@@ -144,6 +144,51 @@
             margin: 5px;
             border: 2px solid #e9ecef;
         }
+        .photo-thumb-wrap {
+            position: relative;
+            display: inline-block;
+            margin: 5px;
+        }
+        .photo-thumb-wrap .remove-photo-btn {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #dc3545;
+            color: #fff;
+            border: none;
+            font-size: 12px;
+            line-height: 18px;
+            text-align: center;
+            cursor: pointer;
+            padding: 0;
+            z-index: 2;
+        }
+        .photo-thumb-wrap .remove-photo-btn:hover {
+            background: #b02a37;
+        }
+        #addMorePhotosBtn {
+            width: 80px;
+            height: 80px;
+            border: 2px dashed #adb5bd;
+            border-radius: 8px;
+            background: #f8f9fa;
+            color: #6c757d;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            margin: 5px;
+            transition: border-color 0.2s;
+        }
+        #addMorePhotosBtn:hover {
+            border-color: #495057;
+            color: #495057;
+        }
         
         .pagination {
             display: flex;
@@ -843,10 +888,15 @@
                         </div>
 
                         <div class="form-group">
-                            <label for="requestPhotos">Фотографії (необов'язково)</label>
-                            <input type="file" id="requestPhotos" class="form-control-file" multiple accept="image/*">
-                            <small class="form-text text-muted">Максимум 5 фото, до 5MB кожне</small>
-                            <div id="photosPreview" class="d-flex flex-wrap mt-2"></div>
+                            <label>Фотографії (необов'язково)</label>
+                            <div>
+                                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="document.getElementById('requestPhotos').click()">
+                                    <i class="fas fa-camera mr-1"></i>Додати фото
+                                </button>
+                                <small class="form-text text-muted d-inline ml-2">Максимум 5 фото, до 5MB кожне</small>
+                            </div>
+                            <input type="file" id="requestPhotos" class="d-none" multiple accept="image/*">
+                            <div id="photosPreview" class="d-flex flex-wrap mt-2 align-items-center"></div>
                         </div>
 
                         <div class="form-group">
@@ -905,6 +955,79 @@
     <script>
         let currentRequestId = null;
         let serviceIntegration;
+        // Масив вибраних фото (File objects)
+        let selectedPhotoFiles = [];
+
+        function initPhotoUpload() {
+            const input = document.getElementById('requestPhotos');
+            if (!input) return;
+            input.addEventListener('change', function(e) {
+                const MAX_COUNT = 5;
+                const MAX_SIZE = 5 * 1024 * 1024;
+                const files = Array.from(e.target.files || []);
+                let added = 0;
+                files.forEach(file => {
+                    if (selectedPhotoFiles.length >= MAX_COUNT) {
+                        toastr.warning('Максимум 5 фотографій');
+                        return;
+                    }
+                    if (file.size > MAX_SIZE) {
+                        toastr.warning(`Файл "${file.name}" перевищує 5MB і не буде доданий`);
+                        return;
+                    }
+                    // Уникнути дублікатів
+                    if (selectedPhotoFiles.some(f => f.name === file.name && f.size === file.size)) return;
+                    selectedPhotoFiles.push(file);
+                    added++;
+                });
+                // Скидаємо input, щоб при повторному відкритті можна було вибрати ті самі файли
+                input.value = '';
+                if (added > 0) renderPhotoPreviews();
+            });
+        }
+
+        function renderPhotoPreviews() {
+            const container = document.getElementById('photosPreview');
+            if (!container) return;
+            container.innerHTML = '';
+            selectedPhotoFiles.forEach((file, idx) => {
+                const wrap = document.createElement('div');
+                wrap.className = 'photo-thumb-wrap';
+
+                const img = document.createElement('img');
+                img.className = 'photo-preview';
+                img.alt = file.name;
+
+                const reader = new FileReader();
+                reader.onload = ev => { img.src = ev.target.result; };
+                reader.readAsDataURL(file);
+
+                const removeBtn = document.createElement('button');
+                removeBtn.type = 'button';
+                removeBtn.className = 'remove-photo-btn';
+                removeBtn.title = 'Видалити фото';
+                removeBtn.innerHTML = '&times;';
+                removeBtn.addEventListener('click', () => {
+                    selectedPhotoFiles.splice(idx, 1);
+                    renderPhotoPreviews();
+                });
+
+                wrap.appendChild(img);
+                wrap.appendChild(removeBtn);
+                container.appendChild(wrap);
+            });
+
+            // Кнопка "+ ще" якщо менше 5 фото
+            if (selectedPhotoFiles.length < 5) {
+                const addBtn = document.createElement('button');
+                addBtn.type = 'button';
+                addBtn.id = 'addMorePhotosBtn';
+                addBtn.title = 'Додати ще фото';
+                addBtn.innerHTML = '<i class="fas fa-plus mb-1" style="font-size:18px"></i><span>ще фото</span>';
+                addBtn.addEventListener('click', () => document.getElementById('requestPhotos').click());
+                container.appendChild(addBtn);
+            }
+        }
         
         function logout() {
             if (confirm('Ви впевнені, що хочете вийти з системи?')) {
@@ -984,6 +1107,17 @@
                         liftAddress: liftAddress
                     };
 
+                    // Прикріплюємо фото як base64 якщо є
+                    if (selectedPhotoFiles.length > 0) {
+                        const toBase64 = file => new Promise((resolve, reject) => {
+                            const r = new FileReader();
+                            r.onload = e => resolve(e.target.result);
+                            r.onerror = reject;
+                            r.readAsDataURL(file);
+                        });
+                        requestData.photosBefore = await Promise.all(selectedPhotoFiles.map(f => toBase64(f)));
+                    }
+
                     // Відправляємо через API
                     const res = await AuthManager.fetchWithAuth('/api/requests', {
                         method: 'POST',
@@ -995,6 +1129,9 @@
                         toastr.success('Заявку успішно створено!');
                         $('#newRequestModal').modal('hide');
                         document.getElementById('newRequestForm').reset();
+                        // Очищаємо вибрані фото
+                        selectedPhotoFiles = [];
+                        renderPhotoPreviews();
                         this.loadRequests();
                     } else {
                         toastr.error((response && response.message) || 'Помилка створення заявки');
@@ -1311,6 +1448,9 @@
             const userData = JSON.parse(localStorage.getItem('userData')) || {};
             if (userData.firstName) {
             }
+
+            // Ініціалізація фото
+            initPhotoUpload();
 
             // Ініціалізація систем
             serviceIntegration = new ServiceRequestsIntegration();

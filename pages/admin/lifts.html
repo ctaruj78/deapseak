@@ -1966,7 +1966,22 @@
                                     <td><strong>Наступне ТО:</strong></td>
                                     <td id="detail-next-maintenance">-</td>
                                 </tr>
+                                <tr>
+                                    <td><strong>Дата сертифікату:</strong></td>
+                                    <td id="detail-license-date">-</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Термін дії сертифікату:</strong></td>
+                                    <td id="detail-license-expiry">-</td>
+                                </tr>
                             </table>
+                            <!-- Кнопка запросити інспекцію -->
+                            <div id="requestInspectionBlock" class="mt-2" style="display:none;">
+                                <div class="alert alert-warning py-2 mb-2" id="inspectionReminderAlert"></div>
+                                <button class="btn btn-warning btn-sm" onclick="requestLiftInspection()">
+                                    <i class="fas fa-clipboard-check mr-1"></i> Запросити інспекцію
+                                </button>
+                            </div>
                         </div>
                     </div>
                     <div class="row">
@@ -2151,6 +2166,75 @@
                     <button type="button" class="btn btn-primary" onclick="printReport()">
                         <i class="fas fa-print"></i> Друкувати
                     </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальне вікно запиту/повідомлення про інспекцію -->
+    <div class="modal fade" id="inspectionRequestModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-warning">
+                    <h5 class="modal-title"><i class="fas fa-clipboard-check mr-2"></i>Інспекція ліфта</h5>
+                    <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Інформація про ліфт -->
+                    <div class="alert alert-light border mb-3 py-2">
+                        <strong>Ліфт:</strong> <span id="inspReqModal_liftRef"></span> &nbsp;|&nbsp;
+                        <strong>Адреса:</strong> <span id="inspReqModal_address"></span><br>
+                        <strong>Термін дії сертифікату:</strong> <span id="inspReqModal_expiry" class="text-danger font-weight-bold"></span>
+                    </div>
+
+                    <!-- ДВА БЛОКИ поруч -->
+                    <div class="row">
+                        <!-- 1. Повідомити клієнта -->
+                        <div class="col-md-6 border-right">
+                            <h6 class="text-primary"><i class="fas fa-user mr-1"></i> Повідомити клієнта</h6>
+                            <p class="text-muted small">Клієнт повинен знати, що термін інспекції закінчується І що FestLift подбає про це.</p>
+                            <div class="form-group">
+                                <label class="small font-weight-bold">Email клієнта</label>
+                                <input type="email" id="inspReqModal_clientEmail" class="form-control form-control-sm" placeholder="email@client.com">
+                            </div>
+                            <div class="form-group">
+                                <label class="small font-weight-bold">Тема</label>
+                                <input type="text" id="inspReqModal_clientSubject" class="form-control form-control-sm">
+                            </div>
+                            <div class="form-group">
+                                <label class="small font-weight-bold">Текст листа</label>
+                                <textarea id="inspReqModal_clientBody" class="form-control form-control-sm" rows="7" style="font-size:12px;"></textarea>
+                            </div>
+                            <button type="button" id="btnSendToClient" class="btn btn-primary btn-sm w-100">
+                                <i class="fas fa-paper-plane mr-1"></i> Надіслати клієнту
+                            </button>
+                        </div>
+
+                        <!-- 2. Запит до муніципалітету -->
+                        <div class="col-md-6">
+                            <h6 class="text-warning"><i class="fas fa-building mr-1"></i> Запит до <span id="inspReqModal_munName">Câmara Municipal</span></h6>
+                            <p class="text-muted small">Офіційний листа з проханням назначити дату інспекції.</p>
+                            <div class="form-group">
+                                <label class="small font-weight-bold">Email муніципалітету</label>
+                                <input type="email" id="inspReqModal_munEmail" class="form-control form-control-sm" placeholder="email@camara.pt">
+                            </div>
+                            <div class="form-group">
+                                <label class="small font-weight-bold">Тема</label>
+                                <input type="text" id="inspReqModal_munSubject" class="form-control form-control-sm">
+                            </div>
+                            <div class="form-group">
+                                <label class="small font-weight-bold">Текст листа</label>
+                                <textarea id="inspReqModal_munBody" class="form-control form-control-sm" rows="7" style="font-size:12px;"></textarea>
+                            </div>
+                            <button type="button" id="btnSendToMun" class="btn btn-warning btn-sm w-100">
+                                <i class="fas fa-building mr-1"></i> Запит до муніципалітету
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <small class="text-muted flex-grow-1"><i class="fas fa-info-circle mr-1"></i>Якщо Brevo не налаштований — відкриється ваш поштовий клієнт (mailto)</small>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрити</button>
                 </div>
             </div>
         </div>
@@ -2747,9 +2831,9 @@
                     formData.append('pdf', currentPDFFile);
                 }
 
-                // Відправка через Brevo SMTP API (token у query параметрі — CORS workaround)
-                const response = await fetch(`/api/email/send-contract?token=${encodeURIComponent(token)}`, {
+                const response = await fetch(`/api/email/send-contract`, {
                     method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` },
                     body: formData
                 });
 
@@ -3294,10 +3378,109 @@
         }
     }
 
+    // ── Запросити/повідомити про інспекцію ліфта ─────────────────────────
+    // Відкриває модальне вікно з двома діями:
+    //  1. Повідомити клієнта, що його ліфту потрібна нова інспекція
+    //  2. Надіслати офіційний запит до câmara municipal
+    function requestLiftInspection() {
+        const liftId = window._currentInspectionLiftId;
+        const lift = window._currentInspectionLift;
+        if (!liftId || !lift) { alert('Дані ліфта не завантажені'); return; }
+
+        const licExpiry = lift.licenseExpiry || lift.certExpiry || null;
+        const expiryStr = licExpiry ? new Date(licExpiry).toLocaleDateString('uk-UA') : 'не вказано';
+
+        const address = (() => {
+            if (!lift.address) return 'N/D';
+            if (typeof lift.address === 'string') return lift.address;
+            const a = lift.address;
+            return [a.street, a.zipCode, a.city].filter(Boolean).join(', ');
+        })();
+        const clientEmail  = lift.clientEmail || (lift.client && lift.client.email) || '';
+        const munEmail     = lift.municipality?.email || '';
+        const munName      = lift.municipality?.name  || 'Câmara Municipal';
+        const liftRef      = lift.municipalNumber || lift.serialNumber || liftId;
+        const clientName   = lift.clientName || lift.contactPerson || 'Exmo(s). Sr(s).';
+
+        const clientSubject = `Aviso: Inspeção do elevador em ${address}`;
+        const clientBody = `${clientName},
+
+Informamos que o certificado de inspeção do elevador com referência ${liftRef}, localizado em:
+
+${address}
+
+é válido até: ${expiryStr}.
+
+Para garantir a conformidade legal, será necessário agendar uma nova inspeção periódica. Entraremos em contacto brevemente com a data disponível.
+
+Com os melhores cumprimentos,
+FestLift`;
+
+        const munSubject = `Pedido de Inspeção de Elevador – ${liftRef}`;
+        const munBody = `Exmos. Srs.,
+
+Vimos por este meio solicitar o agendamento de inspeção periódica do elevador com os seguintes dados:
+
+Número municipal: ${lift.municipalNumber || 'N/D'}
+Número de série: ${lift.serialNumber || 'N/D'}
+Marca/Modelo: ${lift.manufacturer || ''} ${lift.model || ''}
+Endereço: ${address}
+Certificado atual válido até: ${expiryStr}
+
+Solicitamos que indiquem a data e hora disponíveis para a realização da inspeção.
+
+Com os melhores cumprimentos,
+FestLift
+Email de contacto: info@festlift.pt`;
+
+        $('#inspReqModal_liftRef').text(liftRef);
+        $('#inspReqModal_expiry').text(expiryStr);
+        $('#inspReqModal_address').text(address);
+        $('#inspReqModal_clientEmail').val(clientEmail);
+        $('#inspReqModal_clientSubject').val(clientSubject);
+        $('#inspReqModal_clientBody').val(clientBody);
+        $('#inspReqModal_munEmail').val(munEmail);
+        $('#inspReqModal_munName').text(munName);
+        $('#inspReqModal_munSubject').val(munSubject);
+        $('#inspReqModal_munBody').val(munBody);
+        // Reset кнопок
+        $('#btnSendToClient').removeClass('btn-success').addClass('btn-primary').html('<i class="fas fa-paper-plane mr-1"></i> Надіслати клієнту');
+        $('#btnSendToMun').removeClass('btn-success').addClass('btn-warning').html('<i class="fas fa-building mr-1"></i> Запит до муніципалітету');
+        $('#inspectionRequestModal').modal('show');
+    }
+
+    async function _sendInspReqEmail(emailField, subjectField, bodyField, successMsg) {
+        const email   = $(emailField).val().trim();
+        const subject = $(subjectField).val().trim();
+        const body    = $(bodyField).val().trim();
+        if (!email) { alert('Email не вказано. Заповніть поле email.'); return false; }
+        try {
+            const token = AuthManager.getAuthToken();
+            const res = await fetch('/api/email/send-inspection-reminder', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ email, subject, message: body, liftId: window._currentInspectionLiftId, type: 'inspection_request' })
+            });
+            const data = await res.json();
+            if (data.success) { toastr.success(successMsg); return true; }
+        } catch (_) {}
+        // Fallback: mailto
+        window.open(`mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`, '_blank');
+        toastr.info('Відкрито поштовий клієнт');
+        return true;
+    }
+
+    // Кнопки в модалі (ініціалізація одноразово)
+    $(document).on('click', '#btnSendToClient', async function() {
+        const ok = await _sendInspReqEmail('#inspReqModal_clientEmail','#inspReqModal_clientSubject','#inspReqModal_clientBody','Повідомлення клієнту надіслано!');
+        if (ok) $(this).removeClass('btn-primary').addClass('btn-success').html('<i class="fas fa-check mr-1"></i> Надіслано');
+    });
+    $(document).on('click', '#btnSendToMun', async function() {
+        const ok = await _sendInspReqEmail('#inspReqModal_munEmail','#inspReqModal_munSubject','#inspReqModal_munBody','Запит до муніципалітету надіслано!');
+        if (ok) $(this).removeClass('btn-warning').addClass('btn-success').html('<i class="fas fa-check mr-1"></i> Надіслано');
+    });
+
     async function sendInspectionEmail(inspection) {
-        const template = document.getElementById('emailTemplate').value;
-        const formattedDate = new Date(inspection.date).toLocaleDateString('uk-UA');
-        const emailContent = template.replace('{INSPECTION_DATE}', formattedDate);
         
         try {
             const token = AuthManager.getAuthToken();
@@ -3785,6 +3968,10 @@
         const { lat, lng } = result;
         $('#enhancedLiftLat').val(lat.toFixed(6));
         $('#enhancedLiftLng').val(lng.toFixed(6));
+        // Повідомляємо модальний об'єкт про нові координати (інакше coordsManuallyEdited = false)
+        if (window.enhancedLiftModal && typeof window.enhancedLiftModal.setCoordinates === 'function') {
+            window.enhancedLiftModal.setCoordinates(lat, lng);
+        }
         // Якщо поштовий код не заповнений і API повернув — вставляємо
         if (result.postcode && !$('#enhancedLiftPostcode').val().trim()) {
             $('#enhancedLiftPostcode').val(result.postcode);
@@ -4677,6 +4864,45 @@
                     lift.nextInspectionDate ? new Date(lift.nextInspectionDate).toLocaleDateString('uk-UA') :
                     lift.nextMaintenance ? new Date(lift.nextMaintenance).toLocaleDateString('uk-UA') : 'Не вказано'
                 );
+
+                // Сертифікат / ліцензія
+                const licDate = lift.licenseDate || lift.certDate || null;
+                const licExpiry = lift.licenseExpiry || lift.certExpiry || null;
+                $('#detail-license-date').text(licDate ? new Date(licDate).toLocaleDateString('uk-UA') : 'Не вказано');
+                $('#detail-license-expiry').text(licExpiry ? new Date(licExpiry).toLocaleDateString('uk-UA') : 'Не вказано');
+
+                // Логіка кнопки "Запросити інспекцію":
+                // Сертифікат дійсний 2 роки. Нагадування — за 2 місяці до закінчення.
+                const inspBlock = document.getElementById('requestInspectionBlock');
+                const inspAlert = document.getElementById('inspectionReminderAlert');
+                if (inspBlock) {
+                    inspBlock.style.display = 'none';
+                    const expiryDate = licExpiry ? new Date(licExpiry) : null;
+                    const now = new Date();
+                    if (expiryDate) {
+                        window._currentInspectionLiftId = liftId;
+                        window._currentInspectionLift = lift;
+                        const msToExpiry = expiryDate - now;
+                        const daysToExpiry = Math.ceil(msToExpiry / 86400000);
+                        const twoMonthsMs = 60 * 24 * 60 * 60 * 1000; // 60 днів ≈ 2 місяці
+                        if (msToExpiry <= 0) {
+                            inspAlert.className = 'alert alert-danger py-2 mb-2';
+                            inspAlert.innerHTML = `<i class="fas fa-exclamation-circle mr-1"></i> <strong>Сертифікат прострочено!</strong> Необхідно негайно запросити інспекцію.`;
+                            inspBlock.style.display = 'block';
+                        } else if (msToExpiry <= twoMonthsMs) {
+                            inspAlert.className = 'alert alert-warning py-2 mb-2';
+                            inspAlert.innerHTML = `<i class="fas fa-clock mr-1"></i> До закінчення сертифікату <strong>${daysToExpiry} дн.</strong> (${expiryDate.toLocaleDateString('uk-UA')}). Час запросити інспекцію.`;
+                            inspBlock.style.display = 'block';
+                        }
+                    } else if (!licExpiry) {
+                        // Навіть без дати сертифікату показуємо кнопку
+                        window._currentInspectionLiftId = liftId;
+                        window._currentInspectionLift = lift;
+                        inspAlert.className = 'alert alert-secondary py-2 mb-2';
+                        inspAlert.innerHTML = `<i class="fas fa-info-circle mr-1"></i> Дата сертифікату не вказана. Запросіть інспекцію вручну.`;
+                        inspBlock.style.display = 'block';
+                    }
+                }
                 
                 // Звіт інспекції (показуємо останній звіт з історії)
                 const lastReport = lift.inspectionHistory && lift.inspectionHistory.length > 0 
@@ -5026,6 +5252,10 @@
                 $('#nextMaintenance').val('');
             }
             
+            // Ліцензія / сертифікат
+            $('[name="licenseDate"]').val(lift.licenseDate ? lift.licenseDate.split('T')[0] : '');
+            $('[name="licenseExpiry"]').val(lift.licenseExpiry ? lift.licenseExpiry.split('T')[0] : '');
+
             console.log('✅ Форма заповнена даними');
             
             // Відкриваємо модальне вікно
@@ -5715,9 +5945,10 @@
                 formData.append('pdfFile', pdfFile);
 
                 console.log('📤 Відправка з PDF файлом:', pdfFile.name);
-                const apiUrl = `/api/lifts/${encodeURIComponent(liftId)}/inspection-report?token=${encodeURIComponent(token)}`;
+                const apiUrl = `/api/lifts/${encodeURIComponent(liftId)}/inspection-report`;
                 const response = await fetch(apiUrl, {
                     method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` },
                     body: formData
                 });
                 result = await response.json();
@@ -6257,17 +6488,13 @@
                 return;
             }
             
-            // WORKAROUND для GitHub Codespaces CORS: передаємо token через query parameter
-            // замість Authorization header, щоб уникнути CORS preflight (OPTIONS)
-            const apiUrl = AuthManager.getApiUrl(`/api/lifts/${liftId}/contract?token=${encodeURIComponent(token)}`);
-            console.log('📤 Uploading contract to:', apiUrl.replace(/token=[^&]+/, 'token=***'));
+            const apiUrl = AuthManager.getApiUrl(`/api/lifts/${liftId}/contract`);
+            console.log('📤 Uploading contract to:', apiUrl);
             console.log('📦 File:', fileInput.files[0].name, 'Size:', fileInput.files[0].size);
-            console.log('🔑 Token in query parameter (CORS workaround)');
             
-            // FormData з POST БЕЗ custom headers не викликає CORS preflight
             const response = await fetch(apiUrl, {
                 method: 'POST',
-                // Не додаємо headers щоб уникнути preflight!
+                headers: { 'Authorization': `Bearer ${token}` },
                 body: formData
             }).catch(error => {
                 console.error('❌ Fetch error:', error);
@@ -6291,8 +6518,8 @@
                 if ($('#contract-apply-siblings').is(':checked') && $('#contract-siblings-info').is(':visible')) {
                     try {
                         const shareToken = AuthManager.getAuthToken();
-                        const shareUrl = AuthManager.getApiUrl(`/api/lifts/${liftId}/contract/share-to-siblings?token=${encodeURIComponent(shareToken)}`);
-                        const shareRes = await fetch(shareUrl, { method: 'POST' });
+                        const shareUrl = AuthManager.getApiUrl(`/api/lifts/${liftId}/contract/share-to-siblings`);
+                        const shareRes = await fetch(shareUrl, { method: 'POST', headers: { 'Authorization': `Bearer ${shareToken}` } });
                         const shareData = await shareRes.json();
                         if (shareData.success) sharedCount = shareData.updated || 0;
                         console.log('✅ Contract shared to siblings:', shareData);

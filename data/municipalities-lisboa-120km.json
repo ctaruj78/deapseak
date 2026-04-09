@@ -55,7 +55,7 @@
         "1998-*",
         "1999-*"
       ],
-      "email": "geral@cm-lisboa.pt",
+      "email": "inspecoes.elevadores@cm-lisboa.pt",
       "lift_department": {
         "email": "inspecoes.elevadores@cm-lisboa.pt",
         "department_name": "Inspeções de Elevadores - Câmara Municipal de Lisboa",
@@ -80,7 +80,6 @@
         "2765-*",
         "2766-*",
         "2769-*",
-        "2770-*",
         "2775-*",
         "2776-*",
         "2777-*",
@@ -147,6 +146,9 @@
       "longitude": -9.3106,
       "distance_km": 15,
       "postal_codes": [
+        "2740-*",
+        "2770-*",
+        "2771-*",
         "2780-*",
         "2784-*",
         "2785-*",

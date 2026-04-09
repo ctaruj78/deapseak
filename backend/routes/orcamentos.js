@@ -261,6 +261,35 @@ async function gerarPDFOrcamento(orcamento) {
             doc.fillColor('#000000');
             yPos += bankBoxHeight + 15;
 
+            // Fotografias do orçamento
+            if (orcamento.fotos && orcamento.fotos.length > 0) {
+                if (yPos > 650) { doc.addPage(); yPos = 50; }
+                doc.fontSize(11).font('Helvetica-Bold').fillColor('#000000').text('Documentação Fotográfica:', 50, yPos);
+                yPos += 18;
+                doc.moveTo(50, yPos).lineTo(550, yPos).stroke('#cccccc');
+                yPos += 8;
+
+                const imgW = 230;
+                const imgH = 170;
+                const gap = 20;
+                let col = 0; // 0 = esquerda, 1 = direita
+                for (const fotoPath of orcamento.fotos) {
+                    // Construímos caminho absoluto a partir de uploads/ na raiz do projecto
+                    const absPath = path.join(__dirname, '../..', fotoPath.startsWith('/') ? fotoPath : '/' + fotoPath);
+                    if (!fs.existsSync(absPath)) continue;
+                    try {
+                        const x = col === 0 ? 50 : 50 + imgW + gap;
+                        if (yPos + imgH > 780) { doc.addPage(); yPos = 50; col = 0; }
+                        doc.image(absPath, x, yPos, { width: imgW, height: imgH, fit: [imgW, imgH] });
+                        if (col === 1) { yPos += imgH + 12; col = 0; } else { col = 1; }
+                    } catch (imgErr) {
+                        console.warn('⚠️ Erro ao inserir foto no PDF:', fotoPath, imgErr.message);
+                    }
+                }
+                if (col === 1) { yPos += imgH + 12; } // última linha com 1 foto
+                yPos += 10;
+            }
+
             // Rodapé — sempre na última página, abaixo do conteúdo
             const footerY = Math.max(yPos + 10, 770);
             if (footerY > 810) { doc.addPage(); }

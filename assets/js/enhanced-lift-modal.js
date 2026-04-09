@@ -418,6 +418,9 @@ class EnhancedLiftModal {
             nextMaintenance: $('#nextMaintenance').val() || null,
             inspectionFrequency: parseInt($('#enhancedInspectionFrequency').val()) || 24,
             maintenanceNotes: $('#enhancedMaintenanceNotes').val() || '',
+            // Ліцензія / сертифікат
+            licenseDate: $('[name="licenseDate"]').val() || null,
+            licenseExpiry: $('[name="licenseExpiry"]').val() || null,
             // Поля договору
             contractType: $('#editContractType').val() || '',
             contractNumber: $('#editContractNumber').val() || '',
@@ -693,6 +696,8 @@ class EnhancedLiftModal {
                 nextInspectionDate: liftData.nextMaintenance,
                 inspectionFrequency: liftData.inspectionFrequency,
                 maintenanceNotes: liftData.maintenanceNotes,
+                licenseDate: liftData.licenseDate || null,
+                licenseExpiry: liftData.licenseExpiry || null,
                 // Поля договору (зберігаються прямо в об'єкті ліфта)
                 contractType: liftData.contractType || null,
                 contractNumber: liftData.contractNumber || null,
@@ -971,6 +976,9 @@ class EnhancedLiftModal {
         $('#nextMaintenance').val(liftData.nextMaintenance || '');
         $('#enhancedInspectionFrequency').val(liftData.inspectionFrequency || 24);
         $('#enhancedMaintenanceNotes').val(liftData.maintenanceNotes || '');
+        // Ліцензія / сертифікат
+        $('[name="licenseDate"]').val(liftData.licenseDate ? liftData.licenseDate.split('T')[0] : '');
+        $('[name="licenseExpiry"]').val(liftData.licenseExpiry ? liftData.licenseExpiry.split('T')[0] : '');
         
         console.log('✅ All form fields populated');
         console.log('🔍 Municipal number field value:', $('#enhancedMunicipalNumber').val());

@@ -86,7 +86,7 @@ async function geocodeAddress(address) {
                         let cityName = '';
                         if (results[0].address) {
                             const nom = results[0].address;
-                            cityName = nom.city || nom.town || nom.village || nom.municipality || nom.county || '';
+                            cityName = nom.city || nom.town || nom.village || nom.municipality || nom.suburb || nom.quarter || nom.county || '';
                         }
                         
                         console.log(`✅ Geocoded: ${searchAddress} → [${lon}, ${lat}] city: ${cityName}`);
@@ -266,7 +266,7 @@ app.get('/api/geocode', async (req, res) => {
             lat: parseFloat(r.lat),
             lng: parseFloat(r.lon),
             display: r.display_name,
-            city: r.address?.city || r.address?.town || r.address?.village || r.address?.municipality || '',
+            city: r.address?.city || r.address?.town || r.address?.village || r.address?.municipality || r.address?.suburb || r.address?.quarter || '',
             postcode: r.address?.postcode || '',
             type: r.type || r.class || ''
         }));
@@ -275,7 +275,7 @@ app.get('/api/geocode', async (req, res) => {
             lat: parseFloat(best.lat),
             lng: parseFloat(best.lon),
             display: best.display_name,
-            city: best.address?.city || best.address?.town || best.address?.village || '',
+            city: best.address?.city || best.address?.town || best.address?.village || best.address?.municipality || best.address?.suburb || best.address?.quarter || '',
             postcode: best.address?.postcode || '',
             results  // всі варіанти
         });
@@ -2249,15 +2249,26 @@ app.put('/api/lifts/:id', authenticateToken, async (req, res) => {
         };
         
         if (req.body.address) {
-            console.log('🔍 Адреса змінена, виконуємо геокодування...');
-            const geocodedLocation = await geocodeAddress(req.body.address);
-            
-            if (geocodedLocation) {
-                updateData.location = geocodedLocation;
-                console.log('✅ Оновлено координати:', geocodedLocation.coordinates);
+            // Якщо frontend вже надав явні координати — використовуємо їх без геокодування
+            const explicitCoords = req.body.location?.coordinates;
+            if (Array.isArray(explicitCoords) && explicitCoords.length === 2 &&
+                    !isNaN(explicitCoords[0]) && !isNaN(explicitCoords[1])) {
+                console.log('✅ Використано координати з frontend:', explicitCoords);
+                // updateData.location вже встановлено через ...req.body
             } else {
-                console.warn('⚠️ Геокодування не вдалося, координати залишаються без змін');
+                console.log('🔍 Адреса змінена, виконуємо геокодування...');
+                const geocodedLocation = await geocodeAddress(req.body.address);
+
+                if (geocodedLocation) {
+                    updateData.location = geocodedLocation;
+                    console.log('✅ Оновлено координати:', geocodedLocation.coordinates);
+                } else {
+                    console.warn('⚠️ Геокодування не вдалося, координати залишаються без змін');
+                }
             }
+        } else if (req.body.location?.coordinates) {
+            // Запит лише з location (без address) — наприклад, переміщення маркера з мапи
+            console.log('✅ Оновлено координати маркера:', req.body.location.coordinates);
         }
         
         const result = await db.collection('lifts').updateOne(
@@ -2546,6 +2557,15 @@ app.post('/api/lifts/:id/inspection-report', authenticateToken, upload.single('p
                     lastInspectionDate: reportData.date,
                     nextInspectionDate: calcNextInspection(),
                     inspectionStatus: reportData.status === 'passed' ? 'active' : 'needs_attention',
+                    // ✅ Якщо інспекція пройдена → сертифікат діє 2 роки
+                    ...(reportData.status === 'passed' ? {
+                        licenseDate: reportData.date,
+                        licenseExpiry: (() => {
+                            const d = new Date(reportData.date);
+                            d.setFullYear(d.getFullYear() + 2);
+                            return d.toISOString();
+                        })()
+                    } : {}),
                     updatedAt: new Date().toISOString()
                 }
             }
@@ -8577,11 +8597,15 @@ app.post('/api/email/send-inspection-reminder', authenticateToken, async (req, r
         const { email, subject, message, inspectionDate, liftId } = req.body;
 
         if (!email) {
-            return res.status(400).json({
-                success: false,
-                error: 'Email є обов\'язковим'
-            });
+            return res.status(400).json({ success: false, error: 'Email є обов\'язковим' });
         }
+
+        // Перетворюємо plain text у HTML (зберігаємо переноси рядків)
+        const messageHtml = (message || '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/\n/g, '<br>');
 
         const nodemailer = require('nodemailer');
         const transporter = nodemailer.createTransport({
@@ -8597,26 +8621,18 @@ app.post('/api/email/send-inspection-reminder', authenticateToken, async (req, r
         const mailOptions = {
             from: process.env.EMAIL_FROM,
             to: email,
-            subject: subject || 'Нагадування про інспекцію ліфта',
+            subject: subject || 'Notificação de Inspeção de Elevador',
             html: `
-                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                <div style="font-family: Arial, sans-serif; max-width: 640px; margin: 0 auto;">
                     <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 8px 8px 0 0;">
-                        <h2 style="margin: 0;">📅 Нагадування про інспекцію</h2>
+                        <h2 style="margin: 0;">🏢 FestLift – Inspeção de Elevador</h2>
                     </div>
-                    <div style="padding: 20px; border: 1px solid #ddd; border-top: none;">
-                        <p>${message}</p>
-                        ${inspectionDate ? `
-                            <div style="background: #e7f3ff; padding: 15px; border-left: 4px solid #007bff; border-radius: 4px; margin: 20px 0;">
-                                <p style="margin: 0;"><strong>📅 Дата інспекції:</strong> ${inspectionDate}</p>
-                                ${liftId ? `<p style="margin: 5px 0 0 0;"><strong>🏢 Ліфт:</strong> ${liftId}</p>` : ''}
-                            </div>
-                        ` : ''}
-                        <p>Будь ласка, забезпечте доступ до ліфта в зазначену дату.</p>
+                    <div style="padding: 24px; border: 1px solid #ddd; border-top: none; line-height: 1.6;">
+                        ${messageHtml}
                     </div>
-                    <div style="background: #f8f9fa; padding: 15px; text-align: center; border: 1px solid #ddd; border-top: none; border-radius: 0 0 8px 8px;">
+                    <div style="background: #f8f9fa; padding: 14px; text-align: center; border: 1px solid #ddd; border-top: none; border-radius: 0 0 8px 8px;">
                         <p style="margin: 0; color: #666; font-size: 12px;">
-                            З повагою,<br>
-                            <strong>Команда FestLift</strong>
+                            FestLift · <a href="https://festlift.pt" style="color:#667eea;">festlift.pt</a> · info@festlift.pt
                         </p>
                     </div>
                 </div>
@@ -8624,15 +8640,12 @@ app.post('/api/email/send-inspection-reminder', authenticateToken, async (req, r
         };
 
         await transporter.sendMail(mailOptions);
-        
-        console.log(`✅ Inspection reminder sent to ${email}`);
-        res.json({ success: true, message: 'Нагадування про інспекцію відправлено' });
+
+        console.log(`✅ Inspection email sent to ${email} | subject: ${subject}`);
+        res.json({ success: true, message: `Email enviado para ${email}` });
     } catch (error) {
-        console.error('❌ Error sending inspection reminder:', error);
-        res.status(500).json({
-            success: false,
-            error: error.message
-        });
+        console.error('❌ Error sending inspection email:', error.message);
+        res.status(500).json({ success: false, error: error.message });
     }
 });
 

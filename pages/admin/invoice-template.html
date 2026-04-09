@@ -1422,11 +1422,10 @@
                     console.log('📝 Número:', orcamentoData.numero || $('#invoiceNumber').val());
 
                     // Upload fotografias pendentes (selecionadas mas ainda não enviadas)
-                    const fotosInput = document.getElementById('fotosInput');
-                    if (fotosInput.files.length > 0 && orcamentoId) {
+                    if (window._pendingFotoFiles && window._pendingFotoFiles.length > 0 && orcamentoId) {
                         try {
                             const fd = new FormData();
-                            for (const f of fotosInput.files) fd.append('fotos', f);
+                            for (const f of window._pendingFotoFiles) fd.append('fotos', f);
                             const uploadRes = await fetch(`/api/orcamentos/${orcamentoId}/fotos`, {
                                 method: 'POST',
                                 headers: { 'Authorization': `Bearer ${token}` },
@@ -1435,7 +1434,8 @@
                             const uploadResult = await uploadRes.json();
                             if (uploadResult.success) {
                                 renderFotosGrid(uploadResult.fotos);
-                                fotosInput.value = '';
+                                window._pendingFotoFiles = [];
+                                document.getElementById('fotosInput').value = '';
                                 console.log('📷 Fotos enviadas:', uploadResult.fotos.length);
                             } else {
                                 console.warn('⚠️ Erro ao enviar fotos:', uploadResult.message);
@@ -1820,28 +1820,59 @@
         }
 
         // Preview local de novas fotos selecionadas (antes de guardar)
+        window._pendingFotoFiles = [];
         document.addEventListener('DOMContentLoaded', () => {
             const fotosInput = document.getElementById('fotosInput');
             if (!fotosInput) return;
             fotosInput.addEventListener('change', () => {
-                // Recolher URLs já guardadas (links reais, não blob)
+                // Acumular novos ficheiros (evita duplicados por nome+tamanho)
+                Array.from(fotosInput.files).forEach(file => {
+                    const isDup = window._pendingFotoFiles.some(f => f.name === file.name && f.size === file.size);
+                    if (!isDup) window._pendingFotoFiles.push(file);
+                });
+                fotosInput.value = ''; // Reset input para permitir re-selecionar
+
+                // Recolher URLs já guardadas no servidor
                 const savedUrls = [];
                 document.querySelectorAll('#fotosGrid a img').forEach(img => {
                     if (!img.src.startsWith('blob:')) savedUrls.push(img.src.replace(location.origin, ''));
                 });
                 renderFotosGrid(savedUrls);
-                // Adicionar pré-visualizações dos novos ficheiros
-                Array.from(fotosInput.files).forEach(file => {
+
+                // Adicionar pré-visualizações dos ficheiros pendentes
+                window._pendingFotoFiles.forEach((file, idx) => {
                     const url = URL.createObjectURL(file);
                     const wrap = document.createElement('div');
                     wrap.style.cssText = 'position:relative;display:inline-block;';
+                    wrap.dataset.pendingIdx = idx;
                     wrap.innerHTML = `
                         <img src="${url}" style="width:90px;height:90px;object-fit:cover;border-radius:6px;border:2px dashed #17a2b8;" title="${file.name}">
-                        <span style="position:absolute;bottom:0;left:0;right:0;background:rgba(23,162,184,.75);color:#fff;font-size:9px;text-align:center;border-radius:0 0 5px 5px;padding:1px;">Novo</span>`;
+                        <span style="position:absolute;bottom:0;left:0;right:0;background:rgba(23,162,184,.75);color:#fff;font-size:9px;text-align:center;border-radius:0 0 5px 5px;padding:1px;">Novo</span>
+                        <button type="button" onclick="removePendingFoto(${idx})" style="position:absolute;top:2px;right:2px;background:rgba(220,53,69,.85);color:#fff;border:none;border-radius:50%;width:18px;height:18px;font-size:12px;line-height:1;cursor:pointer;padding:0;" title="Remover">&times;</button>`;
                     document.getElementById('fotosGrid').appendChild(wrap);
                 });
             });
         });
+
+        function removePendingFoto(idx) {
+            window._pendingFotoFiles.splice(idx, 1);
+            // Re-render preview
+            const savedUrls = [];
+            document.querySelectorAll('#fotosGrid a img').forEach(img => {
+                if (!img.src.startsWith('blob:')) savedUrls.push(img.src.replace(location.origin, ''));
+            });
+            renderFotosGrid(savedUrls);
+            window._pendingFotoFiles.forEach((file, i) => {
+                const url = URL.createObjectURL(file);
+                const wrap = document.createElement('div');
+                wrap.style.cssText = 'position:relative;display:inline-block;';
+                wrap.innerHTML = `
+                    <img src="${url}" style="width:90px;height:90px;object-fit:cover;border-radius:6px;border:2px dashed #17a2b8;" title="${file.name}">
+                    <span style="position:absolute;bottom:0;left:0;right:0;background:rgba(23,162,184,.75);color:#fff;font-size:9px;text-align:center;border-radius:0 0 5px 5px;padding:1px;">Novo</span>
+                    <button type="button" onclick="removePendingFoto(${i})" style="position:absolute;top:2px;right:2px;background:rgba(220,53,69,.85);color:#fff;border:none;border-radius:50%;width:18px;height:18px;font-size:12px;line-height:1;cursor:pointer;padding:0;" title="Remover">&times;</button>`;
+                document.getElementById('fotosGrid').appendChild(wrap);
+            });
+        }
         // ─────────────────────────────────────────────────────────────
 
         // Завантажити орçаменто за ID

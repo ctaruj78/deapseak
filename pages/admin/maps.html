@@ -625,6 +625,21 @@
         </div>
     </div>
 
+    <!-- Панель редагування позиції маркера -->
+    <div id="locationEditBanner" style="display:none; position:fixed; bottom:20px; left:50%; transform:translateX(-50%); z-index:9999;
+         background:#fff; border:2px solid #f39c12; border-radius:8px; padding:10px 18px;
+         box-shadow:0 4px 16px rgba(0,0,0,0.25); align-items:center; gap:12px; flex-wrap:wrap;">
+        <span style="font-weight:600; color:#856404;">
+            <i class="fas fa-map-pin"></i> Клікніть на мапі куди перемістити ліфт: <span id="editLiftName" style="color:#333;"></span>
+        </span>
+        <button class="btn btn-sm btn-success" onclick="saveMarkerLocation()">
+            <i class="fas fa-save"></i> Зберегти
+        </button>
+        <button class="btn btn-sm btn-secondary" onclick="cancelLocationEdit()">
+            <i class="fas fa-times"></i> Скасувати
+        </button>
+    </div>
+
     <!-- Scripts -->
     <script src="../../plugins/jquery/jquery.min.js"></script>
     <script src="../../plugins/bootstrap/bootstrap.bundle.min.js"></script>
@@ -889,9 +904,101 @@
                         <a href="lifts.html" class="btn btn-sm btn-primary">
                             <i class="fas fa-info-circle"></i> Деталі
                         </a>
+                        <button class="btn btn-sm btn-warning" onclick="enableLocationEdit('${lift.id}')" title="Змінити позицію маркера">
+                            <i class="fas fa-map-marker-alt"></i> Змінити місце
+                        </button>
                     </div>
                 </div>
             `;
+        }
+
+        // ── Редагування позиції маркера (клік по мапі) ───────────────────────
+        let editingLiftId = null;
+        let editingMarkerRef = null;
+        let mapClickHandler = null; // посилання на обробник кліку
+
+        window.enableLocationEdit = function(liftId) {
+            const entry = markers.find(m => m.lift.id === liftId || m.lift.id?.toString() === liftId);
+            if (!entry) { alert('Маркер не знайдено'); return; }
+
+            if (editingLiftId === liftId) {
+                cancelLocationEdit();
+                return;
+            }
+            if (editingLiftId) cancelLocationEdit();
+
+            editingLiftId = liftId;
+            editingMarkerRef = entry.marker;
+
+            // Закриваємо попап і підсвічуємо маркер
+            entry.marker.closePopup();
+            entry.marker.setOpacity(0.5);
+
+            // Показуємо банер
+            const banner = document.getElementById('locationEditBanner');
+            if (banner) {
+                banner.style.display = 'flex';
+                banner.querySelector('#editLiftName').textContent = entry.lift.address || liftId;
+            }
+
+            // Змінюємо курсор над картою
+            map.getContainer().style.cursor = 'crosshair';
+
+            // Реєструємо обробник кліку по мапі
+            mapClickHandler = function(e) {
+                // Переміщуємо маркер на клікнуту точку
+                editingMarkerRef.setLatLng(e.latlng);
+            };
+            map.on('click', mapClickHandler);
+        };
+
+        function cancelLocationEdit() {
+            if (mapClickHandler) {
+                map.off('click', mapClickHandler);
+                mapClickHandler = null;
+            }
+            if (editingMarkerRef) {
+                editingMarkerRef.setOpacity(1);
+            }
+            map.getContainer().style.cursor = '';
+            editingLiftId = null;
+            editingMarkerRef = null;
+            const banner = document.getElementById('locationEditBanner');
+            if (banner) banner.style.display = 'none';
+        }
+
+        async function saveMarkerLocation() {
+            if (!editingLiftId || !editingMarkerRef) return;
+            const latlng = editingMarkerRef.getLatLng();
+            const liftId = editingLiftId;
+
+            cancelLocationEdit();
+
+            try {
+                const token = (typeof AuthManager !== 'undefined' && AuthManager.getAuthToken
+                    ? AuthManager.getAuthToken()
+                    : null) || localStorage.getItem('authToken') || localStorage.getItem('token') || '';
+                const res = await fetch(`/api/lifts/${liftId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({
+                        location: {
+                            type: 'Point',
+                            coordinates: [latlng.lng, latlng.lat]
+                        }
+                    })
+                });
+                const data = await res.json();
+                if (data.success !== false) {
+                    toastr.success('Позицію ліфта збережено!');
+                    const entry = markers.find(m => m.lift.id === liftId || m.lift.id?.toString() === liftId);
+                    if (entry) { entry.lift.lat = latlng.lat; entry.lift.lng = latlng.lng; }
+                } else {
+                    toastr.error('Помилка збереження: ' + (data.message || 'невідома'));
+                }
+            } catch (err) {
+                toastr.error('Помилка з\'єднання: ' + err.message);
+            }
         }
 
         // Захист від подвійного виклику
