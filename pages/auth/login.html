@@ -354,6 +354,13 @@
                         console.log('💾 Зберігаю токен:', token?.substring(0, 20) + '...');
                         console.log('👤 Зберігаю користувача:', user);
                         
+                        // 🔄 Зберігаємо refresh token для автоматичного оновлення
+                        const refreshToken = data.data?.refreshToken || data.refreshToken;
+                        if (refreshToken) {
+                            localStorage.setItem('liftmanager_refresh', refreshToken);
+                            console.log('🔄 Refresh token збережено');
+                        }
+                        
                         // Зберігаємо токен у всіх форматах для сумісності
                         localStorage.setItem('token', token);           // Головний токен
                         localStorage.setItem('authToken', token);       // Для lifts-manager.js

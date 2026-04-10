@@ -39,7 +39,7 @@ const authenticate = (req, res, next) => {
 };
 
 // Генерація Access токена (7 днів)
-const generateToken = (payload, expiresIn = '7d') => {
+const generateToken = (payload, expiresIn = '30d') => {
     return jwt.sign(payload, JWT_SECRET, { expiresIn });
 };
 

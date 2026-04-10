@@ -1372,9 +1372,21 @@
                                                       class="form-control" rows="3"
                                                       placeholder="Записи про ТО, ремонти, заміни деталей, особливості..."></textarea>
                                         </div>
-                                        <button type="button" class="btn btn-outline-info btn-sm" id="addInspectionReportBtn">
-                                            <i class="fas fa-file-upload mr-1"></i> Додати звіт інспекції (PDF)
+                                    </div>
+                                </div>
+
+                                <div class="sc">
+                                    <div class="sc-h green"><i class="fas fa-clipboard-list"></i> Звіти інспекцій</div>
+                                    <div class="sc-b">
+                                        <div id="step4InspectionInfo" class="mb-2">
+                                            <p class="text-muted small mb-0"><i class="fas fa-info-circle mr-1"></i>Збережіть ліфт, щоб переглянути та додати звіти інспекцій</p>
+                                        </div>
+                                        <button type="button" class="btn btn-outline-info btn-sm mt-2" id="addInspectionReportBtn">
+                                            <i class="fas fa-file-upload mr-1"></i> Додати звіт інспекції
                                         </button>
+                                    <button type="button" class="btn btn-outline-info btn-sm ml-1" data-toggle="modal" data-target="#pdfParserModal" title="Завантажити PDF звіт інспекції">
+                                        <i class="fas fa-file-pdf mr-1"></i> PDF Звіт
+                                    </button>
                                     </div>
                                 </div>
 
@@ -1702,6 +1714,13 @@
                                     <td id="detail-inspection-comments">Не вказано</td>
                                 </tr>
                             </table>
+                            <!-- Кнопка запросити інспекцію -->
+                            <div id="requestInspectionBlock" class="mt-2" style="display:none;">
+                                <div class="alert alert-warning py-2 mb-2" id="inspectionReminderAlert"></div>
+                                <button class="btn btn-warning btn-sm" onclick="requestLiftInspection()">
+                                    <i class="fas fa-clipboard-check mr-1"></i> Запросити інспекцію
+                                </button>
+                            </div>
                         </div>
                     </div>
                     <div class="row">
@@ -1822,6 +1841,132 @@
                 <div class="modal-footer" style="flex-shrink: 0; border-top: 1px solid #dee2e6;">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрити</button>
                     <button type="button" class="btn btn-primary" id="edit-lift-from-details">Editar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальне вікно запиту/повідомлення про інспекцію -->
+    <div class="modal fade" id="inspectionRequestModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-warning">
+                    <h5 class="modal-title"><i class="fas fa-clipboard-check mr-2"></i>Інспекція ліфта</h5>
+                    <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-light border mb-3 py-2">
+                        <strong>Ліфт:</strong> <span id="inspReqModal_liftRef"></span> &nbsp;|&nbsp;
+                        <strong>Адреса:</strong> <span id="inspReqModal_address"></span><br>
+                        <strong>Термін дії сертифікату:</strong> <span id="inspReqModal_expiry" class="text-danger font-weight-bold"></span>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 border-right">
+                            <h6 class="text-primary"><i class="fas fa-user mr-1"></i> Повідомити клієнта</h6>
+                            <p class="text-muted small">Клієнт повинен знати, що термін інспекції закінчується і що FestLift подбає про це.</p>
+                            <div class="form-group">
+                                <label class="small font-weight-bold">Email клієнта</label>
+                                <input type="email" id="inspReqModal_clientEmail" class="form-control form-control-sm" placeholder="email@client.com">
+                            </div>
+                            <div class="form-group">
+                                <label class="small font-weight-bold">Тема</label>
+                                <input type="text" id="inspReqModal_clientSubject" class="form-control form-control-sm">
+                            </div>
+                            <div class="form-group">
+                                <label class="small font-weight-bold">Текст листа</label>
+                                <textarea id="inspReqModal_clientBody" class="form-control form-control-sm" rows="7" style="font-size:12px;"></textarea>
+                            </div>
+                            <button type="button" id="btnSendToClient" class="btn btn-primary btn-sm w-100">
+                                <i class="fas fa-paper-plane mr-1"></i> Надіслати клієнту
+                            </button>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-warning"><i class="fas fa-building mr-1"></i> Запит до <span id="inspReqModal_munName">Câmara Municipal</span></h6>
+                            <p class="text-muted small">Офіційний лист з проханням призначити дату інспекції.</p>
+                            <div class="form-group">
+                                <label class="small font-weight-bold">Email муніципалітету</label>
+                                <input type="email" id="inspReqModal_munEmail" class="form-control form-control-sm" placeholder="email@camara.pt">
+                            </div>
+                            <div class="form-group">
+                                <label class="small font-weight-bold">Тема</label>
+                                <input type="text" id="inspReqModal_munSubject" class="form-control form-control-sm">
+                            </div>
+                            <div class="form-group">
+                                <label class="small font-weight-bold">Текст листа</label>
+                                <textarea id="inspReqModal_munBody" class="form-control form-control-sm" rows="7" style="font-size:12px;"></textarea>
+                            </div>
+                            <button type="button" id="btnSendToMun" class="btn btn-warning btn-sm w-100">
+                                <i class="fas fa-building mr-1"></i> Запит до муніципалітету
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <small class="text-muted flex-grow-1"><i class="fas fa-info-circle mr-1"></i>Якщо Brevo не налаштований — відкриється ваш поштовий клієнт (mailto)</small>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрити</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальне вікно запиту/повідомлення про інспекцію -->
+    <div class="modal fade" id="inspectionRequestModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-warning">
+                    <h5 class="modal-title"><i class="fas fa-clipboard-check mr-2"></i>Інспекція ліфта</h5>
+                    <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-light border mb-3 py-2">
+                        <strong>Ліфт:</strong> <span id="inspReqModal_liftRef"></span> &nbsp;|&nbsp;
+                        <strong>Адреса:</strong> <span id="inspReqModal_address"></span><br>
+                        <strong>Термін дії сертифікату:</strong> <span id="inspReqModal_expiry" class="text-danger font-weight-bold"></span>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 border-right">
+                            <h6 class="text-primary"><i class="fas fa-user mr-1"></i> Повідомити клієнта</h6>
+                            <p class="text-muted small">Клієнт повинен знати, що термін інспекції закінчується і що FestLift подбає про це.</p>
+                            <div class="form-group">
+                                <label class="small font-weight-bold">Email клієнта</label>
+                                <input type="email" id="inspReqModal_clientEmail" class="form-control form-control-sm" placeholder="email@client.com">
+                            </div>
+                            <div class="form-group">
+                                <label class="small font-weight-bold">Тема</label>
+                                <input type="text" id="inspReqModal_clientSubject" class="form-control form-control-sm">
+                            </div>
+                            <div class="form-group">
+                                <label class="small font-weight-bold">Текст листа</label>
+                                <textarea id="inspReqModal_clientBody" class="form-control form-control-sm" rows="7" style="font-size:12px;"></textarea>
+                            </div>
+                            <button type="button" id="btnSendToClient" class="btn btn-primary btn-sm w-100">
+                                <i class="fas fa-paper-plane mr-1"></i> Надіслати клієнту
+                            </button>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-warning"><i class="fas fa-building mr-1"></i> Запит до <span id="inspReqModal_munName">Câmara Municipal</span></h6>
+                            <p class="text-muted small">Офіційний лист з проханням призначити дату інспекції.</p>
+                            <div class="form-group">
+                                <label class="small font-weight-bold">Email муніципалітету</label>
+                                <input type="email" id="inspReqModal_munEmail" class="form-control form-control-sm" placeholder="email@camara.pt">
+                            </div>
+                            <div class="form-group">
+                                <label class="small font-weight-bold">Тема</label>
+                                <input type="text" id="inspReqModal_munSubject" class="form-control form-control-sm">
+                            </div>
+                            <div class="form-group">
+                                <label class="small font-weight-bold">Текст листа</label>
+                                <textarea id="inspReqModal_munBody" class="form-control form-control-sm" rows="7" style="font-size:12px;"></textarea>
+                            </div>
+                            <button type="button" id="btnSendToMun" class="btn btn-warning btn-sm w-100">
+                                <i class="fas fa-building mr-1"></i> Запит до муніципалітету
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <small class="text-muted flex-grow-1"><i class="fas fa-info-circle mr-1"></i>Якщо Brevo не налаштований — відкриється ваш поштовий клієнт (mailto)</small>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрити</button>
                 </div>
             </div>
         </div>
@@ -3456,13 +3601,29 @@
     document.addEventListener('DOMContentLoaded', function() {
         const addInspectionReportBtn = document.getElementById('addInspectionReportBtn');
         if (addInspectionReportBtn) {
-            addInspectionReportBtn.addEventListener('click', function() {
+            addInspectionReportBtn.addEventListener('click', async function() {
                 // Зберігаємо backdrop попереднього модального вікна
                 const existingModals = document.querySelectorAll('.modal.show');
                 
                 // Встановлюємо currentLiftId з поточного контексту
+                const liftIdInput = document.getElementById('enhancedLiftId');
+                const editLiftId = liftIdInput && liftIdInput.value ? liftIdInput.value : null;
                 const municipalNumber = document.getElementById('enhancedMunicipalNumber');
-                if (municipalNumber && municipalNumber.value) {
+                if (editLiftId) {
+                    window.currentLiftId = editLiftId;
+                    // Перевіряємо дублювання: чи є вже звіт за останні 30 днів
+                    if (window._step4LastReportDate) {
+                        const daysAgo = (Date.now() - new Date(window._step4LastReportDate)) / 86400000;
+                        if (daysAgo < 30) {
+                            const dateStr = new Date(window._step4LastReportDate).toLocaleDateString('uk-UA');
+                            const proceed = confirm(`⚠️ Увага: Для цього ліфта вже є звіт від ${dateStr} (${Math.ceil(daysAgo)} днів тому).
+
+Додати ще один звіт?`);
+                            if (!proceed) return;
+                        }
+                    }
+                    console.log('🏗️ Встановлено currentLiftId з форми редагування:', window.currentLiftId);
+                } else if (municipalNumber && municipalNumber.value) {
                     window.currentLiftId = municipalNumber.value;
                     console.log('🏗️ Встановлено currentLiftId:', window.currentLiftId);
                 } else {
@@ -3755,7 +3916,7 @@
     }
 
     // Функція збереження звіту інспекції
-    function saveInspectionReport() {
+    async function saveInspectionReport() {
         console.log('💾 === ЗБЕРЕЖЕННЯ ЗВІТУ ІНСПЕКЦІЇ ===');
         
         // Debug - перевіряємо чи існують поля
@@ -3826,77 +3987,101 @@
             calculatedNextMaintenance = calculatedNextMaintenance.toISOString().split('T')[0]; // YYYY-MM-DD формат
         }
 
-        // Формуємо дані для збереження
-        const reportData = {
-            id: 'INSPECTION_' + Date.now(),
-            inspector: inspectorName,
-            inspectionDate: inspectionDate,
-            status: inspectionStatus,
-            comments: inspectionComments,
-            shouldUpdateMaintenance: shouldUpdateMaintenance,
-            calculatedNextMaintenance: calculatedNextMaintenance,
-            frequencyOverride: frequencyOverride,
-            liftId: window.currentLiftId || window.enhancedLiftModal?.currentLiftId || 'UNKNOWN_LIFT',
-            createdAt: new Date().toISOString(),
-            reportType: 'inspection'
-        };
-        
-        console.log('🏗️ Lift ID:', window.currentLiftId, 'Enhanced:', window.enhancedLiftModal?.currentLiftId);
+        // ── Determine MongoDB lift ID ──────────────────────────────────────
+        const liftMongoId = window.currentLiftId || window.enhancedLiftModal?.currentLiftId;
+        const inspectionType = document.getElementById('inspectionType')?.value || 'routine';
 
-        console.log('📋 Дані для збереження:', reportData);
+        console.log('🏗️ Lift ID:', liftMongoId);
 
-        // Збереження
+        if (!liftMongoId || !/^[a-f0-9]{24}$/i.test(liftMongoId)) {
+            alert('❌ Помилка: Не вдалося визначити ID ліфта.\nБудь ласка, закрийте та відкрийте деталі ліфта ще раз.');
+            return;
+        }
+
+        // ── Get auth token ────────────────────────────────────────────────
+        const _saveToken = (typeof AuthManager !== 'undefined') ? AuthManager.getAuthToken() :
+            (localStorage.getItem('liftmanager_jwt') || localStorage.getItem('authToken') || localStorage.getItem('token'));
+
+        // ── Show loading state on save button ─────────────────────────────
+        const _saveBtnEl = document.getElementById('saveInspectionReportBtn');
+        if (_saveBtnEl) {
+            _saveBtnEl.disabled = true;
+            _saveBtnEl.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> Збереження...';
+        }
+
+        // ── Send to API ───────────────────────────────────────────────────
         try {
-            // Зберігаємо в localStorage
-            localStorage.setItem('last_inspection_report', JSON.stringify(reportData));
-            
-            // Зберігаємо в список всіх звітів
-            const allReports = JSON.parse(localStorage.getItem('inspection_reports') || '[]');
-            allReports.push(reportData);
-            localStorage.setItem('inspection_reports', JSON.stringify(allReports));
-            
-            console.log('✅ Звіт успішно збережено!');
-            
-            // Оновлюємо основні дані ліфта (завжди зберігаємо дані інспекції)
-            if (reportData.liftId !== 'UNKNOWN_LIFT') {
-                const inspectionType = document.getElementById('inspectionType')?.value || 'routine';
-                updateLiftMaintenanceDates(
-                    reportData.liftId, 
-                    inspectionDate, 
-                    calculatedNextMaintenance,
-                    {
-                        inspectionDate: inspectionDate,
-                        inspectionType: inspectionType,
-                        inspectionStatus: inspectionStatus,
-                        inspectionComments: inspectionComments
-                    }
-                );
-            }
-            
-            // Показуємо повідомлення про успіх
-            let successMessage = 'Звіт інспекції успішно збережено!';
-            if (shouldUpdateMaintenance) {
-                successMessage += ' Дати ТО оновлено автоматично.';
-            }
-            
-            if (typeof toastr !== 'undefined') {
-                toastr.success(successMessage);
+            let _response;
+            if (currentInspectionPDFFile) {
+                // With PDF — use multipart/form-data
+                const fd = new FormData();
+                fd.append('inspector', inspectorName);
+                fd.append('notes', inspectionComments);
+                fd.append('reportType', inspectionType);
+                fd.append('status', inspectionStatus);
+                fd.append('inspectionDate', inspectionDate);
+                if (calculatedNextMaintenance) fd.append('nextInspectionDate', calculatedNextMaintenance);
+                fd.append('report', currentInspectionPDFFile, currentInspectionPDFFile.name);
+
+                _response = await fetch(`/api/lifts/${liftMongoId}/inspection-report`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${_saveToken}` },
+                    body: fd
+                });
             } else {
-                alert('✅ ' + successMessage + '\n\nІнспектор: ' + inspectorName + '\nДата: ' + inspectionDate);
+                // Without PDF — use JSON
+                _response = await fetch(`/api/lifts/${liftMongoId}/inspection-report`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${_saveToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        inspector: inspectorName,
+                        notes: inspectionComments,
+                        reportType: inspectionType,
+                        status: inspectionStatus,
+                        inspectionDate: inspectionDate,
+                        nextInspectionDate: calculatedNextMaintenance || undefined
+                    })
+                });
             }
-            
-            // Закриваємо модальне вікно (використовуємо глобальну функцію)
+
+            const _result = await _response.json();
+            if (!_result.success) throw new Error(_result.message || _result.error || 'Помилка збереження');
+
+            console.log('✅ Звіт успішно збережено в MongoDB!');
+
+            // Success notification
+            const _successMsg = 'Звіт інспекції успішно збережено!' + (shouldUpdateMaintenance ? ' Дати ТО оновлено.' : '');
+            if (typeof toastr !== 'undefined') {
+                toastr.success(_successMsg);
+            } else {
+                alert('✅ ' + _successMsg);
+            }
+
+            // Close modal
             if (typeof window.closeInspectionModal === 'function') {
                 window.closeInspectionModal();
             } else {
-                console.warn('⚠️ Глобальна функція closeInspectionModal недоступна');
-                // Fallback закриття
                 $('#inspectionReportModal').modal('hide');
             }
-            
+
+            // Reload inspection list in step4
+            const _curId = window.currentLiftId || window._currentInspectionLiftId;
+            if (_curId) {
+                if (typeof loadStep4InspectionInfo === 'function') loadStep4InspectionInfo(_curId);
+                if (typeof loadInspectionReports === 'function') loadInspectionReports(_curId);
+            }
+
         } catch (error) {
             console.error('❌ Помилка збереження:', error);
             alert('❌ Помилка збереження звіту: ' + error.message);
+        } finally {
+            if (_saveBtnEl) {
+                _saveBtnEl.disabled = false;
+                _saveBtnEl.innerHTML = '<i class="fas fa-save mr-1"></i> Зберегти звіт';
+            }
         }
     }
 
@@ -4523,19 +4708,18 @@
         if (_clientId) showClientFilterBanner(_clientId);
 
         try {
+            // Використовуємо той самий шлях, що і в admin/lifts.html
             const result = await apiCall(_endpoint);
-            
+            console.log('[DIAG] Результат apiCall:', result);
             if (result.success && result.data) {
                 // API v2 повертає: { success: true, data: { lifts: [...] } }
                 const apiData = result.data.data || result.data;
                 const lifts = apiData.lifts || apiData;
-                
-                console.log('✅ Elevadores завантажено з API:', lifts.length);
-                
+                console.log('[DIAG] lifts:', lifts);
                 // ✅ ВИПРАВЛЕННЯ: Зберігаємо повний список в глобальну змінну
                 if (Array.isArray(lifts)) {
                     window.allLiftsData = lifts;
-                    
+                    console.log('[DIAG] window.allLiftsData:', window.allLiftsData);
                     // Якщо є активний пошук/фільтр — зберігаємо його, інакше скидаємо на першу сторінку
                     if (typeof applyAllFilters === 'function') {
                         applyAllFilters();
@@ -4546,17 +4730,17 @@
                         const paginatedLifts = lifts.slice(startIdx, endIdx);
                         displayLiftsInTable(paginatedLifts, lifts.length);
                     }
-                    
                     return lifts;
                 } else {
-                    console.error('❌ API повернув не масив:', lifts);
+                    console.error('[DIAG] ❌ API повернув не масив:', lifts);
                     return [];
                 }
             } else {
-                console.error('❌ Помилка завантаження ліфтів:', result.error || 'Unknown error');
+                console.error('[DIAG] ❌ Помилка завантаження ліфтів:', result.error || 'Unknown error');
                 // Fallback до localStorage якщо API недоступний
                 const localLifts = JSON.parse(localStorage.getItem('lifts') || '[]');
                 window.allLiftsData = localLifts;
+                console.log('[DIAG] window.allLiftsData (local):', window.allLiftsData);
                 if (typeof applyAllFilters === 'function') {
                     applyAllFilters();
                 } else {
@@ -4569,9 +4753,10 @@
                 return localLifts;
             }
         } catch (error) {
-            console.error('❌ Exception при завантаженні ліфтів:', error);
+            console.error('[DIAG] ❌ Exception при завантаженні ліфтів:', error);
             const localLifts = JSON.parse(localStorage.getItem('lifts') || '[]');
             window.allLiftsData = localLifts;
+            console.log('[DIAG] window.allLiftsData (exception):', window.allLiftsData);
             if (typeof applyAllFilters === 'function') {
                 applyAllFilters();
             } else {
@@ -5302,6 +5487,41 @@
                 
                 // Зберігаємо current-lift-id для використання в інших функціях
                 $('#liftDetailsModal').data('current-lift-id', liftId);
+                
+                // Зберігаємо дані ліфта для інспекційних листів
+                window._currentInspectionLiftId = liftId;
+                window._currentInspectionLift = lift;
+                
+                // Перевіряємо строк сертифікату для кнопки "Запросити інспекцію"
+                (function() {
+                    const inspBlock = document.getElementById('requestInspectionBlock');
+                    const inspAlert = document.getElementById('inspectionReminderAlert');
+                    if (!inspBlock) return;
+                    inspBlock.style.display = 'none';
+                    const licExpiry = lift.licenseExpiry || lift.certExpiry || null;
+                    const now = new Date();
+                    if (licExpiry) {
+                        const expiryDate = new Date(licExpiry);
+                        const msToExpiry = expiryDate - now;
+                        const daysToExpiry = Math.ceil(msToExpiry / 86400000);
+                        const twoMonthsMs = 60 * 24 * 60 * 60 * 1000;
+                        if (msToExpiry <= 0) {
+                            inspAlert.className = 'alert alert-danger py-2 mb-2';
+                            inspAlert.innerHTML = '<i class="fas fa-exclamation-circle mr-1"></i> <strong>Сертифікат прострочено!</strong> Необхідно негайно запросити інспекцію.';
+                            inspBlock.style.display = 'block';
+                        } else if (msToExpiry <= twoMonthsMs) {
+                            inspAlert.className = 'alert alert-warning py-2 mb-2';
+                            inspAlert.innerHTML = '<i class="fas fa-clock mr-1"></i> До закінчення сертифікату <strong>' + daysToExpiry + ' дн.</strong> (' + expiryDate.toLocaleDateString('uk-UA') + '). Час запросити інспекцію.';
+                            inspBlock.style.display = 'block';
+                        }
+                    } else {
+                        window._currentInspectionLiftId = liftId;
+                        window._currentInspectionLift = lift;
+                        inspAlert.className = 'alert alert-secondary py-2 mb-2';
+                        inspAlert.innerHTML = '<i class="fas fa-info-circle mr-1"></i> Дата сертифікату не вказана. Запросіть інспекцію вручну.';
+                        inspBlock.style.display = 'block';
+                    }
+                })();
                 
                 // Завантажуємо звіти інспекцій
                 loadInspectionReports(liftId, lift);
@@ -8050,7 +8270,499 @@
             if (chatInput) { chatInput.addEventListener('keydown',function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();doSend();}}); }
         }
     });
-    </script>
+
+    // ── Завантаження звітів у вкладку "Сервіс" (крок 4) ─────────────────────
+    window._step4LastReportDate = null;
+    
+    async function loadStep4InspectionInfo(liftId) {
+        const container = document.getElementById('step4InspectionInfo');
+        if (!container) return;
+        if (!liftId) {
+            container.innerHTML = '<p class="text-muted small mb-0"><i class="fas fa-info-circle mr-1"></i>Збережіть ліфт, щоб переглянути та додати звіти інспекцій</p>';
+            window._step4LastReportDate = null;
+            return;
+        }
+        container.innerHTML = '<span class="text-muted small"><i class="fas fa-spinner fa-spin mr-1"></i>Завантаження...</span>';
+        try {
+            const token = typeof AuthManager !== 'undefined' ? AuthManager.getAuthToken() : localStorage.getItem('liftmanager_jwt');
+            const res = await fetch(`/api/inspections?liftId=${encodeURIComponent(liftId)}&limit=5`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await res.json();
+            const reports = (data.data && Array.isArray(data.data)) ? data.data : (Array.isArray(data.data?.inspections) ? data.data.inspections : []);
+            if (reports.length === 0) {
+                container.innerHTML = '<p class="text-muted small mb-0"><i class="fas fa-folder-open mr-1"></i>Звітів ще немає. Натисніть кнопку нижче, щоб додати перший.</p>';
+                window._step4LastReportDate = null;
+                return;
+            }
+            // Sort by date desc
+            reports.sort((a, b) => new Date(b.date || b.createdAt) - new Date(a.date || a.createdAt));
+            window._step4LastReportDate = reports[0].date || reports[0].createdAt || null;
+            const statusLabels = { passed: '<span class="badge badge-success">✅ Пройдено</span>', failed: '<span class="badge badge-warning">⚠️ Клаузи</span>', completed: '<span class="badge badge-info">Виконано</span>' };
+            const typeLabels = { inspection: 'Інспекція', maintenance: 'ТО', repair: 'Ремонт', emergency: 'Аварія' };
+            let html = '<div class="table-responsive"><table class="table table-sm table-bordered table-hover mb-1" style="font-size:0.8rem;">';
+            html += '<thead class="thead-light"><tr><th>Дата</th><th>Тип</th><th>Статус</th><th>Дійсно до</th></tr></thead><tbody>';
+            for (const r of reports.slice(0, 5)) {
+                const d = r.date ? new Date(r.date).toLocaleDateString('uk-UA') : '—';
+                const type = typeLabels[r.type] || r.type || '—';
+                const status = statusLabels[r.status] || r.status || '—';
+                let validUntil = '—';
+                if (r.validUntil) validUntil = new Date(r.validUntil).toLocaleDateString('uk-UA');
+                else if (r.nextInspectionDate) validUntil = new Date(r.nextInspectionDate).toLocaleDateString('uk-UA');
+                else if (r.date && r.status === 'passed') validUntil = new Date(new Date(r.date).setFullYear(new Date(r.date).getFullYear() + 2)).toLocaleDateString('uk-UA');
+                else if (r.date && r.status === 'failed') validUntil = new Date(new Date(r.date).setDate(new Date(r.date).getDate() + 180)).toLocaleDateString('uk-UA');
+                html += `<tr><td>${d}</td><td>${type}</td><td>${status}</td><td>${validUntil}</td></tr>`;
+            }
+            html += '</tbody></table></div>';
+            container.innerHTML = html;
+        } catch (e) {
+            container.innerHTML = '<span class="text-danger small"><i class="fas fa-exclamation-triangle mr-1"></i>Помилка завантаження</span>';
+            console.error('loadStep4InspectionInfo error:', e);
+        }
+    }
+
+    // Завантажуємо дані кроку 4 при кліку на вкладку
+    document.addEventListener('DOMContentLoaded', function() {
+        const svcTab = document.getElementById('eLiftTab-svc');
+        if (svcTab) {
+            svcTab.addEventListener('click', function() {
+                const liftId = (window.enhancedLiftModal && window.enhancedLiftModal.currentLiftId)
+                    || document.getElementById('enhancedLiftId')?.value || null;
+                loadStep4InspectionInfo(liftId);
+            });
+        }
+    });
+
+    // ── Запросити/повідомити про інспекцію ліфта ─────────────────────────────
+    function requestLiftInspection() {
+        const liftId = window._currentInspectionLiftId;
+        const lift = window._currentInspectionLift;
+        if (!liftId || !lift) { alert('Дані ліфта не завантажені'); return; }
+        const licExpiry = lift.licenseExpiry || lift.certExpiry || null;
+        const expiryStr = licExpiry ? new Date(licExpiry).toLocaleDateString('uk-UA') : 'не вказано';
+        const address = (function() {
+            if (!lift.address) return 'N/D';
+            if (typeof lift.address === 'string') return lift.address;
+            const a = lift.address;
+            return [a.street, a.zipCode, a.city].filter(Boolean).join(', ');
+        })();
+        const clientEmail  = lift.clientEmail || (lift.client && lift.client.email) || '';
+        const munEmail     = lift.municipality && lift.municipality.email ? lift.municipality.email : '';
+        const munName      = lift.municipality && lift.municipality.name ? lift.municipality.name : 'Câmara Municipal';
+        const liftRef      = lift.municipalNumber || lift.serialNumber || liftId;
+        const clientName   = lift.clientName || lift.contactPerson || 'Exmo(s). Sr(s).';
+
+        const clientSubject = 'Aviso: Inspeção do elevador em ' + address;
+        const clientBody = `${clientName},
+
+    Informamos que o certificado de inspeção do elevador com referência ${liftRef}, localizado em:
+
+    ${address}
+
+    é válido até: ${expiryStr}.
+
+    Para garantir a conformidade legal, será necessário agendar uma nova inspeção periódica. Entraremos em contacto brevemente com a data disponível.
+
+    Com os melhores cumprimentos,
+    FestLift`;
+        const munSubject = 'Pedido de Inspeção de Elevador – ' + liftRef;
+        const munBody = `Exmos. Srs.,
+
+    Vimos por este meio solicitar o agendamento de inspeção periódica do elevador com os seguintes dados:
+
+    Número municipal: ${lift.municipalNumber || 'N/D'}
+    Número de série: ${lift.serialNumber || 'N/D'}
+    Marca/Modelo: ${(lift.manufacturer || '')} ${(lift.model || '')}
+    Endereço: ${address}
+    Certificado atual válido até: ${expiryStr}
+
+    Solicitamos que indiquem a data e hora disponíveis para a realização da inspeção.
+
+    Com os melhores cumprimentos,
+    FestLift
+    Email de contacto: info@festlift.pt`;
+
+        $('#inspReqModal_liftRef').text(liftRef);
+        $('#inspReqModal_expiry').text(expiryStr);
+        $('#inspReqModal_address').text(address);
+        $('#inspReqModal_clientEmail').val(clientEmail);
+        $('#inspReqModal_clientSubject').val(clientSubject);
+        $('#inspReqModal_clientBody').val(clientBody);
+        $('#inspReqModal_munEmail').val(munEmail);
+        $('#inspReqModal_munName').text(munName);
+        $('#inspReqModal_munSubject').val(munSubject);
+        $('#inspReqModal_munBody').val(munBody);
+        $('#btnSendToClient').removeClass('btn-success').addClass('btn-primary').html('<i class="fas fa-paper-plane mr-1"></i> Надіслати клієнту');
+        $('#btnSendToMun').removeClass('btn-success').addClass('btn-warning').html('<i class="fas fa-building mr-1"></i> Запит до муніципалітету');
+        $('#inspectionRequestModal').modal('show');
+    }
+
+    async function _sendInspReqEmail(emailField, subjectField, bodyField, successMsg) {
+        const email   = $(emailField).val().trim();
+        const subject = $(subjectField).val().trim();
+        const body    = $(bodyField).val().trim();
+        if (!email) { alert('Email не вказано. Заповніть поле email.'); return false; }
+        try {
+            const token = typeof AuthManager !== 'undefined' ? AuthManager.getAuthToken() : localStorage.getItem('liftmanager_jwt');
+            const res = await fetch('/api/email/send-inspection-reminder', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                body: JSON.stringify({ email, subject, message: body, liftId: window._currentInspectionLiftId, type: 'inspection_request' })
+            });
+            const data = await res.json();
+            if (data.success) {
+                if (typeof toastr !== 'undefined') toastr.success(successMsg);
+                else alert(successMsg);
+                return true;
+            }
+        } catch (_) {}
+        // Fallback: mailto
+        window.open('mailto:' + encodeURIComponent(email) + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body), '_blank');
+        if (typeof toastr !== 'undefined') toastr.info('Відкрито поштовий клієнт');
+        return true;
+    }
+
+    // Кнопки надсилання в inspectionRequestModal (ініціалізація одноразово)
+    $(document).on('click', '#btnSendToClient', async function() {
+        const ok = await _sendInspReqEmail('#inspReqModal_clientEmail','#inspReqModal_clientSubject','#inspReqModal_clientBody','Повідомлення клієнту надіслано!');
+        if (ok) $(this).removeClass('btn-primary').addClass('btn-success').html('<i class="fas fa-check mr-1"></i> Надіслано');
+    });
+    $(document).on('click', '#btnSendToMun', async function() {
+        const ok = await _sendInspReqEmail('#inspReqModal_munEmail','#inspReqModal_munSubject','#inspReqModal_munBody','Запит до муніципалітету надіслано!');
+        if (ok) $(this).removeClass('btn-warning').addClass('btn-success').html('<i class="fas fa-check mr-1"></i> Надіслано');
+    });
+
+    // ── PDF Inspection Parser Modal logic ────────────────────────────────────
+    (function() {
+        var _pdfParsed = null;
+
+        // File input change
+        $(document).on('change', '#pdfParserFileInput', function() {
+            var fname = this.files[0] ? this.files[0].name : 'Обрати файл...';
+            $('#pdfParserFileLabel').text(fname);
+            $('#pdfParserAnalyzeBtn').prop('disabled', !this.files[0]);
+        });
+
+        // Analyze button click
+        $(document).on('click', '#pdfParserAnalyzeBtn', async function() {
+            var file = document.getElementById('pdfParserFileInput').files[0];
+            if (!file) return;
+
+            $('#pdfParserStep1').hide();
+            $('#pdfParserFooterStep1').hide();
+            $('#pdfParserLoading').show();
+
+            var fd = new FormData();
+            fd.append('pdf', file);
+
+            try {
+                var token = (typeof AuthManager !== 'undefined') ? AuthManager.getAuthToken() :
+                            localStorage.getItem('liftmanager_jwt');
+                var resp = await fetch('/api/lifts/parse-inspection-pdf', {
+                    method: 'POST',
+                    headers: { 'Authorization': 'Bearer ' + token },
+                    body: fd
+                });
+                var data = await resp.json();
+
+                if (!data.success) {
+                    $('#pdfParserLoading').hide();
+                    $('#pdfParserStep1').show();
+                    $('#pdfParserFooterStep1').show();
+                    if (typeof toastr !== 'undefined') toastr.error(data.message || 'Помилка аналізу PDF');
+                    else alert('Помилка: ' + (data.message || 'Не вдалося аналізувати PDF'));
+                    return;
+                }
+
+                _pdfParsed = data;
+
+                // Populate lift select
+                var sel = $('#pdfParserLiftSelect').empty();
+                if (data.allMatches && data.allMatches.length) {
+                    data.allMatches.forEach(function(l) {
+                        var addr = l.address ? (l.address.street + ', ' + l.address.city) : '';
+                        sel.append('<option value="' + l._id + '">[' + l.confidence + '%] ' + (l.municipalNumber || l._id) + ' — ' + addr + '</option>');
+                    });
+                    sel.prepend('<option value="">— Обрати ліфт —</option>');
+                    sel.val(data.suggestedLift ? data.suggestedLift._id : '');
+                } else {
+                    sel.append('<option value="">— Ліфт не знайдено автоматично —</option>');
+                    try {
+                        var lResp = await fetch('/api/lifts?limit=200', { headers: { 'Authorization': 'Bearer ' + token } });
+                        var lData = await lResp.json();
+                        var lifts = (lData && lData.data && lData.data.lifts) || lData.lifts || lData.data || [];
+                        if (!Array.isArray(lifts)) lifts = [];
+                        lifts.forEach(function(l) {
+                            var addr = l.address ? (l.address.street + ', ' + l.address.city) : '';
+                            sel.append('<option value="' + l._id + '">' + (l.municipalNumber || l._id) + ' — ' + addr + '</option>');
+                        });
+                    } catch(_) {}
+                }
+
+                // Pre-fill fields
+                var ed = data.extractedData || {};
+                if (ed.date) $('#pdfParserDate').val(ed.date.substring(0, 10));
+                if (ed.validUntil) $('#pdfParserValidUntil').val(ed.validUntil.substring(0, 10));
+                $('#pdfParserStatus').val(ed.status || 'passed');
+                $('#pdfParserInspector').val(ed.inspector || ed.company || '');
+                $('#pdfParserReportType').val('annual');
+
+                // Notes auto-fill
+                var notesParts = [];
+                if (ed.company) notesParts.push(ed.company);
+                if (ed.reportNumber) notesParts.push('Rel. ' + ed.reportNumber);
+                if (ed.processNumber) notesParts.push('Proc. ' + ed.processNumber);
+                if (ed.location) notesParts.push('Local: ' + ed.location);
+                if (ed.conclusion) notesParts.push('Conclusão: ' + ed.conclusion);
+                $('#pdfParserNotes').val(notesParts.join(' | '));
+
+                // ── Partial-parse warning ───────────────────────────────────
+                var _parseWarning = $('#pdfParserPartialWarning');
+                if (!_parseWarning.length) {
+                    _parseWarning = $('<div id="pdfParserPartialWarning" class="alert alert-warning mb-2" style="display:none;"><i class="fas fa-exclamation-triangle mr-1"></i> <strong>Дані витягнуто частково.</strong> Система не змогла автоматично розпізнати всі поля. Будь ласка, перевірте та заповніть поля вручну перед збереженням. <small class="text-muted">(Parser: ' + (ed.parserUsed || '?') + ')</small></div>');
+                    $('#pdfParserResults').prepend(_parseWarning);
+                }
+                if (ed.partial) { _parseWarning.show(); } else { _parseWarning.hide(); }
+
+                // Violations
+                if (ed.violations && ed.violations.length) {
+                    var viols = ed.violations.map(function(v) {
+                        var sev = v.classification || (v.severity || '?');
+                        var cls = (sev === 'C1' || sev === 'critical') ? 'danger' : (sev === 'C2' || sev === 'medium') ? 'warning' : 'secondary';
+                        var desc = typeof v === 'string' ? v : (v.description || v.text || JSON.stringify(v));
+                        return '<div class="mb-1"><span class="badge badge-' + cls + '">' + sev + '</span> ' + desc + '</div>';
+                    }).join('');
+                    $('#pdfParserViolationsList').html(viols);
+                    $('#pdfParserViolationsCount').text(ed.violations.length);
+                    $('#pdfParserViolationsBlock').show();
+                } else {
+                    $('#pdfParserViolationsBlock').hide();
+                }
+
+                // Show results
+                $('#pdfParserLoading').hide();
+                $('#pdfParserResults').show();
+                $('#pdfParserFooterConfirm').show();
+
+            } catch (err) {
+                $('#pdfParserLoading').hide();
+                $('#pdfParserStep1').show();
+                $('#pdfParserFooterStep1').show();
+                alert('Помилка мережі: ' + err.message);
+            }
+        });
+
+        // Back button
+        $(document).on('click', '#pdfParserBackBtn', function() {
+            $('#pdfParserResults').hide();
+            $('#pdfParserFooterConfirm').hide();
+            $('#pdfParserStep1').show();
+            $('#pdfParserFooterStep1').show();
+        });
+
+        // Status change → recalc validUntil
+        $(document).on('change', '#pdfParserStatus', function() {
+            var dateVal = $('#pdfParserDate').val();
+            if (!dateVal) return;
+            var d = new Date(dateVal);
+            var status = $(this).val();
+            if (status === 'passed') d.setMonth(d.getMonth() + 24);
+            else if (status === 'failed') d.setMonth(d.getMonth() + 6);
+            else d.setMonth(d.getMonth() + 12);
+            $('#pdfParserValidUntil').val(d.toISOString().substring(0, 10));
+        });
+
+        // Confirm button
+        $(document).on('click', '#pdfParserConfirmBtn', async function() {
+            var liftId = $('#pdfParserLiftSelect').val();
+            if (!liftId) { alert('Оберіть ліфт зі списку'); return; }
+
+            var $btn = $(this);
+            $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-1"></i> Збереження...');
+
+            var ed = _pdfParsed && _pdfParsed.extractedData ? _pdfParsed.extractedData : {};
+            var token = (typeof AuthManager !== 'undefined') ? AuthManager.getAuthToken() :
+                        localStorage.getItem('liftmanager_jwt');
+
+            try {
+                var body = {
+                    inspector: $('#pdfParserInspector').val() || 'Bureau Veritas',
+                    notes: $('#pdfParserNotes').val(),
+                    reportType: $('#pdfParserReportType').val() || 'annual',
+                    status: $('#pdfParserStatus').val() || 'passed',
+                    savedFileUrl: ed.savedFileUrl || null,
+                    lastInspectionDate: $('#pdfParserDate').val(),
+                    nextInspectionDate: $('#pdfParserValidUntil').val(),
+                    violations: ed.violations || []
+                };
+
+                var resp = await fetch('/api/lifts/' + liftId + '/confirm-inspection-from-pdf', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + token
+                    },
+                    body: JSON.stringify(body)
+                });
+                var result = await resp.json();
+
+                if (!result.success) throw new Error(result.message || 'Помилка збереження');
+
+                $('#pdfParserModal').modal('hide');
+
+                if (typeof toastr !== 'undefined') toastr.success('✅ Звіт інспекції збережено!');
+                else alert('Звіт інспекції збережено успішно!');
+
+                // Reload inspection data if lift is currently viewed
+                var curId = window.currentLiftId || window._currentInspectionLiftId;
+                if (curId === liftId) {
+                    if (typeof loadStep4InspectionInfo === 'function') loadStep4InspectionInfo(liftId);
+                    if (typeof loadAdminStep4InspectionInfo === 'function') loadAdminStep4InspectionInfo(liftId);
+                    if (typeof loadInspectionReports === 'function') loadInspectionReports(liftId);
+                }
+
+                _pdfParsed = null;
+
+            } catch (err) {
+                $btn.prop('disabled', false).html('<i class="fas fa-check mr-1"></i> Підтвердити та зберегти');
+                alert('Помилка: ' + err.message);
+            }
+        });
+
+        // Reset on modal open
+        $(document).on('show.bs.modal', '#pdfParserModal', function() {
+            document.getElementById('pdfParserFileInput').value = '';
+            $('#pdfParserFileLabel').text('Обрати файл...');
+            $('#pdfParserAnalyzeBtn').prop('disabled', true);
+            $('#pdfParserStep1').show();
+            $('#pdfParserLoading').hide();
+            $('#pdfParserResults').hide();
+            $('#pdfParserFooterStep1').show();
+            $('#pdfParserFooterConfirm').hide();
+            _pdfParsed = null;
+        });
+    })();
+    // ── /PDF Inspection Parser Modal logic ───────────────────────────────────
+</script>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     PDF Inspection Parser Modal
+     ═══════════════════════════════════════════════════════════════════════ -->
+<div class="modal fade" id="pdfParserModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-file-pdf mr-2"></i> Аналіз PDF звіту інспекції
+                </h5>
+                <button type="button" class="close text-white" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <!-- Step 1: Upload -->
+                <div id="pdfParserStep1">
+                    <div class="alert alert-info py-2 mb-3">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        Підтримуються звіти <strong>Bureau Veritas</strong>, <strong>CML Lisboa</strong>, <strong>Rinave</strong> та інших португальських інспекційних органів.
+                    </div>
+                    <div class="form-group">
+                        <label><strong>Оберіть PDF звіт інспекції</strong></label>
+                        <div class="custom-file">
+                            <input type="file" class="custom-file-input" id="pdfParserFileInput" accept=".pdf">
+                            <label class="custom-file-label" id="pdfParserFileLabel" for="pdfParserFileInput">Обрати файл...</label>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" id="pdfParserAnalyzeBtn" disabled>
+                        <i class="fas fa-search mr-1"></i> Аналізувати PDF
+                    </button>
+                </div>
+                <!-- Step 2: Loading -->
+                <div id="pdfParserLoading" style="display:none;" class="text-center py-5">
+                    <i class="fas fa-spinner fa-spin fa-3x text-primary mb-3"></i>
+                    <p class="text-muted">Аналізуємо PDF звіт, будь ласка зачекайте...</p>
+                </div>
+                <!-- Step 3: Results / Confirmation form -->
+                <div id="pdfParserResults" style="display:none;">
+                    <!-- Matched lift -->
+                    <div class="form-group">
+                        <label class="font-weight-bold"><i class="fas fa-elevator mr-1"></i> Ліфт</label>
+                        <select id="pdfParserLiftSelect" class="form-control form-control-sm"></select>
+                        <small class="text-muted">Ліфт визначено автоматично. Змініть вручну якщо потрібно.</small>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Дата інспекції</label>
+                                <input type="date" id="pdfParserDate" class="form-control form-control-sm">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Дійсний до (наступна інспекція)</label>
+                                <input type="date" id="pdfParserValidUntil" class="form-control form-control-sm">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Тип звіту</label>
+                                <select id="pdfParserReportType" class="form-control form-control-sm">
+                                    <option value="annual">Щорічна</option>
+                                    <option value="routine">Планова</option>
+                                    <option value="certification">Сертифікаційна</option>
+                                    <option value="emergency">Позапланова</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Результат</label>
+                                <select id="pdfParserStatus" class="form-control form-control-sm">
+                                    <option value="passed">✅ Пройдено</option>
+                                    <option value="failed">❌ Не пройдено</option>
+                                    <option value="conditional">⚠️ Умовно пройдено</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Інспектор / Компанія</label>
+                        <input type="text" id="pdfParserInspector" class="form-control form-control-sm" placeholder="Назва інспекційного органу">
+                    </div>
+                    <div class="form-group">
+                        <label>Нотатки <small class="text-muted">(авто-заповнено з PDF)</small></label>
+                        <textarea id="pdfParserNotes" class="form-control form-control-sm" rows="2" placeholder="Додаткові нотатки..."></textarea>
+                    </div>
+                    <!-- Violations list -->
+                    <div id="pdfParserViolationsBlock" style="display:none;" class="mt-2">
+                        <label class="font-weight-bold text-danger">
+                            <i class="fas fa-exclamation-triangle mr-1"></i> Виявлені порушення
+                            <span id="pdfParserViolationsCount" class="badge badge-danger ml-1">0</span>
+                        </label>
+                        <div id="pdfParserViolationsList" class="border rounded p-2 bg-light" style="max-height:160px;overflow-y:auto;font-size:11.5px;"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div id="pdfParserFooterStep1">
+                    <button class="btn btn-secondary btn-sm" data-dismiss="modal">Скасувати</button>
+                </div>
+                <div id="pdfParserFooterConfirm" style="display:none;">
+                    <button class="btn btn-outline-secondary btn-sm mr-2" id="pdfParserBackBtn">
+                        <i class="fas fa-arrow-left mr-1"></i> Назад
+                    </button>
+                    <button class="btn btn-success btn-sm" id="pdfParserConfirmBtn">
+                        <i class="fas fa-check mr-1"></i> Підтвердити та зберегти
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- /PDF Parser Modal -->
 
 </body>
 </html>

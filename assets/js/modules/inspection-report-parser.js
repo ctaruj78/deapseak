@@ -402,10 +402,31 @@ class InspectionReportParser {
             inspectionDate: null
         };
 
-        // Локація
-        const locationMatch = text.match(/Localiza[çc][ãa]o\s+da\s+instala[çc][ãa]o\s+(.+?)(?=C[óo]digo\s+Postal|Relat[óo]rio)/i);
-        if (locationMatch) {
-            info.location = locationMatch[1].trim();
+        // Локація (гнучкі патерни)
+        let location = null;
+        const locationPatterns = [
+            /Local\s+da\s+instala[çc][ãa]o\s*:?\s*([^\n]{10,150})/i,
+            /(?:LOCALIZAÇÃO|Local(?:ização)?|Morada|Endereço)\s*:?\s*([^\n]{10,150})/i,
+            /((?:Rua|Avenida|Av\.|R\.|Praça|Pç\.|Travessa)\s+[A-ZÀ-Ú][^\n]{5,100})/i,
+            /(\d{4}[-\s]?\d{3}\s+[A-ZÀ-Ú][a-zà-úa-z\s]+(?:,\s*Portugal)?)/,
+            /(?:sito|localizado)\s+em\s+([^\n]{10,120})/i,
+            /endere[çc]o\s*:?\s*([^\n]{10,120})/i,
+            /instala[çc][ãa]o\s*:?\s*([^\n]{10,120})/i,
+            /((?:Rua|Avenida)\s+[^,\n]+,?\s*n[ºo.]\s*\d+[^\n]{0,50})/i,
+            /([A-ZÀ-Ú][a-zà-úa-z\s]+,\s*\d{4}[-\s]\d{3})/,
+            /local\s*:?\s*([^\n]{10,120})/i,
+            /(?:Edif[íi]cio|Pr[ée]dio)\s+([^\n]{10,120})/i
+        ];
+        for (let i = 0; i < locationPatterns.length; i++) {
+            const match = text.match(locationPatterns[i]);
+            if (match) {
+                location = match[1].trim();
+                location = location.replace(/\s*(TÉCNICO|CLÁUSULAS|C[123]|ELEVADOR|Página).*$/i, '').replace(/^\s*(O|A|o|a)\s+/, '').trim();
+                break;
+            }
+        }
+        if (location) {
+            info.location = location;
         }
 
         // Поштовий код

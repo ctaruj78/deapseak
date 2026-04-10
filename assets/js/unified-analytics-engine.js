@@ -99,7 +99,7 @@ class UnifiedAnalyticsEngine {
         
         try {
             // Завантажуємо ліфти з API
-            const token = localStorage.getItem('token');
+            const token = sessionStorage.getItem('liftmanager_jwt') || localStorage.getItem('liftmanager_jwt') || localStorage.getItem('authToken') || localStorage.getItem('token');
             if (token) {
                 console.log('🔑 Використовуємо токен для запиту ліфтів...');
                 const response = await fetch('/api/lifts', {
@@ -120,11 +120,9 @@ class UnifiedAnalyticsEngine {
                     console.log('✅ Завантажено з API:', lifts.length, 'ліфтів');
                 } else if (response.status === 401 || response.status === 403) {
                     console.warn('⚠️ Токен невалідний, перенаправлення на логін...');
-                    localStorage.removeItem('token');
-                    localStorage.removeItem('user');
-                    alert('Сесія застаріла. Будь ласка, увійдіть знову.');
-                    window.location.href = '/login.html';
-                    return;
+                    // Don't clear tokens here — let AuthManager handle session
+                    // Just log warning and continue with empty data
+                    console.warn('⚠️ Analytics: API auth failed, using empty data');
                 } else {
                     console.warn('⚠️ API повернув помилку:', response.status);
                 }
@@ -1380,7 +1378,7 @@ class UnifiedAnalyticsEngine {
      */
     async updateUsersMetrics() {
         try {
-            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+            const token = sessionStorage.getItem('liftmanager_jwt') || localStorage.getItem('liftmanager_jwt') || localStorage.getItem('authToken') || localStorage.getItem('token');
             const res = await fetch('/api/users', {
                 headers: { 'Authorization': `Bearer ${token}` }
             });

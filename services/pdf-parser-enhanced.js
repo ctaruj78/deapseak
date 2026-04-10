@@ -79,50 +79,40 @@ function extractMetadata(text) {
     
     // 📍 Локація (GATECI): "Localização da instalação\n<address>"
     const gateciLocMatch = text.match(/Localiza[çc][ãa]o\s+da\s+instala[çc][ãa]o\s*\n([^\n]{5,150})/i);
-    if (gateciLocMatch) {
-        metadata.location = gateciLocMatch[1].trim();
-        console.log('  ✅ [GATECI] Location:', metadata.location);
-    }
-    
-    // 🆔 ID ліфта (GATECI): "Processo N.º\n5635" або "Instalação N.º\n1"
-    const gateciProcessoMatch = text.match(/Processo\s+N\.?[ºo]\s*\n(\d+)/i);
-    const gateciInstalacaoMatch = text.match(/Instala[çc][ãa]o\s+N\.?[ºo]\s*\n(\d+)/i);
-    if (gateciProcessoMatch) {
-        metadata.liftId = gateciProcessoMatch[1];
-        console.log('  ✅ [GATECI] Processo (liftId):', metadata.liftId);
-    } else if (gateciInstalacaoMatch) {
-        metadata.liftId = gateciInstalacaoMatch[1];
-        console.log('  ✅ [GATECI] Instalação (liftId):', metadata.liftId);
-    }
-    
-    // 📅 Дата (GATECI): "Data da Inspeção\n2026-03-03"
-    const gateciDateMatch = text.match(/Data\s+da\s+Inspe[çc][ãa]o\s*\n(\d{4}-\d{2}-\d{2}|\d{1,2}[-\/]\d{1,2}[-\/]\d{2,4})/i);
-    if (gateciDateMatch) {
-        metadata.date = gateciDateMatch[1];
-        console.log('  ✅ [GATECI] Date:', metadata.date);
-    }
-    
-    // 👤 Інспектор (GATECI): "Validação/Inspetor\n<Name>"
-    const gateciInspMatch = text.match(/Valida[çc][ãa]o\s*\/\s*Inspe[ct]or\s*\n([^\n]{3,60})/i);
-    if (gateciInspMatch) {
-        const name = gateciInspMatch[1].trim();
-        // Відкидаємо якщо це не схоже на ім'я (тільки цифри/спецсимволи)
-        if (name.length >= 3 && /[a-záéíóúâêôçà-ú]/i.test(name)) {
-            metadata.inspector = name;
-            console.log('  ✅ [GATECI] Inspector:', metadata.inspector);
+    if (!metadata.location) {
+        console.log('\n📍 Searching for location...');
+        const locationPatterns = [
+            /Local\s+da\s+instala[çc][ãa]o\s*:?\s*([^\n]{10,150})/i,
+            /(?:LOCALIZAÇÃO|Local(?:ização)?|Morada|Endereço)\s*:?\s*([^\n]{10,150})/i,
+            /((?:Rua|Avenida|Av\.|R\.|Praça|Pç\.|Travessa)\s+[A-ZÀ-Ú][^\n]{5,100})/i,
+            /(\d{4}[-\s]?\d{3}\s+[A-ZÀ-Ú][a-zà-úa-z\s]+(?:,\s*Portugal)?)/,
+            /(?:sito|localizado)\s+em\s+([^\n]{10,120})/i,
+            /endere[çc]o\s*:?\s*([^\n]{10,120})/i,
+            /instala[çc][ãa]o\s*:?\s*([^\n]{10,120})/i,
+            /((?:Rua|Avenida)\s+[^,\n]+,?\s*n[ºo.]\s*\d+[^\n]{0,50})/i,
+            /([A-ZÀ-Ú][a-zà-úa-z\s]+,\s*\d{4}[-\s]\d{3})/,
+            /local\s*:?\s*([^\n]{10,120})/i,
+            /(?:Edif[íi]cio|Pr[ée]dio)\s+([^\n]{10,120})/i
+        ];
+        for (let i = 0; i < locationPatterns.length; i++) {
+            const pattern = locationPatterns[i];
+            const match = text.match(pattern);
+            if (match) {
+                let location = match[1].trim();
+                location = location.replace(/\s*(TÉCNICO|CLÁUSULAS|C[123]|ELEVADOR|Página).*$/i, '').replace(/^\s*(O|A|o|a)\s+/, '').trim();
+                if (location.length >= 10 && location.length <= 150) {
+                    metadata.location = location;
+                    console.log(`  ✅ Method ${i + 1} success: ${location.substring(0, 60)}...`);
+                    break;
+                }
+            }
         }
-    }
-    
-    // 🏢 Компанія (GATECI): "Empresa de Manutenção\n<name>"
-    const gateciCompMatch = text.match(/Empresa\s+de\s+Manuten[çc][ãa]o\s*\n([^\n]{3,100})/i);
-    if (gateciCompMatch) {
-        metadata.company = gateciCompMatch[1].trim();
-        console.log('  ✅ [GATECI] Company:', metadata.company);
-    }
-    
-    // 📋 НОМЕР ЗВІТУ - 5 варіантів
+        if (!metadata.location) console.log('  ❌ No location found with any method');
+    } // end if (!metadata.location)
+
+    // 🔢 НОМЕР ЗВІТУ / ПРОЦЕСУ
     const reportNumberPatterns = [
-        /(?:Relatório|Certificado|Auto|RELATÓRIO)\s*(?:N\.?º|Nº|n\.?|DE\s+CLÁUSULAS)?\s*:?\s*(\d+[-\/]\d+)/i,
+        /(?:RELAT[ÓO]RIO|REPORT|REFER[ÊE]NCIA|REF)\s*(?:N[ÚUº.]*\s*)?:?\s*([A-Z0-9]+(?:[\/\-][A-Z0-9]+){1,4})/i,
         /n[úu]mero[:\s]+(\d+[\/\-]\d+)/i,
         /relat[óo]rio[:\s]+n[úuº.]*\s*(\d+[\/\-]\d+)/i,
         /processo[:\s]+(\d+[\/\-]\d+)/i,

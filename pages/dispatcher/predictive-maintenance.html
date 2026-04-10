@@ -8,8 +8,8 @@
 
     
     <!-- AdminLTE CSS -->
-    <link rel="stylesheet" href="/assets/plugins/adminlte/adminlte.min.css">
-    <link rel="stylesheet" href="/assets/plugins/fontawesome/css/all.min.css">
+    <link rel="stylesheet" href="/plugins/adminlte/adminlte.min.css">
+    <link rel="stylesheet" href="/assets/plugins/fontawesome-free/css/all.min.css">
     
     <!-- Toastr CSS -->
     <link rel="stylesheet" href="/plugins/toastr/css/toastr.min.css">
@@ -160,6 +160,26 @@
         .nav-link.active {
             background-color: #007bff !important;
             color: white !important;
+            border-color: #007bff !important;
+        }
+
+        #pmSectionTabs .nav-link {
+            cursor: pointer;
+            color: #495057;
+            border-radius: 4px 4px 0 0;
+            padding: 10px 18px;
+            font-size: 0.9rem;
+        }
+
+        #pmSectionTabs .nav-link:hover {
+            background-color: #e9ecef;
+            color: #007bff;
+        }
+
+        #pmSectionTabs .nav-link.active {
+            background-color: #007bff !important;
+            color: white !important;
+            border-color: #007bff !important;
         }
     </style>
     <link rel="stylesheet" href="/assets/css/table-drag-scroll.css">
@@ -235,8 +255,36 @@
                     </div>
                 </div>
 
+                <!-- ======= НАВІГАЦІЯ ПО СЕКЦІЯХ ======= -->
+                <div class="card card-primary card-outline mb-3">
+                    <div class="card-header p-0 border-bottom-0">
+                        <ul class="nav nav-tabs" id="pmSectionTabs" role="tablist" style="padding: 0 15px;">
+                            <li class="nav-item">
+                                <a class="nav-link active" href="#overview" data-pm-section="overview" onclick="return false;">
+                                    <i class="fas fa-tachometer-alt"></i> Огляд
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#predictions" data-pm-section="predictions" onclick="return false;">
+                                    <i class="fas fa-magic"></i> ШІ Прогнози
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#alerts" data-pm-section="alerts" onclick="return false;">
+                                    <i class="fas fa-bell"></i> Алерти
+                                    <span class="badge badge-danger ml-1" id="alertsTabBadge">0</span>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#schedule" data-pm-section="schedule" onclick="return false;">
+                                    <i class="fas fa-calendar-alt"></i> Розклад
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
                 <!-- System Overview -->
-                                <!-- System Overview -->
                 <div class="section-content" id="overview">
                     <div class="row">
                         <div class="col-lg-3 col-6">
@@ -494,8 +542,8 @@
 
 <!-- Scripts -->
 <script src="/assets/plugins/jquery/jquery.min.js"></script>
-<script src="/assets/plugins/bootstrap/bootstrap.bundle.min.js"></script>
-<script src="/assets/plugins/adminlte/adminlte.min.js"></script>
+<script src="/assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="/plugins/adminlte/adminlte.min.js"></script>
 
     <!-- Sidebar initialization script -->
     <script src="/assets/js/sidebar-init.js"></script>
@@ -512,7 +560,7 @@
     
     <!-- 🌍 Система багатомовності -->
     <script src="/assets/js/i18n.js"></script>
-<script src="/assets/plugins/chart.js/chart.umd.min.js"></script>
+<script src="/plugins/chart.js/chart.umd.min.js"></script>
 
 <!-- EventBus and Predictive Maintenance -->
 <script src="/assets/js/system-eventbus.js?v=1.5"></script>
@@ -712,20 +760,11 @@ class PredictiveMaintenanceDashboard {
     }
 
     setupNavigation() {
-        // Обробляємо кліки по навігації
-        $('.sidebar .nav-link').on('click', (e) => {
-            const href = $(e.target).closest('a').attr('href');
-            
-            // Пропускаємо зовнішні посилання (дозволяємо їм працювати нормально)
-            if (href.includes('.html')) {
-                return true; // Дозволяємо переход
-            }
-            
-            // Блокуємо тільки якорні посилання для внутрішньої навігації
-            if (href.startsWith('#')) {
-                e.preventDefault();
-                this.showSection(href.substring(1));
-            }
+        // Обробляємо кліки по вкладкам секцій (нова навігація в контенті)
+        $(document).on('click', '[data-pm-section]', (e) => {
+            e.preventDefault();
+            const sectionId = $(e.currentTarget).data('pm-section');
+            this.showSection(sectionId);
         });
 
         // Показуємо перший розділ за замовчуванням
@@ -741,9 +780,9 @@ class PredictiveMaintenanceDashboard {
         // Показуємо потрібний розділ
         $(`#${sectionId}`).show();
         
-        // Оновлюємо активний пункт меню
-        $('.sidebar .nav-link').removeClass('active');
-        $(`.sidebar .nav-link[href="#${sectionId}"]`).addClass('active');
+        // Оновлюємо активну вкладку
+        $('#pmSectionTabs .nav-link').removeClass('active');
+        $(`#pmSectionTabs .nav-link[data-pm-section="${sectionId}"]`).addClass('active');
         
         // Завантажуємо дані для розділу
         this.loadSectionData(sectionId);
@@ -879,6 +918,8 @@ class PredictiveMaintenanceDashboard {
         container.empty();
         
         $('#criticalAlertsCount').text(alerts.length);
+        // Оновлюємо бейдж у вкладці
+        $('#alertsTabBadge').text(alerts.length).toggle(alerts.length > 0);
         
         if (alerts.length === 0) {
             container.html('<p class="text-muted text-center">Немає критичних алертів</p>');

@@ -1636,6 +1636,21 @@
                                     </div>
                                 </div>
 
+                                <div class="sc">
+                                    <div class="sc-h green"><i class="fas fa-clipboard-list"></i> Звіти інспекцій</div>
+                                    <div class="sc-b">
+                                        <div id="adminStep4InspectionInfo" class="mb-2">
+                                            <p class="text-muted small mb-0"><i class="fas fa-info-circle mr-1"></i>Збережіть ліфт, щоб переглянути звіти інспекцій</p>
+                                        </div>
+                                        <button type="button" class="btn btn-outline-info btn-sm mt-2" id="adminAddInspectionReportBtn">
+                                            <i class="fas fa-file-upload mr-1"></i> Додати звіт інспекції
+                                        </button>
+                                    <button type="button" class="btn btn-outline-info btn-sm ml-1" data-toggle="modal" data-target="#pdfParserModal" title="Завантажити PDF звіт інспекції">
+                                        <i class="fas fa-file-pdf mr-1"></i> PDF Звіт
+                                    </button>
+                                    </div>
+                                </div>
+
                             </div><!-- /eLiftPane-svc -->
 
                         </div><!-- /tab-content -->
@@ -3377,6 +3392,104 @@
             sendInspectionEmail(inspection);
         }
     }
+
+    // ── Звіти інспекцій у вкладці Сервіс (крок 4) - адмін ─────────────────
+    window._adminStep4LastReportDate = null;
+
+    async function loadAdminStep4InspectionInfo(liftId) {
+        const container = document.getElementById('adminStep4InspectionInfo');
+        if (!container) return;
+        if (!liftId) {
+            container.innerHTML = '<p class="text-muted small mb-0"><i class="fas fa-info-circle mr-1"></i>Збережіть ліфт, щоб переглянути звіти інспекцій</p>';
+            window._adminStep4LastReportDate = null;
+            return;
+        }
+        container.innerHTML = '<span class="text-muted small"><i class="fas fa-spinner fa-spin mr-1"></i>Завантаження...</span>';
+        try {
+            const token = AuthManager.getAuthToken();
+            const res = await fetch('/api/inspections?liftId=' + encodeURIComponent(liftId) + '&limit=5', {
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+            const data = await res.json();
+            const reports = (data.data && Array.isArray(data.data)) ? data.data :
+                (data.data && Array.isArray(data.data.inspections)) ? data.data.inspections : [];
+            if (reports.length === 0) {
+                container.innerHTML = '<p class="text-muted small mb-0"><i class="fas fa-folder-open mr-1"></i>Звітів ще немає. Натисніть кнопку нижче, щоб додати.</p>';
+                window._adminStep4LastReportDate = null;
+                return;
+            }
+            reports.sort(function(a, b) { return new Date(b.date || b.createdAt) - new Date(a.date || a.createdAt); });
+            window._adminStep4LastReportDate = reports[0].date || reports[0].createdAt || null;
+            const statusLabels = {
+                passed: '<span class="badge badge-success">\u2705 Пройдено</span>',
+                failed: '<span class="badge badge-warning">\u26a0\ufe0f Клаузи</span>',
+                completed: '<span class="badge badge-info">Виконано</span>'
+            };
+            const typeLabels = { inspection: 'Інспекція', maintenance: 'ТО', repair: 'Ремонт', emergency: 'Аварія' };
+            let html = '<div class="table-responsive"><table class="table table-sm table-bordered table-hover mb-1" style="font-size:0.8rem;">';
+            html += '<thead class="thead-light"><tr><th>Дата</th><th>Тип</th><th>Статус</th><th>Дійсно до</th></tr></thead><tbody>';
+            for (let i = 0; i < Math.min(reports.length, 5); i++) {
+                const r = reports[i];
+                const d = r.date ? new Date(r.date).toLocaleDateString('uk-UA') : '\u2014';
+                const type = typeLabels[r.type] || r.type || '\u2014';
+                const status = statusLabels[r.status] || r.status || '\u2014';
+                let validUntil = '\u2014';
+                if (r.validUntil) validUntil = new Date(r.validUntil).toLocaleDateString('uk-UA');
+                else if (r.nextInspectionDate) validUntil = new Date(r.nextInspectionDate).toLocaleDateString('uk-UA');
+                else if (r.date && r.status === 'passed') {
+                    const nd = new Date(r.date); nd.setFullYear(nd.getFullYear() + 2);
+                    validUntil = nd.toLocaleDateString('uk-UA');
+                } else if (r.date && r.status === 'failed') {
+                    const nd = new Date(r.date); nd.setDate(nd.getDate() + 180);
+                    validUntil = nd.toLocaleDateString('uk-UA');
+                }
+                html += '<tr><td>' + d + '</td><td>' + type + '</td><td>' + status + '</td><td>' + validUntil + '</td></tr>';
+            }
+            html += '</tbody></table></div>';
+            container.innerHTML = html;
+        } catch (e) {
+            container.innerHTML = '<span class="text-danger small"><i class="fas fa-exclamation-triangle mr-1"></i>Помилка завантаження</span>';
+            console.error('loadAdminStep4InspectionInfo error:', e);
+        }
+    }
+
+    // Завантажуємо при кліку на вкладку "Сервіс" в адмін панелі
+    document.addEventListener('DOMContentLoaded', function() {
+        const adminSvcTab = document.getElementById('eLiftTab-svc');
+        if (adminSvcTab) {
+            adminSvcTab.addEventListener('click', function() {
+                const liftIdEl = document.getElementById('enhancedLiftId');
+                const liftId = (window.enhancedLiftModal && window.enhancedLiftModal.currentLiftId)
+                    || (liftIdEl && liftIdEl.value) || null;
+                loadAdminStep4InspectionInfo(liftId);
+            });
+        }
+        // Обробник кнопки "Додати звіт" в кроці 4
+        const adminAddInspBtn = document.getElementById('adminAddInspectionReportBtn');
+        if (adminAddInspBtn) {
+            adminAddInspBtn.addEventListener('click', async function() {
+                const liftIdEl = document.getElementById('enhancedLiftId');
+                const editLiftId = (window.enhancedLiftModal && window.enhancedLiftModal.currentLiftId)
+                    || (liftIdEl && liftIdEl.value) || null;
+                if (!editLiftId) {
+                    alert('Спочатку збережіть ліфт, щоб можна було додати звіт.');
+                    return;
+                }
+                // Перевіряємо дублювання
+                if (window._adminStep4LastReportDate) {
+                    const daysAgo = (Date.now() - new Date(window._adminStep4LastReportDate)) / 86400000;
+                    if (daysAgo < 30) {
+                        const dateStr = new Date(window._adminStep4LastReportDate).toLocaleDateString('uk-UA');
+                        const proceed = confirm('\u26a0\ufe0f Увага: Для цього ліфта вже є звіт від ' + dateStr + ' (' + Math.ceil(daysAgo) + ' днів тому).\n\nДодати ще один звіт?');
+                        if (!proceed) return;
+                    }
+                }
+                document.getElementById('report-lift-id').value = editLiftId;
+                window.currentLiftId = editLiftId;
+                $('#addReportModal').modal('show');
+            });
+        }
+    });
 
     // ── Запросити/повідомити про інспекцію ліфта ─────────────────────────
     // Відкриває модальне вікно з двома діями:
@@ -7666,7 +7779,338 @@ Email de contacto: info@festlift.pt`;
             if (chatInput) { chatInput.addEventListener('keydown',function(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();doSend();}}); }
         }
     });
-    </script>
+    
+    // ── PDF Inspection Parser Modal logic ────────────────────────────────────
+    (function() {
+        var _pdfParsed = null;
+
+        // File input change
+        $(document).on('change', '#pdfParserFileInput', function() {
+            var fname = this.files[0] ? this.files[0].name : 'Обрати файл...';
+            $('#pdfParserFileLabel').text(fname);
+            $('#pdfParserAnalyzeBtn').prop('disabled', !this.files[0]);
+        });
+
+        // Analyze button click
+        $(document).on('click', '#pdfParserAnalyzeBtn', async function() {
+            var file = document.getElementById('pdfParserFileInput').files[0];
+            if (!file) return;
+
+            $('#pdfParserStep1').hide();
+            $('#pdfParserFooterStep1').hide();
+            $('#pdfParserLoading').show();
+
+            var fd = new FormData();
+            fd.append('pdf', file);
+
+            try {
+                var token = (typeof AuthManager !== 'undefined') ? AuthManager.getAuthToken() :
+                            localStorage.getItem('liftmanager_jwt');
+                var resp = await fetch('/api/lifts/parse-inspection-pdf', {
+                    method: 'POST',
+                    headers: { 'Authorization': 'Bearer ' + token },
+                    body: fd
+                });
+                var data = await resp.json();
+
+                if (!data.success) {
+                    $('#pdfParserLoading').hide();
+                    $('#pdfParserStep1').show();
+                    $('#pdfParserFooterStep1').show();
+                    if (typeof toastr !== 'undefined') toastr.error(data.message || 'Помилка аналізу PDF');
+                    else alert('Помилка: ' + (data.message || 'Не вдалося аналізувати PDF'));
+                    return;
+                }
+
+                _pdfParsed = data;
+
+                // Populate lift select
+                var sel = $('#pdfParserLiftSelect').empty();
+                if (data.allMatches && data.allMatches.length) {
+                    data.allMatches.forEach(function(l) {
+                        var addr = l.address ? (l.address.street + ', ' + l.address.city) : '';
+                        sel.append('<option value="' + l._id + '">[' + l.confidence + '%] ' + (l.municipalNumber || l._id) + ' — ' + addr + '</option>');
+                    });
+                    sel.prepend('<option value="">— Обрати ліфт —</option>');
+                    sel.val(data.suggestedLift ? data.suggestedLift._id : '');
+                } else {
+                    sel.append('<option value="">— Ліфт не знайдено автоматично —</option>');
+                    try {
+                        var lResp = await fetch('/api/lifts?limit=200', { headers: { 'Authorization': 'Bearer ' + token } });
+                        var lData = await lResp.json();
+                        var lifts = (lData && lData.data && lData.data.lifts) || lData.lifts || lData.data || [];
+                        if (!Array.isArray(lifts)) lifts = [];
+                        lifts.forEach(function(l) {
+                            var addr = l.address ? (l.address.street + ', ' + l.address.city) : '';
+                            sel.append('<option value="' + l._id + '">' + (l.municipalNumber || l._id) + ' — ' + addr + '</option>');
+                        });
+                    } catch(_) {}
+                }
+
+                // Pre-fill fields
+                var ed = data.extractedData || {};
+                if (ed.date) $('#pdfParserDate').val(ed.date.substring(0, 10));
+                if (ed.validUntil) $('#pdfParserValidUntil').val(ed.validUntil.substring(0, 10));
+                $('#pdfParserStatus').val(ed.status || 'passed');
+                $('#pdfParserInspector').val(ed.inspector || ed.company || '');
+                $('#pdfParserReportType').val('annual');
+
+                // Notes auto-fill
+                var notesParts = [];
+                if (ed.company) notesParts.push(ed.company);
+                if (ed.reportNumber) notesParts.push('Rel. ' + ed.reportNumber);
+                if (ed.processNumber) notesParts.push('Proc. ' + ed.processNumber);
+                if (ed.location) notesParts.push('Local: ' + ed.location);
+                if (ed.conclusion) notesParts.push('Conclusão: ' + ed.conclusion);
+                $('#pdfParserNotes').val(notesParts.join(' | '));
+
+                // ── Partial-parse warning ───────────────────────────────────
+                var _parseWarning = $('#pdfParserPartialWarning');
+                if (!_parseWarning.length) {
+                    _parseWarning = $('<div id="pdfParserPartialWarning" class="alert alert-warning mb-2" style="display:none;"><i class="fas fa-exclamation-triangle mr-1"></i> <strong>Дані витягнуто частково.</strong> Система не змогла автоматично розпізнати всі поля. Будь ласка, перевірте та заповніть поля вручну перед збереженням. <small class="text-muted">(Parser: ' + (ed.parserUsed || '?') + ')</small></div>');
+                    $('#pdfParserResults').prepend(_parseWarning);
+                }
+                if (ed.partial) { _parseWarning.show(); } else { _parseWarning.hide(); }
+
+                // Violations
+                if (ed.violations && ed.violations.length) {
+                    var viols = ed.violations.map(function(v) {
+                        var sev = v.classification || (v.severity || '?');
+                        var cls = (sev === 'C1' || sev === 'critical') ? 'danger' : (sev === 'C2' || sev === 'medium') ? 'warning' : 'secondary';
+                        var desc = typeof v === 'string' ? v : (v.description || v.text || JSON.stringify(v));
+                        return '<div class="mb-1"><span class="badge badge-' + cls + '">' + sev + '</span> ' + desc + '</div>';
+                    }).join('');
+                    $('#pdfParserViolationsList').html(viols);
+                    $('#pdfParserViolationsCount').text(ed.violations.length);
+                    $('#pdfParserViolationsBlock').show();
+                } else {
+                    $('#pdfParserViolationsBlock').hide();
+                }
+
+                // Show results
+                $('#pdfParserLoading').hide();
+                $('#pdfParserResults').show();
+                $('#pdfParserFooterConfirm').show();
+
+            } catch (err) {
+                $('#pdfParserLoading').hide();
+                $('#pdfParserStep1').show();
+                $('#pdfParserFooterStep1').show();
+                alert('Помилка мережі: ' + err.message);
+            }
+        });
+
+        // Back button
+        $(document).on('click', '#pdfParserBackBtn', function() {
+            $('#pdfParserResults').hide();
+            $('#pdfParserFooterConfirm').hide();
+            $('#pdfParserStep1').show();
+            $('#pdfParserFooterStep1').show();
+        });
+
+        // Status change → recalc validUntil
+        $(document).on('change', '#pdfParserStatus', function() {
+            var dateVal = $('#pdfParserDate').val();
+            if (!dateVal) return;
+            var d = new Date(dateVal);
+            var status = $(this).val();
+            if (status === 'passed') d.setMonth(d.getMonth() + 24);
+            else if (status === 'failed') d.setMonth(d.getMonth() + 6);
+            else d.setMonth(d.getMonth() + 12);
+            $('#pdfParserValidUntil').val(d.toISOString().substring(0, 10));
+        });
+
+        // Confirm button
+        $(document).on('click', '#pdfParserConfirmBtn', async function() {
+            var liftId = $('#pdfParserLiftSelect').val();
+            if (!liftId) { alert('Оберіть ліфт зі списку'); return; }
+
+            var $btn = $(this);
+            $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-1"></i> Збереження...');
+
+            var ed = _pdfParsed && _pdfParsed.extractedData ? _pdfParsed.extractedData : {};
+            var token = (typeof AuthManager !== 'undefined') ? AuthManager.getAuthToken() :
+                        localStorage.getItem('liftmanager_jwt');
+
+            try {
+                var body = {
+                    inspector: $('#pdfParserInspector').val() || 'Bureau Veritas',
+                    notes: $('#pdfParserNotes').val(),
+                    reportType: $('#pdfParserReportType').val() || 'annual',
+                    status: $('#pdfParserStatus').val() || 'passed',
+                    savedFileUrl: ed.savedFileUrl || null,
+                    lastInspectionDate: $('#pdfParserDate').val(),
+                    nextInspectionDate: $('#pdfParserValidUntil').val(),
+                    violations: ed.violations || []
+                };
+
+                var resp = await fetch('/api/lifts/' + liftId + '/confirm-inspection-from-pdf', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + token
+                    },
+                    body: JSON.stringify(body)
+                });
+                var result = await resp.json();
+
+                if (!result.success) throw new Error(result.message || 'Помилка збереження');
+
+                $('#pdfParserModal').modal('hide');
+
+                if (typeof toastr !== 'undefined') toastr.success('✅ Звіт інспекції збережено!');
+                else alert('Звіт інспекції збережено успішно!');
+
+                // Reload inspection data if lift is currently viewed
+                var curId = window.currentLiftId || window._currentInspectionLiftId;
+                if (curId === liftId) {
+                    if (typeof loadStep4InspectionInfo === 'function') loadStep4InspectionInfo(liftId);
+                    if (typeof loadAdminStep4InspectionInfo === 'function') loadAdminStep4InspectionInfo(liftId);
+                    if (typeof loadInspectionReports === 'function') loadInspectionReports(liftId);
+                }
+
+                _pdfParsed = null;
+
+            } catch (err) {
+                $btn.prop('disabled', false).html('<i class="fas fa-check mr-1"></i> Підтвердити та зберегти');
+                alert('Помилка: ' + err.message);
+            }
+        });
+
+        // Reset on modal open
+        $(document).on('show.bs.modal', '#pdfParserModal', function() {
+            document.getElementById('pdfParserFileInput').value = '';
+            $('#pdfParserFileLabel').text('Обрати файл...');
+            $('#pdfParserAnalyzeBtn').prop('disabled', true);
+            $('#pdfParserStep1').show();
+            $('#pdfParserLoading').hide();
+            $('#pdfParserResults').hide();
+            $('#pdfParserFooterStep1').show();
+            $('#pdfParserFooterConfirm').hide();
+            _pdfParsed = null;
+        });
+    })();
+    // ── /PDF Inspection Parser Modal logic ───────────────────────────────────
+</script>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     PDF Inspection Parser Modal
+     ═══════════════════════════════════════════════════════════════════════ -->
+<div class="modal fade" id="pdfParserModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-file-pdf mr-2"></i> Аналіз PDF звіту інспекції
+                </h5>
+                <button type="button" class="close text-white" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <!-- Step 1: Upload -->
+                <div id="pdfParserStep1">
+                    <div class="alert alert-info py-2 mb-3">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        Підтримуються звіти <strong>Bureau Veritas</strong>, <strong>CML Lisboa</strong>, <strong>Rinave</strong> та інших португальських інспекційних органів.
+                    </div>
+                    <div class="form-group">
+                        <label><strong>Оберіть PDF звіт інспекції</strong></label>
+                        <div class="custom-file">
+                            <input type="file" class="custom-file-input" id="pdfParserFileInput" accept=".pdf">
+                            <label class="custom-file-label" id="pdfParserFileLabel" for="pdfParserFileInput">Обрати файл...</label>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" id="pdfParserAnalyzeBtn" disabled>
+                        <i class="fas fa-search mr-1"></i> Аналізувати PDF
+                    </button>
+                </div>
+                <!-- Step 2: Loading -->
+                <div id="pdfParserLoading" style="display:none;" class="text-center py-5">
+                    <i class="fas fa-spinner fa-spin fa-3x text-primary mb-3"></i>
+                    <p class="text-muted">Аналізуємо PDF звіт, будь ласка зачекайте...</p>
+                </div>
+                <!-- Step 3: Results / Confirmation form -->
+                <div id="pdfParserResults" style="display:none;">
+                    <!-- Matched lift -->
+                    <div class="form-group">
+                        <label class="font-weight-bold"><i class="fas fa-elevator mr-1"></i> Ліфт</label>
+                        <select id="pdfParserLiftSelect" class="form-control form-control-sm"></select>
+                        <small class="text-muted">Ліфт визначено автоматично. Змініть вручну якщо потрібно.</small>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Дата інспекції</label>
+                                <input type="date" id="pdfParserDate" class="form-control form-control-sm">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Дійсний до (наступна інспекція)</label>
+                                <input type="date" id="pdfParserValidUntil" class="form-control form-control-sm">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Тип звіту</label>
+                                <select id="pdfParserReportType" class="form-control form-control-sm">
+                                    <option value="annual">Щорічна</option>
+                                    <option value="routine">Планова</option>
+                                    <option value="certification">Сертифікаційна</option>
+                                    <option value="emergency">Позапланова</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Результат</label>
+                                <select id="pdfParserStatus" class="form-control form-control-sm">
+                                    <option value="passed">✅ Пройдено</option>
+                                    <option value="failed">❌ Не пройдено</option>
+                                    <option value="conditional">⚠️ Умовно пройдено</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Інспектор / Компанія</label>
+                        <input type="text" id="pdfParserInspector" class="form-control form-control-sm" placeholder="Назва інспекційного органу">
+                    </div>
+                    <div class="form-group">
+                        <label>Нотатки <small class="text-muted">(авто-заповнено з PDF)</small></label>
+                        <textarea id="pdfParserNotes" class="form-control form-control-sm" rows="2" placeholder="Додаткові нотатки..."></textarea>
+                    </div>
+                    <!-- Violations list -->
+                    <div id="pdfParserViolationsBlock" style="display:none;" class="mt-2">
+                        <label class="font-weight-bold text-danger">
+                            <i class="fas fa-exclamation-triangle mr-1"></i> Виявлені порушення
+                            <span id="pdfParserViolationsCount" class="badge badge-danger ml-1">0</span>
+                        </label>
+                        <div id="pdfParserViolationsList" class="border rounded p-2 bg-light" style="max-height:160px;overflow-y:auto;font-size:11.5px;"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div id="pdfParserFooterStep1">
+                    <button class="btn btn-secondary btn-sm" data-dismiss="modal">Скасувати</button>
+                </div>
+                <div id="pdfParserFooterConfirm" style="display:none;">
+                    <button class="btn btn-outline-secondary btn-sm mr-2" id="pdfParserBackBtn">
+                        <i class="fas fa-arrow-left mr-1"></i> Назад
+                    </button>
+                    <button class="btn btn-success btn-sm" id="pdfParserConfirmBtn">
+                        <i class="fas fa-check mr-1"></i> Підтвердити та зберегти
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- /PDF Parser Modal -->
 
 </body>
 </html>

@@ -266,7 +266,7 @@ class AuthManager {
         }
     }
 
-    static checkAuthOnPageLoad() {
+    static async checkAuthOnPageLoad() {
         const pathname = window.location.pathname;
         
         const publicPages = [
@@ -291,21 +291,29 @@ class AuthManager {
         }
         
         if (!this.isAuthenticated()) {
-            console.log('❌ Користувач не авторизований, редірект на логін');
-            
-            // Зберігаємо поточний URL для редиректу після логіну
-            sessionStorage.setItem('redirect_after_login', window.location.href);
-            
-            // ЗАВЖДИ використовуємо АБСОЛЮТНИЙ шлях з кореня
-            const loginPath = '/pages/auth/login.html';
-            
-            // Перевіряємо, щоб не створювати нескінченний цикл
-            if (pathname !== loginPath && !pathname.includes('login.html')) {
-                // Очищуємо історію і робимо редірект
-                window.history.replaceState(null, '', loginPath);
-                window.location.replace(loginPath);
+            // 🔄 Спробуємо оновити токен через refresh token перед редіректом
+            const refreshToken = localStorage.getItem(this.REFRESH_KEY);
+            if (refreshToken) {
+                console.log('🔄 Access token відсутній/прострочений, спроба оновлення...');
+                try {
+                    const refreshed = await this.refreshAccessToken();
+                    if (refreshed) {
+                        console.log('✅ Token auto-refreshed on page load, продовжуємо...');
+                        // Продовжуємо нижче до перевірки ролі
+                    } else {
+                        this._doLoginRedirect(pathname);
+                        return;
+                    }
+                } catch (e) {
+                    console.error('❌ Помилка refresh на старті:', e);
+                    this._doLoginRedirect(pathname);
+                    return;
+                }
+            } else {
+                console.log('❌ Користувач не авторизований (no refresh token), редірект на логін');
+                this._doLoginRedirect(pathname);
+                return;
             }
-            return;
         }
 
         // 🔐 Перевірка ролі: якщо сторінка вимагає конкретну роль — перевіряємо
@@ -331,6 +339,19 @@ class AuthManager {
                 window.location.replace(target);
                 return;
             }
+        }
+    }
+
+    // Внутрішній хелпер для редіректу на логін
+    static _doLoginRedirect(pathname) {
+        // Зберігаємо поточний URL для редиректу після логіну
+        sessionStorage.setItem('redirect_after_login', window.location.href);
+        
+        const loginPath = '/pages/auth/login.html';
+        
+        if (pathname !== loginPath && !pathname.includes('login.html')) {
+            window.history.replaceState(null, '', loginPath);
+            window.location.replace(loginPath);
         }
     }
 }

@@ -7078,7 +7078,11 @@ app.use('/api/users', authRoutes); // authRoutes містить /users endpoints
 const liftRoutes = require('./backend/routes/liftRoutes');
 app.use('/api/lifts', liftRoutes);
 
-// 📋 Request Routes (заявки, завдання, інспекції)
+// � Inspection PDF Parser Route (аналіз PDF-звітів Bureau Veritas / CML Lisboa)
+const inspectionParserRoutes = require('./backend/routes/inspectionParser');
+app.use('/api/lifts', inspectionParserRoutes);
+
+// �📋 Request Routes (заявки, завдання, інспекції)
 const requestRoutes = require('./backend/routes/requestRoutes');
 app.use('/api/requests', requestRoutes);
 

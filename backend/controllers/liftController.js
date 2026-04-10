@@ -342,7 +342,8 @@ exports.exportLiftsToExcel = async (req, res, next) => {
  */
 exports.addInspectionReport = async (req, res, next) => {
     try {
-        const { inspector, notes, reportType, status, photos } = req.body;
+        const { inspector, notes, reportType, inspectionType, status, photos,
+                inspectionDate, nextInspectionDate } = req.body;
         const reportFile = req.file ? `/uploads/${req.file.filename}` : null;
 
         const lift = await Lift.findById(req.params.id);
@@ -350,22 +351,32 @@ exports.addInspectionReport = async (req, res, next) => {
             throw new AppError('Ліфт не знайдено', 404);
         }
 
+        // Accept custom inspection date from form; fall back to today
+        const reportDate = inspectionDate ? new Date(inspectionDate) : new Date();
+
         const report = {
-            date: new Date(),
+            date: reportDate,
             inspector: inspector || `${req.user.firstName} ${req.user.lastName}`,
             notes,
-            reportType: reportType || 'routine',
+            reportType: reportType || inspectionType || 'routine',
             status: status || 'passed',
             reportFile,
             photos: photos || []
         };
 
         lift.inspectionHistory.push(report);
-        lift.lastInspectionDate = new Date();
+        lift.lastInspectionDate = reportDate;
 
-        // Якщо звіт пройдено, розрахувати наступну інспекцію
-        if (status === 'passed') {
+        // Accept custom nextInspectionDate, or calculate automatically
+        if (nextInspectionDate) {
+            lift.nextInspectionDate = new Date(nextInspectionDate);
+        } else if (status === 'passed') {
             lift.calculateNextMaintenance(6);
+        } else if (status === 'failed') {
+            // Failed → re-inspect in 6 months
+            const nd = new Date(reportDate);
+            nd.setMonth(nd.getMonth() + 6);
+            lift.nextInspectionDate = nd;
         }
 
         await lift.save();

@@ -4,6 +4,7 @@
 const CACHE_NAME = 'deapseak-tech-cache-v5';
 const urlsToCache = [
   '/',
+  '/offline.html',
   '/pages/tech/ar-helper.html',
   '/pages/tech/tools.html',
   '/pages/tech/inspections.html',
@@ -36,7 +37,14 @@ self.addEventListener('fetch', event => {
 
   // НЕ кешуємо API запити - вони повинні йти напряму до сервера
   if (url.pathname.startsWith('/api/')) {
-    event.respondWith(fetch(event.request));
+    event.respondWith(
+      fetch(event.request).catch(() =>
+        new Response(
+          JSON.stringify({ success: false, message: 'Offline or network error' }),
+          { status: 503, headers: { 'Content-Type': 'application/json' } }
+        )
+      )
+    );
     return;
   }
 
@@ -44,7 +52,13 @@ self.addEventListener('fetch', event => {
   // Без цього service worker може повернути 408 для admin/tech сторінок при
   // будь-якій тимчасовій помилці мережі, навіть коли сервер доступний.
   if (event.request.mode === 'navigate') {
-    event.respondWith(fetch(event.request));
+    event.respondWith(
+      fetch(event.request).catch(() =>
+        caches.match('/offline.html').then(cached =>
+          cached || new Response('Offline', { status: 503, headers: { 'Content-Type': 'text/plain' } })
+        )
+      )
+    );
     return;
   }
 
