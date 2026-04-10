@@ -238,6 +238,19 @@
                                                     <label for="notes">Notas</label>
                                                     <textarea class="form-control" id="notes" rows="3" placeholder="Informação adicional ou condições"></textarea>
                                                 </div>
+
+                                                <!-- Secção de Fotografias -->
+                                                <div class="form-group">
+                                                    <label><i class="fas fa-camera text-info"></i> Fotografias do orçamento</label>
+                                                    <div id="fotosGrid" class="d-flex flex-wrap" style="gap:8px;min-height:50px;"></div>
+                                                    <div class="mt-2">
+                                                        <input type="file" id="fotosInput" accept="image/*" multiple style="display:none">
+                                                        <button type="button" class="btn btn-outline-info btn-sm" onclick="document.getElementById('fotosInput').click()">
+                                                            <i class="fas fa-plus"></i> Adicionar fotografias
+                                                        </button>
+                                                        <small class="text-muted ml-2">JPG, PNG — máx. 10 MB cada</small>
+                                                    </div>
+                                                </div>
                                             </div>
                                             <div class="col-md-6">
                                                 <div class="form-group">
@@ -384,6 +397,13 @@
                                             <p class="mb-0" style="font-family: 'Courier New', monospace; font-size: 14px;">
                                                 IBAN: <strong>PT50 0010 0000 5854 8320 0015 4</strong>
                                             </p>
+                                        </div>
+
+                                        <!-- Photos Preview -->
+                                        <div id="previewFotosSection" style="display:none;" class="mt-4">
+                                            <h5><i class="fas fa-camera text-info"></i> Documentação Fotográfica</h5>
+                                            <hr>
+                                            <div id="previewFotosGrid" class="d-flex flex-wrap" style="gap:8px;"></div>
                                         </div>
 
                                         <div class="text-center mt-4">
@@ -1047,6 +1067,30 @@
                     
                     console.log('✅ Orçamento salvo com ID:', orcamentoId);
                     console.log('📝 Número:', orcamentoData.numero || $('#invoiceNumber').val());
+
+                    // Upload fotografias pendentes (selecionadas mas ainda não enviadas)
+                    if (window._pendingFotoFiles && window._pendingFotoFiles.length > 0 && orcamentoId) {
+                        try {
+                            const fd = new FormData();
+                            for (const f of window._pendingFotoFiles) fd.append('fotos', f);
+                            const uploadRes = await fetch(`/api/orcamentos/${orcamentoId}/fotos`, {
+                                method: 'POST',
+                                headers: { 'Authorization': `Bearer ${token}` },
+                                body: fd
+                            });
+                            const uploadResult = await uploadRes.json();
+                            if (uploadResult.success) {
+                                renderFotosGrid(uploadResult.fotos);
+                                window._pendingFotoFiles = [];
+                                document.getElementById('fotosInput').value = '';
+                                console.log('📷 Fotos enviadas:', uploadResult.fotos.length);
+                            } else {
+                                console.warn('⚠️ Erro ao enviar fotos:', uploadResult.message);
+                            }
+                        } catch (fotoErr) {
+                            console.error('❌ Erro ao enviar fotos:', fotoErr);
+                        }
+                    }
                     
                     const action = isUpdate ? 'atualizado' : 'salvo';
                     const numero = orcamentoData.numero || $('#invoiceNumber').val();
@@ -1354,6 +1398,9 @@
                 $('#invoiceDate').val(orcamento.data.split('T')[0]); // Конвертувати ISO date
                 $('#notes').val(orcamento.notas || '');
                 
+                // Carregar fotografias
+                renderFotosGrid(orcamento.fotos || []);
+                
                 // Очистити таблицю сервісів
                 $('#servicesTable tbody').empty();
                 
@@ -1408,6 +1455,105 @@
                 alert('Erro ao carregar orçamento: ' + error.message);
             }
         }
+
+        // ── Fotografias ──────────────────────────────────────────────
+        function renderFotosGrid(fotos) {
+            const grid = document.getElementById('fotosGrid');
+            if (!grid) return;
+            grid.innerHTML = '';
+            (fotos || []).forEach((url, idx) => {
+                const wrap = document.createElement('div');
+                wrap.style.cssText = 'position:relative;display:inline-block;';
+                wrap.innerHTML = `
+                    <a href="${url}" target="_blank">
+                        <img src="${url}" style="width:90px;height:90px;object-fit:cover;border-radius:6px;border:1px solid #ddd;" title="Ver foto">
+                    </a>
+                    <button type="button" onclick="deleteFoto(${idx})"
+                        style="position:absolute;top:2px;right:2px;background:rgba(220,53,69,.85);border:none;border-radius:50%;width:20px;height:20px;color:#fff;font-size:11px;line-height:18px;text-align:center;cursor:pointer;padding:0;"
+                        title="Remover foto">&times;</button>`;
+                grid.appendChild(wrap);
+            });
+
+            // Actualizar secção de fotos na pré-visualização
+            const previewSection = document.getElementById('previewFotosSection');
+            const previewGrid = document.getElementById('previewFotosGrid');
+            if (previewSection && previewGrid) {
+                const validFotos = (fotos || []).filter(u => u && !u.startsWith('blob:'));
+                previewSection.style.display = validFotos.length ? 'block' : 'none';
+                previewGrid.innerHTML = validFotos.map(url =>
+                    `<a href="${url}" target="_blank">
+                        <img src="${url}" style="width:160px;height:120px;object-fit:cover;border-radius:6px;border:1px solid #ccc;" title="Ver foto">
+                    </a>`
+                ).join('');
+            }
+        }
+
+        async function deleteFoto(idx) {
+            if (!window.currentOrcamentoId) return alert('Guarde o orçamento antes de remover fotos.');
+            if (!confirm('Remover esta fotografia?')) return;
+            const token = localStorage.getItem('liftmanager_jwt') || localStorage.getItem('jwt_token') || localStorage.getItem('token') || localStorage.getItem('lm_token');
+            try {
+                const res = await fetch(`/api/orcamentos/${window.currentOrcamentoId}/fotos/${idx}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+                if (data.success) renderFotosGrid(data.fotos);
+                else alert('Erro ao remover: ' + data.message);
+            } catch (e) {
+                alert('Erro ao remover foto: ' + e.message);
+            }
+        }
+
+        function removePendingFoto(idx) {
+            window._pendingFotoFiles.splice(idx, 1);
+            const savedUrls = [];
+            document.querySelectorAll('#fotosGrid a img').forEach(img => {
+                if (!img.src.startsWith('blob:')) savedUrls.push(img.src.replace(location.origin, ''));
+            });
+            renderFotosGrid(savedUrls);
+            window._pendingFotoFiles.forEach((file, i) => {
+                const url = URL.createObjectURL(file);
+                const wrap = document.createElement('div');
+                wrap.style.cssText = 'position:relative;display:inline-block;';
+                wrap.dataset.pendingIdx = i;
+                wrap.innerHTML = `
+                    <img src="${url}" style="width:90px;height:90px;object-fit:cover;border-radius:6px;border:2px dashed #17a2b8;" title="${file.name}">
+                    <span style="position:absolute;bottom:0;left:0;right:0;background:rgba(23,162,184,.75);color:#fff;font-size:9px;text-align:center;border-radius:0 0 5px 5px;padding:1px;">Novo</span>
+                    <button type="button" onclick="removePendingFoto(${i})" style="position:absolute;top:2px;right:2px;background:rgba(220,53,69,.85);color:#fff;border:none;border-radius:50%;width:18px;height:18px;font-size:12px;line-height:1;cursor:pointer;padding:0;" title="Remover">&times;</button>`;
+                document.getElementById('fotosGrid').appendChild(wrap);
+            });
+        }
+
+        // Preview local de novas fotos selecionadas (antes de guardar)
+        window._pendingFotoFiles = [];
+        document.addEventListener('DOMContentLoaded', () => {
+            const fotosInput = document.getElementById('fotosInput');
+            if (!fotosInput) return;
+            fotosInput.addEventListener('change', () => {
+                Array.from(fotosInput.files).forEach(file => {
+                    const isDup = window._pendingFotoFiles.some(f => f.name === file.name && f.size === file.size);
+                    if (!isDup) window._pendingFotoFiles.push(file);
+                });
+                fotosInput.value = '';
+                const savedUrls = [];
+                document.querySelectorAll('#fotosGrid a img').forEach(img => {
+                    if (!img.src.startsWith('blob:')) savedUrls.push(img.src.replace(location.origin, ''));
+                });
+                renderFotosGrid(savedUrls);
+                window._pendingFotoFiles.forEach((file, idx) => {
+                    const url = URL.createObjectURL(file);
+                    const wrap = document.createElement('div');
+                    wrap.style.cssText = 'position:relative;display:inline-block;';
+                    wrap.dataset.pendingIdx = idx;
+                    wrap.innerHTML = `
+                        <img src="${url}" style="width:90px;height:90px;object-fit:cover;border-radius:6px;border:2px dashed #17a2b8;" title="${file.name}">
+                        <span style="position:absolute;bottom:0;left:0;right:0;background:rgba(23,162,184,.75);color:#fff;font-size:9px;text-align:center;border-radius:0 0 5px 5px;padding:1px;">Novo</span>
+                        <button type="button" onclick="removePendingFoto(${idx})" style="position:absolute;top:2px;right:2px;background:rgba(220,53,69,.85);color:#fff;border:none;border-radius:50%;width:18px;height:18px;font-size:12px;line-height:1;cursor:pointer;padding:0;" title="Remover">&times;</button>`;
+                    document.getElementById('fotosGrid').appendChild(wrap);
+                });
+            });
+        });
     </script>
     <script src="/assets/js/table-drag-scroll.js"></script>
 </body>

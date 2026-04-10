@@ -183,6 +183,8 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="/plugins/bootstrap/bootstrap.bundle.min.js"></script>
     <script src="/plugins/adminlte/adminlte.min.js"></script>
+    <link rel="stylesheet" href="../../plugins/select2/css/select2.min.css">
+    <script src="../../plugins/select2/js/select2.min.js"></script>
     <script src="../../assets/js/config.js"></script>
 
     <!-- Modal para mudar status com observação -->
@@ -564,11 +566,14 @@
 
         // ── Vincular Elevador ──────────────────────────────────────────────
         let _vincularOrcamentoId = null;
+        let _allLifts = [];
 
         async function abrirModalVincular(orcamentoId, currentLiftId) {
             _vincularOrcamentoId = orcamentoId;
+            const searchInput = document.getElementById('vincularSearch');
             const sel = document.getElementById('vincularLiftSelect');
             sel.innerHTML = '<option value="">— Sem elevador —</option>';
+            searchInput.value = '';
 
             try {
                 const res = await fetch(`${API_BASE_URL}/api/lifts`, {
@@ -576,32 +581,15 @@
                 });
                 if (res.ok) {
                     const json = await res.json();
-                    const lifts = json.data || json.lifts || [];
-                    // Agrupar por endereço para mostrar ambos os elevadores juntos
-                    lifts.forEach(lift => {
-                        const addr = lift.address || {};
-                        const addrStr = typeof addr === 'string'
-                            ? addr
-                            : [addr.street, addr.zipCode, addr.city].filter(Boolean).join(', ');
-                        const mun = lift.municipalNumber ? `Nº Câmara: ${lift.municipalNumber}` : '';
-                        const label = [mun, addrStr].filter(Boolean).join(' — ') || lift._id;
-                        const opt = document.createElement('option');
-                        opt.value = lift._id;
-                        opt.textContent = label;
-                        if (String(lift._id) === String(currentLiftId)) opt.selected = true;
-                        sel.appendChild(opt);
-                    });
+                    _allLifts = json.data || json.lifts || [];
+                    _renderLiftOptions(currentLiftId);
 
                     // Auto-sugerir por endereço se ainda não está selecionado
                     if (!currentLiftId) {
                         const moradaCard = document.querySelector(`[data-orc-id="${orcamentoId}"]`)?.dataset?.morada || '';
                         if (moradaCard) {
-                            for (let i = 1; i < sel.options.length; i++) {
-                                if (sel.options[i].textContent.toLowerCase().includes(moradaCard.toLowerCase().split(',')[0])) {
-                                    sel.value = sel.options[i].value;
-                                    break;
-                                }
-                            }
+                            searchInput.value = moradaCard.split(',')[0];
+                            _renderLiftOptions(null);
                         }
                     }
                 }
@@ -610,6 +598,26 @@
             }
 
             $('#vincularModal').modal('show');
+        }
+
+        function _renderLiftOptions(selectedId) {
+            const sel = document.getElementById('vincularLiftSelect');
+            const query = (document.getElementById('vincularSearch').value || '').toLowerCase().trim();
+            sel.innerHTML = '<option value="">— Sem elevador —</option>';
+            _allLifts.forEach(lift => {
+                const addr = lift.address || {};
+                const addrStr = typeof addr === 'string'
+                    ? addr
+                    : [addr.street, addr.zipCode, addr.city].filter(Boolean).join(', ');
+                const mun = lift.municipalNumber ? `Nº ${lift.municipalNumber}` : '';
+                const label = [mun, addrStr].filter(Boolean).join(' — ') || lift._id;
+                if (query && !label.toLowerCase().includes(query)) return;
+                const opt = document.createElement('option');
+                opt.value = lift._id;
+                opt.textContent = label;
+                if (String(lift._id) === String(selectedId)) opt.selected = true;
+                sel.appendChild(opt);
+            });
         }
 
         async function confirmarVincular() {
@@ -665,8 +673,12 @@ $(document).ready(function() {
                     Quando há dois elevadores no mesmo edifício, escolha pelo <strong>N.º de Câmara</strong>.
                 </p>
                 <div class="form-group">
+                    <label><i class="fas fa-search mr-1 text-secondary"></i>Pesquisar por morada ou N.º</label>
+                    <input type="text" class="form-control mb-2" id="vincularSearch"
+                           placeholder="Digite morada, código postal ou N.º câmara..."
+                           oninput="_renderLiftOptions(null)">
                     <label for="vincularLiftSelect"><i class="fas fa-elevator mr-1 text-primary"></i>Elevador</label>
-                    <select class="form-control" id="vincularLiftSelect">
+                    <select class="form-control" id="vincularLiftSelect" size="6" style="height:auto;">
                         <option value="">— Sem elevador —</option>
                     </select>
                     <small class="form-text text-muted">

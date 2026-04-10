@@ -710,6 +710,13 @@
                                             </div>
                                         </div>
 
+                                        <!-- Photos Preview -->
+                                        <div id="previewFotosSection" style="display:none;" class="mt-4">
+                                            <h5><i class="fas fa-camera text-info"></i> Documentação Fotográfica</h5>
+                                            <hr>
+                                            <div id="previewFotosGrid" class="d-flex flex-wrap" style="gap:8px;"></div>
+                                        </div>
+
                                         <div class="text-center mt-4">
                                             <p><small>Obrigado pela sua confiança!</small></p>
                                         </div>
@@ -1800,6 +1807,19 @@
                         title="Remover foto">&times;</button>`;
                 grid.appendChild(wrap);
             });
+
+            // Actualizar secção de fotos na pré-visualização
+            const previewSection = document.getElementById('previewFotosSection');
+            const previewGrid = document.getElementById('previewFotosGrid');
+            if (previewSection && previewGrid) {
+                const validFotos = (fotos || []).filter(u => u && !u.startsWith('blob:'));
+                previewSection.style.display = validFotos.length ? 'block' : 'none';
+                previewGrid.innerHTML = validFotos.map(url =>
+                    `<a href="${url}" target="_blank">
+                        <img src="${url}" style="width:160px;height:120px;object-fit:cover;border-radius:6px;border:1px solid #ccc;" title="Ver foto">
+                    </a>`
+                ).join('');
+            }
         }
 
         async function deleteFoto(idx) {

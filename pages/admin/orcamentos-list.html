@@ -185,6 +185,8 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="/plugins/bootstrap/bootstrap.bundle.min.js"></script>
     <script src="/plugins/adminlte/adminlte.min.js"></script>
+    <link rel="stylesheet" href="../../plugins/select2/css/select2.min.css">
+    <script src="../../plugins/select2/js/select2.min.js"></script>
 
     <script src="../../assets/js/sidebar-init.js"></script>
     <script>
@@ -377,6 +379,11 @@
                             ${!isArchived ? `
                             <button class="btn btn-sm btn-warning" onclick="editarOrcamento('${orcamento._id}'); event.stopPropagation();">
                                 <i class="fas fa-edit"></i> Editar
+                            </button>
+                            <button class="btn btn-sm ${orcamento.liftId ? 'btn-outline-success' : 'btn-outline-primary'} mt-1"
+                                    onclick="abrirModalVincular('${orcamento._id}', '${orcamento.liftId || ''}', '${(orcamento.cliente.morada || '').split('\n')[0].replace(/'/g, '')}'); event.stopPropagation();"
+                                    title="${orcamento.liftId ? 'Alterar elevador vinculado' : 'Vincular a um elevador'}">
+                                <i class="fas fa-${orcamento.liftId ? 'link' : 'unlink'}"></i> ${orcamento.liftId ? 'Elevador' : 'Vincular'}
                             </button>
                             <button class="btn btn-sm btn-danger" onclick="eliminarOrcamento('${orcamento._id}'); event.stopPropagation();">
                                 <i class="fas fa-trash"></i> Eliminar
@@ -595,10 +602,130 @@
             }
         }
 
+        // ── Vincular Elevador ──────────────────────────────────────────
+        let _vincularOrcamentoId = null;
+        let _allLifts = [];
+
+        async function abrirModalVincular(orcamentoId, currentLiftId, moradaHint) {
+            _vincularOrcamentoId = orcamentoId;
+            const searchInput = document.getElementById('vincularSearch');
+            const sel = document.getElementById('vincularLiftSelect');
+            sel.innerHTML = '<option value="">— Sem elevador —</option>';
+            searchInput.value = '';
+
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/lifts`, {
+                    headers: { 'Authorization': `Bearer ${getToken()}` }
+                });
+                if (res.ok) {
+                    const json = await res.json();
+                    _allLifts = json.data || json.lifts || [];
+                    _renderLiftOptions(currentLiftId);
+
+                    // Auto-sugerir por morada se não tem elevador selecionado
+                    if (!currentLiftId && moradaHint) {
+                        searchInput.value = moradaHint.split(',')[0];
+                        _renderLiftOptions(null);
+                    }
+                }
+            } catch (e) {
+                console.warn('Erro ao carregar elevadores:', e.message);
+            }
+
+            $('#vincularModal').modal('show');
+        }
+
+        function _renderLiftOptions(selectedId) {
+            const sel = document.getElementById('vincularLiftSelect');
+            const query = (document.getElementById('vincularSearch').value || '').toLowerCase().trim();
+            sel.innerHTML = '<option value="">— Sem elevador —</option>';
+            _allLifts.forEach(lift => {
+                const addr = lift.address || {};
+                const addrStr = typeof addr === 'string'
+                    ? addr
+                    : [addr.street, addr.zipCode, addr.city].filter(Boolean).join(', ');
+                const mun = lift.municipalNumber ? `Nº ${lift.municipalNumber}` : '';
+                const label = [mun, addrStr].filter(Boolean).join(' — ') || lift._id;
+                if (query && !label.toLowerCase().includes(query)) return;
+                const opt = document.createElement('option');
+                opt.value = lift._id;
+                opt.textContent = label;
+                if (String(lift._id) === String(selectedId)) opt.selected = true;
+                sel.appendChild(opt);
+            });
+        }
+
+        async function confirmarVincular() {
+            if (!_vincularOrcamentoId) return;
+            const liftId = document.getElementById('vincularLiftSelect').value;
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/orcamentos/${_vincularOrcamentoId}/link-lift`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Authorization': `Bearer ${getToken()}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ liftId: liftId || null })
+                });
+                const data = await res.json();
+                if (!data.success) throw new Error(data.message);
+                const msg = liftId
+                    ? `✅ Vinculado: ${data.liftAddress || data.municipalNumber || ''}`
+                    : '✅ Elevador desvinculado.';
+                alert(msg);
+                $('#vincularModal').modal('hide');
+                carregarOrcamentos();
+            } catch (err) {
+                alert('Erro ao vincular: ' + err.message);
+            }
+        }
+
         // Carregar ao iniciar
         document.addEventListener('DOMContentLoaded', () => {
             carregarOrcamentos();
         });
     </script>
+
+<!-- Modal: Vincular Elevador -->
+<div class="modal fade" id="vincularModal" tabindex="-1" role="dialog" aria-labelledby="vincularModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="vincularModalLabel">
+                    <i class="fas fa-link mr-2"></i>Vincular Orçamento a Elevador
+                </h5>
+                <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted small mb-3">
+                    Selecione o elevador a que este orçamento pertence.<br>
+                    Quando há dois elevadores no mesmo edifício, escolha pelo <strong>N.º de Câmara</strong>.
+                </p>
+                <div class="form-group">
+                    <label><i class="fas fa-search mr-1 text-secondary"></i>Pesquisar por morada ou N.º</label>
+                    <input type="text" class="form-control mb-2" id="vincularSearch"
+                           placeholder="Digite morada, código postal ou N.º câmara..."
+                           oninput="_renderLiftOptions(null)">
+                    <label for="vincularLiftSelect"><i class="fas fa-elevator mr-1 text-primary"></i>Elevador</label>
+                    <select class="form-control" id="vincularLiftSelect" size="6" style="height:auto;">
+                        <option value="">— Sem elevador —</option>
+                    </select>
+                    <small class="form-text text-muted">
+                        Os elevadores são listados com N.º de Câmara e morada.
+                    </small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                    <i class="fas fa-times mr-1"></i>Cancelar
+                </button>
+                <button type="button" class="btn btn-primary" onclick="confirmarVincular()">
+                    <i class="fas fa-save mr-1"></i>Guardar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 </body>
 </html>

@@ -951,6 +951,17 @@ router.post('/:id/enviar', authenticate, authorizeRoles('admin', 'dispatcher'), 
                                 </p>
                             </div>
 
+                            ${orcamento.fotos && orcamento.fotos.length > 0 ? `
+                            <div style="margin-bottom: 24px;">
+                                <p style="font-size: 13px; color: #555; margin-bottom: 10px;"><strong>📷 Documentação fotográfica:</strong></p>
+                                <div style="display:flex; flex-wrap:wrap; gap:8px;">
+                                    ${orcamento.fotos.map(fotoPath => {
+                                        const absUrl = `${req.protocol}://${req.get('host')}${fotoPath.startsWith('/') ? fotoPath : '/' + fotoPath}`;
+                                        return `<img src="${absUrl}" style="width:160px;height:120px;object-fit:cover;border-radius:6px;border:1px solid #ddd;" alt="Foto">`;
+                                    }).join('')}
+                                </div>
+                            </div>` : ''}
+
                             <p style="margin: 0; font-size: 15px; color: #333;">
                                 Com os melhores cumprimentos,<br>
                                 <strong>FestLift - Elevadores e Serviços, Lda.</strong>
