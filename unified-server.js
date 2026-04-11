@@ -59,7 +59,8 @@ async function geocodeAddress(address) {
         
         // URL для Nominatim API
         const encodedAddress = encodeURIComponent(searchAddress);
-        const url = `https://nominatim.openstreetmap.org/search?q=${encodedAddress}&format=json&limit=1&countrycodes=pt&addressdetails=1`;
+        // limit=3 дозволяє вибрати кращий результат при співпаданні назви вулиці в кількох містах
+        const url = `https://nominatim.openstreetmap.org/search?q=${encodedAddress}&format=json&limit=3&countrycodes=pt&addressdetails=1`;
         
         console.log('🌍 Geocoding:', searchAddress);
         
@@ -79,13 +80,31 @@ async function geocodeAddress(address) {
                     const results = JSON.parse(data);
                     
                     if (results && results.length > 0) {
-                        const lat = parseFloat(results[0].lat);
-                        const lon = parseFloat(results[0].lon);
+                        // 🏙️ Якщо адреса містить місто — шукаємо відповідний результат
+                        // щоб уникнути повернення вулиці з іншого міста (напр. Setúbal замість Lisboa)
+                        let best = results[0];
+                        if (typeof address === 'object' && address !== null && address.city) {
+                            const cityLower = address.city.toLowerCase().trim();
+                            const cityMatch = results.find(r => {
+                                const nom = r.address || {};
+                                const resultCity = (nom.city || nom.town || nom.village || nom.municipality || nom.suburb || nom.quarter || '').toLowerCase();
+                                return resultCity.includes(cityLower) || cityLower.includes(resultCity);
+                            });
+                            if (cityMatch) {
+                                best = cityMatch;
+                                console.log(`🏙️ City-match: вибрано "${best.display_name}" замість першого результату`);
+                            } else {
+                                console.warn(`⚠️ Geocoding: немає результату для міста "${address.city}", використовуємо перший`);
+                            }
+                        }
+                        
+                        const lat = parseFloat(best.lat);
+                        const lon = parseFloat(best.lon);
                         
                         // 🏙️ Витягуємо назву міста з Nominatim address даних
                         let cityName = '';
-                        if (results[0].address) {
-                            const nom = results[0].address;
+                        if (best.address) {
+                            const nom = best.address;
                             cityName = nom.city || nom.town || nom.village || nom.municipality || nom.suburb || nom.quarter || nom.county || '';
                         }
                         
@@ -1383,8 +1402,71 @@ app.get('/api/en-standards', authenticateToken, async (req, res) => {
 
 // Захищені маршрути
 
+// POST /api/lifts/regeocode-all - виправляє координати ліфтів з нульовими або відсутніми координатами
+// Також переробляє ВСІХ, якщо ?force=true (для виправлення вже збережених неправильних координат)
+app.post('/api/lifts/regeocode-all', authenticateToken, requireRole('admin'), async (req, res) => {
+    try {
+        const force = req.query.force === 'true';
+        const liftsCollection = db.collection('lifts');
+        
+        // Знаходимо ліфти для повторного геокодування
+        const filter = force ? {} : {
+            $or: [
+                { 'location.coordinates': { $exists: false } },
+                { 'location.coordinates': [0, 0] },
+                { location: { $exists: false } }
+            ]
+        };
+        
+        const lifts = await liftsCollection.find(filter).toArray();
+        console.log(`🌍 Regeocode: знайдено ${lifts.length} ліфтів (force=${force})`);
+        
+        let fixed = 0;
+        let failed = 0;
+        const results = [];
+        
+        for (const lift of lifts) {
+            if (!lift.address) {
+                failed++;
+                results.push({ id: lift._id, status: 'skip', reason: 'no address' });
+                continue;
+            }
+            
+            // Додаємо невелику затримку щоб не перевантажити Nominatim
+            await new Promise(r => setTimeout(r, 300));
+            
+            const geocoded = await geocodeAddress(lift.address);
+            if (geocoded) {
+                await liftsCollection.updateOne(
+                    { _id: lift._id },
+                    { $set: { location: geocoded, updatedAt: new Date() } }
+                );
+                fixed++;
+                results.push({ id: lift._id, status: 'fixed', coords: geocoded.coordinates, city: geocoded.city });
+                console.log(`✅ Regeocode: ліфт ${lift._id} → ${geocoded.coordinates}`);
+            } else {
+                failed++;
+                results.push({ id: lift._id, status: 'failed', address: lift.address });
+                console.warn(`⚠️ Regeocode: не вдалося геокодувати ліфт ${lift._id}`);
+            }
+        }
+        
+        res.json({
+            success: true,
+            message: `Геокодування завершено: виправлено ${fixed}, помилок ${failed}`,
+            total: lifts.length, fixed, failed, results
+        });
+    } catch (error) {
+        console.error('❌ Regeocode error:', error);
+        res.status(500).json({ success: false, message: 'Помилка масового геокодування: ' + error.message });
+    }
+});
+
 // GET /api/lifts/stats - статистика ліфтів (МАЄ БУТИ ПЕРЕД /api/lifts/:id!)
 app.get('/api/lifts/stats', authenticateToken, async (req, res) => {
+    if (req.user.role !== 'admin' && req.user.role !== 'dispatcher') {
+        return res.status(403).json({ success: false, message: 'Доступ заборонено' });
+    }
     try {
         const liftsCollection = db.collection('lifts');
         
@@ -1565,7 +1647,9 @@ app.get('/api/lifts', authenticateToken, async (req, res) => {
         }
         
         // 🔍 Фільтр пошуку (municipalNumber, вулиця, місто, ім'я клієнта)
-        const searchTerm = (req.query.search || '').trim();
+        // Sanitize: ensure search is a plain string (prevent NoSQL injection via $regex object)
+        const rawSearch = req.query.search;
+        const searchTerm = (typeof rawSearch === 'string' ? rawSearch : '').trim();
         const limitNum = parseInt(req.query.limit) || 0;
         if (searchTerm) {
             const re = new RegExp(searchTerm, 'i');
@@ -1705,14 +1789,26 @@ app.post('/api/lifts', authenticateToken, async (req, res) => {
         let locationData = req.body.location;
         
         if (req.body.address) {
-            console.log('🔍 Спроба геокодування адреси...');
-            const geocodedLocation = await geocodeAddress(req.body.address);
+            // Якщо frontend вже надав явні не-нульові координати (вибрані через діалог геокодування) —
+            // використовуємо їх без повторного геокодування, щоб уникнути перезапису правильних даних
+            const explicitCoords = req.body.location?.coordinates;
+            const hasExplicitCoords = Array.isArray(explicitCoords) &&
+                explicitCoords.length === 2 &&
+                !isNaN(explicitCoords[0]) && !isNaN(explicitCoords[1]) &&
+                !(explicitCoords[0] === 0 && explicitCoords[1] === 0);
             
-            if (geocodedLocation) {
-                locationData = geocodedLocation;
-                console.log('✅ Використано геокодовані координати:', geocodedLocation.coordinates);
-            } else if (!req.body.location || !req.body.location.coordinates) {
-                console.warn('⚠️ Геокодування не вдалося і координати не надані вручну');
+            if (hasExplicitCoords) {
+                console.log('✅ Використано координати з frontend:', explicitCoords);
+            } else {
+                console.log('🔍 Спроба геокодування адреси...');
+                const geocodedLocation = await geocodeAddress(req.body.address);
+                
+                if (geocodedLocation) {
+                    locationData = geocodedLocation;
+                    console.log('✅ Використано геокодовані координати:', geocodedLocation.coordinates);
+                } else if (!req.body.location || !req.body.location.coordinates) {
+                    console.warn('⚠️ Геокодування не вдалося і координати не надані вручну');
+                }
             }
         }
         
@@ -1790,6 +1886,29 @@ app.post('/api/lifts', authenticateToken, async (req, res) => {
         
         // Підготовка даних для збереження
         const liftData = { ...req.body };
+
+        // 🔄 НОРМАЛІЗАЦІЯ enum: driveType та doorType (legacy display text → DB code)
+        const DRIVE_MAP_US = {
+            'гідравлічний': 'hydraulic', 'hydraulic': 'hydraulic',
+            'канатний (mrl)': 'traction_mrl', 'traction_mrl': 'traction_mrl',
+            'канатний (з машинним залом)': 'traction', 'traction': 'traction',
+            'гвинтовий': 'platform', 'платформний': 'platform', 'platform': 'platform',
+            'goods': 'goods', 'вантажний': 'goods'
+        };
+        const DOOR_MAP_US = {
+            'автоматичні (2-стулкові)': 'automatic', 'автоматичні (4-стулкові)': 'automatic',
+            'телескопічні': 'automatic', 'automatic': 'automatic',
+            'напівавтоматичні': 'swing', 'розпашні': 'swing', 'swing': 'swing',
+            'ручні': 'gate', 'gate': 'gate'
+        };
+        if (liftData.driveType) {
+            const norm = DRIVE_MAP_US[liftData.driveType.toLowerCase()];
+            if (norm) liftData.driveType = norm;
+        }
+        if (liftData.doorType) {
+            const norm = DOOR_MAP_US[liftData.doorType.toLowerCase()];
+            if (norm) liftData.doorType = norm;
+        }
         
         // 📮 Перетворюємо postalCode в address.zipCode для сумісності з моделлю
         if (liftData.postalCode) {
@@ -2104,12 +2223,20 @@ app.get('/api/lifts/:id', authenticateToken, async (req, res) => {
         }
         
         // 🔐 ПЕРЕВІРКА ПРАВ ДОСТУПУ
-        if (req.user.role === 'client' && lift.client !== req.user.id && lift.client !== req.user.userId) {
-            console.warn(`⚠️ Клієнт ${req.user.username} намагається отримати чужий ліфт ${liftId}`);
-            return res.status(403).json({
-                success: false,
-                message: 'Немає доступу до цього ліфта'
-            });
+        if (req.user.role === 'client') {
+            const clientId = (req.user.id || req.user.userId || '').toString();
+            const liftClientId = lift.client ? lift.client.toString() : null;
+            const clientEmail = req.user.email ? req.user.email.toLowerCase() : null;
+            const liftClientEmail = lift.clientEmail ? lift.clientEmail.toLowerCase() : null;
+            const hasAccess = (clientId && liftClientId && liftClientId === clientId)
+                || (clientEmail && liftClientEmail && liftClientEmail === clientEmail);
+            if (!hasAccess) {
+                console.warn(`⚠️ Клієнт ${req.user.username} намагається отримати чужий ліфт ${liftId}`);
+                return res.status(403).json({
+                    success: false,
+                    message: 'Немає доступу до цього ліфта'
+                });
+            }
         }
         
         if (req.user.role === 'technician') {
@@ -2247,6 +2374,29 @@ app.put('/api/lifts/:id', authenticateToken, async (req, res) => {
             updatedAt: new Date().toISOString(),
             updatedBy: req.user.username
         };
+
+        // 🔄 НОРМАЛІЗАЦІЯ enum: driveType та doorType (legacy display text → DB code)
+        const DRIVE_MAP_PUT = {
+            'гідравлічний': 'hydraulic', 'hydraulic': 'hydraulic',
+            'канатний (mrl)': 'traction_mrl', 'traction_mrl': 'traction_mrl',
+            'канатний (з машинним залом)': 'traction', 'traction': 'traction',
+            'гвинтовий': 'platform', 'платформний': 'platform', 'platform': 'platform',
+            'goods': 'goods', 'вантажний': 'goods'
+        };
+        const DOOR_MAP_PUT = {
+            'автоматичні (2-стулкові)': 'automatic', 'автоматичні (4-стулкові)': 'automatic',
+            'телескопічні': 'automatic', 'automatic': 'automatic',
+            'напівавтоматичні': 'swing', 'розпашні': 'swing', 'swing': 'swing',
+            'ручні': 'gate', 'gate': 'gate'
+        };
+        if (updateData.driveType) {
+            const norm = DRIVE_MAP_PUT[updateData.driveType.toLowerCase()];
+            if (norm) updateData.driveType = norm;
+        }
+        if (updateData.doorType) {
+            const norm = DOOR_MAP_PUT[updateData.doorType.toLowerCase()];
+            if (norm) updateData.doorType = norm;
+        }
         
         if (req.body.address) {
             // Якщо frontend вже надав явні координати — використовуємо їх без геокодування
@@ -2303,6 +2453,10 @@ app.put('/api/lifts/:id', authenticateToken, async (req, res) => {
 // POST /api/lifts/:id/contract - завантаження контракту
 app.post('/api/lifts/:id/contract', authenticateToken, upload.single('contract'), async (req, res) => {
     try {
+        // 🔐 Тільки admin та dispatcher можуть завантажувати контракти
+        if (req.user.role !== 'admin' && req.user.role !== 'dispatcher') {
+            return res.status(403).json({ success: false, message: 'Доступ заборонено' });
+        }
         const { ObjectId } = require('mongodb');
         const liftId = new ObjectId(req.params.id);
         
@@ -2498,6 +2652,10 @@ app.post('/api/lifts/:id/contract/share-to-siblings', authenticateToken, async (
 });
 app.post('/api/lifts/:id/inspection-report', authenticateToken, upload.single('pdfFile'), async (req, res) => {
     try {
+        // 🔐 Тільки admin, dispatcher, technician можуть додавати звіти
+        if (req.user.role === 'client') {
+            return res.status(403).json({ success: false, message: 'Клієнти не можуть додавати звіти інспекції' });
+        }
         const { ObjectId } = require('mongodb');
         const liftId = new ObjectId(req.params.id);
         
@@ -2519,10 +2677,10 @@ app.post('/api/lifts/:id/inspection-report', authenticateToken, upload.single('p
         else if (c2Count > 0) resolvedStatus = 'conditional';
 
         const reportData = {
-            date: req.body.inspectionDate || new Date().toISOString(),
-            type: req.body.inspectionType || 'routine',
-            inspector: req.user.username,
-            notes: req.body.comments || req.body.findings || '',
+            date: req.body.inspectionDate || req.body.date || new Date().toISOString(),
+            type: req.body.inspectionType || req.body.type || 'routine',
+            inspector: req.body.inspector || req.user.username || req.user.email || 'unknown',
+            notes: req.body.notes || req.body.comments || req.body.findings || '',
             status: resolvedStatus,
             c1Count: c1Count,
             c2Count: c2Count,
@@ -2578,7 +2736,7 @@ app.post('/api/lifts/:id/inspection-report', authenticateToken, upload.single('p
             });
         }
         
-        res.json({
+        res.status(201).json({
             success: true,
             message: 'Звіт інспекції успішно додано',
             report: reportData
@@ -4134,6 +4292,9 @@ app.post('/api/users/:id/reset-password', authenticateToken, async (req, res) =>
 
 // GET /api/requests/stats - статистика запитів (МАЄ БУТИ ПЕРЕД /api/requests/:id!)
 app.get('/api/requests/stats', authenticateToken, async (req, res) => {
+    if (req.user.role !== 'admin' && req.user.role !== 'dispatcher') {
+        return res.status(403).json({ success: false, message: 'Доступ заборонено' });
+    }
     try {
         const requestsCollection = db.collection('requests');
         

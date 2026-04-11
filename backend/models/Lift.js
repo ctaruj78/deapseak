@@ -78,7 +78,8 @@ const liftSchema = new mongoose.Schema({
         photos: [String],
         reportFile: String, // PDF файл звіту
         reportType: { type: String, enum: ['routine', 'emergency', 'annual', 'certification'], default: 'routine' },
-        status: { type: String, enum: ['passed', 'failed', 'conditional'], default: 'passed' }
+        inspectionType: { type: String, enum: ['inspection', 'maintenance', 'repair', 'emergency'] },
+        status: { type: String, enum: ['passed', 'failed', 'conditional', 'completed'], default: 'passed' }
     }],
     photos: [{
         url: String,
@@ -137,6 +138,61 @@ const liftSchema = new mongoose.Schema({
 });
 
 liftSchema.index({ location: '2dsphere' });
+
+// ── Normalize legacy/UI display values → DB enum codes ────────────────────
+const DRIVE_MAP = {
+    'гідравлічний': 'hydraulic',
+    'hydraulic':    'hydraulic',
+    'канатний (mrl)': 'traction_mrl',
+    'traction_mrl': 'traction_mrl',
+    'канатний (з машинним залом)': 'traction',
+    'traction':     'traction',
+    'гвинтовий':    'platform',
+    'платформний':  'platform',
+    'platform':     'platform',
+    'goods':        'goods',
+    'вантажний':    'goods',
+};
+const DOOR_MAP = {
+    'автоматичні (2-стулкові)':       'automatic',
+    'автоматичні (4-стулкові)':       'automatic',
+    'автоматичні (4-стулкові / телескопічні)': 'automatic',
+    'телескопічні':                   'automatic',
+    'automatic':                      'automatic',
+    'напівавтоматичні':               'swing',
+    'напівавтоматичні / розпашні':    'swing',
+    'розпашні':                       'swing',
+    'swing':                          'swing',
+    'ручні':                          'gate',
+    'ручні (ґрати)':                  'gate',
+    'gate':                           'gate',
+};
+liftSchema.pre('save', function(next) {
+    if (this.driveType) {
+        const mapped = DRIVE_MAP[this.driveType.toLowerCase().trim()];
+        if (mapped) this.driveType = mapped;
+    }
+    if (this.doorType) {
+        const mapped = DOOR_MAP[this.doorType.toLowerCase().trim()];
+        if (mapped) this.doorType = mapped;
+    }
+    next();
+});
+
+// Also normalize on findOneAndUpdate / findByIdAndUpdate
+liftSchema.pre('findOneAndUpdate', function(next) {
+    const upd = this.getUpdate();
+    const body = upd?.$set || upd || {};
+    if (body.driveType) {
+        const mapped = DRIVE_MAP[body.driveType.toLowerCase().trim()];
+        if (mapped) { if (upd.$set) upd.$set.driveType = mapped; else upd.driveType = mapped; }
+    }
+    if (body.doorType) {
+        const mapped = DOOR_MAP[body.doorType.toLowerCase().trim()];
+        if (mapped) { if (upd.$set) upd.$set.doorType = mapped; else upd.doorType = mapped; }
+    }
+    next();
+});
 
 liftSchema.virtual('requests', {
     ref: 'Request',

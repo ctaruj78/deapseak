@@ -204,18 +204,45 @@ function extractInspectionDateFromRawText(text = '') {
 }
 
 /**
- * Calculate validUntil:
- *  passed  → inspection date + 24 months (2 years)
- *  failed  → inspection date + 6 months
- *  conditional → inspection date + 12 months
+ * Calculate validUntil based on inspection result and clause types.
+ *
+ * Rules (Portuguese elevator inspection framework DL 320/2002):
+ *  - No C2/C1 clauses (clean or only C3)  → 2-year certificate (+24 months)
+ *  - C2 clauses present (reinspection)    → re-inspection in 30 days (+1 month)
+ *  - C1 clauses present (immobilization)  → fix ASAP, reinspect ASAP (+30 days)
+ *  - Generic failed / conditional fallback → +6 months
  */
-function calcValidUntil(inspDate, passed) {
+function calcValidUntil(inspDate, passed, c1Count, c2Count) {
     if (!inspDate) return null;
     const d = new Date(inspDate);
-    if (passed === true)  d.setMonth(d.getMonth() + 24);
-    else if (passed === false) d.setMonth(d.getMonth() + 6);
-    else d.setMonth(d.getMonth() + 12); // undefined / conditional
+    if (c1Count > 0) {
+        // C1 = immobilisation, must fix and reinspect as soon as possible
+        d.setMonth(d.getMonth() + 1);
+    } else if (c2Count > 0) {
+        // C2 = reinspection required within ~30 days
+        d.setDate(d.getDate() + 30);
+    } else if (passed === true) {
+        // Clean pass (no C2/C1) → 2-year certificate
+        d.setMonth(d.getMonth() + 24);
+    } else if (passed === false) {
+        // Generic failure (no specific clause info)
+        d.setMonth(d.getMonth() + 6);
+    } else {
+        // Unknown / conditional
+        d.setMonth(d.getMonth() + 12);
+    }
     return d;
+}
+
+/**
+ * Determine certificate type label from clause counts and pass status.
+ */
+function determineCertType(passed, c1Count, c2Count, c3Count) {
+    if (c1Count > 0) return 'immobilization';   // C1 → imobilização
+    if (c2Count > 0) return 'reinspection';      // C2 → re-inspeção obrigatória
+    if (passed === true) return 'cert_2_years';  // clean or only C3 → 2-year cert
+    if (passed === false) return 'reinspection'; // generic failed
+    return 'conditional';                        // unknown
 }
 
 /**
@@ -259,8 +286,17 @@ function scoreLift(lift, meta) {
 
     if (meta.installationNumber) {
         const inst = meta.installationNumber.trim();
-        if (lift.serialNumber && lift.serialNumber.trim() === inst) score += 60;
-        else if (lift.municipalNumber && lift.municipalNumber.trim() === inst) score += 55;
+        // Strip common agency prefixes (CML-, CML , BV-, GATECI-, etc.)
+        const instBare = inst.replace(/^[A-Z]{2,8}[-\s]/i, '').trim();
+
+        const matchesNum = (stored) => {
+            if (!stored) return false;
+            const s = stored.trim();
+            const sBare = s.replace(/^[A-Z]{2,8}[-\s]/i, '').trim();
+            return s === inst || s === instBare || sBare === inst || sBare === instBare;
+        };
+        if (lift.serialNumber && matchesNum(lift.serialNumber)) score += 60;
+        else if (lift.municipalNumber && matchesNum(lift.municipalNumber)) score += 55;
     }
 
     if (meta.location) {
@@ -329,12 +365,31 @@ router.post('/parse-inspection-pdf', authenticate, authorizeRoles('admin', 'disp
             fs.renameSync(tmpPath, savedPath);
             const savedFileUrl = `/uploads/inspection-pdfs/${savedFilename}`;
 
+            // ── Clause counts for cert-type logic ─────────────────────────
+            const c1Count = stats.critical || 0;
+            const c2Count = stats.medium   || 0;
+            const c3Count = stats.low      || 0;
+            const certType = determineCertType(passed, c1Count, c2Count, c3Count);
+
             // ── Build unified dates from normalised metadata ───────────────
             let inspectionDate = parseDate(meta.date);
             if (!inspectionDate) {
                 inspectionDate = extractInspectionDateFromRawText(parsed.rawText || '');
             }
-            const validUntil     = calcValidUntil(inspectionDate, passed);
+            const validUntil = calcValidUntil(inspectionDate, passed, c1Count, c2Count);
+
+            // ── Extract address details from location string ──────────────
+            const locationStr = meta.location || '';
+            const postalCode  = meta.postalCode || extractPostalCode(locationStr) || null;
+            const city        = meta.city || null;
+            // Street: first meaningful line before the postal code (or full location)
+            let street = locationStr;
+            if (postalCode) {
+                const cpIdx = locationStr.indexOf(postalCode.replace('-', ' ').trim()) !== -1
+                    ? locationStr.indexOf(postalCode.replace('-', ' ').trim())
+                    : locationStr.indexOf(postalCode);
+                if (cpIdx > 5) street = locationStr.substring(0, cpIdx).replace(/[,\s]+$/, '').trim();
+            }
 
             // ── Prepare extracted data ─────────────────────────────────────
             const extractedData = {
@@ -343,7 +398,10 @@ router.post('/parse-inspection-pdf', authenticate, authorizeRoles('admin', 'disp
                 installationNumber: meta.installationNumber || null,
                 date:               inspectionDate ? inspectionDate.toISOString() : null,
                 dateFormatted:      meta.date || (inspectionDate ? inspectionDate.toISOString().substring(0, 10) : null),
-                location:           meta.location || null,
+                location:           locationStr || null,
+                address:            street     || locationStr || null,
+                postalCode:         postalCode,
+                city:               city,
                 inspector:          meta.inspector || meta.company || null,
                 company:            meta.company || null,
                 owner:              meta.owner || null,
@@ -351,6 +409,10 @@ router.post('/parse-inspection-pdf', authenticate, authorizeRoles('admin', 'disp
                 processNumber:      meta.processNumber || null,
                 passed:             passed,
                 status:             passed === true ? 'passed' : passed === false ? 'failed' : 'conditional',
+                certType,          // 'cert_2_years' | 'reinspection' | 'immobilization' | 'conditional'
+                c1Count,
+                c2Count,
+                c3Count,
                 conclusion:         concl?.status || (concl?.approved === true ? 'passed' : concl?.approved === false ? 'failed' : null),
                 validUntil:         validUntil ? validUntil.toISOString() : null,
                 violations:         viols.slice(0, 50),
@@ -369,13 +431,22 @@ router.post('/parse-inspection-pdf', authenticate, authorizeRoles('admin', 'disp
             const filters = [];
 
             if (instNum) {
-                filters.push({ serialNumber: instNum });
-                filters.push({ municipalNumber: instNum });
+                // Strip common agency prefixes so "CML-14267-28770" finds "14267-28770" and vice-versa
+                const instBare = instNum.replace(/^[A-Z]{2,8}[-\s]/i, '').trim();
+                const variants = [...new Set([instNum, instBare])];
+                filters.push({ serialNumber:    { $in: variants } });
+                filters.push({ municipalNumber: { $in: variants } });
             }
 
             if (meta.location) {
-                const token = extractUsefulAddressToken(meta.location);
-                if (token) {
+                // Extract multiple meaningful tokens from address (not just the first one)
+                // This handles cases like "Rua Professor Mira Fernandes" where DB stores "Rua Mira Fernandes"
+                const addrStopWords = new Set(['rua', 'avenida', 'av', 'travessa', 'praca', 'largo', 'estrada', 'lote', 'bloco', 'piso', 'loja']);
+                const addrTokens = normalizeText(meta.location)
+                    .split(' ')
+                    .filter(t => t.length >= 4 && !addrStopWords.has(t) && !/^\d/.test(t))
+                    .slice(0, 5);
+                for (const token of addrTokens) {
                     filters.push({ 'address.street': { $regex: token, $options: 'i' } });
                 }
 
@@ -447,11 +518,18 @@ router.post('/:id/confirm-inspection-from-pdf', authenticate, authorizeRoles('ad
                 'Порушення:\n' + violations.map(v => `• [${v.severity || '?'}] ${v.description || v}`).join('\n');
         }
 
+        // Normalize reportType to valid enum values
+        const reportTypeMap = { 'inspection': 'annual', 'annual': 'annual', 'routine': 'routine',
+                                'emergency': 'emergency', 'certification': 'certification',
+                                'reinspection': 'routine' };
+        const normalizedReportType = reportTypeMap[reportType] || reportTypeMap[reportType?.toLowerCase()] || 'annual';
+
         const report = {
             date: lastInspectionDate ? new Date(lastInspectionDate) : new Date(),
             inspector: inspector || 'Bureau Veritas',
             notes: violationNotes,
-            reportType: reportType || 'annual',
+            reportType: normalizedReportType,
+            inspectionType: ({ annual: 'inspection', certification: 'inspection', routine: 'maintenance', emergency: 'emergency' })[normalizedReportType] || 'inspection',
             status: status || 'passed',
             reportFile: savedFileUrl || null,
             photos: []

@@ -1519,10 +1519,10 @@
                                                     <label>Тип приводу</label>
                                                     <select id="enhancedDriveType" name="driveType" class="form-control">
                                                         <option value="">— Оберіть —</option>
-                                                        <option>Гідравлічний</option>
-                                                        <option>Канатний (MRL)</option>
-                                                        <option>Канатний (з машинним залом)</option>
-                                                        <option>Гвинтовий</option>
+                                                        <option value="hydraulic">Гідравлічний</option>
+                                                        <option value="traction_mrl">Канатний (MRL)</option>
+                                                        <option value="traction">Канатний (з машинним залом)</option>
+                                                        <option value="platform">Гвинтовий / Платформний</option>
                                                     </select>
                                                 </div>
                                             </div>
@@ -1531,11 +1531,10 @@
                                                     <label>Тип дверей</label>
                                                     <select id="enhancedDoorType" name="doorType" class="form-control">
                                                         <option value="">— Оберіть —</option>
-                                                        <option>Автоматичні (2-стулкові)</option>
-                                                        <option>Автоматичні (4-стулкові)</option>
-                                                        <option>Телескопічні</option>
-                                                        <option>Напівавтоматичні</option>
-                                                        <option>Ручні</option>
+                                                        <option value="automatic">Автоматичні (2-стулкові)</option>
+                                                        <option value="automatic">Автоматичні (4-стулкові / телескопічні)</option>
+                                                        <option value="swing">Напівавтоматичні / Розпашні</option>
+                                                        <option value="gate">Ручні (ґрати)</option>
                                                     </select>
                                                 </div>
                                             </div>
@@ -4560,9 +4559,11 @@ Email de contacto: info@festlift.pt`;
     function displayLiftsInTable(lifts) {
         console.log('📋 Відображення ліфтів в таблиці:', lifts.length);
         
-        // 🏠 Групування за адресою — визначаємо ліфти по одному місцю
+        // 🏠 Групування за адресою — будуємо з ПОВНОГО списку (window.allLiftsData),
+        // щоб ліфти по одній адресі мали однаковий колір і значок навіть на різних сторінках
+        const sourceForGrouping = window.allLiftsData || lifts;
         const addressCount = {};
-        lifts.forEach(lift => {
+        sourceForGrouping.forEach(lift => {
             const addr = lift.address && lift.address.street
                 ? (lift.address.street + ',' + (lift.address.city || '')).toLowerCase().trim()
                 : (typeof lift.address === 'string' ? lift.address : '').toLowerCase().trim();
@@ -4570,9 +4571,10 @@ Email de contacto: info@festlift.pt`;
         });
 
         // 🎨 Порядковий індекс кожної унікальної адреси (для чергування кольорів)
+        // Також будується з повного списку — стабільний між сторінками
         const addressGroupIndex = {};
         let groupCounter = 0;
-        lifts.forEach(lift => {
+        sourceForGrouping.forEach(lift => {
             const addr = lift.address && lift.address.street
                 ? (lift.address.street + ',' + (lift.address.city || '')).toLowerCase().trim()
                 : (typeof lift.address === 'string' ? lift.address : '').toLowerCase().trim();
@@ -4968,14 +4970,18 @@ Email de contacto: info@festlift.pt`;
                 $('#detail-contract-number').text(cn || 'Не вказано');
                 $('#detail-contract-price').text(cp ? `${cp} €` : 'Не вказано');
                 
-                // Дати обслуговування
+                // Дати обслуговування — запасний варіант: беремо з inspectionHistory, якщо поле на рівні ліфта не заповнене
+                const _sortedHist = (lift.inspectionHistory || []).slice().sort((a, b) =>
+                    new Date(b.date || b.inspectionDate || 0) - new Date(a.date || a.inspectionDate || 0));
+                const _lastHistEntry = _sortedHist[0] || null;
+                const _derivedLast = lift.lastInspectionDate || lift.lastMaintenance
+                    || (_lastHistEntry ? (_lastHistEntry.date || _lastHistEntry.inspectionDate) : null);
+                const _derivedNext = lift.nextInspectionDate || lift.nextMaintenance || null;
                 $('#detail-last-maintenance').text(
-                    lift.lastInspectionDate ? new Date(lift.lastInspectionDate).toLocaleDateString('uk-UA') :
-                    lift.lastMaintenance ? new Date(lift.lastMaintenance).toLocaleDateString('uk-UA') : 'Не вказано'
+                    _derivedLast ? new Date(_derivedLast).toLocaleDateString('uk-UA') : 'Не вказано'
                 );
                 $('#detail-next-maintenance').text(
-                    lift.nextInspectionDate ? new Date(lift.nextInspectionDate).toLocaleDateString('uk-UA') :
-                    lift.nextMaintenance ? new Date(lift.nextMaintenance).toLocaleDateString('uk-UA') : 'Не вказано'
+                    _derivedNext ? new Date(_derivedNext).toLocaleDateString('uk-UA') : 'Не вказано'
                 );
 
                 // Сертифікат / ліцензія
@@ -5017,17 +5023,19 @@ Email de contacto: info@festlift.pt`;
                     }
                 }
                 
-                // Звіт інспекції (показуємо останній звіт з історії)
-                const lastReport = lift.inspectionHistory && lift.inspectionHistory.length > 0 
-                    ? lift.inspectionHistory[lift.inspectionHistory.length - 1] 
-                    : null;
+                // Звіт інспекції (показуємо найсвіжіший з історії)
+                const lastReport = _lastHistEntry;
+                const _adminRtMap = { annual: 'inspection', certification: 'inspection', routine: 'maintenance', emergency: 'emergency' };
+                const _adminInspTypeLabels = { inspection: 'Інспекція', maintenance: 'Технічне обслуговування', repair: 'Ремонт', emergency: 'Аварійний', annual: 'Інспекція', routine: 'ТО', certification: 'Сертифікація' };
                 
+                const _lrDateAdmin = lastReport ? (lastReport.date || lastReport.inspectionDate) : null;
                 $('#detail-inspection-date').text(
-                    lastReport && lastReport.date ? new Date(lastReport.date).toLocaleDateString('uk-UA') : 'Не вказано'
+                    _lrDateAdmin ? new Date(_lrDateAdmin).toLocaleDateString('uk-UA') : 'Не вказано'
                 );
-                $('#detail-inspection-type').text(lastReport ? lastReport.type || 'Не вказано' : 'Не вказано');
+                const _lrTypeRaw = lastReport ? (lastReport.inspectionType || lastReport.type || _adminRtMap[lastReport.reportType] || lastReport.reportType || '') : '';
+                $('#detail-inspection-type').text(_lrTypeRaw ? (_adminInspTypeLabels[_lrTypeRaw] || _lrTypeRaw) : 'Не вказано');
                 $('#detail-inspection-status').text(lastReport ? lastReport.status || 'Не вказано' : 'Не вказано');
-                $('#detail-inspection-comments').text(lastReport ? lastReport.notes || 'Не вказано' : 'Не вказано');
+                $('#detail-inspection-comments').text(lastReport ? lastReport.notes || lastReport.comments || '—' : 'Не вказано');
                 
                 // Додаткова інформація
                 $('#detail-created').text(
@@ -5913,20 +5921,28 @@ Email de contacto: info@festlift.pt`;
         
         let html = '<div class="list-group">';
         reportsToDisplay.forEach((report, index) => {
-                const date = report.inspectionDate || report.date 
-                    ? new Date(report.inspectionDate || report.date).toLocaleDateString('uk-UA') 
-                    : 'Невідома дата';
-                const type = report.inspectionType || report.type || 'Не вказано';
-                const notes = report.comments || report.findings || report.notes || 'Без коментарів';
-                const status = report.status || 'completed';
-                const inspector = report.inspectorName || report.inspector || 'Невідомий';
-                const fileUrl = report.fileUrl || report.reportFile || report.file || null;
+                const _dt = report.date || report.inspectionDate;
+                const date = _dt ? new Date(_dt).toLocaleDateString('uk-UA') : 'Невідома дата';
+                const _typeKey = report.reportType || report.inspectionType || report.type || 'routine';
+                const _typeLabels = { 'routine': 'Планова', 'annual': 'Щорічна / Periódica', 'certification': 'Сертифікаційна', 'emergency': 'Позапланова', 'reinspection': 'Реінспекція', 'inspection': 'Інспекція' };
+                const type = _typeLabels[_typeKey] || _typeKey;
+                const notes = report.notes || report.comments || report.findings || '';
+                const status = report.status || '';
+                const inspector = report.inspector || report.inspectorName || 'Невідомий';
+                const fileUrl = report.reportFile || report.fileUrl || report.file || null;
+                const nextInspDate = report.nextInspectionDate ? new Date(report.nextInspectionDate).toLocaleDateString('uk-UA') : null;
                 const reportLiftId = document.getElementById('liftDetailsModal')?.dataset?.liftId || '';
                 const reportOrigIndex = report._originalIndex !== undefined ? report._originalIndex : index;
                 const reportJson = JSON.stringify(report).replace(/'/g, "&apos;");
                 
                 // Статус badge
-                const statusBadge = '<span class="badge badge-secondary">Додано</span>';
+                const statusBadge = status === 'passed'
+                    ? '<span class="badge badge-success">✅ Пройдено</span>'
+                    : status === 'failed'
+                    ? '<span class="badge badge-danger">❌ Не пройдено</span>'
+                    : status === 'conditional'
+                    ? '<span class="badge badge-warning">⚠️ Реінспекція</span>'
+                    : '<span class="badge badge-secondary">—</span>';
                 
                 html += `
                     <div class="list-group-item">
@@ -5936,9 +5952,9 @@ Email de contacto: info@festlift.pt`;
                                     <i class="fas fa-clipboard-check text-primary"></i>
                                     ${type} ${statusBadge}
                                 </h6>
-                                <p class="mb-1"><small><strong>Дата:</strong> ${date}</small></p>
+                                <p class="mb-1"><small><strong>Дата:</strong> ${date}${nextInspDate ? ' &nbsp;→&nbsp; <strong>Наступна: ' + nextInspDate + '</strong>' : ''}</small></p>
                                 <p class="mb-1"><small><strong>Інспектор:</strong> ${inspector}</small></p>
-                                <p class="mb-1"><small>${notes}</small></p>
+                                ${notes ? '<p class="mb-1"><small class="text-muted">' + notes.substring(0, 120) + (notes.length > 120 ? '…' : '') + '</small></p>' : ''}
                             </div>
                             <div class="btn-group-vertical ml-2">
                                 <button class="btn btn-sm btn-outline-primary mb-1" onclick='viewReportDetails(${reportJson})' title="Переглянути деталі">
@@ -6240,7 +6256,8 @@ Email de contacto: info@festlift.pt`;
                 day: 'numeric'
             }) 
             : 'Невідома дата';
-        const type = report.inspectionType || report.type || 'Не вказано';
+        const _adminRepRtMap = { annual: 'inspection', certification: 'inspection', routine: 'maintenance', emergency: 'emergency' };
+        const type = report.inspectionType || report.type || _adminRepRtMap[report.reportType] || report.reportType || 'Не вказано';
         const notes = report.comments || report.findings || report.notes || 'Без коментарів';
         const status = report.status || 'completed';
         const inspector = report.inspectorName || report.inspector || 'Невідомий';
@@ -7824,15 +7841,30 @@ Email de contacto: info@festlift.pt`;
 
                 _pdfParsed = data;
 
-                // Populate lift select
+                // ── Populate lift select ─────────────────────────────────────
                 var sel = $('#pdfParserLiftSelect').empty();
                 if (data.allMatches && data.allMatches.length) {
                     data.allMatches.forEach(function(l) {
-                        var addr = l.address ? (l.address.street + ', ' + l.address.city) : '';
+                        var addr = l.address ? (l.address.street + ', ' + (l.address.city||'')) : '';
                         sel.append('<option value="' + l._id + '">[' + l.confidence + '%] ' + (l.municipalNumber || l._id) + ' — ' + addr + '</option>');
                     });
-                    sel.prepend('<option value="">— Обрати ліфт —</option>');
                     sel.val(data.suggestedLift ? data.suggestedLift._id : '');
+                    if (data.suggestedLift && data.suggestedLift.confidence >= 60) {
+                        // High-confidence auto-match — show found panel, hide dropdown
+                        var sl = data.suggestedLift;
+                        var slAddr = sl.address ? (sl.address.street || '') : '';
+                        $('#pdfAutoLiftName').text((sl.municipalNumber || sl._id) + (slAddr ? ' — ' + slAddr : ''));
+                        $('#pdfAutoLiftFound').show();
+                        $('#pdfAutoLiftNotFound').hide();
+                        $('#pdfLiftSelectRow').hide();
+                    } else {
+                        // Low-confidence — show dropdown so user can confirm/fix
+                        sel.prepend('<option value="">— Обрати ліфт —</option>');
+                        sel.val(data.suggestedLift ? data.suggestedLift._id : '');
+                        $('#pdfAutoLiftFound').hide();
+                        $('#pdfAutoLiftNotFound').hide();
+                        $('#pdfLiftSelectRow').show();
+                    }
                 } else {
                     sel.append('<option value="">— Ліфт не знайдено автоматично —</option>');
                     try {
@@ -7841,41 +7873,93 @@ Email de contacto: info@festlift.pt`;
                         var lifts = (lData && lData.data && lData.data.lifts) || lData.lifts || lData.data || [];
                         if (!Array.isArray(lifts)) lifts = [];
                         lifts.forEach(function(l) {
-                            var addr = l.address ? (l.address.street + ', ' + l.address.city) : '';
+                            var addr = l.address ? (l.address.street + ', ' + (l.address.city||'')) : '';
                             sel.append('<option value="' + l._id + '">' + (l.municipalNumber || l._id) + ' — ' + addr + '</option>');
                         });
                     } catch(_) {}
+                    $('#pdfAutoLiftFound').hide();
+                    $('#pdfAutoLiftNotFound').show();
+                    $('#pdfLiftSelectRow').show();
                 }
 
-                // Pre-fill fields
+                // ── Extract data ─────────────────────────────────────────────
                 var ed = data.extractedData || {};
-                if (ed.date) $('#pdfParserDate').val(ed.date.substring(0, 10));
-                if (ed.validUntil) $('#pdfParserValidUntil').val(ed.validUntil.substring(0, 10));
-                $('#pdfParserStatus').val(ed.status || 'passed');
-                $('#pdfParserInspector').val(ed.inspector || ed.company || '');
+                var certType = ed.certType || (ed.status === 'passed' ? 'cert_2_years' : 'reinspection');
+
+                var dateStr      = ed.date       ? ed.date.substring(0, 10)      : '';
+                var validUntilStr= ed.validUntil ? ed.validUntil.substring(0, 10): '';
+                var inspectorStr = ed.inspector || ed.company || '';
+                var addressStr   = ed.address   || ed.location || '';
+                var postalStr    = ed.postalCode || '';
+
+                // Map certType → status select value
+                var selectStatus = 'conditional';
+                if (certType === 'cert_2_years' || ed.status === 'passed') selectStatus = 'passed';
+                else if (certType === 'immobilization' || ed.status === 'failed')  selectStatus = 'failed';
+
+                // ── Populate edit form fields ────────────────────────────────
+                if (dateStr)       $('#pdfParserDate').val(dateStr);
+                if (validUntilStr) $('#pdfParserValidUntil').val(validUntilStr);
+                $('#pdfParserInspector').val(inspectorStr);
+                $('#pdfParserAddress').val(addressStr);
+                $('#pdfParserPostal').val(postalStr);
+                $('#pdfParserStatus').val(selectStatus);
                 $('#pdfParserReportType').val('annual');
 
                 // Notes auto-fill
                 var notesParts = [];
-                if (ed.company) notesParts.push(ed.company);
-                if (ed.reportNumber) notesParts.push('Rel. ' + ed.reportNumber);
-                if (ed.processNumber) notesParts.push('Proc. ' + ed.processNumber);
-                if (ed.location) notesParts.push('Local: ' + ed.location);
-                if (ed.conclusion) notesParts.push('Conclusão: ' + ed.conclusion);
+                // Показуємо компанію тільки якщо вона коротка (не довга описова фраза)
+                if (ed.company && ed.company.length <= 60)     notesParts.push(ed.company);
+                if (ed.reportNumber)                            notesParts.push('Rel. ' + ed.reportNumber);
+                if (ed.processNumber)                           notesParts.push('Proc. ' + ed.processNumber);
+                // Не додаємо location до нотаток — адреса вже показана в полі "Адреса"
+                if (ed.conclusion)                              notesParts.push('Conclusão: ' + ed.conclusion);
+                if (ed.c1Count > 0) notesParts.push('Cláusulas C1: ' + ed.c1Count);
+                if (ed.c2Count > 0) notesParts.push('Cláusulas C2: ' + ed.c2Count);
+                if (ed.c3Count > 0) notesParts.push('Cláusulas C3: ' + ed.c3Count);
                 $('#pdfParserNotes').val(notesParts.join(' | '));
 
-                // ── Partial-parse warning ───────────────────────────────────
-                var _parseWarning = $('#pdfParserPartialWarning');
-                if (!_parseWarning.length) {
-                    _parseWarning = $('<div id="pdfParserPartialWarning" class="alert alert-warning mb-2" style="display:none;"><i class="fas fa-exclamation-triangle mr-1"></i> <strong>Дані витягнуто частково.</strong> Система не змогла автоматично розпізнати всі поля. Будь ласка, перевірте та заповніть поля вручну перед збереженням. <small class="text-muted">(Parser: ' + (ed.parserUsed || '?') + ')</small></div>');
-                    $('#pdfParserResults').prepend(_parseWarning);
-                }
-                if (ed.partial) { _parseWarning.show(); } else { _parseWarning.hide(); }
+                // ── Cert badge labels ────────────────────────────────────────
+                var certLabels = {
+                    'cert_2_years':   { text: '📜 Сертифікат 2 роки',        cls: 'badge-success' },
+                    'reinspection':   { text: '🔄 Реінспекція (C2)',          cls: 'badge-warning text-dark' },
+                    'immobilization': { text: '🛑 Іммобілізація (C1)',        cls: 'badge-danger' },
+                    'conditional':    { text: '⚠️ Умовно',                    cls: 'badge-warning text-dark' }
+                };
+                var certInfo = certLabels[certType] || { text: '❓ Невизначено', cls: 'badge-secondary' };
 
-                // Violations
+                // ── Populate read-only summary view ──────────────────────────
+                var fmtDate = function(s) {
+                    if (!s) return '—';
+                    try { return new Date(s + 'T00:00:00').toLocaleDateString('pt-PT'); } catch(_) { return s; }
+                };
+                var statusLabels = { 'passed': '✅ Пройдено (2 роки)', 'conditional': '⚠️ Реінспекція', 'failed': '❌ Не пройдено' };
+                $('#pdfSumDate').text(fmtDate(dateStr) || '—');
+                $('#pdfSumNextDate').text(fmtDate(validUntilStr) || '—');
+                $('#pdfSumInspector').text(inspectorStr || '—');
+                $('#pdfSumAddress').text(addressStr || '—');
+                $('#pdfSumPostal').text(postalStr || '—');
+                $('#pdfSumStatus').text(statusLabels[selectStatus] || selectStatus || '—');
+
+                var certInfoHtml = '<span class="badge ' + certInfo.cls + ' mr-1">' + certInfo.text + '</span>';
+                if (ed.c1Count > 0) certInfoHtml += '<span class="badge badge-danger mr-1">C1×' + ed.c1Count + '</span>';
+                if (ed.c2Count > 0) certInfoHtml += '<span class="badge badge-warning text-dark mr-1">C2×' + ed.c2Count + '</span>';
+                if (ed.c3Count > 0) certInfoHtml += '<span class="badge badge-secondary mr-1">C3×' + ed.c3Count + '</span>';
+                if (ed.partial)     certInfoHtml += '<span class="badge badge-light border ml-2 text-muted">⚠️ Часткове розпізнавання</span>';
+                $('#pdfSumCertInfo').html(certInfoHtml);
+
+                // ── Cert badge in banner ─────────────────────────────────────
+                $('#pdfParserCertBadge').removeClass().addClass('badge badge-pill ' + certInfo.cls).text(certInfo.text);
+
+                // Summary shown by default; edit form hidden
+                $('#pdfParserSummaryView').show();
+                $('#pdfParserEditForm').hide();
+                $('#pdfParserToggleEdit').html('<i class="fas fa-pen mr-1"></i> Редагувати');
+
+                // ── Violations ───────────────────────────────────────────────
                 if (ed.violations && ed.violations.length) {
                     var viols = ed.violations.map(function(v) {
-                        var sev = v.classification || (v.severity || '?');
+                        var sev = v.classification || v.severity || '?';
                         var cls = (sev === 'C1' || sev === 'critical') ? 'danger' : (sev === 'C2' || sev === 'medium') ? 'warning' : 'secondary';
                         var desc = typeof v === 'string' ? v : (v.description || v.text || JSON.stringify(v));
                         return '<div class="mb-1"><span class="badge badge-' + cls + '">' + sev + '</span> ' + desc + '</div>';
@@ -7900,6 +7984,32 @@ Email de contacto: info@festlift.pt`;
             }
         });
 
+        // Toggle edit ↔ summary view
+        $(document).on('click', '#pdfParserToggleEdit', function() {
+            var editing = $('#pdfParserEditForm').is(':visible');
+            if (editing) {
+                // Sync edited values back to summary
+                var fmtDate = function(s) {
+                    if (!s) return '—';
+                    try { return new Date(s + 'T00:00:00').toLocaleDateString('pt-PT'); } catch(_) { return s; }
+                };
+                var statusLabels = { 'passed': '✅ Пройдено (2 роки)', 'conditional': '⚠️ Реінспекція', 'failed': '❌ Не пройдено' };
+                $('#pdfSumDate').text(fmtDate($('#pdfParserDate').val()) || '—');
+                $('#pdfSumNextDate').text(fmtDate($('#pdfParserValidUntil').val()) || '—');
+                $('#pdfSumInspector').text($('#pdfParserInspector').val() || '—');
+                $('#pdfSumAddress').text($('#pdfParserAddress').val() || '—');
+                $('#pdfSumPostal').text($('#pdfParserPostal').val() || '—');
+                $('#pdfSumStatus').text(statusLabels[$('#pdfParserStatus').val()] || $('#pdfParserStatus').val() || '—');
+                $('#pdfParserSummaryView').show();
+                $('#pdfParserEditForm').hide();
+                $(this).html('<i class="fas fa-pen mr-1"></i> Редагувати');
+            } else {
+                $('#pdfParserSummaryView').hide();
+                $('#pdfParserEditForm').show();
+                $(this).html('<i class="fas fa-check mr-1"></i> Застосувати зміни');
+            }
+        });
+
         // Back button
         $(document).on('click', '#pdfParserBackBtn', function() {
             $('#pdfParserResults').hide();
@@ -7908,20 +8018,31 @@ Email de contacto: info@festlift.pt`;
             $('#pdfParserFooterStep1').show();
         });
 
+        // "Змінити ліфт" link — reveal dropdown when auto-found
+        $(document).on('click', '#pdfAutoLiftChangeLink', function(e) {
+            e.preventDefault();
+            $('#pdfAutoLiftFound').hide();
+            $('#pdfLiftSelectRow').show();
+        });
+
         // Status change → recalc validUntil
         $(document).on('change', '#pdfParserStatus', function() {
             var dateVal = $('#pdfParserDate').val();
             if (!dateVal) return;
-            var d = new Date(dateVal);
+            var d = new Date(dateVal + 'T00:00:00');
             var status = $(this).val();
-            if (status === 'passed') d.setMonth(d.getMonth() + 24);
-            else if (status === 'failed') d.setMonth(d.getMonth() + 6);
-            else d.setMonth(d.getMonth() + 12);
+            if (status === 'passed')       d.setMonth(d.getMonth() + 24);
+            else if (status === 'failed')  d.setDate(d.getDate() + 30);
+            else                           d.setDate(d.getDate() + 30);
             $('#pdfParserValidUntil').val(d.toISOString().substring(0, 10));
         });
 
-        // Confirm button
+        // Confirm button — "Так, зберегти"
         $(document).on('click', '#pdfParserConfirmBtn', async function() {
+            // If edit form is still open, close it first (apply changes)
+            if ($('#pdfParserEditForm').is(':visible')) {
+                $('#pdfParserToggleEdit').trigger('click');
+            }
             var liftId = $('#pdfParserLiftSelect').val();
             if (!liftId) { alert('Оберіть ліфт зі списку'); return; }
 
@@ -7934,14 +8055,17 @@ Email de contacto: info@festlift.pt`;
 
             try {
                 var body = {
-                    inspector: $('#pdfParserInspector').val() || 'Bureau Veritas',
+                    inspector: $('#pdfParserInspector').val() || ed.company || 'Bureau Veritas',
                     notes: $('#pdfParserNotes').val(),
                     reportType: $('#pdfParserReportType').val() || 'annual',
                     status: $('#pdfParserStatus').val() || 'passed',
                     savedFileUrl: ed.savedFileUrl || null,
                     lastInspectionDate: $('#pdfParserDate').val(),
                     nextInspectionDate: $('#pdfParserValidUntil').val(),
-                    violations: ed.violations || []
+                    violations: ed.violations || [],
+                    address: $('#pdfParserAddress').val() || ed.address || '',
+                    postalCode: $('#pdfParserPostal').val() || ed.postalCode || '',
+                    certType: ed.certType || ''
                 };
 
                 var resp = await fetch('/api/lifts/' + liftId + '/confirm-inspection-from-pdf', {
@@ -7972,7 +8096,7 @@ Email de contacto: info@festlift.pt`;
                 _pdfParsed = null;
 
             } catch (err) {
-                $btn.prop('disabled', false).html('<i class="fas fa-check mr-1"></i> Підтвердити та зберегти');
+                $btn.prop('disabled', false).html('<i class="fas fa-check mr-1"></i> Так, зберегти');
                 alert('Помилка: ' + err.message);
             }
         });
@@ -8000,7 +8124,7 @@ Email de contacto: info@festlift.pt`;
 <div class="modal fade" id="pdfParserModal" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
-            <div class="modal-header bg-primary text-white">
+            <div class="modal-header bg-primary text-white py-2">
                 <h5 class="modal-title">
                     <i class="fas fa-file-pdf mr-2"></i> Аналіз PDF звіту інспекції
                 </h5>
@@ -8013,7 +8137,7 @@ Email de contacto: info@festlift.pt`;
                 <div id="pdfParserStep1">
                     <div class="alert alert-info py-2 mb-3">
                         <i class="fas fa-info-circle mr-1"></i>
-                        Підтримуються звіти <strong>Bureau Veritas</strong>, <strong>CML Lisboa</strong>, <strong>Rinave</strong> та інших португальських інспекційних органів.
+                        Підтримуються звіти <strong>Bureau Veritas</strong>, <strong>CML Lisboa</strong>, <strong>Rinave</strong>, <strong>GATECI</strong>, <strong>APCER</strong>, <strong>CERTIEL</strong> та інших португальських інспекційних органів.
                     </div>
                     <div class="form-group">
                         <label><strong>Оберіть PDF звіт інспекції</strong></label>
@@ -8031,62 +8155,129 @@ Email de contacto: info@festlift.pt`;
                     <i class="fas fa-spinner fa-spin fa-3x text-primary mb-3"></i>
                     <p class="text-muted">Аналізуємо PDF звіт, будь ласка зачекайте...</p>
                 </div>
-                <!-- Step 3: Results / Confirmation form -->
+                <!-- Step 3: Results / Verification + Confirmation form -->
                 <div id="pdfParserResults" style="display:none;">
-                    <!-- Matched lift -->
-                    <div class="form-group">
-                        <label class="font-weight-bold"><i class="fas fa-elevator mr-1"></i> Ліфт</label>
-                        <select id="pdfParserLiftSelect" class="form-control form-control-sm"></select>
-                        <small class="text-muted">Ліфт визначено автоматично. Змініть вручну якщо потрібно.</small>
+
+                    <!-- ── Verification banner ───────────────────────────── -->
+                    <div id="pdfParserVerifyBanner" class="alert alert-warning py-2 mb-3" style="font-size:.92rem;">
+                        <i class="fas fa-robot mr-1"></i>
+                        <strong>Дані витягнуто автоматично — перевірте та підтвердіть:</strong>
+                        <span class="ml-2 badge" id="pdfParserCertBadge" style="font-size:.85rem;"></span>
                     </div>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label>Дата інспекції</label>
-                                <input type="date" id="pdfParserDate" class="form-control form-control-sm">
+
+                    <!-- ── Extracted data summary card ───────────────────── -->
+                    <div class="card border-primary mb-3" id="pdfParserSummaryCard">
+                        <div class="card-header bg-primary text-white py-2 d-flex justify-content-between align-items-center">
+                            <span><i class="fas fa-clipboard-list mr-1"></i> Витягнуті дані зі звіту</span>
+                            <button type="button" class="btn btn-light btn-xs py-0 px-2" id="pdfParserToggleEdit" style="font-size:.75rem;">
+                                <i class="fas fa-pen mr-1"></i> Редагувати
+                            </button>
+                        </div>
+                        <div class="card-body py-2">
+                            <!-- READ-ONLY summary (shown by default) -->
+                            <div id="pdfParserSummaryView">
+                                <div class="row">
+                                    <div class="col-sm-6">
+                                        <table class="table table-sm table-borderless mb-0" style="font-size:.88rem;">
+                                            <tr><td class="text-muted pr-2" style="white-space:nowrap;">Дата інспекції:</td><td><strong id="pdfSumDate">—</strong></td></tr>
+                                            <tr><td class="text-muted pr-2" style="white-space:nowrap;">Наступна інспекція:</td><td><strong id="pdfSumNextDate">—</strong></td></tr>
+                                            <tr><td class="text-muted pr-2" style="white-space:nowrap;">Інспектор:</td><td><strong id="pdfSumInspector">—</strong></td></tr>
+                                        </table>
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <table class="table table-sm table-borderless mb-0" style="font-size:.88rem;">
+                                            <tr><td class="text-muted pr-2" style="white-space:nowrap;">Адреса:</td><td><strong id="pdfSumAddress">—</strong></td></tr>
+                                            <tr><td class="text-muted pr-2" style="white-space:nowrap;">Поштовий індекс:</td><td><strong id="pdfSumPostal">—</strong></td></tr>
+                                            <tr><td class="text-muted pr-2" style="white-space:nowrap;">Результат:</td><td><strong id="pdfSumStatus">—</strong></td></tr>
+                                        </table>
+                                    </div>
+                                </div>
+                                <div id="pdfSumCertInfo" class="mt-1" style="font-size:.85rem;"></div>
+                            </div>
+                            <!-- EDIT FORM (hidden by default) -->
+                            <div id="pdfParserEditForm" style="display:none;">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group mb-2">
+                                            <label class="small mb-1">Дата інспекції</label>
+                                            <input type="date" id="pdfParserDate" class="form-control form-control-sm">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group mb-2">
+                                            <label class="small mb-1">Наступна інспекція</label>
+                                            <input type="date" id="pdfParserValidUntil" class="form-control form-control-sm">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group mb-2">
+                                    <label class="small mb-1">Інспектор / Компанія</label>
+                                    <input type="text" id="pdfParserInspector" class="form-control form-control-sm" placeholder="Назва інспекційного органу">
+                                </div>
+                                <div class="form-group mb-2">
+                                    <label class="small mb-1">Адреса</label>
+                                    <input type="text" id="pdfParserAddress" class="form-control form-control-sm" placeholder="Вулиця та номер">
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-5">
+                                        <div class="form-group mb-2">
+                                            <label class="small mb-1">Поштовий індекс</label>
+                                            <input type="text" id="pdfParserPostal" class="form-control form-control-sm" placeholder="XXXX-XXX">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-7">
+                                        <div class="form-group mb-2">
+                                            <label class="small mb-1">Результат</label>
+                                            <select id="pdfParserStatus" class="form-control form-control-sm">
+                                                <option value="passed">✅ Пройдено (2 роки)</option>
+                                                <option value="conditional">⚠️ Реінспекція (клаузи C2)</option>
+                                                <option value="failed">❌ Не пройдено / Іммобілізація</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group mb-2">
+                                            <label class="small mb-1">Тип звіту</label>
+                                            <select id="pdfParserReportType" class="form-control form-control-sm">
+                                                <option value="annual">Щорічна / Periodica</option>
+                                                <option value="routine">Планова</option>
+                                                <option value="certification">Сертифікаційна</option>
+                                                <option value="emergency">Позапланова</option>
+                                                <option value="reinspection">Реінспекція</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group mb-2">
+                                    <label class="small mb-1">Нотатки</label>
+                                    <textarea id="pdfParserNotes" class="form-control form-control-sm" rows="2" placeholder="Додаткові нотатки..."></textarea>
+                                </div>
                             </div>
                         </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label>Дійсний до (наступна інспекція)</label>
-                                <input type="date" id="pdfParserValidUntil" class="form-control form-control-sm">
-                            </div>
+                    </div>
+
+                    <!-- ── Lift selector ─────────────────────────────────── -->
+                    <div class="form-group" id="pdfParserLiftGroup">
+                        <label class="font-weight-bold small"><i class="fas fa-elevator mr-1"></i> Ліфт</label>
+                        <!-- Auto-found with high confidence -->
+                        <div id="pdfAutoLiftFound" class="alert alert-success py-2 mb-1 d-flex justify-content-between align-items-center" style="display:none!important;font-size:.85rem;">
+                            <span><i class="fas fa-check-circle mr-1"></i> <strong>Ліфт знайдено:</strong> <span id="pdfAutoLiftName"></span></span>
+                            <a href="#" id="pdfAutoLiftChangeLink" class="text-success ml-2" style="font-size:.8rem;white-space:nowrap;">(Змінити)</a>
+                        </div>
+                        <!-- Not found warning -->
+                        <div id="pdfAutoLiftNotFound" class="alert alert-warning py-2 mb-1" style="display:none!important;font-size:.85rem;">
+                            <i class="fas fa-exclamation-triangle mr-1"></i> Ліфт не знайдено автоматично — оберіть зі списку
+                        </div>
+                        <div id="pdfLiftSelectRow">
+                            <select id="pdfParserLiftSelect" class="form-control form-control-sm"></select>
                         </div>
                     </div>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label>Тип звіту</label>
-                                <select id="pdfParserReportType" class="form-control form-control-sm">
-                                    <option value="annual">Щорічна</option>
-                                    <option value="routine">Планова</option>
-                                    <option value="certification">Сертифікаційна</option>
-                                    <option value="emergency">Позапланова</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label>Результат</label>
-                                <select id="pdfParserStatus" class="form-control form-control-sm">
-                                    <option value="passed">✅ Пройдено</option>
-                                    <option value="failed">❌ Не пройдено</option>
-                                    <option value="conditional">⚠️ Умовно пройдено</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label>Інспектор / Компанія</label>
-                        <input type="text" id="pdfParserInspector" class="form-control form-control-sm" placeholder="Назва інспекційного органу">
-                    </div>
-                    <div class="form-group">
-                        <label>Нотатки <small class="text-muted">(авто-заповнено з PDF)</small></label>
-                        <textarea id="pdfParserNotes" class="form-control form-control-sm" rows="2" placeholder="Додаткові нотатки..."></textarea>
-                    </div>
+
                     <!-- Violations list -->
                     <div id="pdfParserViolationsBlock" style="display:none;" class="mt-2">
-                        <label class="font-weight-bold text-danger">
+                        <label class="font-weight-bold text-danger small">
                             <i class="fas fa-exclamation-triangle mr-1"></i> Виявлені порушення
                             <span id="pdfParserViolationsCount" class="badge badge-danger ml-1">0</span>
                         </label>
@@ -8094,17 +8285,20 @@ Email de contacto: info@festlift.pt`;
                     </div>
                 </div>
             </div>
-            <div class="modal-footer">
+            <div class="modal-footer py-2">
                 <div id="pdfParserFooterStep1">
                     <button class="btn btn-secondary btn-sm" data-dismiss="modal">Скасувати</button>
                 </div>
-                <div id="pdfParserFooterConfirm" style="display:none;">
-                    <button class="btn btn-outline-secondary btn-sm mr-2" id="pdfParserBackBtn">
+                <div id="pdfParserFooterConfirm" style="display:none;" class="d-flex w-100 justify-content-between align-items-center">
+                    <button class="btn btn-outline-secondary btn-sm" id="pdfParserBackBtn">
                         <i class="fas fa-arrow-left mr-1"></i> Назад
                     </button>
-                    <button class="btn btn-success btn-sm" id="pdfParserConfirmBtn">
-                        <i class="fas fa-check mr-1"></i> Підтвердити та зберегти
-                    </button>
+                    <div>
+                        <span class="text-muted mr-3" style="font-size:.8rem;" id="pdfParserHint">Всі дані правильні?</span>
+                        <button class="btn btn-success btn-sm" id="pdfParserConfirmBtn">
+                            <i class="fas fa-check mr-1"></i> Так, зберегти
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

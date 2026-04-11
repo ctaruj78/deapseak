@@ -359,6 +359,7 @@ exports.addInspectionReport = async (req, res, next) => {
             inspector: inspector || `${req.user.firstName} ${req.user.lastName}`,
             notes,
             reportType: reportType || inspectionType || 'routine',
+            inspectionType: inspectionType || ({ annual: 'inspection', certification: 'inspection', routine: 'maintenance', emergency: 'emergency' })[reportType] || 'inspection',
             status: status || 'passed',
             reportFile,
             photos: photos || []

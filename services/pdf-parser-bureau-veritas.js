@@ -294,6 +294,12 @@ function extractMetadata(text) {
         metadata.company = 'Câmara Municipal de Lisboa';
     } else if (text.includes('APCER')) {
         metadata.company = 'APCER';
+    } else if (/\bGATECI\b/i.test(text)) {
+        metadata.company = 'GATECI';
+    } else if (/\bCERTIEL\b/i.test(text)) {
+        metadata.company = 'CERTIEL';
+    } else if (/\bNOMINARE\b/i.test(text)) {
+        metadata.company = 'NOMINARE';
     }
     
     console.log('  📋 Company:', metadata.company || 'Unknown');
@@ -380,20 +386,63 @@ function extractMetadata(text) {
         console.log('  ✅ Maintenance Company:', metadata.maintenanceCompany);
     }
     
-    // 8. ІНСПЕКТОР - Bureau Veritas має підписи
+    // 8. ІНСПЕКТОР — кілька форматів для BV/CML/GATECI/CERTIEL/APCER
+    // Фрази висновку, які НЕ є іменами (GATECI/CERTIEL висновки)
+    const bvInspectorRejectWords = /^(Nestas?|Estas?|Assim|Perante|Deste|Desta|Nessa|Neste|Tendo|Dado|Face|Atendendo|Considerando|Em\s+virtude|Em\s+face|Nos\s+termos|Pelo\s+exposto|Pelo\s+que|Em\s+cumprimento|De\s+acordo|Na\s+sequ[eê]ncia|n[ao]\s|em\s|d[aeo]\s)/i;
     const inspectorPatterns = [
-        /Inspector\s+([A-ZÀ-Ú][a-zà-ú]+(?:\s+[A-ZÀ-Ú][a-zà-ú]+){1,3})/i,
-        /([A-ZÀ-Ú][a-zà-ú]+\s+[A-ZÀ-Ú][a-zà-ú]+)\s+Propriet[áa]rio/i
+        // Prefixed label forms (пріоритет — з двокрапкою або тире)
+        /Inspe[ct]or\s+Respons[áa]vel\s*[:\-]\s*([A-ZÀ-Úa-záéíóúàâêôãõç][^\n,]{4,60})/i,
+        /Inspe[ct]or\s*[:\-]\s*([A-ZÀ-Úa-záéíóúàâêôãõç][^\n,]{4,60})/i,
+        /T[eé]cnico\s+Respons[áa]vel\s*[:\-]\s*([A-ZÀ-Úa-záéíóúàâêôãõç][^\n,]{4,60})/i,
+        /Entidade\s+Inspetora(?:\s+Acreditada)?\s*[:\-]\s*([A-ZÀ-Úa-záéíóúàâêôãõç][^\n]{4,80})/i,
+        /Technicien\s*[:\-]\s*([A-ZÀ-Úa-záéíóúàâêôãõç][^\n,]{4,60})/i,
+        // Signature block: name before "Proprietário"
+        /([A-ZÀ-Ú][a-zà-ú]+\s+[A-ZÀ-Ú][a-zà-ú]+)\s+Propriet[áa]rio/i,
+        // BV: name just after "Inspector" keyword (no colon)
+        /\bInspector\s+([A-ZÀ-Ú][a-zà-ú]+(?:\s+[A-ZÀ-Ú][a-zà-ú]+){1,3})/i,
+        // Fallback: company name (BV/GATECI/APCER/CERTIEL itself)
+        /Entidade[^:\n]*[:\-]\s*([A-ZÀ-Ú][^\n]{4,60})/i
     ];
     for (const pattern of inspectorPatterns) {
         const match = text.match(pattern);
         if (match) {
-            metadata.inspector = match[1].trim();
-            console.log('  ✅ Inspector:', metadata.inspector);
-            break;
+            const candidate = match[1].trim().replace(/\s+/g, ' ').replace(/[;,.]+$/, '');
+            // Reject conclusion phrases ("Nestas circunstâncias", "Assim,", etc.) and prepositions
+            const notAName = /^(n[ao]\s|em\s|d[aeo]\s|para\s|pel[ao]s?\s|ao\s|à\s|os\s|as\s|um[a]?\s|este[s]?\s|esta\s|estas\s|não\s|que\s|sendo\s|por\s|com\s|após\s|antes\s|foram\s|situad|localiz|aquand|durante\s|moment)/i;
+            if (candidate.length >= 4 && !/^\d/.test(candidate) && !/Data/i.test(candidate) &&
+                !notAName.test(candidate) && !bvInspectorRejectWords.test(candidate)) {
+                metadata.inspector = candidate.substring(0, 80);
+                console.log('  ✅ Inspector:', metadata.inspector);
+                break;
+            }
         }
     }
-    
+    // Fallback to company if inspector still not found
+    if (!metadata.inspector && metadata.company) {
+        metadata.inspector = metadata.company;
+    }
+
+    // 9. CÓDIGO POSTAL e CIDADE — extrair da localização
+    if (metadata.location) {
+        const cpMatch = metadata.location.match(/(\d{4}[-\s]\d{3})/);
+        if (cpMatch) metadata.postalCode = cpMatch[1].replace(/\s/, '-');
+
+        // Cidade: palavra(s) UPPERCASE depois do código postal, ou antes de vírgula no início
+        const cityAfterCp = metadata.location.match(/\d{4}[-\s]\d{3}[\s,]+([A-ZÀ-Úa-záéíóúàâêôãõç][^,\n]{2,40})/i);
+        if (cityAfterCp) {
+            metadata.city = cityAfterCp[1].trim().replace(/\s+/g, ' ');
+        } else {
+            // Try last token after comma
+            const parts = metadata.location.split(',');
+            const lastPart = parts[parts.length - 1].trim();
+            if (lastPart.length > 2 && lastPart.length < 50 && !/\d{4}/.test(lastPart)) {
+                metadata.city = lastPart.replace(/\s+/g, ' ');
+            }
+        }
+        if (metadata.city) console.log('  ✅ City:', metadata.city);
+        if (metadata.postalCode) console.log('  ✅ PostalCode:', metadata.postalCode);
+    }
+
     return metadata;
 }
 

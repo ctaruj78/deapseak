@@ -1258,10 +1258,10 @@
                                                     <label>Тип приводу</label>
                                                     <select name="driveType" class="form-control">
                                                         <option value="">— Оберіть —</option>
-                                                        <option>Гідравлічний</option>
-                                                        <option>Канатний (MRL)</option>
-                                                        <option>Канатний (з машинним залом)</option>
-                                                        <option>Гвинтовий</option>
+                                                        <option value="hydraulic">Гідравлічний</option>
+                                                        <option value="traction_mrl">Канатний (MRL)</option>
+                                                        <option value="traction">Канатний (з машинним залом)</option>
+                                                        <option value="platform">Гвинтовий / Платформний</option>
                                                     </select>
                                                 </div>
                                             </div>
@@ -1270,11 +1270,10 @@
                                                     <label>Тип дверей</label>
                                                     <select name="doorType" class="form-control">
                                                         <option value="">— Оберіть —</option>
-                                                        <option>Автоматичні (2-стулкові)</option>
-                                                        <option>Автоматичні (4-стулкові)</option>
-                                                        <option>Телескопічні</option>
-                                                        <option>Напівавтоматичні</option>
-                                                        <option>Ручні</option>
+                                                        <option value="automatic">Автоматичні (2-стулкові)</option>
+                                                        <option value="automatic">Автоматичні (4-стулкові / телескопічні)</option>
+                                                        <option value="swing">Напівавтоматичні / Розпашні</option>
+                                                        <option value="gate">Ручні (ґрати)</option>
                                                     </select>
                                                 </div>
                                             </div>
@@ -1381,12 +1380,9 @@
                                         <div id="step4InspectionInfo" class="mb-2">
                                             <p class="text-muted small mb-0"><i class="fas fa-info-circle mr-1"></i>Збережіть ліфт, щоб переглянути та додати звіти інспекцій</p>
                                         </div>
-                                        <button type="button" class="btn btn-outline-info btn-sm mt-2" id="addInspectionReportBtn">
-                                            <i class="fas fa-file-upload mr-1"></i> Додати звіт інспекції
+                                        <button type="button" class="btn btn-outline-primary btn-sm mt-2" id="btnOpenPdfParserFromTab4">
+                                            <i class="fas fa-file-pdf mr-1"></i> Завантажити PDF звіт
                                         </button>
-                                    <button type="button" class="btn btn-outline-info btn-sm ml-1" data-toggle="modal" data-target="#pdfParserModal" title="Завантажити PDF звіт інспекції">
-                                        <i class="fas fa-file-pdf mr-1"></i> PDF Звіт
-                                    </button>
                                     </div>
                                 </div>
 
@@ -1681,6 +1677,10 @@
                                 <tr>
                                     <td><strong>Код домофону:</strong></td>
                                     <td id="detail-access-code">-</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Номер договору:</strong></td>
+                                    <td id="detail-contract-number">-</td>
                                 </tr>
                                 <tr>
                                     <td><strong>Останнє ТО:</strong></td>
@@ -5051,9 +5051,11 @@
     function displayLiftsInTable(lifts, totalCount = null) {
         console.log('📋 Відображення ліфтів в таблиці:', lifts.length);
 
-        // 🏠 Групування за адресою — визначаємо ліфти по одному місцю
+        // 🏠 Групування за адресою — будуємо з ПОВНОГО списку (window.allLiftsData),
+        // щоб ліфти по одній адресі мали однаковий колір і значок навіть на різних сторінках
+        const sourceForGrouping = window.allLiftsData || lifts;
         const addressCount = {};
-        lifts.forEach(lift => {
+        sourceForGrouping.forEach(lift => {
             const addr = lift.address && lift.address.street
                 ? (lift.address.street + ',' + (lift.address.city || '')).toLowerCase().trim()
                 : (typeof lift.address === 'string' ? lift.address : '').toLowerCase().trim();
@@ -5061,9 +5063,10 @@
         });
 
         // 🎨 Порядковий індекс кожної унікальної адреси (для чергування кольорів)
+        // Також будується з повного списку — стабільний між сторінками
         const addressGroupIndex = {};
         let groupCounter = 0;
-        lifts.forEach(lift => {
+        sourceForGrouping.forEach(lift => {
             const addr = lift.address && lift.address.street
                 ? (lift.address.street + ',' + (lift.address.city || '')).toLowerCase().trim()
                 : (typeof lift.address === 'string' ? lift.address : '').toLowerCase().trim();
@@ -5443,28 +5446,37 @@
                 $('#detail-email').text(clientEmail);
                 $('#detail-access-code').text(lift.intercomCode || lift.accessCode || 'Не вказано');
                 
+                // Номер договору
+                const detailCn = lift.contractNumber || lift.maintenanceContract?.contractNumber || '';
+                $('#detail-contract-number').text(detailCn || 'Не вказано');
+                
                 // Дати обслуговування
+                // Якщо lift.lastInspectionDate не встановлено, беремо з останнього запису inspectionHistory
+                const _sortedHist = (lift.inspectionHistory || []).slice().sort((a, b) =>
+                    new Date(b.date || b.inspectionDate || 0) - new Date(a.date || a.inspectionDate || 0));
+                const _lastHistEntry = _sortedHist[0] || null;
+                const _derivedLast = lift.lastInspectionDate || lift.lastMaintenance
+                    || (_lastHistEntry ? (_lastHistEntry.date || _lastHistEntry.inspectionDate) : null);
+                const _derivedNext = lift.nextInspectionDate || lift.nextMaintenance || null;
+
                 $('#detail-last-maintenance').text(
-                    lift.lastInspectionDate ? new Date(lift.lastInspectionDate).toLocaleDateString('uk-UA') :
-                    lift.lastMaintenance ? new Date(lift.lastMaintenance).toLocaleDateString('uk-UA') : 'Не вказано'
+                    _derivedLast ? new Date(_derivedLast).toLocaleDateString('uk-UA') : 'Не вказано'
                 );
                 $('#detail-next-maintenance').text(
-                    lift.nextInspectionDate ? new Date(lift.nextInspectionDate).toLocaleDateString('uk-UA') :
-                    lift.nextMaintenance ? new Date(lift.nextMaintenance).toLocaleDateString('uk-UA') : 'Не вказано'
+                    _derivedNext ? new Date(_derivedNext).toLocaleDateString('uk-UA') : 'Не вказано'
                 );
                 
                 // Звіт інспекції (показуємо останній звіт з історії)
-                const lastReport = lift.inspectionHistory && lift.inspectionHistory.length > 0 
-                    ? lift.inspectionHistory[lift.inspectionHistory.length - 1] 
-                    : null;
+                const lastReport = _lastHistEntry;
                 
-                const inspTypeLabels = { inspection: 'Інспекція', maintenance: 'Технічне обслуговування', repair: 'Ремонт', emergency: 'Аварійний виклик' };
-                const inspStatusLabels = { completed: 'Виконано', passed: 'Пройдено', failed: 'Не пройдено' };
+                const inspTypeLabels = { inspection: 'Інспекція', maintenance: 'Технічне обслуговування', repair: 'Ремонт', emergency: 'Аварійний виклик', annual: 'Інспекція', routine: 'ТО', certification: 'Сертифікація' };
+                const inspStatusLabels = { completed: 'Виконано', passed: 'Пройдено', failed: 'Не пройдено', conditional: 'Умовно' };
                 
                 $('#detail-inspection-date').text(
-                    lastReport && lastReport.date ? new Date(lastReport.date).toLocaleDateString('uk-UA') : 'Не вказано'
+                    lastReport && (lastReport.date || lastReport.inspectionDate) ? new Date(lastReport.date || lastReport.inspectionDate).toLocaleDateString('uk-UA') : 'Не вказано'
                 );
-                $('#detail-inspection-type').text(lastReport ? (inspTypeLabels[lastReport.type] || lastReport.type || 'Не вказано') : 'Не вказано');
+                const _lrType = lastReport ? (lastReport.inspectionType || lastReport.type || lastReport.reportType || '') : '';
+                $('#detail-inspection-type').text(lastReport ? (inspTypeLabels[_lrType] || _lrType || 'Не вказано') : 'Не вказано');
                 $('#detail-inspection-status').text(lastReport ? (inspStatusLabels[lastReport.status] || lastReport.status || 'Не вказано') : 'Не вказано');
                 $('#detail-inspection-comments').text(lastReport ? lastReport.notes || lastReport.comments || '—' : 'Не вказано');
                 
@@ -5830,21 +5842,28 @@
             
             console.log('✅ Форма заповнена даними');
             
+            // Зберігаємо ліфт глобально для Tab 4 (inspectionHistory) та PDF модалки
+            window._currentEditingLift = lift;
+
             // Відкриваємо модальне вікно
             $('#enhancedLiftModal').modal('show');
             
-            // Оновлюємо карту ПІСЛЯ відкриття модального вікна
-            if (lift.latitude && lift.longitude && typeof L !== 'undefined') {
-                $('#enhancedLiftModal').on('shown.bs.modal', function() {
-                    // Відключаємо обробник після виконання
-                    $('#enhancedLiftModal').off('shown.bs.modal');
-                    
+            // Після відкриття: оновлюємо карту І завантажуємо Tab 4
+            $('#enhancedLiftModal').on('shown.bs.modal.editlift', function() {
+                $('#enhancedLiftModal').off('shown.bs.modal.editlift');
+                const _editLiftId = lift._id || lift.id;
+
+                // Карта
+                if (lift.latitude && lift.longitude && typeof L !== 'undefined') {
                     console.log('🗺️ Ініціалізація карти редагування...');
-                    setTimeout(() => {
-                        initEditMap(lift.latitude, lift.longitude, lift.address);
-                    }, 100);
-                });
-            }
+                    setTimeout(() => { initEditMap(lift.latitude, lift.longitude, lift.address); }, 100);
+                }
+
+                // Tab 4: завантажуємо дані інспекцій одразу
+                if (_editLiftId && typeof loadStep4InspectionInfo === 'function') {
+                    loadStep4InspectionInfo(_editLiftId);
+                }
+            });
             
         } catch (error) {
             console.error('❌ Помилка завантаження ліфта:', error);
@@ -6407,7 +6426,8 @@
                 const date = report.inspectionDate || report.date 
                     ? new Date(report.inspectionDate || report.date).toLocaleDateString('uk-UA') 
                     : 'Невідома дата';
-                const type = report.inspectionType || report.type || 'Не вказано';
+                const _rtToType = { annual: 'inspection', certification: 'inspection', routine: 'maintenance', emergency: 'emergency' };
+                const type = report.inspectionType || report.type || _rtToType[report.reportType] || report.reportType || 'Не вказано';
                 const notes = report.comments || report.findings || report.notes || '';
                 const status = report.status || 'completed';
                 const inspector = report.inspectorName || report.inspector || '';
@@ -6420,7 +6440,7 @@
                 const statusBadge = '<span class="badge badge-secondary">Додано</span>';
                 
                 // Тип: локалізована назва
-                const typeLabels = { inspection: 'Інспекція', maintenance: 'ТО', repair: 'Ремонт', emergency: 'Аварійний' };
+                const typeLabels = { inspection: 'Інспекція', maintenance: 'ТО', repair: 'Ремонт', emergency: 'Аварійний', annual: 'Інспекція', routine: 'ТО', certification: 'Сертифікація' };
                 const typeLabel = typeLabels[type] || type;
 
                 html += `
@@ -7065,15 +7085,28 @@
             }
             
             if (!contract || !contract.contractFile) {
-                // Немає контракту - показуємо кнопку завантаження
-                container.innerHTML = `
-                    <div class="alert alert-warning">
-                        <i class="fas fa-exclamation-triangle"></i> Контракт не завантажено
-                    </div>
-                    <button type="button" class="btn btn-sm btn-success" onclick="showUploadContractModal('${liftId}')">
-                        <i class="fas fa-upload"></i> Завантажити контракт
-                    </button>
-                `;
+                // Немає PDF контракту — перевіряємо чи є номер договору на ліфті
+                const liftCn = lift.contractNumber || (lift.maintenanceContract && lift.maintenanceContract.contractNumber) || '';
+                if (liftCn) {
+                    container.innerHTML = `
+                        <div class="alert alert-info py-2">
+                            <i class="fas fa-file-contract mr-1"></i>
+                            Договір №<strong>${liftCn}</strong> (PDF не завантажено)
+                        </div>
+                        <button type="button" class="btn btn-sm btn-success" onclick="showUploadContractModal('${liftId}')">
+                            <i class="fas fa-upload"></i> Завантажити PDF контракту
+                        </button>
+                    `;
+                } else {
+                    container.innerHTML = `
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle"></i> Контракт не завантажено
+                        </div>
+                        <button type="button" class="btn btn-sm btn-success" onclick="showUploadContractModal('${liftId}')">
+                            <i class="fas fa-upload"></i> Завантажити контракт
+                        </button>
+                    `;
+                }
                 return;
             }
             
@@ -8282,43 +8315,66 @@
             window._step4LastReportDate = null;
             return;
         }
-        container.innerHTML = '<span class="text-muted small"><i class="fas fa-spinner fa-spin mr-1"></i>Завантаження...</span>';
-        try {
-            const token = typeof AuthManager !== 'undefined' ? AuthManager.getAuthToken() : localStorage.getItem('liftmanager_jwt');
-            const res = await fetch(`/api/inspections?liftId=${encodeURIComponent(liftId)}&limit=5`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            const data = await res.json();
-            const reports = (data.data && Array.isArray(data.data)) ? data.data : (Array.isArray(data.data?.inspections) ? data.data.inspections : []);
-            if (reports.length === 0) {
-                container.innerHTML = '<p class="text-muted small mb-0"><i class="fas fa-folder-open mr-1"></i>Звітів ще немає. Натисніть кнопку нижче, щоб додати перший.</p>';
-                window._step4LastReportDate = null;
+
+        // Prefer already-fetched lift over a separate API call
+        let reports = null;
+        const cached = window._currentEditingLift;
+        if (cached && (cached._id || cached.id) === liftId && Array.isArray(cached.inspectionHistory)) {
+            reports = cached.inspectionHistory;
+        } else {
+            // Fetch from /api/lifts/:id
+            container.innerHTML = '<span class="text-muted small"><i class="fas fa-spinner fa-spin mr-1"></i>Завантаження...</span>';
+            try {
+                const token = typeof AuthManager !== 'undefined' ? AuthManager.getAuthToken() : localStorage.getItem('liftmanager_jwt');
+                const res = await fetch(`/api/lifts/${encodeURIComponent(liftId)}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+                const fetchedLift = (data.data && data.data.lift) || data.data || data;
+                reports = fetchedLift.inspectionHistory || [];
+            } catch (e) {
+                container.innerHTML = '<span class="text-danger small"><i class="fas fa-exclamation-triangle mr-1"></i>Помилка завантаження</span>';
+                console.error('loadStep4InspectionInfo fetch error:', e);
                 return;
             }
-            // Sort by date desc
-            reports.sort((a, b) => new Date(b.date || b.createdAt) - new Date(a.date || a.createdAt));
-            window._step4LastReportDate = reports[0].date || reports[0].createdAt || null;
-            const statusLabels = { passed: '<span class="badge badge-success">✅ Пройдено</span>', failed: '<span class="badge badge-warning">⚠️ Клаузи</span>', completed: '<span class="badge badge-info">Виконано</span>' };
-            const typeLabels = { inspection: 'Інспекція', maintenance: 'ТО', repair: 'Ремонт', emergency: 'Аварія' };
-            let html = '<div class="table-responsive"><table class="table table-sm table-bordered table-hover mb-1" style="font-size:0.8rem;">';
-            html += '<thead class="thead-light"><tr><th>Дата</th><th>Тип</th><th>Статус</th><th>Дійсно до</th></tr></thead><tbody>';
-            for (const r of reports.slice(0, 5)) {
-                const d = r.date ? new Date(r.date).toLocaleDateString('uk-UA') : '—';
-                const type = typeLabels[r.type] || r.type || '—';
-                const status = statusLabels[r.status] || r.status || '—';
-                let validUntil = '—';
-                if (r.validUntil) validUntil = new Date(r.validUntil).toLocaleDateString('uk-UA');
-                else if (r.nextInspectionDate) validUntil = new Date(r.nextInspectionDate).toLocaleDateString('uk-UA');
-                else if (r.date && r.status === 'passed') validUntil = new Date(new Date(r.date).setFullYear(new Date(r.date).getFullYear() + 2)).toLocaleDateString('uk-UA');
-                else if (r.date && r.status === 'failed') validUntil = new Date(new Date(r.date).setDate(new Date(r.date).getDate() + 180)).toLocaleDateString('uk-UA');
-                html += `<tr><td>${d}</td><td>${type}</td><td>${status}</td><td>${validUntil}</td></tr>`;
-            }
-            html += '</tbody></table></div>';
-            container.innerHTML = html;
-        } catch (e) {
-            container.innerHTML = '<span class="text-danger small"><i class="fas fa-exclamation-triangle mr-1"></i>Помилка завантаження</span>';
-            console.error('loadStep4InspectionInfo error:', e);
         }
+
+        if (!reports || reports.length === 0) {
+            container.innerHTML = '<p class="text-muted small mb-0"><i class="fas fa-folder-open mr-1"></i>Звітів ще немає. Натисніть кнопку нижче, щоб додати перший.</p>';
+            window._step4LastReportDate = null;
+            return;
+        }
+
+        // Sort by date desc
+        const sorted = [...reports].sort((a, b) =>
+            new Date(b.inspectionDate || b.date || b.createdAt) - new Date(a.inspectionDate || a.date || a.createdAt)
+        );
+        window._step4LastReportDate = sorted[0].inspectionDate || sorted[0].date || sorted[0].createdAt || null;
+
+        const statusLabels = {
+            passed:    '<span class="badge badge-success">✅ Пройдено</span>',
+            failed:    '<span class="badge badge-warning">⚠️ Клаузи</span>',
+            completed: '<span class="badge badge-info">Виконано</span>'
+        };
+        const typeLabels = { inspection: 'Інспекція', maintenance: 'ТО', repair: 'Ремонт', emergency: 'Аварія' };
+
+        let html = '<div class="table-responsive"><table class="table table-sm table-bordered table-hover mb-1" style="font-size:0.8rem;">';
+        html += '<thead class="thead-light"><tr><th>Дата</th><th>Тип</th><th>Статус</th><th>Дійсно до</th></tr></thead><tbody>';
+        for (const r of sorted.slice(0, 5)) {
+            const d = (r.inspectionDate || r.date)
+                ? new Date(r.inspectionDate || r.date).toLocaleDateString('uk-UA') : '—';
+            const type = typeLabels[r.inspectionType || r.type] || r.inspectionType || r.type || '—';
+            const status = statusLabels[r.status] || r.status || '—';
+            let validUntil = '—';
+            const vu = r.validUntil || r.nextInspectionDate;
+            if (vu) validUntil = new Date(vu).toLocaleDateString('uk-UA');
+            else if ((r.inspectionDate || r.date) && r.status === 'passed')
+                validUntil = new Date(new Date(r.inspectionDate || r.date).setFullYear(new Date(r.inspectionDate || r.date).getFullYear() + 2)).toLocaleDateString('uk-UA');
+            html += `<tr><td>${d}</td><td>${type}</td><td>${status}</td><td>${validUntil}</td></tr>`;
+        }
+        html += '</tbody></table></div>';
+        if (sorted.length > 5) html += `<small class="text-muted">Показано 5 з ${sorted.length} звітів</small>`;
+        container.innerHTML = html;
     }
 
     // Завантажуємо дані кроку 4 при кліку на вкладку
@@ -8436,6 +8492,13 @@
     (function() {
         var _pdfParsed = null;
 
+        // Кнопка "Завантажити PDF звіт" в Tab 4 — відкриває PDF Parser і запам'ятовує поточний ліфт
+        $(document).on('click', '#btnOpenPdfParserFromTab4', function() {
+            window._pdfPresetLiftId = (window.enhancedLiftModal && window.enhancedLiftModal.currentLiftId)
+                || document.getElementById('enhancedLiftId')?.value || null;
+            $('#pdfParserModal').modal('show');
+        });
+
         // File input change
         $(document).on('change', '#pdfParserFileInput', function() {
             var fname = this.files[0] ? this.files[0].name : 'Обрати файл...';
@@ -8476,16 +8539,61 @@
 
                 _pdfParsed = data;
 
-                // Populate lift select
+                // ── Populate lift select ─────────────────────────────────────
                 var sel = $('#pdfParserLiftSelect').empty();
+                var presetId = window._pdfPresetLiftId || null;
+
                 if (data.allMatches && data.allMatches.length) {
                     data.allMatches.forEach(function(l) {
-                        var addr = l.address ? (l.address.street + ', ' + l.address.city) : '';
+                        var addr = l.address ? (l.address.street + ', ' + (l.address.city || '')) : '';
                         sel.append('<option value="' + l._id + '">[' + l.confidence + '%] ' + (l.municipalNumber || l._id) + ' — ' + addr + '</option>');
                     });
+
+                    // Якщо відкрито з конкретного ліфта, і цей ліфт відсутній у matches — додаємо його окремо
+                    if (presetId && !data.allMatches.find(function(l){ return l._id === presetId; })) {
+                        var cl = window._currentEditingLift;
+                        if (cl && (cl._id || cl.id) === presetId) {
+                            var clAddr = cl.address ? (cl.address.street + ', ' + (cl.address.city || '')) : '';
+                            sel.prepend('<option value="' + presetId + '">📍 Поточний: ' + (cl.municipalNumber || presetId) + ' — ' + clAddr + '</option>');
+                        }
+                    }
+
+                    // Визначаємо який ліфт обрати: преселект > auto-match
+                    var selectVal = presetId || (data.suggestedLift ? data.suggestedLift._id : '');
                     sel.prepend('<option value="">— Обрати ліфт —</option>');
-                    sel.val(data.suggestedLift ? data.suggestedLift._id : '');
+                    sel.val(selectVal);
+
+                    // Авто-знайдено панель
+                    var topMatch = presetId
+                        ? (data.allMatches.find(function(l){ return l._id === presetId; }) || data.suggestedLift)
+                        : data.suggestedLift;
+                    if (topMatch && topMatch.confidence >= 60) {
+                        var tlAddr = topMatch.address ? (topMatch.address.street || '') : '';
+                        $('#pdfAutoLiftName').text((topMatch.municipalNumber || topMatch._id) + (tlAddr ? ' — ' + tlAddr : ''));
+                        $('#pdfAutoLiftConfidence').text(topMatch.confidence + '%');
+                        $('#pdfAutoLiftFound').show();
+                        $('#pdfAutoLiftNotFound').hide();
+                        $('#pdfLiftSelectRow').hide();
+                    } else if (presetId) {
+                        // Відкрито з конкретного ліфта — показуємо dropdown, але обраний він
+                        var cl2 = window._currentEditingLift;
+                        if (cl2) {
+                            $('#pdfAutoLiftName').text((cl2.municipalNumber || presetId) + ' (поточний ліфт)');
+                            $('#pdfAutoLiftConfidence').text('📍');
+                            $('#pdfAutoLiftFound').show();
+                        } else {
+                            $('#pdfAutoLiftFound').hide();
+                        }
+                        $('#pdfAutoLiftNotFound').hide();
+                        $('#pdfLiftSelectRow').show();
+                    } else {
+                        sel.val(data.suggestedLift ? data.suggestedLift._id : '');
+                        $('#pdfAutoLiftFound').hide();
+                        $('#pdfAutoLiftNotFound').hide();
+                        $('#pdfLiftSelectRow').show();
+                    }
                 } else {
+                    // Немає matches — fallback: весь список ліфтів
                     sel.append('<option value="">— Ліфт не знайдено автоматично —</option>');
                     try {
                         var lResp = await fetch('/api/lifts?limit=200', { headers: { 'Authorization': 'Bearer ' + token } });
@@ -8493,27 +8601,51 @@
                         var lifts = (lData && lData.data && lData.data.lifts) || lData.lifts || lData.data || [];
                         if (!Array.isArray(lifts)) lifts = [];
                         lifts.forEach(function(l) {
-                            var addr = l.address ? (l.address.street + ', ' + l.address.city) : '';
+                            var addr = l.address ? (l.address.street + ', ' + (l.address.city || '')) : '';
                             sel.append('<option value="' + l._id + '">' + (l.municipalNumber || l._id) + ' — ' + addr + '</option>');
                         });
                     } catch(_) {}
+                    if (presetId) sel.val(presetId);
+                    $('#pdfAutoLiftFound').hide();
+                    $('#pdfAutoLiftNotFound').show();
+                    $('#pdfLiftSelectRow').show();
                 }
 
                 // Pre-fill fields
                 var ed = data.extractedData || {};
+                var selectStatus = ed.status || 'passed';
+                if (ed.certType === 'cert_2_years') selectStatus = 'passed';
+                else if (ed.certType === 'immobilization') selectStatus = 'failed';
+
                 if (ed.date) $('#pdfParserDate').val(ed.date.substring(0, 10));
                 if (ed.validUntil) $('#pdfParserValidUntil').val(ed.validUntil.substring(0, 10));
-                $('#pdfParserStatus').val(ed.status || 'passed');
+                $('#pdfParserStatus').val(selectStatus);
                 $('#pdfParserInspector').val(ed.inspector || ed.company || '');
                 $('#pdfParserReportType').val('annual');
 
+                // Cert badge
+                var certLabels = {
+                    'cert_2_years':   { text: '📜 Сертифікат 2 роки', cls: 'badge-success' },
+                    'reinspection':   { text: '🔄 Реінспекція (C2)',   cls: 'badge-warning text-dark' },
+                    'immobilization': { text: '🛑 Іммобілізація (C1)', cls: 'badge-danger' },
+                    'conditional':    { text: '⚠️ Умовно',             cls: 'badge-warning text-dark' }
+                };
+                var certInfo = certLabels[ed.certType] || { text: '❓ Невизначено', cls: 'badge-secondary' };
+                var certBadgeHtml = certInfo.text;
+                if (ed.c1Count > 0) certBadgeHtml += ' | C1×' + ed.c1Count;
+                if (ed.c2Count > 0) certBadgeHtml += ' | C2×' + ed.c2Count;
+                if (ed.c3Count > 0) certBadgeHtml += ' | C3×' + ed.c3Count;
+                $('#pdfParserCertBadge').removeClass().addClass('badge badge-pill ' + certInfo.cls).text(certBadgeHtml);
+
                 // Notes auto-fill
                 var notesParts = [];
-                if (ed.company) notesParts.push(ed.company);
+                if (ed.company && ed.company.length <= 60) notesParts.push(ed.company);
                 if (ed.reportNumber) notesParts.push('Rel. ' + ed.reportNumber);
                 if (ed.processNumber) notesParts.push('Proc. ' + ed.processNumber);
-                if (ed.location) notesParts.push('Local: ' + ed.location);
                 if (ed.conclusion) notesParts.push('Conclusão: ' + ed.conclusion);
+                if (ed.c1Count > 0) notesParts.push('C1×' + ed.c1Count);
+                if (ed.c2Count > 0) notesParts.push('C2×' + ed.c2Count);
+                if (ed.c3Count > 0) notesParts.push('C3×' + ed.c3Count);
                 $('#pdfParserNotes').val(notesParts.join(' | '));
 
                 // ── Partial-parse warning ───────────────────────────────────
@@ -8574,7 +8706,8 @@
 
         // Confirm button
         $(document).on('click', '#pdfParserConfirmBtn', async function() {
-            var liftId = $('#pdfParserLiftSelect').val();
+            // Отримуємо liftId: з preset (якщо відкрито з конкретного ліфта) або з dropdown
+            var liftId = $('#pdfParserLiftSelect').val() || window._pdfPresetLiftId || null;
             if (!liftId) { alert('Оберіть ліфт зі списку'); return; }
 
             var $btn = $(this);
@@ -8639,7 +8772,12 @@
             $('#pdfParserResults').hide();
             $('#pdfParserFooterStep1').show();
             $('#pdfParserFooterConfirm').hide();
+            $('#pdfAutoLiftFound').hide();
+            $('#pdfAutoLiftNotFound').hide();
+            $('#pdfLiftSelectRow').hide();
+            $('#pdfParserCertBadge').text('');
             _pdfParsed = null;
+            // НЕ скидаємо _pdfPresetLiftId тут — він вже встановлений перед show
         });
     })();
     // ── /PDF Inspection Parser Modal logic ───────────────────────────────────
@@ -8685,12 +8823,34 @@
                 </div>
                 <!-- Step 3: Results / Confirmation form -->
                 <div id="pdfParserResults" style="display:none;">
-                    <!-- Matched lift -->
-                    <div class="form-group">
+
+                    <!-- Auto-found lift banner -->
+                    <div id="pdfAutoLiftFound" style="display:none;" class="alert alert-success py-2 mb-3 d-flex align-items-center">
+                        <i class="fas fa-check-circle fa-lg mr-2"></i>
+                        <div class="flex-grow-1">
+                            <strong>Ліфт знайдено автоматично:</strong> <span id="pdfAutoLiftName"></span>
+                            <span class="badge badge-success ml-2" id="pdfAutoLiftConfidence"></span>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-outline-success ml-2" onclick="$('#pdfAutoLiftFound').hide();$('#pdfLiftSelectRow').show();">
+                            <i class="fas fa-exchange-alt"></i> Змінити
+                        </button>
+                    </div>
+                    <div id="pdfAutoLiftNotFound" style="display:none;" class="alert alert-warning py-2 mb-3">
+                        <i class="fas fa-search mr-1"></i> Ліфт не знайдено автоматично. Оберіть зі списку.
+                    </div>
+
+                    <!-- Lift dropdown (shown only if low confidence or user wants to change) -->
+                    <div id="pdfLiftSelectRow" class="form-group" style="display:none;">
                         <label class="font-weight-bold"><i class="fas fa-elevator mr-1"></i> Ліфт</label>
                         <select id="pdfParserLiftSelect" class="form-control form-control-sm"></select>
-                        <small class="text-muted">Ліфт визначено автоматично. Змініть вручну якщо потрібно.</small>
+                        <small class="text-muted">Оберіть ліфт зі списку або прийміть автоматично знайдений.</small>
                     </div>
+
+                    <!-- Cert badge -->
+                    <div class="mb-2">
+                        <span id="pdfParserCertBadge" class="badge badge-pill badge-secondary"></span>
+                    </div>
+
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">

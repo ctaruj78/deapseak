@@ -215,8 +215,8 @@ class LiftsManager {
                             ${lift.municipalNumber ? `<p><strong><i class="fas fa-hashtag mr-2"></i>Муніципальний №:</strong> <span class="badge badge-dark">${lift.municipalNumber}</span></p>` : ''}
                             <p><strong><i class="fas fa-map-marker-alt mr-2"></i>Локація:</strong> ${location}</p>
                             <p><strong><i class="fas fa-tag mr-2"></i>Тип:</strong> ${typeText}</p>
-                            <p><strong><i class="fas fa-wrench mr-2"></i>Останнє ТО:</strong> ${this.formatDate(lift.lastMaintenance)}</p>
-                            <p><strong><i class="fas fa-calendar-alt mr-2"></i>Наступне ТО:</strong> ${this.formatDate(lift.nextMaintenance)}</p>
+                            <p><strong><i class="fas fa-wrench mr-2"></i>Останнє ТО:</strong> ${this.formatDate(lift.lastInspectionDate || lift.lastMaintenance)}</p>
+                            <p><strong><i class="fas fa-calendar-alt mr-2"></i>Наступне ТО:</strong> ${this.formatDate(lift.nextInspectionDate || lift.nextMaintenance)}</p>
                             ${lift.capacity ? `<p><strong><i class="fas fa-users mr-2"></i>Місткість:</strong> ${lift.capacity} ${lift.type === 'passenger' ? 'осіб' : 'кг'}</p>` : ''}
                         </div>
                     </div>
@@ -239,8 +239,12 @@ class LiftsManager {
     getStatusText(status) {
         const statuses = {
             'operational': 'Працює',
+            'active': 'Працює',
             'maintenance': 'Обслуговування',
+            'repair': 'На ремонті',
             'attention': 'Потребує уваги',
+            'broken': 'Поламаний',
+            'inactive': 'Неактивний',
             'out-of-service': 'Не працює'
         };
         return statuses[status] || status;
@@ -249,9 +253,13 @@ class LiftsManager {
     getStatusBadgeClass(status) {
         const classes = {
             'operational': 'badge-success',
+            'active': 'badge-success',
             'maintenance': 'badge-warning',
+            'repair': 'badge-warning',
             'attention': 'badge-danger',
-            'out-of-service': 'badge-secondary'
+            'broken': 'badge-danger',
+            'out-of-service': 'badge-secondary',
+            'inactive': 'badge-secondary'
         };
         return classes[status] || 'badge-secondary';
     }
@@ -304,11 +312,11 @@ class LiftsManager {
 
     updateOverview(lifts = this.lifts) {
         $('#totalLifts').text(lifts.length);
-        $('#operationalLifts').text(lifts.filter(lift => lift.status === 'operational').length);
-        $('#maintenanceLifts').text(lifts.filter(lift => lift.status === 'maintenance').length);
+        $('#operationalLifts').text(lifts.filter(lift => lift.status === 'operational' || lift.status === 'active').length);
+        $('#maintenanceLifts').text(lifts.filter(lift => lift.status === 'maintenance' || lift.status === 'repair').length);
         
         const needsAttention = lifts.filter(lift => 
-            lift.status === 'attention' || this.needsAttention(lift)
+            lift.status === 'attention' || lift.status === 'broken' || this.needsAttention(lift)
         ).length;
         $('#needsAttention').text(needsAttention);
         
@@ -941,9 +949,9 @@ class LiftsManager {
         
         // Розрахунок реальної статистики з наявних даних
         const totalLifts = this.lifts.length;
-        const operational = this.lifts.filter(l => l.status === 'operational').length;
-        const maintenance = this.lifts.filter(l => l.status === 'maintenance').length;
-        const needsAttention = this.lifts.filter(l => l.status === 'attention').length;
+        const operational = this.lifts.filter(l => l.status === 'operational' || l.status === 'active').length;
+        const maintenance = this.lifts.filter(l => l.status === 'maintenance' || l.status === 'repair').length;
+        const needsAttention = this.lifts.filter(l => l.status === 'attention' || l.status === 'broken').length;
         
         const uptimePercent = totalLifts > 0 ? ((operational / totalLifts) * 100).toFixed(1) : 0;
         

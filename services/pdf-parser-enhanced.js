@@ -74,25 +74,72 @@ function extractMetadata(text) {
     console.log('\n🔍 ========== METADATA EXTRACTION START ==========');
     
     // ===========================
-    // GATECI FORMAT (значення йде на НОВОМУ РЯДКУ після мітки)
+    // GATECI FORMAT (значення йде на НОВОМУ РЯДКУ або з відступами після мітки)
     // ===========================
-    
-    // 📍 Локація (GATECI): "Localização da instalação\n<address>"
-    const gateciLocMatch = text.match(/Localiza[çc][ãa]o\s+da\s+instala[çc][ãa]o\s*\n([^\n]{5,150})/i);
+
+    // Визначаємо компанію інспекції — якщо це GATECI, фіксуємо одразу щоб уникнути
+    // витягнення довгої описової фрази як назви компанії
+    if (!metadata.company) {
+        if (/\bGATECI\b/i.test(text)) {
+            metadata.company = 'GATECI';
+            console.log('  ✅ Company: GATECI');
+        } else if (/\bCERTIEL\b/i.test(text)) {
+            metadata.company = 'CERTIEL';
+            console.log('  ✅ Company: CERTIEL');
+        } else if (/\bNOMINARE\b/i.test(text)) {
+            metadata.company = 'NOMINARE';
+            console.log('  ✅ Company: NOMINARE');
+        }
+    }
+
+    // 📍 Локація (GATECI): "Localização da instalação\n<address>" OR "Localização da instalação     <address>"
+    // !! FIX: gateciLocMatch was previously defined but NEVER applied to metadata.location !!
+    const gateciLocPatterns = [
+        // Значення на новому рядку
+        /Localiza[çc][ãa]o\s+da\s+instala[çc][ãa]o\s*\n([^\n]{5,150})/i,
+        // Значення на тому ж рядку через відступи (табличний формат GATECI)
+        /Localiza[çc][ãa]o\s+da\s+instala[çc][ãa]o\s{2,}([^\n]{5,150})/i,
+        // "Local da instalação" (без 'ização')
+        /Local\s+da\s+instala[çc][ãa]o\s+([^\n]{5,150})/i,
+    ];
+    for (const gp of gateciLocPatterns) {
+        const gm = text.match(gp);
+        if (gm) {
+            const loc = gm[1].trim().replace(/\s+/g, ' ');
+            // Відкидаємо якщо це виглядає як адреса компанії-інспектора (Porto Salvo / Tagus Park)
+            if (loc.length >= 5 && loc.length <= 200 && !/TAGUS\s*PARK/i.test(loc) && !/PORTO\s*SALVO/i.test(loc)) {
+                metadata.location = loc;
+                console.log('  ✅ GATECI location found:', loc.substring(0, 70));
+                break;
+            }
+        }
+    }
+
     if (!metadata.location) {
         console.log('\n📍 Searching for location...');
         const locationPatterns = [
+            // 1. Labeled forms — highest priority (specific to lift location)
             /Local\s+da\s+instala[çc][ãa]o\s*:?\s*([^\n]{10,150})/i,
-            /(?:LOCALIZAÇÃO|Local(?:ização)?|Morada|Endereço)\s*:?\s*([^\n]{10,150})/i,
-            /((?:Rua|Avenida|Av\.|R\.|Praça|Pç\.|Travessa)\s+[A-ZÀ-Ú][^\n]{5,100})/i,
+            /(?:LOCALIZAÇÃO|Localização|Morada\s+da\s+instala[çc][ãa]o|Endereço\s+da\s+instala[çc][ãa]o)\s*:?\s*([^\n]{10,150})/i,
+            // 2. Postal code + city (identifies correct location by structure)
             /(\d{4}[-\s]?\d{3}\s+[A-ZÀ-Ú][a-zà-úa-z\s]+(?:,\s*Portugal)?)/,
+            // 3. "sito em" / "localizado em"
             /(?:sito|localizado)\s+em\s+([^\n]{10,120})/i,
+            // 4. Labeled "endereço:" / "morada:"
             /endere[çc]o\s*:?\s*([^\n]{10,120})/i,
+            /morada\s*:?\s*([^\n]{10,120})/i,
+            // 5. "instalação:" labeled
             /instala[çc][ãa]o\s*:?\s*([^\n]{10,120})/i,
-            /((?:Rua|Avenida)\s+[^,\n]+,?\s*n[ºo.]\s*\d+[^\n]{0,50})/i,
+            // 6. City + postal code (reversed)
             /([A-ZÀ-Ú][a-zà-úa-z\s]+,\s*\d{4}[-\s]\d{3})/,
+            // 7. "local:" labeled
             /local\s*:?\s*([^\n]{10,120})/i,
-            /(?:Edif[íi]cio|Pr[ée]dio)\s+([^\n]{10,120})/i
+            // 8. Building/edificio
+            /(?:Edif[íi]cio|Pr[ée]dio)\s+([^\n]{10,120})/i,
+            // 9. Rua/Avenida — LAST RESORT: may match inspection company HQ address
+            //    Only used if nothing above worked
+            /((?:Rua|Avenida|Av\.|R\.)\s+[A-ZÀ-Ú][^\n]{5,100},?\s*n[º°o.]\s*\d+[^\n]{0,50})/i,
+            /((?:Rua|Avenida|Av\.|R\.)\s+[A-ZÀ-Ú][^\n]{5,80})/i
         ];
         for (let i = 0; i < locationPatterns.length; i++) {
             const pattern = locationPatterns[i];
@@ -100,6 +147,8 @@ function extractMetadata(text) {
             if (match) {
                 let location = match[1].trim();
                 location = location.replace(/\s*(TÉCNICO|CLÁUSULAS|C[123]|ELEVADOR|Página).*$/i, '').replace(/^\s*(O|A|o|a)\s+/, '').trim();
+                // Відкидаємо адресу самої компанії-інспектора якщо вона відома
+                if (/TAGUS\s*PARK|PORTO\s*SALVO|PORTO SALVO/i.test(location)) continue;
                 if (location.length >= 10 && location.length <= 150) {
                     metadata.location = location;
                     console.log(`  ✅ Method ${i + 1} success: ${location.substring(0, 60)}...`);
@@ -172,34 +221,33 @@ function extractMetadata(text) {
     if (!metadata.liftId) console.log('  ❌ No lift ID found');
     } // end if (!metadata.liftId)
     
-    // 📍 АДРЕСА/ЛОКАЦІЯ - 10 ПОКРАЩЕНИХ ВАРІАНТІВ (пропускаємо якщо вже знайдено з GATECI)
+    // 📍 АДРЕСА/ЛОКАЦІЯ - додаткові варіанти (пропускаємо якщо вже знайдено з GATECI)
     if (!metadata.location) {
-    console.log('\n📍 Searching for location...');
-    const locationPatterns = [
+    console.log('\n📍 Searching for location (pass 2)...');
+    const locationPatterns2 = [
         // 1. Традиційне "LOCALIZAÇÃO:"
         /(?:LOCALIZAÇÃO|Local(?:ização)?|Morada|Endereço)\s*:?\s*([^\n]{10,150})/i,
-        // 2. Rua / Avenida
-        /((?:Rua|Avenida|Av\.|R\.|Praça|Pç\.|Travessa)\s+[A-ZÀ-Ú][^\n]{5,100})/i,
-        // 3. Código postal + cidade
+        // 2. Поштовий індекс + місто
         /(\d{4}[-\s]?\d{3}\s+[A-ZÀ-Ú][a-zà-ú\s]+(?:,\s*Portugal)?)/,
-        // 4. "sito em" / "localizado em"
+        // 3. "sito em" / "localizado em"
         /(?:sito|localizado)\s+em\s+([^\n]{10,120})/i,
-        // 5. "endereço:"
+        // 4. "endereço:"
         /endere[çc]o\s*:?\s*([^\n]{10,120})/i,
-        // 6. "instalação:"
+        // 5. "instalação:"
         /instala[çc][ãa]o\s*:?\s*([^\n]{10,120})/i,
-        // 7. Rua ... nº ...
-        /((?:Rua|Avenida)\s+[^,\n]+,?\s*n[ºo.]\s*\d+[^\n]{0,50})/i,
-        // 8. Місто, Portugal
+        // 6. City, Portugal
         /([A-ZÀ-Ú][a-zà-ú\s]+,\s*\d{4}[-\s]\d{3})/,
-        // 9. "Local:"
+        // 7. "local:"
         /local\s*:?\s*([^\n]{10,120})/i,
-        // 10. Edifício + вулиця
-        /(?:Edif[íi]cio|Pr[ée]dio)\s+([^\n]{10,120})/i
+        // 8. Edifício + rua
+        /(?:Edif[íi]cio|Pr[ée]dio)\s+([^\n]{10,120})/i,
+        // 9-10. Rua/Avenida — LAST RESORT
+        /((?:Rua|Avenida|Av\.|R\.)\s+[A-ZÀ-Ú][^\n]{5,100},?\s*n[º°o.]\s*\d+[^\n]{0,50})/i,
+        /((?:Rua|Avenida|Av\.|R\.)\s+[A-ZÀ-Ú][^\n]{5,80})/i
     ];
     
-    for (let i = 0; i < locationPatterns.length; i++) {
-        const pattern = locationPatterns[i];
+    for (let i = 0; i < locationPatterns2.length; i++) {
+        const pattern = locationPatterns2[i];
         const match = text.match(pattern);
         if (match) {
             let location = match[1].trim();
@@ -208,9 +256,11 @@ function extractMetadata(text) {
                 .replace(/\s*(TÉCNICO|CLÁUSULAS|C[123]|ELEVADOR|Página).*$/i, '')
                 .replace(/^\s*(O|A|o|a)\s+/, '')
                 .trim();
+            // Відкидаємо адресу компанії-інспектора
+            if (/TAGUS\s*PARK|PORTO\s*SALVO/i.test(location)) continue;
             if (location.length >= 10 && location.length <= 150) {
                 metadata.location = location;
-                console.log(`  ✅ Method ${i + 1} success: ${location.substring(0, 60)}...`);
+                console.log(`  ✅ Method2 ${i + 1} success: ${location.substring(0, 60)}...`);
                 break;
             }
         }
@@ -218,9 +268,11 @@ function extractMetadata(text) {
     if (!metadata.location) console.log('  ❌ No location found with any method');
     } // end if (!metadata.location)
     
-    // 👤 ІНСПЕКТОР - 15 ПОКРАЩЕНИХ ВАРІАНТІВ (пропускаємо якщо вже знайдено з GATECI)
+    // 👤 ІНСПЕКТОР - покращені варіанти (пропускаємо якщо вже знайдено з GATECI)
     if (!metadata.inspector) {
     console.log('\n👤 Searching for inspector name...');
+    // Фрази з висновку, що хоч і збігаються з патернами, але НЕ є іменами
+    const inspectorRejectWords = /^(Nestas?|Estas?|Assim|Perante|Deste|Desta|Nessa|Neste|Tendo|Dado|Face|Atendendo|Considerando|Em\s+virtude|Em\s+face|Nos\s+termos|Pelo\s+exposto|Pelo\s+que|Em\s+cumprimento|De\s+acordo|Na\s+sequ[eê]ncia)/i;
     const inspectorPatterns = [
         // 1. TÉCNICO: Ім'я
         /T[ÉE]CNICO\s*(?:RESPONSÁVEL)?\s*:?\s*([A-ZÀ-Ú][a-zà-ú]+(?:\s+[A-ZÀ-Ú][a-zà-ú]+){1,4})/i,
@@ -244,13 +296,13 @@ function extractMetadata(text) {
         /\bpor\s+([A-ZÀ-Ú][a-zà-ú]+(?:\s+[A-ZÀ-Ú][a-zà-ú]+){2,4})\b/,
         // 11. Перед "Página"
         /([A-ZÀ-Ú][a-zà-ú]+(?:\s+[A-ZÀ-Ú][a-zà-ú]+){2,4})\s+P[áa]gina\s*\d+/i,
-        // 12. Certifico que ... (підпис)
+        // 12. Certifico que ...
         /certifico?\s+(?:que|por)\s+([A-ZÀ-Ú][a-zà-ú]+(?:\s+[A-ZÀ-Ú][a-zà-ú]+){1,4})/i,
         // 13. Atesto que ...
         /atesto\s+(?:que|por)\s+([A-ZÀ-Ú][a-zà-ú]+(?:\s+[A-ZÀ-Ú][a-zà-ú]+){1,4})/i,
-        // 14. Nome: (загальний варіант)
+        // 14. Nome:
         /nome\s*:?\s*([A-ZÀ-Ú][a-zà-ú]+(?:\s+[A-ZÀ-Ú][a-zà-ú]+){1,4})/i,
-        // 15. Техник з сертифікатом
+        // 15. Técnico com certificado
         /t[ée]cnico\s+(?:certificado\s+)?n[ºo.]\s*\d+\s*:?\s*([A-ZÀ-Ú][a-zà-ú]+(?:\s+[A-ZÀ-Ú][a-zà-ú]+){1,4})/i
     ];
     
@@ -264,6 +316,11 @@ function extractMetadata(text) {
                 .replace(/\s*(CLÁUSULAS|C[123]|ELEVADOR|Página|Art|Impresso|TÉCNICO).*$/i, '')
                 .replace(/^(O|A|o|a)\s+/, '')  // Видаляємо артиклі
                 .trim();
+            // Відкидаємо фрази з висновку (напр. "Нестас циркунстансіас")
+            if (inspectorRejectWords.test(name)) {
+                console.log(`  ⚠️ Method ${i + 1} rejected (conclusion phrase): "${name}"`);
+                continue;
+            }
             // Перевірка: ім'я має бути 5-60 символів, не включати цифри, мінімум 2 слова
             const wordCount = name.split(/\s+/).length;
             if (name.length >= 5 && name.length <= 60 && !/\d/.test(name) && wordCount >= 2) {
@@ -278,15 +335,18 @@ function extractMetadata(text) {
     if (!metadata.inspector) console.log('  ❌ No inspector name found with any method');
     } // end if (!metadata.inspector)
     
-    // 🏭 КОМПАНІЯ - 7 варіантів
+    // 🏭 КОМПАНІЯ - примітка: GATECI/CERTIEL/NOMINARE вже встановлені раніше
+    // Тут використовуємо патерни тільки якщо company ще не знайдено
+    if (!metadata.company) {
     const companyPatterns = [
-        /(?:EMPRESA|Entidade|Organismo|Sociedade)\s*(?:DE\s+MANUTENÇÃO|INSPETORA)?\s*:?\s*([A-ZÀ-Ú][A-Za-zÀ-Úà-ú\s,.-]{5,100}?)(?:\n|TÉCNICO|CLÁUSULAS|$)/i,
-        /empresa\s*:?\s*([^\n]{5,100})/i,
-        /entidade\s*:?\s*([^\n]{5,100})/i,
-        /(?:Lda|S\.A\.|Unipessoal|LDA)\s*([A-ZÀ-Ú][^\n]{5,80})/,
+        /(?:EMPRESA|Entidade|Organismo|Sociedade)\s*(?:DE\s+MANUTENÇÃO|INSPETORA)?\s*:?\s*([A-ZÀ-Ú][A-Za-zÀ-Úà-ú\s,.-]{5,60}?)(?:\n|TÉCNICO|CLÁUSULAS|$)/i,
+        /empresa\s*:?\s*([^\n]{5,60})/i,
+        /entidade\s*:?\s*([^\n]{5,60})/i,
+        /(?:Lda|S\.A\.|Unipessoal|LDA)\s*([A-ZÀ-Ú][^\n]{5,60})/,
         /([A-ZÀ-Ú][A-Za-zÀ-Úà-ú\s&]+(?:Lda|S\.A\.|Unipessoal|LDA))/,
-        /organiza[çc][ãa]o\s*:?\s*([^\n]{5,100})/i,
-        /\b([A-ZÀ-Ú][A-ZÀ-Úà-ú\s]+(?:ELEVADORES|INSPEÇÕES|MANUTENÇÃO))\b/i
+        /organiza[çc][ãa]o\s*:?\s*([^\n]{5,60})/i,
+        // Останній шанс: назва з ключовими словами — обмежуємо 50 символами!
+        /\b([A-ZÀ-Ú][A-ZÀ-Úà-ú\s]{3,45}(?:ELEVADORES|INSPEÇÕES|MANUTENÇÃO))\b/i
     ];
     
     for (const pattern of companyPatterns) {
@@ -296,7 +356,7 @@ function extractMetadata(text) {
             company = company
                 .replace(/\s*(TÉCNICO|CLÁUSULAS|C[123]).*$/i, '')
                 .trim();
-            if (company.length >= 5 && company.length <= 100) {
+            if (company.length >= 5 && company.length <= 60) {
                 metadata.company = company;
                 console.log('  ✅ Company:', company);
                 break;
@@ -304,6 +364,7 @@ function extractMetadata(text) {
         }
     }
     if (!metadata.company) console.log('  ❌ No company found');
+    } // end if (!metadata.company)
     
     console.log('========== METADATA EXTRACTION END ==========\n');
     return metadata;
