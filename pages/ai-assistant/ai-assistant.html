@@ -995,6 +995,28 @@
             });
         }
 
+        // ── Markdown renderer ────────────────────────────────────────────
+        function renderMarkdown(text) {
+            if (!text) return '';
+            return text
+                // Bold: **text** or __text__
+                .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+                .replace(/__(.+?)__/g, '<strong>$1</strong>')
+                // Italic: *text* or _text_  (not greedy, single char)
+                .replace(/(?<!\*)\*(?!\*)(.+?)(?<!\*)\*(?!\*)/g, '<em>$1</em>')
+                // Headers: ### ## #
+                .replace(/^### (.+)$/gm, '<h6 class="mb-1 mt-2">$1</h6>')
+                .replace(/^## (.+)$/gm, '<h5 class="mb-1 mt-2">$1</h5>')
+                .replace(/^# (.+)$/gm, '<h5 class="mb-1 mt-2">$1</h5>')
+                // Inline code
+                .replace(/`([^`]+)`/g, '<code class="bg-light px-1 rounded">$1</code>')
+                // Horizontal rule ━━━ or ---
+                .replace(/^(━+|─+|-{3,})$/gm, '<hr class="my-1">')
+                // Newlines → br
+                .replace(/\n/g, '<br>');
+        }
+        // ─────────────────────────────────────────────────────────────────
+
         function addChatMessage(text, isUser) {
             const container = document.getElementById('chatMessages');
             const typingIndicator = container.querySelector('.typing-indicator').parentElement;
@@ -1012,7 +1034,7 @@
                 </div>
                 <img class="direct-chat-img" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Ccircle cx='20' cy='20' r='20' fill='%23${isUser ? '007bff' : '28a745'}'/%3E%3Ctext x='20' y='28' font-size='24' text-anchor='middle' fill='white'%3E${isUser ? '👤' : '🤖'}%3C/text%3E%3C/svg%3E" alt="${isUser ? 'User' : 'AI'}">
                 <div class="direct-chat-text">
-                    ${text.replace(/\n/g, '<br>')}
+                    ${renderMarkdown(text)}
                 </div>
             `;
             
@@ -1080,8 +1102,8 @@
                     const response = data.data?.response || data.response || data.message;
                     responseDiv.innerHTML = `
                         <div class="alert alert-success">
-                            <h5><i class="fas fa-check-circle"></i> Юридична консультація</h5>
-                            <div>${response.replace(/\n/g, '<br>')}</div>
+                            <h5><i class="fas fa-check-circle"></i> Юридична консультação</h5>
+                            <div>${renderMarkdown(response)}</div>
                         </div>
                     `;
                 } else {

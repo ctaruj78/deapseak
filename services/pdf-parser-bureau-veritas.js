@@ -282,7 +282,8 @@ function extractMetadata(text) {
         owner: null,
         maintenanceCompany: null,
         installationNumber: null,
-        processNumber: null
+        processNumber: null,
+        validUntil: null
     };
     
     console.log('\n🔍 Extracting Metadata...');
@@ -306,7 +307,7 @@ function extractMetadata(text) {
     
     // 1. НОМЕР ЗВІТУ - різні формати
     const reportPatterns = [
-        /Relatório\s+n[ºo.]\s*([A-Z]{2}\d{4}-\d{4}-\d{2}-\d{2})/i, // Bureau Veritas: NB2023-8010-01-01
+        /Relatório\s+n[ºo.]\s*([A-Z]{2}\d{4}-\d{3,6}-\d{2}-\d{2})/i, // Bureau Veritas: NB2022-26981-01-01 (5-digit middle)
         /CML\/(\d+\/\d+)/i, // CML: CML/3599/6599
         /Processo[:\s]+([A-Z0-9\/-]+)/i // Generic: Processo: 371-11.05/002019
     ];
@@ -345,11 +346,30 @@ function extractMetadata(text) {
         console.log('  ✅ Installation No:', metadata.installationNumber);
     }
     
-    // 4. НОМЕР ПРОЦЕСУ
-    const processMatch = text.match(/Processo\s+n[ºo.]\s*(\d+[-\/]\d+[-\/\d]*)/i);
+    // 4. НОМЕР ПРОЦЕСУ (may start with letters e.g. CML-14267-28770)
+    const processMatch = text.match(/Processo\s+n[ºo.]\s*([A-Z0-9][A-Z0-9\-\/]+)/i);
     if (processMatch) {
-        metadata.processNumber = processMatch[1];
+        metadata.processNumber = processMatch[1].trim();
+        // Also use as installationNumber for lift auto-match if not already set
+        if (!metadata.installationNumber) {
+            metadata.installationNumber = metadata.processNumber;
+            metadata.liftId = metadata.processNumber;
+        }
         console.log('  ✅ Process No:', metadata.processNumber);
+    }
+
+    // 4b. CERTIFICADO — n.º CML-... (validade + installationNumber fallback)
+    const certInstMatch = text.match(/n\.º\s*([A-Z]{3}-\d{4,}-\d{4,})/i);
+    if (certInstMatch && !metadata.installationNumber) {
+        metadata.installationNumber = certInstMatch[1].trim();
+        metadata.liftId = metadata.installationNumber;
+        console.log('  ✅ Installation No (cert):', metadata.installationNumber);
+    }
+    // 4c. Validade (valid until)
+    const validadeMatch = text.match(/Validade[:\s]+([\d]{4}\/[\d]{2}\/[\d]{2})/i);
+    if (validadeMatch) {
+        metadata.validUntil = validadeMatch[1];
+        console.log('  ✅ Valid Until:', metadata.validUntil);
     }
     
     // 5. ЛОКАЦІЯ - Bureau Veritas має таблицю
@@ -363,6 +383,7 @@ function extractMetadata(text) {
             let location = match[1].trim()
                 .replace(/\s+/g, ' ')
                 .replace(/\n+/g, ', ')
+                .replace(/[\s,\.]+$/, '')  // trim trailing " ." or ", "
                 .substring(0, 200);
             if (location.length >= 10) {
                 metadata.location = location;
@@ -396,10 +417,11 @@ function extractMetadata(text) {
         /T[eé]cnico\s+Respons[áa]vel\s*[:\-]\s*([A-ZÀ-Úa-záéíóúàâêôãõç][^\n,]{4,60})/i,
         /Entidade\s+Inspetora(?:\s+Acreditada)?\s*[:\-]\s*([A-ZÀ-Úa-záéíóúàâêôãõç][^\n]{4,80})/i,
         /Technicien\s*[:\-]\s*([A-ZÀ-Úa-záéíóúàâêôãõç][^\n,]{4,60})/i,
-        // Signature block: name before "Proprietário"
-        /([A-ZÀ-Ú][a-zà-ú]+\s+[A-ZÀ-Ú][a-zà-ú]+)\s+Propriet[áa]rio/i,
-        // BV: name just after "Inspector" keyword (no colon)
-        /\bInspector\s+([A-ZÀ-Ú][a-zà-ú]+(?:\s+[A-ZÀ-Ú][a-zà-ú]+){1,3})/i,
+        // BV signature block: date \n...\n  Name  ADMINISTRAÇÃO (or other all-caps entity)
+        // Covers: "2022/11/11 \n\n\n  Pedro Marques  ADMINISTRAÇÃO..."
+        /\d{4}\/\d{2}\/\d{2}\s+([A-ZÀ-Ú][a-záéíóúàâêôãõç]+\s+[A-ZÀ-Ú][a-záéíóúàâêôãõç]+)\s{2,}[A-ZÀÁÉÍÓÚÂÊÔÃÕ]{3}/,
+        // Signature block: name before "Proprietário" — but NOT if the word before is "Inspector" (column header)
+        /(?<!Inspector\s{1,5})([A-ZÀ-Ú][a-zà-ú]+\s+[A-ZÀ-Ú][a-zà-ú]+)\s+Propriet[áa]rio/i,
         // Fallback: company name (BV/GATECI/APCER/CERTIEL itself)
         /Entidade[^:\n]*[:\-]\s*([A-ZÀ-Ú][^\n]{4,60})/i
     ];

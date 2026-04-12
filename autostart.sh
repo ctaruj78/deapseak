@@ -46,6 +46,23 @@ echo -e "${YELLOW}━━━━━━━━━━━━━━━━━━━━�
 pkill -f "node.*unified-server" 2>/dev/null && echo -e "${GREEN}✅ Зупинено старий Unified Server${NC}" || echo -e "${BLUE}ℹ️  Unified Server не запущено${NC}"
 sleep 2
 
+# 1b. Автоматичний запуск Ollama (якщо встановлено і не запущено)
+if command -v ollama &> /dev/null; then
+    if curl -s http://127.0.0.1:11434/api/tags > /dev/null 2>&1; then
+        OLLAMA_MODEL_INFO=$(curl -s http://127.0.0.1:11434/api/tags | node -e "process.stdin.resume(); let d=''; process.stdin.on('data',c=>d+=c); process.stdin.on('end',()=>{ try{ const m=JSON.parse(d).models||[]; console.log(m.length>0?m.map(x=>x.name).join(', '):'(no models)') }catch(e){ console.log('?') } })" 2>/dev/null || echo "?")
+        echo -e "${GREEN}🦙 Ollama вже запущена. Моделі: ${OLLAMA_MODEL_INFO}${NC}"
+    else
+        echo -e "${YELLOW}🦙 Ollama встановлена але не запущена — стартую...${NC}"
+        nohup ollama serve > /tmp/ollama.log 2>&1 &
+        sleep 3
+        if curl -s http://127.0.0.1:11434/api/tags > /dev/null 2>&1; then
+            echo -e "${GREEN}🦙 Ollama запущена на http://127.0.0.1:11434${NC}"
+        else
+            echo -e "${YELLOW}⚠️  Ollama не відповіла — AI буде через Gemini${NC}"
+        fi
+    fi
+fi
+
 # 2. Перевірка та запуск MongoDB
 echo -e "\n${YELLOW}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo -e "${YELLOW}🔍 Крок 2/5: MongoDB${NC}"
@@ -117,28 +134,32 @@ nohup node unified-server.js > logs/unified-server.log 2>&1 &
 SERVER_PID=$!
 echo -e "${BLUE}📝 Server PID: ${SERVER_PID}${NC}"
 
-# Очікування запуску
-echo -e "${YELLOW}⏳ Очікування запуску (5 секунд)...${NC}"
-sleep 5
+# Очікування запуску сервера (до 30 секунд, з retry)
+echo -e "${YELLOW}⏳ Очікування запуску (до 30 секунд)...${NC}"
+READY=false
+for i in $(seq 1 15); do
+    sleep 2
+    if ps -p $SERVER_PID > /dev/null 2>&1 && curl -s http://localhost:5000/api/health > /dev/null 2>&1; then
+        READY=true
+        break
+    fi
+    echo -e "${BLUE}   ↺ ${i}/15 — ще не відповідає...${NC}"
+done
 
 # Перевірка статусу
-if ps -p $SERVER_PID > /dev/null 2>&1; then
-    echo -e "${GREEN}✅ Unified Server процес активний${NC}"
-    
-    # Перевірка API
-    if curl -s http://localhost:5000/api/health > /dev/null 2>&1; then
-        echo -e "${GREEN}✅ API endpoint відповідає${NC}"
-    else
-        echo -e "${RED}❌ API не відповідає${NC}"
-        echo -e "${YELLOW}📋 Логи:${NC}"
-        tail -10 logs/unified-server.log
-        exit 1
-    fi
+if [ "$READY" = "true" ]; then
+    echo -e "${GREEN}✅ Unified Server активний і API відповідає${NC}"
 else
-    echo -e "${RED}❌ Unified Server не запущено${NC}"
-    echo -e "${YELLOW}📋 Логи:${NC}"
-    cat logs/unified-server.log
-    exit 1
+    if ! ps -p $SERVER_PID > /dev/null 2>&1; then
+        echo -e "${RED}❌ Unified Server вилетів (процес мертвий)${NC}"
+        echo -e "${YELLOW}📋 Логи:${NC}"
+        cat logs/unified-server.log
+        exit 1
+    else
+        echo -e "${YELLOW}⚠️  Сервер запущено, але API ще не відповідає — продовжуємо...${NC}"
+        echo -e "${YELLOW}📋 Останні логи:${NC}"
+        tail -5 logs/unified-server.log
+    fi
 fi
 
 # 5. Відкриття браузера

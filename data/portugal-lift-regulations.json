@@ -1,13 +1,13 @@
 {
   "metadata": {
     "country": "Portugal",
-    "last_updated": "2026-03-13",
+    "last_updated": "2026-04-12T10:41:03.553Z",
     "language": "pt-PT",
     "scope": "Regulamentação de Elevadores e Inspeções",
     "version": "4.0",
     "generated_by": "DeapSeaK AI Knowledge Generator",
     "laws_count": 18,
-    "total_articles": 24,
+    "total_articles": 213,
     "total_violation_codes": 49,
     "latest_addition": "EN Standards + Decreto Regulamentar 13/80",
     "authority": "DGEG — Direção-Geral de Energia e Geologia",
@@ -116,36 +116,652 @@
       ],
       "articles": [
         {
+          "number": 2,
+          "classification": "info",
+          "title": "Campo de aplicação",
+          "text": "Aplica-se a elevadores de tracção eléctrica ou comando eléctrico para uso público ou particular. NÃO abrange: elevadores hidráulicos, elevadores tipo nora, cremalheira, fuso, maquinaria teatral, monta-materiais de obras, elevadores de minas/navios, monta-cargas com carga nominal ≤10 kg.",
+          "keywords": [
+            "campo aplicação",
+            "elevadores eléctricos",
+            "monta-cargas",
+            "uso público"
+          ],
+          "relatedViolations": [
+            "elevador hidráulico sem regulamento próprio = atenção"
+          ]
+        },
+        {
+          "number": 3,
+          "classification": "info",
+          "title": "Definições técnicas essenciais",
+          "text": "Ascensor: elevador para transporte de pessoas e carga, cabina com dimensões que permitem acesso de pessoas. Monta-cargas: elevador só para carga, cabina impede acesso de pessoas. Caixa: local onde se desloca a cabina/contrapeso. Casa das máquinas: local da máquina de tracção e aparelhos de comando. Carga nominal: carga máxima para funcionamento seguro. Limitador de velocidade: dispositivo que acciona o pára-quedas por excesso de velocidade. Pára-quedas: fixa a cabina/contrapeso às guias em caso de excesso de velocidade ou rotura de suspensão. Zona de desencravamento: espaço 30+30cm (portas automáticas) ou 17+17cm (manuais) centrado na soleira.",
+          "keywords": [
+            "ascensor",
+            "monta-cargas",
+            "caixa",
+            "casa máquinas",
+            "pára-quedas",
+            "limitador velocidade",
+            "zona desencravamento"
+          ],
+          "relatedViolations": []
+        },
+        {
+          "number": 9,
+          "classification": "C1",
+          "title": "Vedação da caixa",
+          "text": "A caixa deve ser vedada em toda a sua altura por materiais resistentes à propagação da chama e com resistência mecânica suficiente. Na caixa apenas se permitem: acessos, aberturas de visita/socorro, ventilação, ligações à casa de máquinas. Redes metálicas permitidas: fio ≥3mm, malha ≤75×75mm, apenas acima de 2,50m dos patamares.",
+          "keywords": [
+            "vedação caixa",
+            "material incombustível",
+            "rede metálica",
+            "fio 3mm"
+          ],
+          "relatedViolations": [
+            "caixa aberta ou sem vedação = C1",
+            "orifícios não autorizados = C2"
+          ]
+        },
+        {
+          "number": 11,
+          "classification": "C2",
+          "title": "Ventilação da caixa dos ascensores",
+          "text": "A caixa dos ascensores deve ser convenientemente ventilada e não ser utilizada para assegurar a ventilação de locais estranhos ao serviço dos ascensores.",
+          "keywords": [
+            "ventilação caixa",
+            "ventilação locais estranhos"
+          ],
+          "relatedViolations": [
+            "caixa sem ventilação = C2",
+            "caixa usada para ventilação de outros locais = C2"
+          ]
+        },
+        {
+          "number": 12,
+          "classification": "C1",
+          "title": "Evacuação de fumos da caixa formando chaminé",
+          "text": "A caixa susceptível de formar chaminé deve ter ventilação para evacuação de fumos/gases em caso de incêndio. Área mínima das aberturas de evacuação: 2,5% da área da caixa, mínimo 0,07 m² por ascensor. Até 2/3 dessa área pode ser fechada por vidro de espessura <3mm. A caixa forma chaminé quando as portas não abrem todas directamente para a caixa de escada ou corredores que acompanhem todos os andares.",
+          "keywords": [
+            "evacuação fumos",
+            "chaminé",
+            "incêndio",
+            "2,5% área",
+            "0,07 m²"
+          ],
+          "relatedViolations": [
+            "sem abertura evacuação fumos em caixa-chaminé = C1 em caso de incêndio"
+          ]
+        },
+        {
           "number": 14,
-          "classification": "C1"
+          "classification": "C1",
+          "title": "Caixa por cima de locais acessíveis a pessoas",
+          "text": "A caixa não deve situar-se por cima de local acessível a pessoas, excepto se: (a) os órgãos suspensos (cabina E contrapeso) possuírem ambos pára-quedas; ou (b) os órgãos sem pára-quedas tiverem pára-choques assentes em colunas apoiadas no solo firme. O cálculo das colunas deve prever a queda livre dos órgãos.",
+          "keywords": [
+            "caixa local acessível",
+            "pára-quedas contrapeso",
+            "queda livre"
+          ],
+          "relatedViolations": [
+            "caixa sobre local acessível sem pára-quedas duplo = C1"
+          ]
+        },
+        {
+          "number": 16,
+          "classification": "C1",
+          "title": "Dimensionamento vertical da caixa (elevadores de roda de aderência)",
+          "text": "Com o contrapeso nos pára-choques comprimidos, a cabina deve poder subir: 0,035×V² metros (mínimo 0,25m). Altura livre mínima acima da cobertura da cabina: 1 + 0,035×V² metros. Com a cabina nos pára-choques, o contrapeso deve poder subir: 0,035×V² metros. V = velocidade nominal em m/s.",
+          "keywords": [
+            "folga topo caixa",
+            "0,035 V²",
+            "segurança passagem",
+            "roda aderência"
+          ],
+          "relatedViolations": [
+            "folga topo insuficiente = C1 (risco esmagamento mecânico)"
+          ]
+        },
+        {
+          "number": 19,
+          "classification": "C1",
+          "title": "Espaço livre no poço sob a cabina",
+          "text": "Com a cabina em repouso sobre os pára-choques completamente comprimidos, deve observar-se espaço suficiente para protecção de uma pessoa: a distância da parte mais saliente da cabina (excluindo rodas, pára-quedas e rodapé) ao fundo do poço deve ser ≥0,50 m.",
+          "keywords": [
+            "poço",
+            "0,50 m",
+            "fundo poço",
+            "espaço protecção"
+          ],
+          "relatedViolations": [
+            "poço com <0,50m sob cabina = C1 (risco esmagamento)"
+          ]
+        },
+        {
+          "number": 20,
+          "classification": "C2",
+          "title": "Uso exclusivo da caixa",
+          "text": "A caixa deve ser exclusivamente afecta ao serviço do elevador, não podendo ter outra aplicação nem albergar elementos de instalações estranhas ao serviço do elevador (tubagens de gás, água, electricidade estranha, etc.).",
+          "keywords": [
+            "caixa uso exclusivo",
+            "instalações estranhas",
+            "tubagens"
+          ],
+          "relatedViolations": [
+            "tubagem estranha na caixa = C2",
+            "caixa com instalações não-elevador = C2"
+          ]
+        },
+        {
+          "number": 22,
+          "classification": "C2",
+          "title": "Situação e acessibilidade da casa das máquinas",
+          "text": "A casa das máquinas deve ser vedada. Situação: regra geral por cima da caixa. Acesso desde a via pública: fácil, seguro mesmo em intempérie, pela escada do edifício sem usar dependências estranhas ao elevador. Escadas de acesso permitidas se: fixas ou com charneira fixa, com corrimão, largura mínima ≥0,70m, ângulo ≤60° com o plano horizontal.",
+          "keywords": [
+            "casa máquinas",
+            "acesso",
+            "escada",
+            "0,70m largura"
+          ],
+          "relatedViolations": [
+            "casa de máquinas inacessível = C2",
+            "acesso inseguro = C2"
+          ]
+        },
+        {
+          "number": 24,
+          "classification": "C2",
+          "title": "Dimensões mínimas da casa das máquinas",
+          "text": "A casa das máquinas dos ascensores deve permitir entrada de pessoas e acesso seguro a todos os órgãos. Dimensões obrigatórias: altura livre de circulação ≥1,80m; espaço livre em frente dos aparelhos eléctricos ≥0,75m; espaço livre de 0,30m para manobra dos dispositivos de movimentação manual da cabina.",
+          "keywords": [
+            "casa máquinas dimensões",
+            "1,80m altura",
+            "0,75m frente aparelhos",
+            "0,30m manobra"
+          ],
+          "relatedViolations": [
+            "altura <1,80m = C2",
+            "espaço frente aparelhos <0,75m = C2"
+          ]
+        },
+        {
+          "number": 25,
+          "classification": "C2",
+          "title": "Portas e alçapões da casa das máquinas",
+          "text": "Dimensões mínimas: Portas de acesso: largura ≥0,70m e altura ≥1,80m. Alçapões: ≥0,70m × 0,80m. As portas não podem abrir para dentro. Os alçapões fechados devem suportar o peso das pessoas que possam estar de pé por cima. Portas e alçapões devem ter fechadura (fechados à chave mas abertos sem chave do lado de dentro).",
+          "keywords": [
+            "porta casa máquinas",
+            "0,70m",
+            "1,80m",
+            "alçapão 0,70x0,80"
+          ],
+          "relatedViolations": [
+            "porta casa de máquinas <0,70m ou <1,80m = C2",
+            "porta que abre para dentro = C2"
+          ]
+        },
+        {
+          "number": 28,
+          "classification": "C2",
+          "title": "Uso exclusivo da casa das máquinas",
+          "text": "A casa das máquinas não pode ser utilizada para qualquer outro fim, nem para qualquer outra instalação ou armazenamento de material estranho ao elevador, nem ainda como passagem para outro local.",
+          "keywords": [
+            "casa máquinas uso exclusivo",
+            "armazenamento estranho",
+            "passagem"
+          ],
+          "relatedViolations": [
+            "casa de máquinas usada para armazenamento = C2",
+            "material estranho na casa de máquinas = C2"
+          ]
+        },
+        {
+          "number": 29,
+          "classification": "C2",
+          "title": "Iluminação da casa das máquinas",
+          "text": "A casa das máquinas deve ter boa iluminação eléctrica comandada por um interruptor situado junto do acesso, do lado de dentro. Deve prever-se uma ou mais tomadas de corrente. A iluminação natural não deve ter raios solares a incidir directamente sobre qualquer órgão da instalação.",
+          "keywords": [
+            "iluminação casa máquinas",
+            "interruptor acesso",
+            "tomadas corrente"
+          ],
+          "relatedViolations": [
+            "sem iluminação casa de máquinas = C2",
+            "interruptor não junto ao acesso = C3"
+          ]
+        },
+        {
+          "number": 32,
+          "classification": "C1",
+          "title": "Disposições gerais das portas de patamar",
+          "text": "Os acessos do patamar devem possuir portas cheias que não possam abrir para o interior da caixa. A porta, uma vez fechada, não deve permitir a introdução de um dedo de prova de 10 mm de diâmetro. As portas de patamar dos ascensores devem ser instaladas de forma a reduzir ao mínimo o risco de entalamento do vestuário.",
+          "keywords": [
+            "porta patamar cheia",
+            "dedo prova 10mm",
+            "entalamento vestuário",
+            "não abre para caixa"
+          ],
+          "relatedViolations": [
+            "porta permite passagem dedo 10mm = C1",
+            "porta abre para interior da caixa = C1"
+          ]
+        },
+        {
+          "number": 33,
+          "classification": "C1",
+          "title": "Resistência mecânica das portas de patamar",
+          "text": "As portas de patamar e seus ferrolhos devem ter resistência mecânica e rigidez suficientes: estrutura metálica, montadas em quadro metálico, indeformáveis. Vidro, vidro aramado ou plástico apenas em visores com dimensão ≤15cm. As portas fechadas e encravadas devem resistir sem deformação permanente a uma força horizontal de 30 kgf distribuída numa superfície de 25 cm². Nos ascensores sem portas de cabina: deformação elástica ≤5mm.",
+          "keywords": [
+            "estrutura metálica",
+            "30 kgf",
+            "25 cm²",
+            "visor 15cm",
+            "resistência mecânica"
+          ],
+          "relatedViolations": [
+            "porta se deforma = C1",
+            "visor >15cm = C2",
+            "porta não-metálica sem autorização = C1"
+          ]
+        },
+        {
+          "number": 34,
+          "classification": "C2",
+          "title": "Altura mínima dos acessos de patamar dos ascensores",
+          "text": "A altura livre dos acessos de patamar dos ascensores não pode ser inferior a 1,95 m.",
+          "keywords": [
+            "altura acesso patamar",
+            "1,95m",
+            "altura livre"
+          ],
+          "relatedViolations": [
+            "acesso patamar <1,95m = C2"
+          ]
+        },
+        {
+          "number": 37,
+          "classification": "C1",
+          "title": "Portas de patamar de movimento automático",
+          "text": "Nos ascensores com portas automáticas: (a) energia cinética dos painéis à velocidade média de fecho ≤9,8 J; (b) força para manter a porta parada em qualquer posição do percurso de fecho ≤15 kgf; (c) dispositivo de protecção que provoque a paragem ou paragem+reabertura quando encontrar obstáculo ao fechar.",
+          "keywords": [
+            "porta automática",
+            "9,8 J energia cinética",
+            "15 kgf",
+            "dispositivo protecção obstáculo"
+          ],
+          "relatedViolations": [
+            "porta sem dispositivo anti-esmagamento = C1",
+            "energia cinética >9,8J = C1"
+          ]
         },
         {
           "number": 39,
-          "classification": "C1"
+          "classification": "C1",
+          "title": "Encravamento das portas de patamar",
+          "text": "Dispositivos de encravamento silenciosos e seguros. Regras: (a) todas as portas permanentemente encravadas excepto no patamar onde a cabina está; (b) cabina não inicia movimento sem todas as portas encravadas; (c) admite-se desencravamento da porta de destino quando a soleira da cabina entra na zona de desencravamento. Zona de desencravamento: ±30cm (portas automáticas) ou ±17cm (manuais). Gravidade não pode favorecer o desencravamento. Chave especial de emergência conservada na casa das máquinas.",
+          "keywords": [
+            "encravamento",
+            "porta patamar",
+            "zona desencravamento",
+            "±30cm",
+            "±17cm",
+            "chave emergência"
+          ],
+          "relatedViolations": [
+            "porta abre sem cabine no patamar = C1 IMEDIATO (risco queda na caixa)"
+          ]
+        },
+        {
+          "number": 40,
+          "classification": "C1",
+          "title": "Dispositivos eléctricos de controle do encravamento e fecho das portas",
+          "text": "Os elevadores devem ter dispositivos eléctricos que garantam: (1) cabina só se move com todas as portas encravadas; (2) cabina não se move se alguma porta estiver aberta, e imobiliza se alguma porta for aberta durante o movimento. Os contactos devem ser separados mesmo que acidentalmente colados. Abertura das portas com cabina em movimento deve exigir pelo menos 2 manobras anormais simultâneas.",
+          "keywords": [
+            "controlo eléctrico",
+            "porta aberta cabina imobiliza",
+            "dois contactos simultâneos"
+          ],
+          "relatedViolations": [
+            "circuito de segurança das portas inoperacional = C1"
+          ]
+        },
+        {
+          "number": 42,
+          "classification": "C1",
+          "title": "Dimensões e lotação da cabina dos ascensores",
+          "text": "Altura interior da cabina ≥2m. Relação capacidade-carga (exemplos): 1 pessoa=75kg/0,37m², 2=150kg/0,58m², 3=225kg/0,70m², 4=300kg/0,82m², 5=375kg/0,95m², 6=450kg/1,09m², 8=600kg/1,34m², 10=750kg/1,60m², 13=975kg/1,96m², 16=1200kg/2,35m², 20=1500kg/2,82m². Para n>20 pessoas: carga ≥n×75kg e área = 2,82m² + (n-20)×0,12m².",
+          "keywords": [
+            "dimensões cabina",
+            "2m altura",
+            "lotação",
+            "75kg por pessoa",
+            "área mínima"
+          ],
+          "relatedViolations": [
+            "cabina <2m altura = C1",
+            "sobrelotação = C2",
+            "área mínima por pessoa não respeitada = C2"
+          ]
+        },
+        {
+          "number": 52,
+          "classification": "C2",
+          "title": "Ventilação da cabina dos ascensores",
+          "text": "A cabina dos ascensores deve ter boa ventilação, tendo em conta que as pessoas podem ser forçadas a permanecer na cabina em caso de avaria ou falta de energia. As aberturas de ventilação, quando acessíveis, não devem permitir a passagem de uma esfera de 10mm de diâmetro.",
+          "keywords": [
+            "ventilação cabina",
+            "avaria",
+            "esfera 10mm"
+          ],
+          "relatedViolations": [
+            "cabina sem ventilação = C2",
+            "aberturas de ventilação >10mm = C2"
+          ]
+        },
+        {
+          "number": 53,
+          "classification": "C2",
+          "title": "Iluminação eléctrica da cabina dos ascensores",
+          "text": "A cabina deve ter iluminação eléctrica suficiente, não dependente de interruptor na cabina. A iluminação deve ser permanente, podendo ser interrompida apenas quando a cabina estiver estacionada num patamar com todas as portas fechadas — e decorridos pelo menos 5 segundos após o fecho da última porta.",
+          "keywords": [
+            "iluminação cabina",
+            "permanente",
+            "5 segundos",
+            "sem interruptor na cabina"
+          ],
+          "relatedViolations": [
+            "cabina sem iluminação = C2",
+            "luz desliga <5s = C3"
+          ]
+        },
+        {
+          "number": 54,
+          "classification": "C2",
+          "title": "Desnível entre soleiras de cabina e de patamar",
+          "text": "Quando a cabina estacionar num patamar, a diferença de nível entre a soleira da cabina e a soleira da porta de patamar não deve exceder 5 cm, qualquer que seja a carga até ao máximo admissível.",
+          "keywords": [
+            "desnível soleiras",
+            "5cm",
+            "nivelamento",
+            "renivelamento"
+          ],
+          "relatedViolations": [
+            "desnível >5cm = C2 (risco tropeço/queda)",
+            "desnível >2cm = aviso"
+          ]
+        },
+        {
+          "number": 56,
+          "classification": "C1",
+          "title": "Natureza da suspensão — cabos de aço",
+          "text": "A cabina e o contrapeso devem ser suspensos por cabos de aço próprios para elevadores, sem emendas. Tensão de ruptura dos fios: entre 120 e 180 kgf/mm². Os cabos movem-se por atrito em rodas de aderência ou envolvem-se em tambores de enrolamento. Nos monta-cargas podem usar-se cadeias.",
+          "keywords": [
+            "cabos aço",
+            "sem emendas",
+            "120-180 kgf/mm²",
+            "aderência"
+          ],
+          "relatedViolations": [
+            "cabos com emendas = C1",
+            "cabos fora da especificação = C1"
+          ]
+        },
+        {
+          "number": 57,
+          "classification": "C1",
+          "title": "Número mínimo de cabos de suspensão",
+          "text": "Ascensores de roda de aderência: mínimo 2 cabos de suspensão. Ascensores de tambor de enrolamento: mínimo 2 cabos para a cabina e 2 para o contrapeso. Para monta-cargas: se cabina+carga nominal >100kg, aplicam-se as mesmas regras.",
+          "keywords": [
+            "2 cabos mínimo",
+            "suspensão",
+            "cabos cabina",
+            "cabos contrapeso"
+          ],
+          "relatedViolations": [
+            "menos de 2 cabos = C1 CRÍTICO"
+          ]
+        },
+        {
+          "number": 58,
+          "classification": "C1",
+          "title": "Diâmetro mínimo dos cabos de suspensão",
+          "text": "Os cabos de suspensão dos ascensores devem ter diâmetro não inferior a 8 mm.",
+          "keywords": [
+            "diâmetro cabos",
+            "8mm mínimo",
+            "cabos suspensão ascensores"
+          ],
+          "relatedViolations": [
+            "cabos <8mm de diâmetro = C1"
+          ]
+        },
+        {
+          "number": 59,
+          "classification": "C2",
+          "title": "Relação diâmetro rodas/tambores e diâmetro cabos",
+          "text": "A relação entre o diâmetro das rodas ou tambores e o diâmetro nominal dos cabos de suspensão deve ser ≥40. Exemplo: para cabo de 8mm, a roda deve ter diâmetro ≥320mm.",
+          "keywords": [
+            "relação diâmetros",
+            "≥40",
+            "roda/cabo",
+            "fadiga cabos"
+          ],
+          "relatedViolations": [
+            "relação diâmetro roda/cabo <40 = C2 (fadiga acelerada dos cabos)"
+          ]
+        },
+        {
+          "number": 60,
+          "classification": "C1",
+          "title": "Coeficiente de segurança dos cabos",
+          "text": "Coeficiente de segurança mínimo: 12 (ascensores com 3+ cabos), 16 (ascensores com 2 cabos), 8 (monta-cargas). Cálculo: γ = (Frk × n) / P, onde Frk=força ruptura característica, n=número de secções de cabo, P=carga máxima suspensa estática (cabina carregada + peso cabina + peso cabos). Para cadeias (monta-cargas): coeficiente ≥6.",
+          "keywords": [
+            "coeficiente segurança",
+            "γ=12 três cabos",
+            "γ=16 dois cabos",
+            "γ=8 monta-cargas"
+          ],
+          "relatedViolations": [
+            "coeficiente de segurança abaixo do mínimo = C1"
+          ]
         },
         {
           "number": 65,
-          "classification": "C1"
+          "classification": "C1",
+          "title": "Pára-quedas dos ascensores",
+          "text": "A cabina dos ascensores deve ter pára-quedas comandado por limitador de velocidade, capaz de a parar na descida com carga nominal à velocidade de actuação do limitador. Para velocidade nominal >1 m/s: pára-quedas de acção NÃO instantânea, desaceleração instantânea ≤2,5g com 100kg na cabina. O contrapeso: se houver pára-quedas, também de acção não-instantânea para v>1m/s, e comandado por limitador se v>1,50m/s. Pára-quedas devem ser protegidos contra accionamento abusivo.",
+          "keywords": [
+            "pára-quedas cabina",
+            "acção não instantânea",
+            "2,5g",
+            "v>1m/s",
+            "limitador velocidade"
+          ],
+          "relatedViolations": [
+            "pára-quedas inoperacional = C1 CRÍTICO (risco queda livre)",
+            "desaceleração >2,5g = C1"
+          ]
         },
         {
           "number": 67,
-          "classification": "C1"
+          "classification": "C1",
+          "title": "Limitador de velocidade",
+          "text": "Deve actuar antes de a velocidade da cabina atingir: para v≤0,40m/s → actuação ≤0,60m/s; para 0,40<v≤1m/s → actuação ≤1,40×v; para 1<v≤1,50m/s → actuação ≤1,25×v; para v>1,50m/s → actuação ≤1,20×v. Cabo do limitador: muito flexível, protegido da oxidação, diâmetro ≥6mm, coeficiente segurança ≥5. Os limitadores de velocidade devem ser SELADOS.",
+          "keywords": [
+            "limitador velocidade",
+            "actuação",
+            "velocidade 1,40×v",
+            "cabo 6mm",
+            "selado"
+          ],
+          "relatedViolations": [
+            "limitador não selado = C1",
+            "limitador inoperacional = C1 CRÍTICO",
+            "cabo limitador <6mm = C1"
+          ]
+        },
+        {
+          "number": 72,
+          "classification": "C1",
+          "title": "Pára-choques (buffers)",
+          "text": "Todos os elevadores devem ter pára-choques que suportem sem deformação permanente o impacto da cabina e do contrapeso no fundo da caixa. Amortecedores: de mola ou hidráulicos para v≤1,50m/s; hidráulicos OBRIGATÓRIOS para v>1,50m/s. Curso mínimo: 0,10×V² metros (mola) ou 0,05×V² metros (hidráulico). Amortecedores hidráulicos: desaceleração ≤2,5g, retorno do êmbolo subordina funcionamento, nível de líquido verificável.",
+          "keywords": [
+            "pára-choques",
+            "buffer",
+            "amortecedor hidráulico",
+            "0,10×V²",
+            "0,05×V²"
+          ],
+          "relatedViolations": [
+            "pára-choques deteriorados = C1",
+            "buffer hidráulico sem fluido = C1 para v>1,5m/s"
+          ]
         },
         {
           "number": 78,
-          "classification": "C2"
+          "classification": "C2",
+          "title": "Folgas entre a cabina e a parede em frente do acesso (cabina com portas)",
+          "text": "Folga entre a porta da cabina fechada e a parede da caixa em frente: ≤12cm (excepto se a porta tiver encravamento e só possa iniciar movimento depois de encravada). Folga entre soleira da cabina e soleiras das portas de patamar: ≤2cm (portas manuais) ou ≤3,5cm (portas automáticas). Folga entre porta da cabina e porta de patamar (ambas fechadas): ≤12cm.",
+          "keywords": [
+            "folga cabina",
+            "12cm",
+            "2cm soleira",
+            "3,5cm automáticas",
+            "folga portas"
+          ],
+          "relatedViolations": [
+            "folga soleira >2cm = C2",
+            "folga soleira >3,5cm automáticas = C2"
+          ]
         },
         {
           "number": 81,
-          "classification": "C1"
+          "classification": "C1",
+          "title": "Freio de segurança",
+          "text": "Sistema de frenagem que automática e mecanicamente imobiliza o elevador na falta de corrente de alimentação do motor ou da corrente de comando. Aplica-se directamente no veio do sem-fim ou no veio da roda/tambor que move os cabos. Deve parar a cabina na descida com carga nominal+25%, à velocidade nominal. Em funcionamento normal, a desfrenagem é assegurada por corrente eléctrica permanente (fail-safe: corte de corrente = travar). O freio pode ser accionado manualmente, mas exige presença permanente de quem o efectua.",
+          "keywords": [
+            "freio segurança",
+            "fail-safe",
+            "corrente permanente",
+            "carga+25%",
+            "manual"
+          ],
+          "relatedViolations": [
+            "freio que não para a cabina = C1 CRÍTICO",
+            "freio desactivado = C1 IMEDIATO"
+          ]
         },
         {
           "number": 85,
-          "classification": "C1"
+          "classification": "C2",
+          "title": "Resguardo das máquinas",
+          "text": "As peças salientes das máquinas, nomeadamente volantes, engrenagens e correias, devem ser devidamente resguardadas sempre que possam pôr em perigo a segurança das pessoas.",
+          "keywords": [
+            "resguardo máquinas",
+            "protecção mecânica",
+            "volantes engrenagens correias"
+          ],
+          "relatedViolations": [
+            "partes móveis sem protecção = C1 (risco entalamento)"
+          ]
+        },
+        {
+          "number": 93,
+          "classification": "C2",
+          "title": "Dispositivo de paragem na cabina (botão STOP)",
+          "text": "No interior da cabina dos ascensores sem portas: botão ou interruptor vermelho, situado acima dos outros botões, com designação 'Stop'/'Parar'/'Paragem' bem visível, que permita parar o ascensor em emergência. O restabelecimento da marcha só deve ser possível por intervenção de pessoa dentro da cabina.",
+          "keywords": [
+            "botão stop",
+            "cor vermelha",
+            "acima dos outros",
+            "cabina sem portas"
+          ],
+          "relatedViolations": [
+            "ausência botão STOP em cabina sem portas = C2"
+          ]
+        },
+        {
+          "number": 94,
+          "classification": "C2",
+          "title": "Dispositivo de alarme",
+          "text": "Os ascensores devem ter dispositivo de alarme com comando na cabina, identificado com 'Alarme' ou símbolo de sino, que produza sinal sonoro bem característico e audível no local do encarregado de serviço ou, em edifícios colectivos, no átrio de entrada e habitação do porteiro. Se eléctrico: alimentado por acumulador permanentemente recarregável, com capacidade para funcionar mesmo com falha de rede por várias horas.",
+          "keywords": [
+            "alarme",
+            "sino",
+            "acumulador",
+            "signal sonoro",
+            "porteiro átrio"
+          ],
+          "relatedViolations": [
+            "alarme inoperacional = C2",
+            "alarme não audível no local devido = C2"
+          ]
+        },
+        {
+          "number": 97,
+          "classification": "C2",
+          "title": "Avisos obrigatórios na cabina dos ascensores",
+          "text": "Na cabina deve afixar-se: (1) número máximo de pessoas; (2) carga máxima em kg; (3) nome, morada e número de telefone da entidade encarregada da conservação (EMIE). Nos monta-camas e ascensores especiais (art.42 nº3/4): caracteres ≥2cm. Também obrigatório: 'EVITAR A UTILIZAÇÃO DO ASCENSOR POR CRIANÇAS COM MENOS DE 10 ANOS DE IDADE QUANDO NÃO ACOMPANHADAS POR ADULTOS'.",
+          "keywords": [
+            "aviso capacidade",
+            "placa identificação EMIE",
+            "telefone conservação",
+            "crianças 10 anos"
+          ],
+          "relatedViolations": [
+            "sem placa EMIE/telefone = C2",
+            "sem indicação capacidade = C2",
+            "sem aviso crianças = C3"
+          ]
+        },
+        {
+          "number": 108,
+          "classification": "C1",
+          "title": "Conservação e inspecção obrigatória",
+          "text": "Pelo menos 1x por mês: inspecção e realização de trabalhos/reparações necessários à segurança e continuidade de funcionamento. Pelo menos 2x por ano: revisão pormenorizada de todos os órgãos, especialmente sobre dispositivos de segurança, isolamento eléctrico e ligações à terra. Durante paragens por avaria ou conservação: afixar avisos esclarecedores nas portas de patamar.",
+          "keywords": [
+            "mensal",
+            "semestral",
+            "revisão periódica",
+            "dispositivos segurança",
+            "aviso paragem"
+          ],
+          "relatedViolations": [
+            "sem registo de manutenção mensal = C1",
+            "sem revisão semestral = C1"
+          ]
         },
         {
           "number": 109,
-          "classification": "C1"
+          "classification": "C1",
+          "title": "Substituição obrigatória dos cabos de suspensão",
+          "text": "Os cabos de suspensão devem ser imediatamente substituídos quando: (a) o número de fios partidos no comprimento de um passo de cableagem for superior a 10% do total de fios; (b) existirem rupturas concentradas num ponto; (c) apresentarem sinais pronunciados de corrosão.",
+          "keywords": [
+            "substituição cabos",
+            "10% fios partidos",
+            "corrosão",
+            "rupturas concentradas",
+            "passo cableagem"
+          ],
+          "relatedViolations": [
+            ">10% fios partidos = C1 IMEDIATO (substituição urgente)",
+            "cabo com corrosão severa = C1"
+          ]
+        },
+        {
+          "number": 110,
+          "classification": "info",
+          "title": "Registo da conservação (livro do elevador)",
+          "text": "Na casa das máquinas deve existir, por cada elevador, um livro aprovado pela DGEG, com identificação do fabricante e da entidade responsável pela conservação, onde constem todas as revisões e trabalhos executados com as respectivas datas.",
+          "keywords": [
+            "livro elevador",
+            "registo conservação",
+            "casa máquinas",
+            "histórico manutenção"
+          ],
+          "relatedViolations": [
+            "sem livro de registo = C2",
+            "livro desactualizado = C3"
+          ]
         }
       ],
       "penalties": {
@@ -513,7 +1129,244 @@
         "exercicio_sem_registo_DGE": "€7500 a €37500",
         "pessoa_singular_maximo": "€3750"
       },
-      "authority": "DGEG — Direção-Geral de Energia e Geologia"
+      "authority": "DGEG — Direção-Geral de Energia e Geologia",
+      "articles": [
+        {
+          "number": 1,
+          "title": "Objeto e âmbito",
+          "text": "Aplica-se a ascensores, monta-cargas, escadas mecânicas e tapetes rolantes após entrada em serviço. Excluídos: monta-cargas <100 kg.",
+          "keywords": [
+            "âmbito",
+            "manutenção",
+            "inspeção"
+          ],
+          "relatedViolations": []
+        },
+        {
+          "number": 2,
+          "title": "Definições",
+          "text": "EMIE — Empresa de Manutenção de Instalações de Elevação. EIIE — Entidade Inspetora de Instalações de Elevação. Proprietário — responsável legal pela manutenção.",
+          "keywords": [
+            "EMIE",
+            "EIIE",
+            "proprietário"
+          ],
+          "relatedViolations": []
+        },
+        {
+          "number": 5,
+          "title": "Manutenção obrigatória",
+          "text": "§1 Proprietário obrigado a celebrar contrato com EMIE certificada. §2 Manutenção mínima mensal obrigatória. §3 Contrato cobre visitas mensais, emergências e peças de desgaste normal.",
+          "keywords": [
+            "contrato",
+            "manutenção mensal",
+            "EMIE"
+          ],
+          "relatedViolations": [
+            "sem contrato = C2",
+            "sem manutenção = C1 se defeito grave acumulado"
+          ]
+        },
+        {
+          "number": 6,
+          "title": "Livro de manutenção",
+          "text": "Cada elevador deve ter livro de manutenção físico ou digital. Cada visita mensal deve ser registada com data, técnico e trabalhos. Disponível à EIIE durante inspeções.",
+          "keywords": [
+            "livro manutenção",
+            "registos",
+            "visitas"
+          ],
+          "relatedViolations": [
+            "ausência >3 meses = C2"
+          ]
+        },
+        {
+          "number": 7,
+          "title": "Contrato de manutenção",
+          "text": "Contrato deve identificar EMIE (nome, NIF, registo DGEG), frequência mínima mensal e âmbito de trabalhos. Contratos com EMIE não registada = nulos.",
+          "keywords": [
+            "contrato",
+            "DGEG",
+            "registo"
+          ],
+          "relatedViolations": [
+            "EMIE sem registo = C1 (responsabilidade)"
+          ]
+        },
+        {
+          "number": 8,
+          "title": "Comunicação de anomalias",
+          "text": "EMIE obrigada a comunicar C1 ou C2 ao proprietário por escrito em 48 horas. C1: comunicação imediata + imobilização obrigatória antes de sair.",
+          "keywords": [
+            "anomalia",
+            "C1",
+            "C2",
+            "comunicação",
+            "48 horas"
+          ],
+          "relatedViolations": [
+            "não comunicar C1 = responsabilidade criminal"
+          ]
+        },
+        {
+          "number": 10,
+          "title": "Inspeção periódica",
+          "text": "§1 Proprietário obrigado a realizar inspeção periódica por EIIE acreditada IPAC. §2 Periodicidade: 2 anos (aprovação) ou 180 dias (reprovação). §3 Certificado afixado na cabine.",
+          "keywords": [
+            "inspeção periódica",
+            "EIIE",
+            "IPAC",
+            "2 anos",
+            "180 dias"
+          ],
+          "relatedViolations": [
+            "sem inspeção = coima €250-€44.000"
+          ]
+        },
+        {
+          "number": 11,
+          "title": "Conteúdo da inspeção",
+          "text": "EIIE verifica: estrutura da caixa, cabine e portas, sistema de tração/hidráulico, dispositivos de segurança, instalação elétrica, casa de máquinas, comunicação de emergência, documentação.",
+          "keywords": [
+            "para-quedas",
+            "portas",
+            "cabos",
+            "freio",
+            "casa máquinas"
+          ],
+          "relatedViolations": []
+        },
+        {
+          "number": 12,
+          "title": "Resultados e cláusulas",
+          "text": "Aprovado: sem C1 ou C2. Reprovado: ≥1 cláusula C1 (imobilização imediata) ou C2. §4 EIIE envia cópia do relatório à câmara municipal.",
+          "keywords": [
+            "aprovado",
+            "reprovado",
+            "cláusula",
+            "câmara"
+          ],
+          "relatedViolations": []
+        },
+        {
+          "number": 13,
+          "title": "Imobilização imediata (C1)",
+          "text": "§1 EIIE tem poder e obrigação de imobilizar elevador no próprio ato de inspeção se encontrar C1. §2 Reativação só após: (a) correção comprovada; (b) nova inspeção pela EIIE. §3 Colocar em serviço após imobilização = crime.",
+          "keywords": [
+            "imobilização",
+            "C1",
+            "reativação",
+            "EIIE"
+          ],
+          "relatedViolations": [
+            "manter em serviço após C1 = crime art.º 291 CP + coima €44.000"
+          ]
+        },
+        {
+          "number": 14,
+          "title": "Comunicação de acidentes",
+          "text": "§1 Proprietário/EMIE obrigados a comunicar qualquer acidente à câmara municipal e DGEG em 24 horas. §2 Câmara pode ordenar inspeção extraordinária imediata.",
+          "keywords": [
+            "acidente",
+            "24 horas",
+            "câmara",
+            "DGEG"
+          ],
+          "relatedViolations": [
+            "não comunicar = coima €2.500-€25.000"
+          ]
+        },
+        {
+          "number": 16,
+          "title": "Modernização",
+          "text": "§1 Modificação significativa (motor, portas, quadro, cabos portadores) exige: (a) projeto de engenheiro; (b) autorização câmara (alguns municípios); (c) inspeção de verificação. §2 Cumprir EN 81-80:2020.",
+          "keywords": [
+            "modernização",
+            "projeto",
+            "engenheiro",
+            "EN 81-80",
+            "câmara"
+          ],
+          "relatedViolations": [
+            "modernização sem inspeção = C1 se elevador em serviço"
+          ]
+        },
+        {
+          "number": 17,
+          "title": "Registo de instalações",
+          "text": "Todos os elevadores devem estar registados no SINIME (Sistema Nacional de Instalações de Manutenção de Elevadores), incluindo localização, fabricante, EMIE e EIIE.",
+          "keywords": [
+            "SINIME",
+            "registo",
+            "fabricante"
+          ],
+          "relatedViolations": [
+            "elevador não registado = infração do proprietário"
+          ]
+        },
+        {
+          "number": 19,
+          "title": "Competências das câmaras municipais",
+          "text": "§1 Câmaras fiscalizam cumprimento de inspeções periódicas. §2 Podem solicitar relatórios a qualquer momento. §3 Podem ordenar inspeção extraordinária por queixa ou suspeita de perigo. §4 Têm poder de interditar e apor selos.",
+          "keywords": [
+            "câmara municipal",
+            "fiscalização",
+            "interdição",
+            "selo"
+          ],
+          "relatedViolations": []
+        },
+        {
+          "number": 20,
+          "title": "Requisitos EMIE",
+          "text": "§1 Registo na DGEG obrigatório antes de qualquer atividade. §2 Requisitos: capacidade técnica comprovada, seguro de responsabilidade civil obrigatório, pessoal com formação certificada.",
+          "keywords": [
+            "EMIE",
+            "DGEG",
+            "seguro",
+            "formação"
+          ],
+          "relatedViolations": [
+            "EMIE sem registo = coima €7.500-€37.500"
+          ]
+        },
+        {
+          "number": 22,
+          "title": "Requisitos EIIE",
+          "text": "§1 Acreditação IPAC obrigatória (NP EN ISO/IEC 17020). §2 Inspetores com formação em engenharia + especialização em elevadores. §3 EIIE não pode inspecionar elevadores que ela própria mantém.",
+          "keywords": [
+            "EIIE",
+            "IPAC",
+            "ISO 17020",
+            "independência"
+          ],
+          "relatedViolations": []
+        },
+        {
+          "number": 25,
+          "title": "Responsabilidade do proprietário",
+          "text": "§1 Proprietário é o primeiro responsável pela segurança. §2 Responsabilidade não é transferível para EMIE. §3 Em caso de acidente, proprietário e EMIE têm responsabilidade solidária.",
+          "keywords": [
+            "responsabilidade",
+            "proprietário",
+            "solidária",
+            "EMIE"
+          ],
+          "relatedViolations": []
+        },
+        {
+          "number": 42,
+          "title": "Coimas",
+          "text": "Sem contrato EMIE: €1.000-€5.000 (singular) / €2.500-€44.000 (coletiva). Sem livro manutenção: €250-€3.740. Sem inspeção periódica: €250-€44.000. Em serviço após C1: €2.500-€44.000 + criminal. Não comunicar acidente: €2.500-€25.000. EMIE sem registo: €7.500-€37.500.",
+          "keywords": [
+            "coima",
+            "multa",
+            "sanção",
+            "infração"
+          ],
+          "relatedViolations": []
+        }
+      ]
     },
     {
       "id": "LEI_65_2013",
@@ -535,6 +1388,74 @@
         "Reconhecimento de EIIE (Entidades Inspetoras de Instalações de Elevação)",
         "Controlo e fiscalização pela DGEG",
         "Registo nacional de EMIE e EIIE"
+      ],
+      "articles": [
+        {
+          "number": 3,
+          "title": "EMIE — requisitos de acesso",
+          "text": "Registo obrigatório na DGEG antes de qualquer atividade. Técnicos com formação específica em elevadores (curso reconhecido). Seguro de responsabilidade civil mínimo obrigatório. Renovação anual com prova de seguro válido.",
+          "keywords": [
+            "EMIE",
+            "registo DGEG",
+            "formação",
+            "seguro",
+            "renovação"
+          ],
+          "relatedViolations": [
+            "EMIE sem registo = coima €7.500-€37.500"
+          ]
+        },
+        {
+          "number": 4,
+          "title": "Técnicos de manutenção",
+          "text": "Devem ter diploma de curso técnico-profissional em eletromecânica OU experiência comprovada 3+ anos + formação complementar certificada. Devem conhecer EN 81 series, DL 320/2002, segurança em trabalho em altura.",
+          "keywords": [
+            "técnico",
+            "diploma",
+            "eletromecânica",
+            "3 anos",
+            "EN 81"
+          ],
+          "relatedViolations": []
+        },
+        {
+          "number": 8,
+          "title": "EIIE — acreditação",
+          "text": "Acreditação IPAC obrigatória segundo NP EN ISO/IEC 17020 (tipo A ou C). Inspetores com formação universitária em engenharia + especialização em elevadores. Proibição de inspecionar elevadores que a própria EIIE mantém. Responsabilidade civil pelos relatórios.",
+          "keywords": [
+            "EIIE",
+            "IPAC",
+            "ISO 17020",
+            "independência",
+            "responsabilidade civil"
+          ],
+          "relatedViolations": []
+        },
+        {
+          "number": 12,
+          "title": "Reconhecimento mútuo UE",
+          "text": "EMIE/EIIE registadas noutro Estado-Membro da UE podem operar em Portugal mediante comunicação prévia à DGEG (não necessitam de novo registo, mas devem cumprir DL 320/2002).",
+          "keywords": [
+            "UE",
+            "Estado-Membro",
+            "reconhecimento mútuo",
+            "DGEG"
+          ],
+          "relatedViolations": []
+        },
+        {
+          "number": 15,
+          "title": "Suspensão e cancelamento",
+          "text": "DGEG pode suspender ou cancelar registo de EMIE/EIIE em caso de: acidente grave por negligência, inspeções fraudulentas, falta de seguro válido, incumprimento reiterado.",
+          "keywords": [
+            "suspensão",
+            "cancelamento",
+            "DGEG",
+            "negligência",
+            "fraudulento"
+          ],
+          "relatedViolations": []
+        }
       ]
     },
     {
@@ -883,6 +1804,106 @@
           "client_explanation": "A avaliação de conformidade deve ser feita por organismo notificado acreditado pelo IPAC.",
           "severity": "critical"
         }
+      ],
+      "articles": [
+        {
+          "number": 1,
+          "title": "Âmbito",
+          "text": "Aplica-se a ascensores instalados permanentemente em edifícios, colocados no mercado após 9 junho 2017. Para anteriores: DL 320/2002 (manutenção) e normas vigentes à data.",
+          "keywords": [
+            "âmbito",
+            "ascensor novo",
+            "edifício"
+          ],
+          "relatedViolations": []
+        },
+        {
+          "number": 3,
+          "title": "Definições",
+          "text": "Ascensor: aparelho elevação com cabine que serve níveis definidos, inclinação >15° em relação à vertical. Instalador: assume responsabilidade pelo projeto, fabrico, instalação e colocação em serviço. Componentes de segurança: 14 componentes listados no Anexo III.",
+          "keywords": [
+            "ascensor",
+            "instalador",
+            "componentes segurança",
+            "Anexo III"
+          ],
+          "relatedViolations": []
+        },
+        {
+          "number": 5,
+          "title": "Marcação CE",
+          "text": "§1 Todo ascensor novo DEVE ter marcação CE. §2 CE significa cumprimento dos Requisitos Essenciais de Saúde e Segurança (RESS) do Anexo I da Diretiva 2014/33/UE. §3 Sem CE = proibido colocar em serviço.",
+          "keywords": [
+            "marcação CE",
+            "RESS",
+            "Diretiva 2014/33/UE"
+          ],
+          "relatedViolations": [
+            "sem marcação CE = proibido colocar em serviço"
+          ]
+        },
+        {
+          "number": 6,
+          "title": "Declaração UE de Conformidade",
+          "text": "§1 Instalador emite Declaração UE de Conformidade antes de colocar em serviço. §2 Contém: identificação, normas aplicadas, referência ao organismo notificado. §3 Conservar por 10 anos.",
+          "keywords": [
+            "declaração conformidade",
+            "instalador",
+            "organismo notificado",
+            "10 anos"
+          ],
+          "relatedViolations": []
+        },
+        {
+          "number": 9,
+          "title": "Organismo Notificado (ON)",
+          "text": "§1 Instalador deve envolver ON para avaliação de conformidade. §2 Em Portugal: ISQ (Instituto de Soldadura e Qualidade) e outros. §3 ON verifica projeto, produção ou produto final (3 módulos alternativos).",
+          "keywords": [
+            "organismo notificado",
+            "ISQ",
+            "avaliação conformidade",
+            "módulos"
+          ],
+          "relatedViolations": []
+        },
+        {
+          "number": 14,
+          "title": "Obrigações do instalador",
+          "text": "(a) Garantir RESS do Anexo I. (b) Elaborar documentação técnica completa. (c) Realizar avaliação de conformidade. (d) Emitir Declaração CE e apor marcação CE. (e) Conservar documentação 10 anos. (f) Fornecer instruções em português.",
+          "keywords": [
+            "instalador",
+            "obrigações",
+            "documentação",
+            "10 anos",
+            "português"
+          ],
+          "relatedViolations": []
+        },
+        {
+          "number": 20,
+          "title": "Modificações substanciais",
+          "text": "Modificação substancial (substituição de motor, mudança de velocidade ou carga nominal): ascensor considerado NOVO, novo processo de avaliação de conformidade completo exigido (novo CE + novo ON).",
+          "keywords": [
+            "modificação substancial",
+            "novo CE",
+            "organismo notificado"
+          ],
+          "relatedViolations": [
+            "modernização sem novo CE quando exigível = infração grave"
+          ]
+        },
+        {
+          "number": 26,
+          "title": "Fiscalização",
+          "text": "ASAE fiscaliza colocação no mercado (ascensores novos). DGEG supervisiona e coordena aplicação do DL 58/2017. Câmaras municipais fiscalizam inspeções periódicas (DL 320/2002).",
+          "keywords": [
+            "ASAE",
+            "DGEG",
+            "câmara",
+            "fiscalização"
+          ],
+          "relatedViolations": []
+        }
       ]
     },
     {
@@ -905,8 +1926,451 @@
         "sections_count": 1,
         "critical_articles": 4
       },
-      "inspection_points": [],
-      "articles": [],
+      "inspection_points": [
+        {
+          "article": "Art.39.º",
+          "requirement": "Encravamento mecânico das portas de patamar",
+          "urgency": "C1",
+          "deadline": "Imediato",
+          "client_explanation": "As portas dos patamares devem ter encravamento mecânico que impede abri-las quando a cabina não está presente. Sem este dispositivo, qualquer pessoa pode abrir a porta e cair na caixa de elevação, causando morte ou lesões graves.",
+          "description": "Testar: tentar abrir porta de patamar com cabina noutro piso — não deve abrir. Verificar que cabina não arranca com qualquer porta de patamar aberta.",
+          "common_violations": [
+            "Porta abre sem cabina presente = C1 imediato",
+            "Encravamento mecanicamente danificado = C1",
+            "Apenas encravamento elétrico sem mecânico = C2"
+          ]
+        },
+        {
+          "article": "Art.40.º",
+          "requirement": "Controlo elétrico de encravamento e fecho de todas as portas",
+          "urgency": "C1",
+          "deadline": "Imediato",
+          "client_explanation": "Para além do encravamento mecânico, os circuitos elétricos devem confirmar que todas as portas estão fechadas e encravadas antes do elevador poder arrancar. Se um contacto elétrico falhar, o elevador pode arrancar com porta aberta.",
+          "description": "Verificar circuitos elétricos: cada porta tem contacto de fecho E contacto de encravamento ligados em série no circuito de segurança. Testrar bypassar individualmente — o elevador não deve arrancar.",
+          "common_violations": [
+            "Contacto de porta em curto-circuito (bypass) = C1",
+            "Cabo partido no circuito de verificação de portas = C2",
+            "Contacto oxidado com falha intermitente = C2"
+          ]
+        },
+        {
+          "article": "Art.39.º n.º2",
+          "requirement": "Zona de desencravamento: ±30 cm (automáticas) ou ±17 cm (manuais)",
+          "urgency": "C2",
+          "deadline": "30 dias",
+          "client_explanation": "A 'zona de desencravamento' é a distância em que as portas de patamar podem ser abertas do interior da cabina para nivelamento em caso de emergência. Esta zona está limitada por lei para evitar quedas.",
+          "description": "Medir zona de desencravamento: para portas automáticas ≤ 2×30 cm centrados na soleira, para portas manuais ≤ 2×17 cm. Zona excessiva = risco de queda.",
+          "common_violations": [
+            "Zona de desencravamento excessiva = C2 (em modernização C1)",
+            "Dispositivo de desbloqueio ausente = C2"
+          ]
+        },
+        {
+          "article": "Art.32.º",
+          "requirement": "Portas de patamar não abrem para o interior da caixa",
+          "urgency": "C1",
+          "deadline": "Imediato",
+          "client_explanation": "As portas dos patamares devem abrir para fora ou lateralmente (dobradiças/corrediças), nunca para dentro da caixa do elevador. Uma porta a abrir para dentro poderia ser arrancada pela cabina em movimento.",
+          "description": "Verificar dobradiças e mecanismo de abertura: porta deve abrir para fora ou deslizar lateralmente. Com porta fechada, folga deve impedir entrada de dedo Ø10mm na caixa.",
+          "common_violations": [
+            "Porta abre para interior da caixa = C1",
+            "Folga entre porta e ombreira >10mm = C2",
+            "Dobradiças deterioradas com desvio = C2"
+          ]
+        },
+        {
+          "article": "Art.24.º",
+          "requirement": "Dimensões mínimas da casa das máquinas",
+          "urgency": "C2",
+          "deadline": "30 dias",
+          "client_explanation": "A casa das máquinas onde estão o motor e os aparelhos de controlo deve ter dimensões mínimas para que os técnicos possam trabalhar em segurança durante a manutenção.",
+          "description": "Verificar: altura livre ≥1,80 m; espaço livre à frente dos aparelhos ≥0,75 m; espaço de manobra ≥0,30 m nas zonas de trabalho.",
+          "common_violations": [
+            "Altura < 1,80 m = C2",
+            "Acesso obstruído por arrumos/equipamentos = C2",
+            "Porta da casa das máquinas não tranca = C2"
+          ]
+        },
+        {
+          "article": "Art.42.º",
+          "requirement": "Altura interior da cabina ≥ 2,00 m",
+          "urgency": "C2",
+          "deadline": "30 dias",
+          "client_explanation": "A cabina deve ter pelo menos 2 metros de altura interior para garantir a segurança e conforto dos utilizadores. Uma cabina baixa representa risco de pancada na cabeça.",
+          "description": "Medir altura interior da cabina em pelo menos 3 pontos (cantos e centro). Valor mínimo em qualquer ponto ≥ 2,00 m.",
+          "common_violations": [
+            "Altura < 2,00 m em elevador existente = C2 (regularizar em modernização)",
+            "Teto falso que reduz altura < 2,00 m = C2"
+          ]
+        },
+        {
+          "article": "Art.63.º",
+          "requirement": "Sistema de igualizacão de tensão dos cabos de suspensão",
+          "urgency": "C1",
+          "deadline": "Imediato",
+          "client_explanation": "Quando o elevador tem 2 ou mais cabos de suspensão, deve existir um dispositivo que equalize a tensão entre eles e um sensor que deteta elongamento desigual. Cabos com tensões diferentes desgastam-se de forma irregular e podem partir.",
+          "description": "Verificar dispositivo de equalização de tensão. Se ≥2 cabos: confirmar sensor de alongamento desigual ligado ao circuito de segurança. Verificar desgaste diferencial visível dos cabos.",
+          "common_violations": [
+            "Sensor elongamento desigual defeituoso/ausente = C1",
+            "Diferença de tensão entre cabos >10% = C2",
+            "Dispositivo equalizador bloqueado/travado = C2"
+          ]
+        },
+        {
+          "article": "Art.87.º (DR 13/80)",
+          "requirement": "Proteção elétrica do motor: sobrecarga, falta de fase e curto-circuito",
+          "urgency": "C2",
+          "deadline": "30 dias",
+          "client_explanation": "O motor de tração do elevador deve ter proteção elétrica contra sobrecarga, falta de fase e curto-circuito. Sem estas proteções o motor pode queimar ou causar incêndio.",
+          "description": "Verificar presença e funcionalidade de: (1) relé térmico de sobrecarga calibrado para corrente nominal do motor, (2) relé de falta de fase, (3) disjuntor de curto-circuito.",
+          "common_violations": [
+            "Relé térmico bypassado ou ausente = C2",
+            "Proteção de falta de fase ausente = C2",
+            "Disjuntor sobredimensionado (não protege) = C2"
+          ]
+        },
+        {
+          "article": "Art.93.º",
+          "requirement": "Botão STOP vermelho acessível na cabina (cabinas sem portas)",
+          "urgency": "C2",
+          "deadline": "30 dias",
+          "client_explanation": "Em cabinas sem portas (monta-cargas ou plataformas), deve existir um botão STOP de cor vermelha, claramente identificado, que pode ser acionado em caso de emergência.",
+          "description": "Botão vermelho deve estar acima de todos os outros botões de manobra, com designação 'STOP' ou 'PARAR' em letras de pelo menos 10mm, visível e acessível.",
+          "common_violations": [
+            "Botão STOP ausente = C2",
+            "Botão não é vermelho ou não está identificado = C3",
+            "Botão bloqueado mecanicamente = C2"
+          ]
+        },
+        {
+          "article": "Art.94.º",
+          "requirement": "Alarme sonoro funcional com bateria de emergência",
+          "urgency": "C2",
+          "deadline": "30 dias",
+          "client_explanation": "O elevador deve ter um alarme sonoro que funciona mesmo com a corrente cortada (bateria). O alarme deve ser audível na portaria, átrio ou noutro local vigiado para assistência em caso de encarceramento.",
+          "description": "Testar alarme: pressionar botão de alarme — deve soar em local vigiado (portaria/átrio). Simular corte de energia — alarme deve continuar a funcionar com bateria recarregável.",
+          "common_violations": [
+            "Alarme inaudível no local de receção = C2",
+            "Bateria de emergência descarregada/ausente = C2",
+            "Alarme não funciona = C1 (risco de encarceramento)"
+          ]
+        },
+        {
+          "article": "Art.95.º",
+          "requirement": "Avisos e instruções indeléveis e legíveis na cabina",
+          "urgency": "C3",
+          "deadline": "90 dias",
+          "client_explanation": "A cabina deve ter avisos obrigatórios (carga máxima, número de pessoas, contacto de emergência) com caracteres maiúsculas de pelo menos 10 mm em material durável e cor contrastante.",
+          "description": "Verificar: (1) placa de carga máxima em kg e n.º de pessoas, (2) instruções de emergência, (3) caracteres ≥10 mm em maiúsculas, (4) cor contrastante com fundo, (5) material durável/indelével.",
+          "common_violations": [
+            "Placa de carga máxima ausente/ilegível = C3",
+            "Caracteres < 10 mm = C3",
+            "Papel colado (não durável) = C3"
+          ]
+        },
+        {
+          "article": "Art.102.º",
+          "requirement": "Placa de identificação do limitador de velocidade",
+          "urgency": "C3",
+          "deadline": "90 dias",
+          "client_explanation": "O limitador de velocidade — dispositivo que acciona o pára-quedas em caso de sobrevelocidade — deve ter uma placa de identificação com as suas características técnicas para verificação em inspeção.",
+          "description": "Verificar placa no limitador de velocidade com: diâmetro do cabo, tipo de limitador, material do cabo, velocidade de atuação. Dados devem corresponder ao projeto aprovado.",
+          "common_violations": [
+            "Placa ausente ou ilegível = C3",
+            "Velocidade de atuação não corresponde aos dados = C2",
+            "Limitador sem placa após substituição = C3"
+          ]
+        },
+        {
+          "article": "Art.103.º",
+          "requirement": "Identificação dos circuitos no quadro elétrico da casa das máquinas",
+          "urgency": "C3",
+          "deadline": "90 dias",
+          "client_explanation": "Todos os circuitos elétricos do quadro da casa das máquinas devem estar identificados/etiquetados para que em caso de emergência ou manutenção o técnico possa localizar e desligar o circuito correto.",
+          "description": "Verificar etiquetagem de todos os circuitos no quadro elétrico: disjuntores, contactores, relés e bornes devem ter identificação legível e permanente.",
+          "common_violations": [
+            "Circuitos não identificados = C3",
+            "Etiquetas caídas/ilegíveis = C3",
+            "Quadro elétrico sem esquema atualizado = C3"
+          ]
+        },
+        {
+          "article": "Art.111.º (DR 13/80)",
+          "requirement": "Vedação da caixa em elevadores antigos (anterior a 1980)",
+          "urgency": "C2",
+          "deadline": "30 dias",
+          "client_explanation": "Nos elevadores instalados antes de 1980, a caixa deve ser vedada em toda a sua altura. Caixas abertas ou parcialmente abertas permitem que objetos caiam sobre a cabina ou pessoas, e propagação de fumo em caso de incêndio.",
+          "description": "Verificar vedação da caixa em toda a altura: paredes sólidas ou rede metálica com fio ≥3mm e malha ≤75×75mm. Rede apenas permitida acima de 2,50m dos patamares.",
+          "common_violations": [
+            "Caixa aberta ou sem vedação = C2 (em antigos pre-1980)",
+            "Rede com malha >75×75mm = C2",
+            "Fio de rede < 3mm = C2",
+            "Rede abaixo de 2,50m do patamar = C2"
+          ]
+        }
+      ],
+      "articles": [
+        {
+          "number": 2,
+          "classification": "info",
+          "title": "Campo de aplicação",
+          "text": "Aplica-se a elevadores de tracção eléctrica ou comando eléctrico para uso público ou particular. NÃO abrange: elevadores hidráulicos, tipo nora, cremalheira, maquinaria teatral, monta-materiais de obras, elevadores de minas/navios, monta-cargas com carga nominal ≤10 kg. A fiscalização pode autorizar variantes ou dispensas se a segurança for mantida.",
+          "keywords": [
+            "campo aplicação",
+            "exclusões",
+            "hidráulicos",
+            "monta-cargas"
+          ],
+          "relatedViolations": []
+        },
+        {
+          "number": 3,
+          "classification": "info",
+          "title": "Definições técnicas (30 termos actualizados)",
+          "text": "Encravamento: sistema electro-mecânico que aferrolha porta fechada, impossibilitando abertura sem meios especiais. Zona de desencravamento: espaço abaixo+acima soleira (máx 2×30cm automáticas / 2×17cm manuais) onde porta pode desencraVar. Carga nominal: carga máxima indicada na cabina para funcionamento seguro. Pára-quedas: dispositivo que fixa cabina/contrapeso às guias em caso de excesso de velocidade ou rotura de cabos. Limitador de velocidade: actua pára-quedas se excesso de velocidade. Outros: cabina, caixa, casa das máquinas, ferrolho, contrapeso, roda de aderência, guias, monta-cargas.",
+          "keywords": [
+            "definições",
+            "encravamento",
+            "zona desencravamento",
+            "pára-quedas",
+            "limitador velocidade",
+            "carga nominal"
+          ],
+          "relatedViolations": []
+        },
+        {
+          "number": 24,
+          "classification": "technical",
+          "title": "Dimensões mínimas da casa das máquinas",
+          "text": "Altura livre de circulação ≥1,80m. Espaço frente a aparelhos de controlo ≥0,75m. Espaço para manobra manual: frente se motor ≥5,5kW, lateral se motor <5,5kW — mínimo 0,30m. Para monta-cargas sem entrada: exterior frente à porta ≥0,60m, acesso exterior ≥0,75m.",
+          "keywords": [
+            "casa máquinas",
+            "altura",
+            "espaço",
+            "manobra manual",
+            "mota-cargas"
+          ],
+          "relatedViolations": [
+            "C3"
+          ]
+        },
+        {
+          "number": 32,
+          "classification": "safety",
+          "title": "Disposições gerais — portas de patamar",
+          "text": "Portas cheias não abrem para o interior da caixa. Porta fechada não permite introdução de dedo de prova Ø10mm. Face interior conforme Art.13.º. Minimizar risco de entalamento de vestuário.",
+          "keywords": [
+            "portas patamar",
+            "dedo prova",
+            "10mm",
+            "interior caixa"
+          ],
+          "relatedViolations": [
+            "C1",
+            "C2"
+          ]
+        },
+        {
+          "number": 39,
+          "classification": "safety",
+          "title": "Encravamento das portas de patamar",
+          "text": "Dispositivos silenciosos e protegidos de manipulação. Todas as portas encravadas excepto a do patamar onde a cabina está. Cabina só arranca com TODAS as portas encravadas. Desencravamento do destino apenas dentro da zona permitida: 2×30cm (portas automáticas) / 2×17cm (portas manuais). Ferrolhos instalados contra acção da gravidade. Chave especial de emergência guardada na casa das máquinas, identificada e visível.",
+          "keywords": [
+            "encravamento",
+            "zona desencravamento",
+            "30cm",
+            "17cm",
+            "chave emergência",
+            "ferrolho"
+          ],
+          "relatedViolations": [
+            "C1",
+            "C2"
+          ]
+        },
+        {
+          "number": 40,
+          "classification": "safety",
+          "title": "Dispositivo de contrôle do encravamento e fecho das portas",
+          "text": "Dispositivos elétricos verificam: 1) encravamento — cabina só se move se TODAS portas encravadas; 2) fecho — cabina não se move ou imobiliza se porta aberta. Princípio: mínimo DUAS manobras anormais necessárias para funcionar com portas abertas. Os contactos separam-se mesmo se colados. Excepção: monta-cargas com soleira ≥0,60m.",
+          "keywords": [
+            "contrôle",
+            "encravamento elétrico",
+            "fecho",
+            "dois defeitos",
+            "contactos"
+          ],
+          "relatedViolations": [
+            "C1"
+          ]
+        },
+        {
+          "number": 42,
+          "classification": "technical",
+          "title": "Dimensões e lotação da cabina dos ascensores",
+          "text": "Altura interior da cabina ≥2m. Lotação vs área vs carga nominal: tabela até 20 pessoas (75kg/pessoa; área mínima 0,28m² para 1 pessoa até 2,40m² para 20 pessoas). Acima de 20 pessoas: carga=n×75kg, área=2,40+(n-20)×0,12m². Monta-camas 750-1650kg: área máxima 3,64m² se tem anti-sobrecarga+sinalização. Elevadores de carga: área >tabela se anti-sobrecarga+responsável+sinalização. Transporte doentes: área máxima 1,30m².",
+          "keywords": [
+            "lotação",
+            "área cabina",
+            "75kg",
+            "altura 2m",
+            "anti-sobrecarga",
+            "monta-camas"
+          ],
+          "relatedViolations": [
+            "C2",
+            "C3"
+          ]
+        },
+        {
+          "number": 63,
+          "classification": "safety",
+          "title": "Repartição de carga pelos cabos ou cadeias de suspensão",
+          "text": "Obrigatórios dispositivos de igualização de tensão entre cabos/cadeias. Se apenas 2 cabos/cadeias: dispositivo elétrico deve imobilizar o elevador em caso de alongamento desigual ou afrouxamento. Excepção: monta-cargas com soleira ≥0,60m e cabina+carga ≤100kg.",
+          "keywords": [
+            "igualização tensão",
+            "cabos suspensão",
+            "alongamento desigual",
+            "afrouxamento"
+          ],
+          "relatedViolations": [
+            "C1",
+            "C2"
+          ]
+        },
+        {
+          "number": 86,
+          "classification": "technical",
+          "title": "Instalação elétrica — Arts. 86.º a 90.º",
+          "text": "Art.86: Baixa tensão geral; circuitos de comando ≤250V; defeitos à terra NÃO podem provocar marcha nem inutilizar dispositivos de segurança; cabo de comando flexível especial. Art.87: Protecção dos motores contra sobrecarga, falta de fase e curto-circuito. Art.88: Quadro na casa das máquinas (junto à porta), com corte omnipolar. Art.89: Circuito de iluminação + tomadas na cabina. Art.90: Iluminação da casa das máquinas e rodas de desvio de circuitos técnicos/comuns independentes; tomadas de corrente ligadas ao quadro do Art.88.",
+          "keywords": [
+            "instalação elétrica",
+            "baixa tensão",
+            "250V",
+            "quadro",
+            "corte omnipolar",
+            "protecção motor",
+            "iluminação cabina"
+          ],
+          "relatedViolations": [
+            "C1",
+            "C2",
+            "C3"
+          ]
+        },
+        {
+          "number": 93,
+          "classification": "safety",
+          "title": "Dispositivo de paragem na cabina (Stop)",
+          "text": "Em ascensores cuja cabina não tem portas: botão/interruptor de COR VERMELHA, posicionado acima de todos os outros botões, com designação 'Stop', 'Parar' ou 'Paragem' visível. Permite paragem de emergência. Restabelecimento do movimento só por intervenção de pessoa dentro da cabina. Recomendação: indicações no espelho da botoneira, não no próprio botão.",
+          "keywords": [
+            "stop",
+            "paragem emergência",
+            "botão vermelho",
+            "cabina sem portas"
+          ],
+          "relatedViolations": [
+            "C2",
+            "C3"
+          ]
+        },
+        {
+          "number": 94,
+          "classification": "safety",
+          "title": "Dispositivos de alarme dos ascensores",
+          "text": "Comando de alarme dentro da cabina, com designação 'Alarme' ou símbolo de sino visível. Sinal sonoro audível no local do encarregado, átrio de entrada e habitação do porteiro. Se elétrico: acumulador permanente recarregável com capacidade de várias horas sem energia da rede. O botão de alarme pode estar ao nível do dispositivo Stop do Art.93.",
+          "keywords": [
+            "alarme",
+            "sinal sonoro",
+            "bateria",
+            "acumulador",
+            "emergência"
+          ],
+          "relatedViolations": [
+            "C2",
+            "C3"
+          ]
+        },
+        {
+          "number": 95,
+          "classification": "info",
+          "title": "Avisos e instruções — requisitos gerais",
+          "text": "Avisos indeléveis, em material durável, bem visíveis, com caracteres legíveis de cor contrastante ao fundo. Recomendação: maiúsculas e algarismos com altura ≥10mm; minúsculas com altura ≥7mm.",
+          "keywords": [
+            "avisos",
+            "indeléveis",
+            "10mm",
+            "legíveis",
+            "cor contrastante"
+          ],
+          "relatedViolations": [
+            "C3"
+          ]
+        },
+        {
+          "number": 102,
+          "classification": "technical",
+          "title": "Inscrição no limitador de velocidade",
+          "text": "O limitador de velocidade deve ter placa/inscrição permanente com: diâmetro do cabo, tipo do cabo (ou constituição + carga de rotura), material do cabo, velocidade de actuação. Estes dados são essenciais para manutenção e substituição correctas.",
+          "keywords": [
+            "limitador velocidade",
+            "placa identificativa",
+            "diâmetro cabo",
+            "velocidade actuação"
+          ],
+          "relatedViolations": [
+            "C3"
+          ]
+        },
+        {
+          "number": 103,
+          "classification": "technical",
+          "title": "Identificação dos circuitos do quadro",
+          "text": "Os circuitos de saída do quadro da casa das máquinas (referido no Art.88 n.º1) devem estar devidamente identificados/etiquetados para facilitar intervenções de manutenção e evitar erros.",
+          "keywords": [
+            "identificação circuitos",
+            "quadro",
+            "etiquetas",
+            "casa máquinas"
+          ],
+          "relatedViolations": [
+            "C3"
+          ]
+        },
+        {
+          "number": 111,
+          "classification": "safety",
+          "title": "Disposições aplicáveis aos elevadores existentes (Decreto 26591/1936)",
+          "text": "Elevadores instalados ao abrigo do Decreto 26591/1936 devem adoptar: a) encravamento das portas e contrôle elétrico (Arts. 39.º e 40.º); b) avisos e instruções visíveis (Art.95.º); c) conservação adequada. VEDAÇÃO DA CAIXA: caixas abertas devem ser fechadas em toda a altura por: a) paredes conformes Arts. 9.º e 13.º, ou b) rede metálica de fio Ø≥3mm com malha ≤75×75mm, ou c) material similar ao já existente. PRAZOS conforme Art.3.º: instalados até 1955 → 1 ano; até 1961 → 2 anos; até 1966 → 3 anos; até 1970 → 4 anos; após 1970 → 5 anos. A fiscalização pode dispensar a vedação se a segurança for comprovadamente mantida.",
+          "keywords": [
+            "elevadores existentes",
+            "vedação caixa",
+            "encravamento retroactivo",
+            "rede metálica",
+            "3mm",
+            "75mm",
+            "prazos"
+          ],
+          "relatedViolations": [
+            "C1",
+            "C2"
+          ]
+        },
+        {
+          "number": 113,
+          "classification": "info",
+          "title": "Estabelecimento de elevadores em prédios antigos (NOVO — Art. 113.º)",
+          "text": "Em prédios antigos, com ou sem elevadores já instalados, a fiscalização pode dispensar o cumprimento de disposições que não coloquem em causa a segurança das pessoas ou da instalação. Permite adaptar soluções técnicas a edifícios históricos ou com limitações estruturais, desde que a segurança seja mantida por meios equivalentes.",
+          "keywords": [
+            "prédios antigos",
+            "dispensa",
+            "DGEG",
+            "flexibilidade",
+            "edifícios históricos"
+          ],
+          "relatedViolations": []
+        }
+      ],
       "key_changes": [
         "Revisão baseada em directivas CIRA atualizadas",
         "Novas disposições para vedação da caixa em elevadores existentes",
@@ -968,7 +2432,184 @@
         }
       ],
       "applicability": {},
-      "authority": "IPQ — Instituto Português da Qualidade / CEN"
+      "authority": "IPQ — Instituto Português da Qualidade / CEN",
+      "articles": [
+        {
+          "number": "5.2",
+          "title": "Caixa do elevador (poço)",
+          "text": "Fechada em todos os lados. Sem outras instalações (gás, água). Iluminação mínima 50 lux no solo da fossa. Altura refúgio no topo: mínimo 1,0 m. Profundidade da fossa: 0,5 m (V≤1m/s) a 1,5 m (V>1m/s).",
+          "keywords": [
+            "caixa",
+            "poço",
+            "fossa",
+            "refúgio",
+            "iluminação"
+          ],
+          "relatedViolations": [
+            "falta espaço refúgio = C1 (esmagamento técnico)",
+            "sem iluminação de fossa = C2"
+          ]
+        },
+        {
+          "number": "5.3",
+          "title": "Casa de máquinas",
+          "text": "Acesso só ao pessoal autorizado. Temperatura +5°C a +40°C. Iluminação mínima 200 lux. Tomada de serviço obrigatória. Extintor de CO2 ou pó obrigatório. Largura passagem mínima 0,5 m.",
+          "keywords": [
+            "casa máquinas",
+            "temperatura",
+            "iluminação",
+            "extintor",
+            "acesso"
+          ],
+          "relatedViolations": [
+            "acesso não autorizado = C2",
+            "sem extintor = C2"
+          ]
+        },
+        {
+          "number": "5.4",
+          "title": "Portas de patamar",
+          "text": "Folga máxima 6 mm entre folhas e entre folha e batente. Encravamento elétrico + mecânico simultâneos. Contato de porta deteta abertura com 6N de força. Indicador de andar obrigatório no exterior.",
+          "keywords": [
+            "porta patamar",
+            "encravamento",
+            "folga 6mm",
+            "contato porta"
+          ],
+          "relatedViolations": [
+            "encravamento inoperacional = C1",
+            "folga >6mm = C2"
+          ]
+        },
+        {
+          "number": "5.5",
+          "title": "Cabine",
+          "text": "Dimensões mínimas: 1,0m×1,3m×2,0m para carga ≥630 kg. Porta de cabine com contato de segurança. Abertura só no nível ±200mm. Iluminação mínima 100 lux. Emergência ≥1 lux por 1 hora. Alarme de sobrecarga obrigatório.",
+          "keywords": [
+            "cabine",
+            "dimensões",
+            "iluminação",
+            "emergência",
+            "sobrecarga"
+          ],
+          "relatedViolations": [
+            "sem iluminação emergência = C2",
+            "sem alarme sobrecarga = C2"
+          ]
+        },
+        {
+          "number": "5.6",
+          "title": "Velocidade",
+          "text": "Velocidade nominal respeitada ±5% em regime permanente. Desaceleração máxima 0,3 m/s². Solavancos na paragem indicam: freio mal regulado (C2) ou guias desgastadas (C3).",
+          "keywords": [
+            "velocidade nominal",
+            "desaceleração",
+            "freio",
+            "solavanco"
+          ],
+          "relatedViolations": [
+            "velocidade fora tolerância = C2"
+          ]
+        },
+        {
+          "number": "5.7",
+          "title": "Para-quedas e limitador de velocidade",
+          "text": "Para-quedas progressivo obrigatório para V>1 m/s. Para-quedas instantâneo só para V≤0,63 m/s. Teste obrigatório em cada inspeção. Limitador aciona a Vd = 1,25×V nominal (mín. V+0,25 m/s).",
+          "keywords": [
+            "para-quedas",
+            "progressivo",
+            "instantâneo",
+            "limitador",
+            "teste"
+          ],
+          "relatedViolations": [
+            "para-quedas que não atua no teste = C1 IMEDIATO",
+            "limitador bloqueado = C1"
+          ]
+        },
+        {
+          "number": "5.8",
+          "title": "Cabos de suspensão",
+          "text": "Mínimo 2 cabos independentes. Diâmetro mínimo 8 mm (geral) ou 6 mm (MRL). Fator de segurança mínimo 12. Substituição obrigatória: >10% fios partidos numa torçada por trepada OU >5 fios em 6× diâmetro.",
+          "keywords": [
+            "cabos",
+            "10% fios",
+            "fator segurança",
+            "diâmetro",
+            "substituição"
+          ],
+          "relatedViolations": [
+            ">10% fios partidos = C1",
+            ">5 fios em 6D = C1",
+            "corrosão avançada = C1 ou C2"
+          ]
+        },
+        {
+          "number": "5.9",
+          "title": "Freio",
+          "text": "Freio eletromagnético sobre polia motriz ou disco. Para carga nominal + 25% em qualquer posição. Pastilhas mínimo 2mm de espessura. Verificar em cada visita mensal.",
+          "keywords": [
+            "freio",
+            "pastilhas",
+            "carga nominal",
+            "eletromagnético",
+            "2mm"
+          ],
+          "relatedViolations": [
+            "freio que não para = C1",
+            "folga excessiva = C2",
+            "pastilhas <2mm = C2"
+          ]
+        },
+        {
+          "number": "5.10",
+          "title": "Amortecedores",
+          "text": "Amortecedores no fundo da fossa (sob cabine e contrapeso). Tipos: resorte (V≤1 m/s), polietileno (V≤1,6 m/s), hidráulico (V>1 m/s). Hidráulico: nível de óleo visível, sem fugas, reposição após teste.",
+          "keywords": [
+            "amortecedor",
+            "fossa",
+            "hidráulico",
+            "resorte",
+            "polietileno"
+          ],
+          "relatedViolations": [
+            "amortecedor deformado = C1",
+            "fuga óleo = C2"
+          ]
+        },
+        {
+          "number": "5.12",
+          "title": "Nivelação",
+          "text": "Tolerância conforto: ±10 mm. Tolerável: ±20 mm. >20 mm: risco de tropicão. >35 mm = C2. >50 mm em elevadores acessibilidade = C1.",
+          "keywords": [
+            "nivelação",
+            "20mm",
+            "35mm",
+            "tropicão",
+            "acessibilidade"
+          ],
+          "relatedViolations": [
+            "desvio >35mm = C2",
+            "desvio >50mm em PMR = C1"
+          ]
+        },
+        {
+          "number": "6.4",
+          "title": "Telefone de emergência (EN 81-28)",
+          "text": "Comunicação bidirecional 24/7 com serviço de assistência (não gravador). Teste mensal documentado. Autonomia de bateria mínimo 1 hora após corte de energia.",
+          "keywords": [
+            "telefone emergência",
+            "24/7",
+            "bateria",
+            "1 hora",
+            "teste mensal"
+          ],
+          "relatedViolations": [
+            "telefone inoperacional = C2",
+            "sem assistência 24h = C2"
+          ]
+        }
+      ]
     },
     {
       "id": "NP_EN_81_50_2020",
@@ -993,7 +2634,143 @@
       "sections": [],
       "key_requirements": [],
       "applicability": {},
-      "authority": "IPQ — Instituto Português da Qualidade / CEN"
+      "authority": "IPQ — Instituto Português da Qualidade / CEN",
+      "articles": [
+        {
+          "number": 1,
+          "classification": "technical",
+          "title": "Âmbito — Ensaios e cálculos para componentes de ascensores",
+          "text": "Esta norma define os métodos de cálculo de resistência, critérios de projeto e procedimentos de ensaio para os seguintes elementos: cabos/cadeias de suspensão, dispositivos de segurança (pára-quedas, tampão, limitador de velocidade), porta da cabina, porta de patamar, quadro de cabina, guias e suportes, amortecedores, roda de aderência. Aplica-se em conjunto com NP EN 81-20:2020 para ascensores novos.",
+          "keywords": [
+            "cálculo resistência",
+            "ensaios componentes",
+            "pára-quedas",
+            "guias",
+            "amortecedores"
+          ],
+          "relatedViolations": []
+        },
+        {
+          "number": 2,
+          "classification": "technical",
+          "title": "Cabos de suspensão — Requisitos de cálculo",
+          "text": "Fator de segurança mínimo para cabos de tração: ≥12 (cabos de aço) ou ≥10 (cintas de poliuretano). Diâmetro mínimo: 8mm para cabos de aço. Número mínimo de cabos: 2. Para roldanas: relação diâmetro da roldana/diâmetro do cabo ≥40 (tração normal) ou ≥26 (para-quedas ou tensionador). Número de fios partidos por passo de torcedura: limite de 10% dos fios totais num grupo de reforço = substituição obrigatória.",
+          "keywords": [
+            "cabos suspensão",
+            "fator segurança",
+            "diâmetro mínimo",
+            "fios partidos",
+            "10%"
+          ],
+          "relatedViolations": [
+            "C1"
+          ]
+        },
+        {
+          "number": 3,
+          "classification": "technical",
+          "title": "Dispositivo pára-quedas — Ensaio de funcionamento obrigatório",
+          "text": "O pára-quedas deve ser ensaiado em fábrica (ensaio de tipo) e em obra após instalação. Ensaio de fábrica: queda livre à velocidade de actuação do limitador de velocidade com carga nominal. Desaceleração máxima durante actuação: entre 0.2g e 1g. Distância de paragem máxima: definida na norma em função da velocidade nominal. O pára-quedas deve reter a cabina e manter-se retida indefinidamente sem deslizamento. Após actuação do pára-quedas em obra: verificar guias, suportes e cabina antes de reactivar.",
+          "keywords": [
+            "pára-quedas",
+            "ensaio fábrica",
+            "desaceleração",
+            "1g",
+            "0.2g",
+            "retenção cabina"
+          ],
+          "relatedViolations": [
+            "C1"
+          ]
+        },
+        {
+          "number": 4,
+          "classification": "technical",
+          "title": "Limitador de velocidade — Velocidades de actuação",
+          "text": "O limitador de velocidade actua ANTES que a cabina atinja a velocidade de disparo do pára-quedas. Velocidade de actuação: ≥115% da velocidade nominal. Para ascensores de velocidade nominal ≤1m/s: velocidade de actuação ≤0.8m/s + (velocidade nominal × 0.25). Para velocidades >1m/s: velocidade de actuação ≤1.25× velocidade nominal + 0.25m/s. O limitador deve ser verificado e tarado a cada 2 anos (máx.) ou após intervenção nos cabos.",
+          "keywords": [
+            "limitador velocidade",
+            "115% velocidade nominal",
+            "actuação",
+            "taração",
+            "2 anos"
+          ],
+          "relatedViolations": [
+            "C1",
+            "C2"
+          ]
+        },
+        {
+          "number": 5,
+          "classification": "technical",
+          "title": "Amortecedores — Tipos e requisitos",
+          "text": "Tipos de amortecedores: a) acumulação de energia (molas ou tampões borracha) — para v ≤1m/s; b) dissipação de energia (hidráulicos) — para v >1m/s. Todos os ascensores devem ter amortecedores na base de caixa para cabina e contrapeso (Art.10.3 EN 81-1:1998). Amortecedores de mola: validação por cálculo do curso total mínimo. Amortecedores hidráulicos: ensaio de impacto a 115% velocidade nominal; desaceleração máxima 1g durante >0.04s. Verificação visual e funcional a cada inspeção.",
+          "keywords": [
+            "amortecedores",
+            "mola",
+            "hidráulico",
+            "1m/s",
+            "1g",
+            "curso mínimo"
+          ],
+          "relatedViolations": [
+            "C1",
+            "C2"
+          ]
+        },
+        {
+          "number": 6,
+          "classification": "technical",
+          "title": "Portas de cabina e patamar — Resistência mecânica",
+          "text": "Força horizontal sobre face interior porta fechada (cabina): ≥300N sem deformação permanente; ≤150N sem abertura. Porta de patamar: resistência ao fogo EI 30 exigida (para edifícios com compartimentos de fogo). Juntas entre painéis de porta não devem permitir passagem de dedo de prova Ø25mm (face acessível). Dispositivo de encravamento: ferrolho com resistência mínima 1000N à abertura não autorizada. Velocidade máxima de fecho automático de porta: 0.3m/s no ponto de contacto.",
+          "keywords": [
+            "portas resistência",
+            "300N",
+            "EI 30",
+            "encravamento",
+            "1000N",
+            "fecho automático"
+          ],
+          "relatedViolations": [
+            "C1",
+            "C2"
+          ]
+        },
+        {
+          "number": 7,
+          "classification": "technical",
+          "title": "Guias — Cálculo e tolerâncias",
+          "text": "As guias devem ser calculadas para suportar as cargas de paragem do pára-quedas. Material: aço laminado tipo T ou similar. Deflexão máxima das guias durante actuação do pára-quedas: 5mm. Espaçamento entre suportes de guia: função da carga e perfil da guia (definido em tabelas normativas). Tolerância de alinhamento vertical: ≤0.5mm/m. Ligações entre troços: emendas sem ressaltos >0.5mm. Amortecedores de guia (se existentes): verificação anual.",
+          "keywords": [
+            "guias cálculo",
+            "deflexão 5mm",
+            "pára-quedas",
+            "suportes",
+            "alinhamento 0.5mm"
+          ],
+          "relatedViolations": [
+            "C2",
+            "C3"
+          ]
+        },
+        {
+          "number": 8,
+          "classification": "technical",
+          "title": "Roda de aderência — Cálculo de transmissão de esforços",
+          "text": "A tração por aderência (roda de aderência) deve garantir que os cabos não deslizam durante paragem de emergência. Fator de aderência mínimo calculado em condições normais e de emergência. Ranhuras dos cabos: verificação do desgaste e perfil a cada 5 anos ou inspeção completa. Ângulo de embrulho: mínimo 150° para ascensores com contrapeso. Desgaste de ranhuras: perda de profundidade >25% do original = substituição. Tipo de ranhuras: semicirculares, em V, ou com rebaixo (undercut) — cada tipo com fator de aderência diferente.",
+          "keywords": [
+            "roda aderência",
+            "aderência cabos",
+            "ranhuras",
+            "150° embrulho",
+            "desgaste 25%"
+          ],
+          "relatedViolations": [
+            "C1",
+            "C2"
+          ]
+        }
+      ]
     },
     {
       "id": "NP_EN_81_70_2022",
@@ -1045,7 +2822,177 @@
         }
       ],
       "applicability": {},
-      "authority": "IPQ — Instituto Português da Qualidade / CEN"
+      "authority": "IPQ — Instituto Português da Qualidade / CEN",
+      "articles": [
+        {
+          "number": 1,
+          "classification": "info",
+          "title": "Âmbito — Categorias de acessibilidade",
+          "text": "Define dois tipos de elevadores acessíveis: Tipo 1 (acessível a utilizadores de cadeiras de rodas assistidos) e Tipo 2 (acessível a utilizadores de cadeiras de rodas autónomos). Tipo 2 é o requisito mínimo para edifícios de habitação coletiva novos (DL 163/2006) e edifícios públicos. As dimensões da cabina, largura de porta e outros parâmetros são distintos entre Tipo 1 e Tipo 2.",
+          "keywords": [
+            "acessibilidade",
+            "PMR",
+            "cadeira rodas",
+            "Tipo 1",
+            "Tipo 2",
+            "DL 163/2006"
+          ],
+          "relatedViolations": []
+        },
+        {
+          "number": 2,
+          "classification": "technical",
+          "title": "Dimensões mínimas da cabina",
+          "text": "Tipo 1: cabina interior mín. 1000mm (largura) × 1250mm (profundidade). Tipo 2: cabina interior mín. 1100mm (largura) × 1400mm (profundidade). A largura de 1100mm permite a entrada de cadeira de rodas elétrica standard. A profundidade de 1400mm permite manobra de rotação parcial. Carga nominal mínima Tipo 2: 630kg (permite cadeira+utilizador+acompanhante). Altura interior mínima: ≥2000mm.",
+          "keywords": [
+            "dimensões cabina",
+            "1100mm",
+            "1400mm",
+            "Tipo 1",
+            "Tipo 2",
+            "630kg"
+          ],
+          "relatedViolations": [
+            "C2",
+            "C3"
+          ]
+        },
+        {
+          "number": 3,
+          "classification": "technical",
+          "title": "Largura da porta — Passagem livre mínima",
+          "text": "Tipo 1: passagem livre mínima da porta ≥800mm. Tipo 2: passagem livre mínima da porta ≥900mm. A passagem livre é medida com a porta totalmente aberta, entre batentes (sem incluir espessura da porta). Para renovação de elevadores existentes: mínimo recomendado 800mm (Tipo 1). A porta deve manter-se aberta um mínimo de 8 segundos para permitir passagem de cadeira de rodas. Sensor de porta de área obrigatório (não apenas sensor de borracha).",
+          "keywords": [
+            "largura porta",
+            "800mm",
+            "900mm",
+            "passagem livre",
+            "8 segundos",
+            "sensor área"
+          ],
+          "relatedViolations": [
+            "C2"
+          ]
+        },
+        {
+          "number": 4,
+          "classification": "technical",
+          "title": "Botoneira — Altura, Braille e contraste",
+          "text": "Altura dos botões da cabina e de chamada: entre 900mm e 1200mm do piso acabado. Botão de emergência (alarme): ≤900mm (acessível de cadeira de rodas). Botões com indicação Braille ou relevo tátil ao lado de cada botão. Cor dos botões: contraste mínimo 60% com o fundo da botoneira. Dimensão mínima da superfície do botão: 20mm × 20mm (ou Ø20mm). Indicação de andar: visual + auditiva (voz ou tom) na cabina. Painel de botoneira: não deve estar encaixado em local que requeira aproximação lateral além de 600mm.",
+          "keywords": [
+            "botoneira",
+            "900mm",
+            "1200mm",
+            "Braille",
+            "relevo tátil",
+            "contraste 60%",
+            "auditivo"
+          ],
+          "relatedViolations": [
+            "C2",
+            "C3"
+          ]
+        },
+        {
+          "number": 5,
+          "classification": "technical",
+          "title": "Espelho e corrimão na cabina",
+          "text": "Tipo 2: espelho obrigatório na parede oposta à porta (ou paredes laterais) — permite ao utilizador de cadeira de rodas ver o patamar ao recuar para sair. Espelho: do nível 300mm do piso até ≥1000mm altura, em toda a largura (ou mínimo 40% da largura). Corrimão: obrigatório pelo menos numa parede lateral, a 900mm do piso (±25mm). Diâmetro do corrimão: 30-45mm. Afastamento do corrimão à parede: 35-45mm. Não obstruir o espaço livre da porta.",
+          "keywords": [
+            "espelho cabina",
+            "corrimão",
+            "900mm",
+            "Tipo 2",
+            "cadeira rodas retroceder"
+          ],
+          "relatedViolations": [
+            "C3"
+          ]
+        },
+        {
+          "number": 6,
+          "classification": "technical",
+          "title": "Indicações visuais e auditivas",
+          "text": "Indicador de andar visível no interior da cabina e no exterior em cada patamar: contraste ≥60% com fundo. Caracteres mínimos 40mm altura na cabina. Sinalização auditiva: anúncio vocal do piso de chegada + sinal sonoro de abertura de porta. Volume ajustável: 40-70 dB(A). Sinalização de sobrecarga: visual + auditiva. Indicação de sentido de movimento (para cima/para baixo): visual na botoneira ou painel. Iluminação mínima da cabina: ≥100 lux ao nível do piso.",
+          "keywords": [
+            "indicador andar",
+            "40mm",
+            "voz",
+            "auditivo",
+            "100 lux",
+            "sobrecarga",
+            "sinal sonoro"
+          ],
+          "relatedViolations": [
+            "C3"
+          ]
+        },
+        {
+          "number": 7,
+          "classification": "technical",
+          "title": "Nivelação — Precisão no patamar",
+          "text": "Nivelação de parada: ≤±10mm entre piso da cabina e piso do patamar (conforme NP EN 81-20). Para ascensores acessíveis: recomendado ≤±5mm para facilitar passagem de cadeiras de rodas. Nivelação automática com passageiros (re-nivelagem): obrigatória para Tipo 2. Bordo de soleira: chanfrado ou arredondado nos primeiros 20mm para reduzir tropeçamento. Largura de soleira: máx. 20mm (para não criar barreira a cadeiras de rodas).",
+          "keywords": [
+            "nivelação",
+            "±10mm",
+            "±5mm",
+            "re-nivelagem automática",
+            "soleira",
+            "cadeira rodas"
+          ],
+          "relatedViolations": [
+            "C2"
+          ]
+        },
+        {
+          "number": 8,
+          "classification": "technical",
+          "title": "Sistema de alarme de emergência — Acessibilidade",
+          "text": "Botão de alarme: ≤900mm do piso, cor amarela, símbolo de sino, identificado com Braille \"ALARME\". Comunicação bidirecional de emergência (EN 81-28): o utilizador deve conseguir comunicar mesmo sem energia de rede. Receptor externo: deve funcionar 24h/7 dias. Sistema de intercom: volume mínimo 65 dB(A) na cabina. O alarme deve funcionar sem que o utilizador segure um botão continuamente. Bateria de emergência autónoma: mínimo 1 hora de chamadas.",
+          "keywords": [
+            "alarme",
+            "900mm",
+            "bidirecional",
+            "EN 81-28",
+            "Braille",
+            "bateria 1 hora"
+          ],
+          "relatedViolations": [
+            "C1",
+            "C2"
+          ]
+        },
+        {
+          "number": 9,
+          "classification": "technical",
+          "title": "Patamar de embarque — Espaço livre mínimo",
+          "text": "Espaço livre frente à porta no patamar: Tipo 2: mínimo 1500mm × 1500mm para manobra de cadeira de rodas. Tipo 1: mínimo 1500mm profundidade. Iluminação no patamar, frente à porta: mínimo 100 lux. Contraste visual do bordo da porta vs parede: ≥30% para visibilidade de deficientes visuais. Sinalização tátil no piso do patamar: lista de pontos Braille (recomendada norma ISO 23599 para encaminhamento).",
+          "keywords": [
+            "espaço patamar",
+            "1500mm",
+            "manobra cadeira rodas",
+            "iluminação 100 lux",
+            "contraste"
+          ],
+          "relatedViolations": [
+            "C3"
+          ]
+        },
+        {
+          "number": 10,
+          "classification": "info",
+          "title": "Aplicação em edifícios existentes — DL 163/2006",
+          "text": "Em edifícios novos (pós DL 163/2006): obrigatório pelo menos um elevador Tipo 2 por cada grupo de elevadores. Em edifícios existentes com renovação: obrigatório cumprir Tipo 1 no mínimo. Excepção: caixas existentes muito pequenas — fiscalização/DGEG pode autorizar solução alternativa (por ex.: cadeira elevadeira em escada). Certificação de acessibilidade: o técnico responsável deve declarar conformidade com EN 81-70 na documentação de licenciamento.",
+          "keywords": [
+            "edifícios novos",
+            "DL 163/2006",
+            "renovação",
+            "exceção caixa pequena",
+            "declaração conformidade"
+          ],
+          "relatedViolations": []
+        }
+      ]
     },
     {
       "id": "NP_EN_81_71_2022",
@@ -1068,7 +3015,103 @@
       "sections": [],
       "key_requirements": [],
       "applicability": {},
-      "authority": "IPQ — Instituto Português da Qualidade / CEN"
+      "authority": "IPQ — Instituto Português da Qualidade / CEN",
+      "articles": [
+        {
+          "number": 1,
+          "classification": "info",
+          "title": "Âmbito — Categorias de vandalismo VR1, VR2, VR3",
+          "text": "Define três categorias de resistência: VR1 (vandalismo ligeiro — edifícios residenciais), VR2 (vandalismo médio — estações, hospitais, escolas), VR3 (vandalismo severo — locais de risco elevado). A escolha da categoria é decisão do projectista/dono de obra. Para cada categoria define requisitos mínimos de: resistência de painéis de cabina, protecção de botões, vidros, materiais.",
+          "keywords": [
+            "vandalismo",
+            "VR1",
+            "VR2",
+            "VR3",
+            "categorias",
+            "resistência"
+          ],
+          "relatedViolations": []
+        },
+        {
+          "number": 2,
+          "classification": "technical",
+          "title": "Painéis de cabina — Resistência mínima",
+          "text": "VR1: painéis suportam força de 250N por 30s sem deformação permanente. VR2: 500N por 30s. VR3: 1000N por 30s. Materiais recomendados: aço inoxidável espessura ≥1.5mm (VR1), ≥2mm (VR2), ≥3mm (VR3), ou material equivalente com ensaio de resistência. Anti-graffiti: aplicação de película ou tratamento superficial nas categorias VR2/VR3. Espelhos (se existentes): vidro laminado anti-vandalismo ou película protectora.",
+          "keywords": [
+            "painéis resistência",
+            "250N",
+            "500N",
+            "1000N",
+            "inox",
+            "anti-graffiti"
+          ],
+          "relatedViolations": [
+            "C3"
+          ]
+        },
+        {
+          "number": 3,
+          "classification": "technical",
+          "title": "Botões e painel de chamada — Protecção anti-vandalismo",
+          "text": "VR2/VR3: botões embutidos ou com protecção metálica saliente. Botões fluorescentes ou iluminados com LED encapsulado (resistente a abertura). Painel de chamada de patamar: protegido com tampa de aço (VR3) ou câmara de alumínio resistente. Cabos de sinalização de patamar: internos à parede ou protegidos em calha metálica fechada. Indicadores de piso: LCD de alta resistência ou LED encapsulado, sem elementos salientes partíveis.",
+          "keywords": [
+            "botões embutidos",
+            "protecção metálica",
+            "painel chamada",
+            "LED encapsulado"
+          ],
+          "relatedViolations": [
+            "C3"
+          ]
+        },
+        {
+          "number": 4,
+          "classification": "technical",
+          "title": "Portas — Resistência e protecção",
+          "text": "Portas de cabina e patamar: resistência à força perpendicular (centro do painel) ≥500N (VR2) ou ≥1000N (VR3) sem permanente deformação. Vidros em portas: se existentes, laminados. Bordas de detecção: listão emborrachado resistente a impacto. Perfis de alumínio: espessura mínima aumentada em VR2/VR3. Fechadura de patamar: resistência à abertura forçada ≥1000N. Dobradiças de porta de cabina (se salientes): protegidas.",
+          "keywords": [
+            "portas resistência",
+            "500N",
+            "1000N",
+            "vidro laminado",
+            "fechadura",
+            "forçada"
+          ],
+          "relatedViolations": [
+            "C2"
+          ]
+        },
+        {
+          "number": 5,
+          "classification": "technical",
+          "title": "Iluminação de emergência — Protecção",
+          "text": "Luminárias da cabina: protegidas contra impacto (IK08 mínimo para VR2, IK10 para VR3). Impermeáveis à penetração de líquidos: IP44 mínimo para VR3. Para VR3: luminárias com vidro resistente ou em recesso protegido — não devem poder ser retiradas facilmente. Iluminação de patamar: pelo menos IK06 para VR2. Baterias de iluminação de emergência: em invólucro fechado não acessível do interior da cabina.",
+          "keywords": [
+            "iluminação emergência",
+            "IK08",
+            "IK10",
+            "IP44",
+            "protecção impacto"
+          ],
+          "relatedViolations": [
+            "C3"
+          ]
+        },
+        {
+          "number": 6,
+          "classification": "info",
+          "title": "Câmara de videovigilância — Preparação",
+          "text": "Para VR2/VR3: a cabina deve ter preparação para câmara de videovigilância (conduta de cabo + suporte de montagem na parte superior da cabina). A câmara em si é uma decisão do gestor do edifício mas a norma define a possibilidade de instalação. Câmara (se instalada): posição protegida, vedada, com visão total do interior da cabina. A conexão de dados deve ser possível sem intervenção na estrutura da cabina.",
+          "keywords": [
+            "câmara videovigilância",
+            "CCTV",
+            "preparação",
+            "VR2",
+            "VR3"
+          ],
+          "relatedViolations": []
+        }
+      ]
     },
     {
       "id": "NP_EN_81_72_2020",
@@ -1099,7 +3142,110 @@
         "Sinalização: triângulo vermelho com símbolo bombeiro"
       ],
       "applicability": {},
-      "authority": "IPQ — Instituto Português da Qualidade / CEN"
+      "authority": "IPQ — Instituto Português da Qualidade / CEN",
+      "articles": [
+        {
+          "number": 1,
+          "classification": "info",
+          "title": "Âmbito — Requisitos para elevador de bombeiros",
+          "text": "Define requisitos para ascensores que funcionam como elevadores de bombeiros. Aplica-se em conjunto com NP EN 81-20. É obrigatório em edifícios com altura de referência de incêndio >18m acima do nível de acesso dos bombeiros (conforme RGEU e RT-SCIE — Portaria 1532/2008). Pode ser um elevador dedicado ou um elevador normal com modo de bombeiros. O DGEG e as autoridades de proteção civil definem os edifícios que exigem este tipo.",
+          "keywords": [
+            "bombeiros",
+            "elevador bombeiros",
+            ">18m",
+            "RT-SCIE",
+            "Portaria 1532/2008"
+          ],
+          "relatedViolations": []
+        },
+        {
+          "number": 2,
+          "classification": "technical",
+          "title": "Dimensões mínimas da cabina e capacidade",
+          "text": "Cabina mínima: 1100mm (largura) × 2100mm (profundidade) — para acomodar maca de emergência horizontal. Carga nominal mínima: 630kg (recomendado 1000kg para maca de evacuação). Porta: passagem livre mínima 800mm. Velocidade mínima: 1m/s (recomendado ≥1.6m/s em edifícios altos). Altura interior mínima da cabina: 2100mm. Nota: alguns projetos definam 1000×2100 como dimensão de maca, mas 1100×2100 é o mínimo normativo.",
+          "keywords": [
+            "cabina bombeiros",
+            "1100mm",
+            "2100mm",
+            "maca",
+            "630kg",
+            "1000kg",
+            "1m/s"
+          ],
+          "relatedViolations": [
+            "C2"
+          ]
+        },
+        {
+          "number": 3,
+          "classification": "technical",
+          "title": "Alimentação elétrica de emergência",
+          "text": "Fonte de alimentação dedicada: circuito independente a partir do quadro geral, resistente ao fogo (cabos RF90 ou equivalente). Gerador de emergência ou UPS: deve entrar em serviço em ≤60 segundos. O elevador de bombeiros deve funcionar mesmo com falha de energia geral. Selecção automática de alimentação de emergência. Cabos de alimentação: traçado protegido separado dos outros elevadores, sem percurso comum por zonas de incêndio não protegidas.",
+          "keywords": [
+            "alimentação emergência",
+            "RF90",
+            "gerador",
+            "UPS",
+            "60 segundos",
+            "cabos resistentes fogo"
+          ],
+          "relatedViolations": [
+            "C1",
+            "C2"
+          ]
+        },
+        {
+          "number": 4,
+          "classification": "technical",
+          "title": "Caixa do elevador — Resistência ao fogo",
+          "text": "Paredes da caixa: resistência ao fogo E 120 (2 horas) ou superior. Portas de patamar: classificação E 90 ou EI 90 (fogo e isolamento). Fundo de poço: impermeável à água (evitar acumulação de água de extinção). Caixa pressurizada ou protegida contra fumo: recomendado para edifícios altos. Vedação de penetrações da caixa: materiais de resistência ao fogo equivalente à caixa. Drenagem no fundo do poço: obrigatória para evacuar água dos sistemas sprinkler.",
+          "keywords": [
+            "resistência fogo",
+            "E 120",
+            "EI 90",
+            "fundo poço",
+            "impermeável",
+            "drenagem"
+          ],
+          "relatedViolations": [
+            "C1"
+          ]
+        },
+        {
+          "number": 5,
+          "classification": "technical",
+          "title": "Chave de bombeiros — Fases 1 e 2 de operação",
+          "text": "FASE 1 (chamada automática ao piso de evacuação): activada pelo sinal de alarme de incêndio → o elevador interrompe qualquer viagem, ignora chamadas de patamar, desce ao piso de evacuação dos bombeiros, abre a porta e fica bloqueado (fora de serviço normal). FASE 2 (controlo manual pelos bombeiros): chave de bombeiros no interior da cabina → os bombeiros controlam o elevador manualmente, as portas NÃO fecham automaticamente (requerem pressão contínua do botão). Chave de bombeiros no patamar de acesso: permite activar/desactivar Fase 2 do exterior. Indicação luminosa verde = pronto para bombeiros.",
+          "keywords": [
+            "Fase 1",
+            "Fase 2",
+            "chave bombeiros",
+            "alarme incêndio",
+            "piso evacuação",
+            "controlo manual"
+          ],
+          "relatedViolations": [
+            "C1",
+            "C2"
+          ]
+        },
+        {
+          "number": 6,
+          "classification": "technical",
+          "title": "Comunicação e sinalização específica",
+          "text": "Telefone de serviço de bombeiros: na cabina e junto à chave de bombeiros em cada patamar (ou intercomunicador). Identificação exterior: símbolo de bombeiros (capacete vermelho com chamas brancas) em cada patamar e junto à botoeira da chave. Iluminação de emergência autónoma na cabina: mínimo 5 lux ao nível do piso durante ≥1 hora sem rede. Indicador de piso na cabina e no patamar de acesso. Sinalização de \"Elevador de Bombeiros\" na casa das máquinas.",
+          "keywords": [
+            "telefone bombeiros",
+            "símbolo bombeiros",
+            "iluminação emergência 1 hora",
+            "identificação"
+          ],
+          "relatedViolations": [
+            "C2",
+            "C3"
+          ]
+        }
+      ]
     },
     {
       "id": "NP_EN_81_73_2020",
@@ -1123,7 +3269,90 @@
       "sections": [],
       "key_requirements": [],
       "applicability": {},
-      "authority": "IPQ — Instituto Português da Qualidade / CEN"
+      "authority": "IPQ — Instituto Português da Qualidade / CEN",
+      "articles": [
+        {
+          "number": 1,
+          "classification": "info",
+          "title": "Âmbito — Evacuação automática em caso de incêndio",
+          "text": "Define o comportamento que todos os elevadores de passageiros devem ter quando o sistema de detecção de incêndio do edifício emite alarme. A norma aplica-se a ascensores novos (pós NP EN 81-20) e é altamente recomendada para modernizações. O objectivo é evitar que ocupantes fiquem presos em elevadores durante incêndio e impedir que o elevador transporte passageiros para pisos em chamas. Não substitui o NP EN 81-72 (elevadores de bombeiros dedicados).",
+          "keywords": [
+            "incêndio",
+            "evacuação",
+            "alarme incêndio",
+            "comportamento",
+            "NP EN 81-20"
+          ],
+          "relatedViolations": []
+        },
+        {
+          "number": 2,
+          "classification": "technical",
+          "title": "Fase 1 — Recall automático ao piso de evacuação",
+          "text": "Quando o sinal de alarme de incêndio é recebido: 1) O elevador interrompe a viagem em curso no próximo patamar disponível; 2) As portas abrem e ficam abertas; 3) O elevador desce (ou sobe, se já acima do piso de evacuação) ao PISO DE EVACUAÇÃO designado; 4) No piso de evacuação: porta abre e fica aberta; 5) O elevador fica FORA DE SERVIÇO (não responde a chamadas normais) com painel de visualização \"FOGO\" ou símbolo equivalente. Piso de evacuação: geralmente o piso de saída do edifício (rés-do-chão) ou piso definido no plano de emergência.",
+          "keywords": [
+            "Fase 1",
+            "recall",
+            "piso evacuação",
+            "porta abre",
+            "FOGO",
+            "fora de serviço"
+          ],
+          "relatedViolations": [
+            "C1",
+            "C2"
+          ]
+        },
+        {
+          "number": 3,
+          "classification": "technical",
+          "title": "Sinal de alarme de incêndio — Interface com sistema de detecção",
+          "text": "O elevador deve receber o sinal de alarme de incêndio do sistema de detecção e alarme (SADI) do edifício. Interface: contacto seco (relé) normalizado — sinal de activação quando fecho do contacto. Tensão do sinal: tipicamente 24V DC (especificado em projecto). Tempo de resposta do elevador ao receber o sinal: ≤30 segundos para início de Fase 1. O sinal de incêndio deve ser por zona (pode haver diferentes pisos de evacuação conforme o piso em chamas) ou geral (um único piso de evacuação). Teste anual do interface SADI-elevador obrigatório.",
+          "keywords": [
+            "SADI",
+            "sinal incêndio",
+            "contacto seco",
+            "24V",
+            "30 segundos",
+            "teste anual"
+          ],
+          "relatedViolations": [
+            "C2"
+          ]
+        },
+        {
+          "number": 4,
+          "classification": "technical",
+          "title": "Indicação visual e acústica de emergência de incêndio",
+          "text": "Botoeira de patamar: deve mostrar indicação visual de \"elevador fora de serviço\" ou símbolo de chamas quando em Fase 1. Interior da cabina (durante Fase 1): anúncio auditivo \"atenção, incêndio, dirija-se ao piso de saída\" ou equivalente (em português). Cancelar anúncios auditivos normais (pisos, etc.) durante Fase 1. As botoneiras de chamada dos pisos não devem funcionar durante Fase 1. Anulação da Fase 1: apenas por chave de acesso ou intervenção dos bombeiros.",
+          "keywords": [
+            "indicação visual fogo",
+            "anúncio incêndio",
+            "botoneiras bloqueadas",
+            "Fase 1 activa"
+          ],
+          "relatedViolations": [
+            "C2",
+            "C3"
+          ]
+        },
+        {
+          "number": 5,
+          "classification": "info",
+          "title": "Reinício após Fase 1 — Procedimento de retorno ao serviço",
+          "text": "Após extinção do alarme de incêndio: o elevador NÃO retoma o serviço automaticamente. Retorno ao serviço requer: a) sinal de reset do SADI, E b) reset manual pelo técnico de manutenção ou operador autorizado (chave de serviço ou procedimento específico). Antes do retorno: verificar que não há danos no elevador, caixa ou instalação eléctrica. O técnico EMIE deve verificar o histórico de eventos do controlador e confirmar ausência de falhas. Em edifícios com elevadores de bombeiros (EN 81-72): estes são operados pela equipa de bombeiros e não entram em Fase 1 normal.",
+          "keywords": [
+            "retorno serviço",
+            "reset manual",
+            "chave serviço",
+            "verificação EMIE",
+            "após incêndio"
+          ],
+          "relatedViolations": [
+            "C2"
+          ]
+        }
+      ]
     },
     {
       "id": "NP_EN_81_77_2020",
@@ -1146,7 +3375,93 @@
       "sections": [],
       "key_requirements": [],
       "applicability": {},
-      "authority": "IPQ — Instituto Português da Qualidade / CEN"
+      "authority": "IPQ — Instituto Português da Qualidade / CEN",
+      "articles": [
+        {
+          "number": 1,
+          "classification": "info",
+          "title": "Âmbito — Elevadores inclinados (Funiculares de caixa)",
+          "text": "Esta norma aplica-se a elevadores cujo percurso não é vertical, i.e., a caixa está inclinada entre 0° (horizontal) e 70° em relação à horizontal. Não abrange teleféricos (cabos aéreos) nem ascensores inclinados ao preço de prateleira (inclinação ≤6°). Aplica-se em zonas costeiras, terrenos montanhosos e jardins com grandes desníveis. Em Portugal: instalações em Sintra, Serra da Estrela e em edifícios históricos com escadas inclinadas.",
+          "keywords": [
+            "inclinado",
+            "0° a 70°",
+            "funicular",
+            "montanha",
+            "percurso inclinado"
+          ],
+          "relatedViolations": []
+        },
+        {
+          "number": 2,
+          "classification": "technical",
+          "title": "Guias inclinadas — Requisitos e tolerâncias",
+          "text": "Perfil de guia: tipo T ou equivalente, calculado para as forças resultantes da inclinação. Alinhamento: desvio máximo lateral ±1mm/m. Emendas: sem ressaltos >0.5mm. Suportes: espaçamento calculado para a carga efectiva incluindo aceleração de emergência do pára-quedas. Lubrificação das guias: por sistema automático ou manual com frequência definida no plano de manutenção. Limpeza das guias (remoção de folhas/detritos em percursos exteriores): incluída nas visitas mensais da EMIE.",
+          "keywords": [
+            "guias inclinadas",
+            "±1mm/m",
+            "suportes",
+            "lubrificação",
+            "percurso exterior"
+          ],
+          "relatedViolations": [
+            "C2",
+            "C3"
+          ]
+        },
+        {
+          "number": 3,
+          "classification": "technical",
+          "title": "Pára-quedas e limitador de velocidade — Adaptação ao percurso inclinado",
+          "text": "O sistema pára-quedas deve ser adaptado ao percurso inclinado: para inclinações <15°, o pára-quedas actua nas guias normalmente; para ≥15°, sistemas especiais de frenagem lateral. Velocidade de actuação do limitador: calculada para a componente do percurso (não apenas a vertical). Em percursos exteriores: protecção contra gelo e humidade nos mecanismos de segurança. Ensaio de funcionamento do pára-quedas: realizado a cada 5 anos (igual a ascensores verticais) com cabina vazia.",
+          "keywords": [
+            "pára-quedas inclinado",
+            "limitador velocidade",
+            "15°",
+            "gelo",
+            "humidade",
+            "ensaio 5 anos"
+          ],
+          "relatedViolations": [
+            "C1",
+            "C2"
+          ]
+        },
+        {
+          "number": 4,
+          "classification": "technical",
+          "title": "Proteção climática — Percursos ao ar livre",
+          "text": "Para percursos exteriores (ao ar livre): protecção contra chuva nos aparelhos de comando e painel de botoneiras (IP 55 mínimo). Cabina fechada (com vidros): condensação — ventilação adequada para evitar embaciamento. Guias: material resistente à corrosão (inox ou galvanizado) ou manutenção mais frequente. Roldanas e cabos: vedadores contra humidade/gelo em zonas com temperaturas negativas. Fundações: drenagem adequada para evitar deslizamento de terras sob as guias exteriores.",
+          "keywords": [
+            "proteção climática",
+            "exterior",
+            "IP 55",
+            "corrosão",
+            "gelo",
+            "drenagem"
+          ],
+          "relatedViolations": [
+            "C2",
+            "C3"
+          ]
+        },
+        {
+          "number": 5,
+          "classification": "technical",
+          "title": "Segurança em caso de bloqueio no percurso inclinado",
+          "text": "Em percurso inclinado: risco de cabina presa a meio do percurso sem patamar de saída imediato. Obrigatório: sistema de comunicação de emergência bidirecional (EN 81-28) activo durante toda a viagem. Procedimento de evacuação: escadas de emergência paralelas ao percurso obrigatórias se trajectória >30m sem patamar intermédio. Manobra de socorro: possibilidade de deslocar a cabina manualmente ao patamar mais próximo por intervenção técnica. Iluminação de emergência na cabina: mínimo 5 lux durante ≥1 hora sem rede.",
+          "keywords": [
+            "bloqueio percurso",
+            "evacuação",
+            "escadas emergência",
+            "comunicação",
+            "manobra socorro"
+          ],
+          "relatedViolations": [
+            "C1",
+            "C2"
+          ]
+        }
+      ]
     },
     {
       "id": "NP_EN_81_80_2020",
@@ -1170,7 +3485,310 @@
       "sections": [],
       "key_requirements": [],
       "applicability": {},
-      "authority": "IPQ — Instituto Português da Qualidade / CEN"
+      "authority": "IPQ — Instituto Português da Qualidade / CEN",
+      "articles": [
+        {
+          "number": "1.1-1.3",
+          "classification": "INFO",
+          "title": "Campo de aplicação — ascensores existentes",
+          "text": "Aplica-se a ascensores EXISTENTES (eléctricos de aderência/tambor e hidráulicos) servindo pisos definidos, cabina para pessoas ou carga, inclinação das guias ≤15° em relação à vertical. Objectivo: elevar o nível de segurança ao estado actual da arte (equivalente a ascensor novo). NÃO se aplica: outros sistemas de tracção fora EN 81-1/2; pater noster, minas, navios, teatro, estaleiros; inclinação >15°; operações de combate a incêndio.",
+          "keywords": [
+            "ascensor existente",
+            "modernização",
+            "≤15°",
+            "estado da arte",
+            "EN 81-1",
+            "EN 81-2"
+          ],
+          "relatedViolations": []
+        },
+        {
+          "number": "3",
+          "classification": "INFO",
+          "title": "Definições essenciais",
+          "text": "Ascensor existente: ascensor em serviço à disposição do proprietário. Proprietário da instalação: pessoa que tem poder de dispor da instalação e assume responsabilidade pela exploração. Precisão de paragem: distância vertical máxima entre soleira da cabina e soleira do patamar no momento de paragem (portas abertas). Precisão de nivelamento: distância vertical máxima entre soleiras durante carga/descarga. Pessoa autorizada: tem autorização do proprietário para actividades definidas.",
+          "keywords": [
+            "ascensor existente",
+            "proprietário",
+            "precisão de paragem",
+            "precisão de nivelamento",
+            "pessoa autorizada"
+          ],
+          "relatedViolations": []
+        },
+        {
+          "number": "5.2.2",
+          "classification": "C2",
+          "title": "Precisão de paragem e de nivelamento",
+          "text": "Precisão de paragem: ±10 mm (distância entre soleira da cabina e soleira do patamar ao parar). Precisão de nivelamento: ±20 mm (manter durante carga/descarga). Referência EN 81-70:2003 sect. 5.3.3. NOTA: Recomendado aplicar a TODOS os ascensores. Se não cumprir: instalar dispositivo de tracção regulável, ou sistema de nivelamento, ou válvula regulável (hidráulicos). Prioridade: ALTA.",
+          "keywords": [
+            "precisão de paragem",
+            "±10mm",
+            "precisão de nivelamento",
+            "±20mm",
+            "nivelamento"
+          ],
+          "relatedViolations": [
+            "paragem fora de nível >10mm = risco de tropicão = C2",
+            "nivelamento >20mm = acessibilidade comprometida"
+          ]
+        },
+        {
+          "number": "5.5.6.2",
+          "classification": "C1",
+          "title": "Divisória em caixa comum a vários ascensores",
+          "text": "Quando a caixa é comum a vários ascensores: distância horizontal entre bordo do tecto da cabina e qualquer órgão em movimento de ascensor contíguo DEVE SER SUPERIOR a 0,5 m. Se distância <0,5 m: instalar separação a toda a altura da caixa de acordo com 5.6.2.2 da EN 81-1:1998. Prioridade: ALTA.",
+          "keywords": [
+            "caixa comum",
+            "divisória",
+            ">0,5m",
+            "separação",
+            "vários ascensores"
+          ],
+          "relatedViolations": [
+            "distância <0,5m entre cabinas em caixa comum sem divisória = C1"
+          ]
+        },
+        {
+          "number": "5.5.7-5.5.8",
+          "classification": "C1",
+          "title": "Espaços de segurança — topo e poço; acesso ao poço",
+          "text": "Espaços de segurança superior (topo) e inferior (poço) devem estar de acordo com EN 81-1:1998 art. 5.7.1, 5.7.2, 5.7.3 (eléctricos) ou EN 81-2:1998 art. 5.7.1, 5.7.2 (hidráulicos); se não for possível aplicar prEN 81-21. Poço: acesso seguro e apropriado conforme EN 81-1:1998 5.7.3.2. Prioridade: ALTA (risco de esmagamento de pessoal de manutenção).",
+          "keywords": [
+            "espaço de segurança",
+            "topo caixa",
+            "poço",
+            "acesso poço",
+            "esmagamento"
+          ],
+          "relatedViolations": [
+            "espaços segurança insuficientes em topo/poço = C1 imediato para pessoal de manutenção"
+          ]
+        },
+        {
+          "number": "5.5.9",
+          "classification": "C1",
+          "title": "Dispositivos de paragem no poço e na casa de rodas",
+          "text": "O poço e a casa de rodas DEVEM dispor de dispositivos de paragem (stop buttons) conforme EN 81-1:1998 art. 5.7.3.4 e 6.4.5 (eléctricos) ou EN 81-2:1998 art. 5.7.2.5 e 6.4.5 (hidráulicos). Prioridade: ALTA. Ausência de dispositivo de paragem = risco de acidente grave para pessoal que trabalha no poço.",
+          "keywords": [
+            "dispositivo de paragem",
+            "poço",
+            "casa de rodas",
+            "stop button",
+            "stop no poço"
+          ],
+          "relatedViolations": [
+            "ausência de botão de paragem no poço = C1",
+            "ausência de botão de paragem na casa de rodas = C1"
+          ]
+        },
+        {
+          "number": "5.7.7",
+          "classification": "C1",
+          "title": "Dispositivos de encravamento das portas de patamar",
+          "text": "Todos os encravamentos de portas de patamar devem ter nível de segurança equivalente à EN 81-1:1998 e EN 81-2:1998. Se não cumprirem: substituir conforme EN 81-1:1998 art. 7.7. NOTA: encravamentos conforme versões EN 81-1/2 anteriores a 1998 com penetração de 5 mm também são considerados equivalentes. Prioridade: ALTA.",
+          "keywords": [
+            "encravamento",
+            "porta de patamar",
+            "5mm penetração",
+            "substituição encravamento"
+          ],
+          "relatedViolations": [
+            "encravamento inadequado porta patamar = C1 imediato",
+            "porta patamar sem encravamento mecânico+eléctrico = PARAGEM IMEDIATA"
+          ]
+        },
+        {
+          "number": "5.7.8",
+          "classification": "C1",
+          "title": "Desencravamento de socorro e inacessibilidade do exterior",
+          "text": "5.7.8.1 — Desencravamento de socorro só possível por chave triangular (EN 81-1:1998 7.7.3.2). 5.7.8.2 — Dispositivos de encravamento DEVEM ser inacessíveis do exterior da caixa (ex. através de rede de fecho) para impedir uso abusivo. Se acessíveis: fechar caixa com parede cheia ou instalar protecções em redor dos encravamentos. Prioridade: ALTA.",
+          "keywords": [
+            "desencravamento de socorro",
+            "chave triangular",
+            "inacessível exterior",
+            "uso abusivo"
+          ],
+          "relatedViolations": [
+            "encravamento acessível do exterior = C1",
+            "desencravamento sem chave especial = C1"
+          ]
+        },
+        {
+          "number": "5.8.1",
+          "classification": "C2",
+          "title": "Área útil da cabina — correspondência com carga nominal",
+          "text": "Área do pavimento da cabina deve corresponder à carga nominal conforme EN 81-1:1998 art. 8.2 (eléctricos) ou EN 81-2:1998 art. 8.2 (hidráulicos). Se área excessiva: a) reduzir área útil, ou b) limitar uso a utilizadores instruídos, ou c) verificar utilização prevista. Prioridade: BAIXA. (Excesso de área → sobrecarga → risco de queda do para-quedas ou rotura de suspensão).",
+          "keywords": [
+            "área útil cabina",
+            "carga nominal",
+            "sobrecarga",
+            "EN 81-1 8.2"
+          ],
+          "relatedViolations": [
+            "área cabina excessiva para carga nominal = risco de sobrecarga = C2"
+          ]
+        },
+        {
+          "number": "5.8.6",
+          "classification": "C1",
+          "title": "Protecção no tecto da cabina (balaustrada)",
+          "text": "Distância livre horizontal entre bordos exteriores do tecto da cabina e qualquer parte da caixa NÃO DEVE EXCEDER 0,30 m. Se excede 0,30 m: a) prolongar o tecto da cabina para reduzir a distância para <0,30 m, ou b) instalar balaustrada no tecto conforme EN 81-1:1998 8.13.3 ou prEN 81-21, ou c) instalar divisória a toda a altura da caixa. Prioridade: ALTA (risco de queda do técnico do tecto da cabina).",
+          "keywords": [
+            "tecto da cabina",
+            "balaustrada",
+            "≤0,30m",
+            "distância livre",
+            "protecção tecto"
+          ],
+          "relatedViolations": [
+            "distância tecto cabina → parede caixa >0,30m sem balaustrada = C1"
+          ]
+        },
+        {
+          "number": "5.9.2",
+          "classification": "C1",
+          "title": "Pára-quedas e limitador de velocidade — ascensores eléctricos",
+          "text": "TODOS os ascensores eléctricos DEVEM possuir pára-quedas accionado por limitador de velocidade. Compatibilidade do conjunto pára-quedas + limitador DEVE SER verificada e ensaiada. Se incompatíveis: ajustar (sem interferir nos componentes de segurança) ou instalar sistema conforme EN 81-1:1998 art. 9.8 e 9.9. Prioridade: ALTA.",
+          "keywords": [
+            "pára-quedas",
+            "limitador de velocidade",
+            "compatibilidade",
+            "ensaio",
+            "obrigatório"
+          ],
+          "relatedViolations": [
+            "ausência de pára-quedas em ascensor eléctrico = PARAGEM IMEDIATA C1",
+            "pára-quedas incompatível com limitador = C1"
+          ]
+        },
+        {
+          "number": "5.9.4",
+          "classification": "C1",
+          "title": "Protecção contra movimento incontrolado da cabina (UCMP)",
+          "text": "Ascensores de roda de aderência com contrapeso: protecção contra velocidade excessiva em SUBIDA (EN 81-1:1998 art. 9.10). Travão de dupla acção obrigatório (sect.5.12.1). Protecção contra movimento incontrolado com portas abertas: detectar a partir do patamar; actuar quando cabina sai da zona de desencravamento; parar cabina em distância <0,90 m do nível do piso; desaceleração máxima 1g; reposto apenas por pessoa competente. Prioridade: ALTA.",
+          "keywords": [
+            "UCMP",
+            "movimento incontrolado",
+            "subida",
+            "portas abertas",
+            "<0,90m",
+            "desaceleração 1g",
+            "travão dupla acção"
+          ],
+          "relatedViolations": [
+            "máquina sem travão dupla acção = C1",
+            "ausência de UCMP em roda de aderência = C1",
+            "cabina arranca com portas abertas = C1 IMEDIATO"
+          ]
+        },
+        {
+          "number": "5.10.2",
+          "classification": "C1",
+          "title": "Amortecedores — obrigatórios em todos os ascensores",
+          "text": "TODOS os ascensores devem possuir amortecedores ou dispositivos equivalentes conforme EN 81-1:1998 art. 10.3 ou EN 81-2:1998 art. 10.3. Se ausentes: instalar amortecedores adequados à velocidade nominal. Prioridade: ALTA.",
+          "keywords": [
+            "amortecedores",
+            "buffers",
+            "obrigatório",
+            "fundo do poço"
+          ],
+          "relatedViolations": [
+            "ausência de amortecedores = C1",
+            "amortecedores inadequados para velocidade nominal = C1"
+          ]
+        },
+        {
+          "number": "5.12.1",
+          "classification": "C1",
+          "title": "Travão electromecânico — dupla acção (ascensores eléctricos)",
+          "text": "Travão electromecânico DEVE satisfazer EN 81-1:1998 art. 12.4.2 (DUPLA ACÇÃO — dois circuitos de abertura independentes do travão). Máquinas com risco de colapso entre freio e roda de tracção devem ter protecção contra movimento incontrolado ou ser substituídas por máquina tipo EN 81-1. Prioridade: ALTA.",
+          "keywords": [
+            "travão electromecânico",
+            "dupla acção",
+            "dois circuitos",
+            "freio",
+            "12.4.2"
+          ],
+          "relatedViolations": [
+            "travão de acção simples = C1",
+            "travão único sem redundância = PARAGEM IMEDIATA"
+          ]
+        },
+        {
+          "number": "5.12.2",
+          "classification": "C1",
+          "title": "Manobra de socorro (emergência)",
+          "text": "O ascensor DEVE possuir dispositivo de manobra de socorro conforme EN 81-1:1998 art. 12.5 ou EN 81-2:1998 art. 12.9. DEVE ser acompanhado de instruções claramente expostas conforme EN 81-1:1998 art. 16.3.1. Prioridade: ALTA (eléctricos) / MÉDIA (hidráulicos). Ausência = impossibilidade de libertar passageiros encarcerados.",
+          "keywords": [
+            "manobra de socorro",
+            "libertação passageiros",
+            "instruções socorro",
+            "16.3.1"
+          ],
+          "relatedViolations": [
+            "ausência de manobra de socorro = C1 (eléctrico)",
+            "instruções socorro ausentes ou ilegíveis = C2"
+          ]
+        },
+        {
+          "number": "5.13.1-5.13.3",
+          "classification": "C1",
+          "title": "Instalação eléctrica — protecções obrigatórias",
+          "text": "5.13.1 — Aparelhagem eléctrica: invólucros com grau mínimo IP 2X (EN 81-1:1998 13.1.2). Bornes sob tensão >50V após abertura do interruptor principal: marcações obrigatórias (EN 81-1:1998 13.5.3.3). Quadros de grupo: aviso de tensão residual mesmo com interruptor individual aberto. 5.13.2 — Motor da máquina: monitorizado com protecção adequada (sobretemperatura). 5.13.3 — Interruptores principais BLOQUEÁVEIS obrigatórios (EN 81-1:1998 13.4.2). Prioridade: ALTA.",
+          "keywords": [
+            "IP 2X",
+            "interruptores principais bloqueáveis",
+            "protecção motor",
+            ">50V",
+            "marcações eléctrico"
+          ],
+          "relatedViolations": [
+            "ausência de interruptor principal bloqueável = C1",
+            "equipamento eléctrico sem protecção IP2X = C1",
+            "bornes >50V sem marcação = C1"
+          ]
+        },
+        {
+          "number": "5.14.2-5.14.3",
+          "classification": "C1",
+          "title": "Comando inspecção, paragem e alarme no tecto da cabina",
+          "text": "Tecto da cabina DEVE ter: a) comando de manobra de inspecção (EN 81-1:1998 14.2.1.3), b) dispositivo de paragem (stop button) (EN 81-1:1998 14.2.2). Dispositivo de pedido de socorro: comunicação vocal BIDIRECCIONAL (EN 81-1:1998 14.2.3 + EN 81-28). Comunicação cabina–casa de máquinas: intercomunicador se não há comunicação sonora directa. Controlo de carga: evitar arranque em sobrecarga (EN 81-1:1998 14.2.5). Prioridade: ALTA.",
+          "keywords": [
+            "comando de inspecção",
+            "stop no tecto",
+            "alarme bidireccional",
+            "EN 81-28",
+            "controlo de carga",
+            "intercomunicador"
+          ],
+          "relatedViolations": [
+            "ausência de botão de paragem no tecto cabina = C1",
+            "alarme unidireccional (sem resposta) = C2",
+            "ausência de controlo de sobrecarga = C2"
+          ]
+        },
+        {
+          "number": "AnnexA",
+          "classification": "INFO",
+          "title": "Níveis de prioridade — Anexo A (metodologia de risco)",
+          "text": "A norma define 4 níveis de prioridade baseados em Severidade (I=Catastrófico, II=Crítico, III=Marginal, IV=Negligenciável) × Frequência (A=Frequente → F=Impossível): EXTREMO (Prioridade máxima: ascensor IMOBILIZADO imediatamente — ex. exposição catastrófica frequente/provável/ocasional). ALTO (curto prazo — ex. 5 anos). MÉDIO (médio prazo — ex. 10 anos). BAIXO (longo prazo ou com modernização de componente). Riscos extremos no Quadro A.1: ausência de pára-quedas, encravamentos inadequados, movimento incontrolado, caixa exposta. Total de 74 situações perigosas catalogadas na Tabela 1.",
+          "keywords": [
+            "níveis de prioridade",
+            "Extremo",
+            "Alto",
+            "Médio",
+            "Baixo",
+            "74 riscos",
+            "avaliação de risco",
+            "imobilização imediata"
+          ],
+          "relatedViolations": [
+            "risco Extremo = ascensor deve ser imobilizado IMEDIATAMENTE",
+            "risco Alto = prazo máximo ~5 anos para correcção"
+          ]
+        }
+      ]
     },
     {
       "id": "DL_103_2008",
@@ -1197,7 +3815,107 @@
       "authority": "DGAE — Direção-Geral das Atividades Económicas (coordenação); ASAE (fiscalização)",
       "transposes": "Diretiva 2006/42/CE — Diretiva Máquinas",
       "applies_to": "Monta-cargas, escadas mecânicas, tapetes rolantes",
-      "does_not_apply_to": "Ascensores novos — abrangidos pelo DL 58/2017 (Diretiva Ascensores 2014/33/UE)"
+      "does_not_apply_to": "Ascensores novos — abrangidos pelo DL 58/2017 (Diretiva Ascensores 2014/33/UE)",
+      "articles": [
+        {
+          "number": 1,
+          "classification": "info",
+          "title": "Âmbito — O que abrange o DL 103/2008",
+          "text": "Transpõe a Directiva 2006/42/CE (Directiva Máquinas). ÂMBITO: aplica-se a monta-cargas com carga nominal >10kg, escadas mecânicas, tapetes rolantes, e acessórios de elevação. NÃO SE APLICA a ascensores de passageiros (estes são regulados pelo DL 295/98 e DL 58/2017). Em elevadores: aplica-se aos componentes de maquinaria (motores, grupos de tracção, variadores de velocidade) que são instalados como \"máquinas\" em ascensores.",
+          "keywords": [
+            "maquinas",
+            "monta-cargas",
+            "escadas mecânicas",
+            "acessórios elevação",
+            "DL 295/98"
+          ],
+          "relatedViolations": []
+        },
+        {
+          "number": 2,
+          "classification": "technical",
+          "title": "Marcação CE — Declaração de Incorporação",
+          "text": "Toda a maquinaria abrangida deve ter marcação CE + declaração de conformidade CE antes de ser colocada no mercado. Para \"quase-máquinas\" (como motores de ascensores sem toda a maquinaria de segurança) aplica-se \"Declaração de Incorporação\" (não marcação CE completa) — o fabricante do sistema final (ascensor) é responsável pela conformidade total. Registo electrónico das marcações CE: disponível no RAPEX (sistema europeu de alerta). Colocação da marcação CE em local visível, indelével.",
+          "keywords": [
+            "marcação CE",
+            "declaração conformidade",
+            "declaração incorporação",
+            "quase-máquinas",
+            "RAPEX"
+          ],
+          "relatedViolations": [
+            "C2"
+          ]
+        },
+        {
+          "number": 3,
+          "classification": "technical",
+          "title": "Requisitos de segurança essenciais — Para componentes de ascensores",
+          "text": "Componentes de maquinaria em ascensores (motores, variadores, freios) devem: 1) Resistir às forças mecânicas previstas sem deformação perigosa; 2) Dissipar o calor gerado sem risco de incêndio ou sobreaquecimento de outros componentes; 3) Circuitos de segurança manter-se funcionais em caso de falha simples; 4) Proteção IP adequada para o ambiente de instalação (casa de máquinas: mínimo IP 44); 5) Manual técnico em língua portuguesa deve acompanhar o equipamento.",
+          "keywords": [
+            "requisitos segurança",
+            "motor",
+            "variador",
+            "freio",
+            "IP 44",
+            "manual português"
+          ],
+          "relatedViolations": [
+            "C2",
+            "C3"
+          ]
+        },
+        {
+          "number": 4,
+          "classification": "technical",
+          "title": "Escadas mecânicas e tapetes rolantes — Requisitos específicos",
+          "text": "Velocidade máxima: 0.75m/s (escadas mecânicas), 0.90m/s (tapetes horizontais). Inclinação máxima de escada mecânica: 30° (até 35° se altura ≤6m e degrau ≤1000mm). Dispositivos de paragem: botões de emergência visíveis em cima e em baixo (vermelho). Pentes de entrada e saída: dentes intermesham com degraus (proteção anti-entalamento). Escovas laterais: reduzem risco de entalamento de pé calçado. Velocidade de imersão da pente: ≤0.3m/s.",
+          "keywords": [
+            "escadas mecânicas",
+            "tapetes rolantes",
+            "0.75m/s",
+            "30°",
+            "pentes",
+            "escovas"
+          ],
+          "relatedViolations": [
+            "C1",
+            "C2"
+          ]
+        },
+        {
+          "number": 5,
+          "classification": "technical",
+          "title": "Monta-cargas >10kg — Requisitos específicos",
+          "text": "Monta-cargas com carga nominal >10kg e ≤300kg: aplicam-se os requisitos da Directiva Máquinas (DL 103/2008). Monta-cargas >300kg com plataforma de acesso para pessoas: aplica-se a Directiva Ascensores (DL 58/2017). Monta-cargas para carga apenas: vedação da soleira ≥0.60m para impedir acesso acidental. Dispositivo de limitação de carga: obrigatório para carga nominal >300kg. Encravamento de portas (se existentes): obrigatório. Aviso visível \"PROIBIDA A PERMANÊNCIA DE PESSOAS\" no interior.",
+          "keywords": [
+            "monta-cargas",
+            ">10kg",
+            ">300kg",
+            "soleira 0.60m",
+            "limitação carga",
+            "pessoas proibido"
+          ],
+          "relatedViolations": [
+            "C1",
+            "C2"
+          ]
+        },
+        {
+          "number": 6,
+          "classification": "info",
+          "title": "Fiscalização — ASAE e DGEG",
+          "text": "A fiscalização do DL 103/2008 é da competência da ASAE (Autoridade de Segurança Alimentar e Económica) para colocação no mercado, e da DGEG para instalações. As infracções ao DL 103/2008 são contra-ordenações punidas com coima. A ASAE pode retirar do mercado ou ordenar a paragem de equipamentos sem marcação CE ou com declaração de conformidade incompleta. Para escadas mecânicas: a inspeção periódica é exigida pelo DL 320/2002 (adaptado) com frequência idêntica à de ascensores.",
+          "keywords": [
+            "ASAE",
+            "DGEG",
+            "fiscalização",
+            "contra-ordenação",
+            "retirada mercado"
+          ],
+          "relatedViolations": []
+        }
+      ]
     },
     {
       "id": "PORT_348_2013",
@@ -1270,6 +3988,129 @@
           "urgency": "C2",
           "penalty": "€250 a €2500"
         }
+      ],
+      "articles": [
+        {
+          "number": 1,
+          "classification": "info",
+          "title": "Âmbito — Regulamento de Inspeção Periódica Obrigatória",
+          "text": "Portaria n.º 348/2013, de 29 de Novembro. Aprova o Regulamento de Inspeção Periódica Obrigatória (RIPO) de ascensores, monta-cargas, escadas mecânicas e tapetes rolantes. Complementa o DL 320/2002. A inspeção periódica é realizada por uma EIIE (Entidade Inspetora de Instalações de Elevadores) acreditada. A portaria define: periodicidade, metodologia, critérios de classificação de anomalias, conteúdo do relatório e obrigações de reporte ao DGEG.",
+          "keywords": [
+            "RIPO",
+            "inspeção periódica",
+            "EIIE",
+            "periodicidade",
+            "relatório",
+            "DL 320/2002"
+          ],
+          "relatedViolations": []
+        },
+        {
+          "number": 2,
+          "classification": "technical",
+          "title": "Periodicidade das inspeções — Tabela por tipo",
+          "text": "Frequência de inspeção periódica obrigatória: a) Ascensores residenciais (≤4 pisos, área habitual): 2 anos. b) Ascensores residenciais (>4 pisos ou com uso público): 2 anos. c) Ascensores em locais públicos (estações, hospitais, centros comerciais): 2 anos. d) Ascensores de serviço (monta-cargas, plataformas): 4 anos. e) Escadas mecânicas e tapetes rolantes em espaços públicos: 2 anos. Nota: a câmara municipal pode reduzir o intervalo se detectar incumprimento repetido.",
+          "keywords": [
+            "periodicidade",
+            "2 anos",
+            "4 anos",
+            "residencial",
+            "público",
+            "câmara municipal"
+          ],
+          "relatedViolations": [
+            "C2"
+          ]
+        },
+        {
+          "number": 3,
+          "classification": "technical",
+          "title": "Classificação de anomalias — C1, C2, C3",
+          "text": "C1 — PROIBIÇÃO DE FUNCIONAMENTO IMEDIATA: anomalias que representam perigo imediato para a segurança das pessoas. O elevador é imobilizado no acto da inspeção pela EIIE. Exemplos: encravamento de porta inoperante, para-quedas defeituoso, cabos com >10% fios partidos, ausência de proteções eléctricas críticas. C2 — PRAZO ATUAL DE 2 ANOS para correção (Despacho 27/2024 — revogou o prazo original de 30 dias da Portaria 348/2013). Exemplos: nivelação >5cm, alarme inoperante, botão Stop ausente, ausência de identificação EMIE. C3 — PRAZO DE 90 DIAS. Exemplos: iluminação insuficiente, avisos ilegíveis, livro de conservação desactualizado.",
+          "keywords": [
+            "C1",
+            "C2",
+            "C3",
+            "proibição",
+            "30 dias",
+            "90 dias",
+            "anomalias",
+            "classificação",
+            "Despacho 27/2024",
+            "2 anos C2"
+          ],
+          "relatedViolations": [
+            "C1",
+            "C2",
+            "C3"
+          ]
+        },
+        {
+          "number": 4,
+          "classification": "technical",
+          "title": "Relatório de inspeção — Conteúdo obrigatório",
+          "text": "O relatório de inspeção deve conter obrigatoriamente: a) Identificação do imóvel e do elevador (morada, número de registo, tipo, fabricante, ano); b) Identificação da EIIE e do inspector; c) Data da inspeção; d) Lista de todas as anomalias detectadas classificadas em C1/C2/C3 com artigo regulamentar correspondente; e) Resultado da inspeção: APROVADO (sem C1 ou C2) ou REPROVADO (com C1 ou C2); f) Prazo para re-inspeção se reprovado; g) Assinaturas do inspector e do representante da EMIE. Formato: digital (submissão ao DGEG) + papel (entregue ao proprietário).",
+          "keywords": [
+            "relatório inspeção",
+            "aprovado",
+            "reprovado",
+            "conteúdo",
+            "DGEG",
+            "submarino digital"
+          ],
+          "relatedViolations": [
+            "C2"
+          ]
+        },
+        {
+          "number": 5,
+          "classification": "technical",
+          "title": "Procedimento de inspeção — Check list EIIE",
+          "text": "A inspeção periódica deve incluir verificação de: máquina de tracção e freio; limitador de velocidade e para-quedas; guias e amortecedores; portas de patamar e cabina (encravamento, dimensões, estado); instalação eléctrica (protecções, quadro); botoneiras e sinalizações; cabina (iluminação, ventilação, avisos); comunicação de emergência; livro de conservação e registos. Cada ponto é verificado com testes funcionais (não apenas visual). A EIIE tem o direito e obrigação de testar o para-quedas a cada 5 anos (ensaio de disparo com carga).",
+          "keywords": [
+            "check list",
+            "inspeção",
+            "testes funcionais",
+            "para-quedas 5 anos",
+            "livro conservação"
+          ],
+          "relatedViolations": [
+            "C1",
+            "C2"
+          ]
+        },
+        {
+          "number": 6,
+          "classification": "technical",
+          "title": "Consequências e re-inspeção após C1",
+          "text": "Após imobilização por C1: a EIIE sela fisicamente o painel de comando ou bloqueia o acesso. O proprietário é notificado por escrito. O elevador NÃO pode voltar ao serviço sem: 1) Correção documentada da C1 pela EMIE; 2) Pedido de re-inspeção à EIIE; 3) Re-inspeção com resultado APROVADO. Colocar o elevador em serviço após imobilização por C1 sem re-inspeção = crime (Art. 291.º Código Penal) e coima ≤44.000€ (DL 320/2002). A câmara municipal é notificada de todos os C1 no prazo de 48h pela EIIE.",
+          "keywords": [
+            "C1 imobilização",
+            "selo",
+            "re-inspeção",
+            "crime",
+            "44.000€",
+            "câmara municipal 48h"
+          ],
+          "relatedViolations": [
+            "C1"
+          ]
+        },
+        {
+          "number": 7,
+          "classification": "info",
+          "title": "Registo no DGEG — Sistema SINIME",
+          "text": "Cada inspeção realizada deve ser registada no SINIME (Sistema Nacional de Informações de Manutenção de Elevadores) ou sistema equivalente do DGEG. Os dados submetidos incluem: resultado, anomalias, EIIE, inspector, datas. O DGEG mantém estatísticas nacionais de conformidade. Câmaras municipais têm acesso ao SINIME para os elevadores do seu município. A não submissão ao SINIME em 10 dias úteis após inspeção é infracção da EIIE.",
+          "keywords": [
+            "SINIME",
+            "DGEG",
+            "registo",
+            "câmara municipal",
+            "estatísticas",
+            "10 dias úteis"
+          ],
+          "relatedViolations": []
+        }
       ]
     },
     {
@@ -1325,6 +4166,86 @@
           "severity": "mandatory",
           "urgency": "C1",
           "penalty": "Nulidade da inspeção + sanção à OII"
+        }
+      ],
+      "articles": [
+        {
+          "number": 1,
+          "classification": "info",
+          "title": "Âmbito — Regime de acreditação das EIIE",
+          "text": "Portaria n.º 185/2013. Define os requisitos para acreditação e funcionamento das Entidades Inspetoras de Instalações de Elevadores (EIIE). As EIIE são entidades privadas acreditadas pelo IPAC (Instituto Português de Acreditação) por referência à NP EN ISO/IEC 17020 (Requisitos para organismos que realizam inspecções). Só podem realizar inspeções periódicas obrigatórias (PORT 348/2013) as EIIE reconhecidas pelo DGEG.",
+          "keywords": [
+            "EIIE",
+            "acreditação",
+            "IPAC",
+            "ISO 17020",
+            "DGEG",
+            "reconhecimento"
+          ],
+          "relatedViolations": []
+        },
+        {
+          "number": 2,
+          "classification": "technical",
+          "title": "Requisitos dos inspetores — Qualificações mínimas",
+          "text": "Os inspetores de elevadores da EIIE devem ter: a) Habilitações académicas mínimas: curso técnico profissional de eletromecânica ou engenharia (licenciatura recomendada); b) Formação específica em elevadores: mínimo 80h de formação técnica certificada (instalação, manutenção, normas EN 81); c) Experiência prática: mínimo 2 anos em manutenção ou inspeção de elevadores; d) Actualização contínua: formação anual ≥24h sobre novas normas e regulamentos. A EIIE é responsável por manter os registos de formação de todos os inspetores.",
+          "keywords": [
+            "inspector qualificações",
+            "80h formação",
+            "2 anos experiência",
+            "24h/ano",
+            "EN 81",
+            "registos formação"
+          ],
+          "relatedViolations": [
+            "C2"
+          ]
+        },
+        {
+          "number": 3,
+          "classification": "technical",
+          "title": "Independência e imparcialidade da EIIE",
+          "text": "A EIIE e os seus inspetores NÃO podem ter qualquer relação comercial ou financeira com a EMIE que mantém o elevador a inspeccionar (requisito NP EN ISO/IEC 17020 — organismo Tipo A). Especificamente proibido: um inspector que tenha feito manutenção num elevador não pode inspeccionar esse mesmo elevador nos 12 meses seguintes. A EIIE não pode ser detida por ou ter participações numa EMIE. Conflitos de interesses devem ser declarados e o inspector impedido de actuar nesse processo.",
+          "keywords": [
+            "independência",
+            "imparcialidade",
+            "EMIE separação",
+            "Tipo A",
+            "12 meses",
+            "conflito interesses"
+          ],
+          "relatedViolations": []
+        },
+        {
+          "number": 4,
+          "classification": "technical",
+          "title": "Obrigações de reporte ao DGEG e câmaras municipais",
+          "text": "A EIIE deve reportar ao DGEG: a) Lista de todas as inspeções realizadas (mensalmente); b) Todas as imobilizações por C1 (prazo: 48h); c) Situações de risco grave não corrigidas após C1 (imediatamente). Às câmaras municipais: notificação de C1 e C2 dos elevadores no seu município (prazo: 5 dias úteis). Recusa de acesso a um elevador para inspeção: reportar ao DGEG e câmara municipal para acção coerciva. A EIIE archiva todos os relatórios por mínimo 10 anos.",
+          "keywords": [
+            "reporte DGEG",
+            "câmara municipal",
+            "48h C1",
+            "10 anos arquivo",
+            "recusa acesso"
+          ],
+          "relatedViolations": [
+            "C2"
+          ]
+        },
+        {
+          "number": 5,
+          "classification": "info",
+          "title": "Processo de reconhecimento e renovação pelo DGEG",
+          "text": "Pedido de reconhecimento: submissão ao DGEG de certificado de acreditação IPAC + seguro de responsabilidade civil (mínimo 500.000€ por sinistro). Validade do reconhecimento: prazo do certificado IPAC (tipicamente 4 anos). Renovação: submissão antes da expiração da acreditação. Suspensão do reconhecimento pelo DGEG: se EIIE perde acreditação IPAC, pratica infracções graves ou não reporta C1. Lista das EIIE reconhecidas: publicada no site do DGEG.",
+          "keywords": [
+            "reconhecimento DGEG",
+            "IPAC",
+            "seguro 500.000€",
+            "4 anos",
+            "suspensão",
+            "lista EIIE"
+          ],
+          "relatedViolations": []
         }
       ]
     },
@@ -1392,7 +4313,147 @@
           "penalty": "Responsabilidade civil por dano causado pelo atraso"
         }
       ],
-      "authority": "IPQ — Instituto Português da Qualidade / CEN"
+      "authority": "IPQ — Instituto Português da Qualidade / CEN",
+      "articles": [
+        {
+          "number": 1,
+          "classification": "info",
+          "title": "Âmbito — Norma de manutenção de ascensores e escadas mecânicas",
+          "text": "NP EN 13015:2003+A1:2009 define os requisitos mínimos para programas de manutenção preventiva de ascensores, monta-cargas, escadas mecânicas e tapetes rolantes. Estabelece: conteúdo obrigatório do plano de manutenção; intervalos máximos entre verificações; documentação e rastreabilidade. É norma harmonizada (mandato da Comissão Europeia) que complementa DL 320/2002. A EMIE deve cumprir esta norma como mínimo.",
+          "keywords": [
+            "manutenção preventiva",
+            "plano manutenção",
+            "intervalos",
+            "documentação",
+            "norma harmonizada"
+          ],
+          "relatedViolations": []
+        },
+        {
+          "number": 2,
+          "classification": "technical",
+          "title": "Plano de Manutenção — Conteúdo obrigatório",
+          "text": "O plano de manutenção deve ser elaborado com base nos documentos do fabricante e nas normas EN 81 aplicáveis. Deve incluir obrigatoriamente: a) Lista de todos os componentes a verificar com frequência de verificação; b) Procedimento de verificação para cada componente; c) Critérios de aceitação (valores-limite); d) Acções correctivas para cada desvio; e) Referência ao manual do fabricante; f) Competências mínimas exigidas ao técnico. O plano é documento vivo — deve ser actualizado após modificações ao ascensor.",
+          "keywords": [
+            "plano manutenção",
+            "componentes",
+            "frequência",
+            "critérios aceitação",
+            "manual fabricante"
+          ],
+          "relatedViolations": [
+            "C2"
+          ]
+        },
+        {
+          "number": 3,
+          "classification": "technical",
+          "title": "Intervalos máximos de verificação — Componentes críticos",
+          "text": "Visita de manutenção: MENSAL (máx.). Verificação visual cabos/cadeias: MENSAL. Verificação funcional encravamento portas: MENSAL. Verificação funcional alarme emergência + comunicação: MENSAL. Ensaio funcional travão e paragem de emergência: SEMESTRAL. Verificação medição isolamento eléctrico: ANUAL. Verificação funcional limitador de velocidade: ANUAL. Lubrificação guias: conforme fabricante (mín. anual). Ensaio do para-quedas (disparo real): a cada 5 ANOS ou 10.000h de operação (o que ocorrer primeiro).",
+          "keywords": [
+            "mensal",
+            "semestral",
+            "anual",
+            "5 anos",
+            "cabos",
+            "encravamento",
+            "para-quedas",
+            "limitador"
+          ],
+          "relatedViolations": [
+            "C1",
+            "C2"
+          ]
+        },
+        {
+          "number": 4,
+          "classification": "technical",
+          "title": "Documentação e rastreabilidade — Livro de conservação",
+          "text": "O livro de conservação (ficheiro digital ou em papel) deve conter: a) Dados técnicos do ascensor (fabricante, modelo, ano, carga nominal, velocidade); b) Registo de cada visita de manutenção: data, técnico, trabalhos realizados, anomalias encontradas e acções correctivas; c) Registo de peças substituídas com referência; d) Registos de ensaios periódicos (limitador de velocidade, para-quedas); e) Registo de incidentes/acidentes; f) Cópia dos relatórios de inspeção pela EIIE. Conservado na casa das máquinas e acessível a EMIE, EIIE e DGEG. Prazo mínimo de arquivo: 10 anos.",
+          "keywords": [
+            "livro conservação",
+            "rastreabilidade",
+            "data",
+            "técnico",
+            "anomalias",
+            "10 anos"
+          ],
+          "relatedViolations": [
+            "C2",
+            "C3"
+          ]
+        },
+        {
+          "number": 5,
+          "classification": "technical",
+          "title": "Competências do técnico de manutenção",
+          "text": "O técnico que realiza manutenção deve ter: formação em electromecânica ou electricidade industrial; formação específica em ascensores (mínimo 40h incluindo normas EN 81, riscos em altura, equipamentos de protecção individual); conhecimento do plano de manutenção específico do ascensor em questão. A EMIE é responsável por verificar e documentar as competências de todos os técnicos. Trabalhos em altura (cima da cabina, poço): equipamento de protecção individual obrigatório.",
+          "keywords": [
+            "competências técnico",
+            "40h formação",
+            "EN 81",
+            "trabalhos altura",
+            "EPI",
+            "EMIE responsável"
+          ],
+          "relatedViolations": [
+            "C2"
+          ]
+        },
+        {
+          "number": 6,
+          "classification": "technical",
+          "title": "Resposta a avarias — Tempos e prioridades",
+          "text": "C1 (perigo imediato): a EMIE deve deslocar técnico em ≤2 horas e imobilizar o ascensor. C2 (deficiência significativa): prazo de correção ≤30 dias. C3 (deficiência menor): prazo ≤90 dias. Passageiro preso em cabina: EMIE deve ter serviço de resposta 24h/7d com chegada ao local em ≤1 hora em zonas urbanas e ≤2 horas em zonas rurais. Procedimento de libertação de passageiro preso: definido no plano de emergência da EMIE, com comunicação prévia ao passageiro via intercomunicador.",
+          "keywords": [
+            "avaria",
+            "passageiro preso",
+            "1 hora",
+            "2 horas",
+            "24h/7d",
+            "resposta emergência"
+          ],
+          "relatedViolations": [
+            "C1",
+            "C2"
+          ]
+        },
+        {
+          "number": 7,
+          "classification": "technical",
+          "title": "Gestão de componentes de segurança — Substituição obrigatória",
+          "text": "Componentes de segurança (Art. 1 DL 295/98): encravamento de porta, para-quedas, limitador de velocidade, tampões de fim de curso, amortecedores, dispositivos electro-hidráulicos. Substituição obrigatória por componentes CE conformes (DL 295/98 e/ou DL 58/2017). Não é permitido substituir componentes de segurança por peças sem declaração de conformidade. Prazo de vida útil dos cabos de tração: a EMIE define com base no estado e no manual do fabricante (típico: 10-15 anos). Cabos: substituição quando deterioração superior aos limites de norma (NP EN 81-50).",
+          "keywords": [
+            "componentes segurança",
+            "CE",
+            "DL 295/98",
+            "cabos vida útil",
+            "substituição",
+            "DL 58/2017"
+          ],
+          "relatedViolations": [
+            "C1",
+            "C2"
+          ]
+        },
+        {
+          "number": 8,
+          "classification": "info",
+          "title": "Contrato de manutenção — Obrigações legais (DL 320/2002)",
+          "text": "O proprietário é **obrigatoriamente** responsável por celebrar contrato de manutenção com uma EMIE autorizada (DL 320/2002 Art. 4.º). O contrato deve cobrir: visitas mensais obrigatórias, correcção de anomalias C1/C2/C3, serviço de emergência 24h, manobra de socorro de passageiros presos. Cópia do contrato deve estar disponível na casa das máquinas. Rescisão do contrato: EMIE deve notificar a câmara municipal e DGEG com 30 dias de antecedência E garantir que nova EMIE assume antes de descontinuar serviço.",
+          "keywords": [
+            "contrato manutenção",
+            "obrigatório",
+            "câmara municipal",
+            "rescisão 30 dias",
+            "serviço 24h"
+          ],
+          "relatedViolations": [
+            "C1",
+            "C2"
+          ]
+        }
+      ]
     }
   ],
   "violation_codes": [

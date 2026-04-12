@@ -3403,53 +3403,65 @@
             window._adminStep4LastReportDate = null;
             return;
         }
-        container.innerHTML = '<span class="text-muted small"><i class="fas fa-spinner fa-spin mr-1"></i>Завантаження...</span>';
-        try {
-            const token = AuthManager.getAuthToken();
-            const res = await fetch('/api/inspections?liftId=' + encodeURIComponent(liftId) + '&limit=5', {
-                headers: { 'Authorization': 'Bearer ' + token }
-            });
-            const data = await res.json();
-            const reports = (data.data && Array.isArray(data.data)) ? data.data :
-                (data.data && Array.isArray(data.data.inspections)) ? data.data.inspections : [];
-            if (reports.length === 0) {
-                container.innerHTML = '<p class="text-muted small mb-0"><i class="fas fa-folder-open mr-1"></i>Звітів ще немає. Натисніть кнопку нижче, щоб додати.</p>';
-                window._adminStep4LastReportDate = null;
+
+        // Prefer already-fetched lift over a separate API call
+        let reports = null;
+        const cached = window._currentEditingLift;
+        if (cached && String((cached._id || cached.id)) === String(liftId) && Array.isArray(cached.inspectionHistory)) {
+            reports = cached.inspectionHistory;
+        } else {
+            container.innerHTML = '<span class="text-muted small"><i class="fas fa-spinner fa-spin mr-1"></i>Завантаження...</span>';
+            try {
+                const token = typeof AuthManager !== 'undefined' ? AuthManager.getAuthToken() : localStorage.getItem('liftmanager_jwt');
+                const res = await fetch('/api/lifts/' + encodeURIComponent(liftId), {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                const data = await res.json();
+                const fetchedLift = (data.data && data.data.lift) || data.data || data;
+                reports = fetchedLift.inspectionHistory || [];
+            } catch (e) {
+                container.innerHTML = '<span class="text-danger small"><i class="fas fa-exclamation-triangle mr-1"></i>Помилка завантаження</span>';
+                console.error('loadAdminStep4InspectionInfo error:', e);
                 return;
             }
-            reports.sort(function(a, b) { return new Date(b.date || b.createdAt) - new Date(a.date || a.createdAt); });
-            window._adminStep4LastReportDate = reports[0].date || reports[0].createdAt || null;
-            const statusLabels = {
-                passed: '<span class="badge badge-success">\u2705 Пройдено</span>',
-                failed: '<span class="badge badge-warning">\u26a0\ufe0f Клаузи</span>',
-                completed: '<span class="badge badge-info">Виконано</span>'
-            };
-            const typeLabels = { inspection: 'Інспекція', maintenance: 'ТО', repair: 'Ремонт', emergency: 'Аварія' };
-            let html = '<div class="table-responsive"><table class="table table-sm table-bordered table-hover mb-1" style="font-size:0.8rem;">';
-            html += '<thead class="thead-light"><tr><th>Дата</th><th>Тип</th><th>Статус</th><th>Дійсно до</th></tr></thead><tbody>';
-            for (let i = 0; i < Math.min(reports.length, 5); i++) {
-                const r = reports[i];
-                const d = r.date ? new Date(r.date).toLocaleDateString('uk-UA') : '\u2014';
-                const type = typeLabels[r.type] || r.type || '\u2014';
-                const status = statusLabels[r.status] || r.status || '\u2014';
-                let validUntil = '\u2014';
-                if (r.validUntil) validUntil = new Date(r.validUntil).toLocaleDateString('uk-UA');
-                else if (r.nextInspectionDate) validUntil = new Date(r.nextInspectionDate).toLocaleDateString('uk-UA');
-                else if (r.date && r.status === 'passed') {
-                    const nd = new Date(r.date); nd.setFullYear(nd.getFullYear() + 2);
-                    validUntil = nd.toLocaleDateString('uk-UA');
-                } else if (r.date && r.status === 'failed') {
-                    const nd = new Date(r.date); nd.setDate(nd.getDate() + 180);
-                    validUntil = nd.toLocaleDateString('uk-UA');
-                }
-                html += '<tr><td>' + d + '</td><td>' + type + '</td><td>' + status + '</td><td>' + validUntil + '</td></tr>';
-            }
-            html += '</tbody></table></div>';
-            container.innerHTML = html;
-        } catch (e) {
-            container.innerHTML = '<span class="text-danger small"><i class="fas fa-exclamation-triangle mr-1"></i>Помилка завантаження</span>';
-            console.error('loadAdminStep4InspectionInfo error:', e);
         }
+
+        if (!reports || reports.length === 0) {
+            container.innerHTML = '<p class="text-muted small mb-0"><i class="fas fa-folder-open mr-1"></i>Звітів ще немає. Натисніть кнопку нижче, щоб додати.</p>';
+            window._adminStep4LastReportDate = null;
+            return;
+        }
+
+        // Sort by date desc
+        const sorted = [...reports].sort((a, b) =>
+            new Date(b.inspectionDate || b.date || b.createdAt) - new Date(a.inspectionDate || a.date || a.createdAt)
+        );
+        window._adminStep4LastReportDate = sorted[0].inspectionDate || sorted[0].date || sorted[0].createdAt || null;
+
+        const statusLabels = {
+            passed:    '<span class="badge badge-success">✅ Пройдено</span>',
+            failed:    '<span class="badge badge-warning">⚠️ Клаузи</span>',
+            completed: '<span class="badge badge-info">Виконано</span>'
+        };
+        const typeLabels = { inspection: 'Інспекція', maintenance: 'ТО', repair: 'Ремонт', emergency: 'Аварія' };
+
+        let html = '<div class="table-responsive"><table class="table table-sm table-bordered table-hover mb-1" style="font-size:0.8rem;">';
+        html += '<thead class="thead-light"><tr><th>Дата</th><th>Тип</th><th>Статус</th><th>Дійсно до</th></tr></thead><tbody>';
+        for (const r of sorted.slice(0, 5)) {
+            const d = (r.inspectionDate || r.date)
+                ? new Date(r.inspectionDate || r.date).toLocaleDateString('uk-UA') : '—';
+            const type = typeLabels[r.inspectionType || r.type] || r.inspectionType || r.type || '—';
+            const status = statusLabels[r.status] || r.status || '—';
+            let validUntil = '—';
+            const vu = r.validUntil || r.nextInspectionDate;
+            if (vu) validUntil = new Date(vu).toLocaleDateString('uk-UA');
+            else if ((r.inspectionDate || r.date) && r.status === 'passed')
+                validUntil = new Date(new Date(r.inspectionDate || r.date).setFullYear(new Date(r.inspectionDate || r.date).getFullYear() + 2)).toLocaleDateString('uk-UA');
+            html += `<tr><td>${d}</td><td>${type}</td><td>${status}</td><td>${validUntil}</td></tr>`;
+        }
+        html += '</tbody></table></div>';
+        if (sorted.length > 5) html += `<small class="text-muted">Показано 5 з ${sorted.length} звітів</small>`;
+        container.innerHTML = html;
     }
 
     // Завантажуємо при кліку на вкладку "Сервіс" в адмін панелі

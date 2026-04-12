@@ -376,7 +376,9 @@ router.post('/parse-inspection-pdf', authenticate, authorizeRoles('admin', 'disp
             if (!inspectionDate) {
                 inspectionDate = extractInspectionDateFromRawText(parsed.rawText || '');
             }
-            const validUntil = calcValidUntil(inspectionDate, passed, c1Count, c2Count);
+            // Prefer validUntil from PDF metadata (e.g. BV "Validade:2024/11/11") over calculated value
+            const validUntil = (meta.validUntil ? parseDate(meta.validUntil) : null)
+                || calcValidUntil(inspectionDate, passed, c1Count, c2Count);
 
             // ── Extract address details from location string ──────────────
             const locationStr = meta.location || '';
@@ -535,29 +537,34 @@ router.post('/:id/confirm-inspection-from-pdf', authenticate, authorizeRoles('ad
             photos: []
         };
 
-        lift.inspectionHistory.push(report);
-        lift.lastInspectionDate = report.date;
+        // Calculate next inspection date
+        let nextInspDate;
         if (nextInspectionDate) {
-            lift.nextInspectionDate = new Date(nextInspectionDate);
-        } else if (status === 'passed') {
-            // Default: +24 months
-            const nd = new Date(report.date);
-            nd.setMonth(nd.getMonth() + 24);
-            lift.nextInspectionDate = nd;
+            nextInspDate = new Date(nextInspectionDate);
         } else {
-            // Failed: +6 months
-            const nd = new Date(report.date);
-            nd.setMonth(nd.getMonth() + 6);
-            lift.nextInspectionDate = nd;
+            nextInspDate = new Date(report.date);
+            nextInspDate.setMonth(nextInspDate.getMonth() + (status === 'passed' ? 24 : 6));
         }
 
-        await lift.save();
+        // Use $push/$set instead of lift.save() to bypass Mongoose validation
+        // on pre-existing fields with null enum values (e.g. doorType, driveType).
+        await Lift.findByIdAndUpdate(
+            req.params.id,
+            {
+                $push: { inspectionHistory: report },
+                $set: {
+                    lastInspectionDate: report.date,
+                    nextInspectionDate: nextInspDate
+                }
+            }
+        );
+        const nextInspectionDateSaved = nextInspDate;
 
         res.json({
             success: true,
             message: 'Звіт інспекції збережено',
             inspectionEntry: report,
-            nextInspectionDate: lift.nextInspectionDate
+            nextInspectionDate: nextInspectionDateSaved
         });
     } catch (err) {
         console.error('❌ confirm-inspection-from-pdf error:', err);

@@ -24,6 +24,33 @@ const mongoSanitize = require('express-mongo-sanitize'); // 🔐 NoSQL injection
 // 🤖 Google Gemini AI
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
+// AI_PROVIDER: 'auto' | 'gemini' | 'ollama'
+// 'auto' = автоматично uses Ollama if running, otherwise Gemini
+const AI_PROVIDER = (process.env.AI_PROVIDER || 'auto').toLowerCase();
+const OLLAMA_BASE_URL = process.env.OLLAMA_BASE_URL || 'http://127.0.0.1:11434';
+const OLLAMA_MODEL = process.env.OLLAMA_MODEL || 'gemma3:12b';
+
+// ─── Ollama auto-detect cache (TTL 5 хв) ────────────────────────────────────
+let _ollamaCache = { available: null, checkedAt: 0 };
+async function isOllamaAvailable() {
+    const now = Date.now();
+    if (_ollamaCache.available !== null && now - _ollamaCache.checkedAt < 5 * 60 * 1000) {
+        return _ollamaCache.available;
+    }
+    try {
+        const ctrl = new AbortController();
+        const timer = setTimeout(() => ctrl.abort(), 2000);
+        const res = await fetch(`${OLLAMA_BASE_URL}/api/tags`, { signal: ctrl.signal });
+        clearTimeout(timer);
+        _ollamaCache = { available: res.ok, checkedAt: now };
+    } catch {
+        _ollamaCache = { available: false, checkedAt: now };
+    }
+    if (_ollamaCache.available) {
+        console.log(`🦙 Ollama auto-detected at ${OLLAMA_BASE_URL} — using ${OLLAMA_MODEL}`);
+    }
+    return _ollamaCache.available;
+}
 
 // 📧 Email Service (Brevo SMTP)
 const emailService = require('./backend/services/emailService');
@@ -3934,16 +3961,20 @@ app.get('/api/ai/health', authenticateToken, async (req, res) => {
     try {
         const hasApiKey = !!process.env.GEMINI_API_KEY;
         const hasModel = !!process.env.GOOGLE_AI_MODEL;
+        const isOllama = AI_PROVIDER === 'ollama' || (AI_PROVIDER === 'auto' && _ollamaCache.available === true);
+        const provider = isOllama ? `Ollama (${OLLAMA_MODEL})` : 'Google Gemini 2.5 Flash';
+        const configured = isOllama ? true : (hasApiKey && hasModel);
+        const status = configured ? 'configured' : 'missing_api_key';
         
         res.json({
             success: true,
-            status: hasApiKey ? 'configured' : 'missing_api_key',
-            provider: 'Google Gemini 2.5 Flash',
-            model: process.env.GOOGLE_AI_MODEL || 'gemini-2.0-flash-exp',
-            configured: hasApiKey && hasModel,
+            status,
+            provider,
+            model: isOllama ? OLLAMA_MODEL : (process.env.GOOGLE_AI_MODEL || 'gemini-2.0-flash-exp'),
+            configured,
             features: {
-                chat: hasApiKey,
-                pdfAnalysis: hasApiKey,
+                chat: configured,
+                pdfAnalysis: configured,
                 voiceInput: true,
                 voiceOutput: true
             }
@@ -5861,42 +5892,762 @@ Role: ${role}
 
 CLASSIFICAÇÃO DE CLÁUSULAS (FUNDAMENTAL):
 • C1 — CRÍTICO: Risco imediato de acidente mortal. Elevador IMOBILIZADO IMEDIATAMENTE.
-  Prazo: Correção IMEDIATA antes de reativação.
-  Exemplos: para-quedas defeituoso, portas sem bloqueio, cabos com >10% fios partidos.
+  Prazo: Correção IMEDIATA antes de reativação. Sem exceções.
+  Exemplos: para-quedas defeituoso, portas sem bloqueio, cabos com >10% fios partidos,
+            freio que não trava, limitador de velocidade inoperacional, válvula de descida descontrolada.
 
-• C2 — GRAVE: Situação perigosa que pode causar acidente.
+• C2 — GRAVE: Situação perigosa que pode causar acidente a curto/médio prazo.
   Prazo: 2 ANOS para correção (Despacho n.º 27/2024 - VIGENTE).
-  ⚠️ ATENÇÃO: Despacho 17/2022 estabelecia 30 dias para C2 mas foi REVOGADO pelo Despacho 27/2024!
-  O prazo VIGENTE para C2 é 2 ANOS.
-  Exemplos: dispositivos de segurança com desgaste, iluminação insuficiente.
+  ⚠️ ATENÇÃO: Despacho 17/2022 estabelecia 30 dias para C2 mas foi COMPLETAMENTE REVOGADO pelo Despacho 27/2024!
+  O prazo VIGENTE e ÚNICO para C2 é 2 ANOS. Qualquer referência a "30 dias para C2" é INCORRETA.
+  Exemplos: dispositivos de segurança com desgaste, iluminação de emergência sem bateria,
+            telefone inoperacional, nivelação com desvio >35mm, documentação técnica em falta.
 
 • C3 — OBSERVAÇÃO: Não conformidade menor, sem risco imediato.
-  Prazo: Resolver na próxima manutenção programada.
-  Exemplos: documentação incompleta, pequenos defeitos estéticos.
+  Prazo: Resolver na próxima manutenção programada (sem prazo legal fixo).
+  Exemplos: documentação incompleta, desgaste cosmético, ruído não crítico, limpeza deficiente.
 
-FREQUÊNCIAS DE INSPEÇÃO (DL 320/2002):
+FREQUÊNCIAS DE INSPEÇÃO (DL 320/2002, art.º 10.º e 12.º):
 • Inspeção aprovada (sem C1/C2): próxima inspeção em 2 ANOS (24 meses)
-• Inspeção reprovada (C1 ou C2): reavaliação em 180 DIAS para verificar correções
-• Após modernização: inspeção de verificação obrigatória antes de reativar
+• Inspeção reprovada (com C1 ou C2): reavaliação obrigatória em 180 DIAS para verificar correções
+• Após modernização: inspeção de verificação pela EIIE obrigatória antes de reativar
+• Elevadores em condomínios: proprietário/administrador responsável por contratar EIIE
 
-LEGISLAÇÃO PRINCIPAL:
-• DL 58/2017 — LEI PRINCIPAL para ascensores NOVOS. Transpõe Diretiva 2014/33/UE. Coordenado pela DGEG. Fiscalização pelo ASAE.
-  ⚠️ NÃO confundir com DL 103/2008 que se aplica a monta-cargas/escadas (Diretiva Máquinas)
-• DL 320/2002 — Regime de manutenção e inspeção periódica obrigatória (após entrada em serviço)
-  Câmaras municipais têm competência de fiscalização das inspeções periódicas
-• Lei 65/2013 — Regime das EMIE (Empresas de Manutenção de Instalações de Elevação) e EIIE (Entidades Inspetoras). Reconhecimento e controlo pela DGEG.
-• Decreto 513/70 — Regulamento base de instalação de elevadores
-• DR 13/80 — Requisitos técnicos construtivos
-• Despacho 27/2024 — VIGENTE: Prazos C2 = 2 anos (revoga Despacho 17/2022)
-• EN 81-20:2020 + EN 81-50:2020 — Normas europeias de segurança (substituem EN 81-1 e EN 81-2)
-• Circular IPAC 06/2025 — Metodologias de inspeção de modificações
-
-AUTORIDADES COMPETENTES:
-• DGEG (Direção-Geral de Energia e Geologia) — coordena DL 58/2017, reconhece EMIE/EIIE
-• ASAE — fiscalização de mercado (ascensores novos)
-• Câmaras Municipais — fiscalização de inspeções periódicas (DL 320/2002)
-• DGAE — coordena DL 103/2008 (monta-cargas/escadas mecânicas)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📜 DL 320/2002 — ARTIGOS DETALHADOS (Manutenção e Inspeção)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Art.º 1.º — Objeto e âmbito:
+  Aplica-se a ascensores, monta-cargas, escadas mecânicas e tapetes rolantes APÓS entrada em serviço.
+  Excluídos: monta-cargas com carga nominal inferior a 100 kg.
+
+Art.º 2.º — Definições importantes:
+  • EMIE (Empresa de Manutenção de Instalações de Elevação) — empresa certificada que faz manutenção
+  • EIIE (Entidade Inspetora de Instalações de Elevação) — entidade acreditada que faz inspeções
+  • Proprietário — responsável legal pela manutenção e inspeção do elevador
+  • Instalação — o elevador em serviço num edifício
+
+Art.º 5.º — Manutenção obrigatória:
+  § 1 — O proprietário é OBRIGADO a celebrar contrato de manutenção com EMIE certificada.
+  § 2 — A manutenção MÍNIMA obrigatória é mensal (1 vez por mês).
+  § 3 — O contrato deve cobrir: visitas mensais, intervenções de emergência, peças de desgaste normal.
+  ⚠️ Elevador sem contrato de manutenção válido = infração grave = C2 imediato em inspeção.
+
+Art.º 6.º — Livro de manutenção:
+  § 1 — Cada elevador deve ter livro de manutenção físico ou digital.
+  § 2 — Cada visita mensal deve ser registada com data, técnico responsável e trabalhos realizados.
+  § 3 — O livro deve estar acessível à EIIE durante inspeções.
+  ⚠️ Ausência de registos = C3 (documentação) ou C2 (se mais de 3 meses sem registos).
+
+Art.º 7.º — Contrato de manutenção:
+  § 1 — O contrato deve identificar claramente a EMIE (nome, NIF, número de registo DGEG).
+  § 2 — Deve incluir frequência de visitas (mínimo mensal), âmbito de trabalhos, resposta a emergências.
+  § 3 — Contratos com EMIE não registada na DGEG são NULOS e o proprietário fica sem cobertura legal.
+
+Art.º 8.º — Registos de anomalias:
+  EMIE é obrigada a comunicar ao proprietário qualquer anomalia C1 ou C2 por escrito no prazo de 48 horas.
+  Se C1: comunicação IMEDIATA e elevador deve ser imobilizado antes de sair do local.
+
+Art.º 10.º — Inspeção periódica:
+  § 1 — O proprietário é obrigado a realizar inspeção periódica por EIIE acreditada pelo IPAC.
+  § 2 — Periodicidade: 2 anos (aprovação) ou 180 dias (reprovação).
+  § 3 — A EIIE emite certificado de inspeção com resultado (aprovado/reprovado) e lista de cláusulas.
+  § 4 — O certificado deve ser afixado na cabine do elevador em local visível.
+
+Art.º 11.º — Conteúdo da inspeção:
+  A EIIE verifica: estrutura da caixa, cabine e portas, sistema de tração/hidráulico, dispositivos de segurança,
+  instalação elétrica, casa de máquinas, sistema de comunicação de emergência, documentação técnica.
+
+Art.º 12.º — Resultados e cláusulas:
+  § 1 — Aprovado: todos os dispositivos de segurança em conformidade, sem C1 ou C2.
+  § 2 — Reprovado: presença de pelo menos 1 cláusula C1 (imobilização imediata) ou C2.
+  § 3 — O proprietário tem obrigação de comunicar o resultado à câmara municipal.
+  § 4 — EIIE envia cópia do relatório à câmara municipal automaticamente.
+
+Art.º 13.º — Imobilização imediata (C1):
+  § 1 — A EIIE tem PODER e OBRIGAÇÃO de imobilizar o elevador no próprio ato de inspeção se encontrar C1.
+  § 2 — A reativação só é possível após: (a) correção comprovada da C1; (b) nova inspeção pela EIIE.
+  § 3 — Colocar elevador em serviço após imobilização = crime (art.º 291.º CP) + coima até €44.000.
+
+Art.º 14.º — Comunicação de acidentes:
+  § 1 — O proprietário/EMIE é OBRIGADO a comunicar qualquer acidente com elevador à câmara municipal
+        e à DGEG no prazo de 24 horas.
+  § 2 — A câmara pode ordenar inspeção extraordinária imediata.
+  § 3 — Não comunicar acidente = coima de €2.500 a €25.000.
+
+Art.º 15.º — Acesso à instalação:
+  § 1 — Proprietário deve garantir acesso da EMIE e EIIE ao elevador e casa de máquinas.
+  § 2 — Recusar acesso à EIIE para inspeção = infração grave = coima + possível interdição pelo município.
+
+Art.º 16.º — Modernização:
+  § 1 — Qualquer modificação significativa (motor, portas, quadro elétrico, cabos portadores) exige:
+        (a) projeto técnico por engenheiro inscrito na Ordem dos Engenheiros;
+        (b) autorização prévia da câmara municipal (em alguns municípios);
+        (c) inspeção de verificação antes de voltar ao serviço.
+  § 2 — Modernizações devem cumprir EN 81-80:2020 (Regras de segurança para elevadores existentes).
+  § 3 — Após modernização, o elevador recebe novo certificado de conformidade.
+
+Art.º 17.º — Registo de instalações:
+  § 1 — Todos os elevadores devem estar registados no SINIME (Sistema Nacional de Instalações de Manutenção de Elevadores).
+  § 2 — O registo inclui: localização, ano de instalação, fabricante, tipo, EMIE contratada, EIIE.
+  § 3 — Elevador não registado = infração do proprietário.
+
+Art.º 19.º — Competências das câmaras municipais:
+  § 1 — As câmaras municipais têm competência para fiscalizar o cumprimento das inspeções periódicas.
+  § 2 — Podem solicitar relatórios de inspeção a qualquer momento.
+  § 3 — Podem ordenar inspeção extraordinária se receberem queixa ou suspeita de perigo.
+  § 4 — Têm poder de interditar o uso do elevador e apor selos de imobilização.
+
+Art.º 20.º — EMIE — requisitos de acesso à atividade:
+  § 1 — EMIE deve estar registada na DGEG antes de iniciar qualquer atividade de manutenção.
+  § 2 — Requisitos: capacidade técnica comprovada, seguro de responsabilidade civil mínimo obrigatório,
+        pessoal com formação certificada em elevadores.
+  § 3 — Lista de EMIE registadas disponível em: www.dgeg.gov.pt
+
+Art.º 22.º — EIIE — requisitos de acreditação:
+  § 1 — EIIE deve estar acreditada pelo IPAC (Instituto Português de Acreditação) segundo NP EN ISO/IEC 17020.
+  § 2 — A acreditação garante independência, imparcialidade e competência técnica.
+  § 3 — EIIE não pode realizar inspeções em elevadores que ela própria mantém (conflito de interesses).
+  § 4 — Lista de EIIE acreditadas: www.ipac.pt
+
+Art.º 25.º — Responsabilidade do proprietário:
+  § 1 — O proprietário é o PRIMEIRO RESPONSÁVEL pela segurança do elevador.
+  § 2 — A responsabilidade não é transferível para a EMIE — o contrato de manutenção não exonera o proprietário.
+  § 3 — Em caso de acidente, proprietário e EMIE têm responsabilidade solidária.
+
+Art.º 42.º — Coimas (tabela completa):
+  • Manutenção sem contrato com EMIE registada: €1.000 a €5.000 (singular) / €2.500 a €44.000 (coletiva)
+  • Falta de livro de manutenção: €250 a €3.740
+  • Não realizar inspeção periódica: €250 a €5.000 (singular) / €2.500 a €44.000 (coletiva)
+  • Manter elevador em serviço após imobilização C1: €2.500 a €44.000 + responsabilidade criminal
+  • Não comunicar acidente: €2.500 a €25.000
+  • Recusar acesso à EIIE: €1.000 a €10.000
+  • Atividade de EMIE sem registo DGEG: €7.500 a €37.500
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📜 DL 58/2017 — ARTIGOS DETALHADOS (Ascensores Novos / Diretiva 2014/33/UE)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Art.º 1.º — Âmbito:
+  Aplica-se a ascensores instalados PERMANENTEMENTE em edifícios ou construções, colocados no mercado
+  após 9 de junho de 2017. Para elevadores existentes (antes de 2017) aplica-se DL 295/98 (revogado)
+  e DL 320/2002 (manutenção).
+
+Art.º 3.º — Definições:
+  • Ascensor — aparelho de elevação com cabine que serve níveis definidos, com inclinação >15° em relação à vertical
+  • Instalador — pessoa singular ou coletiva que assume responsabilidade pelo projeto, fabrico,
+                  instalação e colocação em serviço
+  • Componentes de segurança — 14 componentes listados no Anexo III (para-quedas, limitador, portas, etc.)
+
+Art.º 5.º — Marcação CE:
+  § 1 — Todo ascensor novo colocado no mercado DEVE ter marcação CE.
+  § 2 — A marcação CE significa que o ascensor cumpre os Requisitos Essenciais de Saúde e Segurança (RESS)
+        do Anexo I da Diretiva 2014/33/UE.
+  § 3 — Sem marcação CE = proibido colocar em serviço.
+
+Art.º 6.º — Declaração UE de Conformidade:
+  § 1 — O instalador deve emitir Declaração UE de Conformidade antes de colocar em serviço.
+  § 2 — A declaração deve conter: identificação do ascensor, normas aplicadas, referência ao
+        organismo notificado que fez avaliação de conformidade.
+  § 3 — O instalador deve conservar a declaração por 10 anos.
+
+Art.º 9.º — Organismo Notificado:
+  § 1 — O instalador deve envolver obrigatoriamente um Organismo Notificado (ON) para avaliação de conformidade.
+  § 2 — Em Portugal, o ON para elevadores é geralmente o ISQ (Instituto de Soldadura e Qualidade) ou similar.
+  § 3 — O ON verifica: projeto, produção ou produto final (3 módulos alternativos disponíveis).
+
+Art.º 14.º — Obrigações do instalador:
+  (a) Garantir que o ascensor cumpre RESS do Anexo I
+  (b) Elaborar documentação técnica completa
+  (c) Realizar procedimento de avaliação de conformidade adequado
+  (d) Emitir declaração UE de conformidade e apor marcação CE
+  (e) Conservar documentação técnica por 10 anos
+  (f) Fornecer instruções de utilização e manutenção ao proprietário em português
+
+Art.º 16.º — Obrigações do importador/distribuidor:
+  Não pode colocar em serviço ascensores sem marcação CE e documentação completa.
+
+Art.º 20.º — Modificações substanciais:
+  Se após entrada em serviço for efetuada modificação substancial (ex: substituição de motor, mudança
+  de velocidade nominal, alteração de carga nominal), o ascensor é considerado NOVO e deve passar
+  novamente pelo processo de avaliação de conformidade completo (novo CE + novo ON).
+
+Art.º 26.º — Fiscalização:
+  ASAE (Autoridade de Segurança Alimentar e Económica) fiscaliza a colocação no mercado.
+  DGEG supervisiona e coordena a aplicação do DL 58/2017.
+  Câmaras municipais fiscalizam inspeções periódicas (DL 320/2002).
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📜 LEI 65/2013 — EMIE e EIIE (Regime de Acesso à Atividade)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Art.º 3.º — EMIE (Empresa de Manutenção de Instalações de Elevação):
+  • Registo obrigatório na DGEG antes de qualquer atividade
+  • Técnicos responsáveis devem ter formação específica em elevadores (curso reconhecido)
+  • Seguro de responsabilidade civil mínimo obrigatório (valor definido por portaria)
+  • Renovação anual do registo com prova de seguro válido
+
+Art.º 4.º — Técnicos de manutenção:
+  • Devem ter diploma de curso técnico-profissional em eletromecânica ou equipamento
+  • OU experiência comprovada de 3+ anos na área + formação complementar certificada
+  • Devem conhecer: EN 81 series, DL 320/2002, procedimentos de segurança em trabalho em altura
+
+Art.º 8.º — EIIE (Entidade Inspetora de Instalações de Elevação):
+  • Acreditação IPAC obrigatória segundo NP EN ISO/IEC 17020 (tipo A ou C)
+  • Inspetores devem ter formação universitária em engenharia + especialização em elevadores
+  • Proibição de inspeção de elevadores que a própria EIIE mantém (independência)
+  • Responsabilidade civil pelos relatórios emitidos
+
+Art.º 12.º — Reconhecimento mútuo UE:
+  EMIE/EIIE registadas noutro Estado-Membro da UE podem operar em Portugal mediante comunicação
+  prévia à DGEG (não necessitam de novo registo, mas devem cumprir requisitos do DL 320/2002).
+
+Art.º 15.º — Suspensão e cancelamento de registo:
+  DGEG pode suspender ou cancelar registo de EMIE/EIIE em caso de: acidente grave por negligência,
+  inspeções fraudulentas, falta de seguro válido, incumprimento reiterado.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📜 EN 81-20:2020 — REQUISITOS TÉCNICOS DETALHADOS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Cláusula 5.2 — Caixa do elevador (poço):
+  • Deve ser fechada em todos os lados (paredes, teto, fundo)
+  • Não podem existir outras instalações na caixa (tubagens de gás, água, etc.) exceto as do próprio elevador
+  • Iluminação permanente mínima 50 lux ao nível do solo da fossa
+  • Altura livre no topo (espaço de refúgio): mínimo 1,0 m acima do último patamar servido
+  • Profundidade da fossa: mínimo 0,5 m (elevadores lentos) a 1,5 m (velocidade >1 m/s)
+  ⚠️ Falta de espaço de refúgio no topo ou fundo = C1 (risco de esmagamento do técnico)
+
+Cláusula 5.3 — Casa de máquinas:
+  • Acesso reservado exclusivamente ao pessoal autorizado (chave específica, sinalização)
+  • Temperatura de funcionamento: +5°C a +40°C (variação excessiva degrada isolamento elétrico)
+  • Iluminação permanente mínima 200 lux ao nível do painel de controlo
+  • Tomada elétrica de serviço obrigatória (220V ou 400V conforme instalação)
+  • Extintor de incêndio adequado (CO2 ou pó) obrigatório dentro da casa de máquinas
+  • Largura de passagem mínima de 0,5 m em torno dos equipamentos
+  ⚠️ Casa de máquinas acessível a não autorizados = C2; sem iluminação = C2
+
+Cláusula 5.4 — Portas de patamar (andares):
+  • Resistência ao fogo: mínimo EI30 (boa prática) conforme legislação de incêndio do edifício
+  • Folga máxima entre folhas de porta e entre folha e batente: 6 mm
+  • Encravamento elétrico e mecânico simultâneos: a porta só abre quando cabine está no nível ± tolerância
+  • Contato de porta deve detetar abertura mesmo com 6N de força aplicada
+  • Indicador de andar obrigatório no exterior do patamar (LED, seta de direção)
+  ⚠️ Encravamento inoperacional = C1. Folga > 6mm entre portas (risco de prender dedos) = C2.
+
+Cláusula 5.5 — Cabine:
+  • Dimensões mínimas: 1,0m × 1,3m × 2,0m (L×P×H) para carga nominal ≥630 kg
+  • Porta de cabine: deve fechar automaticamente e ter contato de segurança
+  • Abertura da porta da cabine: só permitida no nível do patamar ± 200 mm (zona de desbloqueamento)
+  • Iluminação: mínimo 100 lux na área de embarque. Iluminação de emergência ≥1 lux por mínimo 1 hora
+  • Botoneira de sobrecarga: alarme obrigatório quando carga exceder carga nominal
+  • Telefone bidirecional de emergência: conexão com serviço de assistência permanente (24/7)
+  ⚠️ Sem telefone de emergência = C2. Iluminação de emergência sem bateria = C2.
+
+Cláusula 5.6 — Velocidade e acelerações:
+  • Velocidade nominal deve ser respeitada ±5% em regime permanente
+  • Desaceleração na paragem: máximo 0,3 m/s² para conforto dos passageiros
+  • Solavancos brusquos na paragem indicam: freio mal regulado (C2), desgaste das guias (C3)
+
+Cláusula 5.7 — Para-quedas e limitador de velocidade:
+  • Para-quedas progressivo obrigatório para velocidade >1 m/s
+  • Para-quedas instantâneo permitido apenas para velocidade ≤0,63 m/s
+  • Teste de para-quedas obrigatório em cada inspeção periódica E após qualquer intervenção no dispositivo
+  • Limitador de velocidade deve acionar para-quedas a velocidade Vd = 1,25 × V nominal (mín. V+0,25 m/s)
+  ⚠️ Para-quedas que não atua no teste = C1 IMEDIATO (imobilização obrigatória).
+  ⚠️ Limitador de velocidade bloqueado ou correia partida = C1.
+
+Cláusula 5.8 — Cabos de suspensão:
+  • Mínimo 2 cabos de aço independentes para tração
+  • Diâmetro mínimo: 8 mm (geral) ou 6 mm (elevadores MRL/pequenos)
+  • Fator de segurança mínimo: 12 vezes a carga de rutura para cada cabo
+  • Critério de substituição: >10% fios partidos numa torçada em 1 trepada de cabo, ou
+    >5 fios partidos em secções de 6× diâmetro do cabo
+  • Corrosão visível, achatamento, torção permanente = substituição obrigatória
+  ⚠️ Cabos com >10% fios partidos = C1. Cabos com corrosão avançada = C1 ou C2 conforme gravidade.
+
+Cláusula 5.9 — Freio:
+  • Freio eletromagnético de segurança sobre a polia motriz (ou disco no tambor)
+  • Deve parar e manter a carga nominal + 25% de sobrecarga em qualquer posição
+  • Teste: com carga nominal + 25%, ao desligar a corrente, o freio deve parar em ≤1 m (V≤1 m/s)
+  • Pastilhas do freio: verificar desgaste em cada manutenção mensal (espessura mínima 2mm)
+  ⚠️ Freio que não para carga nominal = C1. Folga excessiva entre pastilha e disco = C2.
+
+Cláusula 5.10 — Amortecedores:
+  • Amortecedores no fundo da fossa (sob cabine e contrapeso)
+  • Tipos: resorte (V≤1 m/s), polietileno/poliuretano (V≤1,6 m/s), hidráulico (V>1 m/s)
+  • Amortecedor hidráulico: nível de óleo visível no indicador, sem fugas, reposição após teste
+  ⚠️ Amortecedor deformado permanentemente (após teste) = C1. Fuga de óleo em amortecedor hidráulico = C2.
+
+Cláusula 5.12 — Sistema de nivelação:
+  • Tolerância de paragem: ±10 mm (nível de conforto) / ±20 mm (nível tolerável)
+  • Desvio >20 mm: risco de tropicão à entrada/saída (especialmente idosos e cadeiras de rodas)
+  • Causa típica: sensores de zona de paragem sujos ou sinaléticas magnéticas deslocadas
+  ⚠️ Nivelação com desvio >35 mm = C2 (risco de queda). >50 mm = C1 em elevadores de acessibilidade.
+
+Cláusula 6.4 — Telefone de emergência (EN 81-28):
+  • Comunicação bidirecional garantida com serviço de assistência 24/7 (não pode ser apenas gravador)
+  • Teste mensal obrigatório documentado no livro de manutenção
+  • Funcionamento autónomo (bateria) mínimo 1 hora após corte de energia
+  ⚠️ Telefone inoperacional = C2. Sem número de assistência 24h = C2.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📜 EN 81-50:2020 — REGRAS DE PROJETO E ENSAIOS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Esta norma define os ensaios e cálculos para COMPROVAR que os componentes cumprem EN 81-20.
+Aplica-se a: para-quedas, limitadores de velocidade, amortecedores, portas de patamar, componentes de cabos.
+
+Pontos críticos para inspeção:
+• 5.3 — Ensaio do para-quedas: deve ser realizado com carga nominal completa. Resultado: paragem progressiva
+        sem deformação permanente da cabine. Ensaio de tipo (fábrica) + ensaio em obra após instalação.
+        Desaceleração: entre 0.2g e 1g. Após actuação em obra: verificar guias e cabina antes de reactivar.
+• 5.4 — Carga nominal: placarda com carga nominal e número máximo de pessoas obrigatória na cabine
+• 5.5 — Resistência da cabine: estrutura deve suportar 3× carga nominal sem deformação permanente
+• 6.2 — Ensaios elétricos: teste de isolamento ≥1 MΩ entre fases e entre fase e terra
+• Cabos suspensão: fator segurança ≥12 (aço) ou ≥10 (cintas poliuretano); mín. Ø8mm; mín. 2 cabos
+  ⚠️ >10% fios partidos num passo de torcedura = substituição imediata = C1
+• Limitador de velocidade: actuação ≥115% velocidade nominal; verificação/taração máx. 2 anos
+• Amortecedores: mola (v≤1m/s) ou hidráulico (v>1m/s); hidráulico: desaceleração máx. 1g durante ensaio
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📜 EN 81-70:2022 — ACESSIBILIDADE (Pessoas com Mobilidade Reduzida)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Aplica-se OBRIGATORIAMENTE a edifícios de habitação coletiva novos e a modernizações onde tecnicamente possível.
+Referência em Portugal: DL 163/2006 (Acessibilidade) + EN 81-70.
+
+TIPOS DE ELEVADOR ACESSÍVEL:
+• Tipo 1 (assistido): cabina ≥1000×1250mm; porta livres ≥800mm
+• Tipo 2 (cadeira de rodas autónomo — obrigatório em edifícios novos): cabina ≥1100×1400mm; porta ≥900mm
+  Carga nominal mínima Tipo 2: 630kg (cadeira + utilizador + acompanhante)
+
+Requisitos comuns Tipo 2:
+• Botoneiras: altura 900–1200mm do piso; Braille + relevo tátil; dimensão mínima botão 20×20mm
+• Sinalização sonora: anúncio do andar em voz sintética obrigatório + sinal de abertura de porta
+• Espelho: parede oposta à porta (300mm ao nível do piso até ≥1000mm), para cadeira recuar
+• Corrimão: mín. 1 parede lateral, 900mm altura, Ø30–45mm, afastamento 35–45mm da parede
+• Nivelação: tolerância ≤±10mm; re-nivelagem automática obrigatória no Tipo 2
+• Iluminação: mínimo 100 lux uniforme em toda a cabina
+• Tempo de porta aberta: ≥8 segundos; sensor de área obrigatório (não apenas borracha)
+• Alarme emergência: ≤900mm do piso; comunicação bidirecional 24/7; bateria ≥1h
+• Espaço livre patamar Tipo 2: ≥1500×1500mm frente à porta
+⚠️ Edifícios obrigados por DL 163/2006 que não cumprem EN 81-70 = C2 em inspeção.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📜 NP EN 81-80:2003 — REGRAS DE SEGURANÇA PARA ASCENSORES EXISTENTES (MODERNIZAÇÃO)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+CAMPO DE APLICAÇÃO (Sect. 1):
+  Aplica-se a ascensores EXISTENTES (eléctricos de aderência/tambor e hidráulicos),
+  servindo pisos definidos, cabina para pessoas/carga, inclinação guias ≤15°.
+  Objectivo: elevar o nível de segurança ao estado actual da arte (equivalente a ascensor novo).
+  NÃO se aplica: pater noster, minas, navios, teatro, estaleiros, inclinação >15°.
+
+NÍVEIS DE PRIORIDADE (Anexo A — Metodologia de Risco):
+  Severidade: I=Catastrófico | II=Crítico | III=Marginal | IV=Negligenciável
+  Frequência: A=Frequente → F=Impossível
+  • EXTREMO → IMOBILIZAR ascensor IMEDIATAMENTE (ex: ausência pára-quedas, caixa exposta)
+  • ALTO    → curto prazo (~5 anos)
+  • MÉDIO   → médio prazo (~10 anos ou modernização maior)
+  • BAIXO   → longo prazo ou junto com modernização de componente
+  (74 situações perigosas catalogadas na Tabela 1)
+
+PRECISÃO DE PARAGEM E NIVELAMENTO (Sect. 5.2.2) — Prioridade ALTA:
+  • Precisão de paragem: ±10 mm (soleira cabina vs soleira patamar, portas abertas)
+  • Precisão de nivelamento: ±20 mm (manter durante carga/descarga)
+  Referência: EN 81-70:2003 sect. 5.3.3. Recomendado a TODOS os ascensores.
+
+CAIXA (Sect. 5.5):
+  • 5.5.6.2 — Caixa comum a vários ascensores: distância horizontal entre tecto da cabina e
+    órgãos em movimento do ascensor contíguo DEVE SER >0,5 m. Se <0,5 m = divisória a toda a altura. ALTA.
+  • 5.5.7   — Espaços de segurança topo/poço: conforme EN 81-1:1998 5.7.1/5.7.2/5.7.3. ALTA.
+  • 5.5.8   — Acesso ao poço: acesso seguro obrigatório conforme EN 81-1:1998 5.7.3.2. ALTA.
+  • 5.5.9   — Botões de paragem (stop): obrigatórios no poço e na casa de rodas. ALTA.
+  • 5.5.10  — Iluminação da caixa: adequada conforme EN 81-1:1998 5.9. ALTA.
+  • 5.5.11  — Alarme de socorro no poço e tecto da cabina. MÉDIA.
+
+PORTAS DE PATAMAR (Sect. 5.7):
+  • 5.7.7   — Encravamentos: nível equivalente EN 81-1:1998; versões pré-1998 com 5 mm penetração OK. ALTA.
+  • 5.7.8.1 — Desencravamento de socorro: APENAS com chave triangular. ALTA.
+  • 5.7.8.2 — Encravamentos inacessíveis do exterior (impede uso abusivo). ALTA.
+  • 5.7.9   — Portas de correr automáticas: dispositivo de fecho automático obrigatório. ALTA.
+
+CABINA (Sect. 5.8):
+  • 5.8.1   — Área útil cabina deve corresponder à carga nominal (EN 81-1 8.2). BAIXA.
+  • 5.8.6   — Tecto da cabina: distância livre horizontal ≤0,30 m para as paredes da caixa.
+             Se >0,30 m: instalar balaustrada (EN 81-1:1998 8.13.3) ou prolongar tecto. ALTA.
+  • 5.8.3   — Cabina sem porta: instalar porta mecânica ou manual obrigatoriamente. ALTA.
+  • 5.8.7   — Ventilação da cabina suficiente (EN 81-1:1998 8.16 na falta de regulamentos nacionais). MÉDIA.
+  • 5.8.8.2 — Iluminação de emergência na cabina obrigatória (EN 81-1:1998 8.17.4). MÉDIA.
+
+SUSPENSÃO E PROTECÇÃO VELOCIDADE (Sect. 5.9):
+  • 5.9.2   — TODOS os ascensores eléctricos: OBRIGATÓRIO pára-quedas + limitador de velocidade
+             compatível. Verificar e ENSAIAR compatibilidade. Se incompatível: substituir. ALTA.
+  • 5.9.4   (UCMP) — Roda de aderência com contrapeso: protecção contra velocidade excessiva em
+             SUBIDA (9.10 EN 81-1:1998). Movimento incontrolado com portas abertas:
+             parar em <0,90 m do nível do piso; desaceleração máx. 1g; reposto só por pessoa competente. ALTA.
+
+GUIAS E AMORTECEDORES (Sect. 5.10):
+  • 5.10.1  — Contrapeso guiado só por 2 cabos de aço: substituir por guias rígidas ou 4 cabos. BAIXA.
+  • 5.10.2  — Amortecedores: obrigatórios em TODOS os ascensores (EN 81-1:1998 10.3). ALTA.
+
+MÁQUINA (Sect. 5.12):
+  • 5.12.1  — Travão electromecânico: DUPLA ACÇÃO obrigatório (EN 81-1:1998 12.4.2). ALTA.
+  • 5.12.2  — Manobra de socorro: obrigatória + instruções claramente expostas (16.3.1). ALTA.
+  • 5.12.6  — Limitador de tempo de funcionamento do motor: obrigatório. BAIXA.
+
+INSTALAÇÃO ELÉCTRICA (Sect. 5.13):
+  • 5.13.1  — Aparelhagem eléctrica: invólucros ≥ IP 2X. Bornes >50V após abrir interruptor: marcação obrigatória.
+  • 5.13.3  — Interruptores principais BLOQUEÁVEIS obrigatórios na casa de máquinas. ALTA.
+
+COMANDOS E ALARMES (Sect. 5.14):
+  • 5.14.2  — Tecto da cabina: botão de inspecção + botão de paragem (stop) OBRIGATÓRIOS. ALTA.
+  • 5.14.3  — Alarme de socorro: comunicação vocal BIDIRECCIONAL (EN 81-1:1998 14.2.3 + EN 81-28). ALTA.
+  • 5.14.4  — Cursos >30m: intercomunicador cabina ↔ casa de máquinas obrigatório. MÉDIA.
+  • 5.14.5  — Controlo de carga: evitar arranque em sobrecarga. BAIXA.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📜 DECRETO 513/70 — REGULAMENTO DE SEGURANÇA DE ELEVADORES ELÉCTRICOS (Regulamento Base)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Decreto 513/70 (ainda parcialmente vigente para elevadores pré-1998).
+Fonte oficial: https://diariodarepublica.pt/dr/legislacao-consolidada/decreto/1970-923753404
+
+CAMPO DE APLICAÇÃO (Art.º 2.º):
+  Aplica-se a elevadores de tracção eléctrica ou comando eléctrico. NÃO abrange: hidráulicos,
+  nora, cremalheira, fuso, maquinaria teatral, monta-materiais de obras, elevadores de minas/navios,
+  monta-cargas carga nominal ≤10 kg.
+
+DEFINIÇÕES ESSENCIAIS (Art.º 3.º):
+  • Ascensor: elevador para pessoas+carga, cabina com dimensões para acesso de pessoas
+  • Monta-cargas: só carga, cabina impede acesso de pessoas
+  • Caixa: local de deslocação da cabina/contrapeso
+  • Casa das máquinas: local da máquina de tracção e aparelhos de comando
+  • Carga nominal: carga máxima para funcionamento seguro
+  • Limitador de velocidade: acciona o para-quedas por excesso de velocidade
+  • Para-quedas: fixa a cabina/contrapeso às guias em excesso de velocidade ou rotura de suspensão
+  • Zona de desencravamento: ±30 cm portas automáticas / ±17 cm portas manuais
+
+CAIXA (Art.º 9.º a 21.º):
+  • Art.º 9.º  — Vedação: material resistente à propagação da chama, em toda a altura.
+                Redes metálicas: fio ≥3mm, malha ≤75×75mm, só acima de 2,50m dos patamares. Sem vedação = C1.
+  • Art.º 11.º — Ventilação da caixa: convenientemente ventilada, não pode ser usada para ventilar locais estranhos. Sem ventilação = C2.
+  • Art.º 12.º — Evacuação de fumos (caixa-chaminé): abertura ≥2,5% da área da caixa, mínimo 0,07 m² por ascensor.
+  • Art.º 14.º — Caixa sobre local acessível: cabina E contrapeso com para-quedas, ou buffers em colunas sobre solo firme. Sem para-quedas duplo = C1.
+  • Art.º 16.º — Dimensionamento vertical (roda de aderência): folga acima da cabina ≥ 0,035×V² m (mín. 0,25m). V=velocidade em m/s. Folga insuficiente = C1 (risco esmagamento).
+  • Art.º 19.º — Espaço livre no poço: distância da parte mais saliente da cabina ao fundo ≥ 0,50 m. <0,50m = C1.
+  • Art.º 20.º — Uso exclusivo: caixa não pode albergar tubagens de gás/água/electricidade estranhas. Tubagem estranha = C2.
+
+CASA DAS MÁQUINAS (Art.º 22.º a 31.º):
+  • Art.º 22.º — Acessibilidade: vedada, regra geral por cima da caixa, acesso pela escada do edifício.
+                Escada de acesso: corrimão, largura ≥0,70m, ângulo ≤60°. Inacessível = C2.
+  • Art.º 24.º — Dimensões mínimas: altura livre ≥1,80m; espaço frente aparelhos eléctricos ≥0,75m; espaço manobra manual ≥0,30m. Altura <1,80m = C2.
+  • Art.º 25.º — Portas: largura ≥0,70m, altura ≥1,80m. Alçapões: ≥0,70×0,80m. Portas não abrem para dentro. Porta <0,70m = C2.
+  • Art.º 28.º — Uso exclusivo: não pode ser usada para armazenamento ou passagem para outros locais. Material estranho = C2.
+  • Art.º 29.º — Iluminação: interruptor junto ao acesso (do lado de dentro), tomadas de corrente obrigatórias. Sem iluminação = C2.
+
+PORTAS DE PATAMAR (Art.º 32.º a 41.º):
+  • Art.º 32.º — Portas cheias, não abrem para a caixa. Dedo de prova 10mm não pode passar. Dedo passa = C1.
+  • Art.º 33.º — Estrutura metálica, quadro metálico. Visores: dimensão ≤15cm. Força resistência: 30 kgf/25cm². Deformação = C1.
+  • Art.º 34.º — Altura livre dos acessos de patamar: ≥1,95 m. <1,95m = C2.
+  • Art.º 37.º — Portas automáticas: energia cinética ≤9,8 J à velocidade média de fecho; força manutenção ≤15 kgf; dispositivo anti-obstáculo obrigatório. Sem anti-obstáculo = C1.
+  • Art.º 39.º — Encravamento: todas as portas encravadas excepto no patamar destino. Zona de desencravamento: ±30cm (automáticas) / ±17cm (manuais). Chave especial na casa das máquinas. Porta abre sem cabine = C1 IMEDIATO (queda fatal).
+  • Art.º 40.º — Controlo eléctrico: cabina não se move com porta aberta; imobiliza se porta abrir em movimento. Dois contactos independentes. Circuito inoperacional = C1.
+
+CABINA E CONTRAPESO (Art.º 42.º a 55.º):
+  • Art.º 42.º — Altura interior ≥2m. Capacidade por área:
+                1p=75kg/0,37m² | 4p=300kg/0,82m² | 6p=450kg/1,09m² | 8p=600kg/1,34m²
+                10p=750kg/1,60m² | 13p=975kg/1,96m² | 16p=1200kg/2,35m² | 20p=1500kg/2,82m²
+                Para n>20p: carga ≥n×75kg e área=2,82+(n-20)×0,12m². Altura <2m = C1.
+  • Art.º 52.º — Ventilação: boa ventilação, aberturas acessíveis ≤10mm diâmetro. Sem ventilação = C2.
+  • Art.º 53.º — Iluminação: permanente, sem interruptor na cabina. Pode desligar ≥5s após fecho de todas as portas. Sem iluminação = C2.
+  • Art.º 54.º — Desnível soleiras: ≤5cm, qualquer que seja a carga. >5cm = C2 (risco tropeço/queda).
+
+SUSPENSÃO E PARA-QUEDAS (Art.º 56.º a 68.º):
+  • Art.º 56.º — Cabos de aço sem emendas. Tensão de ruptura dos fios: 120–180 kgf/mm². Cabos com emendas = C1.
+  • Art.º 57.º — Mínimo 2 cabos de suspensão (ascensores). Menos de 2 = C1 CRÍTICO.
+  • Art.º 58.º — Diâmetro mínimo: ≥8 mm (ascensores). Cabo <8mm = C1.
+  • Art.º 59.º — Relação diâmetro roda/cabo: ≥40. Para cabo 8mm → roda ≥320mm. Ratio <40 = C2.
+  • Art.º 60.º — Coeficiente de segurança: γ=12 (≥3 cabos) / γ=16 (2 cabos) / γ=8 (monta-cargas) / γ=6 (cadeias). Cálculo: γ=(Frk×n)/P.
+  • Art.º 65.º — Para-quedas obrigatório (commandado por limitador). Para v>1m/s: acção NÃO instantânea, desaceleração ≤2,5g com 100kg. Para-quedas inoperacional = C1 CRÍTICO.
+  • Art.º 67.º — Limitador de velocidade: actuação ≤1,40×v (para v≤1m/s), ≤1,25×v (para v≤1,50m/s), ≤1,20×v (v>1,50m/s). Cabo ≥6mm com coef. segurança ≥5. Deve ser SELADO. Não selado = C1.
+  • Art.º 72.º — Para-choques (buffers): amortecedores de mola/hidráulicos para v≤1,50m/s; hidráulicos OBRIGATÓRIOS para v>1,50m/s. Curso mínimo: 0,10×V² m (mola) / 0,05×V² m (hidráulico). Buffer deteriorado = C1.
+
+GUIAS E PARAGENS (Art.º 69.º a 75.º):
+  • Art.º 73.º — Paragem automática nos patamares extremos por contactos electromecânicos.
+  • Art.º 74.º — Fins-de-curso de segurança: adicionais aos anteriores, cortam directamente alimentação do motor e freio.
+
+FOLGAS (Art.º 76.º a 80.º):
+  • Art.º 78.º — Cabina com portas: folga entre porta cabina e parede da caixa em frente ≤12cm; folga entre soleiras ≤2cm (manuais) / ≤3,5cm (automáticas); folga porta cabina-porta patamar ≤12cm. Folga soleira >2cm = C2.
+
+ÓRGÃOS DE TRACÇÃO (Art.º 81.º a 85.º):
+  • Art.º 81.º — Freio: fail-safe (corrente permanente = desfrenado; corte = trava). Para cabina com carga nominal+25% à velocidade nominal. Freio que escorrega = C1 CRÍTICO. Desfrenagem manual exige presença permanente.
+  • Art.º 82.º — Comando manual de emergência: levar a cabina manualmente ao patamar mais próximo.
+  • Art.º 85.º — Resguardo: volantes, engrenagens e correias com protecção. Sem protecção = C1.
+
+INSTALAÇÃO ELÉCTRICA (Art.º 86.º a 90.º):
+  • Art.º 86.º — Baixa tensão. Tensão circuitos de comando/sinalização ≤250 V. Defeitos à terra não podem provocar marcha nem tornar inoperantes os dispositivos de segurança.
+  • Art.º 88.º — Quadro da casa das máquinas: junto à porta de acesso, corte omnipolar.
+
+COMANDOS (Art.º 91.º a 94.º):
+  • Art.º 93.º — Botão STOP: vermelho, acima dos outros, com "Stop/Parar/Paragem" visível (ascensores sem portas). Sem botão STOP = C2.
+  • Art.º 94.º — Alarme: comando na cabina, sinal sonoro audível no átrio/porteiro/encarregado. Acumulador para falha de rede. Alarme inoperacional = C2.
+
+AVISOS E INSTRUÇÕES (Art.º 95.º a 110.º):
+  • Art.º 97.º — Na cabina: número máximo pessoas, carga máxima (kg), nome+morada+telefone da EMIE. Sem identificação EMIE = C2. Aviso crianças <10 anos obrigatório = C3 se ausente.
+  • Art.º 99.º — Casa das máquinas: aviso "ELEVADOR, CASA DAS MÁQUINAS - PERIGO ACESSO PROIBIDO A PESSOAS ESTRANHAS AO SERVIÇO" + dados EMIE.
+  • Art.º 108.º — Conservação MENSAL: inspecção + trabalhos (mínimo legal). SEMESTRAL: revisão pormenorizada de todos os órgãos, dispositivos de segurança, isolamento eléctrico e ligações à terra. Durante paragens: avisos nas portas de patamar. Sem manutenção mensal = C1.
+  • Art.º 109.º — Substituição imediata dos cabos se: >10% fios partidos/passo de cableagem; rupturas concentradas num ponto; corrosão pronunciada. >10% fios partidos = C1 IMEDIATO.
+  • Art.º 110.º — Livro de conservação na casa das máquinas (por cada elevador): fabricante, EMIE, todas as revisões+trabalhos com datas. Sem livro = C2.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+� DECRETO REGULAMENTAR 13/80 — ALTERAÇÕES AO DEC. 513/70 (Vigente)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Decreto Regulamentar n.º 13/80, de 16 de Maio de 1980. Modifica 19 artigos do Dec. 513/70
+e acrescenta o novo Art.113.º. Baseia-se em directivas CIRA actualizadas.
+Fonte: https://diariodarepublica.pt/dr/detalhe/decreto-regulamentar/13-1980-473932
+
+CAMPO DE APLICAÇÃO E DEFINIÇÕES (Arts. 2.º e 3.º):
+  • Art.º 2.º — Mesma aplicação do Dec. 513/70. NÃO abrange: hidráulicos, nora, cremalheira,
+    teatrais, obras, minas, navios, monta-cargas ≤10 kg. Fiscalização pode autorizar variantes.
+  • Art.º 3.º — DEFINE (30 termos revistos):
+    – Encravamento: sistema electro-mecânico que aferrolha porta fechada, impossibilitando
+      abertura sem meios especiais (chave de emergência).
+    – Zona de desencravamento: espaço abaixo+acima da soleira — automáticas: ±30 cm (2×30 cm
+      total); manuais: ±17 cm (2×17 cm total).
+    – Carga nominal: carga máxima para funcionamento seguro indicada na cabina.
+    – Pára-quedas: fixa cabina/contrapeso às guias em excesso velocidade ou rotura de cabos.
+    – Limitador de velocidade: actua o pára-quedas automaticamente.
+
+CASA DAS MÁQUINAS (Art.º 24.º):
+  • Altura livre de circulação ≥ 1,80 m.
+  • Espaço frente a aparelhos de controlo ≥ 0,75 m.
+  • Espaço de manobra manual: frontal (motor ≥5,5 kW) ou lateral (motor <5,5 kW) — mínimo 0,30 m.
+  • Monta-cargas sem entrada: exterior frente à porta ≥ 0,60 m; acesso exterior ≥ 0,75 m.
+  • Incumprimento = C3 (60 dias para corrigir).
+
+PORTAS DE PATAMAR (Art.º 32.º):
+  • Portas CHEIAS, não abrem para o interior da caixa.
+  • Porta fechada não permite introdução de dedo de prova Ø10 mm.
+  • Folga >10 mm (dedo penetra) = C2; porta abre para caixa = C1 IMEDIATO.
+
+ENCRAVAMENTO DAS PORTAS (Art.º 39.º) — CRÍTICO:
+  • Dispositivos silenciosos, protegidos de manipulação abusiva.
+  • TODAS as portas encravadas excepto a do patamar onde a cabina está.
+  • Cabina só arranca com TODAS as portas encravadas.
+  • Zona de desencravamento destino: ±30 cm (auto) / ±17 cm (manual). Exceder = C2.
+  • Ferrolhos instalados contra acção da gravidade.
+  • Chave de emergência na casa das máquinas, identificada e visível.
+  • Encravamento inoperante (porta abre com cabina longe) = C1 IMEDIATO — DESLIGAR ELEVADOR.
+
+CONTRÔLE ELÉCTRICO ENCRAVAMENTO E FECHO (Art.º 40.º) — CRÍTICO:
+  • Dispositivos elétricos verificam: 1) encravamento (todas portas verificadas antes de arranque);
+    2) fecho (cabina imobiliza se porta aberta durante movimento).
+  • DOIS defeitos independentes necessários para funcionar com portas abertas (dupla protecção).
+  • Contactos separam-se mesmo se colados. Excepção: monta-cargas soleira ≥0,60 m.
+  • Contrôle defeituoso = C1 IMEDIATO.
+
+DIMENSÕES E LOTAÇÃO DA CABINA (Art.º 42.º):
+  • Altura interior da cabina ≥ 2 m (obrigatório).
+  • Lotação vs carga vs área (tabela): 1 pessoa=75 kg, área 0,28 m² (1p) a 2,40 m² (20p).
+  • Acima de 20 pessoas: carga=n×75 kg; área=2,40+(n−20)×0,12 m².
+  • Monta-camas 750–1650 kg: área máx. 3,64 m² se anti-sobrecarga + sinalização.
+  • Elevadores de carga: área >tabela permitida SE anti-sobrecarga + responsável + sinalização.
+  • Cabina sem anti-sobrecarga (área >tabela) = C2.
+
+SUSPENSÃO — IGUALIZAÇÃO TENSÃO CABOS (Art.º 63.º):
+  • Dispositivos de igualização de tensão obrigatórios entre todos os cabos/cadeias.
+  • Se apenas 2 cabos/cadeias: sensor elétrico imobiliza elevador a alongamento desigual ou
+    afrouxamento. Sistema ausente/defeituoso = C1 IMEDIATO.
+
+INSTALAÇÃO ELÉCTRICA (Arts. 86.º a 90.º):
+  • Art.º 86.º — Baixa tensão; circuitos de comando ≤250 V; defeitos à terra NÃO podem
+    provocar marcha nem inutilizar dispositivos de segurança. Defeito terra = C1 IMEDIATO.
+  • Art.º 87.º — Motores protegidos contra: sobrecarga, falta de fase, curto-circuito.
+  • Art.º 88.º — Quadro na casa das máquinas junto à porta, com corte omnipolar.
+  • Art.º 89.º — Circuito de iluminação + tomadas independente na cabina.
+  • Art.º 90.º — Iluminação casa das máquinas e rodas de desvio em circuitos técnicos/comuns;
+    tomadas ligadas ao quadro do Art.88.º.
+
+BOTÃO DE STOP (Art.º 93.º):
+  • Ascensores com cabina SEM PORTAS: botão/interruptor COR VERMELHA acima dos outros.
+  • Designação visível: "Stop", "Parar" ou "Paragem".
+  • Restabelecimento do movimento só por pessoa DENTRO da cabina.
+  • Ausência em cabina sem portas = C2.
+
+ALARME (Art.º 94.º):
+  • Comando dentro da cabina; designação "Alarme" ou símbolo de sino visível.
+  • Sinal sonoro audível no local do encarregado, átrio de entrada e habitação do porteiro.
+  • Se elétrico: ACUMULADOR PERMANENTE RECARREGÁVEL com capacidade de várias horas sem rede.
+  • Alarme ausente/inoperante = C2; bateria sem carga = C3.
+
+AVISOS E INSTRUÇÕES (Art.º 95.º):
+  • Indeléveis (não apagam), material durável, cor contrastante.
+  • Recomendação: maiúsculas/algarismos ≥ 10 mm; minúsculas ≥ 7 mm.
+  • Avisos ilegíveis ou ausentes = C3.
+
+LIMITADOR DE VELOCIDADE — PLACA (Art.º 102.º):
+  • Placa permanente com: diâmetro do cabo, tipo do cabo, material do cabo, velocidade de actuação.
+  • Placa ausente ou incompleta = C3.
+
+IDENTIFICAÇÃO DE CIRCUITOS (Art.º 103.º):
+  • Circuitos saída do quadro da casa das máquinas (Art.88.º) devidamente etiquetados.
+  • Sem identificação = C3.
+
+ELEVADORES EXISTENTES — APLICAÇÃO RETROACTIVA (Art.º 111.º) — PARA ELEVADORES PRÉ-1980:
+  • Elevadores instalados ao abrigo do Decreto 26591/1936 DEVEM adoptar:
+    a) Encravamento das portas + contrôle eléctrico (Arts. 39.º e 40.º).
+    b) Avisos e instruções visíveis (Art.95.º).
+    c) Conservação adequada.
+  • CAIXAS ABERTAS — VEDAÇÃO OBRIGATÓRIA em toda a altura por uma das opções:
+    a) Paredes conformes Arts. 9.º e 13.º do Dec. 513/70.
+    b) Rede metálica: fio Ø ≥ 3 mm, malha ≤ 75×75 mm.
+    c) Material idêntico ao já existente.
+  • PRAZOS (contados desde Nov 1980 — entrada em vigor):
+    – Instalados até 31 Dez 1955: prazo 1 ano.
+    – Instalados até 31 Dez 1961: prazo 2 anos.
+    – Instalados até 31 Dez 1966: prazo 3 anos.
+    – Instalados até 31 Dez 1970: prazo 4 anos.
+    – Instalados após 31 Dez 1970: prazo 5 anos.
+  • Fiscalização pode DISPENSAR vedação se segurança comprovadamente mantida.
+  • Caixa aberta sem vedação = C2; elevador antigo sem encravamento = C1 IMEDIATO.
+
+PRÉDIOS ANTIGOS — FLEXIBILIDADE (Art.º 113.º — NOVO):
+  • Em prédios antigos (com ou sem elevadores), a DGEG/fiscalização pode DISPENSAR disposições
+    que não coloquem em causa a segurança das pessoas ou da instalação.
+  • Permite soluções técnicas alternativas em edifícios históricos com limitações estruturais.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+�🔧 MANUTENÇÃO PREVENTIVA — O QUE FAZER EM CADA VISITA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+VISITA MENSAL OBRIGATÓRIA (DL 320/2002, art.º 5.º):
+  □ Testar telefone de emergência — ligar e confirmar resposta da central
+  □ Verificar iluminação cabine e iluminação de emergência
+  □ Testar all botões de chamada (cada andar) e botões na cabine
+  □ Verificar nivelação em todos os andares (≤20 mm)
+  □ Inspeccionar cabos visíveis (sinais de desgaste, oxidação, deformação)
+  □ Lubrificar guias (se necessário — guias de roda não lubrificam)
+  □ Verificar funcionamento dos encravamentos de todas as portas
+  □ Testar paragem de emergência (botão STOP na cabine)
+  □ Verificar ruídos anormais (rolamento, freio, tração)
+  □ Assinar e datar livro de manutenção (OBRIGATÓRIO)
+
+VISITA SEMESTRAL (boa prática, muitas EMIE incluem no contrato):
+  □ Verificar pastilhas do freio (espessura, desgaste uniforme)
+  □ Medir desgaste das guias e patilhas de guiamento
+  □ Inspecionar estado das polias (sulcos do cabo, alinhamento)
+  □ Verificar tensão dos cabos de tração e de regulação
+  □ Testar correto funcionamento do para-quedas (sem acionar — verificação visual)
+  □ Limpar fossa (remoção de lixo, verificar presença de água)
+  □ Verificar estado dos amortecedores (deformação, fugas)
+  □ Testar contatos de posição extrema (final de curso topo e fundo)
+
+VISITA ANUAL (incluída em contratos completos):
+  □ Limpeza profunda da casa de máquinas
+  □ Verificação completa do quadro elétrico (aperto de bornes, isolamentos)
+  □ Medição de isolamento elétrico (megómetro — mín. 1 MΩ)
+  □ Revisão da bomba hidráulica e análise de óleo (elevadores hidráulicos)
+  □ Substituição de filtros de óleo (hidráulicos)
+  □ Teste de carga nominal (com pesos)
+  □ Calibração do limitador de velocidade
+  □ Atualização da documentação técnica
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🏭 FABRICANTES DE ELEVADORES — GUIA COMPLETO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+GRANDES FABRICANTES GLOBAIS (contratos proprietários):
+
+🔵 SCHINDLER (Suíça — fundada 1874):
+  • Produtos: Schindler 3300 (residencial), 5500 (comercial), 7000 (alto desempenho)
+  • Sistema de controlo: MicroBASIC, Micro3, PORT Technology
+  • Especificidade: elevadores MRL (sem casa de máquinas) muito populares em Portugal
+  • Peças: sistema proprietário — quadros Schindler, portas Schindler, controladores exclusivos
+  • Razão dos preços elevados:
+    (a) Peças só disponíveis através da rede Schindler ou distribuidores autorizados
+    (b) Software de diagnóstico (SChindler NOVA) exclusivo — empresa independente não tem acesso
+    (c) Técnicos precisam de formação específica Schindler certificada
+    (d) Marca premium com presença em 100+ países — overhead organizacional elevado
+    (e) Garantia de 2 anos exige contratos Schindler Full Service
+
+🔴 OTIS (EUA — fundada 1853, maior do mundo):
+  • Produtos: Gen2 (correia plana, sem óleo), Otis ONE (conectado IoT), GeN360
+  • Sistema de controlo: GECB (Gen2 Control Board), OLV (Otis Landing Verification)
+  • Especificidade: Gen2 usa correia dentada em vez de cabos — não compatível com peças genéricas
+  • Peças: correia Gen2 — exclusiva Otis, não há equivalente de outros fabricantes
+  • Razão dos preços elevados:
+    (a) Correia Gen2 patenteada — sem alternativa de mercado (dependência total)
+    (b) Monitorização remota Otis ONE — funcionalidade paga por mês
+    (c) Força de marca histórica (inventou o freio de segurança em 1852)
+    (d) Presença em edifícios icónicos (Empire State, Eiffel Tower) — imagem premium
+    (e) Integração complexa com smart buildings — setup e programação especializado
+
+🟡 THYSSENKRUPP ELEVATOR / TK ELEVATOR (Alemanha):
+  • Produtos: TWIN (duas cabines no mesmo poço), MULTI (elevador magnético horizontal+vertical), Evolution
+  • Sistema de controlo: EcoSystem, Elevation Pro
+  • Especificidade: TWIN e MULTI são tecnologias apenas TK — altíssima complexidade
+  • Peças: sistema CANbus proprietário, sensores específicos TK
+  • Razão dos preços elevados:
+    (a) Engenharia alemã premium com tolerâncias e qualidade mais exigentes
+    (b) TWIN/MULTI — tecnologias únicas no mundo sem alternativa de custo
+    (c) Formação TK obrigatória e cara para técnicos
+    (d) Peças importadas da Alemanha — logistics e stock limitado em Portugal
+    (e) Forte posição em elevadores de altíssima velocidade (>4 m/s) em arranha-céus
+
+🟢 KONE (Finlândia — fundada 1910):
+  • Produtos: MonoSpace (MRL com motor slim), MiniSpace, KONE N (ecológico)
+  • Sistema de controlo: KDL32 (Drive), V3F25CR, KRD (Remote Diagnostics)
+  • Especificidade: motor de disco (Ecospace) muito compacto — alto rendimento energético
+  • Peças: motor Kone disc-motor é exclusivo, peças elétricas têm referências específicas
+  • Razão dos preços elevados:
+    (a) Tecnologia de motor de disco patenteada — sem equivalente no mercado
+    (b) Monitorização KONE Care Remote conectada — valor acrescentado mas custo adicional
+    (c) Alta fiabilidade documentada — baixa taxa de avaria (0,5 paradas/mês em frota nova)
+    (d) Posição dominante no mercado nórdico e crescente em sul da Europa
+    (e) Formação Kone certificada obrigatória para técnicos em contratos KONE
+
+🟠 MITSUBISHI ELECTRIC (Japão):
+  • Produtos: ELMOTION, Zephyr (alta velocidade), NEXWAY (IoT)
+  • Sistema de controlo: CP-1, CPU-II, LEHY-II
+  • Especificidade: tecnologia VVVF (Variable Voltage Variable Frequency) pioneira — muito fiável
+  • Razão dos preços elevados:
+    (a) Qualidade japonesa (filosofia "zero-defects" — KAIZEN aplicado)
+    (b) Importação do Japão — câmbio e logística encarecem peças
+    (c) Contratos com suporte do Japão para sistemas complexos
+    (d) Base instalada menor em Portugal — menos peças em stock local
+
+🟣 ORONA (País Basco, Espanha) — ALTERNATIVA REGIONAL:
+  • Produtos: Orona 3G, 5G, Nexo (MRL económico)
+  • Especificidade: cooperativa industrial — preços mais competitivos que globais
+  • Vantagem: peças mais acessíveis em Portugal (logística Espanha-Portugal rápida)
+  • Tem rede de técnicos independentes com mais acesso a peças que as marcas globais
+  • Popular em Portugal em habitação social e edifícios de médio custo
+
+🔷 KLEEMANN (Grécia) & GMV (Espanha) — SEGMENTO RESIDENCIAL:
+  • Posicionamento: elevadores residenciais de qualidade a preço intermédio
+  • Peças: mais acessíveis, componentes standard em muitos casos
+  • GMV (Grupo Mecalux) presente em Portugal com boa rede de assistência
+
+EMPRESAS INDEPENDENTES EM PORTUGAL (sem marca própria):
+  • Trabalham com componentes standard ou multi-marca
+  • Peças compradas no mercado livre (Fermator, Wittur, Selcom para portas; ATI, ABB, Yaskawa para drives)
+  • Preços mais competitivos em manutenção e reparação
+  • Limitação: contratos de garantia original exigem marca — perde-se garantia se usar independente no período de garantia
+  • Após garantia (2-5 anos): empresa independente é opção legítima e frequentemente 30-50% mais barata
+
+POR QUE AS GRANDES MARCAS SÃO MAIS CARAS — RESUMO:
+  1. PEÇAS PROPRIETÁRIAS: componentes patenteados sem alternativa de mercado
+  2. SOFTWARE EXCLUSIVO: diagnóstico e programação só com ferramentas da marca
+  3. LOCK-IN CONTRATUAL: contratos originais vinculam o cliente à marca durante anos
+  4. FORMAÇÃO ESPECIALIZADA: técnicos precisam de cursos certificados pela marca
+  5. OVERHEAD GLOBAL: estrutura multinacional com marketing, filiais, suporte 24/7 repercutido nos preços
+  6. QUALIDADE E FIABILIDADE: materiais de maior qualidade, tolerâncias mais apertadas, vida útil mais longa
+  7. RESPONSABILIDADE LEGAL: marca assume responsabilidade pelo produto — custo do risco incorporado
+  NOTA: Qualidade ≠ necessariamente caro. Algumas marcas cobram premium de marca sem justificação técnica.
+  Um proprietário informado deve pedir 3 orçamentos após o período de garantia.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 🏢 SISTEMA FESTLIFT — ESTRUTURA E FUNCIONALIDADES
@@ -5955,125 +6706,394 @@ PAINEL CLIENTE (pages/client/):
 • AI Predictions (ai-predictions.html) — previsões de manutenção com AI
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🔧 AVARIAS TÍPICAS DE ELEVADORES
+🔧 AVARIAS TÍPICAS DE ELEVADORES — DIAGNÓSTICO DETALHADO
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 AVARIAS MECÂNICAS:
-• Cabos de suspensão — desgaste, fios partidos (>10% = C1), elongação excessiva
-• Para-quedas — desgaste ou falha no acionamento (sempre C1)
-• Guias e patilhas — desgaste, desalinhamento, ruídos
-• Amortecedores — deformação permanente, perda de fluido hidráulico
-• Motor de tração — sobreaquecimento, vibrações, consumo elevado
-• Freio eletromagnético — desgaste das pastilhas, folga excessiva (C1 se não travar)
+• Cabos de suspensão — desgaste, fios partidos (>10% = C1), elongação excessiva, corrosão
+  → Solução: substituição obrigatória pelo conjunto completo (não substituir cabo a cabo)
+• Para-quedas — desgaste das cunhas, falha no acionamento (sempre C1), cunhas enferrujadas
+  → Solução: revisão completa, limpeza, lubrificação das guias de acionamento, teste obrigatório
+• Guias e patilhas de guiamento — desgaste das sapatas (>2mm = substituir), desalinhamento vertical
+  → Solução: substituição das sapatas de guiamento, realinhamento e fixação das guias
+• Amortecedores — deformação permanente (após acionamento = C1), perda de fluido (hidráulico)
+  → Solução: substituição imediata se deformação > 10% da altura nominal
+• Motor de tração — sobreaquecimento (> 80°C em carcaça), vibrações (rolamentos), consumo elevado
+  → Solução: verificar ventilação, medir corrente (amperímetro), substituir rolamentos ou motor
+• Freio eletromagnético — desgaste das pastilhas (<2mm = substituir), folga excessiva, ruído ao fechar
+  → Solução: ajuste de folga (0,3-0,5mm), substituição de pastilhas, alinhamento
 
 AVARIAS ELÉTRICAS/ELETRÓNICAS:
-• Fechaduras de portas (contatos) — falha no bloqueio ou deteção (frequente, C1 se porta abre com cabine em movimento)
-• Botoneiras — botões sem resposta, display apagado
-• Painel de controlo — erros de programação, fusíveis queimados
-• Sistema de nivelação — paragem acima/abaixo do andar (>20mm = risco de queda)
-• Iluminação da cabine — lâmpadas fundidas (C2 se sem emergência)
-• Telefone de emergência — inoperacional (C2)
-• Intercomunicador — falha na comunicação com exterior
+• Fechaduras de portas (SLC/GLS/KSS) — falha no contato elétrico ou mecânico
+  → Sintoma: elevador para com porta aparentemente fechada / porta abre entre andares (C1!)
+  → Solução: limpar contatos com spray limpa-contatos, ajustar roletes de encravamento, substituir microswitch
+• Botoneiras — botão sem resposta (contato oxidado), display apagado (alimentação)
+  → Solução: substituir botão individual, verificar alimentação 24V DC da botoneira
+• VVVF/Drive — erros de fault (overtemperature, overcurrent, earth fault)
+  → Solução: ler código de erro, verificar ventilação do drive, resistência de frenagem, IGBT
+• Sistema de nivelação — desvio >20mm (sujidade nos sensores), paragem imprecisa
+  → Solução: limpar fita magnetizada e leitores magnéticos, verificar alinhamento
+• Iluminação da cabine — LED fundido (comum após 5-7 anos), driver LED defeituoso
+  → Solução: substituir fita LED ou módulo, verificar tensão de alimentação
+• Telefone de emergência — sem sinal GSM, bateria descarregada, número errado programado
+  → Solução: verificar sinal GSM na caixa, substituir bateria (duração média 2-3 anos), reprogramar
 
-AVARIAS HIDRÁULICAS (elevadores hidráulicos):
-• Fuga de óleo no cilindro — perda de altura, contaminação ambiental
-• Válvula de descida — descida descontrolada (C1)
-• Bomba hidráulica — ruído excessivo, pressão insuficiente
-• Acumulador — perda de pressão
+AVARIAS HIDRÁULICAS:
+• Fuga de óleo no cilindro — vedante desgastado, pite de corrosão no êmbolo
+  → Solução: substituição de vedante (temporária) ou substituição do cilindro (definitiva)
+• Válvula de descida descontrolada — contaminação do óleo, ressola danificada (C1!)
+  → Solução: substituição da válvula baixo-carga, filtragem/substituição de óleo
+• Bomba hidráulica — ruído de cavitação (falta de óleo ou filtro colmatado), pressão insuficiente
+  → Solução: completar nível de óleo, substituir filtro, reparar/substituir bomba
+• Óleo frio — descida lenta em dias de inverno
+  → Solução: normal em óleo mineral (viscosidade aumenta); considerar óleo sintético
 
-SINTOMAS COMUNS E CAUSAS PROVÁVEIS:
-• Elevador para entre andares → contacto de porta, sobrecarga, fusível
-• Porta não fecha → obstáculo, fotocélula suja, folga excessiva na fechadura
-• Ruído excessivo → guias secas, rolamentos desgastados, cabos mal tensionados
-• Solavanco na paragem → calibração do freio, nivelador
-• Elevador desce lentamente → óleo frio (hidráulico), contrapeso desajustado
+SINTOMAS → DIAGNÓSTICO → SOLUÇÃO:
+Elevador para entre andares:
+  → 1.º verificar: contatos de porta (80% dos casos) → limpar/ajustar
+  → 2.º verificar: sobrecarga → reduzir carga ou calibrar detetor
+  → 3.º verificar: fusível/disjuntor → substituir, investigar causa
+
+Porta não fecha completamente:
+  → 1.º verificar: obstáculo na guia inferior → remover
+  → 2.º verificar: fotocélula suja → limpar com pano húmido
+  → 3.º verificar: folga da fechadura mecânica → ajustar ou substituir rolete
+
+Ruído em marcha (chiado metálico):
+  → Guias secas → lubrificar (exceto guias de roda)
+  → Rolamentos desgastados → substituir motor ou polia
+
+Solavanco forte na paragem:
+  → Freio mal calibrado → ajustar folga e tempo de desmagnetização
+  → Drive VVVF com curva de desaceleração errada → reparametrizar
+
+Elevador vibra em marcha:
+  → Cabos mal tensionados ou com danos → inspecionar e ajustar
+  → Patilhas de guiamento desgastadas → substituir sapatas
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-⚖️ CONSEQUÊNCIAS LEGAIS DE INCUMPRIMENTO
+⚖️ CONSEQUÊNCIAS LEGAIS DE INCUMPRIMENTO — TABELA COMPLETA
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 NÃO CORRIGIR C1 (incumprimento imediato):
 • Crime de exposição a perigo (Código Penal, art.º 291.º) se mantiver elevador em serviço
-• Responsabilidade civil ilimitada por danos a terceiros (DL 363/91 — responsabilidade do produtor/operador)
-• Seguro de responsabilidade civil VOID — seguradora pode recusar indemnização
-• Câmara Municipal pode ordenar selagem imediata do elevador e multa entre €2.500 e €44.000 (DL 320/2002, art.º 42.º)
-• Proprietário do edifício assume responsabilidade pessoal por qualquer acidente
+• Responsabilidade civil ilimitada por danos a terceiros (DL 363/91 + Código Civil art.º 493.º)
+• Seguro de responsabilidade civil VOID — seguradora recusa indemnização (cláusula de incumprimento legal)
+• Câmara Municipal pode ordenar selagem do elevador e coima €2.500-€44.000 (DL 320/2002, art.º 42.º)
+• Proprietário assume responsabilidade pessoal por qualquer acidente (solidariamente com EMIE)
 
 NÃO CORRIGIR C2 NO PRAZO DE 2 ANOS (Despacho 27/2024):
-• Na inspeção seguinte, C2 não corrigida torna-se automaticamente fundamento de reprovação com prazo reduzido
-• Câmara Municipal pode interditar o uso do elevador
-• Coima entre €500 e €3.740 (pessoa singular) ou €2.500 e €44.000 (pessoa coletiva) — DL 320/2002
-• Seguro pode cobrir sinistro mas com direito de regresso contra o proprietário
+• Na inspeção seguinte, C2 não corrigida = reprovação com reavaliação em 180 dias
+• Câmara Municipal pode interditar uso do elevador após 2.ª reprovação consecutiva
+• Coima €500-€3.740 (singular) ou €2.500-€44.000 (coletiva) — DL 320/2002, art.º 42.º
+• Seguro cobre mas com direito de regresso contra proprietário (recuperam o valor pago)
 
-NÃO REALIZAR INSPEÇÃO PERIÓDICA (DL 320/2002):
-• Coima nos mesmos limites acima
-• Elevador considerado "sem certificação" — responsabilidade agravada em caso de acidente
-• EIIE acreditada pode recusar-se a realizar inspeção se elevador apresentar riscos óbvios
+NÃO REALIZAR INSPEÇÃO PERIÓDICA (DL 320/2002, art.º 10.º):
+• Coima €250-€44.000 conforme pessoa singular/coletiva
+• Responsabilidade agravada em caso de acidente ("nunca fez inspeção" = negligência grave)
+• EIIE pode recusar inspeção se situação apresentar risco óbvio (pedem C1 prévio)
+
+NÃO TER CONTRATO DE MANUTENÇÃO COM EMIE REGISTADA:
+• Infração grave = coima €1.000-€44.000
+• Seguro de responsabilidade civil pode ser VOID (sem manutenção = negligência)
+• Em caso de acidente: responsabilidade criminal do proprietário agravada
+
+MANTER ELEVADOR EM SERVIÇO APÓS SELAGEM/IMOBILIZAÇÃO:
+• Crime de desobediência (CP art.º 348.º) + exposição a perigo (CP art.º 291.º)
+• Coima máxima €44.000 + processo criminal
+• Câmara pode ordenar demolição do acesso imediata
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📋 PORTARIA 348/2013 — REGULAMENTO DE INSPEÇÃO PERIÓDICA OBRIGATÓRIA (RIPO)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Define a metodologia, periodicidade e classificação de anomalias nas inspeções periódicas.
+
+PERIODICIDADE DE INSPEÇÃO:
+• Ascensores residenciais (≤4 pisos) e de serviço (monta-cargas): 4 ANOS
+• Ascensores residenciais (>4 pisos ou com uso público): 2 ANOS
+• Escadas mecânicas e tapetes rolantes em locais públicos: 2 ANOS
+
+CLASSIFICAÇÃO DE ANOMALIAS (C1/C2/C3):
+• C1 — PROIBIÇÃO IMEDIATA: perigo imediato para segurança → ascensor imobilizado NO ACTO pela EIIE
+        Exemplos: encravamento inoperante, para-quedas defeituoso, cabos com >10% fios partidos,
+        ausência de proteções elétricas críticas, sobrepassagem de fim-de-curso sem paragem
+• C2 — PRAZO DE 2 ANOS para correção (conforme Despacho 27/2024 — revogou o prazo original de 30 dias)
+        Exemplos: nivelação >5cm, alarme inoperante, botão Stop ausente, livro conservação ausente
+• C3 — PRAZO DE 90 DIAS para correção
+        Exemplos: iluminação insuficiente, avisos ilegíveis, carga nominal não afixada
+
+RELATÓRIO DE INSPEÇÃO (conteúdo obrigatório):
+• Identificação do imóvel + elevador + EIIE + inspector + data
+• Lista de todos C1/C2/C3 com artigo regulamentar
+• Resultado: APROVADO (sem C1/C2) ou REPROVADO (com C1 ou C2)
+• Submissão digital ao DGEG (SINIME) em ≤10 dias úteis + cópia em papel ao proprietário
+• Câmara municipal notificada de C1 em ≤48 horas
+
+APÓS C1:
+• EIIE sela o painel de comando no ato
+• Retorno ao serviço APENAS após: correção documentada + re-inspeção com APROVADO
+• Colocar em serviço sem re-inspeção = crime (CP art.º 291.º) + coima ≤€44.000
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🏛️ PORTARIA 185/2013 — ACREDITAÇÃO DAS EIIE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Define os requisitos para acreditação e funcionamento das Entidades Inspetoras de Instalações de Elevadores (EIIE).
+
+REQUISITOS DE ACREDITAÇÃO:
+• EIIE acreditada pelo IPAC segundo NP EN ISO/IEC 17020 (organismo de inspeção Tipo A)
+• Seguro de responsabilidade civil mínimo €500.000 por sinistro
+• Prazo de reconhecimento pelo DGEG: validade do certificado IPAC (tipicamente 4 anos)
+• Lista das EIIE reconhecidas publicada no site do DGEG
+
+INDEPENDÊNCIA (requisito central):
+• EIIE NÃO pode ter relação comercial/financeira com a EMIE que mantém o elevador
+• Inspector que fez manutenção num elevador: NÃO pode inspecionar esse ascensor nos 12 meses seguintes
+• Conflito de interesses: declara e impede a atuação
+
+QUALIFICAÇÕES DOS INSPETORES:
+• Formação técnica certificada ≥80h (instalação, manutenção, normas EN 81)
+• Experiência prática ≥2 anos em manutenção ou inspeção de elevadores
+• Formação anual de actualização ≥24h
+
+OBRIGAÇÕES DE REPORTE:
+• Reportar ao DGEG: lista mensal de inspeções + C1 em ≤48h
+• Notificar câmara municipal: C1 e C2 em ≤5 dias úteis
+• Arquivo de relatórios: mínimo 10 anos
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔧 NP EN 13015:2003+A1:2009 — MANUTENÇÃO DE ASCENSORES E ESCADAS MECÂNICAS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Norma harmonizada que define o que uma EMIE deve fazer e documentar como manutenção preventiva.
+
+INTERVALOS OBRIGATÓRIOS DE VERIFICAÇÃO:
+• MENSAL (visita obrigatória): verificação visual cabos, encravamento portas, alarme/intercomunicador,
+  botoneiras, lubrificação, anomalias visuais gerais
+• SEMESTRAL: ensaio funcional travão e paragem de emergência completa
+• ANUAL: medição isolamento eléctrico, ensaio funcional limitador de velocidade, revisão guias
+• 5 ANOS (ou 10.000h): ensaio de disparo real do para-quedas com carga certificada
+
+DOCUMENTAÇÃO (Livro de Conservação) — conteúdo obrigatório:
+• Dados técnicos do ascensor (fabricante, modelo, ano, carga, velocidade)
+• Registo de cada visita: data, técnico, trabalhos, anomalias, acções correctivas
+• Registo de peças substituídas com referência de componente
+• Registos de ensaios periódicos (limitador, para-quedas)
+• Cópia dos relatórios de inspeção pela EIIE
+• Prazo de arquivo: mínimo 10 anos; localização: casa das máquinas
+
+CONTRATO DE MANUTENÇÃO (DL 320/2002 art.º 4.º):
+• Obrigatório — proprietário DEVE ter contrato com EMIE autorizada
+• Inclui: visitas mensais, correcção C1/C2/C3, serviço emergência 24h/7d, manobra socorro
+• Rescisão: EMIE notifica câmara municipal + DGEG com ≥30 dias antecedência
+
+RESPOSTA A AVARIAS:
+• Passageiro preso: chegar ao local ≤1h (urbano) / ≤2h (rural) — 24h/7d
+• C1 detectado em manutenção: imobilizar o ascensor e notificar EIIE para re-inspeção
+• Componentes de segurança substituídos: apenas peças com declaração CE (DL 58/2017)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+♿ NP EN 81-71:2022 — ELEVADORES RESISTENTES AO VANDALISMO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Três categorias: VR1 (residencial), VR2 (hospitais/estações), VR3 (zonas de alto risco)
+• Painéis cabina: VR1=250N, VR2=500N, VR3=1000N (força perpendicular 30s sem deformação)
+• Botões: VR2/VR3 embutidos ou com protecção metálica, anti-graffiti
+• Iluminação: VR2=IK08, VR3=IK10 (proteção ao impacto)
+• Portas: resistência à abertura forçada — fechadura ≥1000N
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🚒 NP EN 81-72:2020 — ELEVADORES DE BOMBEIROS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Obrigatório em edifícios com altura de referência de incêndio >18m (RT-SCIE / Portaria 1532/2008).
+
+DIMENSÕES MÍNIMAS: cabina 1100mm×2100mm (maca); porta ≥800mm; carga ≥630kg; velocidade ≥1m/s
+RESISTÊNCIA AO FOGO: paredes caixa E120; portas patamar E90/EI90; cabos RF90
+ALIMENTAÇÃO: circuito dedicado + gerador/UPS (entra em <60s); independente de falha geral de energia
+FASES DE OPERAÇÃO:
+• FASE 1 (automática): alarme incêndio → recall ao piso de evacuação → porta aberta → fora de serviço
+• FASE 2 (manual): bombeiros controlam com chave → porta fecha só com botão pressionado continuamente
+OUTROS: telefone serviço de bombeiros, símbolo bombeiros em cada patamar, iluminação emergência ≥1h
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🔥 NP EN 81-73:2020 — COMPORTAMENTO DOS ELEVADORES EM CASO DE INCÊNDIO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Aplica-se a TODOS os ascensores de passageiros (não apenas elevadores de bombeiros).
+
+FASE 1 — Recall automático:
+• Recebe sinal alarme SADI (contacto seco 24V DC) → em ≤30 segundos inicia recall
+• Para no próximo piso → abre portal → desce ao PISO DE EVACUAÇÃO → porta aberta → fora de serviço
+• Indicação "FOGO" em todas as botoneiras de patamar
+• Regresso ao serviço: NUNCA automático — requer reset manual por técnico + reset SADI
+Interface SADI-elevador: ensaio anual obrigatório (documentado no livro de conservação)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+⛰️ NP EN 81-77:2020 — ELEVADORES COM PERCURSO INCLINADO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Para ascensores com percurso entre 0° e 70° da horizontal (funiculares de caixa, serras, jardins históricos).
+
+Requisitos específicos:
+• Guias: alinhamento ≤±1mm/m; material anti-corrosão em percursos exteriores
+• Para-quedas: adaptado ao percurso inclinado (≥15°: sistema especial de frenagem lateral)
+• Proteção climática exterior: IP55 nos aparelhos de comando; lubrificação adaptada ao gelo
+• Comunicação de emergência 24/7 obrigatória durante toda a viagem (EN 81-28)
+• Escadas de emergência paralelas ao percurso se comprimento >30m sem patamar intermédio
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+🌍 LEGISLAÇÃO EUROPEIA — CONTEXTO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Diretiva 2014/33/UE (Diretiva Ascensores) — transposta para Portugal pelo DL 58/2017:
+• Harmoniza requisitos de segurança em toda a UE para elevadores novos
+• Define 14 Componentes de Segurança (Anexo III) que precisam de avaliação própria
+• Exige marcação CE em todos ascensores e componentes de segurança
+• Define responsabilidades do instalador, importador e distribuidor
+
+Regulamento (UE) 2016/425 — Equipamentos de Proteção Individual:
+• Aplicável a técnicos de manutenção — arneses, capacetes, luvas anti-corte
+• EMIE responsável por fornecer EPI certificado e verificado anualmente
+
+Diretiva 2006/42/CE (Diretiva Máquinas) — transposta por DL 103/2008:
+• NÃO SE APLICA a ascensores de passageiros (esses: DL 58/2017); aplica-se a monta-cargas >10kg,
+  escadas mecânicas, tapetes rolantes e acessórios de elevação
+• Marcação CE obrigatória + Declaração de Conformidade CE antes de colocar no mercado
+• Monta-cargas >300kg com acesso de pessoas → aplica DL 58/2017 (Diretiva Ascensores)
+• Monta-cargas para carga apenas: proibição de permanência de pessoas; soleira ≥0.60m
+• Escadas mecânicas: velocidade máx 0.75m/s; inclinação máx 30°; botões de emergência obrigatórios
+• Fiscalização: ASAE (mercado) + DGEG (instalações); coima por ausência de marcação CE
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-🚨 REGRAS:
-1. Es um CONSULTOR — podes EXPLICAR e ORIENTAR, nunca modificar dados no sistema
+🚨 REGRAS DO ASSISTENTE:
+1. És um CONSULTOR — podes EXPLICAR e ORIENTAR, nunca modificar dados no sistema
 2. PRIVACIDADE — nunca revelar dados de outros clientes
 3. Responde SEMPRE em Português (pt-PT)
 4. Cita sempre os artigos e decretos-lei específicos nas respostas
-5. O sistema chama-se SEMPRE "FestLift" — NUNCA uses "DeapSeak" ou "DeapSeaK"`;
+5. O sistema chama-se SEMPRE "FestLift" — NUNCA uses "DeapSeak" ou "DeapSeaK"
+6. Quando citas prazos de C2, indica SEMPRE que é 2 anos (Despacho 27/2024) — nunca 30 dias
+7. Em dúvida técnica complexa, recomenda consultar engenheiro especialista certificado`;
 
     const roleSpecific = {
-        admin: `\n\n👨‍💼 ADMINISTRATOR CONTEXT:
-You assist the system administrator with:
-- System overview and analytics interpretation
-- Regulatory compliance guidance
-- User management best practices
-- Technical documentation standards
+        admin: `\n\n👨‍💼 CONTEXTO ADMINISTRADOR FestLift:
+Ajudas o administrador do sistema. Prioridades:
 
-Remember: Even as admin assistant, you cannot modify data. Guide them to use the proper admin interface.
-Respond in Portuguese only.`,
-        
-        dispatcher: `\n\n📞 DISPATCHER CONTEXT:
-You assist the dispatcher with:
-- Technician coordination strategies
-- Priority management guidance
-- Inspection scheduling best practices
-- Emergency response protocols
+1. ANÁLISE — interpreta estatísticas, identifica elevadores vencidos, C1 pendentes, técnicos sobrecarregados
+2. CONFORMIDADE — prazos regulatórios: inspeções vencidas, C2 no limite dos 2 anos, EMIE a expirar
+3. UTILIZADORES — melhores práticas para atribuição de papéis, bloqueio de acessos, criação de técnicos
+4. RELATÓRIOS — orienta na geração de PDFs/Excel, KPIs, documentação para câmara municipal
+5. CONFIGURAÇÃO — definições do sistema, email Brevo, integrações, AI provider
 
-Remember: You provide guidance. They use the system interface for actual assignments.
-Respond in Portuguese only.`,
-        
-        tech: `\n\n🔧 TECHNICIAN CONTEXT:
-You assist technicians with:
-- Repair procedures and troubleshooting
-- Safety protocols (NR-12, PT regulations)
-- Technical specifications (motors, cables, brakes)
-- Diagnostic methods for common issues
-- Part compatibility and sourcing
+Nunca alteres dados diretamente — orienta sempre para a interface admin.
+Responde SEMPRE em Português (pt-PT).`,
 
-You can search internet for:
-- Manufacturer manuals
-- Technical diagrams
-- Safety bulletins
-- Industry best practices
+        dispatcher: `\n\n📞 CONTEXTO OPERADOR FestLift:
+Ajudas o operador a coordenar trabalho diário. Prioridades:
 
-Respond in Portuguese only.`,
-        
-        client: `\n\n👤 CLIENT CONTEXT:
-You assist building owners/managers with:
-- Understanding inspection reports in plain non-technical language
-- Knowing exactly what each C1/C2/C3 clause means and their legal deadlines
-- Maintenance planning and cost estimation
-- Legal obligations and consequences of non-compliance
+1. PLANEAMENTO — organiza agenda de inspeções/manutenções por distância, tempo e especialização do técnico
+2. PRIORIZAÇÃO — identifica urgências: C1 pendentes, elevadores imobilizados, SLA prestes a expirar
+3. COMUNICAÇÃO — frases modelo para clientes sobre prazos, atrasos, resultados de inspeção
+4. ORÇAMENTOS — orientação para criar e enviar orçamentos pelo sistema FestLift
+5. CONFLITOS — técnico ausente, dupla marcação, cliente insatisfeito: como resolver
 
-When analyzing a report uploaded by the client, for each clause explain:
-1. O que significa na prática (em linguagem simples, sem jargão técnico)
-2. O risco para os utilizadores do edifício se não for corrigido
-3. Quando deve ser corrigido (C1=imediatamente, C2=2 anos, C3=próxima manutenção)
-4. As consequências legais de não corrigir dentro do prazo
+Formato: objetivo e acionável. Quando envolve priorização, usa lista ordenada 1→2→3.
+Nunca atribuis técnicos diretamente — usa a interface de Assignments.
+Responde SEMPRE em Português (pt-PT).`,
 
-IMPORTANT: You can ONLY discuss their own lifts. Never reveal data about other clients.
-Respond in Portuguese only.`
+        tech: `\n\n🔧 CONTEXTO TÉCNICO FestLift:
+Ajudas o técnico no terreno. Prioridade: SEGURANÇA e DIAGNÓSTICO RÁPIDO.
+
+FORMATO PARA AVARIAS: Sintoma → Causas prováveis (80/20) → Passos de diagnóstico → Solução
+FORMATO PARA INSPEÇÃO: Artigo → Requisito → Estado → Classificação C1/C2/C3 + justificação
+
+REGRAS DE SEGURANÇA (incluir sempre quando relevante):
+- ⚠️ Desliga o quadro elétrico ANTES de qualquer intervenção nos contactos de portas
+- ⚠️ NÃO remover o para-quedas sem cabine imobilizada e cuneada
+- ⚠️ Elevador com C1 NÃO pode voltar a serviço sem reavaliação da EIIE
+
+CAPACIDADES: diagnóstico de avarias, classificação C1/C2/C3, cálculos de dimensionamento,
+artigos de EN 81-20/50, DL 320/2002, procedimentos por tipo de elevador (elétrico/hidráulico/MRL).
+
+Podes usar termos técnicos corretos.
+Responde SEMPRE em Português (pt-PT).`,
+
+        client: `\n\n👤 CONTEXTO CLIENTE FestLift:
+Falas com proprietário ou gestor de edifício. USA SEMPRE linguagem simples — ZERO jargão técnico.
+
+QUANDO ANALISAS UM RELATÓRIO de inspeção, para CADA cláusula C1/C2/C3 apresenta OBRIGATORIAMENTE:
+  a) O que significa em palavras simples (como explicarias a um vizinho)
+  b) O risco CONCRETO para os utilizadores (ex: "a porta pode abrir com o elevador em andamento")
+  c) Prazo: C1=HOJE (imobilização imediata), C2=2 anos (calculas a data), C3=próxima manutenção
+  d) Consequências de NÃO corrigir: multa €2.500-€44.000 + seguro pode não pagar + responsabilidade criminal
+
+OUTROS TÓPICOS:
+- Custo médio de intervenção vs custo de acidente/multa (números concretos)
+- Como escolher EMIE certificada (verificar registo DGEG)
+- Direitos do proprietário face à empresa de manutenção
+
+REGRA ABSOLUTA: NUNCA mostras dados de outros clientes.
+Responde SEMPRE em Português (pt-PT) de forma tranquilizadora mas precisa.`
     };
 
     return basePrompt + (roleSpecific[role] || roleSpecific.client);
+}
+
+function buildAIUserPrompt(message, regulationsContext = null, reportTextContext = null, maxChars = 8000) {
+    let contextualPrompt = '';
+
+    if (regulationsContext) {
+        contextualPrompt += `RELEVANT PORTUGUESE REGULATION:\n` +
+            `Article: ${regulationsContext.article}\n` +
+            `Regulation: ${regulationsContext.regulation}\n` +
+            `Requirement: ${regulationsContext.requirement}\n` +
+            `Description: ${regulationsContext.description}\n` +
+            `Explanation: ${regulationsContext.explanation}\n`;
+
+        if (regulationsContext.violations && regulationsContext.violations.length > 0) {
+            contextualPrompt += `Common Violations: ${regulationsContext.violations.join(', ')}\n`;
+        }
+
+        contextualPrompt += `\nPlease explain this regulation in context of the user's question.\n\n`;
+    }
+
+    if (reportTextContext) {
+        const truncated = reportTextContext.length > maxChars
+            ? reportTextContext.substring(0, maxChars) + '\n...(relatório truncado)'
+            : reportTextContext;
+        contextualPrompt += `INSPECTION REPORT CONTENT (from uploaded PDF):\n---\n${truncated}\n---\n\n` +
+            `Please analyze this report and answer the user's question about it.\n\n`;
+    }
+
+    contextualPrompt += `USER QUESTION: ${message}`;
+    return contextualPrompt;
+}
+
+async function callOllamaRaw(messages) {
+    const response = await fetch(`${OLLAMA_BASE_URL}/api/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            model: OLLAMA_MODEL,
+            messages,
+            stream: false
+        })
+    });
+
+    if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(`Ollama HTTP ${response.status}: ${errText.substring(0, 300)}`);
+    }
+
+    const data = await response.json();
+    const text = data?.message?.content;
+    if (!text || typeof text !== 'string') {
+        throw new Error('Ollama response missing message.content');
+    }
+
+    return text;
 }
 
 // Helper function to call Gemini AI
@@ -6090,35 +7110,7 @@ async function callGeminiAI(message, role, username, regulationsContext = null, 
             systemInstruction: systemPrompt
         });
         
-        let contextualPrompt = '';
-        
-        // Add regulations context if found
-        if (regulationsContext) {
-            contextualPrompt += `RELEVANT PORTUGUESE REGULATION:\n` +
-                               `Article: ${regulationsContext.article}\n` +
-                               `Regulation: ${regulationsContext.regulation}\n` +
-                               `Requirement: ${regulationsContext.requirement}\n` +
-                               `Description: ${regulationsContext.description}\n` +
-                               `Explanation: ${regulationsContext.explanation}\n`;
-            
-            if (regulationsContext.violations && regulationsContext.violations.length > 0) {
-                contextualPrompt += `Common Violations: ${regulationsContext.violations.join(', ')}\n`;
-            }
-            
-            contextualPrompt += `\nPlease explain this regulation in context of the user's question.\n\n`;
-        }
-        
-        // Add PDF report text as context if provided
-        if (reportTextContext) {
-            const maxChars = 8000; // Gemini context limit safety
-            const truncated = reportTextContext.length > maxChars
-                ? reportTextContext.substring(0, maxChars) + '\n...(relatório truncado)'
-                : reportTextContext;
-            contextualPrompt += `INSPECTION REPORT CONTENT (from uploaded PDF):\n---\n${truncated}\n---\n\n` +
-                `Please analyze this report and answer the user's question about it.\n\n`;
-        }
-        
-        contextualPrompt += `USER QUESTION: ${message}`;
+        const contextualPrompt = buildAIUserPrompt(message, regulationsContext, reportTextContext);
         
         const result = await model.generateContent(contextualPrompt);
         const response = await result.response;
@@ -6141,6 +7133,40 @@ async function callGeminiAI(message, role, username, regulationsContext = null, 
     }
 }
 
+async function callOllamaAI(message, role, username, regulationsContext = null, reportTextContext = null) {
+    try {
+        const systemPrompt = getSystemPromptForRole(role, username);
+        const contextualPrompt = buildAIUserPrompt(message, regulationsContext, reportTextContext, 12000);
+        const text = await callOllamaRaw([
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: contextualPrompt }
+        ]);
+
+        console.log('✅ Ollama AI response generated:', text.substring(0, 100) + '...');
+        return text;
+    } catch (error) {
+        console.error('❌ Ollama AI error:', error.message);
+        return '❌ Desculpe, ocorreu um erro ao processar sua pergunta.\n\n' +
+            'Tente novamente ou reformule sua pergunta.';
+    }
+}
+
+async function callMainAI(message, role, username, regulationsContext = null, reportTextContext = null) {
+    let useOllama = AI_PROVIDER === 'ollama';
+
+    if (AI_PROVIDER === 'auto') {
+        useOllama = await isOllamaAvailable();
+    }
+
+    if (useOllama) {
+        const response = await callOllamaAI(message, role, username, regulationsContext, reportTextContext);
+        return { response, poweredBy: `Ollama (${OLLAMA_MODEL})` };
+    }
+
+    const response = await callGeminiAI(message, role, username, regulationsContext, reportTextContext);
+    return { response, poweredBy: 'Google Gemini 2.5 Flash' };
+}
+
 // ─── AI GUEST ENDPOINT (без авторизації, IP-ліміт 2 аналізи + 20 чат/добу) ──
 const _guestAiUsage = new Map(); // ip → { reports, chat, resetAt }
 const _GUEST_REPORT_LIMIT = 2;
@@ -6155,8 +7181,14 @@ function _getGuestUsage(ip) {
     return entry;
 }
 
-// Helper: call Gemini with fallback model on 503
-async function _callGuestGemini(prompt) {
+// Helper: call Gemini/Ollama in guest mode
+async function _callGuestAI(prompt) {
+    const useOllama = AI_PROVIDER === 'ollama' || (AI_PROVIDER === 'auto' && await isOllamaAvailable());
+
+    if (useOllama) {
+        return callOllamaRaw([{ role: 'user', content: prompt }]);
+    }
+
     const models = ['gemini-2.5-flash', 'gemini-1.5-flash', 'gemini-1.5-flash-latest'];
     let lastErr;
     for (const modelName of models) {
@@ -6194,7 +7226,7 @@ app.post('/api/ai/guest-analyze', async (req, res) => {
         usage.reports += 1;
         _guestAiUsage.set(ip, usage);
 
-        if (!process.env.GEMINI_API_KEY) {
+        if (AI_PROVIDER === 'gemini' && !process.env.GEMINI_API_KEY) {
             return res.json({ success: true, data: {
                 response: '⚠️ Serviço de IA temporariamente indisponível. Contacte o administrador.',
                 usedReports: usage.reports, remainingReports: Math.max(0, _GUEST_REPORT_LIMIT - usage.reports)
@@ -6214,7 +7246,7 @@ RELATÓRIO:
 ${reportText.substring(0, 6000)}
 ---`;
 
-        const text = await _callGuestGemini(prompt);
+        const text = await _callGuestAI(prompt);
         res.json({ success: true, data: {
             response: text,
             usedReports: usage.reports,
@@ -6247,7 +7279,7 @@ app.post('/api/ai/guest-chat', async (req, res) => {
         usage.chat += 1;
         _guestAiUsage.set(ip, usage);
 
-        if (!process.env.GEMINI_API_KEY) {
+        if (AI_PROVIDER === 'gemini' && !process.env.GEMINI_API_KEY) {
             return res.json({ success: true, data: {
                 response: '⚠️ Serviço de IA temporariamente indisponível.',
                 usedChat: usage.chat, remainingChat: Math.max(0, _GUEST_CHAT_LIMIT - usage.chat)
@@ -6261,7 +7293,7 @@ Nota: Este utilizador é um visitante (modo demonstração) — podes responder 
 
 PERGUNTA: ${message.substring(0, 1000)}`;
 
-        const text = await _callGuestGemini(prompt);
+        const text = await _callGuestAI(prompt);
         res.json({ success: true, data: {
             response: text,
             usedChat: usage.chat, remainingChat: Math.max(0, _GUEST_CHAT_LIMIT - usage.chat)
@@ -6293,21 +7325,21 @@ app.post('/api/ai/chat', authenticateToken, aiLimiter, async (req, res) => {
         
         // Перевірка чи це звіт інспекції
         if (context && context.reportText) {
-            console.log('📋 Report context provided — sending to Gemini for contextual Q&A...');
-            // Pass report text to Gemini so it can answer questions about it
-            response = await callGeminiAI(message, role, username, null, context.reportText);
+            console.log(`📋 Report context provided — sending to ${AI_PROVIDER} for contextual Q&A...`);
+            const aiResult = await callMainAI(message, role, username, null, context.reportText);
             return res.json({
                 success: true,
                 data: {
-                    response,
+                    response: aiResult.response,
                     timestamp: new Date().toISOString(),
-                    powered_by: 'Google Gemini (report context)',
+                    powered_by: `${aiResult.poweredBy} (report context)`,
                     role: role
                 }
             });
         }
 
         let response = '';
+        let poweredBy = '';
         const lowerMessage = message.toLowerCase();
         
         // STEP 1: SEARCH IN REGULATIONS DATABASE FIRST
@@ -6351,15 +7383,17 @@ app.post('/api/ai/chat', authenticateToken, aiLimiter, async (req, res) => {
             if (foundInRegulations) break;
         }
         
-        // STEP 2: USE GEMINI AI WITH REGULATIONS CONTEXT
+        // STEP 2: USE AI WITH REGULATIONS CONTEXT
         if (foundInRegulations) {
             console.log(`📖 Found regulation: ${foundInRegulations.article}`);
-            // Ask Gemini to explain the regulation in context
-            response = await callGeminiAI(message, role, username, foundInRegulations);
+            const aiResult = await callMainAI(message, role, username, foundInRegulations);
+            response = aiResult.response;
+            poweredBy = aiResult.poweredBy;
         } else {
             console.log('💡 No specific regulation found, using general AI');
-            // General AI response without specific regulation
-            response = await callGeminiAI(message, role, username);
+            const aiResult = await callMainAI(message, role, username);
+            response = aiResult.response;
+            poweredBy = aiResult.poweredBy;
         }
 
         // STEP 3: RETURN AI RESPONSE
@@ -6368,7 +7402,7 @@ app.post('/api/ai/chat', authenticateToken, aiLimiter, async (req, res) => {
             data: {
                 response,
                 timestamp: new Date().toISOString(),
-                powered_by: 'Google Gemini 1.5 Flash',
+                powered_by: poweredBy || 'AI',
                 role: role
             }
         });
