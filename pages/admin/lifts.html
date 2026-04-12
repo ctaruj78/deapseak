@@ -5871,10 +5871,23 @@ Email de contacto: info@festlift.pt`;
         const periodFilter = document.getElementById('filter-report-period')?.value || 'all';
         const searchFilter = document.getElementById('filter-report-search')?.value.toLowerCase() || '';
         
+        // Нормалізація типу звіту до значень дропдауну
+        const resolveReportType = (r) => {
+            const raw = r.inspectionType || r.type || r.reportType || '';
+            const map = {
+                inspection: 'inspection', annual: 'inspection', certification: 'inspection',
+                reinspection: 'inspection', periodic: 'inspection',
+                routine: 'maintenance', maintenance: 'maintenance',
+                repair: 'repair',
+                emergency: 'emergency'
+            };
+            return map[raw] || (raw ? 'inspection' : '');
+        };
+
         // Filtroуємо по типу
         filteredReports = allReports.filter(report => {
             // Тип
-            if (typeFilter && (report.inspectionType || report.type) !== typeFilter) {
+            if (typeFilter && resolveReportType(report) !== typeFilter) {
                 return false;
             }
             
@@ -5889,13 +5902,17 @@ Email de contacto: info@festlift.pt`;
             
             // Pesquisar
             if (searchFilter) {
+                const typeLabel = { inspection: 'інспекція', maintenance: 'то', repair: 'ремонт', emergency: 'аварія' }[resolveReportType(report)] || '';
                 const searchableText = [
                     report.inspectionType || '',
                     report.type || '',
+                    report.reportType || '',
+                    typeLabel,
                     report.comments || '',
                     report.findings || '',
                     report.notes || '',
-                    report.inspectorName || ''
+                    report.inspectorName || '',
+                    report.inspector || ''
                 ].join(' ').toLowerCase();
                 
                 if (!searchableText.includes(searchFilter)) {
