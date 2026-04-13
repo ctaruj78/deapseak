@@ -1110,7 +1110,7 @@
                                             <div class="col-md-6">
                                                 <div class="form-group">
                                                     <label>Номер договору</label>
-                                                    <input type="text" id="editContractNumber" name="contractNumber" class="form-control" placeholder="CT-2024-0001">
+                                                    <input type="text" id="editContractNumber" name="contractNumber" class="form-control" placeholder="1/2026">
                                                 </div>
                                             </div>
                                             <div class="col-md-6">
@@ -4017,7 +4017,7 @@
                 const fd = new FormData();
                 fd.append('inspector', inspectorName);
                 fd.append('notes', inspectionComments);
-                fd.append('reportType', inspectionType);
+                fd.append('inspectionType', inspectionType);
                 fd.append('status', inspectionStatus);
                 fd.append('inspectionDate', inspectionDate);
                 if (calculatedNextMaintenance) fd.append('nextInspectionDate', calculatedNextMaintenance);
@@ -4039,7 +4039,7 @@
                     body: JSON.stringify({
                         inspector: inspectorName,
                         notes: inspectionComments,
-                        reportType: inspectionType,
+                        inspectionType: inspectionType,
                         status: inspectionStatus,
                         inspectionDate: inspectionDate,
                         nextInspectionDate: calculatedNextMaintenance || undefined
@@ -4070,6 +4070,7 @@
             // Reload inspection list in step4
             const _curId = window.currentLiftId || window._currentInspectionLiftId;
             if (_curId) {
+                if (window._currentEditingLift) window._currentEditingLift.inspectionHistory = null;
                 if (typeof loadStep4InspectionInfo === 'function') loadStep4InspectionInfo(_curId);
                 if (typeof loadInspectionReports === 'function') loadInspectionReports(_curId);
             }
@@ -4872,6 +4873,17 @@
 
         $(document).on('show.bs.modal', '#enhancedLiftModal', function() {
             $('#dispatcher-siblings-info').hide();
+            // Авто-генеруємо номер договору тільки для нового ліфта (editContractNumber порожній)
+            const isNew = !$('#enhancedLiftId').val();
+            if (isNew && !$('#editContractNumber').val()) {
+                const year = new Date().getFullYear();
+                const existingContracts = (window.allLiftsData || []).filter(l => {
+                    const cn = l.contractNumber || (l.maintenanceContract && l.maintenanceContract.contractNumber) || '';
+                    return cn.endsWith('/' + year);
+                });
+                const nextNum = existingContracts.length + 1;
+                $('#editContractNumber').val(`${nextNum}/${year}`);
+            }
         });
 
         // ── Draggable + Maximize modal ───────────────────────────────────────
@@ -5478,7 +5490,21 @@
                 const _lrType = lastReport ? (lastReport.inspectionType || lastReport.type || lastReport.reportType || '') : '';
                 $('#detail-inspection-type').text(lastReport ? (inspTypeLabels[_lrType] || _lrType || 'Не вказано') : 'Не вказано');
                 $('#detail-inspection-status').text(lastReport ? (inspStatusLabels[lastReport.status] || lastReport.status || 'Не вказано') : 'Не вказано');
-                $('#detail-inspection-comments').text(lastReport ? lastReport.notes || lastReport.comments || '—' : 'Не вказано');
+                (function(){
+                    const _cm = lastReport ? lastReport.notes || lastReport.comments || null : null;
+                    const _el = $('#detail-inspection-comments');
+                    if (!_cm || _cm === '—') { _el.text('Не вказано'); return; }
+                    if (_cm.length <= 120) { _el.text(_cm); return; }
+                    const _id = 'insp-cm-' + Date.now();
+                    _el.html(
+                        '<a class="btn btn-xs btn-outline-secondary py-0 px-1" data-toggle="collapse" href="#' + _id + '" role="button">'
+                        + '<i class="fas fa-eye mr-1"></i>Показати коментарі</a>'
+                        + '<div class="collapse mt-1" id="' + _id + '">'
+                        + '<div class="small bg-light border-left border-warning pl-2 py-1" style="white-space:pre-wrap;max-height:250px;overflow-y:auto;">'
+                        + $('<div>').text(_cm).html()
+                        + '</div></div>'
+                    );
+                })();
                 
                 // Додаткова інформація
                 $('#detail-created').text(
@@ -5775,10 +5801,11 @@
             // Контракт
             const contract = lift.maintenanceContract || null;
             if (contract) {
-                $('#editContractType').val(contract.contractType || '');
+                $('#editContractType').val(contract.contractType || lift.contractType || '');
                 if (contract.startDate) $('#editContractStart').val(new Date(contract.startDate).toISOString().split('T')[0]);
-                $('#editContractNumber').val(contract.contractNumber || '');
-                $('#editContractPrice').val(contract.contractPrice || '');
+                else if (lift.contractStart) $('#editContractStart').val(new Date(lift.contractStart).toISOString().split('T')[0]);
+                $('#editContractNumber').val(contract.contractNumber || lift.contractNumber || '');
+                $('#editContractPrice').val(contract.contractPrice || lift.contractPrice || '');
                 $('#editContractAutoRenew').prop('checked', !contract.endDate);
                 const banner = document.getElementById('edit-contract-file-banner');
                 if (banner) {
@@ -5803,11 +5830,11 @@
                     }
                 }
             } else {
-                $('#editContractType').val('');
-                $('#editContractStart').val('');
-                $('#editContractNumber').val('');
-                $('#editContractPrice').val('');
-                $('#editContractAutoRenew').prop('checked', true);
+                $('#editContractType').val(lift.contractType || '');
+                if (lift.contractStart) $('#editContractStart').val(new Date(lift.contractStart).toISOString().split('T')[0]);
+                $('#editContractNumber').val(lift.contractNumber || '');
+                $('#editContractPrice').val(lift.contractPrice || '');
+                $('#editContractAutoRenew').prop('checked', lift.contractAutoRenew !== false);
                 const banner = document.getElementById('edit-contract-file-banner');
                 if (banner) banner.innerHTML = `<div class="alert alert-light py-2 mb-0 text-muted"><i class="fas fa-info-circle"></i> Контракт ще не завантажено</div>`;
             }
@@ -6454,10 +6481,12 @@
                 const realIndex = report._originalIndex !== undefined ? report._originalIndex : allReports.indexOf(report);
                 
                 // Статус badge
-                const statusBadge = '<span class="badge badge-secondary">Додано</span>';
+                const statusColors = { passed: 'success', failed: 'danger', conditional: 'warning', completed: 'info', pending: 'secondary' };
+                const statusTexts = { passed: 'Пройдено', failed: 'Не пройдено', conditional: 'Реінспекція', completed: 'Виконано', pending: 'В очікуванні' };
+                const statusBadge = `<span class="badge badge-${statusColors[status] || 'secondary'}">${statusTexts[status] || status || 'Додано'}</span>`;
                 
                 // Тип: локалізована назва
-                const typeLabels = { inspection: 'Інспекція', maintenance: 'ТО', repair: 'Ремонт', emergency: 'Аварійний', annual: 'Інспекція', routine: 'ТО', certification: 'Сертифікація' };
+                const typeLabels = { inspection: 'Інспекція', maintenance: 'ТО', repair: 'Ремонт', emergency: 'Аварійний', annual: 'Інспекція', routine: 'ТО', certification: 'Сертифікація', technical: 'Технічна', safety: 'Перевірка безпеки' };
                 const typeLabel = typeLabels[type] || type;
 
                 html += `
@@ -6556,13 +6585,14 @@
 
         // reportIndex - це _originalIndex (індекс у БД inspectionHistory)
         try {
-            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+            const token = (typeof AuthManager !== 'undefined') ? AuthManager.getAuthToken() : (localStorage.getItem('liftmanager_jwt') || localStorage.getItem('token'));
             const response = await fetch(`/api/lifts/${encodeURIComponent(liftId)}/inspection-report/${reportIndex}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': 'Bearer ' + token }
             });
             const result = await response.json();
             if (result.success) {
+                if (window._currentEditingLift) window._currentEditingLift.inspectionHistory = null;
                 showLiftDetails(liftId);
             } else {
                 alert('Помилка: ' + (result.message || 'Не вдалося видалити'));
@@ -8333,27 +8363,21 @@
             return;
         }
 
-        // Prefer already-fetched lift over a separate API call
+        // Always fetch fresh to avoid stale cache issues
         let reports = null;
-        const cached = window._currentEditingLift;
-        if (cached && (cached._id || cached.id) === liftId && Array.isArray(cached.inspectionHistory)) {
-            reports = cached.inspectionHistory;
-        } else {
-            // Fetch from /api/lifts/:id
-            container.innerHTML = '<span class="text-muted small"><i class="fas fa-spinner fa-spin mr-1"></i>Завантаження...</span>';
-            try {
-                const token = typeof AuthManager !== 'undefined' ? AuthManager.getAuthToken() : localStorage.getItem('liftmanager_jwt');
-                const res = await fetch(`/api/lifts/${encodeURIComponent(liftId)}`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                const data = await res.json();
-                const fetchedLift = (data.data && data.data.lift) || data.data || data;
-                reports = fetchedLift.inspectionHistory || [];
-            } catch (e) {
-                container.innerHTML = '<span class="text-danger small"><i class="fas fa-exclamation-triangle mr-1"></i>Помилка завантаження</span>';
-                console.error('loadStep4InspectionInfo fetch error:', e);
-                return;
-            }
+        container.innerHTML = '<span class="text-muted small"><i class="fas fa-spinner fa-spin mr-1"></i>Завантаження...</span>';
+        try {
+            const token = typeof AuthManager !== 'undefined' ? AuthManager.getAuthToken() : localStorage.getItem('liftmanager_jwt');
+            const res = await fetch(`/api/lifts/${encodeURIComponent(liftId)}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await res.json();
+            const fetchedLift = (data.data && data.data.lift) || data.data || data;
+            reports = fetchedLift.inspectionHistory || [];
+        } catch (e) {
+            container.innerHTML = '<span class="text-danger small"><i class="fas fa-exclamation-triangle mr-1"></i>Помилка завантаження</span>';
+            console.error('loadStep4InspectionInfo fetch error:', e);
+            return;
         }
 
         if (!reports || reports.length === 0) {
@@ -8369,11 +8393,12 @@
         window._step4LastReportDate = sorted[0].inspectionDate || sorted[0].date || sorted[0].createdAt || null;
 
         const statusLabels = {
-            passed:    '<span class="badge badge-success">✅ Пройдено</span>',
-            failed:    '<span class="badge badge-warning">⚠️ Клаузи</span>',
-            completed: '<span class="badge badge-info">Виконано</span>'
+            passed:      '<span class="badge badge-success">✅ Пройдено</span>',
+            failed:      '<span class="badge badge-danger">❌ Не пройдено</span>',
+            conditional: '<span class="badge badge-warning">⚠️ Реінспекція</span>',
+            completed:   '<span class="badge badge-info">Виконано</span>'
         };
-        const typeLabels = { inspection: 'Інспекція', maintenance: 'ТО', repair: 'Ремонт', emergency: 'Аварія' };
+        const typeLabels = { inspection: 'Інспекція', maintenance: 'ТО', repair: 'Ремонт', emergency: 'Аварія', annual: 'Інспекція', routine: 'ТО', certification: 'Сертифікація', technical: 'Технічна', safety: 'Перевірка безпеки' };
 
         let html = '<div class="table-responsive"><table class="table table-sm table-bordered table-hover mb-1" style="font-size:0.8rem;">';
         html += '<thead class="thead-light"><tr><th>Дата</th><th>Тип</th><th>Статус</th><th>Дійсно до</th></tr></thead><tbody>';
@@ -8766,6 +8791,7 @@
                 // Reload inspection data if lift is currently viewed
                 var curId = window.currentLiftId || window._currentInspectionLiftId;
                 if (curId === liftId) {
+                    if (window._currentEditingLift) window._currentEditingLift.inspectionHistory = null;
                     if (typeof loadStep4InspectionInfo === 'function') loadStep4InspectionInfo(liftId);
                     if (typeof loadAdminStep4InspectionInfo === 'function') loadAdminStep4InspectionInfo(liftId);
                     if (typeof loadInspectionReports === 'function') loadInspectionReports(liftId);

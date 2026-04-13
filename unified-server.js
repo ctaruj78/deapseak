@@ -2402,6 +2402,12 @@ app.put('/api/lifts/:id', authenticateToken, async (req, res) => {
             updatedBy: req.user.username
         };
 
+        // Захист: ці поля НЕ перезаписуються через PUT (тільки через спеціальні ендпоінти)
+        delete updateData.inspectionHistory;
+        delete updateData.interventionHistory;
+        delete updateData.photos;
+        delete updateData.chat;
+
         // 🔄 НОРМАЛІЗАЦІЯ enum: driveType та doorType (legacy display text → DB code)
         const DRIVE_MAP_PUT = {
             'гідравлічний': 'hydraulic', 'hydraulic': 'hydraulic',
@@ -2705,7 +2711,9 @@ app.post('/api/lifts/:id/inspection-report', authenticateToken, upload.single('p
 
         const reportData = {
             date: req.body.inspectionDate || req.body.date || new Date().toISOString(),
-            type: req.body.inspectionType || req.body.type || 'routine',
+            inspectionDate: req.body.inspectionDate || req.body.date || new Date().toISOString(),
+            type: req.body.inspectionType || req.body.type || req.body.reportType || 'routine',
+            inspectionType: req.body.inspectionType || req.body.type || req.body.reportType || 'routine',
             inspector: req.body.inspector || req.user.username || req.user.email || 'unknown',
             notes: req.body.notes || req.body.comments || req.body.findings || '',
             status: resolvedStatus,
@@ -2715,7 +2723,7 @@ app.post('/api/lifts/:id/inspection-report', authenticateToken, upload.single('p
             photos: [],
             reportFile: fileUrl,
             fileUrl: fileUrl,
-            reportType: req.body.inspectionType || 'routine'
+            reportType: req.body.inspectionType || req.body.reportType || 'routine'
         };
         
         // Розрахунок наступної дати інспекції
@@ -2740,7 +2748,9 @@ app.post('/api/lifts/:id/inspection-report', authenticateToken, upload.single('p
                 $push: { inspectionHistory: reportData },
                 $set: { 
                     lastInspectionDate: reportData.date,
-                    nextInspectionDate: calcNextInspection(),
+                    nextInspectionDate: (req.body.nextInspectionDate && req.body.nextInspectionDate !== 'undefined')
+                        ? (() => { const d = new Date(req.body.nextInspectionDate); return isNaN(d) ? calcNextInspection() : d.toISOString(); })()
+                        : calcNextInspection(),
                     inspectionStatus: reportData.status === 'passed' ? 'active' : 'needs_attention',
                     // ✅ Якщо інспекція пройдена → сертифікат діє 2 роки
                     ...(reportData.status === 'passed' ? {
@@ -2802,6 +2812,33 @@ app.delete('/api/lifts/:id/inspection-report/:index', authenticateToken, async (
         if (result.matchedCount === 0) {
             return res.status(404).json({ success: false, message: 'Ліфт не знайдено' });
         }
+
+        // Крок 3: перерахунок кореневих полів з актуальної історії
+        const updatedLift = await db.collection('lifts').findOne({ _id: liftId }, { projection: { inspectionHistory: 1 } });
+        const remainingHistory = updatedLift?.inspectionHistory || [];
+        let newLastDate = null, newNextDate = null, newStatus = 'none';
+        if (remainingHistory.length > 0) {
+            const sortedHistory = remainingHistory
+                .filter(r => r && (r.inspectionDate || r.date))
+                .sort((a, b) => new Date(b.inspectionDate || b.date) - new Date(a.inspectionDate || a.date));
+            if (sortedHistory.length > 0) {
+                const latest = sortedHistory[0];
+                newLastDate = latest.inspectionDate || latest.date || null;
+                newStatus = latest.status || 'none';
+                const vu = latest.validUntil || latest.nextInspectionDate;
+                if (vu) {
+                    newNextDate = vu;
+                } else if (newLastDate && newStatus === 'passed') {
+                    const d = new Date(newLastDate);
+                    d.setFullYear(d.getFullYear() + 2);
+                    newNextDate = d.toISOString();
+                }
+            }
+        }
+        await db.collection('lifts').updateOne(
+            { _id: liftId },
+            { $set: { lastInspectionDate: newLastDate, nextInspectionDate: newNextDate, inspectionStatus: newStatus } }
+        );
 
         res.json({ success: true, message: 'Звіт видалено' });
     } catch (error) {

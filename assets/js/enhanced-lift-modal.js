@@ -434,10 +434,13 @@ class EnhancedLiftModal {
             floorLocation: 'ground',
             qrAccessLevel: 'public',
             enableQrTracking: false,
-            interventionHistory: [],
-            photos: [],
-            inspectionHistory: [],
-            chat: [],
+            // These array fields are only set on creation — never overwrite on PUT
+            ...($('#enhancedLiftId').val() ? {} : {
+                interventionHistory: [],
+                photos: [],
+                inspectionHistory: [],
+                chat: []
+            }),
             createdAt: $('#enhancedLiftId').val() ? undefined : new Date().toISOString(),
             updatedAt: new Date().toISOString()
         };

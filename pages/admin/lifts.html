@@ -3404,26 +3404,21 @@
             return;
         }
 
-        // Prefer already-fetched lift over a separate API call
+        // Always fetch fresh to avoid stale cache issues
         let reports = null;
-        const cached = window._currentEditingLift;
-        if (cached && String((cached._id || cached.id)) === String(liftId) && Array.isArray(cached.inspectionHistory)) {
-            reports = cached.inspectionHistory;
-        } else {
-            container.innerHTML = '<span class="text-muted small"><i class="fas fa-spinner fa-spin mr-1"></i>Завантаження...</span>';
-            try {
-                const token = typeof AuthManager !== 'undefined' ? AuthManager.getAuthToken() : localStorage.getItem('liftmanager_jwt');
-                const res = await fetch('/api/lifts/' + encodeURIComponent(liftId), {
-                    headers: { 'Authorization': 'Bearer ' + token }
-                });
-                const data = await res.json();
-                const fetchedLift = (data.data && data.data.lift) || data.data || data;
-                reports = fetchedLift.inspectionHistory || [];
-            } catch (e) {
-                container.innerHTML = '<span class="text-danger small"><i class="fas fa-exclamation-triangle mr-1"></i>Помилка завантаження</span>';
-                console.error('loadAdminStep4InspectionInfo error:', e);
-                return;
-            }
+        container.innerHTML = '<span class="text-muted small"><i class="fas fa-spinner fa-spin mr-1"></i>Завантаження...</span>';
+        try {
+            const token = typeof AuthManager !== 'undefined' ? AuthManager.getAuthToken() : localStorage.getItem('liftmanager_jwt');
+            const res = await fetch('/api/lifts/' + encodeURIComponent(liftId), {
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+            const data = await res.json();
+            const fetchedLift = (data.data && data.data.lift) || data.data || data;
+            reports = fetchedLift.inspectionHistory || [];
+        } catch (e) {
+            container.innerHTML = '<span class="text-danger small"><i class="fas fa-exclamation-triangle mr-1"></i>Помилка завантаження</span>';
+            console.error('loadAdminStep4InspectionInfo error:', e);
+            return;
         }
 
         if (!reports || reports.length === 0) {
@@ -3439,11 +3434,12 @@
         window._adminStep4LastReportDate = sorted[0].inspectionDate || sorted[0].date || sorted[0].createdAt || null;
 
         const statusLabels = {
-            passed:    '<span class="badge badge-success">✅ Пройдено</span>',
-            failed:    '<span class="badge badge-warning">⚠️ Клаузи</span>',
-            completed: '<span class="badge badge-info">Виконано</span>'
+            passed:      '<span class="badge badge-success">✅ Пройдено</span>',
+            failed:      '<span class="badge badge-danger">❌ Не пройдено</span>',
+            conditional: '<span class="badge badge-warning">⚠️ Реінспекція</span>',
+            completed:   '<span class="badge badge-info">Виконано</span>'
         };
-        const typeLabels = { inspection: 'Інспекція', maintenance: 'ТО', repair: 'Ремонт', emergency: 'Аварія' };
+        const typeLabels = { inspection: 'Інспекція', maintenance: 'ТО', repair: 'Ремонт', emergency: 'Аварія', annual: 'Інспекція', routine: 'ТО', certification: 'Сертифікація', technical: 'Технічна', safety: 'Перевірка безпеки' };
 
         let html = '<div class="table-responsive"><table class="table table-sm table-bordered table-hover mb-1" style="font-size:0.8rem;">';
         html += '<thead class="thead-light"><tr><th>Дата</th><th>Тип</th><th>Статус</th><th>Дійсно до</th></tr></thead><tbody>';
@@ -5047,7 +5043,21 @@ Email de contacto: info@festlift.pt`;
                 const _lrTypeRaw = lastReport ? (lastReport.inspectionType || lastReport.type || _adminRtMap[lastReport.reportType] || lastReport.reportType || '') : '';
                 $('#detail-inspection-type').text(_lrTypeRaw ? (_adminInspTypeLabels[_lrTypeRaw] || _lrTypeRaw) : 'Не вказано');
                 $('#detail-inspection-status').text(lastReport ? lastReport.status || 'Не вказано' : 'Не вказано');
-                $('#detail-inspection-comments').text(lastReport ? lastReport.notes || lastReport.comments || '—' : 'Не вказано');
+                (function(){
+                    const _cm = lastReport ? lastReport.notes || lastReport.comments || null : null;
+                    const _el = $('#detail-inspection-comments');
+                    if (!_cm || _cm === '—') { _el.text('Не вказано'); return; }
+                    if (_cm.length <= 120) { _el.text(_cm); return; }
+                    const _id = 'insp-cm-' + Date.now();
+                    _el.html(
+                        '<a class="btn btn-xs btn-outline-secondary py-0 px-1" data-toggle="collapse" href="#' + _id + '" role="button">'
+                        + '<i class="fas fa-eye mr-1"></i>Показати коментарі</a>'
+                        + '<div class="collapse mt-1" id="' + _id + '">'
+                        + '<div class="small bg-light border-left border-warning pl-2 py-1" style="white-space:pre-wrap;max-height:250px;overflow-y:auto;">'
+                        + $('<div>').text(_cm).html()
+                        + '</div></div>'
+                    );
+                })();
                 
                 // Додаткова інформація
                 $('#detail-created').text(
@@ -8117,6 +8127,7 @@ Email de contacto: info@festlift.pt`;
                 // Reload inspection data if lift is currently viewed
                 var curId = window.currentLiftId || window._currentInspectionLiftId;
                 if (curId === liftId) {
+                    if (window._currentEditingLift) window._currentEditingLift.inspectionHistory = null;
                     if (typeof loadStep4InspectionInfo === 'function') loadStep4InspectionInfo(liftId);
                     if (typeof loadAdminStep4InspectionInfo === 'function') loadAdminStep4InspectionInfo(liftId);
                     if (typeof loadInspectionReports === 'function') loadInspectionReports(liftId);

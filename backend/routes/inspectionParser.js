@@ -517,7 +517,7 @@ router.post('/:id/confirm-inspection-from-pdf', authenticate, authorizeRoles('ad
         let violationNotes = notes || '';
         if (violations && violations.length) {
             violationNotes = (notes ? notes + '\n\n' : '') +
-                'Порушення:\n' + violations.map(v => `• [${v.severity || '?'}] ${v.description || v}`).join('\n');
+                'Порушення:\n' + violations.map(v => `• [${v.classification || v.severity || v.type || '?'}] ${v.description || v.text || v}`).join('\n');
         }
 
         // Normalize reportType to valid enum values
@@ -548,13 +548,19 @@ router.post('/:id/confirm-inspection-from-pdf', authenticate, authorizeRoles('ad
 
         // Use $push/$set instead of lift.save() to bypass Mongoose validation
         // on pre-existing fields with null enum values (e.g. doorType, driveType).
+        const licenseFields = (status === 'passed') ? {
+            licenseDate: report.date,
+            licenseExpiry: nextInspDate
+        } : {};
         await Lift.findByIdAndUpdate(
             req.params.id,
             {
                 $push: { inspectionHistory: report },
                 $set: {
                     lastInspectionDate: report.date,
-                    nextInspectionDate: nextInspDate
+                    nextInspectionDate: nextInspDate,
+                    inspectionStatus: status === 'passed' ? 'active' : 'needs_attention',
+                    ...licenseFields
                 }
             }
         );

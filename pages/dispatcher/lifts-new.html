@@ -4277,7 +4277,21 @@
                 );
                 $('#detail-inspection-type').text(lastReport ? lastReport.type || 'Не вказано' : 'Не вказано');
                 $('#detail-inspection-status').text(lastReport ? lastReport.status || 'Не вказано' : 'Не вказано');
-                $('#detail-inspection-comments').text(lastReport ? lastReport.notes || 'Не вказано' : 'Не вказано');
+                (function(){
+                    const _cm = lastReport ? lastReport.notes || null : null;
+                    const _el = $('#detail-inspection-comments');
+                    if (!_cm) { _el.text('Не вказано'); return; }
+                    if (_cm.length <= 120) { _el.text(_cm); return; }
+                    const _id = 'insp-cm-' + Date.now();
+                    _el.html(
+                        '<a class="btn btn-xs btn-outline-secondary py-0 px-1" data-toggle="collapse" href="#' + _id + '" role="button">'
+                        + '<i class="fas fa-eye mr-1"></i>Показати коментарі</a>'
+                        + '<div class="collapse mt-1" id="' + _id + '">'
+                        + '<div class="small bg-light border-left border-warning pl-2 py-1" style="white-space:pre-wrap;max-height:250px;overflow-y:auto;">'
+                        + $('<div>').text(_cm).html()
+                        + '</div></div>'
+                    );
+                })();
                 
                 // Додаткова інформація
                 $('#detail-created').text(
