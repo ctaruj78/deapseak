@@ -830,14 +830,29 @@ class AgentService {
     async _generateServicos(findings, liftLocation) {
         const catalog = await this._buildServiceCatalog();
 
-        // Split findings into individual problems
-        const lines = (findings || '').split(/[\n;,]/).map(l => l.trim()).filter(l => l.length > 10);
-        if (lines.length === 0) lines.push(findings || 'Serviços de manutenção geral');
+        // Split findings into individual problems and strip bullet prefixes
+        // Merge continuation lines (lines without ':') into their parent item
+        const rawLines = (findings || '')
+            .split(/[\n;]+/)
+            .map(l => l.replace(/^[•\-\*]\s*/, '').trim())
+            .filter(l => l.length > 3);
+
+        const lines = [];
+        for (const l of rawLines) {
+            if (l.includes(':') || lines.length === 0) {
+                lines.push(l);                          // top-level item (has category: comment)
+            } else {
+                lines[lines.length - 1] += ' — ' + l; // continuation: append to previous
+            }
+        }
+        const filtered = lines.filter(l => l.length > 5);
+        if (filtered.length === 0) filtered.push(findings || 'Serviços de manutenção geral');
+        const finalLines = filtered;
 
         const result = [];
         const unmatched = [];
 
-        for (const line of lines) {
+        for (const line of finalLines) {
             const match = this._matchServiceFromCatalog(line, catalog);
             if (match) {
                 // Use real service from DB with historical price
@@ -932,7 +947,42 @@ INSTRUÇÕES:
             console.warn('🤖 _generateServicosViaGemini fallback:', err.message);
         }
 
-        return [{ descricao: `Reparação: ${findings.slice(0, 120)}`, quantidade: 1, precoUnitario: 0, total: 0 }];
+        // Fallback: one service row per finding line (no concatenation)
+        const fallbackLines = findings
+            .split('\n')
+            .map(l => l.replace(/^[•\-\*]\s*/, '').trim())
+            .filter(l => l.length > 5);
+
+        // Default prices for common elevator components (when neither catalog nor Gemini available)
+        const defaultPrices = [
+            { keywords: ['cabo', 'cabel'],                    descricao: 'Substituição de cabo',                         preco: 320 },
+            { keywords: ['motor'],                            descricao: 'Reparação/substituição de motor',              preco: 580 },
+            { keywords: ['iluminac', 'lampada', 'luz'],       descricao: 'Substituição de iluminação',                   preco: 65  },
+            { keywords: ['porta', 'door'],                    descricao: 'Reparação de porta',                           preco: 180 },
+            { keywords: ['freio', 'frei'],                    descricao: 'Ajuste/substituição de freio',                 preco: 240 },
+            { keywords: ['amortec'],                          descricao: 'Substituição de amortecedor',                  preco: 240 },
+            { keywords: ['parachoque', 'para-choque'],        descricao: 'Substituição de para-choque',                  preco: 150 },
+            { keywords: ['boton', 'butao', 'botao', 'painel'], descricao: 'Reparação de botoneira/painel',               preco: 120 },
+            { keywords: ['sensor', 'celula', 'fotoc'],        descricao: 'Substituição de sensor/célula fotoeléctrica',  preco: 95  },
+            { keywords: ['lubrif', 'oleo', 'manutencao'],     descricao: 'Lubrificação e manutenção',                    preco: 85  },
+        ];
+
+        const normalize = t => t.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+        return fallbackLines.length > 0
+            ? fallbackLines.map(line => {
+                const norm = normalize(line);
+                const found = defaultPrices.find(dp => dp.keywords.some(k => norm.includes(k)));
+                return {
+                    descricao: found ? found.descricao + ` (${line.slice(0, 60)})` : line.slice(0, 100),
+                    quantidade: 1,
+                    precoUnitario: found ? found.preco : 0,
+                    precoSugerido: found ? found.preco : 0,
+                    fontePreco: found ? 'estimativa-componente' : 'novo',
+                    total: found ? found.preco : 0
+                };
+            })
+            : [{ descricao: `Reparação: ${findings.slice(0, 100)}`, quantidade: 1, precoUnitario: 0, precoSugerido: 0, fontePreco: 'novo', total: 0 }];
     }
 
     // ─────────────────────────────────────────────────────────────────────────
