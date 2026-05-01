@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Вхід - FestLift</title>
+    <title>Entrar - FestLift</title>
     <!-- AdminLTE CSS -->
     <link rel="stylesheet" href="/plugins/adminlte/adminlte.min.css">
     <!-- Bootstrap CSS -->
@@ -20,18 +20,18 @@
         </div>
         <div class="card shadow-lg">
             <div class="card-header bg-primary text-white text-center">
-                <h3 class="card-title mb-0">Вхід до системи</h3>
+                <h3 class="card-title mb-0">Entrar no sistema</h3>
             </div>
             <div class="card-body">
                 <form id="login-form">
                     <div class="input-group mb-3">
-                        <input type="email" id="email" name="email" class="form-control" placeholder="Email (наприклад: info@festlift.pt)" required autofocus autocomplete="username">
+                        <input type="email" id="email" name="email" class="form-control" placeholder="Email (ex: info@festlift.pt)" required autofocus autocomplete="username">
                         <div class="input-group-append">
                             <div class="input-group-text"><span class="fas fa-envelope"></span></div>
                         </div>
                     </div>
                     <div class="input-group mb-3">
-                        <input type="password" id="password" name="password" class="form-control" placeholder="Пароль" required autocomplete="current-password">
+                        <input type="password" id="password" name="password" class="form-control" placeholder="Palavra-passe" required autocomplete="current-password">
                         <div class="input-group-append">
                             <div class="input-group-text"><span class="fas fa-lock"></span></div>
                         </div>
@@ -40,15 +40,15 @@
                         <div class="col-6">
                             <div class="form-check">
                                 <input type="checkbox" class="form-check-input" id="remember" name="remember">
-                                <label class="form-check-label" for="remember">Запам'ятати мене</label>
+                                <label class="form-check-label" for="remember">Lembrar-me</label>
                             </div>
                         </div>
                         <div class="col-6 text-right">
-                            <a href="forgot-password.html">Забули пароль?</a>
+                            <a href="forgot-password.html">Esqueceu a palavra-passe?</a>
                         </div>
                     </div>
                     <button type="submit" class="btn btn-primary btn-block">
-                        <i class="fas fa-sign-in-alt"></i> Увійти
+                        <i class="fas fa-sign-in-alt"></i> Entrar
                     </button>
                 </form>
                 
@@ -110,9 +110,9 @@
             const passwordFromUrl = urlParams.get('password');
             const autoLoginRequested = emailFromUrl && passwordFromUrl;
             
-            // Якщо запитано автологін - очищуємо старий токен
+            // Якщо запитано автологін - оouщуємо старий токен
             if (autoLoginRequested && typeof AuthManager !== 'undefined') {
-                console.log('🔄 Автологін запитано - очищуємо старі дані');
+                console.log('🔄 Автологін запитано - оouщуємо старі дані');
                 AuthManager.logout();
             }
             
@@ -125,13 +125,13 @@
                 console.log('🔑 Password автозаповнено з URL');
             }
             
-            // Перевіряємо чи користувач вже увійшов через AuthManager
+            // Перевіряємо ou користувач вже увійшов через AuthManager
             // Додаємо захист від циклу редиректів
             const redirecting = sessionStorage.getItem('redirecting');
             if (redirecting) {
-                console.log('⚠️ Запобігання циклу редиректів - очищуємо session');
+                console.log('⚠️ Запобігання циклу редиректів - оouщуємо session');
                 sessionStorage.removeItem('redirecting');
-                // Очищуємо всі дані автентифікації
+                // Оouщуємо всі дані автентифікації
                 if (typeof AuthManager !== 'undefined') {
                     localStorage.removeItem(AuthManager.TOKEN_KEY);
                     localStorage.removeItem(AuthManager.USER_KEY);
@@ -139,10 +139,10 @@
             } else if (!autoLoginRequested && typeof AuthManager !== 'undefined' && AuthManager.isAuthenticated()) {
                 const user = AuthManager.getCurrentUser();
                 if (user && user.role) {
-                    // Перевіряємо чи користувач хоче вийти (якщо в URL є параметр logout)
+                    // Перевіряємо ou користувач хоче вийти (якщо в URL є параметр logout)
                     const urlParams = new URLSearchParams(window.location.search);
                     if (urlParams.get('logout') === 'true') {
-                        console.log('🚪 Користувач хоче вийти, очищуємо дані...');
+                        console.log('🚪 Користувач хоче вийти, оouщуємо дані...');
                         AuthManager.logout();
                         return;
                     }
@@ -155,15 +155,15 @@
                         loginContainer.innerHTML = `
                             <div style="text-align: center; padding: 40px;">
                                 <i class="fas fa-user-check" style="font-size: 64px; color: #28a745; margin-bottom: 20px;"></i>
-                                <h3>Ви вже авторизовані</h3>
-                                <p>Користувач: <strong>${user.username}</strong></p>
-                                <p>Роль: <strong>${getRoleName(user.role)}</strong></p>
+                                <h3>Já tem sessão iniciada</h3>
+                                <p>Utilizador: <strong>${user.username}</strong></p>
+                                <p>Função: <strong>${getRoleName(user.role)}</strong></p>
                                 <div style="margin-top: 30px;">
                                     <button onclick="window.redirectUserByRole('${user.role}')" class="btn btn-primary btn-lg" style="margin: 5px;">
-                                        <i class="fas fa-arrow-right"></i> Продовжити до панелі
+                                        <i class="fas fa-arrow-right"></i> Continuar para o painel
                                     </button>
                                     <button onclick="AuthManager.logout(); location.reload();" class="btn btn-outline-secondary btn-lg" style="margin: 5px;">
-                                        <i class="fas fa-sign-out-alt"></i> Вийти та обрати іншу роль
+                                        <i class="fas fa-sign-out-alt"></i> Sair e escolher outra função
                                     </button>
                                 </div>
                             </div>
@@ -174,7 +174,7 @@
                 }
             }
             
-            // Очищуємо старі дані якщо є
+            // Оouщуємо старі дані якщо є
             localStorage.removeItem('lm_session');
             localStorage.removeItem('lm_user');
             
@@ -189,7 +189,7 @@
             
             // Функція перенаправлення за ролями (ГЛОБАЛЬНА)
             window.redirectUserByRole = function(role) {
-                // Очищуємо sessionStorage після редиректу
+                // Оouщуємо sessionStorage після редиректу
                 setTimeout(() => sessionStorage.removeItem('redirecting'), 100);
                 
                 // Використовуємо АБСОЛЮТНІ шляхи від кореня сайту
@@ -221,9 +221,9 @@
                 }
             }
             
-            // Вийти та обрати іншу роль
+            // Sair та обрати іншу роль
             function logoutAndChooseRole() {
-                if (confirm('Ви впевнені що хочете вийти?')) {
+                if (confirm('Tem a certeza que quer sair?')) {
                     AuthManager.logout();
                     location.reload();
                 }
@@ -232,11 +232,11 @@
             // Отримати назву ролі українською
             function getRoleName(role) {
                 const roleNames = {
-                    'admin': 'Адміністратор',
-                    'dispatcher': 'Диспетчер',
-                    'technician': 'Технік',
-                    'tech': 'Технік',
-                    'client': 'Клієнт'
+                    'admin': 'Administrador',
+                    'dispatcher': 'Despachante',
+                    'technician': 'Técnico',
+                    'tech': 'Técnico',
+                    'client': 'Cliente'
                 };
                 return roleNames[role] || role;
             }
@@ -260,7 +260,7 @@
                 }, 5000);
             }
             
-            // Обробка форми входу - ОСТАТОЧНЕ ВИПРАВЛЕННЯ подвійного кліку
+            // Обробка форми входу - ОСТАManutençãoЧНЕ ВИПРАВЛЕННЯ подвійного кліку
             let isSubmitting = false;
             let submitTimestamp = 0;
             
@@ -272,13 +272,13 @@
                 const now = Date.now();
                 
                 // ПОТРІЙНИЙ захист від подвійного кліку:
-                // 1. Перевірка прапорця
-                // 2. Перевірка data-атрибута
-                // 3. Перевірка часу останнього submit (менше 1 секунди = ігнор)
+                // 1. Verificação прапорця
+                // 2. Verificação data-атрибута
+                // 3. Verificação часу останнього submit (менше 1 секунди = ігнор)
                 if (isSubmitting || 
                     loginForm.dataset.processing === 'true' || 
                     (now - submitTimestamp) < 1000) {
-                    console.log('⏸️ БЛОКУВАННЯ: Форма вже обробляється або повторний клік занадто швидко');
+                    console.log('⏸️ БЛОКУВАННЯ: Форма вже обробляється ou повторний клік занадто швидко');
                     return false;
                 }
                 
@@ -291,7 +291,7 @@
                 const submitButton = loginForm.querySelector('button[type="submit"]');
                 const originalButtonText = submitButton.innerHTML;
                 submitButton.disabled = true;
-                submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Вхід...';
+                submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Entrar...';
                 
                 const email = document.getElementById('email').value;
                 const password = document.getElementById('password').value;
@@ -301,7 +301,7 @@
                 console.log('🔑 Password length:', password ? password.length : 0);
                 
                 if (!email || !password) {
-                    showMessage('Введіть email/логін та пароль');
+                    showMessage('Introduza o email e a palavra-passe');
                     isSubmitting = false;
                     loginForm.dataset.processing = 'false';
                     submitButton.disabled = false;
@@ -328,7 +328,7 @@
                         apiUrl = '/api/auth/login';
                     }
                     
-                    console.log('🌐 Запит до:', apiUrl);
+                    console.log('🌐 Pedido до:', apiUrl);
                     
                     const response = await fetch(apiUrl, {
                         method: 'POST',
@@ -382,12 +382,12 @@
                         console.log('✅ Токен збережено в localStorage + sessionStorage');
                         console.log('✅ userData збережено:', user.role, user.email);
                         
-                        showMessage('Успішний вхід! Перенаправлення...', 'success');
+                        showMessage('Entrada com sucesso! A redirecionar...', 'success');
                         
                         // ⚠️ НЕ розблоковуємо кнопку - користувач перенаправляється
                         // Це запобігає повторному кліку під час перенаправлення
                         
-                        // Перевіряємо чи є збережене перенаправлення
+                        // Перевіряємо ou є збережене перенаправлення
                         const redirectUrl = sessionStorage.getItem('redirect_after_login');
                         
                         // 🔐 Якщо обліковий запис має mustChangePassword — показуємо модал
@@ -401,7 +401,7 @@
                                 document.getElementById('mcpEmail').value = user.email;
                                 // Автозаповнюємо поточний пароль — юзер щойно його ввів
                                 document.getElementById('mcpCurrent').value = document.getElementById('password').value;
-                                showMessage('Вітаємо! Будь ласка змініть тимчасовий пароль перед початком роботи.', 'warning');
+                                showMessage('Bem-vindo! Por favor змініть тимчасовий пароль перед початком роботи.', 'warning');
                             }
                         } else {
                             // Звичайний вхід — перенаправляємо через 500мс
@@ -426,8 +426,8 @@
                     }
                 } catch (error) {
                     // Помилка - розблоковуємо форму
-                    console.error('❌ Критична помилка входу:', error);
-                    showMessage('Сталася помилка під час входу. Перевірте з\'єднання з сервером.');
+                    console.error('❌ Crítica помилка входу:', error);
+                    showMessage('Ocorreu um erro ao entrar. Verifique a ligação ao servidor.');
                     isSubmitting = false;
                     loginForm.dataset.processing = 'false';
                     submitButton.disabled = false;
