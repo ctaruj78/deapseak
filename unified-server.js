@@ -817,6 +817,8 @@ app.post('/api/inspections', authenticateToken, async (req, res) => {
         };
         const result = await db.collection('inspections').insertOne(doc);
         console.log(`✅ Inspecção ${numero} guardada (${doc.visitType}) por ${doc.inspector}`);
+        // 🤖 Agent: analyse async, never block response
+        try { agentService.analyseInspection({ ...doc, _id: result.insertedId }); } catch (_) {}
         res.status(201).json({ success: true, inspection: { ...doc, _id: result.insertedId } });
     } catch (error) {
         console.error('❌ Erro ao guardar inspecção:', error);
@@ -1178,6 +1180,7 @@ const upload = multer({
 // PDF Parser Service - ПОКРАЩЕНА ВЕРСІЯ (з автоматичним визначенням типу)
 const pdfParserEnhanced = require('./services/pdf-parser-enhanced');
 const { parseBureauVeritasPDF } = require('./services/pdf-parser-bureau-veritas');
+const agentService = require('./services/agentService');  // 🤖 AI Agent
 const pdfParse = require('pdf-parse');
 
 // Universal PDF Parser - автоматично визначає тип звіту
@@ -10248,6 +10251,64 @@ io.on('connection', (socket) => {
     socket.on('disconnect', () => {
         console.log('👋 WebSocket клієнт відключився:', socket.id);
     });
+});
+
+// 🤖 Init AI Agent (after io is ready)
+agentService.init(db, io);
+
+// ─────────────────────────────────────────────────────────────
+// 🤖 AGENT API ENDPOINTS
+// ─────────────────────────────────────────────────────────────
+
+// GET pending agent notifications
+app.get('/api/agent/notifications', authenticateToken, async (req, res) => {
+    try {
+        const role = req.user?.role;
+        const email = req.user?.email;
+        const data = await agentService.getPendingNotifications(role, email);
+        res.json({ success: true, data });
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+// POST decision on a notification (yes / no / postpone)
+app.post('/api/agent/decide', authenticateToken, async (req, res) => {
+    try {
+        const { notificationId, action, reason } = req.body;
+        if (!notificationId || !action) return res.status(400).json({ success: false, error: 'Missing notificationId or action' });
+        const result = await agentService.handleDecision(
+            notificationId, action, reason || '', req.user.id, req.user.role
+        );
+        res.json(result);
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+// POST free-text chat with agent
+app.post('/api/agent/chat', authenticateToken, async (req, res) => {
+    try {
+        if (!process.env.GEMINI_API_KEY) return res.status(503).json({ success: false, error: 'GEMINI_API_KEY not set' });
+        const { message } = req.body;
+        if (!message) return res.status(400).json({ success: false, error: 'Missing message' });
+        const reply = await agentService.chat(message, req.user.id, req.user.role, req.user.email);
+        res.json({ success: true, reply });
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+// GET cumulative findings for a lift
+app.get('/api/agent/lift-history', authenticateToken, async (req, res) => {
+    try {
+        const { liftLocation } = req.query;
+        if (!liftLocation) return res.status(400).json({ success: false, error: 'Missing liftLocation' });
+        const data = await agentService.buildCumulativeQuoteContext(liftLocation);
+        res.json({ success: true, data });
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
+    }
 });
 
 server.listen(PORT, '0.0.0.0', () => {
