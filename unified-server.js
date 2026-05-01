@@ -10193,7 +10193,11 @@ app.use(express.static(path.join(__dirname), {
 }));
 
 // Fallback для SPA - якщо файл не знайдено, віддаємо index.html
-app.get('*', (req, res) => {
+app.get('*', (req, res, next) => {
+    // Agent routes registered after this wildcard — pass them through
+    if (req.path.startsWith('/api/agent/')) {
+        return next();
+    }
     // Якщо це API запит - 404
     if (req.path.startsWith('/api/')) {
         return res.status(404).json({ success: false, message: 'API endpoint not found' });
