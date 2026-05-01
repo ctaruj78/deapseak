@@ -196,8 +196,32 @@ class AgentService {
         });
 
         let response = '';
+        let orcamentoData = null;
+
         if (action === 'yes') {
-            response = `✅ Confirmado! Vou preparar o orçamento para ${notif.clientName} (${notif.liftLocation}).`;
+            // Generate draft orçamento immediately
+            try {
+                orcamentoData = await this._createDraftOrcamento(notif, userId);
+                const link = `/pages/admin/orcamentos-list.html?highlight=${orcamentoData.numero}`;
+                response = `✅ Rascunho **${orcamentoData.numero}** criado para **${notif.clientName}**!\n\n` +
+                    `Serviços pré-preenchidos pela IA (${orcamentoData.servicos.length} itens).\n` +
+                    `Apenas defina os preços e clique "Enviar ao cliente".\n\n` +
+                    `[🔗 Abrir rascunho](${link})`;
+
+                // Push direct link to admins via WebSocket
+                this._pushToAdmins('agent_orcamento_ready', {
+                    orcamentoId: String(orcamentoData._id),
+                    numero: orcamentoData.numero,
+                    clientName: notif.clientName,
+                    liftLocation: notif.liftLocation,
+                    servicos: orcamentoData.servicos,
+                    link
+                });
+            } catch (err) {
+                console.error('🤖 Agent: failed to create draft orcamento:', err.message);
+                response = `✅ Confirmado! Vou preparar o orçamento para **${notif.clientName}**.\n` +
+                    `⚠️ Erro ao criar rascunho automático: ${err.message}\nCrie manualmente em Orçamentos.`;
+            }
         } else if (action === 'no') {
             response = `❌ Entendido. Guardei na memória: sem orçamento para ${notif.clientName}${reason ? ' — motivo: ' + reason : ''}.`;
         } else {
@@ -205,7 +229,13 @@ class AgentService {
             response = `⏳ Adiado. Lembrarei em ${dateStr}${reason ? ' — ' + reason : ''}.`;
         }
 
-        return { success: true, response, remindAt, status: action === 'yes' ? 'confirmed' : action === 'no' ? 'rejected' : 'postponed' };
+        return {
+            success: true,
+            response,
+            remindAt,
+            status: action === 'yes' ? 'confirmed' : action === 'no' ? 'rejected' : 'postponed',
+            orcamento: orcamentoData || null
+        };
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -399,6 +429,144 @@ class AgentService {
         } catch (err) {
             console.error('🤖 AgentService expiry check error:', err.message);
         }
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // DRAFT ORÇAMENTO CREATION
+    // ─────────────────────────────────────────────────────────────────────────
+
+    /**
+     * Uses Gemini to generate servicos[] from findings, then inserts a draft
+     * orçamento (all prices = 0) into the DB.
+     * The admin only needs to fill in prices before sending.
+     */
+    async _createDraftOrcamento(notif, createdByUserId) {
+        // 1. Generate servicos list via Gemini
+        const servicos = await this._generateServicos(notif.findings, notif.liftLocation);
+
+        // 2. Build orçamento document (mirrors the POST /api/orcamentos format)
+        const now = new Date();
+        const validadeAte = new Date(now);
+        validadeAte.setDate(validadeAte.getDate() + 30);
+
+        const ano = now.getFullYear();
+        const mes = String(now.getMonth() + 1).padStart(2, '0');
+
+        // Auto-generate number
+        const prefix = `ORC-${ano}-${mes}-`;
+        const last = await this.db.collection('orcamentos')
+            .find({ numero: new RegExp(`^${prefix}`) })
+            .sort({ numero: -1 })
+            .limit(1)
+            .toArray();
+        let seq = 1;
+        if (last.length > 0) {
+            const m = last[0].numero.match(/ORC-\d{4}-\d{2}-(\d{3})/);
+            if (m) seq = parseInt(m[1]) + 1;
+        }
+        const numero = `${prefix}${String(seq).padStart(3, '0')}`;
+
+        const orcamento = {
+            numero,
+            data: now.toISOString(),
+            validadeAte: validadeAte.toISOString(),
+            cliente: {
+                nome:   notif.clientName  || 'Desconhecido',
+                email:  notif.clientEmail || '',
+                morada: notif.liftLocation || ''
+            },
+            servicos,   // prices all 0 — admin fills later
+            subtotal: 0,
+            iva: 0,
+            total: 0,
+            notas: `Rascunho gerado automaticamente pela IA em ${now.toLocaleDateString('pt-PT')} com base no relatório ${(notif.relatedReports || []).join(', ')}.\nDefina os preços de cada item e envie ao cliente.`,
+            status: 'rascunho',
+            geradoPorAI: true,
+            agentNotificationId: notif._id ? String(notif._id) : null,
+            liftMunicipal: notif.liftMunicipal || '',
+            criadoPor: 'Agente IA',
+            criadoPorId: createdByUserId || null,
+            createdAt: now.toISOString(),
+            updatedAt: now.toISOString()
+        };
+
+        const result = await this.db.collection('orcamentos').insertOne(orcamento);
+        console.log(`🤖 Agent: draft orçamento ${numero} created for ${notif.clientName}`);
+
+        // Update notification with orcamentoId
+        if (notif._id) {
+            await this.db.collection('agent_notifications').updateOne(
+                { _id: notif._id },
+                { $set: { orcamentoId: result.insertedId, updatedAt: new Date() } }
+            );
+        }
+
+        return { ...orcamento, _id: result.insertedId };
+    }
+
+    /**
+     * Calls Gemini to convert findings text → structured servicos[] array.
+     * All precoUnitario = 0 (admin fills later).
+     */
+    async _generateServicos(findings, liftLocation) {
+        // Fallback if no API key
+        if (!process.env.GEMINI_API_KEY) {
+            return [{
+                descricao: findings || 'Serviços de manutenção/reparação — ver relatório técnico',
+                quantidade: 1,
+                precoUnitario: 0,
+                total: 0
+            }];
+        }
+
+        try {
+            const model = this.genAI.getGenerativeModel({ model: this.model });
+            const prompt = `Analisa estes problemas detetados num elevador e cria uma lista de serviços para orçamento.
+
+PROBLEMAS DETETADOS:
+${findings}
+
+INSTRUÇÕES:
+- Cria entre 2 e 8 linhas de serviço
+- Cada linha: trabalho específico OU peça necessária
+- NUNCA inventes preços — usa 0 para todos os preços
+- Usa terminologia técnica portuguesa de elevadores
+- Separa mão-de-obra de materiais/peças quando possível
+- Formato EXATO (JSON, sem texto extra):
+
+[
+  {"descricao": "Substituição de rolamento do motor de tração SKF 6308-2RS1", "quantidade": 1, "precoUnitario": 0, "total": 0},
+  {"descricao": "Mão de obra — desmontagem, montagem e alinhamento do motor", "quantidade": 4, "precoUnitario": 0, "total": 0}
+]
+
+Responde APENAS com o JSON, sem introdução nem explicação.`;
+
+            const result = await model.generateContent(prompt);
+            const text = result.response.text().trim();
+
+            // Parse JSON — handle markdown code blocks
+            const clean = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+            const parsed = JSON.parse(clean);
+
+            if (Array.isArray(parsed) && parsed.length > 0) {
+                return parsed.map(s => ({
+                    descricao: s.descricao || 'Serviço de manutenção',
+                    quantidade: parseInt(s.quantidade) || 1,
+                    precoUnitario: 0,  // ALWAYS 0 — admin fills
+                    total: 0
+                }));
+            }
+        } catch (err) {
+            console.warn('🤖 Agent _generateServicos fallback:', err.message);
+        }
+
+        // Fallback
+        return [{
+            descricao: `Reparação — ${liftLocation}: ${(findings || '').substring(0, 120)}`,
+            quantidade: 1,
+            precoUnitario: 0,
+            total: 0
+        }];
     }
 
     // ─────────────────────────────────────────────────────────────────────────

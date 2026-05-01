@@ -242,10 +242,28 @@ ${actionHtml}`;
         });
 
         if (res.success) {
-            // Show reply in chat
             showTab('chat');
             openPanel();
-            appendMessage(res.response, 'agent');
+
+            // Replace **bold** markdown in response
+            let replyHtml = (res.response || '').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
+
+            // If a draft orçamento was created, add a direct "Definir preços" button
+            if (res.orcamento && res.orcamento.numero) {
+                const link = `/pages/admin/orcamentos-list.html?highlight=${res.orcamento.numero}`;
+                const servicosList = (res.orcamento.servicos || [])
+                    .map((s, i) => `${i + 1}. ${s.descricao} (x${s.quantidade})`)
+                    .join('<br>');
+                replyHtml += `<br><br><small><strong>Serviços pré-preenchidos:</strong><br>${servicosList}</small>` +
+                    `<br><a href="${link}" style="display:inline-block;margin-top:8px;padding:6px 16px;background:#2563eb;color:#fff;border-radius:20px;text-decoration:none;font-size:12px;font-weight:600">💰 Definir preços e enviar</a>`;
+            }
+
+            const el = document.createElement('div');
+            el.className = 'agent-msg from-agent';
+            el.innerHTML = replyHtml;
+            document.getElementById('agent-messages').appendChild(el);
+            document.getElementById('agent-messages').scrollTop = 99999;
+
             // Refresh
             await loadNotifications();
         }
@@ -346,6 +364,26 @@ ${actionHtml}`;
             } else {
                 showToast(msg);
             }
+        });
+
+        socket.on('agent_orcamento_ready', (data) => {
+            // Admin/dispatcher: draft orçamento was created, show rich notification
+            const link = data.link || `/pages/admin/orcamentos-list.html`;
+            const servicosList = (data.servicos || [])
+                .map((s, i) => `${i + 1}. ${s.descricao} (x${s.quantidade}) — preço: <strong style="color:#ef4444">€ a definir</strong>`)
+                .join('<br>');
+
+            const html = `📋 <strong>Rascunho ${data.numero}</strong> criado para <strong>${data.clientName || ''}</strong><br>` +
+                `📍 ${data.liftLocation || ''}<br><br>` +
+                `<small>${servicosList}</small><br><br>` +
+                `<a href="${link}" style="display:inline-block;margin-top:6px;padding:6px 14px;background:#2563eb;color:#fff;border-radius:20px;text-decoration:none;font-size:12px;font-weight:600">💰 Definir preços e enviar</a>`;
+
+            openPanel();
+            showTab('chat');
+            const el = appendMessage(html, 'agent', 'proactive');
+            el.style.maxWidth = '100%';
+
+            showToast(`Rascunho ${data.numero} criado — defina os preços e envie ao cliente.`);
         });
 
         socket.on('agent_update', (data) => {
