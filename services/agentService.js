@@ -24,14 +24,22 @@ class AgentService {
     }
 
     /**
-     * Must be called once after DB and socket.io are ready.
+     * Must be called once after socket.io is ready.
+     * db may be null initially and set later via setDb().
      */
     init(db, io) {
         this.db = db;
         this.io = io;
-        this._ensureIndexes();
+        if (db) this._ensureIndexes();
         this._scheduleDailyCheck();
         console.log('🤖 AgentService initialized');
+    }
+
+    /** Called when MongoDB is ready (async after init). */
+    setDb(db) {
+        this.db = db;
+        this._ensureIndexes();
+        console.log('🤖 AgentService: DB connected, indexes ensured.');
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -681,11 +689,16 @@ Responde APENAS com o resumo dos problemas, sem introdução.`;
                     .find({ clientEmail, status: 'pending' }).sort({ createdAt: -1 }).limit(5).toArray();
                 ctx.recentDecisions = await this.db.collection('agent_decisions')
                     .find({ clientEmail }).sort({ decidedAt: -1 }).limit(5).toArray();
+                ctx.orcamentos = await this.db.collection('orcamentos')
+                    .find({ 'cliente.email': clientEmail })
+                    .sort({ createdAt: -1 }).limit(10).toArray();
             } else {
                 ctx.pendingNotifications = await this.db.collection('agent_notifications')
                     .find({ status: 'pending' }).sort({ createdAt: -1 }).limit(10).toArray();
                 ctx.recentDecisions = await this.db.collection('agent_decisions')
                     .find({}).sort({ decidedAt: -1 }).limit(10).toArray();
+                ctx.orcamentos = await this.db.collection('orcamentos')
+                    .find({}).sort({ createdAt: -1 }).limit(20).toArray();
             }
         } catch (_) {}
         return ctx;
@@ -699,6 +712,14 @@ Responde APENAS com o resumo dos problemas, sem introdução.`;
         const decisions = (context.recentDecisions || [])
             .map(d => `- ${d.liftLocation}: ${d.action} (${d.reason || 'sem motivo'}) em ${d.decidedAt ? new Date(d.decidedAt).toLocaleDateString('pt-PT') : '?'}`)
             .join('\n') || 'Nenhuma.';
+
+        const orcamentos = (context.orcamentos || [])
+            .map(o => {
+                const data = o.createdAt ? new Date(o.createdAt).toLocaleDateString('pt-PT') : '?';
+                const servicos = (o.servicos || []).map(s => `${s.descricao} (${s.quantidade}x ${s.precoUnitario}€)`).join(', ');
+                return `- ${o.numero || o._id}: ${o.cliente?.nome || '?'} | ${o.status} | ${o.total || 0}€ | ${data}${servicos ? ' | Serviços: ' + servicos : ''}`;
+            })
+            .join('\n') || 'Nenhum orçamento registado.';
 
         const roleDesc = {
             admin: 'administrador do sistema com acesso total',
@@ -717,13 +738,17 @@ ${pending}
 DECISÕES RECENTES:
 ${decisions}
 
+ORÇAMENTOS (dados reais da base de dados):
+${orcamentos}
+
 REGRAS:
 - Nunca crias orçamentos ou tomas ações sem confirmação explícita
 - Se o utilizador diz "sim" a um orçamento, confirma e informa que será preparado
 - Se o utilizador adia, pergunta quando quer ser lembrado
 - Podes responder a perguntas técnicas sobre elevadores, normas EN 81-20, ISO 10816-3
 - Sê conciso e profissional
-- Para clientes: usa linguagem simples, não técnica`;
+- Para clientes: usa linguagem simples, não técnica
+- Quando listares orçamentos, apresenta-os em formato legível com número, cliente, estado e valor`;
     }
 
     _parseRemindDate(reason) {

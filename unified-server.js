@@ -234,7 +234,7 @@ async function connectMongo() {
 }
 
 // Підключаємося при старті
-connectMongo();
+const connectMongoPromise = connectMongo();
 
 // Mongoose підключення (для backend/routes що використовують Mongoose моделі)
 // Якщо MONGODB_URI вже містить ім'я БД — не додаємо DB_NAME повторно
@@ -10253,8 +10253,9 @@ io.on('connection', (socket) => {
     });
 });
 
-// 🤖 Init AI Agent (after io is ready)
-agentService.init(db, io);
+// 🤖 Init AI Agent (after io is ready, db arrives async)
+agentService.init(null, io);
+connectMongoPromise.then(database => agentService.setDb(database)).catch(() => {});
 
 // ─────────────────────────────────────────────────────────────
 // 🤖 AGENT API ENDPOINTS
