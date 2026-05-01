@@ -341,6 +341,11 @@ class AgentService {
             return await this._buildSummary(role, clientEmail);
         }
 
+        // ── Service catalog ──────────────────────────────────────────────────
+        if (/(catalogo|catalogo de servicos|servicos disponiveis|servicos que usamos|lista de servicos|precos de referencia|tabela de precos)/.test(m)) {
+            return await this._showServiceCatalog(role);
+        }
+
         // ── Requests / pedidos ───────────────────────────────────────────────
         if (/(pedido|pedidos|solicitacao|request|requests|chamada)/.test(m) && /(lista|listar|ver|todos|aberto|pendente)/.test(m)) {
             return await this._listRequests(role, clientEmail);
@@ -478,11 +483,35 @@ class AgentService {
             `_Quer detalhe em alguma área? Pergunte-me!_`;
     }
 
+    async _showServiceCatalog(role) {
+        if (role !== 'admin' && role !== 'dispatcher') {
+            return '⛔ O catálogo de serviços está disponível apenas para administradores e despachantes.';
+        }
+        const catalog = await this._buildServiceCatalog();
+        if (catalog.length === 0) return '📂 Catálogo vazio — nenhum serviço encontrado nos orçamentos aprovados.';
+
+        const withPrice = catalog.filter(e => e.precoSugerido > 0);
+        const noPrice   = catalog.filter(e => e.precoSugerido === 0);
+
+        const rows = withPrice.map(e =>
+            `💰 **${e.descricao}** | qty ref: ${e.quantidade} | **${e.precoSugerido}€** | usado ${e.occurrences}×`
+        ).join('\n');
+
+        const rowsNp = noPrice.slice(0, 8).map(e =>
+            `📝 ${e.descricao} | qty ref: ${e.quantidade} | preço: _a definir_`
+        ).join('\n');
+
+        return `📂 **Catálogo de Serviços** (${catalog.length} tipos)\n\n` +
+            `**Com preço histórico (${withPrice.length}):**\n${rows || '_Nenhum_'}\n\n` +
+            (noPrice.length > 0 ? `**Sem preço histórico (${noPrice.length}):**\n${rowsNp}\n\n` : '') +
+            `_Estes preços vêm dos orçamentos aprovados/enviados — são referências, o admin define o preço final._`;
+    }
+
     async _rateLimitFallback(msg, role, clientEmail) {
         // When Gemini is rate limited, try to answer locally anyway
         const local = await this._resolveLocally(msg, role, clientEmail);
         if (local) return local;
-        return `⚡ **Limite de pedidos Gemini atingido** (plano gratuito: ~15/min).\n\nPosso responder diretamente a:\n• _"lista orçamentos"_ / _"conta orçamentos"_\n• _"lista inspeções"_\n• _"lista elevadores"_\n• _"lista pedidos"_\n• _"resumo geral"_\n• _"notificações pendentes"_\n\nPara questões técnicas complexas, tente novamente em 1 minuto.`;
+        return `⚡ **Limite de pedidos Gemini atingido** (plano gratuito: ~15/min).\n\nPosso responder diretamente a:\n• _"lista orçamentos"_ / _"conta orçamentos"_\n• _"lista inspeções"_\n• _"lista elevadores"_\n• _"lista pedidos"_\n• _"resumo geral"_\n• _"catálogo de serviços"_ ← novo!\n• _"notificações pendentes"_\n\nPara questões técnicas complexas, tente novamente em 1 minuto.`;
     }
 
     /**
@@ -689,11 +718,11 @@ class AgentService {
                 email:  notif.clientEmail || '',
                 morada: notif.liftLocation || ''
             },
-            servicos,   // prices all 0 — admin fills later
-            subtotal: 0,
-            iva: 0,
-            total: 0,
-            notas: `Rascunho gerado automaticamente pela IA em ${now.toLocaleDateString('pt-PT')} com base no relatório ${(notif.relatedReports || []).join(', ')}.\nDefina os preços de cada item e envie ao cliente.`,
+            servicos,
+            subtotal: servicos.reduce((s, i) => s + (i.total || 0), 0),
+            iva: Math.round(servicos.reduce((s, i) => s + (i.total || 0), 0) * 0.23 * 100) / 100,
+            total: Math.round(servicos.reduce((s, i) => s + (i.total || 0), 0) * 1.23 * 100) / 100,
+            notas: `Rascunho gerado automaticamente pela IA em ${now.toLocaleDateString('pt-PT')} com base no relatório ${(notif.relatedReports || []).join(', ')}.\nServiços com preço histórico da empresa — reveja e ajuste antes de enviar.`,
             status: 'rascunho',
             geradoPorAI: true,
             agentNotificationId: notif._id ? String(notif._id) : null,
@@ -719,46 +748,173 @@ class AgentService {
     }
 
     /**
-     * Calls Gemini to convert findings text → structured servicos[] array.
-     * All precoUnitario = 0 (admin fills later).
+     * Build a service catalog from all approved/sent orcamentos in the DB.
+     * Returns array of { descricao, quantidade, precoUnitario, occurrences, keywords }
+     */
+    async _buildServiceCatalog() {
+        try {
+            const docs = await this.db.collection('orcamentos')
+                .find({ status: { $in: ['aprovado', 'enviado', 'rascunho'] } }, { projection: { servicos: 1, numero: 1 } })
+                .toArray();
+
+            const map = new Map(); // key = normalized descricao
+            for (const d of docs) {
+                for (const s of (d.servicos || [])) {
+                    if (!s || !s.descricao) continue;
+                    const norm = s.descricao.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').slice(0, 60);
+                    if (!map.has(norm)) {
+                        map.set(norm, {
+                            descricao: s.descricao,
+                            precos: [],
+                            quantidades: [],
+                            occurrences: 0,
+                            keywords: this._extractKeywords(s.descricao)
+                        });
+                    }
+                    const entry = map.get(norm);
+                    entry.occurrences++;
+                    if (s.precoUnitario > 0) entry.precos.push(s.precoUnitario);
+                    if (s.quantidade > 0) entry.quantidades.push(s.quantidade);
+                }
+            }
+
+            return Array.from(map.values()).map(e => {
+                const avgPrice = e.precos.length > 0 ? Math.round(e.precos.reduce((a, b) => a + b, 0) / e.precos.length * 100) / 100 : 0;
+                const avgQty = e.quantidades.length > 0 ? Math.round(e.quantidades.reduce((a, b) => a + b, 0) / e.quantidades.length) : 1;
+                return { descricao: e.descricao, precoSugerido: avgPrice, quantidade: avgQty, occurrences: e.occurrences, keywords: e.keywords };
+            }).sort((a, b) => b.occurrences - a.occurrences);
+        } catch (err) {
+            console.warn('🤖 _buildServiceCatalog error:', err.message);
+            return [];
+        }
+    }
+
+    _extractKeywords(text) {
+        // Extract meaningful words for matching (ignore common stopwords)
+        const stopwords = new Set(['de', 'do', 'da', 'e', 'o', 'a', 'em', 'para', 'com', 'se', 'no', 'na', 'um', 'uma', 'por', 'ao', 'ou']);
+        return text.toLowerCase()
+            .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+            .replace(/[^a-z0-9\s]/g, ' ')
+            .split(/\s+/)
+            .filter(w => w.length > 3 && !stopwords.has(w));
+    }
+
+    _matchServiceFromCatalog(findingText, catalog) {
+        // Score each catalog entry by keyword overlap with the finding text
+        const findingWords = this._extractKeywords(findingText);
+        if (findingWords.length === 0 || catalog.length === 0) return null;
+
+        let best = null;
+        let bestScore = 0;
+        for (const entry of catalog) {
+            const overlap = entry.keywords.filter(k => findingWords.some(fw => fw.includes(k) || k.includes(fw))).length;
+            const score = overlap / Math.max(entry.keywords.length, 1);
+            if (score > bestScore && score >= 0.3) { // at least 30% keyword match
+                bestScore = score;
+                best = entry;
+            }
+        }
+        return best;
+    }
+
+    /**
+     * Generate servicos list for a new draft orçamento.
+     *
+     * Strategy:
+     *  1. Load service catalog from DB (real past services with real prices)
+     *  2. For each finding/problem, try to match a catalog entry (local, no Gemini)
+     *  3. Only call Gemini for findings with no catalog match — and give it the catalog as context
+     *  4. precoUnitario = historical average from DB (or 0 if new service)
+     *  5. Admin can override any price before sending
      */
     async _generateServicos(findings, liftLocation) {
-        // Fallback if no API key
-        if (!process.env.GEMINI_API_KEY) {
-            return [{
-                descricao: findings || 'Serviços de manutenção/reparação — ver relatório técnico',
+        const catalog = await this._buildServiceCatalog();
+
+        // Split findings into individual problems
+        const lines = (findings || '').split(/[\n;,]/).map(l => l.trim()).filter(l => l.length > 10);
+        if (lines.length === 0) lines.push(findings || 'Serviços de manutenção geral');
+
+        const result = [];
+        const unmatched = [];
+
+        for (const line of lines) {
+            const match = this._matchServiceFromCatalog(line, catalog);
+            if (match) {
+                // Use real service from DB with historical price
+                result.push({
+                    descricao: match.descricao,
+                    quantidade: match.quantidade || 1,
+                    precoUnitario: match.precoSugerido,  // real price from DB
+                    precoSugerido: match.precoSugerido,   // shown as suggestion in UI
+                    fontePreco: 'historico',               // flag: came from DB history
+                    total: match.precoSugerido * (match.quantidade || 1)
+                });
+            } else {
+                unmatched.push(line);
+            }
+        }
+
+        // For unmatched problems, call Gemini with catalog context
+        if (unmatched.length > 0) {
+            const geminiServicos = await this._generateServicosViaGemini(unmatched.join('\n'), liftLocation, catalog);
+            result.push(...geminiServicos);
+        }
+
+        // If nothing was matched at all — add a generic labor line from catalog or default
+        if (result.length === 0) {
+            const labor = catalog.find(e => e.keywords.includes('manutencao') || e.keywords.includes('inspecao') || e.keywords.includes('mao'));
+            result.push(labor ? {
+                descricao: labor.descricao,
+                quantidade: 1,
+                precoUnitario: labor.precoSugerido,
+                precoSugerido: labor.precoSugerido,
+                fontePreco: 'historico',
+                total: labor.precoSugerido
+            } : {
+                descricao: 'Mão de obra — reparação e manutenção (ver relatório técnico)',
                 quantidade: 1,
                 precoUnitario: 0,
                 total: 0
-            }];
+            });
         }
+
+        return result;
+    }
+
+    async _generateServicosViaGemini(findings, liftLocation, catalog) {
+        if (!process.env.GEMINI_API_KEY) {
+            return [{ descricao: `Reparação: ${findings.slice(0, 120)}`, quantidade: 1, precoUnitario: 0, total: 0 }];
+        }
+
+        // Build catalog context for Gemini (top 10 most used real services)
+        const catalogContext = catalog.slice(0, 10).map(e =>
+            `- "${e.descricao}" | preço histórico: ${e.precoSugerido > 0 ? e.precoSugerido + '€' : 'sem histórico'}`
+        ).join('\n');
 
         try {
             const model = this.genAI.getGenerativeModel({ model: this.model });
-            const prompt = `Analisa estes problemas detetados num elevador e cria uma lista de serviços para orçamento.
+            const prompt = `És um especialista em orçamentos de manutenção de elevadores em Portugal.
 
-PROBLEMAS DETETADOS:
+PROBLEMAS A RESOLVER:
 ${findings}
 
+CATÁLOGO DE SERVIÇOS DESTA EMPRESA (serviços reais já usados):
+${catalogContext || 'Sem catálogo disponível.'}
+
 INSTRUÇÕES:
-- Cria entre 2 e 8 linhas de serviço
-- Cada linha: trabalho específico OU peça necessária
-- NUNCA inventes preços — usa 0 para todos os preços
-- Usa terminologia técnica portuguesa de elevadores
-- Separa mão-de-obra de materiais/peças quando possível
-- Formato EXATO (JSON, sem texto extra):
+- Cria 2 a 6 linhas de serviço para estes problemas
+- USA nomes do catálogo acima quando forem adequados
+- Para serviços novos, usa terminologia técnica portuguesa de elevadores (normas EN 81-20)
+- Separa mão-de-obra de materiais quando possível
+- precoUnitario: usa o preço histórico do catálogo se existir, senão usa 0
+- Responde APENAS com JSON válido:
 
 [
-  {"descricao": "Substituição de rolamento do motor de tração SKF 6308-2RS1", "quantidade": 1, "precoUnitario": 0, "total": 0},
-  {"descricao": "Mão de obra — desmontagem, montagem e alinhamento do motor", "quantidade": 4, "precoUnitario": 0, "total": 0}
-]
+  {"descricao": "nome do serviço", "quantidade": 1, "precoUnitario": 0, "total": 0}
+]`;
 
-Responde APENAS com o JSON, sem introdução nem explicação.`;
-
-            const result = await model.generateContent(prompt);
-            const text = result.response.text().trim();
-
-            // Parse JSON — handle markdown code blocks
+            const r = await model.generateContent(prompt);
+            const text = r.response.text().trim();
             const clean = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
             const parsed = JSON.parse(clean);
 
@@ -766,21 +922,17 @@ Responde APENAS com o JSON, sem introdução nem explicação.`;
                 return parsed.map(s => ({
                     descricao: s.descricao || 'Serviço de manutenção',
                     quantidade: parseInt(s.quantidade) || 1,
-                    precoUnitario: 0,  // ALWAYS 0 — admin fills
-                    total: 0
+                    precoUnitario: parseFloat(s.precoUnitario) || 0,
+                    precoSugerido: parseFloat(s.precoUnitario) || 0,
+                    fontePreco: parseFloat(s.precoUnitario) > 0 ? 'historico-gemini' : 'novo',
+                    total: (parseInt(s.quantidade) || 1) * (parseFloat(s.precoUnitario) || 0)
                 }));
             }
         } catch (err) {
-            console.warn('🤖 Agent _generateServicos fallback:', err.message);
+            console.warn('🤖 _generateServicosViaGemini fallback:', err.message);
         }
 
-        // Fallback
-        return [{
-            descricao: `Reparação — ${liftLocation}: ${(findings || '').substring(0, 120)}`,
-            quantidade: 1,
-            precoUnitario: 0,
-            total: 0
-        }];
+        return [{ descricao: `Reparação: ${findings.slice(0, 120)}`, quantidade: 1, precoUnitario: 0, total: 0 }];
     }
 
     // ─────────────────────────────────────────────────────────────────────────
