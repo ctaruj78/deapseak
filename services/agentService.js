@@ -257,17 +257,19 @@ class AgentService {
     async chat(userMessage, userId, userRole, clientEmail = null) {
         if (!this.db) throw new Error('DB not ready');
 
+        // ── 1. Try to answer locally (no Gemini needed) ──────────────────────
+        const localAnswer = await this._resolveLocally(userMessage, userRole, clientEmail);
+        if (localAnswer) return localAnswer;
+
+        // ── 2. Gemini for complex / conversational queries ────────────────────
         try {
             const context = await this._buildContext(userRole, clientEmail);
             const model = this.genAI.getGenerativeModel({ model: this.model });
-
             const systemPrompt = this._buildSystemPrompt(userRole, context);
-
             const result = await model.generateContent(`${systemPrompt}\n\nMENSAGEM DO UTILIZADOR: ${userMessage}`);
             return result.response.text();
         } catch (err) {
-            if (err.message && err.message.includes('model')) {
-                // Fallback to older model
+            if (err.message && (err.message.includes('model') || err.message.includes('not found'))) {
                 this.model = 'gemini-1.5-flash';
                 const model = this.genAI.getGenerativeModel({ model: this.model });
                 const context = await this._buildContext(userRole, clientEmail);
@@ -275,8 +277,212 @@ class AgentService {
                 const result = await model.generateContent(`${systemPrompt}\n\nMENSAGEM DO UTILIZADOR: ${userMessage}`);
                 return result.response.text();
             }
+            // Rate limit / quota — return helpful local fallback
+            if (err.message && (err.message.includes('429') || err.message.includes('quota') || err.message.includes('fetch'))) {
+                return this._rateLimitFallback(userMessage, userRole, clientEmail);
+            }
             throw err;
         }
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // LOCAL INTENT ROUTER — answers without consuming Gemini quota
+    // ─────────────────────────────────────────────────────────────────────────
+
+    async _resolveLocally(msg, role, clientEmail) {
+        const m = msg.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+        // ── Greetings ────────────────────────────────────────────────────────
+        if (/^(ola|oi|bom dia|boa tarde|boa noite|hello|hi|hei|привіт)[\s!?.]*$/.test(m.trim())) {
+            const greet = { admin: 'Olá! Sou o assistente FestLift. Posso listar orçamentos, inspeções, ativações por técnico, alertas por lift ou responder a questões técnicas. O que precisa?', dispatcher: 'Olá! Posso ajudar com orçamentos pendentes, inspeções recentes, pedidos abertos ou atribuições de técnicos.', technician: 'Olá! Posso mostrar as suas inspeções recentes, alertas de lifts com problemas, ou responder a questões técnicas.', client: 'Olá! Posso consultar os seus orçamentos, inspeções ou pedidos de serviço. Em que posso ajudar?' };
+            return greet[role] || 'Olá! Como posso ajudar?';
+        }
+
+        // ── Orçamentos — list ────────────────────────────────────────────────
+        if (/(orcamento|orcamentos|orc|quote|kosztor)/.test(m) && /(lista|listar|encontra|mostra|todos|ver|quais|existem|find|show)/.test(m)) {
+            return await this._listOrcamentos(role, clientEmail, m);
+        }
+
+        // ── Orçamentos — count ───────────────────────────────────────────────
+        if (/(orcamento|orcamentos)/.test(m) && /(quantos|numero|total de|count|soma)/.test(m)) {
+            return await this._countOrcamentos(role, clientEmail);
+        }
+
+        // ── Orçamentos — status filter ───────────────────────────────────────
+        const statusMap = { rascunho: ['rascunho', 'draft', 'rascunhos'], enviado: ['enviado', 'enviados', 'sent'], aprovado: ['aprovado', 'aprovados', 'approved', 'aceite'], rejeitado: ['rejeitado', 'rejected', 'recusado'], expirado: ['expirado', 'expired', 'vencido', 'vencidos'] };
+        for (const [status, keywords] of Object.entries(statusMap)) {
+            if (keywords.some(k => m.includes(k)) && /(orcamento|orcamentos|orc)/.test(m)) {
+                return await this._listOrcamentos(role, clientEmail, m, status);
+            }
+        }
+
+        // ── Inspections — list ───────────────────────────────────────────────
+        if (/(inspecao|inspecoes|inspecção|inspection|relatorio|relatorios|report)/.test(m) && /(lista|listar|ver|mostra|ultim|recent|todos)/.test(m)) {
+            return await this._listInspections(role, clientEmail, m);
+        }
+
+        // ── Notifications / alerts ───────────────────────────────────────────
+        if (/(notificacao|notificacoes|alerta|alertas|pendente|pendentes|notification)/.test(m)) {
+            return await this._listNotifications(role, clientEmail);
+        }
+
+        // ── Lifts / elevators ────────────────────────────────────────────────
+        if (/(elevador|lift|elevadores|lifts)/.test(m) && /(lista|listar|ver|mostra|quantos|todos)/.test(m)) {
+            return await this._listLifts(role);
+        }
+
+        // ── Users / technicians ──────────────────────────────────────────────
+        if (/(tecnico|tecnicos|utilizador|utilizadores|user|users|funcionario)/.test(m) && /(lista|listar|ver|mostra|quantos)/.test(m)) {
+            return await this._listUsers(role);
+        }
+
+        // ── Stats / summary ──────────────────────────────────────────────────
+        if (/(resumo|estatistica|estatisticas|dashboard|summary|visao geral|estado geral|overview)/.test(m)) {
+            return await this._buildSummary(role, clientEmail);
+        }
+
+        // ── Requests / pedidos ───────────────────────────────────────────────
+        if (/(pedido|pedidos|solicitacao|request|requests|chamada)/.test(m) && /(lista|listar|ver|todos|aberto|pendente)/.test(m)) {
+            return await this._listRequests(role, clientEmail);
+        }
+
+        return null; // not handled locally → use Gemini
+    }
+
+    // ── Local resolvers ──────────────────────────────────────────────────────
+
+    async _listOrcamentos(role, clientEmail, msg = '', filterStatus = null) {
+        const query = {};
+        if (role === 'client' && clientEmail) query['cliente.email'] = clientEmail;
+        if (filterStatus) query.status = filterStatus;
+
+        const list = await this.db.collection('orcamentos').find(query).sort({ createdAt: -1 }).limit(25).toArray();
+        if (list.length === 0) return `📋 Nenhum orçamento encontrado${filterStatus ? ` com estado **${filterStatus}**` : ''}.`;
+
+        const grouped = {};
+        list.forEach(o => { grouped[o.status] = (grouped[o.status] || 0) + 1; });
+        const summary = Object.entries(grouped).map(([s, n]) => `${n} ${s}`).join(' · ');
+
+        const rows = list.map(o => {
+            const data = o.createdAt ? new Date(o.createdAt).toLocaleDateString('pt-PT') : '?';
+            const total = (o.total || 0).toFixed(2).replace('.', ',');
+            const badge = { rascunho: '📝', enviado: '📨', aprovado: '✅', rejeitado: '❌', expirado: '⏰' }[o.status] || '•';
+            return `${badge} **${o.numero || '—'}** | ${o.cliente?.nome || '?'} | ${o.status} | **${total}€** | ${data}`;
+        }).join('\n');
+
+        return `📋 **Orçamentos** (${list.length} resultado(s) — ${summary}):\n\n${rows}`;
+    }
+
+    async _countOrcamentos(role, clientEmail) {
+        const baseQuery = role === 'client' && clientEmail ? { 'cliente.email': clientEmail } : {};
+        const statuses = ['rascunho', 'enviado', 'aprovado', 'rejeitado', 'expirado'];
+        const counts = await Promise.all(statuses.map(s => this.db.collection('orcamentos').countDocuments({ ...baseQuery, status: s })));
+        const total = counts.reduce((a, b) => a + b, 0);
+        const lines = statuses.map((s, i) => counts[i] > 0 ? `  • ${s}: **${counts[i]}**` : null).filter(Boolean).join('\n');
+        const totalValue = await this.db.collection('orcamentos').aggregate([{ $match: baseQuery }, { $group: { _id: null, sum: { $sum: '$total' } } }]).toArray();
+        const valorTotal = totalValue[0]?.sum?.toFixed(2).replace('.', ',') || '0,00';
+        return `📊 **Resumo de Orçamentos**\n\nTotal: **${total}** orçamentos | Valor acumulado: **${valorTotal}€**\n\n${lines}`;
+    }
+
+    async _listInspections(role, clientEmail, msg = '') {
+        const query = {};
+        if (role === 'client' && clientEmail) query.clientEmail = clientEmail;
+        if (role === 'technician') { /* show own */ }
+        const list = await this.db.collection('inspections').find(query).sort({ createdAt: -1 }).limit(15).toArray();
+        if (list.length === 0) return '🔍 Nenhuma inspeção encontrada.';
+
+        const rows = list.map(i => {
+            const data = i.createdAt ? new Date(i.createdAt).toLocaleDateString('pt-PT') : '?';
+            const nok = Object.values(i.checklist || {}).filter(v => v?.status === 'NOK' || v === 'NOK').length;
+            const badge = nok > 0 ? `⚠️ ${nok} NOK` : '✅ OK';
+            return `${badge} | **${i.numero || i._id?.toString().slice(-6)}** | ${i.liftLocation || '?'} | ${i.inspector || '?'} | ${data}`;
+        }).join('\n');
+
+        return `🔍 **Inspeções recentes** (${list.length}):\n\n${rows}`;
+    }
+
+    async _listNotifications(role, clientEmail) {
+        const query = role === 'client' && clientEmail
+            ? { clientEmail, status: { $in: ['pending', 'postponed'] } }
+            : { status: { $in: ['pending', 'postponed'] } };
+        const list = await this.db.collection('agent_notifications').find(query).sort({ createdAt: -1 }).limit(10).toArray();
+        if (list.length === 0) return '🔔 Não há alertas ou notificações pendentes.';
+        const rows = list.map(n => {
+            const data = n.createdAt ? new Date(n.createdAt).toLocaleDateString('pt-PT') : '?';
+            const badge = n.status === 'postponed' ? '⏰' : '🔔';
+            return `${badge} **${n.liftLocation || '?'}** | ${n.type} | ${n.status} | ${data}`;
+        }).join('\n');
+        return `🔔 **Notificações pendentes** (${list.length}):\n\n${rows}`;
+    }
+
+    async _listLifts(role) {
+        const list = await this.db.collection('lifts').find({}).sort({ createdAt: -1 }).limit(20).toArray();
+        if (list.length === 0) return '🏢 Nenhum elevador registado.';
+        const rows = list.map(l => {
+            const next = l.nextInspectionDate ? new Date(l.nextInspectionDate).toLocaleDateString('pt-PT') : '—';
+            const status = l.status || 'ativo';
+            const badge = status === 'ativo' ? '✅' : '⚠️';
+            return `${badge} **${l.location || l.name || l._id?.toString().slice(-6)}** | Municipal: ${l.municipalNumber || '?'} | Próx. insp: ${next}`;
+        }).join('\n');
+        return `🏢 **Elevadores registados** (${list.length}):\n\n${rows}`;
+    }
+
+    async _listUsers(role) {
+        if (role !== 'admin' && role !== 'dispatcher') return '⛔ Sem permissão para listar utilizadores.';
+        const list = await this.db.collection('users').find({}, { projection: { password: 0, passwordHash: 0 } }).sort({ createdAt: -1 }).limit(20).toArray();
+        if (list.length === 0) return '👥 Nenhum utilizador encontrado.';
+        const rows = list.map(u => {
+            const badge = { admin: '👨‍💼', dispatcher: '📞', technician: '🔧', client: '👤' }[u.role] || '👤';
+            const status = u.banned ? '🚫' : '✅';
+            return `${badge}${status} **${u.name || u.email}** | ${u.role} | ${u.email}`;
+        }).join('\n');
+        return `👥 **Utilizadores** (${list.length}):\n\n${rows}`;
+    }
+
+    async _listRequests(role, clientEmail) {
+        const query = {};
+        if (role === 'client' && clientEmail) query.clientEmail = clientEmail;
+        const list = await this.db.collection('requests').find(query).sort({ createdAt: -1 }).limit(15).toArray();
+        if (list.length === 0) return '📩 Nenhum pedido encontrado.';
+        const rows = list.map(r => {
+            const data = r.createdAt ? new Date(r.createdAt).toLocaleDateString('pt-PT') : '?';
+            const badge = { open: '🟡', assigned: '🔵', 'in-progress': '🔶', completed: '✅', cancelled: '❌' }[r.status] || '•';
+            return `${badge} **${r._id?.toString().slice(-6)}** | ${r.description?.slice(0, 40) || '?'} | ${r.status} | ${data}`;
+        }).join('\n');
+        return `📩 **Pedidos** (${list.length}):\n\n${rows}`;
+    }
+
+    async _buildSummary(role, clientEmail) {
+        const [orc, insp, notifs, lifts, requests] = await Promise.all([
+            this.db.collection('orcamentos').countDocuments(role === 'client' && clientEmail ? { 'cliente.email': clientEmail } : {}),
+            this.db.collection('inspections').countDocuments(role === 'client' && clientEmail ? { clientEmail } : {}),
+            this.db.collection('agent_notifications').countDocuments({ status: 'pending' }),
+            this.db.collection('lifts').countDocuments({}),
+            this.db.collection('requests').countDocuments({ status: { $in: ['open', 'assigned', 'in-progress'] } }),
+        ]);
+        const [orcRascunho, orcEnviado] = await Promise.all([
+            this.db.collection('orcamentos').countDocuments({ status: 'rascunho' }),
+            this.db.collection('orcamentos').countDocuments({ status: 'enviado' }),
+        ]);
+        const valor = await this.db.collection('orcamentos').aggregate([{ $match: { status: 'aprovado' } }, { $group: { _id: null, sum: { $sum: '$total' } } }]).toArray();
+        const valorAprovado = valor[0]?.sum?.toFixed(2).replace('.', ',') || '0,00';
+
+        return `📊 **Visão Geral do Sistema — FestLift**\n\n` +
+            `🏢 Elevadores: **${lifts}**\n` +
+            `📩 Pedidos ativos: **${requests}**\n` +
+            `🔔 Alertas do agente pendentes: **${notifs}**\n\n` +
+            `📋 **Orçamentos:**\n` +
+            `  • Total: **${orc}** | 📝 Rascunho: ${orcRascunho} | 📨 Enviados: ${orcEnviado}\n` +
+            `  • Valor aprovado acumulado: **${valorAprovado}€**\n\n` +
+            `🔍 Inspeções registadas: **${insp}**\n\n` +
+            `_Quer detalhe em alguma área? Pergunte-me!_`;
+    }
+
+    async _rateLimitFallback(msg, role, clientEmail) {
+        // When Gemini is rate limited, try to answer locally anyway
+        const local = await this._resolveLocally(msg, role, clientEmail);
+        if (local) return local;
+        return `⚡ **Limite de pedidos Gemini atingido** (plano gratuito: ~15/min).\n\nPosso responder diretamente a:\n• _"lista orçamentos"_ / _"conta orçamentos"_\n• _"lista inspeções"_\n• _"lista elevadores"_\n• _"lista pedidos"_\n• _"resumo geral"_\n• _"notificações pendentes"_\n\nPara questões técnicas complexas, tente novamente em 1 minuto.`;
     }
 
     /**
