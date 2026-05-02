@@ -363,7 +363,7 @@
                 <li class="nav-item">
                     <a href="/pages/admin/invoice-template.html" class="nav-link">
                         <i class="fas fa-file-invoice nav-icon"></i>
-                        <p>Orçamentos (Створити)</p>
+                        <p>Orçamentos (Criar)</p>
                     </a>
                 </li>
                 <li class="nav-item">
@@ -677,7 +677,7 @@
             </div>
         </footer>
     </div>
-    <!-- Janela modal visualizaçãoу детmasй do QR-code -->
+    <!-- Janela modal visualizar detalhes do QR-code -->
     <div class="modal fade" id="viewQRModal" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
@@ -720,7 +720,7 @@
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header bg-primary">
-                    <h5 class="modal-title">Створення novo do QR-code</h5>
+                    <h5 class="modal-title">Criar novo QR-code</h5>
                     <button type="button" class="close" data-dismiss="modal">
                         <span>&times;</span>
                     </button>
@@ -747,21 +747,21 @@
                                     <select id="qrTarget" class="form-control" required>
                                         <option value="">Selecione primeiro o tipo do QR-code...</option>
                                     </select>
-                                    <small class="form-text text-muted">Selecione конкретне atribuição зmasжно від tipoу</small>
+                                    <small class="form-text text-muted">Selecione a atribuição específica dependendo do tipo</small>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Динамічні поля зmasжно від tipoу -->
+                        <!-- Динамічні поля dependendo do tipo -->
                         <div id="dynamicFields" style="display:none;">
-                            <!-- Поля para do elevador -->
+                            <!-- Atéля para do elevador -->
                             <div id="liftFields" class="dynamic-section" style="display:none;">
                                 <h6 class="text-primary"><i class="fas fa-elevator"></i> Detalhes do elevador</h6>
                                 <div class="row">
                                     <div class="col-md-4">
                                         <div class="form-group">
                                             <label>Número do elevador</label>
-                                            <input type="text" id="liftNumber" class="form-control" placeholder="Наприклад: 101">
+                                            <input type="text" id="liftNumber" class="form-control" placeholder="Ex.: 101">
                                         </div>
                                     </div>
                                     <div class="col-md-4">
@@ -780,20 +780,20 @@
                                     <div class="col-md-4">
                                         <div class="form-group">
                                             <label>Modelo</label>
-                                            <input type="text" id="liftModel" class="form-control" placeholder="Наприклад: SX-500">
+                                            <input type="text" id="liftModel" class="form-control" placeholder="Ex.: SX-500">
                                         </div>
                                     </div>
                                 </div>
                                 <div class="row">
                                     <div class="col-md-6">
                                         <div class="form-group">
-                                            <label>Endereço усeновки</label>
-                                            <input type="text" id="liftAddress" class="form-control" placeholder="Rua, будинок">
+                                            <label>Endereço de instalação</label>
+                                            <input type="text" id="liftAddress" class="form-control" placeholder="Rua, número">
                                         </div>
                                     </div>
                                     <div class="col-md-3">
                                         <div class="form-group">
-                                            <label>Pisoи</label>
+                                            <label>Pisos</label>
                                             <input type="number" id="liftFloors" class="form-control" min="2" placeholder="5">
                                         </div>
                                     </div>
@@ -806,14 +806,14 @@
                                 </div>
                             </div>
 
-                            <!-- Поля para do técnico -->
+                            <!-- Atéля para do técnico -->
                             <div id="technicianFields" class="dynamic-section" style="display:none;">
                                 <h6 class="text-success"><i class="fas fa-user-cog"></i> Detalhes do técnico</h6>
                                 <div class="row">
                                     <div class="col-md-6">
                                         <div class="form-group">
                                             <label>Nome do técnico</label>
-                                            <input type="text" id="techName" class="form-control" placeholder="ПІБ">
+                                            <input type="text" id="techName" class="form-control" placeholder="Nome completo">
                                         </div>
                                     </div>
                                     <div class="col-md-6">
@@ -821,19 +821,19 @@
                                             <label>Especialização</label>
                                             <select id="techSpecialization" class="form-control">
                                                 <option value="">Selecione...</option>
-                                                <option value="електрик">Електрик</option>
-                                                <option value="механік">Механік</option>
-                                                <option value="інженер">Інженер</option>
-                                                <option value="універсал">Універсал</option>
+                                                <option value="eletricista">Eletricista</option>
+                                                <option value="mecânico">Mecânico</option>
+                                                <option value="engenheiro">Engenheiro</option>
+                                                <option value="polivalente">Polivalente</option>
                                             </select>
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- Поля para локації -->
+                            <!-- Atéля para localizações -->
                             <div id="locationFields" class="dynamic-section" style="display:none;">
-                                <h6 class="text-info"><i class="fas fa-map-marker-alt"></i> Detalhes локації</h6>
+                                <h6 class="text-info"><i class="fas fa-map-marker-alt"></i> Detalhes da localização</h6>
                                 <div class="row">
                                     <div class="col-md-6">
                                         <div class="form-group">
@@ -871,7 +871,7 @@
                                 <div class="form-group">
                                     <label>Válido até *</label>
                                     <input type="date" id="qrExpiry" class="form-control" required>
-                                    <small class="form-text text-muted">Мінімум 30 diasв від hoje</small>
+                                    <small class="form-text text-muted">Мінімум 30 dias від hoje</small>
                                 </div>
                             </div>
                         </div>
@@ -890,7 +890,7 @@
                         <div class="form-group">
                             <label>Dados adicionais (JSON)</label>
                             <textarea id="qrMetadata" class="form-control" rows="3" placeholder='{"note": "Adicional informação"}'></textarea>
-                            <small class="form-text text-muted">Додаткові параметри у formatoі JSON (opcional)</small>
+                            <small class="form-text text-muted">Parâmetros adicionais у formatoі JSON (opcional)</small>
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -1236,7 +1236,7 @@
         }
         
         // Inicialização qrManager - apenas один раз!
-        console.log('🚀 Запуск ініціалізації QR Manager...');
+        console.log('🚀 Deапуск ініціалізації QR Manager...');
         if (typeof qrManager !== 'undefined') {
             qrManager.init();
             console.log('✅ QR Manager ініціалізовано com sucesso');

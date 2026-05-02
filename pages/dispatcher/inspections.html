@@ -319,7 +319,7 @@
                 </button>
             </div>
             <div class="modal-body" id="viewModalBody">
-                <!-- Preenchido dinamicamente -->
+                <!-- Preenchaido dinamicamente -->
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
@@ -418,7 +418,7 @@
             console.error('Erro carregamento de inspeções:', err);
             document.getElementById('inspectionsBody').innerHTML =
                 '<tr><td colspan="8" class="text-center text-danger py-4">' +
-                '<i class="fas fa-exclamation-triangle mr-2"></i>Erro ao carregar даних</td></tr>';
+                '<i class="fas fa-exclamation-triangle mr-2"></i>Erro ao carregar dados</td></tr>';
         }
     }
 
@@ -673,7 +673,7 @@
         const date     = document.getElementById('sch_date').value;
         const type     = document.getElementById('sch_type').value;
 
-        if (!address) { Swal.fire('Atenção', 'Preencha a morada do ascensor.', 'warning'); return; }
+        if (!address) { Swal.fire('Atenção', 'Preenchaa a morada do ascensor.', 'warning'); return; }
         if (!techId)  { Swal.fire('Atenção', 'Selecione um técnico responsável.', 'warning'); return; }
         if (!date)    { Swal.fire('Atenção', 'Selecione a data da manutenção.', 'warning'); return; }
 

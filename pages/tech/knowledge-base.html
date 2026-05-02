@@ -441,13 +441,13 @@
                         <div class="col-12">
                             <div class="card knowledge-card">
                                 <div class="card-header">
-                                    <h3 class="card-title"><i class="fas fa-search mr-2"></i>Pesquisar у базі знань</h3>
+                                    <h3 class="card-title"><i class="fas fa-search mr-2"></i>Pesquisar na base de conhecimento</h3>
                                 </div>
                                 <div class="card-body">
                                     <div class="row">
                                         <div class="col-md-8">
                                             <div class="search-box">
-                                                <input type="text" id="searchInput" class="form-control form-control-lg" placeholder="Шукайте рішення, інструкції, пpessoasники...">
+                                                <input type="text" id="searchInput" class="form-control form-control-lg" placeholder="Pesquisar soluções, instruções, пpessoasники...">
                                                 <button class="btn btn-primary" onclick="knowledgeManager.searchArticles()">
                                                     <i class="fas fa-search"></i>
                                                 </button>
@@ -456,10 +456,10 @@
                                         <div class="col-md-4">
                                             <div class="btn-group btn-block">
                                                 <button class="btn btn-outline-primary" onclick="knowledgeManager.showAllArticles()">
-                                                    <i class="fas fa-list"></i> Todas сeтті
+                                                    <i class="fas fa-list"></i> Todas artigos
                                                 </button>
                                                 <button class="btn btn-outline-success" onclick="knowledgeManager.showFeatured()">
-                                                    <i class="fas fa-star"></i> Обрані
+                                                    <i class="fas fa-star"></i> Favoritos
                                                 </button>
                                                 <button class="btn btn-outline-info" onclick="knowledgeManager.showRecent()">
                                                     <i class="fas fa-clock"></i> Novos
@@ -500,8 +500,8 @@
                                 <div class="category-icon">🔧</div>
                                 <div class="category-info">
                                     <h4>Reparação</h4>
-                                    <p>Інструкції desde reparaçãoу de elevadores</p>
-                                    <span class="badge badge-primary">24 сeтті</span>
+                                    <p>Instruções de reparação de elevadores</p>
+                                    <span class="badge badge-primary">24 artigos</span>
                                 </div>
                             </div>
                         </div>
@@ -510,8 +510,8 @@
                                 <div class="category-icon">🛠️</div>
                                 <div class="category-info">
                                     <h4>Manutenção</h4>
-                                    <p>Manutenção planeada e профілактика</p>
-                                    <span class="badge badge-success">18 сeтей</span>
+                                    <p>Manutenção planeada e manutenção preventiva</p>
+                                    <span class="badge badge-success">18 de artigos</span>
                                 </div>
                             </div>
                         </div>
@@ -520,8 +520,8 @@
                                 <div class="category-icon">⚠️</div>
                                 <div class="category-info">
                                     <h4>Segurança</h4>
-                                    <p>Правила de segurança e сeндарти</p>
-                                    <span class="badge badge-warning">15 сeтей</span>
+                                    <p>Regulamentos de segurança e normas</p>
+                                    <span class="badge badge-warning">15 de artigos</span>
                                 </div>
                             </div>
                         </div>
@@ -530,19 +530,19 @@
                                 <div class="category-icon">🔍</div>
                                 <div class="category-info">
                                     <h4>Diagnóstico</h4>
-                                    <p>Pesquisar e усунення неcorretamenteстей</p>
-                                    <span class="badge badge-info">22 сeтті</span>
+                                    <p>Pesquisa e resolução de problemas</p>
+                                    <span class="badge badge-info">22 artigos</span>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Популярні сeтті -->
+                    <!-- Artigos populares -->
                     <div class="row mt-4">
                         <div class="col-12">
                             <div class="card knowledge-card">
                                 <div class="card-header">
-                                    <h3 class="card-title"><i class="fas fa-fire mr-2"></i>Популярні сeтті</h3>
+                                    <h3 class="card-title"><i class="fas fa-fire mr-2"></i>Artigos populares</h3>
                                     <div class="card-tools">
                                         <button class="btn btn-sm btn-primary" onclick="knowledgeManager.showAllPopular()">
                                             <i class="fas fa-eye"></i> Ver todos
@@ -551,39 +551,39 @@
                                 </div>
                                 <div class="card-body">
                                     <div class="row" id="popularArticles">
-                                        <!-- Популярні сeтті serão заванeжені aqui -->
+                                        <!-- Artigos populares serão заванeжені aqui -->
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Recentes додані -->
+                    <!-- Recentemente adicionados -->
                     <div class="row mt-4">
                         <div class="col-12">
                             <div class="card knowledge-card">
                                 <div class="card-header">
-                                    <h3 class="card-title"><i class="fas fa-clock mr-2"></i>Recentes додані</h3>
+                                    <h3 class="card-title"><i class="fas fa-clock mr-2"></i>Recentemente adicionados</h3>
                                 </div>
                                 <div class="card-body">
                                     <div class="row" id="recentArticles">
-                                        <!-- Recentes сeтті serão заванeжені aqui -->
+                                        <!-- Recentes artigos serão заванeжені aqui -->
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Рекомендовані para вас -->
+                    <!-- Recomendados para si -->
                     <div class="row mt-4">
                         <div class="col-12">
                             <div class="card knowledge-card">
                                 <div class="card-header">
-                                    <h3 class="card-title"><i class="fas fa-user-check mr-2"></i>Рекомендовані para вас</h3>
+                                    <h3 class="card-title"><i class="fas fa-user-check mr-2"></i>Recomendados para si</h3>
                                 </div>
                                 <div class="card-body">
                                     <div class="row" id="recommendedArticles">
-                                        <!-- Рекомендовані сeтті serão заванeжені aqui -->
+                                        <!-- Recomendados artigos serão заванeжені aqui -->
                                     </div>
                                 </div>
                             </div>
@@ -660,7 +660,7 @@
                                                     <i class="fas fa-phone-alt fa-2x text-warning mb-2"></i>
                                                     <h6>Suporte</h6>
                                                     <button class="btn btn-sm btn-outline-warning" onclick="window.location.href='support.html'">
-                                                        <i class="fas fa-phone"></i> Зателефонувати
+                                                        <i class="fas fa-phone"></i> Deаtelefoneувати
                                                     </button>
                                                 </div>
                                             </div>
@@ -684,18 +684,18 @@
         </footer>
     </div>
 
-    <!-- Janela modal visualizaçãoу сeтті -->
+    <!-- Janela modal visualizaçãoу artigos -->
     <div class="modal fade" id="viewArticleModal" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-xl" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Visualização сeтті</h5>
+                    <h5 class="modal-title">Visualização artigos</h5>
                     <button type="button" class="close" data-dismiss="modal">
                         <span>&times;</span>
                     </button>
                 </div>
                 <div class="modal-body" id="articleContent">
-                    <!-- Conteúdo сeтті será carregado aqui -->
+                    <!-- Conteúdo artigos será carregado aqui -->
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
@@ -758,7 +758,7 @@
                 $('#techName').text(`${userData.firstName} ${userData.lastName || ''}`);
             }
 
-            // Inicialização менеджера бази знань
+            // Inicialização менеджера base знань
             window.knowledgeManager = new KnowledgeManager();
             
             // Filtroація за темами

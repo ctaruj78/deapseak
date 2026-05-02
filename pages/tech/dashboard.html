@@ -430,7 +430,7 @@
 
             console.log('[Tech Dashboard] Autorizado como:', currentUser.username, currentUser.role);
 
-            // Заванeжуexisteмо дані
+            // Deаванeжуexisteмо дані
             loadTechData();
             
             // Inicialização WebSocket para do técnico
@@ -467,34 +467,34 @@
                     return dueDate && new Date(dueDate) < new Date();
                 }).length;
 
-                // Оновлюexisteмо інтерфейс
+                // Оновлюexisteмо interface
                 $('#activeAssignments').text(activeAssignments);
                 $('#completedToday').text(completedToday);
                 $('#urgentAssignments').text(urgentAssignments);
                 $('#overdueAssignments').text(overdueAssignments);
 
-                // Заванeжуexisteмо lista de tarefas
+                // Deаванeжуexisteмо lista de tarefas
                 displayTechTasks(assignments);
                 
                 console.log('✅ Dados do técnico carregado');
 
             } catch (error) {
-                console.error('❌ Erro ao carregar даних do técnico:', error);
+                console.error('❌ Erro ao carregar dados do técnico:', error);
                 
-                // Показуexisteмо нулі se API indisponível
+                // Atéказуexisteмо нулі se API indisponível
                 $('#activeAssignments').text('0');
                 $('#completedToday').text('0');
                 $('#urgentAssignments').text('0');
                 $('#overdueAssignments').text('0');
                 
-                // Показуexisteмо mensagem про помилку
+                // Atéказуexisteмо mensagem про erro
                 const tasksTable = document.getElementById('todayTasks');
                 if (tasksTable) {
                     tasksTable.innerHTML = `
                         <tr>
                             <td colspan="6" class="text-center text-danger py-4">
                                 <i class="fas fa-exclamation-triangle fa-3x mb-3 d-block"></i>
-                                <p class="mb-0"><strong>Erro ao carregar даних</strong></p>
+                                <p class="mb-0"><strong>Erro ao carregar dados</strong></p>
                                 <small>API indisponível. Tente atualizar a página.</small>
                             </td>
                         </tr>
@@ -543,7 +543,7 @@
 
         // Função apresentação de tarefas do técnico
         function displayTechTasks(assignments) {
-            // Знаходимо separadorлицю de tarefas
+            // Deнаходимо separadorлицю de tarefas
             const tasksTable = document.getElementById('todayTasks');
             
             if (!tasksTable) {
@@ -567,7 +567,7 @@
                 return;
             }
 
-            // Показуexisteмо всі активні tarefas (не завершені e не скасовані)
+            // Atéказуexisteмо всі активні tarefas (не завершені e не скасовані)
             const activeTasks = assignments.filter(assignment =>
                 assignment.status !== 'completed' && assignment.status !== 'cancelled'
             );
@@ -755,7 +755,7 @@
                     ${commentsHtml}
                 `);
 
-                // Botões de ação зmasжно від estadoу
+                // Botões de ação dependendoо від estadoу
                 let actionBtns = '';
                 if (task.status === 'assigned') {
                     actionBtns += `<button class="btn btn-primary mr-2" onclick="startTask('${taskId}');$('#taskDetailsModal').modal('hide');"><i class="fas fa-play mr-1"></i>Iniciar</button>`;
@@ -1019,7 +1019,7 @@
          */
         function handleLiftDiagnostic(data) {
             console.log('[Tech Dashboard] Diagnóstico do elevador:', data);
-            // Тут pode-se adicionar логіку обробки діагностичних даних
+            // Тут pode-se adicionar логіку обробки діагностичних dados
         }
         
         /**
@@ -1044,7 +1044,7 @@
             
             $('body').append(notification);
             
-            // Autoматичне eliminação através de 7 секунд para de técnicos (mais horaу на реакцію)
+            // Automático eliminação através de 7 секунд para de técnicos (mais horaу на реакцію)
             setTimeout(() => {
                 notification.alert('close');
             }, 7000);

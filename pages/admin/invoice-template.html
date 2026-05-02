@@ -809,7 +809,7 @@
                         const year = new Date().getFullYear();
                         const month = String(new Date().getMonth() + 1).padStart(2, '0');
                         $('#invoiceNumber').val(`ORC-${year}-${month}-001`);
-                        console.warn('⚠️ Não foi possível отримати número desde API, використовуйте fallback');
+                        console.warn('⚠️ Não foi possível отримати número desde API, виutilizовуйте fallback');
                     }
                 } catch (error) {
                     console.error('❌ Erro генерації númeroа:', error);
@@ -1171,7 +1171,7 @@
                     doc.text('FestLift - Elevadores e Serviços, Lda. | NIF: 515 924 741 | info@festlift.pt', 105, footerY, { align: 'center' });
                     doc.text('Tel: +351 214 190 863 | Móvel: +351 926 380 243/244 | Av. do Parque 84B, Rio de Mouro, Lisboa 2635-609', 105, footerY + 4.5, { align: 'center' });
                     
-                    // Збереження
+                    // Deбереження
                     const fileName = `Orcamento_${orcamentoNum.replace(/\//g, '-')}.pdf`;
                     doc.save(fileName);
                     
@@ -1204,7 +1204,7 @@
                 
                 // Викорисeти ID desde будь-якого джерела
                 const orcamentoId = window.lastSavedOrcamentoId || window.currentOrcamentoId;
-                console.log('   Використовую ID:', orcamentoId);
+                console.log('   Виutilizовую ID:', orcamentoId);
 
                 const clientEmail = prompt('Insira o email do cliente:', $('#clientEmail').val());
                 if (!clientEmail) return;
@@ -1343,7 +1343,7 @@
             
             // Validação
             if (!clienteNome || !clienteEmail || !clienteMorada) {
-                alert('❌ Preencha todos os dados do cliente (Nome, Morada e Email)!');
+                alert('❌ Preenchaa todos os dados do cliente (Nome, Morada e Email)!');
                 return;
             }
             
@@ -1421,7 +1421,7 @@
                     const orcamentoData = result.data || result.orcamento || {};
                     const orcamentoId = orcamentoData._id || window.currentOrcamentoId;
                     
-                    // Зберігаexisteмо ID para можливості відправки email
+                    // Deберігаexisteмо ID para можливості відправки email
                     window.lastSavedOrcamentoId = orcamentoId;
                     window.currentOrcamentoId = orcamentoId;
                     
@@ -1483,7 +1483,7 @@
 
         // Initialize when document is ready
         $(document).ready(async function() {
-            // Отримати параметри URL
+            // Отримати parâmetros URL
             const urlParams = new URLSearchParams(window.location.search);
             const orcamentoId = urlParams.get('id');
             const viewMode = urlParams.get('view') === 'true';
@@ -1536,7 +1536,7 @@
                                 if (!lift || !lift._id) return;
                                 const addr = lift.address || {};
                                 const addrStr = pLiftAddress || (typeof addr === 'string' ? addr : [addr.street, addr.zipCode, addr.city].filter(Boolean).join(', '));
-                                // Заповнити endereço
+                                // Deаповнити endereço
                                 if (addrStr && !$('#clientAddress').val().trim()) $('#clientAddress').val(addrStr);
                                 if (lift.clientName && !$('#clientName').val().trim()) $('#clientName').val(lift.clientName);
                                 if ((lift.clientEmail || lift.email) && !$('#clientEmail').val().trim()) $('#clientEmail').val(lift.clientEmail || lift.email);
@@ -1630,7 +1630,7 @@
                 if (data.address) {
                     $('#clientAddress').val(data.address);
                 }
-                // Preencher nome e email do cliente se ainda vazio
+                // Preenchaer nome e email do cliente se ainda vazio
                 if (data.clientName && !$('#clientName').val().trim()) {
                     $('#clientName').val(data.clientName);
                 }
@@ -1744,7 +1744,7 @@
                 const orcamento = result.data;
                 console.log('✅ Orçamento carregado (público):', orcamento);
                 
-                // Заповнити форму (apenas чиeння)
+                // Deаповнити форму (apenas чиeння)
                 $('#orcamentoNumero').text(orcamento.numero);
                 $('#data').val(new Date(orcamento.data).toISOString().split('T')[0]).prop('disabled', true);
                 $('#clienteNome').val(orcamento.cliente.nome).prop('disabled', true);
@@ -1780,7 +1780,7 @@
                 $('#btnSalvar').hide();
                 $('#btnEnviarEmail').hide();
                 
-                // Mostrar apenas кнопку скачування PDF
+                // Mostrar apenas botão скачування PDF
                 $('#btnDownloadPDF').show();
                 
             } catch (error) {
@@ -1920,7 +1920,7 @@
                 
                 console.log('✅ Орçаменто carregado:', orcamento);
                 
-                // Заповнити форму даними
+                // Deаповнити форму даними
                 $('#clientName').val(orcamento.cliente.nome);
                 $('#clientAddress').val(orcamento.cliente.morada || '');
                 $('#clientEmail').val(orcamento.cliente.email);

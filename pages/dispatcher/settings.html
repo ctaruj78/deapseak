@@ -175,7 +175,7 @@
                         </div>
                         <div class="col-lg-4 col-md-6">
                             <div class="stats-box">
-                                <div class="stats-number" id="lastLogin">Сьогоdias</div>
+                                <div class="stats-number" id="lastLogin">Hoje</div>
                                 <div class="stats-label">Último entrada</div>
                             </div>
                         </div>
@@ -187,8 +187,8 @@
                             <div class="settings-card user-card">
                                 <span class="role-badge badge-info" id="userRoleBadge">Despachante</span>
                                 <i class="settings-icon fas fa-user-cog"></i>
-                                <h4>Configurações профілю</h4>
-                                <p>Gestão вашим особистим профілем e configuraçõesми</p>
+                                <h4>Configurações do perfil</h4>
+                                <p>Gerir o seu perfil pessoal e configurações</p>
                                 
                                 <form id="profileForm">
                                     <div class="form-group">
@@ -230,7 +230,7 @@
                             <div class="settings-card security-card">
                                 <i class="settings-icon fas fa-shield-alt"></i>
                                 <h4>Segurança e acesso</h4>
-                                <p>Gestão паролями e configuraçõesми de segurança</p>
+                                <p>Gestão palavras-passe e configurações de segurança</p>
                                 
                                 <div class="form-group">
                                     <label for="currentPassword">Palavra-passe actual</label>
@@ -243,21 +243,21 @@
                                 </div>
                                 
                                 <div class="form-group">
-                                    <label for="confirmPassword">Confirmação пароля</label>
+                                    <label for="confirmPassword">Confirmação da palavra-passe</label>
                                     <input type="password" id="confirmPassword" class="form-control">
                                 </div>
                                 
                                 <div class="form-group">
                                     <div class="custom-control custom-switch">
                                         <input type="checkbox" class="custom-control-input" id="twoFactorAuth">
-                                        <label class="custom-control-label" for="twoFactorAuth">Двофакторна автентифікація</label>
+                                        <label class="custom-control-label" for="twoFactorAuth">Autenticação de dois fatores</label>
                                     </div>
                                 </div>
                                 
                                 <div class="form-group">
                                     <div class="custom-control custom-switch">
                                         <input type="checkbox" class="custom-control-input" id="emailNotifications" checked>
-                                        <label class="custom-control-label" for="emailNotifications">Notificações по email</label>
+                                        <label class="custom-control-label" for="emailNotifications">Notificações por email</label>
                                     </div>
                                 </div>
                                 
@@ -274,9 +274,9 @@
                             <div class="settings-card notification-card">
                                 <i class="settings-icon fas fa-bell"></i>
                                 <h4>Notificações</h4>
-                                <p>Configurações de notificações e повідомлень</p>
+                                <p>Configurações de notificações e mensagens</p>
                                 
-                                <h6>Tipoи de notificações:</h6>
+                                <h6>Tipos de notificações:</h6>
                                 <div class="form-group">
                                     <div class="custom-control custom-switch">
                                         <input type="checkbox" class="custom-control-input" id="notifyNewRequests" checked>
@@ -294,22 +294,22 @@
                                 <div class="form-group">
                                     <div class="custom-control custom-switch">
                                         <input type="checkbox" class="custom-control-input" id="notifyCompletions" checked>
-                                        <label class="custom-control-label" for="notifyCompletions">Завершення de tarefas</label>
+                                        <label class="custom-control-label" for="notifyCompletions">Conclusão de tarefas</label>
                                     </div>
                                 </div>
                                 
                                 <div class="form-group">
                                     <div class="custom-control custom-switch">
                                         <input type="checkbox" class="custom-control-input" id="notifyEmergencies" checked>
-                                        <label class="custom-control-label" for="notifyEmergencies">De emergência ситуації</label>
+                                        <label class="custom-control-label" for="notifyEmergencies">Situações de emergência</label>
                                     </div>
                                 </div>
                                 
-                                <h6 class="mt-3">Спpessoas отримання:</h6>
+                                <h6 class="mt-3">Formas de receber:</h6>
                                 <div class="form-group">
                                     <div class="custom-control custom-switch">
                                         <input type="checkbox" class="custom-control-input" id="notifyInApp" checked>
-                                        <label class="custom-control-label" for="notifyInApp">В системі</label>
+                                        <label class="custom-control-label" for="notifyInApp">No sistema</label>
                                     </div>
                                 </div>
                                 
@@ -337,10 +337,10 @@
                             <div class="settings-card system-card">
                                 <i class="settings-icon fas fa-sliders-h"></i>
                                 <h4>Do sistema configurações</h4>
-                                <p>Gerais configurações do sistema e інтерфейсу</p>
+                                <p>Configurações gerais do sistema e interface</p>
                                 
                                 <div class="form-group">
-                                    <label for="languageSelect">Idioma інтерфейсу</label>
+                                    <label for="languageSelect">Idioma da interface</label>
                                     <select id="languageSelect" class="form-control">
                                         <option value="uk">Ucraniano</option>
                                         <option value="en">English</option>
@@ -352,7 +352,7 @@
                                     <select id="timezoneSelect" class="form-control">
                                         <option value="Europe/Kiev">Lisboa (UTC+2)</option>
                                         <option value="UTC">UTC</option>
-                                        <option value="Europe/London">Лондон (UTC+0)</option>
+                                        <option value="Europe/London">Londres (UTC+0)</option>
                                     </select>
                                 </div>
                                 
@@ -412,10 +412,10 @@
                                             <h6>Servidor:</h6>
                                             <p id="systemInfoServer">Node.js + Express</p>
                                             
-                                            <h6>Кліexisteнт:</h6>
+                                            <h6>Cliente:</h6>
                                             <p id="systemInfoClient">HTML5 + JavaScript</p>
                                             
-                                            <h6>Ліцензія:</h6>
+                                            <h6>Licença:</h6>
                                             <p id="systemInfoLicense">Пропріexisteeрна</p>
                                         </div>
                                     </div>
@@ -468,7 +468,7 @@
             $('#darkModeToggle').on('click', function() {
                 $('body').toggleClass('dark-mode');
                 $(this).find('i').toggleClass('fa-moon fa-sun');
-                // Збереження configurações теми
+                // Deбереження configurações теми
                 const isDarkMode = $('body').hasClass('dark-mode');
                 localStorage.setItem('darkMode', isDarkMode);
             });

@@ -77,7 +77,7 @@
                     return;
                 }
                 
-                console.log('📍 Pedido геолокації...');
+                console.log('📍 Pedido геоlocalizações...');
                 navigator.geolocation.getCurrentPosition(
                     (position) => {
                         userLocation = {
@@ -89,7 +89,7 @@
                         resolve(userLocation);
                     },
                     (error) => {
-                        console.warn('⚠️ Erro геолокації:', error.message);
+                        console.warn('⚠️ Erro геоlocalizações:', error.message);
                         reject(error);
                     },
                     { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
@@ -183,7 +183,7 @@
                 
                 console.log('📏 Пряма відсeнь:', (distance/1000).toFixed(2), 'км');
 
-                // Побудова rotaу
+                // Atéбудова rotaу
                 routingControl = L.Routing.control({
                     waypoints: [
                         L.latLng(userLocation.lat, userLocation.lng),
@@ -256,7 +256,7 @@
                 await getUserLocation();
                 center = [userLocation.lat, userLocation.lng];
             } catch (e) {
-                console.warn('⚠️ Геолокацію не recebido, використовуexisteться predefinido');
+                console.warn('⚠️ Геолокацію не recebido, виutilizовуexisteться predefinido');
             }
 
             map = L.map('map').setView(center, zoom);

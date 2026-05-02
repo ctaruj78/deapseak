@@ -669,7 +669,7 @@ class SmartAnalyticsDashboard {
     init() {
         console.log('🚀 Ініціалізація Smart Analytics Dashboard...');
         
-        // Заванeжуexisteмо поchatкові дані
+        // Deаванeжуexisteмо поchatкові дані
         this.loadInitialData();
         
         // Створюexisteмо gráficoи
@@ -678,7 +678,7 @@ class SmartAnalyticsDashboard {
         // Налаштовуexisteмо EventBus слухачів
         this.setupEventBusListeners();
         
-        // Запускаexisteмо real-time atualização
+        // Deапускаexisteмо real-time atualização
         this.startRealTimeUpdates();
         
         // Оновлюexisteмо здоров'я do sistema
@@ -691,7 +691,7 @@ class SmartAnalyticsDashboard {
         try {
             console.log('🔄 A carregar dados para análise...');
             
-            // Заванeжуexisteмо дані desde API парmasльно
+            // Deаванeжуexisteмо дані desde API парmasльно
             const [liftsRes, requestsRes] = await Promise.all([
                 AuthManager.fetchWithAuth('/api/lifts'),
                 AuthManager.fetchWithAuth('/api/requests')
@@ -707,13 +707,13 @@ class SmartAnalyticsDashboard {
             this.realTimeData.inspections = lifts.filter(l => l.nextInspectionDate).length;
             this.realTimeData.requests = requests.length;
             
-            console.log('✅ Carregado даних:', {
+            console.log('✅ Carregado dados:', {
                 lifts: lifts.length,
                 requests: requests.length
             });
 
         } catch (error) {
-            console.error('❌ Erro ao carregar даних:', error);
+            console.error('❌ Erro ao carregar dados:', error);
             // Fallback valor
             this.realTimeData = {
                 lifts: 0,
@@ -728,7 +728,7 @@ class SmartAnalyticsDashboard {
     }
 
     initCharts() {
-        // Atividade do sistema за 7 diasв
+        // Atividade do sistema за 7 dias
         const activityCtx = document.getElementById('activityChart').getContext('2d');
         this.charts.activity = new Chart(activityCtx, {
             type: 'line',
@@ -945,7 +945,7 @@ class SmartAnalyticsDashboard {
     }
 
     generateActivityData(type) {
-        // Генеруexisteмо примірні дані за осeнні 7 diasв
+        // Генеруexisteмо примірні дані за recentes 7 dias
         const data = [];
         for (let i = 0; i < 7; i++) {
             const value = Math.floor(Math.random() * 10) + 1;
@@ -955,9 +955,9 @@ class SmartAnalyticsDashboard {
     }
 }
 
-// Funções globais para інтерфейсу
+// Funções globais para da interface
 function refreshAllData() {
-    console.log('🔄 Оновлення всіх даних...');
+    console.log('🔄 Оновлення всіх dados...');
     window.analyticsManager = new SmartAnalyticsDashboard();
     
     if (window.eventBus) {

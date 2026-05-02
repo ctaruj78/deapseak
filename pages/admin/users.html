@@ -845,7 +845,7 @@
                 password += numbers[Math.floor(Math.random() * numbers.length)];
                 password += special[Math.floor(Math.random() * special.length)];
                 
-                // Preencher o restante do comprimento
+                // Preenchaer o restante do comprimento
                 for (let i = password.length; i < length; i++) {
                     password += allChars[Math.floor(Math.random() * allChars.length)];
                 }
@@ -1419,7 +1419,7 @@
             }
 
             showGeneratedPasswordModal(email, password) {
-                // Створити модальне вікно para показу згенерованого пароля
+                // Створити модальне вікно para показу згенерованого palavra-passe
                 const modalHTML = `
                     <div class="modal fade" id="generatedPasswordModal" tabindex="-1" role="dialog">
                         <div class="modal-dialog modal-dialog-centered" role="document">

@@ -251,7 +251,7 @@
         <!-- ═══════════════════════════════════════════════════════════ -->
 <!-- ЕТАЛОННИЙ SIDEBAR ДЛЯ КЛІЄНТСЬКИХ СManutençãoРІНОК -->
 <!-- Versão: 2.0 Portugal (2026-01-13) -->
-<!-- ⚠️ НЕ РЕДАГУЙТЕ ОКРЕМО! Використовуйте цей ficheiro як еeлон -->
+<!-- ⚠️ НЕ РЕДАГУЙТЕ ОКРЕМО! Виutilizовуйте цей ficheiro як еeлон -->
 <!-- ═══════════════════════════════════════════════════════════ -->
 
 <aside class="main-sidebar sidebar-dark-primary elevation-4">
@@ -743,7 +743,7 @@
                 window._clientLiftMap.remove();
                 window._clientLiftMap = null;
             }
-            // Закриваexisteмо também дочірній модал visualizaçãoу relatório
+            // Deакриваexisteмо também дочірній модал visualizaçãoу relatório
             $('#clientReportViewModal').modal('hide');
         });
         
@@ -860,7 +860,7 @@
                 );
             }, 30000);
 
-            // A carregar даних do utilizador desde API
+            // A carregar dados do utilizador desde API
             async function loadUserData() {
                 try {
                     const token = localStorage.getItem('token');
@@ -880,7 +880,7 @@
                         const userData = await response.json();
                         console.log('✅ Dados do utilizador:', userData);
                         
-                        // Зберігаexisteмо в localStorage
+                        // Deберігаexisteмо в localStorage
                         localStorage.setItem('userData', JSON.stringify(userData));
                         localStorage.setItem('user', JSON.stringify(userData));
                         
@@ -895,11 +895,11 @@
                         }
                     }
                 } catch (error) {
-                    console.error('❌ Erro ao carregar даних:', error);
+                    console.error('❌ Erro ao carregar dados:', error);
                 }
             }
 
-            // Заванeжуexisteмо дані
+            // Deаванeжуexisteмо дані
             await loadUserData();
 
             // Ініціалізація менеджера de elevadores (lifts-manager.js may have already created one)

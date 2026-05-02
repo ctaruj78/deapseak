@@ -841,7 +841,7 @@
                                     <small class="text-muted">Último entrada: ontem</small>
                                 </div>
                             </div>
-                            <button class="btn btn-danger btn-sm mt-2" onclick="if(confirm('Concluir всі sessões ativas? Será removido do sistema.')){localStorage.removeItem('authToken');localStorage.removeItem('userData');sessionStorage.clear();window.location.replace('/pages/auth/login.html');}">
+                            <button class="btn btn-danger btn-sm mt-2" onclick="if(confirm('Terminar todas as sessões ativas? Será removido do sistema.')){localStorage.removeItem('authToken');localStorage.removeItem('userData');sessionStorage.clear();window.location.replace('/pages/auth/login.html');}">
                                 <i class="fas fa-sign-out-alt mr-1"></i>Concluir todas as sessões
                             </button>
                         </div>
@@ -911,10 +911,10 @@
                                 </a>
                             </div>
                             
-                            <h5 class="mt-4">Recentes резервні копії</h5>
+                            <h5 class="mt-4">Cópias de segurança recentes</h5>
                             <div class="list-group">
                                 <div class="list-group-item d-flex justify-content-between align-items-center">
-                                    Повна резервна копія
+                                    Atéвна резервна копія
                                     <small class="text-muted">hoje, 02:00</small>
                                 </div>
                                 <div class="list-group-item d-flex justify-content-between align-items-center">
@@ -979,15 +979,15 @@
                                 <select class="form-control" id="language">
                                     <option value="uk">Ucraniano</option>
                                     <option value="en">English</option>
-                                    <option value="ru">Русский</option>
+                                    <option value="ru">Russo</option>
                                 </select>
                             </div>
                             <div class="form-group">
                                 <label for="timezone">Fuso horário</label>
                                 <select class="form-control" id="timezone">
                                     <option value="Europe/Kiev">Lisboa (UTC+2)</option>
-                                    <option value="Europe/London">Лондон (UTC+0)</option>
-                                    <option value="America/New_York">Нью-Йорк (UTC-5)</option>
+                                    <option value="Europe/London">Londres (UTC+0)</option>
+                                    <option value="America/New_York">Nova Iorque (UTC-5)</option>
                                 </select>
                             </div>
                         </div>
@@ -1012,7 +1012,7 @@
                                 </label>
                             </div>
                             
-                            <h5 class="mt-4">Exportar даних</h5>
+                            <h5 class="mt-4">Exportar dados</h5>
                             <p class="text-muted">Exportarуйте всі ваші дані в JSON formatoі</p>
                             <button class="btn btn-outline-primary" onclick="(function(){const data={user:JSON.parse(localStorage.getItem('userData')||'{}'),exported:new Date().toISOString()};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='profile-export-'+Date.now()+'.json';a.click();})()">
                                 <i class="fas fa-download mr-2"></i>Exportar дані
@@ -1020,7 +1020,7 @@
                             
                             <h5 class="mt-4">Видmasння облікового registo</h5>
                             <p class="text-danger">Цю дію неможливо cancelar. Todas ваші дані serão видmasні наsempre.</p>
-                            <button class="btn btn-outline-danger" onclick="if(confirm('Eliminar conta? Цю дію неможливо cancelar!')){if(confirm('Tem a certeza? Todas дані serão видmasні наsempre.')){const token=localStorage.getItem('authToken');fetch('/api/users/me',{method:'DELETE',headers:{Authorization:'Bearer '+token}}).then(()=>{localStorage.clear();sessionStorage.clear();window.location.replace('/pages/auth/login.html');}).catch(()=>{alert('Erro eliminação. Зверніться до administradorістратора.');});}}">
+                            <button class="btn btn-outline-danger" onclick="if(confirm('Eliminar conta? Цю дію неможливо cancelar!')){if(confirm('Tem a certeza? Todas дані serão видmasні наsempre.')){const token=localStorage.getItem('authToken');fetch('/api/users/me',{method:'DELETE',headers:{Authorization:'Bearer '+token}}).then(()=>{localStorage.clear();sessionStorage.clear();window.location.replace('/pages/auth/login.html');}).catch(()=>{alert('Erro eliminação. Deверніться до administradorістратора.');});}}">
                                 <i class="fas fa-trash mr-2"></i>Eliminar conta
                             </button>
                         </div>
@@ -1137,7 +1137,7 @@
             await loadAdminProfile();
         });
         
-        // A carregar профілю do administrador desde API
+        // A carregar perfil do administrador desde API
         async function loadAdminProfile() {
             try {
                 const token = localStorage.getItem('token') || 
@@ -1174,7 +1174,7 @@
                         $('#adminRole').text(userData.role);
                     }
                     
-                    // Зберігаexisteмо в localStorage
+                    // Deберігаexisteмо в localStorage
                     localStorage.setItem('userData', JSON.stringify(userData));
                 } else {
                     console.warn('⚠️ API failed, using localStorage');

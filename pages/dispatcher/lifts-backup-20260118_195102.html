@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dispatcher - Gestão Elevadorами</title>
+    <title>Dispatcher - Gestão de Elevadores</title>
     <script src="../../assets/js/global-settings.js"></script>
     
     <!-- AdminLTE CSS -->
@@ -164,7 +164,7 @@
                     <div class="row mb-2">
                         <div class="col-sm-6">
                             <h1 class="m-0">
-                                <i class="fas fa-elevator"></i> Gestão Elevadorами
+                                <i class="fas fa-elevator"></i> Gestão de Elevadores
                             </h1>
                         </div>
                         <div class="col-sm-6">
@@ -219,7 +219,7 @@
                             <div class="small-box bg-danger">
                                 <div class="inner">
                                     <h3 id="inactiveLifts">0</h3>
-                                    <p>Неактивні</p>
+                                    <p>Inativos</p>
                                 </div>
                                 <div class="icon">
                                     <i class="fas fa-exclamation-triangle"></i>
@@ -242,7 +242,7 @@
                     <div class="filters">
                         <div class="row">
                             <div class="col-md-4">
-                                <input type="text" id="searchInput" class="form-control" placeholder="🔍 Pesquisar за назвою ou endereço...">
+                                <input type="text" id="searchInput" class="form-control" placeholder="🔍 Pesquisar por nome ou endereço...">
                             </div>
                             <div class="col-md-3">
                                 <select id="statusFilter" class="form-control">
@@ -254,7 +254,7 @@
                             </div>
                             <div class="col-md-3">
                                 <select id="municipalityFilter" class="form-control">
-                                    <option value="">Todas municípioи</option>
+                                    <option value="">Todos os municípios</option>
                                 </select>
                             </div>
                             <div class="col-md-2">
@@ -376,7 +376,7 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label>Осeння inspeção</label>
+                                    <label>Última inspeção</label>
                                     <input type="date" class="form-control" id="lastInspectionDate">
                                 </div>
                             </div>
@@ -412,7 +412,7 @@
             <div class="modal-content">
                 <div class="modal-header bg-info text-white">
                     <h5 class="modal-title">
-                        <i class="fas fa-eye"></i> Visualização інформації про elevador
+                        <i class="fas fa-eye"></i> Visualização de informações do elevador
                     </h5>
                     <button type="button" class="close text-white" data-dismiss="modal" onclick="closeViewModal()">
                         <span>&times;</span>
@@ -433,7 +433,7 @@
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" id="tech-tab" data-toggle="tab" href="#technical" role="tab">
-                                <i class="fas fa-cogs"></i> Técnicos дані
+                                <i class="fas fa-cogs"></i> Dados técnicos
                             </a>
                         </li>
                         <li class="nav-item">
@@ -527,7 +527,7 @@
                             </div>
                             
                             <div class="info-group mb-3">
-                                <label class="text-muted"><i class="fas fa-door-open"></i> Código домофону:</label>
+                                <label class="text-muted"><i class="fas fa-door-open"></i> Código de intercomunicador:</label>
                                 <div class="alert alert-info">
                                     <h4 class="font-weight-bold" id="viewAccessCode">-</h4>
                                 </div>
@@ -554,7 +554,7 @@
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="info-group mb-3">
-                                        <label class="text-muted">Осeння inspeção:</label>
+                                        <label class="text-muted">Última inspeção:</label>
                                         <p id="viewLastInspection">-</p>
                                     </div>
                                 </div>
@@ -633,7 +633,7 @@
                     <ul class="nav nav-tabs" id="docTabs" role="tablist">
                         <li class="nav-item">
                             <a class="nav-link active" id="contracts-tab" data-toggle="tab" href="#contracts" role="tab">
-                                <i class="fas fa-file-contract"></i> Contratoи
+                                <i class="fas fa-file-contract"></i> Contratos
                             </a>
                         </li>
                         <li class="nav-item">
@@ -644,14 +644,14 @@
                     </ul>
                     
                     <div class="tab-content mt-3" id="docTabContent">
-                        <!-- Contratoи -->
+                        <!-- Contratos -->
                         <div class="tab-pane fade show active" id="contracts" role="tabpanel">
                             <div class="mb-3">
                                 <button class="btn btn-primary" onclick="document.getElementById('contractFile').click()">
                                     <i class="fas fa-upload"></i> Carregar contrato
                                 </button>
                                 <input type="file" id="contractFile" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" style="display: none;" onchange="uploadDocument('contract')">
-                                <small class="form-text text-muted">Formatos suportados: PDF, DOC, DOCX, JPG, PNG. Максимум 10 МБ.</small>
+                                <small class="form-text text-muted">Formatos suportados: PDF, DOC, DOCX, JPG, PNG. Máximo 10 MB.</small>
                             </div>
                             <div id="contractsList">
                                 <p class="text-muted text-center py-3">A carregar de documentos...</p>
@@ -665,7 +665,7 @@
                                     <i class="fas fa-upload"></i> Descarregar relatório
                                 </button>
                                 <input type="file" id="inspectionFile" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" style="display: none;" onchange="uploadDocument('inspection')">
-                                <small class="form-text text-muted">Formatos suportados: PDF, DOC, DOCX, JPG, PNG. Максимум 10 МБ.</small>
+                                <small class="form-text text-muted">Formatos suportados: PDF, DOC, DOCX, JPG, PNG. Máximo 10 MB.</small>
                             </div>
                             <div id="inspectionsList">
                                 <p class="text-muted text-center py-3">A carregar de documentos...</p>
@@ -702,7 +702,7 @@
         let map = null;
         let markerCluster = null;
         let currentView = 'list'; // 'list' ou 'map'
-        let userRole = 'dispatcher'; // За замовчуванням
+        let userRole = 'dispatcher'; // Deа замовчуванням
 
         // Отримати função do utilizador desde tokenа
         function getUserRole() {
@@ -732,7 +732,7 @@
 
             // Verificação наявності jQuery modal plugin (para діагностики)
             if (typeof $.fn.modal === 'undefined') {
-                console.warn('⚠️ Bootstrap modal plugin не заванeжений, використовуexisteться fallback');
+                console.warn('⚠️ Bootstrap modal plugin не заванeжений, виutilizовуexisteться fallback');
             } else {
                 console.log('✅ Bootstrap modal plugin готовий');
             }
@@ -751,7 +751,7 @@
             
             if (highlightId) {
                 console.log('🎯 Detectado highlight параметр:', highlightId);
-                // Почекати поки elevadores заванeжаться, потім abrir модальне вікно
+                // Atéчекати поки elevadores заванeжаться, потім abrir модальне вікно
                 setTimeout(() => {
                     const lift = allLifts.find(l => l._id === highlightId);
                     if (lift) {
@@ -802,7 +802,7 @@
                 if (!contentType || !contentType.includes('application/json')) {
                     const text = await response.text();
                     console.error('❌ Recebido не JSON:', text.substring(0, 200));
-                    throw new Error('Сервер повернув неправильний formato даних');
+                    throw new Error('Сервер повернув неправильний formato dados');
                 }
 
                 const data = await response.json();
@@ -828,7 +828,7 @@
                 console.error('❌ Erro:', error);
                 showError('Não foi possível descarregar elevadores: ' + error.message);
                 
-                // Mostrar помилку в контейнері
+                // Mostrar erro в контейнері
                 const container = document.getElementById('liftsContainer');
                 container.innerHTML = `
                     <div class="alert alert-danger" role="alert">
@@ -868,7 +868,7 @@
                     document.getElementById('activeFilterBanner').style.display = 'block';
                 }
             } catch (error) {
-                console.error('Erro carregamento даних cliente:', error);
+                console.error('Erro carregamento dados cliente:', error);
             }
         }
         
@@ -895,24 +895,24 @@
                     notifications.push({
                         type: 'danger',
                         icon: 'fas fa-exclamation-triangle',
-                        message: `Inspeção прострочена на ${Math.abs(daysUntil)} diasв!`
+                        message: `Inspeção прострочена на ${Math.abs(daysUntil)} dias!`
                     });
                 } else if (daysUntil <= 7) {
                     notifications.push({
                         type: 'danger',
                         icon: 'fas fa-calendar-times',
-                        message: `Inspeção através de ${daysUntil} diasв`
+                        message: `Inspeção através de ${daysUntil} dias`
                     });
                 } else if (daysUntil <= 30) {
                     notifications.push({
                         type: 'warning',
                         icon: 'fas fa-calendar-alt',
-                        message: `Inspeção através de ${daysUntil} diasв`
+                        message: `Inspeção através de ${daysUntil} dias`
                     });
                 }
             }
             
-            // Verificação довгої неактивності
+            // Verificação довгої неde atividade
             if (lift.status === 'inactive' && lift.updatedAt) {
                 const lastUpdate = new Date(lift.updatedAt);
                 const daysInactive = Math.floor((today - lastUpdate) / (1000 * 60 * 60 * 24));
@@ -921,7 +921,7 @@
                     notifications.push({
                         type: 'warning',
                         icon: 'fas fa-power-off',
-                        message: `Неativo ${daysInactive} diasв`
+                        message: `Неativo ${daysInactive} dias`
                     });
                 }
             }
@@ -935,13 +935,13 @@
                 });
             }
             
-            // Verificação відсутності relatórioів inspeções
+            // Verificação відсутності de relatórios inspeções
             if (!lift.documents || lift.documents.filter(d => d.type === 'inspection').length === 0) {
                 if (!lift.lastInspectionDate) {
                     notifications.push({
                         type: 'info',
                         icon: 'fas fa-clipboard-check',
-                        message: 'Não há relatórioів inspeções'
+                        message: 'Não há de relatórios inspeções'
                     });
                 }
             }
@@ -975,7 +975,7 @@
                 container.innerHTML = `
                     <div class="text-center py-5">
                         <i class="fas fa-inbox fa-3x text-muted"></i>
-                        <p class="mt-3 text-muted">Elevadorів не encontrado</p>
+                        <p class="mt-3 text-muted">Nenhum elevador encontrado</p>
                     </div>
                 `;
                 return;
@@ -1030,7 +1030,7 @@
                         ` : ''}
                         ${lift.client ? `
                             <span class="badge badge-secondary mr-1">
-                                <i class="fas fa-user"></i> ${lift.clientName || lift.client.name || 'Кліexisteнт'}
+                                <i class="fas fa-user"></i> ${lift.clientName || lift.client.name || 'Cliente'}
                             </span>
                         ` : ''}
                         ${lift.activeRequests && lift.activeRequests > 0 ? `
@@ -1054,7 +1054,7 @@
                             </button>
                         ` : ''}
                         ${lift.clientPhone ? `
-                            <a href="tel:${lift.clientPhone}" class="btn btn-xs btn-secondary" title="Зателефонувати">
+                            <a href="tel:${lift.clientPhone}" class="btn btn-xs btn-secondary" title="Deаtelefoneувати">
                                 <i class="fas fa-phone"></i>
                             </a>
                         ` : ''}
@@ -1111,7 +1111,7 @@
             document.getElementById('inactiveLifts').textContent = allLifts.filter(l => l.status === 'inactive').length;
         }
 
-        // Заповнення filtroа municípioів
+        // Deаповнення filtroа municípioів
         function populateMunicipalityFilter() {
             const municipalities = [...new Set(allLifts.map(l => l.municipality).filter(Boolean))];
             const select = document.getElementById('municipalityFilter');
@@ -1131,7 +1131,7 @@
             document.getElementById('municipalityFilter').addEventListener('change', applyFilters);
         }
 
-        // Застосування filtroів
+        // Deастосування filtroів
         function applyFilters() {
             const search = document.getElementById('searchInput').value.toLowerCase();
             const status = document.getElementById('statusFilter').value;
@@ -1176,7 +1176,7 @@
                 $('#liftModal').modal('show');
             } else {
                 // Fallback: mostrar модальне вікно напряму
-                console.warn('⚠️ jQuery modal indisponível, використовуexisteмо fallback');
+                console.warn('⚠️ jQuery modal indisponível, виutilizовуexisteмо fallback');
                 document.getElementById('liftModal').style.display = 'block';
                 document.getElementById('liftModal').classList.add('show');
                 document.body.classList.add('modal-open');
@@ -1239,7 +1239,7 @@
                 $('#liftModal').modal('show');
             } else {
                 // Fallback
-                console.warn('⚠️ jQuery modal indisponível, використовуexisteмо fallback');
+                console.warn('⚠️ jQuery modal indisponível, виutilizовуexisteмо fallback');
                 document.getElementById('liftModal').style.display = 'block';
                 document.getElementById('liftModal').classList.add('show');
                 document.body.classList.add('modal-open');
@@ -1257,7 +1257,7 @@
             const address = document.getElementById('address').value.trim();
 
             if (!municipalNumber || !address) {
-                showError('Preencha обов\'язкові поля: Número municipal e Endereço');
+                showError('Preenchaa обов\'язкові поля: Número municipal e Endereço');
                 return;
             }
 
@@ -1348,7 +1348,7 @@
             return statuses[status] || 'Activo';
         }
 
-        // Mostrar помилку
+        // Mostrar erro
         function showError(message) {
             alert('❌ ' + message);
         }
@@ -1358,7 +1358,7 @@
             alert('✅ ' + message);
         }
 
-        // Універсальна функція para показу повідомлень
+        // Polivalenteьна функція para показу повідомлень
         function showAlert(message, type = 'info') {
             const icons = {
                 'success': '✅',
@@ -1404,7 +1404,7 @@
 
         // Inicialização карти
         function initMap() {
-            // Centro Португалії
+            // Centro Atéртугалії
             map = L.map('mapView').setView([39.5, -8.0], 7);
             
             // Adicionar tile layer (OpenStreetMap)
@@ -1444,7 +1444,7 @@
 
         // Створити маркер para do elevador
         function createMarker(lift) {
-            // Колір маркера зmasжно від estadoу
+            // Колір маркера dependendoо від estadoу
             const iconColor = {
                 'active': 'green',
                 'inactive': 'red',
@@ -1569,10 +1569,10 @@
                 return;
             }
 
-            // Verificação tamanhoу ficheiroу (макс 10 МБ)
+            // Verificação tamanhoу ficheiroу (макс 10 MB)
             const maxSize = 10 * 1024 * 1024; // 10 MB
             if (file.size > maxSize) {
-                showAlert('Ficheiro занадто великий. Tamanho máximo: 10 МБ', 'danger');
+                showAlert('Ficheiro занадто великий. Tamanho máximo: 10 MB', 'danger');
                 return;
             }
 
@@ -1757,7 +1757,7 @@
         }
 
         // ============================================
-        // 🔗 ІНТЕГРАЦІЯ З ЗАПИТАМИ ТА ТЕХНІКАМИ
+        // 🔗 ІНТЕГРАЦІЯ De DeАПИТАМИ ТА ТЕХНІКАМИ
         // ============================================
 
         async function createRequestForLift(liftId) {

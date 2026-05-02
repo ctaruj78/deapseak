@@ -404,7 +404,7 @@
         <!-- ═══════════════════════════════════════════════════════════ -->
 <!-- ЕТАЛОННИЙ SIDEBAR ДЛЯ КЛІЄНТСЬКИХ СManutençãoРІНОК -->
 <!-- Versão: 2.0 Portugal (2026-01-13) -->
-<!-- ⚠️ НЕ РЕДАГУЙТЕ ОКРЕМО! Використовуйте цей ficheiro як еeлон -->
+<!-- ⚠️ НЕ РЕДАГУЙТЕ ОКРЕМО! Виutilizовуйте цей ficheiro як еeлон -->
 <!-- ═══════════════════════════════════════════════════════════ -->
 
 <aside class="main-sidebar sidebar-dark-primary elevation-4">
@@ -677,7 +677,7 @@
             <!-- Main content -->
             <section class="content">
                 <div class="container-fluid">
-                    <!-- Assunto профілю -->
+                    <!-- Assunto perfil -->
                     <div class="row mb-4">
                         <div class="col-12">
                             <div class="profile-card fade-in-up">
@@ -898,7 +898,7 @@
         </footer>
     </div>
 
-    <!-- Janela modal edição профілю -->
+    <!-- Janela modal edição perfil -->
     <div class="modal fade" id="editProfileModal" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
@@ -1040,12 +1040,12 @@
                     const userData = await response.json();
                     console.log('✅ User profile loaded from API');
                     
-                    // Зберігаexisteмо в localStorage para кешування
+                    // Deберігаexisteмо в localStorage para кешування
                     localStorage.setItem('userData', JSON.stringify(userData));
 
                     fillProfileUI(userData);
 
-                    // 🔑 Показуexisteмо temporário palavra-passe se ainda не alterado
+                    // 🔑 Atéказуexisteмо temporário palavra-passe se ainda не alterado
                     if (userData.mustChangePassword && userData.tempPasswordHint) {
                         document.getElementById('tempPasswordDisplay').textContent = userData.tempPasswordHint;
                         document.getElementById('tempPasswordHintCard').style.display = 'block';
@@ -1190,7 +1190,7 @@
                 }
             }
 
-            // Ініціалізація менеджера профілю
+            // Ініціалізація менеджера perfil
             window.profileManager = new ProfileManager();
             
             // Обробка a carregar аваeра
@@ -1219,7 +1219,7 @@
                 } catch { showSettingsToast('Avatar guardado localmente', 'success'); }
             });
 
-            // ── Definições: alteração пароля ──────────────────────────
+            // ── Definições: alteração palavra-passe ──────────────────────────
             $('#profileChangePasswordForm').on('submit', async function(e) {
                 e.preventDefault();
                 const current = $('#profileCurrentPassword').val();
@@ -1234,7 +1234,7 @@
                     if (res.ok) {
                         showSettingsToast('Palauma-passe alterada com sucesso', 'success');
                         $('#profileChangePasswordForm')[0].reset();
-                        // Сховати підказку temporariamenteго пароля
+                        // Сховати підказку temporariamenteго palavra-passe
                         document.getElementById('tempPasswordHintCard').style.display = 'none';
                     }
                     else { const d = await res.json(); showSettingsToast(d.message || 'Erro ao alterar a palavra-passe', 'error'); }
@@ -1273,7 +1273,7 @@
             }
         });
 
-        // 🔑 Копіювати temporário palavra-passe у буфер обміну
+        // 🔑 Копіювати temporário palavra-passe у para-choques обміну
         function copyTempPassword() {
             const pwd = document.getElementById('tempPasswordDisplay').textContent;
             if (!pwd) return;

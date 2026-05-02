@@ -1664,7 +1664,7 @@
                 
                 console.log('✅ Pedido encontrado:', assignment);
                 
-                // Preencher janela modal com dados
+                // Preenchaer janela modal com dados
                 const displayId = assignment._original?.requestNumber || assignment.requestNumber || ('#' + requestId);
                 $('#modalRequestNumber').text(displayId);
                 $('#modalRequestDate').text(new Date(assignment.createdAt).toLocaleString('pt-PT'));
@@ -2508,7 +2508,7 @@
                         title: '📅 Prolongar prazo',
                         html: `<div style="text-align:left">
                                    <p class="text-muted small mb-2">Nova data = hoje + quantidade de dias seleccionada</p>
-                                   <label class="swal-label">Continuar на</label>
+                                   <label class="swal-label">Continuar em</label>
                                    <select id="swal-extend-days" class="swal-select mt-1">
                                        <option value="7">7 dias</option>
                                        <option value="14">14 dias</option>
@@ -2565,13 +2565,13 @@
                         title: 'Переatribuição pedidos',
                         html: `<div style="text-align:left;padding:4px 0">
                                    <div class="swal-alert-box swal-alert-warning">
-                                       <strong>⚠️ Encontrado ${overdue.length} прострочених pedidos</strong>
-                                       <div style="margin-top:4px">Todas вони serão перепризначені e отримають novo дедлайн</div>
+                                       <strong>⚠️ Encontrado ${overdue.length} pedidos em atraso</strong>
+                                       <div style="margin-top:4px">Todos serão reatribuídos e receberão um novo prazo</div>
                                    </div>
                                    <div class="swal-field">
-                                       <label class="swal-label">Atribuir технікові</label>
+                                       <label class="swal-label">Atribuir ao técnico</label>
                                        <select id="swal-reassign-select" class="swal-select">
-                                           <option value="">— Selecione зі da lista —</option>
+                                           <option value="">— Selecione da lista —</option>
                                            ${techOptions}
                                        </select>
                                    </div>
@@ -2622,7 +2622,7 @@
                             } catch (e) {}
                         }
                         await dispatcherManager.loadAssignments();
-                        Swal.fire({ icon: 'success', title: 'Concluído!', text: `Переatribuído e продоjáно дедлайн: ${count} іdesde ${overdue.length} pedidos на +${days} diasв.`, confirmButtonColor: '#28a745', customClass: { popup: 'swal-dispatch' } });
+                        Swal.fire({ icon: 'success', title: 'Concluído!', text: `Переatribuído e продоjáно дедлайн: ${count} іdesde ${overdue.length} pedidos на +${days} dias.`, confirmButtonColor: '#28a745', customClass: { popup: 'swal-dispatch' } });
                     }
                 },
 
@@ -2712,11 +2712,11 @@
                     Swal.fire({ icon: 'success', title: 'Concluído!', text: `Atribuído ${successCount} іdesde ${selectedItems.length} pedidos.`, confirmButtonColor: '#28a745', customClass: { popup: 'swal-dispatch' } });
                 },
                 
-                // 🎯 ГОЛОВНІ ФУНКЦІЇ ДЛЯ РОБОТИ З ЗАЯВКАМИ
+                // 🎯 ГОЛОВНІ ФУНКЦІЇ ДЛЯ РОБОТИ De DeАЯВКАМИ
                 
-                // Розпоchatи роботу
+                // Iniciar роботу
                 startWork: async function(requestId) {
-                    if (!confirm('Розпоchatи роботу над ціexisteю заявкою?')) {
+                    if (!confirm('Iniciar роботу над ціexisteю заявкою?')) {
                         return;
                     }
                     
@@ -2731,7 +2731,7 @@
                             throw new Error(error.message || 'Erro de alteração estadoу');
                         }
                         
-                        alert('Роботу розпоchatо!');
+                        alert('Роботу iniciadas!');
                         await this.loadAssignments();
                         
                     } catch (error) {
@@ -2743,7 +2743,7 @@
                 // Atribuir técnico  
                 assignTechnician: async function(requestId) {
                     try {
-                        // Заванeжуexisteмо lista de técnicos
+                        // Deаванeжуexisteмо lista de técnicos
                         const response = await AuthManager.fetchWithAuth('/api/users?role=technician');
                         
                         if (!response || !response.ok) {

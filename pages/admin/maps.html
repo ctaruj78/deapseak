@@ -753,9 +753,9 @@
                         }
                     }
                     
-                    // Se геоcódigoвання não foi possível — використовуexisteмо Lisboa predefinido
+                    // Se геоcódigoвання não foi possível — виutilizовуexisteмо Lisboa predefinido
                     if (lat === null || lng === null) {
-                        console.warn(`⚠️ Elevador ${lift._id}: coordenadas відсутні, використовуexisteмо Lisboa predefinido`);
+                        console.warn(`⚠️ Elevador ${lift._id}: coordenadas відсутні, виutilizовуexisteмо Lisboa predefinido`);
                         lat = 38.7223;
                         lng = -9.1393;
                     }
@@ -784,7 +784,7 @@
                 console.log('📍 Primeiro elevador:', lifts[0]);
             } catch (error) {
                 console.error('❌ Erro ao carregar elevadores:', error);
-                // Fallback до testeових даних (Lisboa)
+                // Fallback до testeових dados (Lisboa)
                 lifts = [
                     { id: 'sample_1', model: 'Elevador №1', address: 'Lisboa, Portugal', lat: 38.7223, lng: -9.1393, status: 'active', lastMaintenance: '2024-01-10', location: 'Lisboa, Portugal' }
                 ];
@@ -802,10 +802,10 @@
             return statusMap[mongoStatus] || 'active';
         }
 
-        // Отримання геолокації do utilizador
+        // Отримання геоlocalizações do utilizador
         function getUserLocation() {
             if (navigator.geolocation) {
-                console.log('🔍 Pedido геолокації...');
+                console.log('🔍 Pedido геоlocalizações...');
                 navigator.geolocation.getCurrentPosition(
                     (position) => {
                         userLocation = {
@@ -977,18 +977,18 @@
             editingLiftId = liftId;
             editingMarkerRef = entry.marker;
 
-            // Закриваexisteмо попап і підсвічуexisteмо маркер
+            // Deакриваexisteмо попап і підсвічуexisteмо маркер
             entry.marker.closePopup();
             entry.marker.setOpacity(0.5);
 
-            // Показуexisteмо банер
+            // Atéказуexisteмо банер
             const banner = document.getElementById('locationEditBanner');
             if (banner) {
                 banner.style.display = 'flex';
                 banner.querySelector('#editLiftName').textContent = entry.lift.address || liftId;
             }
 
-            // Змінюexisteмо курсор над картою
+            // Deмінюexisteмо курсор над картою
             map.getContainer().style.cursor = 'crosshair';
 
             // Реexisteструexisteмо обробник кліку по мапі
@@ -1048,7 +1048,7 @@
             }
         }
 
-        // Захист від подвійного виклику
+        // Deахист від подвійного виклику
         let lastRouteCallTimestamp = 0;
         let processingRoute = false;
         
@@ -1066,16 +1066,16 @@
         window.createRouteToLift = function(liftId) {
             const now = Date.now();
             
-            // ЗАХИСТ: Блокуexisteмо se минуло menos 1 секунди desde осeннього виклику
+            // DeАХИСТ: Блокуexisteмо se минуло menos 1 секунди desde осeннього виклику
             if ((now - lastRouteCallTimestamp) < 1000 || processingRoute) {
-                console.log('⏸️ БЛОКУВАННЯ: Повторний виклик занадто rapidamente (подвійний клік)');
+                console.log('⏸️ БЛОКУВАННЯ: Atéвторний виклик занадто rapidamente (подвійний клік)');
                 return;
             }
             
             lastRouteCallTimestamp = now;
             processingRoute = true;
             
-            // Блокуexisteмо кнопку
+            // Блокуexisteмо botão
             const btn = document.getElementById(`route-btn-${liftId}`);
             if (btn) {
                 btn.disabled = true;
@@ -1104,7 +1104,7 @@
                 map.removeControl(routingControl);
             }
 
-            // Побудова rotaу
+            // Atéбудова rotaу
             console.log('  De (utilizador):', userLocation.lat, userLocation.lng);
             console.log('  Para (elevador):', lift.lat, lift.lng);
             
@@ -1126,10 +1126,10 @@
                 const summary = routes[0].summary;
                 console.log('✅ Rota encontrado:', (summary.totalDistance/1000).toFixed(2), 'км');
                 
-                // Розблоковуexisteмо кнопку após com sucessoї побудови
+                // Розблоковуexisteмо botão após com sucessoї побудови
                 unlockRouteButton(liftId);
                 
-                // Adicionar кнопку закриття
+                // Adicionar botão закриття
                 setTimeout(() => {
                     const container = document.querySelector('.leaflet-routing-container');
                     if (container && !container.querySelector('.route-close-btn')) {
@@ -1278,7 +1278,7 @@
             }
 
             // Логування координат antes de побудовою rotaу
-            console.log('🗺️ Побудова rotaу:');
+            console.log('🗺️ Atéбудова rotaу:');
             console.log('  De (utilizador):', userLocation.lat, userLocation.lng);
             console.log('  Para (elevador):', lift.lat, lift.lng);
             console.log('  Endereço do elevador:', lift.address);
@@ -1303,7 +1303,7 @@
                 console.warn('⚠️ AVISO: Відсeнь занадто мала!');
                 console.warn('  Можливо coordenadas do elevador збережені некоректно');
                 console.warn('  Або геоlocalização браузера визначила вашу позицію неexatamente');
-                alert(`⚠️ AVISO\n\nDistância ao elevador: ${distance.toFixed(0)}м\n\nÉ muito pouco. Possivelmente:\n• Ви знаходитесь біля do elevador\n• Coordenadas do elevador в базі даних некоректні\n• Геоlocalização браузера визначила позицію неexatamente\n\nVerifique coordenadas do elevador в розділі "Elevadores".`);
+                alert(`⚠️ AVISO\n\nDistância ao elevador: ${distance.toFixed(0)}м\n\nÉ muito pouco. Possivelmente:\n• Ви знаходитесь біля do elevador\n• Coordenadas do elevador в базі dados некоректні\n• Геоlocalização браузера визначила позицію неexatamente\n\nVerifique coordenadas do elevador в розділі "Elevadores".`);
             }
 
             // Створити rota desde atualmenteї позиції до do elevador
@@ -1318,7 +1318,7 @@
                     styles: [{color: '#007bff', weight: 5, opacity: 0.7}]
                 },
                 createMarker: function() { return null; }, // Не створювати додаткові маркери
-                language: 'en', // Використовуexisteмо англійську, бо українська не підтримуexisteться
+                language: 'en', // Виutilizовуexisteмо англійську, бо українська не підтримуexisteться
                 fitSelectedRoutes: true,
                 addWaypoints: false
             }).on('routesfound', function(e) {
@@ -1328,7 +1328,7 @@
                 console.log('  Відсeнь rotaу:', (summary.totalDistance/1000).toFixed(2), 'км');
                 console.log('  Hora у дорозі:', Math.round(summary.totalTime/60), 'хв');
                 
-                // Додаexisteмо кнопку закриття após того як контейнер criado
+                // Додаexisteмо botão закриття após того як контейнер criado
                 setTimeout(() => {
                     const container = document.querySelector('.leaflet-routing-container');
                     if (container && !container.querySelector('.route-close-btn')) {
@@ -1388,7 +1388,7 @@
                         let xOffset = 0;
                         let yOffset = 0;
                         
-                        // Знаходимо заголовок (область para перетягування)
+                        // Deнаходимо заголовок (область para перетягування)
                         const header = container.querySelector('h2, h3');
                         
                         if (header) {

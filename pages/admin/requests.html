@@ -1134,7 +1134,7 @@ class ServiceRequestManager {
     }
 
     handleUrlParams() {
-        // Обробляexisteмо URL параметри para предзаповнення форми
+        // Обробляexisteмо URL parâmetros para предзаповнення форми
         const urlParams = new URLSearchParams(window.location.search);
         const liftId = urlParams.get('lift');
         const address = urlParams.get('address');
@@ -1183,7 +1183,7 @@ class ServiceRequestManager {
                 return;
             }
             
-            // Заванeжуexisteмо pedidos desde API v2
+            // Deаванeжуexisteмо pedidos desde API v2
             const archiveParam = this._archiveMode ? '?archived=true' : '';
             const response = await AuthManager.fetchWithAuth('/api/requests' + archiveParam);
             
@@ -1203,7 +1203,7 @@ class ServiceRequestManager {
                         // Генеруexisteмо significativo ID (desde requestNumber ou порядковий)
                         const displayId = req.requestNumber || `REQ-${String(index + 1).padStart(4, '0')}`;
                         
-                        // Використовуexisteмо збережені дані про elevador desde pedidos
+                        // Виutilizовуexisteмо збережені дані про elevador desde pedidos
                         const liftId = req.lift?.municipalNumber || req.liftMunicipalNumber || req.liftId || 'Desconhecido';
                         // Morada do elevador: зі збагаченого populate ou desde прямого рядкового поля (antigo formato)
                         const liftAddrObj = req.lift?.address || {};
@@ -1221,7 +1221,7 @@ class ServiceRequestManager {
                         const clientEmail = clientObj.email || '';
                         const clientPhone = clientObj.phone || '';
 
-                        // Отримуexisteмо дані do técnico - використовуexisteмо assignedTo desde populated instalaçãoа
+                        // Отримуexisteмо дані do técnico - виutilizовуexisteмо assignedTo desde populated instalaçãoа
                         const techObj = req.assignedTo || {};
                         const techName = req.technicianName
                             || ((techObj.firstName || techObj.lastName)
@@ -1446,7 +1446,7 @@ class ServiceRequestManager {
     }
 
     async loadLifts() {
-        // Заванeжуexisteмо lista de elevadores desde API
+        // Deаванeжуexisteмо lista de elevadores desde API
         try {
             console.log('🔄 A carregar elevadores para select...');
             const select = $('#requestLift');
@@ -1547,7 +1547,7 @@ class ServiceRequestManager {
                 });
             }
 
-            // Заванeжуexisteмо de clientes і de técnicos у форму створення
+            // Deаванeжуexisteмо de clientes і de técnicos у форму створення
             await this.loadClients();
             await this.loadTechniciansIntoNewForm();
         } catch (error) {
@@ -1567,14 +1567,14 @@ class ServiceRequestManager {
             const data = await resp.json();
             const users = (Array.isArray(data.data) ? data.data : null) || [];
             if (!users.length) {
-                clientSelect.append('<option value="" disabled>Кліexisteнтів не encontrado</option>');
+                clientSelect.append('<option value="" disabled>Clienteів не encontrado</option>');
                 return;
             }
             users.forEach(u => {
                 const name = [u.firstName, u.lastName].filter(Boolean).join(' ') || u.username || u.email;
                 clientSelect.append(`<option value="${u._id}">${name}${u.email ? ' — ' + u.email : ''}</option>`);
             });
-            console.log('✅ Кліexisteнтів carregado:', users.length);
+            console.log('✅ Clienteів carregado:', users.length);
         } catch (e) {
             console.error('❌ Erro ao carregar de clientes:', e);
         }
@@ -1608,7 +1608,7 @@ class ServiceRequestManager {
         container.empty();
 
         if (this.requests.length === 0) {
-            container.html('<div class="alert alert-info m-0"><i class="fas fa-info-circle mr-2"></i>Заявок не encontrado</div>');
+            container.html('<div class="alert alert-info m-0"><i class="fas fa-info-circle mr-2"></i>Deаявок не encontrado</div>');
             $('#requestsCount').text('');
             return;
         }
@@ -1616,7 +1616,7 @@ class ServiceRequestManager {
         const priorityColors = { critical: 'danger', urgent: 'danger', high: 'warning', medium: 'info', low: 'success' };
         const priorityIcons  = { critical: 'exclamation-triangle', urgent: 'exclamation-triangle', high: 'bolt', medium: 'wrench', low: 'clipboard-check' };
         const statusColors   = { new: 'primary', pending: 'primary', assigned: 'warning', in_progress: 'info', completed: 'success', cancelled: 'secondary' };
-        const statusTexts    = { new: 'Nova', pending: 'Nova', assigned: 'Призначена', in_progress: 'Em curso', completed: 'Виконана', cancelled: 'Скасована' };
+        const statusTexts    = { new: 'Nova', pending: 'Nova', assigned: 'Atribuída', in_progress: 'Em curso', completed: 'Виконана', cancelled: 'Скасована' };
 
         this.requests.forEach(request => {
             const requestId = (request._id && request._id.toString) ? request._id.toString() : (request._id || request.id || '');
@@ -1735,9 +1735,9 @@ class ServiceRequestManager {
         const texts = {
             new: 'Nova',
             pending: 'Nova',
-            assigned: 'Призначена',
+            assigned: 'Atribuída',
             in_progress: 'Em curso',
-            completed: 'Завершена',
+            completed: 'Deавершена',
             cancelled: 'Скасована'
         };
         return texts[status] || status;
@@ -1789,7 +1789,7 @@ class ServiceRequestManager {
         }
 
         try {
-            // Зберігаexisteмо através de API
+            // Deберігаexisteмо através de API
             const response = await AuthManager.fetchWithAuth('/api/requests', {
                 method: 'POST',
                 headers: {
@@ -1999,7 +1999,7 @@ class ServiceRequestManager {
         const now = new Date().toISOString().slice(0, 16);
         $('#editScheduledAt').attr('min', now);
         
-        // Preencher formulário de edição
+        // Preenchaer formulário de edição
         $('#editRequestId').val(request.id);
         $('#editRequestLift').val(request.liftId);
         $('#editRequestType').val(request.type);
@@ -2361,7 +2361,7 @@ class ServiceRequestManager {
             if (result.success && result.request) {
                 this.currentRequest = result.request;
                 
-                // Preencher formulário de edição
+                // Preenchaer formulário de edição
                 $('#editRequestId').val(this.currentRequest._id);
                 $('#editRequestTitle').val(this.currentRequest.title || '');
                 $('#editRequestDescription').val(this.currentRequest.description || '');

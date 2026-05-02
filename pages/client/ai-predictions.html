@@ -228,7 +228,7 @@
     <!-- ═══════════════════════════════════════════════════════════ -->
 <!-- ЕТАЛОННИЙ SIDEBAR ДЛЯ КЛІЄНТСЬКИХ СManutençãoРІНОК -->
 <!-- Versão: 2.0 Portugal (2026-01-13) -->
-<!-- ⚠️ НЕ РЕДАГУЙТЕ ОКРЕМО! Використовуйте цей ficheiro як еeлон -->
+<!-- ⚠️ НЕ РЕДАГУЙТЕ ОКРЕМО! Виutilizовуйте цей ficheiro як еeлон -->
 <!-- ═══════════════════════════════════════════════════════════ -->
 
 <aside class="main-sidebar sidebar-dark-primary elevation-4">
@@ -580,7 +580,7 @@
                     <!-- Será preenchido dinamicamente -->
                 </div>
 
-                <!-- Gerais рекомендації -->
+                <!-- Gerais recomendações -->
                 <div class="row mt-4">
                     <div class="col-md-12">
                         <div class="card">
@@ -632,16 +632,16 @@ let clientLifts = [];
 $(document).ready(async function() {
     console.log('🧠 A carregar AI прогнозування para cliente...');
     
-    // Заванeжуexisteмо дані do utilizador
+    // Deаванeжуexisteмо дані do utilizador
     loadUserInfo();
     
     // Ініціалізуexisteмо систему прогнозування
     predictiveSystem = new PredictiveMaintenanceSystem();
     
-    // À espera deмо a carregar даних
+    // À espera deмо a carregar dados
     await new Promise(resolve => setTimeout(resolve, 2000));
     
-    // Заванeжуexisteмо elevadores cliente
+    // Deаванeжуexisteмо elevadores cliente
     await loadClientLifts();
     
     // Відображаexisteмо прогнози
@@ -664,7 +664,7 @@ function loadUserInfo() {
 async function loadClientLifts() {
     try {
         const user = JSON.parse(localStorage.getItem('user') || '{}');
-        console.log('👤 Поточний користувач:', user);
+        console.log('👤 Atual utilizador:', user);
         
         const token = (typeof AuthManager !== 'undefined' && AuthManager.getAuthToken)
             ? AuthManager.getAuthToken()
@@ -714,7 +714,7 @@ function displayPredictions() {
     const container = $('#predictionsContainer');
     container.empty();
     
-    // Збираexisteмо дані прогнозів para de elevadores cliente
+    // Deбираexisteмо дані прогнозів para de elevadores cliente
     let predictions = [];
     
     clientLifts.forEach(lift => {
@@ -800,7 +800,7 @@ function displayPredictions() {
         </div>
     `);
     
-    // Gerais рекомендації
+    // Gerais recomendações
     displayGeneralRecommendations(predictions);
 }
 
@@ -903,7 +903,7 @@ function togglePredictionDetails(liftId) {
     }
 }
 
-// Засeріла функція — залишаexisteться para зворотної сумісності
+// Deасeріла функція — залишаexisteться para зворотної сумісності
 function createPredictionCard(lift, prediction) {
     return '';
 }
@@ -929,7 +929,7 @@ function updateStatistics(predictions) {
     $('#upcomingMaintenance').text(upcoming);
 }
 
-// Gerais рекомендації
+// Gerais recomendações
 function displayGeneralRecommendations(predictions) {
     const container = $('#generalRecommendations');
     

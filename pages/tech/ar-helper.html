@@ -514,7 +514,7 @@
                                             <div class="form-group">
                                                 <label for="liftModelSelect"><i class="fas fa-elevator"></i> Modelo do elevador</label>
                                                 <select id="liftModelSelect" class="form-control select2">
-                                                    <option value="">Selecione модель...</option>
+                                                    <option value="">Selecione o modelo...</option>
                                                     <option value="model1">Otis Gen2</option>
                                                     <option value="model2">Schindler 3300</option>
                                                     <option value="model3">Kone MonoSpace</option>
@@ -577,7 +577,7 @@
                                                 <div class="placeholder-content">
                                                     <i class="fas fa-vr-cardboard fa-4x mb-3"></i>
                                                     <h3>AR visualização</h3>
-                                                    <p class="mb-3">Aponte a câmara на elevador ou робоче ambiente</p>
+                                                    <p class="mb-3">Aponte a câmara para o elevador ou ambiente de trabalho</p>
                                                     <button class="btn btn-primary btn-lg pulse" id="startARBtn">
                                                         <i class="fas fa-play"></i> Iniciar AR
                                                     </button>
@@ -599,21 +599,21 @@
                                                 <div class="ar-info-panel">
                                                     <h5><i class="fas fa-info-circle"></i> Informação</h5>
                                                     <div id="componentInfo">
-                                                        <p class="text-muted">Selecione компонент para visualizaçãoу детmasй</p>
+                                                        <p class="text-muted">Selecione um componente para visualizar detalhes</p>
                                                     </div>
                                                 </div>
 
                                                 <div class="ar-toolbar">
-                                                    <button class="btn btn-light ar-tool" title="Збільшити">
+                                                    <button class="btn btn-light ar-tool" title="Aproximar">
                                                         <i class="fas fa-search-plus"></i>
                                                     </button>
-                                                    <button class="btn btn-light ar-tool" title="Зменшити">
+                                                    <button class="btn btn-light ar-tool" title="Afastar">
                                                         <i class="fas fa-search-minus"></i>
                                                     </button>
-                                                    <button class="btn btn-light ar-tool" title="Оберeти">
+                                                    <button class="btn btn-light ar-tool" title="Rodar">
                                                         <i class="fas fa-sync"></i>
                                                     </button>
-                                                    <button class="btn btn-light ar-tool" title="Пауза">
+                                                    <button class="btn btn-light ar-tool" title="Pausa">
                                                         <i class="fas fa-pause"></i>
                                                     </button>
                                                 </div>
@@ -630,20 +630,20 @@
                         <div class="col-12">
                             <div class="card">
                                 <div class="card-header">
-                                    <h3 class="card-title"><i class="fas fa-book"></i> Керівництва e documentoація</h3>
+                                    <h3 class="card-title"><i class="fas fa-book"></i> Manuais e documentação</h3>
                                 </div>
                                 <div class="card-body">
                                     <div class="manual-cards">
                                         <div class="manual-card">
-                                            <h4><i class="fas fa-shield-alt text-danger"></i> Інструкція desde de segurança</h4>
-                                            <p>Правила техніки de segurança під hora trabalhos desde do elevadorми</p>
+                                            <h4><i class="fas fa-shield-alt text-danger"></i> Instruções de segurança</h4>
+                                            <p>Правила de segurança durante trabalhos no elevador</p>
                                             <button class="btn btn-outline-danger btn-sm" onclick="arHelper.openManual('safety')">
                                                 <i class="fas fa-download"></i> Descarregar
                                             </button>
                                         </div>
                                         <div class="manual-card">
-                                            <h4><i class="fas fa-project-diagram text-primary"></i> Схеми компонентів</h4>
-                                            <p>Деeльні схеми основних компонентів de elevadores</p>
+                                            <h4><i class="fas fa-project-diagram text-primary"></i> Esquemas de componentes</h4>
+                                            <p>Detalhados esquemas dos principais de componentes de elevadores</p>
                                             <button class="btn btn-outline-primary btn-sm" onclick="arHelper.openManual('components')">
                                                 <i class="fas fa-download"></i> Descarregar
                                             </button>
@@ -756,7 +756,7 @@
             
             // Inicialização Select2
             $('#liftModelSelect').select2({
-                placeholder: 'Selecione модель...',
+                placeholder: 'Selecione o modelo...',
                 width: '100%'
             });
 

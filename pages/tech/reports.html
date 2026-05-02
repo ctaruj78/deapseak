@@ -428,7 +428,7 @@
                                                 <div class="card-body text-center">
                                                     <i class="fas fa-file-pdf fa-3x text-success mb-3"></i>
                                                     <h5>Mensal relatório</h5>
-                                                    <p class="text-muted">Detalhado relatório за mês</p>
+                                                    <p class="text-muted">Relatório detalhado por mês</p>
                                                     <button class="btn download-btn" onclick="reportsManager.downloadReport('monthly')">
                                                         <i class="fas fa-download"></i> Descarregar
                                                     </button>
@@ -441,12 +441,12 @@
                         </div>
                     </div>
 
-                    <!-- Tabela relatórioів -->
+                    <!-- Tabela de relatórios -->
                     <div class="row mt-4">
                         <div class="col-12">
                             <div class="card">
                                 <div class="card-header">
-                                    <h3 class="card-title"><i class="fas fa-table mr-2"></i>Історія relatórioів</h3>
+                                    <h3 class="card-title"><i class="fas fa-table mr-2"></i>Історія de relatórios</h3>
                                 </div>
                                 <div class="card-body p-0">
                                     <div class="table-responsive">
@@ -471,18 +471,18 @@
                         </div>
                     </div>
 
-                    <!-- Configurações relatórioів -->
+                    <!-- Configurações de relatórios -->
                     <div class="row mt-4">
                         <div class="col-12">
                             <div class="card">
                                 <div class="card-header">
-                                    <h3 class="card-title"><i class="fas fa-cog mr-2"></i>Configurações relatórioів</h3>
+                                    <h3 class="card-title"><i class="fas fa-cog mr-2"></i>Configurações de relatórios</h3>
                                 </div>
                                 <div class="card-body">
                                     <div class="row">
                                         <div class="col-md-6">
                                             <div class="form-group">
-                                                <label>Formato експорту</label>
+                                                <label>Formato de exportação</label>
                                                 <select class="form-control" id="exportFormat">
                                                     <option value="pdf">PDF</option>
                                                     <option value="excel">Excel</option>
@@ -493,7 +493,7 @@
                                         </div>
                                         <div class="col-md-6">
                                             <div class="form-group">
-                                                <label>Autoматичне створення</label>
+                                                <label>Criação automática</label>
                                                 <select class="form-control" id="autoGenerate">
                                                     <option value="daily">Щоdo dia</option>
                                                     <option value="weekly">Щоda semana</option>
@@ -547,7 +547,7 @@
             }
 
             loadReports() {
-                // Симуляція carregamento relatórioів
+                // Симуляція carregamento de relatórios
                 this.reports = [
                     { id: 1, date: '2025-09-28', type: 'daily', name: 'Relatório diário 28.09.2025', status: 'completed', size: '2.3 MB' },
                     { id: 2, date: '2025-09-27', type: 'weekly', name: 'Relatório semanal 22-28.09.2025', status: 'completed', size: '5.1 MB' },
@@ -646,7 +646,7 @@
                     daily: 'Diário',
                     weekly: 'Semanal',
                     monthly: 'Mensal',
-                    custom: 'Користувацький'
+                    custom: 'Utilizувацький'
                 };
                 return labels[type] || type;
             }
@@ -668,11 +668,11 @@
                     filename = `${type}-report.pdf`;
                 }
                 
-                alert(`A carregar ${filename} розпоchatо. У реальному додатку aqui será справжнexiste carregamento ficheiroу.`);
+                alert(`A carregar ${filename} iniciadas. У реальному додатку aqui será справжнexiste carregamento ficheiroу.`);
             }
 
             generateCustomReport() {
-                alert('Função створення користувацького relatório será реалізована в майбутньому.');
+                alert('Função de criaрення utilizувацького relatório será реалізована в майбутньому.');
             }
 
             saveSettings() {
@@ -703,7 +703,7 @@
                 $('#techName').text(`${userData.firstName} ${userData.lastName || ''}`);
             }
 
-            // Inicialização менеджера relatórioів
+            // Inicialização менеджера de relatórios
             reportsManager = new ReportsManager();
         });
     </script>

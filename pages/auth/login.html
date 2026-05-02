@@ -86,7 +86,7 @@
         function initLoginForm() {
             const loginForm = document.getElementById('login-form');
             
-            // Захист від подвійної ініціалізації
+            // Deахист від подвійної ініціалізації
             if (window.__loginFormInitialized) {
                 console.log('⚠️ Форма já ініціалізована, пропускаexisteмо');
                 return;
@@ -100,7 +100,7 @@
                 return;
             }
             
-            // Позначаexisteмо що форма ініціалізована
+            // Atéзначаexisteмо що форма ініціалізована
             window.__loginFormInitialized = true;
             console.log('🔧 Ініціалізація форми loginу...');
             
@@ -125,11 +125,11 @@
                 console.log('🔑 Password автозаповнено desde URL');
             }
             
-            // Перевіряexisteмо ou користувач já увійшов através de AuthManager
+            // Перевіряexisteмо ou utilizador já увійшов através de AuthManager
             // Додаexisteмо захист від циклу редиректів
             const redirecting = sessionStorage.getItem('redirecting');
             if (redirecting) {
-                console.log('⚠️ Запобігання циклу редиректів - оouщуexisteмо session');
+                console.log('⚠️ Deапобігання циклу редиректів - оouщуexisteмо session');
                 sessionStorage.removeItem('redirecting');
                 // Оouщуexisteмо всі дані автентифікації
                 if (typeof AuthManager !== 'undefined') {
@@ -139,7 +139,7 @@
             } else if (!autoLoginRequested && typeof AuthManager !== 'undefined' && AuthManager.isAuthenticated()) {
                 const user = AuthManager.getCurrentUser();
                 if (user && user.role) {
-                    // Перевіряexisteмо ou користувач хоче sair (se в URL existe параметр logout)
+                    // Перевіряexisteмо ou utilizador хоче sair (se в URL existe параметр logout)
                     const urlParams = new URLSearchParams(window.location.search);
                     if (urlParams.get('logout') === 'true') {
                         console.log('🚪 Utilizador хоче sair, оouщуexisteмо дані...');
@@ -149,7 +149,7 @@
                     
                     console.log('✅ Utilizador já autorizado:', user.username, '(' + user.role + ')');
                     
-                    // Показуexisteмо mensagem desde можливістю sair
+                    // Atéказуexisteмо mensagem desde можливістю sair
                     const loginContainer = document.querySelector('.login-container');
                     if (loginContainer) {
                         loginContainer.innerHTML = `
@@ -178,7 +178,7 @@
             localStorage.removeItem('lm_session');
             localStorage.removeItem('lm_user');
             
-            // Автоматичний submit se existe параметри в URL
+            // Автоматичний submit se existe parâmetros в URL
             if (autoLoginRequested) {
                 console.log('🚀 Автоматичний entrada através de 500ms...');
                 setTimeout(() => {
@@ -192,7 +192,7 @@
                 // Оouщуexisteмо sessionStorage após редиректу
                 setTimeout(() => sessionStorage.removeItem('redirecting'), 100);
                 
-                // Використовуexisteмо АБСОЛЮТНІ шляхи від кореня сайту
+                // Виutilizовуexisteмо АБСОЛЮТНІ шляхи від кореня сайту
                 switch (role) {
                     case 'admin':
                         window.location.replace('/pages/admin/admin-dashboard.html');
@@ -241,7 +241,7 @@
                 return roleNames[role] || role;
             }
             
-            // Покаdesde повідомлень
+            // Atéкаdesde повідомлень
             function showMessage(message, type = 'error') {
                 let alertDiv = document.getElementById('login-message');
                 if (!alertDiv) {
@@ -286,7 +286,7 @@
                 isSubmitting = true;
                 submitTimestamp = now;
                 loginForm.dataset.processing = 'true';
-                console.log('🔒 Форму ЗАБЛОКОВАНО para обробки [' + new Date().toISOString() + ']');
+                console.log('🔒 Форму DeАБЛОКОВАНО para обробки [' + new Date().toISOString() + ']');
                 
                 const submitButton = loginForm.querySelector('button[type="submit"]');
                 const originalButtonText = submitButton.innerHTML;
@@ -351,30 +351,30 @@
                         const token = data.data?.token || data.token;
                         const user = data.data?.user || data.user;
                         
-                        console.log('💾 Зберігаю token:', token?.substring(0, 20) + '...');
-                        console.log('👤 Зберігаю do utilizador:', user);
+                        console.log('💾 Deберігаю token:', token?.substring(0, 20) + '...');
+                        console.log('👤 Deберігаю do utilizador:', user);
                         
-                        // 🔄 Зберігаexisteмо refresh token para автоматичного atualização
+                        // 🔄 Deберігаexisteмо refresh token para автоматичного atualização
                         const refreshToken = data.data?.refreshToken || data.refreshToken;
                         if (refreshToken) {
                             localStorage.setItem('liftmanager_refresh', refreshToken);
                             console.log('🔄 Refresh token guardado');
                         }
                         
-                        // Зберігаexisteмо token у всіх формаeх para сумісності
+                        // Deберігаexisteмо token у всіх формаeх para сумісності
                         localStorage.setItem('token', token);           // Головний token
                         localStorage.setItem('authToken', token);       // Для lifts-manager.js
                         localStorage.setItem('lm_token', token);        // Сeрий formato
                         localStorage.setItem('deapseak_token', token);  // V2 formato
                         localStorage.setItem('liftmanager_jwt', token); // AuthManager formato
                         
-                        // Зберігаexisteмо do utilizador
+                        // Deберігаexisteмо do utilizador
                         localStorage.setItem('user', JSON.stringify(user));           // Головний
                         localStorage.setItem('userData', JSON.stringify(user));       // Для dispatcher/admin панелей
                         localStorage.setItem('lm_session', JSON.stringify(user));     // Сeрий formato
                         localStorage.setItem('liftmanager_user', JSON.stringify(user)); // AuthManager formato
                         
-                        // ⚡ MULTI-TAB FIX: зберігаexisteмо também в sessionStorage (per-tab)
+                        // ⚡ MULTI-TAB FIX: guardaмо também в sessionStorage (per-tab)
                         // Кожна вкладка матиме власний token → різні de função не конфліктують
                         sessionStorage.setItem('liftmanager_jwt', token);
                         sessionStorage.setItem('liftmanager_user', JSON.stringify(user));
@@ -384,15 +384,15 @@
                         
                         showMessage('Entrada com sucesso! A redirecionar...', 'success');
                         
-                        // ⚠️ НЕ розблоковуexisteмо кнопку - користувач перенаправляexisteться
+                        // ⚠️ НЕ розблоковуexisteмо botão - utilizador перенаправляexisteться
                         // Це запобігаexiste повторному кліку під hora перенаправлення
                         
                         // Перевіряexisteмо ou existe збережене перенаправлення
                         const redirectUrl = sessionStorage.getItem('redirect_after_login');
                         
-                        // 🔐 Se обліковий registo маexiste mustChangePassword — показуexisteмо модал
+                        // 🔐 Se обліковий registo tem mustChangePassword — показуexisteмо модал
                         if (user.mustChangePassword) {
-                            // Зберігаexisteмо, де após de alteração перейти
+                            // Deберігаexisteмо, де após de alteração перейти
                             window.__mustChangeRedirectUrl  = redirectUrl;
                             window.__mustChangeUserRole     = user.role;
                             const modal = document.getElementById('mustChangePasswordModal');
@@ -404,7 +404,7 @@
                                 showMessage('Bem-vindo! Por favor altere a sua palavra-passe temporária antes de começar.', 'warning');
                             }
                         } else {
-                            // Звичайний entrada — перенаправляexisteмо através de 500мс
+                            // Deвичайний entrada — перенаправляexisteмо através de 500мс
                             setTimeout(() => {
                                 if (redirectUrl) {
                                     sessionStorage.removeItem('redirect_after_login');
@@ -426,7 +426,7 @@
                     }
                 } catch (error) {
                     // Erro - розблоковуexisteмо форму
-                    console.error('❌ Crítica erro входу:', error);
+                    console.error('❌ Erro crítico входу:', error);
                     showMessage('Ocorreu um erro ao entrar. Verifique a ligação ao servidor.');
                     isSubmitting = false;
                     loginForm.dataset.processing = 'false';
@@ -437,11 +437,11 @@
                 return false;
             };
             
-            // Прикріплюexisteмо обробник (ОДИН РАЗ!)
+            // Прикріплюexisteмо обробник (ОДИН РАDe!)
             loginForm.removeEventListener('submit', handleLogin); // Видаляexisteмо попереdiasй se був
             loginForm.addEventListener('submit', handleLogin, { once: false }); // once: false mas desde ручним контролем
             
-            // ДОДАТКОВИЙ захист: Блокуexisteмо кнопку submit при кліку
+            // ДОДАТКОВИЙ захист: Блокуexisteмо botão submit при кліку
             const submitButton = loginForm.querySelector('button[type="submit"]');
             if (submitButton) {
                 submitButton.addEventListener('click', function(e) {

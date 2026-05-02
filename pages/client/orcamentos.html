@@ -294,7 +294,7 @@
     let pendingAction = null; // { id, status }
 
     function getToken() {
-        // sessionStorage маexiste prioridade — уникаexisteмо old tokenів desde localStorage
+        // sessionStorage tem prioridade — уникаexisteмо old tokenів desde localStorage
         return sessionStorage.getItem('liftmanager_jwt') ||
                localStorage.getItem('liftmanager_jwt') ||
                sessionStorage.getItem('token') ||

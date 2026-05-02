@@ -431,7 +431,7 @@
                                                <input type="date" id="dateFilter" class="form-control form-control-sm ml-2" placeholder="Data">
                                                <select id="sortSelect" class="form-control form-control-sm ml-2">
                                                    <option value="date-desc">Ordenar: Mais recentes primeiro</option>
-                                                   <option value="date-asc">Ordenar: Сeрі споchatку</option>
+                                                   <option value="date-asc">Ordenar: dos mais antigos</option>
                                                    <option value="priority-desc">Ordenar: Alta prioridade</option>
                                                    <option value="priority-asc">Ordenar: Baixa prioridade</option>
                                                    <option value="status">Ordenar: Estado</option>
@@ -527,16 +527,16 @@
                                         <button class="btn btn-action btn-secondary" onclick="window.dispatcherDashboard.quickStats()">
                                             <span class="icon">📋</span>
                                             <span>Estatísticas</span>
-                                            <small>Швидкий inspeção</small>
+                                            <small>Inspeção rápida</small>
                                         </button>
                                         <button class="btn btn-action btn-info" onclick="window.dispatcherDashboard.showTechReport()">
                                             <span class="icon">📝</span>
-                                            <span>Relatório по do técnicoх</span>
+                                            <span>Relatório por técnico</span>
                                             <small>Exportar/visualização</small>
                                         </button>
                                         <button class="btn btn-action btn-danger" onclick="window.dispatcherDashboard.emergencyProtocol()">
                                             <span class="icon">🚨</span>
-                                            <span>Аварійний</span>
+                                            <span>Emergência</span>
                                             <small>Protocolo</small>
                                         </button>
                                     </div>
@@ -560,7 +560,7 @@
                                                 Atribuições
                                             </button>
                                             <button class="btn btn-sm btn-outline-secondary" data-type="completions">
-                                                Завершення
+                                                Deавершення
                                             </button>
                                         </div>
                                     </div>
@@ -592,7 +592,7 @@
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Нове atribuição</h5>
+                    <h5 class="modal-title">Nova atribuição</h5>
                     <button type="button" class="close" data-dismiss="modal">
                         <span>&times;</span>
                     </button>
@@ -631,20 +631,20 @@
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label for="deadline">Крайній prazo *</label>
+                                    <label for="deadline">Prazo limite *</label>
                                     <input type="datetime-local" id="deadline" class="form-control" required>
                                 </div>
                             </div>
                         </div>
 
                         <div class="form-group">
-                            <label for="assignmentNotes">Додаткові notas</label>
+                            <label for="assignmentNotes">Notas adicionais</label>
                             <textarea id="assignmentNotes" class="form-control" rows="3" 
                                       placeholder="Додаткові вказівки para do técnico..."></textarea>
                         </div>
 
                         <div class="form-group">
-                            <label for="notifyClient">Сповістити cliente</label>
+                            <label for="notifyClient">Notificar cliente</label>
                             <div class="custom-control custom-switch">
                                 <input type="checkbox" class="custom-control-input" id="notifyClient" checked>
                                 <label class="custom-control-label" for="notifyClient">Enviar notificações clienteу</label>
@@ -701,10 +701,10 @@
 <!-- API Configuration -->
 <script src="../../assets/js/config.js?v=20241116"></script>
 
-    <!-- ⚠️ СТАРИЙ СКРИПТ З DEMO ДАНИМИ - ТИМЧАСОВО ВІДКЛЮЧЕНО -->
+    <!-- ⚠️ СТАРИЙ СКРИПТ De DEMO ДАНИМИ - ТИМЧАСОВО ВІДКЛЮЧЕНО -->
     <!-- <script src="../../assets/js/modules/dispatcher-dashboard.js"></script> -->
     
-    <!-- ✅ НОВИЙ СКРИПТ З РЕАЛЬНИМИ ДАНИМИ З API -->
+    <!-- ✅ НОВИЙ СКРИПТ De РЕАЛЬНИМИ ДАНИМИ De API -->
     <script src="../../assets/js/modules/dispatcher-dashboard-real.js"></script>
 
     <script>
@@ -767,7 +767,7 @@
                 $('#dispatcherName').text(`${userData.firstName} ${userData.lastName || ''}`);
             }
 
-            // ✅ ІНІЦІАЛІЗАЦІЯ НОВОЇ ПАНЕЛІ З РЕАЛЬНИМИ ДАНИМИ
+            // ✅ ІНІЦІАЛІDeАЦІЯ НОВОЇ ПАНЕЛІ De РЕАЛЬНИМИ ДАНИМИ
             console.log('🚀 Ініціалізація DispatcherDashboardReal...');
             if (typeof DispatcherDashboardReal !== 'undefined') {
                 window.dispatcherDashboard = new DispatcherDashboardReal();
@@ -805,14 +805,14 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label for="editTitle">Заголовок pedidos *</label>
+                                    <label for="editTitle">Deаголовок pedidos *</label>
                                     <input type="text" id="editTitle" class="form-control" required
                                            placeholder="Digite заголовок pedidos">
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label for="editClient">Кліexisteнт *</label>
+                                    <label for="editClient">Cliente *</label>
                                     <input type="text" id="editClient" class="form-control" required
                                            placeholder="Nome cliente">
                                 </div>
@@ -847,15 +847,15 @@
                                     <label for="editStatus">Estado *</label>
                                     <select id="editStatus" class="form-control" required>
                                         <option value="new">Nova</option>
-                                        <option value="assigned">Призначена</option>
+                                        <option value="assigned">Atribuída</option>
                                         <option value="in-progress">Em progresso</option>
-                                        <option value="completed">Завершена</option>
+                                        <option value="completed">Deавершена</option>
                                     </select>
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="form-group">
-                                    <label for="editAssignedTo">Atribuído технікові</label>
+                                    <label for="editAssignedTo">Atribuído ao técnico</label>
                                     <select id="editAssignedTo" class="form-control">
                                         <option value="">Не atribuído</option>
                                     </select>

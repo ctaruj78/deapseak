@@ -1029,24 +1029,24 @@ class PredictiveMaintenanceDashboard {
             }
         });
 
-        // Показуexisteмо перший розділ predefinido
+        // Atéказуexisteмо перший розділ predefinido
         this.showSection('overview');
     }
 
     showSection(sectionId) {
-        console.log(`📍 Показуexisteмо розділ: ${sectionId}`);
+        console.log(`📍 Atéказуexisteмо розділ: ${sectionId}`);
         
         // Приховуexisteмо всі розділи
         $('.section-content').hide();
         
-        // Показуexisteмо потрібний розділ
+        // Atéказуexisteмо потрібний розділ
         $(`#${sectionId}`).show();
         
         // Оновлюexisteмо ativo item меню
         $('.sidebar .nav-link').removeClass('active');
         $(`.sidebar .nav-link[href="#${sectionId}"]`).addClass('active');
         
-        // Заванeжуexisteмо дані para розділу
+        // Deаванeжуexisteмо дані para розділу
         this.loadSectionData(sectionId);
     }
 
@@ -1369,7 +1369,7 @@ class PredictiveMaintenanceDashboard {
 
     updateMLInsights() {
         const insights = [
-            'Sistema виявила підвиaindaний ризик відмови тросів у do elevadorх сeрше 12 років',
+            'Sistema виявила підвиaindaний ризик відмови caboів у do elevadorх сeрше 12 років',
             'Prevê-se uma redução de 15% nos custos de manutenção no próximo trimestre',
             'Recomenda-se впровадити превентивне Manutenção para 3 de elevadores високого ризику'
         ];
@@ -1399,7 +1399,7 @@ class PredictiveMaintenanceDashboard {
             }, { module: 'predictive-dashboard' });
         }
         
-        // Autoматичне atualização кожні 5 minutos
+        // Automático atualização кожні 5 minutos
         setInterval(() => {
             this.loadDashboardData();
         }, 5 * 60 * 1000);
@@ -1424,9 +1424,9 @@ class PredictiveMaintenanceDashboard {
     translateComponent(component) {
         const translations = {
             motor: 'Двигун',
-            cables: 'Троси',
+            cables: 'Caboи',
             brakes: 'Гальма',
-            doors: 'Двері',
+            doors: 'Portas',
             control_system: 'Sistema de gestão',
             safety_systems: 'Системи de segurança'
         };
@@ -1542,7 +1542,7 @@ class PredictiveMaintenanceDashboard {
                 id: 1,
                 type: 'critical',
                 lift: 'Elevador-001',
-                message: 'Crítico знос тросів',
+                message: 'Crítico знос caboів',
                 timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toLocaleString('pt-PT'),
                 acknowledged: false
             },
@@ -1655,7 +1655,7 @@ class PredictiveMaintenanceDashboard {
             <div class="calendar-grid" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px;">
         `;
 
-        // Заголовки diasв da semana
+        // Deаголовки dias da semana
         const dayHeaders = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Нд'];
         dayHeaders.forEach(day => {
             html += `<div class="text-center font-weight-bold p-2">${day}</div>`;

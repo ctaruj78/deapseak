@@ -662,7 +662,7 @@
                                         <div class="text-center py-5">
                                             <i class="fas fa-calendar-alt fa-3x text-muted mb-3"></i>
                                             <h4>Calendário de tarefas</h4>
-                                            <p>Тут será відображено ваші tarefas у вигляді calendárioя</p>
+                                            <p>Тут as suas tarefas serão apresentadas em formato de calendário</p>
                                         </div>
                                     </div>
                                 </div>
@@ -704,7 +704,7 @@
                                         <option value="repair">Reparação</option>
                                         <option value="maintenance">Manutenção</option>
                                         <option value="inspection">Inspecção</option>
-                                        <option value="emergency">Emergência ситуація</option>
+                                        <option value="emergency">Situação de emergência</option>
                                     </select>
                                 </div>
                             </div>
@@ -742,7 +742,7 @@
 
                         <div class="form-group">
                             <label for="taskTitle">Nome tarefas *</label>
-                            <input type="text" id="taskTitle" class="form-control" required placeholder="Digite назву tarefas...">
+                            <input type="text" id="taskTitle" class="form-control" required placeholder="Digite o título da tarefa...">
                         </div>
 
                         <div class="form-group">
@@ -754,18 +754,18 @@
                         <div class="form-group">
                             <label for="taskCategory">Categoria</label>
                             <select id="taskCategory" class="form-control">
-                                <option value="">Selecione категорію...</option>
+                                <option value="">Selecione a categoria...</option>
                                 <option value="mechanical">Mecânicas trabalhos</option>
                                 <option value="electrical">Elétricas trabalhos</option>
                                 <option value="safety">Segurança</option>
-                                <option value="cleaning">Чистка e de manutenção</option>
+                                <option value="cleaning">Limpeza e manutenção</option>
                             </select>
                         </div>
                     </form>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
-                    <button type="button" class="btn btn-primary" onclick="alert('Função створення de tarefas acessoна através de головну painel')">
+                    <button type="button" class="btn btn-primary" onclick="alert('Função de criaрення de tarefas disponível através da página principalinel')">
                         <i class="fas fa-info"></i> Informação
                     </button>
                 </div>
@@ -789,7 +789,7 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
                     <button type="button" class="btn btn-success" onclick="techTaskManager.startTask(currentTaskId)" id="startTaskBtn">
-                        <i class="fas fa-play"></i> Розпоchatи
+                        <i class="fas fa-play"></i> Iniciar
                     </button>
                     <button type="button" class="btn btn-warning" onclick="techTaskManager.completeTask(currentTaskId)" id="completeTaskBtn">
                         <i class="fas fa-check"></i> Concluir
@@ -816,7 +816,7 @@
             }
         }
 
-        // Менеджер de tarefas para de técnicos (використовуexiste API v2)
+        // Gestor de tarefas para de técnicos (виutilizовуexiste API v2)
         class TechTaskManager {
             constructor() {
                 this.tasks = [];
@@ -879,7 +879,7 @@
                 }
             }
             
-            // Розпоchatи tarefas
+            // Iniciar tarefas
             async startTask(requestId) {
                 try {
                     const response = await AuthManager.fetchWithAuth(`/api/requests/${requestId}/status`, {
@@ -892,7 +892,7 @@
                         throw new Error(error.message || 'Erro поchatку trabalhos');
                     }
                     
-                    alert('Tarefas розпоchatо!');
+                    alert('Tarefas iniciadas!');
                     $('#viewTaskModal').modal('hide');
                     await this.loadTasks();
                     
@@ -905,7 +905,7 @@
             // Concluir tarefas
             async completeTask(requestId) {
                 // Pedidoуexisteмо descrição concluídoї trabalhos
-                const workDescription = prompt('Опишіть виконану роботу:', 'Роботу concluído згідно desde регламентом. Todas неcorretamenteсті усунуто.');
+                const workDescription = prompt('Опишіть виконану роботу:', 'Роботу concluído згідно desde regulamentoом. Todas неcorretamenteсті усунуто.');
                 
                 if (!workDescription || workDescription.trim() === '') {
                     alert('Descrição do trabalho concluído обов\'язковий para завершення tarefas');
@@ -922,7 +922,7 @@
                         body: JSON.stringify({
                             resolution: workDescription.trim(),
                             workDone: workDescription.trim(),
-                            laborHours: 1 // За замовчуванням 1 horasа
+                            laborHours: 1 // Deа замовчуванням 1 horasа
                         })
                     });
                     
@@ -948,7 +948,7 @@
                 tbody.innerHTML = '';
                 
                 tasks.forEach(task => {
-                    // Використовуexisteмо task.id desde маппінгу (já existe _id)
+                    // Виutilizовуexisteмо task.id desde маппінгу (já existe _id)
                     const taskId = task.id || task._id;
                     if (!taskId) {
                         console.error('❌ Tarefas беdesde ID:', task);
@@ -958,7 +958,7 @@
                     const row = document.createElement('tr');
                     row.innerHTML = `
                         <td>#${taskId.toString().substr(-6)}</td>
-                        <td>${task.liftId || 'Загальне'}</td>
+                        <td>${task.liftId || 'Deагальне'}</td>
                         <td>${task.type || 'Manutenção'}</td>
                         <td>
                             <span class="status-badge status-${task.status.replace('_', '-')}">
@@ -976,7 +976,7 @@
                                 <i class="fas fa-eye"></i>
                             </button>
                             ${task.status === 'new' || task.status === 'pending' ? `
-                                <button class="btn btn-sm btn-success btn-icon" onclick="techTaskManager.startTask('${taskId}')" title="Розпоchatи">
+                                <button class="btn btn-sm btn-success btn-icon" onclick="techTaskManager.startTask('${taskId}')" title="Iniciar">
                                     <i class="fas fa-play"></i>
                                 </button>
                             ` : ''}
@@ -1054,7 +1054,7 @@
                     </div>
                 `;
                 
-                // Показуexisteмо відповіdias кнопки
+                // Atéказуexisteмо відповіdias кнопки
                 const startBtn = document.getElementById('startTaskBtn');
                 const completeBtn = document.getElementById('completeTaskBtn');
                 

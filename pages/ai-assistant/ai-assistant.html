@@ -453,10 +453,10 @@
                                                     <div class="input-group">
                                                         <input type="text" id="chatInput" placeholder="Escreva uma mensagem..." class="form-control" onkeypress="if(event.key==='Enter') sendChatMessage()">
                                                         <span class="input-group-append">
-                                                            <button type="button" class="voice-btn" id="voiceBtn" onclick="toggleVoiceInput()" title="Falar / Говорити">
+                                                            <button type="button" class="voice-btn" id="voiceBtn" onclick="toggleVoiceInput()" title="Falar / Falar">
                                                                 <i class="fas fa-microphone"></i>
                                                             </button>
-                                                            <button type="button" class="speak-btn" id="speakBtn" onclick="toggleSpeech()" title="Ouvir / Прослухати" style="display: none;">
+                                                            <button type="button" class="speak-btn" id="speakBtn" onclick="toggleSpeech()" title="Ouvir / Ouvir" style="display: none;">
                                                                 <i class="fas fa-volume-up"></i>
                                                             </button>
                                                             <button type="button" class="btn btn-primary" onclick="sendChatMessage()">
@@ -625,7 +625,7 @@
                                                     <input type="file" id="analysisFileInput" accept="application/pdf" style="display: none" onchange="handleAnalysisFile(event)">
                                                     <i class="fas fa-cloud-upload-alt fa-3x text-primary mb-3"></i>
                                                     <h5>Arraste o relatório PDF ou clique para seleccionar</h5>
-                                                    <p class="text-muted">Підтримуються apenas PDF ficheiroи (максимум 10 MB)</p>
+                                                    <p class="text-muted">Apenas ficheiros PDF são suportados (máximo 10 MB)</p>
                                                 </div>
                                                 
                                                 <div id="analysisFileInfo" style="display: none;" class="mt-3">
@@ -639,13 +639,13 @@
                                                 </div>
                                                 
                                                 <div class="text-center mt-3">
-                                                    <strong>АБО</strong>
+                                                    <strong>OU</strong>
                                                 </div>
                                                 
-                                                <textarea id="manualReport" class="form-control mt-3" rows="6" placeholder="Всeвте текст relatório inspeções вручну...&#10;&#10;Приклад:&#10;C1 - ART. 78 - Existem peças salientes das máquinas...&#10;C2 - ART. 45 - A folga entre as soleiras...&#10;C3 - ART. 20 - Falta sinalização adequada..."></textarea>
+                                                <textarea id="manualReport" class="form-control mt-3" rows="6" placeholder="Insira o texto do relatório de inspeção manualmente...&#10;&#10;Приклад:&#10;C1 - ART. 78 - Existem peças salientes das máquinas...&#10;C2 - ART. 45 - A folga entre as soleiras...&#10;C3 - ART. 20 - Falta sinalização adequada..."></textarea>
                                                 
                                                 <button class="btn btn-primary btn-lg btn-block mt-3" id="analyzeReportBtn" onclick="analyzeReport()">
-                                                    <i class="fas fa-search"></i> Análiseувати relatório
+                                                    <i class="fas fa-search"></i> Analisar relatório
                                                 </button>
                                             </div>
                                         </div>
@@ -653,7 +653,7 @@
                                         <div class="card" id="analysisResults" style="display: none;">
                                             <div class="card-header">
                                                 <h3 class="card-title">
-                                                    <i class="fas fa-chart-bar"></i> Resultadoи análise
+                                                    <i class="fas fa-chart-bar"></i> Resultados da análise
                                                 </h3>
                                             </div>
                                             <div class="card-body" id="analysisResultsContent">
@@ -709,7 +709,7 @@
         let speechRecognition = null;
         let isSpeaking = false;
 
-        // Зупинити TTS при переході на іншу a página
+        // Deупинити TTS при переході на іншу a página
         window.addEventListener('pagehide', () => {
             if ('speechSynthesis' in window) {
                 window.speechSynthesis.cancel();
@@ -816,7 +816,7 @@
                 utterance.rate = 0.9;
                 utterance.pitch = 1;
                 
-                // ЖОРСТКА ЗАБОРОНА бразильського португальського
+                // ЖОРСТКА DeOUРОНА бразильського португальського
                 const voices = window.speechSynthesis.getVoices();
                 
                 // Спочатку filtroуexisteмо ВСІ бразильські голоси
@@ -840,25 +840,25 @@
                 
                 if (portugueseVoice) {
                     utterance.voice = portugueseVoice;
-                    console.log('✅ Використовуexisteться ПОРТУГАЛЬСЬКИЙ голос:', portugueseVoice.name, portugueseVoice.lang);
+                    console.log('✅ Виutilizовуexisteться ПОРТУГАЛЬСЬКИЙ голос:', portugueseVoice.name, portugueseVoice.lang);
                 } else {
                     // Pesquisa будь-якого португальського (exceto бразильського)
                     const anyPortuguese = nonBrazilianVoices.find(voice => voice.lang.startsWith('pt'));
                     
                     if (anyPortuguese) {
                         utterance.voice = anyPortuguese;
-                        console.log('⚠️ Використовуexisteться альтернативний НЕ-бразильський голос:', anyPortuguese.name, anyPortuguese.lang);
+                        console.log('⚠️ Виutilizовуexisteться альтернативний НЕ-бразильський голос:', anyPortuguese.name, anyPortuguese.lang);
                     } else {
-                        // ОСТАННІЙ ВАРІАНТ: se apenas бразильські голоси, НЕ використовуexisteмо TTS
+                        // ОСТАННІЙ ВАРІАНТ: se apenas бразильські голоси, НЕ виutilizовуexisteмо TTS
                         const hasBrazilianOnly = voices.some(v => v.lang.includes('BR') || v.lang.includes('Brazil'));
                         
                         if (hasBrazilianOnly) {
                             console.error('❌ ПОМИЛКА: Disponíveis apenas бразильські голоси (pt-BR). TTS ВИМКНЕНО!');
                             console.warn('💡 Всenovosть португальську мову (pt-PT) в configuraçõesх do sistema');
-                            alert('⚠️ Голосовий супровід indisponível!\n\nВ системі encontrado apenas бразильську португальську (pt-BR).\n\nДля trabalhos потрібна existeвропейська португальська (pt-PT).\n\n📌 Інструкція:\nWindows: Settings → Language → Add Portuguese (Portugal)\nmacOS: System Preferences → Accessibility → Spoken Content');
-                            return; // НЕ ОЗВУЧУВАТИ
+                            alert('⚠️ Acompanhamento de voz indisponível!\n\nO sistema encontrou apenas o português do Brasil (pt-BR).\n\nДля trabalhos потрібна existeвропейська португальська (pt-PT).\n\n📌 Instruções:\nWindows: Settings → Language → Add Portuguese (Portugal)\nmacOS: System Preferences → Accessibility → Spoken Content');
+                            return; // НЕ ОDeВУЧУВАТИ
                         } else {
-                            console.warn('⚠️ Португальський голос не encontrado, використовуexisteться системний predefinido');
+                            console.warn('⚠️ Atéртугальський голос не encontrado, виutilizовуexisteться системний predefinido');
                         }
                     }
                 }
@@ -899,7 +899,7 @@
         let currentAnalysisFile = null;
         
         // Розкрити a página — відміняexisteмо __no_fouc, яку всeвляexiste global-settings.js
-        // (ця página не використовуexiste sidebar-init.js, тому revealPage() не викликаexisteться)
+        // (ця página не виutilizовуexiste sidebar-init.js, тому revealPage() не викликаexisteться)
         (function() {
             var s = document.getElementById('__no_fouc');
             if (s) s.remove();
@@ -946,7 +946,7 @@
                 body: JSON.stringify({ message })
             })
             .then(res => {
-                // Verificação на помилку авторизації
+                // Verificação на erro авторизації
                 if (res.status === 401) {
                     console.error('❌ JWT Token expired or invalid');
                     document.getElementById('typingIndicator').classList.remove('active');
@@ -980,7 +980,7 @@
                     const response = data.data?.response || data.response || data.message;
                     addChatMessage(response, false);
                 } else {
-                    const errorMsg = data.error || data.message || 'Щось пішло не eк';
+                    const errorMsg = data.error || data.message || 'Algo correu mal';
                     addChatMessage('❌ Erro: ' + errorMsg, false);
                 }
             })
@@ -990,7 +990,7 @@
                 
                 // Не показувати повторне mensagem se já показали про expired token
                 if (!err.message.includes('Unauthorized')) {
-                    addChatMessage('❌ Erro з\'ligação desde servidorом', false);
+                    addChatMessage('❌ Erro de ligação com o servidor', false);
                 }
             });
         }
@@ -1029,7 +1029,7 @@
             
             msgDiv.innerHTML = `
                 <div class="direct-chat-infos clearfix">
-                    <span class="direct-chat-name float-${isUser ? 'right' : 'left'}">${isUser ? 'Ви' : 'Assistente de IA'}</span>
+                    <span class="direct-chat-name float-${isUser ? 'right' : 'left'}">${isUser ? 'Você' : 'Assistente de IA'}</span>
                     <span class="direct-chat-timestamp float-${isUser ? 'left' : 'right'}">${timeStr}</span>
                 </div>
                 <img class="direct-chat-img" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Ccircle cx='20' cy='20' r='20' fill='%23${isUser ? '007bff' : '28a745'}'/%3E%3Ctext x='20' y='28' font-size='24' text-anchor='middle' fill='white'%3E${isUser ? '👤' : '🤖'}%3C/text%3E%3C/svg%3E" alt="${isUser ? 'User' : 'AI'}">
@@ -1041,7 +1041,7 @@
             container.insertBefore(msgDiv, typingIndicator);
             container.scrollTop = container.scrollHeight;
             
-            // Guardar осeнню resposta AI e mostrar кнопку озвучування
+            // Guardar осeнню resposta AI e mostrar botão озвучування
             if (!isUser) {
                 lastResponse = text;
                 const speakBtn = document.getElementById('speakBtn');
@@ -1078,12 +1078,12 @@
         function askLegalCustom() {
             const question = document.getElementById('legalQuestion').value.trim();
             if (!question) {
-                alert('Будь ласка, опишіть вашу ситуацію');
+                alert('Por favor, descreva a sua situação');
                 return;
             }
             
             const responseDiv = document.getElementById('legalResponse');
-            responseDiv.innerHTML = '<div class="spinner-border text-primary" role="status"></div> <span>Análiseую...</span>';
+            responseDiv.innerHTML = '<div class="spinner-border text-primary" role="status"></div> <span>A analisar...</span>';
             responseDiv.style.display = 'block';
             
             fetch(`${API_URL}/api/ai/chat`, {
@@ -1107,12 +1107,12 @@
                         </div>
                     `;
                 } else {
-                    responseDiv.innerHTML = `<div class="alert alert-danger">❌ Erro: ${data.error || data.message || 'Щось пішло не eк'}</div>`;
+                    responseDiv.innerHTML = `<div class="alert alert-danger">❌ Erro: ${data.error || data.message || 'Algo correu mal'}</div>`;
                 }
             })
             .catch(err => {
                 console.error('Legal error:', err);
-                responseDiv.innerHTML = '<div class="alert alert-danger">❌ Erro з\'ligação desde servidorом</div>';
+                responseDiv.innerHTML = '<div class="alert alert-danger">❌ Erro de ligação com o servidor</div>';
             });
         }
 
@@ -1136,7 +1136,7 @@
             })
             .catch(err => {
                 console.error('Regulations error:', err);
-                resultsDiv.innerHTML = '<div class="alert alert-danger">❌ Erro з\'ligação desde servidorом</div>';
+                resultsDiv.innerHTML = '<div class="alert alert-danger">❌ Erro de ligação com o servidor</div>';
             });
         }
         
@@ -1378,7 +1378,7 @@
             })
             .catch(err => {
                 console.error('Regulations error:', err);
-                resultsDiv.innerHTML = '<div class="alert alert-danger">❌ Erro з\'ligação desde servidorом</div>';
+                resultsDiv.innerHTML = '<div class="alert alert-danger">❌ Erro de ligação com o servidor</div>';
             });
         }
 
@@ -1484,7 +1484,7 @@
             })
             .catch(err => {
                 console.error('❌ Fetch error:', err);
-                resultsContent.innerHTML = '<div class="alert alert-danger">❌ Erro з\'ligação desde servidorом</div>';
+                resultsContent.innerHTML = '<div class="alert alert-danger">❌ Erro de ligação com o servidor</div>';
             });
         }
 
@@ -1519,7 +1519,7 @@
                 <div class="row">
                     <div class="col-md-12">
                         <div class="callout ${result.passed ? 'callout-success' : 'callout-danger'}">
-                            <h5><i class="fas fa-${result.passed ? 'check-circle' : 'times-circle'}"></i> Висновок: ${result.passed ? '✅ СХВАЛЕНО (APROVADO)' : '❌ НЕ СХВАЛЕНО (REPROVADO)'}</h5>
+                            <h5><i class="fas fa-${result.passed ? 'check-circle' : 'times-circle'}"></i> Conclusão: ${result.passed ? '✅ СХВАЛЕНО (APROVADO)' : '❌ НЕ СХВАЛЕНО (REPROVADO)'}</h5>
                         </div>
                     </div>
                 </div>
@@ -1944,7 +1944,7 @@
                 minute: '2-digit'
             });
             
-            infoDiv.innerHTML = `Осeння verificação: ${formatted}`;
+            infoDiv.innerHTML = `Última verificação: ${formatted}`;
         }
         
         // Load last check info on page load

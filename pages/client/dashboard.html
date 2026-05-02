@@ -276,7 +276,7 @@
         <!-- ═══════════════════════════════════════════════════════════ -->
 <!-- ЕТАЛОННИЙ SIDEBAR ДЛЯ КЛІЄНТСЬКИХ СManutençãoРІНОК -->
 <!-- Versão: 2.0 Portugal (2026-01-13) -->
-<!-- ⚠️ НЕ РЕДАГУЙТЕ ОКРЕМО! Використовуйте цей ficheiro як еeлон -->
+<!-- ⚠️ НЕ РЕДАГУЙТЕ ОКРЕМО! Виutilizовуйте цей ficheiro як еeлон -->
 <!-- ═══════════════════════════════════════════════════════════ -->
 
 <aside class="main-sidebar sidebar-dark-primary elevation-4">
@@ -873,7 +873,7 @@
                 );
             }, 30000);
 
-            // Ініціалізація clienteських даних desde API
+            // Ініціалізація clienteських dados desde API
             initializeClientDashboard();
 
             // client-dashboard.js створюexiste window.clientDashboard сам através de DOMContentLoaded
@@ -888,13 +888,13 @@
                 console.log('🔄 Inicialização do painel cliente...');
                 
                 try {
-                    // Заванeжуexisteмо дані do utilizador
+                    // Deаванeжуexisteмо дані do utilizador
                     const userData = await loadClientProfile();
                     
-                    // Оновлюexisteмо інтерфейс do utilizador
+                    // Оновлюexisteмо interface do utilizador
                     updateClientInterface(userData);
                     
-                    // Заванeжуexisteмо дані painelу
+                    // Deаванeжуexisteмо дані painelу
                     const [myLifts, myRequests, notifications] = await Promise.all([
                         loadClientLifts(),
                         loadClientRequests(),
@@ -904,7 +904,7 @@
                     // Оновлюexisteмо сeтистику
                     updateClientStats(myLifts, myRequests);
                     
-                    // Показуexisteмо осeнні pedidos
+                    // Atéказуexisteмо recentes pedidos
                     displayRecentRequests(myRequests);
                     
                     // ✅ Передаexisteмо реальні дані в ClientDashboard (замінюexiste фальшиві)
@@ -920,7 +920,7 @@
                 } catch (error) {
                     console.error('❌ Erro ініціалізації do painel cliente:', error);
                     
-                    // Fallback до локальних даних
+                    // Fallback до локальних dados
                     const fallbackUser = JSON.parse(localStorage.getItem('currentUser')) || { 
                         firstName: 'Cliente' 
                     };
@@ -930,7 +930,7 @@
             }
 
             /**
-             * A carregar профілю cliente
+             * A carregar perfil cliente
              */
             async function loadClientProfile() {
                 try {
@@ -949,7 +949,7 @@
                     
                     throw new Error('Erro ao carregar o perfil');
                 } catch (error) {
-                    console.warn('API indisponível, використовуexisteмо локальні дані');
+                    console.warn('API indisponível, виutilizовуexisteмо локальні дані');
                     // Only use cached data if email matches JWT (avoid showing wrong user)
                     try {
                         const jwtUser = AuthManager.getCurrentUser();
@@ -1042,7 +1042,7 @@
             }
 
             /**
-             * Atualização інтерфейсу cliente
+             * Atualização da interface cliente
              */
             function updateClientInterface(userData) {
                 const fullName = `${userData.firstName || ''} ${userData.lastName || ''}`.trim() || 'Cliente';
@@ -1099,7 +1099,7 @@
             }
 
             /**
-             * Apresentação осeнніх de pedidos
+             * Apresentação recentesх de pedidos
              */
             function displayRecentRequests(requests) {
                 const container = $('#recentRequestsContainer');
@@ -1121,7 +1121,7 @@
                     return;
                 }
 
-                // Показуexisteмо осeнні 5 de pedidos
+                // Atéказуexisteмо recentes 5 de pedidos
                 const recentRequests = requests
                     .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
                     .slice(0, 5);

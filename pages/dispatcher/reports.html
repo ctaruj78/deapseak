@@ -208,7 +208,7 @@
             <!-- Parte direita da navegação -->
             <ul class="navbar-nav ml-auto">
                 <li class="nav-item">
-                    <a class="nav-link" href="#" onclick="reportManager.quickStats()" title="Швидка estatísticas">
+                    <a class="nav-link" href="#" onclick="reportManager.quickStats()" title="Estatísticas rápidas">
                         <i class="fas fa-chart-pie"></i>
                     </a>
                 </li>
@@ -255,7 +255,7 @@
             <!-- Main content -->
             <section class="content">
                 <div class="container-fluid">
-                    <!-- Filtros relatórioів -->
+                    <!-- Filtros de relatórios -->
                     <div class="filter-bar">
                         <div class="row">
                             <div class="col-md-3">
@@ -337,12 +337,12 @@
                         </div>
                     </div>
 
-                    <!-- KPI метрики -->
+                    <!-- KPI métricas -->
                     <div class="row mb-4">
                         <div class="col-lg-2 col-md-4 col-6">
                             <div class="metric-card">
                                 <div class="metric-value text-primary" id="totalAssignments">0</div>
-                                <div class="metric-label">Total приde valores</div>
+                                <div class="metric-label">Total de valores</div>
                                 <div class="trend-indicator trend-up" id="assignmentsTrend">+5%</div>
                             </div>
                         </div>
@@ -452,12 +452,12 @@
                                         <table class="table table-bordered table-hover">
                                             <thead class="thead-light">
                                                 <tr>
-                                                    <th>Показник</th>
-                                                    <th>Поточний період</th>
+                                                    <th>Indicador</th>
+                                                    <th>Período atual</th>
                                                     <th>Anterior період</th>
-                                                    <th>Зміна</th>
-                                                    <th>Ціль</th>
-                                                    <th>Відхилення</th>
+                                                    <th>Variação</th>
+                                                    <th>Meta</th>
+                                                    <th>Variação</th>
                                                 </tr>
                                             </thead>
                                             <tbody id="statsTable">
@@ -477,7 +477,7 @@
                                 <div class="card-header">
                                     <h3 class="card-title">
                                         <i class="fas fa-file-alt mr-2"></i>
-                                        Disponíveis tipoи relatórioів
+                                        Disponíveis tipoи de relatórios
                                     </h3>
                                 </div>
                                 <div class="card-body">
@@ -488,7 +488,7 @@
                                                     <i class="fas fa-tachometer-alt"></i>
                                                 </div>
                                                 <h5>Desempenho</h5>
-                                                <p>Аналіdesde ефективності trabalhos</p>
+                                                <p>Análise de eficiência dos trabalhos</p>
                                                 <button class="btn btn-primary btn-sm" onclick="reportManager.generatePerformanceReport()">
                                                     <i class="fas fa-download"></i> Gerar
                                                 </button>
@@ -512,7 +512,7 @@
                                                     <i class="fas fa-cogs"></i>
                                                 </div>
                                                 <h5>Técnico</h5>
-                                                <p>Técnicos метрики e показники</p>
+                                                <p>Métricas e indicadores dos técnicos</p>
                                                 <button class="btn btn-primary btn-sm" onclick="reportManager.generateTechnicalReport()">
                                                     <i class="fas fa-download"></i> Gerar
                                                 </button>
@@ -524,7 +524,7 @@
                                                     <i class="fas fa-star"></i>
                                                 </div>
                                                 <h5>Qualidade</h5>
-                                                <p>Показники якості de manutenção</p>
+                                                <p>Indicadorи якості de manutenção</p>
                                                 <button class="btn btn-primary btn-sm" onclick="reportManager.generateQualityReport()">
                                                     <i class="fas fa-download"></i> Gerar
                                                 </button>
@@ -536,19 +536,19 @@
                         </div>
                     </div>
 
-                    <!-- Порівняльний аналіdesde -->
+                    <!-- Atéрівняльний аналіdesde -->
                     <div class="row mt-4">
                         <div class="col-md-6">
                             <div class="card">
                                 <div class="card-header">
                                     <h3 class="card-title">
                                         <i class="fas fa-balance-scale mr-2"></i>
-                                        Порівняльний análise
+                                        Atéрівняльний análise
                                     </h3>
                                 </div>
                                 <div class="card-body">
                                     <div id="comparisonAnalysis">
-                                        <!-- Порівняльний аналіdesde será заванeжений aqui -->
+                                        <!-- Atéрівняльний аналіdesde será заванeжений aqui -->
                                     </div>
                                 </div>
                             </div>
@@ -558,12 +558,12 @@
                                 <div class="card-header">
                                     <h3 class="card-title">
                                         <i class="fas fa-bullseye mr-2"></i>
-                                        Показники KPI
+                                        Indicadorи KPI
                                     </h3>
                                 </div>
                                 <div class="card-body">
                                     <div id="kpiMetrics">
-                                        <!-- KPI показники serão заванeжені aqui -->
+                                        <!-- KPI indicadores serão заванeжені aqui -->
                                     </div>
                                 </div>
                             </div>
@@ -598,7 +598,7 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label>Formato експорту</label>
+                                    <label>Formato de exportação</label>
                                     <select class="form-control">
                                         <option value="pdf">PDF</option>
                                         <option value="excel">Excel</option>
@@ -611,7 +611,7 @@
                                 <div class="form-group">
                                     <label>Nível detalhesзації</label>
                                     <select class="form-control">
-                                        <option value="summary">Загальний</option>
+                                        <option value="summary">Deагальний</option>
                                         <option value="detailed">Detalhado</option>
                                         <option value="technical">Técnico</option>
                                     </select>
@@ -698,7 +698,7 @@
                 $('#dispatcherName').text(`${userData.firstName} ${userData.lastName || ''}`);
             }
 
-            // Inicialização менеджера relatórioів
+            // Inicialização менеджера de relatórios
             window.reportManager = new ReportManager();
         });
     </script>
