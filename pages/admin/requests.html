@@ -6,7 +6,7 @@
     <!-- Global Settings -->
     <script src="../../assets/js/global-settings.js"></script>
     <link rel="stylesheet" href="../../assets/css/theme-dark.css">>
-    <title>Заявки на обслуговування - FestLift</title>
+    <title>Pedidos de manutenção - FestLift</title>
 
     <!-- AdminLTE CSS -->
     <link rel="stylesheet" href="../../plugins/adminlte/adminlte.min.css">
@@ -75,7 +75,7 @@
             font-weight: 700;
         }
 
-        /* Різні кольори для кожного типу заявок */
+        /* Cores diferentes para cada tipo de pedido */
         .stats-card.request-emergency {
             background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
         }
@@ -195,7 +195,7 @@
                 </a>
             </li>
             <li class="nav-item d-none d-sm-inline-block">
-                <a href="admin-dashboard.html" class="nav-link">Головна</a>
+                <a href="admin-dashboard.html" class="nav-link">Início</a>
             </li>
         </ul>
         <ul class="navbar-nav ml-auto">
@@ -205,20 +205,20 @@
                     <span class="badge badge-warning navbar-badge" id="notificationCount">3</span>
                 </a>
                 <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
-                    <span class="dropdown-header">Нові заявки</span>
+                    <span class="dropdown-header">Novos pedidos</span>
                     <div class="dropdown-divider"></div>
                     <a href="#" class="dropdown-item">
                         <i class="fas fa-exclamation-triangle mr-2 text-danger"></i>
-                        Аварія ліфта #L001
-                        <span class="float-right text-muted text-sm">5 хв тому</span>
+                        Avaria do elevador #L001
+                        <span class="float-right text-muted text-sm">5 min atrás</span>
                     </a>
                     <div class="dropdown-divider"></div>
-                    <a href="#" class="dropdown-item dropdown-footer">Всі сповіщення</a>
+                    <a href="#" class="dropdown-item dropdown-footer">Todas as notificações</a>
                 </div>
             </li>
             <li class="nav-item">
                 <a class="nav-link" href="#" onclick="logout()">
-                    <i class="fas fa-sign-out-alt"></i> Вийти
+                    <i class="fas fa-sign-out-alt"></i> Sair
                 </a>
             </li>
         </ul>
@@ -237,205 +237,205 @@
                 <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Ccircle cx='80' cy='80' r='80' fill='%23667eea'/%3E%3Ccircle cx='80' cy='62' r='30' fill='white'/%3E%3Cellipse cx='80' cy='135' rx='52' ry='40' fill='white'/%3E%3C/svg%3E" class="img-circle elevation-2" alt="User Image">
             </div>
             <div class="info">
-                <a href="/pages/admin/profile.html" class="d-block" id="sidebarFullName">Адміністратор</a>
-                <small class="text-success">Адміністратор</small>
+                <a href="/pages/admin/profile.html" class="d-block" id="sidebarFullName">Administrador</a>
+                <small class="text-success">Administrador</small>
             </div>
         </div>
 
         <nav class="mt-2">
             <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
 
-                <!-- Дашборд -->
+                <!-- Dashboard -->
                 <li class="nav-item">
                     <a href="/pages/admin/admin-dashboard.html" class="nav-link" id="nav-dashboard">
                         <i class="nav-icon fas fa-tachometer-alt"></i>
-                        <p>Дашборд</p>
+                        <p>Dashboard</p>
                     </a>
                 </li>
 
-                <!-- QR Система -->
+                <!-- QR Sistema -->
                 <li class="nav-item" id="group-qr">
                     <a href="#" class="nav-link">
                         <i class="nav-icon fas fa-qrcode"></i>
-                        <p>QR Система<i class="right fas fa-angle-left"></i></p>
+                        <p>QR Sistema<i class="right fas fa-angle-left"></i></p>
                     </a>
                     <ul class="nav nav-treeview">
                         <li class="nav-item">
                             <a href="/pages/admin/qr-management.html" class="nav-link" id="nav-qr-management">
                                 <i class="fas fa-cog nav-icon"></i>
-                                <p>Управління QR</p>
+                                <p>Gestão de QR</p>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a href="/pages/admin/qr-analytics.html" class="nav-link" id="nav-qr-analytics">
                                 <i class="fas fa-chart-line nav-icon"></i>
-                                <p>Аналітика QR</p>
+                                <p>Análise QR</p>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a href="/pages/admin/qr-history.html" class="nav-link" id="nav-qr-history">
                                 <i class="fas fa-history nav-icon"></i>
-                                <p>Історія сканувань</p>
+                                <p>Histórico de leituras</p>
                             </a>
                         </li>
                     </ul>
                 </li>
 
-                <!-- Ліфти -->
+                <!-- Elevadores -->
                 <li class="nav-item" id="group-lifts">
                     <a href="#" class="nav-link">
                         <i class="nav-icon fas fa-elevator"></i>
-                        <p>Ліфти<i class="right fas fa-angle-left"></i></p>
+                        <p>Elevadores<i class="right fas fa-angle-left"></i></p>
                     </a>
                     <ul class="nav nav-treeview">
                         <li class="nav-item">
                             <a href="/pages/admin/lifts.html" class="nav-link" id="nav-lifts">
                                 <i class="fas fa-list nav-icon"></i>
-                                <p>Управління ліфтами</p>
+                                <p>Gestão de elevadores</p>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a href="/pages/admin/requests.html" class="nav-link" id="nav-requests">
                                 <i class="fas fa-clipboard-list nav-icon"></i>
-                                <p>Заявки</p>
+                                <p>Pedidos</p>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a href="/pages/admin/maps.html" class="nav-link" id="nav-maps">
                                 <i class="fas fa-map-marked-alt nav-icon"></i>
-                                <p>Мапа ліфтів</p>
+                                <p>Mapa de elevadores</p>
                             </a>
                         </li>
                     </ul>
                 </li>
 
-                <!-- Користувачі -->
+                <!-- Utilizadores -->
                 <li class="nav-item">
                     <a href="/pages/admin/users.html" class="nav-link" id="nav-users">
                         <i class="nav-icon fas fa-users"></i>
-                        <p>Користувачі</p>
+                        <p>Utilizadores</p>
                     </a>
                 </li>
 
-                <!-- Документи -->
+                <!-- Documentos -->
                 <li class="nav-item" id="group-docs">
                     <a href="#" class="nav-link">
                         <i class="nav-icon fas fa-file-alt"></i>
-                        <p>Документи<i class="right fas fa-angle-left"></i></p>
+                        <p>Documentos<i class="right fas fa-angle-left"></i></p>
                     </a>
                     <ul class="nav nav-treeview">
                         <li class="nav-item">
                             <a href="/pages/admin/invoice-template.html" class="nav-link" id="nav-invoice-template">
                                 <i class="fas fa-file-invoice nav-icon"></i>
-                                <p>Кошторис (Створити)</p>
+                                <p>Orçamento (Criar)</p>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a href="/pages/admin/orcamentos-list.html" class="nav-link" id="nav-orcamentos-list">
                                 <i class="fas fa-list-alt nav-icon"></i>
-                                <p>Кошторис (Список)</p>
+                                <p>Orçamento (Lista)</p>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a href="/pages/admin/email-template.html" class="nav-link" id="nav-email-template">
                                 <i class="fas fa-envelope nav-icon"></i>
-                                <p>Email шаблони</p>
+                                <p>Modelos de email</p>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a href="/pages/admin/inspection-template.html" class="nav-link" id="nav-inspection-template">
                                 <i class="fas fa-clipboard-check nav-icon"></i>
-                                <p>Інспекції</p>
+                                <p>Inspecções</p>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a href="/pages/admin/report-template.html" class="nav-link" id="nav-report-template">
                                 <i class="fas fa-file-pdf nav-icon"></i>
-                                <p>Шаблони звітів</p>
+                                <p>Modelos de relatórios</p>
                             </a>
                         </li>
                     </ul>
                 </li>
 
-                <!-- Аналітика -->
+                <!-- Análise -->
                 <li class="nav-item" id="group-analytics">
                     <a href="#" class="nav-link">
                         <i class="nav-icon fas fa-chart-line"></i>
-                        <p>Аналітика<i class="right fas fa-angle-left"></i></p>
+                        <p>Análise<i class="right fas fa-angle-left"></i></p>
                     </a>
                     <ul class="nav nav-treeview">
                         <li class="nav-item">
                             <a href="/pages/admin/unified-analytics.html" class="nav-link" id="nav-unified-analytics">
                                 <i class="fas fa-chart-area nav-icon"></i>
-                                <p>Зведена аналітика</p>
+                                <p>Análise global</p>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a href="/pages/admin/predictive-maintenance.html" class="nav-link" id="nav-predictive-maintenance">
                                 <i class="fas fa-brain nav-icon"></i>
-                                <p>AI Прогнозування</p>
+                                <p>AI Previsão</p>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a href="/pages/admin/reports.html" class="nav-link" id="nav-reports">
                                 <i class="fas fa-chart-bar nav-icon"></i>
-                                <p>Звіти</p>
+                                <p>Relatórios</p>
                             </a>
                         </li>
                     </ul>
                 </li>
 
-                <!-- AI Асистент -->
+                <!-- AI Assistente -->
                 <li class="nav-item">
                     <a href="/pages/ai-assistant/ai-assistant.html" class="nav-link" id="nav-ai-assistant">
                         <i class="nav-icon fas fa-magic"></i>
-                        <p>AI Асистент</p>
+                        <p>AI Assistente</p>
                     </a>
                 </li>
 
-                <!-- Підтримка -->
+                <!-- Suporte -->
                 <li class="nav-item" id="group-support">
                     <a href="#" class="nav-link">
                         <i class="nav-icon fas fa-headset"></i>
-                        <p>Підтримка<i class="right fas fa-angle-left"></i></p>
+                        <p>Suporte<i class="right fas fa-angle-left"></i></p>
                     </a>
                     <ul class="nav nav-treeview">
                         <li class="nav-item">
                             <a href="/pages/admin/support.html" class="nav-link" id="nav-support">
                                 <i class="fas fa-life-ring nav-icon"></i>
-                                <p>Технічна підтримка</p>
+                                <p>Suporte técnico</p>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a href="/pages/admin/notifications.html" class="nav-link" id="nav-notifications">
                                 <i class="fas fa-bell nav-icon"></i>
-                                <p>Сповіщення</p>
+                                <p>Notificações</p>
                             </a>
                         </li>
                     </ul>
                 </li>
 
-                <!-- Налаштування -->
+                <!-- Definições -->
                 <li class="nav-item">
                     <a href="/pages/admin/settings.html" class="nav-link" id="nav-settings">
                         <i class="nav-icon fas fa-cogs"></i>
-                        <p>Налаштування</p>
+                        <p>Definições</p>
                     </a>
                 </li>
 
-                <!-- Профіль -->
+                <!-- Perfil -->
                 <li class="nav-item">
                     <a href="/pages/admin/profile.html" class="nav-link" id="nav-profile">
                         <i class="nav-icon fas fa-user-circle"></i>
-                        <p>Профіль</p>
+                        <p>Perfil</p>
                     </a>
                 </li>
 
-                <!-- Вийти -->
+                <!-- Sair -->
                 <li class="nav-item">
                     <a href="#" onclick="if(typeof AuthManager!=='undefined'){AuthManager.logout();}else{localStorage.clear();sessionStorage.clear();window.location.replace('/pages/auth/login.html');}" class="nav-link">
                         <i class="nav-icon fas fa-sign-out-alt text-danger"></i>
-                        <p>Вийти</p>
+                        <p>Sair</p>
                     </a>
                 </li>
 
@@ -533,12 +533,12 @@
             <div class="container-fluid">
                 <div class="row mb-2">
                     <div class="col-sm-6">
-                        <h1><i class="fas fa-clipboard-list mr-2"></i>Заявки на обслуговування</h1>
+                        <h1><i class="fas fa-clipboard-list mr-2"></i>Pedidos de manutenção</h1>
                     </div>
                     <div class="col-sm-6">
                         <ol class="breadcrumb float-sm-right">
-                            <li class="breadcrumb-item"><a href="admin-dashboard.html">Головна</a></li>
-                            <li class="breadcrumb-item active">Заявки на обслуговування</li>
+                            <li class="breadcrumb-item"><a href="admin-dashboard.html">Início</a></li>
+                            <li class="breadcrumb-item active">Pedidos de manutenção</li>
                         </ol>
                     </div>
                 </div>
@@ -556,7 +556,7 @@
                                 <i class="fas fa-clipboard-list"></i>
                             </span>
                             <div class="info-box-content">
-                                <span class="info-box-text">Всього</span>
+                                <span class="info-box-text">Total</span>
                                 <span class="info-box-number" id="statAll">0</span>
                             </div>
                         </div>
@@ -567,7 +567,7 @@
                                 <i class="fas fa-plus-circle"></i>
                             </span>
                             <div class="info-box-content">
-                                <span class="info-box-text">Нові</span>
+                                <span class="info-box-text">Novos</span>
                                 <span class="info-box-number" id="statNew">0</span>
                             </div>
                         </div>
@@ -578,7 +578,7 @@
                                 <i class="fas fa-user-check"></i>
                             </span>
                             <div class="info-box-content">
-                                <span class="info-box-text">Призначені</span>
+                                <span class="info-box-text">Atribuídos</span>
                                 <span class="info-box-number" id="statAssigned">0</span>
                             </div>
                         </div>
@@ -589,7 +589,7 @@
                                 <i class="fas fa-spinner"></i>
                             </span>
                             <div class="info-box-content">
-                                <span class="info-box-text">В роботі</span>
+                                <span class="info-box-text">Em curso</span>
                                 <span class="info-box-number" id="statInProgress">0</span>
                             </div>
                         </div>
@@ -600,7 +600,7 @@
                                 <i class="fas fa-check-circle"></i>
                             </span>
                             <div class="info-box-content">
-                                <span class="info-box-text">Виконані</span>
+                                <span class="info-box-text">Concluídos</span>
                                 <span class="info-box-number" id="statCompleted">0</span>
                             </div>
                         </div>
@@ -611,52 +611,52 @@
                 <div class="filter-panel">
                     <div class="row">
                         <div class="col-md-3">
-                            <label>Тип заявки:</label>
+                            <label>Tipo de pedido:</label>
                             <select class="form-control" id="filterType">
-                                <option value="">Всі типи</option>
-                                <option value="emergency">Аварійні</option>
-                                <option value="maintenance">Планове ТО</option>
-                                <option value="repair">Ремонт</option>
-                                <option value="inspection">Інспекція</option>
-                                <option value="consultation">Консультація</option>
-                                <option value="orcamento">Орсаменто</option>
+                                <option value="">Todos os tipos</option>
+                                <option value="emergency">Avarias</option>
+                                <option value="maintenance">Manutenção planeada</option>
+                                <option value="repair">Reparação</option>
+                                <option value="inspection">Inspecção</option>
+                                <option value="consultation">Consulta</option>
+                                <option value="orcamento">Orçamento</option>
                             </select>
                         </div>
                         <div class="col-md-3">
-                            <label>Статус:</label>
+                            <label>Estado:</label>
                             <select class="form-control" id="filterStatus">
-                                <option value="">Всі статуси</option>
-                                <option value="new">Нові</option>
-                                <option value="assigned">Призначені</option>
+                                <option value="">Todos os estados</option>
+                                <option value="new">Novos</option>
+                                <option value="assigned">Atribuídos</option>
                                 <option value="in_progress">Em progresso</option>
-                                <option value="completed">Завершені</option>
+                                <option value="completed">Concluídos</option>
                             </select>
                         </div>
                         <div class="col-md-3">
-                            <label>Пріоритет:</label>
+                            <label>Prioridade:</label>
                             <select class="form-control" id="filterPriority">
-                                <option value="">Всі пріоритети</option>
-                                <option value="critical">Критичний</option>
-                                <option value="high">Високий</option>
-                                <option value="medium">Середній</option>
-                                <option value="low">Низький</option>
+                                <option value="">Todas as prioridades</option>
+                                <option value="critical">Crítico</option>
+                                <option value="high">Alto</option>
+                                <option value="medium">Médio</option>
+                                <option value="low">Baixo</option>
                             </select>
                         </div>
                         <div class="col-md-3">
-                            <label>Технік:</label>
+                            <label>Técnico:</label>
                             <select class="form-control" id="filterTechnician">
-                                <option value="">Всі техніки</option>
-                                <!-- Завантажується динамічно -->
+                                <option value="">Todos os técnicos</option>
+                                <!-- Carregado dinamicamente -->
                             </select>
                         </div>
                     </div>
                     <div class="row mt-3">
                         <div class="col-md-12 text-right">
                             <button class="btn btn-secondary" onclick="clearFilters()">
-                                <i class="fas fa-times"></i> Очистити
+                                <i class="fas fa-times"></i> Limpar
                             </button>
                             <button class="btn btn-primary" onclick="applyFilters()">
-                                <i class="fas fa-search"></i> Застосувати
+                                <i class="fas fa-search"></i> Aplicar
                             </button>
                             <button class="btn btn-success" onclick="exportToExcel()">
                                 <i class="fas fa-file-excel"></i> Excel
@@ -670,24 +670,24 @@
                     <div class="card-body p-2">
                         <div class="d-flex align-items-center flex-wrap" style="gap:8px">
                             <div class="input-group input-group-sm" style="max-width:280px">
-                                <input type="text" id="searchInput" class="form-control" placeholder="🔍 Пошук заявок...">
+                                <input type="text" id="searchInput" class="form-control" placeholder="🔍 Pesquisar pedidos...">
                                 <div class="input-group-append">
                                     <button class="btn btn-default"><i class="fas fa-search"></i></button>
                                 </div>
                             </div>
                             <div class="btn-group btn-group-sm btn-group-toggle" data-toggle="buttons">
-                                <label class="btn btn-outline-primary active" title="Список">
+                                <label class="btn btn-outline-primary active" title="Lista">
                                     <input type="radio" name="reqView" autocomplete="off" checked onchange="setReqView('list')"> <i class="fas fa-list"></i>
                                 </label>
-                                <label class="btn btn-outline-primary" title="Сітка">
+                                <label class="btn btn-outline-primary" title="Grelha">
                                     <input type="radio" name="reqView" autocomplete="off" onchange="setReqView('grid')"> <i class="fas fa-th"></i>
                                 </label>
                             </div>
-                            <button class="btn btn-sm btn-outline-secondary" onclick="refreshRequests()"><i class="fas fa-sync-alt"></i> Оновити</button>
+                            <button class="btn btn-sm btn-outline-secondary" onclick="refreshRequests()"><i class="fas fa-sync-alt"></i> Actualizar</button>
                             <div class="ml-auto d-flex" style="gap:6px">
                                 <button class="btn btn-sm btn-outline-success" onclick="exportToExcel()"><i class="fas fa-file-excel"></i> Excel</button>
-                                <button class="btn btn-sm btn-warning" id="adminArchiveToggleBtn" onclick="serviceManager.toggleArchiveView()"><i class="fas fa-archive mr-1"></i>Архів</button>
-                                <button class="btn btn-sm btn-success" onclick="openNewRequestModal()"><i class="fas fa-plus"></i> Нова заявка</button>
+                                <button class="btn btn-sm btn-warning" id="adminArchiveToggleBtn" onclick="serviceManager.toggleArchiveView()"><i class="fas fa-archive mr-1"></i>Arquivo</button>
+                                <button class="btn btn-sm btn-success" onclick="openNewRequestModal()"><i class="fas fa-plus"></i> Novo pedido</button>
                             </div>
                         </div>
                     </div>
@@ -696,9 +696,9 @@
                 <!-- Archive mode banner -->
                 <div id="adminArchiveBanner" class="alert alert-warning d-none" style="border-left:4px solid #e67e22">
                     <i class="fas fa-archive mr-2"></i>
-                    <strong>Режим перегляду архіву.</strong> Показуються архівовані та скасовані заявки (фальшиві виклики).
+                    <strong>Modo de visualização de arquivo.</strong> São mostrados pedidos arquivados e cancelados (chamadas falsas).
                     <button class="btn btn-sm btn-outline-warning ml-3" onclick="serviceManager.toggleArchiveView()">
-                        <i class="fas fa-arrow-left mr-1"></i>Повернутись до активних
+                        <i class="fas fa-arrow-left mr-1"></i>Voltar aos activos
                     </button>
                 </div>
 
@@ -706,7 +706,7 @@
                 <div id="requestsContainer" class="req-cards-list">
                     <div class="text-center py-5 text-muted">
                         <i class="fas fa-spinner fa-spin fa-2x mb-3 d-block"></i>
-                        Завантаження заявок...
+                        A carregar pedidos...
                     </div>
                 </div>
 
@@ -734,7 +734,7 @@
     <div class="modal-dialog modal-lg modal-dialog-scrollable">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Нова заявка на обслуговування</h5>
+                <h5 class="modal-title">Novo pedido de manutenção</h5>
                 <button type="button" class="close" data-dismiss="modal">
                     <span>&times;</span>
                 </button>
@@ -744,18 +744,18 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label for="requestLift">Ліфт *</label>
+                                <label for="requestLift">Elevador *</label>
                                 <select class="form-control" id="requestLift" required>
-                                    <option value="">Оберіть ліфт...</option>
+                                    <option value="">Selecione o elevador...</option>
                                 </select>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label for="requestClient">Клієнт *</label>
+                                <label for="requestClient">Cliente *</label>
                                 <select class="form-control" id="requestClient" required>
-                                    <option value="">Оберіть клієнта...</option>
-                                    <!-- Опції будуть завантажені динамічно -->
+                                    <option value="">Selecione o cliente...</option>
+                                    <!-- Opções serão carregadas dinamicamente -->
                                 </select>
                             </div>
                         </div>
@@ -763,26 +763,26 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label for="requestType">Тип заявки *</label>
+                                <label for="requestType">Tipo de pedido *</label>
                                 <select class="form-control" id="requestType" required>
-                                    <option value="">Оберіть тип...</option>
-                                    <option value="emergency">🚨 Аварійна ситуація</option>
-                                    <option value="consultation">💬 Консультація</option>
-                                    <option value="orcamento">💰 Орсаменто</option>
-                                    <option value="maintenance">🔧 Планове ТО</option>
-                                    <option value="repair">🛠️ Ремонт</option>
-                                    <option value="inspection">📋 Інспекція</option>
+                                    <option value="">Selecione o tipo...</option>
+                                    <option value="emergency">🚨 Situação de emergência</option>
+                                    <option value="consultation">💬 Consulta</option>
+                                    <option value="orcamento">💰 Orçamento</option>
+                                    <option value="maintenance">🔧 Manutenção planeada</option>
+                                    <option value="repair">🛠️ Reparação</option>
+                                    <option value="inspection">📋 Inspecção</option>
                                 </select>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label for="requestPriority">Пріоритет *</label>
+                                <label for="requestPriority">Prioridade *</label>
                                 <select class="form-control" id="requestPriority" required>
-                                    <option value="low">Низький</option>
-                                    <option value="medium" selected>Середній</option>
-                                    <option value="high">Високий</option>
-                                    <option value="critical">Критичний</option>
+                                    <option value="low">Baixo</option>
+                                    <option value="medium" selected>Médio</option>
+                                    <option value="high">Alto</option>
+                                    <option value="critical">Crítico</option>
                                 </select>
                             </div>
                         </div>
@@ -790,31 +790,31 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label for="requestTechnician">Призначити техніка</label>
+                                <label for="requestTechnician">Atribuir técnico</label>
                                 <select class="form-control" id="requestTechnician">
-                                    <option value="">Автоматичне призначення</option>
-                                    <!-- Опції будуть завантажені динамічно -->
+                                    <option value="">Atribuição automática</option>
+                                    <!-- Opções serão carregadas dinamicamente -->
                                 </select>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label for="requestScheduled">Запланована дата виконання</label>
+                                <label for="requestScheduled">Data de execução planeada</label>
                                 <input type="datetime-local" class="form-control" id="requestScheduled" min="">
                             </div>
                         </div>
                     </div>
                     <div class="form-group">
-                        <label for="requestDescription">Опис проблеми *</label>
+                        <label for="requestDescription">Descrição do problema *</label>
                         <textarea class="form-control" id="requestDescription" rows="4" required 
-                                  placeholder="Детально опишіть проблему або необхідні роботи..."></textarea>
+                                  placeholder="Descreva detalhadamente o problema ou trabalhos necessários..."></textarea>
                     </div>
                 </form>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
                 <button type="button" class="btn btn-primary" onclick="window.serviceManager.createRequest()">
-                    <i class="fas fa-save"></i> Створити заявку
+                    <i class="fas fa-save"></i> Criar o pedido
                 </button>
             </div>
         </div>
@@ -832,7 +832,7 @@
                 <div>
                     <div class="d-flex align-items-center flex-wrap">
                         <i class="fas fa-clipboard-list mr-2"></i>
-                        <h5 class="modal-title mb-0 mr-2">Деталі заявки <span id="vrmNum" class="font-weight-bold"></span></h5>
+                        <h5 class="modal-title mb-0 mr-2">Detalhes pedidos <span id="vrmNum" class="font-weight-bold"></span></h5>
                         <span id="vrmStatus" class="badge mr-1" style="font-size:.78rem"></span>
                         <span id="vrmPriority" class="badge" style="font-size:.78rem"></span>
                     </div>
@@ -847,20 +847,20 @@
                 <!-- ─── LEFT: description (always visible) + mini tabs ─── -->
                 <div class="flex-grow-1 border-right" style="overflow-y:auto">
 
-                    <!-- Тип + опис завжди видно -->
+                    <!-- Tipo + descrição sempre видно -->
                     <div class="p-4 pb-2">
                         <div class="mb-1">
-                            <small class="text-uppercase text-muted" style="font-size:.68rem;letter-spacing:.08em">Тип заявки</small>
+                            <small class="text-uppercase text-muted" style="font-size:.68rem;letter-spacing:.08em">Tipo de pedido</small>
                             <div id="vrmType" class="font-weight-bold mt-1"></div>
                         </div>
                         <hr class="my-2">
                         <small class="text-uppercase text-muted" style="font-size:.68rem;letter-spacing:.08em">
-                            <i class="fas fa-wrench mr-1"></i>Опис проблеми
+                            <i class="fas fa-wrench mr-1"></i>Descrição do problema
                         </small>
                         <p id="vrmDescription" class="mt-2 mb-0" style="font-size:1rem;line-height:1.7;white-space:pre-wrap"></p>
                         <div id="vrmNotesSection" style="display:none" class="mt-2">
                             <div class="alert alert-warning py-2 px-3 mb-0" style="font-size:.87rem">
-                                <i class="fas fa-sticky-note mr-1"></i><strong>Примітка:</strong>
+                                <i class="fas fa-sticky-note mr-1"></i><strong>Nota:</strong>
                                 <span id="vrmNotes"></span>
                             </div>
                         </div>
@@ -870,50 +870,50 @@
                     <ul class="nav nav-tabs px-4 mt-2" style="border-bottom:2px solid #dee2e6">
                         <li class="nav-item">
                             <a class="nav-link active vrm-tab" data-toggle="tab" href="#vrmTabLoc" style="padding:8px 14px;font-size:.82rem">
-                                <i class="fas fa-map-marker-alt mr-1"></i>Локація
+                                <i class="fas fa-map-marker-alt mr-1"></i>Localização
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link vrm-tab" data-toggle="tab" href="#vrmTabClient" style="padding:8px 14px;font-size:.82rem">
-                                <i class="fas fa-user mr-1"></i>Клієнт
+                                <i class="fas fa-user mr-1"></i>Cliente
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link vrm-tab" data-toggle="tab" href="#vrmTabComments" style="padding:8px 14px;font-size:.82rem">
-                                <i class="fas fa-comments mr-1"></i>Коментарі
+                                <i class="fas fa-comments mr-1"></i>Comentários
                                 <span class="badge badge-primary ml-1" id="commentsCount">0</span>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link vrm-tab" data-toggle="tab" href="#vrmTabHistory" style="padding:8px 14px;font-size:.82rem">
-                                <i class="fas fa-history mr-1"></i>Хронологія
+                                <i class="fas fa-history mr-1"></i>Cronologia
                             </a>
                         </li>
                     </ul>
 
                     <div class="tab-content px-4 py-3">
-                        <!-- Локація -->
+                        <!-- Localização -->
                         <div class="tab-pane fade show active" id="vrmTabLoc">
                             <div class="d-flex align-items-start mb-3">
                                 <i class="fas fa-map-marker-alt text-danger mt-1 mr-2"></i>
                                 <div class="flex-grow-1">
-                                    <small class="text-muted d-block">Адреса</small>
+                                    <small class="text-muted d-block">Endereço</small>
                                     <strong id="vrmAddress"></strong>
                                 </div>
                                 <button class="btn btn-sm btn-outline-primary ml-2" onclick="window.serviceManager && window.serviceManager.openInMapsAdmin()">
-                                    <i class="fas fa-map mr-1"></i>Карта
+                                    <i class="fas fa-map mr-1"></i>Mapa
                                 </button>
                             </div>
                             <div class="d-flex align-items-center mb-3">
                                 <i class="fas fa-hashtag text-info mr-2"></i>
-                                <span class="text-muted mr-1">ID ліфта:</span><code id="vrmLiftId"></code>
+                                <span class="text-muted mr-1">ID do elevador:</span><code id="vrmLiftId"></code>
                             </div>
                             <div id="vrmMapContainer" style="width:100%;height:220px;border-radius:8px;overflow:hidden;background:#f0f0f0;display:flex;align-items:center;justify-content:center">
-                                <div class="text-center text-muted"><i class="fas fa-map-marked-alt fa-3x mb-2"></i><br>Адреса не вказана</div>
+                                <div class="text-center text-muted"><i class="fas fa-map-marked-alt fa-3x mb-2"></i><br>Endereço não especificado</div>
                             </div>
                         </div>
 
-                        <!-- Клієнт -->
+                        <!-- Cliente -->
                         <div class="tab-pane fade" id="vrmTabClient">
                             <div class="d-flex align-items-center mb-3">
                                 <div style="width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#667eea,#764ba2);display:flex;align-items:center;justify-content:center;flex-shrink:0" class="mr-3">
@@ -921,27 +921,27 @@
                                 </div>
                                 <div>
                                     <h6 id="vrmClientName" class="mb-0 font-weight-bold"></h6>
-                                    <small id="vrmClientRole" class="text-muted">Клієнт</small>
+                                    <small id="vrmClientRole" class="text-muted">Cliente</small>
                                 </div>
                             </div>
                             <div class="mb-2"><i class="fas fa-envelope text-primary mr-2"></i><a id="vrmClientEmail" href=""></a></div>
                             <div><i class="fas fa-phone text-success mr-2"></i><a id="vrmClientPhone" href=""></a></div>
                         </div>
 
-                        <!-- Коментарі -->
+                        <!-- Comentários -->
                         <div class="tab-pane fade" id="vrmTabComments">
                             <div id="commentsList" style="max-height:220px;overflow-y:auto">
-                                <p class="text-muted text-center py-3"><i class="fas fa-inbox fa-2x d-block mb-2"></i>Коментарів поки немає</p>
+                                <p class="text-muted text-center py-3"><i class="fas fa-inbox fa-2x d-block mb-2"></i>Ainda sem comentários</p>
                             </div>
                             <div class="mt-2 pt-2 border-top d-flex">
-                                <textarea class="form-control form-control-sm flex-grow-1 mr-2" id="newCommentText" rows="2" placeholder="Написати коментар..."></textarea>
+                                <textarea class="form-control form-control-sm flex-grow-1 mr-2" id="newCommentText" rows="2" placeholder="Escrever comentário..."></textarea>
                                 <button class="btn btn-primary btn-sm" onclick="addComment()" style="white-space:nowrap">
                                     <i class="fas fa-paper-plane"></i>
                                 </button>
                             </div>
                         </div>
 
-                        <!-- Хронологія -->
+                        <!-- Cronologia -->
                         <div class="tab-pane fade" id="vrmTabHistory">
                             <div id="requestTimeline" class="vrm-timeline"></div>
                         </div>
@@ -953,7 +953,7 @@
                 <div style="width:230px;min-width:230px;background:#f8f9fa;overflow-y:auto;padding:16px">
 
                     <div class="mb-3">
-                        <small class="text-uppercase text-muted" style="font-size:.67rem;letter-spacing:.06em">Технік</small>
+                        <small class="text-uppercase text-muted" style="font-size:.67rem;letter-spacing:.06em">Técnico</small>
                         <div class="d-flex align-items-center mt-1">
                             <div style="width:28px;height:28px;border-radius:50%;background:#28a745;display:flex;align-items:center;justify-content:center;flex-shrink:0" class="mr-2">
                                 <i class="fas fa-user-cog text-white" style="font-size:11px"></i>
@@ -963,33 +963,33 @@
                     </div>
 
                     <div class="mb-3">
-                        <small class="text-uppercase text-muted" style="font-size:.67rem;letter-spacing:.06em">Заплановано</small>
+                        <small class="text-uppercase text-muted" style="font-size:.67rem;letter-spacing:.06em">Planeado</small>
                         <div class="mt-1"><strong id="vrmDeadline" style="font-size:.9rem">—</strong></div>
                     </div>
 
                     <hr class="my-2">
-                    <small class="text-uppercase text-muted" style="font-size:.67rem;letter-spacing:.06em">Дії</small>
+                    <small class="text-uppercase text-muted" style="font-size:.67rem;letter-spacing:.06em">Ações</small>
                     <div class="mt-2 d-flex flex-column" id="quickActionsContainer">
                         <!-- generated by generateQuickActions() -->
                     </div>
                     <div class="mt-2 d-flex flex-column">
                         <button class="btn btn-info btn-sm mb-1" onclick="assignTechnician()">
-                            <i class="fas fa-user-plus mr-1"></i>Призначити
+                            <i class="fas fa-user-plus mr-1"></i>Atribuir
                         </button>
                         <button class="btn btn-outline-warning btn-sm mb-1" onclick="serviceManager.extendDeadlineFromModal()">
-                            <i class="fas fa-calendar-plus mr-1"></i>Дедлайн +
+                            <i class="fas fa-calendar-plus mr-1"></i>Prazo +
                         </button>
                         <button class="btn btn-outline-primary btn-sm mb-1" onclick="serviceManager.editRequest(serviceManager.currentRequest?.id || serviceManager.currentRequest?._id); $('#viewRequestModal').modal('hide')">
-                            <i class="fas fa-edit mr-1"></i>Редагувати
+                            <i class="fas fa-edit mr-1"></i>Editar
                         </button>
                         <button class="btn btn-outline-warning btn-sm mb-1" id="adminBtnArchive" onclick="serviceManager.archiveFromModal()">
-                            <i class="fas fa-archive mr-1"></i>Архівувати
+                            <i class="fas fa-archive mr-1"></i>Arquivar
                         </button>
                         <button class="btn btn-success btn-sm mb-1 d-none" id="adminBtnUnarchive" onclick="serviceManager.unarchiveFromModal()">
-                            <i class="fas fa-box-open mr-1"></i>Відновити із архіву
+                            <i class="fas fa-box-open mr-1"></i>Restaurar do arquivo
                         </button>
                         <button class="btn btn-outline-danger btn-sm mb-1" id="adminBtnFalseCall" onclick="serviceManager.falseCallFromModal()">
-                            <i class="fas fa-ban mr-1"></i>Фальшивий виклик
+                            <i class="fas fa-ban mr-1"></i>Chamada falsa
                         </button>
                         <button class="btn btn-outline-danger btn-sm" id="vrmPdfBtn">
                             <i class="fas fa-file-pdf mr-1"></i>PDF
@@ -1001,8 +1001,8 @@
             </div><!-- /SPLIT -->
 
             <div class="modal-footer py-2" style="background:#f8f9fa;border-top:1px solid #dee2e6">
-                <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal"><i class="fas fa-times mr-1"></i>Закрити</button>
-                <button type="button" class="btn btn-primary btn-sm" id="vrmCompleteBtn" onclick="completeRequest()"><i class="fas fa-check mr-1"></i>Завершити</button>
+                <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal"><i class="fas fa-times mr-1"></i>Fechar</button>
+                <button type="button" class="btn btn-primary btn-sm" id="vrmCompleteBtn" onclick="completeRequest()"><i class="fas fa-check mr-1"></i>Concluir</button>
             </div>
         </div>
     </div>
@@ -1012,7 +1012,7 @@
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Editar заявку</h5>
+                <h5 class="modal-title">Editar pedido</h5>
                 <button type="button" class="close" data-dismiss="modal">
                     <span>&times;</span>
                 </button>
@@ -1022,62 +1022,62 @@
                     <input type="hidden" id="editRequestId">
                     
                     <div class="form-group">
-                        <label for="editRequestLift">Ліфт:</label>
+                        <label for="editRequestLift">Elevador:</label>
                         <select class="form-control" id="editRequestLift" disabled>
-                            <option value="">-- Вибір заблоковано --</option>
+                            <option value="">-- Seleção bloqueada --</option>
                         </select>
-                        <small class="form-text text-muted">Ліфт не можна змінити після створення</small>
+                        <small class="form-text text-muted">O elevador não pode ser alterado após a criação</small>
                     </div>
 
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label for="editRequestType">Тип заявки:</label>
+                                <label for="editRequestType">Tipo de pedido:</label>
                                 <select class="form-control" id="editRequestType" disabled>
-                                    <option value="emergency">Аварія</option>
-                                    <option value="maintenance">ТО</option>
-                                    <option value="repair">Ремонт</option>
-                                    <option value="inspection">Інспекція</option>
-                                    <option value="consultation">Консультація</option>
-                                    <option value="orcamento">Орсаменто</option>
+                                    <option value="emergency">Avaria</option>
+                                    <option value="maintenance">IT</option>
+                                    <option value="repair">Reparação</option>
+                                    <option value="inspection">Inspecção</option>
+                                    <option value="consultation">Consulta</option>
+                                    <option value="orcamento">Orçamento</option>
                                 </select>
-                                <small class="form-text text-muted">Тип не можна змінити</small>
+                                <small class="form-text text-muted">O tipo não pode ser alterado</small>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label for="editRequestPriority">Пріоритет:</label>
+                                <label for="editRequestPriority">Prioridade:</label>
                                 <select class="form-control" id="editRequestPriority" required>
-                                    <option value="low">Низький</option>
-                                    <option value="medium">Середній</option>
-                                    <option value="high">Високий</option>
-                                    <option value="critical">Критичний</option>
+                                    <option value="low">Baixo</option>
+                                    <option value="medium">Médio</option>
+                                    <option value="high">Alto</option>
+                                    <option value="critical">Crítico</option>
                                 </select>
                             </div>
                         </div>
                     </div>
 
                     <div class="form-group">
-                        <label for="editRequestTitle">Заголовок:</label>
+                        <label for="editRequestTitle">Título:</label>
                         <input type="text" class="form-control" id="editRequestTitle" required>
                     </div>
 
                     <div class="form-group">
-                        <label for="editRequestDescription">Опис проблеми:</label>
+                        <label for="editRequestDescription">Descrição do problema:</label>
                         <textarea class="form-control" id="editRequestDescription" rows="4" required></textarea>
                     </div>
 
                     <div class="form-group">
-                        <label for="editScheduledAt">Заплановано на:</label>
+                        <label for="editScheduledAt">Planeado para:</label>
                         <input type="datetime-local" class="form-control" id="editScheduledAt" min="">
-                        <small class="form-text text-muted">Можна обрати тільки поточну дату або майбутню</small>
+                        <small class="form-text text-muted">Pode seleccionar apenas a data actual ou futura</small>
                     </div>
                 </form>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
                 <button type="button" class="btn btn-primary" onclick="window.serviceManager.saveEditedRequest()">
-                    <i class="fas fa-save"></i> Guardar зміни
+                    <i class="fas fa-save"></i> Guardar alterações
                 </button>
             </div>
         </div>
@@ -1099,10 +1099,10 @@
     </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 
-<!-- 🌍 Система багатомовності -->
+<!-- 🌍 Sistema multilingue -->
 <script src="../../assets/js/i18n.js"></script>
 
-<!-- Система авторизації -->
+<!-- Sistema de autorização -->
 <script src="../../assets/js/auth.js"></script>
 
 <!-- MongoDB ObjectId Converter -->
@@ -1114,7 +1114,7 @@
 <script>
 /**
  * Service Request Management System
- * Sistema de gestão заявками на обслуговування ліфтів
+ * Sistema de gestão pedidoми на de manutenção de elevadores
  */
 
 class ServiceRequestManager {
@@ -1125,26 +1125,26 @@ class ServiceRequestManager {
     }
 
     async init() {
-        console.log('🎫 Ініціалізація системи заявок...');
+        console.log('🎫 Inicialização do sistema de pedidos...');
         this.loadRequests();
-        await this.loadLifts(); // Завантажуємо ліфти з API
+        await this.loadLifts(); // Carregar elevadores da API
         this.setupEventListeners();
         this.initDataTable();
         this.handleUrlParams();
     }
 
     handleUrlParams() {
-        // Обробляємо URL параметри для предзаповнення форми
+        // Обробляexisteмо URL параметри para предзаповнення форми
         const urlParams = new URLSearchParams(window.location.search);
         const liftId = urlParams.get('lift');
         const address = urlParams.get('address');
         
         if (liftId) {
-            // Автоматично відкриваємо модальне вікно створення заявки
+            // Automático відкриваexisteмо модальне вікно створення pedidos
             setTimeout(() => {
                 $('#requestLift').val(liftId);
                 if (address) {
-                    // Якщо адреси немає в селекті, додаємо її
+                    // Se endereçoи não há в селекті, додаexisteмо її
                     const existingOption = $(`#requestLift option[value="${liftId}"]`);
                     if (existingOption.length === 0) {
                         $('#requestLift').append(`
@@ -1160,12 +1160,12 @@ class ServiceRequestManager {
     }
 
     setupEventListeners() {
-        // Filtroи
+        // Filtros
         $('#filterType, #filterStatus, #filterPriority, #filterTechnician').on('change', () => {
             this.applyFilters();
         });
 
-        // Форма нової заявки
+        // Форма нової pedidos
         $('#newRequestForm').on('submit', (e) => {
             e.preventDefault();
             this.createRequest();
@@ -1174,46 +1174,46 @@ class ServiceRequestManager {
 
     async loadRequests() {
         try {
-            // Перевірка наявності AuthManager
+            // Verificar disponibilidade de AuthManager
             if (typeof AuthManager === 'undefined' || !AuthManager.isAuthenticated || !AuthManager.isAuthenticated()) {
-                console.warn('⚠️ AuthManager не готовий або користувач не авторизований, використовую demo дані');
+                console.warn('⚠️ AuthManager não pronto ou utilizador não autenticado, usando dados demo');
                 this.loadDemoRequests();
                 this.renderRequests();
                 this.updateStatistics();
                 return;
             }
             
-            // Завантажуємо заявки з API v2
+            // Заванeжуexisteмо pedidos desde API v2
             const archiveParam = this._archiveMode ? '?archived=true' : '';
             const response = await AuthManager.fetchWithAuth('/api/requests' + archiveParam);
             
             if (response && response.ok) {
                 const result = await response.json();
                 
-                console.log('📥 API відповідь:', result);
+                console.log('📥 Resposta da API:', result);
                 
-                // API повертає: { success: true, data: [...] }
+                // API devolve: { success: true, data: [...] }
                 if (result.success && result.data) {
                     const apiRequests = Array.isArray(result.data) ? result.data : (result.data.requests || []);
                     
-                    console.log('📊 Заявок отримано:', apiRequests.length);
+                    console.log('📊 Pedidos recebidos:', apiRequests.length);
                     
-                    // Конвертуємо формат API в формат сторінки
+                    // Конвертуexisteмо formato API в formato da página
                     this.requests = apiRequests.map((req, index) => {
-                        // Генеруємо читабельний ID (з requestNumber або порядковий)
+                        // Генеруexisteмо significativo ID (desde requestNumber ou порядковий)
                         const displayId = req.requestNumber || `REQ-${String(index + 1).padStart(4, '0')}`;
                         
-                        // Використовуємо збережені дані про ліфт з заявки
-                        const liftId = req.lift?.municipalNumber || req.liftMunicipalNumber || req.liftId || 'Невідомий';
-                        // Адреса ліфта: зі збагаченого populate або з прямого рядкового поля (старий формат)
+                        // Використовуexisteмо збережені дані про elevador desde pedidos
+                        const liftId = req.lift?.municipalNumber || req.liftMunicipalNumber || req.liftId || 'Desconhecido';
+                        // Morada do elevador: зі збагаченого populate ou desde прямого рядкового поля (antigo formato)
                         const liftAddrObj = req.lift?.address || {};
                         const liftAddress = liftAddrObj.street
                             ? (liftAddrObj.city && liftAddrObj.city !== liftAddrObj.street
                                 ? `${liftAddrObj.street}, ${liftAddrObj.city}`
                                 : liftAddrObj.street)
-                            : (req.liftAddress || 'Адреса невідома');
+                            : (req.liftAddress || 'Endereço desconhecido');
                         
-                        // Дані клієнта з populated об'єкта (або збагаченого бекендом)
+                        // Dados cliente desde populated instalaçãoа (ou збагаченого бекендом)
                         const clientObj = req.client || {};
                         const clientName  = (clientObj.firstName || clientObj.lastName)
                             ? [clientObj.firstName, clientObj.lastName].filter(Boolean).join(' ')
@@ -1221,7 +1221,7 @@ class ServiceRequestManager {
                         const clientEmail = clientObj.email || '';
                         const clientPhone = clientObj.phone || '';
 
-                        // Отримуємо дані техніка - використовуємо assignedTo з populated об'єкта
+                        // Отримуexisteмо дані do técnico - використовуexisteмо assignedTo desde populated instalaçãoа
                         const techObj = req.assignedTo || {};
                         const techName = req.technicianName
                             || ((techObj.firstName || techObj.lastName)
@@ -1230,11 +1230,11 @@ class ServiceRequestManager {
                         
                         return {
                             id: displayId,
-                            _id: req._id, // Зберігаємо реальний MongoDB ID
+                            _id: req._id, // Guardamos o ID real do MongoDB
                             liftId: liftId,
                             liftAddress: liftAddress,
                             liftMunicipalNumber: liftId,
-                            type: req.type || 'maintenance', // Використовуємо req.type, а не status
+                            type: req.type || 'maintenance', // Usamos req.type, não status
                             priority: (() => {
                                 const p = req.priority || 'medium';
                                 return p === 'urgent' ? 'critical' : p; // urgent -> critical
@@ -1244,17 +1244,17 @@ class ServiceRequestManager {
                                 return s === 'pending' ? 'new' : s; // pending -> new
                             })(),
                             title: (() => {
-                                if (req.title && req.title !== 'Без назви') return req.title;
-                                // Автогенерація з типу + адреси
-                                const typeMap = { maintenance: 'ТО', repair: 'Ремонт', inspection: 'Інспекція', consultation: 'Консультація', emergency: 'Аварія', orcamento: 'Орсаменто' };
-                                const typePart = typeMap[req.type] || req.type || 'Заявка';
+                                if (req.title && req.title !== 'Sem título') return req.title;
+                                // Autoгенерація desde tipoу + endereçoи
+                                const typeMap = { maintenance: 'IT', repair: 'Reparação', inspection: 'Inspecção', consultation: 'Consulta', emergency: 'Avaria', orcamento: 'Орсаменто' };
+                                const typePart = typeMap[req.type] || req.type || 'Pedido';
                                 const addr = (() => {
                                     const a = req.lift?.address || {};
                                     return a.street ? [a.street, a.city].filter(Boolean).join(', ') : (req.liftAddress || '');
                                 })();
                                 return addr ? `${typePart} — ${addr}` : typePart;
                             })(),
-                            description: req.description || 'Без опису',
+                            description: req.description || 'Sem descrição',
                             technician: techName,
                             technicianId: req.assignedTo?._id || req.assignedTo,
                             technicianName: techName,
@@ -1276,31 +1276,31 @@ class ServiceRequestManager {
                             archived: req.archived || false,
                             archivedAt: req.archivedAt || null,
                             falseCall: req.falseCall || false,
-                            rawData: req // Зберігаємо оригінальні дані
+                            rawData: req // Guardamos os dados originais
                         };
                     });
                     
-                    console.log('✅ Завантажено заявок з API:', this.requests.length);
+                    console.log('✅ Pedidos carregados da API:', this.requests.length);
                 } else {
-                    console.warn('⚠️ Невірний формат відповіді API, використовую demo дані');
+                    console.warn('⚠️ Formato inválido da resposta API, usando dados demo');
                     this.loadDemoRequests();
                 }
             } else {
-                console.warn('⚠️ API недоступний, використовую demo дані');
+                console.warn('⚠️ API indisponível, usando dados demo');
                 this.loadDemoRequests();
             }
             
             this.renderRequests();
             this.updateStatistics();
         } catch (error) {
-            console.error('❌ Помилка завантаження заявок:', error);
+            console.error('❌ Erro ao carregar pedidos:', error);
             this.loadDemoRequests();
             this.renderRequests();
             this.updateStatistics();
         }
     }
     
-    // Допоміжна функція для конвертації статусу
+    // Допоentreна функція para конверeції estadoу
     mapStatusToType(status) {
         const typeMap = {
             'new': 'emergency',
@@ -1320,8 +1320,8 @@ class ServiceRequestManager {
                 type: 'emergency',
                 priority: 'critical',
                 status: 'new',
-                title: 'Ліфт не працює',
-                description: 'Ліфт зупинився між поверхами, всередині знаходиться людина',
+                title: 'Elevador avariado',
+                description: 'Elevador parado entre pisos, há pessoa no interior',
                 technician: null,
                 createdAt: new Date('2025-10-06T10:30:00').toISOString(),
                 scheduledAt: null,
@@ -1331,8 +1331,8 @@ class ServiceRequestManager {
                     {
                         timestamp: new Date('2025-10-06T10:30:00').toISOString(),
                         action: 'created',
-                        message: 'Заявку створено',
-                        user: 'Адміністратор'
+                        message: 'Pedido criado',
+                        user: 'Administrador'
                     }
                 ]
             },
@@ -1343,8 +1343,8 @@ class ServiceRequestManager {
                 type: 'maintenance',
                 priority: 'medium',
                 status: 'assigned',
-                title: 'Планове ТО',
-                description: 'Щомісячне технічне обслуговування згідно з графіком',
+                title: 'Manutenção planeada',
+                description: 'Manutenção técnica mensal conforme planeado',
                 technician: 'tech1',
                 createdAt: new Date('2025-10-05T14:00:00').toISOString(),
                 scheduledAt: new Date('2025-10-07T09:00:00').toISOString(),
@@ -1354,14 +1354,14 @@ class ServiceRequestManager {
                     {
                         timestamp: new Date('2025-10-05T14:00:00').toISOString(),
                         action: 'created',
-                        message: 'Заявку створено',
-                        user: 'Адміністратор'
+                        message: 'Pedido criado',
+                        user: 'Administrador'
                     },
                     {
                         timestamp: new Date('2025-10-05T14:15:00').toISOString(),
                         action: 'assigned',
-                        message: 'Призначено техніка Петров І.В.',
-                        user: 'Диспетчер'
+                        message: 'Técnico Petrov I.V. atribuído',
+                        user: 'Despachante'
                     }
                 ]
             },
@@ -1372,8 +1372,8 @@ class ServiceRequestManager {
                 type: 'repair',
                 priority: 'high',
                 status: 'in_progress',
-                title: 'Ремонт дверей',
-                description: 'Двері ліфта не закриваються повністю, потрібна заміна сенсора',
+                title: 'Reparação das portas',
+                description: 'As portas do elevador não fecham completamente, é necessário substituir o sensor',
                 technician: 'tech2',
                 createdAt: new Date('2025-10-04T16:20:00').toISOString(),
                 scheduledAt: new Date('2025-10-06T11:00:00').toISOString(),
@@ -1383,19 +1383,19 @@ class ServiceRequestManager {
                     {
                         timestamp: new Date('2025-10-04T16:20:00').toISOString(),
                         action: 'created',
-                        message: 'Заявку створено диспетчером',
-                        user: 'Диспетчер'
+                        message: 'Pedido criado pelo despachante',
+                        user: 'Despachante'
                     },
                     {
                         timestamp: new Date('2025-10-04T16:30:00').toISOString(),
                         action: 'assigned',
-                        message: 'Призначено техніка Сидоров П.П.',
-                        user: 'Адміністратор'
+                        message: 'Técnico Sidorov P.P. atribuído',
+                        user: 'Administrador'
                     },
                     {
                         timestamp: new Date('2025-10-06T11:05:00').toISOString(),
                         action: 'started',
-                        message: 'Технік розпочав роботу',
+                        message: 'Técnico iniciou trabalho',
                         user: 'Сидоров П.П.'
                     }
                 ]
@@ -1407,8 +1407,8 @@ class ServiceRequestManager {
                 type: 'inspection',
                 priority: 'medium',
                 status: 'completed',
-                title: 'Планова інспекція',
-                description: 'Квартальна інспекція безпеки та технічного стану',
+                title: 'Inspecção planeada',
+                description: 'Inspecção trimestral de segurança e estado técnico',
                 technician: 'tech3',
                 createdAt: new Date('2025-10-02T09:00:00').toISOString(),
                 scheduledAt: new Date('2025-10-03T10:00:00').toISOString(),
@@ -1418,25 +1418,25 @@ class ServiceRequestManager {
                     {
                         timestamp: new Date('2025-10-02T09:00:00').toISOString(),
                         action: 'created',
-                        message: 'Заявку створено',
-                        user: 'Адміністратор'
+                        message: 'Pedido criado',
+                        user: 'Administrador'
                     },
                     {
                         timestamp: new Date('2025-10-02T09:15:00').toISOString(),
                         action: 'assigned',
-                        message: 'Призначено техніка Козлов А.А.',
-                        user: 'Адміністратор'
+                        message: 'Técnico Kozlov A.A. atribuído',
+                        user: 'Administrador'
                     },
                     {
                         timestamp: new Date('2025-10-03T10:00:00').toISOString(),
                         action: 'started',
-                        message: 'Розпочато інспекцію',
+                        message: 'Inspecção iniciada',
                         user: 'Козлов А.А.'
                     },
                     {
                         timestamp: new Date('2025-10-03T12:30:00').toISOString(),
                         action: 'completed',
-                        message: 'Інспекцію завершено успішно',
+                        message: 'Inspecção concluída com sucesso',
                         user: 'Козлов А.А.'
                     }
                 ]
@@ -1446,50 +1446,50 @@ class ServiceRequestManager {
     }
 
     async loadLifts() {
-        // Завантажуємо список ліфтів з API
+        // Заванeжуexisteмо lista de elevadores desde API
         try {
-            console.log('🔄 Завантаження ліфтів для select...');
+            console.log('🔄 A carregar elevadores para select...');
             const select = $('#requestLift');
-            select.empty().append('<option value="">Завантаження...</option>');
+            select.empty().append('<option value="">A carregar...</option>');
             
-            // Перевірка AuthManager
+            // Verificação AuthManager
             if (!AuthManager || !AuthManager.isAuthenticated()) {
-                console.error('❌ Користувач не авторизований');
-                select.empty().append('<option value="">Увійдіть в систему</option>');
+                console.error('❌ Utilizador não autenticado');
+                select.empty().append('<option value="">Entre no sistema</option>');
                 return;
             }
             
-            // Викликаємо API для отримання ліфтів
-            console.log('📡 Виклик API /api/lifts...');
+            // Викликаexisteмо API para отримання de elevadores
+            console.log('📡 Chamada API /api/lifts...');
             const response = await AuthManager.fetchWithAuth('/api/lifts', {
                 method: 'GET'
             });
             
             if (!response) {
-                console.error('❌ Помилка авторизації при завантаженні ліфтів');
-                select.empty().append('<option value="">Помилка авторизації</option>');
+                console.error('❌ Erro de autenticação ao carregar elevadores');
+                select.empty().append('<option value="">Erro de autenticação</option>');
                 return;
             }
             
-            // Парсимо JSON з response
+            // Парсимо JSON desde response
             const data = await response.json();
-            console.log('📥 Відповідь API (parsed):', data);
+            console.log('📥 Resposta API (parsed):', data);
             
             if (!data.success) {
-                console.error('❌ API повернув помилку:', data.message);
-                select.empty().append('<option value="">Помилка: ' + (data.message || 'невідома помилка') + '</option>');
+                console.error('❌ API retornou erro:', data.message);
+                select.empty().append('<option value="">Erro: ' + (data.message || 'erro desconhecido') + '</option>');
                 return;
             }
             
             const lifts = data.data || [];
-            console.log('✅ Завантажено ліфтів:', lifts.length, lifts);
+            console.log('✅ Carregado de elevadores:', lifts.length, lifts);
             
             if (lifts.length === 0) {
-                select.empty().append('<option value="">Немає доступних ліфтів</option>');
+                select.empty().append('<option value="">Sem elevadores disponíveis</option>');
                 return;
             }
             
-            // Допоміжна функція для форматування ліфта
+            // Допоentreна функція para formatoування do elevador
             const formatLift = (lift) => {
                 const municipalNumber = lift.municipalNumber || lift.name || '';
                 let addressText = '';
@@ -1504,13 +1504,13 @@ class ServiceRequestManager {
                 return { municipalNumber, addressText };
             };
 
-            // Фільтруємо ліфти без номера І без адреси (порожні записи)
+            // Filtroуexisteмо elevadores беdesde númeroа І беdesde endereçoи (порожні registos)
             const validLifts = lifts.filter(lift => {
                 const { municipalNumber, addressText } = formatLift(lift);
                 return municipalNumber || addressText;
             });
 
-            select.empty().append('<option value="">Оберіть ліфт...</option>');
+            select.empty().append('<option value="">Selecione o elevador...</option>');
             
             validLifts.forEach(lift => {
                 const { municipalNumber, addressText } = formatLift(lift);
@@ -1526,12 +1526,12 @@ class ServiceRequestManager {
                 `);
             });
             
-            console.log('✅ Select ліфтів заповнено, всього опцій:', select.find('option').length);
+            console.log('✅ Select de elevadores заповнено, total опцій:', select.find('option').length);
 
-            // Також оновлюємо select у формі редагування
+            // Також оновлюexisteмо select у формі edição
             const editSelect = $('#editRequestLift');
             if (editSelect.length) {
-                editSelect.empty().append('<option value="">Оберіть ліфт...</option>');
+                editSelect.empty().append('<option value="">Selecione o elevador...</option>');
                 validLifts.forEach(lift => {
                     const { municipalNumber, addressText } = formatLift(lift);
                     const numPart = municipalNumber ? `№${municipalNumber}` : '';
@@ -1547,13 +1547,13 @@ class ServiceRequestManager {
                 });
             }
 
-            // Завантажуємо клієнтів і техніків у форму створення
+            // Заванeжуexisteмо de clientes і de técnicos у форму створення
             await this.loadClients();
             await this.loadTechniciansIntoNewForm();
         } catch (error) {
-            console.error('❌ Помилка завантаження ліфтів:', error);
+            console.error('❌ Erro ao carregar elevadores:', error);
             const select = $('#requestLift');
-            select.empty().append('<option value="">Помилка: ' + error.message + '</option>');
+            select.empty().append('<option value="">Erro: ' + error.message + '</option>');
         }
     }
 
@@ -1561,22 +1561,22 @@ class ServiceRequestManager {
         try {
             const clientSelect = $('#requestClient');
             if (!clientSelect.length) return;
-            clientSelect.empty().append('<option value="">Оберіть клієнта...</option>');
+            clientSelect.empty().append('<option value="">Selecione o cliente...</option>');
             const resp = await AuthManager.fetchWithAuth('/api/users?role=client&limit=200');
             if (!resp || !resp.ok) return;
             const data = await resp.json();
             const users = (Array.isArray(data.data) ? data.data : null) || [];
             if (!users.length) {
-                clientSelect.append('<option value="" disabled>Клієнтів не знайдено</option>');
+                clientSelect.append('<option value="" disabled>Кліexisteнтів не encontrado</option>');
                 return;
             }
             users.forEach(u => {
                 const name = [u.firstName, u.lastName].filter(Boolean).join(' ') || u.username || u.email;
                 clientSelect.append(`<option value="${u._id}">${name}${u.email ? ' — ' + u.email : ''}</option>`);
             });
-            console.log('✅ Клієнтів завантажено:', users.length);
+            console.log('✅ Кліexisteнтів carregado:', users.length);
         } catch (e) {
-            console.error('❌ Помилка завантаження клієнтів:', e);
+            console.error('❌ Erro ao carregar de clientes:', e);
         }
     }
 
@@ -1584,7 +1584,7 @@ class ServiceRequestManager {
         try {
             const techSelect = $('#requestTechnician');
             if (!techSelect.length) return;
-            techSelect.empty().append('<option value="">Автоматичне призначення</option>');
+            techSelect.empty().append('<option value="">Atribuição automática</option>');
             const resp = await AuthManager.fetchWithAuth('/api/users?role=technician&limit=200');
             if (!resp || !resp.ok) return;
             const data = await resp.json();
@@ -1593,9 +1593,9 @@ class ServiceRequestManager {
                 const name = [t.firstName, t.lastName].filter(Boolean).join(' ') || t.username;
                 techSelect.append(`<option value="${t._id}">${name}</option>`);
             });
-            console.log('✅ Техніків завантажено:', techs.length);
+            console.log('✅ Técnicoів carregado:', techs.length);
         } catch (e) {
-            console.error('❌ Помилка завантаження техніків:', e);
+            console.error('❌ Erro ao carregar de técnicos:', e);
         }
     }
 
@@ -1608,7 +1608,7 @@ class ServiceRequestManager {
         container.empty();
 
         if (this.requests.length === 0) {
-            container.html('<div class="alert alert-info m-0"><i class="fas fa-info-circle mr-2"></i>Заявок не знайдено</div>');
+            container.html('<div class="alert alert-info m-0"><i class="fas fa-info-circle mr-2"></i>Заявок не encontrado</div>');
             $('#requestsCount').text('');
             return;
         }
@@ -1616,22 +1616,22 @@ class ServiceRequestManager {
         const priorityColors = { critical: 'danger', urgent: 'danger', high: 'warning', medium: 'info', low: 'success' };
         const priorityIcons  = { critical: 'exclamation-triangle', urgent: 'exclamation-triangle', high: 'bolt', medium: 'wrench', low: 'clipboard-check' };
         const statusColors   = { new: 'primary', pending: 'primary', assigned: 'warning', in_progress: 'info', completed: 'success', cancelled: 'secondary' };
-        const statusTexts    = { new: 'Нова', pending: 'Нова', assigned: 'Призначена', in_progress: 'В роботі', completed: 'Виконана', cancelled: 'Скасована' };
+        const statusTexts    = { new: 'Nova', pending: 'Nova', assigned: 'Призначена', in_progress: 'Em curso', completed: 'Виконана', cancelled: 'Скасована' };
 
         this.requests.forEach(request => {
             const requestId = (request._id && request._id.toString) ? request._id.toString() : (request._id || request.id || '');
-            if (!requestId) { console.error('❌ Запит без ID:', request); return; }
+            if (!requestId) { console.error('❌ Pedido беdesde ID:', request); return; }
 
             const displayId  = request.id || 'REQ-' + requestId.slice(-6).toUpperCase();
             const pColor     = priorityColors[request.priority] || 'secondary';
             const pIcon      = priorityIcons[request.priority]  || 'clipboard';
             const sColor     = statusColors[request.status]     || 'secondary';
             const sText      = statusTexts[request.status]      || request.status;
-            const techName   = request.technicianName || (request.technician ? '<span class="text-warning">Призначено</span>' : '<span class="text-muted">Не призначено</span>');
+            const techName   = request.technicianName || (request.technician ? '<span class="text-warning">Atribuído</span>' : '<span class="text-muted">Не atribuído</span>');
             const isOverdue  = request.status !== 'completed' && request.scheduledAt && new Date(request.scheduledAt) < new Date();
             const dateStr    = request.scheduledAt
-                ? new Date(request.scheduledAt).toLocaleString('uk-UA', {day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})
-                : new Date(request.createdAt).toLocaleString('uk-UA', {day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+                ? new Date(request.scheduledAt).toLocaleString('pt-PT', {day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})
+                : new Date(request.createdAt).toLocaleString('pt-PT', {day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
 
             const card = `
             <div class="card req-card req-card-${request.priority} mb-2" data-id="${requestId}">
@@ -1645,12 +1645,12 @@ class ServiceRequestManager {
                                 <small class="text-muted font-weight-bold">${displayId}</small>
                                 <span class="badge badge-${pColor}">${this.getPriorityText(request.priority)}</span>
                                 <span class="badge badge-${sColor}">${sText}</span>
-                                ${isOverdue ? '<span class="badge badge-danger req-pulse">Протерміновано</span>' : ''}
+                                ${isOverdue ? '<span class="badge badge-danger req-pulse">Atrasado</span>' : ''}
                             </div>
                             <div class="font-weight-bold text-dark mb-1" style="font-size:14px">${request.title || this.getTypeText(request.type) + ' — ' + (request.liftAddress||'')}</div>
                             <div class="text-muted text-truncate mb-1" style="font-size:12px;max-width:600px">${request.description || ''}</div>
                             <div class="d-flex flex-wrap" style="gap:14px;font-size:12px;color:#6c757d">
-                                <span><i class="fas fa-map-marker-alt mr-1"></i>${request.liftAddress || 'Адреса невідома'}</span>
+                                <span><i class="fas fa-map-marker-alt mr-1"></i>${request.liftAddress || 'Endereço desconhecido'}</span>
                                 <span><i class="fas fa-user mr-1"></i>${techName}</span>
                                 <span><i class="fas fa-calendar mr-1"></i>${dateStr}</span>
                                 <span><i class="fas fa-tools mr-1"></i>${this.getTypeText(request.type)}</span>
@@ -1658,12 +1658,12 @@ class ServiceRequestManager {
                         </div>
                         <div class="d-flex flex-column align-items-end flex-shrink-0" style="gap:5px">
                             <div class="btn-group btn-group-sm">
-                                <button class="btn btn-outline-secondary" onclick="serviceManager.viewRequest('${requestId}')" title="Деталі"><i class="fas fa-eye"></i></button>
-                                ${request.status !== 'completed' ? `<button class="btn btn-warning" onclick="openEnhancedAssignModal('${requestId}')" title="Призначити техніка"><i class="fas fa-user-plus"></i></button>` : ''}
-                                ${isOverdue ? `<button class="btn btn-warning" onclick="serviceManager.extendDeadline('${requestId}')" title="Продовжити дедлайн"><i class="fas fa-calendar-plus"></i></button>` : ''}
-                                <button class="btn btn-outline-primary" onclick="serviceManager.editRequest('${requestId}')" title="Редагувати"><i class="fas fa-edit"></i></button>
-                                <button class="btn btn-outline-warning" onclick="serviceManager.archiveRequest('${requestId}')" title="Архівувати"><i class="fas fa-archive"></i></button>
-                                <button class="btn btn-outline-danger" onclick="serviceManager.deleteRequest('${requestId}')" title="Видалити назавжди"><i class="fas fa-trash"></i></button>
+                                <button class="btn btn-outline-secondary" onclick="serviceManager.viewRequest('${requestId}')" title="Detalhes"><i class="fas fa-eye"></i></button>
+                                ${request.status !== 'completed' ? `<button class="btn btn-warning" onclick="openEnhancedAssignModal('${requestId}')" title="Atribuir técnico"><i class="fas fa-user-plus"></i></button>` : ''}
+                                ${isOverdue ? `<button class="btn btn-warning" onclick="serviceManager.extendDeadline('${requestId}')" title="Continuar дедлайн"><i class="fas fa-calendar-plus"></i></button>` : ''}
+                                <button class="btn btn-outline-primary" onclick="serviceManager.editRequest('${requestId}')" title="Editar"><i class="fas fa-edit"></i></button>
+                                <button class="btn btn-outline-warning" onclick="serviceManager.archiveRequest('${requestId}')" title="Arquivar"><i class="fas fa-archive"></i></button>
+                                <button class="btn btn-outline-danger" onclick="serviceManager.deleteRequest('${requestId}')" title="Eliminar наsempre"><i class="fas fa-trash"></i></button>
                             </div>
                         </div>
                     </div>
@@ -1673,7 +1673,7 @@ class ServiceRequestManager {
             container.append(card);
         });
 
-        $('#requestsCount').text(`Показано ${this.requests.length} заявок`);
+        $('#requestsCount').text(`A mostrar ${this.requests.length} pedidos`);
     }
 
     updateStatistics() {
@@ -1695,7 +1695,7 @@ class ServiceRequestManager {
         // DataTable replaced by card layout — no-op
     }
 
-    // Допоміжні методи
+    // Допоentreні методи
     getTypeIcon(type) {
         const icons = {
             emergency: '🚨',
@@ -1710,11 +1710,11 @@ class ServiceRequestManager {
 
     getTypeText(type) {
         const texts = {
-            emergency: 'Аварія',
-            maintenance: 'ТО',
-            repair: 'Ремонт',
-            inspection: 'Інспекція',
-            consultation: 'Консультація',
+            emergency: 'Avaria',
+            maintenance: 'Manutenção',
+            repair: 'Reparação',
+            inspection: 'Inspecção',
+            consultation: 'Consulta',
             orcamento: 'Орсаменто'
         };
         return texts[type] || type;
@@ -1722,21 +1722,21 @@ class ServiceRequestManager {
 
     getPriorityText(priority) {
         const texts = {
-            critical: 'Критичний',
-            urgent: 'Критичний',
-            high: 'Високий',
-            medium: 'Середній',
-            low: 'Низький'
+            critical: 'Crítico',
+            urgent: 'Crítico',
+            high: 'Alto',
+            medium: 'Médio',
+            low: 'Baixo'
         };
         return texts[priority] || priority;
     }
 
     getStatusText(status) {
         const texts = {
-            new: 'Нова',
-            pending: 'Нова',
+            new: 'Nova',
+            pending: 'Nova',
             assigned: 'Призначена',
-            in_progress: 'В роботі',
+            in_progress: 'Em curso',
             completed: 'Завершена',
             cancelled: 'Скасована'
         };
@@ -1749,10 +1749,10 @@ class ServiceRequestManager {
             tech2: 'Сидоров П.П.',
             tech3: 'Козлов А.А.'
         };
-        return techs[techId] || 'Невідомий';
+        return techs[techId] || 'Desconhecido';
     }
 
-    // Методи управління заявками
+    // Методи gestão pedidoми
     async createRequest() {
         const form = $('#newRequestForm')[0];
         if (!form.checkValidity()) {
@@ -1762,13 +1762,13 @@ class ServiceRequestManager {
 
         const clientVal = $('#requestClient').val();
         if (!clientVal) {
-            toastr.error('Будь ласка, оберіть клієнта');
+            toastr.error('Por favor, selecione cliente');
             return;
         }
 
-        // Отримуємо дані ліфта з option
+        // Отримуexisteмо дані do elevador desde option
         const selectedOption = $('#requestLift option:selected');
-        const liftAddress = selectedOption.attr('data-address') || selectedOption.text().split(' - ')[1] || 'Адреса невідома';
+        const liftAddress = selectedOption.attr('data-address') || selectedOption.text().split(' - ')[1] || 'Endereço desconhecido';
         const liftMunicipalNumber = selectedOption.attr('data-municipal') || '';
 
         const typeVal = $('#requestType').val();
@@ -1784,12 +1784,12 @@ class ServiceRequestManager {
         };
 
         if (!newRequest.liftId) {
-            toastr.error('Будь ласка, оберіть ліфт');
+            toastr.error('Por favor, selecione elevador');
             return;
         }
 
         try {
-            // Зберігаємо через API
+            // Зберігаexisteмо através de API
             const response = await AuthManager.fetchWithAuth('/api/requests', {
                 method: 'POST',
                 headers: {
@@ -1799,7 +1799,7 @@ class ServiceRequestManager {
             });
 
             if (!response) {
-                toastr.error('Помилка авторизації');
+                toastr.error('Erro авторизації');
                 return;
             }
 
@@ -1809,17 +1809,17 @@ class ServiceRequestManager {
                 $('#newRequestModal').modal('hide');
                 $('#newRequestForm')[0].reset();
                 
-                // Оновлюємо список заявок
+                // Оновлюexisteмо lista pedidos
                 await this.loadRequests();
                 this.updateStatistics();
                 
-                toastr.success('Заявку створено успішно!');
+                toastr.success('Pedido criado com sucesso!');
             } else {
-                toastr.error('Помилка створення заявки: ' + (data.message || 'невідома помилка'));
+                toastr.error('Erro створення pedidos: ' + (data.message || 'erro desconhecido'));
             }
         } catch (error) {
-            console.error('❌ Помилка створення заявки:', error);
-            toastr.error('Помилка створення заявки: ' + error.message);
+            console.error('❌ Erro ao criar pedido:', error);
+            toastr.error('Erro створення pedidos: ' + error.message);
         }
     }
 
@@ -1829,7 +1829,7 @@ class ServiceRequestManager {
             return id === requestId;
         });
         if (!request) {
-            console.error('Заявку не знайдено:', requestId);
+            console.error('Pedido não encontrado:', requestId);
             return;
         }
         this.currentRequest = request;
@@ -1838,43 +1838,43 @@ class ServiceRequestManager {
         // ── Header ──
         const displayId = request.id || (typeof requestId === 'string' ? requestId.substring(0, 8) : requestId);
         $('#vrmNum').text('#' + displayId);
-        $('#vrmDate').text('Створено: ' + (request.createdAt ? new Date(request.createdAt).toLocaleString('uk-UA') : '—'));
+        $('#vrmDate').text('Criado: ' + (request.createdAt ? new Date(request.createdAt).toLocaleString('pt-PT') : '—'));
 
         // ── Info bar ──
         const statusColors = { new:'info', pending:'info', assigned:'primary', in_progress:'warning', completed:'success', cancelled:'danger' };
-        const statusTexts  = { new:'Нова', pending:'Нова', assigned:'Призначено', in_progress:'В роботі', completed:'Завершено', cancelled:'Скасовано' };
+        const statusTexts  = { new:'Nova', pending:'Nova', assigned:'Atribuído', in_progress:'Em curso', completed:'Concluído', cancelled:'Cancelado' };
         $('#vrmStatus')
             .removeClass('badge-info badge-primary badge-warning badge-success badge-danger badge-secondary')
             .addClass('badge-' + (statusColors[request.status] || 'secondary'))
             .text(statusTexts[request.status] || request.status);
 
         const prioColors = { critical:'dark', high:'danger', medium:'warning', low:'success' };
-        const prioTexts  = { critical:'Критичний', high:'Високий', medium:'Середній', low:'Низький' };
+        const prioTexts  = { critical:'Crítico', high:'Alto', medium:'Médio', low:'Baixo' };
         $('#vrmPriority')
             .removeClass('badge-dark badge-danger badge-warning badge-success badge-secondary')
             .addClass('badge-' + (prioColors[request.priority] || 'secondary'))
             .text(prioTexts[request.priority] || request.priority);
 
-        $('#vrmTech').text(request.technicianName || (request.technician ? 'Призначено' : 'Не призначено'));
+        $('#vrmTech').text(request.technicianName || (request.technician ? 'Atribuído' : 'Não atribuído'));
         $('#vrmDeadline').html(request.scheduledAt
-            ? `<span class="${new Date(request.scheduledAt) < new Date() && request.status !== 'completed' ? 'text-danger' : ''}">${new Date(request.scheduledAt).toLocaleDateString('uk-UA')}</span>`
+            ? `<span class="${new Date(request.scheduledAt) < new Date() && request.status !== 'completed' ? 'text-danger' : ''}">${new Date(request.scheduledAt).toLocaleDateString('pt-PT')}</span>`
             : '<span class="text-muted">—</span>');
 
-        // ── Tab①: Опис ──
+        // ── Tab①: Descrição ──
         const typeIcon = this.getTypeIcon ? this.getTypeIcon(request.type) : '';
         const typeText = this.getTypeText ? this.getTypeText(request.type) : request.type;
         $('#vrmType').html(typeIcon + ' ' + typeText);
-        $('#vrmDescription').text(request.description || 'Опис відсутній');
+        $('#vrmDescription').text(request.description || 'Sem descrição');
         if (request.notes) { $('#vrmNotesSection').show(); $('#vrmNotes').text(request.notes); }
         else { $('#vrmNotesSection').hide(); }
 
-        // ── Tab②: Локація ──
-        $('#vrmAddress').text(request.liftAddress || 'Адреса не вказана');
+        // ── Tab②: Localização ──
+        $('#vrmAddress').text(request.liftAddress || 'Endereço não especificado');
         $('#vrmLiftId').text(request.liftId || '—');
         $('#vrmTypeTag').text(typeText);
         this._loadAdminMap(request.liftAddress);
 
-        // ── Tab③: Клієнт ──
+        // ── Tab③: Cliente ──
         const clientName  = request.clientName  || (request.client && (request.client.name || request.client.firstName)) || '—';
         const clientEmail = request.clientEmail || (request.client && request.client.email) || '';
         const clientPhone = request.clientPhone || (request.client && request.client.phone) || '';
@@ -1882,11 +1882,11 @@ class ServiceRequestManager {
         $('#vrmClientEmail').text(clientEmail || '—').attr('href', clientEmail ? 'mailto:' + clientEmail : '#');
         $('#vrmClientPhone').text(clientPhone || '—').attr('href', clientPhone ? 'tel:' + clientPhone : '#');
 
-        // ── Tab④: Коментарі ──
+        // ── Tab④: Comentários ──
         const requestIdForComments = request._id || request.id;
         loadComments(requestIdForComments);
 
-        // ── Tab⑤: Хронологія ──
+        // ── Tab⑤: Cronologia ──
         const timelineEl = $('#requestTimeline');
         timelineEl.empty();
         const timelineItems = request.timeline || [];
@@ -1897,16 +1897,16 @@ class ServiceRequestManager {
                         <i class="fas fa-circle text-primary vrm-tl-dot"></i>
                         <div>
                             <h6 class="mb-1">${item.message || ''}</h6>
-                            <small class="text-muted d-block mb-1"><i class="far fa-clock mr-1"></i>${new Date(item.timestamp).toLocaleString('uk-UA')}</small>
+                            <small class="text-muted d-block mb-1"><i class="far fa-clock mr-1"></i>${new Date(item.timestamp).toLocaleString('pt-PT')}</small>
                             <p class="mb-0 text-secondary small">${item.user || ''}</p>
                         </div>
                     </div>`);
             });
         } else {
-            timelineEl.html('<p class="text-muted"><i class="fas fa-inbox mr-1"></i>Хронологія відсутня</p>');
+            timelineEl.html('<p class="text-muted"><i class="fas fa-inbox mr-1"></i>Cronologia indisponível</p>');
         }
 
-        // ── Tab⑥: Дії ──
+        // ── Tab⑥: Ações ──
         const actionsHtml = this.generateQuickActions(request);
         $('#quickActionsContainer').html(actionsHtml);
         // PDF button
@@ -1914,9 +1914,9 @@ class ServiceRequestManager {
         $('#vrmPdfBtn').off('click').on('click', () => exportRequestPDF(pdfId));
         // Footer complete/reopen button
         if (request.status === 'completed') {
-            $('#vrmCompleteBtn').html('<i class="fas fa-undo mr-1"></i>Повернути в роботу').removeClass('btn-primary').addClass('btn-warning').attr('onclick', 'reopenRequest()');
+            $('#vrmCompleteBtn').html('<i class="fas fa-undo mr-1"></i>Devolver ao trabalho').removeClass('btn-primary').addClass('btn-warning').attr('onclick', 'reopenRequest()');
         } else {
-            $('#vrmCompleteBtn').html('<i class="fas fa-check mr-1"></i>Завершити').removeClass('btn-warning').addClass('btn-primary').attr('onclick', 'completeRequest()');
+            $('#vrmCompleteBtn').html('<i class="fas fa-check mr-1"></i>Concluir').removeClass('btn-warning').addClass('btn-primary').attr('onclick', 'completeRequest()');
         }
 
         // ── Reset sub-tabs to first ──
@@ -1925,7 +1925,7 @@ class ServiceRequestManager {
         $('#viewRequestModal .tab-pane').removeClass('show active');
         $('#vrmTabLoc').addClass('show active');
 
-        // Показати/сховати кнопки архіву залежно від стану заявки
+        // Mostrar/ocultar botões de arquivo conforme estado do pedido
         const isArchived = request.archived || request._original?.archived;
         const btnAr  = document.getElementById('adminBtnArchive');
         const btnUn  = document.getElementById('adminBtnUnarchive');
@@ -1939,8 +1939,8 @@ class ServiceRequestManager {
 
     _loadAdminMap(address) {
         const $c = $('#vrmMapContainer');
-        if (!address || address === 'Адреса не вказана') {
-            $c.html('<div class="text-center text-muted"><i class="fas fa-map-marked-alt fa-3x mb-2"></i><br>Адреса не вказана</div>');
+        if (!address || address === 'Endereço não especificado') {
+            $c.html('<div class="text-center text-muted"><i class="fas fa-map-marked-alt fa-3x mb-2"></i><br>Endereço não especificado</div>');
             return;
         }
         const encodedAddress = encodeURIComponent(address);
@@ -1959,29 +1959,29 @@ class ServiceRequestManager {
         const isAdmin = currentUser && currentUser.role === 'admin';
         
         if (request.status === 'completed') {
-            // Для завершених заявок показуємо тільки кнопку повернення (тільки для admin)
+            // Para pedidos concluídos mostrar apenas botão de devolução (só admin)
             return `
                 <div class="alert alert-success">
-                    <i class="fas fa-check-circle"></i> Заявка завершена
+                    <i class="fas fa-check-circle"></i> Pedido concluído
                 </div>
                 ${isAdmin ? `
                     <button class="btn btn-warning btn-block btn-sm" onclick="reopenRequest()">
-                        <i class="fas fa-undo"></i> Повернути в роботу
+                        <i class="fas fa-undo"></i> Devolver ao trabalho
                     </button>
                 ` : ''}
             `;
         }
         
-        // Для активних заявок показуємо контекстні кнопки
+        // Para pedidos activos mostrar botões contextuais
         return `
             <button class="btn btn-success btn-block btn-sm mb-1" onclick="changeRequestStatus('in_progress')">
-                <i class="fas fa-play mr-1"></i>Розпочати роботу
+                <i class="fas fa-play mr-1"></i>Iniciar trabalho
             </button>
             <button class="btn btn-outline-secondary btn-block btn-sm mb-1" onclick="$('.vrm-tab[href=&quot;#vrmTabComments&quot;]').tab('show')">
-                <i class="fas fa-comment mr-1"></i>Коментарі
+                <i class="fas fa-comment mr-1"></i>Comentários
             </button>
             <button class="btn btn-primary btn-block btn-sm" onclick="completeRequest()">
-                <i class="fas fa-check mr-1"></i>Завершити
+                <i class="fas fa-check mr-1"></i>Concluir
             </button>
         `;
     }
@@ -1989,17 +1989,17 @@ class ServiceRequestManager {
     async editRequest(requestId) {
         const request = this.requests.find(r => r.id === requestId);
         if (!request) {
-            alert('Заявка не знайдена');
+            alert('Pedido não encontrado');
             return;
         }
 
         this.currentRequest = request;
         
-        // Встановлюємо мінімальну дату (поточна)
+        // Definir data mínima (actual)
         const now = new Date().toISOString().slice(0, 16);
         $('#editScheduledAt').attr('min', now);
         
-        // Заповнюємо форму редагування
+        // Preencher formulário de edição
         $('#editRequestId').val(request.id);
         $('#editRequestLift').val(request.liftId);
         $('#editRequestType').val(request.type);
@@ -2013,17 +2013,17 @@ class ServiceRequestManager {
             $('#editScheduledAt').val(formattedDate);
         }
         
-        // Показуємо модальне вікно
+        // Mostrar janela modal
         $('#editRequestModal').modal('show');
     }
 
     async saveEditedRequest() {
         try {
-            // Використовуємо реальний MongoDB _id замість display ID (REQ-001)
+            // Usar _id real do MongoDB em vez de display ID (REQ-001)
             const requestId = this.currentRequest._id;
             
             if (!requestId) {
-                throw new Error('ID заявки не знайдено');
+                throw new Error('ID do pedido não encontrado');
             }
             
             const updateData = {
@@ -2033,7 +2033,7 @@ class ServiceRequestManager {
                 scheduledDate: $('#editScheduledAt').val() || undefined
             };
             
-            console.log('🔄 Оновлення заявки:', requestId, updateData);
+            console.log('🔄 A actualizar pedido:', requestId, updateData);
             
             const response = await AuthManager.fetchWithAuth(`/api/requests/${requestId}`, {
                 method: 'PUT',
@@ -2042,23 +2042,23 @@ class ServiceRequestManager {
             
             if (!response || !response.ok) {
                 const error = await response.json();
-                throw new Error(error.message || 'Помилка оновлення заявки');
+                throw new Error(error.message || 'Erro ao actualizar pedido');
             }
             
             const result = await response.json();
             
-            alert('Заявку успішно оновлено!');
+            alert('Pedido actualizado com sucesso!');
             
-            // Закриваємо модальне вікно
+            // Fechar janela modal
             $('#editRequestModal').modal('hide');
             
-            // Перезавантажуємо список заявок
+            // Recarregar lista de pedidos
             await this.loadRequests();
             this.renderRequests();
             
         } catch (error) {
-            console.error('Помилка оновлення заявки:', error);
-            alert('Не вдалося оновити заявку: ' + error.message);
+            console.error('Erro ao actualizar pedido:', error);
+            alert('Não foi possível actualizar o pedido: ' + error.message);
         }
     }
 
@@ -2068,7 +2068,7 @@ class ServiceRequestManager {
             ? this.currentRequest._id.toString()
             : (this.currentRequest._id || this.currentRequest.id);
         const self = this;
-        // Закрити Bootstrap modal перш, тоді відкрити Swal (без конфлікту z-index та backdrop)
+        // Fechar modal Bootstrap antes de abrir Swal (sem conflito z-index e backdrop)
         $('#viewRequestModal').one('hidden.bs.modal', function() {
             self.extendDeadline(savedId);
         });
@@ -2084,20 +2084,20 @@ class ServiceRequestManager {
         const mongoId = request._id;
 
         const { value: days, isConfirmed } = await Swal.fire({
-            title: '📅 Продовжити дедлайн',
+            title: '📅 Prolongar prazo',
             html: `<div style="text-align:left">
-                       <p class="text-muted small mb-2">Нова дата = сьогодні + обрана кількість днів</p>
+                       <p class="text-muted small mb-2">Nova data = hoje + quantidade de dias seleccionada</p>
                        <select id="swal-extend-days" class="form-control mt-1">
-                           <option value="7">7 днів</option>
-                           <option value="14">14 днів</option>
-                           <option value="30" selected>30 днів</option>
-                           <option value="60">60 днів</option>
-                           <option value="90">90 днів</option>
+                           <option value="7">7 dias</option>
+                           <option value="14">14 dias</option>
+                           <option value="30" selected>30 dias</option>
+                           <option value="60">60 dias</option>
+                           <option value="90">90 dias</option>
                        </select>
                    </div>`,
-            confirmButtonText: 'Продовжити',
+            confirmButtonText: 'Prolongar',
             confirmButtonColor: '#f39c12',
-            cancelButtonText: 'Скасувати',
+            cancelButtonText: 'Cancelar',
             showCancelButton: true,
             focusConfirm: false,
             preConfirm: () => document.getElementById('swal-extend-days').value
@@ -2114,10 +2114,10 @@ class ServiceRequestManager {
             if (r && r.ok) {
                 await this.loadRequests();
                 this.renderRequests();
-                toastr.success(`Дедлайн продовжено на ${days} днів — ${newDeadline.toLocaleDateString('uk-UA')}`);
+                toastr.success(`Prazo prolongado em ${days} dias — ${newDeadline.toLocaleDateString('pt-PT')}`);
             } else {
                 const err = r ? await r.json().catch(() => ({})) : {};
-                toastr.error('Не вдалося оновити дедлайн: ' + (err.message || r?.status || 'помилка сервера'));
+                toastr.error('Não foi possível actualizar o prazo: ' + (err.message || r?.status || 'erro do servidor'));
             }
         } catch(e) {
             toastr.error(e.message);
@@ -2125,25 +2125,25 @@ class ServiceRequestManager {
     }
 
     async deleteRequest(requestId) {
-        console.log('🗑️ Видалення заявки:', requestId);
+        console.log('🗑️ A eliminar pedido:', requestId);
         const request = this.requests.find(r =>
             r.id === requestId || r._id === requestId ||
             (r._id && r._id.toString && r._id.toString() === requestId)
         );
-        if (!request) { toastr.error('Заявку не знайдено'); return; }
+        if (!request) { toastr.error('Pedido não encontrado'); return; }
 
         const swalResult = await Swal.fire({
-            title: 'Видалити заявку назавжди?',
-            html: `Заявку <b>#${requestId}</b> буде <b>безповоротно видалено</b>.<br><small class="text-muted">Розгляньте архівування як безпечнішу альтернативу.</small>`,
+            title: 'Eliminar pedido definitivamente?',
+            html: `O pedido <b>#${requestId}</b> será <b>permanentemente eliminado</b>.<br><small class="text-muted">Considere arquivar como alternativa mais segura.</small>`,
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#e74c3c',
-            confirmButtonText: '<i class="fas fa-trash mr-1"></i>Видалити назавжди',
-            cancelButtonText: '<i class="fas fa-archive mr-1"></i>Архівувати натомість',
+            confirmButtonText: '<i class="fas fa-trash mr-1"></i>Eliminar definitivamente',
+            cancelButtonText: '<i class="fas fa-archive mr-1"></i>Arquivar em vez disso',
             cancelButtonColor: '#f39c12'
         });
 
-        // Якщо натиснули "Архівувати натомість"
+        // Se clicou em "Arquivar em vez disso"
         if (!swalResult.isConfirmed) {
             if (swalResult.dismiss === Swal.DismissReason.cancel) {
                 await this.archiveRequest(requestId);
@@ -2153,109 +2153,109 @@ class ServiceRequestManager {
 
         try {
             const mongoId = request._id;
-            if (!mongoId) throw new Error('Відсутній MongoDB ID заявки');
+            if (!mongoId) throw new Error('MongoDB ID do pedido em falta');
             const response = await AuthManager.fetchWithAuth(`/api/requests/${mongoId}`, { method: 'DELETE' });
             if (!response || !response.ok) {
                 const error = await response.json().catch(() => ({}));
-                throw new Error(error.message || 'Помилка видалення через API');
+                throw new Error(error.message || 'Erro ao eliminar via API');
             }
             this.requests = this.requests.filter(r => r._id !== mongoId);
             this.renderRequests();
             this.updateStatistics();
-            Swal.fire({ icon: 'success', title: 'Видалено', timer: 1500, showConfirmButton: false });
+            Swal.fire({ icon: 'success', title: 'Eliminado', timer: 1500, showConfirmButton: false });
         } catch (error) {
-            console.error('❌ Помилка видалення заявки:', error);
-            toastr.error('Не вдалося видалити: ' + error.message);
+            console.error('❌ Erro ao eliminar pedido:', error);
+            toastr.error('Não foi possível eliminar: ' + error.message);
         }
     }
 
     async archiveRequest(requestId) {
-        console.log('📦 Архівування заявки:', requestId);
+        console.log('📦 A arquivar pedido:', requestId);
         const request = this.requests.find(r =>
             r.id === requestId || r._id === requestId ||
             (r._id && r._id.toString && r._id.toString() === requestId)
         );
-        if (!request) { toastr.error('Заявку не знайдено'); return; }
+        if (!request) { toastr.error('Pedido não encontrado'); return; }
 
         const swalResult = await Swal.fire({
-            title: 'Архівувати заявку?',
-            html: `Заявку <b>#${requestId}</b> буде переміщено до архіву.<br>Ви зможете відновити її будь-коли.`,
+            title: 'Arquivar pedido?',
+            html: `O pedido <b>#${requestId}</b> será movido para o arquivo.<br>Poderá restaurá-lo a qualquer momento.`,
             icon: 'info',
             showCancelButton: true,
             confirmButtonColor: '#f39c12',
-            confirmButtonText: '<i class="fas fa-archive mr-1"></i>Архівувати',
-            cancelButtonText: 'Скасувати'
+            confirmButtonText: '<i class="fas fa-archive mr-1"></i>Arquivar',
+            cancelButtonText: 'Cancelar'
         });
         if (!swalResult.isConfirmed) return;
 
         try {
             const mongoId = request._id;
-            if (!mongoId) throw new Error('Відсутній MongoDB ID заявки');
+            if (!mongoId) throw new Error('MongoDB ID do pedido em falta');
             const response = await AuthManager.fetchWithAuth(`/api/requests/${mongoId}/archive`, { method: 'POST' });
             const data = response ? await response.json() : null;
-            if (!data || !data.success) throw new Error((data && data.message) || 'Помилка архівування');
+            if (!data || !data.success) throw new Error((data && data.message) || 'Erro ao arquivar');
             this.requests = this.requests.filter(r => r._id !== mongoId);
             this.renderRequests();
             this.updateStatistics();
-            Swal.fire({ icon: 'success', title: 'Архівовано', text: data.message, timer: 1800, showConfirmButton: false });
+            Swal.fire({ icon: 'success', title: 'Arquivado', text: data.message, timer: 1800, showConfirmButton: false });
         } catch (error) {
-            console.error('❌ Помилка архівування:', error);
-            toastr.error('Не вдалося архівувати: ' + error.message);
+            console.error('❌ Erro ao arquivar:', error);
+            toastr.error('Não foi possível arquivar: ' + error.message);
         }
     }
 
     archiveFromModal() {
-        if (!this.currentRequest) { toastr.error('Заявку не відкрито'); return; }
+        if (!this.currentRequest) { toastr.error('Nenhum pedido aberto'); return; }
         const mongoId = this.currentRequest._id || this.currentRequest.id;
         $('#viewRequestModal').modal('hide');
         this.archiveRequest(mongoId);
     }
 
-    // Перемикання режиму перегляду архіву (адмін)
+    // Alternar modo de visualização do arquivo (administrador)
     toggleArchiveView() {
         this._archiveMode = !this._archiveMode;
         const banner = document.getElementById('adminArchiveBanner');
         const btn = document.getElementById('adminArchiveToggleBtn');
         if (this._archiveMode) {
             banner && banner.classList.remove('d-none');
-            if (btn) { btn.classList.remove('btn-warning'); btn.classList.add('btn-secondary'); btn.innerHTML = '<i class="fas fa-times mr-1"></i>Вийти з архіву'; }
+            if (btn) { btn.classList.remove('btn-warning'); btn.classList.add('btn-secondary'); btn.innerHTML = '<i class="fas fa-times mr-1"></i>Sair do arquivo'; }
         } else {
             banner && banner.classList.add('d-none');
-            if (btn) { btn.classList.remove('btn-secondary'); btn.classList.add('btn-warning'); btn.innerHTML = '<i class="fas fa-archive mr-1"></i>Архів'; }
+            if (btn) { btn.classList.remove('btn-secondary'); btn.classList.add('btn-warning'); btn.innerHTML = '<i class="fas fa-archive mr-1"></i>Arquivo'; }
         }
         this.loadRequests();
     }
 
-    // Відновити заявку з архіву (тільки адмін)
+    // Restaurar pedido do arquivo (apenas administrador)
     async unarchiveFromModal() {
         const request = this.currentRequest;
-        if (!request) { toastr.error('Заявку не відкрито'); return; }
+        if (!request) { toastr.error('Nenhum pedido aberto'); return; }
         const mongoId = request._id || request.id;
         const swalResult = await Swal.fire({
-            title: 'Відновити заявку?',
-            text: 'Заявку буде повернуто до активних.',
+            title: 'Restaurar pedido?',
+            text: 'O pedido será devolvido aos activos.',
             icon: 'question',
             showCancelButton: true,
             confirmButtonColor: '#28a745',
-            confirmButtonText: '<i class="fas fa-box-open mr-1"></i>Відновити',
-            cancelButtonText: 'Скасувати'
+            confirmButtonText: '<i class="fas fa-box-open mr-1"></i>Restaurar',
+            cancelButtonText: 'Cancelar'
         });
         if (!swalResult.isConfirmed) return;
         try {
             const response = await AuthManager.fetchWithAuth(`/api/requests/${mongoId}/unarchive`, { method: 'POST' });
             const data = response ? await response.json() : null;
-            if (!data || !data.success) throw new Error((data && data.message) || 'Помилка відновлення');
+            if (!data || !data.success) throw new Error((data && data.message) || 'Erro recuperação');
             $('#viewRequestModal').modal('hide');
             await this.loadRequests();
-            Swal.fire({ icon: 'success', title: 'Відновлено!', text: 'Заявку повернуто до активних.', timer: 1800, showConfirmButton: false });
+            Swal.fire({ icon: 'success', title: 'Restaurado!', text: 'Pedido devolvido aos activos.', timer: 1800, showConfirmButton: false });
         } catch (error) {
-            console.error('❌ Помилка відновлення:', error);
-            toastr.error('Не вдалося відновити: ' + error.message);
+            console.error('❌ Erro ao restaurar:', error);
+            toastr.error('Não foi possível restaurar: ' + error.message);
         }
     }
 
     async falseCallFromModal() {
-        if (!this.currentRequest) { toastr.error('Заявку не відкрито'); return; }
+        if (!this.currentRequest) { toastr.error('Nenhum pedido aberto'); return; }
         const mongoId = this.currentRequest._id || this.currentRequest.id;
         const displayId = this.currentRequest.requestNumber || ('#' + mongoId);
         $('#viewRequestModal').modal('hide');
@@ -2263,35 +2263,35 @@ class ServiceRequestManager {
     }
 
     async falseCallRequest(requestId, displayId) {
-        console.log('🚫 Фальшивий виклик:', requestId);
+        console.log('🚫 Chamada falsa:', requestId);
         displayId = displayId || requestId;
         const swalResult = await Swal.fire({
-            title: 'Фальшивий виклик?',
-            html: `Заявку <b>${displayId}</b> буде позначено як фальшивий виклик та закрито.`,
+            title: 'Chamada falsa?',
+            html: `O pedido <b>${displayId}</b> será marcado como falsa chamada e fechado.`,
             icon: 'warning',
             showCancelButton: true,
             confirmButtonColor: '#e74c3c',
-            confirmButtonText: '<i class="fas fa-ban mr-1"></i>Підтвердити',
-            cancelButtonText: 'Скасувати'
+            confirmButtonText: '<i class="fas fa-ban mr-1"></i>Confirmar',
+            cancelButtonText: 'Cancelar'
         });
         if (!swalResult.isConfirmed) return;
 
         try {
             const response = await AuthManager.fetchWithAuth(`/api/requests/${requestId}/false-call`, { method: 'POST' });
             const data = response ? await response.json() : null;
-            if (!data || !data.success) throw new Error((data && data.message) || 'Помилка');
+            if (!data || !data.success) throw new Error((data && data.message) || 'Erro');
             this.requests = this.requests.filter(r => (r._id || r.id) != requestId);
             this.renderRequests();
             this.updateStatistics();
-            Swal.fire({ icon: 'success', title: 'Відмічено', text: data.message || 'Заявка позначена як фальшивий виклик', timer: 1800, showConfirmButton: false });
+            Swal.fire({ icon: 'success', title: 'Marcado', text: data.message || 'Pedido marcado como falsa chamada', timer: 1800, showConfirmButton: false });
         } catch (error) {
-            console.error('❌ Помилка фальшивий виклик:', error);
-            toastr.error('Не вдалося: ' + error.message);
+            console.error('❌ Erro falsa chamada:', error);
+            toastr.error('Não foi possível: ' + error.message);
         }
     }
 
     applyFilters() {
-        console.log('🔍 Застосування фільтрів...');
+        console.log('🔍 A aplicar filtros...');
         
         const type = $('#filterType').val();
         const status = $('#filterStatus').val();
@@ -2299,20 +2299,20 @@ class ServiceRequestManager {
         const technician = $('#filterTechnician').val();
         
         if (!window.serviceManager || !window.serviceManager.requests) {
-            console.warn('⚠️ Дані заявок ще не завантажені');
+            console.warn('⚠️ Dados de pedidos ainda não carregados');
             return;
         }
         
         const allRequests = window.serviceManager.requests;
         
-        // Якщо всі фільтри порожні - показуємо все
+        // Se todos os filtros estão vazios - mostrar tudo
         if (!type && !status && !priority && !technician) {
-            console.log('✅ Filtroи очищені - показуємо всі заявки');
+            console.log('✅ Filtros limpos - a mostrar todos os pedidos');
             window.serviceManager.renderRequests();
             return;
         }
         
-        // Filtroуємо заявки
+        // Filtrar pedidos
         const filtered = allRequests.filter(req => {
             let matches = true;
             
@@ -2320,7 +2320,7 @@ class ServiceRequestManager {
             if (status && req.status !== status) matches = false;
             if (priority && req.priority !== priority) matches = false;
             if (technician) {
-                // Filtro по техніку - перевіряємо technicianId або technician
+                // Filtro por técnico - verificar technicianId ou technician
                 const reqTechId = req.technicianId || req.technician;
                 if (reqTechId !== technician) matches = false;
             }
@@ -2328,16 +2328,16 @@ class ServiceRequestManager {
             return matches;
         });
         
-        console.log(`✅ Знайдено заявок: ${filtered.length} з ${allRequests.length}`);
-        console.log('🔍 Filtroи:', { type, status, priority, technician });
+        console.log(`✅ Pedidos encontrados: ${filtered.length} de ${allRequests.length}`);
+        console.log('🔍 Filtros:', { type, status, priority, technician });
         
-        // Тимчасово замінюємо requests на відфільтровані
+        // Substituir temporariamente requests pelos filtrados
         const originalRequests = window.serviceManager.requests;
         window.serviceManager.requests = filtered;
         window.serviceManager.renderRequests();
         window.serviceManager.requests = originalRequests;
         
-        toastr.info(`Знайдено: ${filtered.length} заявок`);
+        toastr.info(`Encontrado: ${filtered.length} pedidos`);
     }
 
     clearFilters() {
@@ -2346,14 +2346,14 @@ class ServiceRequestManager {
     }
 
     async editRequest(requestId) {
-        console.log('✏️ Редагування заявки:', requestId);
+        console.log('✏️ A editar pedido:', requestId);
         
         try {
-            // Завантажуємо заявку з API
+            // Carregar pedido da API
             const response = await AuthManager.fetchWithAuth(`/api/requests/${requestId}`);
             
             if (!response || !response.ok) {
-                throw new Error('Не вдалося завантажити заявку');
+                throw new Error('Não foi possível carregar o pedido');
             }
             
             const result = await response.json();
@@ -2361,21 +2361,21 @@ class ServiceRequestManager {
             if (result.success && result.request) {
                 this.currentRequest = result.request;
                 
-                // Заповнюємо форму редагування
+                // Preencher formulário de edição
                 $('#editRequestId').val(this.currentRequest._id);
                 $('#editRequestTitle').val(this.currentRequest.title || '');
                 $('#editRequestDescription').val(this.currentRequest.description || '');
                 $('#editRequestPriority').val(this.currentRequest.priority || 'medium');
                 $('#editRequestStatus').val(this.currentRequest.status || 'new');
                 
-                // Відкриваємо модальне вікно
+                // Abrir janela modal
                 $('#editRequestModal').modal('show');
             } else {
-                throw new Error('Заявку не знайдено');
+                throw new Error('Pedido não encontrado');
             }
         } catch (error) {
-            console.error('❌ Помилка завантаження заявки:', error);
-            toastr.error('Не вдалося завантажити заявку: ' + error.message);
+            console.error('❌ Erro ao carregar pedidos:', error);
+            toastr.error('Não foi possível carregar o pedido: ' + error.message);
         }
     }
 
@@ -2395,25 +2395,25 @@ class ServiceRequestManager {
             });
             
             if (!response || !response.ok) {
-                throw new Error('Не вдалося оновити заявку');
+                throw new Error('Não foi possível actualizar o pedido');
             }
             
-            // Закриваємо модальне вікно
+            // Fechar janela modal
             $('#editRequestModal').modal('hide');
             
-            // Перезавантажуємо список
+            // Recarregar lista
             await this.loadRequests();
             this.renderRequests();
             
-            toastr.success('Заявку успішно оновлено');
+            toastr.success('Pedido actualizado com sucesso');
         } catch (error) {
-            console.error('❌ Помилка оновлення заявки:', error);
-            toastr.error('Не вдалося оновити заявку: ' + error.message);
+            console.error('❌ Erro ao actualizar pedido:', error);
+            toastr.error('Não foi possível actualizar o pedido: ' + error.message);
         }
     }
 }
 
-// Export функції
+// Funções de exportação
 async function exportToExcel() {
     try {
         const token = localStorage.getItem('liftmanager_jwt') || 
@@ -2421,7 +2421,7 @@ async function exportToExcel() {
                      localStorage.getItem('token') || 
                      localStorage.getItem('lm_token');
         if (!token) {
-            throw new Error('Не авторизовано');
+            throw new Error('Não autorizado');
         }
 
         const filterParams = new URLSearchParams();
@@ -2438,7 +2438,7 @@ async function exportToExcel() {
         });
 
         if (!response.ok) {
-            throw new Error('Помилка експорту');
+            throw new Error('Erro de exportação');
         }
 
         const blob = await response.blob();
@@ -2451,10 +2451,10 @@ async function exportToExcel() {
         window.URL.revokeObjectURL(url);
         document.body.removeChild(a);
 
-        toastr.success('Exportar завершено');
+        toastr.success('Exportar concluído');
     } catch (error) {
-        console.error('Помилка експорту:', error);
-        toastr.error('Помилка експорту: ' + error.message);
+        console.error('Erro de exportação:', error);
+        toastr.error('Erro de exportação: ' + error.message);
     }
 }
 
@@ -2465,7 +2465,7 @@ async function exportRequestPDF(requestId) {
                      localStorage.getItem('token') || 
                      localStorage.getItem('lm_token');
         if (!token) {
-            throw new Error('Не авторизовано');
+            throw new Error('Não autorizado');
         }
 
         const response = await fetch(`${window.API_BASE_URL}/api/requests/${requestId}/export/pdf`, {
@@ -2475,7 +2475,7 @@ async function exportRequestPDF(requestId) {
         });
 
         if (!response.ok) {
-            throw new Error('Помилка експорту PDF');
+            throw new Error('Erro de exportação PDF');
         }
 
         const blob = await response.blob();
@@ -2488,21 +2488,21 @@ async function exportRequestPDF(requestId) {
         window.URL.revokeObjectURL(url);
         document.body.removeChild(a);
 
-        toastr.success('PDF експортовано');
+        toastr.success('PDF exportado');
     } catch (error) {
-        console.error('Помилка експорту PDF:', error);
-        toastr.error('Помилка експорту PDF: ' + error.message);
+        console.error('Erro de exportação PDF:', error);
+        toastr.error('Erro de exportação PDF: ' + error.message);
     }
 }
 
-// Глобальні функції
+// Funções globais
 async function openNewRequestModal() {
-    // Завантажуємо список ліфтів перед показом модалки
+    // Carregar lista de elevadores antes de mostrar modal
     if (window.serviceManager) {
         await window.serviceManager.loadLifts();
     }
     
-    // Встановлюємо мінімальну дату (поточна)
+    // Definir data mínima (actual)
     const now = new Date().toISOString().slice(0, 16);
     $('#requestScheduled').attr('min', now);
     
@@ -2510,7 +2510,7 @@ async function openNewRequestModal() {
 }
 
 async function createRequest() {
-    // Просто відкриваємо модальне вікно - ліфти вже завантажені в openNewRequestModal
+    // Apenas abrir janela modal - elevadores já carregados em openNewRequestModal
     openNewRequestModal();
 }
 
@@ -2529,7 +2529,7 @@ function exportRequests() {
     a.click();
     URL.revokeObjectURL(url);
 
-    toastr.success('Заявки експортовано!');
+    toastr.success('Pedidos exportados!');
 }
 
 function clearFilters() {
@@ -2540,75 +2540,75 @@ function applyFilters() {
     window.serviceManager.applyFilters();
 }
 
-// Функції для роботи з заявками
+// Funções para trabalhar com pedidos
 function assignTechnician() {
-    // Перевірка наявності AuthManager
+    // Verificar disponibilidade de AuthManager
     if (typeof AuthManager === 'undefined') {
-        alert('Для виконання цієї дії потрібна авторизація.\nБудь ласка, увійдіть через сторінку логіну.');
+        alert('É necessária autenticação para esta acção.\nPor favor, entre através da página de login.');
         window.location.replace('/pages/auth/login.html');
         return;
     }
     
-    // Детальне логування для діагностики
-    console.log('🔍 Перевірка авторизації...');
+    // Registo detalhado para diagnóstico
+    console.log('🔍 A verificar autorização...');
     console.log('Token (liftmanager_jwt):', localStorage.getItem('liftmanager_jwt'));
     console.log('User:', localStorage.getItem('liftmanager_user'));
     console.log('AuthManager.isAuthenticated():', AuthManager.isAuthenticated());
     console.log('AuthManager.getCurrentUser():', AuthManager.getCurrentUser());
     
-    // Перевірка авторизації
+    // Verificação de autorização
     if (!AuthManager.isAuthenticated()) {
-        alert('Ваша сесія закінчилась.\nБудь ласка, увійдіть знову.');
+        alert('A sua sessão expirou.\nPor favor, entre novamente.');
         window.location.replace('/pages/auth/login.html');
         return;
     }
     
-    // Перевірка чи заявка не завершена
+    // Verificar se pedido não está concluído
     if (window.serviceManager?.currentRequest?.status === 'completed') {
-        alert('Неможливо призначити техніка.\nЦя заявка вже завершена.\n\nЯкщо потрібно внести зміни, спочатку поверніть заявку в роботу.');
+        alert('Não é possível atribuir técnico.\nEste pedido já está concluído.\n\nSe necessário fazer alterações, devolva primeiro o pedido ao trabalho.');
         return;
     }
     
     const currentUser = AuthManager.getCurrentUser();
     if (!currentUser || (currentUser.role !== 'admin' && currentUser.role !== 'dispatcher')) {
-        alert('У вас немає прав для призначення техніків');
+        alert('Não tem permissão para atribuir técnicos');
         return;
     }
     
-    // Показуємо модальне вікно призначення техніка
+    // Mostrar janela modal atribuição do técnico
     showAssignTechnicianModal();
 }
 
 async function changeRequestStatus(newStatus) {
-    // Перевірка наявності AuthManager
+    // Verificar disponibilidade de AuthManager
     if (typeof AuthManager === 'undefined') {
-        alert('Для виконання цієї дії потрібна авторизація.\nБудь ласка, увійдіть через сторінку логіну.');
+        alert('É necessária autenticação para esta acção.\nPor favor, entre através da página de login.');
         window.location.replace('/pages/auth/login.html');
         return;
     }
     
     if (!AuthManager.isAuthenticated()) {
-        alert('Ваша сесія закінчилась.\nБудь ласка, увійдіть знову.');
+        alert('A sua sessão expirou.\nPor favor, entre novamente.');
         window.location.replace('/pages/auth/login.html');
         return;
     }
     
-    // Перевірка чи заявка не завершена
+    // Verificar se pedido não está concluído
     if (window.serviceManager?.currentRequest?.status === 'completed') {
-        alert('Неможливо змінити статус.\nЦя заявка вже завершена.\n\nЯкщо потрібно внести зміни, спочатку поверніть заявку в роботу.');
+        alert('Não é possível alterar estado.\nEste pedido já está concluído.\n\nSe necessário fazer alterações, devolva primeiro o pedido ao trabalho.');
         return;
     }
     
     if (!window.serviceManager || !window.serviceManager.currentRequest) {
-        alert('Заявка не обрана');
+        alert('Nenhum pedido seleccionado');
         return;
     }
     
     try {
-        // Використовуємо MongoDB _id, а не красивий ID
+        // Usar _id real do MongoDB em vez de display ID
         const requestId = window.serviceManager.currentRequest._id || window.serviceManager.currentRequest.id;
         
-        console.log(`Зміна статусу заявки ${requestId} на ${newStatus}`);
+        console.log(`A alterar estado do pedido ${requestId} para ${newStatus}`);
         
         const response = await AuthManager.fetchWithAuth(`/api/requests/${requestId}/status`, {
             method: 'PATCH',
@@ -2619,50 +2619,50 @@ async function changeRequestStatus(newStatus) {
         });
         
         if (!response || !response.ok) {
-            let errorMessage = 'Помилка зміни статусу';
+            let errorMessage = 'Erro ao alterar estado';
             try {
                 const error = await response.json();
                 errorMessage = error.message || errorMessage;
             } catch (e) {
-                // Якщо відповідь не JSON (наприклад HTML 404)
-                errorMessage = `Помилка сервера (${response.status})`;
+                // Se resposta não é JSON (ex.: HTML 404)
+                errorMessage = `Erro do servidor (${response.status})`;
             }
             throw new Error(errorMessage);
         }
         
         const result = await response.json();
-        console.log('Статус змінено:', result);
+        console.log('Estado alterado:', result);
         
-        alert('Статус заявки успішно змінено!');
+        alert('Estado do pedido alterado com sucesso!');
         
-        // Закриваємо модальне вікно
+        // Fechar janela modal
         $('#viewRequestModal').modal('hide');
         
-        // Перезавантажуємо список заявок
+        // Recarregar lista de pedidos
         await window.serviceManager.loadRequests();
         window.serviceManager.renderRequests();
         
     } catch (error) {
-        console.error('Помилка зміни статусу:', error);
-        alert('Не вдалося змінити статус: ' + error.message);
+        console.error('Erro ao alterar estado:', error);
+        alert('Não foi possível alterar o estado: ' + error.message);
     }
 }
 
 async function completeRequest() {
     if (typeof AuthManager === 'undefined' || !AuthManager.isAuthenticated()) {
-        alert('Потрібна авторизація');
+        alert('Autorização necessária');
         window.location.replace('/pages/auth/login.html');
         return;
     }
     
     if (!window.serviceManager?.currentRequest) {
-        alert('Заявка не обрана');
+        alert('Nenhum pedido seleccionado');
         return;
     }
     
-    const workDescription = prompt('Введіть опис виконаної роботи:');
+    const workDescription = prompt('Introduza a descrição do trabalho concluído:');
     if (!workDescription?.trim()) {
-        alert('Опис виконаної роботи обов\'язковий');
+        alert('A descrição do trabalho concluído é obrigatória');
         return;
     }
     
@@ -2676,18 +2676,18 @@ async function completeRequest() {
         
         if (!response || !response.ok) {
             const errBody = response ? await response.json().catch(() => ({})) : {};
-            throw new Error(errBody.message || (response ? `Помилка ${response.status}` : 'Помилка авторизації'));
+            throw new Error(errBody.message || (response ? `Erro ${response.status}` : 'Erro de autorização'));
         }
         
-        alert('Заявку завершено успішно!');
+        alert('Pedido concluído com sucesso!');
         $('#viewRequestModal').modal('hide');
         
         await window.serviceManager.loadRequests();
         window.serviceManager.renderRequests();
         
     } catch (error) {
-        console.error('Помилка завершення:', error);
-        alert('Не вдалося завершити заявку: ' + error.message);
+        console.error('Erro ao concluir:', error);
+        alert('Não foi possível concluir o pedido: ' + error.message);
     }
 }
 
@@ -2696,19 +2696,19 @@ async function addComment() {
         const commentTextRaw = $('#newCommentText').val();
         
         if (!commentTextRaw || typeof commentTextRaw !== 'string') {
-            alert('Введіть текст коментаря');
+            alert('Introduza o texto do comentário');
             return;
         }
         
         const commentText = commentTextRaw.trim();
         
         if (!commentText) {
-            alert('Введіть текст коментаря');
+            alert('Introduza o texto do comentário');
             return;
         }
 
         if (!window.serviceManager.currentRequest) {
-            alert('Не вибрана заявка');
+            alert('Nenhum pedido seleccionado');
             return;
         }
 
@@ -2720,7 +2720,7 @@ async function addComment() {
         });
 
         if (!response.ok) {
-            throw new Error('Помилка додавання коментаря');
+            throw new Error('Erro ao adicionar comentário');
         }
 
         const result = await response.json();
@@ -2730,41 +2730,41 @@ async function addComment() {
         await window.serviceManager.loadRequests();
         await loadComments(requestId);
 
-        alert('Коментар додано успішно');
+        alert('Comentário adicionado com sucesso');
 
     } catch (error) {
         console.error('❌ Error adding comment:', error);
-        alert('Помилка додавання коментаря: ' + error.message);
+        alert('Erro ao adicionar comentário: ' + error.message);
     }
 }
 
 async function reopenRequest() {
-    // Перевірка наявності AuthManager
+    // Verificar disponibilidade de AuthManager
     if (typeof AuthManager === 'undefined') {
-        alert('Для виконання цієї дії потрібна авторизація.\nБудь ласка, увійдіть через сторінку логіну.');
+        alert('É necessária autenticação para esta acção.\nPor favor, entre através da página de login.');
         window.location.replace('/pages/auth/login.html');
         return;
     }
     
     if (!AuthManager.isAuthenticated()) {
-        alert('Ваша сесія закінчилась.\nБудь ласка, увійдіть знову.');
+        alert('A sua sessão expirou.\nPor favor, entre novamente.');
         window.location.replace('/pages/auth/login.html');
         return;
     }
     
-    // Перевірка ролі - тільки admin може повертати в роботу
+    // Verificar papel - só admin pode devolver ao trabalho
     const currentUser = AuthManager.getCurrentUser();
     if (!currentUser || currentUser.role !== 'admin') {
-        alert('Тільки адміністратор може повертати завершені заявки в роботу');
+        alert('Apenas o administrador pode devolver pedidos concluídos ao trabalho');
         return;
     }
     
     if (!window.serviceManager || !window.serviceManager.currentRequest) {
-        alert('Заявка не обрана');
+        alert('Nenhum pedido seleccionado');
         return;
     }
     
-    if (!confirm('Ви впевнені, що хочете повернути цю заявку в роботу?\n\nЗаявка отримає статус "Em progresso" і її можна буде редагувати.')) {
+    if (!confirm('Tem a certeza que quer devolver este pedido ao trabalho?\n\nO pedido receberá o estado "Em progresso" e poderá ser editado.')) {
         return;
     }
     
@@ -2772,10 +2772,10 @@ async function reopenRequest() {
         const requestId = window.serviceManager.currentRequest._id;
         
         if (!requestId) {
-            throw new Error('ID заявки не знайдено');
+            throw new Error('ID do pedido não encontrado');
         }
         
-        console.log(`Повернення заявки ${requestId} в роботу`);
+        console.log(`A devolver pedido ${requestId} ao trabalho`);
         
         const response = await AuthManager.fetchWithAuth(`/api/requests/${requestId}/status`, {
             method: 'PATCH',
@@ -2784,31 +2784,31 @@ async function reopenRequest() {
         
         if (!response || !response.ok) {
             const error = await response.json();
-            throw new Error(error.message || 'Помилка відновлення заявки');
+            throw new Error(error.message || 'Erro recuperação pedidos');
         }
         
         const result = await response.json();
         
-        alert('Заявку повернуто в роботу!');
+        alert('Pedido devolvido ao trabalho!');
         
-        // Закриваємо модальне вікно
+        // Fechar janela modal
         $('#viewRequestModal').modal('hide');
         
-        // Перезавантажуємо список заявок
+        // Recarregar lista de pedidos
         await window.serviceManager.loadRequests();
         window.serviceManager.renderRequests();
         
     } catch (error) {
-        console.error('Помилка відновлення заявки:', error);
-        alert('Не вдалося повернути заявку в роботу: ' + error.message);
+        console.error('Erro recuperação pedidos:', error);
+        alert('Não foi possível devolver o pedido ao trabalho: ' + error.message);
     }
 }
 
 async function openEnhancedAssignModal(requestId) {
-    if (!requestId) { toastr.warning('Не вдалося визначити заявку'); return; }
+    if (!requestId) { toastr.warning('Não foi possível identificar o pedido'); return; }
 
     if (typeof AuthManager === 'undefined' || !AuthManager.isAuthenticated()) {
-        toastr.error('Потрібна авторизація');
+        toastr.error('Autorização necessária');
         window.location.replace('/pages/auth/login.html');
         return;
     }
@@ -2821,7 +2821,7 @@ async function openEnhancedAssignModal(requestId) {
 
         // Load technicians
         const resp = await AuthManager.fetchWithAuth('/api/users');
-        if (!resp || !resp.ok) throw new Error('Не вдалося завантажити список техніків');
+        if (!resp || !resp.ok) throw new Error('Não foi possível carregar lista de técnicos');
         const result = await resp.json();
         let allUsers = result.success && result.data
             ? (Array.isArray(result.data) ? result.data : [])
@@ -2829,7 +2829,7 @@ async function openEnhancedAssignModal(requestId) {
 
         const technicians = allUsers.filter(u => u.role === 'tech' || u.role === 'technician');
         if (technicians.length === 0) {
-            toastr.warning('Техніків не знайдено в системі.');
+            toastr.warning('Técnicos não encontrados no sistema.');
             return;
         }
 
@@ -2864,7 +2864,7 @@ async function openEnhancedAssignModal(requestId) {
                         <small class="text-muted">${tech.email || ''}</small>
                     </div>
                     <div class="d-flex align-items-center gap-2 ml-2">
-                        <div class="workload-dot ${dc}" title="${tasks} активних"></div>
+                        <div class="workload-dot ${dc}" title="${tasks} activos"></div>
                         <small class="text-muted mr-1">${tasks}</small>
                         <div class="workload-bar">${segs}</div>
                     </div>
@@ -2880,7 +2880,7 @@ async function openEnhancedAssignModal(requestId) {
           <div class="modal-dialog modal-lg">
             <div class="modal-content">
               <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title"><i class="fas fa-user-check mr-2"></i>Призначити техніка</h5>
+                <h5 class="modal-title"><i class="fas fa-user-check mr-2"></i>Atribuir técnico</h5>
                 <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
               </div>
               <div class="modal-body">
@@ -2888,7 +2888,7 @@ async function openEnhancedAssignModal(requestId) {
                   <div class="d-flex align-items-center">
                     <div>
                       ${pBadge}
-                      <strong class="ml-1">${req.title || 'Заявка #' + requestId}</strong>
+                      <strong class="ml-1">${req.title || 'Pedido #' + requestId}</strong>
                       <div class="text-muted small mt-1">
                         <i class="fas fa-map-marker-alt mr-1"></i>${req.address || req.location || '—'}
                       </div>
@@ -2897,55 +2897,55 @@ async function openEnhancedAssignModal(requestId) {
                 </div>
                 <div class="row">
                   <div class="col-md-6">
-                    <h6 class="text-muted mb-2"><i class="fas fa-users mr-1"></i>Оберіть техніка</h6>
+                    <h6 class="text-muted mb-2"><i class="fas fa-users mr-1"></i>Selecione o técnico</h6>
                     <div id="eaTechList" style="max-height:320px;overflow-y:auto">${techRows}</div>
                   </div>
                   <div class="col-md-6">
-                    <h6 class="text-muted mb-2"><i class="fas fa-calendar-alt mr-1"></i>Деталі завдання</h6>
+                    <h6 class="text-muted mb-2"><i class="fas fa-calendar-alt mr-1"></i>Detalhes tarefas</h6>
                     <div class="form-group">
-                      <label class="small font-weight-bold">Дата виїзду</label>
+                      <label class="small font-weight-bold">Data de saída</label>
                       <input type="date" class="form-control form-control-sm" id="eaDate" min="${today}" value="${today}">
                     </div>
                     <div class="form-group">
-                      <label class="small font-weight-bold">Час</label>
+                      <label class="small font-weight-bold">Hora</label>
                       <input type="time" class="form-control form-control-sm" id="eaTime" value="09:00">
                     </div>
                     <div class="form-group">
-                      <label class="small font-weight-bold">Тривалість</label>
+                      <label class="small font-weight-bold">Duração</label>
                       <select class="form-control form-control-sm" id="eaDuration">
-                        <option value="1">~1 година</option>
-                        <option value="2" selected>~2 години</option>
-                        <option value="4">~4 години</option>
-                        <option value="8">Цілий день</option>
+                        <option value="1">~1 hora</option>
+                        <option value="2" selected>~2 horas</option>
+                        <option value="4">~4 horas</option>
+                        <option value="8">Dia inteiro</option>
                       </select>
                     </div>
                     <div class="form-group">
-                      <label class="small font-weight-bold">Інструкції</label>
+                      <label class="small font-weight-bold">Instruções</label>
                       <textarea class="form-control form-control-sm" id="eaInstructions" rows="3"
-                        placeholder="Додаткові інструкції для техніка…"></textarea>
+                        placeholder="Instruções adicionais para o técnico…"></textarea>
                     </div>
                     <div class="form-group">
-                      <label class="small font-weight-bold">Сповіщення</label>
+                      <label class="small font-weight-bold">Notificações</label>
                       <div class="custom-control custom-switch mb-1">
                         <input type="checkbox" class="custom-control-input" id="eaNotifyPush" checked>
-                        <label class="custom-control-label small" for="eaNotifyPush">Push техніку</label>
+                        <label class="custom-control-label small" for="eaNotifyPush">Push ao técnico</label>
                       </div>
                       <div class="custom-control custom-switch mb-1">
                         <input type="checkbox" class="custom-control-input" id="eaNotifyEmail" checked>
-                        <label class="custom-control-label small" for="eaNotifyEmail">Email техніку</label>
+                        <label class="custom-control-label small" for="eaNotifyEmail">Email ao técnico</label>
                       </div>
                       <div class="custom-control custom-switch">
                         <input type="checkbox" class="custom-control-input" id="eaNotifyClient">
-                        <label class="custom-control-label small" for="eaNotifyClient">Сповістити клієнта</label>
+                        <label class="custom-control-label small" for="eaNotifyClient">Notificar cliente</label>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
               <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Скасувати</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
                 <button type="button" class="btn btn-primary" onclick="submitEnhancedAssign('${requestId}')">
-                  <i class="fas fa-user-check mr-1"></i>Призначити
+                  <i class="fas fa-user-check mr-1"></i>Atribuir
                 </button>
               </div>
             </div>
@@ -2960,7 +2960,7 @@ async function openEnhancedAssignModal(requestId) {
 
     } catch (error) {
         console.error('openEnhancedAssignModal error:', error);
-        toastr.error('Помилка завантаження техніків: ' + error.message);
+        toastr.error('Erro ao carregar técnicos: ' + error.message);
     }
 }
 
@@ -2979,7 +2979,7 @@ function selectAssignTech(row, techId) {
 
 async function submitEnhancedAssign(requestId) {
     const techId = window._selectedAssignTechId;
-    if (!techId) { toastr.warning('Оберіть техніка'); return; }
+    if (!techId) { toastr.warning('Selecione o técnico'); return; }
 
     const dateVal = $('#eaDate').val();
     const timeVal = $('#eaTime').val();
@@ -2993,17 +2993,17 @@ async function submitEnhancedAssign(requestId) {
         });
         if (!response || !response.ok) {
             const err = await response.json().catch(() => ({}));
-            throw new Error(err.message || 'Помилка призначення');
+            throw new Error(err.message || 'Erro de atribuição');
         }
         $('#enhancedAssignModal').modal('hide');
         $('#viewRequestModal').modal('hide');
-        toastr.success('Техніка призначено! Сповіщення відправлено.');
+        toastr.success('Técnico atribuído! Notificações enviadas.');
         window._selectedAssignTechId = null;
         await window.serviceManager.loadRequests();
         window.serviceManager.renderRequests();
     } catch (error) {
         console.error('❌ submitEnhancedAssign:', error);
-        toastr.error('Помилка: ' + error.message);
+        toastr.error('Erro: ' + error.message);
     }
 }
 
@@ -3015,7 +3015,7 @@ function filterByStatusQuick(status) {
     window.serviceManager.requests = filtered;
     window.serviceManager.renderRequests();
     window.serviceManager.requests = orig;
-    toastr.info(`Фільтр: ${filtered.length} заявок`);
+    toastr.info(`Filtro: ${filtered.length} pedidos`);
 }
 
 function setReqView(mode) {
@@ -3028,15 +3028,15 @@ function setReqView(mode) {
 }
 
 async function submitTechnicianAssignment() {
-    // Перевірка наявності AuthManager
+    // Verificar disponibilidade de AuthManager
     if (typeof AuthManager === 'undefined') {
-        alert('Для виконання цієї дії потрібна авторизація.\nБудь ласка, увійдіть через сторінку логіну.');
+        alert('É necessária autenticação para esta acção.\nPor favor, entre através da página de login.');
         window.location.replace('/pages/auth/login.html');
         return;
     }
     
     if (!AuthManager.isAuthenticated()) {
-        alert('Ваша сесія закінчилась.\nБудь ласка, увійдіть знову.');
+        alert('A sua sessão expirou.\nPor favor, entre novamente.');
         window.location.replace('/pages/auth/login.html');
         return;
     }
@@ -3047,19 +3047,19 @@ async function submitTechnicianAssignment() {
         const deadline = $('#deadline').val();
         
         if (!selectedTechnician) {
-            alert('Оберіть техніка');
+            alert('Selecione o técnico');
             return;
         }
         
         if (!window.serviceManager || !window.serviceManager.currentRequest) {
-            alert('Не вибрана заявка для призначення');
+            alert('Nenhum pedido seleccionado para atribuição');
             return;
         }
         
-        // Використовуємо MongoDB _id, а не красивий ID
+        // Usar _id real do MongoDB em vez de display ID
         const requestId = window.serviceManager.currentRequest._id || window.serviceManager.currentRequest.id;
         
-        console.log(`Призначення техніка ${selectedTechnician} до заявки ${requestId}`);
+        console.log(`A atribuir técnico ${selectedTechnician} ao pedido ${requestId}`);
         
         const response = await AuthManager.fetchWithAuth(`/api/requests/${requestId}/assign`, {
             method: 'POST',
@@ -3072,41 +3072,41 @@ async function submitTechnicianAssignment() {
         
         if (!response || !response.ok) {
             const error = await response.json();
-            throw new Error(error.message || 'Помилка призначення техніка');
+            throw new Error(error.message || 'Erro ao atribuir técnico');
         }
         
         const result = await response.json();
         
-        // Закриваємо модальні вікна
+        // Fechar janelas modais
         $('#assignTechnicianModal').modal('hide');
         $('#viewRequestModal').modal('hide');
         
-        // Повідомлення про успіх
-        alert('Техніка успішно призначено!');
+        // Mensagem de sucesso
+        alert('Técnico atribuído com sucesso!');
         
-        // Перезавантажуємо дані заявок
+        // Recarregar dados do pedido
         await window.serviceManager.loadRequests();
         window.serviceManager.renderRequests();
         
     } catch (error) {
-        console.error('Помилка призначення техніка:', error);
-        alert('Помилка призначення техніка: ' + error.message);
+        console.error('Erro ao atribuir técnico:', error);
+        alert('Erro ao atribuir técnico: ' + error.message);
     }
 }
 
 function getCurrentAssignmentId() {
-    // TODO: Логіка для отримання ID поточно обраної заявки
-    // Це може бути збережено в глобальній змінній або отримано з UI
+    // TODO: Lógica para obter ID do pedido actualmente seleccionado
+    // Pode estar guardado em variável global ou recebido da UI
     return window.currentAssignmentId || null;
 }
 
 function logout() {
-    if (confirm('Ви дійсно хочете вийти?')) {
+    if (confirm('Tem a certeza que quer sair?')) {
         window.location.replace('/pages/auth/login.html');
     }
 }
 
-// 🆕 Функції для роботи з коментарями
+// 🆕 Funções para trabalhar com comentários
 async function loadComments(requestId) {
     try {
         const request = window.serviceManager.requests.find(r => r._id === requestId || r.id === requestId);
@@ -3117,7 +3117,7 @@ async function loadComments(requestId) {
         if (comments.length === 0) {
             $('#commentsList').html(`
                 <p class="text-muted text-center py-3">
-                    <i class="fas fa-inbox"></i> Коментарів поки немає
+                    <i class="fas fa-inbox"></i> Ainda sem comentários
                 </p>
             `);
             $('#commentsCount').text('0');
@@ -3127,8 +3127,8 @@ async function loadComments(requestId) {
         $('#commentsCount').text(comments.length);
         
         const commentsHtml = comments.map(comment => {
-            const username = comment.user?.username || comment.user?.firstName || 'Користувач';
-            const timestamp = new Date(comment.createdAt).toLocaleString('uk-UA');
+            const username = comment.user?.username || comment.user?.firstName || 'Utilizador';
+            const timestamp = new Date(comment.createdAt).toLocaleString('pt-PT');
             
             return `
                 <div class="border-bottom pb-2 mb-2">
@@ -3150,20 +3150,20 @@ async function loadComments(requestId) {
 }
 
 function logout() {
-    if (confirm('Ви дійсно хочете вийти?')) {
+    if (confirm('Tem a certeza que quer sair?')) {
         window.location.replace('/pages/auth/login.html');
     }
 }
 
-// Функція оновлення списку заявок
+// Função de actualização da lista de pedidos
 async function refreshRequests() {
     if (window.serviceManager) {
         await window.serviceManager.loadRequests();
-        toastr.success('Список заявок оновлено');
+        toastr.success('Lista de pedidos actualizada');
     }
 }
 
-// Завантаження техніків у фільтр
+// Carregar técnicos no filtro
 async function loadTechniciansFilter() {
     try {
         const response = await AuthManager.fetchWithAuth('/api/users');
@@ -3173,64 +3173,64 @@ async function loadTechniciansFilter() {
             const technicians = users.filter(u => u.role === 'tech' || u.role === 'technician');
             
             const select = $('#filterTechnician');
-            select.find('option:not(:first)').remove(); // Видаляємо всі крім "Всі техніки"
+            select.find('option:not(:first)').remove(); // Remover todas excepto "Todos os técnicos"
             
             technicians.forEach(tech => {
                 const name = `${tech.firstName || ''} ${tech.lastName || ''}`.trim() || tech.username;
                 select.append(`<option value="${tech._id}">${name}</option>`);
             });
             
-            console.log(`✅ Завантажено техніків у фільтр: ${technicians.length}`);
+            console.log(`✅ Técnicos carregados no filtro: ${technicians.length}`);
         }
     } catch (error) {
-        console.error('❌ Помилка завантаження техніків:', error);
+        console.error('❌ Erro ao carregar técnicos:', error);
     }
 }
 
-// Ініціалізація
+// Inicialização
 $(document).ready(function() {
-    console.log('🚀 Запуск системи заявок на обслуговування...');
+    console.log('🚀 A iniciar sistema de pedidos de assistência...');
 
-    // Виправлення aria-hidden warning: прибирати фокус перед закриттям будь-якого модалу
+    // Correcção aria-hidden warning: remover foco antes de fechar qualquer modal
     $(document).on('hide.bs.modal', '.modal', function() {
         if (document.activeElement && this.contains(document.activeElement)) {
             document.activeElement.blur();
         }
     });
     
-    // М'яка перевірка завантаження AuthManager з затримкою
+    // Verificação suave do carregamento de AuthManager com atraso
     setTimeout(() => {
         if (typeof AuthManager === 'undefined') {
-            console.error('❌ AuthManager не завантажено після затримки!');
+            console.error('❌ AuthManager não carregado após atraso!');
         } else {
-            console.log('✅ AuthManager завантажено');
-            // Завантажуємо техніків у фільтр
+            console.log('✅ AuthManager carregado');
+            // Carregar técnicos no filtro
             loadTechniciansFilter();
         }
     }, 100);
     
-    // Ініціалізуємо serviceManager в будь-якому випадку
+    // Inicializar serviceManager em qualquer caso
     window.serviceManager = new ServiceRequestManager();
     
-    // ✅ ДОДАНО: Обробник пошуку заявок
+    // ✅ ADICIONADO: Handler de pesquisa de pedidos
     $('#searchInput').on('input', function(e) {
         const query = $(this).val().toLowerCase().trim();
-        console.log('🔍 Pesquisar заявок:', query);
+        console.log('🔍 Pesquisar pedidos:', query);
         
         if (!window.serviceManager || !window.serviceManager.requests) {
-            console.warn('⚠️ Дані заявок ще не завантажені');
+            console.warn('⚠️ Dados de pedidos ainda não carregados');
             return;
         }
         
         const allRequests = window.serviceManager.requests;
         
         if (!query) {
-            // Показати всі заявки
+            // Mostrar todos os pedidos
             window.serviceManager.renderRequests();
             return;
         }
         
-        // Filtroуємо заявки
+        // Filtrar pedidos
         const filtered = allRequests.filter(req => {
             const id = ((req._id || req.id) || '').toString().toLowerCase();
             const title = (req.title || '').toLowerCase();
@@ -3251,17 +3251,17 @@ $(document).ready(function() {
                    priority.includes(query);
         });
         
-        console.log(`✅ Знайдено заявок: ${filtered.length} з ${allRequests.length}`);
+        console.log(`✅ Pedidos encontrados: ${filtered.length} de ${allRequests.length}`);
         
-        // Тимчасово замінюємо requests на відфільтровані
+        // Substituir temporariamente requests pelos filtrados
         const originalRequests = window.serviceManager.requests;
         window.serviceManager.requests = filtered;
         window.serviceManager.renderRequests();
-        window.serviceManager.requests = originalRequests; // Повертаємо назад
+        window.serviceManager.requests = originalRequests; // Devolver
     });
 });
 
-// Toastr налаштування
+// Configurações Toastr
 if (typeof toastr !== 'undefined') {
     toastr.options = {
         closeButton: true,

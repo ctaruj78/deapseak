@@ -3,19 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Диспетчер - Управління Ліфтами</title>
+    <title>Dispatcher - Gestão Elevadorами</title>
     <script src="../../assets/js/global-settings.js"></script>
     
     <!-- AdminLTE CSS -->
     <link rel="stylesheet" href="../../plugins/adminlte/adminlte.min.css">
     <link rel="stylesheet" href="../../plugins/fontawesome/css/all.min.css">
     
-    <!-- Leaflet CSS для карти -->
+    <!-- Leaflet CSS para карти -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
     
-    <!-- Додаткові стилі -->
+    <!-- Estilos adicionais -->
     <style>
         .lift-card {
             background: white;
@@ -91,7 +91,7 @@
             background-color: rgba(0, 0, 0, 0.5);
         }
         
-        /* Стилі для карти */
+        /* Estilos para карти */
         #mapView {
             height: 600px;
             width: 100%;
@@ -135,10 +135,10 @@
                     </a>
                 </li>
                 <li class="nav-item d-none d-sm-inline-block">
-                    <a href="dashboard.html" class="nav-link">Головна</a>
+                    <a href="dashboard.html" class="nav-link">Início</a>
                 </li>
                 <li class="nav-item d-none d-sm-inline-block">
-                    <a href="monitoring.html" class="nav-link">Моніторинг</a>
+                    <a href="monitoring.html" class="nav-link">Monitorização</a>
                 </li>
             </ul>
 
@@ -146,7 +146,7 @@
             <ul class="navbar-nav ml-auto">
                 <li class="nav-item">
                     <button class="btn btn-sm btn-outline-danger" onclick="AuthManager.logout()">
-                        <i class="fas fa-sign-out-alt"></i> Вийти
+                        <i class="fas fa-sign-out-alt"></i> Sair
                     </button>
                 </li>
             </ul>
@@ -164,12 +164,12 @@
                     <div class="row mb-2">
                         <div class="col-sm-6">
                             <h1 class="m-0">
-                                <i class="fas fa-elevator"></i> Управління Ліфтами
+                                <i class="fas fa-elevator"></i> Gestão Elevadorами
                             </h1>
                         </div>
                         <div class="col-sm-6">
                             <button class="btn btn-primary float-right" onclick="openAddLiftModal()">
-                                <i class="fas fa-plus"></i> Додати ліфт
+                                <i class="fas fa-plus"></i> Adicionar elevador
                             </button>
                         </div>
                     </div>
@@ -186,7 +186,7 @@
                             <div class="small-box bg-info">
                                 <div class="inner">
                                     <h3 id="totalLifts">0</h3>
-                                    <p>Всього ліфтів</p>
+                                    <p>Total de elevadores</p>
                                 </div>
                                 <div class="icon">
                                     <i class="fas fa-elevator"></i>
@@ -197,7 +197,7 @@
                             <div class="small-box bg-success">
                                 <div class="inner">
                                     <h3 id="activeLifts">0</h3>
-                                    <p>Активні</p>
+                                    <p>Ativos</p>
                                 </div>
                                 <div class="icon">
                                     <i class="fas fa-check-circle"></i>
@@ -208,7 +208,7 @@
                             <div class="small-box bg-warning">
                                 <div class="inner">
                                     <h3 id="maintenanceLifts">0</h3>
-                                    <p>На обслуговуванні</p>
+                                    <p>Em manutenção</p>
                                 </div>
                                 <div class="icon">
                                     <i class="fas fa-tools"></i>
@@ -231,10 +231,10 @@
                     <!-- View Toggle -->
                     <div class="view-toggle">
                         <button class="btn btn-primary" id="btnListView" onclick="switchView('list')">
-                            <i class="fas fa-list"></i> Список
+                            <i class="fas fa-list"></i> Lista
                         </button>
                         <button class="btn btn-outline-primary" id="btnMapView" onclick="switchView('map')">
-                            <i class="fas fa-map-marked-alt"></i> Карта
+                            <i class="fas fa-map-marked-alt"></i> Mapa
                         </button>
                     </div>
 
@@ -242,24 +242,24 @@
                     <div class="filters">
                         <div class="row">
                             <div class="col-md-4">
-                                <input type="text" id="searchInput" class="form-control" placeholder="🔍 Пошук за назвою або адресою...">
+                                <input type="text" id="searchInput" class="form-control" placeholder="🔍 Pesquisar за назвою ou endereço...">
                             </div>
                             <div class="col-md-3">
                                 <select id="statusFilter" class="form-control">
-                                    <option value="">Всі статуси</option>
-                                    <option value="active">Активні</option>
-                                    <option value="inactive">Неактивні</option>
-                                    <option value="maintenance">На обслуговуванні</option>
+                                    <option value="">Todos os estados</option>
+                                    <option value="active">Activos</option>
+                                    <option value="inactive">Inactivos</option>
+                                    <option value="maintenance">Em manutenção</option>
                                 </select>
                             </div>
                             <div class="col-md-3">
                                 <select id="municipalityFilter" class="form-control">
-                                    <option value="">Всі муніципалітети</option>
+                                    <option value="">Todas municípioи</option>
                                 </select>
                             </div>
                             <div class="col-md-2">
                                 <button class="btn btn-secondary btn-block" onclick="resetFilters()">
-                                    <i class="fas fa-redo"></i> Скинути
+                                    <i class="fas fa-redo"></i> Repor
                                 </button>
                             </div>
                         </div>
@@ -270,7 +270,7 @@
 
                     <!-- Active Filter Indicator -->
                     <div id="activeFilterBanner" style="display: none;" class="alert alert-info alert-dismissible fade show">
-                        <strong><i class="fas fa-filter"></i> Активний фільтр:</strong> <span id="filterDescription"></span>
+                        <strong><i class="fas fa-filter"></i> Filtro activo:</strong> <span id="filterDescription"></span>
                         <button type="button" class="close" onclick="clearClientFilter()">
                             <span>&times;</span>
                         </button>
@@ -280,7 +280,7 @@
                     <div id="liftsContainer">
                         <div class="text-center py-5">
                             <i class="fas fa-spinner fa-spin fa-3x text-primary"></i>
-                            <p class="mt-3">Завантаження ліфтів...</p>
+                            <p class="mt-3">A carregar de elevadores...</p>
                         </div>
                     </div>
 
@@ -303,7 +303,7 @@
             <div class="modal-content">
                 <div class="modal-header bg-primary">
                     <h5 class="modal-title">
-                        <i class="fas fa-elevator"></i> <span id="modalTitle">Додати ліфт</span>
+                        <i class="fas fa-elevator"></i> <span id="modalTitle">Adicionar elevador</span>
                     </h5>
                     <button type="button" class="close text-white" data-dismiss="modal">
                         <span>&times;</span>
@@ -316,43 +316,43 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label>Муніципальний номер <span class="text-danger">*</span></label>
+                                    <label>Número municipal <span class="text-danger">*</span></label>
                                     <input type="text" class="form-control" id="municipalNumber" required>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label>Статус</label>
+                                    <label>Estado</label>
                                     <select class="form-control" id="status">
-                                        <option value="active">Активний</option>
-                                        <option value="inactive">Неактивний</option>
-                                        <option value="maintenance">На обслуговуванні</option>
+                                        <option value="active">Activo</option>
+                                        <option value="inactive">Inactivo</option>
+                                        <option value="maintenance">Em manutenção</option>
                                     </select>
                                 </div>
                             </div>
                         </div>
 
                         <div class="form-group">
-                            <label>Адреса <span class="text-danger">*</span></label>
+                            <label>Endereço <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" id="address" required>
                         </div>
 
                         <div class="row">
                             <div class="col-md-4">
                                 <div class="form-group">
-                                    <label>Місто</label>
+                                    <label>Cidade</label>
                                     <input type="text" class="form-control" id="city">
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="form-group">
-                                    <label>Поштовий індекс</label>
+                                    <label>Código postal</label>
                                     <input type="text" class="form-control" id="postalCode">
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="form-group">
-                                    <label>Муніципалітет</label>
+                                    <label>Município</label>
                                     <input type="text" class="form-control" id="municipality">
                                 </div>
                             </div>
@@ -361,13 +361,13 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label>Вантажопідйомність (кг)</label>
+                                    <label>Capacidade de carga (kg)</label>
                                     <input type="number" class="form-control" id="capacity" min="1">
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label>Швидкість (м/с)</label>
+                                    <label>Velocidade (m/s)</label>
                                     <input type="number" class="form-control" id="speed" step="0.1" min="0">
                                 </div>
                             </div>
@@ -376,30 +376,30 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label>Остання інспекція</label>
+                                    <label>Осeння inspeção</label>
                                     <input type="date" class="form-control" id="lastInspectionDate">
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label>Наступна інспекція</label>
+                                    <label>Próxima inspecção</label>
                                     <input type="date" class="form-control" id="nextInspectionDate">
                                 </div>
                             </div>
                         </div>
 
                         <div class="form-group">
-                            <label>Примітки</label>
+                            <label>Notas</label>
                             <textarea class="form-control" id="notes" rows="3"></textarea>
                         </div>
                     </form>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="closeModal()">
-                        <i class="fas fa-times"></i> Скасувати
+                        <i class="fas fa-times"></i> Cancelar
                     </button>
                     <button type="button" class="btn btn-primary" onclick="saveLift()">
-                        <i class="fas fa-save"></i> Зберегти
+                        <i class="fas fa-save"></i> Guardar
                     </button>
                 </div>
             </div>
@@ -412,7 +412,7 @@
             <div class="modal-content">
                 <div class="modal-header bg-info text-white">
                     <h5 class="modal-title">
-                        <i class="fas fa-eye"></i> Перегляд інформації про ліфт
+                        <i class="fas fa-eye"></i> Visualização інформації про elevador
                     </h5>
                     <button type="button" class="close text-white" data-dismiss="modal" onclick="closeViewModal()">
                         <span>&times;</span>
@@ -423,22 +423,22 @@
                     <ul class="nav nav-tabs mb-3" id="viewLiftTabs" role="tablist">
                         <li class="nav-item">
                             <a class="nav-link active" id="general-tab" data-toggle="tab" href="#general" role="tab">
-                                <i class="fas fa-info-circle"></i> Загальна інформація
+                                <i class="fas fa-info-circle"></i> Geral informação
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" id="client-tab" data-toggle="tab" href="#client" role="tab">
-                                <i class="fas fa-user"></i> Клієнт
+                                <i class="fas fa-user"></i> Cliente
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" id="tech-tab" data-toggle="tab" href="#technical" role="tab">
-                                <i class="fas fa-cogs"></i> Технічні дані
+                                <i class="fas fa-cogs"></i> Técnicos дані
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" id="docs-tab" data-toggle="tab" href="#documents" role="tab">
-                                <i class="fas fa-folder"></i> Документи
+                                <i class="fas fa-folder"></i> Documentos
                             </a>
                         </li>
                     </ul>
@@ -449,39 +449,39 @@
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="info-group mb-3">
-                                        <label class="text-muted">Муніципальний номер:</label>
+                                        <label class="text-muted">Número municipal:</label>
                                         <p class="font-weight-bold" id="viewMunicipalNumber">-</p>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="info-group mb-3">
-                                        <label class="text-muted">Статус:</label>
+                                        <label class="text-muted">Estado:</label>
                                         <p id="viewStatus">-</p>
                                     </div>
                                 </div>
                             </div>
                             
                             <div class="info-group mb-3">
-                                <label class="text-muted">Адреса:</label>
+                                <label class="text-muted">Endereço:</label>
                                 <p id="viewAddress">-</p>
                             </div>
                             
                             <div class="row">
                                 <div class="col-md-4">
                                     <div class="info-group mb-3">
-                                        <label class="text-muted">Місто:</label>
+                                        <label class="text-muted">Cidade:</label>
                                         <p id="viewCity">-</p>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="info-group mb-3">
-                                        <label class="text-muted">Поштовий індекс:</label>
+                                        <label class="text-muted">Código postal:</label>
                                         <p id="viewPostalCode">-</p>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="info-group mb-3">
-                                        <label class="text-muted">Муніципалітет:</label>
+                                        <label class="text-muted">Município:</label>
                                         <p id="viewMunicipality">-</p>
                                     </div>
                                 </div>
@@ -495,7 +495,7 @@
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="info-group mb-3">
-                                        <label class="text-muted">Ім'я клієнта:</label>
+                                        <label class="text-muted">Nome cliente:</label>
                                         <p id="viewClientName">-</p>
                                     </div>
                                 </div>
@@ -512,7 +512,7 @@
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="info-group mb-3">
-                                        <label class="text-muted">Телефон:</label>
+                                        <label class="text-muted">Telefone:</label>
                                         <p id="viewClientPhone">
                                             <a href="#" id="viewClientPhoneLink">-</a>
                                         </p>
@@ -520,14 +520,14 @@
                                 </div>
                                 <div class="col-md-6">
                                     <div class="info-group mb-3">
-                                        <label class="text-muted">Контактна особа:</label>
+                                        <label class="text-muted">Pessoa de contacto:</label>
                                         <p id="viewContactPerson">-</p>
                                     </div>
                                 </div>
                             </div>
                             
                             <div class="info-group mb-3">
-                                <label class="text-muted"><i class="fas fa-door-open"></i> Код домофону:</label>
+                                <label class="text-muted"><i class="fas fa-door-open"></i> Código домофону:</label>
                                 <div class="alert alert-info">
                                     <h4 class="font-weight-bold" id="viewAccessCode">-</h4>
                                 </div>
@@ -539,13 +539,13 @@
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="info-group mb-3">
-                                        <label class="text-muted">Вантажопідйомність:</label>
+                                        <label class="text-muted">Capacidade de carga:</label>
                                         <p id="viewCapacity">-</p>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="info-group mb-3">
-                                        <label class="text-muted">Швидкість:</label>
+                                        <label class="text-muted">Velocidade:</label>
                                         <p id="viewSpeed">-</p>
                                     </div>
                                 </div>
@@ -554,20 +554,20 @@
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="info-group mb-3">
-                                        <label class="text-muted">Остання інспекція:</label>
+                                        <label class="text-muted">Осeння inspeção:</label>
                                         <p id="viewLastInspection">-</p>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="info-group mb-3">
-                                        <label class="text-muted">Наступна інспекція:</label>
+                                        <label class="text-muted">Próxima inspecção:</label>
                                         <p id="viewNextInspection">-</p>
                                     </div>
                                 </div>
                             </div>
                             
                             <div class="info-group mb-3">
-                                <label class="text-muted">Примітки:</label>
+                                <label class="text-muted">Notas:</label>
                                 <p id="viewNotes" class="border p-3 rounded bg-light">-</p>
                             </div>
                         </div>
@@ -575,17 +575,17 @@
                         <!-- Documents Tab -->
                         <div class="tab-pane fade" id="documents" role="tabpanel">
                             <div id="viewDocumentsList">
-                                <p class="text-center text-muted">Завантаження документів...</p>
+                                <p class="text-center text-muted">A carregar de documentos...</p>
                             </div>
                         </div>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-warning" onclick="switchToEdit()">
-                        <i class="fas fa-edit"></i> Редагувати
+                        <i class="fas fa-edit"></i> Editar
                     </button>
                     <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="closeViewModal()">
-                        <i class="fas fa-times"></i> Закрити
+                        <i class="fas fa-times"></i> Fechar
                     </button>
                 </div>
             </div>
@@ -621,7 +621,7 @@
             <div class="modal-content">
                 <div class="modal-header bg-warning">
                     <h5 class="modal-title">
-                        <i class="fas fa-folder-open"></i> Документи ліфта
+                        <i class="fas fa-folder-open"></i> Documentos do elevador
                     </h5>
                     <button type="button" class="close" data-dismiss="modal" onclick="closeDocumentsModal()">
                         <span>&times;</span>
@@ -633,49 +633,49 @@
                     <ul class="nav nav-tabs" id="docTabs" role="tablist">
                         <li class="nav-item">
                             <a class="nav-link active" id="contracts-tab" data-toggle="tab" href="#contracts" role="tab">
-                                <i class="fas fa-file-contract"></i> Контракти
+                                <i class="fas fa-file-contract"></i> Contratoи
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" id="inspections-tab" data-toggle="tab" href="#inspections" role="tab">
-                                <i class="fas fa-clipboard-check"></i> Звіти інспекції
+                                <i class="fas fa-clipboard-check"></i> Relatórios inspeções
                             </a>
                         </li>
                     </ul>
                     
                     <div class="tab-content mt-3" id="docTabContent">
-                        <!-- Контракти -->
+                        <!-- Contratoи -->
                         <div class="tab-pane fade show active" id="contracts" role="tabpanel">
                             <div class="mb-3">
                                 <button class="btn btn-primary" onclick="document.getElementById('contractFile').click()">
-                                    <i class="fas fa-upload"></i> Завантажити контракт
+                                    <i class="fas fa-upload"></i> Carregar contrato
                                 </button>
                                 <input type="file" id="contractFile" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" style="display: none;" onchange="uploadDocument('contract')">
-                                <small class="form-text text-muted">Підтримувані формати: PDF, DOC, DOCX, JPG, PNG. Максимум 10 МБ.</small>
+                                <small class="form-text text-muted">Formatos suportados: PDF, DOC, DOCX, JPG, PNG. Максимум 10 МБ.</small>
                             </div>
                             <div id="contractsList">
-                                <p class="text-muted text-center py-3">Завантаження документів...</p>
+                                <p class="text-muted text-center py-3">A carregar de documentos...</p>
                             </div>
                         </div>
                         
-                        <!-- Звіти інспекції -->
+                        <!-- Relatórios inspeções -->
                         <div class="tab-pane fade" id="inspections" role="tabpanel">
                             <div class="mb-3">
                                 <button class="btn btn-primary" onclick="document.getElementById('inspectionFile').click()">
-                                    <i class="fas fa-upload"></i> Завантажити звіт
+                                    <i class="fas fa-upload"></i> Descarregar relatório
                                 </button>
                                 <input type="file" id="inspectionFile" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" style="display: none;" onchange="uploadDocument('inspection')">
-                                <small class="form-text text-muted">Підтримувані формати: PDF, DOC, DOCX, JPG, PNG. Максимум 10 МБ.</small>
+                                <small class="form-text text-muted">Formatos suportados: PDF, DOC, DOCX, JPG, PNG. Максимум 10 МБ.</small>
                             </div>
                             <div id="inspectionsList">
-                                <p class="text-muted text-center py-3">Завантаження документів...</p>
+                                <p class="text-muted text-center py-3">A carregar de documentos...</p>
                             </div>
                         </div>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="closeDocumentsModal()">
-                        <i class="fas fa-times"></i> Закрити
+                        <i class="fas fa-times"></i> Fechar
                     </button>
                 </div>
             </div>
@@ -688,7 +688,7 @@
     <script src="../../plugins/adminlte/adminlte.min.js"></script>
     <script src="../../assets/js/auth.js"></script>
     
-    <!-- Leaflet JS для карти -->
+    <!-- Leaflet JS para карти -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
     
@@ -701,10 +701,10 @@
         let currentLift = null;
         let map = null;
         let markerCluster = null;
-        let currentView = 'list'; // 'list' або 'map'
+        let currentView = 'list'; // 'list' ou 'map'
         let userRole = 'dispatcher'; // За замовчуванням
 
-        // Отримати роль користувача з токена
+        // Отримати função do utilizador desde tokenа
         function getUserRole() {
             try {
                 const token = localStorage.getItem('authToken');
@@ -713,26 +713,26 @@
                     return payload.role || 'dispatcher';
                 }
             } catch (error) {
-                console.warn('⚠️ Не вдалося отримати роль з токена:', error);
+                console.warn('⚠️ Não foi possível отримати função desde tokenа:', error);
             }
             return 'dispatcher';
         }
 
-        // Ініціалізація при завантаженні
+        // Inicialização при заванeженні
         document.addEventListener('DOMContentLoaded', function() {
-            // Перевірка авторизації
+            // Verificação de autorização
             if (!AuthManager.isAuthenticated()) {
                 window.location.href = '/pages/auth/login.html';
                 return;
             }
 
-            // Отримати роль користувача
+            // Отримати função do utilizador
             userRole = getUserRole();
-            console.log('👤 Роль користувача:', userRole);
+            console.log('👤 Função do utilizador:', userRole);
 
-            // Перевірка наявності jQuery modal plugin (для діагностики)
+            // Verificação наявності jQuery modal plugin (para діагностики)
             if (typeof $.fn.modal === 'undefined') {
-                console.warn('⚠️ Bootstrap modal plugin не завантажений, використовується fallback');
+                console.warn('⚠️ Bootstrap modal plugin не заванeжений, використовуexisteться fallback');
             } else {
                 console.log('✅ Bootstrap modal plugin готовий');
             }
@@ -740,47 +740,47 @@
             loadLifts();
             setupEventListeners();
             
-            // Перевірити чи є параметр highlight в URL
+            // Verificar чи existe параметр highlight в URL
             checkForHighlight();
         });
         
-        // Перевірка параметра highlight для автоматичного відкриття ліфта
+        // Verificação параметра highlight para автоматичного відкриття do elevador
         function checkForHighlight() {
             const urlParams = new URLSearchParams(window.location.search);
             const highlightId = urlParams.get('highlight');
             
             if (highlightId) {
-                console.log('🎯 Виявлено highlight параметр:', highlightId);
-                // Почекати поки ліфти завантажаться, потім відкрити модальне вікно
+                console.log('🎯 Detectado highlight параметр:', highlightId);
+                // Почекати поки elevadores заванeжаться, потім abrir модальне вікно
                 setTimeout(() => {
                     const lift = allLifts.find(l => l._id === highlightId);
                     if (lift) {
-                        console.log('✅ Знайдено ліфт, відкриваємо:', lift.municipalNumber);
+                        console.log('✅ Encontrado elevador, відкриваexisteмо:', lift.municipalNumber);
                         viewLift(highlightId);
-                        // Очистити URL параметр
+                        // Limpar URL параметр
                         window.history.replaceState({}, document.title, window.location.pathname);
                     } else {
-                        console.warn('⚠️ Ліфт не знайдено:', highlightId);
+                        console.warn('⚠️ Elevador не encontrado:', highlightId);
                     }
                 }, 1000);
             }
         }
 
-        // Завантаження ліфтів
+        // A carregar de elevadores
         async function loadLifts() {
             try {
                 const token = localStorage.getItem('authToken');
-                console.log('🔄 Завантаження ліфтів...');
+                console.log('🔄 A carregar de elevadores...');
                 console.log('🔑 Token:', token ? 'Присутній' : 'Відсутній');
                 
-                // Перевірити чи є параметр clientId в URL
+                // Verificar чи existe параметр clientId в URL
                 const urlParams = new URLSearchParams(window.location.search);
                 const clientId = urlParams.get('clientId');
                 let apiUrl = `${API_URL}/api/lifts`;
                 
                 if (clientId) {
                     apiUrl += `?clientId=${clientId}`;
-                    console.log('🔍 Фільтр по clientId:', clientId);
+                    console.log('🔍 Filtro по clientId:', clientId);
                 }
                 
                 const response = await fetch(apiUrl, {
@@ -794,24 +794,24 @@
 
                 if (!response.ok) {
                     const errorText = await response.text();
-                    console.error('❌ Помилка відповіді:', errorText);
-                    throw new Error(`Помилка ${response.status}: ${errorText.substring(0, 100)}`);
+                    console.error('❌ Erro відповіді:', errorText);
+                    throw new Error(`Erro ${response.status}: ${errorText.substring(0, 100)}`);
                 }
 
                 const contentType = response.headers.get('content-type');
                 if (!contentType || !contentType.includes('application/json')) {
                     const text = await response.text();
-                    console.error('❌ Отримано не JSON:', text.substring(0, 200));
-                    throw new Error('Сервер повернув неправильний формат даних');
+                    console.error('❌ Recebido не JSON:', text.substring(0, 200));
+                    throw new Error('Сервер повернув неправильний formato даних');
                 }
 
                 const data = await response.json();
-                console.log('✅ Отримано дані:', data);
+                console.log('✅ Recebido дані:', data);
                 
                 allLifts = data.data || data.lifts || [];
-                console.log('📊 Кількість ліфтів:', allLifts.length);
+                console.log('📊 Quantidade de elevadores:', allLifts.length);
                 
-                // Показати банер фільтра якщо активний
+                // Mostrar банер filtroа se ativo
                 if (clientId) {
                     showClientFilterBanner(clientId);
                 }
@@ -821,23 +821,23 @@
                 populateMunicipalityFilter();
                 displayLifts(allLifts);
                 
-                // Завантажити кількість активних запитів (асинхронно)
+                // Descarregar quantidade ativos pedidoів (асинхронно)
                 loadActiveRequestsCount();
                 
             } catch (error) {
-                console.error('❌ Помилка:', error);
-                showError('Не вдалося завантажити ліфти: ' + error.message);
+                console.error('❌ Erro:', error);
+                showError('Não foi possível descarregar elevadores: ' + error.message);
                 
-                // Показати помилку в контейнері
+                // Mostrar помилку в контейнері
                 const container = document.getElementById('liftsContainer');
                 container.innerHTML = `
                     <div class="alert alert-danger" role="alert">
-                        <h4 class="alert-heading"><i class="fas fa-exclamation-triangle"></i> Помилка завантаження</h4>
+                        <h4 class="alert-heading"><i class="fas fa-exclamation-triangle"></i> Erro ao carregar</h4>
                         <p>${error.message}</p>
                         <hr>
                         <p class="mb-0">
                             <button class="btn btn-danger" onclick="loadLifts()">
-                                <i class="fas fa-redo"></i> Спробувати знову
+                                <i class="fas fa-redo"></i> Tentar novamente
                             </button>
                         </p>
                     </div>
@@ -849,10 +849,10 @@
         // 🔍 ФІЛЬТРАЦІЯ ТА НАВІГАЦІЯ
         // ============================================
         
-        // Показати банер фільтра по клієнту
+        // Mostrar банер filtroа по clienteу
         async function showClientFilterBanner(clientId) {
             try {
-                // Отримати дані клієнта
+                // Отримати дані cliente
                 const response = await fetch(`${API_URL}/api/users/${clientId}`, {
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('authToken')}`
@@ -864,15 +864,15 @@
                     const client = result.data || result;
                     const clientName = client.companyName || `${client.firstName || ''} ${client.lastName || ''}`.trim() || client.email;
                     
-                    document.getElementById('filterDescription').textContent = `Ліфти клієнта "${clientName}"`;
+                    document.getElementById('filterDescription').textContent = `Elevadores do cliente "${clientName}"`;
                     document.getElementById('activeFilterBanner').style.display = 'block';
                 }
             } catch (error) {
-                console.error('Помилка завантаження даних клієнта:', error);
+                console.error('Erro carregamento даних cliente:', error);
             }
         }
         
-        // Очистити фільтр клієнта
+        // Limpar filtro cliente
         function clearClientFilter() {
             window.location.href = window.location.pathname;
         }
@@ -886,7 +886,7 @@
             const today = new Date();
             const thirtyDaysFromNow = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000);
             
-            // Перевірка наближення інспекції
+            // Verificação наближення inspeções
             if (lift.nextInspectionDate) {
                 const inspectionDate = new Date(lift.nextInspectionDate);
                 const daysUntil = Math.ceil((inspectionDate - today) / (1000 * 60 * 60 * 24));
@@ -895,24 +895,24 @@
                     notifications.push({
                         type: 'danger',
                         icon: 'fas fa-exclamation-triangle',
-                        message: `Інспекція прострочена на ${Math.abs(daysUntil)} днів!`
+                        message: `Inspeção прострочена на ${Math.abs(daysUntil)} diasв!`
                     });
                 } else if (daysUntil <= 7) {
                     notifications.push({
                         type: 'danger',
                         icon: 'fas fa-calendar-times',
-                        message: `Інспекція через ${daysUntil} днів`
+                        message: `Inspeção através de ${daysUntil} diasв`
                     });
                 } else if (daysUntil <= 30) {
                     notifications.push({
                         type: 'warning',
                         icon: 'fas fa-calendar-alt',
-                        message: `Інспекція через ${daysUntil} днів`
+                        message: `Inspeção através de ${daysUntil} diasв`
                     });
                 }
             }
             
-            // Перевірка довгої неактивності
+            // Verificação довгої неактивності
             if (lift.status === 'inactive' && lift.updatedAt) {
                 const lastUpdate = new Date(lift.updatedAt);
                 const daysInactive = Math.floor((today - lastUpdate) / (1000 * 60 * 60 * 24));
@@ -921,27 +921,27 @@
                     notifications.push({
                         type: 'warning',
                         icon: 'fas fa-power-off',
-                        message: `Неактивний ${daysInactive} днів`
+                        message: `Неativo ${daysInactive} diasв`
                     });
                 }
             }
             
-            // Перевірка відсутності контракту
+            // Verificação відсутності contratoу
             if (!lift.documents || lift.documents.filter(d => d.type === 'contract').length === 0) {
                 notifications.push({
                     type: 'info',
                     icon: 'fas fa-file-contract',
-                    message: 'Немає контракту'
+                    message: 'Não há contratoу'
                 });
             }
             
-            // Перевірка відсутності звітів інспекції
+            // Verificação відсутності relatórioів inspeções
             if (!lift.documents || lift.documents.filter(d => d.type === 'inspection').length === 0) {
                 if (!lift.lastInspectionDate) {
                     notifications.push({
                         type: 'info',
                         icon: 'fas fa-clipboard-check',
-                        message: 'Немає звітів інспекції'
+                        message: 'Não há relatórioів inspeções'
                     });
                 }
             }
@@ -949,7 +949,7 @@
             return notifications;
         }
 
-        // Оновлення лічильника сповіщень на Dashboard
+        // Оновлення contadorа de notificações на Dashboard
         function updateNotificationCounter() {
             let totalNotifications = 0;
             
@@ -958,7 +958,7 @@
                 totalNotifications += notifications.length;
             });
             
-            // Оновити іконку в header (якщо є)
+            // Actualizar іконку в header (se existe)
             const notifBadge = document.querySelector('.navbar .badge-warning');
             if (notifBadge) {
                 notifBadge.textContent = totalNotifications;
@@ -967,7 +967,7 @@
             return totalNotifications;
         }
 
-        // Відображення ліфтів
+        // Apresentação de elevadores
         function displayLifts(lifts) {
             const container = document.getElementById('liftsContainer');
             
@@ -975,7 +975,7 @@
                 container.innerHTML = `
                     <div class="text-center py-5">
                         <i class="fas fa-inbox fa-3x text-muted"></i>
-                        <p class="mt-3 text-muted">Ліфтів не знайдено</p>
+                        <p class="mt-3 text-muted">Elevadorів не encontrado</p>
                     </div>
                 `;
                 return;
@@ -999,7 +999,7 @@
                         <div>
                             <h4 class="mb-1">
                                 <i class="fas fa-elevator text-primary"></i>
-                                ${lift.municipalNumber || 'Без номера'}
+                                ${lift.municipalNumber || 'Sem número'}
                                 ${notifications.length > 0 ? `<span class="badge badge-danger ml-2">${notifications.length}</span>` : ''}
                             </h4>
                             <span class="lift-status ${lift.status || 'active'}">
@@ -1007,13 +1007,13 @@
                             </span>
                         </div>
                         <div>
-                            <button class="btn btn-sm btn-info" onclick="viewLift('${lift._id}')" title="Переглянути">
+                            <button class="btn btn-sm btn-info" onclick="viewLift('${lift._id}')" title="Ver">
                                 <i class="fas fa-eye"></i>
                             </button>
-                            <button class="btn btn-sm btn-success" onclick="viewQRCode('${lift._id}')" title="QR-код">
+                            <button class="btn btn-sm btn-success" onclick="viewQRCode('${lift._id}')" title="QR-code">
                                 <i class="fas fa-qrcode"></i>
                             </button>
-                            <button class="btn btn-sm btn-warning" onclick="openDocumentsModal('${lift._id}')" title="Документи">
+                            <button class="btn btn-sm btn-warning" onclick="openDocumentsModal('${lift._id}')" title="Documentos">
                                 <i class="fas fa-folder-open"></i>
                             </button>
                         </div>
@@ -1025,32 +1025,32 @@
                     <div class="mt-2 mb-2">
                         ${lift.technician ? `
                             <span class="badge badge-info mr-1">
-                                <i class="fas fa-user-cog"></i> Технік: ${lift.technician.name || lift.technician.username || 'Призначено'}
+                                <i class="fas fa-user-cog"></i> Técnico: ${lift.technician.name || lift.technician.username || 'Atribuído'}
                             </span>
                         ` : ''}
                         ${lift.client ? `
                             <span class="badge badge-secondary mr-1">
-                                <i class="fas fa-user"></i> ${lift.clientName || lift.client.name || 'Клієнт'}
+                                <i class="fas fa-user"></i> ${lift.clientName || lift.client.name || 'Кліexisteнт'}
                             </span>
                         ` : ''}
                         ${lift.activeRequests && lift.activeRequests > 0 ? `
                             <span class="badge badge-danger mr-1">
-                                <i class="fas fa-exclamation-circle"></i> ${lift.activeRequests} активних запитів
+                                <i class="fas fa-exclamation-circle"></i> ${lift.activeRequests} ativos pedidoів
                             </span>
                         ` : ''}
                     </div>
                     
                     <!-- Quick Actions -->
                     <div class="mt-2 mb-2">
-                        <button class="btn btn-xs btn-primary mr-1" onclick="createRequestForLift('${lift._id}')" title="Створити запит">
-                            <i class="fas fa-plus"></i> Запит
+                        <button class="btn btn-xs btn-primary mr-1" onclick="createRequestForLift('${lift._id}')" title="Створити pedido">
+                            <i class="fas fa-plus"></i> Pedido
                         </button>
-                        <button class="btn btn-xs btn-info mr-1" onclick="viewLiftRequests('${lift._id}')" title="Історія запитів">
+                        <button class="btn btn-xs btn-info mr-1" onclick="viewLiftRequests('${lift._id}')" title="Історія pedidoів">
                             <i class="fas fa-history"></i> Історія
                         </button>
                         ${!lift.technician ? `
-                            <button class="btn btn-xs btn-success" onclick="assignTechnician('${lift._id}')" title="Призначити техніка">
-                                <i class="fas fa-user-plus"></i> Технік
+                            <button class="btn btn-xs btn-success" onclick="assignTechnician('${lift._id}')" title="Atribuir técnico">
+                                <i class="fas fa-user-plus"></i> Técnico
                             </button>
                         ` : ''}
                         ${lift.clientPhone ? `
@@ -1063,7 +1063,7 @@
                     <div class="lift-info">
                         <div class="info-item">
                             <i class="fas fa-map-marker-alt"></i>
-                            <span>${typeof lift.address === 'object' ? (lift.address.full || lift.address.street || JSON.stringify(lift.address)) : (lift.address || 'Адреса не вказана')}</span>
+                            <span>${typeof lift.address === 'object' ? (lift.address.full || lift.address.street || JSON.stringify(lift.address)) : (lift.address || 'Endereço não especificado')}</span>
                         </div>
                         ${lift.municipality ? `
                         <div class="info-item">
@@ -1074,19 +1074,19 @@
                         ${lift.capacity ? `
                         <div class="info-item">
                             <i class="fas fa-weight"></i>
-                            <span>${lift.capacity} кг</span>
+                            <span>${lift.capacity} kg</span>
                         </div>
                         ` : ''}
                         ${lift.speed ? `
                         <div class="info-item">
                             <i class="fas fa-tachometer-alt"></i>
-                            <span>${lift.speed} м/с</span>
+                            <span>${lift.speed} m/s</span>
                         </div>
                         ` : ''}
                         ${lift.nextInspectionDate ? `
                         <div class="info-item">
                             <i class="fas fa-calendar-check"></i>
-                            <span>Наступна інспекція: ${new Date(lift.nextInspectionDate).toLocaleDateString('uk-UA')}</span>
+                            <span>Próxima inspecção: ${new Date(lift.nextInspectionDate).toLocaleDateString('pt-PT')}</span>
                         </div>
                         ` : ''}
                     </div>
@@ -1103,7 +1103,7 @@
             }).join('');
         }
 
-        // Оновлення статистики
+        // Оновлення сeтистики
         function updateStatistics() {
             document.getElementById('totalLifts').textContent = allLifts.length;
             document.getElementById('activeLifts').textContent = allLifts.filter(l => l.status === 'active').length;
@@ -1111,7 +1111,7 @@
             document.getElementById('inactiveLifts').textContent = allLifts.filter(l => l.status === 'inactive').length;
         }
 
-        // Заповнення фільтра муніципалітетів
+        // Заповнення filtroа municípioів
         function populateMunicipalityFilter() {
             const municipalities = [...new Set(allLifts.map(l => l.municipality).filter(Boolean))];
             const select = document.getElementById('municipalityFilter');
@@ -1124,14 +1124,14 @@
             });
         }
 
-        // Налаштування слухачів подій
+        // Definições слухачів trabalhos
         function setupEventListeners() {
             document.getElementById('searchInput').addEventListener('input', applyFilters);
             document.getElementById('statusFilter').addEventListener('change', applyFilters);
             document.getElementById('municipalityFilter').addEventListener('change', applyFilters);
         }
 
-        // Застосування фільтрів
+        // Застосування filtroів
         function applyFilters() {
             const search = document.getElementById('searchInput').value.toLowerCase();
             const status = document.getElementById('statusFilter').value;
@@ -1156,7 +1156,7 @@
             displayLifts(filtered);
         }
 
-        // Скидання фільтрів
+        // Reposição filtroів
         function resetFilters() {
             document.getElementById('searchInput').value = '';
             document.getElementById('statusFilter').value = '';
@@ -1164,10 +1164,10 @@
             displayLifts(allLifts);
         }
 
-        // Відкрити модальне вікно додавання
+        // Abrir модальне вікно adição
         function openAddLiftModal() {
             currentLift = null;
-            document.getElementById('modalTitle').textContent = 'Додати ліфт';
+            document.getElementById('modalTitle').textContent = 'Adicionar elevador';
             document.getElementById('liftForm').reset();
             document.getElementById('liftId').value = '';
             
@@ -1175,12 +1175,12 @@
             if (typeof $.fn.modal !== 'undefined') {
                 $('#liftModal').modal('show');
             } else {
-                // Fallback: показати модальне вікно напряму
-                console.warn('⚠️ jQuery modal недоступний, використовуємо fallback');
+                // Fallback: mostrar модальне вікно напряму
+                console.warn('⚠️ jQuery modal indisponível, використовуexisteмо fallback');
                 document.getElementById('liftModal').style.display = 'block';
                 document.getElementById('liftModal').classList.add('show');
                 document.body.classList.add('modal-open');
-                // Додати backdrop
+                // Adicionar backdrop
                 const backdrop = document.createElement('div');
                 backdrop.className = 'modal-backdrop fade show';
                 backdrop.id = 'modalBackdrop';
@@ -1188,7 +1188,7 @@
             }
         }
 
-        // Закрити модальне вікно
+        // Fechar модальне вікно
         function closeModal() {
             if (typeof $.fn.modal !== 'undefined') {
                 $('#liftModal').modal('hide');
@@ -1202,17 +1202,17 @@
             }
         }
 
-        // Редагувати ліфт
+        // Editar elevador
         function editLift(liftId) {
             currentLift = allLifts.find(l => l._id === liftId);
             if (!currentLift) return;
 
-            document.getElementById('modalTitle').textContent = 'Редагувати ліфт';
+            document.getElementById('modalTitle').textContent = 'Editar elevador';
             document.getElementById('liftId').value = currentLift._id;
             document.getElementById('municipalNumber').value = currentLift.municipalNumber || '';
             document.getElementById('status').value = currentLift.status || 'active';
             
-            // Handle address - може бути string або object
+            // Handle address - pode бути string ou object
             const address = typeof currentLift.address === 'object' 
                 ? (currentLift.address.full || currentLift.address.street || '') 
                 : (currentLift.address || '');
@@ -1224,7 +1224,7 @@
             document.getElementById('capacity').value = currentLift.capacity || '';
             document.getElementById('speed').value = currentLift.speed || '';
             
-            // Дати інспекції
+            // Дати inspeções
             document.getElementById('lastInspectionDate').value = currentLift.lastInspectionDate 
                 ? new Date(currentLift.lastInspectionDate).toISOString().split('T')[0] 
                 : '';
@@ -1239,7 +1239,7 @@
                 $('#liftModal').modal('show');
             } else {
                 // Fallback
-                console.warn('⚠️ jQuery modal недоступний, використовуємо fallback');
+                console.warn('⚠️ jQuery modal indisponível, використовуexisteмо fallback');
                 document.getElementById('liftModal').style.display = 'block';
                 document.getElementById('liftModal').classList.add('show');
                 document.body.classList.add('modal-open');
@@ -1250,14 +1250,14 @@
             }
         }
 
-        // Зберегти ліфт
+        // Guardar elevador
         async function saveLift() {
             const liftId = document.getElementById('liftId').value;
             const municipalNumber = document.getElementById('municipalNumber').value.trim();
             const address = document.getElementById('address').value.trim();
 
             if (!municipalNumber || !address) {
-                showError('Заповніть обов\'язкові поля: Муніципальний номер та Адреса');
+                showError('Preencha обов\'язкові поля: Número municipal e Endereço');
                 return;
             }
 
@@ -1275,16 +1275,16 @@
                 notes: document.getElementById('notes').value.trim()
             };
 
-            // Спробувати геокодувати адресу якщо це новий ліфт або адреса змінилася
+            // Спробувати геоcódigoвати endereço se це novo elevador ou endereço de alteraçãoлася
             const needsGeocoding = !liftId || (currentLift && currentLift.address !== address);
             if (needsGeocoding) {
-                console.log('📍 Геокодування адреси:', address);
+                console.log('📍 Geocodificação endereçoи:', address);
                 const coords = await geocodeAddress(address);
                 if (coords) {
                     liftData.coordinates = coords;
-                    console.log('✅ Координати знайдено:', coords);
+                    console.log('✅ Coordenadas encontrado:', coords);
                 } else {
-                    console.warn('⚠️ Не вдалося знайти координати для адреси');
+                    console.warn('⚠️ Não foi possível encontrar coordenadas para endereçoи');
                 }
             }
 
@@ -1304,7 +1304,7 @@
 
                 if (!response.ok) {
                     const error = await response.json();
-                    throw new Error(error.message || 'Помилка збереження');
+                    throw new Error(error.message || 'Erro ao guardar');
                 }
 
                 // Try jQuery modal API to hide
@@ -1319,46 +1319,46 @@
                     if (backdrop) backdrop.remove();
                 }
                 
-                showSuccess(liftId ? 'Ліфт оновлено' : 'Ліфт додано');
+                showSuccess(liftId ? 'Elevador atualizado' : 'Elevador adicionado');
                 loadLifts();
 
             } catch (error) {
-                console.error('Помилка:', error);
-                showError(error.message || 'Не вдалося зберегти ліфт');
+                console.error('Erro:', error);
+                showError(error.message || 'Não foi possível guardar elevador');
             }
         }
 
-        // Переглянути QR-код
+        // Visualizar QR-code
         function viewQRCode(liftId) {
             const lift = allLifts.find(l => l._id === liftId);
             if (lift && lift.qrCode) {
                 window.open(lift.qrCode, '_blank');
             } else {
-                showError('QR-код не знайдено');
+                showError('QR-code не encontrado');
             }
         }
 
-        // Отримати текст статусу
+        // Отримати текст estadoу
         function getStatusText(status) {
             const statuses = {
-                'active': 'Активний',
-                'inactive': 'Неактивний',
-                'maintenance': 'На обслуговуванні'
+                'active': 'Activo',
+                'inactive': 'Inactivo',
+                'maintenance': 'Em manutenção'
             };
-            return statuses[status] || 'Активний';
+            return statuses[status] || 'Activo';
         }
 
-        // Показати помилку
+        // Mostrar помилку
         function showError(message) {
             alert('❌ ' + message);
         }
 
-        // Показати успіх
+        // Mostrar sucesso
         function showSuccess(message) {
             alert('✅ ' + message);
         }
 
-        // Універсальна функція для показу повідомлень
+        // Універсальна функція para показу повідомлень
         function showAlert(message, type = 'info') {
             const icons = {
                 'success': '✅',
@@ -1374,7 +1374,7 @@
         // ФУНКЦІЇ ДЛЯ КАРТИ
         // ============================================
 
-        // Перемикання між виглядами
+        // Перемикання entre виглядами
         function switchView(view) {
             currentView = view;
             
@@ -1393,21 +1393,21 @@
                 document.getElementById('btnMapView').classList.add('btn-primary');
                 document.getElementById('btnMapView').classList.remove('btn-outline-primary');
                 
-                // Ініціалізувати карту при першому відкритті
+                // Ініціалізувати mapa при першому відкритті
                 if (!map) {
                     initMap();
                 }
-                // Оновити маркери
+                // Actualizar маркери
                 updateMapMarkers();
             }
         }
 
-        // Ініціалізація карти
+        // Inicialização карти
         function initMap() {
-            // Центр Португалії
+            // Centro Португалії
             map = L.map('mapView').setView([39.5, -8.0], 7);
             
-            // Додати tile layer (OpenStreetMap)
+            // Adicionar tile layer (OpenStreetMap)
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '© OpenStreetMap contributors',
                 maxZoom: 19
@@ -1421,17 +1421,17 @@
             
             map.addLayer(markerCluster);
             
-            console.log('✅ Карта ініціалізована');
+            console.log('✅ Mapa ініціалізована');
         }
 
-        // Оновити маркери на карті
+        // Actualizar маркери на no mapa
         function updateMapMarkers() {
             if (!map || !markerCluster) return;
             
-            // Очистити існуючі маркери
+            // Limpar існуючі маркери
             markerCluster.clearLayers();
             
-            // Додати маркери для ліфтів з координатами
+            // Adicionar маркери para de elevadores desde координаeми
             allLifts.forEach(lift => {
                 if (lift.coordinates && lift.coordinates.lat && lift.coordinates.lng) {
                     const marker = createMarker(lift);
@@ -1439,12 +1439,12 @@
                 }
             });
             
-            console.log(`🗺️ Оновлено ${markerCluster.getLayers().length} маркерів на карті`);
+            console.log(`🗺️ Atualizado ${markerCluster.getLayers().length} маркерів на no mapa`);
         }
 
-        // Створити маркер для ліфта
+        // Створити маркер para do elevador
         function createMarker(lift) {
-            // Колір маркера залежно від статусу
+            // Колір маркера зmasжно від estadoу
             const iconColor = {
                 'active': 'green',
                 'inactive': 'red',
@@ -1463,21 +1463,21 @@
             
             const marker = L.marker([lift.coordinates.lat, lift.coordinates.lng], { icon });
             
-            // Popup з інформацією
+            // Popup desde інформаціexisteю
             const address = typeof lift.address === 'object' 
                 ? (lift.address.full || lift.address.street || '') 
-                : (lift.address || 'Адреса не вказана');
+                : (lift.address || 'Endereço não especificado');
             
             const popupContent = `
                 <div style="min-width: 200px;">
-                    <h5><i class="fas fa-elevator"></i> ${lift.municipalNumber || 'Без номера'}</h5>
-                    <p><strong>Статус:</strong> <span class="badge badge-${iconColor}">${getStatusText(lift.status)}</span></p>
-                    <p><strong>Адреса:</strong> ${address}</p>
-                    ${lift.municipality ? `<p><strong>Муніципалітет:</strong> ${lift.municipality}</p>` : ''}
-                    ${lift.capacity ? `<p><strong>Вантажопідйомність:</strong> ${lift.capacity} кг</p>` : ''}
+                    <h5><i class="fas fa-elevator"></i> ${lift.municipalNumber || 'Sem número'}</h5>
+                    <p><strong>Estado:</strong> <span class="badge badge-${iconColor}">${getStatusText(lift.status)}</span></p>
+                    <p><strong>Endereço:</strong> ${address}</p>
+                    ${lift.municipality ? `<p><strong>Município:</strong> ${lift.municipality}</p>` : ''}
+                    ${lift.capacity ? `<p><strong>Capacidade de carga:</strong> ${lift.capacity} kg</p>` : ''}
                     <div class="mt-2">
                         <button class="btn btn-sm btn-info" onclick="viewLiftFromMap('${lift._id}')">
-                            <i class="fas fa-eye"></i> Переглянути
+                            <i class="fas fa-eye"></i> Ver
                         </button>
                         <button class="btn btn-sm btn-success" onclick="viewQRCode('${lift._id}')">
                             <i class="fas fa-qrcode"></i> QR
@@ -1491,12 +1491,12 @@
             return marker;
         }
 
-        // Переглянути ліфт з карти
+        // Ver elevador desde карти
         function viewLiftFromMap(liftId) {
             viewLift(liftId);
         }
 
-        // Геокодування адреси (Nominatim API)
+        // Geocodificação endereçoи (Nominatim API)
         async function geocodeAddress(address) {
             try {
                 const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address + ', Portugal')}&limit=1`);
@@ -1510,7 +1510,7 @@
                 }
                 return null;
             } catch (error) {
-                console.error('Помилка геокодування:', error);
+                console.error('Erro геоcódigoвання:', error);
                 return null;
             }
         }
@@ -1524,10 +1524,10 @@
         async function openDocumentsModal(liftId) {
             currentDocumentLiftId = liftId;
             
-            // Завантажити документи для цього ліфта
+            // Descarregar documentoи para цього do elevador
             await loadDocuments(liftId);
             
-            // Відкрити модальне вікно
+            // Abrir модальне вікно
             try {
                 if (typeof $ !== 'undefined' && $.fn.modal) {
                     $('#documentsModal').modal('show');
@@ -1536,7 +1536,7 @@
                     document.getElementById('documentsModal').classList.add('show');
                 }
             } catch (error) {
-                console.error('Помилка відкриття модального вікна:', error);
+                console.error('Erro відкриття модального вікна:', error);
             }
         }
 
@@ -1549,14 +1549,14 @@
                     document.getElementById('documentsModal').classList.remove('show');
                 }
             } catch (error) {
-                console.error('Помилка закриття модального вікна:', error);
+                console.error('Erro закриття модального вікна:', error);
             }
             currentDocumentLiftId = null;
         }
 
         async function uploadDocument(type) {
             if (!currentDocumentLiftId) {
-                showAlert('Помилка: не вибрано ліфт', 'danger');
+                showAlert('Erro: не selecionados elevador', 'danger');
                 return;
             }
 
@@ -1565,23 +1565,23 @@
             const file = fileInput.files[0];
 
             if (!file) {
-                showAlert('Будь ласка, виберіть файл', 'warning');
+                showAlert('Por favor, selecione ficheiro', 'warning');
                 return;
             }
 
-            // Перевірка розміру файлу (макс 10 МБ)
+            // Verificação tamanhoу ficheiroу (макс 10 МБ)
             const maxSize = 10 * 1024 * 1024; // 10 MB
             if (file.size > maxSize) {
-                showAlert('Файл занадто великий. Максимальний розмір: 10 МБ', 'danger');
+                showAlert('Ficheiro занадто великий. Tamanho máximo: 10 МБ', 'danger');
                 return;
             }
 
-            // Перевірка типу файлу
+            // Verificação tipoу ficheiroу
             const allowedTypes = ['application/pdf', 'application/msword', 
                 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
                 'image/jpeg', 'image/png'];
             if (!allowedTypes.includes(file.type)) {
-                showAlert('Недопустимий тип файлу. Дозволені: PDF, DOC, DOCX, JPG, PNG', 'danger');
+                showAlert('Недопустимий tipo ficheiroу. Дозволені: PDF, DOC, DOCX, JPG, PNG', 'danger');
                 return;
             }
 
@@ -1600,27 +1600,27 @@
 
                 if (!response.ok) {
                     const error = await response.json();
-                    throw new Error(error.message || 'Помилка завантаження документа');
+                    throw new Error(error.message || 'Erro carregamento documentoа');
                 }
 
                 const result = await response.json();
-                showAlert(`Документ "${file.name}" успішно завантажено`, 'success');
+                showAlert(`Документ "${file.name}" com sucesso carregado`, 'success');
 
-                // Очистити інпут
+                // Limpar інпут
                 fileInput.value = '';
 
-                // Перезавантажити список документів
+                // Recarregar lista de documentos
                 await loadDocuments(currentDocumentLiftId);
 
             } catch (error) {
-                console.error('Помилка завантаження документа:', error);
-                showAlert(error.message || 'Помилка завантаження документа', 'danger');
+                console.error('Erro carregamento documentoа:', error);
+                showAlert(error.message || 'Erro carregamento documentoа', 'danger');
             }
         }
 
         async function loadDocuments(liftId) {
             try {
-                console.log('📄 Завантаження документів для ліфта:', liftId);
+                console.log('📄 A carregar de documentos para do elevador:', liftId);
                 
                 const response = await fetch(`/api/lifts/${liftId}/documents`, {
                     headers: {
@@ -1629,27 +1629,27 @@
                 });
 
                 if (!response.ok) {
-                    throw new Error('Помилка завантаження документів');
+                    throw new Error('Erro carregamento de documentos');
                 }
 
                 const documents = await response.json();
-                console.log('✅ Отримано документів:', documents.length, documents);
+                console.log('✅ Recebido de documentos:', documents.length, documents);
 
-                // Розділити документи за типом
+                // Розділити documentoи за tipoом
                 const contracts = documents.filter(doc => doc.type === 'contract');
                 const inspections = documents.filter(doc => doc.type === 'inspection');
                 
-                console.log('📑 Контрактів:', contracts.length, 'Звітів:', inspections.length);
+                console.log('📑 Contratoів:', contracts.length, 'Relatórioів:', inspections.length);
 
-                // Відобразити контракти
+                // Відобразити contratoи
                 renderDocumentList('contractsList', contracts);
                 
-                // Відобразити звіти інспекції
+                // Відобразити relatórioи inspeções
                 renderDocumentList('inspectionsList', inspections);
 
             } catch (error) {
-                console.error('Помилка завантаження документів:', error);
-                showAlert('Помилка завантаження документів', 'danger');
+                console.error('Erro carregamento de documentos:', error);
+                showAlert('Erro carregamento de documentos', 'danger');
             }
         }
 
@@ -1659,7 +1659,7 @@
             if (documents.length === 0) {
                 container.innerHTML = `
                     <div class="alert alert-info">
-                        <i class="fas fa-info-circle"></i> Документи відсутні
+                        <i class="fas fa-info-circle"></i> Documentos відсутні
                     </div>
                 `;
                 return;
@@ -1667,7 +1667,7 @@
 
             let html = '<div class="list-group">';
             documents.forEach(doc => {
-                const uploadDate = new Date(doc.uploadedAt).toLocaleDateString('uk-UA');
+                const uploadDate = new Date(doc.uploadedAt).toLocaleDateString('pt-PT');
                 const fileIcon = getFileIcon(doc.filename);
                 
                 html += `
@@ -1683,14 +1683,14 @@
                                 </small>
                             </div>
                             <div>
-                                <button class="btn btn-sm btn-primary" onclick="viewDocument('${doc.path}')" title="Переглянути">
+                                <button class="btn btn-sm btn-primary" onclick="viewDocument('${doc.path}')" title="Ver">
                                     <i class="fas fa-eye"></i>
                                 </button>
-                                <button class="btn btn-sm btn-info" onclick="downloadDocument('${doc.path}', '${doc.filename}')" title="Завантажити">
+                                <button class="btn btn-sm btn-info" onclick="downloadDocument('${doc.path}', '${doc.filename}')" title="Descarregar">
                                     <i class="fas fa-download"></i>
                                 </button>
                                 ${userRole === 'admin' ? `
-                                <button class="btn btn-sm btn-danger" onclick="deleteDocument('${doc._id}')" title="Видалити">
+                                <button class="btn btn-sm btn-danger" onclick="deleteDocument('${doc._id}')" title="Eliminar">
                                     <i class="fas fa-trash"></i>
                                 </button>
                                 ` : ''}
@@ -1731,7 +1731,7 @@
         }
 
         async function deleteDocument(docId) {
-            if (!confirm('Ви впевнені, що хочете видалити цей документ?')) {
+            if (!confirm('Tem a certeza que quer eliminar цей documento?')) {
                 return;
             }
 
@@ -1744,15 +1744,15 @@
                 });
 
                 if (!response.ok) {
-                    throw new Error('Помилка видалення документа');
+                    throw new Error('Erro eliminação documentoа');
                 }
 
-                showAlert('Документ успішно видалено', 'success');
+                showAlert('Документ com sucesso eliminado', 'success');
                 await loadDocuments(currentDocumentLiftId);
 
             } catch (error) {
-                console.error('Помилка видалення документа:', error);
-                showAlert(error.message || 'Помилка видалення документа', 'danger');
+                console.error('Erro eliminação documentoа:', error);
+                showAlert(error.message || 'Erro eliminação documentoа', 'danger');
             }
         }
 
@@ -1764,7 +1764,7 @@
             const lift = allLifts.find(l => l._id === liftId);
             if (!lift) return;
             
-            // Перенаправлення на сторінку створення запиту з pre-filled даними
+            // Redirecionamento para a página створення pedidoу desde pre-filled даними
             localStorage.setItem('prefilledRequest', JSON.stringify({
                 liftId: lift._id,
                 liftNumber: lift.municipalNumber,
@@ -1778,7 +1778,7 @@
             const lift = allLifts.find(l => l._id === liftId);
             if (!lift) return;
             
-            // Перенаправлення на сторінку запитів з фільтром по ліфту
+            // Redirecionamento para a página pedidoів desde filtroом по elevadorу
             window.location.href = '/pages/dispatcher/requests.html?liftId=' + liftId;
         }
 
@@ -1787,7 +1787,7 @@
             if (!lift) return;
             
             try {
-                // Завантажити список техніків
+                // Descarregar lista de técnicos
                 const response = await fetch(`${API_URL}/api/users/technicians`, {
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('authToken')}`
@@ -1795,36 +1795,36 @@
                 });
                 
                 if (!response.ok) {
-                    throw new Error('Помилка завантаження техніків');
+                    throw new Error('Erro carregamento de técnicos');
                 }
                 
                 const technicians = await response.json();
                 
                 if (technicians.length === 0) {
-                    showAlert('Немає доступних техніків', 'warning');
+                    showAlert('Não há acessoних de técnicos', 'warning');
                     return;
                 }
                 
-                // Показати діалог вибору
+                // Mostrar діалог вибору
                 const technicianSelect = technicians.map((tech, index) => 
                     `${index + 1}. ${tech.name || tech.username} (${tech.email})`
                 ).join('\n');
                 
                 const selection = prompt(
-                    `Виберіть техніка для ліфта ${lift.municipalNumber}:\n\n${technicianSelect}\n\nВведіть номер:`
+                    `Selecione do técnico para do elevador ${lift.municipalNumber}:\n\n${technicianSelect}\n\nDigite número:`
                 );
                 
                 if (!selection) return;
                 
                 const techIndex = parseInt(selection) - 1;
                 if (techIndex < 0 || techIndex >= technicians.length) {
-                    showAlert('Невірний вибір', 'danger');
+                    showAlert('Inválido вибір', 'danger');
                     return;
                 }
                 
                 const selectedTech = technicians[techIndex];
                 
-                // Призначити техніка
+                // Atribuir técnico
                 const assignResponse = await fetch(`${API_URL}/api/lifts/${liftId}`, {
                     method: 'PUT',
                     headers: {
@@ -1837,19 +1837,19 @@
                 });
                 
                 if (!assignResponse.ok) {
-                    throw new Error('Помилка призначення техніка');
+                    throw new Error('Erro atribuição do técnico');
                 }
                 
-                showAlert(`Технік ${selectedTech.name || selectedTech.username} успішно призначений`, 'success');
-                await loadLifts(); // Перезавантажити список
+                showAlert(`Técnico ${selectedTech.name || selectedTech.username} com sucesso atribuído`, 'success');
+                await loadLifts(); // Recarregar lista
                 
             } catch (error) {
-                console.error('Помилка призначення техніка:', error);
-                showAlert(error.message || 'Помилка призначення техніка', 'danger');
+                console.error('Erro ao atribuir técnico:', error);
+                showAlert(error.message || 'Erro atribuição do técnico', 'danger');
             }
         }
 
-        // Завантажити кількість активних запитів для кожного ліфта
+        // Descarregar quantidade ativos pedidoів para кожного do elevador
         async function loadActiveRequestsCount() {
             try {
                 const response = await fetch(`${API_URL}/api/requests/count-by-lift`, {
@@ -1861,7 +1861,7 @@
                 if (response.ok) {
                     const requestCounts = await response.json();
                     
-                    // Додати кількість запитів до кожного ліфта
+                    // Adicionar quantidade pedidoів до кожного do elevador
                     allLifts.forEach(lift => {
                         const count = requestCounts[lift._id] || 0;
                         lift.activeRequests = count;
@@ -1870,7 +1870,7 @@
                     displayLifts(allLifts);
                 }
             } catch (error) {
-                console.warn('Не вдалося завантажити кількість запитів:', error);
+                console.warn('Não foi possível descarregar quantidade pedidoів:', error);
             }
         }
     </script>

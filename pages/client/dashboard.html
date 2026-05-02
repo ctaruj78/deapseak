@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Клієнт - Головна</title>
+    <title>Cliente - Início</title>
     
     <!-- AdminLTE CSS -->
     <link rel="stylesheet" href="../../plugins/adminlte/adminlte.min.css">
@@ -173,7 +173,7 @@
             justify-content: center;
         }
         
-        /* Анімації */
+        /* Animações */
         @keyframes pulse {
             0% { transform: scale(1); }
             50% { transform: scale(1.05); }
@@ -193,7 +193,7 @@
             animation: fadeIn 0.6s ease;
         }
         
-        /* Спеціальні стилі для карток */
+        /* Estilos especiais para cartões */
         .card-client {
             border: none;
             border-radius: 15px;
@@ -205,7 +205,7 @@
             box-shadow: 0 8px 30px rgba(0,0,0,0.12);
         }
         
-        /* Стилі для темного режиму */
+        /* Estilos para modo escuro */
         .dark-mode .card-client {
             background-color: #2d3748;
             color: white;
@@ -216,7 +216,7 @@
             color: white;
         }
         
-        /* Адаптивність */
+        /* Responsividade */
         @media (max-width: 768px) {
             .welcome-banner {
                 padding: 20px;
@@ -240,7 +240,7 @@
 <body class="hold-transition sidebar-mini layout-fixed client-dashboard" data-required-role="client">
     <div class="wrapper">
 
-        <!-- Навігаційна панель -->
+        <!-- Навігаційна painel -->
         <nav class="main-header navbar navbar-expand navbar-white navbar-light">
             <ul class="navbar-nav">
                 <li class="nav-item">
@@ -249,34 +249,34 @@
                     </a>
                 </li>
                 <li class="nav-item d-none d-sm-inline-block">
-                    <a href="/pages/client/my-lifts.html" class="nav-link">Мої ліфти</a>
+                    <a href="/pages/client/my-lifts.html" class="nav-link">Os meus elevadores</a>
                 </li>
                 <li class="nav-item d-none d-sm-inline-block">
-                    <a href="/pages/client/requests.html" class="nav-link">Заявки</a>
+                    <a href="/pages/client/requests.html" class="nav-link">Pedidos</a>
                 </li>
             </ul>
 
-            <!-- Права частина навігації -->
+            <!-- Permissões horaтина навігації -->
             <ul class="navbar-nav ml-auto">
                 <li class="nav-item">
-                    <a class="nav-link notification-bell" href="/pages/client/notifications.html" title="Сповіщення">
+                    <a class="nav-link notification-bell" href="/pages/client/notifications.html" title="Notificações">
                         <i class="fas fa-bell"></i>
                         <span class="notification-badge" id="notificationCount">0</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#" onclick="logout()" title="Вийти">
+                    <a class="nav-link" href="#" onclick="logout()" title="Sair">
                         <i class="fas fa-sign-out-alt"></i>
                     </a>
                 </li>
             </ul>
         </nav>
 
-        <!-- Бічна панель -->
+        <!-- Бічна painel -->
         <!-- ═══════════════════════════════════════════════════════════ -->
-<!-- ЕТАЛОННИЙ SIDEBAR ДЛЯ КЛІЄНТСЬКИХ СТОРІНОК -->
-<!-- Версія: 2.0 Portugal (2026-01-13) -->
-<!-- ⚠️ НЕ РЕДАГУЙТЕ ОКРЕМО! Використовуйте цей файл як еталон -->
+<!-- ЕТАЛОННИЙ SIDEBAR ДЛЯ КЛІЄНТСЬКИХ СManutençãoРІНОК -->
+<!-- Versão: 2.0 Portugal (2026-01-13) -->
+<!-- ⚠️ НЕ РЕДАГУЙТЕ ОКРЕМО! Використовуйте цей ficheiro як еeлон -->
 <!-- ═══════════════════════════════════════════════════════════ -->
 
 <aside class="main-sidebar sidebar-dark-primary elevation-4">
@@ -288,7 +288,7 @@
     <div class="sidebar">
 
         
-        <!-- Меню навігації -->
+        <!-- Menu de navegação -->
         <nav class="mt-2">
             <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
                 
@@ -300,31 +300,31 @@
                     </a>
                 </li>
                 
-                <!-- 2. Мої ліфти -->
+                <!-- 2. Os meus elevadores -->
                 <li class="nav-item">
                     <a href="/pages/client/my-lifts.html" class="nav-link" id="nav-my-lifts">
                         <i class="nav-icon fas fa-elevator"></i>
-                        <p>Мої ліфти</p>
+                        <p>Os meus elevadores</p>
                         <span class="badge badge-info right" id="liftsCount">0</span>
                     </a>
                 </li>
                 
-                <!-- 3. AI Прогнозування -->
+                <!-- 3. AI Previsãoування -->
                 <li class="nav-item">
                     <a href="/pages/client/ai-predictions.html" class="nav-link" id="nav-ai-predictions">
                         <i class="nav-icon fas fa-brain"></i>
                         <p>
-                            Прогнозування AI
+                            Previsões AI
                             <span class="badge badge-purple right">Novo</span>
                         </p>
                     </a>
                 </li>
                 
-                <!-- 4. Мої заявки -->
+                <!-- 4. Os meus pedidos -->
                 <li class="nav-item">
                     <a href="/pages/client/requests.html" class="nav-link" id="nav-requests">
                         <i class="nav-icon fas fa-tasks"></i>
-                        <p>Заявки</p>
+                        <p>Pedidos</p>
                         <span class="badge badge-warning right" id="requestsCount">0</span>
                     </a>
                 </li>
@@ -337,70 +337,70 @@
                     </a>
                 </li>
 
-                <!-- 6. Рахунки -->
+                <!-- 6. Faturas -->
                 <li class="nav-item">
                     <a href="/pages/client/invoices.html" class="nav-link" id="nav-invoices">
                         <i class="nav-icon fas fa-file-invoice"></i>
-                        <p>Рахунки</p>
+                        <p>Faturas</p>
                         <span class="badge badge-success right" id="invoicesCount">0</span>
                     </a>
                 </li>
                 
-                <!-- 6. Історія -->
+                <!-- 6. Histórico -->
                 <li class="nav-item">
                     <a href="/pages/client/history.html" class="nav-link" id="nav-history">
                         <i class="nav-icon fas fa-history"></i>
-                        <p>Історія</p>
+                        <p>Histórico</p>
                     </a>
                 </li>
                 
-                <!-- 7. Документація -->
+                <!-- 7. Documentação -->
                 <li class="nav-item">
                     <a href="/pages/client/documentation.html" class="nav-link" id="nav-documentation">
                         <i class="nav-icon fas fa-book"></i>
-                        <p>Документація</p>
+                        <p>Documentação</p>
                     </a>
                 </li>
                 
-                <!-- 8. AI Асистент -->
+                <!-- 8. Assistente de IA -->
                 <li class="nav-item">
                     <a href="/pages/ai-assistant/ai-assistant.html" class="nav-link" id="nav-ai-assistant">
                         <i class="nav-icon fas fa-magic"></i>
-                        <p>Асистент AI</p>
+                        <p>Assistente AI</p>
                         <span class="badge badge-success right">★</span>
                     </a>
                 </li>
                 
-                <!-- 9. Сповіщення -->
+                <!-- 9. Notificações -->
                 <li class="nav-item">
                     <a href="/pages/client/notifications.html" class="nav-link" id="nav-notifications">
                         <i class="nav-icon fas fa-bell"></i>
-                        <p>Сповіщення</p>
+                        <p>Notificações</p>
                         <span class="badge badge-danger right" id="notificationsBadge">0</span>
                     </a>
                 </li>
                 
-                <!-- 10. Підтримка -->
+                <!-- 10. Suporte -->
                 <li class="nav-item">
                     <a href="/pages/client/support.html" class="nav-link" id="nav-support">
                         <i class="nav-icon fas fa-headset"></i>
-                        <p>Підтримка</p>
+                        <p>Suporte</p>
                     </a>
                 </li>
                 
-                <!-- 11. Профіль -->
+                <!-- 11. Perfil -->
                 <li class="nav-item">
                     <a href="/pages/client/profile.html" class="nav-link" id="nav-profile">
                         <i class="nav-icon fas fa-user"></i>
-                        <p>Профіль</p>
+                        <p>Perfil</p>
                     </a>
                 </li>
                 
-                <!-- Вихід -->
+                <!-- Saída -->
                 <li class="nav-item">
                     <a href="#" onclick="logout()" class="nav-link">
                         <i class="nav-icon fas fa-sign-out-alt text-danger"></i>
-                        <p>Вийти</p>
+                        <p>Sair</p>
                     </a>
                 </li>
             </ul>
@@ -408,13 +408,13 @@
     </div>
 </aside>
 
-<!-- Скрипт для підсвічування активного пункту -->
+<!-- Скрипт para підсвічування активного itemу -->
 <script>
 (function() {
-    // Визначити поточну сторінку
+    // Визнаouти поточну a página
     const currentPage = window.location.pathname.split('/').pop().replace('.html', '');
     
-    // Мапінг сторінок на ID навігації
+    // Мапінг de páginas на ID навігації
     const pageMap = {
         'dashboard': 'nav-dashboard',
         'my-lifts': 'nav-my-lifts',
@@ -429,7 +429,7 @@
         'support': 'nav-support',
         'profile': 'nav-profile',    };
     
-    // Підсвітити активний пункт
+    // Підсвітити ativo item
     const activeNav = pageMap[currentPage];
     if (activeNav) {
         const navLink = document.getElementById(activeNav);
@@ -438,14 +438,14 @@
         }
     }
     
-    // Завантажити лічильники з API
+    // Descarregar ліouльники desde API
     loadClientCounts();
     
     function loadClientCounts() {
         const token = sessionStorage.getItem('liftmanager_jwt') || localStorage.getItem('liftmanager_jwt') || localStorage.getItem('token');
         if (!token) return;
         
-        // Кількість ліфтів
+        // Quantidade de elevadores
         fetch('/api/lifts', {
             headers: { 'Authorization': `Bearer ${token}` }
         })
@@ -459,7 +459,7 @@
         })
         .catch(err => console.warn('Failed to load lifts count:', err));
         
-        // Кількість заявок
+        // Quantidade de pedidos
         fetch('/api/requests?status=pending,in_progress', {
             headers: { 'Authorization': `Bearer ${token}` }
         })
@@ -473,7 +473,7 @@
         })
         .catch(err => console.warn('Failed to load requests count:', err));
         
-        // Кількість рахунків
+        // Quantidade рахунків
         fetch('/api/invoices?status=unpaid', {
             headers: { 'Authorization': `Bearer ${token}` }
         })
@@ -487,7 +487,7 @@
         })
         .catch(err => console.warn('Failed to load invoices count:', err));
         
-        // Кількість сповіщень
+        // Quantidade de notificações
         fetch('/api/notifications?unread=true', {
             headers: { 'Authorization': `Bearer ${token}` }
         })
@@ -505,12 +505,12 @@
         .catch(err => console.warn('Failed to load notifications count:', err));
     }
     
-    // Оновлювати лічильники кожні 30 секунд
+    // Оновлювати ліouльники кожні 30 секунд
     setInterval(loadClientCounts, 30000);
 })();
 </script>
 
-<!-- Стилі для badge purple -->
+<!-- Стилі para badge purple -->
 <style>
 .badge-purple {
     background: linear-gradient(135deg, #6f42c1, #8e44ad);
@@ -524,16 +524,16 @@
                 <div class="container-fluid">
                     <div class="row mb-2">
                         <div class="col-sm-6">
-                            <h1>Панель клієнта</h1>
+                            <h1>Painel do cliente</h1>
                         </div>
                         <div class="col-sm-6">
                             <ol class="breadcrumb float-sm-right">
-                                <li class="breadcrumb-item"><a href="/pages/client/dashboard.html">Дашборд</a></li>
+                                <li class="breadcrumb-item"><a href="/pages/client/dashboard.html">Início</a></li>
                 
                 <!-- Tickets -->
                 
                 <!-- Settings -->
-                                <li class="breadcrumb-item active">Панель</li>
+                                <li class="breadcrumb-item active">Painel</li>
                             </ol>
                         </div>
                     </div>
@@ -549,9 +549,9 @@
                             <div class="welcome-banner fade-in">
                                 <div class="row align-items-center">
                                     <div class="col-md-8">
-                                        <h2>Вітаємо, <span id="userName">Клієнт</span>! 👋</h2>
-                                        <p class="mb-1">Статус ваших ліфтів: <span class="status-badge all-operational" id="statusBadge">Всі працюють</span></p>
-                                        <small class="opacity-75">Оновлено: <span id="lastUpdateTime"></span></small>
+                                        <h2>Bem-vindo, <span id="userName">Cliente</span>! 👋</h2>
+                                        <p class="mb-1">Estado dos seus elevadores: <span class="status-badge all-operational" id="statusBadge">Todos a funcionar</span></p>
+                                        <small class="opacity-75">Atualizado: <span id="lastUpdateTime"></span></small>
                                     </div>
                                     <div class="col-md-4 text-right">
                                         <div class="weather-widget d-inline-block text-left">
@@ -559,7 +559,7 @@
                                             <div class="d-inline-block ml-2">
                                                 <span class="weather-temp">+22°C</span>
                                                 <br>
-                                                <small class="weather-desc">Хмарно</small>
+                                                <small class="weather-desc">Nublado</small>
                                             </div>
                                         </div>
                                     </div>
@@ -574,13 +574,13 @@
                             <div class="small-box bg-info card-client">
                                 <div class="inner">
                                     <h3 id="totalLifts">0</h3>
-                                    <p>Моїх ліфтів</p>
+                                    <p>Os meus elevadores</p>
                                 </div>
                                 <div class="icon">
                                     <i class="fas fa-building"></i>
                                 </div>
                                 <a href="/pages/client/my-lifts.html" class="small-box-footer">
-                                    Детальніше <i class="fas fa-arrow-circle-right"></i>
+                                    Ver mais <i class="fas fa-arrow-circle-right"></i>
                                 </a>
                             </div>
                         </div>
@@ -588,13 +588,13 @@
                             <div class="small-box bg-success card-client">
                                 <div class="inner">
                                     <h3 id="operationalLifts">0</h3>
-                                    <p>Працюють нормально</p>
+                                    <p>A funcionar normalmente</p>
                                 </div>
                                 <div class="icon">
                                     <i class="fas fa-check-circle"></i>
                                 </div>
                                 <a href="my-lifts.html?status=active" class="small-box-footer">
-                                    Детальніше <i class="fas fa-arrow-circle-right"></i>
+                                    Ver mais <i class="fas fa-arrow-circle-right"></i>
                                 </a>
                             </div>
                         </div>
@@ -602,13 +602,13 @@
                             <div class="small-box bg-warning card-client">
                                 <div class="inner">
                                     <h3 id="maintenanceLifts">0</h3>
-                                    <p>На обслуговуванні</p>
+                                    <p>Em manutenção</p>
                                 </div>
                                 <div class="icon">
                                     <i class="fas fa-tools"></i>
                                 </div>
                                 <a href="my-lifts.html?status=maintenance" class="small-box-footer">
-                                    Детальніше <i class="fas fa-arrow-circle-right"></i>
+                                    Ver mais <i class="fas fa-arrow-circle-right"></i>
                                 </a>
                             </div>
                         </div>
@@ -616,13 +616,13 @@
                             <div class="small-box bg-primary card-client">
                                 <div class="inner">
                                     <h3 id="activeRequests">0</h3>
-                                    <p>Активні заявки</p>
+                                    <p>Pedidos ativos</p>
                                 </div>
                                 <div class="icon">
                                     <i class="fas fa-clipboard-list"></i>
                                 </div>
                                 <a href="/pages/client/requests.html" class="small-box-footer">
-                                    Детальніше <i class="fas fa-arrow-circle-right"></i>
+                                    Ver mais <i class="fas fa-arrow-circle-right"></i>
                                 </a>
                             </div>
                         </div>
@@ -634,10 +634,10 @@
                         <div class="col-lg-8">
                             <div class="card card-client">
                                 <div class="card-header">
-                                    <h3 class="card-title"><i class="fas fa-history mr-2"></i>Останні події</h3>
+                                    <h3 class="card-title"><i class="fas fa-history mr-2"></i>Últimos eventos</h3>
                                     <div class="card-tools">
                                         <button class="btn btn-sm btn-default" onclick="window.clientDashboard?.refreshActivities()">
-                                            <i class="fas fa-sync"></i> Оновити
+                                            <i class="fas fa-sync"></i> Atualizar
                                         </button>
                                     </div>
                                 </div>
@@ -646,10 +646,10 @@
                                         <table class="table table-hover">
                                             <thead>
                                                 <tr>
-                                                    <th>Подія</th>
-                                                    <th>Статус</th>
-                                                    <th>Час</th>
-                                                    <th>Дія</th>
+                                                    <th>Evento</th>
+                                                    <th>Estado</th>
+                                                    <th>Hora</th>
+                                                    <th>Ação</th>
                                                 </tr>
                                             </thead>
                                             <tbody id="recentActivityList">
@@ -660,7 +660,7 @@
                                 </div>
                                 <div class="card-footer text-center">
                                     <a href="/pages/client/history.html" class="btn btn-sm btn-default">
-                                        <i class="fas fa-list"></i> Вся історія
+                                        <i class="fas fa-list"></i> Todo o histórico
                                     </a>
                                 </div>
                             </div>
@@ -670,7 +670,7 @@
                         <div class="col-lg-4">
                             <div class="card card-client">
                                 <div class="card-header">
-                                    <h3 class="card-title"><i class="fas fa-bolt mr-2"></i>Швидкі дії</h3>
+                                    <h3 class="card-title"><i class="fas fa-bolt mr-2"></i>Ações rápidas</h3>
                                 </div>
                                 <div class="card-body">
                                     <div class="row text-center">
@@ -687,20 +687,20 @@
                                         <div class="col-6 mb-3">
                                             <div class="action-button bg-success text-white">
                                                 <i class="fas fa-building action-icon"></i>
-                                                <h5>Мої ліфти</h5>
-                                                <p>Перегляд усіх ліфтів</p>
+                                                <h5>Os meus elevadores</h5>
+                                                <p>Ver todos os elevadores</p>
                                                 <button class="btn btn-light btn-sm" onclick="location.href='my-lifts.html'">
-                                                    Переглянути
+                                                    Ver
                                                 </button>
                                             </div>
                                         </div>
                                         <div class="col-6 mb-3">
                                             <div class="action-button bg-info text-white">
                                                 <i class="fas fa-file-invoice action-icon"></i>
-                                                <h5>Рахунки</h5>
-                                                <p>Перегляд рахунків</p>
+                                                <h5>Faturas</h5>
+                                                <p>Ver faturas</p>
                                                 <button class="btn btn-light btn-sm" onclick="location.href='invoices.html'">
-                                                    Переглянути
+                                                    Ver
                                                 </button>
                                             </div>
                                         </div>
@@ -708,9 +708,9 @@
                                             <div class="action-button bg-warning text-dark">
                                                 <i class="fas fa-headset action-icon"></i>
                                                 <h5>Suporte</h5>
-                                                <p>Зв'язатися з підтримкою</p>
+                                                <p>Contactar suporte</p>
                                                 <button class="btn btn-dark btn-sm" onclick="location.href='support.html'">
-                                                    Зв'язатися
+                                                    Contactar
                                                 </button>
                                             </div>
                                         </div>
@@ -726,7 +726,7 @@
                         <div class="col-lg-6">
                             <div class="card card-client">
                                 <div class="card-header">
-                                    <h3 class="card-title"><i class="fas fa-calendar-alt mr-2"></i>Графік техобслуговування</h3>
+                                    <h3 class="card-title"><i class="fas fa-calendar-alt mr-2"></i>Calendário de manutenção</h3>
                                     <div class="card-tools">
                                         <span class="badge badge-info" id="maintenanceCount">0</span>
                                     </div>
@@ -738,7 +738,7 @@
                                 </div>
                                 <div class="card-footer text-center">
                                     <a href="schedule.html" class="btn btn-sm btn-default">
-                                        <i class="fas fa-calendar"></i> Повний графік
+                                        <i class="fas fa-calendar"></i> Calendário completo
                                     </a>
                                 </div>
                             </div>
@@ -748,7 +748,7 @@
                         <div class="col-lg-6">
                             <div class="card card-client">
                                 <div class="card-header">
-                                    <h3 class="card-title"><i class="fas fa-chart-pie mr-2"></i>Статистика ліфтів</h3>
+                                    <h3 class="card-title"><i class="fas fa-chart-pie mr-2"></i>Estatísticas dos elevadores</h3>
                                 </div>
                                 <div class="card-body">
                                     <div class="chart-container">
@@ -764,16 +764,16 @@
                         <div class="col-12">
                             <div class="card card-client">
                                 <div class="card-header">
-                                    <h3 class="card-title"><i class="fas fa-clipboard-list mr-2"></i>Останні заявки</h3>
+                                    <h3 class="card-title"><i class="fas fa-clipboard-list mr-2"></i>Últimos pedidos</h3>
                                     <div class="card-tools">
                                         <a href="/pages/client/requests.html" class="btn btn-sm btn-default">
-                                            <i class="fas fa-external-link-alt"></i> Всі заявки
+                                            <i class="fas fa-external-link-alt"></i> Todos os pedidos
                                         </a>
                                     </div>
                                 </div>
                                 <div class="card-body p-0">
                                     <div id="recentRequestsContainer" class="p-3">
-                                        <!-- Заявки завантажуються динамічно -->
+                                        <!-- Pedidos заванeжуються динамічно -->
                                     </div>
                                 </div>
                             </div>
@@ -785,7 +785,7 @@
                         <div class="col-12">
                             <div class="card card-client">
                                 <div class="card-header">
-                                    <h3 class="card-title"><i class="fas fa-bell mr-2"></i>Останні сповіщення</h3>
+                                    <h3 class="card-title"><i class="fas fa-bell mr-2"></i>Últimas notificações</h3>
                                     <div class="card-tools">
                                         <span class="badge badge-danger" id="alertsCount">0</span>
                                     </div>
@@ -797,7 +797,7 @@
                                 </div>
                                 <div class="card-footer text-center">
                                     <a href="/pages/client/notifications.html" class="btn btn-sm btn-default">
-                                        <i class="fas fa-bell"></i> Всі сповіщення
+                                        <i class="fas fa-bell"></i> Todas as notificações
                                     </a>
                                 </div>
                             </div>
@@ -810,7 +810,7 @@
         <!-- Footer -->
         <footer class="main-footer">
             <strong>Copyright &copy; 2026 <a href="https://festlift.pt">FestLift</a>.</strong>
-            Система управління ліфтами v2.1.0.
+            Sistema de gestão de elevadores v2.1.0.
             <div class="float-right d-none d-sm-inline-block">
                 <b>Versão</b> 2.1.0
             </div>
@@ -828,14 +828,14 @@
     <script src="../../assets/js/modules/client-dashboard.js?v=1773220162"></script>
 
     <script>
-        // Функція виходу
+        // Função виходу
         function logout() {
-            if (confirm('Ви впевнені, що хочете вийти з системи?')) {
-                // Очищуємо всі дані через AuthManager
+            if (confirm('Tem a certeza que quer sair do sistema?')) {
+                // Оouщуexisteмо всі дані através de AuthManager
                 if (typeof AuthManager !== 'undefined') {
                     AuthManager.logout();
                 } else {
-                    // Fallback якщо AuthManager не завантажений
+                    // Fallback se AuthManager не заванeжений
                     localStorage.clear();
                     sessionStorage.clear();
                     window.location.replace('/pages/auth/login.html');
@@ -848,22 +848,22 @@
             // Ініціалізація AdminLTE
             $('[data-widget="pushmenu"]').PushMenu();
             
-            // Оновлення часу
+            // Atualização horaу
             setInterval(() => {
                 $('#lastUpdateTime').text(new Date().toLocaleTimeString('uk-UA'));
             }, 1000);
 
-            // Темна тема
+            // Escuro тема
             $('#darkModeToggle').on('click', function() {
                 $('body').toggleClass('dark-mode');
                 $(this).find('i').toggleClass('fa-moon fa-sun');
                 window.clientDashboard?.showNotification(
-                    $('body').hasClass('dark-mode') ? 'Темна тема увімкнена' : 'Темна тема вимкнена', 
+                    $('body').hasClass('dark-mode') ? 'Tema escuro ativado' : 'Tema escuro desativado', 
                     'success'
                 );
             });
 
-            // Перевірка з'єднання
+            // Verificação з'ligação
             setInterval(() => {
                 const online = navigator.onLine;
                 $('#connectionStatus').html(
@@ -873,56 +873,56 @@
                 );
             }, 30000);
 
-            // Ініціалізація клієнтських даних з API
+            // Ініціалізація clienteських даних desde API
             initializeClientDashboard();
 
-            // client-dashboard.js створює window.clientDashboard сам через DOMContentLoaded
+            // client-dashboard.js створюexiste window.clientDashboard сам através de DOMContentLoaded
             if (typeof ClientDashboard === 'undefined') {
-                console.error('ClientDashboard клас не завантажено!');
+                console.error('ClientDashboard клас не carregado!');
             }
 
             /**
-             * Ініціалізація клієнтської панелі з даними API
+             * Inicialização do painel cliente desde даними API
              */
             async function initializeClientDashboard() {
-                console.log('🔄 Ініціалізація клієнтської панелі...');
+                console.log('🔄 Inicialização do painel cliente...');
                 
                 try {
-                    // Завантажуємо дані користувача
+                    // Заванeжуexisteмо дані do utilizador
                     const userData = await loadClientProfile();
                     
-                    // Оновлюємо інтерфейс користувача
+                    // Оновлюexisteмо інтерфейс do utilizador
                     updateClientInterface(userData);
                     
-                    // Завантажуємо дані дашборду
+                    // Заванeжуexisteмо дані painelу
                     const [myLifts, myRequests, notifications] = await Promise.all([
                         loadClientLifts(),
                         loadClientRequests(),
                         loadClientNotifications()
                     ]);
 
-                    // Оновлюємо статистику
+                    // Оновлюexisteмо сeтистику
                     updateClientStats(myLifts, myRequests);
                     
-                    // Показуємо останні заявки
+                    // Показуexisteмо осeнні pedidos
                     displayRecentRequests(myRequests);
                     
-                    // ✅ Передаємо реальні дані в ClientDashboard (замінює фальшиві)
+                    // ✅ Передаexisteмо реальні дані в ClientDashboard (замінюexiste фальшиві)
                     if (window.clientDashboard && typeof window.clientDashboard.updateWithRealData === 'function') {
                         window.clientDashboard.updateWithRealData(myLifts, myRequests, notifications);
                     }
                     
-                    // Ініціалізуємо WebSocket
+                    // Ініціалізуexisteмо WebSocket
                     initClientWebSocket(userData);
                     
-                    console.log('✅ Клієнтська панель ініціалізована');
+                    console.log('✅ Clienteська painel ініціалізована');
 
                 } catch (error) {
-                    console.error('❌ Помилка ініціалізації клієнтської панелі:', error);
+                    console.error('❌ Erro ініціалізації do painel cliente:', error);
                     
                     // Fallback до локальних даних
                     const fallbackUser = JSON.parse(localStorage.getItem('currentUser')) || { 
-                        firstName: 'Клієнт' 
+                        firstName: 'Cliente' 
                     };
                     updateClientInterface(fallbackUser);
                     initClientWebSocket(fallbackUser);
@@ -930,7 +930,7 @@
             }
 
             /**
-             * Завантаження профілю клієнта
+             * A carregar профілю cliente
              */
             async function loadClientProfile() {
                 try {
@@ -947,9 +947,9 @@
                         return userData;
                     }
                     
-                    throw new Error('Помилка завантаження профілю');
+                    throw new Error('Erro ao carregar o perfil');
                 } catch (error) {
-                    console.warn('API недоступний, використовуємо локальні дані');
+                    console.warn('API indisponível, використовуexisteмо локальні дані');
                     // Only use cached data if email matches JWT (avoid showing wrong user)
                     try {
                         const jwtUser = AuthManager.getCurrentUser();
@@ -962,62 +962,62 @@
                             return { firstName: jwtUser.email.split('@')[0], email: jwtUser.email };
                         }
                     } catch(e) {}
-                    return { firstName: 'Клієнт' };
+                    return { firstName: 'Cliente' };
                 }
             }
 
             /**
-             * Завантаження ліфтів клієнта з MongoDB API
+             * A carregar de elevadores cliente desde MongoDB API
              */
             async function loadClientLifts() {
                 try {
-                    console.log('🔄 Завантаження ліфтів клієнта з API...');
+                    console.log('🔄 A carregar de elevadores cliente desde API...');
                     const res = await AuthManager.fetchWithAuth('/api/lifts');
                     const data = res ? await res.json() : null;
                     
                     if (!data || !data.success) {
-                        throw new Error('Помилка завантаження ліфтів');
+                        throw new Error('Erro ao carregar de elevadores');
                     }
 
-                    // API повертає { data: { lifts: [...], pagination: {...} } }
+                    // API devolve { data: { lifts: [...], pagination: {...} } }
                     const clientLifts = (data.data && data.data.lifts) ? data.data.lifts : (Array.isArray(data.data) ? data.data : []);
                     
-                    console.log('✅ Elevadores завантажено:', clientLifts.length);
+                    console.log('✅ Elevadores carregado:', clientLifts.length);
                     
-                    // ✅ API вже повертає тільки ліфти цього клієнта (фільтрація на сервері)
+                    // ✅ API já devolve apenas elevadores цього cliente (filtroація на servidorі)
                     
                     return clientLifts;
                 } catch (error) {
-                    console.warn('⚠️ Помилка завантаження ліфтів:', error.message);
+                    console.warn('⚠️ Erro ao carregar de elevadores:', error.message);
                     return [];
                 }
             }
 
             /**
-             * Завантаження заявок клієнта
+             * A carregar de pedidos cliente
              */
             async function loadClientRequests() {
                 try {
-                    console.log('🔄 Завантаження заявок клієнта...');
+                    console.log('🔄 A carregar de pedidos cliente...');
                     const response = await AuthManager.fetchWithAuth('/api/requests');
                     const data = response ? await response.json() : null;
                     
                     if (!data || !data.success) {
-                        throw new Error('Помилка завантаження заявок');
+                        throw new Error('Erro ao carregar de pedidos');
                     }
                     
-                    // API повертає { data: { requests: [...], pagination: {...} } }
+                    // API devolve { data: { requests: [...], pagination: {...} } }
                     const requests = (data.data && data.data.requests) ? data.data.requests : (Array.isArray(data.data) ? data.data : (data.requests || []));
-                    console.log('✅ Заявки завантажено:', requests.length);
+                    console.log('✅ Pedidos carregado:', requests.length);
                     return requests;
                 } catch (error) {
-                    console.error('❌ Помилка завантаження заявок:', error);
+                    console.error('❌ Erro ao carregar de pedidos:', error);
                     return [];
                 }
             }
 
             /**
-             * Завантаження сповіщень клієнта
+             * A carregar de notificações cliente
              */
             async function loadClientNotifications() {
                 try {
@@ -1027,7 +1027,7 @@
                     if (data && data.success) {
                         const notifications = data.notifications || [];
                         
-                        // Оновлюємо лічильник сповіщень
+                        // Оновлюexisteмо ліouльник de notificações
                         const unreadCount = notifications.filter(n => !n.read).length;
                         $('#notificationCount').text(unreadCount);
                         
@@ -1036,16 +1036,16 @@
                     
                     return [];
                 } catch (error) {
-                    console.warn('API недоступний для сповіщень');
+                    console.warn('API indisponível para de notificações');
                     return [];
                 }
             }
 
             /**
-             * Оновлення інтерфейсу клієнта
+             * Atualização інтерфейсу cliente
              */
             function updateClientInterface(userData) {
-                const fullName = `${userData.firstName || ''} ${userData.lastName || ''}`.trim() || 'Клієнт';
+                const fullName = `${userData.firstName || ''} ${userData.lastName || ''}`.trim() || 'Cliente';
                 
                 $('#clientName').text(fullName);
                 $('#userName').text(fullName);
@@ -1060,17 +1060,17 @@
             }
 
             /**
-             * Оновлення статистики клієнта
+             * Atualização сeтистики cliente
              */
             function updateClientStats(lifts, requests) {
-                // Загальна кількість ліфтів
+                // Geral quantidade de elevadores
                 $('#totalLifts').text(lifts.length);
                 
-                // Активні заявки
+                // Pedidos ativos
                 const activeRequests = requests.filter(r => r.status === 'open' || r.status === 'in_progress').length;
                 $('#activeRequests').text(activeRequests);
                 
-                // Завершені за місяць
+                // Concluídas за mês
                 const oneMonthAgo = new Date();
                 oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
                 
@@ -1084,28 +1084,28 @@
                 const liftsInMaintenance = lifts.filter(l => l.status === 'maintenance').length;
                 $('#maintenanceLifts').text(liftsInMaintenance);
 
-                // Ліфти в нормальному стані
+                // Elevadorи в нормальному сeні
                 const liftsOperational = lifts.filter(l => l.status === 'operational' || !l.status).length;
                 $('#operationalLifts').text(liftsOperational);
                 
-                // Оновлення статус-бейджу
+                // Atualização estado-бейджу
                 if (liftsInMaintenance === 0) {
-                    $('#statusBadge').text('Всі працюють').removeClass().addClass('status-badge all-operational');
+                    $('#statusBadge').text('Todos a funcionar').removeClass().addClass('status-badge all-operational');
                 } else if (liftsInMaintenance <= 2) {
-                    $('#statusBadge').text('Обслуговування').removeClass().addClass('status-badge maintenance-needed');
+                    $('#statusBadge').text('Manutenção').removeClass().addClass('status-badge maintenance-needed');
                 } else {
-                    $('#statusBadge').text('Критично').removeClass().addClass('status-badge critical');
+                    $('#statusBadge').text('Crítico').removeClass().addClass('status-badge critical');
                 }
             }
 
             /**
-             * Відображення останніх заявок
+             * Apresentação осeнніх de pedidos
              */
             function displayRecentRequests(requests) {
                 const container = $('#recentRequestsContainer');
                 
                 if (!container.length) {
-                    console.log('Контейнер для заявок не знайдено');
+                    console.log('Контейнер para de pedidos не encontrado');
                     return;
                 }
 
@@ -1115,13 +1115,13 @@
                     container.html(`
                         <div class="alert alert-info">
                             <i class="fas fa-info-circle mr-2"></i>
-                            У вас поки немає заявок
+                            Ainda não tem pedidos
                         </div>
                     `);
                     return;
                 }
 
-                // Показуємо останні 5 заявок
+                // Показуexisteмо осeнні 5 de pedidos
                 const recentRequests = requests
                     .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
                     .slice(0, 5);
@@ -1135,9 +1135,9 @@
                             <div class="card-body py-2">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div>
-                                        <h6 class="mb-1">${request.title || 'Заявка на обслуговування'}</h6>
+                                        <h6 class="mb-1">${request.title || 'Pedido de manutenção'}</h6>
                                         <small class="text-muted">
-                                            ${request.lift?.address || 'Адреса не вказана'} • 
+                                            ${request.lift?.address || 'Morada não indicada'} • 
                                             ${new Date(request.createdAt).toLocaleDateString('uk-UA')}
                                         </small>
                                     </div>
@@ -1156,42 +1156,42 @@
             }
 
             /**
-             * Допоміжні функції для статусів
+             * Допоentreні функції para estadoів
              */
             function getRequestStatusBadge(status) {
                 switch (status) {
                     case 'open':
-                        return '<span class="badge badge-primary">Відкрита</span>';
+                        return '<span class="badge badge-primary">Aberto</span>';
                     case 'in_progress':
                         return '<span class="badge badge-warning">Em progresso</span>';
                     case 'completed':
-                        return '<span class="badge badge-success">Завершена</span>';
+                        return '<span class="badge badge-success">Concluído</span>';
                     case 'cancelled':
-                        return '<span class="badge badge-danger">Скасована</span>';
+                        return '<span class="badge badge-danger">Cancelado</span>';
                     default:
-                        return '<span class="badge badge-secondary">Невідомо</span>';
+                        return '<span class="badge badge-secondary">Desconhecido</span>';
                 }
             }
 
             function getRequestPriorityBadge(priority) {
                 switch (priority) {
                     case 'high':
-                        return '<span class="badge badge-danger ml-1">Високий</span>';
+                        return '<span class="badge badge-danger ml-1">Alto</span>';
                     case 'medium':
-                        return '<span class="badge badge-warning ml-1">Середній</span>';
+                        return '<span class="badge badge-warning ml-1">Médio</span>';
                     case 'low':
-                        return '<span class="badge badge-info ml-1">Низький</span>';
+                        return '<span class="badge badge-info ml-1">Baixo</span>';
                     default:
                         return '';
                 }
             }
             
             /**
-             * Ініціалізація WebSocket для клієнтської панелі
+             * Ініціалізація WebSocket para do painel cliente
              */
             function initClientWebSocket(user) {
                 if (typeof UniversalWebSocketManager === 'undefined') {
-                    console.warn('[Client Dashboard] UniversalWebSocketManager не знайдено');
+                    console.warn('[Client Dashboard] UniversalWebSocketManager não encontrado');
                     return;
                 }
                 
@@ -1200,46 +1200,46 @@
                     
                     // Підписка на події
                     window.clientWebSocket.on('connected', function() {
-                        console.log('[Client Dashboard] WebSocket підключено');
-                        showNotification('Підключено до системи', 'success');
+                        console.log('[Client Dashboard] WebSocket ligado');
+                        showNotification('Ligado ao sistema', 'success');
                     });
                     
                     window.clientWebSocket.on('request_status_update', function(data) {
-                        console.log('[Client Dashboard] Оновлення статусу заявки:', data);
+                        console.log('[Client Dashboard] Atualização estadoу pedidos:', data);
                         updateRequestStatus(data);
-                        showNotification(`Заявка ${data.requestId}: ${data.status}`, 'info');
+                        showNotification(`Pedido ${data.requestId}: ${data.status}`, 'info');
                     });
                     
                     window.clientWebSocket.on('lift_availability', function(data) {
-                        console.log('[Client Dashboard] Оновлення доступності ліфтів:', data);
+                        console.log('[Client Dashboard] Atualização disponívelсті de elevadores:', data);
                         updateLiftStatus(data);
                     });
                     
                     window.clientWebSocket.on('service_notification', function(data) {
-                        console.log('[Client Dashboard] Сервісне повідомлення:', data);
+                        console.log('[Client Dashboard] Mensagem de serviço:', data);
                         showNotification(data.message, data.type || 'info');
                     });
                     
                     window.clientWebSocket.on('disconnected', function() {
-                        console.log('[Client Dashboard] WebSocket відключено');
-                        showNotification('Відключено від системи', 'warning');
+                        console.log('[Client Dashboard] WebSocket desligado');
+                        showNotification('Desligado do sistema', 'warning');
                     });
                     
                     window.clientWebSocket.on('error', function(error) {
-                        console.error('[Client Dashboard] WebSocket помилка:', error);
-                        showNotification('Помилка з\'єднання', 'error');
+                        console.error('[Client Dashboard] WebSocket erro:', error);
+                        showNotification('Erro з\'ligação', 'error');
                     });
                     
-                    // Підключення
+                    // Ligação
                     window.clientWebSocket.connect();
                     
                 } catch (error) {
-                    console.error('[Client Dashboard] Помилка ініціалізації WebSocket:', error);
+                    console.error('[Client Dashboard] Erro ініціалізації WebSocket:', error);
                 }
             }
             
             /**
-             * Оновлення статусу заявки в реальному часі
+             * Atualização estadoу pedidos в реальному horaі
              */
             function updateRequestStatus(data) {
                 const requestElement = document.querySelector(`[data-request-id="${data.requestId}"]`);
@@ -1253,7 +1253,7 @@
             }
             
             /**
-             * Оновлення статусу ліфтів
+             * Atualização estadoу de elevadores
              */
             function updateLiftStatus(data) {
                 if (data.liftId) {
@@ -1269,7 +1269,7 @@
             }
             
             /**
-             * Відображення сповіщень
+             * Apresentação de notificações
              */
             function showNotification(message, type = 'info') {
                 const alertClass = {
@@ -1290,7 +1290,7 @@
                 
                 $('body').append(notification);
                 
-                // Автоматичне видалення через 5 секунд
+                // Автоматичне eliminação através de 5 секунд
                 setTimeout(() => {
                     notification.alert('close');
                 }, 5000);

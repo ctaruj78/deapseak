@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Технік - База знань</title>
+    <title>Técnico - Base de conhecimento</title>
     <script src="../../assets/js/auth.js"></script>
 
     
@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="../../plugins/adminlte/adminlte.min.css">
     <link rel="stylesheet" href="../../plugins/fontawesome/css/all.min.css">
     
-    <!-- Додаткові стилі -->
+    <!-- Estilos adicionais -->
     <style>
         .knowledge-card {
             transition: all 0.3s ease;
@@ -201,7 +201,7 @@
 <body class="hold-transition sidebar-mini layout-fixed" data-required-role="tech">
     <div class="wrapper">
 
-        <!-- Навігаційна панель -->
+        <!-- Barra de navegação -->
         <nav class="main-header navbar navbar-expand navbar-white navbar-light">
             <ul class="navbar-nav">
                 <li class="nav-item">
@@ -210,42 +210,42 @@
                     </a>
                 </li>
                 <li class="nav-item d-none d-sm-inline-block">
-                    <a href="dashboard.html" class="nav-link">Головна</a>
+                    <a href="dashboard.html" class="nav-link">Início</a>
                 </li>
                 <li class="nav-item d-none d-sm-inline-block">
-                    <a href="tasks.html" class="nav-link">Завдання</a>
+                    <a href="tasks.html" class="nav-link">Tarefas</a>
                 </li>
                 <li class="nav-item d-none d-sm-inline-block">
-                    <a href="knowledge-base.html" class="nav-link active">База знань</a>
+                    <a href="knowledge-base.html" class="nav-link active">Base de conhecimento</a>
                 </li>
             </ul>
 
-            <!-- Права частина навігації -->
+            <!-- Parte direita da navegação -->
             <ul class="navbar-nav ml-auto">
                 <li class="nav-item">
-                    <a class="nav-link" href="ar-helper.html" title="AR помічник">
+                    <a class="nav-link" href="ar-helper.html" title="Auxiliar AR">
                         <i class="fas fa-vr-cardboard"></i>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="tools.html" title="Інструменти">
+                    <a class="nav-link" href="tools.html" title="Ferramentas">
                         <i class="fas fa-tools"></i>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#" id="darkModeToggle" title="Темна тема">
+                    <a class="nav-link" href="#" id="darkModeToggle" title="Tema escuro">
                         <i class="fas fa-moon"></i>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#" onclick="logout()" title="Вийти">
+                    <a class="nav-link" href="#" onclick="logout()" title="Sair">
                         <i class="fas fa-sign-out-alt"></i>
                     </a>
                 </li>
             </ul>
         </nav>
 
-        <!-- Бічна панель -->
+        <!-- Painel lateral -->
         <aside class="main-sidebar sidebar-dark-primary elevation-4">
             <a href="dashboard.html" class="brand-link">
                 <span class="elevation-3" style="display:inline-flex;align-items:center;justify-content:center;width:33px;height:33px;border-radius:50%;background:linear-gradient(135deg,#fd7e14,#e83e8c);color:#fff;font-size:17px;margin-right:8px;opacity:.9;flex-shrink:0;"><i class="fas fa-tools"></i></span>
@@ -261,7 +261,7 @@
         <li class="nav-item">
             <a href="/pages/tech/dashboard.html" class="nav-link">
                 <i class="nav-icon fas fa-tachometer-alt"></i>
-                <p>Дашборд</p>
+                <p>Dashboard</p>
             </a>
         </li>
 
@@ -269,7 +269,7 @@
         <li class="nav-item">
             <a href="/pages/tech/tasks.html" class="nav-link">
                 <i class="nav-icon fas fa-clipboard-list"></i>
-                <p>Мої завдання</p>
+                <p>As minhas tarefas</p>
             </a>
         </li>
 
@@ -277,7 +277,7 @@
         <li class="nav-item">
             <a href="/pages/tech/schedule.html" class="nav-link">
                 <i class="nav-icon fas fa-calendar-alt"></i>
-                <p>Розклад</p>
+                <p>Agenda</p>
             </a>
         </li>
 
@@ -293,7 +293,7 @@
         <li class="nav-item">
             <a href="/pages/tech/inspections.html" class="nav-link">
                 <i class="nav-icon fas fa-clipboard-check"></i>
-                <p>Інспекції</p>
+                <p>Inspecções</p>
             </a>
         </li>
 
@@ -301,7 +301,7 @@
         <li class="nav-item">
             <a href="/pages/tech/reports.html" class="nav-link">
                 <i class="nav-icon fas fa-file-alt"></i>
-                <p>Звіти робіт</p>
+                <p>Relatórios de trabalho</p>
             </a>
         </li>
 
@@ -310,7 +310,7 @@
             <a href="#" class="nav-link">
                 <i class="nav-icon fas fa-toolbox"></i>
                 <p>
-                    Інструменти
+                    Ferramentas
                     <i class="right fas fa-angle-left"></i>
                 </p>
             </a>
@@ -318,7 +318,7 @@
                 <li class="nav-item">
                     <a href="/pages/tech/qr-scanner.html" class="nav-link">
                         <i class="fas fa-qrcode nav-icon"></i>
-                        <p>QR Сканер</p>
+                        <p>Leitor QR</p>
                     </a>
                 </li>
                 <li class="nav-item">
@@ -330,13 +330,13 @@
                 <li class="nav-item">
                     <a href="/pages/tech/task-map.html" class="nav-link">
                         <i class="fas fa-map-marked-alt nav-icon"></i>
-                        <p>Карта завдань</p>
+                        <p>Mapa de tarefas</p>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a href="/pages/tech/tools.html" class="nav-link">
                         <i class="fas fa-tools nav-icon"></i>
-                        <p>Інструменти</p>
+                        <p>Ferramentas</p>
                     </a>
                 </li>
             </ul>
@@ -347,7 +347,7 @@
             <a href="#" class="nav-link">
                 <i class="nav-icon fas fa-book"></i>
                 <p>
-                    База знань
+                    Base de conhecimento
                     <i class="right fas fa-angle-left"></i>
                 </p>
             </a>
@@ -355,25 +355,25 @@
                 <li class="nav-item">
                     <a href="/pages/tech/knowledge-base.html" class="nav-link active">
                         <i class="fas fa-bookmark nav-icon"></i>
-                        <p>Довідник</p>
+                        <p>Manual</p>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a href="/pages/tech/manuals.html" class="nav-link">
                         <i class="fas fa-book-open nav-icon"></i>
-                        <p>Інструкції</p>
+                        <p>Instruções</p>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a href="/pages/tech/checklists.html" class="nav-link">
                         <i class="fas fa-tasks nav-icon"></i>
-                        <p>Чеклісти</p>
+                        <p>Listas de verificação</p>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a href="/pages/tech/videos.html" class="nav-link">
                         <i class="fas fa-video nav-icon"></i>
-                        <p>Відео</p>
+                        <p>Vídeos</p>
                     </a>
                 </li>
             </ul>
@@ -382,8 +382,8 @@
         <li class="nav-item">
             <a href="/pages/ai-assistant/ai-assistant.html" class="nav-link">
                 <i class="nav-icon fas fa-magic"></i>
-                <p>AI Асистент</p>
-                <span class="badge badge-success right">Новинка</span>
+                <p>AI Assistente</p>
+                <span class="badge badge-success right">Novidade</span>
             </a>
         </li>
 
@@ -391,7 +391,7 @@
         <li class="nav-item">
             <a href="/pages/tech/notifications.html" class="nav-link">
                 <i class="nav-icon fas fa-bell"></i>
-                <p>Сповіщення</p>
+                <p>Notificações</p>
             </a>
         </li>
 
@@ -399,7 +399,7 @@
         <li class="nav-item">
             <a href="/pages/tech/profile.html" class="nav-link">
                 <i class="nav-icon fas fa-user"></i>
-                <p>Профіль</p>
+                <p>Perfil</p>
             </a>
         </li>
 
@@ -421,12 +421,12 @@
                 <div class="container-fluid">
                     <div class="row mb-2">
                         <div class="col-sm-6">
-                            <h1>База знань техніка</h1>
+                            <h1>Base de conhecimento do técnico</h1>
                         </div>
                         <div class="col-sm-6">
                             <ol class="breadcrumb float-sm-right">
-                                <li class="breadcrumb-item"><a href="dashboard.html">Головна</a></li>
-                                <li class="breadcrumb-item active">База знань</li>
+                                <li class="breadcrumb-item"><a href="dashboard.html">Início</a></li>
+                                <li class="breadcrumb-item active">Base de conhecimento</li>
                             </ol>
                         </div>
                     </div>
@@ -447,7 +447,7 @@
                                     <div class="row">
                                         <div class="col-md-8">
                                             <div class="search-box">
-                                                <input type="text" id="searchInput" class="form-control form-control-lg" placeholder="Шукайте рішення, інструкції, посібники...">
+                                                <input type="text" id="searchInput" class="form-control form-control-lg" placeholder="Шукайте рішення, інструкції, пpessoasники...">
                                                 <button class="btn btn-primary" onclick="knowledgeManager.searchArticles()">
                                                     <i class="fas fa-search"></i>
                                                 </button>
@@ -456,13 +456,13 @@
                                         <div class="col-md-4">
                                             <div class="btn-group btn-block">
                                                 <button class="btn btn-outline-primary" onclick="knowledgeManager.showAllArticles()">
-                                                    <i class="fas fa-list"></i> Всі статті
+                                                    <i class="fas fa-list"></i> Todas сeтті
                                                 </button>
                                                 <button class="btn btn-outline-success" onclick="knowledgeManager.showFeatured()">
                                                     <i class="fas fa-star"></i> Обрані
                                                 </button>
                                                 <button class="btn btn-outline-info" onclick="knowledgeManager.showRecent()">
-                                                    <i class="fas fa-clock"></i> Нові
+                                                    <i class="fas fa-clock"></i> Novos
                                                 </button>
                                             </div>
                                         </div>
@@ -471,19 +471,19 @@
                                         <div class="col-12">
                                             <div class="btn-group">
                                                 <button class="btn btn-sm btn-outline-secondary active" data-filter="all">
-                                                    Всі теми
+                                                    Todas теми
                                                 </button>
                                                 <button class="btn btn-sm btn-outline-secondary" data-filter="repair">
-                                                    Ремонт
+                                                    Reparação
                                                 </button>
                                                 <button class="btn btn-sm btn-outline-secondary" data-filter="maintenance">
-                                                    Обслуговування
+                                                    Manutenção
                                                 </button>
                                                 <button class="btn btn-sm btn-outline-secondary" data-filter="safety">
-                                                    Безпека
+                                                    Segurança
                                                 </button>
                                                 <button class="btn btn-sm btn-outline-secondary" data-filter="troubleshooting">
-                                                    Діагностика
+                                                    Diagnóstico
                                                 </button>
                                             </div>
                                         </div>
@@ -493,15 +493,15 @@
                         </div>
                     </div>
 
-                    <!-- Категорії -->
+                    <!-- Categorias -->
                     <div class="row mt-4">
                         <div class="col-lg-3 col-md-6">
                             <div class="category-card">
                                 <div class="category-icon">🔧</div>
                                 <div class="category-info">
-                                    <h4>Ремонт</h4>
-                                    <p>Інструкції з ремонту ліфтів</p>
-                                    <span class="badge badge-primary">24 статті</span>
+                                    <h4>Reparação</h4>
+                                    <p>Інструкції desde reparaçãoу de elevadores</p>
+                                    <span class="badge badge-primary">24 сeтті</span>
                                 </div>
                             </div>
                         </div>
@@ -509,9 +509,9 @@
                             <div class="category-card">
                                 <div class="category-icon">🛠️</div>
                                 <div class="category-info">
-                                    <h4>Обслуговування</h4>
-                                    <p>Планове ТО та профілактика</p>
-                                    <span class="badge badge-success">18 статей</span>
+                                    <h4>Manutenção</h4>
+                                    <p>Manutenção planeada e профілактика</p>
+                                    <span class="badge badge-success">18 сeтей</span>
                                 </div>
                             </div>
                         </div>
@@ -519,9 +519,9 @@
                             <div class="category-card">
                                 <div class="category-icon">⚠️</div>
                                 <div class="category-info">
-                                    <h4>Безпека</h4>
-                                    <p>Правила безпеки та стандарти</p>
-                                    <span class="badge badge-warning">15 статей</span>
+                                    <h4>Segurança</h4>
+                                    <p>Правила de segurança e сeндарти</p>
+                                    <span class="badge badge-warning">15 сeтей</span>
                                 </div>
                             </div>
                         </div>
@@ -529,73 +529,73 @@
                             <div class="category-card">
                                 <div class="category-icon">🔍</div>
                                 <div class="category-info">
-                                    <h4>Діагностика</h4>
-                                    <p>Pesquisar та усунення несправностей</p>
-                                    <span class="badge badge-info">22 статті</span>
+                                    <h4>Diagnóstico</h4>
+                                    <p>Pesquisar e усунення неcorretamenteстей</p>
+                                    <span class="badge badge-info">22 сeтті</span>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Популярні статті -->
+                    <!-- Популярні сeтті -->
                     <div class="row mt-4">
                         <div class="col-12">
                             <div class="card knowledge-card">
                                 <div class="card-header">
-                                    <h3 class="card-title"><i class="fas fa-fire mr-2"></i>Популярні статті</h3>
+                                    <h3 class="card-title"><i class="fas fa-fire mr-2"></i>Популярні сeтті</h3>
                                     <div class="card-tools">
                                         <button class="btn btn-sm btn-primary" onclick="knowledgeManager.showAllPopular()">
-                                            <i class="fas fa-eye"></i> Переглянути всі
+                                            <i class="fas fa-eye"></i> Ver todos
                                         </button>
                                     </div>
                                 </div>
                                 <div class="card-body">
                                     <div class="row" id="popularArticles">
-                                        <!-- Популярні статті будуть завантажені тут -->
+                                        <!-- Популярні сeтті serão заванeжені aqui -->
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Останні додані -->
+                    <!-- Recentes додані -->
                     <div class="row mt-4">
                         <div class="col-12">
                             <div class="card knowledge-card">
                                 <div class="card-header">
-                                    <h3 class="card-title"><i class="fas fa-clock mr-2"></i>Останні додані</h3>
+                                    <h3 class="card-title"><i class="fas fa-clock mr-2"></i>Recentes додані</h3>
                                 </div>
                                 <div class="card-body">
                                     <div class="row" id="recentArticles">
-                                        <!-- Останні статті будуть завантажені тут -->
+                                        <!-- Recentes сeтті serão заванeжені aqui -->
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Рекомендовані для вас -->
+                    <!-- Рекомендовані para вас -->
                     <div class="row mt-4">
                         <div class="col-12">
                             <div class="card knowledge-card">
                                 <div class="card-header">
-                                    <h3 class="card-title"><i class="fas fa-user-check mr-2"></i>Рекомендовані для вас</h3>
+                                    <h3 class="card-title"><i class="fas fa-user-check mr-2"></i>Рекомендовані para вас</h3>
                                 </div>
                                 <div class="card-body">
                                     <div class="row" id="recommendedArticles">
-                                        <!-- Рекомендовані статті будуть завантажені тут -->
+                                        <!-- Рекомендовані сeтті serão заванeжені aqui -->
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Швидкі посилання -->
+                    <!-- Швидкі ligação -->
                     <div class="row mt-4">
                         <div class="col-12">
                             <div class="card knowledge-card">
                                 <div class="card-header">
-                                    <h3 class="card-title"><i class="fas fa-bolt mr-2"></i>Швидкі посилання</h3>
+                                    <h3 class="card-title"><i class="fas fa-bolt mr-2"></i>Швидкі ligação</h3>
                                 </div>
                                 <div class="card-body">
                                     <div class="row">
@@ -603,9 +603,9 @@
                                             <div class="card bg-light">
                                                 <div class="card-body text-center">
                                                     <i class="fas fa-calendar-alt fa-2x text-info mb-2"></i>
-                                                    <h6>Розклад</h6>
+                                                    <h6>Calendário</h6>
                                                     <button class="btn btn-sm btn-outline-info" onclick="window.location.href='schedule.html'">
-                                                        <i class="fas fa-calendar"></i> Переглянути
+                                                        <i class="fas fa-calendar"></i> Visualizar
                                                     </button>
                                                 </div>
                                             </div>
@@ -614,9 +614,9 @@
                                             <div class="card bg-light">
                                                 <div class="card-body text-center">
                                                     <i class="fas fa-chart-bar fa-2x text-warning mb-2"></i>
-                                                    <h6>Звіти</h6>
+                                                    <h6>Relatórios</h6>
                                                     <button class="btn btn-sm btn-outline-warning" onclick="window.location.href='reports.html'">
-                                                        <i class="fas fa-chart-bar"></i> Переглянути
+                                                        <i class="fas fa-chart-bar"></i> Visualizar
                                                     </button>
                                                 </div>
                                             </div>
@@ -625,9 +625,9 @@
                                             <div class="card bg-light">
                                                 <div class="card-body text-center">
                                                     <i class="fas fa-file-pdf fa-2x text-danger mb-2"></i>
-                                                    <h6>Технічні мануали</h6>
+                                                    <h6>Técnicos мануали</h6>
                                                     <button class="btn btn-sm btn-outline-danger" onclick="window.location.href='manuals.html'">
-                                                        <i class="fas fa-download"></i> Завантажити
+                                                        <i class="fas fa-download"></i> Descarregar
                                                     </button>
                                                 </div>
                                             </div>
@@ -636,9 +636,9 @@
                                             <div class="card bg-light">
                                                 <div class="card-body text-center">
                                                     <i class="fas fa-video fa-2x text-primary mb-2"></i>
-                                                    <h6>Відеоінструкції</h6>
+                                                    <h6>Tutoriais em vídeo</h6>
                                                     <button class="btn btn-sm btn-outline-primary" onclick="window.location.href='videos.html'">
-                                                        <i class="fas fa-play"></i> Переглянути
+                                                        <i class="fas fa-play"></i> Ver
                                                     </button>
                                                 </div>
                                             </div>
@@ -647,7 +647,7 @@
                                             <div class="card bg-light">
                                                 <div class="card-body text-center">
                                                     <i class="fas fa-list-check fa-2x text-success mb-2"></i>
-                                                    <h6>Чек-листи</h6>
+                                                    <h6>Lista de verificaçãoи</h6>
                                                     <button class="btn btn-sm btn-outline-success" onclick="window.location.href='checklists.html'">
                                                         <i class="fas fa-download"></i> Отримати
                                                     </button>
@@ -684,26 +684,26 @@
         </footer>
     </div>
 
-    <!-- Модальне вікно перегляду статті -->
+    <!-- Janela modal visualizaçãoу сeтті -->
     <div class="modal fade" id="viewArticleModal" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-xl" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Перегляд статті</h5>
+                    <h5 class="modal-title">Visualização сeтті</h5>
                     <button type="button" class="close" data-dismiss="modal">
                         <span>&times;</span>
                     </button>
                 </div>
                 <div class="modal-body" id="articleContent">
-                    <!-- Вміст статті буде завантажено тут -->
+                    <!-- Conteúdo сeтті será carregado aqui -->
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрити</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
                     <button type="button" class="btn btn-info" onclick="knowledgeManager.downloadArticle(currentArticleId)">
-                        <i class="fas fa-download"></i> Завантажити
+                        <i class="fas fa-download"></i> Descarregar
                     </button>
                     <button type="button" class="btn btn-success" onclick="knowledgeManager.printArticle(currentArticleId)">
-                        <i class="fas fa-print"></i> Друк
+                        <i class="fas fa-print"></i> Impressão
                     </button>
                     <button type="button" class="btn btn-warning" onclick="knowledgeManager.toggleBookmark(currentArticleId)" id="bookmarkBtn">
                         <i class="far fa-bookmark"></i> В обране
@@ -725,7 +725,7 @@
         let currentArticleId = null;
         
         function logout() {
-            if (confirm('Ви впевнені, що хочете вийти з системи?')) {
+            if (confirm('Tem a certeza que quer sair do sistema?')) {
                 localStorage.removeItem('authToken');
                 localStorage.removeItem('userData');
                 window.location.replace('/pages/auth/login.html');
@@ -733,16 +733,16 @@
         }
 
         $(document).ready(function() {
-            // Ініціалізація AdminLTE
+            // Inicialização AdminLTE
             $('[data-widget="pushmenu"]').PushMenu();
             
-            // Темна тема
+            // Tema escuro
             $('#darkModeToggle').on('click', function() {
                 $('body').toggleClass('dark-mode');
                 $(this).find('i').toggleClass('fa-moon fa-sun');
             });
 
-            // Перевірка з'єднання
+            // Verificação de ligação
             setInterval(() => {
                 const online = navigator.onLine;
                 $('#connectionStatus').html(
@@ -752,13 +752,13 @@
                 );
             }, 30000);
 
-            // Завантаження даних техніка
+            // A carregar dados do técnico
             const userData = JSON.parse(localStorage.getItem('userData')) || {};
             if (userData.firstName) {
                 $('#techName').text(`${userData.firstName} ${userData.lastName || ''}`);
             }
 
-            // Ініціалізація менеджера бази знань
+            // Inicialização менеджера бази знань
             window.knowledgeManager = new KnowledgeManager();
             
             // Filtroація за темами
@@ -773,9 +773,9 @@
         if ('serviceWorker' in navigator) {
           window.addEventListener('load', function() {
             navigator.serviceWorker.register('/service-worker.js').then(function(registration) {
-              console.log('ServiceWorker зареєстровано:', registration);
+              console.log('ServiceWorker registado:', registration);
             }, function(err) {
-              console.log('ServiceWorker помилка:', err);
+              console.log('Erro do ServiceWorker:', err);
             });
           });
         }

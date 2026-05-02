@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Диспетчер - Головна панель</title>
+    <title>Dispatcher - Painel principal</title>
     <script src="../../assets/js/global-settings.js"></script>
     
     <!-- AdminLTE CSS -->
     <link rel="stylesheet" href="../../plugins/adminlte/adminlte.min.css">
     <link rel="stylesheet" href="../../plugins/fontawesome/css/all.min.css">
     
-    <!-- Додаткові стилі -->
+    <!-- Estilos adicionais -->
     <style>
         .stat-card {
             background: white;
@@ -176,7 +176,7 @@
             color: #333;
         }
         
-        /* Менші кнопки для таблиць */
+        /* Botões menores para tabelas */
         .btn-xs {
             padding: 1px 5px;
             font-size: 10px;
@@ -188,7 +188,7 @@
             font-size: 10px;
         }
 
-        /* Overrides для кнопок дій у рядках таблиці */
+        /* Overrides para кнопок ações у рядках da tabela */
         #requestsTableBody .btn-action,
         #requestsTableBody .btn-group .btn-action {
             display: inline-flex;
@@ -288,7 +288,7 @@
 <body class="hold-transition sidebar-mini layout-fixed" data-required-role="dispatcher">
     <div class="wrapper">
 
-        <!-- Навігаційна панель -->
+        <!-- Barra de navegação -->
         <nav class="main-header navbar navbar-expand navbar-white navbar-light">
             <ul class="navbar-nav">
                 <li class="nav-item">
@@ -297,39 +297,39 @@
                     </a>
                 </li>
                 <li class="nav-item d-none d-sm-inline-block">
-                    <a href="../../maps.html" class="nav-link">Мапа ліфтів</a>
+                    <a href="../../maps.html" class="nav-link">Mapa de elevadores</a>
                 </li>
                 <li class="nav-item d-none d-sm-inline-block">
-                    <a href="dashboard.html" class="nav-link active">Головна</a>
+                    <a href="dashboard.html" class="nav-link active">Início</a>
                 </li>
                 <li class="nav-item d-none d-sm-inline-block">
-                    <a href="assignments.html" class="nav-link">Призначення</a>
+                    <a href="assignments.html" class="nav-link">Atribuições</a>
                 </li>
                 <li class="nav-item d-none d-sm-inline-block">
-                    <a href="monitoring.html" class="nav-link">Моніторинг</a>
+                    <a href="monitoring.html" class="nav-link">Monitorização</a>
                 </li>
             </ul>
 
-            <!-- Права частина навігації -->
+            <!-- Parte direita da navegação -->
             <ul class="navbar-nav ml-auto">
                 <li class="nav-item">
-                    <a class="nav-link" href="#" onclick="window.dispatcherDashboard.showNotifications()" title="Сповіщення">
+                    <a class="nav-link" href="#" onclick="window.dispatcherDashboard.showNotifications()" title="Notificações">
                         <i class="fas fa-bell"></i>
                         <span class="notification-dot" id="notificationDot"></span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#" onclick="window.dispatcherDashboard.showMessages()" title="Повідомлення">
+                    <a class="nav-link" href="#" onclick="window.dispatcherDashboard.showMessages()" title="Mensagem">
                         <i class="fas fa-comments"></i>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#" id="darkModeToggle" title="Темна тема">
+                    <a class="nav-link" href="#" id="darkModeToggle" title="Tema escuro">
                         <i class="fas fa-moon"></i>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#" onclick="logout()" title="Вийти">
+                    <a class="nav-link" href="#" onclick="logout()" title="Sair">
                         <i class="fas fa-sign-out-alt"></i>
                     </a>
                 </li>
@@ -346,11 +346,11 @@
                 <div class="container-fluid">
                     <div class="row mb-2">
                         <div class="col-sm-6">
-                            <h1>Панель диспетчера</h1>
+                            <h1>Painel do dispatcher</h1>
                         </div>
                         <div class="col-sm-6">
                             <ol class="breadcrumb float-sm-right">
-                                <li class="breadcrumb-item"><a href="dashboard.html">Головна</a></li>
+                                <li class="breadcrumb-item"><a href="dashboard.html">Início</a></li>
                                 <li class="breadcrumb-item active">Painel de controlo</li>
                             </ol>
                         </div>
@@ -363,14 +363,14 @@
             <!-- Main content -->
             <section class="content">
                 <div class="container-fluid">
-                    <!-- Статистика -->
+                    <!-- Estatísticas -->
                     <div class="row">
                         <div class="col-lg-3 col-md-6">
                             <div class="stat-card">
                                 <div class="stat-icon">📋</div>
                                 <div class="stat-info">
                                     <h3 id="totalRequests">0</h3>
-                                    <p>Всього заявок</p>
+                                    <p>Total de pedidos</p>
                                 </div>
                             </div>
                         </div>
@@ -379,7 +379,7 @@
                                 <div class="stat-icon">⏳</div>
                                 <div class="stat-info">
                                     <h3 id="pendingRequests">0</h3>
-                                    <p>В очікуванні</p>
+                                    <p>Em espera</p>
                                 </div>
                             </div>
                         </div>
@@ -388,7 +388,7 @@
                                 <div class="stat-icon">👥</div>
                                 <div class="stat-info">
                                     <h3 id="availableTechs">0</h3>
-                                    <p>Вільних техніків</p>
+                                    <p>Técnicos disponíveis</p>
                                 </div>
                             </div>
                         </div>
@@ -397,44 +397,44 @@
                                 <div class="stat-icon">🚨</div>
                                 <div class="stat-info">
                                     <h3 id="urgentRequests">0</h3>
-                                    <p>Термінові заявки</p>
+                                    <p>Pedidos urgentes</p>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Основний контент -->
+                    <!-- Conteúdo principal -->
                     <div class="row mt-4">
-                        <!-- Огляд заявок -->
+                        <!-- Revisão pedidos -->
                         <div class="col-lg-8">
                             <div class="card">
                                 <div class="card-header">
-                                    <h3 class="card-title"><i class="fas fa-list mr-2"></i>Останні заявки</h3>
+                                    <h3 class="card-title"><i class="fas fa-list mr-2"></i>Últimos pedidos</h3>
                                     <div class="card-tools">
                                         <div class="btn-group">
                                             <select id="priorityFilter" class="form-control form-control-sm">
-                                                <option value="all">Всі пріоритети</option>
-                                                <option value="high">Високий</option>
-                                                <option value="medium">Середній</option>
-                                                <option value="low">Низький</option>
+                                                <option value="all">Todas as prioridades</option>
+                                                <option value="high">Alto</option>
+                                                <option value="medium">Médio</option>
+                                                <option value="low">Baixo</option>
                                             </select>
                                             <select id="statusFilter" class="form-control form-control-sm ml-2">
-                                                <option value="all">Всі статуси</option>
-                                                <option value="new">Нові</option>
-                                                <option value="assigned">Призначені</option>
+                                                <option value="all">Todos os estados</option>
+                                                <option value="new">Novos</option>
+                                                <option value="assigned">Atribuídos</option>
                                                 <option value="in-progress">Em progresso</option>
-                                                <option value="completed">Завершені</option>
+                                                <option value="completed">Concluídos</option>
                                             </select>
                                                <select id="technicianFilter" class="form-control form-control-sm ml-2">
-                                                   <option value="all">Всі техніки</option>
+                                                   <option value="all">Todos os técnicos</option>
                                                </select>
-                                               <input type="date" id="dateFilter" class="form-control form-control-sm ml-2" placeholder="Дата">
+                                               <input type="date" id="dateFilter" class="form-control form-control-sm ml-2" placeholder="Data">
                                                <select id="sortSelect" class="form-control form-control-sm ml-2">
-                                                   <option value="date-desc">Сортувати: Нові спочатку</option>
-                                                   <option value="date-asc">Сортувати: Старі спочатку</option>
-                                                   <option value="priority-desc">Сортувати: Високий пріоритет</option>
-                                                   <option value="priority-asc">Сортувати: Низький пріоритет</option>
-                                                   <option value="status">Сортувати: Статус</option>
+                                                   <option value="date-desc">Ordenar: Mais recentes primeiro</option>
+                                                   <option value="date-asc">Ordenar: Сeрі споchatку</option>
+                                                   <option value="priority-desc">Ordenar: Alta prioridade</option>
+                                                   <option value="priority-asc">Ordenar: Baixa prioridade</option>
+                                                   <option value="status">Ordenar: Estado</option>
                                                </select>
                                         </div>
                                     </div>
@@ -445,17 +445,17 @@
                                             <thead class="thead-light">
                                                 <tr>
                                                     <th style="width:30px"><input type="checkbox" id="selectAllRequests"></th>
-                                                    <th style="width:110px">№ / Дата</th>
-                                                    <th>Заявка</th>
-                                                    <th style="width:130px">Клієнт</th>
-                                                    <th style="width:80px" class="text-center">Пріоритет</th>
-                                                    <th style="width:90px" class="text-center">Статус</th>
-                                                    <th style="width:130px">Виконавець</th>
-                                                    <th style="width:80px" class="text-center">Дії</th>
+                                                    <th style="width:110px">№ / Data</th>
+                                                    <th>Pedido</th>
+                                                    <th style="width:130px">Cliente</th>
+                                                    <th style="width:80px" class="text-center">Prioridade</th>
+                                                    <th style="width:90px" class="text-center">Estado</th>
+                                                    <th style="width:130px">Executor</th>
+                                                    <th style="width:80px" class="text-center">Ações</th>
                                                 </tr>
                                             </thead>
                                             <tbody id="requestsTableBody">
-                                                <!-- Заявки будуть завантажені тут -->
+                                                <!-- Pedidos serão заванeжені aqui -->
                                             </tbody>
                                         </table>
                                     </div>
@@ -463,81 +463,81 @@
                                 <div class="card-footer">
                                     <div id="bulkActionsPanel" class="mb-2" style="display: none;"></div>
                                     <button class="btn btn-sm btn-default" onclick="window.dispatcherDashboard.loadRequests()">
-                                        <i class="fas fa-sync"></i> Оновити
+                                        <i class="fas fa-sync"></i> Actualizar
                                     </button>
                                     <button class="btn btn-sm btn-primary float-right" onclick="window.dispatcherDashboard.showAllRequests()">
-                                        <i class="fas fa-eye"></i> Переглянути всі
+                                        <i class="fas fa-eye"></i> Ver todos
                                     </button>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Доступність техніків -->
+                        <!-- Disponibilidade de técnicos -->
                         <div class="col-lg-4">
                             <div class="card">
                                 <div class="card-header">
-                                    <h3 class="card-title"><i class="fas fa-users mr-2"></i>Доступні техніки</h3>
+                                    <h3 class="card-title"><i class="fas fa-users mr-2"></i>Técnicos disponíveis</h3>
                                     <div class="card-tools">
-                                        <span class="badge badge-success" id="onlineTechs">0 онлайн</span>
+                                        <span class="badge badge-success" id="onlineTechs">0 online</span>
                                     </div>
                                 </div>
                                 <div class="card-body p-0">
                                     <div id="techList">
-                                        <!-- Техніки будуть завантажені тут -->
+                                        <!-- Técnicos serão заванeжені aqui -->
                                     </div>
                                 </div>
                                 <div class="card-footer">
                                     <button class="btn btn-sm btn-primary" onclick="window.dispatcherDashboard.showTechManagement()">
-                                        <i class="fas fa-cog"></i> Gestão техніками
+                                        <i class="fas fa-cog"></i> Gestão de técnicos
                                     </button>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Швидкі дії -->
+                    <!-- Acções rápidas -->
                     <div class="row mt-4">
                         <div class="col-12">
                             <div class="card">
                                 <div class="card-header">
-                                    <h3 class="card-title"><i class="fas fa-bolt mr-2"></i>Швидкі дії</h3>
+                                    <h3 class="card-title"><i class="fas fa-bolt mr-2"></i>Ações rápidas</h3>
                                 </div>
                                 <div class="card-body">
                                     <div class="action-buttons">
                                         <a class="btn btn-action btn-info" href="calendar.html">
                                             <span class="icon">📅</span>
-                                            <span>Календар</span>
-                                            <small>Перегляд заявок</small>
+                                            <span>Calendário</span>
+                                            <small>Visualização pedidos</small>
                                         </a>
                                         <button class="btn btn-action btn-success" onclick="window.dispatcherDashboard.openMonitoring()">
                                             <span class="icon">📊</span>
-                                            <span>Моніторинг</span>
-                                            <small>Реальний час</small>
+                                            <span>Monitorização</span>
+                                            <small>Hora em tempo real</small>
                                         </button>
                                         <button class="btn btn-action btn-warning" onclick="window.dispatcherDashboard.sendBroadcast()">
                                             <span class="icon">📢</span>
-                                            <span>Розсилка повідомлень</span>
-                                            <small>Надіслати всім техникам</small>
+                                            <span>Envio de notificações</span>
+                                            <small>Enviar a todos os técnicos</small>
                                         </button>
                                         <a class="btn btn-action btn-primary" href="../../qr-interface.html">
                                             <span class="icon"><i class="fas fa-qrcode"></i></span>
-                                            <span>QR Система</span>
-                                            <small>Управління кодами</small>
+                                            <span>QR Sistema</span>
+                                            <small>Gestão de códigos</small>
                                         </a>
                                         <button class="btn btn-action btn-secondary" onclick="window.dispatcherDashboard.quickStats()">
                                             <span class="icon">📋</span>
-                                            <span>Статистика</span>
-                                            <small>Швидкий огляд</small>
+                                            <span>Estatísticas</span>
+                                            <small>Швидкий inspeção</small>
                                         </button>
                                         <button class="btn btn-action btn-info" onclick="window.dispatcherDashboard.showTechReport()">
                                             <span class="icon">📝</span>
-                                            <span>Звіт по техніках</span>
-                                            <small>Exportar/перегляд</small>
+                                            <span>Relatório по do técnicoх</span>
+                                            <small>Exportar/visualização</small>
                                         </button>
                                         <button class="btn btn-action btn-danger" onclick="window.dispatcherDashboard.emergencyProtocol()">
                                             <span class="icon">🚨</span>
                                             <span>Аварійний</span>
-                                            <small>Протокол</small>
+                                            <small>Protocolo</small>
                                         </button>
                                     </div>
                                 </div>
@@ -545,19 +545,19 @@
                         </div>
                     </div>
 
-                    <!-- Останні події -->
+                    <!-- Recentes trabalhos -->
                     <div class="row mt-4">
                         <div class="col-12">
                             <div class="card">
                                 <div class="card-header">
-                                    <h3 class="card-title"><i class="fas fa-history mr-2"></i>Останні події</h3>
+                                    <h3 class="card-title"><i class="fas fa-history mr-2"></i>Recentes trabalhos</h3>
                                     <div class="card-tools">
                                         <div class="btn-group">
                                             <button class="btn btn-sm btn-outline-secondary active" data-type="all">
-                                                Всі
+                                                Todas
                                             </button>
                                             <button class="btn btn-sm btn-outline-secondary" data-type="assignments">
-                                                Призначення
+                                                Atribuições
                                             </button>
                                             <button class="btn btn-sm btn-outline-secondary" data-type="completions">
                                                 Завершення
@@ -567,7 +567,7 @@
                                 </div>
                                 <div class="card-body p-0">
                                     <div class="list-group list-group-flush" id="recentActivities">
-                                        <!-- Останні події будуть завантажені тут -->
+                                        <!-- Recentes trabalhos serão заванeжені aqui -->
                                     </div>
                                 </div>
                             </div>
@@ -587,12 +587,12 @@
         </footer>
     </div>
 
-    <!-- Модальне вікно для нового призначення -->
+    <!-- Janela modal para novo atribuição -->
     <div class="modal fade" id="assignmentModal" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Нове призначення</h5>
+                    <h5 class="modal-title">Нове atribuição</h5>
                     <button type="button" class="close" data-dismiss="modal">
                         <span>&times;</span>
                     </button>
@@ -602,17 +602,17 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label for="requestSelect">Виберіть заявку *</label>
+                                    <label for="requestSelect">Selecione o pedido *</label>
                                     <select id="requestSelect" class="form-control" required>
-                                        <option value="">Оберіть заявку...</option>
+                                        <option value="">Selecione o pedido...</option>
                                     </select>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label for="techSelect">Виберіть техніка *</label>
+                                    <label for="techSelect">Selecione do técnico *</label>
                                     <select id="techSelect" class="form-control" required>
-                                        <option value="">Оберіть техніка...</option>
+                                        <option value="">Selecione o técnico...</option>
                                     </select>
                                 </div>
                             </div>
@@ -621,33 +621,33 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label for="prioritySelect">Пріоритет *</label>
+                                    <label for="prioritySelect">Prioridade *</label>
                                     <select id="prioritySelect" class="form-control" required>
-                                        <option value="high">Високий</option>
-                                        <option value="medium" selected>Середній</option>
-                                        <option value="low">Низький</option>
+                                        <option value="high">Alto</option>
+                                        <option value="medium" selected>Médio</option>
+                                        <option value="low">Baixo</option>
                                     </select>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label for="deadline">Крайній термін *</label>
+                                    <label for="deadline">Крайній prazo *</label>
                                     <input type="datetime-local" id="deadline" class="form-control" required>
                                 </div>
                             </div>
                         </div>
 
                         <div class="form-group">
-                            <label for="assignmentNotes">Додаткові нотатки</label>
+                            <label for="assignmentNotes">Додаткові notas</label>
                             <textarea id="assignmentNotes" class="form-control" rows="3" 
-                                      placeholder="Додаткові вказівки для техніка..."></textarea>
+                                      placeholder="Додаткові вказівки para do técnico..."></textarea>
                         </div>
 
                         <div class="form-group">
-                            <label for="notifyClient">Сповістити клієнта</label>
+                            <label for="notifyClient">Сповістити cliente</label>
                             <div class="custom-control custom-switch">
                                 <input type="checkbox" class="custom-control-input" id="notifyClient" checked>
-                                <label class="custom-control-label" for="notifyClient">Надіслати сповіщення клієнту</label>
+                                <label class="custom-control-label" for="notifyClient">Enviar notificações clienteу</label>
                             </div>
                         </div>
                     </form>
@@ -655,32 +655,32 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
                     <button type="button" class="btn btn-primary" onclick="window.dispatcherDashboard.submitAssignment()">
-                        <i class="fas fa-check"></i> Призначити
+                        <i class="fas fa-check"></i> Atribuir
                     </button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Модальне вікно сповіщень -->
+    <!-- Janela modal de notificações -->
     <div class="modal fade" id="notificationsModal" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Сповіщення</h5>
+                    <h5 class="modal-title">Notificações</h5>
                     <button type="button" class="close" data-dismiss="modal">
                         <span>&times;</span>
                     </button>
                 </div>
                 <div class="modal-body">
                     <div id="notificationsList">
-                        <!-- Сповіщення будуть завантажені тут -->
+                        <!-- Notificações serão заванeжені aqui -->
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрити</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
                     <button type="button" class="btn btn-primary" onclick="window.dispatcherDashboard.markAllAsRead()">
-                        Позначити все як прочитане
+                        Marcar tudo como lido
                     </button>
                 </div>
             </div>
@@ -709,7 +709,7 @@
 
     <script>
         function logout() {
-            if (confirm('Ви впевнені, що хочете вийти з системи?')) {
+            if (confirm('Tem a certeza que quer sair do sistema?')) {
                 localStorage.removeItem('token');
                 localStorage.removeItem('authToken');
                 localStorage.removeItem('userData');
@@ -717,7 +717,7 @@
             }
         }
 
-        // Глобальні функції для кнопок (fallback)
+        // Funções globais para кнопок (fallback)
         function viewRequest(id) {
             if (window.dispatcherDashboard) {
                 window.dispatcherDashboard.viewRequest(id);
@@ -739,19 +739,19 @@
         $(document).ready(function() {
             console.log('📊 Dispatcher Dashboard - ініціалізація...');
             
-            // Ініціалізація AdminLTE
+            // Inicialização AdminLTE
             $('[data-widget="pushmenu"]').PushMenu();
             
-            // Ініціалізація AdminLTE
+            // Inicialização AdminLTE
             $('[data-widget="pushmenu"]').PushMenu();
             
-            // Темна тема
+            // Tema escuro
             $('#darkModeToggle').on('click', function() {
                 $('body').toggleClass('dark-mode');
                 $(this).find('i').toggleClass('fa-moon fa-sun');
             });
 
-            // Перевірка з'єднання
+            // Verificação de ligação
             setInterval(() => {
                 const online = navigator.onLine;
                 $('#connectionStatus').html(
@@ -761,7 +761,7 @@
                 );
             }, 30000);
 
-            // Завантаження даних диспетчера з AuthManager
+            // A carregar dados do despachante desde AuthManager
             const userData = AuthManager.getCurrentUser() || {};
             if (userData.firstName) {
                 $('#dispatcherName').text(`${userData.firstName} ${userData.lastName || ''}`);
@@ -771,12 +771,12 @@
             console.log('🚀 Ініціалізація DispatcherDashboardReal...');
             if (typeof DispatcherDashboardReal !== 'undefined') {
                 window.dispatcherDashboard = new DispatcherDashboardReal();
-                console.log('✅ DispatcherDashboardReal створено');
+                console.log('✅ DispatcherDashboardReal criado');
             } else {
-                console.error('❌ DispatcherDashboardReal не завантажено!');
+                console.error('❌ DispatcherDashboardReal не carregado!');
             }
             
-            // Фільтрація подій
+            // Filtroація trabalhos
             $('[data-type]').on('click', function() {
                 const type = $(this).data('type');
                 $('[data-type]').removeClass('active');
@@ -788,12 +788,12 @@
         });
     </script>
 
-    <!-- Модальне вікно для редагування заявки -->
+    <!-- Janela modal para edição pedidos -->
     <div class="modal fade" id="editRequestModal" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Редагування заявки</h5>
+                    <h5 class="modal-title">Edição pedidos</h5>
                     <button type="button" class="close" data-dismiss="modal">
                         <span>&times;</span>
                     </button>
@@ -805,48 +805,48 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label for="editTitle">Заголовок заявки *</label>
+                                    <label for="editTitle">Заголовок pedidos *</label>
                                     <input type="text" id="editTitle" class="form-control" required
-                                           placeholder="Введіть заголовок заявки">
+                                           placeholder="Digite заголовок pedidos">
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label for="editClient">Клієнт *</label>
+                                    <label for="editClient">Кліexisteнт *</label>
                                     <input type="text" id="editClient" class="form-control" required
-                                           placeholder="Назва клієнта">
+                                           placeholder="Nome cliente">
                                 </div>
                             </div>
                         </div>
 
                         <div class="form-group">
-                            <label for="editDescription">Опис проблеми *</label>
+                            <label for="editDescription">Descrição do problema *</label>
                             <textarea id="editDescription" class="form-control" rows="3" required
-                                      placeholder="Детальний опис проблеми..."></textarea>
+                                      placeholder="Detalhado descrição проблеми..."></textarea>
                         </div>
 
                         <div class="form-group">
-                            <label for="editLocation">Локація *</label>
+                            <label for="editLocation">Localização *</label>
                             <input type="text" id="editLocation" class="form-control" required
-                                   placeholder="Адреса або місце розташування">
+                                   placeholder="Endereço ou місце розeшування">
                         </div>
 
                         <div class="row">
                             <div class="col-md-4">
                                 <div class="form-group">
-                                    <label for="editPriority">Пріоритет *</label>
+                                    <label for="editPriority">Prioridade *</label>
                                     <select id="editPriority" class="form-control" required>
-                                        <option value="high">Високий</option>
-                                        <option value="medium">Середній</option>
-                                        <option value="low">Низький</option>
+                                        <option value="high">Alto</option>
+                                        <option value="medium">Médio</option>
+                                        <option value="low">Baixo</option>
                                     </select>
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="form-group">
-                                    <label for="editStatus">Статус *</label>
+                                    <label for="editStatus">Estado *</label>
                                     <select id="editStatus" class="form-control" required>
-                                        <option value="new">Нова</option>
+                                        <option value="new">Nova</option>
                                         <option value="assigned">Призначена</option>
                                         <option value="in-progress">Em progresso</option>
                                         <option value="completed">Завершена</option>
@@ -855,9 +855,9 @@
                             </div>
                             <div class="col-md-4">
                                 <div class="form-group">
-                                    <label for="editAssignedTo">Призначено технікові</label>
+                                    <label for="editAssignedTo">Atribuído технікові</label>
                                     <select id="editAssignedTo" class="form-control">
-                                        <option value="">Не призначено</option>
+                                        <option value="">Не atribuído</option>
                                     </select>
                                 </div>
                             </div>
@@ -867,36 +867,36 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
                     <button type="button" class="btn btn-primary" onclick="window.dispatcherDashboard.submitEditRequest()">
-                        <i class="fas fa-save"></i> Guardar зміни
+                        <i class="fas fa-save"></i> Guardar alterações
                     </button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Модальне вікно звіту по техніках -->
+    <!-- Janela modal relatório по do técnicoх -->
     <div class="modal fade" id="techReportModal" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Звіт по роботі техніків</h5>
+                    <h5 class="modal-title">Relatório по роботі de técnicos</h5>
                     <button type="button" class="close" data-dismiss="modal">
                         <span>&times;</span>
                     </button>
                 </div>
                 <div class="modal-body" id="techReportContent">
-                    <!-- Звіт буде згенеровано JS -->
+                    <!-- Relatório será згенеровано JS -->
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрити</button>
-                    <button type="button" class="btn btn-primary" onclick="window.dispatcherDashboard.exportTechReport()">Exportarувати в CSV</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
+                    <button type="button" class="btn btn-primary" onclick="window.dispatcherDashboard.exportTechReport()">Exportar в CSV</button>
                 </div>
             </div>
         </div>
     </div>
     <script src="/assets/js/table-drag-scroll.js"></script>
 
-<!-- Ініціалізація динамічного сайдбару -->
+<!-- Inicialização do sidebar dinâmico -->
 <script>
     document.addEventListener("DOMContentLoaded", function() {
         if (typeof loadSidebarWithInit === "function") {

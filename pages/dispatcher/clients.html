@@ -3,17 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Клієнти - Диспетчер</title>
+    <title>Clientes - Dispatcher</title>
     <script src="../../assets/js/global-settings.js"></script>
     
-    <!-- 🔒 Перевірка доступу -->
+    <!-- 🔒 Verificação acessoу -->
     <script src="/assets/js/dispatcher-access-check.js"></script>
     
     <!-- AdminLTE CSS -->
     <link rel="stylesheet" href="../../plugins/adminlte/adminlte.min.css">
     <link rel="stylesheet" href="../../plugins/fontawesome/css/all.min.css">
     
-    <!-- Додаткові стилі -->
+    <!-- Estilos adicionais -->
     <style>
         .client-card {
             background: white;
@@ -118,7 +118,7 @@
 <body class="hold-transition sidebar-mini layout-fixed" data-required-role="dispatcher">
     <div class="wrapper">
 
-        <!-- Навігаційна панель -->
+        <!-- Barra de navegação -->
         <nav class="main-header navbar navbar-expand navbar-white navbar-light">
             <ul class="navbar-nav">
                 <li class="nav-item">
@@ -127,36 +127,36 @@
                     </a>
                 </li>
                 <li class="nav-item d-none d-sm-inline-block">
-                    <a href="dashboard.html" class="nav-link">Головна</a>
+                    <a href="dashboard.html" class="nav-link">Início</a>
                 </li>
                 <li class="nav-item d-none d-sm-inline-block">
-                    <a href="assignments.html" class="nav-link">Призначення</a>
+                    <a href="assignments.html" class="nav-link">Atribuições</a>
                 </li>
                 <li class="nav-item d-none d-sm-inline-block">
-                    <a href="clients.html" class="nav-link active">Клієнти</a>
+                    <a href="clients.html" class="nav-link active">Clientes</a>
                 </li>
             </ul>
 
-            <!-- Права частина навігації -->
+            <!-- Parte direita da navegação -->
             <ul class="navbar-nav ml-auto">
                 <li class="nav-item">
-                    <a class="nav-link" href="#" onclick="clientManager.showNotifications()" title="Сповіщення">
+                    <a class="nav-link" href="#" onclick="clientManager.showNotifications()" title="Notificações">
                         <i class="fas fa-bell"></i>
                         <span class="notification-dot" id="notificationDot"></span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#" onclick="clientManager.showMessages()" title="Повідомлення">
+                    <a class="nav-link" href="#" onclick="clientManager.showMessages()" title="Mensagem">
                         <i class="fas fa-comments"></i>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#" id="darkModeToggle" title="Темна тема">
+                    <a class="nav-link" href="#" id="darkModeToggle" title="Tema escuro">
                         <i class="fas fa-moon"></i>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#" onclick="logout()" title="Вийти">
+                    <a class="nav-link" href="#" onclick="logout()" title="Sair">
                         <i class="fas fa-sign-out-alt"></i>
                     </a>
                 </li>
@@ -173,12 +173,12 @@
                 <div class="container-fluid">
                     <div class="row mb-2">
                         <div class="col-sm-6">
-                            <h1>Управління клієнтами</h1>
+                            <h1>Gestão por clientes</h1>
                         </div>
                         <div class="col-sm-6">
                             <ol class="breadcrumb float-sm-right">
-                                <li class="breadcrumb-item"><a href="dashboard.html">Дашборд</a></li>
-                                <li class="breadcrumb-item active">Клієнти</li>
+                                <li class="breadcrumb-item"><a href="dashboard.html">Painel</a></li>
+                                <li class="breadcrumb-item active">Clientes</li>
                             </ol>
                         </div>
                     </div>
@@ -188,47 +188,47 @@
             <!-- Main content -->
             <section class="content">
                 <div class="container-fluid">
-                    <!-- Filtroи та пошук -->
+                    <!-- Filtros e pesquisa -->
                     <div class="row">
                         <div class="col-12">
                             <div class="client-filter">
                                 <div class="row">
                                     <div class="col-md-3">
                                         <div class="form-group">
-                                            <label for="statusFilter">Статус клієнта</label>
+                                            <label for="statusFilter">Estado cliente</label>
                                             <select id="statusFilter" class="form-control">
-                                                <option value="all">Всі статуси</option>
-                                                <option value="active">Активні</option>
-                                                <option value="inactive">Неактивні</option>
-                                                <option value="suspended">Призупинені</option>
+                                                <option value="all">Todos os estados</option>
+                                                <option value="active">Activos</option>
+                                                <option value="inactive">Inactivos</option>
+                                                <option value="suspended">Suspensos</option>
                                             </select>
                                         </div>
                                     </div>
                                     <div class="col-md-3">
                                         <div class="form-group">
-                                            <label for="typeFilter">Тип клієнта</label>
+                                            <label for="typeFilter">Tipo cliente</label>
                                             <select id="typeFilter" class="form-control">
-                                                <option value="all">Всі типи</option>
-                                                <option value="business">Бізнес</option>
-                                                <option value="individual">Фізичні особи</option>
-                                                <option value="government">Державні</option>
+                                                <option value="all">Todos os tipos</option>
+                                                <option value="business">Empresa</option>
+                                                <option value="individual">Particulares</option>
+                                                <option value="government">Público</option>
                                             </select>
                                         </div>
                                     </div>
                                     <div class="col-md-3">
                                         <div class="form-group">
-                                            <label for="priorityFilter">Пріоритет</label>
+                                            <label for="priorityFilter">Prioridade</label>
                                             <select id="priorityFilter" class="form-control">
-                                                <option value="all">Всі пріоритети</option>
-                                                <option value="high">Високий</option>
-                                                <option value="medium">Середній</option>
-                                                <option value="low">Низький</option>
+                                                <option value="all">Todas as prioridades</option>
+                                                <option value="high">Alto</option>
+                                                <option value="medium">Médio</option>
+                                                <option value="low">Baixo</option>
                                             </select>
                                         </div>
                                     </div>
                                     <div class="col-md-3">
                                         <div class="form-group">
-                                            <label for="searchInput">Pesquisar клієнтів</label>
+                                            <label for="searchInput">Pesquisar de clientes</label>
                                             <div class="input-group">
                                                 <input type="text" id="searchInput" class="form-control" placeholder="Pesquisar...">
                                                 <div class="input-group-append">
@@ -244,77 +244,77 @@
                         </div>
                     </div>
 
-                    <!-- Статистика клієнтів -->
+                    <!-- Estatísticas de clientes -->
                     <div class="row">
                         <div class="col-lg-3 col-md-6">
                             <div class="stats-box">
                                 <div class="stats-number" id="totalClients">0</div>
-                                <div class="stats-label">Всього клієнтів</div>
+                                <div class="stats-label">Total de clientes</div>
                             </div>
                         </div>
                         <div class="col-lg-3 col-md-6">
                             <div class="stats-box">
                                 <div class="stats-number" id="activeClients">0</div>
-                                <div class="stats-label">Активних клієнтів</div>
+                                <div class="stats-label">Ativos de clientes</div>
                             </div>
                         </div>
                         <div class="col-lg-3 col-md-6">
                             <div class="stats-box">
                                 <div class="stats-number" id="totalRequests">0</div>
-                                <div class="stats-label">Всього заявок</div>
+                                <div class="stats-label">Total de pedidos</div>
                             </div>
                         </div>
                         <div class="col-lg-3 col-md-6">
                             <div class="stats-box">
                                 <div class="stats-number" id="avgRating">0.0</div>
-                                <div class="stats-label">Середній рейтинг</div>
+                                <div class="stats-label">Avaliação média</div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Перегляд клієнтів (картки або таблиця) -->
+                    <!-- Visualização de clientes (картки ou tabela) -->
                     <div class="row mt-4">
                         <div class="col-12">
                             <div class="card">
                                 <div class="card-header">
-                                    <h3 class="card-title"><i class="fas fa-list mr-2"></i>Список клієнтів</h3>
+                                    <h3 class="card-title"><i class="fas fa-list mr-2"></i>Lista de clientes</h3>
                                     <div class="card-tools">
                                         <div class="btn-group">
                                             <button class="btn btn-sm btn-outline-secondary active" data-view="card">
-                                                <i class="fas fa-th-large"></i> Картки
+                                                <i class="fas fa-th-large"></i> Cartões
                                             </button>
                                             <button class="btn btn btn-sm btn-outline-secondary" data-view="table">
-                                                <i class="fas fa-table"></i> Таблиця
+                                                <i class="fas fa-table"></i> Tabela
                                             </button>
                                         </div>
                                         <button class="btn btn-sm btn-success ml-2" onclick="clientManager.showAddClientModal()">
-                                            <i class="fas fa-plus"></i> Adicionar клієнта
+                                            <i class="fas fa-plus"></i> Adicionar cliente
                                         </button>
                                     </div>
                                 </div>
                                 <div class="card-body">
-                                    <!-- Контейнер для карток клієнтів -->
+                                    <!-- Contêiner para cartões de clientes -->
                                     <div class="row" id="clientsGrid">
-                                        <!-- Клієнти будуть завантажені тут -->
+                                        <!-- Clientes serão заванeжені aqui -->
                                     </div>
                                     
-                                    <!-- Таблиця клієнтів (прихована за замовчуванням) -->
+                                    <!-- Tabela de clientes (oculta predefinido) -->
                                     <div class="table-responsive d-none" id="clientsTable">
                                         <table class="table table-hover client-table">
                                             <thead>
                                                 <tr>
                                                     <th>ID</th>
-                                                    <th>Клієнт</th>
-                                                    <th>Тип</th>
-                                                    <th>Статус</th>
-                                                    <th>Пріоритет</th>
-                                                    <th>Заявки</th>
+                                                    <th>Cliente</th>
+                                                    <th>Tipo</th>
+                                                    <th>Estado</th>
+                                                    <th>Prioridade</th>
+                                                    <th>Pedidos</th>
                                                     <th>Рейтинг</th>
-                                                    <th>Дії</th>
+                                                    <th>Ações</th>
                                                 </tr>
                                             </thead>
                                             <tbody id="clientsTableBody">
-                                                <!-- Дані таблиці будуть завантажені тут -->
+                                                <!-- Dados da tabela serão заванeжені aqui -->
                                             </tbody>
                                         </table>
                                     </div>
@@ -322,14 +322,14 @@
                                 <div class="card-footer">
                                     <div class="d-flex justify-content-between">
                                         <div>
-                                            <span class="text-muted">Показано <span id="shownClients">0</span> з <span id="totalClientsCount">0</span> клієнтів</span>
+                                            <span class="text-muted">A mostrar <span id="shownClients">0</span> desde <span id="totalClientsCount">0</span> de clientes</span>
                                         </div>
                                         <div>
                                             <button class="btn btn-sm btn-outline-secondary" onclick="clientManager.exportClients()">
                                                 <i class="fas fa-download"></i> Exportar
                                             </button>
                                             <button class="btn btn-sm btn-outline-primary ml-2" onclick="clientManager.loadClients()">
-                                                <i class="fas fa-sync"></i> Оновити
+                                                <i class="fas fa-sync"></i> Actualizar
                                             </button>
                                         </div>
                                     </div>
@@ -338,15 +338,15 @@
                         </div>
                     </div>
 
-                    <!-- Останні заявки клієнтів -->
+                    <!-- Últimos pedidos de clientes -->
                     <div class="row mt-4">
                         <div class="col-12">
                             <div class="card">
                                 <div class="card-header">
-                                    <h3 class="card-title"><i class="fas fa-history mr-2"></i>Останні заявки клієнтів</h3>
+                                    <h3 class="card-title"><i class="fas fa-history mr-2"></i>Últimos pedidos de clientes</h3>
                                     <div class="card-tools">
                                         <button class="btn btn-sm btn-outline-secondary" onclick="clientManager.showAllRequests()">
-                                            <i class="fas fa-eye"></i> Всі заявки
+                                            <i class="fas fa-eye"></i> Todos os pedidos
                                         </button>
                                     </div>
                                 </div>
@@ -356,16 +356,16 @@
                                             <thead>
                                                 <tr>
                                                     <th>ID</th>
-                                                    <th>Клієнт</th>
-                                                    <th>Заявка</th>
-                                                    <th>Пріоритет</th>
-                                                    <th>Статус</th>
-                                                    <th>Дата</th>
-                                                    <th>Дії</th>
+                                                    <th>Cliente</th>
+                                                    <th>Pedido</th>
+                                                    <th>Prioridade</th>
+                                                    <th>Estado</th>
+                                                    <th>Data</th>
+                                                    <th>Ações</th>
                                                 </tr>
                                             </thead>
                                             <tbody id="recentRequests">
-                                                <!-- Останні заявки будуть завантажені тут -->
+                                                <!-- Últimos pedidos serão заванeжені aqui -->
                                             </tbody>
                                         </table>
                                     </div>
@@ -387,12 +387,12 @@
         </footer>
     </div>
 
-    <!-- Модальне вікно додавання/редагування клієнта -->
+    <!-- Janela modal adição/edição cliente -->
     <div class="modal fade" id="clientModal" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="clientModalTitle">Adicionar клієнта</h5>
+                    <h5 class="modal-title" id="clientModalTitle">Adicionar cliente</h5>
                     <button type="button" class="close" data-dismiss="modal">
                         <span>&times;</span>
                     </button>
@@ -403,17 +403,17 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label for="clientName">Назва клієнта *</label>
+                                    <label for="clientName">Nome cliente *</label>
                                     <input type="text" id="clientName" class="form-control" required>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label for="clientType">Тип клієнта *</label>
+                                    <label for="clientType">Tipo cliente *</label>
                                     <select id="clientType" class="form-control" required>
-                                        <option value="business">Бізнес</option>
+                                        <option value="business">Empresa</option>
                                         <option value="individual">Фізична особа</option>
-                                        <option value="government">Державна установа</option>
+                                        <option value="government">Державна усenova</option>
                                     </select>
                                 </div>
                             </div>
@@ -428,7 +428,7 @@
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label for="clientPhone">Телефон *</label>
+                                    <label for="clientPhone">Telefone *</label>
                                     <input type="tel" id="clientPhone" class="form-control" required>
                                 </div>
                             </div>
@@ -437,17 +437,17 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label for="clientPriority">Пріоритет обслуговування</label>
+                                    <label for="clientPriority">Prioridade de manutenção</label>
                                     <select id="clientPriority" class="form-control">
-                                        <option value="low">Низький</option>
-                                        <option value="medium" selected>Середній</option>
-                                        <option value="high">Високий</option>
+                                        <option value="low">Baixo</option>
+                                        <option value="medium" selected>Médio</option>
+                                        <option value="high">Alto</option>
                                     </select>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label for="clientStatus">Статус *</label>
+                                    <label for="clientStatus">Estado *</label>
                                     <select id="clientStatus" class="form-control" required>
                                         <option value="active">Ativo</option>
                                         <option value="inactive">Inativo</option>
@@ -458,38 +458,38 @@
                         </div>
 
                         <div class="form-group">
-                            <label for="clientAddress">Адреса</label>
+                            <label for="clientAddress">Endereço</label>
                             <input type="text" id="clientAddress" class="form-control" 
-                                   placeholder="Повна адреса клієнта">
+                                   placeholder="Endereço completo cliente">
                         </div>
 
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label for="contactPerson">Контактна особа</label>
+                                    <label for="contactPerson">Pessoa de contacto</label>
                                     <input type="text" id="contactPerson" class="form-control" 
-                                           placeholder="ПІБ контактної особи">
+                                           placeholder="ПІБ конeктної особи">
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label for="contactPosition">Посада</label>
+                                    <label for="contactPosition">Cargo</label>
                                     <input type="text" id="contactPosition" class="form-control" 
-                                           placeholder="Посада контактної особи">
+                                           placeholder="Cargo конeктної особи">
                                 </div>
                             </div>
                         </div>
 
                         <div class="form-group">
-                            <label for="contractInfo">Інформація про договір</label>
+                            <label for="contractInfo">Informação про contrato</label>
                             <textarea id="contractInfo" class="form-control" rows="2" 
-                                      placeholder="Номер договору, дата підписання, термін дії..."></textarea>
+                                      placeholder="Número do contrato, data підписання, validade..."></textarea>
                         </div>
 
                         <div class="form-group">
-                            <label for="clientNotes">Додаткові нотатки</label>
+                            <label for="clientNotes">Додаткові notas</label>
                             <textarea id="clientNotes" class="form-control" rows="3" 
-                                      placeholder="Додаткова інформація про клієнта..."></textarea>
+                                      placeholder="Adicional informação про cliente..."></textarea>
                         </div>
                     </form>
                 </div>
@@ -524,7 +524,7 @@
 
     <script>
         function logout() {
-            if (confirm('Ви впевнені, що хочете вийти з системи?')) {
+            if (confirm('Tem a certeza que quer sair do sistema?')) {
                 localStorage.removeItem('authToken');
                 localStorage.removeItem('userData');
                 window.location.replace('/pages/auth/login.html');
@@ -532,16 +532,16 @@
         }
 
         $(document).ready(function() {
-            // Ініціалізація AdminLTE
+            // Inicialização AdminLTE
             $('[data-widget="pushmenu"]').PushMenu();
             
-            // Темна тема
+            // Tema escuro
             $('#darkModeToggle').on('click', function() {
                 $('body').toggleClass('dark-mode');
                 $(this).find('i').toggleClass('fa-moon fa-sun');
             });
 
-            // Перевірка з'єднання
+            // Verificação de ligação
             setInterval(() => {
                 const online = navigator.onLine;
                 $('#connectionStatus').html(
@@ -551,20 +551,20 @@
                 );
             }, 30000);
 
-            // Завантаження даних диспетчера
+            // A carregar dados do despachante
             const userData = JSON.parse(localStorage.getItem('userData')) || {};
             if (userData.firstName) {
                 $('#dispatcherName').text(`${userData.firstName} ${userData.lastName || ''}`);
             }
             
-            // ✅ Диспетчер може додавати та редагувати клієнтів (практично!)
-            // ❌ Але НЕ може видаляти (тільки адмін з модерацією)
-            console.log('👮 Роль користувача:', userData.role);
+            // ✅ Dispatcher pode додавати e editar de clientes (практично!)
+            // ❌ Але НЕ pode видаляти (apenas administrador desde модераціexisteю)
+            console.log('👮 Função do utilizador:', userData.role);
 
-            // Ініціалізація менеджера клієнтів
+            // Inicialização менеджера de clientes
             window.clientManager = new ClientManager();
             
-            // Перемикання між картками і таблицею
+            // Перемикання entre картками і separadorлицею
             $('[data-view]').on('click', function() {
                 const viewType = $(this).data('view');
                 $('[data-view]').removeClass('active');
@@ -580,7 +580,7 @@
                 }
             });
             
-            // Filtroація клієнтів
+            // Filtroація de clientes
             $('#statusFilter, #typeFilter, #priorityFilter').on('change', function() {
                 clientManager.filterClients();
             });

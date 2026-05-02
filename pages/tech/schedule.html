@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Технік - Розклад</title>
+    <title>Técnico - Calendário</title>
     <script src="../../assets/js/auth.js"></script>
 
     
@@ -14,7 +14,7 @@
     <!-- FullCalendar CSS -->
     <link rel="stylesheet" href="/plugins/fullcalendar/css/main.min.css">
     
-    <!-- Додаткові стилі -->
+    <!-- Estilos adicionais -->
     <style>
         .schedule-card {
             transition: all 0.3s ease;
@@ -185,7 +185,7 @@
 <body class="hold-transition sidebar-mini layout-fixed" data-required-role="tech">
     <div class="wrapper">
 
-        <!-- Навігаційна панель -->
+        <!-- Barra de navegação -->
         <nav class="main-header navbar navbar-expand navbar-white navbar-light">
             <ul class="navbar-nav">
                 <li class="nav-item">
@@ -194,42 +194,42 @@
                     </a>
                 </li>
                 <li class="nav-item d-none d-sm-inline-block">
-                    <a href="dashboard.html" class="nav-link">Головна</a>
+                    <a href="dashboard.html" class="nav-link">Início</a>
                 </li>
                 <li class="nav-item d-none d-sm-inline-block">
-                    <a href="schedule.html" class="nav-link active">Розклад</a>
+                    <a href="schedule.html" class="nav-link active">Calendário</a>
                 </li>
                 <li class="nav-item d-none d-sm-inline-block">
-                    <a href="tasks.html" class="nav-link">Завдання</a>
+                    <a href="tasks.html" class="nav-link">Tarefas</a>
                 </li>
             </ul>
 
-            <!-- Права частина навігації -->
+            <!-- Parte direita da navegação -->
             <ul class="navbar-nav ml-auto">
                 <li class="nav-item">
-                    <a class="nav-link" href="ar-helper.html" title="AR помічник">
+                    <a class="nav-link" href="ar-helper.html" title="Auxiliar AR">
                         <i class="fas fa-vr-cardboard"></i>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="tools.html" title="Інструменти">
+                    <a class="nav-link" href="tools.html" title="Ferramentas">
                         <i class="fas fa-tools"></i>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#" id="darkModeToggle" title="Темна тема">
+                    <a class="nav-link" href="#" id="darkModeToggle" title="Tema escuro">
                         <i class="fas fa-moon"></i>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#" onclick="logout()" title="Вийти">
+                    <a class="nav-link" href="#" onclick="logout()" title="Sair">
                         <i class="fas fa-sign-out-alt"></i>
                     </a>
                 </li>
             </ul>
         </nav>
 
-        <!-- Бічна панель -->
+        <!-- Painel lateral -->
                 <aside class="main-sidebar sidebar-dark-primary elevation-4">
             <!-- Brand Logo -->
             <a href="dashboard.html" class="brand-link">
@@ -246,7 +246,7 @@
         <li class="nav-item">
             <a href="/pages/tech/dashboard.html" class="nav-link">
                 <i class="nav-icon fas fa-tachometer-alt"></i>
-                <p>Дашборд</p>
+                <p>Dashboard</p>
             </a>
         </li>
 
@@ -254,7 +254,7 @@
         <li class="nav-item">
             <a href="/pages/tech/tasks.html" class="nav-link">
                 <i class="nav-icon fas fa-clipboard-list"></i>
-                <p>Мої завдання</p>
+                <p>As minhas tarefas</p>
             </a>
         </li>
 
@@ -262,7 +262,7 @@
         <li class="nav-item">
             <a href="/pages/tech/schedule.html" class="nav-link">
                 <i class="nav-icon fas fa-calendar-alt"></i>
-                <p>Розклад</p>
+                <p>Agenda</p>
             </a>
         </li>
 
@@ -278,7 +278,7 @@
         <li class="nav-item">
             <a href="/pages/tech/inspections.html" class="nav-link">
                 <i class="nav-icon fas fa-clipboard-check"></i>
-                <p>Інспекції</p>
+                <p>Inspecções</p>
             </a>
         </li>
 
@@ -286,7 +286,7 @@
         <li class="nav-item">
             <a href="/pages/tech/reports.html" class="nav-link">
                 <i class="nav-icon fas fa-file-alt"></i>
-                <p>Звіти робіт</p>
+                <p>Relatórios de trabalho</p>
             </a>
         </li>
 
@@ -295,7 +295,7 @@
             <a href="#" class="nav-link">
                 <i class="nav-icon fas fa-toolbox"></i>
                 <p>
-                    Інструменти
+                    Ferramentas
                     <i class="right fas fa-angle-left"></i>
                 </p>
             </a>
@@ -303,7 +303,7 @@
                 <li class="nav-item">
                     <a href="/pages/tech/qr-scanner.html" class="nav-link">
                         <i class="fas fa-qrcode nav-icon"></i>
-                        <p>QR Сканер</p>
+                        <p>Leitor QR</p>
                     </a>
                 </li>
                 <li class="nav-item">
@@ -315,13 +315,13 @@
                 <li class="nav-item">
                     <a href="/pages/tech/task-map.html" class="nav-link">
                         <i class="fas fa-map-marked-alt nav-icon"></i>
-                        <p>Карта завдань</p>
+                        <p>Mapa de tarefas</p>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a href="/pages/tech/tools.html" class="nav-link">
                         <i class="fas fa-tools nav-icon"></i>
-                        <p>Інструменти</p>
+                        <p>Ferramentas</p>
                     </a>
                 </li>
             </ul>
@@ -332,7 +332,7 @@
             <a href="#" class="nav-link">
                 <i class="nav-icon fas fa-book"></i>
                 <p>
-                    База знань
+                    Base de conhecimento
                     <i class="right fas fa-angle-left"></i>
                 </p>
             </a>
@@ -340,25 +340,25 @@
                 <li class="nav-item">
                     <a href="/pages/tech/knowledge-base.html" class="nav-link">
                         <i class="fas fa-bookmark nav-icon"></i>
-                        <p>Довідник</p>
+                        <p>Manual</p>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a href="/pages/tech/manuals.html" class="nav-link">
                         <i class="fas fa-book-open nav-icon"></i>
-                        <p>Інструкції</p>
+                        <p>Instruções</p>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a href="/pages/tech/checklists.html" class="nav-link">
                         <i class="fas fa-tasks nav-icon"></i>
-                        <p>Чеклісти</p>
+                        <p>Listas de verificação</p>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a href="/pages/tech/videos.html" class="nav-link">
                         <i class="fas fa-video nav-icon"></i>
-                        <p>Відео</p>
+                        <p>Vídeos</p>
                     </a>
                 </li>
             </ul>
@@ -367,8 +367,8 @@
         <li class="nav-item">
             <a href="/pages/ai-assistant/ai-assistant.html" class="nav-link">
                 <i class="nav-icon fas fa-magic"></i>
-                <p>AI Асистент</p>
-                <span class="badge badge-success right">Новинка</span>
+                <p>AI Assistente</p>
+                <span class="badge badge-success right">Novidade</span>
             </a>
         </li>
 
@@ -376,7 +376,7 @@
         <li class="nav-item">
             <a href="/pages/tech/notifications.html" class="nav-link">
                 <i class="nav-icon fas fa-bell"></i>
-                <p>Сповіщення</p>
+                <p>Notificações</p>
             </a>
         </li>
 
@@ -384,7 +384,7 @@
         <li class="nav-item">
             <a href="/pages/tech/profile.html" class="nav-link">
                 <i class="nav-icon fas fa-user"></i>
-                <p>Профіль</p>
+                <p>Perfil</p>
             </a>
         </li>
 
@@ -406,12 +406,12 @@
                 <div class="container-fluid">
                     <div class="row mb-2">
                         <div class="col-sm-6">
-                            <h1>Розклад роботи</h1>
+                            <h1>Calendário de trabalho</h1>
                         </div>
                         <div class="col-sm-6">
                             <ol class="breadcrumb float-sm-right">
-                                <li class="breadcrumb-item"><a href="dashboard.html">Головна</a></li>
-                                <li class="breadcrumb-item active">Розклад</li>
+                                <li class="breadcrumb-item"><a href="dashboard.html">Início</a></li>
+                                <li class="breadcrumb-item active">Calendário</li>
                             </ol>
                         </div>
                     </div>
@@ -421,14 +421,14 @@
             <!-- Main content -->
             <section class="content">
                 <div class="container-fluid">
-                    <!-- Статистика -->
+                    <!-- Estatísticas -->
                     <div class="row">
                         <div class="col-lg-3 col-md-6">
                             <div class="stat-card">
                                 <div class="stat-icon">📅</div>
                                 <div class="stat-info">
                                     <h3 id="totalEvents">0</h3>
-                                    <p>Всього подій</p>
+                                    <p>Total trabalhos</p>
                                 </div>
                             </div>
                         </div>
@@ -437,7 +437,7 @@
                                 <div class="stat-icon">🔧</div>
                                 <div class="stat-info">
                                     <h3 id="todayEvents">0</h3>
-                                    <p>Сьогодні</p>
+                                    <p>Hoje</p>
                                 </div>
                             </div>
                         </div>
@@ -455,44 +455,44 @@
                                 <div class="stat-icon">⚠️</div>
                                 <div class="stat-info">
                                     <h3 id="urgentEvents">0</h3>
-                                    <p>Термінові</p>
+                                    <p>Urgentes</p>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Легенда -->
+                    <!-- Legenda -->
                     <div class="row mt-4">
                         <div class="col-12">
                             <div class="card schedule-card">
                                 <div class="card-header">
-                                    <h3 class="card-title"><i class="fas fa-info-circle mr-2"></i>Легенда розкладу</h3>
+                                    <h3 class="card-title"><i class="fas fa-info-circle mr-2"></i>Legenda do calendário</h3>
                                 </div>
                                 <div class="card-body">
                                     <div class="schedule-legend">
                                         <div class="legend-item">
                                             <div class="legend-color" style="background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);"></div>
-                                            <span>Завдання</span>
+                                            <span>Tarefas</span>
                                         </div>
                                         <div class="legend-item">
                                             <div class="legend-color" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%);"></div>
-                                            <span>Інспекції</span>
+                                            <span>Inspecções</span>
                                         </div>
                                         <div class="legend-item">
                                             <div class="legend-color" style="background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);"></div>
-                                            <span>Техобслуговування</span>
+                                            <span>Manutenção técnica</span>
                                         </div>
                                         <div class="legend-item">
                                             <div class="legend-color" style="background: linear-gradient(135deg, #dc3545 0%, #e83e8c 100%);"></div>
-                                            <span>Аварійні роботи</span>
+                                            <span>Trabalhos de emergência</span>
                                         </div>
                                         <div class="legend-item">
                                             <div class="legend-color" style="background: #28a745;"></div>
-                                            <span>Вільний час</span>
+                                            <span>Disponível hora</span>
                                         </div>
                                         <div class="legend-item">
                                             <div class="legend-color" style="background: #dc3545;"></div>
-                                            <span>Зайнятий</span>
+                                            <span>Ocupado</span>
                                         </div>
                                     </div>
                                 </div>
@@ -505,13 +505,13 @@
                         <div class="col-12">
                             <div class="view-toggle">
                                 <button class="btn btn-primary active" onclick="scheduleManager.showCalendarView()">
-                                    <i class="fas fa-calendar"></i> Календар
+                                    <i class="fas fa-calendar"></i> Calendário
                                 </button>
                                 <button class="btn btn-outline-primary" onclick="scheduleManager.showListView()">
-                                    <i class="fas fa-list"></i> Список
+                                    <i class="fas fa-list"></i> Lista
                                 </button>
                                 <button class="btn btn-outline-primary" onclick="scheduleManager.showDayView()">
-                                    <i class="fas fa-clock"></i> Денний графік
+                                    <i class="fas fa-clock"></i> Gráfico diário
                                 </button>
                                 <div class="ml-auto">
                                     <button class="btn btn-success" onclick="scheduleManager.exportSchedule()">
@@ -522,18 +522,18 @@
                         </div>
                     </div>
 
-                    <!-- Календар -->
+                    <!-- Calendário -->
                     <div class="row mt-4" id="calendarView">
                         <div class="col-12">
                             <div class="card schedule-card">
                                 <div class="card-header">
-                                    <h3 class="card-title"><i class="fas fa-calendar mr-2"></i>Календар подій</h3>
+                                    <h3 class="card-title"><i class="fas fa-calendar mr-2"></i>Calendário trabalhos</h3>
                                     <div class="card-tools">
                                         <button class="btn btn-sm btn-primary" onclick="scheduleManager.prevPeriod()">
                                             <i class="fas fa-chevron-left"></i>
                                         </button>
                                         <button class="btn btn-sm btn-primary" onclick="scheduleManager.today()">
-                                            Сьогодні
+                                            Сьогоdias
                                         </button>
                                         <button class="btn btn-sm btn-primary" onclick="scheduleManager.nextPeriod()">
                                             <i class="fas fa-chevron-right"></i>
@@ -549,25 +549,25 @@
                         </div>
                     </div>
 
-                    <!-- Список подій -->
+                    <!-- Lista trabalhos -->
                     <div class="row mt-4" id="listView" style="display: none;">
                         <div class="col-12">
                             <div class="card schedule-card">
                                 <div class="card-header">
-                                    <h3 class="card-title"><i class="fas fa-list mr-2"></i>Список подій</h3>
+                                    <h3 class="card-title"><i class="fas fa-list mr-2"></i>Lista trabalhos</h3>
                                     <div class="card-tools">
                                         <div class="btn-group">
                                             <button class="btn btn-sm btn-outline-primary" onclick="scheduleManager.filterEvents('all')">
-                                                Всі
+                                                Todas
                                             </button>
                                             <button class="btn btn-sm btn-outline-primary" onclick="scheduleManager.filterEvents('today')">
-                                                Сьогодні
+                                                Сьогоdias
                                             </button>
                                             <button class="btn btn-sm btn-outline-primary" onclick="scheduleManager.filterEvents('week')">
-                                                Тиждень
+                                                Semana
                                             </button>
                                             <button class="btn btn-sm btn-outline-primary" onclick="scheduleManager.filterEvents('month')">
-                                                Місяць
+                                                Mês
                                             </button>
                                         </div>
                                     </div>
@@ -577,17 +577,17 @@
                                         <table class="table table-hover">
                                             <thead>
                                                 <tr>
-                                                    <th>Дата</th>
-                                                    <th>Час</th>
-                                                    <th>Тип</th>
-                                                    <th>Подія</th>
-                                                    <th>Локація</th>
-                                                    <th>Статус</th>
-                                                    <th>Дії</th>
+                                                    <th>Data</th>
+                                                    <th>Hora</th>
+                                                    <th>Tipo</th>
+                                                    <th>Поação</th>
+                                                    <th>Localização</th>
+                                                    <th>Estado</th>
+                                                    <th>Ações</th>
                                                 </tr>
                                             </thead>
                                             <tbody id="eventsList">
-                                                <!-- Події будуть завантажені тут -->
+                                                <!-- Поações serão заванeжені aqui -->
                                             </tbody>
                                         </table>
                                     </div>
@@ -596,12 +596,12 @@
                         </div>
                     </div>
 
-                    <!-- Денний графік -->
+                    <!-- Gráfico diário -->
                     <div class="row mt-4" id="dayView" style="display: none;">
                         <div class="col-12">
                             <div class="card schedule-card">
                                 <div class="card-header">
-                                    <h3 class="card-title"><i class="fas fa-clock mr-2"></i>Денний графік</h3>
+                                    <h3 class="card-title"><i class="fas fa-clock mr-2"></i>Gráfico diário</h3>
                                     <div class="card-tools">
                                         <div class="input-group" style="width: 200px;">
                                             <input type="date" id="daySelector" class="form-control">
@@ -615,42 +615,42 @@
                                 </div>
                                 <div class="card-body">
                                     <div id="daySchedule">
-                                        <!-- Денний графік буде завантажений тут -->
+                                        <!-- Gráfico diário será заванeжений aqui -->
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Configurações розкладу -->
+                    <!-- Configurações do calendário -->
                     <div class="row mt-4">
                         <div class="col-12">
                             <div class="card schedule-card">
                                 <div class="card-header">
-                                    <h3 class="card-title"><i class="fas fa-cog mr-2"></i>Configurações розкладу</h3>
+                                    <h3 class="card-title"><i class="fas fa-cog mr-2"></i>Configurações do calendário</h3>
                                 </div>
                                 <div class="card-body">
                                     <div class="row">
                                         <div class="col-md-6">
                                             <div class="form-group">
-                                                <label>Робочий графік</label>
+                                                <label>Horário de trabalho</label>
                                                 <select class="form-control" id="workSchedule">
-                                                    <option value="standard">Стандартний (9:00-18:00)</option>
-                                                    <option value="flexible">Гнучкий графік</option>
-                                                    <option value="shift">Змінний графік</option>
-                                                    <option value="custom">Індивідуальний</option>
+                                                    <option value="standard">Padrão (9:00-18:00)</option>
+                                                    <option value="flexible">Horário flexível</option>
+                                                    <option value="shift">Horário por turnos</option>
+                                                    <option value="custom">Personalizado</option>
                                                 </select>
                                             </div>
                                         </div>
                                         <div class="col-md-6">
                                             <div class="form-group">
-                                                <label>Сповіщення</label>
+                                                <label>Notificações</label>
                                                 <select class="form-control" id="notifications">
-                                                    <option value="30">За 30 хвилин</option>
-                                                    <option value="60">За 1 годину</option>
-                                                    <option value="120">За 2 години</option>
-                                                    <option value="360">За 6 годин</option>
-                                                    <option value="1440">За 1 день</option>
+                                                    <option value="30">Em 30 minutos</option>
+                                                    <option value="60">За 1 horasу</option>
+                                                    <option value="120">За 2 horasи</option>
+                                                    <option value="360">За 6 horas</option>
+                                                    <option value="1440">За 1 dia</option>
                                                 </select>
                                             </div>
                                         </div>
@@ -658,7 +658,7 @@
                                     <div class="row">
                                         <div class="col-12">
                                             <button class="btn btn-primary" onclick="scheduleManager.saveSettings()">
-                                                <i class="fas fa-save"></i> Guardar налаштування
+                                                <i class="fas fa-save"></i> Guardar configurações
                                             </button>
                                         </div>
                                     </div>
@@ -680,26 +680,26 @@
         </footer>
     </div>
 
-    <!-- Модальне вікно перегляду події -->
+    <!-- Janela modal visualizaçãoу trabalhos -->
     <div class="modal fade" id="eventDetailsModal" tabindex="-1" role="dialog">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Деталі події</h5>
+                    <h5 class="modal-title">Detalhes trabalhos</h5>
                     <button type="button" class="close" data-dismiss="modal">
                         <span>&times;</span>
                     </button>
                 </div>
                 <div class="modal-body" id="eventDetailsContent">
-                    <!-- Вміст події буде завантажено тут -->
+                    <!-- Conteúdo trabalhos será carregado aqui -->
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрити</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
                     <button type="button" class="btn btn-info" onclick="scheduleManager.editEvent(currentEventId)">
                         <i class="fas fa-edit"></i> Editar
                     </button>
                     <button type="button" class="btn btn-success" onclick="scheduleManager.startEvent(currentEventId)" id="startEventBtn">
-                        <i class="fas fa-play"></i> Розпочати
+                        <i class="fas fa-play"></i> Розпоchatи
                     </button>
                 </div>
             </div>
@@ -722,7 +722,7 @@
         let currentEventId = null;
         
         function logout() {
-            if (confirm('Ви впевнені, що хочете вийти з системи?')) {
+            if (confirm('Tem a certeza que quer sair do sistema?')) {
                 localStorage.removeItem('authToken');
                 localStorage.removeItem('userData');
                 window.location.replace('/pages/auth/login.html');
@@ -730,16 +730,16 @@
         }
 
         $(document).ready(function() {
-            // Ініціалізація AdminLTE
+            // Inicialização AdminLTE
             $('[data-widget="pushmenu"]').PushMenu();
             
-            // Темна тема
+            // Tema escuro
             $('#darkModeToggle').on('click', function() {
                 $('body').toggleClass('dark-mode');
                 $(this).find('i').toggleClass('fa-moon fa-sun');
             });
 
-            // Перевірка з'єднання
+            // Verificação de ligação
             setInterval(() => {
                 const online = navigator.onLine;
                 $('#connectionStatus').html(
@@ -749,16 +749,16 @@
                 );
             }, 30000);
 
-            // Завантаження даних техніка
+            // A carregar dados do técnico
             const userData = JSON.parse(localStorage.getItem('userData')) || {};
             if (userData.firstName) {
                 $('#techName').text(`${userData.firstName} ${userData.lastName || ''}`);
             }
 
-            // Встановлення сьогоднішньої дати в селектор
+            // Всeновлення hojeшньої дати в селектор
             $('#daySelector').val(new Date().toISOString().split('T')[0]);
 
-            // Ініціалізація менеджера розкладу
+            // Inicialização менеджера calendárioу
             window.scheduleManager = new ScheduleManager();
         });
     </script>

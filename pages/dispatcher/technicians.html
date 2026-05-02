@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Управління техніками - Диспетчер</title>
+    <title>Gestão de técnicos - Dispatcher</title>
     <script src="../../assets/js/global-settings.js"></script>
     
     <!-- AdminLTE CSS -->
     <link rel="stylesheet" href="../../plugins/adminlte/adminlte.min.css">
     <link rel="stylesheet" href="../../plugins/fontawesome/css/all.min.css">
     
-    <!-- Додаткові стилі -->
+    <!-- Estilos adicionais -->
     <style>
         .tech-card {
             background: white;
@@ -146,7 +146,7 @@
 <body class="hold-transition sidebar-mini layout-fixed" data-required-role="dispatcher">
     <div class="wrapper">
 
-        <!-- Навігаційна панель -->
+        <!-- Barra de navegação -->
         <nav class="main-header navbar navbar-expand navbar-white navbar-light">
             <ul class="navbar-nav">
                 <li class="nav-item">
@@ -155,39 +155,39 @@
                     </a>
                 </li>
                 <li class="nav-item d-none d-sm-inline-block">
-                    <a href="dashboard.html" class="nav-link">Головна</a>
+                    <a href="dashboard.html" class="nav-link">Início</a>
                 </li>
                 <li class="nav-item d-none d-sm-inline-block">
-                    <a href="assignments.html" class="nav-link">Призначення</a>
+                    <a href="assignments.html" class="nav-link">Atribuições</a>
                 </li>
                 <li class="nav-item d-none d-sm-inline-block">
-                    <a href="monitoring.html" class="nav-link">Моніторинг</a>
+                    <a href="monitoring.html" class="nav-link">Monitorização</a>
                 </li>
                 <li class="nav-item d-none d-sm-inline-block">
-                    <a href="technicians.html" class="nav-link active">Техніки</a>
+                    <a href="technicians.html" class="nav-link active">Técnicos</a>
                 </li>
             </ul>
 
-            <!-- Права частина навігації -->
+            <!-- Parte direita da navegação -->
             <ul class="navbar-nav ml-auto">
                 <li class="nav-item">
-                    <a class="nav-link" href="#" onclick="technicianManager.showNotifications()" title="Сповіщення">
+                    <a class="nav-link" href="#" onclick="technicianManager.showNotifications()" title="Notificações">
                         <i class="fas fa-bell"></i>
                         <span class="notification-dot" id="notificationDot"></span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#" onclick="technicianManager.showMessages()" title="Повідомлення">
+                    <a class="nav-link" href="#" onclick="technicianManager.showMessages()" title="Mensagem">
                         <i class="fas fa-comments"></i>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#" id="darkModeToggle" title="Темна тема">
+                    <a class="nav-link" href="#" id="darkModeToggle" title="Tema escuro">
                         <i class="fas fa-moon"></i>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#" onclick="logout()" title="Вийти">
+                    <a class="nav-link" href="#" onclick="logout()" title="Sair">
                         <i class="fas fa-sign-out-alt"></i>
                     </a>
                 </li>
@@ -204,12 +204,12 @@
                 <div class="container-fluid">
                     <div class="row mb-2">
                         <div class="col-sm-6">
-                            <h1>Управління техніками <span class="badge badge-success" id="techsBadge" style="font-size:0.7em;vertical-align:middle;">0</span></h1>
+                            <h1>Gestão de técnicos <span class="badge badge-success" id="techsBadge" style="font-size:0.7em;vertical-align:middle;">0</span></h1>
                         </div>
                         <div class="col-sm-6">
                             <ol class="breadcrumb float-sm-right">
-                                <li class="breadcrumb-item"><a href="dashboard.html">Головна</a></li>
-                                <li class="breadcrumb-item active">Техніки</li>
+                                <li class="breadcrumb-item"><a href="dashboard.html">Início</a></li>
+                                <li class="breadcrumb-item active">Técnicos</li>
                             </ol>
                         </div>
                     </div>
@@ -219,41 +219,41 @@
             <!-- Main content -->
             <section class="content">
                 <div class="container-fluid">
-                    <!-- Filtroи та пошук -->
+                    <!-- Filtros e pesquisa -->
                     <div class="row">
                         <div class="col-12">
                             <div class="tech-filter">
                                 <div class="row">
                                     <div class="col-md-3">
                                         <div class="form-group">
-                                            <label for="statusFilter">Статус</label>
+                                            <label for="statusFilter">Estado</label>
                                             <select id="statusFilter" class="form-control">
-                                                <option value="all">Всі статуси</option>
-                                                <option value="online">Онлайн</option>
-                                                <option value="busy">Зайняті</option>
-                                                <option value="offline">Офлайн</option>
+                                                <option value="all">Todos os estados</option>
+                                                <option value="online">Online</option>
+                                                <option value="busy">Ocupados</option>
+                                                <option value="offline">Offline</option>
                                             </select>
                                         </div>
                                     </div>
                                     <div class="col-md-3">
                                         <div class="form-group">
-                                            <label for="specialtyFilter">Спеціалізація</label>
+                                            <label for="specialtyFilter">Especialização</label>
                                             <select id="specialtyFilter" class="form-control">
-                                                <option value="all">Всі спеціалізації</option>
-                                                <option value="network">Мережі</option>
-                                                <option value="hardware">Обладнання</option>
+                                                <option value="all">Todas as especializações</option>
+                                                <option value="network">Redes</option>
+                                                <option value="hardware">Equipamento</option>
                                                 <option value="software">ПЗ</option>
-                                                <option value="security">Безпека</option>
+                                                <option value="security">Segurança</option>
                                             </select>
                                         </div>
                                     </div>
                                     <div class="col-md-3">
                                         <div class="form-group">
-                                            <label for="workloadFilter">Завантаження</label>
+                                            <label for="workloadFilter">A carregar</label>
                                             <select id="workloadFilter" class="form-control">
-                                                <option value="all">Будь-яке завантаження</option>
-                                                <option value="low">Низьке</option>
-                                                <option value="medium">Середнє</option>
+                                                <option value="all">Qualquer carga de trabalho</option>
+                                                <option value="low">Baixo</option>
+                                                <option value="medium">Médio</option>
                                                 <option value="high">Високе</option>
                                             </select>
                                         </div>
@@ -262,7 +262,7 @@
                                         <div class="form-group">
                                             <label for="searchInput">Pesquisar</label>
                                             <div class="input-group">
-                                                <input type="text" id="searchInput" class="form-control" placeholder="Pesquisar техніків...">
+                                                <input type="text" id="searchInput" class="form-control" placeholder="Pesquisar de técnicos...">
                                                 <div class="input-group-append">
                                                     <button class="btn btn-primary" onclick="technicianManager.searchTechnicians()">
                                                         <i class="fas fa-search"></i>
@@ -276,30 +276,30 @@
                         </div>
                     </div>
 
-                    <!-- Статистика техніків -->
+                    <!-- Estatísticas de técnicos -->
                     <div class="row">
                         <div class="col-lg-3 col-md-6">
                             <div class="stats-box">
                                 <div class="stats-number" id="totalTechs">0</div>
-                                <div class="stats-label">Всього техніків</div>
+                                <div class="stats-label">Total de técnicos</div>
                             </div>
                         </div>
                         <div class="col-lg-3 col-md-6">
                             <div class="stats-box">
                                 <div class="stats-number" id="availableTechs">0</div>
-                                <div class="stats-label">Доступні техніки</div>
+                                <div class="stats-label">Técnicos disponíveis</div>
                             </div>
                         </div>
                         <div class="col-lg-3 col-md-6">
                             <div class="stats-box">
                                 <div class="stats-number" id="activeAssignments">0</div>
-                                <div class="stats-label">Активні завдання</div>
+                                <div class="stats-label">Ativos tarefas</div>
                             </div>
                         </div>
                         <div class="col-lg-3 col-md-6">
                             <div class="stats-box">
                                 <div class="stats-number" id="avgCompletion">0%</div>
-                                <div class="stats-label">Середня завершеність</div>
+                                <div class="stats-label">Сереdo dia завершеність</div>
                             </div>
                         </div>
                     </div>
@@ -308,16 +308,16 @@
                         <div class="col-12 text-right text-muted small mt-1" id="lastUpdate"></div>
                     </div>
 
-                    <!-- Список техніків -->
+                    <!-- Lista de técnicos -->
                     <div class="row mt-4" id="techniciansGrid">
-                        <!-- Техніки будуть завантажені тут -->
+                        <!-- Técnicos serão заванeжені aqui -->
                     </div>
 
-                    <!-- Кнопка додавання нового техніка -->
+                    <!-- Кнопка adição novo do técnico -->
                     <div class="row mt-4">
                         <div class="col-12 text-center">
                             <button class="btn btn-success btn-lg" onclick="technicianManager.showAddTechnicianModal()">
-                                <i class="fas fa-plus"></i> Adicionar нового техніка
+                                <i class="fas fa-plus"></i> Adicionar novo do técnico
                             </button>
                         </div>
                     </div>
@@ -335,12 +335,12 @@
         </footer>
     </div>
 
-    <!-- Модальне вікно додавання/редагування техніка -->
+    <!-- Janela modal adição/edição do técnico -->
     <div class="modal fade" id="technicianModal" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="technicianModalTitle">Adicionar техніка</h5>
+                    <h5 class="modal-title" id="technicianModalTitle">Adicionar do técnico</h5>
                     <button type="button" class="close" data-dismiss="modal">
                         <span>&times;</span>
                     </button>
@@ -351,13 +351,13 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label for="techFirstName">Ім'я *</label>
+                                    <label for="techFirstName">Nome *</label>
                                     <input type="text" id="techFirstName" class="form-control" required>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label for="techLastName">Прізвище *</label>
+                                    <label for="techLastName">Apelido *</label>
                                     <input type="text" id="techLastName" class="form-control" required>
                                 </div>
                             </div>
@@ -372,7 +372,7 @@
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label for="techPhone">Телефон *</label>
+                                    <label for="techPhone">Telefone *</label>
                                     <input type="tel" id="techPhone" class="form-control" required>
                                 </div>
                             </div>
@@ -381,19 +381,19 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label for="techSpecialty">Спеціалізація *</label>
+                                    <label for="techSpecialty">Especialização *</label>
                                     <select id="techSpecialty" class="form-control" required>
-                                        <option value="network">Мережі</option>
-                                        <option value="hardware">Обладнання</option>
+                                        <option value="network">Redes</option>
+                                        <option value="hardware">Equipamento</option>
                                         <option value="software">ПЗ</option>
-                                        <option value="security">Безпека</option>
-                                        <option value="general">Загальна підтримка</option>
+                                        <option value="security">Segurança</option>
+                                        <option value="general">Geral suporte</option>
                                     </select>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label for="techStatus">Статус *</label>
+                                    <label for="techStatus">Estado *</label>
                                     <select id="techStatus" class="form-control" required>
                                         <option value="active">Ativo</option>
                                         <option value="inactive">Inativo</option>
@@ -404,29 +404,29 @@
                         </div>
 
                         <div class="form-group">
-                            <label for="techSkills">Навички (через кому)</label>
+                            <label for="techSkills">Навички (através de кому)</label>
                             <input type="text" id="techSkills" class="form-control" 
-                                   placeholder="Наприклад: мережеве обладнання, Windows Server, кібербезпека">
+                                   placeholder="Наприклад: мережеве обладнання, Windows Server, кіберsegurança">
                         </div>
 
                         <div class="form-group">
-                            <label for="techLocation">Місцезнаходження</label>
+                            <label for="techLocation">Localização</label>
                             <input type="text" id="techLocation" class="form-control" 
-                                   placeholder="Введіть адресу або координати">
+                                   placeholder="Digite endereço ou coordenadas">
                         </div>
 
                         <div class="form-group">
-                            <label for="techAvatar">Аватар</label>
+                            <label for="techAvatar">Avatar</label>
                             <div class="custom-file">
                                 <input type="file" class="custom-file-input" id="techAvatar">
-                                <label class="custom-file-label" for="techAvatar">Оберіть файл</label>
+                                <label class="custom-file-label" for="techAvatar">Selecione ficheiro</label>
                             </div>
                         </div>
 
                         <div class="form-group">
-                            <label for="techNotes">Додаткові нотатки</label>
+                            <label for="techNotes">Додаткові notas</label>
                             <textarea id="techNotes" class="form-control" rows="3" 
-                                      placeholder="Додаткова інформація про техніка..."></textarea>
+                                      placeholder="Adicional informação про do técnico..."></textarea>
                         </div>
                     </form>
                 </div>
@@ -440,12 +440,12 @@
         </div>
     </div>
 
-    <!-- Модальне вікно перегляду техніка -->
+    <!-- Janela modal visualizaçãoу do técnico -->
     <div class="modal fade" id="viewTechnicianModal" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Деталі техніка</h5>
+                    <h5 class="modal-title">Detalhes do técnico</h5>
                     <button type="button" class="close" data-dismiss="modal">
                         <span>&times;</span>
                     </button>
@@ -454,11 +454,11 @@
                     <div class="row">
                         <div class="col-md-4 text-center">
                             <img id="viewTechAvatar" src="../../assets/img/avatars/tech-default.png" 
-                                 class="tech-avatar" alt="Технік">
-                            <h4 id="viewTechName" class="mt-2">Ім'я Техніка</h4>
+                                 class="tech-avatar" alt="Técnico">
+                            <h4 id="viewTechName" class="mt-2">Nome Técnico</h4>
                             <div id="viewTechStatus" class="mb-2">
                                 <span class="status-indicator online"></span>
-                                <span>Онлайн</span>
+                                <span>Online</span>
                             </div>
                             <div class="action-buttons">
                                 <button class="btn btn-sm btn-primary" onclick="technicianManager.editTechnician()">
@@ -475,39 +475,39 @@
                                     <p><strong>Email:</strong> <span id="viewTechEmail">email@example.com</span></p>
                                 </div>
                                 <div class="col-6">
-                                    <p><strong>Телефон:</strong> <span id="viewTechPhone">+351912000000</span></p>
+                                    <p><strong>Telefone:</strong> <span id="viewTechPhone">+351912000000</span></p>
                                 </div>
                             </div>
                             <div class="row">
                                 <div class="col-6">
-                                    <p><strong>Спеціалізація:</strong> <span id="viewTechSpecialty">Мережі</span></p>
+                                    <p><strong>Especialização:</strong> <span id="viewTechSpecialty">Redes</span></p>
                                 </div>
                                 <div class="col-6">
-                                    <p><strong>Завантаження:</strong> <span id="viewTechWorkload">Середнє</span></p>
+                                    <p><strong>A carregar:</strong> <span id="viewTechWorkload">Médio</span></p>
                                 </div>
                             </div>
                             <div class="row">
                                 <div class="col-12">
                                     <p><strong>Навички:</strong></p>
                                     <div id="viewTechSkills">
-                                        <!-- Навички будуть завантажені тут -->
+                                        <!-- As competências serão carregadas aqui -->
                                     </div>
                                 </div>
                             </div>
                             <div class="row mt-3">
                                 <div class="col-12">
-                                    <p><strong>Поточні завдання:</strong></p>
+                                    <p><strong>Поточні tarefas:</strong></p>
                                     <ul id="viewTechAssignments" class="list-group">
-                                        <!-- Завдання будуть завантажені тут -->
+                                        <!-- Tarefas serão заванeжені aqui -->
                                     </ul>
                                 </div>
                             </div>
                             <div class="row mt-3">
                                 <div class="col-12">
-                                    <p><strong>Місцезнаходження:</strong></p>
+                                    <p><strong>Localização:</strong></p>
                                     <div class="location-map" id="viewTechLocation">
                                         <i class="fas fa-map-marker-alt mr-2"></i>
-                                        <span>Карта недоступна</span>
+                                        <span>Mapa indisponível</span>
                                     </div>
                                 </div>
                             </div>
@@ -515,7 +515,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрити</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
                 </div>
             </div>
         </div>
@@ -547,7 +547,7 @@
 
     <script>
         function logout() {
-            if (confirm('Ви впевнені, що хочете вийти з системи?')) {
+            if (confirm('Tem a certeza que quer sair do sistema?')) {
                 if (typeof AuthManager !== 'undefined') {
                     AuthManager.logout();
                 } else {
@@ -561,23 +561,23 @@
         }
 
         $(document).ready(function() {
-            // Завантаження сайдбару
+            // A carregar сайдбару
             if (typeof loadSidebarWithInit === 'function') {
                 loadSidebarWithInit('includes/sidebar.html');
             } else {
                 console.error('❌ loadSidebarWithInit not found!');
             }
 
-            // Ініціалізація AdminLTE
+            // Inicialização AdminLTE
             $('[data-widget="pushmenu"]').PushMenu();
             
-            // Темна тема
+            // Tema escuro
             $('#darkModeToggle').on('click', function() {
                 $('body').toggleClass('dark-mode');
                 $(this).find('i').toggleClass('fa-moon fa-sun');
             });
 
-            // Перевірка з'єднання
+            // Verificação de ligação
             setInterval(() => {
                 const online = navigator.onLine;
                 $('#connectionStatus').html(
@@ -587,22 +587,22 @@
                 );
             }, 30000);
 
-            // Завантаження даних диспетчера
+            // A carregar dados do despachante
             const userData = JSON.parse(localStorage.getItem('userData')) || {};
             if (userData.firstName) {
                 $('#dispatcherName').text(`${userData.firstName} ${userData.lastName || ''}`);
             }
 
-            // Ініціалізація менеджера техніків
+            // Inicialização менеджера de técnicos
             window.technicianManager = new TechnicianManager();
             
-            // Обробка вибору файлу
+            // Обробка вибору ficheiroу
             $('.custom-file-input').on('change', function() {
                 let fileName = $(this).val().split('\\').pop();
                 $(this).next('.custom-file-label').addClass("selected").html(fileName);
             });
             
-            // Filtroація техніків
+            // Filtroація de técnicos
             $('#statusFilter, #specialtyFilter, #workloadFilter').on('change', function() {
                 technicianManager.filterTechnicians();
             });

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Manutenção Mensal - Диспетчер</title>
+    <title>Manutenção Mensal - Dispatcher</title>
     <script src="../../assets/js/global-settings.js"></script>
     <script src="../../assets/js/auth.js"></script>
     <!-- Inspection template engine -->
@@ -63,7 +63,7 @@
                     <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
                 </li>
                 <li class="nav-item d-none d-sm-inline-block">
-                    <a href="dashboard.html" class="nav-link">Головна</a>
+                    <a href="dashboard.html" class="nav-link">Início</a>
                 </li>
                 <li class="nav-item d-none d-sm-inline-block">
                     <a href="inspection-template.html" class="nav-link active">Manutenção</a>
@@ -72,7 +72,7 @@
 
             <ul class="navbar-nav ml-auto">
                 <li class="nav-item">
-                    <a class="nav-link" href="#" onclick="logout()" title="Вийти">
+                    <a class="nav-link" href="#" onclick="logout()" title="Sair">
                         <i class="fas fa-sign-out-alt"></i>
                     </a>
                 </li>
@@ -93,7 +93,7 @@
                         </div>
                         <div class="col-sm-6">
                             <ol class="breadcrumb float-sm-right">
-                                <li class="breadcrumb-item"><a href="dashboard.html">Головна</a></li>
+                                <li class="breadcrumb-item"><a href="dashboard.html">Início</a></li>
                                 <li class="breadcrumb-item active">Manutenção</li>
                             </ol>
                         </div>
@@ -462,7 +462,7 @@
                         }
                     }
                 } catch(e) { console.warn('next-number error:', e.message); }
-                // Fallback — послідовна нумерація в межах сесії
+                // Fallback — numeração sequencial dentro da sessão
                 const year = new Date().getFullYear();
                 const month = String(new Date().getMonth() + 1).padStart(2, '0');
                 const seq = String(Date.now()).slice(-5);

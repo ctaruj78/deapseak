@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🔍 Діагностика AI прогнозування</title>
+    <title>🔍 Diagnóstico de previsão IA</title>
     <script src="../../assets/js/auth.js"></script>
 
     <link rel="stylesheet" href="../../plugins/bootstrap/bootstrap.min.css">
@@ -29,8 +29,8 @@
     <div class="container-fluid">
         <div class="row">
             <div class="col-12">
-                <h1>🔍 Повна діагностика AI прогнозування</h1>
-                <p class="text-muted">Перевірка всіх компонентів системи AI прогнозування</p>
+                <h1>🔍 Diagnóstico completo de previsão IA</h1>
+                <p class="text-muted">Verificação de todos os componentes do sistema de IA</p>
             </div>
         </div>
 
@@ -38,23 +38,23 @@
             <div class="col-md-6">
                 <div class="card">
                     <div class="card-header">
-                        <h5>📋 Тестові дії</h5>
+                        <h5>📋 Ações de teste</h5>
                     </div>
                     <div class="card-body">
-                        <button class="btn btn-primary btn-sm mb-2" onclick="checkScripts()">1. Перевірити скрипти</button><br>
-                        <button class="btn btn-info btn-sm mb-2" onclick="checkClasses()">2. Перевірити класи</button><br>
-                        <button class="btn btn-success btn-sm mb-2" onclick="testInitialization()">3. Тест ініціалізації</button><br>
-                        <button class="btn btn-warning btn-sm mb-2" onclick="testChart()">4. Тест графіка</button><br>
-                        <button class="btn btn-secondary btn-sm mb-2" onclick="simulateOriginalPage()">5. Симулювати оригінал</button><br>
+                        <button class="btn btn-primary btn-sm mb-2" onclick="checkScripts()">1. Verificar scripts</button><br>
+                        <button class="btn btn-info btn-sm mb-2" onclick="checkClasses()">2. Verificar classes</button><br>
+                        <button class="btn btn-success btn-sm mb-2" onclick="testInitialization()">3. Teste de inicialização</button><br>
+                        <button class="btn btn-warning btn-sm mb-2" onclick="testChart()">4. Teste de gráfico</button><br>
+                        <button class="btn btn-secondary btn-sm mb-2" onclick="simulateOriginalPage()">5. Simular original</button><br>
                         <hr>
-                        <button class="btn btn-danger btn-sm" onclick="clearConsole()">Очистити консоль</button>
+                        <button class="btn btn-danger btn-sm" onclick="clearConsole()">Limpar consola</button>
                     </div>
                 </div>
 
-                <!-- Тестова зона для графіка -->
+                <!-- Zona de teste para o gráfico -->
                 <div class="card mt-3">
                     <div class="card-header">
-                        <h6>📊 Тестовий графік</h6>
+                        <h6>📊 Gráfico de teste</h6>
                     </div>
                     <div class="card-body">
                         <canvas id="test-prediction-chart" height="200"></canvas>
@@ -65,7 +65,7 @@
             <div class="col-md-6">
                 <div class="card">
                     <div class="card-header">
-                        <h5>🖥️ Консоль виводу</h5>
+                        <h5>🖥️ Saída da consola</h5>
                     </div>
                     <div class="card-body p-0">
                         <div id="console" class="console-output"></div>
@@ -74,16 +74,16 @@
             </div>
         </div>
 
-        <!-- Тестові AI рекомендації -->
+        <!-- Recomendações de IA de teste -->
         <div class="row mt-3">
             <div class="col-12">
                 <div class="card">
                     <div class="card-header">
-                        <h5>🤖 Тестові AI рекомендації</h5>
+                        <h5>🤖 Recomendações de IA de teste</h5>
                     </div>
                     <div class="card-body">
                         <div id="test-ai-recommendations">
-                            <!-- Тут будуть рекомендації -->
+                            <!-- Aqui estarão as recomendações -->
                         </div>
                     </div>
                 </div>
@@ -91,7 +91,7 @@
         </div>
     </div>
 
-    <!-- Підключаємо оригінальні скрипти -->
+    <!-- Підchaveаexisteмо оригінальні скрипти -->
     <script src="../../assets/js/predictive-maintenance.js"></script>
     <script src="../../assets/js/unified-analytics-engine.js"></script>
 
@@ -118,11 +118,11 @@
         }
 
         function checkScripts() {
-            log('🔍 Перевіряємо завантажені скрипти...', 'info');
+            log('🔍 A verificar scripts carregados...', 'info');
             
-            // Перевіряємо наявність скриптів
+            // Перевіряexisteмо наявність скриптів
             const scripts = document.querySelectorAll('script[src*="predictive-maintenance"], script[src*="unified-analytics-engine"]');
-            log(`📜 Знайдено ${scripts.length} AI скриптів`, scripts.length > 0 ? 'success' : 'error');
+            log(`📜 Encontrado ${scripts.length} AI scripts`, scripts.length > 0 ? 'success' : 'error');
             
             scripts.forEach((script, i) => {
                 log(`   ${i+1}. ${script.src}`, 'info');
@@ -130,86 +130,86 @@
         }
 
         function checkClasses() {
-            log('🏗️ Перевіряємо доступність класів...', 'info');
+            log('🏗️ A verificar a acessibilidade das classes...', 'info');
             
-            // Перевіряємо PredictiveMaintenanceSystem
+            // Перевіряexisteмо PredictiveMaintenanceSystem
             if (typeof PredictiveMaintenanceSystem !== 'undefined') {
-                log('✅ PredictiveMaintenanceSystem - ЗНАЙДЕНО', 'success');
+                log('✅ PredictiveMaintenanceSystem - ENCONTRADO', 'success');
                 
                 try {
                     const testInstance = new PredictiveMaintenanceSystem();
-                    log('✅ Можна створити екземпляр PredictiveMaintenanceSystem', 'success');
+                    log('✅ É possível criar uma instância de PredictiveMaintenanceSystem', 'success');
                     
-                    // Перевіряємо методи
+                    // Перевіряexisteмо методи
                     const methods = ['init', 'generateRecommendations', 'getSystemPredictions'];
                     methods.forEach(method => {
                         if (typeof testInstance[method] === 'function') {
-                            log(`✅ Метод ${method}() - є`, 'success');
+                            log(`✅ Método ${method}() - existe`, 'success');
                         } else {
-                            log(`❌ Метод ${method}() - відсутній`, 'error');
+                            log(`❌ Método ${method}() - ausente`, 'error');
                         }
                     });
                     
                 } catch (error) {
-                    log(`❌ Помилка створення екземпляра: ${error.message}`, 'error');
+                    log(`❌ Erro створення екземпляра: ${error.message}`, 'error');
                 }
             } else {
-                log('❌ PredictiveMaintenanceSystem - НЕ ЗНАЙДЕНО', 'error');
+                log('❌ PredictiveMaintenanceSystem - NÃO ENCONTRADO', 'error');
             }
             
-            // Перевіряємо глобальні функції
+            // Перевіряexisteмо глобальні функції
             const globalFunctions = ['initPredictiveAnalytics', 'activateAIPredictive'];
             globalFunctions.forEach(func => {
                 if (typeof window[func] === 'function') {
-                    log(`✅ Функція ${func}() - є`, 'success');
+                    log(`✅ Função ${func}() - existe`, 'success');
                 } else {
-                    log(`❌ Функція ${func}() - відсутня`, 'error');
+                    log(`❌ Função ${func}() - ausente`, 'error');
                 }
             });
         }
 
         function testInitialization() {
-            log('🚀 Тестуємо ініціалізацію системи...', 'info');
+            log('🚀 Testeуexisteмо ініціалізацію do sistema...', 'info');
             
             try {
                 if (typeof window.initPredictiveAnalytics === 'function') {
-                    log('🔄 Викликаємо initPredictiveAnalytics()...', 'info');
+                    log('🔄 Викликаexisteмо initPredictiveAnalytics()...', 'info');
                     const result = window.initPredictiveAnalytics();
-                    log(`📊 Результат ініціалізації: ${result}`, result ? 'success' : 'warning');
+                    log(`📊 Resultado da inicialização: ${result}`, result ? 'success' : 'warning');
                 } else {
-                    log('❌ initPredictiveAnalytics не знайдено', 'error');
+                    log('❌ initPredictiveAnalytics não encontrado', 'error');
                 }
                 
-                // Створюємо екземпляр системи
+                // Створюexisteмо екземпляр do sistema
                 if (!window.testPredictiveSystem) {
-                    log('🏗️ Створюємо тестовий екземпляр системи...', 'info');
+                    log('🏗️ Створюexisteмо testeовий екземпляр do sistema...', 'info');
                     window.testPredictiveSystem = new PredictiveMaintenanceSystem();
-                    log('✅ Тестовий екземпляр створено', 'success');
+                    log('✅ Instância de teste criada', 'success');
                 }
                 
             } catch (error) {
-                log(`❌ Помилка ініціалізації: ${error.message}`, 'error');
-                console.error('Детальна помилка:', error);
+                log(`❌ Erro ініціалізації: ${error.message}`, 'error');
+                console.error('Detalhada erro:', error);
             }
         }
 
         function testChart() {
-            log('📊 Тестуємо створення графіка...', 'info');
+            log('📊 Testeуexisteмо створення gráficoа...', 'info');
             
             try {
                 const canvas = document.getElementById('test-prediction-chart');
                 if (!canvas) {
-                    log('❌ Canvas не знайдено', 'error');
+                    log('❌ Canvas não encontrado', 'error');
                     return;
                 }
                 
                 const ctx = canvas.getContext('2d');
                 
-                // Створюємо тестові дані
+                // Створюexisteмо testeові дані
                 const data = {
-                    labels: ['Тиждень 1', 'Тиждень 2', 'Тиждень 3', 'Тиждень 4'],
+                    labels: ['Semana 1', 'Semana 2', 'Semana 3', 'Semana 4'],
                     datasets: [{
-                        label: 'Ймовірність поломки (%)',
+                        label: 'Probabilidade de avaria (%)',
                         data: [Math.random()*50, Math.random()*50, Math.random()*50, Math.random()*50],
                         borderColor: '#ff6b6b',
                         backgroundColor: 'rgba(255, 107, 107, 0.1)',
@@ -227,36 +227,36 @@
                         plugins: {
                             title: {
                                 display: true,
-                                text: 'Тестовий прогноз ТО'
+                                text: 'Previsão de manutenção de teste'
                             }
                         }
                     }
                 });
                 
-                log('✅ Тестовий графік створено успішно', 'success');
+                log('✅ Gráfico de teste criado com sucesso', 'success');
                 
-                // Тестуємо AI рекомендації
+                // Testeуexisteмо AI recomendações
                 loadTestRecommendations();
                 
             } catch (error) {
-                log(`❌ Помилка створення графіка: ${error.message}`, 'error');
+                log(`❌ Erro створення gráficoа: ${error.message}`, 'error');
             }
         }
 
         function loadTestRecommendations() {
-            log('🤖 Завантажуємо тестові AI рекомендації...', 'info');
+            log('🤖 Заванeжуexisteмо testeові AI recomendações...', 'info');
             
             const container = document.getElementById('test-ai-recommendations');
             if (!container) {
-                log('❌ Контейнер рекомендацій не знайдено', 'error');
+                log('❌ Контейнер рекомендацій не encontrado', 'error');
                 return;
             }
             
             const recommendations = [
-                { type: 'danger', icon: '🚨', text: 'Критичне: Ліфт #L003 потребує негайного огляду' },
-                { type: 'warning', icon: '⚠️', text: 'Увага: Планове ТО для ліфтів #L001, #L005 через 7 днів' },
-                { type: 'info', icon: '💡', text: 'Підказка: Виявлено можливість оптимізації енергоспоживання' },
-                { type: 'success', icon: '✅', text: 'Чудово: Elevadores #L002, #L004 працюють оптимально' }
+                { type: 'danger', icon: '🚨', text: 'Crítico: Elevador #L003 requer inspecção imediata' },
+                { type: 'warning', icon: '⚠️', text: 'Atenção: Manutenção planeada para de elevadores #L001, #L005 em 7 dias' },
+                { type: 'info', icon: '💡', text: 'Sugestão: Identificada oportunidade de otimização energética' },
+                { type: 'success', icon: '✅', text: 'Bem: Elevadores #L002, #L004 a funcionar de forma ótima' }
             ];
             
             const html = recommendations.map(rec => `
@@ -266,42 +266,42 @@
             `).join('');
             
             container.innerHTML = html;
-            log('✅ AI рекомендації завантажено', 'success');
+            log('✅ AI recomendações carregado', 'success');
         }
 
         function simulateOriginalPage() {
-            log('🔄 Симулюємо роботу оригінальної сторінки...', 'info');
+            log('🔄 Симулюexisteмо роботу оригінальної da página...', 'info');
             
-            // Симулюємо завантаження сторінки з хешем
-            log('📍 Симулюємо hash: #predictive-analytics', 'info');
+            // Симулюexisteмо carregamento da página desde хешем
+            log('📍 Симулюexisteмо hash: #predictive-analytics', 'info');
             
-            // Перевіряємо чи спрацьовує логіка
+            // Перевіряexisteмо чи спрацьовуexiste логіка
             if (window.location.hash === '#predictive-analytics' || true) {
-                log('✅ Hash збігається, активуємо AI таб', 'success');
+                log('✅ Hash збігаexisteться, активуexisteмо AI separador', 'success');
                 
                 setTimeout(() => {
                     if (window.activateAIPredictive) {
-                        log('🎯 Викликаємо activateAIPredictive()...', 'info');
+                        log('🎯 Викликаexisteмо activateAIPredictive()...', 'info');
                         try {
                             const success = window.activateAIPredictive();
-                            log(`📊 Результат активації: ${success}`, success ? 'success' : 'warning');
+                            log(`📊 Resultado da ativação: ${success}`, success ? 'success' : 'warning');
                         } catch (error) {
-                            log(`❌ Помилка активації: ${error.message}`, 'error');
+                            log(`❌ Erro активації: ${error.message}`, 'error');
                         }
                     } else {
-                        log('❌ activateAIPredictive не знайдено', 'error');
+                        log('❌ activateAIPredictive não encontrado', 'error');
                     }
                 }, 100);
             }
         }
 
-        // Автоматичний запуск при завантаженні
+        // Autoматичний запуск при заванeженні
         document.addEventListener('DOMContentLoaded', function() {
-            log('🔄 Діагностика розпочата автоматично...', 'info');
+            log('🔄 Diagnóstico iniciado automaticamente...', 'info');
             setTimeout(() => checkScripts(), 500);
             setTimeout(() => checkClasses(), 1000);
             
-            // Перехоплюємо оригінальний console.log
+            // Перехоплюexisteмо оригінальний console.log
             const originalLog = console.log;
             const originalError = console.error;
             const originalWarn = console.warn;

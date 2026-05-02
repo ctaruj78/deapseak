@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Диспетчер - Звіти та аналітика</title>
+    <title>Dispatcher - Relatórios e análise</title>
     <script src="../../assets/js/auth.js"></script>
 
     <script src="../../assets/js/global-settings.js"></script>
@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="../../plugins/adminlte/adminlte.min.css">
     <link rel="stylesheet" href="../../plugins/fontawesome/css/all.min.css">
     
-    <!-- Додаткові стилі -->
+    <!-- Estilos adicionais -->
     <style>
         .report-card {
             transition: all 0.3s ease;
@@ -186,7 +186,7 @@
 <body class="hold-transition sidebar-mini layout-fixed" data-required-role="dispatcher">
     <div class="wrapper">
 
-        <!-- Навігаційна панель -->
+        <!-- Barra de navegação -->
         <nav class="main-header navbar navbar-expand navbar-white navbar-light">
             <ul class="navbar-nav">
                 <li class="nav-item">
@@ -195,35 +195,35 @@
                     </a>
                 </li>
                 <li class="nav-item d-none d-sm-inline-block">
-                    <a href="dashboard.html" class="nav-link">Головна</a>
+                    <a href="dashboard.html" class="nav-link">Início</a>
                 </li>
                 <li class="nav-item d-none d-sm-inline-block">
-                    <a href="assignments.html" class="nav-link">Призначення</a>
+                    <a href="assignments.html" class="nav-link">Atribuições</a>
                 </li>
                 <li class="nav-item d-none d-sm-inline-block">
-                    <a href="reports.html" class="nav-link active">Звіти</a>
+                    <a href="reports.html" class="nav-link active">Relatórios</a>
                 </li>
             </ul>
 
-            <!-- Права частина навігації -->
+            <!-- Parte direita da navegação -->
             <ul class="navbar-nav ml-auto">
                 <li class="nav-item">
-                    <a class="nav-link" href="#" onclick="reportManager.quickStats()" title="Швидка статистика">
+                    <a class="nav-link" href="#" onclick="reportManager.quickStats()" title="Швидка estatísticas">
                         <i class="fas fa-chart-pie"></i>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#" onclick="reportManager.exportAll()" title="Exportar всіх звітів">
+                    <a class="nav-link" href="#" onclick="reportManager.exportAll()" title="Exportar todos os relatórios">
                         <i class="fas fa-file-export"></i>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#" id="darkModeToggle" title="Темна тема">
+                    <a class="nav-link" href="#" id="darkModeToggle" title="Tema escuro">
                         <i class="fas fa-moon"></i>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#" onclick="logout()" title="Вийти">
+                    <a class="nav-link" href="#" onclick="logout()" title="Sair">
                         <i class="fas fa-sign-out-alt"></i>
                     </a>
                 </li>
@@ -240,12 +240,12 @@
                 <div class="container-fluid">
                     <div class="row mb-2">
                         <div class="col-sm-6">
-                            <h1>Звіти та аналітика</h1>
+                            <h1>Relatórios e análise</h1>
                         </div>
                         <div class="col-sm-6">
                             <ol class="breadcrumb float-sm-right">
-                                <li class="breadcrumb-item"><a href="dashboard.html">Головна</a></li>
-                                <li class="breadcrumb-item active">Звіти</li>
+                                <li class="breadcrumb-item"><a href="dashboard.html">Início</a></li>
+                                <li class="breadcrumb-item active">Relatórios</li>
                             </ol>
                         </div>
                     </div>
@@ -255,82 +255,82 @@
             <!-- Main content -->
             <section class="content">
                 <div class="container-fluid">
-                    <!-- Filtroи звітів -->
+                    <!-- Filtros relatórioів -->
                     <div class="filter-bar">
                         <div class="row">
                             <div class="col-md-3">
                                 <div class="form-group">
-                                    <label>Період звіту:</label>
+                                    <label>Період relatório:</label>
                                     <select id="periodSelect" class="form-control">
-                                        <option value="today">Сьогодні</option>
-                                        <option value="week" selected>Цей тиждень</option>
-                                        <option value="month">Цей місяць</option>
-                                        <option value="quarter">Цей квартал</option>
-                                        <option value="year">Цей рік</option>
-                                        <option value="custom">Власний період</option>
+                                        <option value="today">Hoje</option>
+                                        <option value="week" selected>Esta semana</option>
+                                        <option value="month">Este mês</option>
+                                        <option value="quarter">Este trimestre</option>
+                                        <option value="year">Este ano</option>
+                                        <option value="custom">Período personalizado</option>
                                     </select>
                                 </div>
                             </div>
                             <div class="col-md-3">
                                 <div class="form-group">
-                                    <label>Тип звіту:</label>
+                                    <label>Tipo relatório:</label>
                                     <select id="reportType" class="form-control">
-                                        <option value="performance">Продуктивність</option>
-                                        <option value="financial">Фінансовий</option>
-                                        <option value="technical">Технічний</option>
-                                        <option value="quality">Якість</option>
+                                        <option value="performance">Desempenho</option>
+                                        <option value="financial">Financeiro</option>
+                                        <option value="technical">Técnico</option>
+                                        <option value="quality">Qualidade</option>
                                     </select>
                                 </div>
                             </div>
                             <div class="col-md-3">
                                 <div class="form-group">
-                                    <label>Групування:</label>
+                                    <label>Agrupamento:</label>
                                     <select id="groupBy" class="form-control">
-                                        <option value="daily">По днях</option>
-                                        <option value="weekly">По тижнях</option>
-                                        <option value="monthly">По місяцях</option>
-                                        <option value="technician">По техніках</option>
-                                        <option value="category">По категоріях</option>
+                                        <option value="daily">Por dia</option>
+                                        <option value="weekly">Por semana</option>
+                                        <option value="monthly">Por mês</option>
+                                        <option value="technician">Por técnico</option>
+                                        <option value="category">Por categoria</option>
                                     </select>
                                 </div>
                             </div>
                             <div class="col-md-3">
                                 <div class="form-group">
-                                    <label style="visibility: hidden;">Дії</label>
+                                    <label style="visibility: hidden;">Ações</label>
                                     <div class="btn-group btn-block">
                                         <button class="btn btn-primary" onclick="reportManager.generateReport()">
-                                            <i class="fas fa-sync"></i> Оновити
+                                            <i class="fas fa-sync"></i> Actualizar
                                         </button>
                                         <button class="btn btn-success" onclick="reportManager.exportReport()">
                                             <i class="fas fa-download"></i> Exportar
                                         </button>
                                         <button class="btn btn-info" onclick="reportManager.printReport()">
-                                            <i class="fas fa-print"></i> Друк
+                                            <i class="fas fa-print"></i> Impressão
                                         </button>
                                     </div>
                                 </div>
                             </div>
                         </div>
                         
-                        <!-- Власний період (прихований за замовчуванням) -->
+                        <!-- Período personalizado (oculto por padrão) -->
                         <div class="row mt-3" id="customPeriod" style="display: none;">
                             <div class="col-md-3">
                                 <div class="form-group">
-                                    <label>Дата з:</label>
+                                    <label>Data de início:</label>
                                     <input type="date" id="dateFrom" class="form-control">
                                 </div>
                             </div>
                             <div class="col-md-3">
                                 <div class="form-group">
-                                    <label>Дата по:</label>
+                                    <label>Data até:</label>
                                     <input type="date" id="dateTo" class="form-control">
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label style="visibility: hidden;">Застосувати</label>
+                                    <label style="visibility: hidden;">Aplicar</label>
                                     <button class="btn btn-outline-primary btn-block" onclick="reportManager.applyCustomPeriod()">
-                                        <i class="fas fa-check"></i> Застосувати період
+                                        <i class="fas fa-check"></i> Aplicar період
                                     </button>
                                 </div>
                             </div>
@@ -342,54 +342,54 @@
                         <div class="col-lg-2 col-md-4 col-6">
                             <div class="metric-card">
                                 <div class="metric-value text-primary" id="totalAssignments">0</div>
-                                <div class="metric-label">Всього призначень</div>
+                                <div class="metric-label">Total приde valores</div>
                                 <div class="trend-indicator trend-up" id="assignmentsTrend">+5%</div>
                             </div>
                         </div>
                         <div class="col-lg-2 col-md-4 col-6">
                             <div class="metric-card">
                                 <div class="metric-value text-success" id="completionRate">0%</div>
-                                <div class="metric-label">Відсоток завершення</div>
+                                <div class="metric-label">Percentagem de conclusão</div>
                                 <div class="trend-indicator trend-up" id="completionTrend">+2%</div>
                             </div>
                         </div>
                         <div class="col-lg-2 col-md-4 col-6">
                             <div class="metric-card">
                                 <div class="metric-value text-info" id="avgTime">0:00</div>
-                                <div class="metric-label">Середній час</div>
+                                <div class="metric-label">Tempo médio</div>
                                 <div class="trend-indicator trend-down" id="timeTrend">-10%</div>
                             </div>
                         </div>
                         <div class="col-lg-2 col-md-4 col-6">
                             <div class="metric-card">
                                 <div class="metric-value text-warning" id="slaCompliance">0%</div>
-                                <div class="metric-label">Відповідність SLA</div>
+                                <div class="metric-label">Cumprimento de SLA</div>
                                 <div class="trend-indicator trend-neutral" id="slaTrend">0%</div>
                             </div>
                         </div>
                         <div class="col-lg-2 col-md-4 col-6">
                             <div class="metric-card">
                                 <div class="metric-value text-danger" id="escalations">0</div>
-                                <div class="metric-label">Ескалації</div>
+                                <div class="metric-label">Escaladas</div>
                                 <div class="trend-indicator trend-down" id="escalationsTrend">-15%</div>
                             </div>
                         </div>
                         <div class="col-lg-2 col-md-4 col-6">
                             <div class="metric-card">
                                 <div class="metric-value" id="customerSatisfaction">0%</div>
-                                <div class="metric-label">Задоволеність клієнтів</div>
+                                <div class="metric-label">Satisfação dos clientes</div>
                                 <div class="trend-indicator trend-up" id="satisfactionTrend">+3%</div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Основні графи -->
+                    <!-- Gráficos principais -->
                     <div class="row">
                         <div class="col-lg-8">
                             <div class="chart-container">
                                 <h5 class="card-title mb-3">
                                     <i class="fas fa-chart-line mr-2"></i>
-                                    Динаміка продуктивності
+                                    Evolução desempenho
                                 </h5>
                                 <canvas id="performanceChart" height="250"></canvas>
                             </div>
@@ -398,20 +398,20 @@
                             <div class="chart-container">
                                 <h5 class="card-title mb-3">
                                     <i class="fas fa-chart-pie mr-2"></i>
-                                    Розподіл по пріоритетах
+                                    Розподіл по prioridadeах
                                 </h5>
                                 <canvas id="priorityChart" height="250"></canvas>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Додаткові графи -->
+                    <!-- Gráficos adicionais -->
                     <div class="row mt-4">
                         <div class="col-lg-6">
                             <div class="chart-container">
                                 <h5 class="card-title mb-3">
                                     <i class="fas fa-users mr-2"></i>
-                                    Продуктивність техніків
+                                    Desempenho de técnicos
                                 </h5>
                                 <canvas id="techPerformanceChart" height="250"></canvas>
                             </div>
@@ -420,29 +420,29 @@
                             <div class="chart-container">
                                 <h5 class="card-title mb-3">
                                     <i class="fas fa-calendar mr-2"></i>
-                                    Завантаження по днях
+                                    A carregar по do diaх
                                 </h5>
                                 <canvas id="workloadChart" height="250"></canvas>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Детальна статистика -->
+                    <!-- Detalhada estatísticas -->
                     <div class="row mt-4">
                         <div class="col-12">
                             <div class="card">
                                 <div class="card-header">
                                     <h3 class="card-title">
                                         <i class="fas fa-table mr-2"></i>
-                                        Детальна статистика
+                                        Detalhada estatísticas
                                     </h3>
                                     <div class="card-tools">
                                         <div class="btn-group">
                                             <button class="btn btn-sm btn-outline-primary" onclick="reportManager.tableView()">
-                                                <i class="fas fa-table"></i> Таблиця
+                                                <i class="fas fa-table"></i> Tabela
                                             </button>
                                             <button class="btn btn-sm btn-outline-secondary" onclick="reportManager.chartView()">
-                                                <i class="fas fa-chart-bar"></i> Графік
+                                                <i class="fas fa-chart-bar"></i> Gráfico
                                             </button>
                                         </div>
                                     </div>
@@ -454,14 +454,14 @@
                                                 <tr>
                                                     <th>Показник</th>
                                                     <th>Поточний період</th>
-                                                    <th>Попередній період</th>
+                                                    <th>Anterior період</th>
                                                     <th>Зміна</th>
                                                     <th>Ціль</th>
                                                     <th>Відхилення</th>
                                                 </tr>
                                             </thead>
                                             <tbody id="statsTable">
-                                                <!-- Дані будуть завантажені тут -->
+                                                <!-- Dados serão заванeжені aqui -->
                                             </tbody>
                                         </table>
                                     </div>
@@ -470,14 +470,14 @@
                         </div>
                     </div>
 
-                    <!-- Типи звітів -->
+                    <!-- Tipos de relatórios -->
                     <div class="row mt-4">
                         <div class="col-12">
                             <div class="card">
                                 <div class="card-header">
                                     <h3 class="card-title">
                                         <i class="fas fa-file-alt mr-2"></i>
-                                        Доступні типи звітів
+                                        Disponíveis tipoи relatórioів
                                     </h3>
                                 </div>
                                 <div class="card-body">
@@ -487,10 +487,10 @@
                                                 <div class="report-icon">
                                                     <i class="fas fa-tachometer-alt"></i>
                                                 </div>
-                                                <h5>Продуктивність</h5>
-                                                <p>Аналіз ефективності роботи</p>
+                                                <h5>Desempenho</h5>
+                                                <p>Аналіdesde ефективності trabalhos</p>
                                                 <button class="btn btn-primary btn-sm" onclick="reportManager.generatePerformanceReport()">
-                                                    <i class="fas fa-download"></i> Згенерувати
+                                                    <i class="fas fa-download"></i> Gerar
                                                 </button>
                                             </div>
                                         </div>
@@ -499,10 +499,10 @@
                                                 <div class="report-icon">
                                                     <i class="fas fa-money-bill-wave"></i>
                                                 </div>
-                                                <h5>Фінансовий</h5>
-                                                <p>Фінансові показники та ROI</p>
+                                                <h5>Financeiro</h5>
+                                                <p>Indicadores financeiros e ROI</p>
                                                 <button class="btn btn-primary btn-sm" onclick="reportManager.generateFinancialReport()">
-                                                    <i class="fas fa-download"></i> Згенерувати
+                                                    <i class="fas fa-download"></i> Gerar
                                                 </button>
                                             </div>
                                         </div>
@@ -511,10 +511,10 @@
                                                 <div class="report-icon">
                                                     <i class="fas fa-cogs"></i>
                                                 </div>
-                                                <h5>Технічний</h5>
-                                                <p>Технічні метрики та показники</p>
+                                                <h5>Técnico</h5>
+                                                <p>Técnicos метрики e показники</p>
                                                 <button class="btn btn-primary btn-sm" onclick="reportManager.generateTechnicalReport()">
-                                                    <i class="fas fa-download"></i> Згенерувати
+                                                    <i class="fas fa-download"></i> Gerar
                                                 </button>
                                             </div>
                                         </div>
@@ -523,10 +523,10 @@
                                                 <div class="report-icon">
                                                     <i class="fas fa-star"></i>
                                                 </div>
-                                                <h5>Якість</h5>
-                                                <p>Показники якості обслуговування</p>
+                                                <h5>Qualidade</h5>
+                                                <p>Показники якості de manutenção</p>
                                                 <button class="btn btn-primary btn-sm" onclick="reportManager.generateQualityReport()">
-                                                    <i class="fas fa-download"></i> Згенерувати
+                                                    <i class="fas fa-download"></i> Gerar
                                                 </button>
                                             </div>
                                         </div>
@@ -536,19 +536,19 @@
                         </div>
                     </div>
 
-                    <!-- Порівняльний аналіз -->
+                    <!-- Порівняльний аналіdesde -->
                     <div class="row mt-4">
                         <div class="col-md-6">
                             <div class="card">
                                 <div class="card-header">
                                     <h3 class="card-title">
                                         <i class="fas fa-balance-scale mr-2"></i>
-                                        Порівняльний аналіз
+                                        Порівняльний análise
                                     </h3>
                                 </div>
                                 <div class="card-body">
                                     <div id="comparisonAnalysis">
-                                        <!-- Порівняльний аналіз буде завантажений тут -->
+                                        <!-- Порівняльний аналіdesde será заванeжений aqui -->
                                     </div>
                                 </div>
                             </div>
@@ -563,7 +563,7 @@
                                 </div>
                                 <div class="card-body">
                                     <div id="kpiMetrics">
-                                        <!-- KPI показники будуть завантажені тут -->
+                                        <!-- KPI показники serão заванeжені aqui -->
                                     </div>
                                 </div>
                             </div>
@@ -583,12 +583,12 @@
         </footer>
     </div>
 
-    <!-- Модальне вікно налаштувань звіту -->
+    <!-- Janela modal налаштувань relatório -->
     <div class="modal fade" id="reportSettingsModal" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Configurações звіту</h5>
+                    <h5 class="modal-title">Configurações relatório</h5>
                     <button type="button" class="close" data-dismiss="modal">
                         <span>&times;</span>
                     </button>
@@ -598,7 +598,7 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label>Формат експорту</label>
+                                    <label>Formato експорту</label>
                                     <select class="form-control">
                                         <option value="pdf">PDF</option>
                                         <option value="excel">Excel</option>
@@ -609,27 +609,27 @@
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label>Рівень деталізації</label>
+                                    <label>Nível detalhesзації</label>
                                     <select class="form-control">
                                         <option value="summary">Загальний</option>
-                                        <option value="detailed">Детальний</option>
-                                        <option value="technical">Технічний</option>
+                                        <option value="detailed">Detalhado</option>
+                                        <option value="technical">Técnico</option>
                                     </select>
                                 </div>
                             </div>
                         </div>
                         <div class="form-group">
-                            <label>Включити графи</label>
+                            <label>Вchaveити графи</label>
                             <div class="custom-control custom-switch">
                                 <input type="checkbox" class="custom-control-input" id="includeCharts" checked>
-                                <label class="custom-control-label" for="includeCharts">Включати графи в звіт</label>
+                                <label class="custom-control-label" for="includeCharts">Вклюchatи графи в relatório</label>
                             </div>
                         </div>
                         <div class="form-group">
-                            <label>Включити рекомендації</label>
+                            <label>Вchaveити recomendações</label>
                             <div class="custom-control custom-switch">
                                 <input type="checkbox" class="custom-control-input" id="includeRecommendations" checked>
-                                <label class="custom-control-label" for="includeRecommendations">Додавати рекомендації</label>
+                                <label class="custom-control-label" for="includeRecommendations">Додавати recomendações</label>
                             </div>
                         </div>
                     </form>
@@ -637,7 +637,7 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
                     <button type="button" class="btn btn-primary" onclick="reportManager.applySettings()">
-                        <i class="fas fa-check"></i> Застосувати
+                        <i class="fas fa-check"></i> Aplicar
                     </button>
                 </div>
             </div>
@@ -659,7 +659,7 @@
 
     <script>
         function logout() {
-            if (confirm('Ви впевнені, що хочете вийти з системи?')) {
+            if (confirm('Tem a certeza que quer sair do sistema?')) {
                 localStorage.removeItem('authToken');
                 localStorage.removeItem('userData');
                 window.location.replace('/pages/auth/login.html');
@@ -667,16 +667,16 @@
         }
 
         $(document).ready(function() {
-            // Ініціалізація AdminLTE
+            // Inicialização AdminLTE
             $('[data-widget="pushmenu"]').PushMenu();
             
-            // Темна тема
+            // Tema escuro
             $('#darkModeToggle').on('click', function() {
                 $('body').toggleClass('dark-mode');
                 $(this).find('i').toggleClass('fa-moon fa-sun');
             });
 
-            // Перевірка з'єднання
+            // Verificação de ligação
             setInterval(() => {
                 const online = navigator.onLine;
                 $('#connectionStatus').html(
@@ -686,25 +686,25 @@
                 );
             }, 30000);
 
-            // Переключення власного періоду
+            // Переchaveення власного періоду
             $('#periodSelect').change(function() {
                 const isCustom = $(this).val() === 'custom';
                 $('#customPeriod').toggle(isCustom);
             });
 
-            // Завантаження даних диспетчера
+            // A carregar dados do despachante
             const userData = JSON.parse(localStorage.getItem('userData')) || {};
             if (userData.firstName) {
                 $('#dispatcherName').text(`${userData.firstName} ${userData.lastName || ''}`);
             }
 
-            // Ініціалізація менеджера звітів
+            // Inicialização менеджера relatórioів
             window.reportManager = new ReportManager();
         });
     </script>
     <script src="/assets/js/table-drag-scroll.js"></script>
 
-<!-- Ініціалізація динамічного сайдбару -->
+<!-- Inicialização do sidebar dinâmico -->
 <script>
     document.addEventListener("DOMContentLoaded", function() {
         if (typeof loadSidebarWithInit === "function") {

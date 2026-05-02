@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Технік - AR помічник</title>
+    <title>Técnico - Auxiliar AR</title>
     <script src="../../assets/js/auth.js"></script>
 
     
@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="../../plugins/adminlte/adminlte.min.css">
     <link rel="stylesheet" href="../../plugins/fontawesome/css/all.min.css">
     
-    <!-- AR.js для AR функціоналу -->
+    <!-- AR.js para AR функціоналу -->
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
     <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
     
@@ -192,7 +192,7 @@
             position: absolute;
         }
         
-        /* Анімації */
+        /* Animações */
         @keyframes slideInRight {
             from {
                 transform: translateX(100%);
@@ -214,7 +214,7 @@
             animation: pulse 2s infinite;
         }
         
-        /* Спеціальні стилі для AR */
+        /* Estilos especiais para AR */
         .a-enter-vr {
             display: none !important;
         }
@@ -223,7 +223,7 @@
             display: none !important;
         }
         
-        /* Адаптивність */
+        /* Responsividade */
         @media (max-width: 768px) {
             .ar-container {
                 flex-direction: column;
@@ -246,7 +246,7 @@
             }
         }
         
-        /* Стилі для темного режиму */
+        /* Estilos para темного режиму */
         .dark-mode .ar-container {
             background: rgba(45, 45, 45, 0.95);
         }
@@ -270,7 +270,7 @@
 <body class="hold-transition sidebar-mini layout-fixed ar-helper-page" data-required-role="tech">
     <div class="wrapper">
 
-        <!-- Навігаційна панель -->
+        <!-- Barra de navegação -->
         <nav class="main-header navbar navbar-expand navbar-white navbar-light">
             <ul class="navbar-nav">
                 <li class="nav-item">
@@ -279,34 +279,34 @@
                     </a>
                 </li>
                 <li class="nav-item d-none d-sm-inline-block">
-                    <a href="tasks.html" class="nav-link">Завдання</a>
+                    <a href="tasks.html" class="nav-link">Tarefas</a>
                 </li>
                 <li class="nav-item d-none d-sm-inline-block">
-                    <a href="schedule.html" class="nav-link">Розклад</a>
+                    <a href="schedule.html" class="nav-link">Calendário</a>
                 </li>
             </ul>
 
-            <!-- Права частина навігації -->
+            <!-- Parte direita da navegação -->
             <ul class="navbar-nav ml-auto">
                 <li class="nav-item">
-                    <a class="nav-link" href="tools.html" title="Інструменти">
+                    <a class="nav-link" href="tools.html" title="Ferramentas">
                         <i class="fas fa-tools"></i>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#" id="darkModeToggle" title="Темна тема">
+                    <a class="nav-link" href="#" id="darkModeToggle" title="Tema escuro">
                         <i class="fas fa-moon"></i>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#" onclick="logout()" title="Вийти">
+                    <a class="nav-link" href="#" onclick="logout()" title="Sair">
                         <i class="fas fa-sign-out-alt"></i>
                     </a>
                 </li>
             </ul>
         </nav>
 
-        <!-- Бічна панель -->
+        <!-- Painel lateral -->
         <aside class="main-sidebar sidebar-dark-primary elevation-4">
             <a href="dashboard.html" class="brand-link">
                 <span class="elevation-3" style="display:inline-flex;align-items:center;justify-content:center;width:33px;height:33px;border-radius:50%;background:linear-gradient(135deg,#fd7e14,#e83e8c);color:#fff;font-size:17px;margin-right:8px;opacity:.9;flex-shrink:0;"><i class="fas fa-tools"></i></span>
@@ -322,7 +322,7 @@
         <li class="nav-item">
             <a href="/pages/tech/dashboard.html" class="nav-link">
                 <i class="nav-icon fas fa-tachometer-alt"></i>
-                <p>Дашборд</p>
+                <p>Dashboard</p>
             </a>
         </li>
 
@@ -330,7 +330,7 @@
         <li class="nav-item">
             <a href="/pages/tech/tasks.html" class="nav-link">
                 <i class="nav-icon fas fa-clipboard-list"></i>
-                <p>Мої завдання</p>
+                <p>As minhas tarefas</p>
             </a>
         </li>
 
@@ -338,7 +338,7 @@
         <li class="nav-item">
             <a href="/pages/tech/schedule.html" class="nav-link">
                 <i class="nav-icon fas fa-calendar-alt"></i>
-                <p>Розклад</p>
+                <p>Agenda</p>
             </a>
         </li>
 
@@ -354,7 +354,7 @@
         <li class="nav-item">
             <a href="/pages/tech/inspections.html" class="nav-link">
                 <i class="nav-icon fas fa-clipboard-check"></i>
-                <p>Інспекції</p>
+                <p>Inspecções</p>
             </a>
         </li>
 
@@ -362,7 +362,7 @@
         <li class="nav-item">
             <a href="/pages/tech/reports.html" class="nav-link">
                 <i class="nav-icon fas fa-file-alt"></i>
-                <p>Звіти робіт</p>
+                <p>Relatórios de trabalho</p>
             </a>
         </li>
 
@@ -371,7 +371,7 @@
             <a href="#" class="nav-link">
                 <i class="nav-icon fas fa-toolbox"></i>
                 <p>
-                    Інструменти
+                    Ferramentas
                     <i class="right fas fa-angle-left"></i>
                 </p>
             </a>
@@ -379,7 +379,7 @@
                 <li class="nav-item">
                     <a href="/pages/tech/qr-scanner.html" class="nav-link">
                         <i class="fas fa-qrcode nav-icon"></i>
-                        <p>QR Сканер</p>
+                        <p>Leitor QR</p>
                     </a>
                 </li>
                 <li class="nav-item">
@@ -391,13 +391,13 @@
                 <li class="nav-item">
                     <a href="/pages/tech/task-map.html" class="nav-link">
                         <i class="fas fa-map-marked-alt nav-icon"></i>
-                        <p>Карта завдань</p>
+                        <p>Mapa de tarefas</p>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a href="/pages/tech/tools.html" class="nav-link">
                         <i class="fas fa-tools nav-icon"></i>
-                        <p>Інструменти</p>
+                        <p>Ferramentas</p>
                     </a>
                 </li>
             </ul>
@@ -408,7 +408,7 @@
             <a href="#" class="nav-link">
                 <i class="nav-icon fas fa-book"></i>
                 <p>
-                    База знань
+                    Base de conhecimento
                     <i class="right fas fa-angle-left"></i>
                 </p>
             </a>
@@ -416,25 +416,25 @@
                 <li class="nav-item">
                     <a href="/pages/tech/knowledge-base.html" class="nav-link">
                         <i class="fas fa-bookmark nav-icon"></i>
-                        <p>Довідник</p>
+                        <p>Manual</p>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a href="/pages/tech/manuals.html" class="nav-link">
                         <i class="fas fa-book-open nav-icon"></i>
-                        <p>Інструкції</p>
+                        <p>Instruções</p>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a href="/pages/tech/checklists.html" class="nav-link">
                         <i class="fas fa-tasks nav-icon"></i>
-                        <p>Чеклісти</p>
+                        <p>Listas de verificação</p>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a href="/pages/tech/videos.html" class="nav-link">
                         <i class="fas fa-video nav-icon"></i>
-                        <p>Відео</p>
+                        <p>Vídeos</p>
                     </a>
                 </li>
             </ul>
@@ -443,8 +443,8 @@
         <li class="nav-item">
             <a href="/pages/ai-assistant/ai-assistant.html" class="nav-link">
                 <i class="nav-icon fas fa-magic"></i>
-                <p>AI Асистент</p>
-                <span class="badge badge-success right">Новинка</span>
+                <p>AI Assistente</p>
+                <span class="badge badge-success right">Novidade</span>
             </a>
         </li>
 
@@ -452,7 +452,7 @@
         <li class="nav-item">
             <a href="/pages/tech/notifications.html" class="nav-link">
                 <i class="nav-icon fas fa-bell"></i>
-                <p>Сповіщення</p>
+                <p>Notificações</p>
             </a>
         </li>
 
@@ -460,7 +460,7 @@
         <li class="nav-item">
             <a href="/pages/tech/profile.html" class="nav-link">
                 <i class="nav-icon fas fa-user"></i>
-                <p>Профіль</p>
+                <p>Perfil</p>
             </a>
         </li>
 
@@ -482,12 +482,12 @@
                 <div class="container-fluid">
                     <div class="row mb-2">
                         <div class="col-sm-6">
-                            <h1>AR помічник</h1>
+                            <h1>Auxiliar AR</h1>
                         </div>
                         <div class="col-sm-6">
                             <ol class="breadcrumb float-sm-right">
-                                <li class="breadcrumb-item"><a href="dashboard.html">Головна</a></li>
-                                <li class="breadcrumb-item active">AR помічник</li>
+                                <li class="breadcrumb-item"><a href="dashboard.html">Início</a></li>
+                                <li class="breadcrumb-item active">Auxiliar AR</li>
                             </ol>
                         </div>
                     </div>
@@ -502,9 +502,9 @@
                         <div class="col-12">
                             <div class="card">
                                 <div class="card-header">
-                                    <h3 class="card-title">Допомога з доповненою реальністю</h3>
+                                    <h3 class="card-title">Ajuda de realidade aumentada</h3>
                                     <div class="card-tools">
-                                        <span class="badge badge-info" id="arStatus">Неактивно</span>
+                                        <span class="badge badge-info" id="arStatus">Inativo</span>
                                     </div>
                                 </div>
                                 <div class="card-body p-0">
@@ -512,9 +512,9 @@
                                         <!-- AR Controls -->
                                         <div class="ar-controls col-md-4">
                                             <div class="form-group">
-                                                <label for="liftModelSelect"><i class="fas fa-elevator"></i> Модель ліфта</label>
+                                                <label for="liftModelSelect"><i class="fas fa-elevator"></i> Modelo do elevador</label>
                                                 <select id="liftModelSelect" class="form-control select2">
-                                                    <option value="">Оберіть модель...</option>
+                                                    <option value="">Selecione модель...</option>
                                                     <option value="model1">Otis Gen2</option>
                                                     <option value="model2">Schindler 3300</option>
                                                     <option value="model3">Kone MonoSpace</option>
@@ -531,33 +531,33 @@
                                             </div>
 
                                             <div class="form-group">
-                                                <label><i class="fas fa-cogs"></i> Компоненти</label>
+                                                <label><i class="fas fa-cogs"></i> Componentes</label>
                                                 <div class="component-list" id="componentList">
                                                     <!-- Components will be loaded dynamically -->
                                                 </div>
                                             </div>
 
                                             <div class="form-group">
-                                                <label><i class="fas fa-tools"></i> Інструменти AR</label>
+                                                <label><i class="fas fa-tools"></i> Ferramentas AR</label>
                                                 <div class="btn-group d-flex flex-wrap">
                                                     <button class="btn btn-outline-primary mb-2 mr-2" id="measureTool">
-                                                        <i class="fas fa-ruler"></i> Вимірювання
+                                                        <i class="fas fa-ruler"></i> Medição
                                                     </button>
                                                     <button class="btn btn-outline-info mb-2 mr-2" id="annotationTool">
-                                                        <i class="fas fa-pen"></i> Анотації
+                                                        <i class="fas fa-pen"></i> Anotações
                                                     </button>
                                                     <button class="btn btn-outline-success mb-2 mr-2" id="screenshotTool">
-                                                        <i class="fas fa-camera"></i> Знімок
+                                                        <i class="fas fa-camera"></i> Fotografia
                                                     </button>
                                                     <button class="btn btn-outline-warning mb-2 mr-2" id="hotspotTool">
-                                                        <i class="fas fa-map-marker-alt"></i> Хот-споти
+                                                        <i class="fas fa-map-marker-alt"></i> Pontos de referência
                                                     </button>
                                                 </div>
                                             </div>
 
                                             <div class="form-group">
                                                 <button class="btn btn-primary btn-lg btn-block pulse" id="startAR">
-                                                    <i class="fas fa-play"></i> Запустити AR
+                                                    <i class="fas fa-play"></i> Iniciar AR
                                                 </button>
                                             </div>
 
@@ -565,7 +565,7 @@
                                                 <div class="alert alert-info">
                                                     <small>
                                                         <i class="fas fa-info-circle"></i>
-                                                        Наведіть камеру на ліфт або маркер для активації AR
+                                                        Aponte a câmara на elevador ou маркер para активації AR
                                                     </small>
                                                 </div>
                                             </div>
@@ -576,10 +576,10 @@
                                             <div class="ar-placeholder" id="arPlaceholder">
                                                 <div class="placeholder-content">
                                                     <i class="fas fa-vr-cardboard fa-4x mb-3"></i>
-                                                    <h3>AR перегляд</h3>
-                                                    <p class="mb-3">Наведіть камеру на ліфт або робоче середовище</p>
+                                                    <h3>AR visualização</h3>
+                                                    <p class="mb-3">Aponte a câmara на elevador ou робоче ambiente</p>
                                                     <button class="btn btn-primary btn-lg pulse" id="startARBtn">
-                                                        <i class="fas fa-play"></i> Запустити AR
+                                                        <i class="fas fa-play"></i> Iniciar AR
                                                     </button>
                                                 </div>
                                             </div>
@@ -597,9 +597,9 @@
                                             <!-- AR Overlay -->
                                             <div class="ar-overlay">
                                                 <div class="ar-info-panel">
-                                                    <h5><i class="fas fa-info-circle"></i> Інформація</h5>
+                                                    <h5><i class="fas fa-info-circle"></i> Informação</h5>
                                                     <div id="componentInfo">
-                                                        <p class="text-muted">Оберіть компонент для перегляду деталей</p>
+                                                        <p class="text-muted">Selecione компонент para visualizaçãoу детmasй</p>
                                                     </div>
                                                 </div>
 
@@ -610,7 +610,7 @@
                                                     <button class="btn btn-light ar-tool" title="Зменшити">
                                                         <i class="fas fa-search-minus"></i>
                                                     </button>
-                                                    <button class="btn btn-light ar-tool" title="Обертати">
+                                                    <button class="btn btn-light ar-tool" title="Оберeти">
                                                         <i class="fas fa-sync"></i>
                                                     </button>
                                                     <button class="btn btn-light ar-tool" title="Пауза">
@@ -630,36 +630,36 @@
                         <div class="col-12">
                             <div class="card">
                                 <div class="card-header">
-                                    <h3 class="card-title"><i class="fas fa-book"></i> Керівництва та документація</h3>
+                                    <h3 class="card-title"><i class="fas fa-book"></i> Керівництва e documentoація</h3>
                                 </div>
                                 <div class="card-body">
                                     <div class="manual-cards">
                                         <div class="manual-card">
-                                            <h4><i class="fas fa-shield-alt text-danger"></i> Інструкція з безпеки</h4>
-                                            <p>Правила техніки безпеки під час роботи з ліфтами</p>
+                                            <h4><i class="fas fa-shield-alt text-danger"></i> Інструкція desde de segurança</h4>
+                                            <p>Правила техніки de segurança під hora trabalhos desde do elevadorми</p>
                                             <button class="btn btn-outline-danger btn-sm" onclick="arHelper.openManual('safety')">
-                                                <i class="fas fa-download"></i> Завантажити
+                                                <i class="fas fa-download"></i> Descarregar
                                             </button>
                                         </div>
                                         <div class="manual-card">
                                             <h4><i class="fas fa-project-diagram text-primary"></i> Схеми компонентів</h4>
-                                            <p>Детальні схеми основних компонентів ліфтів</p>
+                                            <p>Деeльні схеми основних компонентів de elevadores</p>
                                             <button class="btn btn-outline-primary btn-sm" onclick="arHelper.openManual('components')">
-                                                <i class="fas fa-download"></i> Завантажити
+                                                <i class="fas fa-download"></i> Descarregar
                                             </button>
                                         </div>
                                         <div class="manual-card">
-                                            <h4><i class="fas fa-wrench text-warning"></i> Розбір несправностей</h4>
-                                            <p>Поширені проблеми та їх вирішення для різних моделей</p>
+                                            <h4><i class="fas fa-wrench text-warning"></i> Розбір неcorretamenteстей</h4>
+                                            <p>Problemas comuns e as suas soluções para різних моделей</p>
                                             <button class="btn btn-outline-warning btn-sm" onclick="arHelper.openManual('troubleshooting')">
-                                                <i class="fas fa-download"></i> Завантажити
+                                                <i class="fas fa-download"></i> Descarregar
                                             </button>
                                         </div>
                                         <div class="manual-card">
-                                            <h4><i class="fas fa-video text-success"></i> Відеоінструкції</h4>
-                                            <p>Відеоуроки з ремонту та обслуговування</p>
+                                            <h4><i class="fas fa-video text-success"></i> Tutoriais em vídeo</h4>
+                                            <p>Vídeoуanos desde reparaçãoу e de manutenção</p>
                                             <button class="btn btn-outline-success btn-sm" onclick="arHelper.openVideoTutorials()">
-                                                <i class="fas fa-play"></i> Переглянути
+                                                <i class="fas fa-play"></i> Ver
                                             </button>
                                         </div>
                                     </div>
@@ -673,13 +673,13 @@
                         <div class="col-12">
                             <div class="card">
                                 <div class="card-header">
-                                    <h3 class="card-title"><i class="fas fa-camera"></i> Останні знімки</h3>
+                                    <h3 class="card-title"><i class="fas fa-camera"></i> Recentes знімки</h3>
                                 </div>
                                 <div class="card-body">
                                     <div id="screenshotsGallery" class="d-flex flex-wrap gap-2">
                                         <div class="text-center text-muted py-5 w-100">
                                             <i class="fas fa-camera fa-3x mb-2"></i>
-                                            <p>Ще немає знімків</p>
+                                            <p>Ще não há знімків</p>
                                         </div>
                                     </div>
                                 </div>
@@ -699,7 +699,7 @@
                                       <a-scene embedded arjs>
                                         <a-marker preset="hiro">
                                           <a-box position="0 0.5 0" material="color: #4CAF50; opacity: 0.7;"></a-box>
-                                          <a-text value="Ліфт" position="0 1.2 0" color="#fff"></a-text>
+                                          <a-text value="Elevador" position="0 1.2 0" color="#fff"></a-text>
                                         </a-marker>
                                         <a-entity camera></a-entity>
                                       </a-scene>
@@ -736,9 +736,9 @@
     <script src="../../assets/js/modules/push-notifications.js"></script>
     <script src="../../assets/js/modules/messenger.js"></script>
     <script>
-        // Функція виходу
+        // Função виходу
         function logout() {
-            if (confirm('Ви впевнені, що хочете вийти з системи?')) {
+            if (confirm('Tem a certeza que quer sair do sistema?')) {
                 if (typeof AuthManager !== 'undefined') {
                     AuthManager.logout();
                 } else {
@@ -749,41 +749,41 @@
             }
         }
 
-        // Ініціалізація
+        // Inicialização
         $(document).ready(function() {
-            // Ініціалізація AdminLTE
+            // Inicialização AdminLTE
             $('[data-widget="pushmenu"]').PushMenu();
             
-            // Ініціалізація Select2
+            // Inicialização Select2
             $('#liftModelSelect').select2({
-                placeholder: 'Оберіть модель...',
+                placeholder: 'Selecione модель...',
                 width: '100%'
             });
 
-            // Перевірка чи завантажено ar-helper.js
+            // Verificação чи carregado ar-helper.js
             if (typeof ARHelper === 'undefined') {
-                console.error('ARHelper клас не завантажено!');
+                console.error('ARHelper клас не carregado!');
                 
                 // Резервна ініціалізація
                 const currentUser = JSON.parse(localStorage.getItem('currentUser')) || { 
-                    firstName: 'Технік' 
+                    firstName: 'Técnico' 
                 };
                 $('#techName').text(currentUser.firstName);
                 
                 // Базовий функціонал
                 $('#startAR, #startARBtn').on('click', function() {
-                    alert('AR функціонал недоступний. Перевірте завантаження ARHelper.js');
+                    alert('AR функціонал indisponível. Verifique carregamento ARHelper.js');
                 });
             }
-            // ПРИМІТКА: window.arHelper створюється в ar-helper.js модулі
+            // ПРИМІТКА: window.arHelper створюexisteться в ar-helper.js модулі
 
-            // Темна тема
+            // Tema escuro
             $('#darkModeToggle').on('click', function() {
                 $('body').toggleClass('dark-mode');
                 $(this).find('i').toggleClass('fa-moon fa-sun');
             });
 
-            // Голосове керування - ініціалізація з затримкою щоб ARHelper встиг завантажитися
+            // Голосове керування - ініціалізація desde затримкою para ARHelper встиг descarregarся
             setTimeout(function() {
                 if (typeof VoiceAR !== 'undefined' && window.arHelper) {
                     const voiceAR = new VoiceAR(window.arHelper);
@@ -794,16 +794,16 @@
                     voiceBtn.onclick = () => voiceAR.start();
                     document.querySelector('.ar-control-panel')?.appendChild(voiceBtn);
                 } else {
-                    console.warn('⚠️ VoiceAR або ARHelper не завантажено');
+                    console.warn('⚠️ VoiceAR ou ARHelper не carregado');
                 }
             }, 200);
 
-            // Ініціалізація push-нотифікацій
+            // Inicialização push-нотифікацій
             window.pushNotifications.init();
             const pushBtn = document.createElement('button');
             pushBtn.className = 'btn btn-danger mb-2';
-            pushBtn.innerHTML = '<i class="fas fa-bell"></i> Тест push-нотифікації';
-            pushBtn.onclick = () => window.pushNotifications.notifyNewTask('Перевірити ліфт №5');
+            pushBtn.innerHTML = '<i class="fas fa-bell"></i> Teste push-нотифікації';
+            pushBtn.onclick = () => window.pushNotifications.notifyNewTask('Verificar elevador №5');
             document.querySelector('.ar-control-panel')?.appendChild(pushBtn);
 
             setTimeout(() => {
@@ -819,13 +819,13 @@
             }, 1500);
         });
 
-        // Реєстрація service worker
+        // Registo service worker
         if ('serviceWorker' in navigator) {
           window.addEventListener('load', function() {
             navigator.serviceWorker.register('/service-worker.js').then(function(registration) {
-              console.log('ServiceWorker зареєстровано:', registration);
+              console.log('ServiceWorker registado:', registration);
             }, function(err) {
-              console.log('ServiceWorker помилка:', err);
+              console.log('Erro do ServiceWorker:', err);
             });
           });
         }

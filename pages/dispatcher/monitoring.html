@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Диспетчер - Моніторинг у реальному часі</title>
+    <title>Dispatcher - Monitorização em tempo real</title>
     <script src="../../assets/js/global-settings.js"></script>
     
     <!-- AdminLTE CSS -->
@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="../../plugins/fontawesome/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
     
-    <!-- Додаткові стилі -->
+    <!-- Estilos adicionais -->
     <style>
         .monitoring-card {
             transition: all 0.3s ease;
@@ -321,7 +321,7 @@
 <body class="hold-transition sidebar-mini layout-fixed" data-required-role="dispatcher">
     <div class="wrapper">
 
-        <!-- Навігаційна панель -->
+        <!-- Barra de navegação -->
         <nav class="main-header navbar navbar-expand navbar-white navbar-light">
             <ul class="navbar-nav">
                 <li class="nav-item">
@@ -330,37 +330,37 @@
                     </a>
                 </li>
                 <li class="nav-item d-none d-sm-inline-block">
-                    <a href="dashboard.html" class="nav-link">Головна</a>
+                    <a href="dashboard.html" class="nav-link">Início</a>
                 </li>
                 <li class="nav-item d-none d-sm-inline-block">
-                    <a href="assignments.html" class="nav-link">Призначення</a>
+                    <a href="assignments.html" class="nav-link">Atribuições</a>
                 </li>
                 <li class="nav-item d-none d-sm-inline-block">
-                    <a href="monitoring.html" class="nav-link active">Моніторинг</a>
+                    <a href="monitoring.html" class="nav-link active">Monitorização</a>
                 </li>
             </ul>
 
-            <!-- Права частина навігації -->
+            <!-- Parte direita da navegação -->
             <ul class="navbar-nav ml-auto">
                 <li class="nav-item">
-                    <a class="nav-link" href="#" onclick="monitoringManager.showAlerts()" title="Сповіщення">
+                    <a class="nav-link" href="#" onclick="monitoringManager.showAlerts()" title="Notificações">
                         <i class="fas fa-bell"></i>
                         <span class="alert-badge" id="alertsCount">0</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#" onclick="monitoringManager.toggleAutoRefresh()" title="Автооновлення">
+                    <a class="nav-link" href="#" onclick="monitoringManager.toggleAutoRefresh()" title="Autoatualização">
                         <i class="fas fa-sync" id="autoRefreshIcon"></i>
                         <span class="live-indicator" id="liveIndicator"></span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#" id="darkModeToggle" title="Темна тема">
+                    <a class="nav-link" href="#" id="darkModeToggle" title="Tema escuro">
                         <i class="fas fa-moon"></i>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#" onclick="logout()" title="Вийти">
+                    <a class="nav-link" href="#" onclick="logout()" title="Sair">
                         <i class="fas fa-sign-out-alt"></i>
                     </a>
                 </li>
@@ -377,12 +377,12 @@
                 <div class="container-fluid">
                     <div class="row mb-2">
                         <div class="col-sm-6">
-                            <h1>Моніторинг у реальному часі</h1>
+                            <h1>Monitorização em tempo real</h1>
                         </div>
                         <div class="col-sm-6">
                             <ol class="breadcrumb float-sm-right">
-                                <li class="breadcrumb-item"><a href="dashboard.html">Головна</a></li>
-                                <li class="breadcrumb-item active">Моніторинг</li>
+                                <li class="breadcrumb-item"><a href="dashboard.html">Início</a></li>
+                                <li class="breadcrumb-item active">Monitorização</li>
                             </ol>
                         </div>
                     </div>
@@ -392,62 +392,62 @@
             <!-- Main content -->
             <section class="content">
                 <div class="container-fluid">
-                    <!-- Статистика в реальному часі -->
+                    <!-- Estatísticas в реальному horaі -->
                     <div class="row">
                         <div class="col-lg-2 col-md-4 col-6">
                             <div class="metric-card">
                                 <div class="metric-value text-primary" id="onlineTechs">0</div>
-                                <div class="metric-label">Техніків онлайн</div>
+                                <div class="metric-label">Técnicos online</div>
                             </div>
                         </div>
                         <div class="col-lg-2 col-md-4 col-6">
                             <div class="metric-card">
                                 <div class="metric-value text-success" id="activeAssignments">0</div>
-                                <div class="metric-label">Активних робіт</div>
+                                <div class="metric-label">Trabalhos ativos</div>
                             </div>
                         </div>
                         <div class="col-lg-2 col-md-4 col-6">
                             <div class="metric-card">
                                 <div class="metric-value text-warning" id="pendingAlerts">0</div>
-                                <div class="metric-label">Активних сповіщень</div>
+                                <div class="metric-label">Ativos de notificações</div>
                             </div>
                         </div>
                         <div class="col-lg-2 col-md-4 col-6">
                             <div class="metric-card">
-                                <div class="metric-value text-info" id="avgResponse">0с</div>
-                                <div class="metric-label">Середній час відгуку</div>
+                                <div class="metric-value text-info" id="avgResponse">0s</div>
+                                <div class="metric-label">Tempo médio de resposta</div>
                             </div>
                         </div>
                         <div class="col-lg-2 col-md-4 col-6">
                             <div class="metric-card">
                                 <div class="metric-value text-danger" id="emergencyCases">0</div>
-                                <div class="metric-label">Аварійних випадків</div>
+                                <div class="metric-label">Ocorrências de emergência</div>
                             </div>
                         </div>
                         <div class="col-lg-2 col-md-4 col-6">
                             <div class="metric-card">
                                 <div class="metric-value" id="systemUptime">100%</div>
-                                <div class="metric-label">Доступність системи</div>
+                                <div class="metric-label">Disponibilidade do sistema</div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Мапа та основний моніторинг -->
+                    <!-- Мапа e основний monitorização -->
                     <div class="row mt-4">
                         <div class="col-lg-8">
-                            <!-- Карта техніків -->
+                            <!-- Mapa de técnicos -->
                             <div class="card">
                                 <div class="card-header">
                                     <h3 class="card-title">
                                         <i class="fas fa-map-marker-alt mr-2"></i>
-                                        Мапа розташування техніків
+                                        Мапа розeшування de técnicos
                                     </h3>
                                     <div class="card-tools">
                                         <button class="btn btn-sm btn-outline-primary" onclick="monitoringManager.centerMap()">
-                                            <i class="fas fa-crosshairs"></i> Центрувати
+                                            <i class="fas fa-crosshairs"></i> Centralizar
                                         </button>
                                         <button class="btn btn-sm btn-outline-info" onclick="monitoringManager.toggleHeatmap()">
-                                            <i class="fas fa-fire"></i> Теплова карта
+                                            <i class="fas fa-fire"></i> Mapa de calor
                                         </button>
                                     </div>
                                 </div>
@@ -455,39 +455,39 @@
                                     <div class="map-container" id="techMap">
                                         <div class="map-placeholder">
                                             <i class="fas fa-map fa-3x text-muted mb-3"></i>
-                                            <p>Інтерактивна карта моніторингу</p>
-                                            <small class="text-muted">Завантаження даних...</small>
+                                            <p>Mapa interactivo monitorização</p>
+                                            <small class="text-muted">A carregar dados...</small>
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- Активні завдання -->
+                            <!-- Ativos tarefas -->
                             <div class="card mt-4">
                                 <div class="card-header">
                                     <h3 class="card-title">
                                         <i class="fas fa-tasks mr-2"></i>
-                                        Активні завдання в реальному часі
+                                        Ativos tarefas в реальному horaі
                                     </h3>
                                     <div class="card-tools">
-                                        <span class="badge badge-success" id="activeTasksCount">0 активних</span>
+                                        <span class="badge badge-success" id="activeTasksCount">0 ativos</span>
                                     </div>
                                 </div>
                                 <div class="card-body p-0">
                                     <div id="activeTasksContainer">
-                                        <!-- Активні завдання будуть завантажені тут -->
+                                        <!-- Ativos tarefas serão заванeжені aqui -->
                                     </div>
                                 </div>
                             </div>
                         </div>
 
                         <div class="col-lg-4">
-                            <!-- Статус техніків -->
+                            <!-- Estado de técnicos -->
                             <div class="card">
                                 <div class="card-header">
                                     <h3 class="card-title">
                                         <i class="fas fa-users mr-2"></i>
-                                        Статус техніків
+                                        Estado de técnicos
                                     </h3>
                                     <div class="card-tools">
                                         <div class="input-group input-group-sm" style="width: 150px;">
@@ -502,58 +502,58 @@
                                 </div>
                                 <div class="card-body p-0">
                                     <div id="techStatusContainer" style="max-height: 400px; overflow-y: auto;">
-                                        <!-- Статуси техніків будуть завантажені тут -->
+                                        <!-- Estadoи de técnicos serão заванeжені aqui -->
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- Системні сповіщення -->
+                            <!-- Do sistema notificações -->
                             <div class="card mt-4">
                                 <div class="card-header">
                                     <h3 class="card-title">
                                         <i class="fas fa-bell mr-2"></i>
-                                        Останні сповіщення
+                                        Recentes notificações
                                     </h3>
                                     <div class="card-tools">
                                         <button class="btn btn-sm btn-outline-danger" onclick="monitoringManager.clearAlerts()">
-                                            <i class="fas fa-trash"></i> Очистити
+                                            <i class="fas fa-trash"></i> Limpar
                                         </button>
                                     </div>
                                 </div>
                                 <div class="card-body p-0">
                                     <div id="alertsContainer" style="max-height: 300px; overflow-y: auto;">
-                                        <!-- Сповіщення будуть завантажені тут -->
+                                        <!-- Notificações serão заванeжені aqui -->
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Додаткові інструменти -->
+                    <!-- Додаткові ferramentas -->
                     <div class="row mt-4">
                         <div class="col-12">
                             <div class="card">
                                 <div class="card-header">
                                     <h3 class="card-title">
                                         <i class="fas fa-tools mr-2"></i>
-                                        Інструменти моніторингу
+                                        Ferramentas monitorização
                                     </h3>
                                 </div>
                                 <div class="card-body">
                                     <div class="row">
                                         <div class="col-md-3 mb-3">
                                             <button class="btn btn-outline-primary btn-block" onclick="monitoringManager.startBroadcast()">
-                                                <i class="fas fa-broadcast-tower"></i> Трансляція
+                                                <i class="fas fa-broadcast-tower"></i> Transmissão
                                             </button>
                                         </div>
                                         <div class="col-md-3 mb-3">
                                             <button class="btn btn-outline-success btn-block" onclick="monitoringManager.exportLogs()">
-                                                <i class="fas fa-download"></i> Exportar логів
+                                                <i class="fas fa-download"></i> Exportar registos
                                             </button>
                                         </div>
                                         <div class="col-md-3 mb-3">
                                             <button class="btn btn-outline-warning btn-block" onclick="monitoringManager.systemDiagnostics()">
-                                                <i class="fas fa-stethoscope"></i> Діагностика
+                                                <i class="fas fa-stethoscope"></i> Diagnóstico
                                             </button>
                                         </div>
                                         <div class="col-md-3 mb-3">
@@ -567,21 +567,21 @@
                         </div>
                     </div>
 
-                    <!-- Графіки та аналітика -->
+                    <!-- Gráficoи e análise -->
                     <div class="row mt-4">
                         <div class="col-md-6">
                             <div class="card">
                                 <div class="card-header">
                                     <h3 class="card-title">
                                         <i class="fas fa-chart-line mr-2"></i>
-                                        Навантаження системи
+                                        Наванeження do sistema
                                     </h3>
                                 </div>
                                 <div class="card-body">
                                     <div id="systemLoadChart" style="height: 200px;">
                                         <div class="text-center py-5 text-muted">
                                             <i class="fas fa-chart-line fa-2x mb-3"></i>
-                                            <p>Графік навантаження системи</p>
+                                            <p>Gráfico наванeження do sistema</p>
                                         </div>
                                     </div>
                                 </div>
@@ -599,8 +599,8 @@
                                     <div id="activityTimeline">
                                         <div class="timeline">
                                             <div class="timeline-item">
-                                                <strong>Запуск системи моніторингу</strong>
-                                                <p>Система успішно ініціалізована</p>
+                                                <strong>Запуск do sistema monitorização</strong>
+                                                <p>Sistema com sucesso ініціалізована</p>
                                                 <small class="text-muted">Щойно</small>
                                             </div>
                                         </div>
@@ -623,51 +623,51 @@
         </footer>
     </div>
 
-    <!-- Модальне вікно деталей техніка -->
+    <!-- Janela modal детmasй do técnico -->
     <div class="modal fade" id="techDetailsModal" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Деталі техніка</h5>
+                    <h5 class="modal-title">Detalhes do técnico</h5>
                     <button type="button" class="close" data-dismiss="modal">
                         <span>&times;</span>
                     </button>
                 </div>
                 <div class="modal-body" id="techDetailsContent">
-                    <!-- Вміст деталей техніка -->
+                    <!-- Conteúdo детmasй do técnico -->
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Модальне вікно трансляції -->
+    <!-- Janela modal трансляції -->
     <div class="modal fade" id="broadcastModal" tabindex="-1" role="dialog">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Трансляція повідомлення</h5>
+                    <h5 class="modal-title">Transmissão mensagem</h5>
                     <button type="button" class="close" data-dismiss="modal">
                         <span>&times;</span>
                     </button>
                 </div>
                 <div class="modal-body">
                     <div class="form-group">
-                        <label>Повідомлення для трансляції:</label>
-                        <textarea class="form-control" rows="3" placeholder="Введіть текст повідомлення..."></textarea>
+                        <label>Mensagem para трансляції:</label>
+                        <textarea class="form-control" rows="3" placeholder="Digite текст mensagem..."></textarea>
                     </div>
                     <div class="form-group">
-                        <label>Пріоритет:</label>
+                        <label>Prioridade:</label>
                         <select class="form-control">
                             <option value="normal">Звичайний</option>
                             <option value="important">Важливий</option>
-                            <option value="critical">Критичний</option>
+                            <option value="critical">Crítico</option>
                         </select>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
                     <button type="button" class="btn btn-primary" onclick="monitoringManager.sendBroadcast()">
-                        <i class="fas fa-paper-plane"></i> Надіслати
+                        <i class="fas fa-paper-plane"></i> Enviar
                     </button>
                 </div>
             </div>
@@ -686,7 +686,7 @@
 
     <script>
         function logout() {
-            if (confirm('Ви впевнені, що хочете вийти з системи?')) {
+            if (confirm('Tem a certeza que quer sair do sistema?')) {
                 localStorage.removeItem('authToken');
                 localStorage.removeItem('userData');
                 window.location.replace('/pages/auth/login.html');
@@ -694,21 +694,21 @@
         }
 
         $(document).ready(function() {
-            // Ініціалізація AdminLTE
+            // Inicialização AdminLTE
             $('[data-widget="pushmenu"]').PushMenu();
             
-            // Темна тема
+            // Tema escuro
             $('#darkModeToggle').on('click', function() {
                 $('body').toggleClass('dark-mode');
                 $(this).find('i').toggleClass('fa-moon fa-sun');
             });
 
-            // Pesquisar техніків
+            // Pesquisar de técnicos
             $('#techSearch').on('input', function() {
                 monitoringManager.filterTechnicians($(this).val());
             });
 
-            // Завантаження даних диспетчера
+            // A carregar dados do despachante
             const userData = JSON.parse(localStorage.getItem('userData')) || {};
             if (userData.firstName) {
                 $('#dispatcherName').text(`${userData.firstName} ${userData.lastName || ''}`);

@@ -211,7 +211,7 @@
     </div>
 
     <script>
-        // API_BASE_URL має бути порожнім для relative URLs (працює в GitHub Codespaces)
+        // API_BASE_URL deve estar vazio para URLs relativos (a funcionar в GitHub Codespaces)
         const API_BASE_URL = window.API_BASE_URL || '';
 
         // Archive mode
@@ -267,7 +267,7 @@
                 const result = await response.json();
                 console.log('📋 Resultado da API:', result);
                 
-                // API повертає {success: true, data: [...], pagination: {...}}
+                // API retorna {success: true, data: [...], pagination: {...}}
                 const orcamentos = result.success ? result.data : (result.data || result);
 
                 if (!orcamentos || orcamentos.length === 0) {

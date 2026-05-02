@@ -52,7 +52,7 @@
                     </button>
                 </form>
                 
-                <!-- Demo акаунти -->
+                <!-- Contas de demonstração -->
                 <div class="mt-4">
                     <div class="alert alert-info">
                         <h6><i class="fas fa-info-circle"></i> Contas de demonstração para teste:</h6>
@@ -78,21 +78,21 @@
     <!-- AdminLTE -->
     <script src="/plugins/adminlte/adminlte.min.js"></script>
     
-    <!-- Система авторизації -->
+    <!-- Sistema de autenticação -->
     <script src="../../assets/js/auth.js"></script>
     
     <script>
-        // НЕГАЙНА ініціалізація (без чекання DOMContentLoaded)
+        // НЕГАЙНА ініціалізація (беdesde чекання DOMContentLoaded)
         function initLoginForm() {
             const loginForm = document.getElementById('login-form');
             
             // Захист від подвійної ініціалізації
             if (window.__loginFormInitialized) {
-                console.log('⚠️ Форма вже ініціалізована, пропускаємо');
+                console.log('⚠️ Форма já ініціалізована, пропускаexisteмо');
                 return;
             }
             
-            // Якщо форма ще не готова - чекаємо
+            // Se форма ainda не готова - чекаexisteмо
             if (!loginForm) {
                 if (document.readyState === 'loading') {
                     document.addEventListener('DOMContentLoaded', initLoginForm, { once: true });
@@ -100,38 +100,38 @@
                 return;
             }
             
-            // Позначаємо що форма ініціалізована
+            // Позначаexisteмо що форма ініціалізована
             window.__loginFormInitialized = true;
-            console.log('🔧 Ініціалізація форми логіну...');
+            console.log('🔧 Ініціалізація форми loginу...');
             
-            // Автозаповнення з URL параметрів (для швидкого тестування)
+            // Автозаповнення desde URL параметрів (para rapidamenteго тестування)
             const urlParams = new URLSearchParams(window.location.search);
             const emailFromUrl = urlParams.get('email');
             const passwordFromUrl = urlParams.get('password');
             const autoLoginRequested = emailFromUrl && passwordFromUrl;
             
-            // Якщо запитано автологін - оouщуємо старий токен
+            // Se pedidoано автоlogin - оouщуexisteмо сeрий token
             if (autoLoginRequested && typeof AuthManager !== 'undefined') {
-                console.log('🔄 Автологін запитано - оouщуємо старі дані');
+                console.log('🔄 Автоlogin pedidoано - оouщуexisteмо сeрі дані');
                 AuthManager.logout();
             }
             
             if (emailFromUrl) {
                 document.getElementById('email').value = decodeURIComponent(emailFromUrl);
-                console.log('📧 Email автозаповнено з URL');
+                console.log('📧 Email автозаповнено desde URL');
             }
             if (passwordFromUrl) {
                 document.getElementById('password').value = decodeURIComponent(passwordFromUrl);
-                console.log('🔑 Password автозаповнено з URL');
+                console.log('🔑 Password автозаповнено desde URL');
             }
             
-            // Перевіряємо ou користувач вже увійшов через AuthManager
-            // Додаємо захист від циклу редиректів
+            // Перевіряexisteмо ou користувач já увійшов através de AuthManager
+            // Додаexisteмо захист від циклу редиректів
             const redirecting = sessionStorage.getItem('redirecting');
             if (redirecting) {
-                console.log('⚠️ Запобігання циклу редиректів - оouщуємо session');
+                console.log('⚠️ Запобігання циклу редиректів - оouщуexisteмо session');
                 sessionStorage.removeItem('redirecting');
-                // Оouщуємо всі дані автентифікації
+                // Оouщуexisteмо всі дані автентифікації
                 if (typeof AuthManager !== 'undefined') {
                     localStorage.removeItem(AuthManager.TOKEN_KEY);
                     localStorage.removeItem(AuthManager.USER_KEY);
@@ -139,17 +139,17 @@
             } else if (!autoLoginRequested && typeof AuthManager !== 'undefined' && AuthManager.isAuthenticated()) {
                 const user = AuthManager.getCurrentUser();
                 if (user && user.role) {
-                    // Перевіряємо ou користувач хоче вийти (якщо в URL є параметр logout)
+                    // Перевіряexisteмо ou користувач хоче sair (se в URL existe параметр logout)
                     const urlParams = new URLSearchParams(window.location.search);
                     if (urlParams.get('logout') === 'true') {
-                        console.log('🚪 Користувач хоче вийти, оouщуємо дані...');
+                        console.log('🚪 Utilizador хоче sair, оouщуexisteмо дані...');
                         AuthManager.logout();
                         return;
                     }
                     
-                    console.log('✅ Користувач вже авторизований:', user.username, '(' + user.role + ')');
+                    console.log('✅ Utilizador já autorizado:', user.username, '(' + user.role + ')');
                     
-                    // Показуємо повідомлення з можливістю вийти
+                    // Показуexisteмо mensagem desde можливістю sair
                     const loginContainer = document.querySelector('.login-container');
                     if (loginContainer) {
                         loginContainer.innerHTML = `
@@ -174,25 +174,25 @@
                 }
             }
             
-            // Оouщуємо старі дані якщо є
+            // Оouщуexisteмо сeрі дані se existe
             localStorage.removeItem('lm_session');
             localStorage.removeItem('lm_user');
             
-            // Автоматичний submit якщо є параметри в URL
+            // Автоматичний submit se existe параметри в URL
             if (autoLoginRequested) {
-                console.log('🚀 Автоматичний вхід через 500ms...');
+                console.log('🚀 Автоматичний entrada através de 500ms...');
                 setTimeout(() => {
-                    console.log('📤 Відправка форми логіну...');
+                    console.log('📤 Відправка форми loginу...');
                     loginForm.requestSubmit();
                 }, 500);
             }
             
-            // Функція перенаправлення за ролями (ГЛОБАЛЬНА)
+            // Função перенаправлення за ролями (ГЛОБАЛЬНА)
             window.redirectUserByRole = function(role) {
-                // Оouщуємо sessionStorage після редиректу
+                // Оouщуexisteмо sessionStorage após редиректу
                 setTimeout(() => sessionStorage.removeItem('redirecting'), 100);
                 
-                // Використовуємо АБСОЛЮТНІ шляхи від кореня сайту
+                // Використовуexisteмо АБСОЛЮТНІ шляхи від кореня сайту
                 switch (role) {
                     case 'admin':
                         window.location.replace('/pages/admin/admin-dashboard.html');
@@ -212,7 +212,7 @@
                 }
             };
             
-            // Продовжити до панелі (для вже авторизованих)
+            // Continuar до панелі (para já авторизованих)
             function continueToPanel() {
                 const user = AuthManager.getCurrentUser();
                 if (user && user.role) {
@@ -221,7 +221,7 @@
                 }
             }
             
-            // Sair та обрати іншу роль
+            // Sair e обрати іншу função
             function logoutAndChooseRole() {
                 if (confirm('Tem a certeza que quer sair?')) {
                     AuthManager.logout();
@@ -229,7 +229,7 @@
                 }
             }
             
-            // Отримати назву ролі українською
+            // Отримати назву de função українською
             function getRoleName(role) {
                 const roleNames = {
                     'admin': 'Administrador',
@@ -241,7 +241,7 @@
                 return roleNames[role] || role;
             }
             
-            // Показ повідомлень
+            // Покаdesde повідомлень
             function showMessage(message, type = 'error') {
                 let alertDiv = document.getElementById('login-message');
                 if (!alertDiv) {
@@ -254,7 +254,7 @@
                 alertDiv.textContent = message;
                 alertDiv.style.display = 'block';
                 
-                // Автоматично приховати через 5 секунд
+                // Автоматично ocultar através de 5 секунд
                 setTimeout(() => {
                     alertDiv.style.display = 'none';
                 }, 5000);
@@ -273,20 +273,20 @@
                 
                 // ПОТРІЙНИЙ захист від подвійного кліку:
                 // 1. Verificação прапорця
-                // 2. Verificação data-атрибута
-                // 3. Verificação часу останнього submit (менше 1 секунди = ігнор)
+                // 2. Verificação data-атрибуe
+                // 3. Verificação horaу осeннього submit (менше 1 секунди = ігнор)
                 if (isSubmitting || 
                     loginForm.dataset.processing === 'true' || 
                     (now - submitTimestamp) < 1000) {
-                    console.log('⏸️ БЛОКУВАННЯ: Форма вже обробляється ou повторний клік занадто швидко');
+                    console.log('⏸️ БЛОКУВАННЯ: Форма já обробляexisteться ou повторний клік занадто rapidamente');
                     return false;
                 }
                 
-                // Встановлюємо всі прапорці
+                // Всeновлюexisteмо всі прапорці
                 isSubmitting = true;
                 submitTimestamp = now;
                 loginForm.dataset.processing = 'true';
-                console.log('🔒 Форму ЗАБЛОКОВАНО для обробки [' + new Date().toISOString() + ']');
+                console.log('🔒 Форму ЗАБЛОКОВАНО para обробки [' + new Date().toISOString() + ']');
                 
                 const submitButton = loginForm.querySelector('button[type="submit"]');
                 const originalButtonText = submitButton.innerHTML;
@@ -296,7 +296,7 @@
                 const email = document.getElementById('email').value;
                 const password = document.getElementById('password').value;
                 
-                console.log('🔐 Форма логіну відправлена - v2.1.0 ' + new Date().toISOString());
+                console.log('🔐 Форма loginу відправлена - v2.1.0 ' + new Date().toISOString());
                 console.log('📝 Email:', email);
                 console.log('🔑 Password length:', password ? password.length : 0);
                 
@@ -310,9 +310,9 @@
                 }
                 
                 try {
-                    console.log('🔐 Спроба входу для:', email);
+                    console.log('🔐 Спроба входу para:', email);
                     
-                    // Формування API URL для GitHub Codespaces та локальної розробки
+                    // Формування API URL para GitHub Codespaces e локальної розробки
                     let apiUrl;
                     const hostname = window.location.hostname;
                     
@@ -342,69 +342,69 @@
                     });
                     
                     const data = await response.json();
-                    console.log('📝 Відповідь сервера:', data);
+                    console.log('📝 Resposta do servidor:', data);
                     console.log('✅ Response OK:', response.ok);
                     console.log('🔢 Status Code:', response.status);
                     
                     if (response.ok && data.success) {
-                        // V2 API: отримуємо token та user з data
+                        // V2 API: отримуexisteмо token e user desde data
                         const token = data.data?.token || data.token;
                         const user = data.data?.user || data.user;
                         
-                        console.log('💾 Зберігаю токен:', token?.substring(0, 20) + '...');
-                        console.log('👤 Зберігаю користувача:', user);
+                        console.log('💾 Зберігаю token:', token?.substring(0, 20) + '...');
+                        console.log('👤 Зберігаю do utilizador:', user);
                         
-                        // 🔄 Зберігаємо refresh token для автоматичного оновлення
+                        // 🔄 Зберігаexisteмо refresh token para автоматичного atualização
                         const refreshToken = data.data?.refreshToken || data.refreshToken;
                         if (refreshToken) {
                             localStorage.setItem('liftmanager_refresh', refreshToken);
-                            console.log('🔄 Refresh token збережено');
+                            console.log('🔄 Refresh token guardado');
                         }
                         
-                        // Зберігаємо токен у всіх форматах для сумісності
-                        localStorage.setItem('token', token);           // Головний токен
+                        // Зберігаexisteмо token у всіх формаeх para сумісності
+                        localStorage.setItem('token', token);           // Головний token
                         localStorage.setItem('authToken', token);       // Для lifts-manager.js
-                        localStorage.setItem('lm_token', token);        // Старий формат
-                        localStorage.setItem('deapseak_token', token);  // V2 формат
-                        localStorage.setItem('liftmanager_jwt', token); // AuthManager формат
+                        localStorage.setItem('lm_token', token);        // Сeрий formato
+                        localStorage.setItem('deapseak_token', token);  // V2 formato
+                        localStorage.setItem('liftmanager_jwt', token); // AuthManager formato
                         
-                        // Зберігаємо користувача
+                        // Зберігаexisteмо do utilizador
                         localStorage.setItem('user', JSON.stringify(user));           // Головний
                         localStorage.setItem('userData', JSON.stringify(user));       // Для dispatcher/admin панелей
-                        localStorage.setItem('lm_session', JSON.stringify(user));     // Старий формат
-                        localStorage.setItem('liftmanager_user', JSON.stringify(user)); // AuthManager формат
+                        localStorage.setItem('lm_session', JSON.stringify(user));     // Сeрий formato
+                        localStorage.setItem('liftmanager_user', JSON.stringify(user)); // AuthManager formato
                         
-                        // ⚡ MULTI-TAB FIX: зберігаємо також в sessionStorage (per-tab)
-                        // Кожна вкладка матиме власний токен → різні ролі не конфліктують
+                        // ⚡ MULTI-TAB FIX: зберігаexisteмо também в sessionStorage (per-tab)
+                        // Кожна вкладка матиме власний token → різні de função не конфліктують
                         sessionStorage.setItem('liftmanager_jwt', token);
                         sessionStorage.setItem('liftmanager_user', JSON.stringify(user));
                         
-                        console.log('✅ Токен збережено в localStorage + sessionStorage');
-                        console.log('✅ userData збережено:', user.role, user.email);
+                        console.log('✅ Token guardado в localStorage + sessionStorage');
+                        console.log('✅ userData guardado:', user.role, user.email);
                         
                         showMessage('Entrada com sucesso! A redirecionar...', 'success');
                         
-                        // ⚠️ НЕ розблоковуємо кнопку - користувач перенаправляється
-                        // Це запобігає повторному кліку під час перенаправлення
+                        // ⚠️ НЕ розблоковуexisteмо кнопку - користувач перенаправляexisteться
+                        // Це запобігаexiste повторному кліку під hora перенаправлення
                         
-                        // Перевіряємо ou є збережене перенаправлення
+                        // Перевіряexisteмо ou existe збережене перенаправлення
                         const redirectUrl = sessionStorage.getItem('redirect_after_login');
                         
-                        // 🔐 Якщо обліковий запис має mustChangePassword — показуємо модал
+                        // 🔐 Se обліковий registo маexiste mustChangePassword — показуexisteмо модал
                         if (user.mustChangePassword) {
-                            // Зберігаємо, де після зміни перейти
+                            // Зберігаexisteмо, де após de alteração перейти
                             window.__mustChangeRedirectUrl  = redirectUrl;
                             window.__mustChangeUserRole     = user.role;
                             const modal = document.getElementById('mustChangePasswordModal');
                             if (modal) {
                                 modal.style.display = 'flex';
                                 document.getElementById('mcpEmail').value = user.email;
-                                // Автозаповнюємо поточний пароль — юзер щойно його ввів
+                                // Автозаповнюexisteмо atual palavra-passe — юзер agora mesmo його ввів
                                 document.getElementById('mcpCurrent').value = document.getElementById('password').value;
-                                showMessage('Bem-vindo! Por favor змініть тимчасовий пароль перед початком роботи.', 'warning');
+                                showMessage('Bem-vindo! Por favor altere a sua palavra-passe temporária antes de começar.', 'warning');
                             }
                         } else {
-                            // Звичайний вхід — перенаправляємо через 500мс
+                            // Звичайний entrada — перенаправляexisteмо através de 500мс
                             setTimeout(() => {
                                 if (redirectUrl) {
                                     sessionStorage.removeItem('redirect_after_login');
@@ -416,17 +416,17 @@
                         }
                         
                     } else {
-                        // Помилка - розблоковуємо форму
-                        showMessage(data.message || 'Помилка входу');
-                        console.error('❌ Помилка входу:', data);
+                        // Erro - розблоковуexisteмо форму
+                        showMessage(data.message || 'Erro de login');
+                        console.error('❌ Erro de login:', data);
                         isSubmitting = false;
                         loginForm.dataset.processing = 'false';
                         submitButton.disabled = false;
                         submitButton.innerHTML = originalButtonText;
                     }
                 } catch (error) {
-                    // Помилка - розблоковуємо форму
-                    console.error('❌ Crítica помилка входу:', error);
+                    // Erro - розблоковуexisteмо форму
+                    console.error('❌ Crítica erro входу:', error);
                     showMessage('Ocorreu um erro ao entrar. Verifique a ligação ao servidor.');
                     isSubmitting = false;
                     loginForm.dataset.processing = 'false';
@@ -437,11 +437,11 @@
                 return false;
             };
             
-            // Прикріплюємо обробник (ОДИН РАЗ!)
-            loginForm.removeEventListener('submit', handleLogin); // Видаляємо попередній якщо був
-            loginForm.addEventListener('submit', handleLogin, { once: false }); // once: false але з ручним контролем
+            // Прикріплюexisteмо обробник (ОДИН РАЗ!)
+            loginForm.removeEventListener('submit', handleLogin); // Видаляexisteмо попереdiasй se був
+            loginForm.addEventListener('submit', handleLogin, { once: false }); // once: false mas desde ручним контролем
             
-            // ДОДАТКОВИЙ захист: Блокуємо кнопку submit при кліку
+            // ДОДАТКОВИЙ захист: Блокуexisteмо кнопку submit при кліку
             const submitButton = loginForm.querySelector('button[type="submit"]');
             if (submitButton) {
                 submitButton.addEventListener('click', function(e) {
@@ -449,7 +449,7 @@
                         e.preventDefault();
                         e.stopPropagation();
                         e.stopImmediatePropagation();
-                        console.log('🚫 Клік заблоковано - форма вже обробляється');
+                        console.log('🚫 Клік заблоковано - форма já обробляexisteться');
                         return false;
                     }
                 });
@@ -458,11 +458,11 @@
             console.log('✅ Login form handler attached with double-click protection');
         }
         
-        // Викликаємо ініціалізацію одразу
+        // Викликаexisteмо ініціалізацію imediatamente
         initLoginForm();
     </script>
 
-    <!-- 🔐 Модал примусової зміни пароля -->
+    <!-- 🔐 Modal de alteração obrigatória de palavra-passe -->
     <div id="mustChangePasswordModal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.7);z-index:9999;align-items:center;justify-content:center">
       <div style="background:#fff;border-radius:12px;padding:36px 32px;max-width:440px;width:94%;box-shadow:0 8px 32px rgba(0,0,0,.25)">
         <div style="text-align:center;margin-bottom:20px">
@@ -524,13 +524,13 @@
                 return;
             }
 
-            // Успіх — оновлюємо userData в localStorage
+            // Sucesso — оновлюexisteмо userData в localStorage
             const storedUser = JSON.parse(localStorage.getItem('userData') || '{}');
             storedUser.mustChangePassword = false;
             ['userData','user','lm_session','liftmanager_user'].forEach(k => localStorage.setItem(k, JSON.stringify(storedUser)));
 
             document.getElementById('mustChangePasswordModal').style.display = 'none';
-            // Перенаправляємо
+            // Перенаправляexisteмо
             const redirectUrl = window.__mustChangeRedirectUrl;
             setTimeout(() => {
                 if (redirectUrl) { sessionStorage.removeItem('redirect_after_login'); window.location.href = redirectUrl; }

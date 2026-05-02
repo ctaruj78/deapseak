@@ -4,7 +4,7 @@
         <div class="modal-content">
             <div class="modal-header bg-info text-white">
                 <h5 class="modal-title">
-                    <i class="fas fa-eye"></i> Перегляд інформації про ліфт
+                    <i class="fas fa-eye"></i> Visualização інформації про elevador
                 </h5>
                 <button type="button" class="close text-white" data-dismiss="modal" onclick="closeViewModal()">
                     <span>&times;</span>
@@ -15,22 +15,22 @@
                 <ul class="nav nav-tabs mb-3" id="viewLiftTabs" role="tablist">
                     <li class="nav-item">
                         <a class="nav-link active" id="general-tab" data-toggle="tab" href="#general" role="tab">
-                            <i class="fas fa-info-circle"></i> Загальна інформація
+                            <i class="fas fa-info-circle"></i> Geral informação
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" id="client-tab" data-toggle="tab" href="#client" role="tab">
-                            <i class="fas fa-user"></i> Клієнт
+                            <i class="fas fa-user"></i> Cliente
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" id="tech-tab" data-toggle="tab" href="#technical" role="tab">
-                            <i class="fas fa-cogs"></i> Технічні дані
+                            <i class="fas fa-cogs"></i> Técnicos дані
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" id="docs-tab" data-toggle="tab" href="#documents" role="tab">
-                            <i class="fas fa-folder"></i> Документи
+                            <i class="fas fa-folder"></i> Documentos
                         </a>
                     </li>
                 </ul>
@@ -41,39 +41,39 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="info-group mb-3">
-                                    <label class="text-muted">Муніципальний номер:</label>
+                                    <label class="text-muted">Número municipal:</label>
                                     <p class="font-weight-bold" id="viewMunicipalNumber">-</p>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="info-group mb-3">
-                                    <label class="text-muted">Статус:</label>
+                                    <label class="text-muted">Estado:</label>
                                     <p id="viewStatus">-</p>
                                 </div>
                             </div>
                         </div>
                         
                         <div class="info-group mb-3">
-                            <label class="text-muted">Адреса:</label>
+                            <label class="text-muted">Endereço:</label>
                             <p id="viewAddress">-</p>
                         </div>
                         
                         <div class="row">
                             <div class="col-md-4">
                                 <div class="info-group mb-3">
-                                    <label class="text-muted">Місто:</label>
+                                    <label class="text-muted">Cidade:</label>
                                     <p id="viewCity">-</p>
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="info-group mb-3">
-                                    <label class="text-muted">Поштовий індекс:</label>
+                                    <label class="text-muted">Código postal:</label>
                                     <p id="viewPostalCode">-</p>
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="info-group mb-3">
-                                    <label class="text-muted">Муніципалітет:</label>
+                                    <label class="text-muted">Município:</label>
                                     <p id="viewMunicipality">-</p>
                                 </div>
                             </div>
@@ -87,7 +87,7 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="info-group mb-3">
-                                    <label class="text-muted">Ім'я клієнта:</label>
+                                    <label class="text-muted">Nome cliente:</label>
                                     <p id="viewClientName">-</p>
                                 </div>
                             </div>
@@ -104,7 +104,7 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="info-group mb-3">
-                                    <label class="text-muted">Телефон:</label>
+                                    <label class="text-muted">Telefone:</label>
                                     <p id="viewClientPhone">
                                         <a href="#" id="viewClientPhoneLink">-</a>
                                     </p>
@@ -112,14 +112,14 @@
                             </div>
                             <div class="col-md-6">
                                 <div class="info-group mb-3">
-                                    <label class="text-muted">Контактна особа:</label>
+                                    <label class="text-muted">Pessoa de contacto:</label>
                                     <p id="viewContactPerson">-</p>
                                 </div>
                             </div>
                         </div>
                         
                         <div class="info-group mb-3">
-                            <label class="text-muted"><i class="fas fa-door-open"></i> Код домофону:</label>
+                            <label class="text-muted"><i class="fas fa-door-open"></i> Código домофону:</label>
                             <div class="alert alert-info">
                                 <h4 class="font-weight-bold" id="viewAccessCode">-</h4>
                             </div>
@@ -131,13 +131,13 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="info-group mb-3">
-                                    <label class="text-muted">Вантажопідйомність:</label>
+                                    <label class="text-muted">Capacidade de carga:</label>
                                     <p id="viewCapacity">-</p>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="info-group mb-3">
-                                    <label class="text-muted">Швидкість:</label>
+                                    <label class="text-muted">Velocidade:</label>
                                     <p id="viewSpeed">-</p>
                                 </div>
                             </div>
@@ -146,20 +146,20 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="info-group mb-3">
-                                    <label class="text-muted">Остання інспекція:</label>
+                                    <label class="text-muted">Осeння inspeção:</label>
                                     <p id="viewLastInspection">-</p>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="info-group mb-3">
-                                    <label class="text-muted">Наступна інспекція:</label>
+                                    <label class="text-muted">Próxima inspecção:</label>
                                     <p id="viewNextInspection">-</p>
                                 </div>
                             </div>
                         </div>
                         
                         <div class="info-group mb-3">
-                            <label class="text-muted">Примітки:</label>
+                            <label class="text-muted">Notas:</label>
                             <p id="viewNotes" class="border p-3 rounded bg-light">-</p>
                         </div>
                     </div>
@@ -167,17 +167,17 @@
                     <!-- Documents Tab -->
                     <div class="tab-pane fade" id="documents" role="tabpanel">
                         <div id="viewDocumentsList">
-                            <p class="text-center text-muted">Завантаження документів...</p>
+                            <p class="text-center text-muted">A carregar de documentos...</p>
                         </div>
                     </div>
                 </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-warning" onclick="switchToEdit()">
-                    <i class="fas fa-edit"></i> Редагувати
+                    <i class="fas fa-edit"></i> Editar
                 </button>
                 <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="closeViewModal()">
-                    <i class="fas fa-times"></i> Закрити
+                    <i class="fas fa-times"></i> Fechar
                 </button>
             </div>
         </div>

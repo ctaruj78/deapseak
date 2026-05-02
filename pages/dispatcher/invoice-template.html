@@ -105,17 +105,17 @@
                     <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
                 </li>
                 <li class="nav-item d-none d-sm-inline-block">
-                    <a href="dashboard.html" class="nav-link">Головна</a>
+                    <a href="dashboard.html" class="nav-link">Início</a>
                 </li>
                 <li class="nav-item d-none d-sm-inline-block">
-                    <a href="invoice-template.html" class="nav-link active">Рахунки</a>
+                    <a href="invoice-template.html" class="nav-link active">Faturas</a>
                 </li>
             </ul>
 
             <ul class="navbar-nav ml-auto">
                 <li class="nav-item">
                     <a class="nav-link" href="../auth/login.html" role="button">
-                        <i class="fas fa-sign-out-alt"></i> Вийти
+                        <i class="fas fa-sign-out-alt"></i> Sair
                     </a>
                 </li>
             </ul>
@@ -332,7 +332,7 @@
                                         <div class="invoice-header">
                                             <div class="row">
                                                 <div class="col-md-6">
-                                                    <!-- Логотип FestLift -->
+                                                    <!-- Logótipo FestLift -->
                                                     <div class="mb-3">
                                                         <div style="display: inline-block; background: #1a3a6b; padding: 10px 16px; border-radius: 6px;">
                                                             <img src="/assets/img/logo.png" 
@@ -467,7 +467,7 @@
 
     <!-- Sidebar initialization script -->
     <script src="../../assets/js/sidebar-init.js"></script>
-    <!-- jsPDF для генерації PDF -->
+    <!-- jsPDF para geração de PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
 
@@ -506,7 +506,7 @@
 
             async generateInvoiceNumber() {
                 try {
-                    // Отримати останній номер з API
+                    // Obter o último número da API
                     const _authToken = localStorage.getItem('liftmanager_jwt') ||
                                        localStorage.getItem('jwt_token') ||
                                        localStorage.getItem('token') ||
@@ -522,14 +522,14 @@
                         const data = await response.json();
                         $('#invoiceNumber').val(data.numero);
                     } else {
-                        // Fallback: генерувати локально
+                        // Fallback: gerar localmente
                         const year = new Date().getFullYear();
                         const month = String(new Date().getMonth() + 1).padStart(2, '0');
                         $('#invoiceNumber').val(`ORC-${year}-${month}-001`);
-                        console.warn('⚠️ Не вдалося отримати номер з API, використовуйте fallback');
+                        console.warn('⚠️ Não foi possível отримати número desde API, використовуйте fallback');
                     }
                 } catch (error) {
-                    console.error('❌ Помилка генерації номера:', error);
+                    console.error('❌ Erro генерації númeroа:', error);
                     // Fallback
                     const year = new Date().getFullYear();
                     const month = String(new Date().getMonth() + 1).padStart(2, '0');
@@ -825,7 +825,7 @@
                     doc.setLineWidth(0.3);
                     doc.rect(20, bankY, 170, 20);
                     
-                    // Іконка банку (будівля з колонами)
+                    // Іконка банку (будівля desde колонами)
                     doc.setFillColor(0, 102, 204);
                     doc.rect(24, bankY + 7, 8, 6, 'F'); // База будівлі
                     doc.setFillColor(255, 255, 255);
@@ -877,7 +877,7 @@
                 console.log('   lastSavedOrcamentoId:', window.lastSavedOrcamentoId);
                 console.log('   currentOrcamentoId:', window.currentOrcamentoId);
                 
-                // Перевірка чи орçаменто збережено
+                // Verificação чи орçаменто guardado
                 if (!window.lastSavedOrcamentoId && !window.currentOrcamentoId) {
                     const save = confirm('Orçamento não foi salvo. Deseja salvar antes de enviar?');
                     if (save) {
@@ -891,7 +891,7 @@
                     }
                 }
                 
-                // Використати ID з будь-якого джерела
+                // Викорисeти ID desde будь-якого джерела
                 const orcamentoId = window.lastSavedOrcamentoId || window.currentOrcamentoId;
                 console.log('   Використовую ID:', orcamentoId);
 
@@ -1065,7 +1065,7 @@
                 data.liftAddress = $('#liftAddressSearch').val() || null;
             }
             
-            // При оновленні додати numero та data з форми
+            // При оновленні adicionar numero e data desde форми
             if (window.currentOrcamentoId) {
                 data.numero = $('#invoiceNumber').val();
                 data.data = $('#invoiceDate').val();
@@ -1087,7 +1087,7 @@
                     return;
                 }
                 
-                // Перевірити чи це оновлення чи створення
+                // Verificar чи це atualização чи створення
                 const isUpdate = window.currentOrcamentoId;
                 const url = isUpdate 
                     ? `/api/orcamentos/${window.currentOrcamentoId}` 
@@ -1113,11 +1113,11 @@
                 console.log('📋 Resultado:', result);
                 
                 if (response.ok && result.success) {
-                    // Отримати дані орçаменту (може бути в result.data або result.orcamento)
+                    // Отримати дані орçаменту (pode бути в result.data ou result.orcamento)
                     const orcamentoData = result.data || result.orcamento || {};
                     const orcamentoId = orcamentoData._id || window.currentOrcamentoId;
                     
-                    // Зберігаємо ID для можливості відправки email
+                    // Зберігаexisteмо ID para можливості відправки email
                     window.lastSavedOrcamentoId = orcamentoId;
                     window.currentOrcamentoId = orcamentoId;
                     
@@ -1180,14 +1180,14 @@
             const viewMode = urlParams.get('view') === 'true';
             const publicToken = urlParams.get('token');
             
-            // Якщо є публічний токен - це клієнт переглядає орçаменто
+            // Se existe публічний token - це cliente visualizaçãoаexiste орçаменто
             if (publicToken && orcamentoId) {
-                console.log('🌍 Публічний перегляд орçаменту:', orcamentoId);
+                console.log('🌍 Публічний visualização орçаменту:', orcamentoId);
                 await loadOrcamentoPublico(orcamentoId, publicToken);
                 return;
             }
             
-            // Перевірка авторизації для адміністраторів
+            // Verificação de autorização para administradorістраторів
             const token = localStorage.getItem('liftmanager_jwt') || 
                          localStorage.getItem('jwt_token') ||
                          localStorage.getItem('token') || 
@@ -1202,12 +1202,12 @@
             invoiceManager.init();
             await loadLiftOptions(token);
 
-            // Перевірити чи є ID орçаменту в URL (для редагування/перегляду)
+            // Verificar чи existe ID орçаменту в URL (para edição/visualizaçãoу)
             if (orcamentoId) {
-                console.log('📋 Завантаження орçаменту:', orcamentoId, 'Режим перегляду:', viewMode);
+                console.log('📋 A carregar орçаменту:', orcamentoId, 'Modo de visualização:', viewMode);
                 await loadOrcamento(orcamentoId, viewMode);
             } else {
-                // Пре-заповнення з параметрів ліфта (коли відкрито з модалки ліфта)
+                // Пре-заповнення desde параметрів do elevador (quando aberto desde модалки do elevador)
                 const pLiftId = urlParams.get('liftId');
                 const pLiftAddress = urlParams.get('liftAddress');
                 const pClientName = urlParams.get('clientName');
@@ -1243,7 +1243,7 @@
                             }).catch(() => {});
                     }
 
-                    // Авто-заповнення наступного номеру орçаменту
+                    // Auto-заповнення наступного númeroу орçаменту
                     try {
                         const res = await fetch('/api/orcamentos/next-number', {
                             headers: { 'Authorization': `Bearer ${token}` }
@@ -1253,9 +1253,9 @@
                             const nextNum = json.nextNumber || json.numero || json.data?.nextNumber;
                             if (nextNum) $('#invoiceNumber').val(nextNum);
                         }
-                    } catch(e) { /* ігноруємо */ }
+                    } catch(e) { /* ігноруexisteмо */ }
 
-                    // Сьогоднішня дата
+                    // Сьогоdiasшня data
                     const today = new Date().toISOString().split('T')[0];
                     if (!$('#invoiceDate').val()) $('#invoiceDate').val(today);
                 }
@@ -1406,10 +1406,10 @@
             }).catch(() => {});
         }
         
-        // Завантажити орçаменто (публічний доступ)
+        // Descarregar орçаменто (публічний acesso)
         async function loadOrcamentoPublico(id, token) {
             try {
-                console.log('🌐 Завантаження з /api/orcamentos/public/' + id);
+                console.log('🌐 A carregar desde /api/orcamentos/public/' + id);
                 
                 const response = await fetch(`/api/orcamentos/public/${id}?token=${token}`);
                 
@@ -1426,7 +1426,7 @@
                 const orcamento = result.data;
                 console.log('✅ Orçamento carregado (público):', orcamento);
                 
-                // Заповнити форму (тільки читання)
+                // Заповнити форму (apenas чиeння)
                 $('#orcamentoNumero').text(orcamento.numero);
                 $('#data').val(new Date(orcamento.data).toISOString().split('T')[0]).prop('disabled', true);
                 $('#clienteNome').val(orcamento.cliente.nome).prop('disabled', true);
@@ -1436,7 +1436,7 @@
                 $('#clienteNIF').val(orcamento.cliente.nif || '').prop('disabled', true);
                 $('#notas').val(orcamento.notas || '').prop('disabled', true);
                 
-                // Завантажити сервіси
+                // Descarregar serviçoи
                 if (orcamento.servicos && orcamento.servicos.length > 0) {
                     $('#servicosTable tbody').empty();
                     orcamento.servicos.forEach((servico, index) => {
@@ -1452,17 +1452,17 @@
                     });
                 }
                 
-                // Показати тотали
+                // Mostrar тоeли
                 $('#subtotal').text(`€${orcamento.subtotal.toFixed(2)}`);
                 $('#ivaValor').text(`€${orcamento.iva.toFixed(2)}`);
                 $('#total').text(`€${orcamento.total.toFixed(2)}`);
                 
-                // Сховати кнопки редагування
+                // Сховати кнопки edição
                 $('.card-footer').hide();
                 $('#btnSalvar').hide();
                 $('#btnEnviarEmail').hide();
                 
-                // Показати тільки кнопку скачування PDF
+                // Mostrar apenas кнопку скачування PDF
                 $('#btnDownloadPDF').show();
                 
             } catch (error) {
@@ -1472,7 +1472,7 @@
             }
         }
         
-        // Завантажити орçаменто за ID
+        // Descarregar орçаменто за ID
         async function loadOrcamento(id, viewMode = false) {
             try {
                 const token = localStorage.getItem('liftmanager_jwt') || 
@@ -1480,7 +1480,7 @@
                              localStorage.getItem('token') || 
                              localStorage.getItem('lm_token');
                 
-                console.log('🌐 Завантаження з /api/orcamentos/' + id);
+                console.log('🌐 A carregar desde /api/orcamentos/' + id);
                 
                 const response = await fetch(`/api/orcamentos/${id}`, {
                     headers: {
@@ -1489,29 +1489,29 @@
                 });
                 
                 if (!response.ok) {
-                    throw new Error('Орçаменто не знайдено');
+                    throw new Error('Орçаменто не encontrado');
                 }
                 
                 const result = await response.json();
                 const orcamento = result.success ? result.data : result;
                 
-                console.log('✅ Орçаменто завантажено:', orcamento);
+                console.log('✅ Орçаменто carregado:', orcamento);
                 
                 // Заповнити форму даними
                 $('#clientName').val(orcamento.cliente.nome);
                 $('#clientAddress').val(orcamento.cliente.morada || '');
                 $('#clientEmail').val(orcamento.cliente.email);
                 $('#invoiceNumber').val(orcamento.numero);
-                $('#invoiceDate').val(orcamento.data.split('T')[0]); // Конвертувати ISO date
+                $('#invoiceDate').val(orcamento.data.split('T')[0]); // Converter data ISO
                 $('#notes').val(orcamento.notas || '');
                 
                 // Carregar fotografias
                 renderFotosGrid(orcamento.fotos || []);
                 
-                // Очистити таблицю сервісів
+                // Limpar separadorлицю serviçoів
                 $('#servicesTable tbody').empty();
                 
-                // Додати сервіси
+                // Adicionar serviçoи
                 orcamento.servicos.forEach(servico => {
                     const newRow = `
                         <tr>
@@ -1525,11 +1525,11 @@
                     $('#servicesTable tbody').append(newRow);
                 });
                 
-                // Пересчитати підсумки
+                // Пересчиeти підсумки
                 invoiceManager.calculateTotals();
                 invoiceManager.updatePreview();
                 
-                // Якщо режим перегляду - зробити readonly
+                // Se режим visualizaçãoу - зробити readonly
                 if (viewMode) {
                     $('input, textarea, button[onclick*="addServiceRow"], button[onclick*="removeRow"]').prop('disabled', true);
                     $('button[onclick*="saveOrcamento"]').hide();
@@ -1575,9 +1575,9 @@
                     }).catch(() => {});
                 }
 
-                // Зберегти ID для можливості оновлення та відправки email
+                // Guardar ID para можливості atualização e відправки email
                 window.currentOrcamentoId = id;
-                window.lastSavedOrcamentoId = id; // Додати для email функції
+                window.lastSavedOrcamentoId = id; // Adicionar para email функції
                 
             } catch (error) {
                 console.error('❌ Erro ao carregar orçamento:', error);

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Perfil - Клієнт</title>
+    <title>Perfil - Cliente</title>
     <script src="../../assets/js/auth.js"></script>
 
     
@@ -323,7 +323,7 @@
             }
         }
         
-        /* Анімації */
+        /* Animações */
         @keyframes fadeInUp {
             from {
                 opacity: 0;
@@ -339,7 +339,7 @@
             animation: fadeInUp 0.6s ease;
         }
         
-        /* Спеціальні стилі для перемикачів */
+        /* Estilos especiais para interruptores */
         .custom-switch-profile .custom-control-label::before {
             border-radius: 20px;
             height: 1.5rem;
@@ -353,7 +353,7 @@
             top: calc(0.125rem + 2px);
         }
         
-        /* Стилі для прогресу */
+        /* Estilos para progresso */
         .progress-profile {
             height: 8px;
             border-radius: 4px;
@@ -368,7 +368,7 @@
 <body class="hold-transition sidebar-mini layout-fixed profile-page" data-required-role="client">
     <div class="wrapper">
 
-        <!-- Навігаційна панель -->
+        <!-- Навігаційна painel -->
         <nav class="main-header navbar navbar-expand navbar-white navbar-light">
             <ul class="navbar-nav">
                 <li class="nav-item">
@@ -377,34 +377,34 @@
                     </a>
                 </li>
                 <li class="nav-item d-none d-sm-inline-block">
-                    <a href="/pages/client/dashboard.html" class="nav-link">Головна</a>
+                    <a href="/pages/client/dashboard.html" class="nav-link">Início</a>
                 </li>
                 <li class="nav-item d-none d-sm-inline-block">
                     <a href="/pages/client/profile.html" class="nav-link active">Perfil</a>
                 </li>
             </ul>
 
-            <!-- Права частина навігації -->
+            <!-- Permissões horaтина навігації -->
             <ul class="navbar-nav ml-auto">
                 <li class="nav-item">
-                    <a class="nav-link notification-bell" href="/pages/client/notifications.html" title="Сповіщення">
+                    <a class="nav-link notification-bell" href="/pages/client/notifications.html" title="Notificações">
                         <i class="fas fa-bell"></i>
                         <span class="notification-badge bg-danger" id="notificationCount">0</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#" onclick="logout()" title="Вийти">
+                    <a class="nav-link" href="#" onclick="logout()" title="Sair">
                         <i class="fas fa-sign-out-alt"></i>
                     </a>
                 </li>
             </ul>
         </nav>
 
-        <!-- Бічна панель -->
+        <!-- Бічна painel -->
         <!-- ═══════════════════════════════════════════════════════════ -->
-<!-- ЕТАЛОННИЙ SIDEBAR ДЛЯ КЛІЄНТСЬКИХ СТОРІНОК -->
-<!-- Версія: 2.0 Portugal (2026-01-13) -->
-<!-- ⚠️ НЕ РЕДАГУЙТЕ ОКРЕМО! Використовуйте цей файл як еталон -->
+<!-- ЕТАЛОННИЙ SIDEBAR ДЛЯ КЛІЄНТСЬКИХ СManutençãoРІНОК -->
+<!-- Versão: 2.0 Portugal (2026-01-13) -->
+<!-- ⚠️ НЕ РЕДАГУЙТЕ ОКРЕМО! Використовуйте цей ficheiro як еeлон -->
 <!-- ═══════════════════════════════════════════════════════════ -->
 
 <aside class="main-sidebar sidebar-dark-primary elevation-4">
@@ -416,7 +416,7 @@
     <div class="sidebar">
 
         
-        <!-- Меню навігації -->
+        <!-- Menu de navegação -->
         <nav class="mt-2">
             <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
                 
@@ -428,31 +428,31 @@
                     </a>
                 </li>
                 
-                <!-- 2. Мої ліфти -->
+                <!-- 2. Os meus elevadores -->
                 <li class="nav-item">
                     <a href="/pages/client/my-lifts.html" class="nav-link" id="nav-my-lifts">
                         <i class="nav-icon fas fa-elevator"></i>
-                        <p>Мої ліфти</p>
+                        <p>Os meus elevadores</p>
                         <span class="badge badge-info right" id="liftsCount">0</span>
                     </a>
                 </li>
                 
-                <!-- 3. AI Прогнозування -->
+                <!-- 3. AI Previsãoування -->
                 <li class="nav-item">
                     <a href="/pages/client/ai-predictions.html" class="nav-link" id="nav-ai-predictions">
                         <i class="nav-icon fas fa-brain"></i>
                         <p>
-                            Прогнозування AI
+                            Previsões AI
                             <span class="badge badge-purple right">Novo</span>
                         </p>
                     </a>
                 </li>
                 
-                <!-- 4. Мої заявки -->
+                <!-- 4. Os meus pedidos -->
                 <li class="nav-item">
                     <a href="/pages/client/requests.html" class="nav-link" id="nav-requests">
                         <i class="nav-icon fas fa-tasks"></i>
-                        <p>Заявки</p>
+                        <p>Pedidos</p>
                         <span class="badge badge-warning right" id="requestsCount">0</span>
                     </a>
                 </li>
@@ -465,79 +465,79 @@
                     </a>
                 </li>
 
-                <!-- 6. Рахунки -->
+                <!-- 6. Faturas -->
                 <li class="nav-item">
                     <a href="/pages/client/invoices.html" class="nav-link" id="nav-invoices">
                         <i class="nav-icon fas fa-file-invoice"></i>
-                        <p>Рахунки</p>
+                        <p>Faturas</p>
                         <span class="badge badge-success right" id="invoicesCount">0</span>
                     </a>
                 </li>
                 
-                <!-- 6. Історія -->
+                <!-- 6. Histórico -->
                 <li class="nav-item">
                     <a href="/pages/client/history.html" class="nav-link" id="nav-history">
                         <i class="nav-icon fas fa-history"></i>
-                        <p>Історія</p>
+                        <p>Histórico</p>
                     </a>
                 </li>
                 
-                <!-- 7. Документація -->
+                <!-- 7. Documentação -->
                 <li class="nav-item">
                     <a href="/pages/client/documentation.html" class="nav-link" id="nav-documentation">
                         <i class="nav-icon fas fa-book"></i>
-                        <p>Документація</p>
+                        <p>Documentação</p>
                     </a>
                 </li>
                 
-                <!-- 8. AI Асистент -->
+                <!-- 8. Assistente de IA -->
                 <li class="nav-item">
                     <a href="/pages/ai-assistant/ai-assistant.html" class="nav-link" id="nav-ai-assistant">
                         <i class="nav-icon fas fa-magic"></i>
-                        <p>Асистент AI</p>
+                        <p>Assistente AI</p>
                         <span class="badge badge-success right">★</span>
                     </a>
                 </li>
                 
-                <!-- 9. Сповіщення -->
+                <!-- 9. Notificações -->
                 <li class="nav-item">
                     <a href="/pages/client/notifications.html" class="nav-link" id="nav-notifications">
                         <i class="nav-icon fas fa-bell"></i>
-                        <p>Сповіщення</p>
+                        <p>Notificações</p>
                         <span class="badge badge-danger right" id="notificationsBadge">0</span>
                     </a>
                 </li>
                 
-                <!-- 10. Підтримка -->
+                <!-- 10. Suporte -->
                 <li class="nav-item">
                     <a href="/pages/client/support.html" class="nav-link" id="nav-support">
                         <i class="nav-icon fas fa-headset"></i>
-                        <p>Підтримка</p>
+                        <p>Suporte</p>
                     </a>
                 </li>
                 
-                <!-- 11. Профіль -->
+                <!-- 11. Perfil -->
                 <li class="nav-item">
                     <a href="/pages/client/profile.html" class="nav-link" id="nav-profile">
                         <i class="nav-icon fas fa-user"></i>
-                        <p>Профіль</p>
+                        <p>Perfil</p>
                     </a>
                 </li>
                 
-                <!-- Налаштування (окремо внизу) -->
-                <li class="nav-header">НАЛАШТУВАННЯ</li>
+                <!-- Definições (окремо внизу) -->
+                <li class="nav-header">DEFINIÇÕES</li>
                 <li class="nav-item">
                     <a href="/pages/client/profile.html#settings" class="nav-link" id="nav-settings" onclick="setTimeout(()=>{ var t=document.getElementById('settings-tab'); if(t) t.click(); },100)">
                         <i class="nav-icon fas fa-cog"></i>
-                        <p>Налаштування</p>
+                        <p>Definições</p>
                     </a>
                 </li>
                 
-                <!-- Вихід -->
+                <!-- Saída -->
                 <li class="nav-item">
                     <a href="#" onclick="logout()" class="nav-link">
                         <i class="nav-icon fas fa-sign-out-alt text-danger"></i>
-                        <p>Вийти</p>
+                        <p>Sair</p>
                     </a>
                 </li>
             </ul>
@@ -545,13 +545,13 @@
     </div>
 </aside>
 
-<!-- Скрипт для підсвічування активного пункту -->
+<!-- Скрипт para підсвічування активного itemу -->
 <script>
 (function() {
-    // Визначити поточну сторінку
+    // Визнаouти поточну a página
     const currentPage = window.location.pathname.split('/').pop().replace('.html', '');
     
-    // Мапінг сторінок на ID навігації
+    // Мапінг de páginas на ID навігації
     const pageMap = {
         'dashboard': 'nav-dashboard',
         'my-lifts': 'nav-my-lifts',
@@ -567,7 +567,7 @@
         'profile': 'nav-profile',
     };
     
-    // Підсвітити активний пункт
+    // Підсвітити ativo item
     const activeNav = pageMap[currentPage];
     if (activeNav) {
         const navLink = document.getElementById(activeNav);
@@ -576,14 +576,14 @@
         }
     }
     
-    // Завантажити лічильники з API
+    // Descarregar ліouльники desde API
     loadClientCounts();
     
     function loadClientCounts() {
         const token = sessionStorage.getItem('liftmanager_jwt') || localStorage.getItem('liftmanager_jwt') || localStorage.getItem('token');
         if (!token) return;
         
-        // Кількість ліфтів
+        // Quantidade de elevadores
         fetch('/api/lifts', {
             headers: { 'Authorization': `Bearer ${token}` }
         })
@@ -597,7 +597,7 @@
         })
         .catch(err => console.warn('Failed to load lifts count:', err));
         
-        // Кількість заявок
+        // Quantidade de pedidos
         fetch('/api/requests?status=pending,in_progress', {
             headers: { 'Authorization': `Bearer ${token}` }
         })
@@ -611,7 +611,7 @@
         })
         .catch(err => console.warn('Failed to load requests count:', err));
         
-        // Кількість рахунків
+        // Quantidade рахунків
         fetch('/api/invoices?status=unpaid', {
             headers: { 'Authorization': `Bearer ${token}` }
         })
@@ -625,7 +625,7 @@
         })
         .catch(err => console.warn('Failed to load invoices count:', err));
         
-        // Кількість сповіщень
+        // Quantidade de notificações
         fetch('/api/notifications?unread=true', {
             headers: { 'Authorization': `Bearer ${token}` }
         })
@@ -643,12 +643,12 @@
         .catch(err => console.warn('Failed to load notifications count:', err));
     }
     
-    // Оновлювати лічильники кожні 30 секунд
+    // Оновлювати ліouльники кожні 30 секунд
     setInterval(loadClientCounts, 30000);
 })();
 </script>
 
-<!-- Стилі для badge purple -->
+<!-- Стилі para badge purple -->
 <style>
 .badge-purple {
     background: linear-gradient(135deg, #6f42c1, #8e44ad);
@@ -662,11 +662,11 @@
                 <div class="container-fluid">
                     <div class="row mb-2">
                         <div class="col-sm-6">
-                            <h1>Мій профіль</h1>
+                            <h1>O meu perfil</h1>
                         </div>
                         <div class="col-sm-6">
                             <ol class="breadcrumb float-sm-right">
-                                <li class="breadcrumb-item"><a href="/pages/client/dashboard.html">Головна</a></li>
+                                <li class="breadcrumb-item"><a href="/pages/client/dashboard.html">Início</a></li>
                                 <li class="breadcrumb-item active">Perfil</li>
                             </ol>
                         </div>
@@ -677,7 +677,7 @@
             <!-- Main content -->
             <section class="content">
                 <div class="container-fluid">
-                    <!-- Заголовок профілю -->
+                    <!-- Assunto профілю -->
                     <div class="row mb-4">
                         <div class="col-12">
                             <div class="profile-card fade-in-up">
@@ -685,8 +685,8 @@
                                     <div class="profile-avatar" id="profileAvatar">
                                         <i class="fas fa-user"></i>
                                     </div>
-                                    <h2 id="profileName">Завантаження...</h2>
-                                    <p class="mb-0" id="profileEmail">Завантаження...</p>
+                                    <h2 id="profileName">A carregar...</h2>
+                                    <p class="mb-0" id="profileEmail">A carregar...</p>
                                     
                                     <div class="avatar-upload">
                                         <label for="avatarInput" class="avatar-upload-label">
@@ -699,19 +699,19 @@
                                     <div class="profile-stats">
                                         <div class="stat-item">
                                             <div class="stat-number" id="statsLifts">0</div>
-                                            <div class="stat-label">Ліфтів</div>
+                                            <div class="stat-label">Elevadores</div>
                                         </div>
                                         <div class="stat-item">
                                             <div class="stat-number" id="statsRequests">0</div>
-                                            <div class="stat-label">Активних заявок</div>
+                                            <div class="stat-label">Pedidos ativos</div>
                                         </div>
                                         <div class="stat-item">
                                             <div class="stat-number" id="statsTickets">0</div>
-                                            <div class="stat-label">Звернень</div>
+                                            <div class="stat-label">Tickets</div>
                                         </div>
                                         <div class="stat-item">
                                             <div class="stat-number" id="statsYears">0</div>
-                                            <div class="stat-label">Років з нами</div>
+                                            <div class="stat-label">Anos connosco</div>
                                         </div>
                                     </div>
                                 </div>
@@ -719,7 +719,7 @@
                         </div>
                     </div>
 
-                    <!-- Навігація по профілю -->
+                    <!-- Navegação do perfil -->
                     <div class="row mb-4">
                         <div class="col-12">
                             <div class="card">
@@ -743,18 +743,18 @@
                                 </div>
                                 <div class="card-body">
                                     <div class="tab-content" id="profileTabContent">
-                                        <!-- Особиста інформація -->
+                                        <!-- Informação pessoal -->
                                         <div class="tab-pane fade show active" id="info" role="tabpanel">
                                             <div class="row">
                                                 <div class="col-md-6">
-                                                    <h4 class="mb-4">Контактна інформація</h4>
+                                                    <h4 class="mb-4">Informações de contacto</h4>
                                                     <div class="info-item">
                                                         <div class="info-icon">
                                                             <i class="fas fa-user"></i>
                                                         </div>
                                                         <div class="info-content">
-                                                            <div class="info-label">Повне ім'я</div>
-                                                            <div class="info-value" id="infoFullName">Клієнт Клієнтович</div>
+                                                            <div class="info-label">Nome completo</div>
+                                                            <div class="info-value" id="infoFullName">Cliente Exemplo</div>
                                                         </div>
                                                     </div>
                                                     <div class="info-item">
@@ -763,7 +763,7 @@
                                                         </div>
                                                         <div class="info-content">
                                                             <div class="info-label">Email</div>
-                                                            <div class="info-value" id="infoEmail">Завантаження...</div>
+                                                            <div class="info-value" id="infoEmail">A carregar...</div>
                                                         </div>
                                                     </div>
                                                     <div class="info-item">
@@ -771,7 +771,7 @@
                                                             <i class="fas fa-phone"></i>
                                                         </div>
                                                         <div class="info-content">
-                                                            <div class="info-label">Телефон</div>
+                                                            <div class="info-label">Telefone</div>
                                                             <div class="info-value" id="infoPhone">+351 912 000 000</div>
                                                         </div>
                                                     </div>
@@ -780,20 +780,20 @@
                                                             <i class="fas fa-building"></i>
                                                         </div>
                                                         <div class="info-content">
-                                                            <div class="info-label">Компанія</div>
-                                                            <div class="info-value" id="infoCompany">ТОВ "Приклад"</div>
+                                                            <div class="info-label">Empresa</div>
+                                                            <div class="info-value" id="infoCompany">Empresa Exemplo</div>
                                                         </div>
                                                     </div>
                                                 </div>
                                                 <div class="col-md-6">
-                                                    <h4 class="mb-4">Адреса</h4>
+                                                    <h4 class="mb-4">Morada</h4>
                                                     <div class="info-item">
                                                         <div class="info-icon">
                                                             <i class="fas fa-map-marker-alt"></i>
                                                         </div>
                                                         <div class="info-content">
-                                                            <div class="info-label">Адреса</div>
-                                                            <div class="info-value" id="infoAddress">м. Lisboa, Rua Прикладна, 123</div>
+                                                            <div class="info-label">Morada</div>
+                                                            <div class="info-value" id="infoAddress">Lisboa, Rua Exemplo, 123</div>
                                                         </div>
                                                     </div>
                                                     <div class="info-item">
@@ -801,7 +801,7 @@
                                                             <i class="fas fa-city"></i>
                                                         </div>
                                                         <div class="info-content">
-                                                            <div class="info-label">Місто</div>
+                                                            <div class="info-label">Cidade</div>
                                                             <div class="info-value" id="infoCity">Lisboa</div>
                                                         </div>
                                                     </div>
@@ -810,8 +810,8 @@
                                                             <i class="fas fa-flag"></i>
                                                         </div>
                                                         <div class="info-content">
-                                                            <div class="info-label">Область</div>
-                                                            <div class="info-value" id="infoRegion">Lisboaська область</div>
+                                                            <div class="info-label">Distrito</div>
+                                                            <div class="info-value" id="infoRegion">Distrito de Lisboa</div>
                                                         </div>
                                                     </div>
                                                     <div class="info-item">
@@ -819,7 +819,7 @@
                                                             <i class="fas fa-mail-bulk"></i>
                                                         </div>
                                                         <div class="info-content">
-                                                            <div class="info-label">Поштовий індекс</div>
+                                                            <div class="info-label">Código postal</div>
                                                             <div class="info-value" id="infoZip">01001</div>
                                                         </div>
                                                     </div>
@@ -827,11 +827,11 @@
                                             </div>
                                         </div>
 
-                                        <!-- Безпека -->
+                                        <!-- Segurança -->
                                         <div class="tab-pane fade" id="security" role="tabpanel">
-                                            <h4 class="mb-4">Безпека</h4>
+                                            <h4 class="mb-4">Segurança</h4>
 
-                                            <!-- 🔑 Тимчасовий пароль — показується поки mustChangePassword = true -->
+                                            <!-- 🔑 Palavra-passe temporária — exibido enquanto mustChangePassword = true -->
                                             <div id="tempPasswordHintCard" style="display:none" class="mb-4">
                                                 <div style="background:#fff8e1;border:2px solid #ffb300;border-radius:10px;padding:20px 24px">
                                                     <div class="d-flex align-items-start">
@@ -852,25 +852,25 @@
                                                 <div class="col-md-6">
                                                     <div class="card">
                                                         <div class="card-header">
-                                                            <h5 class="card-title">Зміна пароля</h5>
+                                                            <h5 class="card-title">Alterar palavra-passe</h5>
                                                         </div>
                                                         <div class="card-body">
                                                             <form id="passwordForm">
                                                                 <div class="form-group">
-                                                                    <label for="currentPassword">Поточний пароль</label>
+                                                                    <label for="currentPassword">Palavra-passe atual</label>
                                                                     <input type="password" class="form-control" id="currentPassword" required>
                                                                 </div>
                                                                 <div class="form-group">
-                                                                    <label for="newPassword">Новий пароль</label>
+                                                                    <label for="newPassword">Nova palavra-passe</label>
                                                                     <input type="password" class="form-control" id="newPassword" required>
-                                                                    <small class="form-text text-muted">Мінімум 8 символів, включаючи цифри та літери</small>
+                                                                    <small class="form-text text-muted">Mínimo 8 caracteres, incluindo números e letras</small>
                                                                 </div>
                                                                 <div class="form-group">
-                                                                    <label for="confirmPassword">Підтвердження пароля</label>
+                                                                    <label for="confirmPassword">Confirmar palavra-passe</label>
                                                                     <input type="password" class="form-control" id="confirmPassword" required>
                                                                 </div>
                                                                 <button type="button" class="btn btn-primary" onclick="profileManager.changePassword()">
-                                                                    <i class="fas fa-key mr-2"></i>Змінити пароль
+                                                                    <i class="fas fa-key mr-2"></i>Alterar palavra-passe
                                                                 </button>
                                                             </form>
                                                         </div>
@@ -891,19 +891,19 @@
         <!-- Footer -->
         <footer class="main-footer">
             <strong>Copyright &copy; 2026 <a href="https://festlift.pt">FestLift</a>.</strong>
-            Система управління ліфтами v2.1.0.
+            Sistema de gestão de elevadores v2.1.0.
             <div class="float-right d-none d-sm-inline-block">
                 <b>Versão</b> 2.1.0
             </div>
         </footer>
     </div>
 
-    <!-- Модальне вікно редагування профілю -->
+    <!-- Janela modal edição профілю -->
     <div class="modal fade" id="editProfileModal" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Редагування профілю</h5>
+                    <h5 class="modal-title">Editar perfil</h5>
                     <button type="button" class="close" data-dismiss="modal">
                         <span>&times;</span>
                     </button>
@@ -913,13 +913,13 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label for="editFirstName">Ім'я *</label>
+                                    <label for="editFirstName">Nome *</label>
                                     <input type="text" class="form-control" id="editFirstName" required>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label for="editLastName">Прізвище *</label>
+                                    <label for="editLastName">Apelido *</label>
                                     <input type="text" class="form-control" id="editLastName" required>
                                 </div>
                             </div>
@@ -933,29 +933,29 @@
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label for="editPhone">Телефон</label>
+                                    <label for="editPhone">Telefone</label>
                                     <input type="tel" class="form-control" id="editPhone">
                                 </div>
                             </div>
                         </div>
                         <div class="form-group">
-                            <label for="editCompany">Компанія</label>
+                            <label for="editCompany">Empresa</label>
                             <input type="text" class="form-control" id="editCompany">
                         </div>
                         <div class="form-group">
-                            <label for="editAddress">Адреса</label>
+                            <label for="editAddress">Morada</label>
                             <input type="text" class="form-control" id="editAddress">
                         </div>
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label for="editCity">Місто</label>
+                                    <label for="editCity">Cidade</label>
                                     <input type="text" class="form-control" id="editCity">
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label for="editZip">Поштовий індекс</label>
+                                    <label for="editZip">Código postal</label>
                                     <input type="text" class="form-control" id="editZip">
                                 </div>
                             </div>
@@ -965,7 +965,7 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
                     <button type="button" class="btn btn-primary" onclick="profileManager.saveProfile()">
-                        <i class="fas fa-save mr-2"></i>Guardar зміни
+                        <i class="fas fa-save mr-2"></i>Guardar alterações
                     </button>
                 </div>
             </div>
@@ -977,15 +977,15 @@
     <script src="../../plugins/bootstrap/bootstrap.bundle.min.js"></script>
     <script src="../../plugins/adminlte/adminlte.min.js"></script>
 
-<!-- 👤 Завантажувач профілю з API -->
+<!-- 👤 Carregador de perfil da API -->
 <script src="../../assets/js/profile-loader.js"></script>
 
-<!-- 👤 Завантажувач профілю клієнта (специфічний) -->
+<!-- 👤 Carregador de perfil do cliente (específico) -->
 <script src="../../assets/js/client-profile-loader.js"></script>
 
     <script>
         function logout() {
-            if (confirm('Ви впевнені, що хочете вийти з системи?')) {
+            if (confirm('Tem a certeza que quer sair do sistema?')) {
                 if (typeof AuthManager !== 'undefined') {
                     AuthManager.logout();
                 } else {
@@ -1000,13 +1000,13 @@
             // Ініціалізація AdminLTE
             $('[data-widget="pushmenu"]').PushMenu();
             
-            // Темна тема
+            // Escuro тема
             $('#darkModeToggle').on('click', function() {
                 $('body').toggleClass('dark-mode');
                 $(this).find('i').toggleClass('fa-moon fa-sun');
             });
 
-            // Перевірка з'єднання
+            // Verificação з'ligação
             setInterval(() => {
                 const online = navigator.onLine;
                 $('#connectionStatus').html(
@@ -1040,12 +1040,12 @@
                     const userData = await response.json();
                     console.log('✅ User profile loaded from API');
                     
-                    // Зберігаємо в localStorage для кешування
+                    // Зберігаexisteмо в localStorage para кешування
                     localStorage.setItem('userData', JSON.stringify(userData));
 
                     fillProfileUI(userData);
 
-                    // 🔑 Показуємо тимчасовий пароль якщо ще не змінено
+                    // 🔑 Показуexisteмо temporário palavra-passe se ainda не alterado
                     if (userData.mustChangePassword && userData.tempPasswordHint) {
                         document.getElementById('tempPasswordDisplay').textContent = userData.tempPasswordHint;
                         document.getElementById('tempPasswordHintCard').style.display = 'block';
@@ -1074,13 +1074,13 @@
             $('#profileName').text(fullName);
             $('#profileEmail').text(userData.email || '—');
 
-            // Вкладка "Особиста інформація"
+            // Вкладка "Informação pessoal"
             $('#infoFullName').text(fullName);
             $('#infoEmail').text(userData.email || '—');
             $('#infoPhone').text(userData.phone || '—');
             $('#infoCompany').text(userData.company || '—');
 
-            // Адреса
+            // Morada
             if (userData.address) {
                 $('#infoAddress').text(userData.address);
             } else {
@@ -1090,7 +1090,7 @@
             $('#infoRegion').text(userData.region || '—');
             $('#infoZip').text(userData.zip || userData.zipCode || '—');
 
-            // Пре-заповнення форми редагування
+            // Пре-заповнення форми edição
             $('#editFirstName').val(userData.firstName || '');
             $('#editLastName').val(userData.lastName || '');
             $('#editEmail').val(userData.email || '');
@@ -1105,13 +1105,13 @@
             // Ініціалізація AdminLTE
             $('[data-widget="pushmenu"]').PushMenu();
             
-            // Темна тема
+            // Escuro тема
             $('#darkModeToggle').on('click', function() {
                 $('body').toggleClass('dark-mode');
                 $(this).find('i').toggleClass('fa-moon fa-sun');
             });
 
-            // Перевірка з'єднання
+            // Verificação з'ligação
             setInterval(() => {
                 const online = navigator.onLine;
                 $('#connectionStatus').html(
@@ -1124,27 +1124,27 @@
             // Simple ProfileManager stub to prevent console errors
             class ProfileManager {
                 editProfile() {
-                    alert('Редагування профілю');
+                    alert('Editar perfil');
                     $('#profileModal').modal('show');
                 }
                 
                 changePassword() {
-                    alert('Зміна паролю');
+                    alert('Alterar palavra-passe');
                 }
                 
                 logoutAllSessions() {
-                    if (confirm('Завершити всі сесії?')) {
-                        alert('Всі сесії завершено');
+                    if (confirm('Prazoar todas as sessões?')) {
+                        alert('Todas as sessões terminadas');
                     }
                 }
                 
                 exportData() {
-                    alert('Exportar даних розпочато');
+                    alert('Exportação de dados iniciada');
                 }
                 
                 deleteAccount() {
-                    if (confirm('Eliminar аккаунт назавжди?')) {
-                        alert('Аккаунт буде видалено');
+                    if (confirm('Eliminar conta permanentemente?')) {
+                        alert('Conta será eliminada');
                     }
                 }
                 
@@ -1193,16 +1193,16 @@
             // Ініціалізація менеджера профілю
             window.profileManager = new ProfileManager();
             
-            // Обробка завантаження аватара
+            // Обробка a carregar аваeра
             $('#avatarInput').on('change', function(e) {
                 profileManager.handleAvatarUpload(e.target.files[0]);
             });
 
-            // ── Налаштування: аватар ──────────────────────────────────
+            // ── Definições: аваeр ──────────────────────────────────
             $('#settingsAvatarInput').on('change', async function(e) {
                 const file = e.target.files[0];
                 if (!file) return;
-                if (file.size > 2 * 1024 * 1024) { showSettingsToast('Файл занадто великий (максимум 2 МБ)', 'error'); return; }
+                if (file.size > 2 * 1024 * 1024) { showSettingsToast('Ficheiro demasiado grande (máximo 2 MB)', 'error'); return; }
                 const reader = new FileReader();
                 reader.onload = function(ev) {
                     $('#settingsAvatarPreview').attr('src', ev.target.result);
@@ -1214,35 +1214,35 @@
                 try {
                     const token = localStorage.getItem('liftmanager_jwt') || sessionStorage.getItem('liftmanager_jwt') || localStorage.getItem('token');
                     const res = await fetch('/api/users/avatar', { method: 'POST', headers: { 'Authorization': `Bearer ${token}` }, body: formData });
-                    if (res.ok) { showSettingsToast('Аватар оновлено', 'success'); }
-                    else { showSettingsToast('Не вдалося завантажити аватар', 'error'); }
-                } catch { showSettingsToast('Аватар збережено локально', 'success'); }
+                    if (res.ok) { showSettingsToast('Avatar atualizado', 'success'); }
+                    else { showSettingsToast('Não foi possível carregar o avatar', 'error'); }
+                } catch { showSettingsToast('Avatar guardado localmente', 'success'); }
             });
 
-            // ── Налаштування: зміна пароля ──────────────────────────
+            // ── Definições: alteração пароля ──────────────────────────
             $('#profileChangePasswordForm').on('submit', async function(e) {
                 e.preventDefault();
                 const current = $('#profileCurrentPassword').val();
                 const newPwd = $('#profileNewPassword').val();
                 const confirm = $('#profileConfirmPassword').val();
-                if (newPwd.length < 8) { showSettingsToast('Пароль має бути не менше 8 символів', 'error'); return; }
-                if (newPwd !== confirm) { showSettingsToast('Паролі не співпадають', 'error'); return; }
-                const btn = $('#profileChangePwdBtn').prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-2"></i>Збереження...');
+                if (newPwd.length < 8) { showSettingsToast('A palavra-passe deve ter no mínimo 8 caracteres', 'error'); return; }
+                if (newPwd !== confirm) { showSettingsToast('As palavras-passe não coincidem', 'error'); return; }
+                const btn = $('#profileChangePwdBtn').prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-2"></i>A guardar...');
                 try {
                     const token = localStorage.getItem('liftmanager_jwt') || sessionStorage.getItem('liftmanager_jwt') || localStorage.getItem('token');
                     const res = await fetch('/api/users/change-password', { method: 'POST', headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ currentPassword: current, newPassword: newPwd }) });
                     if (res.ok) {
                         showSettingsToast('Palauma-passe alterada com sucesso', 'success');
                         $('#profileChangePasswordForm')[0].reset();
-                        // Сховати підказку тимчасового пароля
+                        // Сховати підказку temporariamenteго пароля
                         document.getElementById('tempPasswordHintCard').style.display = 'none';
                     }
-                    else { const d = await res.json(); showSettingsToast(d.message || 'Помилка зміни пароля', 'error'); }
-                } catch { showSettingsToast('Помилка з’єднання', 'error'); }
-                finally { $('#profileChangePwdBtn').prop('disabled', false).html('<i class="fas fa-key mr-2"></i>Змінити пароль'); }
+                    else { const d = await res.json(); showSettingsToast(d.message || 'Erro ao alterar a palavra-passe', 'error'); }
+                } catch { showSettingsToast('Erro de ligação', 'error'); }
+                finally { $('#profileChangePwdBtn').prop('disabled', false).html('<i class="fas fa-key mr-2"></i>Alterar palavra-passe'); }
             });
 
-            // ── Налаштування: сповіщення ──────────────────────────
+            // ── Definições: notificações ──────────────────────────
             function loadNotifSettings() {
                 const saved = JSON.parse(localStorage.getItem('client_notification_settings') || '{}');
                 const def = { notifyEmail:true, notifyPush:true, notifySMS:false, notifyMaintenance:true, notifyEmergency:true, notifyInvoice:true, notifyStatus:true };
@@ -1254,7 +1254,7 @@
                 const s = {};
                 keys.forEach(k => { const el = document.getElementById(k); if (el) s[k] = el.checked; });
                 localStorage.setItem('client_notification_settings', JSON.stringify(s));
-                showSettingsToast('Налаштування сповіщень збережено', 'success');
+                showSettingsToast('Definições de notificações guardadas', 'success');
             });
             loadNotifSettings();
 
@@ -1267,13 +1267,13 @@
                 setTimeout(() => t.fadeOut(400, () => t.remove()), 3000);
             }
 
-            // Відкрити вкладку Налаштування за hash
+            // Abrir вкладку Definições за hash
             if (window.location.hash === '#settings') {
                 $('#settings-tab').tab('show');
             }
         });
 
-        // 🔑 Копіювати тимчасовий пароль у буфер обміну
+        // 🔑 Копіювати temporário palavra-passe у буфер обміну
         function copyTempPassword() {
             const pwd = document.getElementById('tempPasswordDisplay').textContent;
             if (!pwd) return;

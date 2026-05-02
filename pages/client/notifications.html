@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Сповіщення - Клієнт</title>
+    <title>Notificações - Cliente</title>
     <script src="../../assets/js/auth.js"></script>
 
     
@@ -170,7 +170,7 @@
             }
         }
         
-        /* Анімації */
+        /* Animações */
         @keyframes slideIn {
             from {
                 opacity: 0;
@@ -186,7 +186,7 @@
             animation: slideIn 0.3s ease;
         }
         
-        /* Кастомні стилі для пагінації */
+        /* Estilos personalizados para paginação */
         .pagination-custom .page-link {
             border-radius: 20px;
             margin: 0 3px;
@@ -202,7 +202,7 @@
 <body class="hold-transition sidebar-mini layout-fixed notification-page" data-required-role="client">
     <div class="wrapper">
 
-        <!-- Навігаційна панель -->
+        <!-- Навігаційна painel -->
         <nav class="main-header navbar navbar-expand navbar-white navbar-light">
             <ul class="navbar-nav">
                 <li class="nav-item">
@@ -211,34 +211,34 @@
                     </a>
                 </li>
                 <li class="nav-item d-none d-sm-inline-block">
-                    <a href="/pages/client/dashboard.html" class="nav-link">Головна</a>
+                    <a href="/pages/client/dashboard.html" class="nav-link">Início</a>
                 </li>
                 <li class="nav-item d-none d-sm-inline-block">
-                    <a href="/pages/client/notifications.html" class="nav-link active">Сповіщення</a>
+                    <a href="/pages/client/notifications.html" class="nav-link active">Notificações</a>
                 </li>
             </ul>
 
-            <!-- Права частина навігації -->
+            <!-- Permissões horaтина навігації -->
             <ul class="navbar-nav ml-auto">
                 <li class="nav-item">
-                    <a class="nav-link notification-bell" href="/pages/client/notifications.html" title="Сповіщення">
+                    <a class="nav-link notification-bell" href="/pages/client/notifications.html" title="Notificações">
                         <i class="fas fa-bell"></i>
                         <span class="notification-badge bg-danger" id="notificationCount">0</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#" onclick="logout()" title="Вийти">
+                    <a class="nav-link" href="#" onclick="logout()" title="Sair">
                         <i class="fas fa-sign-out-alt"></i>
                     </a>
                 </li>
             </ul>
         </nav>
 
-        <!-- Бічна панель -->
+        <!-- Бічна painel -->
         <!-- ═══════════════════════════════════════════════════════════ -->
-<!-- ЕТАЛОННИЙ SIDEBAR ДЛЯ КЛІЄНТСЬКИХ СТОРІНОК -->
-<!-- Версія: 2.0 Portugal (2026-01-13) -->
-<!-- ⚠️ НЕ РЕДАГУЙТЕ ОКРЕМО! Використовуйте цей файл як еталон -->
+<!-- ЕТАЛОННИЙ SIDEBAR ДЛЯ КЛІЄНТСЬКИХ СManutençãoРІНОК -->
+<!-- Versão: 2.0 Portugal (2026-01-13) -->
+<!-- ⚠️ НЕ РЕДАГУЙТЕ ОКРЕМО! Використовуйте цей ficheiro як еeлон -->
 <!-- ═══════════════════════════════════════════════════════════ -->
 
 <aside class="main-sidebar sidebar-dark-primary elevation-4">
@@ -250,7 +250,7 @@
     <div class="sidebar">
 
         
-        <!-- Меню навігації -->
+        <!-- Menu de navegação -->
         <nav class="mt-2">
             <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
                 
@@ -262,31 +262,31 @@
                     </a>
                 </li>
                 
-                <!-- 2. Мої ліфти -->
+                <!-- 2. Os meus elevadores -->
                 <li class="nav-item">
                     <a href="/pages/client/my-lifts.html" class="nav-link" id="nav-my-lifts">
                         <i class="nav-icon fas fa-elevator"></i>
-                        <p>Мої ліфти</p>
+                        <p>Os meus elevadores</p>
                         <span class="badge badge-info right" id="liftsCount">0</span>
                     </a>
                 </li>
                 
-                <!-- 3. AI Прогнозування -->
+                <!-- 3. AI Previsãoування -->
                 <li class="nav-item">
                     <a href="/pages/client/ai-predictions.html" class="nav-link" id="nav-ai-predictions">
                         <i class="nav-icon fas fa-brain"></i>
                         <p>
-                            Прогнозування AI
+                            Previsões AI
                             <span class="badge badge-purple right">Novo</span>
                         </p>
                     </a>
                 </li>
                 
-                <!-- 4. Мої заявки -->
+                <!-- 4. Os meus pedidos -->
                 <li class="nav-item">
                     <a href="/pages/client/requests.html" class="nav-link" id="nav-requests">
                         <i class="nav-icon fas fa-tasks"></i>
-                        <p>Заявки</p>
+                        <p>Pedidos</p>
                         <span class="badge badge-warning right" id="requestsCount">0</span>
                     </a>
                 </li>
@@ -299,70 +299,70 @@
                     </a>
                 </li>
 
-                <!-- 6. Рахунки -->
+                <!-- 6. Faturas -->
                 <li class="nav-item">
                     <a href="/pages/client/invoices.html" class="nav-link" id="nav-invoices">
                         <i class="nav-icon fas fa-file-invoice"></i>
-                        <p>Рахунки</p>
+                        <p>Faturas</p>
                         <span class="badge badge-success right" id="invoicesCount">0</span>
                     </a>
                 </li>
                 
-                <!-- 6. Історія -->
+                <!-- 6. Histórico -->
                 <li class="nav-item">
                     <a href="/pages/client/history.html" class="nav-link" id="nav-history">
                         <i class="nav-icon fas fa-history"></i>
-                        <p>Історія</p>
+                        <p>Histórico</p>
                     </a>
                 </li>
                 
-                <!-- 7. Документація -->
+                <!-- 7. Documentação -->
                 <li class="nav-item">
                     <a href="/pages/client/documentation.html" class="nav-link" id="nav-documentation">
                         <i class="nav-icon fas fa-book"></i>
-                        <p>Документація</p>
+                        <p>Documentação</p>
                     </a>
                 </li>
                 
-                <!-- 8. AI Асистент -->
+                <!-- 8. Assistente de IA -->
                 <li class="nav-item">
                     <a href="/pages/ai-assistant/ai-assistant.html" class="nav-link" id="nav-ai-assistant">
                         <i class="nav-icon fas fa-magic"></i>
-                        <p>Асистент AI</p>
+                        <p>Assistente AI</p>
                         <span class="badge badge-success right">★</span>
                     </a>
                 </li>
                 
-                <!-- 9. Сповіщення -->
+                <!-- 9. Notificações -->
                 <li class="nav-item">
                     <a href="/pages/client/notifications.html" class="nav-link" id="nav-notifications">
                         <i class="nav-icon fas fa-bell"></i>
-                        <p>Сповіщення</p>
+                        <p>Notificações</p>
                         <span class="badge badge-danger right" id="notificationsBadge">0</span>
                     </a>
                 </li>
                 
-                <!-- 10. Підтримка -->
+                <!-- 10. Suporte -->
                 <li class="nav-item">
                     <a href="/pages/client/support.html" class="nav-link" id="nav-support">
                         <i class="nav-icon fas fa-headset"></i>
-                        <p>Підтримка</p>
+                        <p>Suporte</p>
                     </a>
                 </li>
                 
-                <!-- 11. Профіль -->
+                <!-- 11. Perfil -->
                 <li class="nav-item">
                     <a href="/pages/client/profile.html" class="nav-link" id="nav-profile">
                         <i class="nav-icon fas fa-user"></i>
-                        <p>Профіль</p>
+                        <p>Perfil</p>
                     </a>
                 </li>
                 
-                <!-- Вихід -->
+                <!-- Saída -->
                 <li class="nav-item">
                     <a href="#" onclick="logout()" class="nav-link">
                         <i class="nav-icon fas fa-sign-out-alt text-danger"></i>
-                        <p>Вийти</p>
+                        <p>Sair</p>
                     </a>
                 </li>
             </ul>
@@ -370,13 +370,13 @@
     </div>
 </aside>
 
-<!-- Скрипт для підсвічування активного пункту -->
+<!-- Скрипт para підсвічування активного itemу -->
 <script>
 (function() {
-    // Визначити поточну сторінку
+    // Визнаouти поточну a página
     const currentPage = window.location.pathname.split('/').pop().replace('.html', '');
     
-    // Мапінг сторінок на ID навігації
+    // Мапінг de páginas на ID навігації
     const pageMap = {
         'dashboard': 'nav-dashboard',
         'my-lifts': 'nav-my-lifts',
@@ -391,7 +391,7 @@
         'support': 'nav-support',
         'profile': 'nav-profile',    };
     
-    // Підсвітити активний пункт
+    // Підсвітити ativo item
     const activeNav = pageMap[currentPage];
     if (activeNav) {
         const navLink = document.getElementById(activeNav);
@@ -400,14 +400,14 @@
         }
     }
     
-    // Завантажити лічильники з API
+    // Descarregar ліouльники desde API
     loadClientCounts();
     
     function loadClientCounts() {
         const token = sessionStorage.getItem('liftmanager_jwt') || localStorage.getItem('liftmanager_jwt') || localStorage.getItem('token');
         if (!token) return;
         
-        // Кількість ліфтів
+        // Quantidade de elevadores
         fetch('/api/lifts', {
             headers: { 'Authorization': `Bearer ${token}` }
         })
@@ -421,7 +421,7 @@
         })
         .catch(err => console.warn('Failed to load lifts count:', err));
         
-        // Кількість заявок
+        // Quantidade de pedidos
         fetch('/api/requests?status=pending,in_progress', {
             headers: { 'Authorization': `Bearer ${token}` }
         })
@@ -435,7 +435,7 @@
         })
         .catch(err => console.warn('Failed to load requests count:', err));
         
-        // Кількість рахунків
+        // Quantidade рахунків
         fetch('/api/invoices?status=unpaid', {
             headers: { 'Authorization': `Bearer ${token}` }
         })
@@ -449,7 +449,7 @@
         })
         .catch(err => console.warn('Failed to load invoices count:', err));
         
-        // Кількість сповіщень
+        // Quantidade de notificações
         fetch('/api/notifications?unread=true', {
             headers: { 'Authorization': `Bearer ${token}` }
         })
@@ -467,12 +467,12 @@
         .catch(err => console.warn('Failed to load notifications count:', err));
     }
     
-    // Оновлювати лічильники кожні 30 секунд
+    // Оновлювати ліouльники кожні 30 секунд
     setInterval(loadClientCounts, 30000);
 })();
 </script>
 
-<!-- Стилі для badge purple -->
+<!-- Стилі para badge purple -->
 <style>
 .badge-purple {
     background: linear-gradient(135deg, #6f42c1, #8e44ad);
@@ -486,16 +486,16 @@
                 <div class="container-fluid">
                     <div class="row mb-2">
                         <div class="col-sm-6">
-                            <h1>Сповіщення</h1>
+                            <h1>Notificações</h1>
                         </div>
                         <div class="col-sm-6">
                             <ol class="breadcrumb float-sm-right">
-                                <li class="breadcrumb-item"><a href="/pages/client/dashboard.html">Головна</a></li>
+                                <li class="breadcrumb-item"><a href="/pages/client/dashboard.html">Início</a></li>
                 
                 <!-- Tickets -->
                 
                 <!-- Settings -->
-                                <li class="breadcrumb-item active">Сповіщення</li>
+                                <li class="breadcrumb-item active">Notificações</li>
                             </ol>
                         </div>
                     </div>
@@ -505,7 +505,7 @@
             <!-- Main content -->
             <section class="content">
                 <div class="container-fluid">
-                    <!-- Filtroи та дії -->
+                    <!-- Filtroи e дії -->
                     <div class="row mb-4">
                         <div class="col-12">
                             <div class="card">
@@ -514,26 +514,26 @@
                                         <div class="col-md-6">
                                             <div class="filter-buttons">
                                                 <button class="btn btn-outline-primary active" data-filter="all">
-                                                    <i class="fas fa-list"></i> Всі
+                                                    <i class="fas fa-list"></i> Todos
                                                 </button>
                                                 <button class="btn btn-outline-danger" data-filter="unread">
-                                                    <i class="fas fa-envelope"></i> Непрочитані
+                                                    <i class="fas fa-envelope"></i> Não lidas
                                                 </button>
                                                 <button class="btn btn-outline-warning" data-filter="important">
-                                                    <i class="fas fa-exclamation-circle"></i> Важливі
+                                                    <i class="fas fa-exclamation-circle"></i> Importantes
                                                 </button>
                                                 <button class="btn btn-outline-info" data-filter="maintenance">
-                                                    <i class="fas fa-tools"></i> Техобслуговування
+                                                    <i class="fas fa-tools"></i> Manutenção
                                                 </button>
                                             </div>
                                         </div>
                                         <div class="col-md-6 text-right">
                                             <div class="btn-group">
                                                 <button class="btn btn-success" onclick="notificationManager.markAllAsRead()">
-                                                    <i class="fas fa-check-double"></i> Позначити всі як прочитані
+                                                    <i class="fas fa-check-double"></i> Marcar todas como lidas
                                                 </button>
                                                 <button class="btn btn-danger" onclick="notificationManager.clearAll()">
-                                                    <i class="fas fa-trash"></i> Очистити всі
+                                                    <i class="fas fa-trash"></i> Limpar todas
                                                 </button>
                                             </div>
                                         </div>
@@ -549,7 +549,7 @@
                             <div class="card">
                                 <div class="card-body">
                                     <div class="input-group">
-                                        <input type="text" class="form-control" placeholder="Pesquisar сповіщень..." id="searchNotifications">
+                                        <input type="text" class="form-control" placeholder="Pesquisar notificações..." id="searchNotifications">
                                         <div class="input-group-append">
                                             <button class="btn btn-primary" onclick="notificationManager.searchNotifications()">
                                                 <i class="fas fa-search"></i> Pesquisar
@@ -561,13 +561,13 @@
                         </div>
                     </div>
 
-                    <!-- Статистика сповіщень -->
+                    <!-- Estatísticas de notificações -->
                     <div class="row mb-4">
                         <div class="col-lg-3 col-6">
                             <div class="small-box bg-info">
                                 <div class="inner">
                                     <h3 id="totalNotifications">0</h3>
-                                    <p>Всього сповіщень</p>
+                                    <p>Total de notificações</p>
                                 </div>
                                 <div class="icon">
                                     <i class="fas fa-bell"></i>
@@ -578,7 +578,7 @@
                             <div class="small-box bg-warning">
                                 <div class="inner">
                                     <h3 id="unreadNotifications">0</h3>
-                                    <p>Непрочитаних</p>
+                                    <p>Não lidas</p>
                                 </div>
                                 <div class="icon">
                                     <i class="fas fa-envelope"></i>
@@ -589,7 +589,7 @@
                             <div class="small-box bg-danger">
                                 <div class="inner">
                                     <h3 id="importantNotifications">0</h3>
-                                    <p>Важливих</p>
+                                    <p>Importantes</p>
                                 </div>
                                 <div class="icon">
                                     <i class="fas fa-exclamation-circle"></i>
@@ -600,7 +600,7 @@
                             <div class="small-box bg-success">
                                 <div class="inner">
                                     <h3 id="todayNotifications">0</h3>
-                                    <p>Сьогодні</p>
+                                    <p>Hoje</p>
                                 </div>
                                 <div class="icon">
                                     <i class="fas fa-calendar-day"></i>
@@ -609,32 +609,32 @@
                         </div>
                     </div>
 
-                    <!-- Список сповіщень -->
+                    <!-- Lista de notificações -->
                     <div class="row">
                         <div class="col-12">
                             <div class="card">
                                 <div class="card-header">
-                                    <h3 class="card-title">Список сповіщень</h3>
+                                    <h3 class="card-title">Lista de notificações</h3>
                                     <div class="card-tools">
                                         <div class="btn-group">
                                             <button class="btn btn-sm btn-outline-secondary" onclick="notificationManager.sortByDate()">
-                                                <i class="fas fa-sort-amount-down"></i> За датою
+                                                <i class="fas fa-sort-amount-down"></i> Por data
                                             </button>
                                             <button class="btn btn-sm btn-outline-secondary" onclick="notificationManager.sortByPriority()">
-                                                <i class="fas fa-sort-amount-up"></i> За пріоритетом
+                                                <i class="fas fa-sort-amount-up"></i> Por prioridade
                                             </button>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="card-body p-0">
                                     <div id="notificationsContainer">
-                                        <!-- Сповіщення будуть завантажені тут -->
+                                        <!-- Notificações serão заванeжені aqui -->
                                     </div>
                                 </div>
                                 <div class="card-footer">
                                     <nav aria-label="Notifications pagination">
                                         <ul class="pagination pagination-custom justify-content-center" id="notificationsPagination">
-                                            <!-- Пагінація буде додана тут -->
+                                            <!-- Пагінація será додана aqui -->
                                         </ul>
                                     </nav>
                                 </div>
@@ -642,54 +642,54 @@
                         </div>
                     </div>
 
-                    <!-- Configurações сповіщень -->
+                    <!-- Configurações de notificações -->
                     <div class="row mt-4">
                         <div class="col-12">
                             <div class="card">
                                 <div class="card-header">
-                                    <h3 class="card-title"><i class="fas fa-cog mr-2"></i>Configurações сповіщень</h3>
+                                    <h3 class="card-title"><i class="fas fa-cog mr-2"></i>Configurações de notificações</h3>
                                 </div>
                                 <div class="card-body">
                                     <div class="row">
                                         <div class="col-md-6">
-                                            <h5>Типи сповіщень:</h5>
+                                            <h5>Tipos de notificações:</h5>
                                             <div class="form-group">
                                                 <div class="custom-control custom-switch">
                                                     <input type="checkbox" class="custom-control-input" id="notifyMaintenance" checked>
-                                                    <label class="custom-control-label" for="notifyMaintenance">Технічне обслуговування</label>
+                                                    <label class="custom-control-label" for="notifyMaintenance">Manutenção técnica</label>
                                                 </div>
                                             </div>
                                             <div class="form-group">
                                                 <div class="custom-control custom-switch">
                                                     <input type="checkbox" class="custom-control-input" id="notifyAlerts" checked>
-                                                    <label class="custom-control-label" for="notifyAlerts">Аварійні сповіщення</label>
+                                                    <label class="custom-control-label" for="notifyAlerts">Alertas de emergência</label>
                                                 </div>
                                             </div>
                                             <div class="form-group">
                                                 <div class="custom-control custom-switch">
                                                     <input type="checkbox" class="custom-control-input" id="notifyBilling" checked>
-                                                    <label class="custom-control-label" for="notifyBilling">Рахунки та оплата</label>
+                                                    <label class="custom-control-label" for="notifyBilling">Faturas e pagamentos</label>
                                                 </div>
                                             </div>
                                         </div>
                                         <div class="col-md-6">
-                                            <h5>Спосіб отримання:</h5>
+                                            <h5>Método de receção:</h5>
                                             <div class="form-group">
                                                 <div class="custom-control custom-switch">
                                                     <input type="checkbox" class="custom-control-input" id="notifyEmail" checked>
-                                                    <label class="custom-control-label" for="notifyEmail">Email сповіщення</label>
+                                                    <label class="custom-control-label" for="notifyEmail">Notificações por Email</label>
                                                 </div>
                                             </div>
                                             <div class="form-group">
                                                 <div class="custom-control custom-switch">
                                                     <input type="checkbox" class="custom-control-input" id="notifyPush" checked>
-                                                    <label class="custom-control-label" for="notifyPush">Push-сповіщення</label>
+                                                    <label class="custom-control-label" for="notifyPush">Notificações push</label>
                                                 </div>
                                             </div>
                                             <div class="form-group">
                                                 <div class="custom-control custom-switch">
                                                     <input type="checkbox" class="custom-control-input" id="notifySMS">
-                                                    <label class="custom-control-label" for="notifySMS">SMS сповіщення</label>
+                                                    <label class="custom-control-label" for="notifySMS">Notificações SMS</label>
                                                 </div>
                                             </div>
                                         </div>
@@ -697,7 +697,7 @@
                                     <div class="row mt-3">
                                         <div class="col-12">
                                             <button class="btn btn-primary" onclick="notificationManager.saveSettings()">
-                                                <i class="fas fa-save"></i> Guardar налаштування
+                                                <i class="fas fa-save"></i> Guardar definições
                                             </button>
                                         </div>
                                     </div>
@@ -712,19 +712,19 @@
         <!-- Footer -->
         <footer class="main-footer">
             <strong>Copyright &copy; 2026 <a href="https://festlift.pt">FestLift</a>.</strong>
-            Система управління ліфтами v2.1.0.
+            Sistema de gestão de elevadores v2.1.0.
             <div class="float-right d-none d-sm-inline-block">
                 <b>Versão</b> 2.1.0
             </div>
         </footer>
     </div>
 
-    <!-- Модальне вікно перегляду сповіщення -->
+    <!-- Janela modal visualizaçãoу notificações -->
     <div class="modal fade" id="viewNotificationModal" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="notificationModalTitle">Деталі сповіщення</h5>
+                    <h5 class="modal-title" id="notificationModalTitle">Detalhes da notificação</h5>
                     <button type="button" class="close" data-dismiss="modal">
                         <span>&times;</span>
                     </button>
@@ -747,9 +747,9 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрити</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
                     <button type="button" class="btn btn-primary" id="modalNotificationActionBtn">
-                        <i class="fas fa-eye"></i> Переглянути деталі
+                        <i class="fas fa-eye"></i> Ver detalhes
                     </button>
                 </div>
             </div>
@@ -766,7 +766,7 @@
 
     <script>
         function logout() {
-            if (confirm('Ви впевнені, що хочете вийти з системи?')) {
+            if (confirm('Tem a certeza que quer sair do sistema?')) {
                 if (typeof AuthManager !== 'undefined') {
                     AuthManager.logout();
                 } else {
@@ -781,13 +781,13 @@
             // Ініціалізація AdminLTE
             $('[data-widget="pushmenu"]').PushMenu();
             
-            // Темна тема
+            // Escuro тема
             $('#darkModeToggle').on('click', function() {
                 $('body').toggleClass('dark-mode');
                 $(this).find('i').toggleClass('fa-moon fa-sun');
             });
 
-            // Перевірка з'єднання
+            // Verificação з'ligação
             setInterval(() => {
                 const online = navigator.onLine;
                 $('#connectionStatus').html(
@@ -797,15 +797,15 @@
                 );
             }, 30000);
 
-            // Завантаження даних користувача
+            // A carregar даних do utilizador
             const userData = JSON.parse(localStorage.getItem('userData')) || {};
             if (userData.firstName) {
             }
 
-            // Ініціалізація менеджера сповіщень
+            // Ініціалізація менеджера de notificações
             window.notificationManager = new NotificationManager();
             
-            // Filtroація сповіщень
+            // Filtroація de notificações
             $('[data-filter]').on('click', function() {
                 const filter = $(this).data('filter');
                 $('[data-filter]').removeClass('active');

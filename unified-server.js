@@ -2058,9 +2058,17 @@ app.post('/api/lifts', authenticateToken, async (req, res) => {
                 const hashedPassword = await bcrypt.hash(rawPassword, 10);
 
                 const nameParts = (liftData.clientName || '').trim().split(/\s+/);
+                // Generate a unique username: try base, then base2, base3, ...
+                const baseUsername = clientEmail.split('@')[0].replace(/[^a-z0-9_.-]/gi, '_');
+                let candidateUsername = baseUsername;
+                let usernameAttempt = 1;
+                while (await db.collection('users').findOne({ username: candidateUsername })) {
+                    usernameAttempt++;
+                    candidateUsername = `${baseUsername}${usernameAttempt}`;
+                }
                 const newClientDoc = {
                     email: clientEmail,
-                    username: clientEmail.split('@')[0],
+                    username: candidateUsername,
                     firstName: nameParts[0] || '',
                     lastName: nameParts.slice(1).join(' ') || '',
                     phone: liftData.clientPhone || '',

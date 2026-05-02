@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Perfil диспетчера</title>
+    <title>Perfil do dispatcher</title>
     <script src="../../assets/js/global-settings.js"></script>
     <link rel="stylesheet" href="../../plugins/adminlte/adminlte.min.css">
     <link rel="stylesheet" href="../../plugins/fontawesome/css/all.min.css">
@@ -16,7 +16,7 @@
                     <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
                 </li>
                 <li class="nav-item d-none d-sm-inline-block">
-                        <a href="dispatcher-dashboard.html" class="nav-link">Дашборд</a>
+                        <a href="dispatcher-dashboard.html" class="nav-link">Painel</a>
                 </li>
             </ul>
         </nav>
@@ -27,7 +27,7 @@
                 <div class="container-fluid">
                     <div class="row mb-2">
                         <div class="col-sm-6">
-                            <h1 class="m-0">Perfil диспетчера</h1>
+                            <h1 class="m-0">Perfil do dispatcher</h1>
                         </div>
                     </div>
                 </div>
@@ -35,7 +35,7 @@
             <section class="content">
                 <div class="container-fluid">
                     <div class="row">
-                        <!-- Аватар та основна інформація -->
+                        <!-- Avatar e основна informação -->
                         <div class="col-md-3">
                             <div class="card card-primary card-outline text-center">
                                 <div class="card-body box-profile pt-4">
@@ -49,26 +49,26 @@
                             </div>
                         </div>
 
-                        <!-- Деталі профілю -->
+                        <!-- Detalhes профілю -->
                         <div class="col-md-9">
                             <div class="card">
                                 <div class="card-header p-2">
                                     <ul class="nav nav-pills">
                                         <li class="nav-item">
-                                            <a class="nav-link active" href="#info" data-toggle="tab">Інформація</a>
+                                            <a class="nav-link active" href="#info" data-toggle="tab">Informação</a>
                                         </li>
                                         <li class="nav-item">
-                                            <a class="nav-link" href="#password" data-toggle="tab">Пароль</a>
+                                            <a class="nav-link" href="#password" data-toggle="tab">Palavra-passe</a>
                                         </li>
                                     </ul>
                                 </div>
                                 <div class="card-body">
                                     <div class="tab-content">
-                                        <!-- Вкладка інформації -->
+                                        <!-- Separador de informação -->
                                         <div class="active tab-pane" id="info">
                                             <form onsubmit="submitProfileUpdate(event)">
                                                 <div class="form-group row">
-                                                    <label class="col-sm-3 col-form-label">Ім'я</label>
+                                                    <label class="col-sm-3 col-form-label">Nome</label>
                                                     <div class="col-sm-9">
                                                         <input type="text" class="form-control" data-user-name placeholder="Ваше ім'я">
                                                     </div>
@@ -80,49 +80,49 @@
                                                     </div>
                                                 </div>
                                                 <div class="form-group row">
-                                                    <label class="col-sm-3 col-form-label">Телефон</label>
+                                                    <label class="col-sm-3 col-form-label">Telefone</label>
                                                     <div class="col-sm-9">
-                                                        <input type="tel" class="form-control" data-user-phone placeholder="Телефон">
+                                                        <input type="tel" class="form-control" data-user-phone placeholder="Telefone">
                                                     </div>
                                                 </div>
                                                 <div class="form-group row">
-                                                    <label class="col-sm-3 col-form-label">Дата реєстрації</label>
+                                                    <label class="col-sm-3 col-form-label">Data de registo</label>
                                                     <div class="col-sm-9">
                                                         <p class="form-control-plaintext" data-user-created>—</p>
                                                     </div>
                                                 </div>
                                                 <div class="form-group row">
                                                     <div class="offset-sm-3 col-sm-9">
-                                                        <button type="submit" class="btn btn-primary">Зберегти зміни</button>
+                                                        <button type="submit" class="btn btn-primary">Guardar alterações</button>
                                                     </div>
                                                 </div>
                                             </form>
                                         </div>
 
-                                        <!-- Вкладка пароля -->
+                                        <!-- Separador de palavra-passe -->
                                         <div class="tab-pane" id="password">
                                             <form onsubmit="submitPasswordChange(event)">
                                                 <div class="form-group row">
-                                                    <label class="col-sm-3 col-form-label">Поточний пароль</label>
+                                                    <label class="col-sm-3 col-form-label">Palavra-passe actual</label>
                                                     <div class="col-sm-9">
                                                         <input type="password" class="form-control" id="currentPassword" required>
                                                     </div>
                                                 </div>
                                                 <div class="form-group row">
-                                                    <label class="col-sm-3 col-form-label">Новий пароль</label>
+                                                    <label class="col-sm-3 col-form-label">Nova palavra-passe</label>
                                                     <div class="col-sm-9">
                                                         <input type="password" class="form-control" id="newPassword" required minlength="6">
                                                     </div>
                                                 </div>
                                                 <div class="form-group row">
-                                                    <label class="col-sm-3 col-form-label">Підтвердити</label>
+                                                    <label class="col-sm-3 col-form-label">Confirmar</label>
                                                     <div class="col-sm-9">
                                                         <input type="password" class="form-control" id="confirmPassword" required minlength="6">
                                                     </div>
                                                 </div>
                                                 <div class="form-group row">
                                                     <div class="offset-sm-3 col-sm-9">
-                                                        <button type="submit" class="btn btn-warning">Змінити пароль</button>
+                                                        <button type="submit" class="btn btn-warning">Alterar palavra-passe</button>
                                                     </div>
                                                 </div>
                                             </form>
@@ -159,7 +159,7 @@
     <!-- Auth System -->
     <script src="../../assets/js/auth.js?v=20241206"></script>
 
-    <!-- 👤 Завантажувач профілю з API -->
+    <!-- 👤 Carregador de perfil da API -->
     <script src="../../assets/js/profile-loader.js"></script>
 
     <!-- DataTables (if needed) -->
@@ -189,7 +189,7 @@
             const current  = document.getElementById('currentPassword').value;
             const newPass  = document.getElementById('newPassword').value;
             const confirm  = document.getElementById('confirmPassword').value;
-            if (newPass !== confirm) { alert('Паролі не співпадають'); return; }
+            if (newPass !== confirm) { alert('Паde função не співпадають'); return; }
             if (window.changeUserPassword) {
                 window.changeUserPassword(current, newPass);
             }

@@ -2,7 +2,7 @@
 <html lang="pt">
 <head>
     <meta charset="UTF-8">
-    <title>Маршрут до завдання - FestLift</title>
+    <title>Rota до tarefas - FestLift</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
     <!-- Leaflet CSS -->
@@ -30,7 +30,7 @@
     <div class="info-panel" id="taskInfo">
         <div class="loading">
             <i class="fas fa-spinner fa-spin fa-2x mb-3"></i>
-            <p>Завантаження даних...</p>
+            <p>A carregar dados...</p>
         </div>
     </div>
     <div id="map"></div>
@@ -44,40 +44,40 @@
     <script>
         let map, routingControl, userLocation;
         
-        // Отримати ID ліфта з URL
+        // Отримати ID do elevador desde URL
         function getLiftId() {
             const params = new URLSearchParams(window.location.search);
             return params.get('lift') || params.get('id');
         }
 
-        // Завантажити дані ліфта з API
+        // Descarregar дані do elevador desde API
         async function loadLiftData(liftId) {
             try {
-                console.log('🔄 Завантаження даних ліфта:', liftId);
+                console.log('🔄 A carregar dados do elevador:', liftId);
                 const response = await AuthManager.fetchWithAuth(`/api/lifts/${liftId}`);
                 
                 if (!response.ok) {
-                    throw new Error('Ліфт не знайдено');
+                    throw new Error('Elevador не encontrado');
                 }
 
                 const data = await response.json();
-                console.log('✅ Дані ліфта отримано:', data);
+                console.log('✅ Dados do elevador recebido:', data);
                 return data.data || data;
             } catch (error) {
-                console.error('❌ Помилка завантаження ліфта:', error);
+                console.error('❌ Erro ao carregar elevador:', error);
                 return null;
             }
         }
 
-        // Отримати геолокацію користувача
+        // Отримати геолокацію do utilizador
         function getUserLocation() {
             return new Promise((resolve, reject) => {
                 if (!navigator.geolocation) {
-                    reject(new Error('Геолокація не підтримується вашим браузером'));
+                    reject(new Error('Геоlocalização не підтримуexisteться вашим браузером'));
                     return;
                 }
                 
-                console.log('📍 Запит геолокації...');
+                console.log('📍 Pedido геолокації...');
                 navigator.geolocation.getCurrentPosition(
                     (position) => {
                         userLocation = {
@@ -85,11 +85,11 @@
                             lng: position.coords.longitude,
                             accuracy: position.coords.accuracy
                         };
-                        console.log('✅ Геолокацію отримано:', userLocation);
+                        console.log('✅ Геолокацію recebido:', userLocation);
                         resolve(userLocation);
                     },
                     (error) => {
-                        console.warn('⚠️ Помилка геолокації:', error.message);
+                        console.warn('⚠️ Erro геолокації:', error.message);
                         reject(error);
                     },
                     { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
@@ -97,7 +97,7 @@
             });
         }
 
-        // Відобразити інформацію про ліфт
+        // Відобразити інформацію про elevador
         function renderLiftInfo(lift) {
             const fullAddress = [
                 lift.address?.street,
@@ -106,28 +106,28 @@
             ].filter(Boolean).join(', ');
             
             const statusText = {
-                'operational': '✅ Працює',
-                'maintenance': '🔧 Технічне обслуговування',
-                'out_of_service': '❌ Не працює',
+                'operational': '✅ A funcionar',
+                'maintenance': '🔧 Manutenção técnica',
+                'out_of_service': '❌ Fora de serviço',
                 'inactive': '⚠️ Inativo'
-            }[lift.status] || 'Невідомо';
+            }[lift.status] || 'Desconhecido';
 
             document.getElementById('taskInfo').innerHTML = `
                 <div class="d-flex justify-content-between align-items-start">
                     <div>
-                        <h5><i class="fas fa-elevator text-primary"></i> ${lift.model || 'Ліфт'} ${lift.municipalNumber ? `№${lift.municipalNumber}` : ''}</h5>
-                        <p class="mb-1"><i class="fas fa-map-marker-alt text-danger"></i> <strong>Адреса:</strong> ${fullAddress}</p>
-                        <p class="mb-1"><i class="fas fa-industry"></i> <strong>Виробник:</strong> ${lift.manufacturer || 'Невідомо'}</p>
-                        <p class="mb-0"><i class="fas fa-info-circle"></i> <strong>Статус:</strong> ${statusText}</p>
+                        <h5><i class="fas fa-elevator text-primary"></i> ${lift.model || 'Elevador'} ${lift.municipalNumber ? `№${lift.municipalNumber}` : ''}</h5>
+                        <p class="mb-1"><i class="fas fa-map-marker-alt text-danger"></i> <strong>Endereço:</strong> ${fullAddress}</p>
+                        <p class="mb-1"><i class="fas fa-industry"></i> <strong>Fabricante:</strong> ${lift.manufacturer || 'Desconhecido'}</p>
+                        <p class="mb-0"><i class="fas fa-info-circle"></i> <strong>Estado:</strong> ${statusText}</p>
                     </div>
                     <button class="btn btn-secondary" onclick="window.close()">
-                        <i class="fas fa-times"></i> Закрити
+                        <i class="fas fa-times"></i> Fechar
                     </button>
                 </div>
             `;
         }
 
-        // Ініціалізувати мапу з маршрутом
+        // Ініціалізувати мапу desde rotaом
         async function initializeMapWithRoute(lift) {
             try {
                 // Отримати геолокацію
@@ -141,11 +141,11 @@
                     maxZoom: 19
                 }).addTo(map);
 
-                // Координати ліфта
+                // Coordenadas do elevador
                 const liftLat = lift.location?.coordinates?.[1] || 50.4501;
                 const liftLng = lift.location?.coordinates?.[0] || 30.5234;
 
-                // Маркер користувача
+                // Маркер do utilizador
                 L.marker([userLocation.lat, userLocation.lng], {
                     icon: L.icon({
                         iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
@@ -157,7 +157,7 @@
                     })
                 }).addTo(map).bindPopup('📍 Ваша позиція');
 
-                // Маркер ліфта
+                // Маркер do elevador
                 L.marker([liftLat, liftLng], {
                     icon: L.icon({
                         iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
@@ -167,9 +167,9 @@
                         popupAnchor: [1, -34],
                         shadowSize: [41, 41]
                     })
-                }).addTo(map).bindPopup(`🎯 ${lift.model || 'Ліфт'}`).openPopup();
+                }).addTo(map).bindPopup(`🎯 ${lift.model || 'Elevador'}`).openPopup();
 
-                // Розрахунок відстані
+                // Розfatura відсeні
                 const R = 6371e3;
                 const φ1 = userLocation.lat * Math.PI/180;
                 const φ2 = liftLat * Math.PI/180;
@@ -181,9 +181,9 @@
                 const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
                 const distance = R * c;
                 
-                console.log('📏 Пряма відстань:', (distance/1000).toFixed(2), 'км');
+                console.log('📏 Пряма відсeнь:', (distance/1000).toFixed(2), 'км');
 
-                // Побудова маршруту
+                // Побудова rotaу
                 routingControl = L.Routing.control({
                     waypoints: [
                         L.latLng(userLocation.lat, userLocation.lng),
@@ -200,18 +200,18 @@
                     addWaypoints: false
                 }).on('routesfound', function(e) {
                     const summary = e.routes[0].summary;
-                    console.log('✅ Маршрут знайдено:');
-                    console.log('  Відстань:', (summary.totalDistance/1000).toFixed(2), 'км');
-                    console.log('  Час:', Math.round(summary.totalTime/60), 'хв');
+                    console.log('✅ Rota encontrada:');
+                    console.log('  Відсeнь:', (summary.totalDistance/1000).toFixed(2), 'км');
+                    console.log('  Hora:', Math.round(summary.totalTime/60), 'хв');
                 }).on('routingerror', function(e) {
-                    console.error('❌ Помилка маршруту:', e.error);
-                    alert('Не вдалося побудувати маршрут. Перевірте з\'єднання.');
+                    console.error('❌ Erro rotaу:', e.error);
+                    alert('Não foi possível побудувати rota. Verifique з\'ligação.');
                 }).addTo(map);
 
             } catch (error) {
-                console.error('❌ Помилка ініціалізації:', error);
+                console.error('❌ Erro ініціалізації:', error);
                 
-                // Fallback: показати тільки ліфт
+                // Fallback: mostrar apenas elevador
                 const liftLat = lift.location?.coordinates?.[1] || 50.4501;
                 const liftLng = lift.location?.coordinates?.[0] || 30.5234;
                 
@@ -222,18 +222,18 @@
                 }).addTo(map);
                 
                 L.marker([liftLat, liftLng]).addTo(map)
-                    .bindPopup(`${lift.model || 'Ліфт'}<br>${lift.address?.street || ''}`).openPopup();
+                    .bindPopup(`${lift.model || 'Elevador'}<br>${lift.address?.street || ''}`).openPopup();
                 
-                alert('Не вдалося визначити вашу позицію. Показано тільки місце призначення.');
+                alert('Não foi possível визначити вашу позицію. A mostrar apenas місце atribuição.');
             }
         }
 
-        // Завантажити всі ліфти та показати загальну карту
+        // Descarregar всі elevadores e mostrar загальну mapa
         async function loadAllLiftsMap() {
             document.getElementById('taskInfo').innerHTML = `
                 <div class="d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0"><i class="fas fa-map text-primary"></i> Карта ліфтів</h5>
-                    <small class="text-muted">Натисніть на маркер для побудови маршруту</small>
+                    <h5 class="mb-0"><i class="fas fa-map text-primary"></i> Mapa de elevadores</h5>
+                    <small class="text-muted">Clique на маркер para побудови rotaу</small>
                 </div>
             `;
 
@@ -246,17 +246,17 @@
                     if (!Array.isArray(lifts)) lifts = [];
                 }
             } catch (e) {
-                console.warn('⚠️ Не вдалося завантажити ліфти:', e);
+                console.warn('⚠️ Não foi possível descarregar elevadores:', e);
             }
 
             // Спробувати отримати геолокацію
-            let center = [38.7169, -9.1399]; // Лісабон за замовчуванням
+            let center = [38.7169, -9.1399]; // Лісouн predefinido
             let zoom = 12;
             try {
                 await getUserLocation();
                 center = [userLocation.lat, userLocation.lng];
             } catch (e) {
-                console.warn('⚠️ Геолокацію не отримано, використовується за замовчуванням');
+                console.warn('⚠️ Геолокацію не recebido, використовуexisteться predefinido');
             }
 
             map = L.map('map').setView(center, zoom);
@@ -298,22 +298,22 @@
                 }).addTo(map);
 
                 marker.bindPopup(`
-                    <b>${lift.model || 'Ліфт'} ${lift.municipalNumber ? '№' + lift.municipalNumber : ''}</b><br>
+                    <b>${lift.model || 'Elevador'} ${lift.municipalNumber ? '№' + lift.municipalNumber : ''}</b><br>
                     ${fullAddress || ''}<br>
                     <a href="/pages/tech/task-map.html?lift=${lift._id || lift.id}" class="btn btn-sm btn-primary mt-1" style="color:#fff">
-                        <i class="fas fa-route"></i> Маршрут
+                        <i class="fas fa-route"></i> Rota
                     </a>
                 `);
             });
 
             if (lifts.length > 0) {
-                console.log(`✅ Відображено ${lifts.length} ліфтів на карті`);
+                console.log(`✅ Відображено ${lifts.length} de elevadores на no mapa`);
             } else {
-                console.warn('⚠️ Ліфти не знайдено');
+                console.warn('⚠️ Elevadores не encontrado');
             }
         }
 
-        // Ініціалізація
+        // Inicialização
         (async function() {
             const liftId = getLiftId();
             
@@ -328,7 +328,7 @@
                 document.getElementById('taskInfo').innerHTML = `
                     <div class="alert alert-danger">
                         <i class="fas fa-exclamation-triangle"></i>
-                        Ліфт не знайдено
+                        Elevador не encontrado
                     </div>
                 `;
                 return;

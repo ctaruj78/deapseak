@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Технік - Інспекції</title>
+    <title>Técnico - Inspeções</title>
     <script src="../../assets/js/auth.js"></script>
 
     
@@ -13,7 +13,7 @@
     <!-- SweetAlert2 -->
     <link rel="stylesheet" href="/plugins/sweetalert2/css/sweetalert2.min.css">
     
-    <!-- Додаткові стилі -->
+    <!-- Estilos adicionais -->
     <style>
         .inspection-card {
             transition: all 0.3s ease;
@@ -195,7 +195,7 @@
 <body class="hold-transition sidebar-mini layout-fixed" data-required-role="tech">
     <div class="wrapper">
 
-        <!-- Навігаційна панель -->
+        <!-- Barra de navegação -->
         <nav class="main-header navbar navbar-expand navbar-white navbar-light">
             <ul class="navbar-nav">
                 <li class="nav-item">
@@ -204,42 +204,42 @@
                     </a>
                 </li>
                 <li class="nav-item d-none d-sm-inline-block">
-                    <a href="dashboard.html" class="nav-link">Головна</a>
+                    <a href="dashboard.html" class="nav-link">Início</a>
                 </li>
                 <li class="nav-item d-none d-sm-inline-block">
-                    <a href="inspections.html" class="nav-link active">Інспекції</a>
+                    <a href="inspections.html" class="nav-link active">Inspecções</a>
                 </li>
                 <li class="nav-item d-none d-sm-inline-block">
-                    <a href="tasks.html" class="nav-link">Завдання</a>
+                    <a href="tasks.html" class="nav-link">Tarefas</a>
                 </li>
             </ul>
 
-            <!-- Права частина навігації -->
+            <!-- Parte direita da navegação -->
             <ul class="navbar-nav ml-auto">
                 <li class="nav-item">
-                    <a class="nav-link" href="ar-helper.html" title="AR помічник">
+                    <a class="nav-link" href="ar-helper.html" title="Auxiliar AR">
                         <i class="fas fa-vr-cardboard"></i>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="tools.html" title="Інструменти">
+                    <a class="nav-link" href="tools.html" title="Ferramentas">
                         <i class="fas fa-tools"></i>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#" id="darkModeToggle" title="Темна тема">
+                    <a class="nav-link" href="#" id="darkModeToggle" title="Tema escuro">
                         <i class="fas fa-moon"></i>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#" onclick="logout()" title="Вийти">
+                    <a class="nav-link" href="#" onclick="logout()" title="Sair">
                         <i class="fas fa-sign-out-alt"></i>
                     </a>
                 </li>
             </ul>
         </nav>
 
-        <!-- Бічна панель -->
+        <!-- Painel lateral -->
                 <aside class="main-sidebar sidebar-dark-primary elevation-4">
             <!-- Brand Logo -->
             <a href="dashboard.html" class="brand-link">
@@ -256,7 +256,7 @@
         <li class="nav-item">
             <a href="/pages/tech/dashboard.html" class="nav-link">
                 <i class="nav-icon fas fa-tachometer-alt"></i>
-                <p>Дашборд</p>
+                <p>Dashboard</p>
             </a>
         </li>
 
@@ -264,7 +264,7 @@
         <li class="nav-item">
             <a href="/pages/tech/tasks.html" class="nav-link">
                 <i class="nav-icon fas fa-clipboard-list"></i>
-                <p>Мої завдання</p>
+                <p>As minhas tarefas</p>
             </a>
         </li>
 
@@ -272,7 +272,7 @@
         <li class="nav-item">
             <a href="/pages/tech/schedule.html" class="nav-link">
                 <i class="nav-icon fas fa-calendar-alt"></i>
-                <p>Розклад</p>
+                <p>Agenda</p>
             </a>
         </li>
 
@@ -288,7 +288,7 @@
         <li class="nav-item">
             <a href="/pages/tech/inspections.html" class="nav-link">
                 <i class="nav-icon fas fa-clipboard-check"></i>
-                <p>Інспекції</p>
+                <p>Inspecções</p>
             </a>
         </li>
 
@@ -296,7 +296,7 @@
         <li class="nav-item">
             <a href="/pages/tech/reports.html" class="nav-link">
                 <i class="nav-icon fas fa-file-alt"></i>
-                <p>Звіти робіт</p>
+                <p>Relatórios de trabalho</p>
             </a>
         </li>
 
@@ -305,7 +305,7 @@
             <a href="#" class="nav-link">
                 <i class="nav-icon fas fa-toolbox"></i>
                 <p>
-                    Інструменти
+                    Ferramentas
                     <i class="right fas fa-angle-left"></i>
                 </p>
             </a>
@@ -313,7 +313,7 @@
                 <li class="nav-item">
                     <a href="/pages/tech/qr-scanner.html" class="nav-link">
                         <i class="fas fa-qrcode nav-icon"></i>
-                        <p>QR Сканер</p>
+                        <p>Leitor QR</p>
                     </a>
                 </li>
                 <li class="nav-item">
@@ -325,13 +325,13 @@
                 <li class="nav-item">
                     <a href="/pages/tech/task-map.html" class="nav-link">
                         <i class="fas fa-map-marked-alt nav-icon"></i>
-                        <p>Карта завдань</p>
+                        <p>Mapa de tarefas</p>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a href="/pages/tech/tools.html" class="nav-link">
                         <i class="fas fa-tools nav-icon"></i>
-                        <p>Інструменти</p>
+                        <p>Ferramentas</p>
                     </a>
                 </li>
             </ul>
@@ -342,7 +342,7 @@
             <a href="#" class="nav-link">
                 <i class="nav-icon fas fa-book"></i>
                 <p>
-                    База знань
+                    Base de conhecimento
                     <i class="right fas fa-angle-left"></i>
                 </p>
             </a>
@@ -350,25 +350,25 @@
                 <li class="nav-item">
                     <a href="/pages/tech/knowledge-base.html" class="nav-link">
                         <i class="fas fa-bookmark nav-icon"></i>
-                        <p>Довідник</p>
+                        <p>Manual</p>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a href="/pages/tech/manuals.html" class="nav-link">
                         <i class="fas fa-book-open nav-icon"></i>
-                        <p>Інструкції</p>
+                        <p>Instruções</p>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a href="/pages/tech/checklists.html" class="nav-link">
                         <i class="fas fa-tasks nav-icon"></i>
-                        <p>Чеклісти</p>
+                        <p>Listas de verificação</p>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a href="/pages/tech/videos.html" class="nav-link">
                         <i class="fas fa-video nav-icon"></i>
-                        <p>Відео</p>
+                        <p>Vídeos</p>
                     </a>
                 </li>
             </ul>
@@ -377,8 +377,8 @@
         <li class="nav-item">
             <a href="/pages/ai-assistant/ai-assistant.html" class="nav-link">
                 <i class="nav-icon fas fa-magic"></i>
-                <p>AI Асистент</p>
-                <span class="badge badge-success right">Новинка</span>
+                <p>AI Assistente</p>
+                <span class="badge badge-success right">Novidade</span>
             </a>
         </li>
 
@@ -386,7 +386,7 @@
         <li class="nav-item">
             <a href="/pages/tech/notifications.html" class="nav-link">
                 <i class="nav-icon fas fa-bell"></i>
-                <p>Сповіщення</p>
+                <p>Notificações</p>
             </a>
         </li>
 
@@ -394,7 +394,7 @@
         <li class="nav-item">
             <a href="/pages/tech/profile.html" class="nav-link">
                 <i class="nav-icon fas fa-user"></i>
-                <p>Профіль</p>
+                <p>Perfil</p>
             </a>
         </li>
 
@@ -416,12 +416,12 @@
                 <div class="container-fluid">
                     <div class="row mb-2">
                         <div class="col-sm-6">
-                            <h1>Інспекції та перевірки</h1>
+                            <h1>Inspeções e de verificação</h1>
                         </div>
                         <div class="col-sm-6">
                             <ol class="breadcrumb float-sm-right">
-                                <li class="breadcrumb-item"><a href="dashboard.html">Головна</a></li>
-                                <li class="breadcrumb-item active">Інспекції</li>
+                                <li class="breadcrumb-item"><a href="dashboard.html">Início</a></li>
+                                <li class="breadcrumb-item active">Inspecções</li>
                             </ol>
                         </div>
                     </div>
@@ -431,14 +431,14 @@
             <!-- Main content -->
             <section class="content">
                 <div class="container-fluid">
-                    <!-- Статистика -->
+                    <!-- Estatísticas -->
                     <div class="row">
                         <div class="col-lg-3 col-md-6">
                             <div class="stat-card">
                                 <div class="stat-icon">📋</div>
                                 <div class="stat-info">
                                     <h3 id="totalInspections">0</h3>
-                                    <p>Всього інспекцій</p>
+                                    <p>Total de inspeções</p>
                                 </div>
                             </div>
                         </div>
@@ -447,7 +447,7 @@
                                 <div class="stat-icon">⏳</div>
                                 <div class="stat-info">
                                     <h3 id="plannedInspections">0</h3>
-                                    <p>Заплановані</p>
+                                    <p>Planeados</p>
                                 </div>
                             </div>
                         </div>
@@ -456,7 +456,7 @@
                                 <div class="stat-icon">🔧</div>
                                 <div class="stat-info">
                                     <h3 id="inProgressInspections">0</h3>
-                                    <p>В процесі</p>
+                                    <p>Em processo</p>
                                 </div>
                             </div>
                         </div>
@@ -465,63 +465,63 @@
                                 <div class="stat-icon">✅</div>
                                 <div class="stat-info">
                                     <h3 id="completedInspections">0</h3>
-                                    <p>Завершені</p>
+                                    <p>Concluídas</p>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Filtroи -->
+                    <!-- Filtros -->
                     <div class="row mt-4">
                         <div class="col-12">
                             <div class="card inspection-card">
                                 <div class="card-header">
-                                    <h3 class="card-title"><i class="fas fa-filter mr-2"></i>Filtroи інспекцій</h3>
+                                    <h3 class="card-title"><i class="fas fa-filter mr-2"></i>Filtros de inspeções</h3>
                                 </div>
                                 <div class="card-body">
                                     <div class="row">
                                         <div class="col-md-3">
                                             <div class="form-group">
-                                                <label>Статус:</label>
+                                                <label>Estado:</label>
                                                 <select id="statusFilter" class="form-control">
-                                                    <option value="all">Всі статуси</option>
-                                                    <option value="planned">Заплановані</option>
-                                                    <option value="in-progress">В процесі</option>
-                                                    <option value="completed">Завершені</option>
-                                                    <option value="overdue">Протерміновані</option>
+                                                    <option value="all">Todos os estados</option>
+                                                    <option value="planned">Planeados</option>
+                                                    <option value="in-progress">Em processo</option>
+                                                    <option value="completed">Concluídos</option>
+                                                    <option value="overdue">Em atraso</option>
                                                 </select>
                                             </div>
                                         </div>
                                         <div class="col-md-3">
                                             <div class="form-group">
-                                                <label>Тип інспекції:</label>
+                                                <label>Tipo de inspecção:</label>
                                                 <select id="typeFilter" class="form-control">
-                                                    <option value="all">Всі типи</option>
-                                                    <option value="safety">Безпека</option>
-                                                    <option value="technical">Технічна</option>
-                                                    <option value="periodic">Періодична</option>
-                                                    <option value="emergency">Аварійна</option>
+                                                    <option value="all">Todos os tipos</option>
+                                                    <option value="safety">Segurança</option>
+                                                    <option value="technical">Técnica</option>
+                                                    <option value="periodic">Periódica</option>
+                                                    <option value="emergency">Emergência</option>
                                                 </select>
                                             </div>
                                         </div>
                                         <div class="col-md-3">
                                             <div class="form-group">
-                                                <label>Пріоритет:</label>
+                                                <label>Prioridade:</label>
                                                 <select id="priorityFilter" class="form-control">
-                                                    <option value="all">Всі пріоритети</option>
-                                                    <option value="high">Високий</option>
-                                                    <option value="medium">Середній</option>
-                                                    <option value="low">Низький</option>
+                                                    <option value="all">Todas as prioridades</option>
+                                                    <option value="high">Alto</option>
+                                                    <option value="medium">Médio</option>
+                                                    <option value="low">Baixo</option>
                                                 </select>
                                             </div>
                                         </div>
                                         <div class="col-md-3">
                                             <div class="form-group" style="margin-top: 32px;">
                                                 <button class="btn btn-primary" onclick="inspectionManager.applyFilters()">
-                                                    <i class="fas fa-filter"></i> Застосувати
+                                                    <i class="fas fa-filter"></i> Aplicar
                                                 </button>
                                                 <button class="btn btn-default" onclick="inspectionManager.resetFilters()">
-                                                    <i class="fas fa-sync"></i> Скинути
+                                                    <i class="fas fa-sync"></i> Repor
                                                 </button>
                                             </div>
                                         </div>
@@ -531,28 +531,28 @@
                         </div>
                     </div>
 
-                    <!-- Дії -->
+                    <!-- Ações -->
                     <div class="row mt-4">
                         <div class="col-12">
                             <div class="card inspection-card">
                                 <div class="card-header">
-                                    <h3 class="card-title"><i class="fas fa-plus-circle mr-2"></i>Швидкі дії</h3>
+                                    <h3 class="card-title"><i class="fas fa-plus-circle mr-2"></i>Acções rápidas</h3>
                                 </div>
                                 <div class="card-body">
                                     <div class="row">
                                         <div class="col-md-4 mb-3">
                                             <button class="btn btn-primary btn-lg btn-block" onclick="inspectionManager.startNewInspection()">
-                                                <i class="fas fa-plus"></i> Нова інспекція
+                                                <i class="fas fa-plus"></i> Nova inspeção
                                             </button>
                                         </div>
                                         <div class="col-md-4 mb-3">
                                             <button class="btn btn-success btn-lg btn-block" onclick="inspectionManager.importChecklist()">
-                                                <i class="fas fa-file-import"></i> Імпорт чек-листа
+                                                <i class="fas fa-file-import"></i> Importar lista de verificação
                                             </button>
                                         </div>
                                         <div class="col-md-4 mb-3">
                                             <button class="btn btn-info btn-lg btn-block" onclick="inspectionManager.exportReports()">
-                                                <i class="fas fa-file-export"></i> Exportar звітів
+                                                <i class="fas fa-file-export"></i> Exportar relatórioів
                                             </button>
                                         </div>
                                     </div>
@@ -561,19 +561,19 @@
                         </div>
                     </div>
 
-                    <!-- Список інспекцій -->
+                    <!-- Lista de inspeções -->
                     <div class="row mt-4">
                         <div class="col-12">
                             <div class="card inspection-card">
                                 <div class="card-header">
-                                    <h3 class="card-title"><i class="fas fa-list mr-2"></i>Список інспекцій</h3>
+                                    <h3 class="card-title"><i class="fas fa-list mr-2"></i>Lista de inspeções</h3>
                                     <div class="card-tools">
                                         <div class="btn-group">
                                             <button class="btn btn-success" onclick="inspectionManager.exportInspections()">
                                                 <i class="fas fa-download"></i> Exportar
                                             </button>
                                             <button class="btn btn-info" onclick="inspectionManager.printInspections()">
-                                                <i class="fas fa-print"></i> Друк
+                                                <i class="fas fa-print"></i> Impressão
                                             </button>
                                         </div>
                                     </div>
@@ -584,17 +584,17 @@
                                             <thead>
                                                 <tr>
                                                     <th>ID</th>
-                                                    <th>Дата</th>
-                                                    <th>Тип</th>
-                                                    <th>Ліфт</th>
-                                                    <th>Статус</th>
-                                                    <th>Пріоритет</th>
-                                                    <th>Результат</th>
-                                                    <th>Дії</th>
+                                                    <th>Data</th>
+                                                    <th>Tipo</th>
+                                                    <th>Elevador</th>
+                                                    <th>Estado</th>
+                                                    <th>Prioridade</th>
+                                                    <th>Resultado</th>
+                                                    <th>Ações</th>
                                                 </tr>
                                             </thead>
                                             <tbody id="inspectionsTableBody">
-                                                <!-- Інспекції будуть завантажені тут -->
+                                                <!-- Inspeções serão заванeжені aqui -->
                                             </tbody>
                                         </table>
                                     </div>
@@ -602,11 +602,11 @@
                                 <div class="card-footer">
                                     <div class="pagination">
                                         <button class="btn btn-sm btn-default" onclick="inspectionManager.previousPage()">
-                                            <i class="fas fa-chevron-left"></i> Попередня
+                                            <i class="fas fa-chevron-left"></i> Anterior
                                         </button>
-                                        <span class="mx-3">Сторінка <span id="currentPage">1</span> з <span id="totalPages">1</span></span>
+                                        <span class="mx-3">Página <span id="currentPage">1</span> de <span id="totalPages">1</span></span>
                                         <button class="btn btn-sm btn-default" onclick="inspectionManager.nextPage()">
-                                            Наступна <i class="fas fa-chevron-right"></i>
+                                            Seguinte <i class="fas fa-chevron-right"></i>
                                         </button>
                                     </div>
                                 </div>
@@ -614,12 +614,12 @@
                         </div>
                     </div>
 
-                    <!-- Чек-листи -->
+                    <!-- Lista de verificaçãoи -->
                     <div class="row mt-4">
                         <div class="col-12">
                             <div class="card inspection-card">
                                 <div class="card-header">
-                                    <h3 class="card-title"><i class="fas fa-clipboard-list mr-2"></i>Стандартні чек-листи</h3>
+                                    <h3 class="card-title"><i class="fas fa-clipboard-list mr-2"></i>Estadoдартні listas de verificação</h3>
                                 </div>
                                 <div class="card-body">
                                     <div class="row">
@@ -627,10 +627,10 @@
                                             <div class="card">
                                                 <div class="card-body text-center">
                                                     <i class="fas fa-shield-alt fa-3x text-primary mb-3"></i>
-                                                    <h5>Перевірка безпеки</h5>
-                                                    <p>Стандартний чек-лист перевірки систем безпеки</p>
+                                                    <h5>Verificação de segurança</h5>
+                                                    <p>Padrão lista de verificação de verificação систем de segurança</p>
                                                     <button class="btn btn-primary btn-sm" onclick="inspectionManager.loadSafetyChecklist()">
-                                                        <i class="fas fa-download"></i> Завантажити
+                                                        <i class="fas fa-download"></i> Descarregar
                                                     </button>
                                                 </div>
                                             </div>
@@ -639,10 +639,10 @@
                                             <div class="card">
                                                 <div class="card-body text-center">
                                                     <i class="fas fa-cogs fa-3x text-warning mb-3"></i>
-                                                    <h5>Технічний огляд</h5>
-                                                    <p>Повна перевірка технічного стану ліфта</p>
+                                                    <h5>Inspeção técnica</h5>
+                                                    <p>Verificação técnica completa do estado do elevador</p>
                                                     <button class="btn btn-primary btn-sm" onclick="inspectionManager.loadTechnicalChecklist()">
-                                                        <i class="fas fa-download"></i> Завантажити
+                                                        <i class="fas fa-download"></i> Descarregar
                                                     </button>
                                                 </div>
                                             </div>
@@ -651,10 +651,10 @@
                                             <div class="card">
                                                 <div class="card-body text-center">
                                                     <i class="fas fa-calendar-check fa-3x text-success mb-3"></i>
-                                                    <h5>Щорічна інспекція</h5>
-                                                    <p>Чек-лист для щорічної планової інспекції</p>
+                                                    <h5>Inspeção anual</h5>
+                                                    <p>Lista de verificação para a inspeção anual planeada inspeções</p>
                                                     <button class="btn btn-primary btn-sm" onclick="inspectionManager.loadAnnualChecklist()">
-                                                        <i class="fas fa-download"></i> Завантажити
+                                                        <i class="fas fa-download"></i> Descarregar
                                                     </button>
                                                 </div>
                                             </div>
@@ -678,12 +678,12 @@
         </footer>
     </div>
 
-    <!-- Модальне вікно нової інспекції -->
+    <!-- Janela modal нової inspeções -->
     <div class="modal fade" id="newInspectionModal" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Нова інспекція</h5>
+                    <h5 class="modal-title">Nova inspeção</h5>
                     <button type="button" class="close" data-dismiss="modal">
                         <span>&times;</span>
                     </button>
@@ -693,25 +693,25 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label for="inspectionType">Тип інспекції *</label>
+                                    <label for="inspectionType">Tipo de inspecção *</label>
                                     <select id="inspectionType" class="form-control" required>
-                                        <option value="">Оберіть тип...</option>
-                                        <option value="safety">Перевірка безпеки</option>
-                                        <option value="technical">Технічний огляд</option>
-                                        <option value="periodic">Періодична перевірка</option>
-                                        <option value="emergency">Аварійна перевірка</option>
-                                        <option value="custom">Інша перевірка</option>
+                                        <option value="">Selecione o tipo...</option>
+                                        <option value="safety">Verificação de segurança</option>
+                                        <option value="technical">Inspeção técnica</option>
+                                        <option value="periodic">Periódica verificação</option>
+                                        <option value="emergency">Emergência verificação</option>
+                                        <option value="custom">Інша verificação</option>
                                     </select>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label for="inspectionLift">Ліфт *</label>
+                                    <label for="inspectionLift">Elevador *</label>
                                     <select id="inspectionLift" class="form-control" required>
-                                        <option value="">Оберіть ліфт...</option>
-                                        <option value="lift1">Otis Gen2 - Rua Центральна, 12</option>
-                                        <option value="lift2">Schindler 3300 - пр. Перемоги, 45</option>
-                                        <option value="lift3">KONE MonoSpace - Rua Шевченка, 78</option>
+                                        <option value="">Selecione o elevador...</option>
+                                        <option value="lift1">Otis Gen2 - Rua Central, 12</option>
+                                        <option value="lift2">Schindler 3300 - Av. Peremogy, 45</option>
+                                        <option value="lift3">KONE MonoSpace - Rua Shevchenko, 78</option>
                                     </select>
                                 </div>
                             </div>
@@ -720,35 +720,35 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label for="inspectionPriority">Пріоритет *</label>
+                                    <label for="inspectionPriority">Prioridade *</label>
                                     <select id="inspectionPriority" class="form-control" required>
-                                        <option value="medium">Середній</option>
-                                        <option value="high">Високий</option>
-                                        <option value="low">Низький</option>
+                                        <option value="medium">Médio</option>
+                                        <option value="high">Alto</option>
+                                        <option value="low">Baixo</option>
                                     </select>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label for="inspectionDate">Запланована дата *</label>
+                                    <label for="inspectionDate">Заплаnovaна data *</label>
                                     <input type="datetime-local" id="inspectionDate" class="form-control" required>
                                 </div>
                             </div>
                         </div>
 
                         <div class="form-group">
-                            <label for="inspectionDescription">Опис інспекції</label>
+                            <label for="inspectionDescription">Descrição inspeções</label>
                             <textarea id="inspectionDescription" class="form-control" rows="3" 
-                                      placeholder="Опишіть мету та особливості цієї інспекції..."></textarea>
+                                      placeholder="Опишіть мету e особливості ціexisteї inspeções..."></textarea>
                         </div>
 
                         <div class="form-group">
-                            <label for="inspectionChecklist">Чек-лист (необов'язково)</label>
+                            <label for="inspectionChecklist">Lista de verificação (opcional)</label>
                             <select id="inspectionChecklist" class="form-control">
-                                <option value="">Оберіть чек-лист...</option>
-                                <option value="safety">Стандартний чек-лист безпеки</option>
-                                <option value="technical">Технічний чек-лист</option>
-                                <option value="annual">Щорічний чек-лист</option>
+                                <option value="">Selecione lista de verificação...</option>
+                                <option value="safety">Padrão lista de verificação de segurança</option>
+                                <option value="technical">Técnico lista de verificação</option>
+                                <option value="annual">Anual lista de verificação</option>
                             </select>
                         </div>
                     </form>
@@ -756,33 +756,33 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
                     <button type="button" class="btn btn-primary" onclick="inspectionManager.createInspection()">
-                        <i class="fas fa-save"></i> Створити інспекцію
+                        <i class="fas fa-save"></i> Створити inspeção
                     </button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Модальне вікно перегляду інспекції -->
+    <!-- Janela modal visualizaçãoу inspeções -->
     <div class="modal fade" id="viewInspectionModal" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-xl" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Деталі інспекції</h5>
+                    <h5 class="modal-title">Detalhes inspeções</h5>
                     <button type="button" class="close" data-dismiss="modal">
                         <span>&times;</span>
                     </button>
                 </div>
                 <div class="modal-body" id="inspectionDetailsContent">
-                    <!-- Вміст інспекції буде завантажено тут -->
+                    <!-- Conteúdo inspeções será carregado aqui -->
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрити</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
                     <button type="button" class="btn btn-info" onclick="inspectionManager.downloadReport(currentInspectionId)">
-                        <i class="fas fa-download"></i> Завантажити звіт
+                        <i class="fas fa-download"></i> Descarregar relatório
                     </button>
                     <button type="button" class="btn btn-success" onclick="inspectionManager.continueInspection(currentInspectionId)" id="continueInspectionBtn">
-                        <i class="fas fa-play"></i> Продовжити
+                        <i class="fas fa-play"></i> Continuar
                     </button>
                 </div>
             </div>
@@ -803,7 +803,7 @@
         let currentInspectionId = null;
         
         function logout() {
-            if (confirm('Ви впевнені, що хочете вийти з системи?')) {
+            if (confirm('Tem a certeza que quer sair do sistema?')) {
                 localStorage.removeItem('authToken');
                 localStorage.removeItem('userData');
                 window.location.replace('/pages/auth/login.html');
@@ -811,16 +811,16 @@
         }
 
         $(document).ready(function() {
-            // Ініціалізація AdminLTE
+            // Inicialização AdminLTE
             $('[data-widget="pushmenu"]').PushMenu();
             
-            // Темна тема
+            // Tema escuro
             $('#darkModeToggle').on('click', function() {
                 $('body').toggleClass('dark-mode');
                 $(this).find('i').toggleClass('fa-moon fa-sun');
             });
 
-            // Перевірка з'єднання
+            // Verificação de ligação
             setInterval(() => {
                 const online = navigator.onLine;
                 $('#connectionStatus').html(
@@ -830,16 +830,16 @@
                 );
             }, 30000);
 
-            // Завантаження даних техніка
+            // A carregar dados do técnico
             const userData = JSON.parse(localStorage.getItem('userData')) || {};
             if (userData.firstName) {
                 $('#techName').text(`${userData.firstName} ${userData.lastName || ''}`);
             }
 
-            // Ініціалізація менеджера інспекцій
+            // Inicialização менеджера de inspeções
             window.inspectionManager = new InspectionManager();
 
-            // Перенести фокус з модалки перед закриттям (уникнення aria-hidden на focused element)
+            // Перенести фокус desde модалки antes de закриттям (уникнення aria-hidden на focused element)
             $(document).on('hide.bs.modal', '.modal', function () {
                 if (document.activeElement && this.contains(document.activeElement)) {
                     document.activeElement.blur();
@@ -850,9 +850,9 @@
         if ('serviceWorker' in navigator) {
           window.addEventListener('load', function() {
             navigator.serviceWorker.register('/service-worker.js').then(function(registration) {
-              console.log('ServiceWorker зареєстровано:', registration);
+              console.log('ServiceWorker registado:', registration);
             }, function(err) {
-              console.log('ServiceWorker помилка:', err);
+              console.log('Erro do ServiceWorker:', err);
             });
           });
         }

@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Технік - Завдання</title>
+    <title>Técnico - Tarefas</title>
     
     <!-- AdminLTE CSS -->
     <link rel="stylesheet" href="../../plugins/adminlte/adminlte.min.css">
     <link rel="stylesheet" href="../../plugins/fontawesome/css/all.min.css">
     
-    <!-- Додаткові стилі -->
+    <!-- Estilos adicionais -->
     <style>
         .task-card {
             transition: all 0.3s ease;
@@ -226,7 +226,7 @@
     </style>
     
     <!-- Service Integration -->
-    <!-- Система авторизації -->
+    <!-- Sistema de autorização -->
     <script src="../../assets/js/auth.js"></script>
     
     <!-- MongoDB ObjectId Converter -->
@@ -239,7 +239,7 @@
 <body class="hold-transition sidebar-mini layout-fixed" data-required-role="tech">
     <div class="wrapper">
 
-        <!-- Навігаційна панель -->
+        <!-- Barra de navegação -->
         <nav class="main-header navbar navbar-expand navbar-white navbar-light">
             <ul class="navbar-nav">
                 <li class="nav-item">
@@ -248,42 +248,42 @@
                     </a>
                 </li>
                 <li class="nav-item d-none d-sm-inline-block">
-                    <a href="dashboard.html" class="nav-link">Головна</a>
+                    <a href="dashboard.html" class="nav-link">Início</a>
                 </li>
                 <li class="nav-item d-none d-sm-inline-block">
-                    <a href="tasks.html" class="nav-link active">Завдання</a>
+                    <a href="tasks.html" class="nav-link active">Tarefas</a>
                 </li>
                 <li class="nav-item d-none d-sm-inline-block">
-                    <a href="inspections.html" class="nav-link">Інспекції</a>
+                    <a href="inspections.html" class="nav-link">Inspecções</a>
                 </li>
             </ul>
 
-            <!-- Права частина навігації -->
+            <!-- Parte direita da navegação -->
             <ul class="navbar-nav ml-auto">
                 <li class="nav-item">
-                    <a class="nav-link" href="ar-helper.html" title="AR помічник">
+                    <a class="nav-link" href="ar-helper.html" title="Auxiliar AR">
                         <i class="fas fa-vr-cardboard"></i>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="tools.html" title="Інструменти">
+                    <a class="nav-link" href="tools.html" title="Ferramentas">
                         <i class="fas fa-tools"></i>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#" id="darkModeToggle" title="Темна тема">
+                    <a class="nav-link" href="#" id="darkModeToggle" title="Tema escuro">
                         <i class="fas fa-moon"></i>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#" onclick="logout()" title="Вийти">
+                    <a class="nav-link" href="#" onclick="logout()" title="Sair">
                         <i class="fas fa-sign-out-alt"></i>
                     </a>
                 </li>
             </ul>
         </nav>
 
-        <!-- Бічна панель -->
+        <!-- Painel lateral -->
                 <aside class="main-sidebar sidebar-dark-primary elevation-4">
             <!-- Brand Logo -->
             <a href="dashboard.html" class="brand-link">
@@ -300,7 +300,7 @@
         <li class="nav-item">
             <a href="/pages/tech/dashboard.html" class="nav-link">
                 <i class="nav-icon fas fa-tachometer-alt"></i>
-                <p>Дашборд</p>
+                <p>Dashboard</p>
             </a>
         </li>
 
@@ -308,7 +308,7 @@
         <li class="nav-item">
             <a href="/pages/tech/tasks.html" class="nav-link">
                 <i class="nav-icon fas fa-clipboard-list"></i>
-                <p>Мої завдання</p>
+                <p>As minhas tarefas</p>
             </a>
         </li>
 
@@ -316,7 +316,7 @@
         <li class="nav-item">
             <a href="/pages/tech/schedule.html" class="nav-link">
                 <i class="nav-icon fas fa-calendar-alt"></i>
-                <p>Розклад</p>
+                <p>Agenda</p>
             </a>
         </li>
 
@@ -332,7 +332,7 @@
         <li class="nav-item">
             <a href="/pages/tech/inspections.html" class="nav-link">
                 <i class="nav-icon fas fa-clipboard-check"></i>
-                <p>Інспекції</p>
+                <p>Inspecções</p>
             </a>
         </li>
 
@@ -340,7 +340,7 @@
         <li class="nav-item">
             <a href="/pages/tech/reports.html" class="nav-link">
                 <i class="nav-icon fas fa-file-alt"></i>
-                <p>Звіти робіт</p>
+                <p>Relatórios de trabalho</p>
             </a>
         </li>
 
@@ -349,7 +349,7 @@
             <a href="#" class="nav-link">
                 <i class="nav-icon fas fa-toolbox"></i>
                 <p>
-                    Інструменти
+                    Ferramentas
                     <i class="right fas fa-angle-left"></i>
                 </p>
             </a>
@@ -357,7 +357,7 @@
                 <li class="nav-item">
                     <a href="/pages/tech/qr-scanner.html" class="nav-link">
                         <i class="fas fa-qrcode nav-icon"></i>
-                        <p>QR Сканер</p>
+                        <p>Leitor QR</p>
                     </a>
                 </li>
                 <li class="nav-item">
@@ -369,13 +369,13 @@
                 <li class="nav-item">
                     <a href="/pages/tech/task-map.html" class="nav-link">
                         <i class="fas fa-map-marked-alt nav-icon"></i>
-                        <p>Карта завдань</p>
+                        <p>Mapa de tarefas</p>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a href="/pages/tech/tools.html" class="nav-link">
                         <i class="fas fa-tools nav-icon"></i>
-                        <p>Інструменти</p>
+                        <p>Ferramentas</p>
                     </a>
                 </li>
             </ul>
@@ -386,7 +386,7 @@
             <a href="#" class="nav-link">
                 <i class="nav-icon fas fa-book"></i>
                 <p>
-                    База знань
+                    Base de conhecimento
                     <i class="right fas fa-angle-left"></i>
                 </p>
             </a>
@@ -394,25 +394,25 @@
                 <li class="nav-item">
                     <a href="/pages/tech/knowledge-base.html" class="nav-link">
                         <i class="fas fa-bookmark nav-icon"></i>
-                        <p>Довідник</p>
+                        <p>Manual</p>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a href="/pages/tech/manuals.html" class="nav-link">
                         <i class="fas fa-book-open nav-icon"></i>
-                        <p>Інструкції</p>
+                        <p>Instruções</p>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a href="/pages/tech/checklists.html" class="nav-link">
                         <i class="fas fa-tasks nav-icon"></i>
-                        <p>Чеклісти</p>
+                        <p>Listas de verificação</p>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a href="/pages/tech/videos.html" class="nav-link">
                         <i class="fas fa-video nav-icon"></i>
-                        <p>Відео</p>
+                        <p>Vídeos</p>
                     </a>
                 </li>
             </ul>
@@ -421,8 +421,8 @@
         <li class="nav-item">
             <a href="/pages/ai-assistant/ai-assistant.html" class="nav-link">
                 <i class="nav-icon fas fa-magic"></i>
-                <p>AI Асистент</p>
-                <span class="badge badge-success right">Новинка</span>
+                <p>AI Assistente</p>
+                <span class="badge badge-success right">Novidade</span>
             </a>
         </li>
 
@@ -430,7 +430,7 @@
         <li class="nav-item">
             <a href="/pages/tech/notifications.html" class="nav-link">
                 <i class="nav-icon fas fa-bell"></i>
-                <p>Сповіщення</p>
+                <p>Notificações</p>
             </a>
         </li>
 
@@ -438,7 +438,7 @@
         <li class="nav-item">
             <a href="/pages/tech/profile.html" class="nav-link">
                 <i class="nav-icon fas fa-user"></i>
-                <p>Профіль</p>
+                <p>Perfil</p>
             </a>
         </li>
 
@@ -460,12 +460,12 @@
                 <div class="container-fluid">
                     <div class="row mb-2">
                         <div class="col-sm-6">
-                            <h1>Мої завдання</h1>
+                            <h1>As minhas tarefas</h1>
                         </div>
                         <div class="col-sm-6">
                             <ol class="breadcrumb float-sm-right">
-                                <li class="breadcrumb-item"><a href="dashboard.html">Дашборд</a></li>
-                                <li class="breadcrumb-item active">Завдання</li>
+                                <li class="breadcrumb-item"><a href="dashboard.html">Painel</a></li>
+                                <li class="breadcrumb-item active">Tarefas</li>
                             </ol>
                         </div>
                     </div>
@@ -475,14 +475,14 @@
             <!-- Main content -->
             <section class="content">
                 <div class="container-fluid">
-                    <!-- Статистика -->
+                    <!-- Estatísticas -->
                     <div class="row">
                         <div class="col-lg-3 col-md-6">
                             <div class="stat-card">
                                 <div class="stat-icon">📋</div>
                                 <div class="stat-info">
                                     <h3 id="totalTasks">0</h3>
-                                    <p>Всього завдань</p>
+                                    <p>Total de tarefas</p>
                                 </div>
                             </div>
                         </div>
@@ -491,7 +491,7 @@
                                 <div class="stat-icon">⏳</div>
                                 <div class="stat-info">
                                     <h3 id="pendingTasks">0</h3>
-                                    <p>В очікуванні</p>
+                                    <p>Em espera</p>
                                 </div>
                             </div>
                         </div>
@@ -509,60 +509,60 @@
                                 <div class="stat-icon">✅</div>
                                 <div class="stat-info">
                                     <h3 id="completedTasks">0</h3>
-                                    <p>Завершені</p>
+                                    <p>Concluídas</p>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Filtroи -->
+                    <!-- Filtros -->
                     <div class="row mt-4">
                         <div class="col-12">
                             <div class="card task-card">
                                 <div class="card-header">
-                                    <h3 class="card-title"><i class="fas fa-filter mr-2"></i>Filtroи завдань</h3>
+                                    <h3 class="card-title"><i class="fas fa-filter mr-2"></i>Filtros de tarefas</h3>
                                 </div>
                                 <div class="card-body">
                                     <div class="row">
                                         <div class="col-md-3">
                                             <div class="form-group">
-                                                <label>Статус:</label>
+                                                <label>Estado:</label>
                                                 <select id="statusFilter" class="form-control">
-                                                    <option value="all">Всі статуси</option>
-                                                    <option value="pending">В очікуванні</option>
+                                                    <option value="all">Todos os estados</option>
+                                                    <option value="pending">Pendente</option>
                                                     <option value="in-progress">Em progresso</option>
-                                                    <option value="completed">Завершені</option>
-                                                    <option value="urgent">Термінові</option>
+                                                    <option value="completed">Concluídos</option>
+                                                    <option value="urgent">Urgentes</option>
                                                 </select>
                                             </div>
                                         </div>
                                         <div class="col-md-3">
                                             <div class="form-group">
-                                                <label>Тип завдання:</label>
+                                                <label>Tipo tarefas:</label>
                                                 <select id="typeFilter" class="form-control">
-                                                    <option value="all">Всі типи</option>
-                                                    <option value="repair">Ремонт</option>
-                                                    <option value="maintenance">Обслуговування</option>
-                                                    <option value="inspection">Інспекція</option>
-                                                    <option value="emergency">Аварійна</option>
+                                                    <option value="all">Todos os tipos</option>
+                                                    <option value="repair">Reparação</option>
+                                                    <option value="maintenance">Manutenção</option>
+                                                    <option value="inspection">Inspecção</option>
+                                                    <option value="emergency">Emergência</option>
                                                 </select>
                                             </div>
                                         </div>
                                         <div class="col-md-3">
                                             <div class="form-group">
-                                                <label>Пріоритет:</label>
+                                                <label>Prioridade:</label>
                                                 <select id="priorityFilter" class="form-control">
-                                                    <option value="all">Всі пріоритети</option>
-                                                    <option value="high">Високий</option>
-                                                    <option value="medium">Середній</option>
-                                                    <option value="low">Низький</option>
+                                                    <option value="all">Todas as prioridades</option>
+                                                    <option value="high">Alto</option>
+                                                    <option value="medium">Médio</option>
+                                                    <option value="low">Baixo</option>
                                                 </select>
                                             </div>
                                         </div>
                                         <div class="col-md-3">
                                             <div class="form-group" style="margin-top: 32px;">
                                                 <button class="btn btn-primary" onclick="techTaskManager.loadTasks()">
-                                                    <i class="fas fa-sync"></i> Оновити
+                                                    <i class="fas fa-sync"></i> Actualizar
                                                 </button>
                                             </div>
                                         </div>
@@ -572,23 +572,23 @@
                         </div>
                     </div>
 
-                    <!-- Дії -->
+                    <!-- Ações -->
                     <div class="row mt-4">
                         <div class="col-12">
                             <div class="card task-card">
                                 <div class="card-header">
-                                    <h3 class="card-title"><i class="fas fa-plus-circle mr-2"></i>Швидкі дії</h3>
+                                    <h3 class="card-title"><i class="fas fa-plus-circle mr-2"></i>Acções rápidas</h3>
                                 </div>
                                 <div class="card-body">
                                     <div class="row">
                                         <div class="col-md-6 mb-3">
                                             <button class="btn btn-success btn-lg btn-block" onclick="techTaskManager.loadTasks()">
-                                                <i class="fas fa-sync"></i> Оновити завдання
+                                                <i class="fas fa-sync"></i> Actualizar tarefas
                                             </button>
                                         </div>
                                         <div class="col-md-6 mb-3">
                                             <button class="btn btn-info btn-lg btn-block" onclick="window.print()">
-                                                <i class="fas fa-print"></i> Друк
+                                                <i class="fas fa-print"></i> Impressão
                                             </button>
                                         </div>
                                     </div>
@@ -597,19 +597,19 @@
                         </div>
                     </div>
 
-                    <!-- Список завдань -->
+                    <!-- Lista de tarefas -->
                     <div class="row mt-4">
                         <div class="col-12">
                             <div class="card task-card">
                                 <div class="card-header">
-                                    <h3 class="card-title"><i class="fas fa-list mr-2"></i>Список завдань</h3>
+                                    <h3 class="card-title"><i class="fas fa-list mr-2"></i>Lista de tarefas</h3>
                                     <div class="card-tools">
                                         <div class="btn-group">
                                             <button class="btn btn-success" onclick="techTaskManager.loadTasks()">
-                                                <i class="fas fa-sync"></i> Оновити
+                                                <i class="fas fa-sync"></i> Actualizar
                                             </button>
                                             <button class="btn btn-info" onclick="window.print()">
-                                                <i class="fas fa-print"></i> Друк
+                                                <i class="fas fa-print"></i> Impressão
                                             </button>
                                         </div>
                                     </div>
@@ -620,24 +620,24 @@
                                             <thead>
                                                 <tr>
                                                     <th>ID</th>
-                                                    <th>Дата</th>
-                                                    <th>Тип</th>
-                                                    <th>Ліфт</th>
-                                                    <th>Статус</th>
-                                                    <th>Пріоритет</th>
-                                                    <th>Термін</th>
-                                                    <th>Дії</th>
+                                                    <th>Data</th>
+                                                    <th>Tipo</th>
+                                                    <th>Elevador</th>
+                                                    <th>Estado</th>
+                                                    <th>Prioridade</th>
+                                                    <th>Prazo</th>
+                                                    <th>Ações</th>
                                                 </tr>
                                             </thead>
                                             <tbody id="tasksTableBody">
-                                                <!-- Завдання будуть завантажені тут -->
+                                                <!-- Tarefas serão заванeжені aqui -->
                                             </tbody>
                                         </table>
                                     </div>
                                 </div>
                                 <div class="card-footer">
                                     <div class="pagination">
-                                        <span class="mx-3">Сторінка <span id="currentPage">1</span> з <span id="totalPages">1</span></span>
+                                        <span class="mx-3">Página <span id="currentPage">1</span> de <span id="totalPages">1</span></span>
                                         <div class="search-box ml-3">
                                             <input type="text" id="searchInput" class="form-control" placeholder="Pesquisar...">
                                             <button class="btn btn-primary">
@@ -650,19 +650,19 @@
                         </div>
                     </div>
 
-                    <!-- Календар завдань -->
+                    <!-- Calendário de tarefas -->
                     <div class="row mt-4">
                         <div class="col-12">
                             <div class="card task-card">
                                 <div class="card-header">
-                                    <h3 class="card-title"><i class="fas fa-calendar mr-2"></i>Календар завдань</h3>
+                                    <h3 class="card-title"><i class="fas fa-calendar mr-2"></i>Calendário de tarefas</h3>
                                 </div>
                                 <div class="card-body">
                                     <div id="taskCalendar" style="min-height: 400px;">
                                         <div class="text-center py-5">
                                             <i class="fas fa-calendar-alt fa-3x text-muted mb-3"></i>
-                                            <h4>Календар завдань</h4>
-                                            <p>Тут буде відображено ваші завдання у вигляді календаря</p>
+                                            <h4>Calendário de tarefas</h4>
+                                            <p>Тут será відображено ваші tarefas у вигляді calendárioя</p>
                                         </div>
                                     </div>
                                 </div>
@@ -683,12 +683,12 @@
         </footer>
     </div>
 
-    <!-- Модальне вікно нового завдання -->
+    <!-- Janela modal novo tarefas -->
     <div class="modal fade" id="newTaskModal" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Нове завдання</h5>
+                    <h5 class="modal-title">Nova tarefa</h5>
                     <button type="button" class="close" data-dismiss="modal">
                         <span>&times;</span>
                     </button>
@@ -698,24 +698,24 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label for="taskType">Тип завдання *</label>
+                                    <label for="taskType">Tipo tarefas *</label>
                                     <select id="taskType" class="form-control" required>
-                                        <option value="">Оберіть тип...</option>
-                                        <option value="repair">Ремонт</option>
-                                        <option value="maintenance">Обслуговування</option>
-                                        <option value="inspection">Інспекція</option>
-                                        <option value="emergency">Аварійна ситуація</option>
+                                        <option value="">Selecione o tipo...</option>
+                                        <option value="repair">Reparação</option>
+                                        <option value="maintenance">Manutenção</option>
+                                        <option value="inspection">Inspecção</option>
+                                        <option value="emergency">Emergência ситуація</option>
                                     </select>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label for="taskLift">Ліфт *</label>
+                                    <label for="taskLift">Elevador *</label>
                                     <select id="taskLift" class="form-control" required>
-                                        <option value="">Оберіть ліфт...</option>
-                                        <option value="lift1">Otis Gen2 - Rua Центральна, 12</option>
-                                        <option value="lift2">Schindler 3300 - пр. Перемоги, 45</option>
-                                        <option value="lift3">KONE MonoSpace - Rua Шевченка, 78</option>
+                                        <option value="">Selecione o elevador...</option>
+                                        <option value="lift1">Otis Gen2 - Rua Central, 12</option>
+                                        <option value="lift2">Schindler 3300 - Av. Peremogy, 45</option>
+                                        <option value="lift3">KONE MonoSpace - Rua Shevchenko, 78</option>
                                     </select>
                                 </div>
                             </div>
@@ -724,75 +724,75 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label for="taskPriority">Пріоритет *</label>
+                                    <label for="taskPriority">Prioridade *</label>
                                     <select id="taskPriority" class="form-control" required>
-                                        <option value="medium">Середній</option>
-                                        <option value="high">Високий</option>
-                                        <option value="low">Низький</option>
+                                        <option value="medium">Médio</option>
+                                        <option value="high">Alto</option>
+                                        <option value="low">Baixo</option>
                                     </select>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label for="taskDeadline">Термін виконання *</label>
+                                    <label for="taskDeadline">Prazo execução *</label>
                                     <input type="datetime-local" id="taskDeadline" class="form-control" required>
                                 </div>
                             </div>
                         </div>
 
                         <div class="form-group">
-                            <label for="taskTitle">Назва завдання *</label>
-                            <input type="text" id="taskTitle" class="form-control" required placeholder="Введіть назву завдання...">
+                            <label for="taskTitle">Nome tarefas *</label>
+                            <input type="text" id="taskTitle" class="form-control" required placeholder="Digite назву tarefas...">
                         </div>
 
                         <div class="form-group">
-                            <label for="taskDescription">Опис завдання</label>
+                            <label for="taskDescription">Descrição tarefas</label>
                             <textarea id="taskDescription" class="form-control" rows="3" 
-                                      placeholder="Опишіть деталі завдання..."></textarea>
+                                      placeholder="Опишіть detalhes tarefas..."></textarea>
                         </div>
 
                         <div class="form-group">
-                            <label for="taskCategory">Категорія</label>
+                            <label for="taskCategory">Categoria</label>
                             <select id="taskCategory" class="form-control">
-                                <option value="">Оберіть категорію...</option>
-                                <option value="mechanical">Механічні роботи</option>
-                                <option value="electrical">Електричні роботи</option>
-                                <option value="safety">Безпека</option>
-                                <option value="cleaning">Чистка та обслуговування</option>
+                                <option value="">Selecione категорію...</option>
+                                <option value="mechanical">Mecânicas trabalhos</option>
+                                <option value="electrical">Elétricas trabalhos</option>
+                                <option value="safety">Segurança</option>
+                                <option value="cleaning">Чистка e de manutenção</option>
                             </select>
                         </div>
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрити</button>
-                    <button type="button" class="btn btn-primary" onclick="alert('Функція створення завдань доступна через головну панель')">
-                        <i class="fas fa-info"></i> Інформація
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
+                    <button type="button" class="btn btn-primary" onclick="alert('Função створення de tarefas acessoна através de головну painel')">
+                        <i class="fas fa-info"></i> Informação
                     </button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Модальне вікно перегляду завдання -->
+    <!-- Janela modal visualizaçãoу tarefas -->
     <div class="modal fade" id="viewTaskModal" tabindex="-1" role="dialog" aria-labelledby="viewTaskModalTitle" aria-hidden="true">
         <div class="modal-dialog modal-xl" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="viewTaskModalTitle">Деталі завдання</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Закрити">
+                    <h5 class="modal-title" id="viewTaskModalTitle">Detalhes tarefas</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Fechar">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <div class="modal-body" id="taskDetailsContent">
-                    <!-- Вміст завдання буде завантажено тут -->
+                    <!-- Conteúdo tarefas será carregado aqui -->
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрити</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
                     <button type="button" class="btn btn-success" onclick="techTaskManager.startTask(currentTaskId)" id="startTaskBtn">
-                        <i class="fas fa-play"></i> Розпочати
+                        <i class="fas fa-play"></i> Розпоchatи
                     </button>
                     <button type="button" class="btn btn-warning" onclick="techTaskManager.completeTask(currentTaskId)" id="completeTaskBtn">
-                        <i class="fas fa-check"></i> Завершити
+                        <i class="fas fa-check"></i> Concluir
                     </button>
                 </div>
             </div>
@@ -809,14 +809,14 @@
         let serviceIntegration;
         
         function logout() {
-            if (confirm('Ви впевнені, що хочете вийти з системи?')) {
+            if (confirm('Tem a certeza que quer sair do sistema?')) {
                 localStorage.removeItem('authToken');
                 localStorage.removeItem('userData');
                 window.location.replace('/pages/auth/login.html');
             }
         }
 
-        // Менеджер завдань для техніків (використовує API v2)
+        // Менеджер de tarefas para de técnicos (використовуexiste API v2)
         class TechTaskManager {
             constructor() {
                 this.tasks = [];
@@ -827,7 +827,7 @@
             async init() {
                 const role = this.currentUser ? this.currentUser.role : null;
                 if (!AuthManager.isAuthenticated() || !role || (role !== 'technician' && role !== 'tech')) {
-                    alert('Доступ тільки для техніків');
+                    alert('Acesso apenas para de técnicos');
                     AuthManager.logout();
                     return;
                 }
@@ -835,32 +835,32 @@
                 await this.loadTasks();
             }
             
-            // Завантажити завдання для поточного техніка з API
+            // Descarregar tarefas para atualmenteго do técnico desde API
             async loadTasks() {
                 try {
                     const response = await AuthManager.fetchWithAuth('/api/requests');
                     
                     if (!response || !response.ok) {
-                        throw new Error('Не вдалося завантажити завдання');
+                        throw new Error('Não foi possível descarregar tarefas');
                     }
                     
                     const result = await response.json();
                     
                     if (result.success && result.data) {
-                        // API v2 повертає: { success: true, data: [...] }
+                        // API v2 devolve: { success: true, data: [...] }
                         const apiRequests = result.data.requests || result.data;
                         
-                        // Конвертуємо формат API в формат UI
+                        // Converter formato API para formato UI
                         this.tasks = apiRequests.map(req => ({
                             id: req._id,
-                            liftId: req.liftMunicipalNumber || req.liftId || 'Невідомо',
-                            liftAddress: req.liftAddress || 'Адреса невідома',
-                            type: req.type || req.title || 'Не вказано',
+                            liftId: req.liftMunicipalNumber || req.liftId || 'Desconhecido',
+                            liftAddress: req.liftAddress || 'Endereço desconhecido',
+                            type: req.type || req.title || 'Não especificado',
                             priority: req.priority || 'medium',
                             status: req.status || 'new',
                             description: req.description || '',
                             createdAt: req.createdAt,
-                            createdBy: req.createdBy || 'Невідомо',
+                            createdBy: req.createdBy || 'Desconhecido',
                             assignedTo: req.technician,
                             technicianName: req.technicianName || '',
                             deadline: req.deadline || req.scheduledAt,
@@ -874,12 +874,12 @@
                     this.updateStats(this.tasks);
                     
                 } catch (error) {
-                    console.error('Помилка завантаження завдань:', error);
-                    alert('Помилка завантаження завдань: ' + error.message);
+                    console.error('Erro carregamento de tarefas:', error);
+                    alert('Erro carregamento de tarefas: ' + error.message);
                 }
             }
             
-            // Розпочати завдання
+            // Розпоchatи tarefas
             async startTask(requestId) {
                 try {
                     const response = await AuthManager.fetchWithAuth(`/api/requests/${requestId}/status`, {
@@ -889,30 +889,30 @@
                     
                     if (!response || !response.ok) {
                         const error = await response.json();
-                        throw new Error(error.message || 'Помилка початку роботи');
+                        throw new Error(error.message || 'Erro поchatку trabalhos');
                     }
                     
-                    alert('Завдання розпочато!');
+                    alert('Tarefas розпоchatо!');
                     $('#viewTaskModal').modal('hide');
                     await this.loadTasks();
                     
                 } catch (error) {
-                    console.error('Помилка початку роботи:', error);
-                    alert('Не вдалося розпочати роботу: ' + error.message);
+                    console.error('Erro поchatку trabalhos:', error);
+                    alert('Não foi possível розпоchatи роботу: ' + error.message);
                 }
             }
             
-            // Завершити завдання
+            // Concluir tarefas
             async completeTask(requestId) {
-                // Запитуємо опис виконаної роботи
-                const workDescription = prompt('Опишіть виконану роботу:', 'Роботу виконано згідно з регламентом. Всі несправності усунуто.');
+                // Pedidoуexisteмо descrição concluídoї trabalhos
+                const workDescription = prompt('Опишіть виконану роботу:', 'Роботу concluído згідно desde регламентом. Todas неcorretamenteсті усунуто.');
                 
                 if (!workDescription || workDescription.trim() === '') {
-                    alert('Опис виконаної роботи обов\'язковий для завершення завдання');
+                    alert('Descrição do trabalho concluído обов\'язковий para завершення tarefas');
                     return;
                 }
                 
-                if (!confirm('Ви впевнені, що хочете завершити це завдання?')) {
+                if (!confirm('Tem a certeza que quer concluir це tarefas?')) {
                     return;
                 }
                 
@@ -922,22 +922,22 @@
                         body: JSON.stringify({
                             resolution: workDescription.trim(),
                             workDone: workDescription.trim(),
-                            laborHours: 1 // За замовчуванням 1 година
+                            laborHours: 1 // За замовчуванням 1 horasа
                         })
                     });
                     
                     if (!response || !response.ok) {
                         const error = await response.json();
-                        throw new Error(error.message || 'Помилка завершення завдання');
+                        throw new Error(error.message || 'Erro завершення tarefas');
                     }
                     
-                    alert('Завдання успішно завершено!');
+                    alert('Tarefas com sucesso concluído!');
                     $('#viewTaskModal').modal('hide');
                     await this.loadTasks();
                     
                 } catch (error) {
-                    console.error('Помилка завершення завдання:', error);
-                    alert('Не вдалося завершити завдання: ' + error.message);
+                    console.error('Erro завершення tarefas:', error);
+                    alert('Não foi possível concluir tarefas: ' + error.message);
                 }
             }
             
@@ -948,10 +948,10 @@
                 tbody.innerHTML = '';
                 
                 tasks.forEach(task => {
-                    // Використовуємо task.id з маппінгу (вже є _id)
+                    // Використовуexisteмо task.id desde маппінгу (já existe _id)
                     const taskId = task.id || task._id;
                     if (!taskId) {
-                        console.error('❌ Завдання без ID:', task);
+                        console.error('❌ Tarefas беdesde ID:', task);
                         return;
                     }
                     
@@ -959,7 +959,7 @@
                     row.innerHTML = `
                         <td>#${taskId.toString().substr(-6)}</td>
                         <td>${task.liftId || 'Загальне'}</td>
-                        <td>${task.type || 'Обслуговування'}</td>
+                        <td>${task.type || 'Manutenção'}</td>
                         <td>
                             <span class="status-badge status-${task.status.replace('_', '-')}">
                                 ${this.getStatusText(task.status)}
@@ -972,16 +972,16 @@
                         </td>
                         <td>${new Date(task.createdAt).toLocaleDateString()}</td>
                         <td>
-                            <button class="btn btn-sm btn-info btn-icon" onclick="techTaskManager.viewTask('${taskId}')" title="Переглянути">
+                            <button class="btn btn-sm btn-info btn-icon" onclick="techTaskManager.viewTask('${taskId}')" title="Ver">
                                 <i class="fas fa-eye"></i>
                             </button>
                             ${task.status === 'new' || task.status === 'pending' ? `
-                                <button class="btn btn-sm btn-success btn-icon" onclick="techTaskManager.startTask('${taskId}')" title="Розпочати">
+                                <button class="btn btn-sm btn-success btn-icon" onclick="techTaskManager.startTask('${taskId}')" title="Розпоchatи">
                                     <i class="fas fa-play"></i>
                                 </button>
                             ` : ''}
                             ${task.status === 'in_progress' ? `
-                                <button class="btn btn-sm btn-warning btn-icon" onclick="techTaskManager.completeTask('${taskId}')" title="Завершити">
+                                <button class="btn btn-sm btn-warning btn-icon" onclick="techTaskManager.completeTask('${taskId}')" title="Concluir">
                                     <i class="fas fa-check"></i>
                                 </button>
                             ` : ''}
@@ -990,7 +990,7 @@
                     tbody.appendChild(row);
                 });
                 
-                // Оновити загальну кількість завдань (якщо елемент існує)
+                // Actualizar загальну quantidade de tarefas (se елемент existe)
                 const totalTasksCountEl = document.getElementById('totalTasksCount');
                 if (totalTasksCountEl) {
                     totalTasksCountEl.textContent = tasks.length;
@@ -1005,7 +1005,7 @@
                     completed: tasks.filter(t => t.status === 'completed').length
                 };
                 
-                // Безпечне оновлення статистики (перевірка наявності елементів)
+                // Безпечне atualização сeтистики (verificação наявності елементів)
                 const totalEl = document.getElementById('totalTasks');
                 const pendingEl = document.getElementById('pendingTasks');
                 const inProgressEl = document.getElementById('inProgressTasks');
@@ -1020,7 +1020,7 @@
             viewTask(requestId) {
                 const task = this.tasks.find(t => t.id === requestId);
                 if (!task) {
-                    alert('Завдання не знайдено');
+                    alert('Tarefas не encontrado');
                     return;
                 }
                 
@@ -1029,23 +1029,23 @@
                 document.getElementById('taskDetailsContent').innerHTML = `
                     <div class="row">
                         <div class="col-md-6">
-                            <h6>Основна інформація</h6>
+                            <h6>Informação principal</h6>
                             <p><strong>ID:</strong> #${task.id}</p>
-                            <p><strong>Ліфт:</strong> ${task.liftId}</p>
-                            <p><strong>Адреса:</strong> ${task.liftAddress}</p>
-                            <p><strong>Тип:</strong> ${task.type}</p>
-                            <p><strong>Пріоритет:</strong> <span class="priority-badge priority-${task.priority}">${this.getPriorityText(task.priority)}</span></p>
-                            <p><strong>Статус:</strong> <span class="status-badge status-${task.status.replace('_', '-')}">${this.getStatusText(task.status)}</span></p>
+                            <p><strong>Elevador:</strong> ${task.liftId}</p>
+                            <p><strong>Endereço:</strong> ${task.liftAddress}</p>
+                            <p><strong>Tipo:</strong> ${task.type}</p>
+                            <p><strong>Prioridade:</strong> <span class="priority-badge priority-${task.priority}">${this.getPriorityText(task.priority)}</span></p>
+                            <p><strong>Estado:</strong> <span class="status-badge status-${task.status.replace('_', '-')}">${this.getStatusText(task.status)}</span></p>
                         </div>
                         <div class="col-md-6">
-                            <h6>Деталі</h6>
-                            <p><strong>Створено:</strong> ${new Date(task.createdAt).toLocaleString('uk-UA')}</p>
+                            <h6>Detalhes</h6>
+                            <p><strong>Criado:</strong> ${new Date(task.createdAt).toLocaleString('pt-PT')}</p>
                             <p><strong>Створив:</strong> ${task.createdBy}</p>
-                            ${task.deadline ? `<p><strong>Термін:</strong> ${new Date(task.deadline).toLocaleString('uk-UA')}</p>` : ''}
+                            ${task.deadline ? `<p><strong>Prazo:</strong> ${new Date(task.deadline).toLocaleString('pt-PT')}</p>` : ''}
                         </div>
                         <div class="col-12 mt-3">
-                            <h6>Опис</h6>
-                            <p>${task.description || 'Опис відсутній'}</p>
+                            <h6>Descrição</h6>
+                            <p>${task.description || 'Descrição ausente'}</p>
                             ${task.resolution ? `
                                 <h6>Рішення</h6>
                                 <p>${task.resolution}</p>
@@ -1054,7 +1054,7 @@
                     </div>
                 `;
                 
-                // Показуємо відповідні кнопки
+                // Показуexisteмо відповіdias кнопки
                 const startBtn = document.getElementById('startTaskBtn');
                 const completeBtn = document.getElementById('completeTaskBtn');
                 
@@ -1066,36 +1066,36 @@
             
             getStatusText(status) {
                 const statusMap = {
-                    'new': 'Нове',
-                    'assigned': 'Призначено',
+                    'new': 'Novo',
+                    'assigned': 'Atribuído',
                     'in_progress': 'Em progresso',
                     'completed': 'Concluído',
-                    'cancelled': 'Скасовано'
+                    'cancelled': 'Cancelado'
                 };
                 return statusMap[status] || status;
             }
             
             getPriorityText(priority) {
                 const priorityMap = {
-                    'high': 'Високий',
-                    'medium': 'Середній',
-                    'low': 'Низький'
+                    'high': 'Alto',
+                    'medium': 'Médio',
+                    'low': 'Baixo'
                 };
                 return priorityMap[priority] || priority;
             }
         }
 
         $(document).ready(function() {
-            // Ініціалізація AdminLTE
+            // Inicialização AdminLTE
             $('[data-widget="pushmenu"]').PushMenu();
             
-            // Темна тема
+            // Tema escuro
             $('#darkModeToggle').on('click', function() {
                 $('body').toggleClass('dark-mode');
                 $(this).find('i').toggleClass('fa-moon fa-sun');
             });
 
-            // Перевірка з'єднання
+            // Verificação de ligação
             setInterval(() => {
                 const online = navigator.onLine;
                 $('#connectionStatus').html(
@@ -1105,16 +1105,16 @@
                 );
             }, 30000);
 
-            // Завантаження даних техніка з AuthManager
+            // A carregar dados do técnico desde AuthManager
             const userData = AuthManager.getCurrentUser();
             if (userData && userData.firstName) {
                 $('#techName').text(`${userData.firstName} ${userData.lastName || ''}`);
             }
 
-            // Ініціалізація менеджера завдань
+            // Inicialização менеджера de tarefas
             window.techTaskManager = new TechTaskManager();
             
-            // Придушення помилок від розширень браузера
+            // Придушення erros від розширень браузера
             window.addEventListener('error', function(e) {
                 if (e.message && e.message.includes('Extension context')) {
                     e.preventDefault();

@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="uk">
+<html lang="pt">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Диспетчер - Інспекції</title>
+    <title>Dispatcher - Inspeções</title>
     <script src="../../assets/js/global-settings.js"></script>
 
     <!-- AdminLTE CSS -->
@@ -64,15 +64,15 @@
                 </a>
             </li>
             <li class="nav-item d-none d-sm-inline-block">
-                <a href="dashboard.html" class="nav-link">Головна</a>
+                <a href="dashboard.html" class="nav-link">Início</a>
             </li>
             <li class="nav-item d-none d-sm-inline-block">
-                <a href="inspections.html" class="nav-link active">Інспекції</a>
+                <a href="inspections.html" class="nav-link active">Inspecções</a>
             </li>
         </ul>
         <ul class="navbar-nav ml-auto">
             <li class="nav-item">
-                <a class="nav-link" href="#" onclick="logout()" title="Вийти">
+                <a class="nav-link" href="#" onclick="logout()" title="Sair">
                     <i class="fas fa-sign-out-alt"></i>
                 </a>
             </li>
@@ -88,12 +88,12 @@
             <div class="container-fluid">
                 <div class="row mb-2">
                     <div class="col-sm-6">
-                        <h1><i class="fas fa-clipboard-check mr-2"></i>Інспекції</h1>
+                        <h1><i class="fas fa-clipboard-check mr-2"></i>Inspecções</h1>
                     </div>
                     <div class="col-sm-6">
                         <ol class="breadcrumb float-sm-right">
-                            <li class="breadcrumb-item"><a href="dashboard.html">Головна</a></li>
-                            <li class="breadcrumb-item active">Інспекції</li>
+                            <li class="breadcrumb-item"><a href="dashboard.html">Início</a></li>
+                            <li class="breadcrumb-item active">Inspecções</li>
                         </ol>
                     </div>
                 </div>
@@ -103,24 +103,24 @@
         <section class="content">
             <div class="container-fluid">
 
-                <!-- Статистика -->
+                <!-- Estatísticas -->
                 <div class="row" id="statsRow">
                     <div class="col-6 col-md-3">
                         <div class="stat-card">
                             <div class="stat-number text-primary" id="statTotal">—</div>
-                            <div class="stat-label">Всього інспекцій</div>
+                            <div class="stat-label">Total de inspeções</div>
                         </div>
                     </div>
                     <div class="col-6 col-md-3">
                         <div class="stat-card">
                             <div class="stat-number text-success" id="statCompleted">—</div>
-                            <div class="stat-label">Завершено</div>
+                            <div class="stat-label">Concluído</div>
                         </div>
                     </div>
                     <div class="col-6 col-md-3">
                         <div class="stat-card">
                             <div class="stat-number text-warning" id="statInProgress">—</div>
-                            <div class="stat-label">В процесі</div>
+                            <div class="stat-label">Em processo</div>
                         </div>
                     </div>
                     <div class="col-6 col-md-3">
@@ -131,46 +131,46 @@
                     </div>
                 </div>
 
-                <!-- Фільтри -->
+                <!-- Filtros -->
                 <div class="card">
                     <div class="card-body pb-1">
                         <div class="row">
                             <div class="col-md-3 col-sm-6">
                                 <div class="form-group">
-                                    <label>Статус</label>
+                                    <label>Estado</label>
                                     <select id="filterStatus" class="form-control form-control-sm">
-                                        <option value="">Всі статуси</option>
-                                        <option value="planned">Заплановано</option>
-                                        <option value="in_progress">В процесі</option>
-                                        <option value="completed">Завершено</option>
-                                        <option value="overdue">Прострочено</option>
-                                        <option value="cancelled">Скасовано</option>
+                                        <option value="">Todos os estados</option>
+                                        <option value="planned">Planeado</option>
+                                        <option value="in_progress">Em processo</option>
+                                        <option value="completed">Concluído</option>
+                                        <option value="overdue">Atrasado</option>
+                                        <option value="cancelled">Cancelado</option>
                                     </select>
                                 </div>
                             </div>
                             <div class="col-md-3 col-sm-6">
                                 <div class="form-group">
-                                    <label>Пріоритет</label>
+                                    <label>Prioridade</label>
                                     <select id="filterPriority" class="form-control form-control-sm">
-                                        <option value="">Всі пріоритети</option>
-                                        <option value="high">Високий</option>
-                                        <option value="medium">Середній</option>
-                                        <option value="low">Низький</option>
+                                        <option value="">Todas as prioridades</option>
+                                        <option value="high">Alto</option>
+                                        <option value="medium">Médio</option>
+                                        <option value="low">Baixo</option>
                                     </select>
                                 </div>
                             </div>
                             <div class="col-md-3 col-sm-6">
                                 <div class="form-group">
-                                    <label>Технік</label>
+                                    <label>Técnico</label>
                                     <select id="filterTech" class="form-control form-control-sm">
-                                        <option value="">Всі техніки</option>
+                                        <option value="">Todos os técnicos</option>
                                     </select>
                                 </div>
                             </div>
                             <div class="col-md-3 col-sm-6 d-flex align-items-end">
                                 <div class="form-group w-100">
                                     <button class="btn btn-sm btn-secondary btn-block" onclick="resetFilters()">
-                                        <i class="fas fa-undo mr-1"></i> Скинути
+                                        <i class="fas fa-undo mr-1"></i> Repor
                                     </button>
                                 </div>
                             </div>
@@ -178,16 +178,16 @@
                     </div>
                 </div>
 
-                <!-- Таблиця інспекцій -->
+                <!-- Tabela de inspeções -->
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title"><i class="fas fa-list mr-2"></i>Список інспекцій</h3>
+                        <h3 class="card-title"><i class="fas fa-list mr-2"></i>Lista de inspecções</h3>
                         <div class="card-tools">
                             <button class="btn btn-sm btn-success mr-1" onclick="openScheduleModal()">
                                 <i class="fas fa-plus"></i> Nova Manutenção
                             </button>
                             <button class="btn btn-sm btn-outline-primary" onclick="loadInspections()">
-                                <i class="fas fa-sync-alt"></i> Оновити
+                                <i class="fas fa-sync-alt"></i> Actualizar
                             </button>
                         </div>
                     </div>
@@ -197,19 +197,19 @@
                                 <thead class="thead-dark">
                                     <tr>
                                         <th>#</th>
-                                        <th>Тип</th>
-                                        <th>Ліфт / Адреса</th>
-                                        <th>Технік</th>
-                                        <th>Дата</th>
-                                        <th>Пріоритет</th>
-                                        <th>Статус</th>
-                                        <th>Дії</th>
+                                        <th>Tipo</th>
+                                        <th>Elevador / Endereço</th>
+                                        <th>Técnico</th>
+                                        <th>Data</th>
+                                        <th>Prioridade</th>
+                                        <th>Estado</th>
+                                        <th>Ações</th>
                                     </tr>
                                 </thead>
                                 <tbody id="inspectionsBody">
                                     <tr>
                                         <td colspan="8" class="text-center py-4">
-                                            <i class="fas fa-spinner fa-spin mr-2"></i>Завантаження...
+                                            <i class="fas fa-spinner fa-spin mr-2"></i>A carregar...
                                         </td>
                                     </tr>
                                 </tbody>
@@ -226,7 +226,7 @@
     <footer class="main-footer">
         <strong>FestLift</strong> &copy; <span id="year"></span>
         <div class="float-right d-none d-sm-inline-block">
-            <b>Диспетчер</b>
+            <b>Despachante</b>
         </div>
     </footer>
 
@@ -308,21 +308,21 @@
     </div>
 </div>
 
-<!-- Модальне вікно деталей інспекції -->
+<!-- Janela modal детmasй inspeções -->
 <div class="modal fade" id="viewModal" tabindex="-1" role="dialog">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title"><i class="fas fa-clipboard-check mr-2"></i>Деталі інспекції</h5>
+                <h5 class="modal-title"><i class="fas fa-clipboard-check mr-2"></i>Detalhes inspeções</h5>
                 <button type="button" class="close" data-dismiss="modal">
                     <span>&times;</span>
                 </button>
             </div>
             <div class="modal-body" id="viewModalBody">
-                <!-- Заповнюється динамічно -->
+                <!-- Preenchido dinamicamente -->
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрити</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
             </div>
         </div>
     </div>
@@ -351,11 +351,11 @@
     document.getElementById('year').textContent = new Date().getFullYear();
 
     const STATUS_LABELS = {
-        planned:     'Заплановано',
-        in_progress: 'В процесі',
-        completed:   'Завершено',
+        planned:     'Planeado',
+        in_progress: 'Em processo',
+        completed:   'Concluído',
         overdue:     'Прострочено',
-        cancelled:   'Скасовано'
+        cancelled:   'Cancelado'
     };
     const STATUS_CLASSES = {
         planned:     'badge-planned',
@@ -364,13 +364,13 @@
         overdue:     'badge-overdue',
         cancelled:   'badge-cancelled'
     };
-    const PRIORITY_LABELS  = { high: 'Високий', medium: 'Середній', low: 'Низький' };
+    const PRIORITY_LABELS  = { high: 'Alto', medium: 'Médio', low: 'Baixo' };
     const PRIORITY_CLASSES = { high: 'priority-high', medium: 'priority-medium', low: 'priority-low' };
     const TYPE_LABELS = {
-        scheduled:  'Планова',
-        technical:  'Технічний огляд',
-        periodic:   'Периодична перевірка',
-        emergency:  'Аварійна',
+        scheduled:  'Planeada',
+        technical:  'Inspeção técnica',
+        periodic:   'Периодична verificação',
+        emergency:  'Emergência',
         custom:     'Інша'
     };
 
@@ -386,7 +386,7 @@
     }
 
     function logout() {
-        if (confirm('Ви впевнені, що хочете вийти?')) {
+        if (confirm('Tem a certeza que quer sair?')) {
             if (typeof AuthManager !== 'undefined') {
                 AuthManager.logout();
             } else {
@@ -415,10 +415,10 @@
             updateStats(allInspections);
             populateTechFilter(allInspections);
         } catch (err) {
-            console.error('Помилка завантаження інспекцій:', err);
+            console.error('Erro carregamento de inspeções:', err);
             document.getElementById('inspectionsBody').innerHTML =
                 '<tr><td colspan="8" class="text-center text-danger py-4">' +
-                '<i class="fas fa-exclamation-triangle mr-2"></i>Помилка завантаження даних</td></tr>';
+                '<i class="fas fa-exclamation-triangle mr-2"></i>Erro ao carregar даних</td></tr>';
         }
     }
 
@@ -432,7 +432,7 @@
         const tbody = document.getElementById('inspectionsBody');
 
         if (!inspections.length) {
-            tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted py-4">Інспекцій не знайдено</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted py-4">Nenhuma inspecção encontrada</td></tr>';
             return;
         }
 
@@ -442,7 +442,7 @@
             const lift = ins.liftAddress || ins.liftLocation || ins.liftId || ins.lift || '—';
             const tech = ins.technicianName || ins.inspector || ins.assignedTechnicianName || (ins.technician ? ins.technician.name : '') || '—';
             const rawDate = ins.scheduledDate || ins.date || ins.data || ins.createdAt || '';
-            const date = rawDate ? new Date(rawDate).toLocaleDateString('uk-UA') : '—';
+            const date = rawDate ? new Date(rawDate).toLocaleDateString('pt-PT') : '—';
             const status = ins.status || 'planned';
             const priority = ins.priority || 'medium';
 
@@ -455,7 +455,7 @@
                 <td><span class="priority-badge ${PRIORITY_CLASSES[priority] || ''}">${PRIORITY_LABELS[priority] || priority}</span></td>
                 <td><span class="status-badge ${STATUS_CLASSES[status] || ''}">${STATUS_LABELS[status] || status}</span></td>
                 <td>
-                    <button class="btn btn-xs btn-info" onclick="viewInspection('${escapeHtml(id)}')" title="Деталі">
+                    <button class="btn btn-xs btn-info" onclick="viewInspection('${escapeHtml(id)}')" title="Detalhes">
                         <i class="fas fa-eye"></i>
                     </button>
                 </td>
@@ -466,10 +466,10 @@
         dtTable = $('#inspectionsTable').DataTable({
             language: {
                 url: '//cdn.datatables.net/plug-ins/1.13.7/i18n/uk.json',
-                search: 'Пошук:',
-                lengthMenu: 'Показати _MENU_ записів',
-                info: 'Записи від _START_ до _END_ із _TOTAL_',
-                infoEmpty: 'Записів не знайдено',
+                search: 'Pesquisar:',
+                lengthMenu: 'Mostrar _MENU_ registos',
+                info: 'Registoи від _START_ до _END_ іdesde _TOTAL_',
+                infoEmpty: 'Registoів не encontrado',
                 paginate: { previous: '‹', next: '›' }
             },
             order: [[4, 'desc']],
@@ -494,7 +494,7 @@
                 .filter(Boolean)
         )].sort();
         const sel = document.getElementById('filterTech');
-        sel.innerHTML = '<option value="">Всі техніки</option>' +
+        sel.innerHTML = '<option value="">Todos os técnicos</option>' +
             names.map(n => `<option value="${escapeHtml(n)}">${escapeHtml(n)}</option>`).join('');
     }
 
@@ -540,7 +540,7 @@
         } catch (err) {
             const ins = allInspections.find(i => (i._id || i.id) === id);
             if (ins) { renderViewModal(ins); $('#viewModal').modal('show'); }
-            else Swal.fire('Помилка', 'Не вдалося завантажити деталі', 'error');
+            else Swal.fire('Erro', 'Não foi possível descarregar detalhes', 'error');
         }
     }
 
@@ -549,7 +549,7 @@
         const priority = ins.priority || 'medium';
         const type = TYPE_LABELS[ins.type || ins.visitType] || ins.type || ins.visitType || '—';
         const date = ins.scheduledDate || ins.date || ins.data || ins.createdAt || '';
-        const formattedDate = date ? new Date(date).toLocaleString('uk-UA') : '—';
+        const formattedDate = date ? new Date(date).toLocaleString('pt-PT') : '—';
 
         let checklistHtml = '';
         const cl = ins.checklist;

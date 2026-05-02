@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Простий тест навігації</title>
+    <title>Teste simples de navegação</title>
     <script src="../../assets/js/auth.js"></script>
 
     <style>
@@ -30,14 +30,14 @@
     </style>
 </head>
 <body>
-    <h1>Простий тест навігації до AI прогнозування</h1>
+    <h1>Teste simples de navegação до AI прогнозування</h1>
     
-    <p>Це імітує меню з сторінки lifts.html без AdminLTE:</p>
+    <p>Це імітуexiste меню desde da página lifts.html беdesde AdminLTE:</p>
     
     <ul>
         <li class="nav-item">
             <a href="predictive-maintenance.html" class="nav-link" id="test-link">
-                <i class="fas fa-brain"></i> AI Прогнозування
+                <i class="fas fa-brain"></i> AI Previsão
             </a>
         </li>
     </ul>
@@ -49,16 +49,16 @@
             const status = document.getElementById('status');
             status.innerHTML = `
                 <div style="background: #d4edda; color: #155724; padding: 10px; margin: 10px 0; border-radius: 5px;">
-                    ✅ Клік зареєстровано! Переходимо до: ${this.href}<br>
-                    Час: ${new Date().toLocaleTimeString()}
+                    ✅ Clique registado! A navegar para: ${this.href}<br>
+                    Hora: ${new Date().toLocaleTimeString()}
                 </div>
             `;
             
-            // Не блокуємо навігацію
+            // Não bloquear a navegação
             return true;
         });
         
-        // Логування всіх кліків для діагностики
+        // Логування всіх кліків para діагностики
         document.addEventListener('click', function(e) {
             console.log('Клік по елементу:', e.target);
             console.log('Tag:', e.target.tagName);

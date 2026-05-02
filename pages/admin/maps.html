@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Мапа ліфтів - FestLift</title>
+    <title>Mapa de elevadores - FestLift</title>
 
     <!-- AdminLTE CSS -->
     <link rel="stylesheet" href="../../plugins/adminlte/adminlte.min.css">
@@ -67,10 +67,10 @@
         .stats-card.error { border-left-color: #dc3545; }
 
         /* ═══════════════════════════════════════════════════════════
-         * 🗺️ ROUTING CONTROL - Вікно з маршрутом (DRAGGABLE)
+         * 🗺️ ROUTING CONTROL - Idadeно desde rotaом (DRAGGABLE)
          * ═══════════════════════════════════════════════════════════*/
         
-        /* Вікно маршруту - можна перетягувати */
+        /* Janela de rota - arrastável */
         .leaflet-routing-container {
             position: absolute !important;
             top: 10px !important;
@@ -85,7 +85,7 @@
             cursor: move !important;
         }
 
-        /* Стилізація заголовка - активна зона для перетягування */
+        /* Стилізація заголовка - zona ativa para arrastar */
         .leaflet-routing-container h2,
         .leaflet-routing-container h3 {
             background: #007bff !important;
@@ -99,7 +99,7 @@
             user-select: none !important;
         }
 
-        /* Іконка перетягування в заголовку */
+        /* Ícone de arrastar no cabeçalho */
         .leaflet-routing-container h2::after,
         .leaflet-routing-container h3::after {
             content: '⋮⋮';
@@ -112,7 +112,7 @@
             letter-spacing: -2px;
         }
 
-        /* Альтернативи маршруту */
+        /* Alternativas de rota */
         .leaflet-routing-alt {
             padding: 10px !important;
             border-bottom: 1px solid #eee !important;
@@ -123,7 +123,7 @@
             background: #f8f9fa !important;
         }
 
-        /* Кнопки згортання */
+        /* Botões de colapso */
         .leaflet-routing-collapse-btn {
             color: white !important;
             background: transparent !important;
@@ -132,7 +132,7 @@
             cursor: pointer !important;
         }
 
-        /* Скролбар */
+        /* Barra de rolagem */
         .leaflet-routing-container::-webkit-scrollbar {
             width: 8px;
         }
@@ -151,12 +151,12 @@
             background: #555;
         }
 
-        /* Приховати зайві елементи */
+        /* Ocultar elementos desnecessários */
         .leaflet-routing-geocoders {
             display: none !important;
         }
 
-        /* Кнопка закриття маршруту */
+        /* Кнопка закриття rotaу */
         .route-close-btn {
             transition: all 0.2s ease;
             cursor: pointer !important;
@@ -167,7 +167,7 @@
             transform: scale(1.1);
         }
 
-        /* Анімація при перетягуванні */
+        /* Animação ao arrastar */
         .leaflet-routing-container.dragging {
             opacity: 0.8;
             box-shadow: 0 8px 25px rgba(0,0,0,0.4) !important;
@@ -184,13 +184,13 @@
                     <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
                 </li>
                 <li class="nav-item d-none d-sm-inline-block">
-                    <a href="admin-dashboard.html" class="nav-link">Головна</a>
+                    <a href="admin-dashboard.html" class="nav-link">Início</a>
                 </li>
             </ul>
             <ul class="navbar-nav ml-auto">
                 <li class="nav-item">
                     <a class="nav-link" href="#" id="refreshMap">
-                        <i class="fas fa-sync-alt"></i> Оновити
+                        <i class="fas fa-sync-alt"></i> Actualizar
                     </a>
                 </li>
             </ul>
@@ -209,205 +209,205 @@
                 <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Ccircle cx='80' cy='80' r='80' fill='%23667eea'/%3E%3Ccircle cx='80' cy='62' r='30' fill='white'/%3E%3Cellipse cx='80' cy='135' rx='52' ry='40' fill='white'/%3E%3C/svg%3E" class="img-circle elevation-2" alt="User Image">
             </div>
             <div class="info">
-                <a href="/pages/admin/profile.html" class="d-block" id="sidebarFullName">Адміністратор</a>
-                <small class="text-success">Адміністратор</small>
+                <a href="/pages/admin/profile.html" class="d-block" id="sidebarFullName">Administrador</a>
+                <small class="text-success">Administrador</small>
             </div>
         </div>
 
         <nav class="mt-2">
             <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
 
-                <!-- Дашборд -->
+                <!-- Dashboard -->
                 <li class="nav-item">
                     <a href="/pages/admin/admin-dashboard.html" class="nav-link" id="nav-dashboard">
                         <i class="nav-icon fas fa-tachometer-alt"></i>
-                        <p>Дашборд</p>
+                        <p>Dashboard</p>
                     </a>
                 </li>
 
-                <!-- QR Система -->
+                <!-- QR Sistema -->
                 <li class="nav-item" id="group-qr">
                     <a href="#" class="nav-link">
                         <i class="nav-icon fas fa-qrcode"></i>
-                        <p>QR Система<i class="right fas fa-angle-left"></i></p>
+                        <p>QR Sistema<i class="right fas fa-angle-left"></i></p>
                     </a>
                     <ul class="nav nav-treeview">
                         <li class="nav-item">
                             <a href="/pages/admin/qr-management.html" class="nav-link" id="nav-qr-management">
                                 <i class="fas fa-cog nav-icon"></i>
-                                <p>Управління QR</p>
+                                <p>Gestão de QR</p>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a href="/pages/admin/qr-analytics.html" class="nav-link" id="nav-qr-analytics">
                                 <i class="fas fa-chart-line nav-icon"></i>
-                                <p>Аналітика QR</p>
+                                <p>Análise QR</p>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a href="/pages/admin/qr-history.html" class="nav-link" id="nav-qr-history">
                                 <i class="fas fa-history nav-icon"></i>
-                                <p>Історія сканувань</p>
+                                <p>Histórico de leituras</p>
                             </a>
                         </li>
                     </ul>
                 </li>
 
-                <!-- Ліфти -->
+                <!-- Elevadores -->
                 <li class="nav-item" id="group-lifts">
                     <a href="#" class="nav-link">
                         <i class="nav-icon fas fa-elevator"></i>
-                        <p>Ліфти<i class="right fas fa-angle-left"></i></p>
+                        <p>Elevadores<i class="right fas fa-angle-left"></i></p>
                     </a>
                     <ul class="nav nav-treeview">
                         <li class="nav-item">
                             <a href="/pages/admin/lifts.html" class="nav-link" id="nav-lifts">
                                 <i class="fas fa-list nav-icon"></i>
-                                <p>Управління ліфтами</p>
+                                <p>Gestão de elevadores</p>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a href="/pages/admin/requests.html" class="nav-link" id="nav-requests">
                                 <i class="fas fa-clipboard-list nav-icon"></i>
-                                <p>Заявки</p>
+                                <p>Pedidos</p>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a href="/pages/admin/maps.html" class="nav-link" id="nav-maps">
                                 <i class="fas fa-map-marked-alt nav-icon"></i>
-                                <p>Мапа ліфтів</p>
+                                <p>Mapa de elevadores</p>
                             </a>
                         </li>
                     </ul>
                 </li>
 
-                <!-- Користувачі -->
+                <!-- Utilizadores -->
                 <li class="nav-item">
                     <a href="/pages/admin/users.html" class="nav-link" id="nav-users">
                         <i class="nav-icon fas fa-users"></i>
-                        <p>Користувачі</p>
+                        <p>Utilizadores</p>
                     </a>
                 </li>
 
-                <!-- Документи -->
+                <!-- Documentos -->
                 <li class="nav-item" id="group-docs">
                     <a href="#" class="nav-link">
                         <i class="nav-icon fas fa-file-alt"></i>
-                        <p>Документи<i class="right fas fa-angle-left"></i></p>
+                        <p>Documentos<i class="right fas fa-angle-left"></i></p>
                     </a>
                     <ul class="nav nav-treeview">
                         <li class="nav-item">
                             <a href="/pages/admin/invoice-template.html" class="nav-link" id="nav-invoice-template">
                                 <i class="fas fa-file-invoice nav-icon"></i>
-                                <p>Кошторис (Створити)</p>
+                                <p>Orçamento (Criar)</p>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a href="/pages/admin/orcamentos-list.html" class="nav-link" id="nav-orcamentos-list">
                                 <i class="fas fa-list-alt nav-icon"></i>
-                                <p>Кошторис (Список)</p>
+                                <p>Orçamento (Lista)</p>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a href="/pages/admin/email-template.html" class="nav-link" id="nav-email-template">
                                 <i class="fas fa-envelope nav-icon"></i>
-                                <p>Email шаблони</p>
+                                <p>Modelos de email</p>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a href="/pages/admin/inspection-template.html" class="nav-link" id="nav-inspection-template">
                                 <i class="fas fa-clipboard-check nav-icon"></i>
-                                <p>Інспекції</p>
+                                <p>Inspecções</p>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a href="/pages/admin/report-template.html" class="nav-link" id="nav-report-template">
                                 <i class="fas fa-file-pdf nav-icon"></i>
-                                <p>Шаблони звітів</p>
+                                <p>Modelos de relatórios</p>
                             </a>
                         </li>
                     </ul>
                 </li>
 
-                <!-- Аналітика -->
+                <!-- Análise -->
                 <li class="nav-item" id="group-analytics">
                     <a href="#" class="nav-link">
                         <i class="nav-icon fas fa-chart-line"></i>
-                        <p>Аналітика<i class="right fas fa-angle-left"></i></p>
+                        <p>Análise<i class="right fas fa-angle-left"></i></p>
                     </a>
                     <ul class="nav nav-treeview">
                         <li class="nav-item">
                             <a href="/pages/admin/unified-analytics.html" class="nav-link" id="nav-unified-analytics">
                                 <i class="fas fa-chart-area nav-icon"></i>
-                                <p>Зведена аналітика</p>
+                                <p>Análise global</p>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a href="/pages/admin/predictive-maintenance.html" class="nav-link" id="nav-predictive-maintenance">
                                 <i class="fas fa-brain nav-icon"></i>
-                                <p>AI Прогнозування</p>
+                                <p>AI Previsão</p>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a href="/pages/admin/reports.html" class="nav-link" id="nav-reports">
                                 <i class="fas fa-chart-bar nav-icon"></i>
-                                <p>Звіти</p>
+                                <p>Relatórios</p>
                             </a>
                         </li>
                     </ul>
                 </li>
 
-                <!-- AI Асистент -->
+                <!-- AI Assistente -->
                 <li class="nav-item">
                     <a href="/pages/ai-assistant/ai-assistant.html" class="nav-link" id="nav-ai-assistant">
                         <i class="nav-icon fas fa-magic"></i>
-                        <p>AI Асистент</p>
+                        <p>AI Assistente</p>
                     </a>
                 </li>
 
-                <!-- Підтримка -->
+                <!-- Suporte -->
                 <li class="nav-item" id="group-support">
                     <a href="#" class="nav-link">
                         <i class="nav-icon fas fa-headset"></i>
-                        <p>Підтримка<i class="right fas fa-angle-left"></i></p>
+                        <p>Suporte<i class="right fas fa-angle-left"></i></p>
                     </a>
                     <ul class="nav nav-treeview">
                         <li class="nav-item">
                             <a href="/pages/admin/support.html" class="nav-link" id="nav-support">
                                 <i class="fas fa-life-ring nav-icon"></i>
-                                <p>Технічна підтримка</p>
+                                <p>Suporte técnico</p>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a href="/pages/admin/notifications.html" class="nav-link" id="nav-notifications">
                                 <i class="fas fa-bell nav-icon"></i>
-                                <p>Сповіщення</p>
+                                <p>Notificações</p>
                             </a>
                         </li>
                     </ul>
                 </li>
 
-                <!-- Налаштування -->
+                <!-- Definições -->
                 <li class="nav-item">
                     <a href="/pages/admin/settings.html" class="nav-link" id="nav-settings">
                         <i class="nav-icon fas fa-cogs"></i>
-                        <p>Налаштування</p>
+                        <p>Definições</p>
                     </a>
                 </li>
 
-                <!-- Профіль -->
+                <!-- Perfil -->
                 <li class="nav-item">
                     <a href="/pages/admin/profile.html" class="nav-link" id="nav-profile">
                         <i class="nav-icon fas fa-user-circle"></i>
-                        <p>Профіль</p>
+                        <p>Perfil</p>
                     </a>
                 </li>
 
-                <!-- Вийти -->
+                <!-- Sair -->
                 <li class="nav-item">
                     <a href="#" onclick="if(typeof AuthManager!=='undefined'){AuthManager.logout();}else{localStorage.clear();sessionStorage.clear();window.location.replace('/pages/auth/login.html');}" class="nav-link">
                         <i class="nav-icon fas fa-sign-out-alt text-danger"></i>
-                        <p>Вийти</p>
+                        <p>Sair</p>
                     </a>
                 </li>
 
@@ -506,12 +506,12 @@
                 <div class="container-fluid">
                     <div class="row mb-2">
                         <div class="col-sm-6">
-                            <h1 class="m-0">Мапа ліфтів</h1>
+                            <h1 class="m-0">Mapa de elevadores</h1>
                         </div>
                         <div class="col-sm-6">
                             <ol class="breadcrumb float-sm-right">
-                                <li class="breadcrumb-item"><a href="admin-dashboard.html">Головна</a></li>
-                                <li class="breadcrumb-item active">Мапа ліфтів</li>
+                                <li class="breadcrumb-item"><a href="admin-dashboard.html">Início</a></li>
+                                <li class="breadcrumb-item active">Mapa de elevadores</li>
                             </ol>
                         </div>
                     </div>
@@ -528,7 +528,7 @@
                             <div class="small-box bg-info stats-card total">
                                 <div class="inner">
                                     <h3 id="totalLifts"><i class="fas fa-spinner fa-spin"></i></h3>
-                                    <p>Всього ліфтів</p>
+                                    <p>Total de elevadores</p>
                                 </div>
                                 <div class="icon">
                                     <i class="fas fa-building"></i>
@@ -539,7 +539,7 @@
                             <div class="small-box bg-success stats-card active">
                                 <div class="inner">
                                     <h3 id="activeLifts"><i class="fas fa-spinner fa-spin"></i></h3>
-                                    <p>Активних</p>
+                                    <p>Ativos</p>
                                 </div>
                                 <div class="icon">
                                     <i class="fas fa-check-circle"></i>
@@ -550,7 +550,7 @@
                             <div class="small-box bg-warning stats-card maintenance">
                                 <div class="inner">
                                     <h3 id="maintenanceLifts"><i class="fas fa-spinner fa-spin"></i></h3>
-                                    <p>На обслуговуванні</p>
+                                    <p>Em manutenção</p>
                                 </div>
                                 <div class="icon">
                                     <i class="fas fa-tools"></i>
@@ -561,7 +561,7 @@
                             <div class="small-box bg-danger stats-card error">
                                 <div class="inner">
                                     <h3 id="errorLifts"><i class="fas fa-spinner fa-spin"></i></h3>
-                                    <p>З несправностями</p>
+                                    <p>Com avarias</p>
                                 </div>
                                 <div class="icon">
                                     <i class="fas fa-exclamation-triangle"></i>
@@ -576,35 +576,35 @@
                             <div class="col-md-3">
                                 <label for="searchInput">Pesquisar:</label>
                                 <input type="text" class="form-control" id="searchInput" 
-                                       placeholder="Адреса, номер, клієнт...">
+                                       placeholder="Endereço, número, cliente...">
                             </div>
                             <div class="col-md-3">
-                                <label for="statusFilter">Filtro за статусом:</label>
+                                <label for="statusFilter">Filtro por estado:</label>
                                 <select class="form-control" id="statusFilter">
-                                    <option value="all">Всі ліфти</option>
-                                    <option value="active">Активні</option>
-                                    <option value="maintenance">На обслуговуванні</option>
-                                    <option value="inactive">З несправностями</option>
+                                    <option value="all">Todas elevadores</option>
+                                    <option value="active">Activos</option>
+                                    <option value="maintenance">Em manutenção</option>
+                                    <option value="inactive">Com avarias</option>
                                 </select>
                             </div>
                             <div class="col-md-4">
-                                <label for="routeToLift">Прокласти маршрут до ліфта:</label>
+                                <label for="routeToLift">Traçar rota para o elevador:</label>
                                 <select id="routeToLift" class="form-control">
-                                    <option value="">Оберіть ліфт</option>
+                                    <option value="">Selecione elevador</option>
                                 </select>
                             </div>
                             <div class="col-md-2">
                                 <label>&nbsp;</label>
                                 <button id="btnRoute" class="btn btn-primary btn-block">
-                                    <i class="fas fa-route"></i> Маршрут
+                                    <i class="fas fa-route"></i> Rota
                                 </button>
                             </div>
                             <div class="col-md-12 mt-2">
                                 <button id="btnRegeocodeAll" class="btn btn-warning btn-sm"
-                                        title="Виправляє координати ліфтів, що показуються в неправильному місці">
-                                    <i class="fas fa-map-marked-alt"></i> Виправити координати (Re-geocode)
+                                        title="Corrigir coordenadas de elevadores que aparecem no local errado">
+                                    <i class="fas fa-map-marked-alt"></i> Corrigir coordenadas (Re-geocode)
                                 </button>
-                                <small class="text-muted ml-2">Використовуйте якщо ліфти відображаються в неправильному місці</small>
+                                <small class="text-muted ml-2">Use quando os elevadores aparecem no local errado</small>
                             </div>
                         </div>
                     </div>
@@ -612,7 +612,7 @@
                     <!-- Map Container -->
                     <div class="card">
                         <div class="card-header">
-                            <h3 class="card-title">Інтерактивна мапа ліфтів</h3>
+                            <h3 class="card-title">Mapa interactivo de elevadores</h3>
                             <div class="card-tools">
                                 <button type="button" class="btn btn-tool" data-card-widget="collapse">
                                     <i class="fas fa-minus"></i>
@@ -632,18 +632,18 @@
         </div>
     </div>
 
-    <!-- Панель редагування позиції маркера -->
+    <!-- Painel edição позиції маркера -->
     <div id="locationEditBanner" style="display:none; position:fixed; bottom:20px; left:50%; transform:translateX(-50%); z-index:9999;
          background:#fff; border:2px solid #f39c12; border-radius:8px; padding:10px 18px;
          box-shadow:0 4px 16px rgba(0,0,0,0.25); align-items:center; gap:12px; flex-wrap:wrap;">
         <span style="font-weight:600; color:#856404;">
-            <i class="fas fa-map-pin"></i> Клікніть на мапі куди перемістити ліфт: <span id="editLiftName" style="color:#333;"></span>
+            <i class="fas fa-map-pin"></i> Clique no mapa para onde mover o elevador: <span id="editLiftName" style="color:#333;"></span>
         </span>
         <button class="btn btn-sm btn-success" onclick="saveMarkerLocation()">
-            <i class="fas fa-save"></i> Зберегти
+            <i class="fas fa-save"></i> Guardar
         </button>
         <button class="btn btn-sm btn-secondary" onclick="cancelLocationEdit()">
-            <i class="fas fa-times"></i> Скасувати
+            <i class="fas fa-times"></i> Cancelar
         </button>
     </div>
 
@@ -663,7 +663,7 @@
         });
     </script>
     
-    <!-- 🌍 Система багатомовності -->
+    <!-- 🌍 Sistema multilingue -->
     <script src="../../assets/js/i18n.js"></script>
     <!-- Leaflet JS -->
     <script src="../../plugins/leaflet/leaflet.js"></script>
@@ -682,9 +682,9 @@
         let userLocation = null;
 
         $(document).ready(async function() {
-            // Перевірка авторизації
+            // Verificação de autorização
             if (!AuthManager.isAuthenticated()) {
-                // ✅ Перевірка чи сторінка активна перед redirect
+                // ✅ Verificar se a página está ativa antes de redirecionar
                 if (document.body && !document.hidden) {
                     window.location.replace('/pages/auth/login.html');
                 }
@@ -699,24 +699,24 @@
             getUserLocation();
         });
 
-        // Завантаження ліфтів з API
+        // A carregar de elevadores desde API
         async function loadLiftsFromAPI() {
             try {
-                console.log('🔄 Завантаження ліфтів з API...');
+                console.log('🔄 A carregar elevadores da API...');
                 const response = await AuthManager.fetchWithAuth('/api/lifts');
                 
                 if (!response.ok) {
-                    throw new Error('Помилка завантаження ліфтів');
+                    throw new Error('Erro carregamento de elevadores');
                 }
 
                 const data = await response.json();
-                console.log('📦 Отримані дані з API:', data);
-                console.log('✅ Завантажено ліфтів:', data.data?.length || 0);
+                console.log('📦 Отримані дані desde API:', data);
+                console.log('✅ Carregado de elevadores:', data.data?.length || 0);
                 
-                // Конвертуємо дані з MongoDB в формат для мапи
+                // Конвертуexisteмо дані desde MongoDB в formato para мапи
                 const rawLifts = data.data || [];
                 
-                // Геокодуємо ліфти з відсутніми або нульовими координатами
+                // Геоcódigoexisteмо elevadores desde відсутніми ou нульовими координаeми
                 const geocodePromises = rawLifts.map(async lift => {
                     const coords = lift.location?.coordinates;
                     const hasValidCoords = Array.isArray(coords) &&
@@ -733,10 +733,10 @@
                     let lat = hasValidCoords ? coords[1] : null;
                     let lng = hasValidCoords ? coords[0] : null;
                     
-                    // Якщо координати відсутні або нульові — геокодуємо з адреси
+                    // Se coordenadas відсутні ou нульові — геоcódigoexisteмо desde endereçoи
                     if (!hasValidCoords && fullAddress) {
                         try {
-                            console.log(`🔍 Геокодування "${fullAddress}" (ліфт ${lift._id})...`);
+                            console.log(`🔍 Geocodificação "${fullAddress}" (elevador ${lift._id})...`);
                             const geoResp = await AuthManager.fetchWithAuth(
                                 `/api/geocode?q=${encodeURIComponent(fullAddress)}`
                             );
@@ -745,53 +745,53 @@
                                 if (geoData.success && geoData.lat && geoData.lng) {
                                     lat = geoData.lat;
                                     lng = geoData.lng;
-                                    console.log(`✅ Геокодовано: ${fullAddress} → [${lng}, ${lat}]`);
+                                    console.log(`✅ Geocodificado: ${fullAddress} → [${lng}, ${lat}]`);
                                 }
                             }
                         } catch (e) {
-                            console.warn(`⚠️ Геокодування не вдалося для ${fullAddress}:`, e.message);
+                            console.warn(`⚠️ Geocodificação não foi possível para ${fullAddress}:`, e.message);
                         }
                     }
                     
-                    // Якщо геокодування не вдалося — використовуємо Lisboa за замовчуванням
+                    // Se геоcódigoвання não foi possível — використовуexisteмо Lisboa predefinido
                     if (lat === null || lng === null) {
-                        console.warn(`⚠️ Ліфт ${lift._id}: координати відсутні, використовуємо Lisboa за замовчуванням`);
+                        console.warn(`⚠️ Elevador ${lift._id}: coordenadas відсутні, використовуexisteмо Lisboa predefinido`);
                         lat = 38.7223;
                         lng = -9.1393;
                     }
                     
-                    console.log('🔄 Обробка ліфта:', lift._id, [lng, lat]);
+                    console.log('🔄 Обробка do elevador:', lift._id, [lng, lat]);
                     
                     return {
                         id: lift._id,
-                        model: lift.model || 'Невідомо',
+                        model: lift.model || 'Desconhecido',
                         manufacturer: lift.manufacturer,
-                        address: fullAddress || 'Адреса не вказана',
-                        location: fullAddress || 'Адреса не вказана',
-                        city: lift.address?.city || 'Невідомо',
-                        country: lift.address?.country || 'Невідомо',
+                        address: fullAddress || 'Endereço não especificado',
+                        location: fullAddress || 'Endereço não especificado',
+                        city: lift.address?.city || 'Desconhecido',
+                        country: lift.address?.country || 'Desconhecido',
                         lat,
                         lng,
                         status: mapStatus(lift.status),
-                        lastMaintenance: lift.lastInspectionDate ? new Date(lift.lastInspectionDate).toLocaleDateString('uk-UA') : 'Невідомо',
+                        lastMaintenance: lift.lastInspectionDate ? new Date(lift.lastInspectionDate).toLocaleDateString('pt-PT') : 'Desconhecido',
                         municipalNumber: lift.municipalNumber
                     };
                 });
                 
                 lifts = await Promise.all(geocodePromises);
 
-                console.log('✅ Оброблено ліфтів для мапи:', lifts.length);
-                console.log('📍 Перший ліфт:', lifts[0]);
+                console.log('✅ Оброблено de elevadores para мапи:', lifts.length);
+                console.log('📍 Primeiro elevador:', lifts[0]);
             } catch (error) {
-                console.error('❌ Помилка завантаження ліфтів:', error);
-                // Fallback до тестових даних (Lisboa)
+                console.error('❌ Erro ao carregar elevadores:', error);
+                // Fallback до testeових даних (Lisboa)
                 lifts = [
-                    { id: 'sample_1', model: 'Ліфт №1', address: 'Lisboa, Portugal', lat: 38.7223, lng: -9.1393, status: 'active', lastMaintenance: '2024-01-10', location: 'Lisboa, Portugal' }
+                    { id: 'sample_1', model: 'Elevador №1', address: 'Lisboa, Portugal', lat: 38.7223, lng: -9.1393, status: 'active', lastMaintenance: '2024-01-10', location: 'Lisboa, Portugal' }
                 ];
             }
         }
 
-        // Мапування статусів MongoDB до статусів мапи
+        // Мапування estadoів MongoDB до estadoів мапи
         function mapStatus(mongoStatus) {
             const statusMap = {
                 'operational': 'active',
@@ -802,10 +802,10 @@
             return statusMap[mongoStatus] || 'active';
         }
 
-        // Отримання геолокації користувача
+        // Отримання геолокації do utilizador
         function getUserLocation() {
             if (navigator.geolocation) {
-                console.log('🔍 Запит геолокації...');
+                console.log('🔍 Pedido геолокації...');
                 navigator.geolocation.getCurrentPosition(
                     (position) => {
                         userLocation = {
@@ -813,12 +813,12 @@
                             lng: position.coords.longitude,
                             accuracy: position.coords.accuracy
                         };
-                        console.log('📍 Отримано геолокацію користувача:');
-                        console.log('  Широта:', userLocation.lat);
-                        console.log('  Довгота:', userLocation.lng);
-                        console.log('  Точність:', userLocation.accuracy, 'метрів');
+                        console.log('📍 Recebido геолокацію do utilizador:');
+                        console.log('  Latitude:', userLocation.lat);
+                        console.log('  Longitude:', userLocation.lng);
+                        console.log('  Precisão:', userLocation.accuracy, 'метрів');
                         
-                        // Adicionar маркер поточної позиції
+                        // Adicionar маркер atualmenteї позиції
                         L.marker([userLocation.lat, userLocation.lng], {
                             icon: L.icon({
                                 iconUrl: '../../plugins/leaflet/images/marker-icon-2x.png',
@@ -830,11 +830,11 @@
                             })
                         })
                         .addTo(map)
-                        .bindPopup('Ваша поточна позиція')
+                        .bindPopup('A sua posição atual')
                         .openPopup();
                     },
                     (error) => {
-                        console.warn('⚠️ Не вдалося отримати геолокацію:', error.message);
+                        console.warn('⚠️ Não foi possível отримати геолокацію:', error.message);
                     }
                 );
             }
@@ -842,29 +842,29 @@
 
         function initializeMap() {
             console.log('🗺️ Ініціалізація мапи...');
-            console.log('📍 Кількість ліфтів для відображення:', lifts.length);
+            console.log('📍 Quantidade de elevadores para apresentação:', lifts.length);
             
-            // ⏱️ Timeout для ініціалізації карти (5 секунд)
+            // ⏱️ Timeout para ініціалізації карти (5 секунд)
             const mapTimeout = setTimeout(() => {
                 if (!map || !map._loaded) {
-                    console.warn('⚠️ Карта не завантажилась за 5 секунд, показую заглушку');
-                    $('#liftsMap').html('<div class="alert alert-info m-3"><i class="fas fa-map-marked-alt"></i> Карта тимчасово недоступна. Спробуйте оновити сторінку.</div>');
+                    console.warn('⚠️ Mapa не заванeжилась за 5 секунд, показую заглушку');
+                    $('#liftsMap').html('<div class="alert alert-info m-3"><i class="fas fa-map-marked-alt"></i> Mapa temporariamente indisponível. Tente atualizar a página.</div>');
                 }
             }, 5000);
             
             // Initialize map centered on Lisboa, Portugal (default)
             map = L.map('liftsMap', {
                 preferCanvas: true, // Швидше рендеринг
-                fadeAnimation: false, // Вимкнути анімацію для швидшого завантаження
+                fadeAnimation: false, // Desativar анімацію para швидшого carregamento
                 zoomAnimation: false
             }).setView([38.7223, -9.1393], 11);
 
-            // Add OpenStreetMap tiles з коротким timeout
+            // Add OpenStreetMap tiles desde коротким timeout
             const tileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
                 attribution: '© OpenStreetMap contributors',
                 maxZoom: 19,
-                errorTileUrl: 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7', // 1x1 transparent для помилок
-                timeout: 5000 // Швидкий timeout для tiles
+                errorTileUrl: 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7', // 1x1 transparent para erros
+                timeout: 5000 // Швидкий timeout para tiles
             });
             
             tileLayer.on('tileerror', function() {
@@ -873,20 +873,20 @@
             
             tileLayer.addTo(map);
             
-            // ✅ Прибираємо timeout після успішного завантаження
+            // ✅ Прибираexisteмо timeout após com sucessoго carregamento
             map.on('load', () => {
                 clearTimeout(mapTimeout);
-                console.log('✅ Карта успішно завантажена');
+                console.log('✅ Mapa com sucesso заванeжена');
             });
 
             // Add lift markers
             if (lifts.length === 0) {
-                console.warn('⚠️ Немає ліфтів для відображення на мапі');
+                console.warn('⚠️ Não há de elevadores para apresentação на мапі');
             } else {
                 const bounds = [];
                 
                 lifts.forEach((lift, index) => {
-                    console.log(`➕ Додаємо маркер ${index + 1}:`, {
+                    console.log(`➕ Додаexisteмо маркер ${index + 1}:`, {
                         id: lift.id,
                         lat: lift.lat,
                         lng: lift.lng,
@@ -896,18 +896,18 @@
                     bounds.push([lift.lat, lift.lng]);
                 });
                 
-                console.log('✅ Всі маркери додано:', markers.length);
+                console.log('✅ Todas маркери adicionado:', markers.length);
                 
-                // 🎯 Автоматично центруємо карту на всіх маркерах
+                // 🎯 Automático центруexisteмо mapa на всіх маркерах
                 if (bounds.length > 0) {
                     map.fitBounds(bounds, { padding: [50, 50] });
-                    console.log('✅ Карта автоматично центрована на маркерах');
+                    console.log('✅ Mapa автоматично центрована на маркерах');
                 }
             }
         }
 
         function addLiftMarker(lift) {
-            console.log('🎯 addLiftMarker викликано для:', lift.id, 'координати:', lift.lat, lift.lng);
+            console.log('🎯 addLiftMarker викликано para:', lift.id, 'coordenadas:', lift.lat, lift.lng);
             
             const markerColor = getStatusColor(lift.status);
             const markerHtml = `<div class="lift-marker" style="background-color: ${markerColor}"></div>`;
@@ -925,48 +925,48 @@
                     .bindPopup(createLiftPopup(lift));
 
                 markers.push({ marker, lift });
-                console.log('✅ Маркер додано успішно');
+                console.log('✅ Маркер adicionado com sucesso');
             } catch (error) {
-                console.error('❌ Помилка додавання маркера:', error);
+                console.error('❌ Erro adição маркера:', error);
             }
         }
 
         function createLiftPopup(lift) {
             const statusClass = `status-${lift.status}`;
             const statusText = getStatusText(lift.status);
-            const displayName = lift.model || lift.name || `Ліфт ${lift.id}`;
-            const displayAddress = lift.location || lift.address || 'Адреса не вказана';
-            const lastService = lift.lastMaintenance || lift.lastService || 'Невідомо';
+            const displayName = lift.model || lift.name || `Elevador ${lift.id}`;
+            const displayAddress = lift.location || lift.address || 'Endereço não especificado';
+            const lastService = lift.lastMaintenance || lift.lastService || 'Desconhecido';
 
             return `
                 <div class="lift-popup">
                     <h6><i class="fas fa-elevator"></i> ${displayName}</h6>
-                    <p><strong>📍 Адреса:</strong><br>${displayAddress}</p>
-                    <p><strong>📊 Статус:</strong> <span class="lift-status ${statusClass}">${statusText}</span></p>
-                    <p><strong>🔧 Останнє ТО:</strong> ${lastService}</p>
+                    <p><strong>📍 Endereço:</strong><br>${displayAddress}</p>
+                    <p><strong>📊 Estado:</strong> <span class="lift-status ${statusClass}">${statusText}</span></p>
+                    <p><strong>🔧 Última manutenção:</strong> ${lastService}</p>
                     <div class="text-center mt-2">
                         <button id="route-btn-${lift.id}" class="btn btn-sm btn-success" onclick="createRouteToLift('${lift.id}')">
-                            <i class="fas fa-route"></i> Прокласти маршрут
+                            <i class="fas fa-route"></i> Traçar rota
                         </button>
                         <a href="lifts.html" class="btn btn-sm btn-primary">
-                            <i class="fas fa-info-circle"></i> Деталі
+                            <i class="fas fa-info-circle"></i> Detalhes
                         </a>
-                        <button class="btn btn-sm btn-warning" onclick="enableLocationEdit('${lift.id}')" title="Змінити позицію маркера">
-                            <i class="fas fa-map-marker-alt"></i> Змінити місце
+                        <button class="btn btn-sm btn-warning" onclick="enableLocationEdit('${lift.id}')" title="Alterar posição do marcador">
+                            <i class="fas fa-map-marker-alt"></i> Alterar localização
                         </button>
                     </div>
                 </div>
             `;
         }
 
-        // ── Редагування позиції маркера (клік по мапі) ───────────────────────
+        // ── Edição позиції маркера (клік по мапі) ───────────────────────
         let editingLiftId = null;
         let editingMarkerRef = null;
-        let mapClickHandler = null; // посилання на обробник кліку
+        let mapClickHandler = null; // ligação на обробник кліку
 
         window.enableLocationEdit = function(liftId) {
             const entry = markers.find(m => m.lift.id === liftId || m.lift.id?.toString() === liftId);
-            if (!entry) { alert('Маркер не знайдено'); return; }
+            if (!entry) { alert('Marcador não encontrado'); return; }
 
             if (editingLiftId === liftId) {
                 cancelLocationEdit();
@@ -977,23 +977,23 @@
             editingLiftId = liftId;
             editingMarkerRef = entry.marker;
 
-            // Закриваємо попап і підсвічуємо маркер
+            // Закриваexisteмо попап і підсвічуexisteмо маркер
             entry.marker.closePopup();
             entry.marker.setOpacity(0.5);
 
-            // Показуємо банер
+            // Показуexisteмо банер
             const banner = document.getElementById('locationEditBanner');
             if (banner) {
                 banner.style.display = 'flex';
                 banner.querySelector('#editLiftName').textContent = entry.lift.address || liftId;
             }
 
-            // Змінюємо курсор над картою
+            // Змінюexisteмо курсор над картою
             map.getContainer().style.cursor = 'crosshair';
 
-            // Реєструємо обробник кліку по мапі
+            // Реexisteструexisteмо обробник кліку по мапі
             mapClickHandler = function(e) {
-                // Переміщуємо маркер на клікнуту точку
+                // Переміщуexisteмо маркер на клікнуту точку
                 editingMarkerRef.setLatLng(e.latlng);
             };
             map.on('click', mapClickHandler);
@@ -1037,14 +1037,14 @@
                 });
                 const data = await res.json();
                 if (data.success !== false) {
-                    toastr.success('Позицію ліфта збережено!');
+                    toastr.success('Posição do elevador guardada!');
                     const entry = markers.find(m => m.lift.id === liftId || m.lift.id?.toString() === liftId);
                     if (entry) { entry.lift.lat = latlng.lat; entry.lift.lng = latlng.lng; }
                 } else {
-                    toastr.error('Помилка збереження: ' + (data.message || 'невідома'));
+                    toastr.error('Erro ao guardar: ' + (data.message || 'desconhecida'));
                 }
             } catch (err) {
-                toastr.error('Помилка з\'єднання: ' + err.message);
+                toastr.error('Erro з\'ligação: ' + err.message);
             }
         }
 
@@ -1052,61 +1052,61 @@
         let lastRouteCallTimestamp = 0;
         let processingRoute = false;
         
-        // Функція розблокування кнопки маршруту
+        // Função розблокування кнопки rotaу
         function unlockRouteButton(liftId) {
             processingRoute = false;
             const btn = document.getElementById(`route-btn-${liftId}`);
             if (btn) {
                 btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-route"></i> Прокласти маршрут';
+                btn.innerHTML = '<i class="fas fa-route"></i> Traçar rota';
             }
         }
         
-        // Глобальна функція для кнопки "Прокласти маршрут" в popup
+        // Глобальна функція para кнопки "Traçar rota" в popup
         window.createRouteToLift = function(liftId) {
             const now = Date.now();
             
-            // ЗАХИСТ: Блокуємо якщо минуло менше 1 секунди з останнього виклику
+            // ЗАХИСТ: Блокуexisteмо se минуло menos 1 секунди desde осeннього виклику
             if ((now - lastRouteCallTimestamp) < 1000 || processingRoute) {
-                console.log('⏸️ БЛОКУВАННЯ: Повторний виклик занадто швидко (подвійний клік)');
+                console.log('⏸️ БЛОКУВАННЯ: Повторний виклик занадто rapidamente (подвійний клік)');
                 return;
             }
             
             lastRouteCallTimestamp = now;
             processingRoute = true;
             
-            // Блокуємо кнопку
+            // Блокуexisteмо кнопку
             const btn = document.getElementById(`route-btn-${liftId}`);
             if (btn) {
                 btn.disabled = true;
-                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Будується...';
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> A construir...';
             }
             
-            console.log('🗺️ Прокладання маршруту до ліфта:', liftId);
+            console.log('🗺️ Прокладання rotaу до do elevador:', liftId);
             
             const lift = lifts.find(l => l.id === liftId);
             if (!lift) {
-                console.error('❌ Ліфт не знайдено:', liftId);
+                console.error('❌ Elevador не encontrado:', liftId);
                 unlockRouteButton(liftId);
                 return;
             }
 
-            // Перевірити чи є геолокація користувача
+            // Verificar чи existe геоlocalização do utilizador
             if (!userLocation) {
-                alert('Не вдалося визначити вашу поточну локацію. Дозвольте доступ до геолокації в браузері.');
+                alert('Não foi possível determinar a sua localização actual. Permita o acesso à geolocalização no navegador.');
                 map.setView([lift.lat, lift.lng], 16);
                 unlockRouteButton(liftId);
                 return;
             }
 
-            // Eliminar попередній маршрут
+            // Eliminar попереdiasй rota
             if (routingControl) {
                 map.removeControl(routingControl);
             }
 
-            // Побудова маршруту
-            console.log('  Від (користувач):', userLocation.lat, userLocation.lng);
-            console.log('  До (ліфт):', lift.lat, lift.lng);
+            // Побудова rotaу
+            console.log('  De (utilizador):', userLocation.lat, userLocation.lng);
+            console.log('  Para (elevador):', lift.lat, lift.lng);
             
             routingControl = L.Routing.control({
                 waypoints: [
@@ -1124,12 +1124,12 @@
             }).on('routesfound', function(e) {
                 const routes = e.routes;
                 const summary = routes[0].summary;
-                console.log('✅ Маршрут знайдено:', (summary.totalDistance/1000).toFixed(2), 'км');
+                console.log('✅ Rota encontrado:', (summary.totalDistance/1000).toFixed(2), 'км');
                 
-                // Розблоковуємо кнопку після успішної побудови
+                // Розблоковуexisteмо кнопку após com sucessoї побудови
                 unlockRouteButton(liftId);
                 
-                // Додати кнопку закриття
+                // Adicionar кнопку закриття
                 setTimeout(() => {
                     const container = document.querySelector('.leaflet-routing-container');
                     if (container && !container.querySelector('.route-close-btn')) {
@@ -1167,17 +1167,17 @@
                 }, 100);
             }).addTo(map);
 
-            const displayName = lift.model || lift.name || `Ліфт ${lift.id}`;
-            console.log(`🗺️ Маршрут до: ${displayName}`);
+            const displayName = lift.model || lift.name || `Elevador ${lift.id}`;
+            console.log(`🗺️ Rota до: ${displayName}`);
         };
 
         function populateLiftSelector() {
             const selector = $('#routeToLift');
-            selector.empty(); // Очистити попередні опції
-            selector.append('<option value="">Оберіть ліфт</option>');
+            selector.empty(); // Limpar попереdias опції
+            selector.append('<option value="">Selecione elevador</option>');
             lifts.forEach(lift => {
-                const displayName = lift.model || lift.name || `Ліфт ${lift.id}`;
-                const displayAddress = lift.location || lift.address || 'Адреса не вказана';
+                const displayName = lift.model || lift.name || `Elevador ${lift.id}`;
+                const displayAddress = lift.location || lift.address || 'Endereço não especificado';
                 selector.append(`<option value="${lift.id}">${displayName} - ${displayAddress}</option>`);
             });
         }
@@ -1193,13 +1193,13 @@
         async function regeocodeAll() {
             const btn = $('#btnRegeocodeAll');
             const confirmed = confirm(
-                'Це виправить координати ВСІХ ліфтів з неправильними або відсутніми координатами.\n\n' +
-                'Натисніть OK для повного re-geocoding (може зайняти кілька хвилин).\n' +
-                'Натисніть Cancel для виправлення лише ліфтів без координат.'
+                'Це виправить coordenadas ВСІХ de elevadores desde неправильними ou відсутніми координаeми.\n\n' +
+                'Clique em OK para re-geocoding completo (pode demorar vários minutos).\n' +
+                'Clique Cancel para correção лише de elevadores беdesde координат.'
             );
-            const force = confirmed; // OK = force=true (всі), Cancel = тільки порожні
+            const force = confirmed; // OK = force=true (всі), Cancel = apenas порожні
             
-            btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Виправлення...');
+            btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> A corrigir...');
             
             try {
                 const resp = await AuthManager.fetchWithAuth(
@@ -1208,15 +1208,15 @@
                 );
                 const result = await resp.json();
                 if (result.success) {
-                    alert(`✅ Геокодування завершено!\nВиправлено: ${result.fixed}\nПомилок: ${result.failed}\nВсього оброблено: ${result.total}`);
+                    alert(`✅ Geocodificação concluído!\nCorrigidos: ${result.fixed}\nErros: ${result.failed}\nTotal processados: ${result.total}`);
                     await refreshMap();
                 } else {
-                    alert('❌ Помилка: ' + (result.message || 'Невідома помилка'));
+                    alert('❌ Erro: ' + (result.message || 'Erro desconhecido'));
                 }
             } catch (e) {
-                alert('❌ Помилка запиту: ' + e.message);
+                alert('❌ Erro de pedido: ' + e.message);
             } finally {
-                btn.prop('disabled', false).html('<i class="fas fa-map-marked-alt"></i> Виправити координати (Re-geocode)');
+                btn.prop('disabled', false).html('<i class="fas fa-map-marked-alt"></i> Corrigir coordenadas (Re-geocode)');
             }
         }
 
@@ -1252,38 +1252,38 @@
                 }
             });
             
-            console.log(`🔍 Filtro мапи: статус="${statusFilter}", пошук="${searchQuery}"`);
+            console.log(`🔍 Filtro мапи: estado="${statusFilter}", pesquisa="${searchQuery}"`);
         }
 
         function showRoute() {
             const liftId = $('#routeToLift').val();
             if (!liftId) {
-                alert('Оберіть ліфт для прокладання маршруту');
+                alert('Selecione um elevador para traçar a rota');
                 return;
             }
 
             const lift = lifts.find(l => l.id == liftId);
             if (!lift) return;
 
-            // Перевірити чи є геолокація користувача
+            // Verificar чи existe геоlocalização do utilizador
             if (!userLocation) {
-                alert('Не вдалося визначити вашу поточну локацію. Дозвольте доступ до геолокації в браузері.');
+                alert('Não foi possível determinar a sua localização actual. Permita o acesso à geolocalização no navegador.');
                 map.setView([lift.lat, lift.lng], 16);
                 return;
             }
 
-            // Eliminar попередній маршрут
+            // Eliminar попереdiasй rota
             if (routingControl) {
                 map.removeControl(routingControl);
             }
 
-            // Логування координат перед побудовою маршруту
-            console.log('🗺️ Побудова маршруту:');
-            console.log('  Від (користувач):', userLocation.lat, userLocation.lng);
-            console.log('  До (ліфт):', lift.lat, lift.lng);
-            console.log('  Адреса ліфта:', lift.address);
+            // Логування координат antes de побудовою rotaу
+            console.log('🗺️ Побудова rotaу:');
+            console.log('  De (utilizador):', userLocation.lat, userLocation.lng);
+            console.log('  Para (elevador):', lift.lat, lift.lng);
+            console.log('  Endereço do elevador:', lift.address);
             
-            // Розрахунок прямої відстані (Haversine formula)
+            // Розfatura прямої відсeні (Haversine formula)
             const R = 6371e3; // Earth radius in meters
             const φ1 = userLocation.lat * Math.PI/180;
             const φ2 = lift.lat * Math.PI/180;
@@ -1295,18 +1295,18 @@
             const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
             const distance = R * c;
             const distanceKm = (distance/1000).toFixed(2);
-            console.log('  Пряма відстань:', distanceKm, 'км');
-            console.log('  Відстань у метрах:', distance.toFixed(2), 'м');
+            console.log('  Пряма відсeнь:', distanceKm, 'км');
+            console.log('  Відсeнь у метрах:', distance.toFixed(2), 'м');
             
-            // Перевірка: якщо відстань менше 50 метрів
+            // Verificação: se відсeнь menos 50 метрів
             if (distance < 50) {
-                console.warn('⚠️ ПОПЕРЕДЖЕННЯ: Відстань занадто мала!');
-                console.warn('  Можливо координати ліфта збережені некоректно');
-                console.warn('  Або геолокація браузера визначила вашу позицію неточно');
-                alert(`⚠️ ПОПЕРЕДЖЕННЯ\n\nВідстань до ліфта: ${distance.toFixed(0)}м\n\nЦе занадто мало. Можливо:\n• Ви знаходитесь біля ліфта\n• Координати ліфта в базі даних некоректні\n• Геолокація браузера визначила позицію неточно\n\nПеревірте координати ліфта в розділі "Elevadores".`);
+                console.warn('⚠️ AVISO: Відсeнь занадто мала!');
+                console.warn('  Можливо coordenadas do elevador збережені некоректно');
+                console.warn('  Або геоlocalização браузера визначила вашу позицію неexatamente');
+                alert(`⚠️ AVISO\n\nDistância ao elevador: ${distance.toFixed(0)}м\n\nÉ muito pouco. Possivelmente:\n• Ви знаходитесь біля do elevador\n• Coordenadas do elevador в базі даних некоректні\n• Геоlocalização браузера визначила позицію неexatamente\n\nVerifique coordenadas do elevador в розділі "Elevadores".`);
             }
 
-            // Створити маршрут з поточної позиції до ліфта
+            // Створити rota desde atualmenteї позиції до do elevador
             routingControl = L.Routing.control({
                 waypoints: [
                     L.latLng(userLocation.lat, userLocation.lng),
@@ -1318,24 +1318,24 @@
                     styles: [{color: '#007bff', weight: 5, opacity: 0.7}]
                 },
                 createMarker: function() { return null; }, // Не створювати додаткові маркери
-                language: 'en', // Використовуємо англійську, бо українська не підтримується
+                language: 'en', // Використовуexisteмо англійську, бо українська не підтримуexisteться
                 fitSelectedRoutes: true,
                 addWaypoints: false
             }).on('routesfound', function(e) {
                 const routes = e.routes;
                 const summary = routes[0].summary;
-                console.log('✅ Маршрут знайдено:');
-                console.log('  Відстань маршруту:', (summary.totalDistance/1000).toFixed(2), 'км');
-                console.log('  Час у дорозі:', Math.round(summary.totalTime/60), 'хв');
+                console.log('✅ Rota encontrada:');
+                console.log('  Відсeнь rotaу:', (summary.totalDistance/1000).toFixed(2), 'км');
+                console.log('  Hora у дорозі:', Math.round(summary.totalTime/60), 'хв');
                 
-                // Додаємо кнопку закриття після того як контейнер створено
+                // Додаexisteмо кнопку закриття após того як контейнер criado
                 setTimeout(() => {
                     const container = document.querySelector('.leaflet-routing-container');
                     if (container && !container.querySelector('.route-close-btn')) {
                         const closeBtn = document.createElement('button');
                         closeBtn.className = 'route-close-btn';
                         closeBtn.innerHTML = '×';
-                        closeBtn.title = 'Закрити маршрут';
+                        closeBtn.title = 'Fechar rota';
                         closeBtn.style.cssText = `
                             position: absolute;
                             top: 5px;
@@ -1367,7 +1367,7 @@
                             if (routingControl) {
                                 map.removeControl(routingControl);
                                 routingControl = null;
-                                console.log('🗺️ Маршрут закрито');
+                                console.log('🗺️ Rota fechado');
                             }
                         });
                         
@@ -1388,7 +1388,7 @@
                         let xOffset = 0;
                         let yOffset = 0;
                         
-                        // Знаходимо заголовок (область для перетягування)
+                        // Знаходимо заголовок (область para перетягування)
                         const header = container.querySelector('h2, h3');
                         
                         if (header) {
@@ -1396,14 +1396,14 @@
                             document.addEventListener('mousemove', drag);
                             document.addEventListener('mouseup', dragEnd);
                             
-                            // Touch events для мобільних пристроїв
+                            // Touch events para мобільних dispositivos
                             header.addEventListener('touchstart', dragStart);
                             document.addEventListener('touchmove', drag);
                             document.addEventListener('touchend', dragEnd);
                         }
                         
                         function dragStart(e) {
-                            // Ігноруємо клік на кнопці закриття
+                            // Ігноруexisteмо клік на кнопці закриття
                             if (e.target.classList.contains('route-close-btn')) {
                                 return;
                             }
@@ -1454,25 +1454,25 @@
                             el.style.transform = `translate3d(${xPos}px, ${yPos}px, 0)`;
                         }
                         
-                        console.log('🖱️ Вікно маршруту тепер можна перетягувати за заголовок');
+                        console.log('🖱️ Idadeно rotaу тепер pode-se перетягувати за заголовок');
                     }
                 }, 100);
             }).on('routingerror', function(e) {
-                console.error('❌ Помилка побудови маршруту:', e.error);
-                alert('Не вдалося побудувати маршрут. Можливо, адреса занадто далеко або недоступна для автомобільного руху.');
+                console.error('❌ Erro побудови rotaу:', e.error);
+                alert('Não foi possível traçar a rota. Possivelmente, o endereço é demasiado dmasко ou indisponível para автомобільного руху.');
             }).addTo(map);
 
-            const displayName = lift.model || lift.name || `Ліфт ${lift.id}`;
-            console.log(`🗺️ Маршрут до: ${displayName} (${lift.location || lift.address})`);
+            const displayName = lift.model || lift.name || `Elevador ${lift.id}`;
+            console.log(`🗺️ Rota до: ${displayName} (${lift.location || lift.address})`);
         }
 
         async function refreshMap() {
             console.log('🔄 Оновлення мапи...');
             
-            // Оновити дані з API
+            // Atualizar dados desde API
             await loadLiftsFromAPI();
 
-            // Очистити існуючі маркери
+            // Limpar існуючі маркери
             markers.forEach(({ marker }) => {
                 map.removeLayer(marker);
             });
@@ -1483,13 +1483,13 @@
                 addLiftMarker(lift);
             });
 
-            // Оновити селектор маршрутів
+            // Actualizar селектор rotaів
             populateLiftSelector();
 
-            // Оновити статистику
+            // Actualizar сeтистику
             updateStats();
 
-            // Показати індикатор завантаження
+            // Mostrar індикатор carregamento
             $('#refreshMap i').addClass('fa-spin');
             setTimeout(() => {
                 $('#refreshMap i').removeClass('fa-spin');
@@ -1521,9 +1521,9 @@
         function getStatusText(status) {
             switch (status) {
                 case 'active': return 'Ativo';
-                case 'maintenance': return 'На обслуговуванні';
-                case 'inactive': return 'З несправностями';
-                default: return 'Невідомо';
+                case 'maintenance': return 'Em manutenção';
+                case 'inactive': return 'Com falhas';
+                default: return 'Desconhecido';
             }
         }
     </script>

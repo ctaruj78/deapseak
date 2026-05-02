@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Мапа ліфтів - FestLift</title>
+    <title>Mapa de elevadores - FestLift</title>
     <script src="../../assets/js/auth.js"></script>
 
 
@@ -52,7 +52,7 @@
         <a class="navbar-brand" href="#">FestLift</a>
         <div class="navbar-nav ml-auto">
             <a class="nav-link" href="#" id="refreshMap">
-                <i class="fas fa-sync-alt"></i> Оновити
+                <i class="fas fa-sync-alt"></i> Actualizar
             </a>
         </div>
     </nav>
@@ -62,7 +62,7 @@
             <div class="col-md-12">
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Інтерактивна мапа ліфтів</h3>
+                        <h3 class="card-title">Mapa interactivo de elevadores</h3>
                     </div>
                     <div class="card-body">
                         <div id="liftsMap"></div>
@@ -81,11 +81,11 @@
     <script>
         // Load lift data from localStorage or use sample data
         let lifts = JSON.parse(localStorage.getItem('lifts')) || [
-            { id: 'sample_1', model: 'Ліфт №1', address: 'Rua Шевченка, 10', lat: 50.4501, lng: 30.5234, status: 'active', lastMaintenance: '2024-01-10', location: 'Rua Шевченка, 10' },
-            { id: 'sample_2', model: 'Ліфт №2', address: 'Rua Франка, 25', lat: 50.4542, lng: 30.5167, status: 'active', lastMaintenance: '2024-01-08', location: 'Rua Франка, 25' },
-            { id: 'sample_3', model: 'Ліфт №3', address: 'пр. Перемоги, 50', lat: 50.4478, lng: 30.5103, status: 'maintenance', lastMaintenance: '2024-01-12', location: 'пр. Перемоги, 50' },
-            { id: 'sample_4', model: 'Ліфт №4', address: 'Rua Лесі Українки, 15', lat: 50.4421, lng: 30.5189, status: 'inactive', lastMaintenance: '2024-01-05', location: 'Rua Лесі Українки, 15' },
-            { id: 'sample_5', model: 'Ліфт №5', address: 'Rua Сагайдачного, 8', lat: 50.4489, lng: 30.5256, status: 'active', lastMaintenance: '2024-01-09', location: 'Rua Сагайдачного, 8' }
+            { id: 'sample_1', model: 'Elevador №1', address: 'Rua Shevchenko, 10', lat: 50.4501, lng: 30.5234, status: 'active', lastMaintenance: '2024-01-10', location: 'Rua Shevchenko, 10' },
+            { id: 'sample_2', model: 'Elevador №2', address: 'Rua Franka, 25', lat: 50.4542, lng: 30.5167, status: 'active', lastMaintenance: '2024-01-08', location: 'Rua Franka, 25' },
+            { id: 'sample_3', model: 'Elevador №3', address: 'Av. Peremogy, 50', lat: 50.4478, lng: 30.5103, status: 'maintenance', lastMaintenance: '2024-01-12', location: 'Av. Peremogy, 50' },
+            { id: 'sample_4', model: 'Elevador №4', address: 'Rua Lesi Ukrainky, 15', lat: 50.4421, lng: 30.5189, status: 'inactive', lastMaintenance: '2024-01-05', location: 'Rua Lesi Ukrainky, 15' },
+            { id: 'sample_5', model: 'Elevador №5', address: 'Rua Sahaidachnoho, 8', lat: 50.4489, lng: 30.5256, status: 'active', lastMaintenance: '2024-01-09', location: 'Rua Sahaidachnoho, 8' }
         ];
 
         let map;
@@ -145,18 +145,18 @@
         function createLiftPopup(lift) {
             const statusClass = `status-${lift.status}`;
             const statusText = getStatusText(lift.status);
-            const displayName = lift.model || lift.name || `Ліфт ${lift.id}`;
-            const displayAddress = lift.location || lift.address || 'Адреса не вказана';
-            const lastService = lift.lastMaintenance || lift.lastService || 'Невідомо';
+            const displayName = lift.model || lift.name || `Elevador ${lift.id}`;
+            const displayAddress = lift.location || lift.address || 'Endereço não especificado';
+            const lastService = lift.lastMaintenance || lift.lastService || 'Desconhecido';
 
             return `
                 <div class="lift-popup">
                     <h6>${displayName}</h6>
-                    <p><strong>Адреса:</strong> ${displayAddress}</p>
-                    <p><strong>Статус:</strong> <span class="lift-status ${statusClass}">${statusText}</span></p>
-                    <p><strong>Останнє ТО:</strong> ${lastService}</p>
+                    <p><strong>Endereço:</strong> ${displayAddress}</p>
+                    <p><strong>Estado:</strong> <span class="lift-status ${statusClass}">${statusText}</span></p>
+                    <p><strong>Última manutenção:</strong> ${lastService}</p>
                     <div class="text-center mt-2">
-                        <a href="lifts.html" class="btn btn-sm btn-primary">Переглянути деталі</a>
+                        <a href="lifts.html" class="btn btn-sm btn-primary">Ver detalhes</a>
                     </div>
                 </div>
             `;
@@ -172,11 +172,11 @@
         function refreshMap() {
             try {
                 console.log('Refreshing map...');
-                // Оновити дані з localStorage
+                // Atualizar dados desde localStorage
                 lifts = JSON.parse(localStorage.getItem('lifts')) || lifts;
                 console.log(`Loaded ${lifts.length} lifts from localStorage`);
 
-                // Очистити існуючі маркери
+                // Limpar існуючі маркери
                 markers.forEach(({ marker }) => {
                     map.removeLayer(marker);
                 });
@@ -187,7 +187,7 @@
                     addLiftMarker(lift);
                 });
 
-                // Показати індикатор завантаження
+                // Mostrar індикатор carregamento
                 $('#refreshMap i').addClass('fa-spin');
                 setTimeout(() => {
                     $('#refreshMap i').removeClass('fa-spin');
@@ -210,9 +210,9 @@
         function getStatusText(status) {
             switch (status) {
                 case 'active': return 'Ativo';
-                case 'maintenance': return 'На обслуговуванні';
-                case 'inactive': return 'З несправностями';
-                default: return 'Невідомо';
+                case 'maintenance': return 'Em manutenção';
+                case 'inactive': return 'Com falhas';
+                default: return 'Desconhecido';
             }
         }
     </script>

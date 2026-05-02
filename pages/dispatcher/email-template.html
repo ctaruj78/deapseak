@@ -267,7 +267,7 @@
 
                     <!-- Custom Templates -->
                     <div class="row" id="customTemplatesContainer">
-                        <!-- Динамічно додані шаблони з'являться тут -->
+                        <!-- Os modelos adicionados dinamicamente aparecerão aqui -->
                     </div>
                 </div>
             </section>
@@ -367,7 +367,7 @@
                 const template = this.templates[templateId];
                 
                 if (templateId === 'new') {
-                    // Новий шаблон - очистити форму
+                    // Novo modelo - limpar formulário
                     $('#templateName').val('');
                     $('#templateSubject').val('');
                     $('#templateContent').val('');
@@ -375,7 +375,7 @@
                     $('#editTemplateModal .modal-title').text('Criar Novo Modelo');
                     $('#editTemplateModal').modal('show');
                 } else if (template) {
-                    // Редагування існуючого шаблону
+                    // Edição do modelo existente
                     $('#templateName').val(template.name);
                     $('#templateSubject').val(template.subject);
                     $('#templateContent').val(template.content);
@@ -399,7 +399,7 @@
                 }
 
                 if (templateId === 'new') {
-                    // Створити новий ID для шаблону
+                    // Criar novo ID para o modelo
                     const newId = 'custom_' + Date.now();
                     this.templates[newId] = {
                         name: name,
@@ -407,7 +407,7 @@
                         content: content
                     };
                 } else if (templateId) {
-                    // Оновити існуючий шаблон
+                    // Atualizar modelo existente
                     this.templates[templateId] = {
                         name: name,
                         subject: subject,
@@ -512,7 +512,7 @@
                 const container = $('#customTemplatesContainer');
                 container.empty();
                 
-                // Рендеримо тільки кастомні шаблони (ті, що починаються з 'custom_')
+                // Рендеримо apenas кастомні modeloи (ті, що починаються desde 'custom_')
                 const customTemplates = Object.keys(this.templates).filter(id => id.startsWith('custom_'));
                 
                 if (customTemplates.length === 0) return;

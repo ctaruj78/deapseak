@@ -57,7 +57,7 @@
                 <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
             </li>
             <li class="nav-item d-none d-sm-inline-block">
-                <a href="/pages/client/dashboard.html" class="nav-link">Головна</a>
+                <a href="/pages/client/dashboard.html" class="nav-link">Início</a>
             </li>
             <li class="nav-item d-none d-sm-inline-block">
                 <a href="/pages/client/orcamentos.html" class="nav-link active">Orçamentos</a>
@@ -65,13 +65,13 @@
         </ul>
         <ul class="navbar-nav ml-auto">
             <li class="nav-item">
-                <a class="nav-link notification-bell" href="/pages/client/notifications.html" title="Sповіщення">
+                <a class="nav-link notification-bell" href="/pages/client/notifications.html" title="Notificações">
                     <i class="fas fa-bell"></i>
                     <span class="notification-badge" id="notificationCount">0</span>
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="#" onclick="logout()" title="Вийти"><i class="fas fa-sign-out-alt"></i></a>
+                <a class="nav-link" href="#" onclick="logout()" title="Sair"><i class="fas fa-sign-out-alt"></i></a>
             </li>
         </ul>
     </nav>
@@ -92,17 +92,17 @@
                     </li>
                     <li class="nav-item">
                         <a href="/pages/client/my-lifts.html" class="nav-link" id="nav-my-lifts">
-                            <i class="nav-icon fas fa-elevator"></i><p>Мої ліфти<span class="badge badge-info right" id="liftsCount">0</span></p>
+                            <i class="nav-icon fas fa-elevator"></i><p>Os meus elevadores<span class="badge badge-info right" id="liftsCount">0</span></p>
                         </a>
                     </li>
                     <li class="nav-item">
                         <a href="/pages/client/ai-predictions.html" class="nav-link" id="nav-ai-predictions">
-                            <i class="nav-icon fas fa-brain"></i><p>Прогнозування AI<span class="badge badge-purple right">Novo</span></p>
+                            <i class="nav-icon fas fa-brain"></i><p>Previsões AI<span class="badge badge-purple right">Novo</span></p>
                         </a>
                     </li>
                     <li class="nav-item">
                         <a href="/pages/client/requests.html" class="nav-link" id="nav-requests">
-                            <i class="nav-icon fas fa-tasks"></i><p>Заявки<span class="badge badge-warning right" id="requestsCount">0</span></p>
+                            <i class="nav-icon fas fa-tasks"></i><p>Pedidos<span class="badge badge-warning right" id="requestsCount">0</span></p>
                         </a>
                     </li>
                     <li class="nav-item">
@@ -113,12 +113,12 @@
                     </li>
                     <li class="nav-item">
                         <a href="/pages/client/invoices.html" class="nav-link" id="nav-invoices">
-                            <i class="nav-icon fas fa-file-invoice"></i><p>Рахунки<span class="badge badge-success right" id="invoicesCount">0</span></p>
+                            <i class="nav-icon fas fa-file-invoice"></i><p>Faturas<span class="badge badge-success right" id="invoicesCount">0</span></p>
                         </a>
                     </li>
                     <li class="nav-item">
                         <a href="/pages/client/history.html" class="nav-link" id="nav-history">
-                            <i class="nav-icon fas fa-history"></i><p>Історія</p>
+                            <i class="nav-icon fas fa-history"></i><p>Histórico</p>
                         </a>
                     </li>
                     <li class="nav-item">
@@ -133,22 +133,22 @@
                     </li>
                     <li class="nav-item">
                         <a href="/pages/client/notifications.html" class="nav-link" id="nav-notifications">
-                            <i class="nav-icon fas fa-bell"></i><p>Сповіщення<span class="badge badge-danger right" id="notificationsBadge">0</span></p>
+                            <i class="nav-icon fas fa-bell"></i><p>Notificações<span class="badge badge-danger right" id="notificationsBadge">0</span></p>
                         </a>
                     </li>
                     <li class="nav-item">
                         <a href="/pages/client/support.html" class="nav-link" id="nav-support">
-                            <i class="nav-icon fas fa-headset"></i><p>Підтримка</p>
+                            <i class="nav-icon fas fa-headset"></i><p>Suporte</p>
                         </a>
                     </li>
                     <li class="nav-item">
                         <a href="/pages/client/profile.html" class="nav-link" id="nav-profile">
-                            <i class="nav-icon fas fa-user"></i><p>Профіль</p>
+                            <i class="nav-icon fas fa-user"></i><p>Perfil</p>
                         </a>
                     </li>
                     <li class="nav-item">
                         <a href="#" onclick="logout()" class="nav-link">
-                            <i class="nav-icon fas fa-sign-out-alt text-danger"></i><p>Вийти</p>
+                            <i class="nav-icon fas fa-sign-out-alt text-danger"></i><p>Sair</p>
                         </a>
                     </li>
                 </ul>
@@ -166,7 +166,7 @@
                     </div>
                     <div class="col-sm-6">
                         <ol class="breadcrumb float-sm-right">
-                            <li class="breadcrumb-item"><a href="/pages/client/dashboard.html">Головна</a></li>
+                            <li class="breadcrumb-item"><a href="/pages/client/dashboard.html">Início</a></li>
                 
                 <!-- Tickets -->
                 
@@ -294,7 +294,7 @@
     let pendingAction = null; // { id, status }
 
     function getToken() {
-        // sessionStorage має пріоритет — уникаємо old токенів з localStorage
+        // sessionStorage маexiste prioridade — уникаexisteмо old tokenів desde localStorage
         return sessionStorage.getItem('liftmanager_jwt') ||
                localStorage.getItem('liftmanager_jwt') ||
                sessionStorage.getItem('token') ||

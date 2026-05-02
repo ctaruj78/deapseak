@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="uk">
+<html lang="pt">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Мапа ліфтів</title>
+    <title>Mapa de elevadores</title>
     <script src="../assets/js/auth.js"></script>
 
     <link rel="stylesheet" href="../plugins/adminlte/adminlte.min.css">
@@ -15,7 +15,7 @@
 </head>
 <body class="hold-transition sidebar-mini layout-fixed">
     <div class="wrapper">
-        <!-- Навігаційна панель -->
+        <!-- Painel de navegação -->
         <nav class="main-header navbar navbar-expand navbar-white navbar-light">
             <ul class="navbar-nav">
                 <li class="nav-item">
@@ -23,7 +23,7 @@
                 </li>
             </ul>
         </nav>
-        <!-- Бічна панель -->
+        <!-- Barra lateral -->
         <aside class="main-sidebar sidebar-dark-primary elevation-4">
             <a href="/pages/admin/admin-dashboard.html" class="brand-link">
                 <span class="brand-text font-weight-light">Lift Management</span>
@@ -31,24 +31,24 @@
             <div class="sidebar">
                 <nav class="mt-2">
                     <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
-                        <li class="nav-item"><a href="/pages/admin/admin-dashboard.html" class="nav-link"><i class="nav-icon fas fa-tachometer-alt"></i><p>Дашборд</p></a></li>
-                        <li class="nav-item"><a href="/pages/admin/lifts.html" class="nav-link"><i class="nav-icon fas fa-elevator"></i><p>Ліфти</p></a></li>
-                        <li class="nav-item"><a href="/pages/maps.html" class="nav-link active"><i class="nav-icon fas fa-map-marked-alt"></i><p>Мапа ліфтів</p></a></li>
-                        <li class="nav-item"><a href="/pages/admin/users.html" class="nav-link"><i class="nav-icon fas fa-users"></i><p>Користувачі</p></a></li>
-                        <li class="nav-item"><a href="/pages/admin/reports.html" class="nav-link"><i class="nav-icon fas fa-chart-bar"></i><p>Звіти</p></a></li>
-                        <li class="nav-item"><a href="/pages/admin/settings.html" class="nav-link"><i class="nav-icon fas fa-cog"></i><p>Налаштування</p></a></li>
-                        <li class="nav-item"><a href="/pages/admin/profile.html" class="nav-link"><i class="nav-icon fas fa-user"></i><p>Профіль</p></a></li>
-                        <li class="nav-item"><a href="#" class="nav-link" onclick="logout()"><i class="nav-icon fas fa-sign-out-alt"></i><p>Вийти</p></a></li>
+                        <li class="nav-item"><a href="/pages/admin/admin-dashboard.html" class="nav-link"><i class="nav-icon fas fa-tachometer-alt"></i><p>Dashboard</p></a></li>
+                        <li class="nav-item"><a href="/pages/admin/lifts.html" class="nav-link"><i class="nav-icon fas fa-elevator"></i><p>Elevadores</p></a></li>
+                        <li class="nav-item"><a href="/pages/maps.html" class="nav-link active"><i class="nav-icon fas fa-map-marked-alt"></i><p>Mapa de elevadores</p></a></li>
+                        <li class="nav-item"><a href="/pages/admin/users.html" class="nav-link"><i class="nav-icon fas fa-users"></i><p>Utilizadores</p></a></li>
+                        <li class="nav-item"><a href="/pages/admin/reports.html" class="nav-link"><i class="nav-icon fas fa-chart-bar"></i><p>Relatórios</p></a></li>
+                        <li class="nav-item"><a href="/pages/admin/settings.html" class="nav-link"><i class="nav-icon fas fa-cog"></i><p>Configurações</p></a></li>
+                        <li class="nav-item"><a href="/pages/admin/profile.html" class="nav-link"><i class="nav-icon fas fa-user"></i><p>Perfil</p></a></li>
+                        <li class="nav-item"><a href="#" class="nav-link" onclick="logout()"><i class="nav-icon fas fa-sign-out-alt"></i><p>Sair</p></a></li>
                     </ul>
                 </nav>
             </div>
         </aside>
-        <!-- Контент -->
+        <!-- Conteúdo -->
         <div class="content-wrapper">
             <section class="content-header">
                 <div class="container-fluid">
                     <div class="row mb-2">
-                        <div class="col-sm-6"><h1>Мапа ліфтів</h1></div>
+                        <div class="col-sm-6"><h1>Mapa de elevadores</h1></div>
                     </div>
                 </div>
             </section>
@@ -59,33 +59,33 @@
                         <div class="mt-3 d-flex justify-content-between align-items-center">
                             <div>
                                 <button id="btnRefreshMap" class="btn btn-secondary">
-                                    <i class="fas fa-sync-alt"></i> Оновити карту
+                                    <i class="fas fa-sync-alt"></i> Actualizar mapa
                                 </button>
-                                <small class="text-muted ml-2">Останнє оновлення: <span id="lastUpdate">зараз</span></small>
+                                <small class="text-muted ml-2">Última actualização: <span id="lastUpdate">agora</span></small>
                             </div>
                             <div>
-                                <label for="addressInput" class="mb-0">Визначити координати по адресі:</label>
+                                <label for="addressInput" class="mb-0">Determinar coordenadas por endereço:</label>
                             </div>
                         </div>
                         <div class="mt-2">
                             <div class="input-group" style="max-width:400px;">
-                                <input type="text" id="addressInput" class="form-control" placeholder="Введіть адресу...">
+                                <input type="text" id="addressInput" class="form-control" placeholder="Introduza o endereço...">
                                 <div class="input-group-append">
                                     <button id="btnGeocode" class="btn btn-success">
-                                        <i class="fas fa-search"></i> Пошук
+                                        <i class="fas fa-search"></i> Pesquisar
                                     </button>
                                 </div>
                             </div>
                         </div>
                         <div class="mt-3">
-                            <label for="routeToLift">Прокласти маршрут до ліфта:</label>
+                            <label for="routeToLift">Traçar rota para o elevador:</label>
                             <div class="input-group" style="max-width:500px;">
                                 <select id="routeToLift" class="form-control">
-                                    <option value="">Оберіть ліфт...</option>
+                                    <option value="">Selecione o elevador...</option>
                                 </select>
                                 <div class="input-group-append">
                                     <button id="btnRoute" class="btn btn-primary">
-                                        <i class="fas fa-route"></i> Показати маршрут
+                                        <i class="fas fa-route"></i> Mostrar rota
                                     </button>
                                 </div>
                             </div>

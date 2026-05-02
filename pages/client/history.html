@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Клієнт - Історія обслуговування</title>
+    <title>Cliente - Histórico de manutenção</title>
     <script src="../../assets/js/auth.js"></script>
 
     
@@ -224,7 +224,7 @@
 <body class="hold-transition sidebar-mini layout-fixed" data-required-role="client">
     <div class="wrapper">
 
-        <!-- Навігаційна панель -->
+        <!-- Навігаційна painel -->
         <nav class="main-header navbar navbar-expand navbar-white navbar-light">
             <ul class="navbar-nav">
                 <li class="nav-item">
@@ -233,37 +233,37 @@
                     </a>
                 </li>
                 <li class="nav-item d-none d-sm-inline-block">
-                    <a href="/pages/client/dashboard.html" class="nav-link">Головна</a>
+                    <a href="/pages/client/dashboard.html" class="nav-link">Início</a>
                 </li>
                 <li class="nav-item d-none d-sm-inline-block">
-                    <a href="/pages/client/my-lifts.html" class="nav-link">Мої ліфти</a>
+                    <a href="/pages/client/my-lifts.html" class="nav-link">Os meus elevadores</a>
                 </li>
                 <li class="nav-item d-none d-sm-inline-block">
-                    <a href="/pages/client/history.html" class="nav-link active">Історія</a>
+                    <a href="/pages/client/history.html" class="nav-link active">Histórico</a>
                 </li>
             </ul>
 
-            <!-- Права частина навігації -->
+            <!-- Permissões horaтина навігації -->
             <ul class="navbar-nav ml-auto">
                 <li class="nav-item">
-                    <a class="nav-link notification-bell" href="/pages/client/notifications.html" title="Сповіщення">
+                    <a class="nav-link notification-bell" href="/pages/client/notifications.html" title="Notificações">
                         <i class="fas fa-bell"></i>
                         <span class="notification-badge" id="notificationCount">0</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#" onclick="logout()" title="Вийти">
+                    <a class="nav-link" href="#" onclick="logout()" title="Sair">
                         <i class="fas fa-sign-out-alt"></i>
                     </a>
                 </li>
             </ul>
         </nav>
 
-        <!-- Бічна панель -->
+        <!-- Бічна painel -->
         <!-- ═══════════════════════════════════════════════════════════ -->
-<!-- ЕТАЛОННИЙ SIDEBAR ДЛЯ КЛІЄНТСЬКИХ СТОРІНОК -->
-<!-- Версія: 2.0 Portugal (2026-01-13) -->
-<!-- ⚠️ НЕ РЕДАГУЙТЕ ОКРЕМО! Використовуйте цей файл як еталон -->
+<!-- ЕТАЛОННИЙ SIDEBAR ДЛЯ КЛІЄНТСЬКИХ СManutençãoРІНОК -->
+<!-- Versão: 2.0 Portugal (2026-01-13) -->
+<!-- ⚠️ НЕ РЕДАГУЙТЕ ОКРЕМО! Використовуйте цей ficheiro як еeлон -->
 <!-- ═══════════════════════════════════════════════════════════ -->
 
 <aside class="main-sidebar sidebar-dark-primary elevation-4">
@@ -275,7 +275,7 @@
     <div class="sidebar">
 
         
-        <!-- Меню навігації -->
+        <!-- Menu de navegação -->
         <nav class="mt-2">
             <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
                 
@@ -287,31 +287,31 @@
                     </a>
                 </li>
                 
-                <!-- 2. Мої ліфти -->
+                <!-- 2. Os meus elevadores -->
                 <li class="nav-item">
                     <a href="/pages/client/my-lifts.html" class="nav-link" id="nav-my-lifts">
                         <i class="nav-icon fas fa-elevator"></i>
-                        <p>Мої ліфти</p>
+                        <p>Os meus elevadores</p>
                         <span class="badge badge-info right" id="liftsCount">0</span>
                     </a>
                 </li>
                 
-                <!-- 3. AI Прогнозування -->
+                <!-- 3. AI Previsãoування -->
                 <li class="nav-item">
                     <a href="/pages/client/ai-predictions.html" class="nav-link" id="nav-ai-predictions">
                         <i class="nav-icon fas fa-brain"></i>
                         <p>
-                            Прогнозування AI
+                            Previsões AI
                             <span class="badge badge-purple right">Novo</span>
                         </p>
                     </a>
                 </li>
                 
-                <!-- 4. Мої заявки -->
+                <!-- 4. Os meus pedidos -->
                 <li class="nav-item">
                     <a href="/pages/client/requests.html" class="nav-link" id="nav-requests">
                         <i class="nav-icon fas fa-tasks"></i>
-                        <p>Заявки</p>
+                        <p>Pedidos</p>
                         <span class="badge badge-warning right" id="requestsCount">0</span>
                     </a>
                 </li>
@@ -324,70 +324,70 @@
                     </a>
                 </li>
 
-                <!-- 6. Рахунки -->
+                <!-- 6. Faturas -->
                 <li class="nav-item">
                     <a href="/pages/client/invoices.html" class="nav-link" id="nav-invoices">
                         <i class="nav-icon fas fa-file-invoice"></i>
-                        <p>Рахунки</p>
+                        <p>Faturas</p>
                         <span class="badge badge-success right" id="invoicesCount">0</span>
                     </a>
                 </li>
                 
-                <!-- 6. Історія -->
+                <!-- 6. Histórico -->
                 <li class="nav-item">
                     <a href="/pages/client/history.html" class="nav-link" id="nav-history">
                         <i class="nav-icon fas fa-history"></i>
-                        <p>Історія</p>
+                        <p>Histórico</p>
                     </a>
                 </li>
                 
-                <!-- 7. Документація -->
+                <!-- 7. Documentação -->
                 <li class="nav-item">
                     <a href="/pages/client/documentation.html" class="nav-link" id="nav-documentation">
                         <i class="nav-icon fas fa-book"></i>
-                        <p>Документація</p>
+                        <p>Documentação</p>
                     </a>
                 </li>
                 
-                <!-- 8. AI Асистент -->
+                <!-- 8. Assistente de IA -->
                 <li class="nav-item">
                     <a href="/pages/ai-assistant/ai-assistant.html" class="nav-link" id="nav-ai-assistant">
                         <i class="nav-icon fas fa-magic"></i>
-                        <p>Асистент AI</p>
+                        <p>Assistente AI</p>
                         <span class="badge badge-success right">★</span>
                     </a>
                 </li>
                 
-                <!-- 9. Сповіщення -->
+                <!-- 9. Notificações -->
                 <li class="nav-item">
                     <a href="/pages/client/notifications.html" class="nav-link" id="nav-notifications">
                         <i class="nav-icon fas fa-bell"></i>
-                        <p>Сповіщення</p>
+                        <p>Notificações</p>
                         <span class="badge badge-danger right" id="notificationsBadge">0</span>
                     </a>
                 </li>
                 
-                <!-- 10. Підтримка -->
+                <!-- 10. Suporte -->
                 <li class="nav-item">
                     <a href="/pages/client/support.html" class="nav-link" id="nav-support">
                         <i class="nav-icon fas fa-headset"></i>
-                        <p>Підтримка</p>
+                        <p>Suporte</p>
                     </a>
                 </li>
                 
-                <!-- 11. Профіль -->
+                <!-- 11. Perfil -->
                 <li class="nav-item">
                     <a href="/pages/client/profile.html" class="nav-link" id="nav-profile">
                         <i class="nav-icon fas fa-user"></i>
-                        <p>Профіль</p>
+                        <p>Perfil</p>
                     </a>
                 </li>
                 
-                <!-- Вихід -->
+                <!-- Saída -->
                 <li class="nav-item">
                     <a href="#" onclick="logout()" class="nav-link">
                         <i class="nav-icon fas fa-sign-out-alt text-danger"></i>
-                        <p>Вийти</p>
+                        <p>Sair</p>
                     </a>
                 </li>
             </ul>
@@ -395,13 +395,13 @@
     </div>
 </aside>
 
-<!-- Скрипт для підсвічування активного пункту -->
+<!-- Скрипт para підсвічування активного itemу -->
 <script>
 (function() {
-    // Визначити поточну сторінку
+    // Визнаouти поточну a página
     const currentPage = window.location.pathname.split('/').pop().replace('.html', '');
     
-    // Мапінг сторінок на ID навігації
+    // Мапінг de páginas на ID навігації
     const pageMap = {
         'dashboard': 'nav-dashboard',
         'my-lifts': 'nav-my-lifts',
@@ -416,7 +416,7 @@
         'support': 'nav-support',
         'profile': 'nav-profile',    };
     
-    // Підсвітити активний пункт
+    // Підсвітити ativo item
     const activeNav = pageMap[currentPage];
     if (activeNav) {
         const navLink = document.getElementById(activeNav);
@@ -425,14 +425,14 @@
         }
     }
     
-    // Завантажити лічильники з API
+    // Descarregar ліouльники desde API
     loadClientCounts();
     
     function loadClientCounts() {
         const token = sessionStorage.getItem('liftmanager_jwt') || localStorage.getItem('liftmanager_jwt') || localStorage.getItem('token');
         if (!token) return;
         
-        // Кількість ліфтів
+        // Quantidade de elevadores
         fetch('/api/lifts', {
             headers: { 'Authorization': `Bearer ${token}` }
         })
@@ -446,7 +446,7 @@
         })
         .catch(err => console.warn('Failed to load lifts count:', err));
         
-        // Кількість заявок
+        // Quantidade de pedidos
         fetch('/api/requests?status=pending,in_progress', {
             headers: { 'Authorization': `Bearer ${token}` }
         })
@@ -460,7 +460,7 @@
         })
         .catch(err => console.warn('Failed to load requests count:', err));
         
-        // Кількість рахунків
+        // Quantidade рахунків
         fetch('/api/invoices?status=unpaid', {
             headers: { 'Authorization': `Bearer ${token}` }
         })
@@ -474,7 +474,7 @@
         })
         .catch(err => console.warn('Failed to load invoices count:', err));
         
-        // Кількість сповіщень
+        // Quantidade de notificações
         fetch('/api/notifications?unread=true', {
             headers: { 'Authorization': `Bearer ${token}` }
         })
@@ -492,12 +492,12 @@
         .catch(err => console.warn('Failed to load notifications count:', err));
     }
     
-    // Оновлювати лічильники кожні 30 секунд
+    // Оновлювати ліouльники кожні 30 секунд
     setInterval(loadClientCounts, 30000);
 })();
 </script>
 
-<!-- Стилі для badge purple -->
+<!-- Стилі para badge purple -->
 <style>
 .badge-purple {
     background: linear-gradient(135deg, #6f42c1, #8e44ad);
@@ -511,16 +511,16 @@
                 <div class="container-fluid">
                     <div class="row mb-2">
                         <div class="col-sm-6">
-                            <h1>Історія обслуговування</h1>
+                            <h1>Histórico de manutenção</h1>
                         </div>
                         <div class="col-sm-6">
                             <ol class="breadcrumb float-sm-right">
-                                <li class="breadcrumb-item"><a href="/pages/client/dashboard.html">Головна</a></li>
+                                <li class="breadcrumb-item"><a href="/pages/client/dashboard.html">Início</a></li>
                 
                 <!-- Tickets -->
                 
                 <!-- Settings -->
-                                <li class="breadcrumb-item active">Історія</li>
+                                <li class="breadcrumb-item active">Histórico</li>
                             </ol>
                         </div>
                     </div>
@@ -535,7 +535,7 @@
                         <div class="col-12">
                             <div class="card history-card">
                                 <div class="card-header">
-                                    <h3 class="card-title"><i class="fas fa-filter mr-2"></i>Filtroи історії</h3>
+                                    <h3 class="card-title"><i class="fas fa-filter mr-2"></i>Filtros do histórico</h3>
                                 </div>
                                 <div class="card-body">
                                     <div class="row">
@@ -543,43 +543,43 @@
                                             <div class="form-group">
                                                 <label>Період:</label>
                                                 <select id="periodFilter" class="form-control">
-                                                    <option value="30">Останні 30 днів</option>
-                                                    <option value="90">Останні 3 місяці</option>
-                                                    <option value="365">Останній рік</option>
-                                                    <option value="all">Вся історія</option>
+                                                    <option value="30">Últimos 30 dias</option>
+                                                    <option value="90">Últimos 3 meses</option>
+                                                    <option value="365">Último ano</option>
+                                                    <option value="all">Todo o histórico</option>
                                                 </select>
                                             </div>
                                         </div>
                                         <div class="col-md-3">
                                             <div class="form-group">
-                                                <label>Тип події:</label>
+                                                <label>Tipo de evento:</label>
                                                 <select id="eventTypeFilter" class="form-control">
-                                                    <option value="all">Всі події</option>
-                                                    <option value="maintenance">Технічне обслуговування</option>
-                                                    <option value="repair">Ремонт</option>
-                                                    <option value="inspection">Інспекція</option>
-                                                    <option value="emergency">Аварійне обслуговування</option>
+                                                    <option value="all">Todos os eventos</option>
+                                                    <option value="maintenance">Manutenção técnica</option>
+                                                    <option value="repair">Reparação</option>
+                                                    <option value="inspection">Inspeção</option>
+                                                    <option value="emergency">Manutenção de emergência</option>
                                                 </select>
                                             </div>
                                         </div>
                                         <div class="col-md-3">
                                             <div class="form-group">
-                                                <label>Ліфт:</label>
+                                                <label>Elevador:</label>
                                                 <select id="liftFilter" class="form-control">
-                                                    <option value="all">Всі ліфти</option>
-                                                    <option value="lift1">Otis Gen2 - Rua Центральна, 12</option>
-                                                    <option value="lift2">Schindler 3300 - пр. Перемоги, 45</option>
-                                                    <option value="lift3">KONE MonoSpace - Rua Шевченка, 78</option>
+                                                    <option value="all">Todos os elevadores</option>
+                                                    <option value="lift1">Otis Gen2 - Rua Central, 12</option>
+                                                    <option value="lift2">Schindler 3300 - Av. da Vitória, 45</option>
+                                                    <option value="lift3">KONE MonoSpace - Rua Shevchenko, 78</option>
                                                 </select>
                                             </div>
                                         </div>
                                         <div class="col-md-3">
                                             <div class="form-group" style="margin-top: 32px;">
                                                 <button class="btn btn-primary" onclick="historyManager.applyFilters()">
-                                                    <i class="fas fa-filter"></i> Застосувати
+                                                    <i class="fas fa-filter"></i> Aplicar
                                                 </button>
                                                 <button class="btn btn-default" onclick="historyManager.resetFilters()">
-                                                    <i class="fas fa-sync"></i> Скинути
+                                                    <i class="fas fa-sync"></i> Repor
                                                 </button>
                                             </div>
                                         </div>
@@ -589,14 +589,14 @@
                         </div>
                     </div>
 
-                    <!-- Статистика -->
+                    <!-- Estatísticas -->
                     <div class="row">
                         <div class="col-lg-3 col-md-6">
                             <div class="stat-card">
                                 <div class="stat-icon">📋</div>
                                 <div class="stat-info">
                                     <h3 id="totalEvents">0</h3>
-                                    <p>Всього подій</p>
+                                    <p>Total de eventos</p>
                                 </div>
                             </div>
                         </div>
@@ -605,7 +605,7 @@
                                 <div class="stat-icon">🔧</div>
                                 <div class="stat-info">
                                     <h3 id="maintenanceCount">0</h3>
-                                    <p>Технічних обслуговувань</p>
+                                    <p>Manutenções técnicas</p>
                                 </div>
                             </div>
                         </div>
@@ -614,7 +614,7 @@
                                 <div class="stat-icon">⏱️</div>
                                 <div class="stat-info">
                                     <h3 id="avgResponseTime">0</h3>
-                                    <p>Середній час реакції</p>
+                                    <p>Tempo médio de resposta</p>
                                 </div>
                             </div>
                         </div>
@@ -623,7 +623,7 @@
                                 <div class="stat-icon">⭐</div>
                                 <div class="stat-info">
                                     <h3 id="avgRating">0</h3>
-                                    <p>Середня оцінка</p>
+                                    <p>Avaliação média</p>
                                 </div>
                             </div>
                         </div>
@@ -634,50 +634,50 @@
                         <div class="col-12">
                             <div class="card history-card">
                                 <div class="card-header">
-                                    <h3 class="card-title"><i class="fas fa-stream mr-2"></i>Хронологія подій</h3>
+                                    <h3 class="card-title"><i class="fas fa-stream mr-2"></i>Cronologia de eventos</h3>
                                     <div class="card-tools">
                                         <span class="badge badge-primary" id="timelineCount">0</span>
                                     </div>
                                 </div>
                                 <div class="card-body">
                                     <div class="timeline" id="timeline">
-                                        <!-- Події будуть завантажені тут -->
+                                        <!-- Події serão заванeжені aqui -->
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Детальна статистика -->
+                    <!-- Estatísticas detalhadas -->
                     <div class="row mt-4">
                         <div class="col-12">
                             <div class="card history-card">
                                 <div class="card-header">
-                                    <h3 class="card-title"><i class="fas fa-chart-bar mr-2"></i>Детальна статистика</h3>
+                                    <h3 class="card-title"><i class="fas fa-chart-bar mr-2"></i>Estatísticas detalhadas</h3>
                                 </div>
                                 <div class="card-body">
                                     <div class="row">
                                         <div class="col-md-6 mb-4">
                                             <div class="chart-container">
-                                                <h5>Розподіл по типах подій</h5>
+                                                <h5>Distribuição por tipos de evento</h5>
                                                 <canvas id="eventTypeChart" height="250"></canvas>
                                             </div>
                                         </div>
                                         <div class="col-md-6 mb-4">
                                             <div class="chart-container">
-                                                <h5>Частота обслуговування</h5>
+                                                <h5>Frequência de manutenção</h5>
                                                 <canvas id="frequencyChart" height="250"></canvas>
                                             </div>
                                         </div>
                                         <div class="col-md-6 mb-4">
                                             <div class="chart-container">
-                                                <h5>Оцінки якості</h5>
+                                                <h5>Avaliações de qualidade</h5>
                                                 <canvas id="ratingsChart" height="250"></canvas>
                                             </div>
                                         </div>
                                         <div class="col-md-6 mb-4">
                                             <div class="chart-container">
-                                                <h5>Витрати на обслуговування</h5>
+                                                <h5>Custos de manutenção</h5>
                                                 <canvas id="costsChart" height="250"></canvas>
                                             </div>
                                         </div>
@@ -692,24 +692,24 @@
                         <div class="col-12">
                             <div class="card history-card">
                                 <div class="card-header">
-                                    <h3 class="card-title"><i class="fas fa-download mr-2"></i>Exportar історії</h3>
+                                    <h3 class="card-title"><i class="fas fa-download mr-2"></i>Exportar histórico</h3>
                                 </div>
                                 <div class="card-body">
                                     <div class="export-options">
                                         <button class="btn btn-primary export-btn" onclick="historyManager.exportToPDF()">
                                             <i class="fas fa-file-pdf fa-2x mb-2"></i>
-                                            <h5>Exportar в PDF</h5>
-                                            <small>Guardar у форматі PDF</small>
+                                            <h5>Exportar em PDF</h5>
+                                            <small>Guardar em formato PDF</small>
                                         </button>
                                         <button class="btn btn-success export-btn" onclick="historyManager.exportToExcel()">
                                             <i class="fas fa-file-excel fa-2x mb-2"></i>
-                                            <h5>Exportar в Excel</h5>
-                                            <small>Guardar у форматі Excel</small>
+                                            <h5>Exportar em Excel</h5>
+                                            <small>Guardar em formato Excel</small>
                                         </button>
                                         <button class="btn btn-info export-btn" onclick="historyManager.printHistory()">
                                             <i class="fas fa-print fa-2x mb-2"></i>
-                                            <h5>Друк</h5>
-                                            <small>Роздрукувати історію</small>
+                                            <h5>Imprimir</h5>
+                                            <small>Imprimir histórico</small>
                                         </button>
                                     </div>
                                 </div>
@@ -723,7 +723,7 @@
         <!-- Footer -->
         <footer class="main-footer">
             <strong>Copyright &copy; 2026 <a href="https://festlift.pt">FestLift</a>.</strong>
-            Система управління ліфтами v2.1.0.
+            Sistema de gestão de elevadores v2.1.0.
             <div class="float-right d-none d-sm-inline-block">
                 <b>Versão</b> 2.1.0
             </div>
@@ -740,7 +740,7 @@
 
     <script>
         function logout() {
-            if (confirm('Ви впевнені, що хочете вийти з системи?')) {
+            if (confirm('Tem a certeza que quer sair do sistema?')) {
                 localStorage.removeItem('authToken');
                 localStorage.removeItem('userData');
                 window.location.replace('/pages/auth/login.html');
@@ -751,13 +751,13 @@
             // Ініціалізація AdminLTE
             $('[data-widget="pushmenu"]').PushMenu();
             
-            // Темна тема
+            // Escuro тема
             $('#darkModeToggle').on('click', function() {
                 $('body').toggleClass('dark-mode');
                 $(this).find('i').toggleClass('fa-moon fa-sun');
             });
 
-            // Перевірка з'єднання
+            // Verificação з'ligação
             setInterval(() => {
                 const online = navigator.onLine;
                 $('#connectionStatus').html(
@@ -767,7 +767,7 @@
                 );
             }, 30000);
 
-            // Завантаження даних користувача
+            // A carregar даних do utilizador
             const userData = JSON.parse(localStorage.getItem('userData')) || {};
             if (userData.firstName) {
             }

@@ -8,13 +8,13 @@
             </a>
         </li>
         <li class="nav-item d-none d-sm-inline-block">
-            <a href="dashboard.html" class="nav-link">Головна</a>
+            <a href="dashboard.html" class="nav-link">Principal</a>
         </li>
         <li class="nav-item d-none d-sm-inline-block">
-            <a href="monitoring.html" class="nav-link">Моніторинг</a>
+            <a href="monitoring.html" class="nav-link">Monitorização</a>
         </li>
         <li class="nav-item d-none d-sm-inline-block">
-            <a href="assignments.html" class="nav-link">Завдання</a>
+            <a href="assignments.html" class="nav-link">Tarefa</a>
         </li>
     </ul>
 
@@ -27,15 +27,15 @@
                 <span class="badge badge-warning navbar-badge" id="notificationCount">0</span>
             </a>
             <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
-                <span class="dropdown-item dropdown-header">Сповіщення</span>
+                <span class="dropdown-item dropdown-header">Notificações</span>
                 <div class="dropdown-divider"></div>
                 <div id="notificationList">
                     <a href="#" class="dropdown-item">
-                        <i class="fas fa-info-circle mr-2"></i> Немає нових сповіщень
+                        <i class="fas fa-info-circle mr-2"></i> Sem novas notificações
                     </a>
                 </div>
                 <div class="dropdown-divider"></div>
-                <a href="notifications.html" class="dropdown-item dropdown-footer">Всі сповіщення</a>
+                <a href="notifications.html" class="dropdown-item dropdown-footer">Ver todas as notificações</a>
             </div>
         </li>
 
@@ -43,19 +43,19 @@
         <li class="nav-item dropdown">
             <a class="nav-link" data-toggle="dropdown" href="#">
                 <i class="far fa-user"></i>
-                <span class="ml-1" id="navbarUserName">Диспетчер</span>
+                <span class="ml-1" id="navbarUserName">Dispatcher</span>
             </a>
             <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
                 <a href="profile.html" class="dropdown-item">
-                    <i class="fas fa-user mr-2"></i> Профіль
+                    <i class="fas fa-user mr-2"></i> Perfil
                 </a>
                 <div class="dropdown-divider"></div>
                 <a href="settings.html" class="dropdown-item">
-                    <i class="fas fa-cog mr-2"></i> Налаштування
+                    <i class="fas fa-cog mr-2"></i> Configurações
                 </a>
                 <div class="dropdown-divider"></div>
                 <a href="../../pages/auth/login.html" class="dropdown-item" onclick="logout()">
-                    <i class="fas fa-sign-out-alt mr-2"></i> Вийти
+                    <i class="fas fa-sign-out-alt mr-2"></i> Sair
                 </a>
             </div>
         </li>
@@ -70,7 +70,7 @@
 </nav>
 
 <script>
-// Завантаження імені користувача в navbar
+// Carregamento імені do utilizador в navbar
 document.addEventListener('DOMContentLoaded', function() {
     const userData = JSON.parse(localStorage.getItem('userData') || '{}');
     const navUserName = document.getElementById('navbarUserName');
@@ -78,11 +78,11 @@ document.addEventListener('DOMContentLoaded', function() {
         navUserName.textContent = `${userData.firstName} ${userData.lastName || ''}`.trim();
     }
 
-    // Завантаження кількості сповіщень
+    // Carregamento de quantidade de notificações
     loadNotifications();
 });
 
-// Функція завантаження сповіщень
+// Função carregamento de notificações
 async function loadNotifications() {
     try {
         const response = await AuthManager.fetchWithAuth('/api/notifications?unread=true');
@@ -109,10 +109,10 @@ async function loadNotifications() {
             }
         }
     } catch (error) {
-        console.warn('Не вдалося завантажити сповіщення:', error);
+        console.warn('Não foi possível carregar notificações:', error);
     }
 }
 
-// Оновлення сповіщень кожні 60 секунд
+// Оновлення de notificações кожні 60 секунд
 setInterval(loadNotifications, 60000);
 </script>

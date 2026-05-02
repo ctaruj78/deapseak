@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Диспетчер - Управління призначеннями</title>
+    <title>Despachante - Gestão de atribuições</title>
     <script src="../../assets/js/global-settings.js"></script>
     
     <!-- AdminLTE CSS -->
@@ -20,7 +20,7 @@
     <!-- MongoDB ObjectId Converter -->
     <script src="../../assets/js/id-converter.js"></script>
     
-    <!-- Додаткові стилі -->
+    <!-- Estilos adicionais -->
     <style>
         .assignment-card {
             transition: all 0.3s ease;
@@ -327,7 +327,7 @@
 <body class="hold-transition sidebar-mini layout-fixed" data-required-role="dispatcher">
     <div class="wrapper">
 
-        <!-- Навігаційна панель -->
+        <!-- Barra de navegação -->
         <nav class="main-header navbar navbar-expand navbar-white navbar-light">
             <ul class="navbar-nav">
                 <li class="nav-item">
@@ -336,31 +336,31 @@
                     </a>
                 </li>
                 <li class="nav-item d-none d-sm-inline-block">
-                    <a href="dashboard.html" class="nav-link">Головна</a>
+                    <a href="dashboard.html" class="nav-link">Início</a>
                 </li>
                 <li class="nav-item d-none d-sm-inline-block">
-                    <a href="assignments.html" class="nav-link active">Призначення</a>
+                    <a href="assignments.html" class="nav-link active">Atribuições</a>
                 </li>
                 <li class="nav-item d-none d-sm-inline-block">
-                    <a href="monitoring.html" class="nav-link">Моніторинг</a>
+                    <a href="monitoring.html" class="nav-link">Monitorização</a>
                 </li>
             </ul>
 
-            <!-- Права частина навігації -->
+            <!-- Parte direita da navegação -->
             <ul class="navbar-nav ml-auto">
                 <li class="nav-item">
-                    <a class="nav-link" href="#" onclick="assignmentManager.showNotifications()" title="Сповіщення">
+                    <a class="nav-link" href="#" onclick="assignmentManager.showNotifications()" title="Notificações">
                         <i class="fas fa-bell"></i>
                         <span class="notification-dot" id="notificationDot"></span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#" id="darkModeToggle" title="Темна тема">
+                    <a class="nav-link" href="#" id="darkModeToggle" title="Tema escuro">
                         <i class="fas fa-moon"></i>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#" onclick="logout()" title="Вийти">
+                    <a class="nav-link" href="#" onclick="logout()" title="Sair">
                         <i class="fas fa-sign-out-alt"></i>
                     </a>
                 </li>
@@ -377,12 +377,12 @@
                 <div class="container-fluid">
                     <div class="row mb-2">
                         <div class="col-sm-6">
-                            <h1>Управління призначеннями</h1>
+                            <h1>Gestão de atribuições</h1>
                         </div>
                         <div class="col-sm-6">
                             <ol class="breadcrumb float-sm-right">
-                                <li class="breadcrumb-item"><a href="dashboard.html">Головна</a></li>
-                                <li class="breadcrumb-item active">Призначення</li>
+                                <li class="breadcrumb-item"><a href="dashboard.html">Início</a></li>
+                                <li class="breadcrumb-item active">Atribuições</li>
                             </ol>
                         </div>
                     </div>
@@ -392,58 +392,58 @@
             <!-- Main content -->
             <section class="content">
                 <div class="container-fluid">
-                    <!-- Статистика -->
+                    <!-- Estatísticas -->
                     <div class="stats-overview">
                         <div class="stat-item">
                             <div class="stat-number text-primary" id="totalAssignments">0</div>
-                            <div class="stat-label">Всього призначень</div>
+                            <div class="stat-label">Total de atribuições</div>
                         </div>
                         <div class="stat-item">
                             <div class="stat-number text-warning" id="activeAssignments">0</div>
-                            <div class="stat-label">Активні</div>
+                            <div class="stat-label">Activos</div>
                         </div>
                         <div class="stat-item">
                             <div class="stat-number text-success" id="completedAssignments">0</div>
-                            <div class="stat-label">Завершені</div>
+                            <div class="stat-label">Concluídos</div>
                         </div>
                         <div class="stat-item">
                             <div class="stat-number text-danger" id="overdueAssignments">0</div>
-                            <div class="stat-label">Протерміновані</div>
+                            <div class="stat-label">Em atraso</div>
                         </div>
                     </div>
 
-                    <!-- Filtroи -->
+                    <!-- Filtros -->
                     <div class="filter-bar">
                         <div class="row">
                             <div class="col-md-3">
                                 <div class="form-group">
-                                    <label>Статус:</label>
+                                    <label>Estado:</label>
                                     <select id="statusFilter" class="form-control">
-                                        <option value="all">Всі статуси</option>
-                                        <option value="pending">В очікуванні</option>
-                                        <option value="assigned">Призначені</option>
+                                        <option value="all">Todos os estados</option>
+                                        <option value="pending">Pendente</option>
+                                        <option value="assigned">Atribuídos</option>
                                         <option value="in-progress">Em progresso</option>
-                                        <option value="completed">Завершені</option>
-                                        <option value="cancelled">Скасовані</option>
+                                        <option value="completed">Concluídos</option>
+                                        <option value="cancelled">Cancelados</option>
                                     </select>
                                 </div>
                             </div>
                             <div class="col-md-3">
                                 <div class="form-group">
-                                    <label>Пріоритет:</label>
+                                    <label>Prioridade:</label>
                                     <select id="priorityFilter" class="form-control">
-                                        <option value="all">Всі пріоритети</option>
-                                        <option value="high">Високий</option>
-                                        <option value="medium">Середній</option>
-                                        <option value="low">Низький</option>
+                                        <option value="all">Todas as prioridades</option>
+                                        <option value="high">Alto</option>
+                                        <option value="medium">Médio</option>
+                                        <option value="low">Baixo</option>
                                     </select>
                                 </div>
                             </div>
                             <div class="col-md-3">
                                 <div class="form-group">
-                                    <label>Технік:</label>
+                                    <label>Técnico:</label>
                                     <select id="techFilter" class="form-control">
-                                        <option value="all">Всі техніки</option>
+                                        <option value="all">Todos os técnicos</option>
                                     </select>
                                 </div>
                             </div>
@@ -451,10 +451,10 @@
                                 <div class="form-group">
                                     <label>Період:</label>
                                     <select id="periodFilter" class="form-control">
-                                        <option value="today">Сьогодні</option>
-                                        <option value="week">Цей тиждень</option>
-                                        <option value="month">Цей місяць</option>
-                                        <option value="all">Весь період</option>
+                                        <option value="today">Hoje</option>
+                                        <option value="week">Esta semana</option>
+                                        <option value="month">Este mês</option>
+                                        <option value="all">Todo o período</option>
                                     </select>
                                 </div>
                             </div>
@@ -463,19 +463,19 @@
                             <div class="col-12">
                                 <div class="btn-group">
                                     <button class="btn btn-primary" onclick="assignmentManager.applyFilters()">
-                                        <i class="fas fa-filter"></i> Застосувати
+                                        <i class="fas fa-filter"></i> Aplicar
                                     </button>
                                     <button class="btn btn-secondary" onclick="assignmentManager.resetFilters()">
-                                        <i class="fas fa-sync"></i> Скинути
+                                        <i class="fas fa-sync"></i> Repor
                                     </button>
                                     <button class="btn btn-success" onclick="assignmentManager.exportAssignments()">
                                         <i class="fas fa-download"></i> Exportar
                                     </button>
                                     <button class="btn btn-info" onclick="assignmentManager.showCalendarView()">
-                                        <i class="fas fa-calendar"></i> Календар
+                                        <i class="fas fa-calendar"></i> Calendário
                                     </button>
                                     <button class="btn btn-warning" id="archiveToggleBtn" onclick="assignmentManager.toggleArchiveView()">
-                                        <i class="fas fa-archive"></i> Архів
+                                        <i class="fas fa-archive"></i> Arquivo
                                     </button>
                                 </div>
                             </div>
@@ -485,38 +485,38 @@
                     <!-- Archive mode banner -->
                     <div id="archiveModeBanner" class="alert alert-warning d-none" style="border-left:4px solid #e67e22;">
                         <i class="fas fa-archive mr-2"></i>
-                        <strong>Режим перегляду архіву.</strong> Показуються архівовані та скасовані заявки (фальшиві виклики).
+                        <strong>Modo de visualização de arquivo.</strong> São mostrados pedidos arquivados e cancelados (chamadas falsas).
                         <button class="btn btn-sm btn-outline-warning ml-3" onclick="assignmentManager.toggleArchiveView()">
-                            <i class="fas fa-arrow-left mr-1"></i>Повернутись до активних
+                            <i class="fas fa-arrow-left mr-1"></i>Voltar aos activos
                         </button>
                     </div>
 
-                    <!-- Перегляд -->
+                    <!-- Vista -->
                     <div class="row mb-3">
                         <div class="col-12">
                             <div class="btn-group btn-group-toggle" data-toggle="buttons">
                                 <label class="btn btn-outline-primary active">
                                     <input type="radio" name="viewOptions" id="listView" autocomplete="off" checked>
-                                    <i class="fas fa-list"></i> Список
+                                    <i class="fas fa-list"></i> Lista
                                 </label>
                                 <label class="btn btn-outline-primary">
                                     <input type="radio" name="viewOptions" id="gridView" autocomplete="off">
-                                    <i class="fas fa-th"></i> Сітка
+                                    <i class="fas fa-th"></i> Grelha
                                 </label>
                                 <label class="btn btn-outline-primary">
                                     <input type="radio" name="viewOptions" id="timelineView" autocomplete="off">
-                                    <i class="fas fa-stream"></i> Хронологія
+                                    <i class="fas fa-stream"></i> Cronologia
                                 </label>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Список призначень -->
+                    <!-- Lista de atribuições -->
                     <div class="row">
                         <div class="col-12">
                             <div class="card">
                                 <div class="card-header">
-                                    <h3 class="card-title">Список призначень</h3>
+                                    <h3 class="card-title">Lista de atribuições</h3>
                                     <div class="card-tools">
                                         <div class="input-group input-group-sm" style="width: 200px;">
                                             <input type="text" id="searchInput" class="form-control" placeholder="Pesquisar...">
@@ -530,19 +530,19 @@
                                 </div>
                                 <div class="card-body p-0">
                                     <div id="assignmentsContainer">
-                                        <!-- Призначення будуть завантажені тут -->
+                                        <!-- As atribuições serão carregadas aqui -->
                                     </div>
                                 </div>
                                 <div class="card-footer">
                                     <div class="d-flex justify-content-between align-items-center">
                                         <div>
-                                            Показано <span id="shownCount">0</span> з <span id="totalCount">0</span> призначень
+                                            A mostrar <span id="shownCount">0</span> de <span id="totalCount">0</span> atribuições
                                         </div>
                                         <div class="btn-group">
                                             <button class="btn btn-default" onclick="assignmentManager.previousPage()">
                                                 <i class="fas fa-chevron-left"></i>
                                             </button>
-                                            <span class="btn btn-default">Стор. <span id="currentPage">1</span></span>
+                                            <span class="btn btn-default">Pág. <span id="currentPage">1</span></span>
                                             <button class="btn btn-default" onclick="assignmentManager.nextPage()">
                                                 <i class="fas fa-chevron-right"></i>
                                             </button>
@@ -553,33 +553,33 @@
                         </div>
                     </div>
 
-                    <!-- Швидкі дії -->
+                    <!-- Acções rápidas -->
                     <div class="row mt-4">
                         <div class="col-12">
                             <div class="card">
                                 <div class="card-header">
-                                    <h3 class="card-title">Швидкі дії</h3>
+                                    <h3 class="card-title">Acções rápidas</h3>
                                 </div>
                                 <div class="card-body">
                                     <div class="row">
                                         <div class="col-md-3 mb-3">
                                             <button class="btn btn-primary btn-block" onclick="assignmentManager.createNewAssignment()">
-                                                <i class="fas fa-plus"></i> Нове призначення
+                                                <i class="fas fa-plus"></i> Nova atribuição
                                             </button>
                                         </div>
                                         <div class="col-md-3 mb-3">
                                             <button class="btn btn-success btn-block" onclick="assignmentManager.bulkAssign()">
-                                                <i class="fas fa-users"></i> Масове призначення
+                                                <i class="fas fa-users"></i> Atribuição em massa
                                             </button>
                                         </div>
                                         <div class="col-md-3 mb-3">
                                             <button class="btn btn-warning btn-block" onclick="assignmentManager.reassignOverdue()">
-                                                <i class="fas fa-sync"></i> Перепризначити протерміновані
+                                                <i class="fas fa-sync"></i> Reatribuir em atraso
                                             </button>
                                         </div>
                                         <div class="col-md-3 mb-3">
                                             <button class="btn btn-info btn-block" onclick="assignmentManager.generateReport()">
-                                                <i class="fas fa-chart-bar"></i> Звіт продуктивності
+                                                <i class="fas fa-chart-bar"></i> Relatório de produtividade
                                             </button>
                                         </div>
                                     </div>
@@ -601,24 +601,24 @@
         </footer>
     </div>
 
-    <!-- Модальне вікно призначення -->
+    <!-- Janela de atribuição -->
     <div class="modal fade" id="assignmentModal" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-lg modal-dialog-scrollable" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Gestão призначенням</h5>
+                    <h5 class="modal-title">Gestão de atribuição</h5>
                     <button type="button" class="close" data-dismiss="modal">
                         <span>&times;</span>
                     </button>
                 </div>
                 <div class="modal-body" id="assignmentModalBody">
-                    <!-- Вміст модального вікна -->
+                    <!-- Conteúdo da janela modal -->
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Модальне вікно перегляду деталей призначення -->
+    <!-- Janela de detalhes da atribuição -->
     <div class="modal fade" id="viewAssignmentModal" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-xl modal-dialog-scrollable" role="document">
             <div class="modal-content" style="border-radius:12px;border:none;box-shadow:0 10px 40px rgba(0,0,0,.2)">
@@ -628,7 +628,7 @@
                         <div>
                             <div class="d-flex align-items-center">
                                 <i class="fas fa-clipboard-list mr-2"></i>
-                                <h5 class="modal-title mb-0">Деталі запиту <span id="modalRequestNumber" class="font-weight-bold"></span></h5>
+                                <h5 class="modal-title mb-0">Detalhes do pedido <span id="modalRequestNumber" class="font-weight-bold"></span></h5>
                                 <span id="modalStatus" class="badge badge-info ml-3" style="font-size:.8rem"></span>
                                 <span id="modalPriority" class="badge badge-warning ml-1" style="font-size:.8rem"></span>
                             </div>
@@ -644,15 +644,15 @@
                         <!-- ─── LEFT PANEL (description + tabs for extra info) ─── -->
                         <div class="flex-grow-1 border-right" style="overflow-y:auto">
 
-                            <!-- Опис завжди видно -->
+                            <!-- Descrição sempre visível -->
                             <div class="p-4 pb-0">
                                 <h6 class="text-uppercase text-muted mb-2" style="font-size:.72rem;letter-spacing:.08em">
-                                    <i class="fas fa-wrench mr-1"></i>Опис проблеми
+                                    <i class="fas fa-wrench mr-1"></i>Descrição do problema
                                 </h6>
                                 <p id="modalDescription" style="font-size:1rem;line-height:1.7;white-space:pre-wrap"></p>
                                 <div id="modalNotesSection" style="display:none">
                                     <div class="alert alert-warning py-2 px-3 mt-2 mb-0" style="font-size:.87rem">
-                                        <i class="fas fa-sticky-note mr-1"></i><strong>Примітка:</strong>
+                                        <i class="fas fa-sticky-note mr-1"></i><strong>Nota:</strong>
                                         <span id="modalNotes"></span>
                                     </div>
                                 </div>
@@ -662,43 +662,43 @@
                             <ul class="nav nav-tabs px-4 mt-3" style="border-bottom:2px solid #dee2e6">
                                 <li class="nav-item">
                                     <a class="nav-link active disp-tab" data-toggle="tab" href="#tabLocation" style="padding:8px 14px;font-size:.82rem">
-                                        <i class="fas fa-map-marker-alt mr-1"></i>Локація
+                                        <i class="fas fa-map-marker-alt mr-1"></i>Localização
                                     </a>
                                 </li>
                                 <li class="nav-item">
                                     <a class="nav-link disp-tab" data-toggle="tab" href="#tabClient" style="padding:8px 14px;font-size:.82rem">
-                                        <i class="fas fa-user mr-1"></i>Клієнт
+                                        <i class="fas fa-user mr-1"></i>Cliente
                                     </a>
                                 </li>
                                 <li class="nav-item">
                                     <a class="nav-link disp-tab" data-toggle="tab" href="#tabHistory" style="padding:8px 14px;font-size:.82rem">
-                                        <i class="fas fa-history mr-1"></i>Хронологія
+                                        <i class="fas fa-history mr-1"></i>Cronologia
                                     </a>
                                 </li>
                                 <li class="nav-item">
                                     <a class="nav-link disp-tab" data-toggle="tab" href="#tabDispComments" style="padding:8px 14px;font-size:.82rem">
-                                        <i class="fas fa-comments mr-1"></i>Коментарі
+                                        <i class="fas fa-comments mr-1"></i>Comentários
                                         <span class="badge badge-primary ml-1" id="dispCommentsCount">0</span>
                                     </a>
                                 </li>
                             </ul>
 
                             <div class="tab-content px-4 py-3">
-                                <!-- Локація -->
+                                <!-- Localização -->
                                 <div class="tab-pane fade show active" id="tabLocation">
                                     <div class="d-flex align-items-start mb-2">
                                         <i class="fas fa-map-marker-alt text-danger mt-1 mr-2"></i>
                                         <div class="flex-grow-1">
-                                            <small class="text-muted d-block">Адреса</small>
+                                            <small class="text-muted d-block">Endereço</small>
                                             <strong id="modalAddress"></strong>
                                         </div>
                                         <button class="btn btn-sm btn-outline-primary ml-2" onclick="assignmentManager.openInMaps()">
-                                            <i class="fas fa-map mr-1"></i>Карта
+                                            <i class="fas fa-map mr-1"></i>Mapa
                                         </button>
                                     </div>
                                     <div class="d-flex align-items-center">
                                         <i class="fas fa-hashtag text-info mr-2"></i>
-                                        <span class="text-muted mr-1">ID ліфта:</span>
+                                        <span class="text-muted mr-1">ID do elevador:</span>
                                         <code id="modalLiftId"></code>
                                     </div>
                                     <div id="assignmentMap" style="width:100%;height:250px;border-radius:8px;overflow:hidden;margin-top:12px;position:relative">
@@ -707,7 +707,7 @@
                                     <div id="nearestTechnicians" class="row mt-2"></div>
                                 </div>
 
-                                <!-- Клієнт -->
+                                <!-- Cliente -->
                                 <div class="tab-pane fade" id="tabClient">
                                     <div class="d-flex align-items-center mb-3">
                                         <div style="width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#667eea,#764ba2);display:flex;align-items:center;justify-content:center;flex-shrink:0" class="mr-3">
@@ -715,26 +715,26 @@
                                         </div>
                                         <div>
                                             <h6 id="modalClientName" class="mb-0 font-weight-bold"></h6>
-                                            <small class="text-muted">Клієнт</small>
+                                            <small class="text-muted">Cliente</small>
                                         </div>
                                     </div>
                                     <div class="mb-2"><i class="fas fa-envelope text-primary mr-2"></i><a id="modalClientEmail" href=""></a></div>
                                     <div><i class="fas fa-phone text-success mr-2"></i><a id="modalClientPhone" href=""></a></div>
                                 </div>
 
-                                <!-- Хронологія -->
+                                <!-- Cronologia -->
                                 <div class="tab-pane fade" id="tabHistory">
                                     <div id="modalTimeline" class="timeline" style="padding-left:30px">
                                     </div>
                                 </div>
 
-                                <!-- Коментарі -->
+                                <!-- Comentários -->
                                 <div class="tab-pane fade" id="tabDispComments">
                                     <div id="dispCommentsList" style="max-height:220px;overflow-y:auto">
-                                        <p class="text-muted text-center py-3"><i class="fas fa-inbox fa-2x d-block mb-2"></i>Коментарів поки немає</p>
+                                        <p class="text-muted text-center py-3"><i class="fas fa-inbox fa-2x d-block mb-2"></i>Ainda sem comentários</p>
                                     </div>
                                     <div class="mt-2 pt-2 border-top d-flex gap-2">
-                                        <textarea class="form-control form-control-sm flex-grow-1 mr-2" id="dispNewComment" rows="2" placeholder="Написати коментар..."></textarea>
+                                        <textarea class="form-control form-control-sm flex-grow-1 mr-2" id="dispNewComment" rows="2" placeholder="Escrever comentário..."></textarea>
                                         <button class="btn btn-primary btn-sm" onclick="assignmentManager.postDispComment()" style="white-space:nowrap">
                                             <i class="fas fa-paper-plane"></i>
                                         </button>
@@ -749,52 +749,52 @@
 
                             <!-- Technician -->
                             <div class="mb-3">
-                                <small class="text-uppercase text-muted" style="font-size:.68rem;letter-spacing:.06em">Технік</small>
+                                <small class="text-uppercase text-muted" style="font-size:.68rem;letter-spacing:.06em">Técnico</small>
                                 <div class="d-flex align-items-center mt-1">
                                     <div style="width:30px;height:30px;border-radius:50%;background:#28a745;display:flex;align-items:center;justify-content:center;flex-shrink:0" class="mr-2">
                                         <i class="fas fa-user-cog text-white" style="font-size:12px"></i>
                                     </div>
-                                    <strong id="modalTechnician" style="font-size:.88rem">Не призначено</strong>
+                                    <strong id="modalTechnician" style="font-size:.88rem">Não atribuído</strong>
                                 </div>
                             </div>
 
                             <!-- Deadline -->
                             <div class="mb-3">
-                                <small class="text-uppercase text-muted" style="font-size:.68rem;letter-spacing:.06em">Заплановано</small>
+                                <small class="text-uppercase text-muted" style="font-size:.68rem;letter-spacing:.06em">Planeado</small>
                                 <div class="mt-1"><strong id="modalDeadline" style="font-size:.9rem">—</strong></div>
                             </div>
 
                             <hr class="my-2">
 
                             <!-- Actions -->
-                            <small class="text-uppercase text-muted" style="font-size:.68rem;letter-spacing:.06em">Дії</small>
+                            <small class="text-uppercase text-muted" style="font-size:.68rem;letter-spacing:.06em">Ações</small>
                             <div class="mt-2 d-flex flex-column disp-right-actions">
                                 <button class="btn btn-success btn-sm mb-1" onclick="assignmentManager.reassignFromModal()">
-                                    <i class="fas fa-user-check mr-1"></i>Призначити / Змінити
+                                    <i class="fas fa-user-check mr-1"></i>Atribuir / Alterar
                                 </button>
                                 <button class="btn btn-primary btn-sm mb-1 btn-start-work" onclick="assignmentManager.changeStatusFromModal('in_progress')">
-                                    <i class="fas fa-play mr-1"></i>Розпочати роботу
+                                    <i class="fas fa-play mr-1"></i>Iniciar trabalho
                                 </button>
                                 <button class="btn btn-success btn-sm mb-1 btn-complete-work" onclick="assignmentManager.changeStatusFromModal('completed')">
-                                    <i class="fas fa-check mr-1"></i>Завершити
+                                    <i class="fas fa-check mr-1"></i>Concluir
                                 </button>
                                 <button class="btn btn-warning btn-sm mb-1" onclick="assignmentManager.extendDeadlineFromModal()">
-                                    <i class="fas fa-calendar-plus mr-1"></i>Дедлайн +
+                                    <i class="fas fa-calendar-plus mr-1"></i>Prazo +
                                 </button>
                                 <button class="btn btn-outline-primary btn-sm mb-1" onclick="assignmentManager.editAssignment()">
-                                    <i class="fas fa-edit mr-1"></i>Редагувати
+                                    <i class="fas fa-edit mr-1"></i>Editar
                                 </button>
                                 <button class="btn btn-outline-secondary btn-sm mb-1 btn-cancel-work" onclick="assignmentManager.changeStatusFromModal('cancelled')">
-                                    <i class="fas fa-ban mr-1"></i>Скасувати
+                                    <i class="fas fa-ban mr-1"></i>Cancelar
                                 </button>
                                 <button class="btn btn-outline-warning btn-sm mb-1 btn-archive-action" onclick="assignmentManager.archiveFromModal()" id="btnArchiveModal">
-                                    <i class="fas fa-archive mr-1"></i>Архівувати
+                                    <i class="fas fa-archive mr-1"></i>Arquivar
                                 </button>
                                 <button class="btn btn-success btn-sm mb-1 d-none" onclick="assignmentManager.unarchiveFromModal()" id="btnUnarchiveModal">
-                                    <i class="fas fa-box-open mr-1"></i>Відновити із архіву
+                                    <i class="fas fa-box-open mr-1"></i>Restaurar do arquivo
                                 </button>
                                 <button class="btn btn-outline-danger btn-sm mb-1 btn-false-call-action" onclick="assignmentManager.falseCallFromModal()" id="btnFalseCallModal">
-                                    <i class="fas fa-phone-slash mr-1"></i>Фальшивий виклик
+                                    <i class="fas fa-phone-slash mr-1"></i>Chamada falsa
                                 </button>
                                 <button class="btn btn-outline-danger btn-sm mb-1" id="dispModalPdfBtn">
                                     <i class="fas fa-file-pdf mr-1"></i>PDF
@@ -808,7 +808,7 @@
                 </div>
                 <div class="modal-footer py-2" style="background:#f8f9fa;border-top:1px solid #dee2e6">
                     <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">
-                        <i class="fas fa-times mr-1"></i>Закрити
+                        <i class="fas fa-times mr-1"></i>Fechar
                     </button>
                 </div>
             </div>
@@ -969,12 +969,12 @@
         }
     </style>
 
-    <!-- Модальне вікно масового призначення -->
+    <!-- Janela de atribuição em massa -->
     <div class="modal fade" id="bulkAssignmentModal" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-xl" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Масове призначення</h5>
+                    <h5 class="modal-title">Atribuição em massa</h5>
                     <button type="button" class="close" data-dismiss="modal">
                         <span>&times;</span>
                     </button>
@@ -982,24 +982,24 @@
                 <div class="modal-body">
                     <div class="row">
                         <div class="col-md-6">
-                            <h6>Доступні заявки</h6>
+                            <h6>Pedidos disponíveis</h6>
                             <div id="availableRequests" class="list-group" style="max-height: 400px; overflow-y: auto;">
-                                <!-- Заявки будуть додані тут -->
+                                <!-- Os pedidos serão adicionados aqui -->
                             </div>
                         </div>
                         <div class="col-md-6">
-                            <h6>Вибрані для призначення</h6>
+                            <h6>Seleccionados para atribuição</h6>
                             <div id="selectedRequests" class="list-group" style="max-height: 400px; overflow-y: auto;">
-                                <!-- Вибрані заявки -->
+                                <!-- Pedidos seleccionados -->
                             </div>
                         </div>
                     </div>
                     <div class="row mt-3">
                         <div class="col-12">
                             <div class="form-group">
-                                <label>Оберіть техніка для масового призначення:</label>
+                                <label>Selecione o técnico para atribuição em massa:</label>
                                 <select id="bulkTechSelect" class="form-control">
-                                    <option value="">Оберіть техніка...</option>
+                                    <option value="">Selecione o técnico...</option>
                                 </select>
                             </div>
                         </div>
@@ -1008,7 +1008,7 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
                     <button type="button" class="btn btn-primary" onclick="assignmentManager.submitBulkAssignment()">
-                        <i class="fas fa-check"></i> Призначити вибрані
+                        <i class="fas fa-check"></i> Atribuir seleccionados
                     </button>
                 </div>
             </div>
@@ -1025,14 +1025,14 @@
         let serviceIntegration;
         
         function logout() {
-            if (confirm('Ви впевнені, що хочете вийти з системи?')) {
+            if (confirm('Tem a certeza que quer sair do sistema?')) {
                 localStorage.removeItem('authToken');
                 localStorage.removeItem('userData');
                 window.location.replace('/pages/auth/login.html');
             }
         }
 
-        // Менеджер призначень для диспетчерів (використовує уніфіковану систему)
+        // Gestor de atribuições para despachantes (utiliza sistema unificado)
         class DispatcherAssignmentManager {
             constructor() {
                 this.integration = serviceIntegration;
@@ -1049,7 +1049,7 @@
             
             getCurrentUser() {
                 return JSON.parse(localStorage.getItem('userData')) || 
-                       { id: 'disp_001', firstName: 'Марія', lastName: 'Коваленко', role: 'dispatcher' };
+                       { id: 'disp_001', firstName: 'Maria', lastName: 'Kovalenko', role: 'dispatcher' };
             }
             
             async getTechnicians() {
@@ -1068,24 +1068,24 @@
                         }));
                     }
                 } catch (error) {
-                    console.warn('⚠️ Не вдалося завантажити техніків з API');
+                    console.warn('⚠️ Não foi possível carregar técnicos da API');
                 }
                 
-                // Fallback на demo дані
+                // Fallback para dados demo
                 return [
                     { id: 'tech_001', _id: 'tech_001', name: 'Técnico Um', firstName: 'Técnico', lastName: 'Um', active: true },
                     { id: 'tech_002', _id: 'tech_002', name: 'Técnico Dois', firstName: 'Técnico', lastName: 'Dois', active: true }
                 ];
             }
             
-            // Отримати заявки для диспетчера (незавершені)
+            // Obter pedidos para o despachante (não concluídos)
             getMyAssignments() {
                 return this.integration.getFilteredRequests('dispatcher', this.currentUser.id);
             }
             
-            // Призначити заявку технічному фахівцю
+            // Atribuir pedido ao técnico
             async assignRequest(requestId, technicianId, extras = {}) {
-                console.log('📋 Призначаємо запит:', { requestId, technicianId });
+                console.log('📋 A atribuir pedido:', { requestId, technicianId });
                 try {
                     const body = { technicianId, assignedBy: this.currentUser?.id };
                     if (extras.instructions) body.instructions = extras.instructions;
@@ -1096,7 +1096,7 @@
                     });
                     if (!response || !response.ok) {
                         const error = await response.json();
-                        throw new Error(error.message || 'Помилка призначення');
+                        throw new Error(error.message || 'Erro de atribuição');
                     }
                     // Also update deadline/scheduledAt via PUT if provided
                     if (extras.deadline) {
@@ -1105,20 +1105,20 @@
                             body: JSON.stringify({ deadline: extras.deadline, scheduledAt: extras.deadline })
                         });
                     }
-                    console.log('✅ Запит успішно призначено');
+                    console.log('✅ Pedido atribuído com sucesso');
                     await this.loadAssignments();
-                    toastr.success('Заявку призначено! Сповіщення відправлено.');
+                    toastr.success('Pedido atribuído! Notificações enviadas.');
                 } catch (error) {
-                    console.error('❌ Помилка призначення:', error);
-                    toastr.error('Не вдалося призначити заявку: ' + error.message);
+                    console.error('❌ Erro de atribuição:', error);
+                    toastr.error('Não foi possível atribuir o pedido: ' + error.message);
                 }
             }
 
-            // Показати розширений модал призначення техніка (як в адмін панелі)
+            // Mostrar avançado модал atribuição do técnico (як в administrador панелі)
             async showAssignDialog(requestId) {
                 const activeTechs = (this.technicians || []).filter(t => t.active);
                 if (activeTechs.length === 0) {
-                    Swal.fire({ icon: 'warning', title: 'Немає техніків', text: 'Немає доступних техніків для призначення.', confirmButtonColor: '#667eea', customClass: { popup: 'swal-dispatch' } });
+                    Swal.fire({ icon: 'warning', title: 'Sem técnicos', text: 'Não há técnicos disponíveis para atribuição.', confirmButtonColor: '#667eea', customClass: { popup: 'swal-dispatch' } });
                     return;
                 }
 
@@ -1138,7 +1138,7 @@
                     const tid = (tech._id && tech._id.toString) ? tech._id.toString() : (tech._id || tech.id || '');
                     const tasks = workloadMap[tid] || 0;
                     const dc = dotClass(tasks);
-                    const name = tech.name || `${tech.firstName || ''} ${tech.lastName || ''}`.trim() || 'Технік';
+                    const name = tech.name || `${tech.firstName || ''} ${tech.lastName || ''}`.trim() || 'Técnico';
                     const initials = name.split(' ').map(p => p[0] || '').join('').substring(0, 2).toUpperCase() || '?';
                     const avatarBg = dc === 'green' ? '#28a745' : dc === 'yellow' ? '#ffc107' : '#dc3545';
                     const segs = [1,2,3,4,5].map(i => {
@@ -1153,7 +1153,7 @@
                                 <small class="text-muted">${tech.email || ''}</small>
                             </div>
                             <div class="d-flex align-items-center ml-2" style="gap:6px">
-                                <div class="workload-dot ${dc}" title="${tasks} активних"></div>
+                                <div class="workload-dot ${dc}" title="${tasks} activos"></div>
                                 <small class="text-muted">${tasks}</small>
                                 <div class="workload-bar">${segs}</div>
                             </div>
@@ -1174,68 +1174,68 @@
                   <div class="modal-dialog modal-lg">
                     <div class="modal-content">
                       <div class="modal-header bg-primary text-white">
-                        <h5 class="modal-title"><i class="fas fa-user-check mr-2"></i>Призначити техніка</h5>
+                        <h5 class="modal-title"><i class="fas fa-user-check mr-2"></i>Atribuir técnico</h5>
                         <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
                       </div>
                       <div class="modal-body">
                         <div class="alert alert-light border mb-3 py-2">
                           <div class="d-flex align-items-center">
-                            <div>${pBadge}<strong class="ml-1">${req.title || req.type || 'Заявка'}</strong>
+                            <div>${pBadge}<strong class="ml-1">${req.title || req.type || 'Pedido'}</strong>
                               <div class="text-muted small mt-1"><i class="fas fa-map-marker-alt mr-1"></i>${addr}</div>
                             </div>
                           </div>
                         </div>
                         <div class="row">
                           <div class="col-md-6">
-                            <h6 class="text-muted mb-2"><i class="fas fa-users mr-1"></i>Оберіть техніка</h6>
+                            <h6 class="text-muted mb-2"><i class="fas fa-users mr-1"></i>Selecione o técnico</h6>
                             <div id="dispEaTechList" style="max-height:320px;overflow-y:auto">${techRows}</div>
                           </div>
                           <div class="col-md-6">
-                            <h6 class="text-muted mb-2"><i class="fas fa-calendar-alt mr-1"></i>Деталі завдання</h6>
+                            <h6 class="text-muted mb-2"><i class="fas fa-calendar-alt mr-1"></i>Detalhes tarefas</h6>
                             <div class="form-group">
-                              <label class="small font-weight-bold">Дата виїзду</label>
+                              <label class="small font-weight-bold">Data de saída</label>
                               <input type="date" class="form-control form-control-sm" id="dispEaDate" min="${today}" value="${today}">
                             </div>
                             <div class="form-group">
-                              <label class="small font-weight-bold">Час</label>
+                              <label class="small font-weight-bold">Hora</label>
                               <input type="time" class="form-control form-control-sm" id="dispEaTime" value="09:00">
                             </div>
                             <div class="form-group">
-                              <label class="small font-weight-bold">Тривалість</label>
+                              <label class="small font-weight-bold">Duração</label>
                               <select class="form-control form-control-sm" id="dispEaDuration">
-                                <option value="1">~1 година</option>
-                                <option value="2" selected>~2 години</option>
-                                <option value="4">~4 години</option>
-                                <option value="8">Цілий день</option>
+                                <option value="1">~1 hora</option>
+                                <option value="2" selected>~2 horas</option>
+                                <option value="4">~4 horas</option>
+                                <option value="8">Dia inteiro</option>
                               </select>
                             </div>
                             <div class="form-group">
-                              <label class="small font-weight-bold">Інструкції</label>
+                              <label class="small font-weight-bold">Instruções</label>
                               <textarea class="form-control form-control-sm" id="dispEaInstructions" rows="3"
-                                placeholder="Додаткові інструкції для техніка…"></textarea>
+                                placeholder="Instruções adicionais para o técnico…"></textarea>
                             </div>
                             <div class="form-group">
-                              <label class="small font-weight-bold">Сповіщення</label>
+                              <label class="small font-weight-bold">Notificações</label>
                               <div class="custom-control custom-switch mb-1">
                                 <input type="checkbox" class="custom-control-input" id="dispEaNotifyPush" checked>
-                                <label class="custom-control-label small" for="dispEaNotifyPush">Push техніку</label>
+                                <label class="custom-control-label small" for="dispEaNotifyPush">Push ao técnico</label>
                               </div>
                               <div class="custom-control custom-switch mb-1">
                                 <input type="checkbox" class="custom-control-input" id="dispEaNotifyEmail" checked>
-                                <label class="custom-control-label small" for="dispEaNotifyEmail">Email техніку</label>
+                                <label class="custom-control-label small" for="dispEaNotifyEmail">Email ao técnico</label>
                               </div>
                               <div class="custom-control custom-switch">
                                 <input type="checkbox" class="custom-control-input" id="dispEaNotifyClient">
-                                <label class="custom-control-label small" for="dispEaNotifyClient">Сповістити клієнта</label>
+                                <label class="custom-control-label small" for="dispEaNotifyClient">Notificar cliente</label>
                               </div>
                             </div>
                           </div>
                         </div>
                       </div>
                       <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Скасувати</button>
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
                         <button type="button" class="btn btn-primary" id="dispEaSubmitBtn">
-                          <i class="fas fa-user-check mr-1"></i>Призначити
+                          <i class="fas fa-user-check mr-1"></i>Atribuir
                         </button>
                       </div>
                     </div>
@@ -1255,7 +1255,7 @@
                 const self = this;
                 document.getElementById('dispEaSubmitBtn').addEventListener('click', async () => {
                     const techId = window._dispSelectedTechId;
-                    if (!techId) { toastr.warning('Оберіть техніка зі списку'); return; }
+                    if (!techId) { toastr.warning('Selecione o técnico da lista'); return; }
                     const dateVal = document.getElementById('dispEaDate').value;
                     const timeVal = document.getElementById('dispEaTime').value;
                     const deadline = dateVal && timeVal ? new Date(`${dateVal}T${timeVal}`).toISOString() : undefined;
@@ -1267,7 +1267,7 @@
                 $('#dispEnhancedAssignModal').modal('show');
             }
 
-            // Переназначити заявку
+            // Reatribuir pedido
             reassignRequest(requestId, newTechnicianId) {
                 const request = this.integration.getRequest(requestId);
                 if (request) {
@@ -1278,51 +1278,51 @@
                     this.integration.updateRequest(requestId, request);
                     this.loadAssignments();
                     
-                    toastr.info('Заявку переназначено!');
+                    toastr.info('Pedido reatribuído!');
                 }
             }
             
-            // Завантажити та відобразити призначення
-            // Завантажити призначення з API
+            // Carregar e mostrar atribuições
+            // Carregar atribuições da API
             async loadAssignments() {
                 try {
                     const archiveParam = this._archiveMode ? '?archived=true' : '';
                     const response = await AuthManager.fetchWithAuth('/api/requests' + archiveParam);
                     
                     if (!response || !response.ok) {
-                        throw new Error('Не вдалося завантажити призначення');
+                        throw new Error('Não foi possível carregar atribuições');
                     }
                     
                     const result = await response.json();
                     
                     if (result.success && result.data) {
-                        // API v2 повертає: { success: true, data: { requests: [...] } }
+                        // API v2 retorna: { success: true, data: { requests: [...] } }
                         const apiRequests = result.data.requests || result.data;
                         
-                        console.log('📊 Завантажено запитів:', apiRequests.length);
+                        console.log('📊 Pedidos carregados:', apiRequests.length);
                         if (apiRequests.length > 0) {
-                            console.log('🔍 Приклад запиту:', apiRequests[0]);
+                            console.log('🔍 Exemplo de pedido:', apiRequests[0]);
                         }
                         
-                        // Конвертуємо формат API в формат UI
+                        // Converter formato API para formato UI
                         const assignments = apiRequests.map(req => {
-                            // Витягуємо дані ліфта
-                            let liftAddress = 'Адреса невідома';
-                            let liftId = 'Невідомо';
+                            // Extrair dados do elevador
+                            let liftAddress = 'Endereço desconhecido';
+                            let liftId = 'Desconhecido';
                             
-                            // Перевіряємо різні варіанти структури даних
+                            // Verificar diferentes variantes da estrutura de dados
                             const liftData = req.lift || req.liftId || req.elevator;
                             
                             if (liftData) {
-                                // Якщо lift це ObjectId string, а не об'єкт
+                                // Se lift é ObjectId string e não instalação
                                 if (typeof liftData === 'string') {
                                     liftId = liftData;
-                                    // Спробуємо взяти адресу з інших полів
+                                    // Tentar obter endereço de outros campos
                                     if (req.liftAddress) liftAddress = req.liftAddress;
                                     else if (req.address) liftAddress = req.address;
                                 } else {
-                                    // Lift це об'єкт з даними
-                                    // Пріоритет: address об'єкт > addressLine > municipalNumber
+                                    // Lift é instalação com dados
+                                    // Prioridade: address instalação > addressLine > municipalNumber
                                     if (liftData.address) {
                                         if (typeof liftData.address === 'string') {
                                             liftAddress = liftData.address;
@@ -1337,31 +1337,31 @@
                                         liftAddress = liftData.location;
                                     }
                                     
-                                    liftId = liftData.municipalNumber || liftData.name || liftData._id || 'Невідомо';
+                                    liftId = liftData.municipalNumber || liftData.name || liftData._id || 'Desconhecido';
                                 }
                             }
                             
-                            // Витягуємо дані техніка
-                            let assignedToName = 'Не призначено';
+                            // Extrair dados do técnico
+                            let assignedToName = 'Não atribuído';
                             const techData = req.assignedTo || req.technician || req.assignedTechnician;
                             
                             if (techData) {
-                                // Якщо assignedTo це ObjectId string, а не об'єкт
+                                // Se assignedTo é ObjectId string e não instalação
                                 if (typeof techData === 'string') {
-                                    // Спробуємо знайти техніка зі списку
+                                    // Tentar encontrar técnico da lista
                                     const foundTech = (this.technicians || []).find(t => 
                                         (t._id && t._id.toString() === techData) || t.id === techData
                                     );
                                     if (foundTech) {
-                                        assignedToName = foundTech.name || `${foundTech.firstName || ''} ${foundTech.lastName || ''}`.trim() || 'Технік';
+                                        assignedToName = foundTech.name || `${foundTech.firstName || ''} ${foundTech.lastName || ''}`.trim() || 'Técnico';
                                     } else {
-                                        assignedToName = 'Призначено';
+                                        assignedToName = 'Atribuído';
                                     }
                                 } else {
                                     const firstName = techData.firstName || '';
                                     const lastName = techData.lastName || '';
                                     const fullName = `${firstName} ${lastName}`.trim();
-                                    assignedToName = fullName || techData.name || 'Технік';
+                                    assignedToName = fullName || techData.name || 'Técnico';
                                 }
                             }
                             
@@ -1370,7 +1370,7 @@
                                 id: req._id,
                                 liftId: liftId,
                                 liftAddress: liftAddress,
-                                description: req.description || req.title || req.issue || 'Без опису',
+                                description: req.description || req.title || req.issue || 'Sem descrição',
                                 priority: req.priority || 'medium',
                                 status: req.status || 'new',
                                 createdAt: req.createdAt || req.date,
@@ -1381,12 +1381,12 @@
                                 archived: req.archived || false,
                                 archivedAt: req.archivedAt || null,
                                 falseCall: req.falseCall || false,
-                                // Зберігаємо оригінальний об'єкт для дебагу
+                                // Guardar instalação original para debug
                                 _original: req
                             };
                         });
                         
-                        // ✅ ВАЖЛИВО: Зберігаємо assignments для використання в viewAssignment()
+                        // ✅ IMPORTANTE: Guardar assignments para uso em viewAssignment()
                         this.assignments = assignments;
                         
                         this.displayAssignments(assignments);
@@ -1394,8 +1394,8 @@
                     }
                     
                 } catch (error) {
-                    console.error('Помилка завантаження призначень:', error);
-                    alert('Помилка завантаження призначень: ' + error.message);
+                    console.error('Erro ao carregar atribuições:', error);
+                    alert('Erro ao carregar atribuições: ' + error.message);
                 }
             }
             
@@ -1432,33 +1432,33 @@
                     low:      { icon: 'fas fa-arrow-down',         bg: '#28a745' }
                 };
                 const statusBadge = {
-                    new:         { cls: 'badge-info',    label: 'Нова' },
-                    assigned:    { cls: 'badge-primary',  label: 'Призначена' },
-                    in_progress: { cls: 'badge-warning',  label: 'В роботі' },
-                    completed:   { cls: 'badge-success',  label: 'Виконана' },
-                    cancelled:   { cls: 'badge-danger',   label: 'Скасована' }
+                    new:         { cls: 'badge-info',    label: 'Nova' },
+                    assigned:    { cls: 'badge-primary',  label: 'Atribuída' },
+                    in_progress: { cls: 'badge-warning',  label: 'Em curso' },
+                    completed:   { cls: 'badge-success',  label: 'Concluída' },
+                    cancelled:   { cls: 'badge-danger',   label: 'Cancelada' }
                 };
                 const priority = assignment.priority || 'medium';
                 const pi = priorityIconMap[priority] || priorityIconMap.medium;
                 const si = statusBadge[assignment.status] || { cls: 'badge-secondary', label: assignment.status };
                 const displayId = assignment._original?.requestNumber || ('REQ-' + aid.slice(-6).toUpperCase());
                 const isOverdue = assignment.deadline && new Date(assignment.deadline) < new Date() && assignment.status !== 'completed';
-                const techName = assignment.assignedToName || assignment.technicianName || 'Не призначено';
+                const techName = assignment.assignedToName || assignment.technicianName || 'Não atribuído';
                 const address = assignment.liftAddress || assignment.address || assignment.location || '—';
                 const archiveBadge = assignment.falseCall
-                    ? `<span class="badge badge-danger ml-1" title="Фальшивий виклик"><i class="fas fa-phone-slash mr-1"></i>Фальш. виклик</span>`
-                    : (assignment.archived ? `<span class="badge badge-warning ml-1"><i class="fas fa-archive mr-1"></i>Архів</span>` : '');
+                    ? `<span class="badge badge-danger ml-1" title="Chamada falsa"><i class="fas fa-phone-slash mr-1"></i>Falsa chamada</span>`
+                    : (assignment.archived ? `<span class="badge badge-warning ml-1"><i class="fas fa-archive mr-1"></i>Arquivo</span>` : '');
                 const closeBtn = assignment.status !== 'completed'
-                    ? `<button class="btn btn-sm btn-success" onclick="dispatcherManager.closeRequest('${aid}')"><i class="fas fa-check-circle mr-1"></i>Закрити</button>` : '';
+                    ? `<button class="btn btn-sm btn-success" onclick="dispatcherManager.closeRequest('${aid}')"><i class="fas fa-check-circle mr-1"></i>Fechar</button>` : '';
                 const reopenBtn = assignment.status === 'completed'
-                    ? `<button class="btn btn-sm btn-outline-warning" onclick="dispatcherManager.reopenRequest('${aid}')"><i class="fas fa-redo mr-1"></i>Відкрити</button>` : '';
+                    ? `<button class="btn btn-sm btn-outline-warning" onclick="dispatcherManager.reopenRequest('${aid}')"><i class="fas fa-redo mr-1"></i>Reabrir</button>` : '';
                 const extendBtn = isOverdue
-                    ? `<button class="btn btn-sm btn-warning" onclick="assignmentManager.extendDeadline('${aid}')"><i class="fas fa-calendar-plus mr-1"></i>Продовжити</button>` : '';
+                    ? `<button class="btn btn-sm btn-warning" onclick="assignmentManager.extendDeadline('${aid}')"><i class="fas fa-calendar-plus mr-1"></i>Prolongar</button>` : '';
                 return { aid, priority, pi, si, displayId, isOverdue, techName, address, archiveBadge, closeBtn, reopenBtn, extendBtn };
             }
 
             _renderList(container, assignments) {
-                const empty = '<div class="p-4 text-center text-muted"><i class="fas fa-inbox fa-2x mb-2 d-block"></i>Заявок не знайдено</div>';
+                const empty = '<div class="p-4 text-center text-muted"><i class="fas fa-inbox fa-2x mb-2 d-block"></i>Pedidos não encontrados</div>';
                 const html = assignments.map(assignment => {
                     const { aid, priority, pi, si, displayId, isOverdue, techName, address, archiveBadge, closeBtn, reopenBtn, extendBtn } = this._buildCardHelpers(assignment);
                     if (!aid) return '';
@@ -1472,20 +1472,20 @@
                             <div class="d-flex align-items-center flex-wrap mb-1" style="gap:6px">
                               <strong class="mr-1">${displayId}</strong>
                               <span class="badge badge-pill ${si.cls}">${si.label}</span>
-                              ${isOverdue ? '<span class="badge badge-pill badge-danger">Протерм.</span>' : ''}
+                              ${isOverdue ? '<span class="badge badge-pill badge-danger">Atrasado</span>' : ''}
                               ${archiveBadge}
                             </div>
-                            <div class="font-weight-bold mb-1">${assignment.title || assignment.type || 'Заявка'}</div>
+                            <div class="font-weight-bold mb-1">${assignment.title || assignment.type || 'Pedido'}</div>
                             <p class="text-muted small mb-2">${descText}${descText.length >= 120 ? '…' : ''}</p>
                             <div class="d-flex flex-wrap text-muted small" style="gap:12px">
                               <span><i class="fas fa-map-marker-alt mr-1"></i>${address}</span>
                               <span><i class="fas fa-user-wrench mr-1"></i>${techName}</span>
-                              <span><i class="fas fa-clock mr-1"></i>${new Date(assignment.createdAt).toLocaleDateString('uk-UA')}</span>
+                              <span><i class="fas fa-clock mr-1"></i>${new Date(assignment.createdAt).toLocaleDateString('pt-PT')}</span>
                             </div>
                           </div>
                           <div class="d-flex flex-column align-items-end ml-2" style="gap:6px;flex-shrink:0">
-                            <button class="btn btn-sm btn-outline-info" onclick="dispatcherManager.viewAssignment('${aid}')"><i class="fas fa-eye mr-1"></i>Переглянути</button>
-                            <button class="btn btn-sm btn-outline-primary" onclick="dispatcherManager.showAssignDialog('${aid}')"><i class="fas fa-user-cog mr-1"></i>Призначити</button>
+                            <button class="btn btn-sm btn-outline-info" onclick="dispatcherManager.viewAssignment('${aid}')"><i class="fas fa-eye mr-1"></i>Ver</button>
+                            <button class="btn btn-sm btn-outline-primary" onclick="dispatcherManager.showAssignDialog('${aid}')"><i class="fas fa-user-cog mr-1"></i>Atribuir</button>
                             ${closeBtn}${extendBtn}${reopenBtn}
                           </div>
                         </div>
@@ -1496,7 +1496,7 @@
             }
 
             _renderGrid(container, assignments) {
-                const empty = '<div class="p-4 text-center text-muted col-12"><i class="fas fa-inbox fa-2x mb-2 d-block"></i>Заявок не знайдено</div>';
+                const empty = '<div class="p-4 text-center text-muted col-12"><i class="fas fa-inbox fa-2x mb-2 d-block"></i>Pedidos não encontrados</div>';
                 const html = assignments.map(assignment => {
                     const { aid, priority, pi, si, displayId, isOverdue, techName, address, archiveBadge, closeBtn, reopenBtn, extendBtn } = this._buildCardHelpers(assignment);
                     if (!aid) return '';
@@ -1510,10 +1510,10 @@
                             <strong>${displayId}</strong><br>
                             <span class="badge badge-pill ${si.cls}">${si.label}</span>
                             ${archiveBadge}
-                            ${isOverdue ? '<span class="badge badge-pill badge-danger ml-1">Протерм.</span>' : ''}
+                            ${isOverdue ? '<span class="badge badge-pill badge-danger ml-1">Atrasado</span>' : ''}
                           </div>
                         </div>
-                        <div class="font-weight-bold mb-1" style="font-size:.9rem">${assignment.title || assignment.type || 'Заявка'}</div>
+                        <div class="font-weight-bold mb-1" style="font-size:.9rem">${assignment.title || assignment.type || 'Pedido'}</div>
                         <p class="text-muted small mb-2">${descText}${descText.length >= 80 ? '…' : ''}</p>
                         <div class="text-muted small mb-2">
                           <div><i class="fas fa-map-marker-alt mr-1"></i>${address}</div>
@@ -1531,19 +1531,19 @@
             }
 
             _renderTimeline(container, assignments) {
-                const empty = '<div class="p-4 text-center text-muted"><i class="fas fa-inbox fa-2x mb-2 d-block"></i>Заявок не знайдено</div>';
+                const empty = '<div class="p-4 text-center text-muted"><i class="fas fa-inbox fa-2x mb-2 d-block"></i>Pedidos não encontrados</div>';
                 const statusBadge = {
-                    new:         { cls: 'badge-info',    label: 'Нова' },
-                    assigned:    { cls: 'badge-primary',  label: 'Призначена' },
-                    in_progress: { cls: 'badge-warning',  label: 'В роботі' },
-                    completed:   { cls: 'badge-success',  label: 'Виконана' },
-                    cancelled:   { cls: 'badge-danger',   label: 'Скасована' }
+                    new:         { cls: 'badge-info',    label: 'Nova' },
+                    assigned:    { cls: 'badge-primary',  label: 'Atribuída' },
+                    in_progress: { cls: 'badge-warning',  label: 'Em curso' },
+                    completed:   { cls: 'badge-success',  label: 'Concluída' },
+                    cancelled:   { cls: 'badge-danger',   label: 'Cancelada' }
                 };
                 const sorted = [...assignments].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
                 const html = sorted.map(assignment => {
                     const { aid, priority, si, displayId, isOverdue, techName, address, closeBtn, reopenBtn, extendBtn } = this._buildCardHelpers(assignment);
                     if (!aid) return '';
-                    const dateStr = assignment.createdAt ? new Date(assignment.createdAt).toLocaleString('uk-UA') : '—';
+                    const dateStr = assignment.createdAt ? new Date(assignment.createdAt).toLocaleString('pt-PT') : '—';
                     const descText = (assignment.description || '').substring(0, 100);
                     return `
                     <div class="tl-item priority-${priority}">
@@ -1554,8 +1554,8 @@
                             <div>
                               <strong>${displayId}</strong>
                               <span class="badge badge-pill ${si.cls} ml-1">${si.label}</span>
-                              ${isOverdue ? '<span class="badge badge-pill badge-danger ml-1">Протерм.</span>' : ''}
-                              <div class="font-weight-bold mt-1">${assignment.title || assignment.type || 'Заявка'}</div>
+                              ${isOverdue ? '<span class="badge badge-pill badge-danger ml-1">Atrasado</span>' : ''}
+                              <div class="font-weight-bold mt-1">${assignment.title || assignment.type || 'Pedido'}</div>
                               ${descText ? `<p class="text-muted small mb-1">${descText}${descText.length >= 100 ? '…' : ''}</p>` : ''}
                               <div class="text-muted small">
                                 <i class="fas fa-map-marker-alt mr-1"></i>${address}
@@ -1586,7 +1586,7 @@
                     }).length
                 };
                 
-                // Безпечне оновлення DOM елементів
+                // Atualização segura de elementos DOM
                 const totalEl = document.getElementById('totalAssignments');
                 const activeEl = document.getElementById('activeAssignments');
                 const completedEl = document.getElementById('completedAssignments');
@@ -1601,12 +1601,12 @@
             async closeRequest(requestId) {
                 if (!requestId) return;
                 const ok = await Swal.fire({
-                    title: 'Закрити заявку?',
-                    text: 'Заявку буде позначено як виконану.',
+                    title: 'Fechar pedido?',
+                    text: 'O pedido será marcado como concluído.',
                     icon: 'question',
                     showCancelButton: true,
-                    confirmButtonText: 'Так, закрити',
-                    cancelButtonText: 'Скасувати',
+                    confirmButtonText: 'Sim, fechar',
+                    cancelButtonText: 'Cancelar',
                     customClass: { popup: 'swal-dispatch' }
                 });
                 if (!ok.isConfirmed) return;
@@ -1615,24 +1615,24 @@
                         method: 'PATCH',
                         body: JSON.stringify({ status: 'completed' })
                     });
-                    if (!resp || !resp.ok) throw new Error('Помилка оновлення статусу');
-                    if (window.toastr) toastr.success('Заявку закрито як виконану');
+                    if (!resp || !resp.ok) throw new Error('Erro ao actualizar estado');
+                    if (window.toastr) toastr.success('Pedido fechado como concluído');
                     await this.loadAssignments();
                 } catch (e) {
                     console.error('closeRequest:', e);
-                    if (window.toastr) toastr.error('Помилка: ' + e.message);
+                    if (window.toastr) toastr.error('Erro: ' + e.message);
                 }
             }
 
             async reopenRequest(requestId) {
                 if (!requestId) return;
                 const ok = await Swal.fire({
-                    title: 'Повторно відкрити?',
-                    text: 'Заявку буде повернено в статус "В роботі".',
+                    title: 'Reabrir?',
+                    text: 'O pedido será devolvido ao estado "Em curso".',
                     icon: 'question',
                     showCancelButton: true,
-                    confirmButtonText: 'Так, відкрити',
-                    cancelButtonText: 'Скасувати',
+                    confirmButtonText: 'Sim, reabrir',
+                    cancelButtonText: 'Cancelar',
                     customClass: { popup: 'swal-dispatch' }
                 });
                 if (!ok.isConfirmed) return;
@@ -1641,35 +1641,35 @@
                         method: 'PATCH',
                         body: JSON.stringify({ status: 'in_progress' })
                     });
-                    if (!resp || !resp.ok) throw new Error('Помилка оновлення статусу');
-                    if (window.toastr) toastr.success('Заявку повторно відкрито');
+                    if (!resp || !resp.ok) throw new Error('Erro ao actualizar estado');
+                    if (window.toastr) toastr.success('Pedido reaberto com sucesso');
                     await this.loadAssignments();
                 } catch (e) {
                     console.error('reopenRequest:', e);
-                    if (window.toastr) toastr.error('Помилка: ' + e.message);
+                    if (window.toastr) toastr.error('Erro: ' + e.message);
                 }
             }
 
             viewAssignment(requestId) {
-                console.log('🔍 Переглядаємо запит:', requestId);
+                console.log('🔍 A visualizar pedido:', requestId);
                 
-                // Знайти запит в завантажених даних
+                // Encontrar pedido nos dados carregados
                 const assignment = this.assignments.find(a => a.id === requestId);
                 
                 if (!assignment) {
-                    console.warn('⚠️ Запит не знайдено:', requestId);
-                    alert(`Запит #${requestId} не знайдено`);
+                    console.warn('⚠️ Pedido não encontrado:', requestId);
+                    alert(`Pedido #${requestId} não encontrado`);
                     return;
                 }
                 
-                console.log('✅ Знайдено запит:', assignment);
+                console.log('✅ Pedido encontrado:', assignment);
                 
-                // Заповнити модальне вікно даними
+                // Preencher janela modal com dados
                 const displayId = assignment._original?.requestNumber || assignment.requestNumber || ('#' + requestId);
                 $('#modalRequestNumber').text(displayId);
-                $('#modalRequestDate').text(new Date(assignment.createdAt).toLocaleString('uk-UA'));
+                $('#modalRequestDate').text(new Date(assignment.createdAt).toLocaleString('pt-PT'));
                 
-                // Статус з кольорами
+                // Estado com cores
                 const statusColors = {
                     'new': 'info',
                     'assigned': 'primary', 
@@ -1678,40 +1678,40 @@
                     'cancelled': 'danger'
                 };
                 const statusTexts = {
-                    'new': 'Нова',
-                    'assigned': 'Призначено',
-                    'in_progress': 'В роботі',
-                    'completed': 'Завершено',
-                    'cancelled': 'Скасовано'
+                    'new': 'Nova',
+                    'assigned': 'Atribuído',
+                    'in_progress': 'Em curso',
+                    'completed': 'Concluído',
+                    'cancelled': 'Cancelado'
                 };
                 $('#modalStatus')
                     .removeClass('badge-info badge-primary badge-warning badge-success badge-danger')
                     .addClass('badge-' + (statusColors[assignment.status] || 'secondary'))
                     .text(statusTexts[assignment.status] || assignment.status);
                 
-                // Пріоритет з кольорами
+                // Prioridade com cores
                 const priorityColors = {
                     'high': 'danger',
                     'medium': 'warning',
                     'low': 'success'
                 };
                 const priorityTexts = {
-                    'high': 'Високий',
-                    'medium': 'Середній',
-                    'low': 'Низький'
+                    'high': 'Alto',
+                    'medium': 'Médio',
+                    'low': 'Baixo'
                 };
                 $('#modalPriority')
                     .removeClass('badge-danger badge-warning badge-success')
                     .addClass('badge-' + (priorityColors[assignment.priority] || 'secondary'))
                     .text(priorityTexts[assignment.priority] || assignment.priority);
                 
-                // Технік
-                $('#modalTechnician').text(assignment.assignedToName || 'Не призначено');
+                // Técnico
+                $('#modalTechnician').text(assignment.assignedToName || 'Não atribuído');
                 
-                // Опис
-                $('#modalDescription').text(assignment.description || 'Опис відсутній');
+                // Descrição
+                $('#modalDescription').text(assignment.description || 'Sem descrição');
                 
-                // Примітки
+                // Notas
                 if (assignment.notes) {
                     $('#modalNotesSection').show();
                     $('#modalNotes').text(assignment.notes);
@@ -1719,13 +1719,13 @@
                     $('#modalNotesSection').hide();
                 }
                 
-                // Адреса
-                $('#modalAddress').text(assignment.liftAddress || 'Адреса невідома');
-                $('#modalLiftId').text(assignment.liftId || 'ID невідомий');
+                // Morada
+                $('#modalAddress').text(assignment.liftAddress || 'Endereço desconhecido');
+                $('#modalLiftId').text(assignment.liftId || 'ID desconhecido');
                 
-                // Клієнт
+                // Cliente
                 if (assignment.client) {
-                    $('#modalClientName').text(assignment.client.name || 'Ім\'я невідоме');
+                    $('#modalClientName').text(assignment.client.name || 'Nome desconhecido');
                     const clientEmail = assignment.client.email || '';
                     $('#modalClientEmail')
                         .text(clientEmail)
@@ -1735,12 +1735,12 @@
                         .text(clientPhone)
                         .attr('href', 'tel:' + clientPhone);
                 } else {
-                    $('#modalClientName').text('Інформація відсутня');
+                    $('#modalClientName').text('Informação indisponível');
                     $('#modalClientEmail').text('—').attr('href', '#');
                     $('#modalClientPhone').text('—').attr('href', '#');
                 }
                 
-                // Історія (timeline)
+                // Histórico (timeline)
                 const timeline = $('#modalTimeline');
                 timeline.empty();
                 
@@ -1748,9 +1748,9 @@
                     {
                         icon: 'fas fa-plus-circle',
                         color: 'primary',
-                        title: 'Запит створено',
+                        title: 'Pedido criado',
                         date: assignment.createdAt,
-                        description: 'Клієнт подав запит на обслуговування'
+                        description: 'O cliente submeteu um pedido de assistência'
                     }
                 ];
                 
@@ -1758,9 +1758,9 @@
                     events.push({
                         icon: 'fas fa-user-check',
                         color: 'success',
-                        title: 'Призначено техніка',
+                        title: 'Técnico atribuído',
                         date: assignment.assignedAt,
-                        description: `Призначено: ${assignment.assignedToName}`
+                        description: `Atribuído: ${assignment.assignedToName}`
                     });
                 }
                 
@@ -1768,9 +1768,9 @@
                     events.push({
                         icon: 'fas fa-play-circle',
                         color: 'warning',
-                        title: 'Розпочато роботу',
+                        title: 'Trabalho iniciado',
                         date: assignment.startedAt,
-                        description: 'Технік розпочав виконання'
+                        description: 'O técnico iniciou a execução'
                     });
                 }
                 
@@ -1778,9 +1778,9 @@
                     events.push({
                         icon: 'fas fa-check-circle',
                         color: 'success',
-                        title: 'Завершено',
+                        title: 'Concluído',
                         date: assignment.completedAt,
-                        description: 'Роботу успішно завершено'
+                        description: 'Trabalho concluído com sucesso'
                     });
                 }
                 
@@ -1792,7 +1792,7 @@
                             <div>
                                 <h6 class="mb-1">${event.title}</h6>
                                 <small class="text-muted d-block mb-2">
-                                    <i class="far fa-clock mr-1"></i>${date.toLocaleString('uk-UA')}
+                                    <i class="far fa-clock mr-1"></i>${date.toLocaleString('pt-PT')}
                                 </small>
                                 <p class="mb-0 text-secondary">${event.description}</p>
                             </div>
@@ -1800,48 +1800,48 @@
                     `);
                 });
                 
-                // Зберегти ID та дані для можливості редагування
+                // Guardar ID e dados para possível edição
                 this.currentViewingId = requestId;
                 this.currentViewingAssignment = assignment;
                 
-                // ── Дедлайн (4-та колонка info bar) ──
+                // ── Prazo (4.ª coluna da barra de info) ──
                 const deadlineVal = assignment.deadline || assignment.scheduledAt;
                 if (deadlineVal) {
                     const isOverdue = new Date(deadlineVal) < new Date() && assignment.status !== 'completed';
-                    $('#modalDeadline').html(`<span class="${isOverdue ? 'text-danger' : ''}">${new Date(deadlineVal).toLocaleDateString('uk-UA')}</span>`);
+                    $('#modalDeadline').html(`<span class="${isOverdue ? 'text-danger' : ''}">${new Date(deadlineVal).toLocaleDateString('pt-PT')}</span>`);
                 } else {
                     $('#modalDeadline').html('<span class="text-muted">—</span>');
                 }
                 
-                // ── Коментарі tab ──
+                // ── Comentários tab ──
                 this.loadDispComments(assignment);
                 
-                // ── PDF-кнопка ──
+                // ── Botão PDF ──
                 $('#dispModalPdfBtn').off('click').on('click', () => {
                     if (typeof exportRequestPDF === 'function') exportRequestPDF(requestId);
-                    else Swal && Swal.fire('PDF', 'Функція PDF поки недоступна для диспетчера', 'info');
+                    else Swal && Swal.fire('PDF', 'Função PDF ainda não disponível para o despachante', 'info');
                 });
                 
-                // ── Показати правильні дії (hide/show status buttons у правій панелі) ──
+                // ── Mostrar acções correctas (hide/show botões de estado no painel direito) ──
                 const isCompleted = assignment.status === 'completed' || assignment.status === 'cancelled';
-                // Ховаємо кнопки дій що не мають сенсу для завершених/скасованих
+                // Ocultar botões de acção sem sentido para pedidos concluídos/cancelados
                 $('#viewAssignmentModal .disp-right-actions .btn-start-work').toggle(!isCompleted);
                 $('#viewAssignmentModal .disp-right-actions .btn-complete-work').toggle(!isCompleted);
                 $('#viewAssignmentModal .disp-right-actions .btn-cancel-work').toggle(!isCompleted);
                 
-                // ── Скинути на перший таб ──
+                // ── Repor no primeiro separador ──
                 $('#viewAssignmentModal .nav-tabs .nav-link').removeClass('active');
                 $('#viewAssignmentModal .nav-tabs .nav-link:first').addClass('active');
                 $('#viewAssignmentModal .tab-pane').removeClass('show active');
                 $('#tabLocation').addClass('show active');
                 
-                // Завантажити карту
+                // Carregar mapa
                 this.loadMap(assignment.liftAddress);
                 
-                // Завантажити найближчих техніків
+                // Carregar técnicos mais próximos
                 this.loadNearestTechnicians(assignment.liftAddress);
                 
-                // Показати/сховати кнопки залежно від стану архіву
+                // Mostrar/ocultar botões conforme estado do arquivo
                 const isArchived = assignment.archived || assignment._original?.archived;
                 const currentRole = (window.AuthManager?.currentUser?.role) || (this.currentUser?.role) || '';
                 const isAdmin = currentRole === 'admin';
@@ -1852,7 +1852,7 @@
                 if (btnUnarchive) btnUnarchive.style.display  = (isArchived && isAdmin) ? '' : 'none';
                 if (btnFalseCall) btnFalseCall.style.display  = isArchived ? 'none' : '';
 
-                // Показати модальне вікно
+                // Mostrar janela modal
                 $('#viewAssignmentModal').modal('show');
             }
 
@@ -1861,12 +1861,12 @@
                 const count = comments.length;
                 $('#dispCommentsCount').text(count || '0');
                 if (!count) {
-                    $('#dispCommentsList').html('<p class="text-muted text-center py-3"><i class="fas fa-inbox fa-2x d-block mb-2"></i>Коментарів поки немає</p>');
+                    $('#dispCommentsList').html('<p class="text-muted text-center py-3"><i class="fas fa-inbox fa-2x d-block mb-2"></i>Ainda sem comentários</p>');
                     return;
                 }
                 const html = comments.map(c => {
-                    const name = (c.user && (c.user.username || c.user.firstName)) || 'Користувач';
-                    const time = c.createdAt ? new Date(c.createdAt).toLocaleString('uk-UA') : '';
+                    const name = (c.user && (c.user.username || c.user.firstName)) || 'Utilizador';
+                    const time = c.createdAt ? new Date(c.createdAt).toLocaleString('pt-PT') : '';
                     return `<div class="border-bottom pb-2 mb-2">
                         <div class="d-flex justify-content-between align-items-start">
                             <strong class="text-primary"><i class="fas fa-user-circle mr-1"></i>${name}</strong>
@@ -1880,7 +1880,7 @@
 
             async postDispComment() {
                 const text = $('#dispNewComment').val().trim();
-                if (!text) { toastr.warning('Введіть текст коментаря'); return; }
+                if (!text) { toastr.warning('Introduza o texto do comentário'); return; }
                 const aid = this.currentViewingId;
                 if (!aid) return;
                 const assignment = this.assignments.find(a => a.id === aid);
@@ -1889,14 +1889,14 @@
                     const resp = await AuthManager.fetchWithAuth(`/api/requests/${mongoId}/comments`, {
                         method: 'POST', body: JSON.stringify({ text })
                     });
-                    if (!resp || !resp.ok) throw new Error('Помилка');
-                    toastr.success('Коментар додано');
+                    if (!resp || !resp.ok) throw new Error('Erro');
+                    toastr.success('Comentário adicionado');
                     $('#dispNewComment').val('');
                     await this.loadAssignments();
                     const updated = this.assignments.find(a => a.id === aid);
                     if (updated) this.loadDispComments(updated);
                 } catch (e) {
-                    toastr.error('Не вдалось додати коментар: ' + e.message);
+                    toastr.error('Não foi possível adicionar comentário: ' + e.message);
                 }
             }
 
@@ -1913,20 +1913,20 @@
                     });
                     if (!resp || !resp.ok) {
                         const err = await resp.json().catch(() => ({}));
-                        throw new Error(err.message || `Помилка ${resp.status}`);
+                        throw new Error(err.message || `Erro ${resp.status}`);
                     }
-                    toastr.success('Статус змінено');
+                    toastr.success('Estado alterado');
                     $('#viewAssignmentModal').modal('hide');
                     await this.loadAssignments();
                 } catch (e) {
-                    toastr.error('Помилка: ' + e.message);
+                    toastr.error('Erro: ' + e.message);
                 }
             }
 
             async extendDeadlineFromModal() {
                 const aid = this.currentViewingId;
                 if (!aid) return;
-                // Закрити Bootstrap modal перш, тоді відкрити Swal (без конфлікту z-index та backdrop)
+                // Fechar modal Bootstrap antes de abrir Swal (sem conflito z-index e backdrop)
                 const savedId = aid;
                 $('#viewAssignmentModal').one('hidden.bs.modal', async function() {
                     await window.assignmentManager.extendDeadline(savedId);
@@ -1934,7 +1934,7 @@
                 $('#viewAssignmentModal').modal('hide');
             }
             
-            // Відкрити адресу в Google Maps
+            // Abrir endereço no Google Maps
             openInMaps() {
                 if (!this.currentViewingAssignment) return;
                 const address = this.currentViewingAssignment.liftAddress;
@@ -1942,53 +1942,53 @@
                 window.open(mapsUrl, '_blank');
             }
 
-            // Перемикання режиму перегляду архіву
+            // Alternar modo de visualização do arquivo
             toggleArchiveView() {
                 this._archiveMode = !this._archiveMode;
                 const banner = document.getElementById('archiveModeBanner');
                 const btn = document.getElementById('archiveToggleBtn');
                 if (this._archiveMode) {
                     banner && banner.classList.remove('d-none');
-                    if (btn) { btn.classList.remove('btn-warning'); btn.classList.add('btn-secondary'); btn.innerHTML = '<i class="fas fa-times mr-1"></i>Вийти з архіву'; }
+                    if (btn) { btn.classList.remove('btn-warning'); btn.classList.add('btn-secondary'); btn.innerHTML = '<i class="fas fa-times mr-1"></i>Sair do arquivo'; }
                 } else {
                     banner && banner.classList.add('d-none');
-                    if (btn) { btn.classList.remove('btn-secondary'); btn.classList.add('btn-warning'); btn.innerHTML = '<i class="fas fa-archive mr-1"></i>Архів'; }
+                    if (btn) { btn.classList.remove('btn-secondary'); btn.classList.add('btn-warning'); btn.innerHTML = '<i class="fas fa-archive mr-1"></i>Arquivo'; }
                 }
                 this.loadAssignments();
             }
 
-            // Відновити заявку з архіву
+            // Restaurar pedido do arquivo
             async unarchiveFromModal() {
                 const assignment = this.currentViewingAssignment;
                 if (!assignment) return;
-                if (!confirm('Відновити заявку із архіву?')) return;
+                if (!confirm('Restaurar pedido do arquivo?')) return;
                 try {
                     const res = await AuthManager.fetchWithAuth(`/api/requests/${assignment._id}/unarchive`, { method: 'POST' });
                     const result = await res.json();
                     if (result.success) {
-                        await Swal.fire({ icon: 'success', title: 'Відновлено!', text: 'Заявку повернуто до активних.', timer: 1800, showConfirmButton: false });
+                        await Swal.fire({ icon: 'success', title: 'Restaurado!', text: 'Pedido devolvido aos activos.', timer: 1800, showConfirmButton: false });
                         $('#assignmentModal').modal('hide');
                         await this.loadAssignments();
                     } else {
-                        alert('Помилка: ' + (result.message || 'Не вдалося відновити'));
+                        alert('Erro: ' + (result.message || 'Não foi possível restaurar'));
                     }
                 } catch (err) {
-                    alert('Помилка: ' + err.message);
+                    alert('Erro: ' + err.message);
                 }
             }
 
-            // Архівувати заявку з модального вікна
+            // Arquivar pedido da janela modal
             async archiveFromModal() {
                 const assignment = this.currentViewingAssignment;
                 if (!assignment) return;
                 const result = await Swal.fire({
-                    title: 'Архівувати заявку?',
-                    html: `Заявку <b>#${assignment.id || assignment._id}</b> буде переміщено до архіву.<br>Вона зникне зі списку активних заявок.`,
+                    title: 'Arquivar pedido?',
+                    html: `O pedido <b>#${assignment.id || assignment._id}</b> será movido para o arquivo.<br>Desaparecerá da lista de pedidos activos.`,
                     icon: 'warning',
                     showCancelButton: true,
                     confirmButtonColor: '#f39c12',
-                    confirmButtonText: '<i class="fas fa-archive mr-1"></i>Архівувати',
-                    cancelButtonText: 'Скасувати'
+                    confirmButtonText: '<i class="fas fa-archive mr-1"></i>Arquivar',
+                    cancelButtonText: 'Cancelar'
                 });
                 if (!result.isConfirmed) return;
                 try {
@@ -1996,28 +1996,28 @@
                     const data = res ? await res.json() : null;
                     if (data && data.success) {
                         $('#viewAssignmentModal').modal('hide');
-                        Swal.fire({ icon: 'success', title: 'Архівовано', text: data.message, timer: 1800, showConfirmButton: false });
+                        Swal.fire({ icon: 'success', title: 'Arquivado', text: data.message, timer: 1800, showConfirmButton: false });
                         await this.loadAssignments();
                     } else {
-                        Swal.fire({ icon: 'error', title: 'Помилка', text: (data && data.message) || 'Не вдалось архівувати' });
+                        Swal.fire({ icon: 'error', title: 'Erro', text: (data && data.message) || 'Não foi possível arquivar' });
                     }
                 } catch (e) {
-                    Swal.fire({ icon: 'error', title: 'Помилка', text: 'Помилка з\'єднання' });
+                    Swal.fire({ icon: 'error', title: 'Erro', text: 'Erro de ligação' });
                 }
             }
 
-            // Позначити як фальшивий виклик і архівувати
+            // Marcar como falsa chamada e arquivar
             async falseCallFromModal() {
                 const assignment = this.currentViewingAssignment;
                 if (!assignment) return;
                 const result = await Swal.fire({
-                    title: 'Фальшивий виклик?',
-                    html: `Заявку <b>#${assignment.id || assignment._id}</b> буде позначено як <b>фальшивий виклик</b> і автоматично архівовано.`,
+                    title: 'Chamada falsa?',
+                    html: `O pedido <b>#${assignment.id || assignment._id}</b> será marcado como <b>falsa chamada</b> e arquivado automaticamente.`,
                     icon: 'question',
                     showCancelButton: true,
                     confirmButtonColor: '#e74c3c',
-                    confirmButtonText: '<i class="fas fa-phone-slash mr-1"></i>Так, фальшивий виклик',
-                    cancelButtonText: 'Скасувати'
+                    confirmButtonText: '<i class="fas fa-phone-slash mr-1"></i>Sim, falsa chamada',
+                    cancelButtonText: 'Cancelar'
                 });
                 if (!result.isConfirmed) return;
                 try {
@@ -2025,37 +2025,37 @@
                     const data = res ? await res.json() : null;
                     if (data && data.success) {
                         $('#viewAssignmentModal').modal('hide');
-                        Swal.fire({ icon: 'success', title: 'Позначено', text: data.message, timer: 1800, showConfirmButton: false });
+                        Swal.fire({ icon: 'success', title: 'Marcado', text: data.message, timer: 1800, showConfirmButton: false });
                         await this.loadAssignments();
                     } else {
-                        Swal.fire({ icon: 'error', title: 'Помилка', text: (data && data.message) || 'Не вдалось виконати операцію' });
+                        Swal.fire({ icon: 'error', title: 'Erro', text: (data && data.message) || 'Não foi possível executar a operação' });
                     }
                 } catch (e) {
-                    Swal.fire({ icon: 'error', title: 'Помилка', text: 'Помилка з\'єднання' });
+                    Swal.fire({ icon: 'error', title: 'Erro', text: 'Erro de ligação' });
                 }
             }
 
-            // Завантажити карту (Leaflet + OpenStreetMap / Nominatim)
+            // Carregar mapa (Leaflet + OpenStreetMap / Nominatim)
             loadMap(address) {
                 const $container = $('#assignmentMap');
 
-                if (!address || address === 'Адреса невідома') {
-                    $container.html('<div class="d-flex flex-column align-items-center justify-content-center h-100 text-muted"><i class="fas fa-map-marked-alt fa-3x mb-2"></i><span>Адреса не вказана</span></div>');
+                if (!address || address === 'Endereço desconhecido') {
+                    $container.html('<div class="d-flex flex-column align-items-center justify-content-center h-100 text-muted"><i class="fas fa-map-marked-alt fa-3x mb-2"></i><span>Endereço não especificado</span></div>');
                     return;
                 }
 
-                // Відновлюємо структуру div якщо вона була замінена повідомленням
+                // Restaurar estrutura div se foi substituída por mensagem
                 if (!document.getElementById('leafletMap')) {
                     $container.html('<div id="leafletMap" style="width:100%;height:100%"></div>');
                 }
 
-                // Знищуємо попередній екземпляр мапи
+                // Destruir instância anterior do mapa
                 if (this._leafletMap) {
                     this._leafletMap.remove();
                     this._leafletMap = null;
                 }
 
-                // Ініціалізуємо Leaflet з дефолтним центром (Лісабон)
+                // Inicializar Leaflet com centro padrão (Lisboa)
                 const map = L.map('leafletMap', { zoomControl: true }).setView([38.7223, -9.1393], 13);
                 this._leafletMap = map;
 
@@ -2064,7 +2064,7 @@
                     maxZoom: 19
                 }).addTo(map);
 
-                // Геокодуємо адресу через Nominatim (безкоштовно, без ключа)
+                // Geocodificar endereço via Nominatim (gratuito, sem chave)
                 const nominatimUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1`;
 
                 fetch(nominatimUrl, { headers: { 'Accept-Language': 'uk,pt,en' } })
@@ -2082,46 +2082,46 @@
                                 $('#modalCoordinates').text(`${lat.toFixed(5)}, ${lon.toFixed(5)}`);
                             }
                         } else {
-                            // Адреса не знайдена — показуємо Лісабон з повідомленням
+                            // Morada не знайдена — показуexisteмо Лісouн desde mensagemм
                             L.popup()
                                 .setLatLng([38.7223, -9.1393])
-                                .setContent(`Адресу не вдалося знайти: <b>${address}</b>`)
+                                .setContent(`Endereço não encontrado: <b>${address}</b>`)
                                 .openOn(map);
                         }
                     })
                     .catch(() => {
-                        // Fallback: показуємо карту без маркера
+                        // Fallback: mostrar mapa sem marcador
                     });
 
-                // Примусово оновлюємо розмір після відображення модалу
+                // Forçar atualização do tamanho após exibir modal
                 setTimeout(() => map.invalidateSize(), 300);
             }
             
-            // Завантажити найближчих техніків
+            // Carregar técnicos mais próximos
             async loadNearestTechnicians(address) {
                 const container = $('#nearestTechnicians');
-                container.html('<div class="col-12 text-center"><i class="fas fa-spinner fa-spin"></i> Завантаження...</div>');
+                container.html('<div class="col-12 text-center"><i class="fas fa-spinner fa-spin"></i> A carregar...</div>');
                 
                 try {
-                    // Отримуємо список всіх техніків
+                    // Obter lista de todos os técnicos
                     const techs = this.technicians || [];
                     
                     if (techs.length === 0) {
-                        container.html('<div class="col-12 text-center text-muted">Немає доступних техніків</div>');
+                        container.html('<div class="col-12 text-center text-muted">Sem técnicos disponíveis</div>');
                         return;
                     }
                     
-                    // В реальному застосунку тут була б геолокація
-                    // Поки що сортуємо за доступністю
+                    // Numa aplicação real seria usada geolocalização
+                    // Por agora ordenar por disponibilidade
                     const sortedTechs = techs
                         .filter(t => t.active)
-                        .slice(0, 3); // Показуємо топ 3
+                        .slice(0, 3); // Mostrar top 3
                     
                     container.empty();
                     
                     sortedTechs.forEach((tech, index) => {
-                        const distance = ((index + 1) * 1.5).toFixed(1); // Демо відстань
-                        const eta = (index + 1) * 15; // Демо час прибуття
+                        const distance = ((index + 1) * 1.5).toFixed(1); // Distância demo
+                        const eta = (index + 1) * 15; // Tempo de chegada demo
                         
                         const techCard = `
                             <div class="col-md-4 mb-3">
@@ -2131,21 +2131,21 @@
                                             <i class="fas fa-user-circle fa-3x text-primary"></i>
                                         </div>
                                         <h6 class="font-weight-bold mb-1">${tech.name}</h6>
-                                        <small class="text-muted d-block mb-2">${tech.specialty || 'Технік'}</small>
+                                        <small class="text-muted d-block mb-2">${tech.specialty || 'Técnico'}</small>
                                         
                                         <div class="d-flex justify-content-around mb-3">
                                             <div>
                                                 <i class="fas fa-road text-info"></i>
-                                                <small class="d-block">${distance} км</small>
+                                                <small class="d-block">${distance} km</small>
                                             </div>
                                             <div>
                                                 <i class="fas fa-clock text-warning"></i>
-                                                <small class="d-block">${eta} хв</small>
+                                                <small class="d-block">${eta} min</small>
                                             </div>
                                         </div>
                                         
                                         <button class="btn btn-sm btn-primary btn-block" onclick="assignmentManager.quickAssign('${tech._id || tech.id}'); event.stopPropagation();">
-                                            <i class="fas fa-user-check mr-1"></i>Призначити
+                                            <i class="fas fa-user-check mr-1"></i>Atribuir
                                         </button>
                                     </div>
                                 </div>
@@ -2156,56 +2156,56 @@
                     });
                     
                     if (sortedTechs.length === 0) {
-                        container.html('<div class="col-12 text-center text-muted">Немає доступних техніків поблизу</div>');
+                        container.html('<div class="col-12 text-center text-muted">Sem técnicos disponíveis nas proximidades</div>');
                     }
                     
                 } catch (error) {
-                    console.error('Помилка завантаження техніків:', error);
-                    container.html('<div class="col-12 text-center text-danger">Помилка завантаження</div>');
+                    console.error('Erro ao carregar técnicos:', error);
+                    container.html('<div class="col-12 text-center text-danger">Erro ao carregar</div>');
                 }
             }
             
-            // Швидке призначення техніка
+            // Atribuição rápida de técnico
             async quickAssign(technicianId) {
                 if (!this.currentViewingId) {
-                    alert('Помилка: ID запиту не знайдено');
+                    alert('Erro: ID do pedido não encontrado');
                     return;
                 }
                 
-                console.log('⚡ Швидке призначення:', { requestId: this.currentViewingId, technicianId });
+                console.log('⚡ Atribuição rápida:', { requestId: this.currentViewingId, technicianId });
                 
-                if (confirm('Призначити цього техніка на запит?')) {
+                if (confirm('Atribuir este técnico ao pedido?')) {
                     await this.assignRequest(this.currentViewingId, technicianId);
                     
-                    // Закрити модальне вікно після призначення
+                    // Fechar janela modal após atribuição
                     setTimeout(() => {
                         $('#viewAssignmentModal').modal('hide');
                     }, 1500);
                 }
             }
             
-            // Редагувати призначення
+            // Editar atribuição
             editAssignment() {
-                console.log('✏️ Редагуємо призначення:', this.currentViewingId);
+                console.log('✏️ A editar atribuição:', this.currentViewingId);
                 
                 if (!this.currentViewingId || !this.currentViewingAssignment) {
-                    alert('Помилка: дані запиту не знайдено');
+                    alert('Erro: dados do pedido não encontrados');
                     return;
                 }
                 
-                // Закрити модальне вікно перегляду
+                // Fechar janela modal de visualização
                 $('#viewAssignmentModal').modal('hide');
                 
-                // Відкрити форму редагування (можна створити окреме модальне вікно)
+                // Abrir formulário de edição (pode criar janela modal separada)
                 const assignment = this.currentViewingAssignment;
                 
-                const newDescription = prompt('Новий опис проблеми:', assignment.description);
+                const newDescription = prompt('Nova descrição do problema:', assignment.description);
                 if (newDescription && newDescription !== assignment.description) {
                     this.updateAssignmentDescription(this.currentViewingId, newDescription);
                 }
             }
             
-            // Оновити опис призначення
+            // Actualizar descrição da atribuição
             async updateAssignmentDescription(requestId, newDescription) {
                 try {
                     const response = await AuthManager.fetchWithAuth(`/api/requests/${requestId}`, {
@@ -2214,26 +2214,26 @@
                     });
                     
                     if (response && response.ok) {
-                        alert('Опис успішно оновлено!');
+                        alert('Descrição actualizada com sucesso!');
                         await this.loadAssignments();
                     } else {
-                        throw new Error('Помилка оновлення');
+                        throw new Error('Erro ao actualizar');
                     }
                 } catch (error) {
-                    console.error('Помилка оновлення опису:', error);
-                    alert('Не вдалося оновити опис: ' + error.message);
+                    console.error('Erro ao actualizar descrição:', error);
+                    alert('Não foi possível actualizar a descrição: ' + error.message);
                 }
             }
             
-            // Перепризначити техніка з модального вікна
+            // Reatribuir técnico da janela modal
             async reassignFromModal() {
                 if (!this.currentViewingId) {
-                    alert('Помилка: ID запиту не знайдено');
+                    alert('Erro: ID do pedido não encontrado');
                     return;
                 }
                 const self = this;
                 const savedId = this.currentViewingId;
-                // Дочекатись закриття viewAssignmentModal, потім відкрити повний діалог
+                // Aguardar fecho de viewAssignmentModal, depois abrir diálogo completo
                 $('#viewAssignmentModal').one('hidden.bs.modal', async function() {
                     await self.showAssignDialog(savedId);
                 });
@@ -2250,15 +2250,15 @@
                     
                     if (!response || !response.ok) {
                         const error = await response.json();
-                        throw new Error(error.message || 'Помилка підтвердження');
+                        throw new Error(error.message || 'Erro de confirmação');
                     }
                     
-                    alert('Заявку підтверджено!');
+                    alert('Pedido confirmado!');
                     await this.loadAssignments();
                     
                 } catch (error) {
-                    console.error('Помилка підтвердження заявки:', error);
-                    alert('Не вдалося підтвердити заявку: ' + error.message);
+                    console.error('Erro ao confirmar pedido:', error);
+                    alert('Não foi possível confirmar o pedido: ' + error.message);
                 }
             }
             
@@ -2269,37 +2269,37 @@
             
             getStatusText(status) {
                 const statusMap = {
-                    'new': 'Нова',
-                    'assigned': 'Призначено',
-                    'approved': 'Підтверджено',
+                    'new': 'Nova',
+                    'assigned': 'Atribuído',
+                    'approved': 'Confirmado',
                     'in_progress': 'Em progresso',
                     'completed': 'Concluído',
-                    'cancelled': 'Скасовано'
+                    'cancelled': 'Cancelado'
                 };
                 return statusMap[status] || status;
             }
             
             getPriorityText(priority) {
                 const priorityMap = {
-                    'high': 'Високий',
-                    'medium': 'Середній',
-                    'low': 'Низький'
+                    'high': 'Alto',
+                    'medium': 'Médio',
+                    'low': 'Baixo'
                 };
                 return priorityMap[priority] || priority;
             }
         }
 
         $(document).ready(function() {
-            // Ініціалізація AdminLTE
+            // Inicialização AdminLTE
             $('[data-widget="pushmenu"]').PushMenu();
             
-            // Темна тема
+            // Tema escuro
             $('#darkModeToggle').on('click', function() {
                 $('body').toggleClass('dark-mode');
                 $(this).find('i').toggleClass('fa-moon fa-sun');
             });
 
-            // Перевірка з'єднання
+            // Verificação de ligação
             setInterval(() => {
                 const online = navigator.onLine;
                 $('#connectionStatus').html(
@@ -2309,73 +2309,73 @@
                 );
             }, 30000);
 
-            // Завантаження даних диспетчера
+            // A carregar dados do despachante
             const userData = JSON.parse(localStorage.getItem('userData')) || {};
             if (userData.firstName) {
                 $('#dispatcherName').text(`${userData.firstName} ${userData.lastName || ''}`);
             }
 
-            // Ініціалізація систем
+            // Inicialização de sistemas
             serviceIntegration = new ServiceRequestsIntegration();
             window.dispatcherManager = new DispatcherAssignmentManager();
             
-            // 🔧 ВИПРАВЛЕННЯ: Додаємо функції для модальних вікон
+            // 🔧 CORRECÇÃO: Adicionar funções para janelas modais
             window.assignmentManager = {
-                // Показати сповіщення
+                // Mostrar notificações
                 showNotifications: function() {
-                    alert('Сповіщення: У вас 3 нових заявки!');
+                    alert('Notificações: Tem 3 novos pedidos!');
                 },
                 
-                // Застосувати фільтри
+                // Aplicar filtros
                 applyFilters: function() {
-                    console.log('Застосування фільтрів...');
+                    console.log('A aplicar filtros...');
                     const priority = $('#priorityFilter').val();
                     const status = $('#statusFilter').val();
-                    console.log('Filtroи:', { priority, status });
-                    alert(`Filtroи застосовано: Пріоритет=${priority}, Статус=${status}`);
+                    console.log('Filtros:', { priority, status });
+                    alert(`Filtros aplicados: Prioridade=${priority}, Estado=${status}`);
                 },
                 
-                // Скинути фільтри
+                // Repor filtros
                 resetFilters: function() {
                     $('#priorityFilter').val('');
                     $('#statusFilter').val('');
-                    console.log('Filtroи скинуто');
-                    alert('Filtroи скинуто');
+                    console.log('Filtros limpos');
+                    alert('Filtros limpos');
                 },
                 
-                // Exportar призначень
+                // Exportar atribuições
                 exportAssignments: function() {
-                    console.log('Exportar призначень...');
-                    alert('Exportar розпочато. Файл буде завантажено через кілька секунд.');
+                    console.log('A exportar atribuições...');
+                    alert('Exportação iniciada. O ficheiro será descarregado em breve.');
                 },
                 
-                // Показати календар
+                // Mostrar calendário
                 showCalendarView: function() {
-                    alert('Відкриття календарного вигляду...');
-                    // Тут можна перенаправити на календар
+                    alert('A abrir vista de calendário...');
+                    // Aqui pode redirecionar para o calendário
                     window.location.href = 'calendar.html';
                 },
                 
-                // Pesquisar призначень  
+                // Pesquisar atribuições  
                 searchAssignments: function() {
                     const query = $('#searchQuery').val();
                     console.log('Pesquisar:', query);
-                    alert(`Pesquisar за запитом: "${query}"`);
+                    alert(`Pesquisar por: "${query}"`);
                 },
                 
-                // Попередня сторінка
+                // Anterior página
                 previousPage: function() {
-                    console.log('Попередня сторінка');
-                    alert('Перехід на попередню сторінку');
+                    console.log('Anterior página');
+                    alert('Ir para a página anterior');
                 },
                 
-                // Наступна сторінка
+                // Seguinte página
                 nextPage: function() {
-                    console.log('Наступна сторінка'); 
-                    alert('Перехід на наступну сторінку');
+                    console.log('Seguinte página'); 
+                    alert('Ir para a página seguinte');
                 },
                 
-                // Створити нове призначення
+                // Criar nova atribuição
                 createNewAssignment: async function() {
                     const activeTechs = (dispatcherManager.technicians || []).filter(t => t.active);
                     const techOptions = activeTechs.map(t => {
@@ -2384,42 +2384,42 @@
                     }).join('');
 
                     const { value: formValues, isConfirmed } = await Swal.fire({
-                        title: 'Нове призначення',
+                        title: 'Nova atribuição',
                         width: 520,
                         html: `<div style="text-align:left;padding:4px 0">
-                                   <div class="swal-section-title">Деталі заявки</div>
+                                   <div class="swal-section-title">Detalhes pedidos</div>
                                    <div class="swal-field">
-                                       <label class="swal-label">Опис проблеми <span style="color:#e53e3e">*</span></label>
-                                       <textarea id="swal-desc" class="swal-textarea" placeholder="Детально опишіть несправність або необхідні роботи..."></textarea>
+                                       <label class="swal-label">Descrição do problema <span style="color:#e53e3e">*</span></label>
+                                       <textarea id="swal-desc" class="swal-textarea" placeholder="Descreva detalhadamente a avaria ou trabalhos necessários..."></textarea>
                                    </div>
                                    <div class="swal-field">
-                                       <label class="swal-label">Пріоритет</label>
+                                       <label class="swal-label">Prioridade</label>
                                        <select id="swal-priority" class="swal-select">
-                                           <option value="low">🟢  Низький</option>
-                                           <option value="medium" selected>🟡  Середній</option>
-                                           <option value="high">🟠  Високий</option>
-                                           <option value="critical">🔴  Критичний</option>
+                                           <option value="low">🟢  Baixo</option>
+                                           <option value="medium" selected>🟡  Médio</option>
+                                           <option value="high">🟠  Alto</option>
+                                           <option value="critical">🔴  Crítico</option>
                                        </select>
                                    </div>
                                    ${activeTechs.length > 0 ? `<div class="swal-field">
-                                       <label class="swal-label">Призначити техніку (опційно)</label>
+                                       <label class="swal-label">Atribuir a técnico (opcional)</label>
                                        <select id="swal-tech" class="swal-select">
-                                           <option value="">— Не призначати зараз —</option>
+                                           <option value="">— Não atribuir agora —</option>
                                            ${techOptions}
                                        </select>
                                    </div>` : ''}
                                </div>`,
                         customClass: { popup: 'swal-dispatch' },
-                        confirmButtonText: 'Створити заявку',
+                        confirmButtonText: 'Criar o pedido',
                         confirmButtonColor: '#3470dc',
-                        cancelButtonText: 'Скасувати',
+                        cancelButtonText: 'Cancelar',
                         cancelButtonColor: '#a0aec0',
                         showCancelButton: true,
                         focusConfirm: false,
                         preConfirm: () => {
                             const desc = document.getElementById('swal-desc').value.trim();
                             if (!desc) {
-                                Swal.showValidationMessage('Введіть опис проблеми');
+                                Swal.showValidationMessage('Introduza a descrição do problema');
                                 return false;
                             }
                             return {
@@ -2441,7 +2441,7 @@
                                     type: 'maintenance'
                                 })
                             });
-                            if (!response || !response.ok) throw new Error('Не вдалося створити заявку');
+                            if (!response || !response.ok) throw new Error('Não foi possível criar o pedido');
                             const result = await response.json();
                             if (formValues.technicianId && result.data?._id) {
                                 await AuthManager.fetchWithAuth(`/api/requests/${result.data._id}/assign`, {
@@ -2450,19 +2450,19 @@
                                 });
                             }
                             await dispatcherManager.loadAssignments();
-                            Swal.fire({ icon: 'success', title: 'Готово!', text: 'Нове призначення створено!', confirmButtonColor: '#28a745', customClass: { popup: 'swal-dispatch' } });
+                            Swal.fire({ icon: 'success', title: 'Feito!', text: 'Nova atribuição criada!', confirmButtonColor: '#28a745', customClass: { popup: 'swal-dispatch' } });
                         } catch (error) {
-                            Swal.fire({ icon: 'error', title: 'Помилка', text: error.message, confirmButtonColor: '#dc3545', customClass: { popup: 'swal-dispatch' } });
+                            Swal.fire({ icon: 'error', title: 'Erro', text: error.message, confirmButtonColor: '#dc3545', customClass: { popup: 'swal-dispatch' } });
                         }
                     }
                 },
 
-                // Масове призначення
+                // Atribuição em massa
                 bulkAssign: function() {
                     // Populate technician dropdown
                     const techSelect = document.getElementById('bulkTechSelect');
                     if (techSelect) {
-                        techSelect.innerHTML = '<option value="">Оберіть техніка...</option>';
+                        techSelect.innerHTML = '<option value="">Selecione o técnico...</option>';
                         (dispatcherManager.technicians || []).filter(t => t.active).forEach(t => {
                             const techId = (t._id && t._id.toString) ? t._id.toString() : (t._id || t.id || '');
                             const opt = document.createElement('option');
@@ -2491,36 +2491,36 @@
                             });
                     }
                     const selected = document.getElementById('selectedRequests');
-                    if (selected) selected.innerHTML = '<p class="text-muted p-2">Натисніть на заявку щоб вибрати</p>';
+                    if (selected) selected.innerHTML = '<p class="text-muted p-2">Clique num pedido para seleccionar</p>';
                     $('#bulkAssignmentModal').modal('show');
                 },
 
-                // Продовжити дедлайн з модального вікна (закриває модалку спочатку)
+                // Prolongar prazo da janela modal (fecha modal primeiro)
                 extendDeadlineFromModal: function() {
                     if (window.dispatcherManager) {
                         window.dispatcherManager.extendDeadlineFromModal();
                     }
                 },
 
-                // Перепризначити прострочені
+                // Reatribuir atrasados
                 extendDeadline: async function(requestId) {
                     const { value: days, isConfirmed } = await Swal.fire({
-                        title: '📅 Продовжити дедлайн',
+                        title: '📅 Prolongar prazo',
                         html: `<div style="text-align:left">
-                                   <p class="text-muted small mb-2">Нова дата = сьогодні + обрана кількість днів</p>
-                                   <label class="swal-label">Продовжити на</label>
+                                   <p class="text-muted small mb-2">Nova data = hoje + quantidade de dias seleccionada</p>
+                                   <label class="swal-label">Continuar на</label>
                                    <select id="swal-extend-days" class="swal-select mt-1">
-                                       <option value="7">7 днів</option>
-                                       <option value="14">14 днів</option>
-                                       <option value="30" selected>30 днів</option>
-                                       <option value="60">60 днів</option>
-                                       <option value="90">90 днів</option>
+                                       <option value="7">7 dias</option>
+                                       <option value="14">14 dias</option>
+                                       <option value="30" selected>30 dias</option>
+                                       <option value="60">60 dias</option>
+                                       <option value="90">90 dias</option>
                                    </select>
                                </div>`,
                         customClass: { popup: 'swal-dispatch' },
-                        confirmButtonText: 'Продовжити',
+                        confirmButtonText: 'Prolongar',
                         confirmButtonColor: '#f39c12',
-                        cancelButtonText: 'Скасувати',
+                        cancelButtonText: 'Cancelar',
                         showCancelButton: true,
                         focusConfirm: false,
                         preConfirm: () => document.getElementById('swal-extend-days').value
@@ -2535,12 +2535,12 @@
                         });
                         if (r && r.ok) {
                             await dispatcherManager.loadAssignments();
-                            Swal.fire({ icon: 'success', title: 'Дедлайн продовжено!', text: `Нова дата: ${newDeadline.toLocaleDateString('uk-UA')}`, timer: 2000, showConfirmButton: false, customClass: { popup: 'swal-dispatch' } });
+                            Swal.fire({ icon: 'success', title: 'Дедлайн продоjáно!', text: `Nova data: ${newDeadline.toLocaleDateString('pt-PT')}`, timer: 2000, showConfirmButton: false, customClass: { popup: 'swal-dispatch' } });
                         } else {
-                            Swal.fire({ icon: 'error', title: 'Помилка', text: 'Не вдалося оновити дедлайн', customClass: { popup: 'swal-dispatch' } });
+                            Swal.fire({ icon: 'error', title: 'Erro', text: 'Não foi possível atualizar дедлайн', customClass: { popup: 'swal-dispatch' } });
                         }
                     } catch(e) {
-                        Swal.fire({ icon: 'error', title: 'Помилка', text: e.message, customClass: { popup: 'swal-dispatch' } });
+                        Swal.fire({ icon: 'error', title: 'Erro', text: e.message, customClass: { popup: 'swal-dispatch' } });
                     }
                 },
 
@@ -2551,7 +2551,7 @@
                     });
 
                     if (overdue.length === 0) {
-                        Swal.fire({ icon: 'info', title: 'Немає прострочених', text: 'Всі заявки в нормальному статусі.', confirmButtonColor: '#17a2b8', customClass: { popup: 'swal-dispatch' } });
+                        Swal.fire({ icon: 'info', title: 'Não há прострочених', text: 'Todos os pedidos в нормальному estadoі.', confirmButtonColor: '#17a2b8', customClass: { popup: 'swal-dispatch' } });
                         return;
                     }
 
@@ -2562,40 +2562,40 @@
                     }).join('');
 
                     const { value: formValues, isConfirmed } = await Swal.fire({
-                        title: 'Перепризначення заявок',
+                        title: 'Переatribuição pedidos',
                         html: `<div style="text-align:left;padding:4px 0">
                                    <div class="swal-alert-box swal-alert-warning">
-                                       <strong>⚠️ Знайдено ${overdue.length} прострочених заявок</strong>
-                                       <div style="margin-top:4px">Всі вони будуть перепризначені та отримають новий дедлайн</div>
+                                       <strong>⚠️ Encontrado ${overdue.length} прострочених pedidos</strong>
+                                       <div style="margin-top:4px">Todas вони serão перепризначені e отримають novo дедлайн</div>
                                    </div>
                                    <div class="swal-field">
-                                       <label class="swal-label">Призначити технікові</label>
+                                       <label class="swal-label">Atribuir технікові</label>
                                        <select id="swal-reassign-select" class="swal-select">
-                                           <option value="">— Оберіть зі списку —</option>
+                                           <option value="">— Selecione зі da lista —</option>
                                            ${techOptions}
                                        </select>
                                    </div>
                                    <div class="swal-field mt-2">
-                                       <label class="swal-label">Продовжити дедлайн на</label>
+                                       <label class="swal-label">Continuar дедлайн на</label>
                                        <select id="swal-extend-days-bulk" class="swal-select">
-                                           <option value="7">7 днів</option>
-                                           <option value="14">14 днів</option>
-                                           <option value="30" selected>30 днів</option>
-                                           <option value="60">60 днів</option>
-                                           <option value="90">90 днів</option>
+                                           <option value="7">7 dias</option>
+                                           <option value="14">14 dias</option>
+                                           <option value="30" selected>30 dias</option>
+                                           <option value="60">60 dias</option>
+                                           <option value="90">90 dias</option>
                                        </select>
                                    </div>
                                </div>`,
                         customClass: { popup: 'swal-dispatch' },
-                        confirmButtonText: 'Перепризначити всі',
+                        confirmButtonText: 'Reatribuir всі',
                         confirmButtonColor: '#f39c12',
-                        cancelButtonText: 'Скасувати',
+                        cancelButtonText: 'Cancelar',
                         cancelButtonColor: '#a0aec0',
                         showCancelButton: true,
                         focusConfirm: false,
                         preConfirm: () => {
                             const val = document.getElementById('swal-reassign-select').value;
-                            if (!val) Swal.showValidationMessage('Будь ласка, оберіть техніка');
+                            if (!val) Swal.showValidationMessage('Por favor, selecione do técnico');
                             const days = document.getElementById('swal-extend-days-bulk').value;
                             return { technicianId: val, days: parseInt(days) };
                         }
@@ -2622,11 +2622,11 @@
                             } catch (e) {}
                         }
                         await dispatcherManager.loadAssignments();
-                        Swal.fire({ icon: 'success', title: 'Готово!', text: `Перепризначено та продовжено дедлайн: ${count} із ${overdue.length} заявок на +${days} днів.`, confirmButtonColor: '#28a745', customClass: { popup: 'swal-dispatch' } });
+                        Swal.fire({ icon: 'success', title: 'Concluído!', text: `Переatribuído e продоjáно дедлайн: ${count} іdesde ${overdue.length} pedidos на +${days} diasв.`, confirmButtonColor: '#28a745', customClass: { popup: 'swal-dispatch' } });
                     }
                 },
 
-                // Генерувати звіт
+                // Генерувати relatório
                 generateReport: function() {
                     const assignments = dispatcherManager.assignments || [];
                     const total = assignments.length;
@@ -2639,31 +2639,31 @@
                         return new Date(a.deadline) < new Date() && a.status !== 'completed';
                     }).length;
                     Swal.fire({
-                        title: '📊 Звіт продуктивності',
+                        title: '📊 Relatório desempenho',
                         width: 540,
                         html: `<div style="padding:4px 0">
                                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
                                        <div style="background:linear-gradient(135deg,#667eea,#764ba2);color:white;border-radius:12px;padding:16px;text-align:center">
                                            <div style="font-size:2rem;font-weight:700;line-height:1">${total}</div>
-                                           <div style="font-size:11px;opacity:.85;margin-top:5px;text-transform:uppercase;letter-spacing:.5px">Всього заявок</div>
+                                           <div style="font-size:11px;opacity:.85;margin-top:5px;text-transform:uppercase;letter-spacing:.5px">Total de pedidos</div>
                                        </div>
                                        <div style="background:linear-gradient(135deg,#28a745,#20c997);color:white;border-radius:12px;padding:16px;text-align:center">
                                            <div style="font-size:2rem;font-weight:700;line-height:1">${completed}</div>
-                                           <div style="font-size:11px;opacity:.85;margin-top:5px;text-transform:uppercase;letter-spacing:.5px">Виконано</div>
+                                           <div style="font-size:11px;opacity:.85;margin-top:5px;text-transform:uppercase;letter-spacing:.5px">Concluído</div>
                                        </div>
                                        <div style="background:linear-gradient(135deg,#17a2b8,#138496);color:white;border-radius:12px;padding:16px;text-align:center">
                                            <div style="font-size:2rem;font-weight:700;line-height:1">${inProgress}</div>
-                                           <div style="font-size:11px;opacity:.85;margin-top:5px;text-transform:uppercase;letter-spacing:.5px">В роботі</div>
+                                           <div style="font-size:11px;opacity:.85;margin-top:5px;text-transform:uppercase;letter-spacing:.5px">Em curso</div>
                                        </div>
                                        <div style="background:linear-gradient(135deg,#ffc107,#fd7e14);color:white;border-radius:12px;padding:16px;text-align:center">
                                            <div style="font-size:2rem;font-weight:700;line-height:1">${assigned}</div>
-                                           <div style="font-size:11px;opacity:.85;margin-top:5px;text-transform:uppercase;letter-spacing:.5px">Призначено</div>
+                                           <div style="font-size:11px;opacity:.85;margin-top:5px;text-transform:uppercase;letter-spacing:.5px">Atribuído</div>
                                        </div>
                                    </div>
                                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
                                        <div style="background:linear-gradient(135deg,#6c757d,#495057);color:white;border-radius:12px;padding:16px;text-align:center">
                                            <div style="font-size:2rem;font-weight:700;line-height:1">${newReqs}</div>
-                                           <div style="font-size:11px;opacity:.85;margin-top:5px;text-transform:uppercase;letter-spacing:.5px">Нові заявки</div>
+                                           <div style="font-size:11px;opacity:.85;margin-top:5px;text-transform:uppercase;letter-spacing:.5px">Novos pedidos</div>
                                        </div>
                                        <div style="background:linear-gradient(135deg,#dc3545,#c82333);color:white;border-radius:12px;padding:16px;text-align:center">
                                            <div style="font-size:2rem;font-weight:700;line-height:1">${overdue}</div>
@@ -2671,29 +2671,29 @@
                                        </div>
                                    </div>
                                    ${total > 0 ? `<div style="margin-top:14px;background:#f8f9fa;border-radius:10px;padding:14px">
-                                       <div style="font-size:11px;color:#6c757d;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Відсоток виконання</div>
+                                       <div style="font-size:11px;color:#6c757d;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Percentagem execução</div>
                                        <div style="background:#e9ecef;border-radius:20px;height:10px;overflow:hidden">
                                            <div style="width:${Math.round(completed/total*100)}%;height:100%;background:linear-gradient(to right,#28a745,#20c997);border-radius:20px"></div>
                                        </div>
-                                       <div style="font-size:13px;color:#495057;margin-top:6px;text-align:right;font-weight:600">${Math.round(completed/total*100)}% завершено</div>
+                                       <div style="font-size:13px;color:#495057;margin-top:6px;text-align:right;font-weight:600">${Math.round(completed/total*100)}% concluído</div>
                                    </div>` : ''}
                                </div>`,
                         customClass: { popup: 'swal-dispatch' },
-                        confirmButtonText: 'Закрити',
+                        confirmButtonText: 'Fechar',
                         confirmButtonColor: '#667eea',
                     });
                 },
 
-                // Підтвердити масове призначення
+                // Confirmar масове atribuição
                 submitBulkAssignment: async function() {
                     const techId = document.getElementById('bulkTechSelect')?.value;
                     if (!techId) {
-                        Swal.fire({ icon: 'warning', title: 'Помилка', text: 'Виберіть техніка!', confirmButtonColor: '#f39c12', customClass: { popup: 'swal-dispatch' } });
+                        Swal.fire({ icon: 'warning', title: 'Erro', text: 'Selecione do técnico!', confirmButtonColor: '#f39c12', customClass: { popup: 'swal-dispatch' } });
                         return;
                     }
                     const selectedItems = document.querySelectorAll('#availableRequests .list-group-item.active');
                     if (selectedItems.length === 0) {
-                        Swal.fire({ icon: 'warning', title: 'Помилка', text: 'Виберіть хоча б одну заявку!', confirmButtonColor: '#f39c12', customClass: { popup: 'swal-dispatch' } });
+                        Swal.fire({ icon: 'warning', title: 'Erro', text: 'Selecione хоча б одну o pedido!', confirmButtonColor: '#f39c12', customClass: { popup: 'swal-dispatch' } });
                         return;
                     }
                     let successCount = 0;
@@ -2709,14 +2709,14 @@
                     }
                     $('#bulkAssignmentModal').modal('hide');
                     await dispatcherManager.loadAssignments();
-                    Swal.fire({ icon: 'success', title: 'Готово!', text: `Призначено ${successCount} із ${selectedItems.length} заявок.`, confirmButtonColor: '#28a745', customClass: { popup: 'swal-dispatch' } });
+                    Swal.fire({ icon: 'success', title: 'Concluído!', text: `Atribuído ${successCount} іdesde ${selectedItems.length} pedidos.`, confirmButtonColor: '#28a745', customClass: { popup: 'swal-dispatch' } });
                 },
                 
                 // 🎯 ГОЛОВНІ ФУНКЦІЇ ДЛЯ РОБОТИ З ЗАЯВКАМИ
                 
-                // Розпочати роботу
+                // Розпоchatи роботу
                 startWork: async function(requestId) {
-                    if (!confirm('Розпочати роботу над цією заявкою?')) {
+                    if (!confirm('Розпоchatи роботу над ціexisteю заявкою?')) {
                         return;
                     }
                     
@@ -2728,79 +2728,79 @@
                         
                         if (!response || !response.ok) {
                             const error = await response.json();
-                            throw new Error(error.message || 'Помилка зміни статусу');
+                            throw new Error(error.message || 'Erro de alteração estadoу');
                         }
                         
-                        alert('Роботу розпочато!');
+                        alert('Роботу розпоchatо!');
                         await this.loadAssignments();
                         
                     } catch (error) {
-                        console.error('Помилка початку роботи:', error);
-                        alert('Не вдалося розпочати роботу: ' + error.message);
+                        console.error('Erro поchatку trabalhos:', error);
+                        alert('Não foi possível розпоchatи роботу: ' + error.message);
                     }
                 },
                 
-                // Призначити техніка  
+                // Atribuir técnico  
                 assignTechnician: async function(requestId) {
                     try {
-                        // Завантажуємо список техніків
+                        // Заванeжуexisteмо lista de técnicos
                         const response = await AuthManager.fetchWithAuth('/api/users?role=technician');
                         
                         if (!response || !response.ok) {
-                            throw new Error('Не вдалося завантажити список техніків');
+                            throw new Error('Não foi possível descarregar lista de técnicos');
                         }
                         
                         const result = await response.json();
                         const technicians = result.data?.users || result.users || [];
                         
                         if (technicians.length === 0) {
-                            alert('Немає доступних техніків');
+                            alert('Não há acessoних de técnicos');
                             return;
                         }
                         
-                        // Створюємо список для вибору
-                        let techList = 'Оберіть техніка:\n\n';
+                        // Створюexisteмо lista para вибору
+                        let techList = 'Selecione do técnico:\n\n';
                         technicians.forEach((tech, index) => {
                             techList += `${index + 1}. ${tech.firstName} ${tech.lastName} (${tech.email})\n`;
                         });
                         
-                        const choice = prompt(techList + '\nВведіть номер:');
+                        const choice = prompt(techList + '\nDigite número:');
                         if (!choice) return;
                         
                         const techIndex = parseInt(choice) - 1;
                         if (techIndex < 0 || techIndex >= technicians.length) {
-                            alert('Невірний вибір');
+                            alert('Inválido вибір');
                             return;
                         }
                         
                         const selectedTech = technicians[techIndex];
                         
-                        // Призначаємо техніка
+                        // Призначаexisteмо do técnico
                         const assignResponse = await AuthManager.fetchWithAuth(`/api/requests/${requestId}/assign`, {
                             method: 'POST',
                             body: JSON.stringify({
                                 technicianId: selectedTech._id,
-                                instructions: 'Призначено диспетчером'
+                                instructions: 'Atribuído диспетчером'
                             })
                         });
                         
                         if (!assignResponse || !assignResponse.ok) {
                             const error = await assignResponse.json();
-                            throw new Error(error.message || 'Помилка призначення');
+                            throw new Error(error.message || 'Erro de atribuição');
                         }
                         
-                        alert(`Техніка ${selectedTech.firstName} ${selectedTech.lastName} призначено!`);
+                        alert(`Técnico ${selectedTech.firstName} ${selectedTech.lastName} atribuído!`);
                         await this.loadAssignments();
                         
                     } catch (error) {
-                        console.error('Помилка призначення техніка:', error);
-                        alert('Не вдалося призначити техніка: ' + error.message);
+                        console.error('Erro ao atribuir técnico:', error);
+                        alert('Não foi possível atribuir do técnico: ' + error.message);
                     }
                 },
                 
-                // Adicionar коментар
+                // Adicionar comentário
                 addComment: async function(requestId) {
-                    const comment = prompt('Введіть коментар:');
+                    const comment = prompt('Digite comentário:');
                     if (!comment || comment.trim() === '') {
                         return;
                     }
@@ -2813,21 +2813,21 @@
                         
                         if (!response || !response.ok) {
                             const error = await response.json();
-                            throw new Error(error.message || 'Помилка додавання коментаря');
+                            throw new Error(error.message || 'Erro adição comentárioя');
                         }
                         
-                        alert('Коментар додано!');
+                        alert('Comentário adicionado!');
                         await this.loadAssignments();
                         
                     } catch (error) {
-                        console.error('Помилка додавання коментаря:', error);
-                        alert('Не вдалося додати коментар: ' + error.message);
+                        console.error('Erro adição comentárioя:', error);
+                        alert('Não foi possível adicionar comentário: ' + error.message);
                     }
                 },
                 
-                // Завершити заявку
+                // Concluir o pedido
                 completeRequest: async function(requestId) {
-                    if (!confirm('Завершити цю заявку?')) {
+                    if (!confirm('Concluir цю o pedido?')) {
                         return;
                     }
                     
@@ -2843,19 +2843,19 @@
                         
                         if (!response || !response.ok) {
                             const error = await response.json();
-                            throw new Error(error.message || 'Помилка завершення');
+                            throw new Error(error.message || 'Erro завершення');
                         }
                         
-                        alert('Заявку завершено!');
+                        alert('Pedido concluído!');
                         await this.loadAssignments();
                         
                     } catch (error) {
-                        console.error('Помилка завершення заявки:', error);
-                        alert('Не вдалося завершити заявку: ' + error.message);
+                        console.error('Erro завершення pedidos:', error);
+                        alert('Não foi possível concluir o pedido: ' + error.message);
                     }
                 },
                 
-                // Оновити статус заявки
+                // Actualizar estado pedidos
                 updateRequestStatus: async function(requestId, newStatus) {
                     try {
                         const response = await AuthManager.fetchWithAuth(`/api/requests/${requestId}/status`, {
@@ -2865,134 +2865,134 @@
                         
                         if (!response || !response.ok) {
                             const error = await response.json();
-                            throw new Error(error.message || 'Помилка оновлення статусу');
+                            throw new Error(error.message || 'Erro atualização estadoу');
                         }
                         
                         await this.loadAssignments();
                         
                     } catch (error) {
-                        console.error('Помилка оновлення статусу:', error);
+                        console.error('Erro atualização estadoу:', error);
                         throw error;
                     }
                 },
                 
-                // 🆕 ДОДАНІ МЕТОДИ ДЛЯ МОДАЛЬНОГО ВІКНА
+                // 🆕 ДОДАНІ МЕManutençãoДИ ДЛЯ МОДАЛЬНОГО ВІКНА
                 
-                // Редагувати призначення
+                // Editar atribuição
                 editAssignment: function() {
-                    console.log('✏️ Редагуємо призначення через assignmentManager');
+                    console.log('✏️ Редагуexisteмо atribuição através de assignmentManager');
                     
                     if (window.dispatcherManager) {
                         window.dispatcherManager.editAssignment();
                     } else {
-                        alert('Помилка: менеджер не ініціалізовано');
+                        alert('Erro: gestor não inicializado');
                     }
                 },
                 
-                // Перепризначити з модального вікна
+                // Reatribuir desde модального вікна
                 reassignFromModal: async function() {
-                    console.log('🔄 Перепризначення через assignmentManager');
+                    console.log('🔄 Переatribuição através de assignmentManager');
                     
                     if (window.dispatcherManager) {
                         await window.dispatcherManager.reassignFromModal();
                     } else {
-                        alert('Помилка: менеджер не ініціалізовано');
+                        alert('Erro: gestor não inicializado');
                     }
                 },
                 
-                // Відкрити в Google Maps
+                // Abrir в Google Maps
                 openInMaps: function() {
-                    console.log('🗺️ Відкриття карти через assignmentManager');
+                    console.log('🗺️ Відкриття карти através de assignmentManager');
                     
                     if (window.dispatcherManager) {
                         window.dispatcherManager.openInMaps();
                     } else {
-                        alert('Помилка: менеджер не ініціалізовано');
+                        alert('Erro: gestor não inicializado');
                     }
                 },
                 
-                // Швидке призначення
+                // Швидке atribuição
                 quickAssign: async function(technicianId) {
-                    console.log('⚡ Швидке призначення через assignmentManager:', technicianId);
+                    console.log('⚡ Швидке atribuição através de assignmentManager:', technicianId);
                     
                     if (window.dispatcherManager) {
                         await window.dispatcherManager.quickAssign(technicianId);
                     } else {
-                        alert('Помилка: менеджер не ініціалізовано');
+                        alert('Erro: gestor não inicializado');
                     }
                 },
                 
-                // Переглянути призначення
+                // Visualizar atribuição
                 viewAssignment: function(requestId) {
-                    console.log('👁️ Перегляд призначення через assignmentManager:', requestId);
+                    console.log('👁️ Visualização atribuição através de assignmentManager:', requestId);
                     
                     if (window.dispatcherManager) {
                         window.dispatcherManager.viewAssignment(requestId);
                     } else {
-                        alert('Помилка: менеджер не ініціалізовано');
+                        alert('Erro: gestor não inicializado');
                     }
                 },
                 
-                // Призначити запит
+                // Atribuir pedido
                 assignRequest: async function(requestId, technicianId) {
-                    console.log('👨‍🔧 Призначення запиту через assignmentManager:', { requestId, technicianId });
+                    console.log('👨‍🔧 Atribuições pedidoу através de assignmentManager:', { requestId, technicianId });
                     
                     if (window.dispatcherManager) {
                         await window.dispatcherManager.assignRequest(requestId, technicianId);
                     } else {
-                        alert('Помилка: менеджер не ініціалізовано');
+                        alert('Erro: gestor não inicializado');
                     }
                 },
                 
-                // Перемикання режиму перегляду архіву
+                // Alternar modo de visualização do arquivo
                 toggleArchiveView: function() {
                     if (window.dispatcherManager) {
                         window.dispatcherManager.toggleArchiveView();
                     } else {
-                        alert('Помилка: менеджер не ініціалізовано');
+                        alert('Erro: gestor não inicializado');
                     }
                 },
 
-                // Відновити заявку з архіву
+                // Restaurar pedido do arquivo
                 unarchiveFromModal: async function() {
                     if (window.dispatcherManager) {
                         await window.dispatcherManager.unarchiveFromModal();
                     } else {
-                        alert('Помилка: менеджер не ініціалізовано');
+                        alert('Erro: gestor não inicializado');
                     }
                 },
 
-                // Архівувати заявку з модального вікна
+                // Arquivar pedido da janela modal
                 archiveFromModal: async function() {
                     if (window.dispatcherManager) {
                         await window.dispatcherManager.archiveFromModal();
                     } else {
-                        alert('Помилка: менеджер не ініціалізовано');
+                        alert('Erro: gestor não inicializado');
                     }
                 },
 
-                // Фальшивий виклик з модального вікна
+                // Chamada falsa desde модального вікна
                 falseCallFromModal: async function() {
                     if (window.dispatcherManager) {
                         await window.dispatcherManager.falseCallFromModal();
                     } else {
-                        alert('Помилка: менеджер не ініціалізовано');
+                        alert('Erro: gestor não inicializado');
                     }
                 },
 
-                // Завантажити призначення
+                // Descarregar atribuição
                 loadAssignments: async function() {
-                    console.log('🔄 Завантаження призначень через assignmentManager');
+                    console.log('🔄 A carregar приde valores através de assignmentManager');
                     
                     if (window.dispatcherManager) {
                         await window.dispatcherManager.loadAssignments();
                     } else {
-                        alert('Помилка: менеджер не ініціалізовано');
+                        alert('Erro: gestor não inicializado');
                     }
                 }
             };
             
-            // Ініціалізація вже відбувається в constructor через init()
+            // Inicialização já відбуваexisteться в constructor através de init()
             // dispatcherManager.loadAssignments(); // ❌ ВИДАЛЕНО - дублювання
         });
     </script>
@@ -3048,7 +3048,7 @@
 </body>
 </html>
 
-<!-- Ініціалізація динамічного сайдбару -->
+<!-- Inicialização do sidebar dinâmico -->
 <script>
     document.addEventListener("DOMContentLoaded", function() {
         if (typeof loadSidebarWithInit === "function") {

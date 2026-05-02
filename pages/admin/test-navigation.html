@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Тест навігації AI Прогнозування</title>
+    <title>Teste de navegação de Previsão por IA</title>
     <script src="../../assets/js/auth.js"></script>
 
     <style>
@@ -53,14 +53,14 @@
 </head>
 <body>
     <div class="container">
-        <h1>🔍 Діагностика навігації AI Прогнозування</h1>
+        <h1>🔍 Diagnóstico навігації AI Previsão</h1>
         
         <div class="status">
-            <strong>Поточна сторінка:</strong> <span id="current-page"></span><br>
+            <strong>Поточна página:</strong> <span id="current-page"></span><br>
             <strong>Поточний хеш:</strong> <span id="current-hash"></span>
         </div>
 
-        <h2>Тестові посилання:</h2>
+        <h2>Testeові ligação:</h2>
         
         <a href="predictive-maintenance.html" class="test-link" onclick="testLink(this)">
             🎯 predictive-maintenance.html (відносний шлях)
@@ -71,29 +71,29 @@
         </a>
         
         <a href="./predictive-maintenance.html" class="test-link" onclick="testLink(this)">
-            🎯 ./predictive-maintenance.html (поточна папка)
+            🎯 ./predictive-maintenance.html (atual папка)
         </a>
         
         <a href="../admin/predictive-maintenance.html" class="test-link" onclick="testLink(this)">
-            🎯 ../admin/predictive-maintenance.html (з батьківської папки)
+            🎯 ../admin/predictive-maintenance.html (desde батьківської папки)
         </a>
 
-        <h2>Перевірка доступності файлів:</h2>
+        <h2>Verificação disponívelсті ficheiroів:</h2>
         <button onclick="checkFile('unified-analytics.html')" class="test-link" style="border: none; cursor: pointer;">
-            📄 Перевірити unified-analytics.html
+            📄 Verificar unified-analytics.html
         </button>
         
         <button onclick="checkFile('/pages/admin/unified-analytics.html')" class="test-link" style="border: none; cursor: pointer;">
-            📄 Перевірити /pages/admin/unified-analytics.html
+            📄 Verificar /pages/admin/unified-analytics.html
         </button>
 
         <div id="results"></div>
     </div>
 
     <script>
-        // Оновлюємо інформацію про поточну сторінку
+        // Оновлюexisteмо інформацію про поточну a página
         document.getElementById('current-page').textContent = window.location.pathname;
-        document.getElementById('current-hash').textContent = window.location.hash || '(немає)';
+        document.getElementById('current-hash').textContent = window.location.hash || '(não há)';
 
         function testLink(link) {
             const results = document.getElementById('results');
@@ -102,11 +102,11 @@
             results.innerHTML += `
                 <div class="result success">
                     ✅ Клік по посиланню: <strong>${href}</strong><br>
-                    Час: ${new Date().toLocaleTimeString()}
+                    Hora: ${new Date().toLocaleTimeString()}
                 </div>
             `;
             
-            // Не блокуємо перехід
+            // Не блокуexisteмо перехід
             return true;
         }
 
@@ -119,28 +119,28 @@
                 if (response.ok) {
                     results.innerHTML += `
                         <div class="result success">
-                            ✅ Файл <strong>${path}</strong> доступний (статус: ${response.status})
+                            ✅ Ficheiro <strong>${path}</strong> acessoний (estado: ${response.status})
                         </div>
                     `;
                 } else {
                     results.innerHTML += `
                         <div class="result error">
-                            ❌ Файл <strong>${path}</strong> недоступний (статус: ${response.status})
+                            ❌ Ficheiro <strong>${path}</strong> indisponível (estado: ${response.status})
                         </div>
                     `;
                 }
             } catch (error) {
                 results.innerHTML += `
                     <div class="result error">
-                        ❌ Помилка перевірки <strong>${path}</strong>: ${error.message}
+                        ❌ Erro de verificação <strong>${path}</strong>: ${error.message}
                     </div>
                 `;
             }
         }
 
-        // Слухаємо зміни хешу
+        // Слухаexisteмо de alteração хешу
         window.addEventListener('hashchange', function() {
-            document.getElementById('current-hash').textContent = window.location.hash || '(немає)';
+            document.getElementById('current-hash').textContent = window.location.hash || '(não há)';
         });
     </script>
 </body>

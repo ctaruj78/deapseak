@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="uk">
+<html lang="pt">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>⚙️ Налаштування системи</title>
+    <title>⚙️ Configurações do sistema</title>
     <script src="../assets/js/auth.js"></script>
 
     
@@ -93,12 +93,12 @@
                 <div class="container-fluid">
                     <div class="row mb-2">
                         <div class="col-sm-6">
-                            <h1 class="m-0">⚙️ Налаштування системи</h1>
+                            <h1 class="m-0">⚙️ Configurações do sistema</h1>
                         </div>
                         <div class="col-sm-6">
                             <ol class="breadcrumb float-sm-right">
-                                <li class="breadcrumb-item"><a href="pages/admin/lifts.html">Головна</a></li>
-                                <li class="breadcrumb-item active">Налаштування</li>
+                                <li class="breadcrumb-item"><a href="pages/admin/lifts.html">Início</a></li>
+                                <li class="breadcrumb-item active">Configurações</li>
                             </ol>
                         </div>
                     </div>
@@ -113,44 +113,44 @@
                         <div class="col-md-12">
                             <div class="card setting-card">
                                 <div class="card-header bg-primary">
-                                    <h3 class="card-title">🥽 AR Helper (Доповнена реальність)</h3>
+                                    <h3 class="card-title">🥽 AR Helper (Realidade aumentada)</h3>
                                     <div class="card-tools">
-                                        <span id="ar-status-badge" class="badge badge-secondary">Завантаження...</span>
+                                        <span id="ar-status-badge" class="badge badge-secondary">A carregar...</span>
                                     </div>
                                 </div>
                                 <div class="card-body">
                                     <div class="row">
                                         <div class="col-md-8">
-                                            <h5>Активувати AR Helper</h5>
+                                            <h5>Activar AR Helper</h5>
                                             <p class="text-muted">
-                                                AR Helper додає функції доповненої реальності для:
+                                                O AR Helper adiciona funções de realidade aumentada para:
                                             </p>
                                             <ul class="text-muted">
-                                                <li>🔍 Інтерактивного сканування QR кодів</li>
-                                                <li>📋 Допомоги під час інспекцій ліфтів</li>
-                                                <li>🎯 Візуалізації інформації про ліфти</li>
-                                                <li>📱 Роботи з камерою та відео</li>
+                                                <li>🔍 Digitalização interactiva de códigos QR</li>
+                                                <li>📋 Ajuda durante inspecções de elevadores</li>
+                                                <li>🎯 Visualização de informações sobre elevadores</li>
+                                                <li>📱 Trabalho com câmara e vídeo</li>
                                             </ul>
                                             
                                             <div class="alert alert-info">
-                                                <h6><i class="fas fa-info-circle"></i> Примітка:</h6>
-                                                <p class="mb-0">AR Helper потребує доступу до камери пристрою. При першому використанні браузер запитає дозвіл на використання камери.</p>
+                                                <h6><i class="fas fa-info-circle"></i> Nota:</h6>
+                                                <p class="mb-0">O AR Helper requer acesso à câmara do dispositivo. Na primeira utilização, o browser pedirá permissão para usar a câmara.</p>
                                             </div>
                                         </div>
                                         <div class="col-md-4 text-center">
                                             <div class="d-flex flex-column align-items-center">
-                                                <h6>Стан AR Helper</h6>
+                                                <h6>Estado do AR Helper</h6>
                                                 <label class="switch mb-3">
                                                     <input type="checkbox" id="ar-helper-toggle">
                                                     <span class="slider"></span>
                                                 </label>
                                                 
                                                 <div id="ar-helper-status" class="mb-3">
-                                                    <span class="status-badge bg-secondary">Перевіряємо...</span>
+                                                    <span class="status-badge bg-secondary">A verificar...</span>
                                                 </div>
                                                 
                                                 <button id="test-ar-btn" class="btn btn-outline-primary btn-sm" disabled>
-                                                    <i class="fas fa-play"></i> Тест AR
+                                                    <i class="fas fa-play"></i> Testar AR
                                                 </button>
                                             </div>
                                         </div>
@@ -165,13 +165,13 @@
                         <div class="col-md-6">
                             <div class="card setting-card">
                                 <div class="card-header bg-success">
-                                    <h3 class="card-title">🔊 Голосове управління</h3>
+                                    <h3 class="card-title">🔊 Controlo por voz</h3>
                                 </div>
                                 <div class="card-body">
                                     <div class="d-flex justify-content-between align-items-center">
                                         <div>
-                                            <h6>Увімкнути голосове управління</h6>
-                                            <small class="text-muted">Керування системою голосом</small>
+                                            <h6>Activar controlo por voz</h6>
+                                            <small class="text-muted">Controlo do sistema por voz</small>
                                         </div>
                                         <label class="switch">
                                             <input type="checkbox" id="voice-control-toggle">
@@ -185,16 +185,16 @@
                         <div class="col-md-6">
                             <div class="card setting-card">
                                 <div class="card-header bg-success">
-                                    <h3 class="card-title">🧠 Smart Система</h3>
+                                    <h3 class="card-title">🧠 Sistema inteligente</h3>
                                     <div class="card-tools">
-                                        <span id="smart-status-badge" class="badge badge-secondary">Завантаження...</span>
+                                        <span id="smart-status-badge" class="badge badge-secondary">A carregar...</span>
                                     </div>
                                 </div>
                                 <div class="card-body">
                                     <div class="d-flex justify-content-between align-items-center mb-3">
                                         <div>
-                                            <h6>Активувати Smart систему</h6>
-                                            <small class="text-muted">Розумні алгоритми та автоматизація</small>
+                                            <h6>Activar sistema inteligente</h6>
+                                            <small class="text-muted">Algoritmos inteligentes e automação</small>
                                         </div>
                                         <label class="switch">
                                             <input type="checkbox" id="smart-system-toggle">
@@ -203,19 +203,19 @@
                                     </div>
                                     
                                     <div class="mt-3">
-                                        <h6>Можливості Smart системи:</h6>
+                                        <h6>Funcionalidades do sistema inteligente:</h6>
                                         <ul class="mb-0">
-                                            <li>🤖 Автоматичне планування обслуговування</li>
-                                            <li>📈 Прогнозна аналітика</li>
-                                            <li>⚡ Оптимізація роботи ліфтів</li>
-                                            <li>🔔 Розумні сповіщення</li>
-                                            <li>📊 Адаптивна аналітика поведінки</li>
+                                            <li>🤖 Planeamento automático de manutenção</li>
+                                            <li>📈 Análise preditiva</li>
+                                            <li>⚡ Optimização do funcionamento dos elevadores</li>
+                                            <li>🔔 Notificações inteligentes</li>
+                                            <li>📊 Análise adaptativa de comportamento</li>
                                         </ul>
                                     </div>
                                     
                                     <div class="alert alert-info mt-3">
                                         <i class="fas fa-info-circle"></i>
-                                        <strong>Примітка:</strong> Smart система використовує машинне навчання для покращення роботи всіх підсистем.
+                                        <strong>Nota:</strong> O sistema inteligente utiliza aprendizagem automática para melhorar o funcionamento de todos os subsistemas.
                                     </div>
                                 </div>
                             </div>
@@ -227,13 +227,13 @@
                         <div class="col-md-6">
                             <div class="card setting-card">
                                 <div class="card-header bg-warning">
-                                    <h3 class="card-title">📊 Аналітика</h3>
+                                    <h3 class="card-title">📊 Análise</h3>
                                 </div>
                                 <div class="card-body">
                                     <div class="d-flex justify-content-between align-items-center">
                                         <div>
-                                            <h6>Збирати статистику використання</h6>
-                                            <small class="text-muted">Для покращення сервісу</small>
+                                            <h6>Recolher estatísticas de utilização</h6>
+                                            <small class="text-muted">Para melhorar o serviço</small>
                                         </div>
                                         <label class="switch">
                                             <input type="checkbox" id="analytics-toggle">
@@ -250,15 +250,15 @@
                         <div class="col-md-12">
                             <div class="card setting-card">
                                 <div class="card-header bg-info">
-                                    <h3 class="card-title">🔔 Сповіщення</h3>
+                                    <h3 class="card-title">🔔 Notificações</h3>
                                 </div>
                                 <div class="card-body">
                                     <div class="row">
                                         <div class="col-md-4">
                                             <div class="d-flex justify-content-between align-items-center mb-3">
                                                 <div>
-                                                    <h6>Push сповіщення</h6>
-                                                    <small class="text-muted">Сповіщення у браузері</small>
+                                                    <h6>Notificações push</h6>
+                                                    <small class="text-muted">Notificações no browser</small>
                                                 </div>
                                                 <label class="switch">
                                                     <input type="checkbox" id="push-notifications-toggle">
@@ -269,8 +269,8 @@
                                         <div class="col-md-4">
                                             <div class="d-flex justify-content-between align-items-center mb-3">
                                                 <div>
-                                                    <h6>Звукові сповіщення</h6>
-                                                    <small class="text-muted">Звуки при подіях</small>
+                                                    <h6>Notificações sonoras</h6>
+                                                    <small class="text-muted">Sons em eventos</small>
                                                 </div>
                                                 <label class="switch">
                                                     <input type="checkbox" id="sound-notifications-toggle">
@@ -281,8 +281,8 @@
                                         <div class="col-md-4">
                                             <div class="d-flex justify-content-between align-items-center mb-3">
                                                 <div>
-                                                    <h6>Email сповіщення</h6>
-                                                    <small class="text-muted">Надсилати на пошту</small>
+                                                    <h6>Notificações por email</h6>
+                                                    <small class="text-muted">Enviar para o email</small>
                                                 </div>
                                                 <label class="switch">
                                                     <input type="checkbox" id="email-notifications-toggle">
@@ -301,32 +301,32 @@
                         <div class="col-md-12">
                             <div class="card setting-card">
                                 <div class="card-header bg-primary">
-                                    <h3 class="card-title">🏢 Налаштування управління ліфтами</h3>
+                                    <h3 class="card-title">🏢 Configurações de gestão de elevadores</h3>
                                 </div>
                                 <div class="card-body">
                                     <div class="row">
                                         <div class="col-md-6">
                                             <div class="form-group">
-                                                <label for="auto-refresh-interval">🔄 Автооновлення списку ліфтів (секунди)</label>
+                                                <label for="auto-refresh-interval">🔄 Actualização automática da lista de elevadores (segundos)</label>
                                                 <div class="input-group">
                                                     <input type="number" class="form-control" id="auto-refresh-interval" min="5" max="300" value="30">
                                                     <div class="input-group-append">
-                                                        <span class="input-group-text">сек</span>
+                                                        <span class="input-group-text">seg</span>
                                                     </div>
                                                 </div>
-                                                <small class="text-muted">Інтервал оновлення даних ліфтів (5-300 секунд)</small>
+                                                <small class="text-muted">Intervalo de actualização dos dados dos elevadores (5-300 segundos)</small>
                                             </div>
                                         </div>
                                         <div class="col-md-6">
                                             <div class="form-group">
-                                                <label for="lifts-per-page">📄 Ліфтів на сторінку</label>
+                                                <label for="lifts-per-page">📄 Elevadores por página</label>
                                                 <select class="form-control" id="lifts-per-page">
-                                                    <option value="10">10 ліфтів</option>
-                                                    <option value="25" selected>25 ліфтів</option>
-                                                    <option value="50">50 ліфтів</option>
-                                                    <option value="100">100 ліфтів</option>
+                                                    <option value="10">10 elevadores</option>
+                                                    <option value="25" selected>25 elevadores</option>
+                                                    <option value="50">50 elevadores</option>
+                                                    <option value="100">100 elevadores</option>
                                                 </select>
-                                                <small class="text-muted">Кількість ліфтів для відображення на одній сторінці</small>
+                                                <small class="text-muted">Número de elevadores a mostrar por página</small>
                                             </div>
                                         </div>
                                     </div>
@@ -335,8 +335,8 @@
                                         <div class="col-md-6">
                                             <div class="d-flex justify-content-between align-items-center mb-3">
                                                 <div>
-                                                    <h6>📊 Показувати статистику в реальному часі</h6>
-                                                    <small class="text-muted">Відображення live метрик ліфтів</small>
+                                                    <h6>📊 Mostrar estatísticas em tempo real</h6>
+                                                    <small class="text-muted">Exibição de métricas ao vivo dos elevadores</small>
                                                 </div>
                                                 <label class="switch">
                                                     <input type="checkbox" id="realtime-stats-toggle" checked>
@@ -347,8 +347,8 @@
                                         <div class="col-md-6">
                                             <div class="d-flex justify-content-between align-items-center mb-3">
                                                 <div>
-                                                    <h6>🔍 Автопошук при вводі</h6>
-                                                    <small class="text-muted">Пошук ліфтів під час набору тексту</small>
+                                                    <h6>🔍 Pesquisa automática durante escrita</h6>
+                                                    <small class="text-muted">Pesquisa de elevadores durante a escrita</small>
                                                 </div>
                                                 <label class="switch">
                                                     <input type="checkbox" id="auto-search-toggle" checked>
@@ -362,8 +362,8 @@
                                         <div class="col-md-6">
                                             <div class="d-flex justify-content-between align-items-center mb-3">
                                                 <div>
-                                                    <h6>⚠️ Автоповідомлення про проблеми</h6>
-                                                    <small class="text-muted">Автоматичні повідомлення про поломки</small>
+                                                    <h6>⚠️ Alertas automáticos sobre problemas</h6>
+                                                    <small class="text-muted">Notificações automáticas sobre avarias</small>
                                                 </div>
                                                 <label class="switch">
                                                     <input type="checkbox" id="auto-alerts-toggle" checked>
@@ -374,8 +374,8 @@
                                         <div class="col-md-6">
                                             <div class="d-flex justify-content-between align-items-center mb-3">
                                                 <div>
-                                                    <h6>💾 Автозбереження змін</h6>
-                                                    <small class="text-muted">Зберігати зміни автоматично</small>
+                                                    <h6>💾 Gravação automática de alterações</h6>
+                                                    <small class="text-muted">Guardar alterações automaticamente</small>
                                                 </div>
                                                 <label class="switch">
                                                     <input type="checkbox" id="auto-save-toggle" checked>
@@ -395,13 +395,13 @@
                             <div class="card">
                                 <div class="card-body text-center">
                                     <button class="btn btn-success btn-lg mr-3" onclick="saveAllSettings()">
-                                        <i class="fas fa-save"></i> Зберегти всі налаштування
+                                        <i class="fas fa-save"></i> Guardar todas as configurações
                                     </button>
                                     <button class="btn btn-secondary btn-lg mr-3" onclick="resetToDefaults()">
-                                        <i class="fas fa-undo"></i> Скинути до замовчувань
+                                        <i class="fas fa-undo"></i> Repor predefinições
                                     </button>
                                     <button class="btn btn-info btn-lg" onclick="exportSettings()">
-                                        <i class="fas fa-download"></i> Експорт налаштувань
+                                        <i class="fas fa-download"></i> Exportar configurações
                                     </button>
                                 </div>
                             </div>
@@ -418,7 +418,7 @@
     <script src="../plugins/adminlte/adminlte.min.js"></script>
     
     <script>
-        // Система управління налаштуваннями
+        // Sistema de gestão de configurações
         class SystemSettings {
             constructor() {
                 this.settings = this.loadSettings();
@@ -426,7 +426,7 @@
             }
             
             init() {
-                console.log('⚙️ Ініціалізація налаштувань...');
+                console.log('⚙️ A inicializar configurações...');
                 this.loadSettingsUI();
                 this.setupEventListeners();
                 this.checkARAvailability();
@@ -441,7 +441,7 @@
                     pushNotifications: true,
                     soundNotifications: true,
                     emailNotifications: false,
-                    // Налаштування ліфтів
+                    // Configurações de elevadores
                     autoRefreshInterval: 30,
                     liftsPerPage: 25,
                     realtimeStats: true,
@@ -456,11 +456,11 @@
             
             saveSettings() {
                 localStorage.setItem('deapseak_settings', JSON.stringify(this.settings));
-                console.log('✅ Налаштування збережено:', this.settings);
+                console.log('✅ Configurações guardadas:', this.settings);
             }
             
             loadSettingsUI() {
-                // Завантажуємо стан перемикачів
+                // Carregar estado dos interruptores
                 Object.keys(this.settings).forEach(key => {
                     const toggle = document.getElementById(key.replace(/([A-Z])/g, '-$1').toLowerCase() + '-toggle');
                     if (toggle) {
@@ -468,7 +468,7 @@
                     }
                 });
                 
-                // Завантажуємо числові поля
+                // Carregar campos numéricos
                 const intervalInput = document.getElementById('auto-refresh-interval');
                 if (intervalInput) {
                     intervalInput.value = this.settings.autoRefreshInterval;
@@ -529,7 +529,7 @@
                     });
                 });
                 
-                // Налаштування ліфтів
+                // Configurações de elevadores
                 const autoRefreshInterval = document.getElementById('auto-refresh-interval');
                 autoRefreshInterval.addEventListener('change', (e) => {
                     this.settings.autoRefreshInterval = parseInt(e.target.value);
@@ -542,7 +542,7 @@
                     this.saveSettings();
                 });
                 
-                // Перемикачі налаштувань ліфтів
+                // Interruptores de configurações de elevadores
                 ['realtime-stats', 'auto-search', 'auto-alerts', 'auto-save'].forEach(setting => {
                     const toggle = document.getElementById(`${setting}-toggle`);
                     if (toggle) {
@@ -565,20 +565,20 @@
                 const testBtn = document.getElementById('test-ar-btn');
                 
                 try {
-                    // Перевіряємо підтримку камери
+                    // Verificar suporte de câmara
                     const hasCamera = !!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia);
                     
                     if (hasCamera) {
                         statusBadge.className = 'badge badge-success';
-                        statusBadge.textContent = 'Підтримується';
+                        statusBadge.textContent = 'Suportado';
                         testBtn.disabled = false;
                     } else {
                         statusBadge.className = 'badge badge-warning';
-                        statusBadge.textContent = 'Обмежена підтримка';
+                        statusBadge.textContent = 'Suporte limitado';
                     }
                 } catch (error) {
                     statusBadge.className = 'badge badge-danger';
-                    statusBadge.textContent = 'Не підтримується';
+                    statusBadge.textContent = 'Não suportado';
                 }
             }
             
@@ -587,9 +587,9 @@
                 const arEnabled = this.settings.arHelper;
                 
                 if (arEnabled) {
-                    statusDiv.innerHTML = '<span class="status-badge bg-success">✅ Увімкнено</span>';
+                    statusDiv.innerHTML = '<span class="status-badge bg-success">✅ Activado</span>';
                 } else {
-                    statusDiv.innerHTML = '<span class="status-badge bg-secondary">⏸️ Вимкнено</span>';
+                    statusDiv.innerHTML = '<span class="status-badge bg-secondary">⏸️ Desactivado</span>';
                 }
             }
             
@@ -599,44 +599,44 @@
                 
                 if (smartEnabled) {
                     statusBadge.className = 'badge badge-success';
-                    statusBadge.textContent = '✅ Активна';
-                    this.showNotification('🧠 Smart система активована!', 'success');
+                    statusBadge.textContent = '✅ Activo';
+                    this.showNotification('🧠 Sistema inteligente activado!', 'success');
                 } else {
                     statusBadge.className = 'badge badge-secondary';
-                    statusBadge.textContent = '⏸️ Неактивна';
-                    this.showNotification('🧠 Smart система вимкнута', 'info');
+                    statusBadge.textContent = '⏸️ Inactivo';
+                    this.showNotification('🧠 Sistema inteligente desactivado', 'info');
                 }
             }
             
             enableAR() {
-                console.log('🥽 Увімкнення AR Helper...');
+                console.log('🥽 A activar AR Helper...');
                 
-                // Викликаємо глобальну функцію увімкнення AR
+                // Chamar função global de activação do AR
                 if (typeof window.enableARHelper === 'function') {
                     window.enableARHelper();
-                    this.showNotification('✅ AR Helper увімкнено!', 'success');
+                    this.showNotification('✅ AR Helper activado!', 'success');
                 } else if (typeof window.arHelperManager !== 'undefined') {
                     window.arHelperManager.enableAR();
                     this.showNotification('✅ AR Helper увімкнено!', 'success');
                 } else {
-                    this.showNotification('⚠️ AR Helper буде активний після перезавантаження сторінки', 'warning');
+                    this.showNotification('⚠️ O AR Helper estará activo após recarregar a página', 'warning');
                 }
                 
                 this.updateARStatus();
             }
             
             disableAR() {
-                console.log('🥽 Вимкнення AR Helper...');
+                console.log('🥽 A desactivar AR Helper...');
                 
-                // Викликаємо глобальну функцію вимкнення AR
+                // Chamar função global de desactivação do AR
                 if (typeof window.disableARHelper === 'function') {
                     window.disableARHelper();
-                    this.showNotification('AR Helper вимкнено', 'info');
+                    this.showNotification('AR Helper desactivado', 'info');
                 } else if (typeof window.arHelperManager !== 'undefined') {
                     window.arHelperManager.disableAR();
                     this.showNotification('AR Helper вимкнено', 'info');
                 } else {
-                    this.showNotification('AR Helper буде вимкнений після перезавантаження сторінки', 'info');
+                    this.showNotification('O AR Helper será desactivado após recarregar a página', 'info');
                 }
                 
                 this.updateARStatus();
@@ -644,40 +644,40 @@
             
             testAR() {
                 if (this.settings.arHelper) {
-                    this.showNotification('🧪 Запуск тесту AR Helper...', 'info');
+                    this.showNotification('🧪 A iniciar teste do AR Helper...', 'info');
                     
-                    // Перевіряємо чи AR доступний
+                    // Verificar se AR está disponível
                     if (typeof window.arHelper !== 'undefined' && window.arHelper) {
-                        // Тестуємо AR функції
+                        // Testar funções AR
                         try {
                             if (window.arHelper.isInitialized) {
-                                this.showNotification('✅ AR Helper ініціалізований та готовий до роботи!', 'success');
+                                this.showNotification('✅ AR Helper inicializado e pronto a usar!', 'success');
                                 
-                                // Опціонально запускаємо короткий тест
+                                // Opcionalmente iniciar teste curto
                                 setTimeout(() => {
-                                    this.showNotification('📱 Перевірка камери та AR функцій...', 'info');
+                                    this.showNotification('📱 A verificar câmara e funções AR...', 'info');
                                     
                                     setTimeout(() => {
-                                        this.showNotification('🎉 AR Helper працює коректно!', 'success');
+                                        this.showNotification('🎉 AR Helper a funcionar correctamente!', 'success');
                                     }, 1500);
                                 }, 1000);
                                 
                             } else {
-                                this.showNotification('⚠️ AR Helper завантажується...', 'warning');
+                                this.showNotification('⚠️ AR Helper a carregar...', 'warning');
                             }
                         } catch (error) {
-                            this.showNotification('❌ Помилка тестування AR: ' + error.message, 'warning');
+                            this.showNotification('❌ Erro ao testar AR: ' + error.message, 'warning');
                         }
                     } else {
-                        this.showNotification('🔄 AR Helper ініціалізується. Спробуйте через кілька секунд.', 'info');
+                        this.showNotification('🔄 AR Helper a inicializar. Tente novamente dentro de alguns segundos.', 'info');
                     }
                 } else {
-                    this.showNotification('❌ AR Helper вимкнено. Увімкніть його спочатку.', 'warning');
+                    this.showNotification('❌ AR Helper desactivado. Active-o primeiro.', 'warning');
                 }
             }
             
             showNotification(message, type = 'info') {
-                // Створюємо toast notification
+                // Criar notificação toast
                 const toast = document.createElement('div');
                 toast.className = `alert alert-${type === 'success' ? 'success' : type === 'warning' ? 'warning' : 'info'} alert-dismissible fade show`;
                 toast.style.position = 'fixed';
@@ -699,14 +699,14 @@
             }
         }
         
-        // Global functions
+        // Funções globais
         function saveAllSettings() {
             window.systemSettings.saveSettings();
-            window.systemSettings.showNotification('✅ Всі налаштування збережено!', 'success');
+            window.systemSettings.showNotification('✅ Todas configurações guardado!', 'success');
         }
         
         function resetToDefaults() {
-            if (confirm('Скинути всі налаштування до замовчувань?')) {
+            if (confirm('Repor todas as configurações para as predefinições?')) {
                 localStorage.removeItem('deapseak_settings');
                 location.reload();
             }
@@ -725,7 +725,7 @@
             linkElement.click();
         }
         
-        // Ініціалізуємо при завантаженні
+        // Inicializar ao carregar
         document.addEventListener('DOMContentLoaded', function() {
             window.systemSettings = new SystemSettings();
         });
