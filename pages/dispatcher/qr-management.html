@@ -593,7 +593,7 @@
                                     <div class="ml-auto d-flex align-items-center" style="gap:6px;">
                                         <!-- View toggle -->
                                         <div class="btn-group btn-group-sm" role="group" aria-label="Modo de visualização">
-                                            <button type="button" class="btn btn-secondary active" id="listViewBtn" onclick="qrManager.toggleView('list')" title="Вигляд da tabela">
+                                            <button type="button" class="btn btn-secondary active" id="listViewBtn" onclick="qrManager.toggleView('list')" title="Vista de tabela">
                                                 <i class="fas fa-list"></i>
                                             </button>
                                             <button type="button" class="btn btn-outline-secondary" id="gridViewBtn" onclick="qrManager.toggleView('grid')" title="Vista de grelha">
@@ -981,7 +981,7 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <div class="text-muted">Aqui será apresentado історія leituras para do QR-code (exemplo).</div>
+                    <div class="text-muted">Aqui será apresentado o histórico de leituras do QR-code (exemplo).</div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
@@ -1001,7 +1001,7 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <div class="text-muted">Aqui será apresentado modelo para друку/експорту do QR-code (exemplo).</div>
+                    <div class="text-muted">Aqui será apresentado modelo para impressão/exportação do QR-code (exemplo).</div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
@@ -1020,12 +1020,12 @@
             </ul>
         </div>
     </div>
-    <!-- Janela modal para масової de alteração estadoу -->
+    <!-- Janela modal para масової de alteração estado -->
     <div class="modal fade" id="bulkStatusModal" tabindex="-1" role="dialog" aria-labelledby="bulkStatusModalLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header bg-secondary text-white">
-                    <h5 class="modal-title" id="bulkStatusModalLabel"><i class="fas fa-exchange-alt"></i> Масова alteração estadoу</h5>
+                    <h5 class="modal-title" id="bulkStatusModalLabel"><i class="fas fa-exchange-alt"></i> Alteração em massa de estado</h5>
                     <button type="button" class="close text-white" data-dismiss="modal" aria-label="Fechar">
                         <span aria-hidden="true">&times;</span>
                     </button>
@@ -1047,12 +1047,12 @@
             </div>
         </div>
     </div>
-    <!-- Модальне confirmação масового eliminação -->
+    <!-- Модальне confirmação em massa eliminação -->
     <div class="modal fade" id="bulkDeleteModal" tabindex="-1" role="dialog" aria-labelledby="bulkDeleteModalLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header bg-danger text-white">
-                    <h5 class="modal-title" id="bulkDeleteModalLabel"><i class="fas fa-trash"></i> Confirmação масового eliminação</h5>
+                    <h5 class="modal-title" id="bulkDeleteModalLabel"><i class="fas fa-trash"></i> Confirmação de exclusão em massa eliminação</h5>
                     <button type="button" class="close text-white" data-dismiss="modal" aria-label="Fechar">
                         <span aria-hidden="true">&times;</span>
                     </button>
@@ -1126,11 +1126,11 @@
             $('#bulkDeleteModal').modal('show');
         });
         
-        // Ações em massa - alteração estadoу
+        // Ações em massa - alteração estado
         $('#bulkStatusBtn').on('click', function() {
             const count = $('.qr-checkbox:checked').length;
             if (count === 0) {
-                showNotification('Selecione QR-codes para de alteração estadoу', 'warning');
+                showNotification('Selecione QR-codes para de alteração estado', 'warning');
                 return;
             }
             $('#bulkStatusCount').text(count);
@@ -1147,7 +1147,7 @@
             showNotification(`Exportar ${count} de QR-codes...`, 'info');
         });
         
-        // Confirmação масового eliminação
+        // Confirmação de exclusão em massa eliminação
         $('#confirmBulkDeleteBtn').on('click', function() {
             const checkedBoxes = $('.qr-checkbox:checked');
             checkedBoxes.closest('tr').fadeOut(300, function() {
@@ -1158,7 +1158,7 @@
             $('#bulkActionsPanel').hide();
         });
         
-        // Confirmação de alteração estadoу
+        // Confirmação de alteração estado
         $('#confirmBulkStatusBtn').on('click', function() {
             const newStatus = $('#bulkStatusSelect').val();
             const checkedBoxes = $('.qr-checkbox:checked');
@@ -1236,7 +1236,7 @@
         }
         
         // Inicialização qrManager - apenas один раз!
-        console.log('🚀 Deапуск ініціалізації QR Manager...');
+        console.log('🚀 Início ініціалізації QR Manager...');
         if (typeof qrManager !== 'undefined') {
             qrManager.init();
             console.log('✅ QR Manager ініціалізовано com sucesso');

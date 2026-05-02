@@ -515,7 +515,7 @@
                                 </select>
                             </div>
                             <div class="col-md-3">
-                                <label for="dateFilter">Період:</label>
+                                <label for="dateFilter">Período:</label>
                                 <select class="form-control" id="dateFilter">
                                     <option value="all">Todo o período</option>
                                     <option value="today">Hoje</option>
@@ -666,7 +666,7 @@
                 $('#notificationsList').html(`
                     <div class="alert alert-warning m-3">
                         <h5><i class="fas fa-exclamation-triangle"></i> Não foi possível descarregar notificações</h5>
-                        <p>Erro ligação до API: ${error.message}</p>
+                        <p>Erro de ligação à API: ${error.message}</p>
                         <button class="btn btn-primary btn-sm" onclick="location.reload()">
                             <i class="fas fa-sync"></i> Tentar novamente
                         </button>
@@ -997,7 +997,7 @@
                 });
                 const result = await resp.json();
                 if (result.success) {
-                    toastr.info('Pedido на eliminação recusado');
+                    toastr.info('Pedido de eliminação recusado');
                     const n = notifications.find(n => n.id == notificationId || n._id == notificationId);
                     if (n) n.status = 'rejected';
                     loadNotifications();

@@ -527,12 +527,12 @@
                         </div>
                     </div>
 
-                    <!-- Період relatório -->
+                    <!-- Período do relatório -->
                     <div class="row mb-4">
                         <div class="col-12">
                             <div class="card">
                                 <div class="card-header">
-                                    <h3 class="card-title">Період relatório</h3>
+                                    <h3 class="card-title">Período do relatório</h3>
                                 </div>
                                 <div class="card-body">
                                     <div class="row">
@@ -650,7 +650,7 @@
                                 <div class="card-body">
                                     <div class="report-header text-center mb-4">
                                         <h2>Relatório de manutenção técnica</h2>
-                                        <p class="text-muted">Період: 01.01.2024 - 31.01.2024</p>
+                                        <p class="text-muted">Período: 01.01.2024 - 31.01.2024</p>
                                     </div>
                                     
                                     <div class="row mb-4">
@@ -725,7 +725,7 @@
                                 </div>
                                 <div class="card-body">
                                     <div id="scheduled-list">
-                                        <p class="text-center text-muted" id="scheduled-empty">Relatórios agendados відсутні</p>
+                                        <p class="text-center text-muted" id="scheduled-empty">Sem relatórios agendados</p>
                                     </div>
                                 </div>
                             </div>
@@ -779,7 +779,7 @@
                 $(this).addClass('active');
             });
 
-            // Швидкий вибір періоду
+            // Швидкий вибір períodoу
             $('.quick-periods .btn').on('click', function() {
                 const days = parseInt($(this).data('days'));
                 const today = new Date();
@@ -810,7 +810,7 @@
                 const status = $('#statusFilter').val();
 
                 if (!startDate || !endDate) {
-                    alert('Selecione поchatкову e кінцеву дати');
+                    alert('Selecione as datas inicial e final');
                     return;
                 }
 
@@ -829,7 +829,7 @@
                         const items = Array.isArray(data.items) ? data.items : [];
                         const tbody = items.map(function(r) {
                             return '<tr><td>' + (r.id || r._id || '—') + '</td><td>' + (r.lift || '—') + '</td><td>' + (r.technician || '—') + '</td><td>' + (r.status || '—') + '</td><td>' + (r.createdAt ? new Date(r.createdAt).toLocaleDateString('pt-PT') : '—') + '</td><td>' + (r.completedAt ? new Date(r.completedAt).toLocaleDateString('pt-PT') : '—') + '</td></tr>';
-                        }).join('') || '<tr><td colspan="6" class="text-center">Sem dados за selecionado період</td></tr>';
+                        }).join('') || '<tr><td colspan="6" class="text-center">Sem dados за selecionado período</td></tr>';
                         $('#report-result-placeholder').closest('tbody').html(tbody);
                         if (data.stats) {
                             $('#result-completed').text(data.stats.completed || 0);

@@ -417,7 +417,7 @@
             const currentUser = AuthManager.getCurrentUser();
             
             if (!currentUser) {
-                console.error('[Tech Dashboard] Não foi possível отримати дані do utilizador');
+                console.error('[Tech Dashboard] Não foi possível отримати dados do utilizador');
                 AuthManager.logout();
                 return;
             }
@@ -430,7 +430,7 @@
 
             console.log('[Tech Dashboard] Autorizado como:', currentUser.username, currentUser.role);
 
-            // Deаванeжуexisteмо дані
+            // Deаванeжуexisteмо dados
             loadTechData();
             
             // Inicialização WebSocket para do técnico
@@ -443,7 +443,7 @@
             console.log('🔄 A carregar dados do técnico...');
             
             try {
-                // Отримуexisteмо дані desde API
+                // Отримуexisteмо dados desde API
                 const [assignments, requests] = await Promise.all([
                     loadTechAssignments(),
                     loadTechRequests()
@@ -523,7 +523,7 @@
             }
         }
 
-        // Função carregamento pedidoів do técnico
+        // Função carregamento pedidos do técnico
         async function loadTechRequests() {
             try {
                 const response = await AuthManager.fetchWithAuth('/api/requests');
@@ -755,7 +755,7 @@
                     ${commentsHtml}
                 `);
 
-                // Botões de ação dependendoо від estadoу
+                // Botões de ação dependendoо від estado
                 let actionBtns = '';
                 if (task.status === 'assigned') {
                     actionBtns += `<button class="btn btn-primary mr-2" onclick="startTask('${taskId}');$('#taskDetailsModal').modal('hide');"><i class="fas fa-play mr-1"></i>Iniciar</button>`;
@@ -827,7 +827,7 @@
         }
 
         function addTaskNote(taskId) {
-            console.log('📝 Додавання notas до tarefas:', taskId);
+            console.log('📝 Додавання notas para as tarefas:', taskId);
             document.getElementById('noteTaskId').value = taskId;
             document.getElementById('noteText').value = '';
             $('#addNoteModal').modal('show');
@@ -865,11 +865,11 @@
                 })
                 .catch(error => {
                     console.error('Erro отримання координат:', error);
-                    alert('Não foi possível отримати coordenadas do elevador');
+                    alert('Não foi possível obter as coordenadas do elevador');
                 });
         }
 
-        // Função adição notas до tarefas
+        // Função adição notas para as tarefas
         async function addNoteToTask(taskId, note) {
             try {
                 const response = await AuthManager.fetchWithAuth(`/api/requests/${taskId}/comment`, {
@@ -904,7 +904,7 @@
             }
         }
 
-        // Função atualização estadoу tarefas
+        // Função ao atualizar o estado da tarefa
         async function updateTaskStatus(taskId, newStatus) {
             try {
                 const response = await AuthManager.fetchWithAuth(`/api/requests/${taskId}/status`, {
@@ -914,14 +914,14 @@
 
                 if (response && response.ok) {
                     console.log('✅ Estado tarefas atualizado');
-                    // Recarregar дані
+                    // Recarregar dados
                     loadTechData();
                 } else {
                     throw new Error('Erro ao actualizar estado');
                 }
             } catch (error) {
-                console.error('❌ Erro atualização estadoу:', error);
-                alert('Erro atualização estadoу tarefas');
+                console.error('❌ Erro atualização estado:', error);
+                alert('Erro ao atualizar o estado da tarefa');
             }
         }
         
@@ -977,7 +977,7 @@
                 
                 window.techWebSocket.on('error', function(error) {
                     console.error('[Tech Dashboard] WebSocket erro:', error);
-                    showTechNotification('Erro з\'ligação', 'error');
+                    showTechNotification('Erro de ligação', 'error');
                 });
                 
                 // Підchaveення

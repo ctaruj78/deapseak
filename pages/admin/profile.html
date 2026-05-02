@@ -1013,14 +1013,14 @@
                             </div>
                             
                             <h5 class="mt-4">Exportar dados</h5>
-                            <p class="text-muted">Exportarуйте todos ваші дані в JSON formatoі</p>
+                            <p class="text-muted">Exporte todos os seus dados em formato JSON</p>
                             <button class="btn btn-outline-primary" onclick="(function(){const data={user:JSON.parse(localStorage.getItem('userData')||'{}'),exported:new Date().toISOString()};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='profile-export-'+Date.now()+'.json';a.click();})()">
                                 <i class="fas fa-download mr-2"></i>Exportar dados
                             </button>
                             
-                            <h5 class="mt-4">Видmasння облікового registo</h5>
-                            <p class="text-danger">Цю дію неможливо cancelar. Todas ваші дані serão видmasні наsempre.</p>
-                            <button class="btn btn-outline-danger" onclick="if(confirm('Eliminar conta? Цю дію неможливо cancelar!')){if(confirm('Tem a certeza? Todas дані serão видmasні наsempre.')){const token=localStorage.getItem('authToken');fetch('/api/users/me',{method:'DELETE',headers:{Authorization:'Bearer '+token}}).then(()=>{localStorage.clear();sessionStorage.clear();window.location.replace('/pages/auth/login.html');}).catch(()=>{alert('Erro eliminação. Deверніться до administradorістратора.');});}}">
+                            <h5 class="mt-4">Eliminar conta</h5>
+                            <p class="text-danger">Esta ação não pode ser cancelada. Todas os seus dados serão eliminados permanentemente.</p>
+                            <button class="btn btn-outline-danger" onclick="if(confirm('Eliminar conta? Esta ação não pode ser cancelada!')){if(confirm('Tem a certeza? Todas dados serão eliminados permanentemente.')){const token=localStorage.getItem('authToken');fetch('/api/users/me',{method:'DELETE',headers:{Authorization:'Bearer '+token}}).then(()=>{localStorage.clear();sessionStorage.clear();window.location.replace('/pages/auth/login.html');}).catch(()=>{alert('Erro eliminação. Contacte o administrador.');});}}">
                                 <i class="fas fa-trash mr-2"></i>Eliminar conta
                             </button>
                         </div>
@@ -1117,7 +1117,7 @@
         document.getElementById('personalForm').addEventListener('submit', function(e) {
             e.preventDefault();
             // Handle personal info update
-            alert('Informação pessoal оновлена!');
+            alert('Informação pessoal atualizada!');
         });
 
         document.getElementById('passwordForm').addEventListener('submit', function(e) {

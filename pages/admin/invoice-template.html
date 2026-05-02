@@ -1417,7 +1417,7 @@
                 console.log('📋 Resultado:', result);
                 
                 if (response.ok && result.success) {
-                    // Отримати дані орçаменту (pode бути в result.data ou result.orcamento)
+                    // Obter dados орçаменту (pode бути в result.data ou result.orcamento)
                     const orcamentoData = result.data || result.orcamento || {};
                     const orcamentoId = orcamentoData._id || window.currentOrcamentoId;
                     
@@ -1483,7 +1483,7 @@
 
         // Initialize when document is ready
         $(document).ready(async function() {
-            // Отримати parâmetros URL
+            // Obter parâmetros URL
             const urlParams = new URLSearchParams(window.location.search);
             const orcamentoId = urlParams.get('id');
             const viewMode = urlParams.get('view') === 'true';
@@ -1496,7 +1496,7 @@
                 return;
             }
             
-            // Verificação de autorização para administradorістраторів
+            // Verificação de autorização para administradorів
             const token = localStorage.getItem('liftmanager_jwt') || 
                          localStorage.getItem('jwt_token') ||
                          localStorage.getItem('token') || 

@@ -632,10 +632,10 @@ let clientLifts = [];
 $(document).ready(async function() {
     console.log('🧠 A carregar AI прогнозування para cliente...');
     
-    // Deаванeжуexisteмо дані do utilizador
+    // Deаванeжуexisteмо dados do utilizador
     loadUserInfo();
     
-    // Ініціалізуexisteмо систему прогнозування
+    // Ініціалізуexisteмо sistema прогнозування
     predictiveSystem = new PredictiveMaintenanceSystem();
     
     // À espera deмо a carregar dados
@@ -714,7 +714,7 @@ function displayPredictions() {
     const container = $('#predictionsContainer');
     container.empty();
     
-    // Deбираexisteмо дані прогнозів para de elevadores cliente
+    // Deбираexisteмо dados прогнозів para de elevadores cliente
     let predictions = [];
     
     clientLifts.forEach(lift => {
@@ -804,7 +804,7 @@ function displayPredictions() {
     displayGeneralRecommendations(predictions);
 }
 
-// Компактний linha da tabela + розгортувана painel детmasй
+// Компактний linha da tabela + розгортувана painel дetc
 function createPredictionRow(lift, prediction) {
     const liftId = window.safeId ? window.safeId(lift) : ((lift._id && lift._id.toString) ? lift._id.toString() : (lift._id || lift.id || ''));
     if (!liftId) return '';
@@ -951,7 +951,7 @@ function displayGeneralRecommendations(predictions) {
                 <div class="timeline-marker" style="background: #dc3545; box-shadow: 0 0 0 2px #dc3545;"></div>
                 <div class="alert alert-danger mb-2">
                     <h5><i class="fas fa-exclamation-triangle"></i> Atenção crítica!</h5>
-                    <p>У вас existe <strong>${criticalLifts.length}</strong> ${criticalLifts.length === 1 ? 'elevador' : 'elevadores'} com alto risco de avaria. 
+                    <p>Tem <strong>${criticalLifts.length}</strong> ${criticalLifts.length === 1 ? 'elevador' : 'elevadores'} com alto risco de avaria. 
                     Recomendamos organizar urgentemente a manutenção técnica.</p>
                 </div>
             </div>
@@ -964,7 +964,7 @@ function displayGeneralRecommendations(predictions) {
                 <div class="timeline-marker" style="background: #ffc107; box-shadow: 0 0 0 2px #ffc107;"></div>
                 <div class="alert alert-warning mb-2">
                     <h5><i class="fas fa-calendar-check"></i> ⚠️ Inspeções em atraso (Violação da lei!)</h5>
-                    <p><strong>${needsInspection.length}</strong> ${needsInspection.length === 1 ? 'elevador necessita' : 'elevadores necessitam'} планової inspeções.</p>
+                    <p><strong>${needsInspection.length}</strong> ${needsInspection.length === 1 ? 'elevador necessita' : 'elevadores necessitam'} de inspeção planeada.</p>
                     <p class="mb-0"><strong>ATENÇÃO:</strong> Em Portugal é obrigatória <strong>inspeção mensal</strong> para todos os tipos de elevadores! 
                     O atraso pode resultar em multas de 500€ a 5000€.</p>
                 </div>

@@ -570,7 +570,7 @@ document.addEventListener("DOMContentLoaded", function() {
             Swal.fire({
                 icon: 'error',
                 title: 'Erro de acesso à câmara',
-                text: 'Não foi possível отримати lista acessoних камер. Verifique дозволи камери у вашому браузері.',
+                text: 'Não foi possível отримати lista disponíveis камер. Verifique дозволи камери у вашому браузері.',
                 confirmButtonText: 'Entendido'
             });
         }
@@ -751,7 +751,7 @@ document.addEventListener("DOMContentLoaded", function() {
             Swal.fire({
                 icon: 'error',
                 title: 'Erro ao processar dados',
-                text: 'Não foi possível обробити введені дані. Verifique formato dados і tente ainda раз.',
+                text: 'Não foi possível обробити введені dados. Verifique formato dados і tente ainda раз.',
                 confirmButtonText: 'Entendido'
             });
         } finally {
@@ -1042,7 +1042,7 @@ document.addEventListener("DOMContentLoaded", function() {
                                 <p><strong>Data e hora:</strong> ${formattedDate}, ${formattedTime}</p>
                                 <p><strong>Estado:</strong> ${scan.status === 'success' ? 'Com sucesso' : scan.status === 'unknown' ? 'Desconhecido' : 'Erro'}</p>
                                 <p><strong>Tipo do QR-code:</strong> ${scan.referenceType || 'Não definido'}</p>
-                                <p><strong>ID instalaçãoа:</strong> ${scan.referenceId || 'Não definido'}</p>
+                                <p><strong>ID de instalação:</strong> ${scan.referenceId || 'Não definido'}</p>
                                 <p><strong>Dados do código QR:</strong></p>
                                 <pre class="bg-light p-2">${JSON.stringify(scan.data, null, 2)}</pre>
                             </div>

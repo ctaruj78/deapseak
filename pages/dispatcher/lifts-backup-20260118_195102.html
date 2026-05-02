@@ -704,7 +704,7 @@
         let currentView = 'list'; // 'list' ou 'map'
         let userRole = 'dispatcher'; // Deа замовчуванням
 
-        // Отримати função do utilizador desde tokenа
+        // Obter função do utilizador desde tokenа
         function getUserRole() {
             try {
                 const token = localStorage.getItem('authToken');
@@ -726,7 +726,7 @@
                 return;
             }
 
-            // Отримати função do utilizador
+            // Obter função do utilizador
             userRole = getUserRole();
             console.log('👤 Função do utilizador:', userRole);
 
@@ -806,7 +806,7 @@
                 }
 
                 const data = await response.json();
-                console.log('✅ Recebido дані:', data);
+                console.log('✅ Recebido dados:', data);
                 
                 allLifts = data.data || data.lifts || [];
                 console.log('📊 Quantidade de elevadores:', allLifts.length);
@@ -821,7 +821,7 @@
                 populateMunicipalityFilter();
                 displayLifts(allLifts);
                 
-                // Descarregar quantidade ativos pedidoів (асинхронно)
+                // Descarregar quantidade ativos pedidos (асинхронно)
                 loadActiveRequestsCount();
                 
             } catch (error) {
@@ -852,7 +852,7 @@
         // Mostrar банер filtroа по clienteу
         async function showClientFilterBanner(clientId) {
             try {
-                // Отримати дані cliente
+                // Obter os dados do cliente
                 const response = await fetch(`${API_URL}/api/users/${clientId}`, {
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('authToken')}`
@@ -926,12 +926,12 @@
                 }
             }
             
-            // Verificação відсутності contratoу
+            // Verificação відсутності contrato
             if (!lift.documents || lift.documents.filter(d => d.type === 'contract').length === 0) {
                 notifications.push({
                     type: 'info',
                     icon: 'fas fa-file-contract',
-                    message: 'Não há contratoу'
+                    message: 'Não há contrato'
                 });
             }
             
@@ -1035,7 +1035,7 @@
                         ` : ''}
                         ${lift.activeRequests && lift.activeRequests > 0 ? `
                             <span class="badge badge-danger mr-1">
-                                <i class="fas fa-exclamation-circle"></i> ${lift.activeRequests} ativos pedidoів
+                                <i class="fas fa-exclamation-circle"></i> ${lift.activeRequests} ativos pedidos
                             </span>
                         ` : ''}
                     </div>
@@ -1045,8 +1045,8 @@
                         <button class="btn btn-xs btn-primary mr-1" onclick="createRequestForLift('${lift._id}')" title="Criar pedido">
                             <i class="fas fa-plus"></i> Pedido
                         </button>
-                        <button class="btn btn-xs btn-info mr-1" onclick="viewLiftRequests('${lift._id}')" title="Історія pedidoів">
-                            <i class="fas fa-history"></i> Історія
+                        <button class="btn btn-xs btn-info mr-1" onclick="viewLiftRequests('${lift._id}')" title="Histórico pedidos">
+                            <i class="fas fa-history"></i> Histórico
                         </button>
                         ${!lift.technician ? `
                             <button class="btn btn-xs btn-success" onclick="assignTechnician('${lift._id}')" title="Atribuir técnico">
@@ -1054,7 +1054,7 @@
                             </button>
                         ` : ''}
                         ${lift.clientPhone ? `
-                            <a href="tel:${lift.clientPhone}" class="btn btn-xs btn-secondary" title="Deаtelefoneувати">
+                            <a href="tel:${lift.clientPhone}" class="btn btn-xs btn-secondary" title="Telefonar">
                                 <i class="fas fa-phone"></i>
                             </a>
                         ` : ''}
@@ -1338,7 +1338,7 @@
             }
         }
 
-        // Отримати texto estadoу
+        // Obter texto estado
         function getStatusText(status) {
             const statuses = {
                 'active': 'Activo',
@@ -1421,7 +1421,7 @@
             
             map.addLayer(markerCluster);
             
-            console.log('✅ Mapa ініціалізована');
+            console.log('✅ Mapa inicializado');
         }
 
         // Actualizar маркери на no mapa
@@ -1444,7 +1444,7 @@
 
         // Criar маркер para do elevador
         function createMarker(lift) {
-            // Колір маркера dependendoо від estadoу
+            // Колір маркера dependendoо від estado
             const iconColor = {
                 'active': 'green',
                 'inactive': 'red',
@@ -1569,19 +1569,19 @@
                 return;
             }
 
-            // Verificação tamanhoу ficheiroу (макс 10 MB)
+            // Verificação tamanhoу ficheiro (макс 10 MB)
             const maxSize = 10 * 1024 * 1024; // 10 MB
             if (file.size > maxSize) {
                 showAlert('Ficheiro занадто великий. Tamanho máximo: 10 MB', 'danger');
                 return;
             }
 
-            // Verificação tipoу ficheiroу
+            // Verificação tipoу ficheiro
             const allowedTypes = ['application/pdf', 'application/msword', 
                 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
                 'image/jpeg', 'image/png'];
             if (!allowedTypes.includes(file.type)) {
-                showAlert('Недопустимий tipo ficheiroу. Дозволені: PDF, DOC, DOCX, JPG, PNG', 'danger');
+                showAlert('Недопустимий tipo ficheiro. Дозволені: PDF, DOC, DOCX, JPG, PNG', 'danger');
                 return;
             }
 
@@ -1659,7 +1659,7 @@
             if (documents.length === 0) {
                 container.innerHTML = `
                     <div class="alert alert-info">
-                        <i class="fas fa-info-circle"></i> Documentos відсутні
+                        <i class="fas fa-info-circle"></i> Documentos ausentes
                     </div>
                 `;
                 return;
@@ -1778,7 +1778,7 @@
             const lift = allLifts.find(l => l._id === liftId);
             if (!lift) return;
             
-            // Redirecionamento para a página pedidoів desde filtroом по elevadorу
+            // Redirecionamento para a página pedidos desde filtroом по elevadorу
             window.location.href = '/pages/dispatcher/requests.html?liftId=' + liftId;
         }
 
@@ -1801,7 +1801,7 @@
                 const technicians = await response.json();
                 
                 if (technicians.length === 0) {
-                    showAlert('Não há acessoних de técnicos', 'warning');
+                    showAlert('Não há técnicos disponíveis', 'warning');
                     return;
                 }
                 
@@ -1818,7 +1818,7 @@
                 
                 const techIndex = parseInt(selection) - 1;
                 if (techIndex < 0 || techIndex >= technicians.length) {
-                    showAlert('Inválido вибір', 'danger');
+                    showAlert('Seleção inválida', 'danger');
                     return;
                 }
                 
@@ -1849,7 +1849,7 @@
             }
         }
 
-        // Descarregar quantidade ativos pedidoів para кожного do elevador
+        // Descarregar quantidade ativos pedidos para кожного do elevador
         async function loadActiveRequestsCount() {
             try {
                 const response = await fetch(`${API_URL}/api/requests/count-by-lift`, {
@@ -1861,7 +1861,7 @@
                 if (response.ok) {
                     const requestCounts = await response.json();
                     
-                    // Adicionar quantidade pedidoів до кожного do elevador
+                    // Adicionar quantidade pedidos до кожного do elevador
                     allLifts.forEach(lift => {
                         const count = requestCounts[lift._id] || 0;
                         lift.activeRequests = count;
@@ -1870,7 +1870,7 @@
                     displayLifts(allLifts);
                 }
             } catch (error) {
-                console.warn('Não foi possível descarregar quantidade pedidoів:', error);
+                console.warn('Não foi possível descarregar quantidade pedidos:', error);
             }
         }
     </script>

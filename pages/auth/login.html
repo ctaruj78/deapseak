@@ -88,7 +88,7 @@
             
             // Deахист від подвійної ініціалізації
             if (window.__loginFormInitialized) {
-                console.log('⚠️ Форма já ініціалізована, пропускаexisteмо');
+                console.log('⚠️ Форма já inicializado, пропускаexisteмо');
                 return;
             }
             
@@ -100,7 +100,7 @@
                 return;
             }
             
-            // Atéзначаexisteмо що форма ініціалізована
+            // Atéзначаexisteмо що форма inicializado
             window.__loginFormInitialized = true;
             console.log('🔧 Ініціалізація форми loginу...');
             
@@ -112,7 +112,7 @@
             
             // Se pedidoано автоlogin - оouщуexisteмо сeрий token
             if (autoLoginRequested && typeof AuthManager !== 'undefined') {
-                console.log('🔄 Автоlogin pedidoано - оouщуexisteмо сeрі дані');
+                console.log('🔄 Автоlogin pedidoано - оouщуexisteмо сeрі dados');
                 AuthManager.logout();
             }
             
@@ -131,7 +131,7 @@
             if (redirecting) {
                 console.log('⚠️ Deапобігання циклу редиректів - оouщуexisteмо session');
                 sessionStorage.removeItem('redirecting');
-                // Оouщуexisteмо todos дані автентифікації
+                // Оouщуexisteмо todos dados автентифікації
                 if (typeof AuthManager !== 'undefined') {
                     localStorage.removeItem(AuthManager.TOKEN_KEY);
                     localStorage.removeItem(AuthManager.USER_KEY);
@@ -142,7 +142,7 @@
                     // Перевіряexisteмо ou utilizador хоче sair (se в URL existe параметр logout)
                     const urlParams = new URLSearchParams(window.location.search);
                     if (urlParams.get('logout') === 'true') {
-                        console.log('🚪 Utilizador хоче sair, оouщуexisteмо дані...');
+                        console.log('🚪 Utilizador хоче sair, оouщуexisteмо dados...');
                         AuthManager.logout();
                         return;
                     }
@@ -174,7 +174,7 @@
                 }
             }
             
-            // Оouщуexisteмо сeрі дані se existe
+            // Оouщуexisteмо сeрі dados se existe
             localStorage.removeItem('lm_session');
             localStorage.removeItem('lm_user');
             
@@ -229,7 +229,7 @@
                 }
             }
             
-            // Отримати назву de função українською
+            // Obter назву de função українською
             function getRoleName(role) {
                 const roleNames = {
                     'admin': 'Administrador',
@@ -404,7 +404,7 @@
                                 showMessage('Bem-vindo! Por favor altere a sua palavra-passe temporária antes de começar.', 'warning');
                             }
                         } else {
-                            // Deвичайний entrada — перенаправляexisteмо através de 500мс
+                            // Normal entrada — перенаправляexisteмо através de 500мс
                             setTimeout(() => {
                                 if (redirectUrl) {
                                     sessionStorage.removeItem('redirect_after_login');

@@ -804,7 +804,7 @@
                                         <div class="form-group">
                                             <label for="enhancedLiftCapacity">Capacidade de carga (kg)</label>
                                             <div class="input-group">
-                                                <input type="number" id="enhancedLiftCapacity" name="liftCapacity" class="form-control" min="150" max="5000" step="10" value="300" placeholder="кг">
+                                                <input type="number" id="enhancedLiftCapacity" name="liftCapacity" class="form-control" min="150" max="5000" step="10" value="300" placeholder="kg">
                                                 <div class="input-group-append">
                                                     <span class="input-group-text">kg</span>
                                                 </div>
@@ -835,7 +835,7 @@
                                         <div class="form-group">
                                             <label for="enhancedLiftAddress">Endereço completo *</label>
                                             <div class="input-group">
-                                                <input type="text" id="enhancedLiftAddress" name="liftAddress" class="form-control" required placeholder="Rua Хрещатик, 1, Lisboa">
+                                                <input type="text" id="enhancedLiftAddress" name="liftAddress" class="form-control" required placeholder="Rua Kreschatyk, 1, Lisboa">
                                                 <div class="input-group-append">
                                                     <button type="button" class="btn btn-outline-info" id="enhancedBtnGeocode">
                                                         <i class="fas fa-search-location"></i>
@@ -932,7 +932,7 @@
                                     <div class="col-md-6">
                                         <div class="form-group">
                                             <label for="enhancedContactPerson">Pessoa de contacto</label>
-                                            <input type="text" id="enhancedContactPerson" name="contactPerson" class="form-control" placeholder="Gerente, por exemplo administradorістратор">
+                                            <input type="text" id="enhancedContactPerson" name="contactPerson" class="form-control" placeholder="Gerente, por exemplo administrador">
                                         </div>
                                     </div>
                                 </div>
@@ -1029,7 +1029,7 @@
                                     <div class="col-12">
                                         <div class="form-group">
                                             <label for="enhancedMaintenanceNotes">Notas de manutenção</label>
-                                            <textarea id="enhancedMaintenanceNotes" name="maintenanceNotes" class="form-control" rows="3" placeholder="Registo deistooistoи про manutenção técnica, reparaçãoи, substituições детmasй..."></textarea>
+                                            <textarea id="enhancedMaintenanceNotes" name="maintenanceNotes" class="form-control" rows="3" placeholder="Registo de histórico de manutenção técnica, reparação, substituições, etc..."></textarea>
                                         </div>
                                     </div>
                                 </div>
@@ -1399,7 +1399,7 @@
                             <input type="date" id="contract-start-date" class="form-control" required>
                         </div>
                         <div class="form-group">
-                            <label for="contract-end-date">Data de fim <small class="text-muted">(opcional — se não houver, renova automaticamenteться автоматично на 1 ano)</small></label>
+                            <label for="contract-end-date">Data de fim <small class="text-muted">(opcional — se não houver, renova automaticamente por 1 ano)</small></label>
                             <input type="date" id="contract-end-date" class="form-control">
                         </div>
                         <div class="form-group">
@@ -1950,7 +1950,7 @@
                         <label for="municipality-notes">
                             <i class="fas fa-comment mr-1"></i>Notas adicionais (opcional)
                         </label>
-                        <textarea id="municipality-notes" class="form-control" rows="3" placeholder="Adicione informação adicional paraa municípioу..."></textarea>
+                        <textarea id="municipality-notes" class="form-control" rows="3" placeholder="Adicione informação adicional para o município..."></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -2028,7 +2028,7 @@
             }
         };
         
-        // Глобальна змінна para збереження PDF ficheiroу
+        // Глобальна змінна para збереження PDF ficheiro
         let currentPDFFile = null;
 
         // Функції para trabalhos desde PDF relatórioми
@@ -2322,7 +2322,7 @@ Equipa FestLift
             }
         }
 
-        // Обробник carregamento PDF ficheiroу
+        // Обробник carregamento PDF ficheiro
         document.addEventListener('DOMContentLoaded', function() {
             const pdfInput = document.getElementById('inspectionReport');
             if (pdfInput) {
@@ -2450,7 +2450,7 @@ Equipa FestLift
                 const liftId = $(this).data('lift-id') || $(this).data('id');
                 console.log('Edit lift clicked for ID:', liftId);
                 if (window.enhancedLiftModal && liftId) {
-                    // Deаванeжуexisteмо дані do elevador para edição в enhanced модальному вікні
+                    // Deаванeжуexisteмо dados do elevador para edição в enhanced модальному вікні
                     const lift = window.allLifts?.find(l => l.id === liftId);
                     if (lift) {
                         window.enhancedLiftModal.loadLiftForEdit(lift);
@@ -2461,7 +2461,7 @@ Equipa FestLift
                 }
             });
 
-            // Обробник edição desde детmasй
+            // Обробник edição desde дetc
             $('#edit-lift-from-details').on('click', function() {
                 const detailsModal = $('#liftDetailsModal');
                 const liftId = detailsModal.data('current-lift-id'); // Necessário definir ao abrir os detalhes
@@ -2504,7 +2504,7 @@ Equipa FestLift
         }
         
         if (liftData) {
-            // Режим edição - СПОЧАТКУ всeновлюexisteмо ID, ПОТІМ заванeжуexisteмо дані
+            // Режим edição - СПОЧАТКУ всeновлюexisteмо ID, ПОТІМ заванeжуexisteмо dados
             console.log('✏️ EDIT MODE: Loading data for lift:', liftData);
             console.log('🔑 Lift ID:', liftData.id || liftData._id);
             
@@ -2872,7 +2872,7 @@ Equipa FestLift
                     window.currentLiftId = window.enhancedLiftModal.currentLiftId;
                     console.log('🏗️ currentLiftId do modal melhorado:', window.currentLiftId);
                 } else {
-                    // Спробуexisteмо витягти _id desde dataset abertoго модального вікна детmasй
+                    // Спробуexisteмо витягти _id desde dataset abertoго модального вікна дetc
                     const detailModal = document.getElementById('liftDetailsModal');
                     if (detailModal?.dataset?.liftId) {
                         window.currentLiftId = detailModal.dataset.liftId;
@@ -3004,7 +3004,7 @@ Equipa FestLift
                         document.getElementById('dispPdfLoading').style.display = 'none';
 
                         if (!data.success) {
-                            if (typeof toastr !== 'undefined') toastr.warning(data.message || 'Não foi possível reconhecer o PDF. Preencha вручну.');
+                            if (typeof toastr !== 'undefined') toastr.warning(data.message || 'Não foi possível reconhecer o PDF. Preencha manualmente.');
                             document.getElementById('dispPdfAnalyzeRow').style.display = 'block';
                             return;
                         }
@@ -3318,7 +3318,7 @@ Equipa FestLift
             return;
         }
         
-        // Отримуexisteмо дані desde форми
+        // Отримуexisteмо dados desde форми
         const inspectorName = inspectorField.value.trim();
         const inspectionDate = dateField.value;
         const inspectionStatus = statusField.value;
@@ -3359,7 +3359,7 @@ Equipa FestLift
             calculatedNextMaintenance = calculatedNextMaintenance.toISOString().split('T')[0]; // formato YYYY-MM-DD
         }
 
-        // Формуexisteмо дані para збереження
+        // Формуexisteмо dados para збереження
         const liftId = window.enhancedLiftModal?.currentLiftId || window.currentLiftId;
         if (!liftId || /^(UNKNOWN|LIFT_)/.test(liftId)) {
             alert('❌ Não foi possível identificar o elevador. Feche a janela e tente novamente.');
@@ -3439,7 +3439,7 @@ Equipa FestLift
                     if (nextMaintenanceDate) {
                         lifts[i].nextMaintenance = nextMaintenanceDate;
                     }
-                    // Deберігаexisteмо дані inspeções
+                    // Deберігаexisteмо dados inspeções
                     if (inspectionData.inspectionDate) {
                         lifts[i].inspectionDate = inspectionData.inspectionDate;
                     }
@@ -3768,7 +3768,7 @@ Equipa FestLift</textarea>
         setTimeout(updateScheduledInspectionsList, 500);
     });
 
-    // Diagnóstico навігації AI прогнозування e gestão активним меню
+    // Diagnóstico de navegação AI прогнозування e gestão активним меню
     document.addEventListener('DOMContentLoaded', function() {
         console.log('🔍 Diagnóstico de navegação de previsão AI iniciado');
         
@@ -3788,7 +3788,7 @@ Equipa FestLift</textarea>
                     link.classList.remove('active');
                 });
                 
-                // Додаexisteмо ativo classe до AI прогнозування
+                // Додаexisteмо ativo classe para previsões IA
                 this.classList.add('active');
                 
                 // Deберігаexisteмо сeн в sessionStorage para збереження após переходу
@@ -3909,7 +3909,7 @@ Equipa FestLift</textarea>
     console.log('  - QRCode:', typeof QRCode !== 'undefined' ? '✅' : '⏳ a carregar...');
     console.log('  - EnhancedLiftModal:', typeof EnhancedLiftModal !== 'undefined' ? '✅' : '⏳ a carregar...');
     
-    // Deапускаexisteмо ініціалізацію após carregamento todosх скриптів
+    // Inícioаexisteмо ініціалізацію após carregamento todosх скриптів
     setTimeout(initializeEnhancedModal, 500);
 
     // ========================================================================
@@ -4018,7 +4018,7 @@ Equipa FestLift</textarea>
 
     // 🔧 ВИПРАВЛЕННЯ: API integração замість localStorage
     
-    // API базова функція desde викорисeнням AuthManager
+    // API базова функція desde utilizaçãoм AuthManager
     async function apiCall(endpoint, method = 'GET', data = null) {
         // Verificação de autorização
         if (!AuthManager.isAuthenticated()) {
@@ -4115,7 +4115,7 @@ Equipa FestLift</textarea>
         }
     }
     
-    // 🏛️ Mostrar modal desde confirmaçãoм відправки mensagem municípioу
+    // 🏛️ Mostrar modal desde confirmaçãoм відправки mensagem município
     // Função apresentação de elevadores в da tabela
     function displayLiftsInTable(lifts) {
         console.log('📋 A mostrar elevadores na tabela:', lifts.length);
@@ -4369,7 +4369,7 @@ Equipa FestLift</textarea>
             console.log('📍 address:', lift.address);
             console.log('🗺️ location:', lift.location);
 
-            // Deаповнюexisteмо модальне вікно детmasй
+            // Deаповнюexisteмо модальне вікно дetc
             const modal = document.getElementById('liftDetailsModal');
             if (modal) {
                 // Deберігаexisteмо _id para API викликів
@@ -4387,10 +4387,10 @@ Equipa FestLift</textarea>
                 $('#detail-status').text(getStatusText(lift.status) || 'Não especificado');
                 
                 // Especificações técnicas
-                // Capacidade: показуexisteмо і особи, і кг através de рисочку
+                // Capacidade: показуexisteмо і особи, і kg através de рисочку
                 let capacityText = 'Não especificado';
                 if (lift.capacity) {
-                    // Розраховуexisteмо quantidade pessoas (1 особа ≈ 75 кг)
+                    // Розраховуexisteмо quantidade pessoas (1 особа ≈ 75 kg)
                     const persons = Math.floor(lift.capacity / 75);
                     capacityText = `${persons} pessoas / ${lift.capacity} kg`;
                 } else if (lift.loadCapacity) {
@@ -4513,7 +4513,7 @@ Equipa FestLift</textarea>
                     };
                 }
                 
-                // Deберігаexisteмо current-lift-id para викорисeння в інших функціях
+                // Deберігаexisteмо current-lift-id para utilização в інших функціях
                 $('#liftDetailsModal').data('current-lift-id', liftId);
                 
                 // Deаванeжуexisteмо relatórioи de inspeções
@@ -4572,7 +4572,7 @@ Equipa FestLift</textarea>
         }
     }
     
-    // Função ініціалізації карти в модальному вікні детmasй
+    // Função ініціалізації карти в модальному вікні дetc
     function initDetailsMap(lat, lng, address) {
         console.log('🗺️ A inicializar mapa de detalhes:', { lat, lng, address });
         
@@ -4870,7 +4870,7 @@ Equipa FestLift</textarea>
         console.log('🏷️ A gerar código QR para elevador:', liftId);
         
         try {
-            // Deаванeжуexisteмо дані do elevador desde API
+            // Deаванeжуexisteмо dados do elevador desde API
             const result = await apiCall(`/api/lifts/${liftId}`, 'GET');
             
             console.log('✅ Resposta completa da API:', result);
@@ -4927,7 +4927,7 @@ Equipa FestLift</textarea>
                 return;
             }
             
-            // Формуexisteмо endereço desde instalaçãoа address ou стanos
+            // Формуexisteмо endereço desde instalação address ou стanos
             const address = lift.address;
             let addressStr = 'Endereço não especificado';
             if (typeof address === 'object' && address !== null) {
@@ -4937,7 +4937,7 @@ Equipa FestLift</textarea>
                 if (address.municipality || address.city) parts.push(address.municipality || address.city);
                 addressStr = parts.join(', ') || 'Endereço não especificado';
             } else if (typeof address === 'string' && address) {
-                // Antigo formato: address = "Rua Хрещатик, 1"
+                // Antigo formato: address = "Rua Kreschatyk, 1"
                 addressStr = address;
             }
             
@@ -4954,7 +4954,7 @@ Equipa FestLift</textarea>
             container.innerHTML = '<div id="qrcode"></div>';
             
             // Генеруexisteмо ТІЛЬКИ URL para do QR-code (para не переповнити)
-            // QR-code містить лише ligação, todos дані заванeжуються при переході
+            // QR-code містить лише ligação, todos dados заванeжуються при переході
             const qrUrl = `${window.location.origin}/lift-info.html?id=${lift._id || lift.id}`;
             
             console.log('📄 QR URL:', qrUrl);
@@ -4970,7 +4970,7 @@ Equipa FestLift</textarea>
             });
             
             
-            // Deберігаexisteмо дані para carregamento/друку
+            // Deберігаexisteмо dados para carregamento/друку
             window.currentQRData = {
                 lift: lift,
                 qrUrl: qrUrl,  // Deберігаexisteмо URL para do QR-code
@@ -5212,7 +5212,7 @@ Equipa FestLift</textarea>
                 return false;
             }
             
-            // Період
+            // Período
             if (periodFilter !== 'all') {
                 const reportDate = new Date(report.inspectionDate || report.date);
                 const daysDiff = (Date.now() - reportDate) / (1000 * 60 * 60 * 24);
@@ -5356,7 +5356,7 @@ Equipa FestLift</textarea>
     }
     
     function showAddReportModal() {
-        // Отримуexisteмо _id do elevador desde dataset модального вікна детmasй
+        // Отримуexisteмо _id do elevador desde dataset модального вікна дetc
         const modal = document.getElementById('liftDetailsModal');
         const liftId = modal?.dataset?.liftId || $('#detail-id').text();
         console.log('📋 A abrir formulário de relatório para elevador:', liftId);
@@ -5380,7 +5380,7 @@ Equipa FestLift</textarea>
         }
         
         try {
-            // Формуexisteмо дані relatório як JSON (не FormData, бо не заванeжуexisteмо ficheiro)
+            // Формуexisteмо dados relatório як JSON (не FormData, бо не заванeжуexisteмо ficheiro)
             const reportData = {
                 inspectionType: type,
                 inspectionDate: date,
@@ -5493,7 +5493,7 @@ Equipa FestLift</textarea>
                     ${fileUrl ? `
                         <div class="row">
                             <div class="col-12">
-                                <p><strong><i class="fas fa-file-pdf"></i> Прикріплений ficheiro:</strong></p>
+                                <p><strong><i class="fas fa-file-pdf"></i> Ficheiro anexado:</strong></p>
                                 <a href="${fileUrl}" target="_blank" class="btn btn-outline-primary ml-4">
                                     <i class="fas fa-external-link-alt"></i> Abrir PDF ficheiro
                                 </a>
@@ -5548,7 +5548,7 @@ Equipa FestLift</textarea>
             statusText = 'CONCLUÍDO';
         }
         
-        // Отримуexisteмо дані do elevador
+        // Отримуexisteмо dados do elevador
         const liftId = $('#detail-id').text() || '';
         const liftLocation = $('#detail-location').text() || '';
         const liftType = $('#detail-type').text() || '';
@@ -5718,7 +5718,7 @@ Equipa FestLift</textarea>
             }
             
             if (!contract || !contract.contractFile) {
-                // Não há contratoу - показуexisteмо botão carregamento
+                // Não há contrato - показуexisteмо botão carregamento
                 container.innerHTML = `
                     <div class="alert alert-warning">
                         <i class="fas fa-exclamation-triangle"></i> Contrato não carregado
@@ -5749,7 +5749,7 @@ Equipa FestLift</textarea>
                             <i class="fas fa-file-contract text-success"></i> Contrato №${contractNumber}
                         </h6>
                         <p class="card-text">
-                            <strong>Період ações:</strong> ${periodText}<br>
+                            <strong>Período de ações:</strong> ${periodText}<br>
                             ${description ? `<strong>Notas:</strong> ${description}<br>` : ''}
                         </p>
                         <div class="btn-group">
@@ -5986,7 +5986,7 @@ Equipa FestLift</textarea>
                     const type = (lift.type || '').toLowerCase();
                     const id = ((lift._id || lift.id) || '').toString().toLowerCase();
                     
-                    // Morada desde instalaçãoа
+                    // Morada desde instalação
                     let addressStr = '';
                     if (typeof lift.address === 'object' && lift.address) {
                         addressStr = `${lift.address.street || ''} ${lift.address.municipality || lift.address.city || ''}`.toLowerCase();
@@ -6018,7 +6018,7 @@ Equipa FestLift</textarea>
             console.warn('⚠️ Campo searchInput não encontrado');
         }
         
-        // ✅ ДОДАНО: Обробники filtroів по estadoу e tipoу
+        // ✅ ДОДАНО: Обробники filtroів по estado e tipoу
         const statusFilter = document.getElementById('statusFilter');
         const typeFilter = document.getElementById('typeFilter');
         
@@ -6102,7 +6102,7 @@ Equipa FestLift</textarea>
             displayLiftsInTable(filtered);
             
             // ✅ ВИПРАВЛЕННЯ: Сeтистичні картки sempre показують ПОВНУ сeтистику
-            // Тільки tabela показуexiste відfiltroовані дані
+            // Тільки tabela показуexiste відfiltroовані dados
             updateLiftsStatistics(window.allLiftsData);
         }
         
@@ -6238,7 +6238,7 @@ Equipa FestLift</textarea>
         currentMunicipalityLiftId = liftId;
         
         try {
-            // Deаванeжуexisteмо дані do elevador
+            // Deаванeжуexisteмо dados do elevador
             const result = await apiCall(`/api/lifts/${liftId}`, 'GET');
             
             console.log('📦 Janela do município - resposta completa da API:', result);
@@ -6274,7 +6274,7 @@ Equipa FestLift</textarea>
                 throw new Error('Não foi possível carregar os dados do elevador');
             }
             
-            // Deберігаexisteмо дані para preview
+            // Deберігаexisteмо dados para preview
             currentMunicipalityLiftData = lift;
             
             console.log('✅ Dados do elevador carregados:', lift);
@@ -6352,7 +6352,7 @@ Equipa FestLift</textarea>
                             mun = munResult.data.data;
                             console.log('✅ Extraído de munResult.data.data (invólucro duplo)');
                         } 
-                        // Verificação 2: munResult.data.name (пряма структура municípioу)
+                        // Verificação 2: munResult.data.name (пряма структура município)
                         else if (munResult.data.name) {
                             mun = munResult.data;
                             console.log('✅ Usado munResult.data directamente (tem name)');
@@ -6377,7 +6377,7 @@ Equipa FestLift</textarea>
                         console.log('🔍 mun.email:', mun.email);
                         console.log('🔍 mun.name:', mun.name);
                         
-                        // Deберігаexisteмо дані municípioу para preview
+                        // Deберігаexisteмо dados município para preview
                         currentMunicipalityData = mun;
                         
                         // Виutilizовуexisteмо email депарeменту de elevadores, se він existe
@@ -6432,7 +6432,7 @@ Equipa FestLift</textarea>
             }
             
             try {
-                // Виutilizовуexisteмо збережені дані lift замість textoу desde DOM
+                // Виutilizовуexisteмо збережені dados lift замість textoу desde DOM
                 const lift = currentMunicipalityLiftData;
                 const mun = currentMunicipalityData;
                 
@@ -6707,7 +6707,7 @@ Equipa FestLift</textarea>
     $(document).ready(function() {
         console.log('🔧 A configurar integração do parser de PDF de relatórios...');
         
-        // Обробник carregamento PDF ficheiroу
+        // Обробник carregamento PDF ficheiro
         const pdfInput = document.getElementById('inspectionReportPDF');
         if (pdfInput && window.inspectionReportParser) {
             
@@ -6732,7 +6732,7 @@ Equipa FestLift</textarea>
                 console.log('📄 Ficheiro PDF seleccionado:', file.name);
                 currentInspectionPDFFile = file;
                 
-                // Atéказуexisteмо прев'ю ficheiroу
+                // Atéказуexisteмо прев'ю ficheiro
                 document.getElementById('pdfReportFileName').textContent = file.name;
                 document.getElementById('pdfReportPreviewContainer').style.display = 'block';
                 
@@ -6832,7 +6832,7 @@ Equipa FestLift</textarea>
                         $('#pdfParsingStatus').after(detailsHtml);
                     }
                     
-                    // Deберігаexisteмо розпарсені дані para подальшого викорисeння
+                    // Deберігаexisteмо розпарсені dados para подальшого utilização
                     window.currentParsedInspectionData = parsedData;
                     
                     // Atéказуexisteмо mensagem про sucesso

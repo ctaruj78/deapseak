@@ -617,7 +617,7 @@
                         <div class="col-md-8">
                             <div class="card prediction-card">
                                 <div class="card-header">
-                                    <h3 class="card-title"><i class="fas fa-crystal-ball"></i> IA Прогнози на seguinte період</h3>
+                                    <h3 class="card-title"><i class="fas fa-crystal-ball"></i> Previsões de IA para o próximo período</h3>
                                 </div>
                                 <div class="card-body">
                                     <div class="row">
@@ -1029,7 +1029,7 @@ class PredictiveMaintenanceDashboard {
             }
         });
 
-        // Atéказуexisteмо перший розділ predefinido
+        // Atéказуexisteмо o primeiro розділ predefinido
         this.showSection('overview');
     }
 
@@ -1046,7 +1046,7 @@ class PredictiveMaintenanceDashboard {
         $('.sidebar .nav-link').removeClass('active');
         $(`.sidebar .nav-link[href="#${sectionId}"]`).addClass('active');
         
-        // Deаванeжуexisteмо дані para розділу
+        // Deаванeжуexisteмо dados para розділу
         this.loadSectionData(sectionId);
     }
 
@@ -1118,7 +1118,7 @@ class PredictiveMaintenanceDashboard {
         const alerts = predictiveMaintenance.getActiveAlerts();
         this.updateAlerts(alerts);
         
-        // Отримуexisteмо деeльні дані de elevadores
+        // Отримуexisteмо деeльні dados de elevadores
         this.updateLiftDetails();
         
         // Отримуexisteмо gráfico Manutenção
@@ -1129,7 +1129,7 @@ class PredictiveMaintenanceDashboard {
     }
 
     updateOverviewStats(stats) {
-        console.log('📊 updateOverviewStats отримав дані:', stats);
+        console.log('📊 updateOverviewStats отримав dados:', stats);
         
         $('#highRiskCount').text(stats.highRiskLifts || 0);
         $('#mediumRiskCount').text(stats.mediumRiskLifts || 0);
@@ -1182,7 +1182,7 @@ class PredictiveMaintenanceDashboard {
         $('#criticalAlertsCount').text(alerts.length);
         
         if (alerts.length === 0) {
-            container.html('<p class="text-muted text-center">Não há критичних de alertas</p>');
+            container.html('<p class="text-muted text-center">Não há alertas críticos</p>');
             return;
         }
         
@@ -1394,7 +1394,7 @@ class PredictiveMaintenanceDashboard {
                 this.updateAlerts(data.alerts);
                 
                 if (data.criticalCount > 0) {
-                    toastr.error(`Gerados ${data.criticalCount} критичних de alertas!`);
+                    toastr.error(`Gerados ${data.criticalCount} alertas críticos!`);
                 }
             }, { module: 'predictive-dashboard' });
         }
@@ -1443,7 +1443,7 @@ class PredictiveMaintenanceDashboard {
         return badges[priority] || 'secondary';
     }
 
-    // Novos методи para розділів
+    // Novos методи para secçãoв
 
     createPredictionCharts() {
         this.createTrendChart();

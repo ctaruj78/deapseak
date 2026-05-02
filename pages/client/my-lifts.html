@@ -670,9 +670,9 @@
                       </div>
                       <div class="card-body">
                         <ul>
-                          <li><a href="../../docs/user-manual.pdf" target="_blank"><i class="fas fa-file-pdf text-danger mr-2"></i>Manual do utilizadorистувача (PDF)</a></li>
+                          <li><a href="../../docs/user-manual.pdf" target="_blank"><i class="fas fa-file-pdf text-danger mr-2"></i>Manual do utilizador (PDF)</a></li>
                           <li><a href="../../docs/technical-guide.md" target="_blank"><i class="fas fa-book text-info mr-2"></i>Guia técnico</a></li>
-                          <li><a href="../../docs/api-documentation.md" target="_blank"><i class="fas fa-code text-success mr-2"></i>Documentação APIція</a></li>
+                          <li><a href="../../docs/api-documentation.md" target="_blank"><i class="fas fa-code text-success mr-2"></i>Documentação API</a></li>
                 
                 <!-- Tickets -->
                 
@@ -694,7 +694,7 @@
         </footer>
     </div>
 
-    <!-- Janela modal детmasй do elevador -->
+    <!-- Janela modal дetc do elevador -->
     <div class="modal fade" id="liftDetailsModal" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-xl" role="document" style="max-width: 90vw; margin: 1rem auto;">
             <div class="modal-content" style="max-height: 95vh; display: flex; flex-direction: column;">
@@ -705,7 +705,7 @@
                     </button>
                 </div>
                 <div class="modal-body" id="liftDetailsContent" style="flex: 1; overflow-y: auto; overflow-x: hidden;">
-                    <!-- Conteúdo детmasй do elevador será carregado aqui -->
+                    <!-- Conteúdo дetc do elevador será carregado aqui -->
                 </div>
                 <div class="modal-footer" style="flex-shrink: 0;">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal"><i class="fas fa-times"></i> Fechar</button>
@@ -850,7 +850,7 @@
                 $(this).find('i').toggleClass('fa-moon fa-sun');
             });
 
-            // Verificação з'ligação
+            // Verificação de ligação
             setInterval(() => {
                 const online = navigator.onLine;
                 $('#connectionStatus').html(
@@ -899,7 +899,7 @@
                 }
             }
 
-            // Deаванeжуexisteмо дані
+            // Deаванeжуexisteмо dados
             await loadUserData();
 
             // Ініціалізація менеджера de elevadores (lifts-manager.js may have already created one)

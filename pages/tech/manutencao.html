@@ -301,9 +301,9 @@
                                         <i class="fas fa-spinner fa-spin"></i> A carregar dados do elevador desde do QR-code...
                                     </div>
                                     
-                                    <!-- Informação про заванeжений elevador -->
+                                    <!-- Informação sobre заванeжений elevador -->
                                     <div id="liftDataInfo" class="alert alert-success" style="display: none;">
-                                        <h5><i class="fas fa-qrcode"></i> Dados заванeжені desde do QR-code</h5>
+                                        <h5><i class="fas fa-qrcode"></i> Dados carregados do QR-code</h5>
                                         <div id="liftDataDetails"></div>
                                     </div>
                                     
@@ -1242,7 +1242,7 @@
         // Inspection management
         const inspectionManager = {
             init() {
-                // 🔥 КРОК 1: Em primeiro lugar заванeжуexisteмо дані desde QR (se existe)
+                // 🔥 КРОК 1: Em primeiro lugar заванeжуexisteмо dados desde QR (se existe)
                 loadLiftDataFromURL();
                 
                 // Set current date
@@ -1542,7 +1542,7 @@
                 if (!confirmed) return;
                 
                 try {
-                    // Deбираexisteмо дані relatório (todos поля потрібні para генерації PDF)
+                    // Deбираexisteмо dados relatório (todos поля потрібні para генерації PDF)
                     const reportData = {
                         inspectionNumber: $('#inspectionNumber').val(),
                         inspectionDate: $('#inspectionDate').val(),

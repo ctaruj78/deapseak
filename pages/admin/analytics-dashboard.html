@@ -669,7 +669,7 @@ class SmartAnalyticsDashboard {
     init() {
         console.log('🚀 Ініціалізація Smart Analytics Dashboard...');
         
-        // Deаванeжуexisteмо поchatкові дані
+        // Deаванeжуexisteмо поchatкові dados
         this.loadInitialData();
         
         // Створюexisteмо gráficoи
@@ -678,7 +678,7 @@ class SmartAnalyticsDashboard {
         // Налаштовуexisteмо EventBus слухачів
         this.setupEventBusListeners();
         
-        // Deапускаexisteмо real-time atualização
+        // Inícioаexisteмо real-time atualização
         this.startRealTimeUpdates();
         
         // Оновлюexisteмо здоров'я do sistema
@@ -691,7 +691,7 @@ class SmartAnalyticsDashboard {
         try {
             console.log('🔄 A carregar dados para análise...');
             
-            // Deаванeжуexisteмо дані desde API парmasльно
+            // Deаванeжуexisteмо dados desde API парmasльно
             const [liftsRes, requestsRes] = await Promise.all([
                 AuthManager.fetchWithAuth('/api/lifts'),
                 AuthManager.fetchWithAuth('/api/requests')
@@ -945,7 +945,7 @@ class SmartAnalyticsDashboard {
     }
 
     generateActivityData(type) {
-        // Генеруexisteмо примірні дані за recentes 7 dias
+        // Генеруexisteмо примірні dados за recentes 7 dias
         const data = [];
         for (let i = 0; i < 7; i++) {
             const value = Math.floor(Math.random() * 10) + 1;

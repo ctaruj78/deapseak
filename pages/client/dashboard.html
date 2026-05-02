@@ -831,7 +831,7 @@
         // Função виходу
         function logout() {
             if (confirm('Tem a certeza que quer sair do sistema?')) {
-                // Оouщуexisteмо todos дані através de AuthManager
+                // Оouщуexisteмо todos dados através de AuthManager
                 if (typeof AuthManager !== 'undefined') {
                     AuthManager.logout();
                 } else {
@@ -863,7 +863,7 @@
                 );
             });
 
-            // Verificação з'ligação
+            // Verificação de ligação
             setInterval(() => {
                 const online = navigator.onLine;
                 $('#connectionStatus').html(
@@ -878,7 +878,7 @@
 
             // client-dashboard.js створюexiste window.clientDashboard сам através de DOMContentLoaded
             if (typeof ClientDashboard === 'undefined') {
-                console.error('ClientDashboard classe не carregado!');
+                console.error('ClientDashboard classe não carregado!');
             }
 
             /**
@@ -888,13 +888,13 @@
                 console.log('🔄 Inicialização do painel cliente...');
                 
                 try {
-                    // Deаванeжуexisteмо дані do utilizador
+                    // Deаванeжуexisteмо dados do utilizador
                     const userData = await loadClientProfile();
                     
                     // Оновлюexisteмо interface do utilizador
                     updateClientInterface(userData);
                     
-                    // Deаванeжуexisteмо дані painelу
+                    // Deаванeжуexisteмо dados painelу
                     const [myLifts, myRequests, notifications] = await Promise.all([
                         loadClientLifts(),
                         loadClientRequests(),
@@ -907,7 +907,7 @@
                     // Atéказуexisteмо recentes pedidos
                     displayRecentRequests(myRequests);
                     
-                    // ✅ Передаexisteмо реальні дані в ClientDashboard (замінюexiste фальшиві)
+                    // ✅ Передаexisteмо реальні dados в ClientDashboard (замінюexiste фальшиві)
                     if (window.clientDashboard && typeof window.clientDashboard.updateWithRealData === 'function') {
                         window.clientDashboard.updateWithRealData(myLifts, myRequests, notifications);
                     }
@@ -915,7 +915,7 @@
                     // Ініціалізуexisteмо WebSocket
                     initClientWebSocket(userData);
                     
-                    console.log('✅ Clienteська painel ініціалізована');
+                    console.log('✅ Clienteська painel inicializado');
 
                 } catch (error) {
                     console.error('❌ Erro ініціалізації do painel cliente:', error);
@@ -949,7 +949,7 @@
                     
                     throw new Error('Erro ao carregar o perfil');
                 } catch (error) {
-                    console.warn('API indisponível, виutilizовуexisteмо локальні дані');
+                    console.warn('API indisponível, виutilizовуexisteмо локальні dados');
                     // Only use cached data if email matches JWT (avoid showing wrong user)
                     try {
                         const jwtUser = AuthManager.getCurrentUser();
@@ -1205,7 +1205,7 @@
                     });
                     
                     window.clientWebSocket.on('request_status_update', function(data) {
-                        console.log('[Client Dashboard] Atualização estadoу pedidos:', data);
+                        console.log('[Client Dashboard] Atualização estado pedidos:', data);
                         updateRequestStatus(data);
                         showNotification(`Pedido ${data.requestId}: ${data.status}`, 'info');
                     });
@@ -1227,7 +1227,7 @@
                     
                     window.clientWebSocket.on('error', function(error) {
                         console.error('[Client Dashboard] WebSocket erro:', error);
-                        showNotification('Erro з\'ligação', 'error');
+                        showNotification('Erro de ligação', 'error');
                     });
                     
                     // Ligação
@@ -1239,7 +1239,7 @@
             }
             
             /**
-             * Atualização estadoу pedidos в реальному horaі
+             * Atualização estado pedidos в реальному horaі
              */
             function updateRequestStatus(data) {
                 const requestElement = document.querySelector(`[data-request-id="${data.requestId}"]`);
@@ -1253,7 +1253,7 @@
             }
             
             /**
-             * Atualização estadoу de elevadores
+             * Atualização estado de elevadores
              */
             function updateLiftStatus(data) {
                 if (data.liftId) {

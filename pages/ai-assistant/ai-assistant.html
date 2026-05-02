@@ -642,7 +642,7 @@
                                                     <strong>OU</strong>
                                                 </div>
                                                 
-                                                <textarea id="manualReport" class="form-control mt-3" rows="6" placeholder="Insira o texto do relatório de inspeção manualmente...&#10;&#10;Приклад:&#10;C1 - ART. 78 - Existem peças salientes das máquinas...&#10;C2 - ART. 45 - A folga entre as soleiras...&#10;C3 - ART. 20 - Falta sinalização adequada..."></textarea>
+                                                <textarea id="manualReport" class="form-control mt-3" rows="6" placeholder="Insira o texto do relatório de inspeção manualmente...&#10;&#10;Exemplo:&#10;C1 - ART. 78 - Existem peças salientes das máquinas...&#10;C2 - ART. 45 - A folga entre as soleiras...&#10;C3 - ART. 20 - Falta sinalização adequada..."></textarea>
                                                 
                                                 <button class="btn btn-primary btn-lg btn-block mt-3" id="analyzeReportBtn" onclick="analyzeReport()">
                                                     <i class="fas fa-search"></i> Analisar relatório
@@ -855,7 +855,7 @@
                         if (hasBrazilianOnly) {
                             console.error('❌ ПОМИЛКА: Disponíveis apenas бразильські голоси (pt-BR). TTS ВИМКНЕНО!');
                             console.warn('💡 Всenovosть португальську мову (pt-PT) в configuraçõesх do sistema');
-                            alert('⚠️ Acompanhamento de voz indisponível!\n\nO sistema encontrou apenas o português do Brasil (pt-BR).\n\nДля trabalhos потрібна existeвропейська португальська (pt-PT).\n\n📌 Instruções:\nWindows: Settings → Language → Add Portuguese (Portugal)\nmacOS: System Preferences → Accessibility → Spoken Content');
+                            alert('⚠️ Acompanhamento de voz indisponível!\n\nO sistema encontrou apenas o português do Brasil (pt-BR).\n\nPara funcionarhos necessária a língua portuguesa europeia (pt-PT).\n\n📌 Instruções:\nWindows: Settings → Language → Add Portuguese (Portugal)\nmacOS: System Preferences → Accessibility → Spoken Content');
                             return; // НЕ ОDeВУЧУВАТИ
                         } else {
                             console.warn('⚠️ Atéртугальський голос не encontrado, виutilizовуexisteться системний predefinido');
@@ -1102,7 +1102,7 @@
                     const response = data.data?.response || data.response || data.message;
                     responseDiv.innerHTML = `
                         <div class="alert alert-success">
-                            <h5><i class="fas fa-check-circle"></i> Юридична консультação</h5>
+                            <h5><i class="fas fa-check-circle"></i> Consulta jurídica</h5>
                             <div>${renderMarkdown(response)}</div>
                         </div>
                     `;
@@ -1119,7 +1119,7 @@
         // Regulations functions
         function loadAllRegulations() {
             const resultsDiv = document.getElementById('regulationsResults');
-            resultsDiv.innerHTML = '<div class="text-center"><div class="spinner-border text-success" role="status"></div><p class="mt-2">Carregamento законів...</p></div>';
+            resultsDiv.innerHTML = '<div class="text-center"><div class="spinner-border text-success" role="status"></div><p class="mt-2">Carregamento das leis...</p></div>';
             
             fetch(`${API_URL}/api/regulations`, {
                 method: 'GET',
@@ -1131,7 +1131,7 @@
                 if (data.success && data.data) {
                     displayRegulationsList(data.data);
                 } else {
-                    resultsDiv.innerHTML = `<div class="alert alert-danger">❌ Erro carregamento законів</div>`;
+                    resultsDiv.innerHTML = `<div class="alert alert-danger">❌ Erro ao carregar as leis</div>`;
                 }
             })
             .catch(err => {
@@ -1145,7 +1145,7 @@
             
             let html = `
                 <div class="alert alert-info mb-3">
-                    <strong><i class="fas fa-book"></i> Total законів: ${regulations.length}</strong>
+                    <strong><i class="fas fa-book"></i> Total das leis: ${regulations.length}</strong>
                     <button class="btn btn-sm btn-primary float-right" onclick="document.getElementById('regulationSearch').focus()">
                         <i class="fas fa-search"></i> Pesquisa
                     </button>
@@ -1235,7 +1235,7 @@
                     <div class="card-header bg-gradient-primary">
                         <h4 class="mb-1"><i class="fas fa-gavel"></i> ${regulation.title}</h4>
                         <p class="mb-0" style="color: #ffeb3b; text-shadow: 1px 1px 2px rgba(0,0,0,0.3);">
-                            <strong>${regulation.number}</strong>${regulation.date ? ` від ${regulation.date}` : ''}
+                            <strong>${regulation.number}</strong>${regulation.date ? ` de ${regulation.date}` : ''}
                             <span class="badge badge-${statusColor} ml-2">${statusText}</span>
                         </p>
                     </div>
@@ -1519,7 +1519,7 @@
                 <div class="row">
                     <div class="col-md-12">
                         <div class="callout ${result.passed ? 'callout-success' : 'callout-danger'}">
-                            <h5><i class="fas fa-${result.passed ? 'check-circle' : 'times-circle'}"></i> Conclusão: ${result.passed ? '✅ СХВАЛЕНО (APROVADO)' : '❌ НЕ СХВАЛЕНО (REPROVADO)'}</h5>
+                            <h5><i class="fas fa-${result.passed ? 'check-circle' : 'times-circle'}"></i> Conclusão: ${result.passed ? '✅ APROVADO' : '❌ REPROVADO (REPROVADO)'}</h5>
                         </div>
                     </div>
                 </div>

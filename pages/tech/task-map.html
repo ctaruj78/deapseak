@@ -2,7 +2,7 @@
 <html lang="pt">
 <head>
     <meta charset="UTF-8">
-    <title>Rota до tarefas - FestLift</title>
+    <title>Rota para tarefas - FestLift</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
     <!-- Leaflet CSS -->
@@ -44,13 +44,13 @@
     <script>
         let map, routingControl, userLocation;
         
-        // Отримати ID do elevador desde URL
+        // Obter ID do elevador desde URL
         function getLiftId() {
             const params = new URLSearchParams(window.location.search);
             return params.get('lift') || params.get('id');
         }
 
-        // Descarregar дані do elevador desde API
+        // Descarregar dados do elevador desde API
         async function loadLiftData(liftId) {
             try {
                 console.log('🔄 A carregar dados do elevador:', liftId);
@@ -69,11 +69,11 @@
             }
         }
 
-        // Отримати геолокацію do utilizador
+        // Obter геолокацію do utilizador
         function getUserLocation() {
             return new Promise((resolve, reject) => {
                 if (!navigator.geolocation) {
-                    reject(new Error('Геоlocalização не підтримуexisteться вашим браузером'));
+                    reject(new Error('A geolocalização не підтримуexisteться вашим браузером'));
                     return;
                 }
                 
@@ -130,7 +130,7 @@
         // Ініціалізувати мапу desde rotaом
         async function initializeMapWithRoute(lift) {
             try {
-                // Отримати геолокацію
+                // Obter геолокацію
                 await getUserLocation();
                 
                 // Criar мапу
@@ -205,7 +205,7 @@
                     console.log('  Hora:', Math.round(summary.totalTime/60), 'хв');
                 }).on('routingerror', function(e) {
                     console.error('❌ Erro rotaу:', e.error);
-                    alert('Não foi possível побудувати rota. Verifique з\'ligação.');
+                    alert('Não foi possível calcular a rota. Verifique de ligação.');
                 }).addTo(map);
 
             } catch (error) {
@@ -224,7 +224,7 @@
                 L.marker([liftLat, liftLng]).addTo(map)
                     .bindPopup(`${lift.model || 'Elevador'}<br>${lift.address?.street || ''}`).openPopup();
                 
-                alert('Não foi possível визначити вашу позицію. A mostrar apenas місце atribuição.');
+                alert('Não foi possível determinar a sua posição. A mostrar apenas local de atribuição.');
             }
         }
 
@@ -233,7 +233,7 @@
             document.getElementById('taskInfo').innerHTML = `
                 <div class="d-flex justify-content-between align-items-center">
                     <h5 class="mb-0"><i class="fas fa-map text-primary"></i> Mapa de elevadores</h5>
-                    <small class="text-muted">Clique на маркер para побудови rotaу</small>
+                    <small class="text-muted">Clique no marcador para calcular a rota</small>
                 </div>
             `;
 

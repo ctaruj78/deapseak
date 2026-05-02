@@ -449,7 +449,7 @@
                             </div>
                             <div class="col-md-3">
                                 <div class="form-group">
-                                    <label>Період:</label>
+                                    <label>Período:</label>
                                     <select id="periodFilter" class="form-control">
                                         <option value="today">Hoje</option>
                                         <option value="week">Esta semana</option>
@@ -2576,7 +2576,7 @@
                                        </select>
                                    </div>
                                    <div class="swal-field mt-2">
-                                       <label class="swal-label">Continuar дедлайн на</label>
+                                       <label class="swal-label">Prolongar prazo por</label>
                                        <select id="swal-extend-days-bulk" class="swal-select">
                                            <option value="7">7 dias</option>
                                            <option value="14">14 dias</option>
@@ -2622,7 +2622,7 @@
                             } catch (e) {}
                         }
                         await dispatcherManager.loadAssignments();
-                        Swal.fire({ icon: 'success', title: 'Concluído!', text: `Переatribuído e продоjáно дедлайн: ${count} іdesde ${overdue.length} pedidos на +${days} dias.`, confirmButtonColor: '#28a745', customClass: { popup: 'swal-dispatch' } });
+                        Swal.fire({ icon: 'success', title: 'Concluído!', text: `Переatribuído e продоjáно дедлайн: ${count} junto ${overdue.length} pedidos на +${days} dias.`, confirmButtonColor: '#28a745', customClass: { popup: 'swal-dispatch' } });
                     }
                 },
 
@@ -2667,7 +2667,7 @@
                                        </div>
                                        <div style="background:linear-gradient(135deg,#dc3545,#c82333);color:white;border-radius:12px;padding:16px;text-align:center">
                                            <div style="font-size:2rem;font-weight:700;line-height:1">${overdue}</div>
-                                           <div style="font-size:11px;opacity:.85;margin-top:5px;text-transform:uppercase;letter-spacing:.5px">Прострочено</div>
+                                           <div style="font-size:11px;opacity:.85;margin-top:5px;text-transform:uppercase;letter-spacing:.5px">Em atraso</div>
                                        </div>
                                    </div>
                                    ${total > 0 ? `<div style="margin-top:14px;background:#f8f9fa;border-radius:10px;padding:14px">
@@ -2709,7 +2709,7 @@
                     }
                     $('#bulkAssignmentModal').modal('hide');
                     await dispatcherManager.loadAssignments();
-                    Swal.fire({ icon: 'success', title: 'Concluído!', text: `Atribuído ${successCount} іdesde ${selectedItems.length} pedidos.`, confirmButtonColor: '#28a745', customClass: { popup: 'swal-dispatch' } });
+                    Swal.fire({ icon: 'success', title: 'Concluído!', text: `Atribuído ${successCount} junto ${selectedItems.length} pedidos.`, confirmButtonColor: '#28a745', customClass: { popup: 'swal-dispatch' } });
                 },
                 
                 // 🎯 ГОЛОВНІ ФУНКЦІЇ ДЛЯ РОБОТИ De DeАЯВКАМИ
@@ -2728,10 +2728,10 @@
                         
                         if (!response || !response.ok) {
                             const error = await response.json();
-                            throw new Error(error.message || 'Erro de alteração estadoу');
+                            throw new Error(error.message || 'Erro de alteração estado');
                         }
                         
-                        alert('Роботу iniciadas!');
+                        alert('Trabalho iniciado!');
                         await this.loadAssignments();
                         
                     } catch (error) {
@@ -2754,7 +2754,7 @@
                         const technicians = result.data?.users || result.users || [];
                         
                         if (technicians.length === 0) {
-                            alert('Não há acessoних de técnicos');
+                            alert('Não há técnicos disponíveis');
                             return;
                         }
                         
@@ -2769,7 +2769,7 @@
                         
                         const techIndex = parseInt(choice) - 1;
                         if (techIndex < 0 || techIndex >= technicians.length) {
-                            alert('Inválido вибір');
+                            alert('Seleção inválida');
                             return;
                         }
                         
@@ -2865,13 +2865,13 @@
                         
                         if (!response || !response.ok) {
                             const error = await response.json();
-                            throw new Error(error.message || 'Erro atualização estadoу');
+                            throw new Error(error.message || 'Erro atualização estado');
                         }
                         
                         await this.loadAssignments();
                         
                     } catch (error) {
-                        console.error('Erro atualização estadoу:', error);
+                        console.error('Erro atualização estado:', error);
                         throw error;
                     }
                 },

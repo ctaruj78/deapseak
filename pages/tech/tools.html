@@ -753,15 +753,15 @@
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label for="expectedReturn">Очікуване повернення *</label>
+                                    <label for="expectedReturn">Devolução esperada *</label>
                                     <input type="datetime-local" id="expectedReturn" class="form-control" required>
                                 </div>
                             </div>
                         </div>
 
                         <div class="form-group">
-                            <label for="checkoutPurpose">Меe викорисeння</label>
-                            <textarea id="checkoutPurpose" class="form-control" rows="2" placeholder="Для якого tarefas потрібен ferramenta..."></textarea>
+                            <label for="checkoutPurpose">Finalidade de utilização</label>
+                            <textarea id="checkoutPurpose" class="form-control" rows="2" placeholder="Para qual tarefa é necessário ferramenta..."></textarea>
                         </div>
 
                         <div class="form-group">
@@ -773,7 +773,7 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
                     <button type="button" class="btn btn-primary" onclick="toolManager.confirmCheckout()">
-                        <i class="fas fa-check"></i> Confirmar видачу
+                        <i class="fas fa-check"></i> Confirmar entrega
                     </button>
                 </div>
             </div>
@@ -796,7 +796,7 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
                     <button type="button" class="btn btn-info" onclick="toolManager.printToolLabel(currentToolId)">
-                        <i class="fas fa-print"></i> Impressão ярлика
+                        <i class="fas fa-print"></i> Impressão de etiqueta
                     </button>
                     <button type="button" class="btn btn-warning" onclick="toolManager.requestMaintenance(currentToolId)" id="maintenanceBtn">
                         <i class="fas fa-tools"></i> Manutenção

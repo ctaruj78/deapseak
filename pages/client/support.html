@@ -950,7 +950,7 @@
         class SupportManager {
             showCategory(category) {
                 console.log('Showing category:', category);
-                alert(`Atéкаdesde categorias: ${category}`);
+                alert(`Categorias disponíveis: ${category}`);
             }
             
             callSupport() {
@@ -981,7 +981,7 @@
             searchKnowledgeBase() {
                 const query = $('#knowledgeSearch').val() || $('#knowledgeBaseSearch').val();
                 console.log('Searching knowledge base for:', query);
-                alert(`Pesquisar в na base de conhecimento: ${query || 'pesquisa vazia'}`);
+                alert(`Pesquisar na base de conhecimento: ${query || 'pesquisa vazia'}`);
             }
             
             sendMessage() {
@@ -1019,7 +1019,7 @@
                 $(this).find('i').toggleClass('fa-moon fa-sun');
             });
 
-            // Verificação з'ligação
+            // Verificação de ligação
             setInterval(() => {
                 const online = navigator.onLine;
                 $('#connectionStatus').html(
@@ -1037,7 +1037,7 @@
             // Ініціалізація менеджера підтримки
             window.supportManager = new SupportManager();
             
-            // Processamento вибору ficheiroу
+            // Processamento вибору ficheiro
             $('.custom-file-input').on('change', function() {
                 let fileName = $(this).val().split('\\').pop();
                 $(this).next('.custom-file-label').addClass("selected").html(fileName);

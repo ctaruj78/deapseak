@@ -1037,7 +1037,7 @@
             }
         }
 
-        // Gestor de pedidos para de clientes (виutilizовуexiste уніфіковану систему)
+        // Gestor de pedidos para de clientes (виutilizовуexiste уніфіковану sistema)
         class ClientRequestsManager {
             constructor() {
                 this.integration = serviceIntegration;
@@ -1078,7 +1078,7 @@
 
             async submitNewRequest() {
                 try {
-                    // Отримуexisteмо дані desde форми
+                    // Отримуexisteмо dados desde форми
                     const type = document.getElementById('requestType').value;
                     const liftId = document.getElementById('requestLift').value;
                     const priority = document.getElementById('requestPriority').value;
@@ -1097,7 +1097,7 @@
                     const selectedOption = liftSelect.options[liftSelect.selectedIndex];
                     const liftAddress = selectedOption ? selectedOption.dataset.address : '';
 
-                    // Формуexisteмо дані pedidos
+                    // Формуexisteмо dados pedidos
                     const requestData = {
                         type: type,
                         liftId: liftId,
@@ -1434,7 +1434,7 @@
                 $(this).find('i').toggleClass('fa-moon fa-sun');
             });
 
-            // Verificação з'ligação
+            // Verificação de ligação
             setInterval(() => {
                 const online = navigator.onLine;
                 $('#connectionStatus').html(

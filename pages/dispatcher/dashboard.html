@@ -647,7 +647,7 @@
                             <label for="notifyClient">Notificar cliente</label>
                             <div class="custom-control custom-switch">
                                 <input type="checkbox" class="custom-control-input" id="notifyClient" checked>
-                                <label class="custom-control-label" for="notifyClient">Enviar notificações clienteу</label>
+                                <label class="custom-control-label" for="notifyClient">Enviar notificações ao cliente</label>
                             </div>
                         </div>
                     </form>
@@ -773,7 +773,7 @@
                 window.dispatcherDashboard = new DispatcherDashboardReal();
                 console.log('✅ DispatcherDashboardReal criado');
             } else {
-                console.error('❌ DispatcherDashboardReal не carregado!');
+                console.error('❌ DispatcherDashboardReal não carregado!');
             }
             
             // Filtroація trabalhos
@@ -805,7 +805,7 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label for="editTitle">Deаголовок pedidos *</label>
+                                    <label for="editTitle">Título do pedido *</label>
                                     <input type="text" id="editTitle" class="form-control" required
                                            placeholder="Digite título pedidos">
                                 </div>
@@ -849,7 +849,7 @@
                                         <option value="new">Nova</option>
                                         <option value="assigned">Atribuída</option>
                                         <option value="in-progress">Em progresso</option>
-                                        <option value="completed">Deавершена</option>
+                                        <option value="completed">Concluída</option>
                                     </select>
                                 </div>
                             </div>
@@ -857,7 +857,7 @@
                                 <div class="form-group">
                                     <label for="editAssignedTo">Atribuído ao técnico</label>
                                     <select id="editAssignedTo" class="form-control">
-                                        <option value="">Не atribuído</option>
+                                        <option value="">Não atribuído</option>
                                     </select>
                                 </div>
                             </div>
@@ -879,7 +879,7 @@
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Relatório по роботі de técnicos</h5>
+                    <h5 class="modal-title">Relatório de trabalho dos técnicos</h5>
                     <button type="button" class="close" data-dismiss="modal">
                         <span>&times;</span>
                     </button>
@@ -889,7 +889,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
-                    <button type="button" class="btn btn-primary" onclick="window.dispatcherDashboard.exportTechReport()">Exportar в CSV</button>
+                    <button type="button" class="btn btn-primary" onclick="window.dispatcherDashboard.exportTechReport()">Exportar para CSV</button>
                 </div>
             </div>
         </div>
