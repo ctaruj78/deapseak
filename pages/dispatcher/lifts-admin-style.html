@@ -6777,6 +6777,23 @@ Equipa FestLift</textarea>
                         if (parsedData.liftInfo.maintenanceCompany) {
                             console.log('📝 Empresa de manutenção:', parsedData.liftInfo.maintenanceCompany);
                         }
+                        // Próxima data de inspeção
+                        if (parsedData.liftInfo.nextInspectionDate) {
+                            console.log('📅 Próxima inspeção:', parsedData.liftInfo.nextInspectionDate);
+                            try {
+                                const nextDateStr = parsedData.liftInfo.nextInspectionDate;
+                                let isoDate = '';
+                                if (/\d{2}\/\d{2}\/\d{4}/.test(nextDateStr)) {
+                                    const parts = nextDateStr.split('/');
+                                    isoDate = `${parts[2]}-${parts[1]}-${parts[0]}`;
+                                } else if (/\d{4}[-\/]\d{2}[-\/]\d{2}/.test(nextDateStr)) {
+                                    isoDate = nextDateStr.replace(/\//g, '-');
+                                }
+                                if (isoDate && document.getElementById('nextInspectionDate')) {
+                                    document.getElementById('nextInspectionDate').value = isoDate;
+                                }
+                            } catch(e) {}
+                        }
                     }
                     
                     // Визначаexisteмо estado на осnovos клауз

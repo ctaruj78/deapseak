@@ -7089,7 +7089,7 @@ Responde SEMPRE em Português (pt-PT) de forma tranquilizadora mas precisa.`
     return basePrompt + (roleSpecific[role] || roleSpecific.client);
 }
 
-function buildAIUserPrompt(message, regulationsContext = null, reportTextContext = null, maxChars = 8000) {
+function buildAIUserPrompt(message, regulationsContext = null, reportTextContext = null, maxChars = 8000, dbContext = null) {
     let contextualPrompt = '';
 
     if (regulationsContext) {
@@ -7113,6 +7113,11 @@ function buildAIUserPrompt(message, regulationsContext = null, reportTextContext
             : reportTextContext;
         contextualPrompt += `INSPECTION REPORT CONTENT (from uploaded PDF):\n---\n${truncated}\n---\n\n` +
             `Please analyze this report and answer the user's question about it.\n\n`;
+    }
+
+    if (dbContext) {
+        contextualPrompt += `DADOS REAIS DA BASE DE DADOS FESTLIFT:\n---\n${dbContext}\n---\n\n` +
+            `Usa estes dados reais para responder à pergunta do utilizador.\n\n`;
     }
 
     contextualPrompt += `USER QUESTION: ${message}`;
@@ -7145,7 +7150,7 @@ async function callOllamaRaw(messages) {
 }
 
 // Helper function to call Gemini AI
-async function callGeminiAI(message, role, username, regulationsContext = null, reportTextContext = null) {
+async function callGeminiAI(message, role, username, regulationsContext = null, reportTextContext = null, dbContext = null) {
     try {
         if (!process.env.GEMINI_API_KEY) {
             throw new Error('GEMINI_API_KEY not configured');
@@ -7158,7 +7163,7 @@ async function callGeminiAI(message, role, username, regulationsContext = null, 
             systemInstruction: systemPrompt
         });
         
-        const contextualPrompt = buildAIUserPrompt(message, regulationsContext, reportTextContext);
+        const contextualPrompt = buildAIUserPrompt(message, regulationsContext, reportTextContext, 8000, dbContext);
         
         const result = await model.generateContent(contextualPrompt);
         const response = await result.response;
@@ -7181,10 +7186,10 @@ async function callGeminiAI(message, role, username, regulationsContext = null, 
     }
 }
 
-async function callOllamaAI(message, role, username, regulationsContext = null, reportTextContext = null) {
+async function callOllamaAI(message, role, username, regulationsContext = null, reportTextContext = null, dbContext = null) {
     try {
         const systemPrompt = getSystemPromptForRole(role, username);
-        const contextualPrompt = buildAIUserPrompt(message, regulationsContext, reportTextContext, 12000);
+        const contextualPrompt = buildAIUserPrompt(message, regulationsContext, reportTextContext, 12000, dbContext);
         const text = await callOllamaRaw([
             { role: 'system', content: systemPrompt },
             { role: 'user', content: contextualPrompt }
@@ -7199,7 +7204,7 @@ async function callOllamaAI(message, role, username, regulationsContext = null, 
     }
 }
 
-async function callMainAI(message, role, username, regulationsContext = null, reportTextContext = null) {
+async function callMainAI(message, role, username, regulationsContext = null, reportTextContext = null, dbContext = null) {
     let useOllama = AI_PROVIDER === 'ollama';
 
     if (AI_PROVIDER === 'auto') {
@@ -7207,11 +7212,11 @@ async function callMainAI(message, role, username, regulationsContext = null, re
     }
 
     if (useOllama) {
-        const response = await callOllamaAI(message, role, username, regulationsContext, reportTextContext);
+        const response = await callOllamaAI(message, role, username, regulationsContext, reportTextContext, dbContext);
         return { response, poweredBy: `Ollama (${OLLAMA_MODEL})` };
     }
 
-    const response = await callGeminiAI(message, role, username, regulationsContext, reportTextContext);
+    const response = await callGeminiAI(message, role, username, regulationsContext, reportTextContext, dbContext);
     return { response, poweredBy: 'Google Gemini 2.5 Flash' };
 }
 
@@ -7390,6 +7395,63 @@ app.post('/api/ai/chat', authenticateToken, aiLimiter, async (req, res) => {
         let poweredBy = '';
         const lowerMessage = message.toLowerCase();
         
+
+        // STEP 0: DB LOOKUP — search for lifts and inspections matching the user message
+        let dbContext = null;
+        try {
+            if (db) {
+                // Extract address keywords from message (Portuguese street types)
+                const addrMatch = lowerMessage.match(/(?:rua|avenida|av\.?|praça|travessa|beco|calçada|estrada|casal|largo|quinta)\s+[\w\s\-]+/gi);
+                if (addrMatch && addrMatch.length > 0) {
+                    // Take first match, use the first 4+ words as search term
+                    const rawTerm = addrMatch[0].trim().split(/\s+/).slice(0, 5).join('\s+');
+                    const liftsFound = await db.collection('lifts').find({
+                        $or: [
+                            { 'address.street': { $regex: rawTerm, $options: 'i' } },
+                            { address: { $regex: rawTerm, $options: 'i' } }
+                        ]
+                    }).limit(3).toArray();
+
+                    if (liftsFound.length > 0) {
+                        dbContext = 'ELEVADORES ENCONTRADOS NA BASE DE DADOS FESTLIFT:\n';
+                        for (const lift of liftsFound) {
+                            const addr = typeof lift.address === 'object'
+                                ? [lift.address.street, lift.address.zipCode, lift.address.city].filter(Boolean).join(', ')
+                                : (lift.address || 'Morada desconhecida');
+                            dbContext += `\nElevador ID: ${lift._id}\n`;
+                            dbContext += `  Morada: ${addr}\n`;
+                            dbContext += `  Estado: ${lift.inspectionStatus || lift.status || 'desconhecido'}\n`;
+                            if (lift.lastInspectionDate) dbContext += `  Última inspeção: ${new Date(lift.lastInspectionDate).toLocaleDateString('pt-PT')}\n`;
+                            if (lift.nextInspectionDate) dbContext += `  Próxima inspeção: ${new Date(lift.nextInspectionDate).toLocaleDateString('pt-PT')}\n`;
+                            if (lift.municipalNumber) dbContext += `  N.º municipal: ${lift.municipalNumber}\n`;
+                            if (lift.installationNumber) dbContext += `  N.º instalação: ${lift.installationNumber}\n`;
+                            // Get last inspection report
+                            const lastInsp = await db.collection('inspections').findOne(
+                                { $or: [{ liftId: lift._id.toString() }, { liftId: lift._id }] },
+                                { sort: { date: -1, inspectionDate: -1, createdAt: -1 } }
+                            );
+                            if (lastInsp) {
+                                const inspDate = lastInsp.inspectionDate || lastInsp.date || lastInsp.createdAt;
+                                dbContext += `  Último relatório: ${inspDate ? new Date(inspDate).toLocaleDateString('pt-PT') : 'data desconhecida'}\n`;
+                                dbContext += `  Resultado: ${lastInsp.result || lastInsp.overallResult || lastInsp.status || 'desconhecido'}\n`;
+                                if (lastInsp.clauses && lastInsp.clauses.length > 0) {
+                                    const c1 = lastInsp.clauses.filter(c => c.type === 'C1').length;
+                                    const c2 = lastInsp.clauses.filter(c => c.type === 'C2').length;
+                                    const c3 = lastInsp.clauses.filter(c => c.type === 'C3').length;
+                                    dbContext += `  Cláusulas: C1=${c1}, C2=${c2}, C3=${c3}\n`;
+                                }
+                            } else {
+                                dbContext += `  Relatórios de inspeção: nenhum registado\n`;
+                            }
+                        }
+                        console.log(`🗄️ DB context built: ${liftsFound.length} lift(s) found`);
+                    }
+                }
+            }
+        } catch (dbLookupErr) {
+            console.warn('⚠️ DB context lookup failed:', dbLookupErr.message);
+        }
+
         // STEP 1: SEARCH IN REGULATIONS DATABASE FIRST
         console.log('🔍 Searching regulations database...');
         let foundInRegulations = null;
@@ -7434,12 +7496,12 @@ app.post('/api/ai/chat', authenticateToken, aiLimiter, async (req, res) => {
         // STEP 2: USE AI WITH REGULATIONS CONTEXT
         if (foundInRegulations) {
             console.log(`📖 Found regulation: ${foundInRegulations.article}`);
-            const aiResult = await callMainAI(message, role, username, foundInRegulations);
+            const aiResult = await callMainAI(message, role, username, foundInRegulations, null, dbContext);
             response = aiResult.response;
             poweredBy = aiResult.poweredBy;
         } else {
             console.log('💡 No specific regulation found, using general AI');
-            const aiResult = await callMainAI(message, role, username);
+            const aiResult = await callMainAI(message, role, username, null, null, dbContext);
             response = aiResult.response;
             poweredBy = aiResult.poweredBy;
         }

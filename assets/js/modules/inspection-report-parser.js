@@ -399,7 +399,9 @@ class InspectionReportParser {
             reportNumber: null,
             installationNumber: null,
             processNumber: null,
-            inspectionDate: null
+            inspectionDate: null,
+            nextInspectionDate: null,
+            inspectionResult: null
         };
 
         // Локація (гнучкі патерни)
@@ -485,8 +487,52 @@ class InspectionReportParser {
 
         // Дата інспекції
         const dateMatch = text.match(/Data\s+da\s+Inspec[çc][ãa]o\s+.*?(\d{4}\/\d{2}\/\d{2})/i);
-        if (dateMatch) {
+        if (!dateMatch) {
+            // Alternate patterns
+            const dateMatch2 = text.match(/(\d{2}[\/\-]\d{2}[\/\-]\d{4})/);
+            if (dateMatch2) info.inspectionDate = dateMatch2[1];
+        } else {
             info.inspectionDate = dateMatch[1];
+        }
+
+        // Próxima data de inspeção (explicit in report)
+        const nextDatePatterns = [
+            /[Pp]r[oó]xima\s+[Ii]nspec[çc][ãa]o\s*:?\s*(\d{4}[\/\-]\d{2}[\/\-]\d{2})/,
+            /[Pp]r[oó]xima\s+[Ii]nspec[çc][ãa]o\s*:?\s*(\d{2}[\/\-]\d{2}[\/\-]\d{4})/,
+            /[Vv][áa]lido?\s+at[eé]\s*:?\s*(\d{4}[\/\-]\d{2}[\/\-]\d{2})/,
+            /[Vv][áa]lido?\s+at[eé]\s*:?\s*(\d{2}[\/\-]\d{2}[\/\-]\d{4})/,
+            /[Pp]r[oó]xima\s+data\s*:?\s*(\d{2}[\/\-]\d{2}[\/\-]\d{4})/i
+        ];
+        for (const pattern of nextDatePatterns) {
+            const m = text.match(pattern);
+            if (m) { info.nextInspectionDate = m[1]; break; }
+        }
+
+        // Resultado da inspeção
+        if (text.match(/[Aa]provado|[Aa]provação/)) info.inspectionResult = 'approved';
+        else if (text.match(/[Rr]eprovado|[Rr]eprovação/)) info.inspectionResult = 'failed';
+
+        // Calculate nextInspectionDate if not found explicitly
+        if (!info.nextInspectionDate && info.inspectionDate) {
+            try {
+                let baseDate;
+                const dateParts = info.inspectionDate.replace(/-/g, '/').split('/');
+                if (dateParts[0].length === 4) {
+                    baseDate = new Date(parseInt(dateParts[0]), parseInt(dateParts[1]) - 1, parseInt(dateParts[2]));
+                } else {
+                    baseDate = new Date(parseInt(dateParts[2]), parseInt(dateParts[1]) - 1, parseInt(dateParts[0]));
+                }
+                if (!isNaN(baseDate.getTime())) {
+                    const next = new Date(baseDate);
+                    if (info.inspectionResult === 'failed') {
+                        next.setDate(next.getDate() + 180); // 180 days for failed
+                    } else {
+                        next.setFullYear(next.getFullYear() + 2); // 2 years for approved/unknown
+                    }
+                    info.nextInspectionDate = next.toLocaleDateString('pt-PT');
+                    info.nextInspectionDateCalculated = true; // flag that it was calculated, not extracted
+                }
+            } catch (e) { /* ignore date calc error */ }
         }
 
         console.log('✅ Інформація витягнута:', info);
