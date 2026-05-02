@@ -4460,15 +4460,18 @@ Equipa FestLift</textarea>
                 $('#detail-contract-number').text(cn || 'Não especificado');
                 $('#detail-contract-price').text(cp ? `${cp} €` : 'Não especificado');
                 
-                // Дати de manutenção
+                // Дати de manutenção — nextMaintenance é calculado: lastMaintenance + 1 mês (não armazenado)
+                const _lastMaint = lift.lastMaintenance;
                 $('#detail-last-maintenance').text(
-                    lift.lastInspectionDate ? new Date(lift.lastInspectionDate).toLocaleDateString('pt-PT') :
-                    lift.lastMaintenance ? new Date(lift.lastMaintenance).toLocaleDateString('pt-PT') : 'Não especificado'
+                    _lastMaint ? new Date(_lastMaint).toLocaleDateString('pt-PT') : 'Não especificado'
                 );
-                $('#detail-next-maintenance').text(
-                    lift.nextInspectionDate ? new Date(lift.nextInspectionDate).toLocaleDateString('pt-PT') :
-                    lift.nextMaintenance ? new Date(lift.nextMaintenance).toLocaleDateString('pt-PT') : 'Não especificado'
-                );
+                if (_lastMaint) {
+                    const _nextD = new Date(_lastMaint);
+                    _nextD.setMonth(_nextD.getMonth() + 1);
+                    $('#detail-next-maintenance').text(new Date(_nextD).toLocaleDateString('pt-PT') + ' (estimado)');
+                } else {
+                    $('#detail-next-maintenance').text('Não especificado');
+                }
                 
                 // Relatório inspeções (показуexisteмо recentesй relatório desde історії)
                 const lastReport = lift.inspectionHistory && lift.inspectionHistory.length > 0 

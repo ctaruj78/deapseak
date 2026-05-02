@@ -2418,6 +2418,8 @@ app.put('/api/lifts/:id', authenticateToken, async (req, res) => {
         delete updateData.interventionHistory;
         delete updateData.photos;
         delete updateData.chat;
+        // nextMaintenance НЕ зберігається — обчислюється динамічно як lastMaintenance + 1 місяць
+        delete updateData.nextMaintenance;
 
         // 🔄 НОРМАЛІЗАЦІЯ enum: driveType та doorType (legacy display text → DB code)
         const DRIVE_MAP_PUT = {

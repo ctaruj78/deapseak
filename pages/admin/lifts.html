@@ -1590,9 +1590,9 @@
                                             </div>
                                             <div class="col-md-4">
                                                 <div class="form-group">
-                                                    <label for="nextMaintenance">Próxima manutenção</label>
-                                                    <input type="date" id="nextMaintenance" name="nextMaintenance" class="form-control">
-                                                    <small class="text-muted">Data prevista da próxima inspecção</small>
+                                                    <label>Próxima manutenção</label>
+                                                    <input type="text" id="nextMaintenance" class="form-control" readonly disabled placeholder="Calculado automaticamente">
+                                                    <small class="text-muted">Calculado: última + 1 mês (não armazenado)</small>
                                                 </div>
                                             </div>
                                             <div class="col-md-4">
@@ -4982,14 +4982,16 @@ Email de contacto: info@festlift.pt`;
                 const _sortedHist = (lift.inspectionHistory || []).slice().sort((a, b) =>
                     new Date(b.date || b.inspectionDate || 0) - new Date(a.date || a.inspectionDate || 0));
                 const _lastHistEntry = _sortedHist[0] || null;
-                const _derivedLast = lift.lastInspectionDate || lift.lastMaintenance
-                    || (_lastHistEntry ? (_lastHistEntry.date || _lastHistEntry.inspectionDate) : null);
-                const _derivedNext = lift.nextInspectionDate || lift.nextMaintenance || null;
+                // Última MANUTENÇÃO = visita mensal do técnico (campo lastMaintenance)
+                // NÃO usar lastInspectionDate aqui — isso é inspecção formal (6 em 6 meses)
+                const _derivedLast = lift.lastMaintenance || null;
+                // ⚠️ Próxima manutenção NÃO é armazenada — é calculada dinamicamente: última + 1 mês
+                const _derivedNext = _derivedLast ? (() => { const d = new Date(_derivedLast); d.setMonth(d.getMonth() + 1); return d; })() : null;
                 $('#detail-last-maintenance').text(
                     _derivedLast ? new Date(_derivedLast).toLocaleDateString('pt-PT') : 'Não especificado'
                 );
                 $('#detail-next-maintenance').text(
-                    _derivedNext ? new Date(_derivedNext).toLocaleDateString('pt-PT') : 'Não especificado'
+                    _derivedNext ? new Date(_derivedNext).toLocaleDateString('pt-PT') + ' (estimado)' : 'Não especificado'
                 );
 
                 // Certificado / licença
@@ -5375,22 +5377,17 @@ Email de contacto: info@festlift.pt`;
             const technicianId = technician._id || lift.assignedTechnician || 'auto';
             $('#enhancedAssignedTechnician').val(technicianId);
             
-            // Inspeções
-            if (lift.lastInspectionDate) {
-                const lastMaintenanceDate = new Date(lift.lastInspectionDate).toISOString().split('T')[0];
-                $('#lastMaintenance').val(lastMaintenanceDate);
-            } else if (lift.lastMaintenance) {
-                const lastMaintenanceDate = new Date(lift.lastMaintenance).toISOString().split('T')[0];
-                $('#lastMaintenance').val(lastMaintenanceDate);
+            // Manutenção — apenas a data da última visita do técnico
+            if (lift.lastMaintenance) {
+                $('#lastMaintenance').val(new Date(lift.lastMaintenance).toISOString().split('T')[0]);
             } else {
                 $('#lastMaintenance').val('');
             }
-            if (lift.nextInspectionDate) {
-                const nextMaintenanceDate = new Date(lift.nextInspectionDate).toISOString().split('T')[0];
-                $('#nextMaintenance').val(nextMaintenanceDate);
-            } else if (lift.nextMaintenance) {
-                const nextMaintenanceDate = new Date(lift.nextMaintenance).toISOString().split('T')[0];
-                $('#nextMaintenance').val(nextMaintenanceDate);
+            // Próxima manutenção: calculada dinamicamente = última + 1 mês (não armazenada)
+            if (lift.lastMaintenance) {
+                const nextD = new Date(lift.lastMaintenance);
+                nextD.setMonth(nextD.getMonth() + 1);
+                $('#nextMaintenance').val(nextD.toLocaleDateString('pt-PT') + ' (estimado)');
             } else {
                 $('#nextMaintenance').val('');
             }
