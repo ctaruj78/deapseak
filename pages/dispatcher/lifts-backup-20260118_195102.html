@@ -1042,7 +1042,7 @@
                     
                     <!-- Quick Actions -->
                     <div class="mt-2 mb-2">
-                        <button class="btn btn-xs btn-primary mr-1" onclick="createRequestForLift('${lift._id}')" title="Створити pedido">
+                        <button class="btn btn-xs btn-primary mr-1" onclick="createRequestForLift('${lift._id}')" title="Criar pedido">
                             <i class="fas fa-plus"></i> Pedido
                         </button>
                         <button class="btn btn-xs btn-info mr-1" onclick="viewLiftRequests('${lift._id}')" title="Історія pedidoів">
@@ -1257,7 +1257,7 @@
             const address = document.getElementById('address').value.trim();
 
             if (!municipalNumber || !address) {
-                showError('Preenchaa обов\'язкові поля: Número municipal e Endereço');
+                showError('Preencha обов\'язкові поля: Número municipal e Endereço');
                 return;
             }
 
@@ -1338,7 +1338,7 @@
             }
         }
 
-        // Отримати текст estadoу
+        // Отримати texto estadoу
         function getStatusText(status) {
             const statuses = {
                 'active': 'Activo',
@@ -1413,7 +1413,7 @@
                 maxZoom: 19
             }).addTo(map);
             
-            // Ініціалізувати кластери маркерів
+            // Ініціалізувати classeтери маркерів
             markerCluster = L.markerClusterGroup({
                 chunkedLoading: true,
                 maxClusterRadius: 50
@@ -1442,7 +1442,7 @@
             console.log(`🗺️ Atualizado ${markerCluster.getLayers().length} маркерів на no mapa`);
         }
 
-        // Створити маркер para do elevador
+        // Criar маркер para do elevador
         function createMarker(lift) {
             // Колір маркера dependendoо від estadoу
             const iconColor = {
@@ -1635,7 +1635,7 @@
                 const documents = await response.json();
                 console.log('✅ Recebido de documentos:', documents.length, documents);
 
-                // Розділити documentoи за tipoом
+                // Dividir documentoи за tipoом
                 const contracts = documents.filter(doc => doc.type === 'contract');
                 const inspections = documents.filter(doc => doc.type === 'inspection');
                 

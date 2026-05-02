@@ -2587,7 +2587,7 @@
                                    </div>
                                </div>`,
                         customClass: { popup: 'swal-dispatch' },
-                        confirmButtonText: 'Reatribuir всі',
+                        confirmButtonText: 'Reatribuir todos',
                         confirmButtonColor: '#f39c12',
                         cancelButtonText: 'Cancelar',
                         cancelButtonColor: '#a0aec0',
@@ -2736,7 +2736,7 @@
                         
                     } catch (error) {
                         console.error('Erro поchatку trabalhos:', error);
-                        alert('Não foi possível розпоchatи роботу: ' + error.message);
+                        alert('Não foi possível iniciar o trabalho: ' + error.message);
                     }
                 },
                 
@@ -2843,14 +2843,14 @@
                         
                         if (!response || !response.ok) {
                             const error = await response.json();
-                            throw new Error(error.message || 'Erro завершення');
+                            throw new Error(error.message || 'Erro conclusão');
                         }
                         
                         alert('Pedido concluído!');
                         await this.loadAssignments();
                         
                     } catch (error) {
-                        console.error('Erro завершення pedidos:', error);
+                        console.error('Erro conclusão pedidos:', error);
                         alert('Não foi possível concluir o pedido: ' + error.message);
                     }
                 },

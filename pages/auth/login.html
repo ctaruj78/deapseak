@@ -104,7 +104,7 @@
             window.__loginFormInitialized = true;
             console.log('🔧 Ініціалізація форми loginу...');
             
-            // Автозаповнення desde URL параметрів (para rapidamenteго тестування)
+            // Автоpreenchimento desde URL параметрів (para rapidamenteго тестування)
             const urlParams = new URLSearchParams(window.location.search);
             const emailFromUrl = urlParams.get('email');
             const passwordFromUrl = urlParams.get('password');
@@ -131,7 +131,7 @@
             if (redirecting) {
                 console.log('⚠️ Deапобігання циклу редиректів - оouщуexisteмо session');
                 sessionStorage.removeItem('redirecting');
-                // Оouщуexisteмо всі дані автентифікації
+                // Оouщуexisteмо todos дані автентифікації
                 if (typeof AuthManager !== 'undefined') {
                     localStorage.removeItem(AuthManager.TOKEN_KEY);
                     localStorage.removeItem(AuthManager.USER_KEY);
@@ -254,13 +254,13 @@
                 alertDiv.textContent = message;
                 alertDiv.style.display = 'block';
                 
-                // Автоматично ocultar através de 5 секунд
+                // Автоматично ocultar através de 5 segundos
                 setTimeout(() => {
                     alertDiv.style.display = 'none';
                 }, 5000);
             }
             
-            // Обробка форми входу - ОСТАManutençãoЧНЕ ВИПРАВЛЕННЯ подвійного кліку
+            // Processamento форми входу - ОСТАManutençãoЧНЕ ВИПРАВЛЕННЯ подвійного кліку
             let isSubmitting = false;
             let submitTimestamp = 0;
             
@@ -274,7 +274,7 @@
                 // ПОТРІЙНИЙ захист від подвійного кліку:
                 // 1. Verificação прапорця
                 // 2. Verificação data-атрибуe
-                // 3. Verificação horaу осeннього submit (менше 1 секунди = ігнор)
+                // 3. Verificação horaу осeннього submit (менше 1 segundosи = ігнор)
                 if (isSubmitting || 
                     loginForm.dataset.processing === 'true' || 
                     (now - submitTimestamp) < 1000) {
@@ -282,7 +282,7 @@
                     return false;
                 }
                 
-                // Всeновлюexisteмо всі прапорці
+                // Всeновлюexisteмо todos прапорці
                 isSubmitting = true;
                 submitTimestamp = now;
                 loginForm.dataset.processing = 'true';
@@ -361,7 +361,7 @@
                             console.log('🔄 Refresh token guardado');
                         }
                         
-                        // Deберігаexisteмо token у всіх формаeх para сумісності
+                        // Deберігаexisteмо token у todosх формаeх para сумісності
                         localStorage.setItem('token', token);           // Головний token
                         localStorage.setItem('authToken', token);       // Для lifts-manager.js
                         localStorage.setItem('lm_token', token);        // Сeрий formato
@@ -449,7 +449,7 @@
                         e.preventDefault();
                         e.stopPropagation();
                         e.stopImmediatePropagation();
-                        console.log('🚫 Клік заблоковано - форма já обробляexisteться');
+                        console.log('🚫 Клік bloqueado - форма já обробляexisteться');
                         return false;
                     }
                 });

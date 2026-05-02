@@ -457,7 +457,7 @@
         .catch(err => console.warn('Failed to load notifications count:', err));
     }
     
-    // Оновлювати ліouльники кожні 30 секунд
+    // Оновлювати ліouльники кожні 30 segundos
     setInterval(loadClientCounts, 30000);
 })();
 </script>
@@ -933,7 +933,7 @@ function updateStatistics(predictions) {
 function displayGeneralRecommendations(predictions) {
     const container = $('#generalRecommendations');
     
-    // Análiseуexisteмо всі прогнози
+    // Análiseуexisteмо todos прогнози
     const criticalLifts = predictions.filter(p => (p.prediction.failureRisk || 0) >= 0.8);
     const oldLifts = predictions.filter(p => (p.prediction.age || 0) > 15);
     const needsInspection = predictions.filter(p => {

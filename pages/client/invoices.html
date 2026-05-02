@@ -457,7 +457,7 @@
         .catch(err => console.warn('Failed to load notifications count:', err));
     }
     
-    // Оновлювати ліouльники кожні 30 секунд
+    // Оновлювати ліouльники кожні 30 segundos
     setInterval(loadClientCounts, 30000);
 })();
 </script>
@@ -770,7 +770,7 @@
             // Ініціалізація AdminLTE
             $('[data-widget="pushmenu"]').PushMenu();
             
-            // Escuro тема
+            // Escuro assunto
             $('#darkModeToggle').on('click', function() {
                 $('body').toggleClass('dark-mode');
                 $(this).find('i').toggleClass('fa-moon fa-sun');
@@ -794,7 +794,7 @@
             // Ініціалізація менеджера рахунків
             window.invoiceManager = new InvoiceManager();
 
-            // Перенести фокус desde модалки antes de закриттям (уникнення aria-hidden на focused element)
+            // Reagendar фокус desde модалки antes de закриттям (уникнення aria-hidden на focused element)
             $(document).on('hide.bs.modal', '.modal', function () {
                 if (document.activeElement && this.contains(document.activeElement)) {
                     document.activeElement.blur();

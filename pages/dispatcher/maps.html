@@ -390,7 +390,7 @@
                 
                 // Конвертуexisteмо дані desde MongoDB в formato para мапи
                 lifts = (data.data || []).map(lift => {
-                    console.log('🔄 Обробка do elevador:', lift._id, lift.location?.coordinates);
+                    console.log('🔄 Processamento do elevador:', lift._id, lift.location?.coordinates);
                     
                     // Формуexisteмо повну endereço desde містом і країною
                     const fullAddress = [
@@ -507,10 +507,10 @@
                 
                 console.log('✅ Todas маркери adicionado:', markers.length);
                 
-                // 🎯 Automático центруexisteмо mapa на всіх маркерах
+                // 🎯 Automático centroуexisteмо mapa на todosх маркерах
                 if (bounds.length > 0) {
                     map.fitBounds(bounds, { padding: [50, 50] });
-                    console.log('✅ Mapa автоматично центрована на маркерах');
+                    console.log('✅ Mapa автоматично centroована на маркерах');
                 }
             }
         }
@@ -583,7 +583,7 @@
         window.createRouteToLift = function(liftId) {
             const now = Date.now();
             
-            // DeАХИСТ: Блокуexisteмо se минуло menos 1 секунди desde осeннього виклику
+            // DeАХИСТ: Блокуexisteмо se минуло menos 1 segundosи desde осeннього виклику
             if ((now - lastRouteCallTimestamp) < 1000 || processingRoute) {
                 console.log('⏸️ БЛОКУВАННЯ: Atéвторний виклик занадто rapidamente (подвійний клік)');
                 return;
@@ -792,7 +792,7 @@
                 alert(`⚠️ AVISO\n\nDistância ao elevador: ${distance.toFixed(0)}м\n\nÉ muito pouco. Possivelmente:\n• Ви знаходитесь біля do elevador\n• Coordenadas do elevador в базі dados некоректні\n• Геоlocalização браузера визначила позицію неexatamente\n\nVerifique coordenadas do elevador в розділі "Elevadores".`);
             }
 
-            // Створити rota desde atualmenteї позиції до do elevador
+            // Criar rota desde atualmenteї позиції до do elevador
             routingControl = L.Routing.control({
                 waypoints: [
                     L.latLng(userLocation.lat, userLocation.lng),
@@ -874,7 +874,7 @@
                         let xOffset = 0;
                         let yOffset = 0;
                         
-                        // Deнаходимо заголовок (область para перетягування)
+                        // Deнаходимо título (область para перетягування)
                         const header = container.querySelector('h2, h3');
                         
                         if (header) {
@@ -940,7 +940,7 @@
                             el.style.transform = `translate3d(${xPos}px, ${yPos}px, 0)`;
                         }
                         
-                        console.log('🖱️ Idadeно rotaу тепер pode-se перетягувати за заголовок');
+                        console.log('🖱️ Idadeно rotaу тепер pode-se перетягувати за título');
                     }
                 }, 100);
             }).on('routingerror', function(e) {

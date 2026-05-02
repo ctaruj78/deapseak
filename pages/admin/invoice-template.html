@@ -1343,7 +1343,7 @@
             
             // Validação
             if (!clienteNome || !clienteEmail || !clienteMorada) {
-                alert('❌ Preenchaa todos os dados do cliente (Nome, Morada e Email)!');
+                alert('❌ Preencha todos os dados do cliente (Nome, Morada e Email)!');
                 return;
             }
             
@@ -1516,7 +1516,7 @@
                 console.log('📋 A carregar орçаменту:', orcamentoId, 'Modo de visualização:', viewMode);
                 await loadOrcamento(orcamentoId, viewMode);
             } else {
-                // Пре-заповнення desde параметрів do elevador (quando aberto desde модалки do elevador)
+                // Пре-preenchimento desde параметрів do elevador (quando aberto desde модалки do elevador)
                 const pLiftId = urlParams.get('liftId');
                 const pLiftAddress = urlParams.get('liftAddress');
                 const pClientName = urlParams.get('clientName');
@@ -1540,7 +1540,7 @@
                                 if (addrStr && !$('#clientAddress').val().trim()) $('#clientAddress').val(addrStr);
                                 if (lift.clientName && !$('#clientName').val().trim()) $('#clientName').val(lift.clientName);
                                 if ((lift.clientEmail || lift.email) && !$('#clientEmail').val().trim()) $('#clientEmail').val(lift.clientEmail || lift.email);
-                                // Descarregar всі elevadores за endereço і mostrar painel
+                                // Descarregar todos elevadores за endereço і mostrar painel
                                 const street = (typeof addr === 'object' ? addr.street : addrStr.split(',')[0]) || addrStr;
                                 fetch(`/api/lifts?search=${encodeURIComponent(street)}&limit=50`, { headers: { 'Authorization': `Bearer ${tok2}` } })
                                     .then(r2 => r2.json()).then(json2 => {
@@ -1775,7 +1775,7 @@
                 $('#ivaValor').text(`€${orcamento.iva.toFixed(2)}`);
                 $('#total').text(`€${orcamento.total.toFixed(2)}`);
                 
-                // Сховати кнопки edição
+                // Ocultar кнопки edição
                 $('.card-footer').hide();
                 $('#btnSalvar').hide();
                 $('#btnEnviarEmail').hide();

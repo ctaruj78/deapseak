@@ -1630,7 +1630,7 @@
                                         <div class="form-group">
                                             <textarea id="enhancedMaintenanceNotes" name="maintenanceNotes"
                                                       class="form-control" rows="3"
-                                                      placeholder="Registoistos de manutenção, reparações, substituição de peças, particularidades..."></textarea>
+                                                      placeholder="Registo deistooistos de manutenção, reparações, substituição de peças, particularidades..."></textarea>
                                         </div>
                                     </div>
                                 </div>
@@ -2653,7 +2653,7 @@
                         <label for="municipality-notes">
                             <i class="fas fa-comment mr-1"></i>Notas adicionais (opcional)
                         </label>
-                        <textarea id="municipality-notes" class="form-control" rows="3" placeholder="Adicione informação adicional para municípioу..."></textarea>
+                        <textarea id="municipality-notes" class="form-control" rows="3" placeholder="Adicione informação adicional paraa municípioу..."></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -3222,7 +3222,7 @@ Equipa FestLift
                 window.enhancedLiftModal.resetForm();
             }
             
-            // Ініціалізуexisteмо mapa para novo do elevador (центр Atéртугалії)
+            // Ініціалізуexisteмо mapa para novo do elevador (centro Atéртугалії)
             $('#enhancedLiftModal').on('shown.bs.modal', function() {
                 // Відchaveаexisteмо обробник após execução
                 $('#enhancedLiftModal').off('shown.bs.modal');
@@ -3249,7 +3249,7 @@ Equipa FestLift
     };
 
     // 🔧 ВИДАЛЕНО: Antigo обробник "Guardar і створити QR-code"
-    // Причина: викликав дублювання de elevadores através de збереження в localStorage
+    // Motivo: викликав дублювання de elevadores através de збереження в localStorage
     // Тепер виutilizовуexisteться EnhancedLiftModal.handleFormSubmit() desde API
     
     document.addEventListener('DOMContentLoaded', function() {
@@ -3460,7 +3460,7 @@ Equipa FestLift
         container.innerHTML = html;
     }
 
-    // Deаванeжуexisteмо при кліку на вкладку "Serviço" в administrador панелі
+    // Deаванeжуexisteмо при кліку no separador "Serviço" в administrador панелі
     document.addEventListener('DOMContentLoaded', function() {
         const adminSvcTab = document.getElementById('eLiftTab-svc');
         if (adminSvcTab) {
@@ -3573,7 +3573,7 @@ Email de contacto: info@festlift.pt`;
         const email   = $(emailField).val().trim();
         const subject = $(subjectField).val().trim();
         const body    = $(bodyField).val().trim();
-        if (!email) { alert('Email não especificado. Preenchaa o campo email.'); return false; }
+        if (!email) { alert('Email não especificado. Preencha o campo email.'); return false; }
         try {
             const token = AuthManager.getAuthToken();
             const res = await fetch('/api/email/send-inspection-reminder', {
@@ -3699,7 +3699,7 @@ Email de contacto: info@festlift.pt`;
             // 2. Deакриваexisteмо основне модальне вікно
             const mainModal = document.getElementById('inspectionReportModal');
             if (mainModal) {
-                // Видаляexisteмо класи Bootstrap
+                // Видаляexisteмо classeи Bootstrap
                 mainModal.classList.remove('show', 'fade');
                 mainModal.style.display = 'none';
                 mainModal.setAttribute('aria-hidden', 'true');
@@ -3762,7 +3762,7 @@ Email de contacto: info@festlift.pt`;
                 // Deберігаexisteмо backdrop поantes deнього модального вікна
                 const existingModals = document.querySelectorAll('.modal.show');
                 
-                // Всeновлюexisteмо currentLiftId desde atualmenteго контексту
+                // Всeновлюexisteмо currentLiftId desde atualmenteго конtextoу
                 const municipalNumber = document.getElementById('enhancedMunicipalNumber');
                 if (municipalNumber && municipalNumber.value) {
                     window.currentLiftId = municipalNumber.value;
@@ -3804,7 +3804,7 @@ Email de contacto: info@festlift.pt`;
                         const commentsField = document.getElementById('inspectionComments');
                         
                         if (inspectorField) {
-                            // Видаляexisteмо всі блокування
+                            // Видаляexisteмо todos блокування
                             inspectorField.disabled = false;
                             inspectorField.readOnly = false;
                             inspectorField.removeAttribute('disabled');
@@ -3838,7 +3838,7 @@ Email de contacto: info@festlift.pt`;
                             console.log('💬 Campo de comentários desbloqueado');
                         }
                         
-                        // Видаляexisteмо всі overlay'і що можуть bloquear
+                        // Видаляexisteмо todos overlay'і що можуть bloquear
                         const overlays = document.querySelectorAll('.modal-backdrop, .overlay');
                         overlays.forEach(overlay => {
                             if (overlay.style.zIndex > 1060) {
@@ -3950,12 +3950,12 @@ Email de contacto: info@festlift.pt`;
             aiLink.addEventListener('click', function(e) {
                 console.log('🎯 Clique na previsão AI registado!');
                 
-                // Прибираexisteмо ativo клас desde усіх itens меню
+                // Прибираexisteмо ativo classe desde todosх itens меню
                 document.querySelectorAll('.nav-link').forEach(link => {
                     link.classList.remove('active');
                 });
                 
-                // Додаexisteмо ativo клас до AI прогнозування
+                // Додаexisteмо ativo classe до AI прогнозування
                 this.classList.add('active');
                 
                 // Deберігаexisteмо сeн в sessionStorage para збереження após переходу
@@ -3973,12 +3973,12 @@ Email de contacto: info@festlift.pt`;
             analyticsLink.addEventListener('click', function(e) {
                 console.log('📊 Clique em análise registado!');
                 
-                // Прибираexisteмо ativo клас desde усіх itens меню
+                // Прибираexisteмо ativo classe desde todosх itens меню
                 document.querySelectorAll('.nav-link').forEach(link => {
                     link.classList.remove('active');
                 });
                 
-                // Додаexisteмо ativo клас до análise
+                // Додаexisteмо ativo classe до análise
                 this.classList.add('active');
                 
                 // Deберігаexisteмо сeн в sessionStorage
@@ -3998,7 +3998,7 @@ Email de contacto: info@festlift.pt`;
             
             const activeLink = menuMap[activeMenuItem];
             if (activeLink) {
-                // Прибираexisteмо ativo клас desde усіх
+                // Прибираexisteмо ativo classe desde todosх
                 document.querySelectorAll('.nav-link').forEach(link => {
                     link.classList.remove('active');
                 });
@@ -4013,7 +4013,7 @@ Email de contacto: info@festlift.pt`;
     // 🔧 ВИПРАВЛЕННЯ: Правильна ініціалізація Enhanced Lift Modal
     console.log('🚀 A inicializar Enhanced Lift Modal...');
     
-    // Перевіряexisteмо чи carregado всі dependendoості
+    // Перевіряexisteмо чи carregado todos dependendoості
     let initAttempts = 0;
     const maxAttempts = 50; // Máximo 5 segundos de espera
     
@@ -4076,7 +4076,7 @@ Email de contacto: info@festlift.pt`;
     console.log('  - QRCode:', typeof QRCode !== 'undefined' ? '✅' : '⏳ a carregar...');
     console.log('  - EnhancedLiftModal:', typeof EnhancedLiftModal !== 'undefined' ? '✅' : '⏳ a carregar...');
     
-    // Deапускаexisteмо ініціалізацію após carregamento всіх скриптів
+    // Deапускаexisteмо ініціалізацію após carregamento todosх скриптів
     setTimeout(initializeEnhancedModal, 500);
 
     // ========================================================================
@@ -4386,7 +4386,7 @@ Email de contacto: info@festlift.pt`;
         return saved;
     };
 
-    // 🏠 Verificação сусіdiasх de elevadores при введенні endereçoи (administrador painel)
+    // 🏠 Verificação сtodosdiasх de elevadores при введенні endereçoи (administrador painel)
     (function setupAddressSiblingsCheck() {
         let siblingsTimer = null;
         $(document).on('input', '#enhancedLiftAddress, #enhancedLiftPostcode', function() {
@@ -4419,10 +4419,10 @@ Email de contacto: info@festlift.pt`;
                 const textEl = document.getElementById('admin-siblings-text');
                 if (siblings.length > 0) {
                     const nums = siblings.map(s => s.municipalNumber || 'N/A').join(', ');
-                    textEl.textContent = `Neste endereço já estão registados ${siblings.length} elevador${siblings.length > 1 ? 'а' : ''} (№ ${nums}). Цей elevador será adicionado до ціexisteї grupos.`;
+                    textEl.textContent = `Neste endereço já estão registados ${siblings.length} elevador${siblings.length > 1 ? 'es' : ''} (№ ${nums}). Цей elevador será adicionado до deste grupos.`;
                     infoEl.style.display = '';
 
-                    // ── Auto-заповнення ціни e dados договору desde сусіднього do elevador ──
+                    // ── Auto-preenchimento ціни e dados договору desde сtodosднього do elevador ──
                     const sibling = siblings[0];
                     const siblingContract = sibling.contractPrice || sibling.contract?.contractPrice;
                     const siblingContractNumber = sibling.contractNumber || sibling.contract?.contractNumber;
@@ -4447,7 +4447,7 @@ Email de contacto: info@festlift.pt`;
                     if (siblingContractType && !$('#editContractType').val()) {
                         $('#editContractType').val(siblingContractType);
                     }
-                    // Підтягуexisteмо tipo приводу від сусіднього do elevador
+                    // Підтягуexisteмо tipo приводу від сtodosднього do elevador
                     const siblingDriveType = sibling.driveType;
                     if (siblingDriveType && !$('#enhancedDriveType').val()) {
                         $('#enhancedDriveType').val(siblingDriveType);
@@ -4459,7 +4459,7 @@ Email de contacto: info@festlift.pt`;
                             infoEl.appendChild(hint);
                         }
                     }
-                    // Підтягуexisteмо tipo portas від сусіднього do elevador
+                    // Підтягуexisteмо tipo portas від сtodosднього do elevador
                     const siblingDoorType = sibling.doorType;
                     if (siblingDoorType && !$('#enhancedDoorType').val()) {
                         $('#enhancedDoorType').val(siblingDoorType);
@@ -4471,7 +4471,7 @@ Email de contacto: info@festlift.pt`;
                             infoEl.appendChild(hint);
                         }
                     }
-                    // Підтягуexisteмо velocidade від сусіднього do elevador
+                    // Підтягуexisteмо velocidade від сtodosднього do elevador
                     const siblingSpeed = sibling.speed;
                     if (siblingSpeed && !$('#enhancedLiftSpeed').val()) {
                         $('#enhancedLiftSpeed').val(siblingSpeed);
@@ -4613,7 +4613,7 @@ Email de contacto: info@festlift.pt`;
                     </td>
                 </tr>
             `;
-            // Оновлюexisteмо сeтистику (всі нулі)
+            // Оновлюexisteмо сeтистику (todos нулі)
             updateLiftsStatistics(lifts);
             return;
         }
@@ -4754,7 +4754,7 @@ Email de contacto: info@festlift.pt`;
     // Função atualização сeтистики de elevadores
     function updateLiftsStatistics(lifts) {
         if (!lifts || lifts.length === 0) {
-            // Se não há de elevadores - всі contadorи на нуль
+            // Se não há de elevadores - todos contadorи на нуль
             $('#totalLifts').text('0');
             $('#activeLifts').text('0');
             $('#maintenanceLifts').text('0');
@@ -5274,7 +5274,7 @@ Email de contacto: info@festlift.pt`;
                 console.log('✅ Set enhancedLiftModal.editAddress:', window.enhancedLiftModal.editAddress);
             }
 
-            // Deмінюexisteмо заголовок модального вікна
+            // Deмінюexisteмо título модального вікна
             $('#enhancedModalTitle').text('Editar elevador');
             
             // Deаповнюexisteмо приховане поле desde ID
@@ -6840,7 +6840,7 @@ Email de contacto: info@festlift.pt`;
                 }
                 
                 if (!query) {
-                    // Mostrar всі elevadores
+                    // Mostrar todos elevadores
                     displayLiftsInTable(window.allLiftsData);
                     return;
                 }
@@ -6889,7 +6889,7 @@ Email de contacto: info@festlift.pt`;
         const statusFilter = document.getElementById('statusFilter');
         const typeFilter = document.getElementById('typeFilter');
         
-        // Função застосування всіх filtroів
+        // Função застосування todosх filtroів
         function applyAllFilters() {
             if (!window.allLiftsData || window.allLiftsData.length === 0) {
                 console.warn('⚠️ Dados dos elevadores ainda não carregados');
@@ -7159,7 +7159,7 @@ Email de contacto: info@festlift.pt`;
             $('#mun-municipal-number').text(lift.municipalNumber || 'Não especificado');
             $('#mun-qr-code').text(lift.qrCode?.code || lift.qrCode || 'Não especificado');
             
-            // Обробка endereçoи - modelo tem address як instalação {street, city, zipCode, country}
+            // Processamento endereçoи - modelo tem address як instalação {street, city, zipCode, country}
             let addressStr = 'Não especificado';
             let postalCode = '';
             
@@ -7308,14 +7308,14 @@ Email de contacto: info@festlift.pt`;
             }
             
             try {
-                // Виutilizовуexisteмо збережені дані lift замість тексту desde DOM
+                // Виutilizовуexisteмо збережені дані lift замість textoу desde DOM
                 const lift = currentMunicipalityLiftData;
                 const mun = currentMunicipalityData;
                 
                 console.log('🔍 DEBUG lift object:', lift);
                 console.log('🔍 DEBUG lift.address:', lift.address);
                 
-                // Обробка endereçoи - modelo tem address як instalação {street, city, zipCode, country}
+                // Processamento endereçoи - modelo tem address як instalação {street, city, zipCode, country}
                 let addressStr = 'Não especificado';
                 let postalCode = 'Não especificado';
                 
@@ -7344,7 +7344,7 @@ Email de contacto: info@festlift.pt`;
                 console.log('📍 Parsed address:', addressStr);
                 console.log('📮 Parsed postal code:', postalCode);
                 
-                // Обробка dados cliente
+                // Processamento dados cliente
                 let clientName = 'Não especificado';
                 let clientPhone = 'Não especificado';
                 let clientEmail = 'Não especificado';
@@ -7649,7 +7649,7 @@ Email de contacto: info@festlift.pt`;
                             $('#inspectionDate').val(`${year}-${month}-${day}`);
                         }
                         
-                        // Компанія de manutenção
+                        // Empresa de manutenção
                         if (parsedData.liftInfo.maintenanceCompany) {
                             console.log('📝 Empresa de manutenção:', parsedData.liftInfo.maintenanceCompany);
                         }
@@ -7786,7 +7786,7 @@ Email de contacto: info@festlift.pt`;
                 var type = document.getElementById('intType');
                 var desc = document.getElementById('intDescription');
                 if (!date||!date.value||!type||!type.value||!desc||!desc.value) {
-                    alert('Preenchaa os campos obrigatórios: data, tipo, descrição');
+                    alert('Preencha os campos obrigatórios: data, tipo, descrição');
                     return;
                 }
                 var token = localStorage.getItem('authToken')||localStorage.getItem('token')||localStorage.getItem('liftmanager_jwt');

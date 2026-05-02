@@ -1032,7 +1032,7 @@
             
             // Validação
             if (!clienteNome || !clienteEmail || !clienteMorada) {
-                alert('❌ Preenchaa todos os dados do cliente (Nome, Morada e Email)!');
+                alert('❌ Preencha todos os dados do cliente (Nome, Morada e Email)!');
                 return;
             }
             
@@ -1207,7 +1207,7 @@
                 console.log('📋 A carregar орçаменту:', orcamentoId, 'Modo de visualização:', viewMode);
                 await loadOrcamento(orcamentoId, viewMode);
             } else {
-                // Пре-заповнення desde параметрів do elevador (quando aberto desde модалки do elevador)
+                // Пре-preenchimento desde параметрів do elevador (quando aberto desde модалки do elevador)
                 const pLiftId = urlParams.get('liftId');
                 const pLiftAddress = urlParams.get('liftAddress');
                 const pClientName = urlParams.get('clientName');
@@ -1243,7 +1243,7 @@
                             }).catch(() => {});
                     }
 
-                    // Auto-заповнення наступного númeroу орçаменту
+                    // Auto-preenchimento наступного númeroу орçаменту
                     try {
                         const res = await fetch('/api/orcamentos/next-number', {
                             headers: { 'Authorization': `Bearer ${token}` }
@@ -1457,7 +1457,7 @@
                 $('#ivaValor').text(`€${orcamento.iva.toFixed(2)}`);
                 $('#total').text(`€${orcamento.total.toFixed(2)}`);
                 
-                // Сховати кнопки edição
+                // Ocultar кнопки edição
                 $('.card-footer').hide();
                 $('#btnSalvar').hide();
                 $('#btnEnviarEmail').hide();

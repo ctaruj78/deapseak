@@ -643,7 +643,7 @@
         .catch(err => console.warn('Failed to load notifications count:', err));
     }
     
-    // Оновлювати ліouльники кожні 30 секунд
+    // Оновлювати ліouльники кожні 30 segundos
     setInterval(loadClientCounts, 30000);
 })();
 </script>
@@ -1000,7 +1000,7 @@
             // Ініціалізація AdminLTE
             $('[data-widget="pushmenu"]').PushMenu();
             
-            // Escuro тема
+            // Escuro assunto
             $('#darkModeToggle').on('click', function() {
                 $('body').toggleClass('dark-mode');
                 $(this).find('i').toggleClass('fa-moon fa-sun');
@@ -1090,7 +1090,7 @@
             $('#infoRegion').text(userData.region || '—');
             $('#infoZip').text(userData.zip || userData.zipCode || '—');
 
-            // Пре-заповнення форми edição
+            // Пре-preenchimento форми edição
             $('#editFirstName').val(userData.firstName || '');
             $('#editLastName').val(userData.lastName || '');
             $('#editEmail').val(userData.email || '');
@@ -1105,7 +1105,7 @@
             // Ініціалізація AdminLTE
             $('[data-widget="pushmenu"]').PushMenu();
             
-            // Escuro тема
+            // Escuro assunto
             $('#darkModeToggle').on('click', function() {
                 $('body').toggleClass('dark-mode');
                 $(this).find('i').toggleClass('fa-moon fa-sun');
@@ -1193,7 +1193,7 @@
             // Ініціалізація менеджера perfil
             window.profileManager = new ProfileManager();
             
-            // Обробка a carregar аваeра
+            // Processamento a carregar аваeра
             $('#avatarInput').on('change', function(e) {
                 profileManager.handleAvatarUpload(e.target.files[0]);
             });
@@ -1234,7 +1234,7 @@
                     if (res.ok) {
                         showSettingsToast('Palauma-passe alterada com sucesso', 'success');
                         $('#profileChangePasswordForm')[0].reset();
-                        // Сховати підказку temporariamenteго palavra-passe
+                        // Ocultar підказку temporariamenteго palavra-passe
                         document.getElementById('tempPasswordHintCard').style.display = 'none';
                     }
                     else { const d = await res.json(); showSettingsToast(d.message || 'Erro ao alterar a palavra-passe', 'error'); }

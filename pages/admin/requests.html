@@ -1134,7 +1134,7 @@ class ServiceRequestManager {
     }
 
     handleUrlParams() {
-        // Обробляexisteмо URL parâmetros para предзаповнення форми
+        // Обробляexisteмо URL parâmetros para предpreenchimento форми
         const urlParams = new URLSearchParams(window.location.search);
         const liftId = urlParams.get('lift');
         const address = urlParams.get('address');
@@ -1245,7 +1245,7 @@ class ServiceRequestManager {
                             })(),
                             title: (() => {
                                 if (req.title && req.title !== 'Sem título') return req.title;
-                                // Autoгенерація desde tipoу + endereçoи
+                                // Autogeração desde tipoу + endereçoи
                                 const typeMap = { maintenance: 'IT', repair: 'Reparação', inspection: 'Inspecção', consultation: 'Consulta', emergency: 'Avaria', orcamento: 'Орсаменто' };
                                 const typePart = typeMap[req.type] || req.type || 'Pedido';
                                 const addr = (() => {

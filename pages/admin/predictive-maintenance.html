@@ -822,7 +822,7 @@
 <script>
 /**
  * 🔮 Funções globais para handlers onclick
- * ВАЖЛИВО: Оголошуються ДО класу, para бути acessoними imediatamente
+ * ВАЖЛИВО: Оголошуються ДО classeу, para бути acessoними imediatamente
  */
 
 // Iniciar completo análise
@@ -857,7 +857,7 @@ window.exportPredictions = function() {
 
 // Confirmar todos alertas
 window.acknowledgeAllAlerts = function() {
-    console.log('Підтверджуexisteмо всі alertas...');
+    console.log('Підтверджуexisteмо todos alertas...');
     
     const alertButtons = document.querySelectorAll('#allAlertsList button[onclick*="acknowledgeAlert"]');
     alertButtons.forEach(button => {
@@ -1036,7 +1036,7 @@ class PredictiveMaintenanceDashboard {
     showSection(sectionId) {
         console.log(`📍 Atéказуexisteмо розділ: ${sectionId}`);
         
-        // Приховуexisteмо всі розділи
+        // Приховуexisteмо todos розділи
         $('.section-content').hide();
         
         // Atéказуexisteмо потрібний розділ
@@ -1416,9 +1416,9 @@ class PredictiveMaintenanceDashboard {
     getRiskText(risk) {
         const percentage = Math.round(risk * 100);
         if (risk > 0.8) return `CRÍTICO ${percentage}%`;
-        if (risk > 0.6) return `Високий ${percentage}%`;
+        if (risk > 0.6) return `Alto ${percentage}%`;
         if (risk > 0.3) return `Médio ${percentage}%`;
-        return `Низький ${percentage}%`;
+        return `Baixo ${percentage}%`;
     }
 
     translateComponent(component) {
@@ -1516,7 +1516,7 @@ class PredictiveMaintenanceDashboard {
         new Chart(ctx, {
             type: 'bar',
             data: {
-                labels: ['Низький ризик', 'Médio ризик', 'Високий ризик', 'Crítico'],
+                labels: ['Baixo ризик', 'Médio ризик', 'Alto ризик', 'Crítico'],
                 datasets: [{
                     label: 'Quantidade de elevadores',
                     data: [45, 23, 8, 3],

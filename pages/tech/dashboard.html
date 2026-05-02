@@ -456,7 +456,7 @@
                     return a.status === 'completed' && 
                            new Date(a.updatedAt).toDateString() === new Date().toDateString();
                 }).length;
-                // Urgentes = активні desde prioridadeом high/urgent/critical
+                // Urgentes = активні com prioridade high/urgent/critical
                 const urgentAssignments = assignments.filter(a =>
                     isActive(a) && (a.priority === 'high' || a.priority === 'urgent' || a.priority === 'critical')
                 ).length;
@@ -567,7 +567,7 @@
                 return;
             }
 
-            // Atéказуexisteмо всі активні tarefas (не завершені e не скасовані)
+            // Atéказуexisteмо todos активні tarefas (не завершені e не скасовані)
             const activeTasks = assignments.filter(assignment =>
                 assignment.status !== 'completed' && assignment.status !== 'cancelled'
             );
@@ -821,7 +821,7 @@
                 await updateTaskStatus(taskId, 'completed');
                 $('#completeTaskModal').modal('hide');
             } catch (error) {
-                console.error('❌ Erro завершення:', error);
+                console.error('❌ Erro conclusão:', error);
                 alert('Erro ao concluir a tarefa');
             }
         }
@@ -989,7 +989,7 @@
         }
         
         /**
-         * Обробка novo tarefas
+         * Processamento novo tarefas
          */
         function handleNewAssignment(data) {
             // Оновлюexisteмо contador ativos de tarefas
@@ -1004,10 +1004,10 @@
         }
         
         /**
-         * Обробка urgenteго notificações
+         * Processamento urgenteго notificações
          */
         function handlePriorityAlert(data) {
-            // Міняexisteмо колір сeтистики на червоний para привернення уваги
+            // Міняexisteмо колір сeтистики на vermelho para привернення уваги
             $('#urgentAssignments').closest('.stat-card').addClass('border-danger');
             
             // Додаexisteмо мигання
@@ -1015,7 +1015,7 @@
         }
         
         /**
-         * Обробка діагностики do elevador
+         * Processamento діагностики do elevador
          */
         function handleLiftDiagnostic(data) {
             console.log('[Tech Dashboard] Diagnóstico do elevador:', data);
@@ -1044,7 +1044,7 @@
             
             $('body').append(notification);
             
-            // Automático eliminação através de 7 секунд para de técnicos (mais horaу на реакцію)
+            // Automático eliminação através de 7 segundos para de técnicos (mais horaу на реакцію)
             setTimeout(() => {
                 notification.alert('close');
             }, 7000);

@@ -986,7 +986,7 @@
         $(document).on('click', '.reject-deletion', async function() {
             const liftId = $(this).data('lift-id');
             const notificationId = $(this).data('notification-id');
-            const reason = prompt('Причина відхилення (необов,язково):') ;
+            const reason = prompt('Motivo відхилення (необов,язково):') ;
 
             try {
                 const token = localStorage.getItem('liftmanager_jwt') || localStorage.getItem('authToken') || localStorage.getItem('token');

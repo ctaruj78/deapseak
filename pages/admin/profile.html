@@ -817,7 +817,7 @@
                             <div class="form-check">
                                 <input class="form-check-input" type="checkbox" id="twoFactorEnabled" checked>
                                 <label class="form-check-label" for="twoFactorEnabled">
-                                    Увімкнути 2FA
+                                    Ativar 2FA
                                 </label>
                             </div>
                             <p class="text-muted mt-2">Autenticação de dois fatores garante um nível adicional de segurança para o seu registo.</p>
@@ -1013,9 +1013,9 @@
                             </div>
                             
                             <h5 class="mt-4">Exportar dados</h5>
-                            <p class="text-muted">Exportarуйте всі ваші дані в JSON formatoі</p>
+                            <p class="text-muted">Exportarуйте todos ваші дані в JSON formatoі</p>
                             <button class="btn btn-outline-primary" onclick="(function(){const data={user:JSON.parse(localStorage.getItem('userData')||'{}'),exported:new Date().toISOString()};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='profile-export-'+Date.now()+'.json';a.click();})()">
-                                <i class="fas fa-download mr-2"></i>Exportar дані
+                                <i class="fas fa-download mr-2"></i>Exportar dados
                             </button>
                             
                             <h5 class="mt-4">Видmasння облікового registo</h5>

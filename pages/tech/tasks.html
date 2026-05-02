@@ -662,7 +662,7 @@
                                         <div class="text-center py-5">
                                             <i class="fas fa-calendar-alt fa-3x text-muted mb-3"></i>
                                             <h4>Calendário de tarefas</h4>
-                                            <p>Тут as suas tarefas serão apresentadas em formato de calendário</p>
+                                            <p>As suas tarefas serão apresentadas em formato de calendário</p>
                                         </div>
                                     </div>
                                 </div>
@@ -765,7 +765,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
-                    <button type="button" class="btn btn-primary" onclick="alert('Função de criaрення de tarefas disponível através da página principalinel')">
+                    <button type="button" class="btn btn-primary" onclick="alert('Função de criação de tarefas disponível através da página principalinel')">
                         <i class="fas fa-info"></i> Informação
                     </button>
                 </div>
@@ -898,7 +898,7 @@
                     
                 } catch (error) {
                     console.error('Erro поchatку trabalhos:', error);
-                    alert('Não foi possível розпоchatи роботу: ' + error.message);
+                    alert('Não foi possível iniciar o trabalho: ' + error.message);
                 }
             }
             
@@ -908,7 +908,7 @@
                 const workDescription = prompt('Опишіть виконану роботу:', 'Роботу concluído згідно desde regulamentoом. Todas неcorretamenteсті усунуто.');
                 
                 if (!workDescription || workDescription.trim() === '') {
-                    alert('Descrição do trabalho concluído обов\'язковий para завершення tarefas');
+                    alert('Descrição do trabalho concluído é obrigatório para concluir tarefas');
                     return;
                 }
                 
@@ -928,7 +928,7 @@
                     
                     if (!response || !response.ok) {
                         const error = await response.json();
-                        throw new Error(error.message || 'Erro завершення tarefas');
+                        throw new Error(error.message || 'Erro conclusão tarefas');
                     }
                     
                     alert('Tarefas com sucesso concluído!');
@@ -936,7 +936,7 @@
                     await this.loadTasks();
                     
                 } catch (error) {
-                    console.error('Erro завершення tarefas:', error);
+                    console.error('Erro conclusão tarefas:', error);
                     alert('Não foi possível concluir tarefas: ' + error.message);
                 }
             }
@@ -958,7 +958,7 @@
                     const row = document.createElement('tr');
                     row.innerHTML = `
                         <td>#${taskId.toString().substr(-6)}</td>
-                        <td>${task.liftId || 'Deагальне'}</td>
+                        <td>${task.liftId || 'Geral'}</td>
                         <td>${task.type || 'Manutenção'}</td>
                         <td>
                             <span class="status-badge status-${task.status.replace('_', '-')}">
@@ -1054,7 +1054,7 @@
                     </div>
                 `;
                 
-                // Atéказуexisteмо відповіdias кнопки
+                // Atéказуexisteмо respostaas кнопки
                 const startBtn = document.getElementById('startTaskBtn');
                 const completeBtn = document.getElementById('completeTaskBtn');
                 

@@ -242,7 +242,7 @@
                                                 <option value="all">Todas as especializações</option>
                                                 <option value="network">Redes</option>
                                                 <option value="hardware">Equipamento</option>
-                                                <option value="software">ПDe</option>
+                                                <option value="software">Software</option>
                                                 <option value="security">Segurança</option>
                                             </select>
                                         </div>
@@ -254,7 +254,7 @@
                                                 <option value="all">Qualquer carga de trabalho</option>
                                                 <option value="low">Baixo</option>
                                                 <option value="medium">Médio</option>
-                                                <option value="high">Високе</option>
+                                                <option value="high">Alta</option>
                                             </select>
                                         </div>
                                     </div>
@@ -299,7 +299,7 @@
                         <div class="col-lg-3 col-md-6">
                             <div class="stats-box">
                                 <div class="stats-number" id="avgCompletion">0%</div>
-                                <div class="stats-label">Сереdo dia завершеність</div>
+                                <div class="stats-label">Taxa de conclusão diária</div>
                             </div>
                         </div>
                     </div>
@@ -385,7 +385,7 @@
                                     <select id="techSpecialty" class="form-control" required>
                                         <option value="network">Redes</option>
                                         <option value="hardware">Equipamento</option>
-                                        <option value="software">ПDe</option>
+                                        <option value="software">Software</option>
                                         <option value="security">Segurança</option>
                                         <option value="general">Geral suporte</option>
                                     </select>
@@ -397,16 +397,16 @@
                                     <select id="techStatus" class="form-control" required>
                                         <option value="active">Ativo</option>
                                         <option value="inactive">Inativo</option>
-                                        <option value="vacation">У відпустці</option>
+                                        <option value="vacation">De férias</option>
                                     </select>
                                 </div>
                             </div>
                         </div>
 
                         <div class="form-group">
-                            <label for="techSkills">Competências (através de кому)</label>
+                            <label for="techSkills">Competências (separadas por vírgula)</label>
                             <input type="text" id="techSkills" class="form-control" 
-                                   placeholder="Ex.: мережеве обладнання, Windows Server, кіберsegurança">
+                                   placeholder="Ex.: мережеве equipamento, Windows Server, кіберsegurança">
                         </div>
 
                         <div class="form-group">
@@ -596,7 +596,7 @@
             // Inicialização менеджера de técnicos
             window.technicianManager = new TechnicianManager();
             
-            // Обробка вибору ficheiroу
+            // Processamento вибору ficheiroу
             $('.custom-file-input').on('change', function() {
                 let fileName = $(this).val().split('\\').pop();
                 $(this).next('.custom-file-label').addClass("selected").html(fileName);

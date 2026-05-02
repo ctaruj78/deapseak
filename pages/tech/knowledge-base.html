@@ -625,7 +625,7 @@
                                             <div class="card bg-light">
                                                 <div class="card-body text-center">
                                                     <i class="fas fa-file-pdf fa-2x text-danger mb-2"></i>
-                                                    <h6>Técnicos мануали</h6>
+                                                    <h6>Manuais técnicos</h6>
                                                     <button class="btn btn-sm btn-outline-danger" onclick="window.location.href='manuals.html'">
                                                         <i class="fas fa-download"></i> Descarregar
                                                     </button>
@@ -706,7 +706,7 @@
                         <i class="fas fa-print"></i> Impressão
                     </button>
                     <button type="button" class="btn btn-warning" onclick="knowledgeManager.toggleBookmark(currentArticleId)" id="bookmarkBtn">
-                        <i class="far fa-bookmark"></i> В обране
+                        <i class="far fa-bookmark"></i> В selecionado
                     </button>
                 </div>
             </div>
@@ -761,7 +761,7 @@
             // Inicialização менеджера base знань
             window.knowledgeManager = new KnowledgeManager();
             
-            // Filtroація за темами
+            // Filtroація за assuntoми
             $('[data-filter]').on('click', function() {
                 const filter = $(this).data('filter');
                 $('[data-filter]').removeClass('active');

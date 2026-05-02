@@ -539,7 +539,7 @@
         .catch(err => console.warn('Failed to load notifications count:', err));
     }
     
-    // Оновлювати ліouльники кожні 30 секунд
+    // Оновлювати ліouльники кожні 30 segundos
     setInterval(loadClientCounts, 30000);
 })();
 </script>
@@ -1013,7 +1013,7 @@
             // Ініціалізація AdminLTE
             $('[data-widget="pushmenu"]').PushMenu();
             
-            // Escuro тема
+            // Escuro assunto
             $('#darkModeToggle').on('click', function() {
                 $('body').toggleClass('dark-mode');
                 $(this).find('i').toggleClass('fa-moon fa-sun');
@@ -1037,7 +1037,7 @@
             // Ініціалізація менеджера підтримки
             window.supportManager = new SupportManager();
             
-            // Обробка вибору ficheiroу
+            // Processamento вибору ficheiroу
             $('.custom-file-input').on('change', function() {
                 let fileName = $(this).val().split('\\').pop();
                 $(this).next('.custom-file-label').addClass("selected").html(fileName);

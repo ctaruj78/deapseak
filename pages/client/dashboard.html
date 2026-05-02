@@ -505,7 +505,7 @@
         .catch(err => console.warn('Failed to load notifications count:', err));
     }
     
-    // Оновлювати ліouльники кожні 30 секунд
+    // Оновлювати ліouльники кожні 30 segundos
     setInterval(loadClientCounts, 30000);
 })();
 </script>
@@ -831,7 +831,7 @@
         // Função виходу
         function logout() {
             if (confirm('Tem a certeza que quer sair do sistema?')) {
-                // Оouщуexisteмо всі дані através de AuthManager
+                // Оouщуexisteмо todos дані através de AuthManager
                 if (typeof AuthManager !== 'undefined') {
                     AuthManager.logout();
                 } else {
@@ -853,7 +853,7 @@
                 $('#lastUpdateTime').text(new Date().toLocaleTimeString('uk-UA'));
             }, 1000);
 
-            // Escuro тема
+            // Escuro assunto
             $('#darkModeToggle').on('click', function() {
                 $('body').toggleClass('dark-mode');
                 $(this).find('i').toggleClass('fa-moon fa-sun');
@@ -878,7 +878,7 @@
 
             // client-dashboard.js створюexiste window.clientDashboard сам através de DOMContentLoaded
             if (typeof ClientDashboard === 'undefined') {
-                console.error('ClientDashboard клас не carregado!');
+                console.error('ClientDashboard classe не carregado!');
             }
 
             /**
@@ -1290,7 +1290,7 @@
                 
                 $('body').append(notification);
                 
-                // Автоматичне eliminação através de 5 секунд
+                // Автоматичне eliminação através de 5 segundos
                 setTimeout(() => {
                     notification.alert('close');
                 }, 5000);

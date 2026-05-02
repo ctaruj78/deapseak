@@ -379,7 +379,7 @@
                 </div>
                 <div class="scan-actions">
                   <button class="btn btn-info" id="create-task-button">
-                    <i class="fas fa-tasks"></i> Створити tarefas
+                    <i class="fas fa-tasks"></i> Criar tarefas
                   </button>
                   <button class="btn btn-warning" id="submit-report-button">
                     <i class="fas fa-file-alt"></i> Submeter relatório
@@ -704,7 +704,7 @@ document.addEventListener("DOMContentLoaded", function() {
             Swal.fire({
                 icon: 'error',
                 title: 'Erro ao processar código QR',
-                text: 'Não foi possível розпізнати QR-code у carregadoму ficheiroі. Verifique, що ficheiro містить чіткий QR-code.',
+                text: 'Não foi possível reconhecer QR-code у carregadoму ficheiroі. Verifique, що ficheiro містить чіткий QR-code.',
                 confirmButtonText: 'Entendido'
             });
         } finally {
@@ -791,15 +791,15 @@ document.addEventListener("DOMContentLoaded", function() {
                                 </tr>
                                 <tr>
                                     <th>Endereço</th>
-                                    <td>${lift.address || 'Не вказана'}</td>
+                                    <td>${lift.address || 'Não especificado'}</td>
                                 </tr>
                                 <tr>
                                     <th>Modelo</th>
-                                    <td>${lift.model || 'Не вказана'}</td>
+                                    <td>${lift.model || 'Não especificado'}</td>
                                 </tr>
                                 <tr>
                                     <th>Tipo</th>
-                                    <td>${lift.type || 'Не вказаний'}</td>
+                                    <td>${lift.type || 'Não especificado'}</td>
                                 </tr>
                                 <tr>
                                     <th>Estado</th>
@@ -849,7 +849,7 @@ document.addEventListener("DOMContentLoaded", function() {
                                 </tr>
                                 <tr>
                                     <th>Descrição</th>
-                                    <td>${request.description || 'Не вказаний'}</td>
+                                    <td>${request.description || 'Não especificado'}</td>
                                 </tr>
                                 <tr>
                                     <th>Prioridade</th>
@@ -871,11 +871,11 @@ document.addEventListener("DOMContentLoaded", function() {
                                 </tr>
                                 <tr>
                                     <th>Endereço</th>
-                                    <td>${request.address || 'Не вказана'}</td>
+                                    <td>${request.address || 'Não especificado'}</td>
                                 </tr>
                                 <tr>
                                     <th>Cliente</th>
-                                    <td>${request.clientName || 'Не вказаний'}</td>
+                                    <td>${request.clientName || 'Não especificado'}</td>
                                 </tr>
                                 <tr>
                                     <th>Criado</th>
@@ -908,11 +908,11 @@ document.addEventListener("DOMContentLoaded", function() {
                                 </tr>
                                 <tr>
                                     <th>Email</th>
-                                    <td>${result.data.email || 'Не вказаний'}</td>
+                                    <td>${result.data.email || 'Não especificado'}</td>
                                 </tr>
                                 <tr>
                                     <th>Telefone</th>
-                                    <td>${result.data.phone || 'Не вказаний'}</td>
+                                    <td>${result.data.phone || 'Não especificado'}</td>
                                 </tr>
                             </table>
                         `;

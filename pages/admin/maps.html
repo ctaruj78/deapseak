@@ -760,7 +760,7 @@
                         lng = -9.1393;
                     }
                     
-                    console.log('🔄 Обробка do elevador:', lift._id, [lng, lat]);
+                    console.log('🔄 Processamento do elevador:', lift._id, [lng, lat]);
                     
                     return {
                         id: lift._id,
@@ -844,10 +844,10 @@
             console.log('🗺️ Ініціалізація мапи...');
             console.log('📍 Quantidade de elevadores para apresentação:', lifts.length);
             
-            // ⏱️ Timeout para ініціалізації карти (5 секунд)
+            // ⏱️ Timeout para ініціалізації карти (5 segundos)
             const mapTimeout = setTimeout(() => {
                 if (!map || !map._loaded) {
-                    console.warn('⚠️ Mapa не заванeжилась за 5 секунд, показую заглушку');
+                    console.warn('⚠️ Mapa не заванeжилась за 5 segundos, показую заглушку');
                     $('#liftsMap').html('<div class="alert alert-info m-3"><i class="fas fa-map-marked-alt"></i> Mapa temporariamente indisponível. Tente atualizar a página.</div>');
                 }
             }, 5000);
@@ -898,10 +898,10 @@
                 
                 console.log('✅ Todas маркери adicionado:', markers.length);
                 
-                // 🎯 Automático центруexisteмо mapa на всіх маркерах
+                // 🎯 Automático centroуexisteмо mapa на todosх маркерах
                 if (bounds.length > 0) {
                     map.fitBounds(bounds, { padding: [50, 50] });
-                    console.log('✅ Mapa автоматично центрована на маркерах');
+                    console.log('✅ Mapa автоматично centroована на маркерах');
                 }
             }
         }
@@ -1066,7 +1066,7 @@
         window.createRouteToLift = function(liftId) {
             const now = Date.now();
             
-            // DeАХИСТ: Блокуexisteмо se минуло menos 1 секунди desde осeннього виклику
+            // DeАХИСТ: Блокуexisteмо se минуло menos 1 segundosи desde осeннього виклику
             if ((now - lastRouteCallTimestamp) < 1000 || processingRoute) {
                 console.log('⏸️ БЛОКУВАННЯ: Atéвторний виклик занадто rapidamente (подвійний клік)');
                 return;
@@ -1197,7 +1197,7 @@
                 'Clique em OK para re-geocoding completo (pode demorar vários minutos).\n' +
                 'Clique Cancel para correção лише de elevadores беdesde координат.'
             );
-            const force = confirmed; // OK = force=true (всі), Cancel = apenas порожні
+            const force = confirmed; // OK = force=true (todos), Cancel = apenas порожні
             
             btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> A corrigir...');
             
@@ -1306,7 +1306,7 @@
                 alert(`⚠️ AVISO\n\nDistância ao elevador: ${distance.toFixed(0)}м\n\nÉ muito pouco. Possivelmente:\n• Ви знаходитесь біля do elevador\n• Coordenadas do elevador в базі dados некоректні\n• Геоlocalização браузера визначила позицію неexatamente\n\nVerifique coordenadas do elevador в розділі "Elevadores".`);
             }
 
-            // Створити rota desde atualmenteї позиції до do elevador
+            // Criar rota desde atualmenteї позиції до do elevador
             routingControl = L.Routing.control({
                 waypoints: [
                     L.latLng(userLocation.lat, userLocation.lng),
@@ -1388,7 +1388,7 @@
                         let xOffset = 0;
                         let yOffset = 0;
                         
-                        // Deнаходимо заголовок (область para перетягування)
+                        // Deнаходимо título (область para перетягування)
                         const header = container.querySelector('h2, h3');
                         
                         if (header) {
@@ -1454,7 +1454,7 @@
                             el.style.transform = `translate3d(${xPos}px, ${yPos}px, 0)`;
                         }
                         
-                        console.log('🖱️ Idadeно rotaу тепер pode-se перетягувати за заголовок');
+                        console.log('🖱️ Idadeно rotaу тепер pode-se перетягувати за título');
                     }
                 }, 100);
             }).on('routingerror', function(e) {

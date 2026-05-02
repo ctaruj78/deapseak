@@ -133,7 +133,7 @@
                 // Отримати геолокацію
                 await getUserLocation();
                 
-                // Створити мапу
+                // Criar мапу
                 map = L.map('map').setView([userLocation.lat, userLocation.lng], 13);
                 
                 L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
@@ -228,7 +228,7 @@
             }
         }
 
-        // Descarregar всі elevadores e mostrar загальну mapa
+        // Descarregar todos elevadores e mostrar загальну mapa
         async function loadAllLiftsMap() {
             document.getElementById('taskInfo').innerHTML = `
                 <div class="d-flex justify-content-between align-items-center">

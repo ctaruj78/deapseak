@@ -484,7 +484,7 @@
                                     <i class="fas fa-elevator"></i>
                                 </div>
                                 <a href="#" class="small-box-footer" onclick="qrManager.resetFilters()">
-                                    Visualizar всі <i class="fas fa-arrow-circle-right"></i>
+                                    Visualizar todos <i class="fas fa-arrow-circle-right"></i>
                                 </a>
                             </div>
                         </div>
@@ -871,7 +871,7 @@
                                 <div class="form-group">
                                     <label>Válido até *</label>
                                     <input type="date" id="qrExpiry" class="form-control" required>
-                                    <small class="form-text text-muted">Мінімум 30 dias від hoje</small>
+                                    <small class="form-text text-muted">Mínimo de 30 dias a partir de hoje</small>
                                 </div>
                             </div>
                         </div>
@@ -882,7 +882,7 @@
                             <div class="text-center p-3 border rounded" id="qrPreview">
                                 <div class="text-muted">
                                     <i class="fas fa-qrcode fa-3x mb-2"></i>
-                                    <p>QR-code з'явиться após заповнення полів</p>
+                                    <p>QR-code aparecerá após preenchimento dos campos</p>
                                 </div>
                             </div>
                         </div>
@@ -890,12 +890,12 @@
                         <div class="form-group">
                             <label>Dados adicionais (JSON)</label>
                             <textarea id="qrMetadata" class="form-control" rows="3" placeholder='{"note": "Adicional informação"}'></textarea>
-                            <small class="form-text text-muted">Parâmetros adicionais у formatoі JSON (opcional)</small>
+                            <small class="form-text text-muted">Parâmetros adicionais em formato JSON (opcional)</small>
                         </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-                        <button type="submit" class="btn btn-primary">Створити QR-code</button>
+                        <button type="submit" class="btn btn-primary">Criar QR-code</button>
                     </div>
                 </form>
             </div>
@@ -970,7 +970,7 @@
     </div>
 
     <!-- Janelas modais -->
-    <!-- Janela modal: Histórico de leituras (заглушка) -->
+    <!-- Janela modal: Histórico de leituras (exemplo) -->
     <div class="modal fade" id="scanHistoryModal" tabindex="-1" role="dialog" aria-labelledby="scanHistoryModalLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
@@ -981,7 +981,7 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <div class="text-muted">Тут será історія leituras para do QR-code (заглушка).</div>
+                    <div class="text-muted">Aqui será apresentado історія leituras para do QR-code (exemplo).</div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
@@ -990,7 +990,7 @@
         </div>
     </div>
 
-    <!-- Janela modal: Modelo do QR-code (заглушка) -->
+    <!-- Janela modal: Modelo do QR-code (exemplo) -->
     <div class="modal fade" id="qrTemplateModal" tabindex="-1" role="dialog" aria-labelledby="qrTemplateModalLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
@@ -1001,7 +1001,7 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <div class="text-muted">Тут será modelo para друку/експорту do QR-code (заглушка).</div>
+                    <div class="text-muted">Aqui será apresentado modelo para друку/експорту do QR-code (exemplo).</div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
@@ -1016,7 +1016,7 @@
         </div>
         <div class="card-body p-3">
             <ul class="list-unstyled mb-0" id="auditLogList">
-                <li class="text-muted">Registo de ações vazio (заглушка)</li>
+                <li class="text-muted">Registo de ações vazio</li>
             </ul>
         </div>
     </div>
@@ -1182,13 +1182,13 @@
             showNotification('Estado com sucesso alterado', 'success');
         });
         
-        // Вибір всіх
+        // Вибір todosх
         $('#selectAll').on('change', function() {
             $('.qr-checkbox').prop('checked', this.checked);
             updateBulkActions();
         });
         
-        // Обробка вибору окремих чекбоксів
+        // Processamento вибору окремих чекбоксів
         $(document).on('change', '.qr-checkbox', function() {
             updateBulkActions();
         });

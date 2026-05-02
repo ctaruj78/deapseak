@@ -636,7 +636,7 @@
                                     <div class="manual-cards">
                                         <div class="manual-card">
                                             <h4><i class="fas fa-shield-alt text-danger"></i> Instruções de segurança</h4>
-                                            <p>Правила de segurança durante trabalhos no elevador</p>
+                                            <p>Regras de segurança durante trabalhos no elevador</p>
                                             <button class="btn btn-outline-danger btn-sm" onclick="arHelper.openManual('safety')">
                                                 <i class="fas fa-download"></i> Descarregar
                                             </button>
@@ -649,15 +649,15 @@
                                             </button>
                                         </div>
                                         <div class="manual-card">
-                                            <h4><i class="fas fa-wrench text-warning"></i> Розбір неcorretamenteстей</h4>
-                                            <p>Problemas comuns e as suas soluções para різних моделей</p>
+                                            <h4><i class="fas fa-wrench text-warning"></i> Resolução de problemas</h4>
+                                            <p>Problemas comuns e as suas soluções para de diferentes modelos</p>
                                             <button class="btn btn-outline-warning btn-sm" onclick="arHelper.openManual('troubleshooting')">
                                                 <i class="fas fa-download"></i> Descarregar
                                             </button>
                                         </div>
                                         <div class="manual-card">
                                             <h4><i class="fas fa-video text-success"></i> Tutoriais em vídeo</h4>
-                                            <p>Vídeoуanos desde reparaçãoу e de manutenção</p>
+                                            <p>Vídeos de reparação e manutenção</p>
                                             <button class="btn btn-outline-success btn-sm" onclick="arHelper.openVideoTutorials()">
                                                 <i class="fas fa-play"></i> Ver
                                             </button>
@@ -673,13 +673,13 @@
                         <div class="col-12">
                             <div class="card">
                                 <div class="card-header">
-                                    <h3 class="card-title"><i class="fas fa-camera"></i> Recentes знімки</h3>
+                                    <h3 class="card-title"><i class="fas fa-camera"></i> Capturas recentes</h3>
                                 </div>
                                 <div class="card-body">
                                     <div id="screenshotsGallery" class="d-flex flex-wrap gap-2">
                                         <div class="text-center text-muted py-5 w-100">
                                             <i class="fas fa-camera fa-3x mb-2"></i>
-                                            <p>Ще não há знімків</p>
+                                            <p>Ainda não há capturas</p>
                                         </div>
                                     </div>
                                 </div>
@@ -762,7 +762,7 @@
 
             // Verificação чи carregado ar-helper.js
             if (typeof ARHelper === 'undefined') {
-                console.error('ARHelper клас не carregado!');
+                console.error('ARHelper classe не carregado!');
                 
                 // Резервна ініціалізація
                 const currentUser = JSON.parse(localStorage.getItem('currentUser')) || { 
