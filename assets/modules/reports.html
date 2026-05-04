@@ -2,12 +2,12 @@
     <div class="container-fluid">
         <div class="row mb-2">
             <div class="col-sm-6">
-                <h1><i class="fas fa-chart-bar"></i> Звіти та аналітика</h1>
+                <h1><i class="fas fa-chart-bar"></i> Relatórioи та аналітика</h1>
             </div>
             <div class="col-sm-6">
                 <ol class="breadcrumb float-sm-right">
                     <li class="breadcrumb-item"><a href="#" onclick="window.crmSystem.loadModule('dashboard')">Головна</a></li>
-                    <li class="breadcrumb-item active">Звіти</li>
+                    <li class="breadcrumb-item active">Relatórioи</li>
                 </ol>
             </div>
         </div>
@@ -23,16 +23,16 @@
                     <div class="card-header">
                         <h3 class="card-title">
                             <i class="fas fa-calendar-alt"></i>
-                            Звіт за період
+                            Relatório за період
                         </h3>
                         <div class="card-tools">
                             <div class="input-group input-group-sm" style="width: 300px;">
                                 <select class="form-control" id="reportPeriod">
-                                    <option value="today">Сьогодні</option>
+                                    <option value="today">Hoje</option>
                                     <option value="week">Поточний тиждень</option>
                                     <option value="month" selected>Поточний місяць</option>
                                     <option value="quarter">Поточний квартал</option>
-                                    <option value="year">Поточний рік</option>
+                                    <option value="year">Поточний ano</option>
                                     <option value="custom">Вибраний період</option>
                                 </select>
                             </div>
@@ -120,14 +120,14 @@
             </div>
         </div>
 
-        <!-- Деталізовані звіти -->
+        <!-- Detalhesзовані звіти -->
         <div class="row">
             <div class="col-12">
                 <div class="card">
                     <div class="card-header">
                         <h3 class="card-title">
                             <i class="fas fa-table"></i>
-                            Деталізований звіт
+                            Detalhesзований звіт
                         </h3>
                         <div class="card-tools">
                             <button type="button" class="btn btn-success btn-sm" onclick="exportReport('excel')">
@@ -142,56 +142,56 @@
                         <table class="table table-hover text-nowrap" id="reportTable">
                             <thead>
                                 <tr>
-                                    <th>Дата</th>
-                                    <th>Ліфт</th>
-                                    <th>Тип роботи</th>
-                                    <th>Технік</th>
-                                    <th>Статус</th>
-                                    <th>Час роботи</th>
+                                    <th>Data</th>
+                                    <th>Elevador</th>
+                                    <th>Tipo роботи</th>
+                                    <th>Técnico</th>
+                                    <th>Estado</th>
+                                    <th>Tempo de funcionamento</th>
                                     <th>Примітки</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr>
                                     <td>2025-10-03</td>
-                                    <td>Ліфт #001</td>
-                                    <td>Планове ТО</td>
+                                    <td>Elevador #001</td>
+                                    <td>Manutenção planeada</td>
                                     <td>Іван Петренко</td>
-                                    <td><span class="badge badge-success">Виконано</span></td>
+                                    <td><span class="badge badge-success">Concluído</span></td>
                                     <td>2 год 30 хв</td>
                                     <td>Заміна тросів</td>
                                 </tr>
                                 <tr>
                                     <td>2025-10-02</td>
-                                    <td>Ліфт #005</td>
-                                    <td>Аварійний ремонт</td>
-                                    <td>Сергій Коваленко</td>
+                                    <td>Elevador #005</td>
+                                    <td>Reparação de emergência</td>
+                                    <td>Agoгій Коваленко</td>
                                     <td><span class="badge badge-warning">В процесі</span></td>
                                     <td>4 год 15 хв</td>
-                                    <td>Ремонт двигуна</td>
+                                    <td>Reparação двигуна</td>
                                 </tr>
                                 <tr>
                                     <td>2025-10-02</td>
-                                    <td>Ліфт #012</td>
-                                    <td>Діагностика</td>
+                                    <td>Elevador #012</td>
+                                    <td>Diagnóstico</td>
                                     <td>Олексій Сидоренко</td>
-                                    <td><span class="badge badge-success">Виконано</span></td>
+                                    <td><span class="badge badge-success">Concluído</span></td>
                                     <td>1 год 45 хв</td>
                                     <td>Перевірка безпеки</td>
                                 </tr>
                                 <tr>
                                     <td>2025-10-01</td>
-                                    <td>Ліфт #008</td>
-                                    <td>Встановлення QR</td>
+                                    <td>Elevador #008</td>
+                                    <td>Instalação QR</td>
                                     <td>Максим Іваненко</td>
-                                    <td><span class="badge badge-success">Виконано</span></td>
+                                    <td><span class="badge badge-success">Concluído</span></td>
                                     <td>45 хв</td>
                                     <td>QR код встановлено</td>
                                 </tr>
                                 <tr>
                                     <td>2025-09-30</td>
-                                    <td>Ліфт #015</td>
-                                    <td>Планове ТО</td>
+                                    <td>Elevador #015</td>
+                                    <td>Manutenção planeada</td>
                                     <td>Володимир Мельник</td>
                                     <td><span class="badge badge-danger">Відхилено</span></td>
                                     <td>-</td>
@@ -204,20 +204,20 @@
             </div>
         </div>
 
-        <!-- Експорт та налаштування -->
+        <!-- Exportar та налаштування -->
         <div class="row">
             <div class="col-md-6">
                 <div class="card">
                     <div class="card-header">
                         <h3 class="card-title">
                             <i class="fas fa-download"></i>
-                            Експорт даних
+                            Exportar даних
                         </h3>
                     </div>
                     <div class="card-body">
                         <form>
                             <div class="form-group">
-                                <label>Період експорту:</label>
+                                <label>Período експорту:</label>
                                 <div class="input-group">
                                     <input type="date" class="form-control" id="exportFromDate">
                                     <div class="input-group-prepend input-group-append">
@@ -227,7 +227,7 @@
                                 </div>
                             </div>
                             <div class="form-group">
-                                <label>Формат файлу:</label>
+                                <label>Formato do ficheiro:</label>
                                 <select class="form-control" id="exportFormat">
                                     <option value="excel">Excel (.xlsx)</option>
                                     <option value="csv">CSV (.csv)</option>
@@ -246,39 +246,39 @@
                     <div class="card-header">
                         <h3 class="card-title">
                             <i class="fas fa-cog"></i>
-                            Налаштування звітів
+                            Definições звітів
                         </h3>
                     </div>
                     <div class="card-body">
                         <form>
                             <div class="form-group">
-                                <label>Автоматичний експорт:</label>
+                                <label>Exportação automática:</label>
                                 <div class="custom-control custom-switch">
                                     <input type="checkbox" class="custom-control-input" id="autoExport">
-                                    <label class="custom-control-label" for="autoExport">Щомісячний експорт</label>
+                                    <label class="custom-control-label" for="autoExport">Exportação mensal</label>
                                 </div>
                             </div>
                             <div class="form-group">
-                                <label>Email для розсилки:</label>
+                                <label>Email de envio:</label>
                                 <input type="email" class="form-control" placeholder="admin@company.com" id="reportEmail">
                             </div>
                             <div class="form-group">
-                                <label>Включати в звіт:</label>
+                                <label>Incluir no relatório:</label>
                                 <div class="custom-control custom-checkbox">
                                     <input type="checkbox" class="custom-control-input" id="includeTasks" checked>
-                                    <label class="custom-control-label" for="includeTasks">Завдання</label>
+                                    <label class="custom-control-label" for="includeTasks">Tarefa</label>
                                 </div>
                                 <div class="custom-control custom-checkbox">
                                     <input type="checkbox" class="custom-control-input" id="includeLifts" checked>
-                                    <label class="custom-control-label" for="includeLifts">Ліфти</label>
+                                    <label class="custom-control-label" for="includeLifts">Elevadores</label>
                                 </div>
                                 <div class="custom-control custom-checkbox">
                                     <input type="checkbox" class="custom-control-input" id="includeQR" checked>
-                                    <label class="custom-control-label" for="includeQR">QR коди</label>
+                                    <label class="custom-control-label" for="includeQR">Códigos QR</label>
                                 </div>
                             </div>
                             <button type="button" class="btn btn-success" onclick="saveReportSettings()">
-                                <i class="fas fa-save"></i> Зберегти налаштування
+                                <i class="fas fa-save"></i> Guardar налаштування
                             </button>
                         </form>
                     </div>
@@ -301,15 +301,15 @@ function initializeReportsCharts() {
     new Chart(weeklyCtx, {
         type: 'line',
         data: {
-            labels: ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Нд'],
+            labels: ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'],
             datasets: [{
-                label: 'Виконані завдання',
+                label: 'Tarefas concluídas',
                 data: [12, 19, 15, 25, 22, 8, 5],
                 borderColor: 'rgb(75, 192, 192)',
                 backgroundColor: 'rgba(75, 192, 192, 0.2)',
                 tension: 0.4
             }, {
-                label: 'Аварійні виклики',
+                label: 'Chamadas de emergência',
                 data: [2, 3, 1, 5, 4, 1, 2],
                 borderColor: 'rgb(255, 99, 132)',
                 backgroundColor: 'rgba(255, 99, 132, 0.2)',
@@ -332,7 +332,7 @@ function initializeReportsCharts() {
     new Chart(taskTypeCtx, {
         type: 'doughnut',
         data: {
-            labels: ['Планове ТО', 'Аварійний ремонт', 'Діагностика', 'Встановлення QR'],
+            labels: ['Manutenção planeada', 'Reparação de emergência', 'Diagnóstico', 'Instalação QR'],
             datasets: [{
                 data: [45, 25, 20, 10],
                 backgroundColor: [
@@ -352,14 +352,14 @@ function initializeReportsCharts() {
 
 function loadReportData() {
     // Симуляція завантаження даних
-    console.log('Завантаження даних звітів...');
+    console.log('A carregar даних звітів...');
 }
 
 function exportReport(format) {
-    toastr.info('Експорт звіту в форматі ' + format.toUpperCase() + ' розпочато...', 'Експорт');
+    toastr.info('Exportar relatório no formato ' + format.toUpperCase() + ' iniciado...', 'Exportar');
     
     setTimeout(() => {
-        toastr.success('Звіт успішно експортовано!', 'Успіх');
+        toastr.success('Relatório exportado com sucesso!', 'Sucesso');
     }, 2000);
 }
 
@@ -369,14 +369,14 @@ function generateCustomReport() {
     const format = document.getElementById('exportFormat').value;
     
     if (!fromDate || !toDate) {
-        toastr.error('Оберіть період для експорту', 'Помилка');
+        toastr.error('Selecione o período de exportação', 'Erro');
         return;
     }
     
-    toastr.info(`Створення звіту за період ${fromDate} - ${toDate}`, 'Генерація звіту');
+    toastr.info(`A criar relatório para o período ${fromDate} - ${toDate}`, 'A gerar relatório');
     
     setTimeout(() => {
-        toastr.success('Користувацький звіт готовий до завантаження!', 'Успіх');
+        toastr.success('Relatório personalizado pronto para descarregar!', 'Sucesso');
     }, 3000);
 }
 
@@ -385,7 +385,7 @@ function saveReportSettings() {
     const email = document.getElementById('reportEmail').value;
     
     // Симуляція збереження налаштувань
-    toastr.success('Налаштування звітів збережено!', 'Успіх');
+    toastr.success('Definições de relatórios guardadas!', 'Sucesso');
 }
 
 // Обновление периода отчета
@@ -394,6 +394,6 @@ document.getElementById('reportPeriod').addEventListener('change', function() {
     console.log('Зміна періоду звіту:', period);
     
     // Тут можна додати логіку завантаження даних за обраний період
-    toastr.info('Оновлення даних за обраний період...', 'Завантаження');
+    toastr.info('A atualizar dados para o período selecionado...', 'A carregar');
 });
 </script>

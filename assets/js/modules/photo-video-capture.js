@@ -1,5 +1,5 @@
 // photo-video-capture.js
-// Фото/відео-фіксація проблем для техніка з додаванням до звіту
+// Fotografia/відео-фіксація проблем для техніка з додаванням до звіту
 
 class PhotoVideoCapture {
   constructor(reportManager) {
@@ -13,7 +13,7 @@ class PhotoVideoCapture {
     const container = document.querySelector(containerSelector);
     if (!container) return;
     container.innerHTML = `
-      <h4>Фото/Відео-фіксація</h4>
+      <h4>Fotografia/Vídeo-фіксація</h4>
       <video id="arVideo" width="320" height="240" autoplay muted style="border:1px solid #ccc;"></video>
       <div class="mt-2">
         <button class="btn btn-primary btn-sm" id="startVideoBtn">Старт відео</button>
@@ -31,7 +31,7 @@ class PhotoVideoCapture {
       this.mediaStream = await navigator.mediaDevices.getUserMedia({ video: true });
       this.videoElement.srcObject = this.mediaStream;
     } else {
-      alert('Камера не підтримується');
+      alert('Câmara não suportada');
     }
   }
 
@@ -51,7 +51,7 @@ class PhotoVideoCapture {
   updateGallery() {
     const gallery = document.getElementById('photoGallery');
     if (!gallery) return;
-    gallery.innerHTML = this.photoGallery.map((url, i) => `<img src="${url}" width="80" class="mr-2 mb-2" alt="Фото ${i+1}">`).join('');
+    gallery.innerHTML = this.photoGallery.map((url, i) => `<img src="${url}" width="80" class="mr-2 mb-2" alt="Fotografia ${i+1}">`).join('');
   }
 }
 

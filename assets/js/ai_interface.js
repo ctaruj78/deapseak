@@ -25,20 +25,20 @@ class AIInterfaceController {
             // Отримання інформації про користувача
             await this.loadUserInfo();
             
-            // Завантаження персоналізованого інтерфейсу
+            // A carregar персоналізованого інтерфейсу
             await this.loadPersonalizedInterface();
             
-            // Завантаження рекомендацій
+            // A carregar рекомендацій
             await this.loadRecommendations();
             
-            // Налаштування відстеження поведінки
+            // Definições відстеження поведінки
             this.setupBehaviorTracking();
             
             // Запуск адаптивних функцій
             this.startAdaptiveFeatures();
             
         } catch (error) {
-            console.error('Помилка ініціалізації AI інтерфейсу:', error);
+            console.error('Erro ініціалізації AI інтерфейсу:', error);
         }
     }
     
@@ -50,10 +50,10 @@ class AIInterfaceController {
             this.userId = userInfo.id;
             this.userRole = userInfo.role;
             
-            console.log(`👤 Користувач: ${this.userId} (${this.userRole})`);
+            console.log(`👤 Utilizador: ${this.userId} (${this.userRole})`);
             
         } catch (error) {
-            console.error('Помилка завантаження інформації користувача:', error);
+            console.error('Erro завантаження інформації користувача:', error);
         }
     }
     
@@ -70,7 +70,7 @@ class AIInterfaceController {
             console.log('🎨 Персоналізований інтерфейс завантажено');
             
         } catch (error) {
-            console.error('Помилка завантаження інтерфейсу:', error);
+            console.error('Erro завантаження інтерфейсу:', error);
             // Використання інтерфейсу за замовчуванням
             this.applyDefaultInterface();
         }
@@ -81,20 +81,20 @@ class AIInterfaceController {
             // Застосування теми
             this.applyColorTheme(interfaceData.color_theme);
             
-            // Налаштування layout
+            // Definições layout
             this.applyLayoutSettings(interfaceData.preferred_layout);
             
             // Конфігурація віджетів
             this.configureWidgets(interfaceData.widget_configuration);
             
-            // Налаштування доступності
+            // Definições доступності
             this.applyAccessibilitySettings(interfaceData.accessibility_settings);
             
             // Ярлики
             this.setupShortcuts(interfaceData.shortcuts);
             
         } catch (error) {
-            console.error('Помилка застосування налаштувань інтерфейсу:', error);
+            console.error('Erro застосування налаштувань інтерфейсу:', error);
         }
     }
     
@@ -134,7 +134,7 @@ class AIInterfaceController {
                 }
             }
             
-            // Налаштування щільності
+            // Definições щільності
             if (content && layoutSettings.density) {
                 content.classList.remove('density-compact', 'density-normal', 'density-comfortable', 'density-large');
                 content.classList.add(`density-${layoutSettings.density}`);
@@ -143,7 +143,7 @@ class AIInterfaceController {
             console.log('📐 Layout налаштований:', layoutSettings);
             
         } catch (error) {
-            console.error('Помилка застосування layout:', error);
+            console.error('Erro застосування layout:', error);
         }
     }
     
@@ -171,7 +171,7 @@ class AIInterfaceController {
             console.log(`📊 Віджети налаштовані: ${sortedWidgets.length}`);
             
         } catch (error) {
-            console.error('Помилка конфігурації віджетів:', error);
+            console.error('Erro конфігурації віджетів:', error);
         }
     }
     
@@ -186,13 +186,13 @@ class AIInterfaceController {
                 widgetContainer.classList.add('high-priority');
             }
             
-            // Завантаження вмісту віджета
+            // A carregar вмісту віджета
             this.loadWidgetContent(widgetContainer, widgetConfig.widget);
             
             return widgetContainer;
             
         } catch (error) {
-            console.error(`Помилка створення віджета ${widgetConfig.widget}:`, error);
+            console.error(`Erro створення віджета ${widgetConfig.widget}:`, error);
             return null;
         }
     }
@@ -224,37 +224,37 @@ class AIInterfaceController {
                 const content = createFunction.call(this);
                 container.innerHTML = content;
             } else {
-                container.innerHTML = `<div class="widget-placeholder">Віджет "${widgetName}" в розробці</div>`;
+                container.innerHTML = `<div class="widget-placeholder">Widget "${widgetName}" em desenvolvimento</div>`;
             }
             
         } catch (error) {
-            console.error(`Помилка завантаження вмісту віджета ${widgetName}:`, error);
-            container.innerHTML = '<div class="widget-error">Помилка завантаження віджета</div>';
+            console.error(`Erro завантаження вмісту віджета ${widgetName}:`, error);
+            container.innerHTML = '<div class="widget-error">Erro ao carregar widget</div>';
         }
     }
     
     createSystemStatsWidget() {
         return `
             <div class="widget-header">
-                <h3><i class="fas fa-chart-line"></i> Статистика системи</h3>
+                <h3><i class="fas fa-chart-line"></i> Estatísticas do sistema</h3>
             </div>
             <div class="widget-body">
                 <div class="stats-grid">
                     <div class="stat-item">
                         <span class="stat-value" id="total-lifts">-</span>
-                        <span class="stat-label">Ліфтів</span>
+                        <span class="stat-label">Elevadorів</span>
                     </div>
                     <div class="stat-item">
                         <span class="stat-value" id="active-requests">-</span>
-                        <span class="stat-label">Активних заявок</span>
+                        <span class="stat-label">Pedidos ativos</span>
                     </div>
                     <div class="stat-item">
                         <span class="stat-value" id="technicians-online">-</span>
-                        <span class="stat-label">Техніків онлайн</span>
+                        <span class="stat-label">Técnicoів онлайн</span>
                     </div>
                     <div class="stat-item">
                         <span class="stat-value" id="system-uptime">-</span>
-                        <span class="stat-label">Час роботи</span>
+                        <span class="stat-label">Tempo de funcionamento</span>
                     </div>
                 </div>
             </div>
@@ -264,12 +264,12 @@ class AIInterfaceController {
     createActiveRequestsWidget() {
         return `
             <div class="widget-header">
-                <h3><i class="fas fa-tasks"></i> Активні заявки</h3>
-                <button class="btn btn-sm btn-primary" onclick="showAllRequests()">Всі заявки</button>
+                <h3><i class="fas fa-tasks"></i> Pedidos ativos</h3>
+                <button class="btn btn-sm btn-primary" onclick="showAllRequests()">Todos os pedidos</button>
             </div>
             <div class="widget-body">
                 <div id="active-requests-list" class="requests-list">
-                    <div class="loading-spinner">Завантаження...</div>
+                    <div class="loading-spinner">A carregar...</div>
                 </div>
             </div>
         `;
@@ -278,11 +278,11 @@ class AIInterfaceController {
     createAssignmentsWidget() {
         return `
             <div class="widget-header">
-                <h3><i class="fas fa-clipboard-list"></i> Мої призначення</h3>
+                <h3><i class="fas fa-clipboard-list"></i> As minhas atribuições</h3>
             </div>
             <div class="widget-body">
                 <div id="my-assignments-list" class="assignments-list">
-                    <div class="loading-spinner">Завантаження...</div>
+                    <div class="loading-spinner">A carregar...</div>
                 </div>
             </div>
         `;
@@ -292,7 +292,7 @@ class AIInterfaceController {
         try {
             const body = document.body;
             
-            // Високий контраст
+            // Altий контраст
             if (accessibilitySettings.high_contrast) {
                 body.classList.add('high-contrast');
             } else {
@@ -312,10 +312,10 @@ class AIInterfaceController {
                 this.setupKeyboardNavigation();
             }
             
-            console.log('♿ Налаштування доступності застосовані');
+            console.log('♿ Definições доступності застосовані');
             
         } catch (error) {
-            console.error('Помилка застосування налаштувань доступності:', error);
+            console.error('Erro застосування налаштувань доступності:', error);
         }
     }
     
@@ -346,7 +346,7 @@ class AIInterfaceController {
             console.log(`⌨️ Ярлики налаштовані: ${Object.keys(shortcuts).length}`);
             
         } catch (error) {
-            console.error('Помилка налаштування ярликів:', error);
+            console.error('Erro налаштування ярликів:', error);
         }
     }
     
@@ -363,7 +363,7 @@ class AIInterfaceController {
             console.log(`💡 Рекомендацій завантажено: ${recommendations.length}`);
             
         } catch (error) {
-            console.error('Помилка завантаження рекомендацій:', error);
+            console.error('Erro завантаження рекомендацій:', error);
         }
     }
     
@@ -385,10 +385,10 @@ class AIInterfaceController {
                     <p class="rec-description">${rec.description}</p>
                     <div class="rec-actions">
                         <button class="btn btn-sm btn-success" onclick="aiInterface.acceptRecommendation('${rec.recommendation_id}')">
-                            Застосувати
+                            Aplicar
                         </button>
                         <button class="btn btn-sm btn-secondary" onclick="aiInterface.dismissRecommendation('${rec.recommendation_id}')">
-                            Відхилити
+                            Rejeitar
                         </button>
                     </div>
                 `;
@@ -400,7 +400,7 @@ class AIInterfaceController {
             });
             
         } catch (error) {
-            console.error('Помилка відображення рекомендацій:', error);
+            console.error('Erro відображення рекомендацій:', error);
         }
     }
     
@@ -436,7 +436,7 @@ class AIInterfaceController {
             console.log('📊 Відстеження поведінки налаштовано');
             
         } catch (error) {
-            console.error('Помилка налаштування відстеження:', error);
+            console.error('Erro налаштування відстеження:', error);
         }
     }
     
@@ -461,11 +461,11 @@ class AIInterfaceController {
                 },
                 body: JSON.stringify(behavior)
             }).catch(error => {
-                console.error('Помилка відстеження поведінки:', error);
+                console.error('Erro відстеження поведінки:', error);
             });
             
         } catch (error) {
-            console.error('Помилка трекінгу поведінки:', error);
+            console.error('Erro трекінгу поведінки:', error);
         }
     }
     
@@ -482,7 +482,7 @@ class AIInterfaceController {
             console.log('🔄 Адаптивні функції запущені');
             
         } catch (error) {
-            console.error('Помилка запуску адаптивних функцій:', error);
+            console.error('Erro запуску адаптивних функцій:', error);
         }
     }
     
@@ -505,11 +505,11 @@ class AIInterfaceController {
             // Повторне завантаження інтерфейсу
             await this.loadPersonalizedInterface();
             
-            showNotification('Рекомендацію застосовано!', 'success');
+            showNotification('Recomendação aplicada!', 'success');
             
         } catch (error) {
-            console.error('Помилка прийняття рекомендації:', error);
-            showNotification('Помилка застосування рекомендації', 'error');
+            console.error('Erro прийняття рекомендації:', error);
+            showNotification('Erro ao aplicar recomendação', 'error');
         }
     }
     
@@ -529,11 +529,11 @@ class AIInterfaceController {
                     break;
                     
                 default:
-                    console.log('Невідомий тип рекомендації:', recommendation.type);
+                    console.log('Desconhecido тип рекомендації:', recommendation.type);
             }
             
         } catch (error) {
-            console.error('Помилка виконання рекомендації:', error);
+            console.error('Erro виконання рекомендації:', error);
         }
     }
     
@@ -547,7 +547,7 @@ class AIInterfaceController {
     }
     
     async setupScheduleReminder(peakHour) {
-        // Налаштування нагадування для пікового часу
+        // Definições нагадування для пікового часу
         if (Notification.permission === 'granted') {
             // Створення нагадування
             console.log(`Налаштовано нагадування на ${peakHour}:00`);
@@ -558,7 +558,7 @@ class AIInterfaceController {
         // Показ довідки для типу помилки
         const helpModal = document.getElementById('help-modal');
         if (helpModal) {
-            // Завантаження відповідної довідки
+            // A carregar відповідної довідки
             this.loadHelpContent(errorType);
             $(helpModal).modal('show');
         }
@@ -575,7 +575,7 @@ class AIInterfaceController {
             });
             
         } catch (error) {
-            console.error('Помилка оновлення налаштувань:', error);
+            console.error('Erro оновлення налаштувань:', error);
         }
     }
     
@@ -593,7 +593,7 @@ class AIInterfaceController {
             });
             
         } catch (error) {
-            console.error('Помилка позначення рекомендації:', error);
+            console.error('Erro позначення рекомендації:', error);
         }
     }
     
@@ -627,7 +627,7 @@ function showNotification(message, type = 'info') {
     }
 }
 
-// Експорт для використання в інших модулях
+// Exportar для використання в інших модулях
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = AIInterfaceController;
 }

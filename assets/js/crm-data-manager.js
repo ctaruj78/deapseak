@@ -87,7 +87,7 @@ class CRMDataManager {
                     email: 'dispatcher@deapsseak.com',
                     role: 'dispatcher',
                     phone: '+38 (098) 234-56-78',
-                    department: 'Диспетчерська служба',
+                    department: 'Dispatcherська служба',
                     status: 'active',
                     lastLogin: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
                     permissions: ['assignments', 'monitoring', 'reports']
@@ -111,8 +111,8 @@ class CRMDataManager {
                     liftId: 'L001',
                     type: 'emergency',
                     priority: 'urgent',
-                    title: 'Ліфт зупинився між поверхами',
-                    description: 'Ліфт застряг між 3-м та 4-м поверхами. Всередині знаходиться 1 особа.',
+                    title: 'Elevador parado entre andares',
+                    description: 'Elevador застряг між 3-м та 4-м поверхами. Всередині знаходиться 1 особа.',
                     status: 'in-progress',
                     assignedTo: 'U003',
                     created: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
@@ -125,8 +125,8 @@ class CRMDataManager {
                     liftId: 'L002',
                     type: 'maintenance',
                     priority: 'medium',
-                    title: 'Планове технічне обслуговування',
-                    description: 'Щомісячне ТО згідно з регламентом',
+                    title: 'Manutenção técnica planeada',
+                    description: 'Щомісячне Manutenção згідно з регламентом',
                     status: 'pending',
                     assignedTo: null,
                     created: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
@@ -139,7 +139,7 @@ class CRMDataManager {
                     liftId: 'L003',
                     type: 'repair',
                     priority: 'high',
-                    title: 'Заміна кнопок виклику',
+                    title: 'Substituição de botões de chamada',
                     description: 'Не працюють кнопки виклику на 1-му поверсі',
                     status: 'assigned',
                     assignedTo: 'U003',
@@ -219,7 +219,7 @@ class CRMDataManager {
                 totalClients: 2,
                 activeContracts: 2,
                 qrScansToday: 23,
-                avgResponseTime: 2.5, // години
+                avgResponseTime: 2.5, // horasи
                 satisfactionRate: 94.5 // %
             },
             
@@ -385,7 +385,7 @@ class CRMDataManager {
         return client;
     }
     
-    // QR коди
+    // Códigos QR
     getQRCodes() {
         return this.getData().qrCodes;
     }
@@ -419,7 +419,7 @@ class CRMDataManager {
         return null;
     }
     
-    // Аналітика
+    // Análise
     getAnalytics() {
         return this.getData().analytics;
     }
@@ -443,7 +443,7 @@ class CRMDataManager {
         };
     }
     
-    // Пошук та фільтрація
+    // Pesquisa та фільтрація
     searchLifts(query) {
         const lifts = this.getLifts();
         const searchTerm = query.toLowerCase();
@@ -476,7 +476,7 @@ class CRMDataManager {
         return tasks;
     }
     
-    // Звіти
+    // Relatórioи
     getMaintenanceSchedule() {
         const lifts = this.getLifts();
         const today = new Date();
@@ -499,7 +499,7 @@ class CRMDataManager {
         });
     }
     
-    // Налаштування
+    // Definições
     getSettings() {
         return this.getData().settings;
     }
@@ -512,7 +512,7 @@ class CRMDataManager {
     }
 }
 
-// Експорт класу для використання в інших модулях
+// Exportar класу для використання в інших модулях
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = CRMDataManager;
 } else {

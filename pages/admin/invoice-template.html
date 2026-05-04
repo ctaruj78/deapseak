@@ -1912,13 +1912,13 @@
                 });
                 
                 if (!response.ok) {
-                    throw new Error('Орçаменто не encontrado');
+                    throw new Error('Orçamento não encontrado');
                 }
                 
                 const result = await response.json();
                 const orcamento = result.success ? result.data : result;
                 
-                console.log('✅ Орçаменто carregado:', orcamento);
+                console.log('✅ Orçamento carregado:', orcamento);
                 
                 // Deаповнити форму даними
                 $('#clientName').val(orcamento.cliente.nome);

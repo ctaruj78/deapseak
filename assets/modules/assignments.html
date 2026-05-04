@@ -19,7 +19,7 @@
                 <div class="col-sm-6">
                     <ol class="breadcrumb float-sm-right">
                         <li class="breadcrumb-item"><a href="#" onclick="window.crmSystem.loadDashboard()">Головна</a></li>
-                        <li class="breadcrumb-item active">Завдання</li>
+                        <li class="breadcrumb-item active">Tarefa</li>
                     </ol>
                 </div>
             </div>
@@ -82,7 +82,7 @@
                 <div class="col-md-8">
                     <div class="card">
                         <div class="card-header">
-                            <h3 class="card-title">Черга завдань</h3>
+                            <h3 class="card-title">Junга завдань</h3>
                             <div class="card-tools">
                                 <button type="button" class="btn btn-success btn-sm" onclick="createNewTask()">
                                     <i class="fas fa-plus"></i> Нове завдання
@@ -97,10 +97,10 @@
                                 <thead>
                                     <tr>
                                         <th>ID</th>
-                                        <th>Адреса</th>
-                                        <th>Тип</th>
-                                        <th>Пріоритет</th>
-                                        <th>Технік</th>
+                                        <th>Endereço</th>
+                                        <th>Tipo</th>
+                                        <th>Prioridade</th>
+                                        <th>Técnico</th>
                                         <th>Термін</th>
                                         <th>Дії</th>
                                     </tr>
@@ -109,9 +109,9 @@
                                     <tr>
                                         <td>T001</td>
                                         <td>вул. Хрещатик, 1</td>
-                                        <td>Аварія</td>
-                                        <td><span class="badge badge-danger">Високий</span></td>
-                                        <td><span class="text-muted">Не призначено</span></td>
+                                        <td>Avaria</td>
+                                        <td><span class="badge badge-danger">Altий</span></td>
+                                        <td><span class="text-muted">Não atribuído</span></td>
                                         <td>21.12.2024 14:00</td>
                                         <td>
                                             <div class="btn-group">
@@ -130,8 +130,8 @@
                                     <tr>
                                         <td>T002</td>
                                         <td>вул. Володимирська, 15</td>
-                                        <td>ТО</td>
-                                        <td><span class="badge badge-warning">Середній</span></td>
+                                        <td>Manutenção</td>
+                                        <td><span class="badge badge-warning">Agoедній</span></td>
                                         <td>Іванов І.І.</td>
                                         <td>22.12.2024 10:00</td>
                                         <td>
@@ -151,7 +151,7 @@
                                     <tr>
                                         <td>T003</td>
                                         <td>пр-т Перемоги, 42</td>
-                                        <td>Ремонт</td>
+                                        <td>Reparação</td>
                                         <td><span class="badge badge-info">Низький</span></td>
                                         <td>Петров П.П.</td>
                                         <td>23.12.2024 15:00</td>
@@ -182,16 +182,16 @@
                         <div class="card-body">
                             <div class="timeline">
                                 <div class="time-label">
-                                    <span class="bg-blue">Сьогодні</span>
+                                    <span class="bg-blue">Hoje</span>
                                 </div>
                                 <div>
                                     <i class="fas fa-wrench bg-red"></i>
                                     <div class="timeline-item">
                                         <span class="time"><i class="fas fa-clock"></i> 09:00</span>
-                                        <h3 class="timeline-header">Аварійний виклик - вул. Хрещатик, 1</h3>
+                                        <h3 class="timeline-header">Chamada de emergência - вул. Хрещатик, 1</h3>
                                         <div class="timeline-body">
                                             Призначено: <strong>Іванов І.І.</strong><br>
-                                            Статус: <span class="badge badge-warning">В дорозі</span>
+                                            Estado: <span class="badge badge-warning">A caminho</span>
                                         </div>
                                     </div>
                                 </div>
@@ -199,10 +199,10 @@
                                     <i class="fas fa-check bg-green"></i>
                                     <div class="timeline-item">
                                         <span class="time"><i class="fas fa-clock"></i> 10:30</span>
-                                        <h3 class="timeline-header">ТО завершено - вул. Володимирська, 15</h3>
+                                        <h3 class="timeline-header">Manutenção concluída - вул. Володимирська, 15</h3>
                                         <div class="timeline-body">
                                             Виконавець: <strong>Петров П.П.</strong><br>
-                                            Статус: <span class="badge badge-success">Завершено</span>
+                                            Estado: <span class="badge badge-success">Завершено</span>
                                         </div>
                                     </div>
                                 </div>
@@ -227,7 +227,7 @@
                                     <div class="users-list-date">
                                         <small>Завдань: 2</small>
                                         <button class="btn btn-xs btn-primary float-right" onclick="assignToTech('TECH001')">
-                                            Призначити
+                                            Atribuir
                                         </button>
                                     </div>
                                 </li>
@@ -238,7 +238,7 @@
                                     <div class="users-list-date">
                                         <small>Завдань: 4</small>
                                         <button class="btn btn-xs btn-primary float-right" onclick="assignToTech('TECH002')">
-                                            Призначити
+                                            Atribuir
                                         </button>
                                     </div>
                                 </li>
@@ -247,9 +247,9 @@
                                         <span class="badge badge-danger">●</span> Сидоров С.С.
                                     </div>
                                     <div class="users-list-date">
-                                        <small>Зайнятий до 16:00</small>
+                                        <small>Ocupado до 16:00</small>
                                         <button class="btn btn-xs btn-secondary float-right" disabled>
-                                            Зайнятий
+                                            Ocupado
                                         </button>
                                     </div>
                                 </li>
@@ -266,7 +266,7 @@
                             <div class="info-box mb-3">
                                 <span class="info-box-icon bg-info"><i class="fas fa-clock"></i></span>
                                 <div class="info-box-content">
-                                    <span class="info-box-text">Середній час</span>
+                                    <span class="info-box-text">Agoедній час</span>
                                     <span class="info-box-number">2.5 год</span>
                                 </div>
                             </div>
@@ -294,10 +294,10 @@
                         </div>
                         <div class="card-body">
                             <button class="btn btn-danger btn-block mb-2" onclick="emergencyCall()">
-                                <i class="fas fa-exclamation-triangle mr-2"></i>Аварійний виклик
+                                <i class="fas fa-exclamation-triangle mr-2"></i>Chamada de emergência
                             </button>
                             <button class="btn btn-info btn-block mb-2" onclick="scheduleTO()">
-                                <i class="fas fa-calendar mr-2"></i>Запланувати ТО
+                                <i class="fas fa-calendar mr-2"></i>Запланувати Manutenção
                             </button>
                             <button class="btn btn-success btn-block mb-2" onclick="bulkAssign()">
                                 <i class="fas fa-users-cog mr-2"></i>Масове призначення
@@ -318,7 +318,7 @@
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h4 class="modal-title">Призначити завдання</h4>
+                <h4 class="modal-title">Atribuir завдання</h4>
                 <button type="button" class="close" data-dismiss="modal">
                     <span aria-hidden="true">&times;</span>
                 </button>
@@ -326,36 +326,36 @@
             <div class="modal-body">
                 <form id="assignForm">
                     <div class="form-group">
-                        <label>Завдання</label>
+                        <label>Tarefa</label>
                         <input type="text" class="form-control" id="taskId" readonly>
                     </div>
                     <div class="form-group">
-                        <label>Технік</label>
+                        <label>Técnico</label>
                         <select class="form-control" id="techSelect" required>
-                            <option value="">Виберіть техніка</option>
+                            <option value="">Selecione um técnico</option>
                             <option value="TECH001">Іванов І.І.</option>
                             <option value="TECH002">Петров П.П.</option>
                             <option value="TECH003">Сидоров С.С.</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>Пріоритет</label>
+                        <label>Prioridade</label>
                         <select class="form-control" id="priority">
                             <option value="low">Низький</option>
-                            <option value="medium">Середній</option>
-                            <option value="high">Високий</option>
+                            <option value="medium">Agoедній</option>
+                            <option value="high">Altий</option>
                             <option value="urgent">Терміновий</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>Коментар</label>
+                        <label>Comentário</label>
                         <textarea class="form-control" id="comment" rows="3"></textarea>
                     </div>
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">Скасувати</button>
-                <button type="button" class="btn btn-primary" onclick="confirmAssignment()">Призначити</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="confirmAssignment()">Atribuir</button>
             </div>
         </div>
     </div>
@@ -363,7 +363,7 @@
 
 <script>
 function createNewTask() {
-    alert('Створення нового завдання');
+    alert('Criar nova tarefa');
 }
 
 function assignTask(taskId) {
@@ -377,15 +377,15 @@ function reassignTask(taskId) {
 }
 
 function viewTaskDetails(taskId) {
-    alert('Перегляд деталей завдання: ' + taskId);
+    alert('Ver detalhes da tarefa: ' + taskId);
 }
 
 function editTask(taskId) {
-    alert('Редагування завдання: ' + taskId);
+    alert('Editar tarefa: ' + taskId);
 }
 
 function contactTech(taskId) {
-    alert('Зв\'язок з технікою по завданню: ' + taskId);
+    alert('Contactar técnico da tarefa: ' + taskId);
 }
 
 function confirmAssignment() {
@@ -393,38 +393,38 @@ function confirmAssignment() {
     const techId = document.getElementById('techSelect').value;
     
     if (techId) {
-        toastr.success('Завдання ' + taskId + ' призначено техніку');
+        toastr.success('Tarefa ' + taskId + ' atribuída ao técnico');
         $('#assignModal').modal('hide');
     } else {
-        toastr.error('Виберіть техніка');
+        toastr.error('Selecione um técnico');
     }
 }
 
 function assignToTech(techId) {
-    alert('Призначення завдання техніку: ' + techId);
+    alert('Atribuir tarefa ao técnico: ' + techId);
 }
 
 function autoAssign() {
-    toastr.info('Автоматичний розподіл завдань...');
+    toastr.info('Distribuição automática de tarefas...');
     setTimeout(() => {
-        toastr.success('Завдання автоматично розподілені');
+        toastr.success('Tarefas distribuídas automaticamente');
     }, 2000);
 }
 
 function emergencyCall() {
-    alert('Створення аварійного виклику');
+    alert('Criar chamada de emergência');
 }
 
 function scheduleTO() {
-    alert('Планування технічного обслуговування');
+    alert('Planear manutenção técnica');
 }
 
 function bulkAssign() {
-    alert('Масове призначення завдань');
+    alert('Atribuição em massa de tarefas');
 }
 
 function generateSchedule() {
-    alert('Генерація розкладу на день');
+    alert('Gerar agenda do dia');
 }
 </script>
 </body>

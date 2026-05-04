@@ -47,18 +47,18 @@ class LiftManagement {
 
     getLiftTypeLabel(type) {
         const types = {
-            'passenger': 'Пасажирський',
-            'cargo': 'Вантажний',
-            'hospital': 'Лікарняний'
+            'passenger': 'Passageiro',
+            'cargo': 'Carga',
+            'hospital': 'Hospitalar'
         };
         return types[type] || type;
     }
 
     getStatusLabel(status) {
         const statuses = {
-            'active': 'Активний',
-            'maintenance': 'Обслуговування',
-            'inactive': 'Неактивний'
+            'active': 'Ativo',
+            'maintenance': 'Manutenção',
+            'inactive': 'Inativo'
         };
         return statuses[status] || status;
     }
@@ -124,10 +124,10 @@ class LiftManagement {
         const title = document.getElementById('modalTitle');
         
         if (lift) {
-            title.textContent = 'Редагувати ліфт';
+            title.textContent = 'Editar ліфт';
             this.fillForm(lift);
         } else {
-            title.textContent = 'Додати ліфт';
+            title.textContent = 'Adicionar ліфт';
             this.resetForm();
         }
         
@@ -180,7 +180,7 @@ class LiftManagement {
         
         this.closeModal();
         this.loadLifts();
-        this.showNotification('Ліфт успішно збережено', 'success');
+        this.showNotification('Elevador com sucesso збережено', 'success');
     }
 
     editLift(id) {
@@ -192,12 +192,12 @@ class LiftManagement {
     }
 
     deleteLift(id) {
-        if (confirm('Ви впевнені, що хочете видалити цей ліфт?')) {
+        if (confirm('Tem a certeza que pretende eliminar este elevador?')) {
             const lifts = JSON.parse(localStorage.getItem('lifts')) || [];
             const filteredLifts = lifts.filter(lift => lift.id !== id);
             localStorage.setItem('lifts', JSON.stringify(filteredLifts));
             this.loadLifts();
-            this.showNotification('Ліфт успішно видалено', 'success');
+            this.showNotification('Elevador com sucesso видалено', 'success');
         }
     }
 

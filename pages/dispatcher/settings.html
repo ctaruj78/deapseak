@@ -316,14 +316,14 @@
                                 <div class="form-group">
                                     <div class="custom-control custom-switch">
                                         <input type="checkbox" class="custom-control-input" id="notifyEmail" checked>
-                                        <label class="custom-control-label" for="notifyEmail">Email</label>
+                                        <label class="custom-control-label" for="notifyEmail">Email <small class="text-muted">(gerido pelo servidor)</small></label>
                                     </div>
                                 </div>
                                 
                                 <div class="form-group">
                                     <div class="custom-control custom-switch">
-                                        <input type="checkbox" class="custom-control-input" id="notifySMS">
-                                        <label class="custom-control-label" for="notifySMS">SMS</label>
+                                        <input type="checkbox" class="custom-control-input" id="notifySMS" disabled>
+                                        <label class="custom-control-label text-muted" for="notifySMS">SMS <small>(não disponível)</small></label>
                                     </div>
                                 </div>
                                 
@@ -336,21 +336,13 @@
                         <div class="col-lg-6">
                             <div class="settings-card system-card">
                                 <i class="settings-icon fas fa-sliders-h"></i>
-                                <h4>Do sistema configurações</h4>
+                                <h4>Configurações do sistema</h4>
                                 <p>Configurações gerais do sistema e interface</p>
-                                
-                                <div class="form-group">
-                                    <label for="languageSelect">Idioma da interface</label>
-                                    <select id="languageSelect" class="form-control">
-                                        <option value="uk">Ucraniano</option>
-                                        <option value="en">English</option>
-                                    </select>
-                                </div>
                                 
                                 <div class="form-group">
                                     <label for="timezoneSelect">Fuso horário</label>
                                     <select id="timezoneSelect" class="form-control">
-                                        <option value="Europe/Kiev">Lisboa (UTC+2)</option>
+                                        <option value="Europe/Lisbon">Lisboa (UTC+1/+2)</option>
                                         <option value="UTC">UTC</option>
                                         <option value="Europe/London">Londres (UTC+0)</option>
                                     </select>
@@ -468,12 +460,12 @@
             $('#darkModeToggle').on('click', function() {
                 $('body').toggleClass('dark-mode');
                 $(this).find('i').toggleClass('fa-moon fa-sun');
-                // Deбереження configurações теми
+                // Guardar configurações do tema
                 const isDarkMode = $('body').hasClass('dark-mode');
                 localStorage.setItem('darkMode', isDarkMode);
             });
 
-            // Recuperação теми
+            // Recuperação do tema
             if (localStorage.getItem('darkMode') === 'true') {
                 $('body').addClass('dark-mode');
                 $('#darkModeToggle').find('i').removeClass('fa-moon').addClass('fa-sun');
@@ -489,9 +481,9 @@
                 );
             }, 30000);
 
-            // Inicialização менеджера налаштувань (виконуexisteться в dispatcher-settings-manager.js)
+            // Inicialização do gestor de configurações (executado em dispatcher-settings-manager.js)
             
-            // Processamento вибору ficheiro
+            // Processamento da seleção de ficheiro
             $('.custom-file-input').on('change', function() {
                 let fileName = $(this).val().split('\\').pop();
                 $(this).next('.custom-file-label').addClass("selected").html(fileName);

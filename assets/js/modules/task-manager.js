@@ -39,19 +39,19 @@ class TaskManager {
                 const data = await response.json();
                 // API може повертати {data: [...]} або просто [...]
                 this.tasks = Array.isArray(data) ? data : (data.data || data.requests || []);
-                console.log('✅ Завдання завантажені з API:', this.tasks.length);
+                console.log('✅ Tarefa завантажені з API:', this.tasks.length);
                 localStorage.setItem('tasks', JSON.stringify(this.tasks));
             } else {
                 console.warn('⚠️ API /api/requests returned non-OK status:', response.status);
                 throw new Error(`API status: ${response.status}`);
             }
         } catch (error) {
-            console.error('❌ Помилка завантаження завдань з API:', error);
+            console.error('❌ Erro завантаження завдань з API:', error);
             // Fallback: спроба завантажити з localStorage
             this.tasks = JSON.parse(localStorage.getItem('tasks')) || [];
             
             if (this.tasks.length === 0) {
-                console.warn('⚠️ Використовуються демо-дані (API недоступне)');
+                console.warn('⚠️ Використовуються демо-дані (API indisponível)');
                 this.tasks = this.createSampleTasks();
                 localStorage.setItem('tasks', JSON.stringify(this.tasks));
             }
@@ -65,7 +65,7 @@ class TaskManager {
             {
                 id: 'TASK-2024-001',
                 type: 'repair',
-                title: 'Ремонт дверей ліфта',
+                title: 'Reparação дверей ліфта',
                 liftId: 'lift1',
                 lift: 'Otis Gen2 - вул. Центральна, 12',
                 priority: 'high',
@@ -116,7 +116,7 @@ class TaskManager {
                 category: 'electrical',
                 estimatedTime: 180,
                 technician: 'Петро Сидоренко',
-                description: 'Ліфт зупинився між поверхами. Необхідна негайна допомога!',
+                description: 'Elevador parado entre andares. Необхідна негайна допомога!',
                 emergency: true
             },
             {
@@ -137,7 +137,7 @@ class TaskManager {
                 progress: 100,
                 technician: 'Іван Петренко',
                 result: 'success',
-                notes: 'Ліфт у хорошому технічному стані. Всі системи працюють належним чином.'
+                notes: 'Elevador у хорошому технічному стані. Todos системи працюють належним чином.'
             }
         ];
     }
@@ -158,7 +158,7 @@ class TaskManager {
             this.applyFilters();
         });
 
-        // Пошук
+        // Pesquisa
         $('#searchInput').on('input', (e) => {
             this.searchTasks(e.target.value);
         });
@@ -167,21 +167,21 @@ class TaskManager {
     applyFilters() {
         let filteredTasks = [...this.tasks];
 
-        // Фільтрація за статусом
+        // Filtroація за статусом
         if (this.filters.status !== 'all') {
             filteredTasks = filteredTasks.filter(task => 
                 task.status === this.filters.status
             );
         }
 
-        // Фільтрація за типом
+        // Filtroація за типом
         if (this.filters.type !== 'all') {
             filteredTasks = filteredTasks.filter(task => 
                 task.type === this.filters.type
             );
         }
 
-        // Фільтрація за пріоритетом
+        // Filtroація за пріоритетом
         if (this.filters.priority !== 'all') {
             filteredTasks = filteredTasks.filter(task => 
                 task.priority === this.filters.priority
@@ -270,7 +270,7 @@ class TaskManager {
                         <button class="btn btn-sm btn-info btn-icon" onclick="taskManager.viewTask('${task.id}')" title="Перегляд">
                             <i class="fas fa-eye"></i>
                         </button>
-                        <button class="btn btn-sm btn-secondary btn-icon" onclick="taskManager.downloadTaskReport('${task.id}')" title="Звіт">
+                        <button class="btn btn-sm btn-secondary btn-icon" onclick="taskManager.downloadTaskReport('${task.id}')" title="Relatório">
                             <i class="fas fa-download"></i>
                         </button>
                         ${task.status === 'pending' || task.status === 'urgent' ? 
@@ -278,7 +278,7 @@ class TaskManager {
                                 <i class="fas fa-play"></i>
                             </button>` : ''}
                         ${task.status === 'in-progress' ? 
-                            `<button class="btn btn-sm btn-warning btn-icon" onclick="taskManager.completeTask('${task.id}')" title="Завершити">
+                            `<button class="btn btn-sm btn-warning btn-icon" onclick="taskManager.completeTask('${task.id}')" title="Concluir">
                                 <i class="fas fa-check"></i>
                             </button>` : ''}
                     </div>
@@ -290,19 +290,19 @@ class TaskManager {
     getStatusText(status) {
         const statuses = {
             'pending': 'В очікуванні',
-            'in-progress': 'В роботі',
+            'in-progress': 'Em progresso',
             'completed': 'Завершено',
             'cancelled': 'Скасовано',
-            'urgent': 'Терміново'
+            'urgent': 'Urgente'
         };
         return statuses[status] || status;
     }
 
     getTypeText(type) {
         const types = {
-            'repair': 'Ремонт',
-            'maintenance': 'Обслуговування',
-            'inspection': 'Інспекція',
+            'repair': 'Reparação',
+            'maintenance': 'Manutenção',
+            'inspection': 'Inspeção',
             'emergency': 'Аварійна'
         };
         return types[type] || type;
@@ -310,8 +310,8 @@ class TaskManager {
 
     getPriorityText(priority) {
         const priorities = {
-            'high': 'Високий',
-            'medium': 'Середній',
+            'high': 'Altий',
+            'medium': 'Agoедній',
             'low': 'Низький'
         };
         return priorities[priority] || priority;
@@ -328,7 +328,7 @@ class TaskManager {
         if (hoursDiff < 0) {
             return '<span class="text-danger"><i class="fas fa-exclamation-triangle"></i> Протерміновано</span>';
         } else if (hoursDiff < 24) {
-            return '<span class="text-warning"><i class="fas fa-clock"></i> Скоро дедлайн</span>';
+            return '<span class="text-warning"><i class="fas fa-clock"></i> Скоро prazo</span>';
         }
         return '';
     }
@@ -423,7 +423,7 @@ class TaskManager {
         };
 
         if (!formData.type || !formData.liftId || !formData.deadline || !formData.title) {
-            this.showNotification('Будь ласка, заповніть обов\'язкові поля', 'error');
+            this.showNotification('Por favor, заповніть обов\'язкові поля', 'error');
             return;
         }
 
@@ -442,7 +442,7 @@ class TaskManager {
         $('#newTaskModal').modal('hide');
         this.applyFilters();
         
-        this.showNotification('Завдання успішно створено!', 'success');
+        this.showNotification('Tarefa com sucesso створено!', 'success');
     }
 
     viewTask(taskId) {
@@ -453,7 +453,7 @@ class TaskManager {
         const modalContent = this.createTaskDetails(task);
         $('#taskDetailsContent').html(modalContent);
         
-        // Оновлення видимості кнопок
+        // Atualização видимості кнопок
         this.updateTaskButtons(task);
         
         $('#viewTaskModal').modal('show');
@@ -482,10 +482,10 @@ class TaskManager {
                 <div class="row mb-4">
                     <div class="col-md-6">
                         <div class="info-item">
-                            <strong><i class="fas fa-elevator"></i> Ліфт:</strong> ${task.lift}
+                            <strong><i class="fas fa-elevator"></i> Elevador:</strong> ${task.lift}
                         </div>
                         <div class="info-item">
-                            <strong><i class="fas fa-tag"></i> Тип:</strong> ${typeText}
+                            <strong><i class="fas fa-tag"></i> Tipo:</strong> ${typeText}
                         </div>
                         <div class="info-item">
                             <strong><i class="fas fa-calendar-plus"></i> Створено:</strong> ${this.formatDateTime(task.createdDate)}
@@ -498,7 +498,7 @@ class TaskManager {
                     </div>
                     <div class="col-md-6">
                         <div class="info-item">
-                            <strong><i class="fas fa-user-cog"></i> Технік:</strong> ${task.technician || 'Не призначено'}
+                            <strong><i class="fas fa-user-cog"></i> Técnico:</strong> ${task.technician || 'Não atribuído'}
                         </div>
                         <div class="info-item">
                             <strong><i class="fas fa-hourglass-end"></i> Термін:</strong> ${this.formatDateTime(task.deadline)}
@@ -520,7 +520,7 @@ class TaskManager {
                 ${task.description ? `
                     <div class="card mb-4">
                         <div class="card-header">
-                            <h5 class="card-title"><i class="fas fa-align-left"></i> Опис завдання</h5>
+                            <h5 class="card-title"><i class="fas fa-align-left"></i> Descrição завдання</h5>
                         </div>
                         <div class="card-body">
                             <p class="card-text">${task.description}</p>
@@ -537,7 +537,7 @@ class TaskManager {
                             <div class="progress progress-sm">
                                 <div class="progress-bar bg-success" style="width: ${task.progress}%"></div>
                             </div>
-                            <small class="text-muted">${task.progress}% завершено</small>
+                            <small class="text-muted">${task.progress}% concluída</small>
                         </div>
                     </div>
                 ` : ''}
@@ -554,7 +554,7 @@ class TaskManager {
                                         <div class="d-flex justify-content-between align-items-center">
                                             <span>${item.item}</span>
                                             <span class="badge ${item.status === 'completed' ? 'badge-success' : item.status === 'in-progress' ? 'badge-warning' : 'badge-secondary'}">
-                                                ${item.status === 'completed' ? 'Виконано' : item.status === 'in-progress' ? 'В роботі' : 'В очікуванні'}
+                                                ${item.status === 'completed' ? 'Concluído' : item.status === 'in-progress' ? 'Em progresso' : 'В очікуванні'}
                                             </span>
                                         </div>
                                         ${item.notes ? `<p class="mb-0 mt-2"><small>${item.notes}</small></p>` : ''}
@@ -585,7 +585,7 @@ class TaskManager {
                                             <tr>
                                                 <td>${material.name}</td>
                                                 <td>${material.quantity}</td>
-                                                <td>${material.used ? '<span class="text-success"><i class="fas fa-check"></i> Так</span>' : '<span class="text-muted"><i class="fas fa-times"></i> Ні</span>'}</td>
+                                                <td>${material.used ? '<span class="text-success"><i class="fas fa-check"></i> Sim</span>' : '<span class="text-muted"><i class="fas fa-times"></i> Não</span>'}</td>
                                             </tr>
                                         `).join('')}
                                     </tbody>
@@ -614,7 +614,7 @@ class TaskManager {
                         <div class="card-body">
                             <div class="text-center">
                                 <h2 class="${task.result === 'success' ? 'text-success' : 'text-danger'}">
-                                    ${task.result === 'success' ? 'Успішно завершено' : 'Не вдалося завершити'}
+                                    ${task.result === 'success' ? 'Успішно concluída' : 'Не вдалося завершити'}
                                 </h2>
                             </div>
                         </div>
@@ -647,7 +647,7 @@ class TaskManager {
         localStorage.setItem('tasks', JSON.stringify(this.tasks));
         this.applyFilters();
         
-        this.showNotification('Завдання розпочато!', 'success');
+        this.showNotification('Tarefa розпочато!', 'success');
         this.viewTask(taskId);
     }
 
@@ -662,7 +662,7 @@ class TaskManager {
         localStorage.setItem('tasks', JSON.stringify(this.tasks));
         this.applyFilters();
         
-        this.showNotification('Завдання успішно завершено!', 'success');
+        this.showNotification('Tarefa concluída com sucesso!', 'success');
         this.viewTask(taskId);
     }
 
@@ -683,7 +683,7 @@ class TaskManager {
             link.download = `звіт_завдання_${taskId}.pdf`;
             link.click();
             
-            this.showNotification('Звіт успішно завантажено', 'success');
+            this.showNotification('Relatório com sucesso завантажено', 'success');
         }, 1500);
     }
 
@@ -692,18 +692,18 @@ class TaskManager {
             ЗВІТ ПРО ВИКОНАННЯ ЗАВДАННЯ #${task.id}
             ===================================
             
-            Назва: ${task.title}
-            Тип: ${this.getTypeText(task.type)}
-            Ліфт: ${task.lift}
-            Статус: ${this.getStatusText(task.status)}
-            Пріоритет: ${this.getPriorityText(task.priority)}
+            Nome: ${task.title}
+            Tipo: ${this.getTypeText(task.type)}
+            Elevador: ${task.lift}
+            Estado: ${this.getStatusText(task.status)}
+            Prioridade: ${this.getPriorityText(task.priority)}
             
             Створено: ${this.formatDateTime(task.createdDate)}
             ${task.startedDate ? `Розпочато: ${this.formatDateTime(task.startedDate)}` : ''}
             ${task.completedDate ? `Завершено: ${this.formatDateTime(task.completedDate)}` : ''}
             Термін: ${this.formatDateTime(task.deadline)}
             
-            ${task.description ? `Опис: ${task.description}` : ''}
+            ${task.description ? `Descrição: ${task.description}` : ''}
             
             ${task.estimatedTime ? `Очікуваний час: ${task.estimatedTime} хв` : ''}
             ${task.actualTime ? `Фактичний час: ${task.actualTime} хв` : ''}
@@ -736,7 +736,7 @@ class TaskManager {
     }
 
     convertToCSV(tasks) {
-        const headers = ['ID', 'Тип', 'Ліфт', 'Статус', 'Пріоритет', 'Створено', 'Термін', 'Технік'];
+        const headers = ['ID', 'Tipo', 'Elevador', 'Estado', 'Prioridade', 'Створено', 'Термін', 'Técnico'];
         const rows = tasks.map(task => [
             task.id,
             this.getTypeText(task.type),
@@ -745,7 +745,7 @@ class TaskManager {
             this.getPriorityText(task.priority),
             this.formatDate(task.createdDate),
             this.formatDate(task.deadline),
-            task.technician || 'Не призначено'
+            task.technician || 'Não atribuído'
         ]);
         
         return [headers, ...rows].map(row => row.join(',')).join('\n');
@@ -760,7 +760,7 @@ class TaskManager {
         link.download = filename;
         link.click();
         
-        this.showNotification('Експорт успішно завершено', 'success');
+        this.showNotification('Exportar com sucesso concluída', 'success');
     }
 
     printTasks() {

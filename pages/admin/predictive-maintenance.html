@@ -886,7 +886,7 @@ window.exportSchedule = function() {
                 date: `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`,
                 lift: `Elevador-${String(Math.floor(Math.random() * 20) + 1).padStart(3, '0')}`,
                 type: 'maintenance',
-                description: 'Планове manutenção técnica'
+                description: 'Manutenção técnica planeada'
             });
         }
     }
@@ -1162,7 +1162,7 @@ class PredictiveMaintenanceDashboard {
         // Seguinte mês
         const nextMonth = predictions.nextMonth || {};
         $('#nextMonthCost').text(`₴${formatCurrency(nextMonth.estimatedCosts || 0)}`);
-        $('#nextMonthDetails').text(`${nextMonth.expectedFailures || 0} відмов очікуexisteться`);
+        $('#nextMonthDetails').text(`${nextMonth.expectedFailures || 0} falhas esperadas`);
         
         // Seguinte trimestre  
         const nextQuarter = predictions.nextQuarter || {};
@@ -1172,7 +1172,7 @@ class PredictiveMaintenanceDashboard {
         // Seguinte ano
         const nextYear = predictions.nextYear || {};
         $('#nextYearCost').text(`₴${formatCurrency(nextYear.estimatedCosts || 0)}`);
-        $('#nextYearDetails').text(`${Math.round(nextYear.expectedFailures || 0)} капreparaçãoів`);
+        $('#nextYearDetails').text(`${Math.round(nextYear.expectedFailures || 0)} reparações maiores`);
     }
 
     updateAlerts(alerts) {
@@ -1369,9 +1369,9 @@ class PredictiveMaintenanceDashboard {
 
     updateMLInsights() {
         const insights = [
-            'Sistema виявила підвиaindaний ризик відмови caboів у do elevadorх сeрше 12 років',
+            'O sistema detetou risco elevado de falha dos cabos em elevadores com mais de 12 anos',
             'Prevê-se uma redução de 15% nos custos de manutenção no próximo trimestre',
-            'Recomenda-se впровадити превентивне Manutenção para 3 de elevadores високого ризику'
+            'Recomenda-se implementar manutenção preventiva em 3 elevadores de alto risco'
         ];
         
         const randomInsight = insights[Math.floor(Math.random() * insights.length)];
@@ -1423,12 +1423,12 @@ class PredictiveMaintenanceDashboard {
 
     translateComponent(component) {
         const translations = {
-            motor: 'Двигун',
-            cables: 'Caboи',
-            brakes: 'Гальма',
+            motor: 'Motor',
+            cables: 'Cabos',
+            brakes: 'Travões',
             doors: 'Portas',
             control_system: 'Sistema de gestão',
-            safety_systems: 'Системи de segurança'
+            safety_systems: 'Sistemas de segurança'
         };
         return translations[component] || component;
     }
@@ -1455,7 +1455,7 @@ class PredictiveMaintenanceDashboard {
         const ctx = document.getElementById('predictionTrendChart');
         if (!ctx) return;
 
-        const months = ['Січ', 'Лют', 'Бер', 'Квіт', 'Тра', 'Чер'];
+        const months = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun'];
         const predictions = [12000, 15000, 11000, 18000, 16000, 14000];
         const actual = [11500, 14800, 10800, 17500, null, null];
 
@@ -1464,13 +1464,13 @@ class PredictiveMaintenanceDashboard {
             data: {
                 labels: months,
                 datasets: [{
-                    label: 'Прогноdesde витрат',
+                    label: 'Previsão de custos',
                     data: predictions,
                     borderColor: '#007bff',
                     backgroundColor: '#007bff20',
                     tension: 0.4
                 }, {
-                    label: 'Фактичні gastos',
+                    label: 'Custos reais',
                     data: actual,
                     borderColor: '#28a745',
                     backgroundColor: '#28a74520',
@@ -1516,7 +1516,7 @@ class PredictiveMaintenanceDashboard {
         new Chart(ctx, {
             type: 'bar',
             data: {
-                labels: ['Baixo ризик', 'Médio ризик', 'Alto ризик', 'Crítico'],
+                labels: ['Baixo risco', 'Risco médio', 'Alto risco', 'Crítico'],
                 datasets: [{
                     label: 'Quantidade de elevadores',
                     data: [45, 23, 8, 3],
@@ -1542,7 +1542,7 @@ class PredictiveMaintenanceDashboard {
                 id: 1,
                 type: 'critical',
                 lift: 'Elevador-001',
-                message: 'Crítico знос caboів',
+                message: 'Desgaste crítico de cabos',
                 timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toLocaleString('pt-PT'),
                 acknowledged: false
             },
@@ -1550,7 +1550,7 @@ class PredictiveMaintenanceDashboard {
                 id: 2,
                 type: 'high',
                 lift: 'Elevador-005',
-                message: 'Перевиaindaння допустимої вібрації двигуна',
+                message: 'Vibração do motor acima do limite admissível',
                 timestamp: new Date(Date.now() - 5 * 60 * 60 * 1000).toLocaleString('pt-PT'),
                 acknowledged: false
             },
@@ -1558,7 +1558,7 @@ class PredictiveMaintenanceDashboard {
                 id: 3,
                 type: 'medium',
                 lift: 'Elevador-012',
-                message: 'Наближаexisteться prazo плаnovo Manutenção',
+                message: 'A aproximar-se o prazo de manutenção planeada',
                 timestamp: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toLocaleString('pt-PT'),
                 acknowledged: true
             },
@@ -1566,7 +1566,7 @@ class PredictiveMaintenanceDashboard {
                 id: 4,
                 type: 'low',
                 lift: 'Elevador-008',
-                message: 'Recomenda-se substituição filtroів',
+                message: 'Recomenda-se substituição de filtros',
                 timestamp: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toLocaleString('pt-PT'),
                 acknowledged: true
             }
@@ -1656,7 +1656,7 @@ class PredictiveMaintenanceDashboard {
         `;
 
         // Deаголовки dias da semana
-        const dayHeaders = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Нд'];
+        const dayHeaders = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
         dayHeaders.forEach(day => {
             html += `<div class="text-center font-weight-bold p-2">${day}</div>`;
         });

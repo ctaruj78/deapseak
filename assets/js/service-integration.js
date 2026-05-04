@@ -27,7 +27,7 @@ class ServiceRequestsIntegration {
         try {
             return JSON.parse(localStorage.getItem(this.storageKey) || '[]');
         } catch (error) {
-            console.error('Помилка читання заявок:', error);
+            console.error('Erro читання заявок:', error);
             return [];
         }
     }
@@ -110,7 +110,7 @@ class ServiceRequestsIntegration {
             requests[index].timeline.push({
                 timestamp: new Date().toISOString(),
                 action: 'status_changed',
-                message: `Статус змінено на "${this.getStatusText(updates.status)}"`,
+                message: `Estado змінено на "${this.getStatusText(updates.status)}"`,
                 user: updates.updatedBy || 'Система'
             });
         }
@@ -172,36 +172,36 @@ class ServiceRequestsIntegration {
     // Допоміжні методи
     getStatusText(status) {
         const texts = {
-            new: 'Нова',
-            assigned: 'Призначена',
-            'in-progress': 'В роботі',
-            completed: 'Завершена',
-            cancelled: 'Скасована'
+            new: 'Nova',
+            assigned: 'Atribuída',
+            'in-progress': 'Em progresso',
+            completed: 'Concluída',
+            cancelled: 'Cancelada'
         };
         return texts[status] || status;
     }
 
     getTypeText(type) {
         const texts = {
-            emergency: 'Аварія',
-            maintenance: 'ТО',
-            repair: 'Ремонт',
-            inspection: 'Інспекція'
+            emergency: 'Avaria',
+            maintenance: 'Manutenção',
+            repair: 'Reparação',
+            inspection: 'Inspeção'
         };
         return texts[type] || type;
     }
 
     getPriorityText(priority) {
         const texts = {
-            critical: 'Критичний',
-            high: 'Високий', 
-            medium: 'Середній',
+            critical: 'Crítico',
+            high: 'Altий', 
+            medium: 'Agoедній',
             low: 'Низький'
         };
         return texts[priority] || priority;
     }
 
-    // Експорт/імпорт даних
+    // Exportar/імпорт даних
     exportData() {
         const data = {
             requests: this.getAllRequests(),
@@ -232,7 +232,7 @@ class ServiceRequestsIntegration {
             
             return false;
         } catch (error) {
-            console.error('Помилка імпорту:', error);
+            console.error('Erro імпорту:', error);
             return false;
         }
     }
@@ -249,12 +249,12 @@ class ServiceRequestsIntegration {
             console.log('✅ Синхронізація завершена');
             return true;
         } catch (error) {
-            console.error('❌ Помилка синхронізації:', error);
+            console.error('❌ Erro синхронізації:', error);
             return false;
         }
     }
 
-    // Сповіщення
+    // Notificações
     sendNotification(message, type = 'info') {
         // Інтеграція з toastr або іншою системою сповіщень
         if (typeof toastr !== 'undefined') {

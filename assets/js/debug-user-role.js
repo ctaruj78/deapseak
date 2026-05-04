@@ -1,5 +1,5 @@
 /**
- * 🔍 Діагностика ролі користувача
+ * 🔍 Diagnóstico ролі користувача
  * Відкрийте консоль браузера (F12) та введіть: debugUserRole()
  */
 
@@ -32,20 +32,20 @@ function debugUserRole() {
             const user = JSON.parse(userData);
             console.table({
                 'Email': user.email,
-                'Роль': user.role,
+                'Função': user.role,
                 'Ім\'я': `${user.firstName || ''} ${user.lastName || ''}`,
                 'User ID': user.userId
             });
             
             // 2. Перевірка відповідності
             console.log('');
-            console.log('%c👤 2. ПОТОЧНА РОЛЬ:', 'color: #2196F3; font-weight: bold; font-size: 14px;');
+            console.log('%c👤 2. ПОManutençãoЧНА РОЛЬ:', 'color: #2196F3; font-weight: bold; font-size: 14px;');
             
             if (user.role === 'dispatcher') {
                 console.log('%c✅ ВИ ДИСПЕТЧЕР', 'background: #4CAF50; color: white; padding: 5px; font-weight: bold;');
                 console.log('   → Доступ до dispatcher/* сторінок ДОЗВОЛЕНО');
             } else if (user.role === 'admin') {
-                console.log('%c✅ ВИ АДМІНІСТРАТОР', 'background: #FF9800; color: white; padding: 5px; font-weight: bold;');
+                console.log('%c✅ ВИ АДМІНІСТРАManutençãoР', 'background: #FF9800; color: white; padding: 5px; font-weight: bold;');
                 console.log('   → Доступ до всіх сторінок ДОЗВОЛЕНО');
             } else if (user.role === 'client') {
                 console.log('%c⚠️ ВИ КЛІЄНТ', 'background: #f44336; color: white; padding: 5px; font-weight: bold;');
@@ -61,7 +61,7 @@ function debugUserRole() {
             
             // 3. Перевірка поточної сторінки
             console.log('');
-            console.log('%c🌐 3. ПОТОЧНА СТОРІНКА:', 'color: #2196F3; font-weight: bold; font-size: 14px;');
+            console.log('%c🌐 3. ПОManutençãoЧНА СManutençãoРІНКА:', 'color: #2196F3; font-weight: bold; font-size: 14px;');
             console.log(`   URL: ${window.location.pathname}`);
             
             const isDispatcherPage = window.location.pathname.includes('/dispatcher/');
@@ -70,23 +70,23 @@ function debugUserRole() {
             const isTechPage = window.location.pathname.includes('/tech/');
             
             if (isDispatcherPage) {
-                console.log('   📍 Тип: Диспетчерська сторінка');
+                console.log('   📍 Tipo: Dispatcherська сторінка');
                 if (user.role === 'dispatcher' || user.role === 'admin') {
                     console.log('%c   ✅ Доступ дозволено для вашої ролі', 'color: green;');
                 } else {
                     console.log('%c   ❌ ДОСТУП ЗАБОРОНЕНО ДЛЯ ВАШОЇ РОЛІ!', 'color: red; font-weight: bold;');
                 }
             } else if (isAdminPage) {
-                console.log('   📍 Тип: Адміністраторська сторінка');
+                console.log('   📍 Tipo: Administradorська сторінка');
                 if (user.role === 'admin') {
                     console.log('%c   ✅ Доступ дозволено для вашої ролі', 'color: green;');
                 } else {
                     console.log('%c   ❌ ДОСТУП ЗАБОРОНЕНО ДЛЯ ВАШОЇ РОЛІ!', 'color: red; font-weight: bold;');
                 }
             } else if (isClientPage) {
-                console.log('   📍 Тип: Клієнтська сторінка');
+                console.log('   📍 Tipo: Clienteська сторінка');
             } else if (isTechPage) {
-                console.log('   📍 Тип: Сторінка техніка');
+                console.log('   📍 Tipo: Сторінка техніка');
             }
             
             // 4. Рекомендації
@@ -94,12 +94,12 @@ function debugUserRole() {
             console.log('%c💡 4. РЕКОМЕНДАЦІЇ:', 'color: #2196F3; font-weight: bold; font-size: 14px;');
             
             if (isDispatcherPage && user.role !== 'dispatcher' && user.role !== 'admin') {
-                console.log('%c⚠️ ВИ НА НЕПРАВИЛЬНІЙ СТОРІНЦІ!', 'color: red; font-weight: bold;');
+                console.log('%c⚠️ ВИ НА НЕПРАВИЛЬНІЙ СManutençãoРІНЦІ!', 'color: red; font-weight: bold;');
                 console.log('');
                 console.log('Варіанти дій:');
                 console.log('1️⃣ Вийдіть (Logout) та увійдіть як диспетчер:');
                 console.log('   Email: dispatcher@festlift.pt');
-                console.log('   Пароль: dispatcher123');
+                console.log('   Palavra-passe: dispatcher123');
                 console.log('');
                 console.log('2️⃣ Перейдіть на вашу панель:');
                 if (user.role === 'client') {
@@ -123,7 +123,7 @@ function debugUserRole() {
             console.log('');
             
         } catch (error) {
-            console.error('%c❌ Помилка парсингу userData:', 'color: red; font-weight: bold;', error);
+            console.error('%c❌ Erro парсингу userData:', 'color: red; font-weight: bold;', error);
             console.log('   → Дані пошкоджені. Очистіть localStorage та перелогіньтесь.');
         }
     }

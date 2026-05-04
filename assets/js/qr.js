@@ -25,7 +25,7 @@ class QRManager {
             liftCard.className = 'qr-card';
             
             liftCard.innerHTML = `
-                <h3>Ліфт ${lift.serialNumber}</h3>
+                <h3>Elevador ${lift.serialNumber}</h3>
                 <div class="qr-code" id="qr-${lift.id}"></div>
                 <p>${lift.address}</p>
             `;

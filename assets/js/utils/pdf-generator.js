@@ -43,7 +43,7 @@ class PDFGenerator {
         this.currentY = this.margin;
 
         // Add header
-        await this.addHeader(options.title || 'Звіт про інспекцію ліфта');
+        await this.addHeader(options.title || 'Relatório про інспекцію ліфта');
         
         // Add lift information
         this.addLiftInfo(data.lift);
@@ -90,7 +90,7 @@ class PDFGenerator {
         // Date
         this.pdf.setFontSize(10);
         this.pdf.setFont(undefined, 'normal');
-        this.pdf.text(`Дата створення: ${new Date().toLocaleDateString('uk-UA')}`, this.pageWidth - this.margin, 30, { align: 'right' });
+        this.pdf.text(`Data створення: ${new Date().toLocaleDateString('uk-UA')}`, this.pageWidth - this.margin, 30, { align: 'right' });
 
         this.currentY = 60;
     }
@@ -105,12 +105,12 @@ class PDFGenerator {
         this.pdf.setFont(undefined, 'normal');
         
         const liftInfo = [
-            ['Адреса:', lift.address],
-            ['Серійний номер:', lift.serialNumber],
+            ['Endereço:', lift.address],
+            ['Número de série:', lift.serialNumber],
             ['Виробник:', lift.manufacturer],
-            ['Модель:', lift.model],
+            ['Modelo:', lift.model],
             ['Рік початку обслуговування:', lift.installationDate ? new Date(lift.installationDate).getFullYear() : new Date(lift.createdAt).getFullYear()],
-            ['Клієнт:', lift.client]
+            ['Cliente:', lift.client]
         ];
 
         liftInfo.forEach(([label, value]) => {
@@ -130,17 +130,17 @@ class PDFGenerator {
     addInspectionDetails(inspection) {
         this.pdf.setFontSize(12);
         this.pdf.setFont(undefined, 'bold');
-        this.pdf.text('Деталі інспекції:', this.margin, this.currentY);
+        this.pdf.text('Detalhes інспекції:', this.margin, this.currentY);
         this.currentY += 15;
 
         this.pdf.setFontSize(10);
         this.pdf.setFont(undefined, 'normal');
 
         const inspectionDetails = [
-            ['Дата інспекції:', new Date(inspection.date).toLocaleDateString('uk-UA')],
-            ['Технік:', inspection.technician],
-            ['Тривалість:', `${inspection.duration} хвилин`],
-            ['Тип інспекції:', inspection.type],
+            ['Data інспекції:', new Date(inspection.date).toLocaleDateString('uk-UA')],
+            ['Técnico:', inspection.technician],
+            ['Duração:', `${inspection.duration} хвилин`],
+            ['Tipo інспекції:', inspection.type],
             ['Загальний стан:', inspection.overallCondition]
         ];
 
@@ -181,12 +181,12 @@ class PDFGenerator {
             this.pdf.text(lines, this.margin + 10, this.currentY);
             this.currentY += lines.length * 6 + 4;
 
-            this.pdf.text(`Статус: ${finding.status}`, this.margin + 10, this.currentY);
+            this.pdf.text(`Estado: ${finding.status}`, this.margin + 10, this.currentY);
             this.currentY += 6;
 
             if (finding.photos && finding.photos.length > 0) {
                 this.currentY += 4;
-                this.pdf.text('Фото:', this.margin + 10, this.currentY);
+                this.pdf.text('Fotografia:', this.margin + 10, this.currentY);
                 this.currentY += 6;
                 
                 // Would add photos here in real implementation
@@ -220,7 +220,7 @@ class PDFGenerator {
             this.pdf.text(lines, this.margin + 10, this.currentY);
             this.currentY += lines.length * 6;
 
-            this.pdf.text(`Пріоритет: ${rec.priority}`, this.margin + 10, this.currentY);
+            this.pdf.text(`Prioridade: ${rec.priority}`, this.margin + 10, this.currentY);
             this.pdf.text(`Орієнтовний термін: ${rec.deadline}`, this.margin + 10, this.currentY + 6);
             this.currentY += 12;
         });

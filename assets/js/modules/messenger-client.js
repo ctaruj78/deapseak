@@ -5,7 +5,7 @@ class MessengerClient {
   constructor() {
     this.messages = [];
     this.container = null;
-    this.sender = localStorage.getItem('userName') || 'Клієнт';
+    this.sender = localStorage.getItem('userName') || 'Cliente';
     this.role = localStorage.getItem('userRole') || 'client';
     this.apiUrl = window.location.origin + '/api/chat';
   }
@@ -17,7 +17,7 @@ class MessengerClient {
       <h4>Чат з диспетчером/техніком</h4>
       <div id="clientChatWindow" style="height:150px;overflow-y:auto;border:1px solid #ccc;padding:5px;margin-bottom:10px;"></div>
       <input type="text" id="clientChatInput" class="form-control mb-2" placeholder="Введіть повідомлення...">
-      <button class="btn btn-primary btn-sm" id="clientSendMsgBtn">Відправити</button>
+      <button class="btn btn-primary btn-sm" id="clientSendMsgBtn">Enviar</button>
     `;
     document.getElementById('clientSendMsgBtn').onclick = () => this.sendMessage();
     this.fetchMessages();
@@ -66,7 +66,7 @@ class MessengerClient {
         this.messages = msgs.map(m => {
           if (!m.role) {
             if (m.sender === this.sender) return { ...m, role: this.role };
-            return { ...m, role: m.sender === 'Диспетчер' ? 'dispatcher' : 'technician' };
+            return { ...m, role: m.sender === 'Dispatcher' ? 'dispatcher' : 'technician' };
           }
           return m;
         });

@@ -37,7 +37,7 @@ const LiftsManager = (function() {
     
     async function apiCall(endpoint, method = 'GET', data = null) {
         if (!AuthManager?.isAuthenticated()) {
-            console.warn('⚠️ Користувач не авторизований');
+            console.warn('⚠️ Utilizador не авторизований');
             AuthManager?.logout();
             throw new Error('Не авторизований');
         }
@@ -52,12 +52,12 @@ const LiftsManager = (function() {
             });
             
             if (!response) {
-                throw new Error('Помилка авторизації');
+                throw new Error('Erro авторизації');
             }
             
             if (!response.ok) {
                 const error = await response.json();
-                throw new Error(error.message || 'Помилка API');
+                throw new Error(error.message || 'Erro API');
             }
             
             return await response.json();
@@ -122,7 +122,7 @@ const LiftsManager = (function() {
             setAllLifts(lifts);
             return lifts;
         } catch (error) {
-            console.error('Помилка завантаження ліфтів:', error);
+            console.error('Erro завантаження ліфтів:', error);
             return [];
         }
     }
@@ -132,11 +132,11 @@ const LiftsManager = (function() {
         
         try {
             const result = await apiCall('/api/lifts', 'POST', liftData);
-            showNotification('Ліфт успішно створено', 'success');
+            showNotification('Elevador com sucesso створено', 'success');
             await loadLifts();
             return result.data;
         } catch (error) {
-            console.error('Помилка створення ліфта:', error);
+            console.error('Erro створення ліфта:', error);
             throw error;
         }
     }
@@ -146,11 +146,11 @@ const LiftsManager = (function() {
         
         try {
             const result = await apiCall(`/api/lifts/${liftId}`, 'PUT', liftData);
-            showNotification('Ліфт успішно оновлено', 'success');
+            showNotification('Elevador com sucesso оновлено', 'success');
             await loadLifts();
             return result.data;
         } catch (error) {
-            console.error('Помилка оновлення ліфта:', error);
+            console.error('Erro оновлення ліфта:', error);
             throw error;
         }
     }
@@ -158,16 +158,16 @@ const LiftsManager = (function() {
     async function deleteLift(liftId) {
         if (!canDelete()) return;
         
-        if (!confirm('Ви впевнені, що хочете видалити цей ліфт?')) {
+        if (!confirm('Tem a certeza que pretende eliminar este elevador?')) {
             return;
         }
         
         try {
             await apiCall(`/api/lifts/${liftId}`, 'DELETE');
-            showNotification('Ліфт успішно видалено', 'success');
+            showNotification('Elevador com sucesso видалено', 'success');
             await loadLifts();
         } catch (error) {
-            console.error('Помилка видалення ліфта:', error);
+            console.error('Erro видалення ліфта:', error);
         }
     }
     
@@ -182,13 +182,13 @@ const LiftsManager = (function() {
             });
             
             if (!response.ok) {
-                throw new Error('Помилка генерації QR коду');
+                throw new Error('Erro генерації QR коду');
             }
             
             const data = await response.json();
             return data.data.qrCode;
         } catch (error) {
-            console.error('Помилка генерації QR:', error);
+            console.error('Erro генерації QR:', error);
             showNotification('Не вдалося згенерувати QR код', 'error');
             throw error;
         }
@@ -206,14 +206,14 @@ const LiftsManager = (function() {
             });
             
             if (!response.ok) {
-                throw new Error('Помилка експорту');
+                throw new Error('Erro експорту');
             }
             
             const blob = await response.blob();
             downloadFile(blob, `lifts-${Date.now()}.xlsx`);
-            showNotification('Експорт завершено', 'success');
+            showNotification('Exportar concluída', 'success');
         } catch (error) {
-            console.error('Помилка експорту:', error);
+            console.error('Erro експорту:', error);
             showNotification('Не вдалося експортувати', 'error');
         }
     }
@@ -293,12 +293,12 @@ const LiftsManager = (function() {
     function init() {
         console.log('🚀 Initializing Lifts Manager...');
         
-        // Завантажити користувача
+        // Descarregar користувача
         if (AuthManager) {
             state.user = AuthManager.getCurrentUser();
         }
         
-        // Завантажити ліфти
+        // Descarregar ліфти
         loadLifts().then(lifts => {
             console.log(`✅ Loaded ${lifts.length} lifts`);
             updateStatistics();

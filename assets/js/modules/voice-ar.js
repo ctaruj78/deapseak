@@ -19,7 +19,7 @@ class VoiceAR {
 
   init() {
     if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
-      alert('Голосове керування не підтримується вашим браузером');
+      alert('Controlo por voz não é suportado pelo seu browser');
       return;
     }
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -55,7 +55,7 @@ class VoiceAR {
       this.commands['пошук компонент'](comp);
       return;
     }
-    alert('Команда не розпізнана: ' + text);
+    alert('Comando não reconhecido: ' + text);
   }
 }
 

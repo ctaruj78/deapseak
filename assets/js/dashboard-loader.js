@@ -20,7 +20,7 @@ class DashboardLoader {
             return;
         }
 
-        // Завантаження даних при ініціалізації
+        // A carregar даних при ініціалізації
         this.loadDashboardData();
 
         // Автооновлення кожні 30 секунд
@@ -85,7 +85,7 @@ class DashboardLoader {
 
     async loadDashboardData() {
         try {
-            console.log('📊 Завантаження статистики дашборду...');
+            console.log('📊 A carregar статистики дашборду...');
             const startTime = performance.now();
             
             // Показуємо індикатори завантаження
@@ -113,7 +113,7 @@ class DashboardLoader {
                 totalRevenue: 0 // TODO: додати підрахунок з бази
             };
 
-            // Оновлення UI
+            // Atualização UI
             this.updateUI(stats);
             
             const loadTime = (performance.now() - startTime).toFixed(0);
@@ -123,7 +123,7 @@ class DashboardLoader {
             this.updateLastRefreshTime();
 
         } catch (error) {
-            console.error('❌ Помилка завантаження статистики:', error);
+            console.error('❌ Erro завантаження статистики:', error);
             this.setError();
         }
     }
@@ -242,7 +242,7 @@ class DashboardLoader {
         this.updateElement('total-lifts', stats.totalLifts);
         this.updateElement('active-lifts', stats.activeLifts);
         this.updateElement('qr-scans', stats.totalLifts); // TODO: окремий лічильник QR сканувань
-        this.updateElement('maintenance-needed', 0); // TODO: лічильник ліфтів що потребують ТО
+        this.updateElement('maintenance-needed', 0); // TODO: лічильник ліфтів що потребують Manutenção
     }
 
     updateElement(id, value) {

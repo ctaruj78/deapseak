@@ -180,7 +180,7 @@ class RoleManager {
     logRoleActivity() {
         const user = authManager.currentUser;
         if (user) {
-            console.log(`Користувач ${user.username} (${user.role}) увійшов у систему`);
+            console.log(`Utilizador ${user.username} (${user.role}) увійшов у систему`);
             
             // Log role-specific activity
             setInterval(() => {

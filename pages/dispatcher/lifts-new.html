@@ -2407,17 +2407,6 @@ Equipa FestLift
         });
     </script>
 
-    </div>
-        </div>
-        <div class="ai-chat-input">
-          <textarea class="ai-message-input" placeholder="Escreva uma mensagem..."></textarea>
-          <div class="ai-chat-actions">
-            <button class="ai-send-message"><i class="fas fa-paper-plane"></i> Enviar</button>
-            <button class="ai-voice-toggle"><i class="fas fa-microphone"></i> Voz</button>
-          </div>
-        </div>
-      </div>
-    </div>
     <script>
     // Função para відкриття модального вікна do elevador (apenas desde картою)
     // Глобальна функція para відкриття модального вікна do elevador
@@ -3203,7 +3192,7 @@ Equipa FestLift
             // Atéказуexisteмо mensagem про sucesso
             let successMessage = 'Relatório inspeções com sucesso guardado!';
             if (shouldUpdateMaintenance) {
-                successMessage += ' Дати Manutenção atualizado автоматично.';
+                successMessage += ' Datas de Manutenção atualizadas automaticamente.';
             }
             
             if (typeof toastr !== 'undefined') {
@@ -4210,7 +4199,7 @@ Equipa FestLift</textarea>
                 
                 // Horaтоe de inspeções - apenas se вказана
                 $('#detail-frequency').text(
-                    lift.inspectionFrequency ? `${lift.inspectionFrequency} міс.` : 'Não especificado'
+                    lift.inspectionFrequency ? `${lift.inspectionFrequency} meses` : 'Não especificado'
                 );
                 
                 // Localização desde нової структури
@@ -4257,7 +4246,7 @@ Equipa FestLift</textarea>
                 $('#detail-email').text(clientEmail);
                 $('#detail-access-code').text(lift.intercomCode || lift.accessCode || 'Não especificado');
                 
-                // Дати de manutenção — nextMaintenance é calculado: lastMaintenance + 1 mês (não armazenado)
+                // Datas de manutenção — nextMaintenance é calculado: lastMaintenance + 1 mês (não armazenado)
                 const _lastMaint = lift.lastMaintenance;
                 $('#detail-last-maintenance').text(
                     _lastMaint ? new Date(_lastMaint).toLocaleDateString('pt-PT') : 'Não especificado'
@@ -4448,7 +4437,7 @@ Equipa FestLift</textarea>
             
             let lift;
             if (result && result.success && result.data) {
-                // Сервер devolve: {success:true, data:{lift:{...}}}
+                // Agoвер devolve: {success:true, data:{lift:{...}}}
                 // apiCall обгорeexiste: {success, data: <serverResponse>}
                 const rd = result.data;
                 const rdd = rd && rd.data;
@@ -4916,7 +4905,7 @@ Equipa FestLift</textarea>
         lifts = lifts.filter(l => (l._id || l.id) !== liftId);
         localStorage.setItem('lifts', JSON.stringify(lifts));
         
-        // Також спробувати eliminar através de API
+        // Simож спробувати eliminar através de API
         const deleteResult = await apiCall(`/api/lifts/${liftId}`, 'DELETE');
         if (deleteResult.success) {
             console.log('✅ Elevador eliminado da API');
@@ -5245,7 +5234,7 @@ Equipa FestLift</textarea>
         let typeIcon = 'fa-clipboard-check';
         if (type.toLowerCase().includes('reparação') || type === 'repair') {
             typeIcon = 'fa-wrench';
-        } else if (type.toLowerCase().includes('аварі') || type === 'emergency') {
+        } else if (type.toLowerCase().includes('avari') || type === 'emergency') {
             typeIcon = 'fa-exclamation-triangle';
         } else if (type.toLowerCase().includes('manutenção') || type === 'maintenance') {
             typeIcon = 'fa-tools';
@@ -5697,7 +5686,7 @@ Equipa FestLift</textarea>
                     }
                 }
                 const msg = sharedCount > 0
-                    ? `Contrato com sucesso carregado e застосовано до ${sharedCount + 1} elevadores neste endereço!`
+                    ? `Contrato com sucesso carregado e aplicado a ${sharedCount + 1} elevadores neste endereço!`
                     : 'Contrato carregado com sucesso!';
                 alert(msg);
                 $('#uploadContractModal').modal('hide');
@@ -6560,101 +6549,234 @@ Equipa FestLift</textarea>
                         </small>
                     `);
                     
-                    // Automático заповнюexisteмо поля форми
-                    if (parsedData.liftInfo) {
-                        // Data de inspecção
-                        if (parsedData.liftInfo.inspectionDate) {
-                            const dateStr = parsedData.liftInfo.inspectionDate.replace(/\//g, '-');
-                            const [year, month, day] = dateStr.split('-');
-                            $('#inspectionDate').val(`${year}-${month}-${day}`);
-                        }
-                        
-                        // Empresa de manutenção
-                        if (parsedData.liftInfo.maintenanceCompany) {
-                            console.log('📝 Empresa de manutenção:', parsedData.liftInfo.maintenanceCompany);
-                        }
-                        // Próxima data de inspeção
-                        if (parsedData.liftInfo.nextInspectionDate) {
-                            console.log('📅 Próxima inspeção:', parsedData.liftInfo.nextInspectionDate);
-                            try {
-                                const nextDateStr = parsedData.liftInfo.nextInspectionDate;
-                                let isoDate = '';
-                                if (/\d{2}\/\d{2}\/\d{4}/.test(nextDateStr)) {
-                                    const parts = nextDateStr.split('/');
-                                    isoDate = `${parts[2]}-${parts[1]}-${parts[0]}`;
-                                } else if (/\d{4}[-\/]\d{2}[-\/]\d{2}/.test(nextDateStr)) {
-                                    isoDate = nextDateStr.replace(/\//g, '-');
-                                }
-                                if (isoDate && document.getElementById('nextInspectionDate')) {
-                                    document.getElementById('nextInspectionDate').value = isoDate;
-                                }
-                            } catch(e) {}
+                    // ── Store parsed data — DO NOT auto-fill yet ─────────────
+                    window.currentParsedInspectionData = parsedData;
+
+                    // ── Build extracted values ───────────────────────────────
+                    const liftInfo = parsedData.liftInfo || {};
+                    const inspResult = parsedData.inspectionResult || {};
+
+                    // Inspection date → ISO
+                    let extractedDateISO = '';
+                    if (liftInfo.inspectionDate) {
+                        const raw = liftInfo.inspectionDate.replace(/\//g, '-');
+                        const parts = raw.split('-');
+                        if (parts.length === 3) {
+                            extractedDateISO = parts[0].length === 4
+                                ? raw                              // already YYYY-MM-DD
+                                : `${parts[2]}-${parts[1]}-${parts[0]}`; // DD-MM-YYYY → YYYY-MM-DD
                         }
                     }
-                    
-                    // Визначаexisteмо estado на осnovos клауз
-                    if (parsedData.inspectionResult) {
-                        let status = 'passed';
-                        if (parsedData.inspectionResult.hasImmobilization) {
-                            status = 'failed';
-                        } else if (parsedData.inspectionResult.requiresReinspection) {
-                            status = 'failed';
-                        } else if (parsedData.clauseStats.C2 > 0 || parsedData.clauseStats.C3 > 0) {
-                            status = 'conditional';
+
+                    // Next inspection date → ISO
+                    let extractedNextISO = '';
+                    if (liftInfo.nextInspectionDate) {
+                        const nRaw = liftInfo.nextInspectionDate;
+                        if (/\d{2}\/\d{2}\/\d{4}/.test(nRaw)) {
+                            const p = nRaw.split('/');
+                            extractedNextISO = `${p[2]}-${p[1]}-${p[0]}`;
+                        } else if (/\d{4}[-\/]\d{2}[-\/]\d{2}/.test(nRaw)) {
+                            extractedNextISO = nRaw.replace(/\//g, '-');
                         }
-                        
-                        $('#inspectionStatus').val(status);
-                        console.log('✅ Estado instalado:', status);
                     }
-                    
-                    // Додаexisteмо інформацію про клаузи в comentárioі
+
+                    // Status
+                    let extractedStatus = 'passed';
+                    if (inspResult.hasImmobilization)       extractedStatus = 'failed';
+                    else if (inspResult.requiresReinspection) extractedStatus = 'failed';
+                    else if (parsedData.clauseStats.C2 > 0 || parsedData.clauseStats.C3 > 0)
+                        extractedStatus = 'conditional';
+
+                    const statusLabels = { passed: '✅ Aprovado (2 anos)', conditional: '⚠️ Reinspecção (C2)', failed: '❌ Reprovado / Imobilização' };
+                    const fmtD = s => { try { return s ? new Date(s+'T00:00:00').toLocaleDateString('pt-PT') : '—'; } catch(_) { return s||'—'; } };
+
+                    // ── Badge for clause summary ─────────────────────────────
+                    const c1b = parsedData.clauseStats.C1 > 0 ? `<span class="badge badge-danger ml-1">C1×${parsedData.clauseStats.C1}</span>` : '';
+                    const c2b = parsedData.clauseStats.C2 > 0 ? `<span class="badge badge-warning text-dark ml-1">C2×${parsedData.clauseStats.C2}</span>` : '';
+                    const c3b = parsedData.clauseStats.C3 > 0 ? `<span class="badge badge-secondary ml-1">C3×${parsedData.clauseStats.C3}</span>` : '';
+
+                    // ── Clauses list HTML ────────────────────────────────────
+                    let clausesListHtml = '';
                     if (parsedData.clauses && parsedData.clauses.length > 0) {
-                        let clausesText = '\n\n=== CLÁUSULAS DETECTADAS ===\n';
-                        parsedData.clauses.forEach((clause, index) => {
-                            clausesText += `\n${index + 1}. ${clause.type} - Artº.${clause.article}\n   ${clause.description}\n`;
-                        });
-                        
-                        const currentComments = $('#inspectionComments').val() || '';
-                        $('#inspectionComments').val(currentComments + clausesText);
-                        
-                        console.log(`✅ ${parsedData.clauses.length} cláusulas adicionadas aos comentários`);
+                        clausesListHtml = parsedData.clauses.map((cl, i) => {
+                            const sev = cl.type || '?';
+                            const cls = sev === 'C1' ? 'danger' : sev === 'C2' ? 'warning text-dark' : 'secondary';
+                            return `<div class="mb-1"><span class="badge badge-${cls}">${sev}</span> Artº.${cl.article||'?'} — ${cl.description||''}</div>`;
+                        }).join('');
                     }
-                    
-                    // Atéказуexisteмо деeльну інформацію про клаузи
-                    if (parsedData.clauses && parsedData.clauses.length > 0) {
-                        const clausesHtml = window.inspectionReportParser.formatClausesForDisplay(parsedData.clauses);
-                        
-                        const detailsHtml = `
-                            <div class="card mt-3" id="clausesDetails">
-                                <div class="card-header bg-info">
-                                    <h5 class="card-title mb-0">
-                                        <i class="fas fa-exclamation-triangle mr-2"></i>
-                                        Cláusulas detectadas (${parsedData.clauseStats.total})
-                                    </h5>
+
+                    // ── Render confirmation card ─────────────────────────────
+                    const confirmCardHtml = `
+                        <div class="card border-warning mt-3" id="dispPdfConfirmCard">
+                            <div class="card-header bg-warning text-dark py-2 d-flex justify-content-between align-items-center">
+                                <span>
+                                    <i class="fas fa-robot mr-1"></i>
+                                    <strong>Dados extraídos automaticamente — verifique e confirme:</strong>
+                                    ${c1b}${c2b}${c3b}
+                                </span>
+                                <button type="button" class="btn btn-outline-dark btn-xs py-0 px-2" id="dispPdfToggleEdit" style="font-size:.75rem;">
+                                    <i class="fas fa-pen mr-1"></i> Editar
+                                </button>
+                            </div>
+                            <div class="card-body py-2">
+
+                                <!-- READ-ONLY SUMMARY -->
+                                <div id="dispPdfSummaryView">
+                                    <div class="row">
+                                        <div class="col-sm-6">
+                                            <table class="table table-sm table-borderless mb-0" style="font-size:.88rem;">
+                                                <tr><td class="text-muted pr-2" style="white-space:nowrap;">Data de inspecção:</td><td><strong id="dispSumDate">${fmtD(extractedDateISO)}</strong></td></tr>
+                                                <tr><td class="text-muted pr-2" style="white-space:nowrap;">Próxima inspecção:</td><td><strong id="dispSumNextDate">${fmtD(extractedNextISO)}</strong></td></tr>
+                                                <tr><td class="text-muted pr-2" style="white-space:nowrap;">Empresa:</td><td><strong id="dispSumCompany">${liftInfo.maintenanceCompany||'—'}</strong></td></tr>
+                                            </table>
+                                        </div>
+                                        <div class="col-sm-6">
+                                            <table class="table table-sm table-borderless mb-0" style="font-size:.88rem;">
+                                                <tr><td class="text-muted pr-2" style="white-space:nowrap;">Resultado:</td><td><strong id="dispSumStatus">${statusLabels[extractedStatus]||extractedStatus}</strong></td></tr>
+                                                <tr><td class="text-muted pr-2" style="white-space:nowrap;">Total cláusulas:</td><td><strong>${parsedData.clauseStats.total}</strong></td></tr>
+                                            </table>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="card-body">
-                                    ${clausesHtml}
-                                    ${parsedData.inspectionResult.requiresReinspection ? 
-                                        '<div class="alert alert-warning mt-3"><i class="fas fa-clock mr-2"></i><strong>Atenção!</strong> Reinspeção necessária em 30 dias</div>' : 
-                                        ''
-                                    }
+
+                                <!-- EDIT FORM (hidden by default) -->
+                                <div id="dispPdfEditForm" style="display:none;">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-group mb-2">
+                                                <label class="small mb-1">Data de inspecção</label>
+                                                <input type="date" id="dispPdfDate" class="form-control form-control-sm" value="${extractedDateISO}">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group mb-2">
+                                                <label class="small mb-1">Próxima inspecção</label>
+                                                <input type="date" id="dispPdfNextDate" class="form-control form-control-sm" value="${extractedNextISO}">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-group mb-2">
+                                                <label class="small mb-1">Empresa / Inspector</label>
+                                                <input type="text" id="dispPdfCompany" class="form-control form-control-sm" value="${liftInfo.maintenanceCompany||''}">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group mb-2">
+                                                <label class="small mb-1">Resultado</label>
+                                                <select id="dispPdfStatus" class="form-control form-control-sm">
+                                                    <option value="passed" ${extractedStatus==='passed'?'selected':''}>✅ Aprovado (2 anos)</option>
+                                                    <option value="conditional" ${extractedStatus==='conditional'?'selected':''}>⚠️ Reinspecção (cláusulas C2)</option>
+                                                    <option value="failed" ${extractedStatus==='failed'?'selected':''}>❌ Reprovado / Imobilização</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                ${clausesListHtml ? `
+                                <hr class="my-2">
+                                <div style="max-height:120px;overflow-y:auto;font-size:11.5px;">${clausesListHtml}</div>` : ''}
+                                ${inspResult.requiresReinspection ? '<div class="alert alert-warning py-1 mb-0 mt-2" style="font-size:.82rem;"><i class="fas fa-clock mr-1"></i><strong>Atenção:</strong> Reinspeção necessária em 30 dias</div>' : ''}
+                            </div>
+                            <div class="card-footer py-2 d-flex justify-content-between align-items-center">
+                                <span class="text-muted" style="font-size:.8rem;">Todos os dados estão correctos?</span>
+                                <div>
+                                    <button type="button" class="btn btn-outline-secondary btn-sm mr-2" id="dispPdfCancelConfirm">
+                                        <i class="fas fa-times mr-1"></i> Cancelar
+                                    </button>
+                                    <button type="button" class="btn btn-success btn-sm" id="dispPdfConfirmBtn">
+                                        <i class="fas fa-check mr-1"></i> Sim, aplicar dados
+                                    </button>
                                 </div>
                             </div>
-                        `;
-                        
-                        $('#pdfParsingStatus').after(detailsHtml);
-                    }
-                    
-                    // Deберігаexisteмо розпарсені dados para подальшого utilização
-                    window.currentParsedInspectionData = parsedData;
-                    
-                    // Atéказуexisteмо mensagem про sucesso
-                    if (typeof toastr !== 'undefined') {
-                        toastr.success(
-                            `Relatório analisado! Encontrado ${parsedData.clauseStats.total} cláusulas.`,
-                            'Análise concluída'
+                        </div>
+                    `;
+
+                    // Remove old confirm card if exists, then append
+                    $('#dispPdfConfirmCard').remove();
+                    $('#clausesDetails').remove();
+                    $('#pdfParsingStatus').after(confirmCardHtml);
+
+                    // ── Toggle edit ↔ summary ────────────────────────────────
+                    $(document).off('click', '#dispPdfToggleEdit').on('click', '#dispPdfToggleEdit', function() {
+                        const editing = $('#dispPdfEditForm').is(':visible');
+                        if (editing) {
+                            // Apply edits back to summary
+                            $('#dispSumDate').text(fmtD($('#dispPdfDate').val()));
+                            $('#dispSumNextDate').text(fmtD($('#dispPdfNextDate').val()));
+                            $('#dispSumCompany').text($('#dispPdfCompany').val()||'—');
+                            $('#dispSumStatus').text(statusLabels[$('#dispPdfStatus').val()]||$('#dispPdfStatus').val());
+                            $('#dispPdfSummaryView').show();
+                            $('#dispPdfEditForm').hide();
+                            $(this).html('<i class="fas fa-pen mr-1"></i> Editar');
+                        } else {
+                            $('#dispPdfSummaryView').hide();
+                            $('#dispPdfEditForm').show();
+                            $(this).html('<i class="fas fa-check mr-1"></i> Aplicar alterações');
+                        }
+                    });
+
+                    // ── Cancel ───────────────────────────────────────────────
+                    $(document).off('click', '#dispPdfCancelConfirm').on('click', '#dispPdfCancelConfirm', function() {
+                        $('#dispPdfConfirmCard').remove();
+                        $('#pdfParsingStatus').removeClass('alert-success').addClass('alert-secondary').html(
+                            '<i class="fas fa-ban mr-2"></i>Análise cancelada. Os dados não foram aplicados.'
                         );
-                    }
+                        window.currentParsedInspectionData = null;
+                    });
+
+                    // ── Confirm — NOW apply to form ──────────────────────────
+                    $(document).off('click', '#dispPdfConfirmBtn').on('click', '#dispPdfConfirmBtn', function() {
+                        // If edit form is open, close it first
+                        if ($('#dispPdfEditForm').is(':visible')) {
+                            $('#dispPdfToggleEdit').trigger('click');
+                        }
+
+                        const finalDate     = $('#dispPdfDate').val()     || extractedDateISO;
+                        const finalNextDate = $('#dispPdfNextDate').val()  || extractedNextISO;
+                        const finalStatus   = $('#dispPdfStatus').val()    || extractedStatus;
+                        const finalCompany  = $('#dispPdfCompany').val()   || liftInfo.maintenanceCompany || '';
+
+                        // Apply to form fields
+                        if (finalDate && $('#inspectionDate').length) {
+                            $('#inspectionDate').val(finalDate);
+                        }
+                        if (finalNextDate && document.getElementById('nextInspectionDate')) {
+                            document.getElementById('nextInspectionDate').value = finalNextDate;
+                        }
+                        if (finalStatus && $('#inspectionStatus').length) {
+                            $('#inspectionStatus').val(finalStatus);
+                        }
+
+                        // Clauses text to comments
+                        if (parsedData.clauses && parsedData.clauses.length > 0) {
+                            let clausesText = '\n\n=== CLÁUSULAS DETECTADAS ===\n';
+                            parsedData.clauses.forEach((clause, index) => {
+                                clausesText += `\n${index + 1}. ${clause.type} - Artº.${clause.article||'?'}\n   ${clause.description||''}\n`;
+                            });
+                            const currentComments = $('#inspectionComments').val() || '';
+                            $('#inspectionComments').val(currentComments + clausesText);
+                        }
+
+                        // Remove confirm card and show success
+                        $('#dispPdfConfirmCard').remove();
+                        $('#pdfParsingStatus').removeClass('alert-info alert-secondary').addClass('alert-success').html(`
+                            <i class="fas fa-check-circle mr-2"></i>
+                            <strong>Dados aplicados com sucesso!</strong>
+                            <small class="d-block mt-1">
+                                Data: <strong>${fmtD(finalDate)}</strong> &nbsp;|&nbsp;
+                                Próxima: <strong>${fmtD(finalNextDate)}</strong> &nbsp;|&nbsp;
+                                Resultado: <strong>${statusLabels[finalStatus]||finalStatus}</strong>
+                            </small>
+                        `);
+
+                        if (typeof toastr !== 'undefined') {
+                            toastr.success(`Dados do relatório aplicados! ${parsedData.clauseStats.total} cláusulas registadas.`, 'Confirmado');
+                        }
+                        console.log('✅ Dispatcher PDF confirm — dados aplicados:', { finalDate, finalNextDate, finalStatus, finalCompany });
+                    });
                     
                 } catch (error) {
                     console.error('❌ Erro no parsing do PDF:', error);

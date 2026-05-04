@@ -80,7 +80,7 @@ self.addEventListener('push', event => {
     }
 
     const options = {
-        body: data.message || 'Нове повідомлення',
+        body: data.message || 'Nova mensagem',
         icon: '/assets/img/logo.png',
         badge: '/assets/img/logo.png',
         vibrate: [200, 100, 200],
@@ -88,11 +88,11 @@ self.addEventListener('push', event => {
         actions: [
             {
                 action: 'view',
-                title: 'Переглянути'
+                title: 'Ver'
             },
             {
                 action: 'dismiss',
-                title: 'Закрити'
+                title: 'Fechar'
             }
         ]
     };

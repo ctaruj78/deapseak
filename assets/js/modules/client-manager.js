@@ -8,7 +8,7 @@ class ClientManager {
         // Визначаємо роль користувача
         const userData = JSON.parse(localStorage.getItem('userData') || '{}');
         this.userRole = userData.role || 'dispatcher';
-        console.log('👤 Роль користувача:', this.userRole);
+        console.log('👤 Função користувача:', this.userRole);
         
         this.init();
     }
@@ -18,10 +18,10 @@ class ClientManager {
         this.setupRealTimeUpdates();
     }
 
-    // Завантаження клієнтів
+    // A carregar клієнтів
     async loadClients() {
         try {
-            console.log('🔄 Завантаження клієнтів з API...');
+            console.log('🔄 A carregar клієнтів з API...');
             const _token = localStorage.getItem('token') || localStorage.getItem('liftmanager_jwt') || localStorage.getItem('authToken') || '';
             const response = await fetch('/api/users?role=client', {
                 headers: {
@@ -110,7 +110,7 @@ class ClientManager {
                     date: req.createdAt ? new Date(req.createdAt).toLocaleString('pt-PT') : '—'
                 }));
                 
-                console.log('✅ Клієнтів оброблено:', this.clients.length);
+                console.log('✅ Clienteів оброблено:', this.clients.length);
                 this.filteredClients = [...this.clients];
                 this.renderClients();
                 this.renderRecentRequests();
@@ -120,7 +120,7 @@ class ClientManager {
                 this.loadDemoClients();
             }
         } catch (error) {
-            console.error('❌ Помилка завантаження клієнтів:', error);
+            console.error('❌ Erro завантаження клієнтів:', error);
             this.loadDemoClients();
         }
     }
@@ -162,7 +162,7 @@ class ClientManager {
                 totalRequests: 8,
                 activeRequests: 1,
                 avatar: "Б",
-                notes: "Середній бізнес, стабільний клієнт"
+                notes: "Agoедній бізнес, стабільний клієнт"
             },
             {
                 id: 3,
@@ -225,7 +225,7 @@ class ClientManager {
         this.updateStats();
     }
 
-    // Завантаження заявок клієнтів
+    // A carregar заявок клієнтів
     async loadClientRequests() {
         const _tok = localStorage.getItem('token') || localStorage.getItem('liftmanager_jwt') || localStorage.getItem('authToken') || '';
         try {
@@ -261,7 +261,7 @@ class ClientManager {
                 this.loadDemoRequests();
             }
         } catch (error) {
-            console.error('Помилка завантаження заявок:', error);
+            console.error('Erro завантаження заявок:', error);
             this.loadDemoRequests();
         }
     }
@@ -300,7 +300,7 @@ class ClientManager {
                 id: 1004,
                 clientId: 5,
                 clientName: "Іван Петренко",
-                title: "Налаштування Wi-Fi",
+                title: "Definições Wi-Fi",
                 priority: "low",
                 status: "completed",
                 date: new Date(Date.now() - 10800000).toLocaleString('pt-PT')
@@ -602,7 +602,7 @@ class ClientManager {
         );
         
         if (!client) {
-            console.error('❌ Клієнта не знайдено:', clientId);
+            console.error('❌ Clienteа не знайдено:', clientId);
             alert('Cliente não encontrado');
             return;
         }
@@ -728,7 +728,7 @@ class ClientManager {
         
         this.showCustomModal(modalContent);
         
-        // Завантажити ліфти та заявки клієнта після відкриття модалки
+        // Descarregar ліфти та заявки клієнта після відкриття модалки
         const cid = client._id || client.id;
         setTimeout(() => {
             this.loadClientLifts(cid);
@@ -736,7 +736,7 @@ class ClientManager {
         }, 100);
     }
     
-    // Завантаження ліфтів клієнта
+    // A carregar ліфтів клієнта
     async loadClientLifts(clientId) {
         const container = document.getElementById('clientLiftsContainer');
         if (!container) return;
@@ -755,7 +755,7 @@ class ClientManager {
             const result = await response.json();
             const lifts = result.data || result.lifts || [];
             
-            // Оновити лічильник
+            // Atualizar лічильник
             const badge = document.getElementById('clientLiftsBadge');
             if (badge) badge.textContent = lifts.length;
             
@@ -810,10 +810,10 @@ class ClientManager {
                 </div>
             `;
         } catch (error) {
-            console.error('❌ Помилка завантаження ліфтів:', error);
+            console.error('❌ Erro завантаження ліфтів:', error);
             container.innerHTML = `
                 <div class="alert alert-danger">
-                    <i class="fas fa-exclamation-triangle"></i> Помилка завантаження ліфтів
+                    <i class="fas fa-exclamation-triangle"></i> Erro завантаження ліфтів
                 </div>
             `;
         }
@@ -887,7 +887,7 @@ class ClientManager {
         window.location.href = `${base}?clientId=${clientId}`;
     }
 
-    // Завантаження заявок клієнта для модалки
+    // A carregar заявок клієнта для модалки
     async loadClientRequestsForModal(clientId) {
         const container = document.getElementById('clientRequestsContainer');
         const badge = document.getElementById('clientRequestsBadge');
@@ -910,7 +910,7 @@ class ClientManager {
 
             if (badge) badge.textContent = requests.length;
 
-            // Оновити статистику заявок у модалці
+            // Atualizar статистику заявок у модалці
             const activeStatuses = ['new', 'open', 'assigned', 'in_progress', 'pending'];
             const activeCount = requests.filter(r => activeStatuses.includes(r.status)).length;
             const closedCount = requests.length - activeCount;
@@ -968,7 +968,7 @@ class ClientManager {
                 ${requests.length > 10 ? `<small class="text-muted mt-1 d-block">A mostrar 10 de ${requests.length} pedidos</small>` : ''}
             `;
         } catch (error) {
-            console.error('❌ Помилка завантаження заявок:', error);
+            console.error('❌ Erro завантаження заявок:', error);
 
             // Fallback to in-memory data
             const cid = String(clientId);
@@ -1002,7 +1002,7 @@ class ClientManager {
     editClient(clientId) {
         console.log('✏️ Редагуємо клієнта:', clientId);
         
-        // ✅ Диспетчер може редагувати клієнтів (практично для роботи)
+        // ✅ Dispatcher може редагувати клієнтів (практично для роботи)
         if (this.userRole !== 'admin' && this.userRole !== 'dispatcher') {
             alert('❌ Acesso negado! Apenas administradores e despachantes podem editar clientes.');
             return;
@@ -1017,7 +1017,7 @@ class ClientManager {
         );
         
         if (!client) {
-            console.error('❌ Клієнта не знайдено:', clientId);
+            console.error('❌ Clienteа не знайдено:', clientId);
             alert('Cliente não encontrado');
             return;
         }
@@ -1111,7 +1111,7 @@ class ClientManager {
         
         try {
             if (clientData.id) {
-                // Оновлення існуючого клієнта
+                // Atualização існуючого клієнта
                 const response = await fetch(`/api/users/${clientData.id}`, {
                     method: 'PUT',
                     headers: {
@@ -1217,7 +1217,7 @@ class ClientManager {
             
             $('#clientModal').modal('hide');
         } catch (error) {
-            console.error('Помилка збереження клієнта:', error);
+            console.error('Erro ao guardar клієнта:', error);
             this.showNotification('Erro ao guardar cliente', 'error');
         }
     }
@@ -1248,12 +1248,12 @@ class ClientManager {
                 this.showNotification('Cliente eliminado com sucesso', 'success');
             }
         } catch (error) {
-            console.error('Помилка видалення клієнта:', error);
+            console.error('Erro видалення клієнта:', error);
             this.showNotification('Erro ao eliminar cliente', 'error');
         }
     }
 
-    // Надіслати повідомлення клієнту
+    // Enviar повідомлення клієнту
     messageClient(clientId) {
         const client = this.clients.find(c => c.id === clientId);
         if (!client) return;
@@ -1272,7 +1272,7 @@ class ClientManager {
         }
     }
 
-    // Фільтрація клієнтів
+    // Filtroація клієнтів
     filterClients() {
         const statusFilter = document.getElementById('statusFilter').value;
         const typeFilter = document.getElementById('typeFilter').value;
@@ -1289,7 +1289,7 @@ class ClientManager {
         this.renderClients();
     }
 
-    // Надіслати тимчасовий пароль клієнту
+    // Enviar тимчасовий пароль клієнту
     async sendPasswordToClient(clientId) {
         if (!confirm('Enviar nova senha temporária para o email do cliente?')) return;
         const token = localStorage.getItem('authToken');
@@ -1324,7 +1324,7 @@ class ClientManager {
         );
         
         if (!client) {
-            console.error('❌ Клієнта не знайдено:', clientId);
+            console.error('❌ Clienteа не знайдено:', clientId);
             alert('Cliente não encontrado');
             return;
         }
@@ -1403,12 +1403,12 @@ class ClientManager {
                 alert('Erro ao enviar email: ' + (error.message || 'Erro desconhecido'));
             }
         } catch (error) {
-            console.error('Помилка відправки email:', error);
+            console.error('Erro відправки email:', error);
             alert('Erro ao enviar email: ' + error.message);
         }
     }
 
-    // Пошук клієнтів
+    // Pesquisa клієнтів
     searchClients() {
         const searchTerm = document.getElementById('searchInput').value.toLowerCase();
         
@@ -1427,7 +1427,7 @@ class ClientManager {
         this.renderClients();
     }
 
-    // Експорт клієнтів
+    // Exportar клієнтів
     exportClients() {
         const data = JSON.stringify(this.filteredClients, null, 2);
         const blob = new Blob([data], { type: 'application/json' });
@@ -1449,7 +1449,7 @@ class ClientManager {
         alert('Funcionalidade de visualização de todos os pedidos será implementada na próxima versão');
     }
 
-    // Оновлення статистики
+    // Atualização статистики
     updateStats() {
         const totalClients = this.clients.length;
         const activeClients = this.clients.filter(c => c.status === 'active').length;
@@ -1473,10 +1473,10 @@ class ClientManager {
         if (clientsBadgeEl) clientsBadgeEl.textContent = totalClients;
     }
 
-    // Налаштування реальних оновлень
+    // Definições реальних оновлень
     setupRealTimeUpdates() {
         setInterval(() => {
-            // Оновлення часу останнього оновлення
+            // Atualização часу останнього оновлення
             const now = new Date();
             const lastUpdateEl = document.getElementById('lastUpdate');
             if (lastUpdateEl) {

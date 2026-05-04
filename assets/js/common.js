@@ -89,7 +89,7 @@ class CommonUtils {
         return re.test(phone);
     }
 
-    // НОВІ МЕТОДИ ДЛЯ QR-СИСТЕМИ
+    // НОВІ МЕManutençãoДИ ДЛЯ QR-СИСТЕМИ
     static loadQRCodeLibrary() {
         return new Promise((resolve, reject) => {
             if (typeof QRCode !== 'undefined') {
@@ -130,8 +130,8 @@ class CommonUtils {
             const mergedOptions = { ...defaultOptions, ...options };
             return new QRCode(container, mergedOptions);
         } catch (error) {
-            console.error('Помилка генерації QR-коду:', error);
-            this.showNotification('Помилка генерації QR-коду', 'error');
+            console.error('Erro генерації QR-коду:', error);
+            this.showNotification('Erro генерації QR-коду', 'error');
             throw error;
         }
     }
@@ -147,10 +147,10 @@ class CommonUtils {
             link.download = filename;
             link.href = canvas.toDataURL('image/png');
             link.click();
-            this.showNotification('QR-код успішно завантажено', 'success');
+            this.showNotification('QR-код com sucesso завантажено', 'success');
         } catch (error) {
-            console.error('Помилка завантаження QR-коду:', error);
-            this.showNotification('Помилка завантаження QR-коду', 'error');
+            console.error('Erro завантаження QR-коду:', error);
+            this.showNotification('Erro завантаження QR-коду', 'error');
         }
     }
 
@@ -195,7 +195,7 @@ class CommonUtils {
                     <div class="print-info">
                         LiftMaster Pro - Система управління ліфтами
                     </div>
-                    <button class="no-print" onclick="window.print()">Друкувати</button>
+                    <button class="no-print" onclick="window.print()">Imprimir</button>
                 </body>
             </html>
         `);
@@ -222,7 +222,7 @@ class CommonUtils {
             }
             return lifts;
         } catch (error) {
-            console.error('Помилка читання ліфтів з localStorage:', error);
+            console.error('Erro читання ліфтів з localStorage:', error);
             return this.loadTestLiftsData();
         }
     }
@@ -301,7 +301,7 @@ class CommonUtils {
             ];
             return testData;
         } catch (error) {
-            console.error('Помилка завантаження тестових даних:', error);
+            console.error('Erro завантаження тестових даних:', error);
             return [];
         }
     }
@@ -311,8 +311,8 @@ class CommonUtils {
             localStorage.setItem('lifts', JSON.stringify(lifts));
             return true;
         } catch (error) {
-            console.error('Помилка збереження ліфтів:', error);
-            this.showNotification('Помилка збереження даних', 'error');
+            console.error('Erro ao guardar ліфтів:', error);
+            this.showNotification('Erro ao guardar даних', 'error');
             return false;
         }
     }
@@ -321,7 +321,7 @@ class CommonUtils {
         try {
             return JSON.parse(localStorage.getItem('currentUser')) || null;
         } catch (error) {
-            console.error('Помилка читання поточного користувача:', error);
+            console.error('Erro читання поточного користувача:', error);
             return null;
         }
     }
@@ -331,7 +331,7 @@ class CommonUtils {
             localStorage.setItem('currentUser', JSON.stringify(user));
             return true;
         } catch (error) {
-            console.error('Помилка збереження користувача:', error);
+            console.error('Erro ao guardar користувача:', error);
             return false;
         }
     }
@@ -340,7 +340,7 @@ class CommonUtils {
         try {
             return JSON.parse(localStorage.getItem('lifts')) || [];
         } catch (error) {
-            console.error('Помилка читання ліфтів з localStorage:', error);
+            console.error('Erro читання ліфтів з localStorage:', error);
             return [];
         }
     }
@@ -350,8 +350,8 @@ class CommonUtils {
             localStorage.setItem('lifts', JSON.stringify(lifts));
             return true;
         } catch (error) {
-            console.error('Помилка збереження ліфтів:', error);
-            this.showNotification('Помилка збереження даних', 'error');
+            console.error('Erro ao guardar ліфтів:', error);
+            this.showNotification('Erro ao guardar даних', 'error');
             return false;
         }
     }
@@ -360,7 +360,7 @@ class CommonUtils {
         try {
             return JSON.parse(localStorage.getItem('serviceRequests')) || [];
         } catch (error) {
-            console.error('Помилка читання заявок:', error);
+            console.error('Erro читання заявок:', error);
             return [];
         }
     }
@@ -370,7 +370,7 @@ class CommonUtils {
             localStorage.setItem('serviceRequests', JSON.stringify(requests));
             return true;
         } catch (error) {
-            console.error('Помилка збереження заявок:', error);
+            console.error('Erro ao guardar заявок:', error);
             return false;
         }
     }
@@ -389,8 +389,8 @@ class CommonUtils {
             }
             return null;
         } catch (error) {
-            console.error('Помилка геокодування:', error);
-            this.showNotification('Помилка отримання координат', 'error');
+            console.error('Erro геокодування:', error);
+            this.showNotification('Erro отримання координат', 'error');
             return null;
         }
     }

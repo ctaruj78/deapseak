@@ -23,7 +23,7 @@ class ChatSystem {
         this.reconnectAttempts = 0;
         this.maxReconnectAttempts = 5;
         
-        // Налаштування
+        // Definições
         this.messagePageSize = 50;
         this.isTyping = false;
         this.typingTimeout = null;
@@ -59,13 +59,13 @@ class ChatSystem {
             console.log('✅ Chat System ініціалізовано');
             
         } catch (error) {
-            console.error('❌ Помилка ініціалізації Chat System:', error);
+            console.error('❌ Erro ініціалізації Chat System:', error);
             this.loadFromLocalStorage();
         }
     }
 
     /**
-     * Завантаження контактів
+     * A carregar контактів
      */
     async loadContacts() {
         try {
@@ -81,7 +81,7 @@ class ChatSystem {
             if (response.ok) {
                 const allUsers = await response.json();
                 
-                // Фільтруємо користувачів (виключаємо себе)
+                // Filtroуємо користувачів (виключаємо себе)
                 this.contacts = allUsers.filter(user => 
                     user._id !== this.currentUser._id
                 ).map(user => ({
@@ -95,13 +95,13 @@ class ChatSystem {
                 return true;
             }
         } catch (error) {
-            console.error('Помилка завантаження контактів:', error);
+            console.error('Erro завантаження контактів:', error);
         }
         return false;
     }
 
     /**
-     * Завантаження каналів
+     * A carregar каналів
      */
     async loadChannels() {
         try {
@@ -124,7 +124,7 @@ class ChatSystem {
             this.renderChannels();
             return true;
         } catch (error) {
-            console.error('Помилка завантаження каналів:', error);
+            console.error('Erro завантаження каналів:', error);
             this.channels = this.createDefaultChannels();
             this.renderChannels();
         }
@@ -159,12 +159,12 @@ class ChatSystem {
                 lastMessage: {
                     text: 'Є питання по ліфту #123',
                     timestamp: new Date(Date.now() - Math.random() * 2 * 60 * 60 * 1000),
-                    sender: { firstName: 'Технік' }
+                    sender: { firstName: 'Técnico' }
                 }
             },
             {
                 _id: 'dispatchers',
-                name: 'Диспетчери',
+                name: 'Dispatcherи',
                 description: 'Канал для диспетчерів',
                 type: 'private',
                 members: ['dispatcher', 'admin'],
@@ -172,14 +172,14 @@ class ChatSystem {
                 lastMessage: {
                     text: 'Призначив нову заявку',
                     timestamp: new Date(Date.now() - Math.random() * 30 * 60 * 1000),
-                    sender: { firstName: 'Диспетчер' }
+                    sender: { firstName: 'Dispatcher' }
                 }
             }
         ];
     }
 
     /**
-     * Налаштування WebSocket підключення
+     * Definições WebSocket підключення
      */
     setupSocketConnection() {
         // В реальному проекті тут буде справжній WebSocket
@@ -200,14 +200,14 @@ class ChatSystem {
         const messageTemplates = [
             'Привіт! Як справи?',
             'Чи можеш допомогти з заявкою?',
-            'Ліфт відремонтовано',
+            'Elevador відремонтовано',
             'Дякую за роботу!',
             'Потрібна консультація',
             'Все готово',
             'Хай день!',
             'Гарної роботи!',
             'Питання по обслуговуванню',
-            'Звіт готовий'
+            'Relatório готовий'
         ];
 
         setInterval(() => {
@@ -264,7 +264,7 @@ class ChatSystem {
                         <div class="contact-details">
                             <small class="text-muted contact-role">${this.getRoleText(contact.role)}</small>
                             ${contact.isOnline ? 
-                                '<small class="text-success">Онлайн</small>' : 
+                                '<small class="text-success">Online</small>' : 
                                 `<small class="text-muted">Був(ла) ${this.getTimeAgo(contact.lastSeen)}</small>`
                             }
                         </div>
@@ -341,16 +341,16 @@ class ChatSystem {
         this.currentChat = contactId;
         this.currentChatType = 'direct';
         
-        // Оновлення активного контакту
+        // Atualização активного контакту
         this.renderContacts();
         
-        // Завантаження повідомлень
+        // A carregar повідомлень
         await this.loadMessages(contactId, 'direct');
         
-        // Оновлення заголовку чату
+        // Atualização заголовку чату
         this.updateChatHeader({
             name: `${contact.firstName} ${contact.lastName}`,
-            status: contact.isOnline ? 'Онлайн' : `Був(ла) ${this.getTimeAgo(contact.lastSeen)}`,
+            status: contact.isOnline ? 'Online' : `Був(ла) ${this.getTimeAgo(contact.lastSeen)}`,
             avatar: this.getAvatarUrl(contact)
         });
         
@@ -368,13 +368,13 @@ class ChatSystem {
         this.currentChat = channelId;
         this.currentChatType = 'channel';
         
-        // Оновлення активного каналу
+        // Atualização активного каналу
         this.renderChannels();
         
-        // Завантаження повідомлень каналу
+        // A carregar повідомлень каналу
         await this.loadMessages(channelId, 'channel');
         
-        // Оновлення заголовку чату
+        // Atualização заголовку чату
         this.updateChatHeader({
             name: `#${channel.name}`,
             status: `${channel.members?.length || 0} учасників`,
@@ -386,7 +386,7 @@ class ChatSystem {
     }
 
     /**
-     * Завантаження повідомлень
+     * A carregar повідомлень
      */
     async loadMessages(chatId, type) {
         try {
@@ -408,7 +408,7 @@ class ChatSystem {
             
             this.renderMessages();
         } catch (error) {
-            console.error('Помилка завантаження повідомлень:', error);
+            console.error('Erro завантаження повідомлень:', error);
             this.messages = this.generateTestMessages(chatId, type);
             this.renderMessages();
         }
@@ -437,7 +437,7 @@ class ChatSystem {
                 _id: Date.now() + i,
                 text: this.getRandomMessage(),
                 timestamp: new Date(Date.now() - (messageCount - i) * 60 * 60 * 1000),
-                sender: sender || { firstName: 'Невідомий', lastName: '' },
+                sender: sender || { firstName: 'Desconhecido', lastName: '' },
                 type: type,
                 chatId: chatId,
                 isOwn: isOwnMessage
@@ -549,10 +549,10 @@ class ChatSystem {
                 const sentMessage = await response.json();
                 this.addMessageToChat(sentMessage);
             } else {
-                throw new Error('Помилка відправки повідомлення');
+                throw new Error('Erro відправки повідомлення');
             }
         } catch (error) {
-            console.error('Помилка відправки повідомлення:', error);
+            console.error('Erro відправки повідомлення:', error);
             
             // Додаємо повідомлення локально (симуляція)
             const localMessage = {
@@ -580,7 +580,7 @@ class ChatSystem {
             this.renderMessages();
         }
         
-        // Оновлення списків контактів/каналів
+        // Atualização списків контактів/каналів
         this.updateLastMessage(message);
     }
 
@@ -603,7 +603,7 @@ class ChatSystem {
     }
 
     /**
-     * Налаштування обробників подій
+     * Definições обробників подій
      */
     setupEventListeners() {
         // Форма надсилання повідомлення
@@ -642,7 +642,7 @@ class ChatSystem {
             });
         }
 
-        // Пошук у чатах
+        // Pesquisa у чатах
         const searchInput = document.getElementById('chatSearch');
         if (searchInput) {
             searchInput.addEventListener('input', (e) => {
@@ -660,10 +660,10 @@ class ChatSystem {
 
     getRoleText(role) {
         const roles = {
-            'admin': 'Адміністратор',
-            'dispatcher': 'Диспетчер',
-            'tech': 'Технік',
-            'client': 'Клієнт'
+            'admin': 'Administrador',
+            'dispatcher': 'Dispatcher',
+            'tech': 'Técnico',
+            'client': 'Cliente'
         };
         return roles[role] || role;
     }
@@ -684,14 +684,14 @@ class ChatSystem {
         const time = new Date(timestamp);
         const diffInMinutes = Math.floor((now - time) / (1000 * 60));
         
-        if (diffInMinutes < 1) return 'щойно';
-        if (diffInMinutes < 60) return `${diffInMinutes} хв. тому`;
-        if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)} год. тому`;
-        return `${Math.floor(diffInMinutes / 1440)} дн. тому`;
+        if (diffInMinutes < 1) return 'agora mesmo';
+        if (diffInMinutes < 60) return `${diffInMinutes} min. atrás`;
+        if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)} год. atrás`;
+        return `${Math.floor(diffInMinutes / 1440)} дн. atrás`;
     }
 
     formatTime(timestamp) {
-        return new Date(timestamp).toLocaleTimeString('uk-UA', {
+        return new Date(timestamp).toLocaleTimeString('pt-PT', {
             hour: '2-digit',
             minute: '2-digit'
         });
@@ -704,11 +704,11 @@ class ChatSystem {
         yesterday.setDate(today.getDate() - 1);
         
         if (date.toDateString() === today.toDateString()) {
-            return 'Сьогодні';
+            return 'Hoje';
         } else if (date.toDateString() === yesterday.toDateString()) {
-            return 'Вчора';
+            return 'Ontem';
         } else {
-            return date.toLocaleDateString('uk-UA');
+            return date.toLocaleDateString('pt-PT');
         }
     }
 
@@ -723,13 +723,13 @@ class ChatSystem {
         const messages = [
             'Привіт! 👋',
             'Як справи з роботою?',
-            'Ліфт відремонтовано ✅',
+            'Elevador відремонтовано ✅',
             'Потрібна допомога з заявкою',
             'Дякую за швидку роботу! 👍',
             'Все готово до здачі',
             'Гарного дня! ☀️',
             'Питання по обладнанню',
-            'Звіт надіслано',
+            'Relatório надіслано',
             'До зв\'язку!'
         ];
         return messages[Math.floor(Math.random() * messages.length)];
@@ -791,9 +791,9 @@ class ChatSystem {
         console.log('Діалог прикріплення файлів');
     }
 
-    // Пошук у чатах
+    // Pesquisa у чатах
     searchChats(query) {
-        console.log('Пошук:', query);
+        console.log('Pesquisa:', query);
     }
 
     // Обробка набору тексту
@@ -835,7 +835,7 @@ class ChatSystem {
         this.renderChannels();
     }
 
-    // Оновлення останнього повідомлення
+    // Atualização останнього повідомлення
     updateLastMessage(message) {
         if (message.type === 'direct') {
             const contact = this.contacts.find(c => c._id === message.chatId || c._id === message.sender._id);
@@ -857,7 +857,7 @@ class ChatSystem {
         }
     }
 
-    // Налаштування нотифікацій
+    // Definições нотифікацій
     setupNotifications() {
         if ('Notification' in window && Notification.permission === 'default') {
             Notification.requestPermission();
@@ -889,7 +889,7 @@ class ChatSystem {
         });
     }
 
-    // Завантаження з localStorage
+    // A carregar з localStorage
     loadFromLocalStorage() {
         try {
             const saved = JSON.parse(localStorage.getItem('chatData'));
@@ -905,7 +905,7 @@ class ChatSystem {
             this.renderContacts();
             this.renderChannels();
         } catch (error) {
-            console.error('Помилка завантаження з localStorage:', error);
+            console.error('Erro завантаження з localStorage:', error);
             this.contacts = [];
             this.channels = this.createDefaultChannels();
         }
@@ -932,9 +932,9 @@ class ChatSystem {
                                 </h5>
                             </div>
                             <div class="card-body p-0">
-                                <!-- Пошук -->
+                                <!-- Pesquisa -->
                                 <div class="p-3 border-bottom">
-                                    <input type="text" class="form-control" id="chatSearch" placeholder="Пошук контактів...">
+                                    <input type="text" class="form-control" id="chatSearch" placeholder="Pesquisa контактів...">
                                 </div>
                                 
                                 <!-- Канали -->
@@ -989,7 +989,7 @@ class ChatSystem {
                                     <div class="input-group">
                                         <input type="text" class="form-control" id="messageInput" placeholder="Введіть повідомлення...">
                                         <div class="input-group-append">
-                                            <button type="button" class="btn btn-outline-secondary" id="attachButton" title="Прикріпити файл">
+                                            <button type="button" class="btn btn-outline-secondary" id="attachButton" title="Anexar файл">
                                                 <i class="fas fa-paperclip"></i>
                                             </button>
                                             <button type="submit" class="btn btn-primary">
@@ -1061,7 +1061,7 @@ class ChatSystem {
                 </div>
                 <div class="card-footer">
                     <a href="#" onclick="chatSystem.renderInContainer('main-content')" class="btn btn-sm btn-outline-primary btn-block">
-                        <i class="fas fa-comments"></i> Відкрити чат
+                        <i class="fas fa-comments"></i> Abrir чат
                     </a>
                 </div>
             </div>
@@ -1129,7 +1129,7 @@ class ChatSystem {
     }
 
     /**
-     * Завантаження файлу
+     * A carregar файлу
      */
     async uploadFile(file) {
         try {
@@ -1163,18 +1163,18 @@ class ChatSystem {
             const result = await response.json();
 
             if (result.success) {
-                // Надіслати повідомлення з файлом
+                // Enviar повідомлення з файлом
                 await this.sendFileMessage(result.file);
                 this.hideUploadProgress(progressId);
                 
-                toastr.success(`Файл ${file.name} завантажено`);
+                toastr.success(`Ficheiro ${file.name} carregado`);
             } else {
                 throw new Error(result.message);
             }
 
         } catch (error) {
-            console.error('Помилка завантаження файлу:', error);
-            toastr.error(`Не вдалося завантажити файл: ${error.message}`);
+            console.error('Erro завантаження файлу:', error);
+            toastr.error(`Não foi possível carregar o ficheiro: ${error.message}`);
         }
     }
 
@@ -1184,7 +1184,7 @@ class ChatSystem {
     validateFile(file) {
         // Перевірка розміру
         if (file.size > this.maxFileSize) {
-            toastr.error(`Файл занадто великий. Максимум ${this.maxFileSize / 1024 / 1024}MB`);
+            toastr.error(`Ficheiro demasiado grande. Máximo ${this.maxFileSize / 1024 / 1024}MB`);
             return false;
         }
 
@@ -1197,7 +1197,7 @@ class ChatSystem {
         });
 
         if (!isAllowed) {
-            toastr.error('Непідтримуваний тип файлу');
+            toastr.error('Tipo de ficheiro não suportado');
             return false;
         }
 
@@ -1351,7 +1351,7 @@ class ChatSystem {
     }
 
     /**
-     * Відкрити модальне вікно зображення
+     * Abrir модальне вікно зображення
      */
     openImageModal(imageUrl, imageName) {
         const modal = document.createElement('div');
@@ -1370,9 +1370,9 @@ class ChatSystem {
                     </div>
                     <div class="modal-footer">
                         <a href="${imageUrl}" download="${imageName}" class="btn btn-primary">
-                            <i class="fas fa-download"></i> Завантажити
+                            <i class="fas fa-download"></i> Descarregar
                         </a>
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрити</button>
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
                     </div>
                 </div>
             </div>
@@ -1408,7 +1408,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// Експорт для використання в модулях
+// Exportar для використання в модулях
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = ChatSystem;
 }

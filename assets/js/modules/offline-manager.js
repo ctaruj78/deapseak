@@ -108,7 +108,7 @@ class OfflineManager {
             await this.syncLocalChanges();
             await this.pullServerUpdates();
             
-            CommonUtils.showNotification('Дані синхронізовано', 'success');
+            CommonUtils.showNotification('Dados sincronizados', 'success');
 
         } catch (error) {
             console.error('Sync failed:', error);
@@ -224,7 +224,7 @@ class OfflineManager {
         await this.clearTempFiles();
         await this.compressDatabase();
 
-        CommonUtils.showNotification('Очищено місце у сховищі', 'info');
+        CommonUtils.showNotification('Espaço de armazenamento limpo', 'info');
     }
 
     // Error Handling & Recovery
@@ -292,7 +292,7 @@ class OfflineManager {
         const statusElement = document.getElementById('online-status');
         if (statusElement) {
             statusElement.className = this.isOnline ? 'online' : 'offline';
-            statusElement.title = this.isOnline ? 'Онлайн' : 'Офлайн';
+            statusElement.title = this.isOnline ? 'Online' : 'Offline';
         }
 
         // Update UI based on connectivity
@@ -314,7 +314,7 @@ class OfflineManager {
     showOfflineNotification() {
         if (!this.isOnline) {
             CommonUtils.showNotification(
-                'Працюєте в офлайн-режимі. Зміни будуть синхронізовані після відновлення з\'єднання.',
+                'Está em modo offline. As alterações serão sincronizadas após restaurar a ligação.',
                 'warning',
                 5000
             );

@@ -1,5 +1,5 @@
 /**
- * DispatcherSettingsManager — повна реалізація
+ * DispatcherSettingsManager — implementação completa
  * API: PUT /api/auth/profile, POST /api/auth/change-password
  */
 class DispatcherSettingsManager {
@@ -18,7 +18,7 @@ class DispatcherSettingsManager {
         this.hideAdminSection();
     }
 
-    // ─── Профіль ─────────────────────────────────────────────────────────────
+    // ─── Perfil ───────────────────────────────────────────────────────────────
 
     async loadProfileFromAPI() {
         try {
@@ -47,7 +47,7 @@ class DispatcherSettingsManager {
 
         const lastLoginEl = document.getElementById('lastLogin');
         if (lastLoginEl && this.userData.lastLogin) {
-            lastLoginEl.textContent = new Date(this.userData.lastLogin).toLocaleDateString('uk-UA');
+            lastLoginEl.textContent = new Date(this.userData.lastLogin).toLocaleDateString('pt-PT');
         }
     }
 
@@ -57,7 +57,7 @@ class DispatcherSettingsManager {
         const phone     = document.getElementById('userPhone')?.value?.trim();
 
         if (!firstName || !lastName) {
-            this.showNotification("Ім'я та прізвище обов'язкові", 'warning');
+            this.showNotification("Nome e apelido são obrigatórios", 'warning');
             return;
         }
         try {
@@ -76,17 +76,17 @@ class DispatcherSettingsManager {
                 localStorage.setItem('userData', JSON.stringify(stored));
                 this.userData = { ...this.userData, firstName, lastName, phone };
                 this.updateUserInterface();
-                this.showNotification('Профіль успішно збережено!', 'success');
+                this.showNotification('Perfil guardado com sucesso!', 'success');
             } else {
-                this.showNotification(data.message || 'Помилка збереження профілю', 'error');
+                this.showNotification(data.message || 'Erro ao guardar perfil', 'error');
             }
         } catch (err) {
             console.error('saveProfile error:', err);
-            this.showNotification('Помилка зʼєднання з сервером', 'error');
+            this.showNotification('Erro de ligação ao servidor', 'error');
         }
     }
 
-    // ─── Пароль ──────────────────────────────────────────────────────────────
+    // ─── Palavra-passe ──────────────────────────────────────────────────────────────
 
     async changePassword() {
         const currentPassword = document.getElementById('currentPassword')?.value;
@@ -94,15 +94,15 @@ class DispatcherSettingsManager {
         const confirmPassword = document.getElementById('confirmPassword')?.value;
 
         if (!currentPassword || !newPassword || !confirmPassword) {
-            this.showNotification('Заповніть всі поля паролю', 'warning');
+            this.showNotification('Preencha todos os campos da palavra-passe', 'warning');
             return;
         }
         if (newPassword !== confirmPassword) {
-            this.showNotification('Нові паролі не співпадають', 'error');
+            this.showNotification('As novas palavras-passe não coincidem', 'error');
             return;
         }
         if (newPassword.length < 6) {
-            this.showNotification('Мінімум 6 символів', 'error');
+            this.showNotification('Mínimo 6 caracteres', 'error');
             return;
         }
         try {
@@ -116,20 +116,20 @@ class DispatcherSettingsManager {
             });
             const data = await res.json();
             if (res.ok && data.success !== false) {
-                this.showNotification('Пароль успішно змінено!', 'success');
+                this.showNotification('Palavra-passe alterada com sucesso!', 'success');
                 ['currentPassword','newPassword','confirmPassword'].forEach(id => {
                     const el = document.getElementById(id); if (el) el.value = '';
                 });
             } else {
-                this.showNotification(data.message || 'Невірний поточний пароль', 'error');
+                this.showNotification(data.message || 'Palavra-passe atual incorreta', 'error');
             }
         } catch (err) {
             console.error('changePassword error:', err);
-            this.showNotification('Помилка зʼєднання з сервером', 'error');
+            this.showNotification('Erro de ligação ao servidor', 'error');
         }
     }
 
-    // ─── Сповіщення ──────────────────────────────────────────────────────────
+    // ─── Notificações ──────────────────────────────────────────────────────────
 
     saveNotificationSettings() {
         const ids = ['notifyNewRequests','notifyAssignments','notifyCompletions',
@@ -141,10 +141,10 @@ class DispatcherSettingsManager {
         });
         this.settings.notifications = values;
         this.saveSettings();
-        this.showNotification('Налаштування сповіщень збережено', 'success');
+        this.showNotification('Definições de notificações guardadas', 'success');
     }
 
-    // ─── Системні налаштування ───────────────────────────────────────────────
+    // ─── Definições do sistema ───────────────────────────────────────────────
 
     saveSystemSettings() {
         const get = id => { const el = document.getElementById(id); return el ? el.value : null; };
@@ -157,7 +157,7 @@ class DispatcherSettingsManager {
             autoRefresh: getCheck('autoRefresh')
         };
         this.saveSettings();
-        this.showNotification('Системні налаштування збережено', 'success');
+        this.showNotification('Definições do sistema guardadas', 'success');
     }
 
     // ─── Backup ──────────────────────────────────────────────────────────────
@@ -165,7 +165,7 @@ class DispatcherSettingsManager {
     async createBackup() {
         try {
             const backupType = document.getElementById('backupType')?.value || 'full';
-            this.showNotification('Створення backup... зачекайте', 'info');
+            this.showNotification('A criar cópia de segurança... aguarde', 'info');
 
             const endpointMap = {
                 full:        ['/api/lifts', '/api/requests'],
@@ -191,32 +191,32 @@ class DispatcherSettingsManager {
             a.click();
             URL.revokeObjectURL(a.href);
 
-            this.showNotification(`Backup "${backupType}" завантажено!`, 'success');
+            this.showNotification(`Backup "${backupType}" transferida!`, 'success');
         } catch (err) {
             console.error('createBackup error:', err);
-            this.showNotification('Помилка створення backup', 'error');
+            this.showNotification('Erro ao criar cópia de segurança', 'error');
         }
     }
 
     restoreBackup() {
         const fileInput = document.getElementById('restoreFile');
         if (!fileInput || !fileInput.files.length) {
-            this.showNotification('Оберіть файл backup', 'warning');
+            this.showNotification('Selecione um ficheiro de cópia de segurança', 'warning');
             return;
         }
         const reader = new FileReader();
         reader.onload = e => {
             try {
                 const data = JSON.parse(e.target.result);
-                this.showNotification(`Backup від ${new Date(data.created).toLocaleDateString('uk-UA')} (тип: ${data.type}) прочитано. Зверніться до адміністратора для повного відновлення.`, 'info');
+                this.showNotification(`Backup від ${new Date(data.created).toLocaleDateString('pt-PT')} (tipo: ${data.type}) lido. Contacte o administrador para restauro completo.`, 'info');
             } catch {
-                this.showNotification('Невірний формат backup файлу', 'error');
+                this.showNotification('Formato de ficheiro de cópia de segurança inválido', 'error');
             }
         };
         reader.readAsText(fileInput.files[0]);
     }
 
-    // ─── Різні дії ───────────────────────────────────────────────────────────
+    // ─── Outras ações ─────────────────────────────────────────────────────────
 
     manageUsers() {
         window.location.href = '/pages/admin/users.html';
@@ -225,7 +225,7 @@ class DispatcherSettingsManager {
     backupData() {
         const el = document.getElementById('backupType');
         if (el) el.scrollIntoView({ behavior: 'smooth' });
-        this.showNotification('Перейдіть до секції "Резервне копіювання" нижче', 'info');
+        this.showNotification('Aceda à secção "Cópia de segurança" abaixo', 'info');
     }
 
     restoreData() {
@@ -238,7 +238,7 @@ class DispatcherSettingsManager {
     }
 
     manageRoles() {
-        this.showNotification('Управління ролями — тільки для адміністраторів', 'warning');
+        this.showNotification('Gestão de funções — apenas para administradores', 'warning');
     }
 
     async systemDiagnostics() {
@@ -247,20 +247,20 @@ class DispatcherSettingsManager {
             const data = await res.json();
             this.showNotification(`Система: ${data.status || 'ok'} | MongoDB: ${data.database || data.db || 'ok'}`, res.ok ? 'success' : 'error');
         } catch {
-            this.showNotification('Сервер не відповідає', 'error');
+            this.showNotification('Servidor não responde', 'error');
         }
     }
 
     async checkUpdates() {
-        this.showNotification('Перевірка оновлень...', 'info');
-        setTimeout(() => this.showNotification('Система актуальна. Оновлень не знайдено.', 'success'), 1500);
+        this.showNotification('A verificar atualizações...', 'info');
+        setTimeout(() => this.showNotification('Sistema atualizado. Sem atualizações disponíveis.', 'success'), 1500);
     }
 
     showNotifications() {
-        this.showNotification('Нових сповіщень немає', 'info');
+        this.showNotification('Sem novas notificações', 'info');
     }
 
-    // ─── Приховати admin-секцію від диспетчера ───────────────────────────────
+    // ─── Ocultar secção admin para dispatcher ────────────────────────────────
 
     hideAdminSection() {
         const stored = JSON.parse(localStorage.getItem('userData') || '{}');
@@ -313,9 +313,9 @@ class DispatcherSettingsManager {
         if (!this.userData) return;
         const name = `${this.userData.firstName || ''} ${this.userData.lastName || ''}`.trim();
         const el = document.getElementById('userName');
-        if (el) el.textContent = name || 'Диспетчер';
+        if (el) el.textContent = name || 'Dispatcher';
         const nameEl = document.getElementById('dispatcherName');
-        if (nameEl) nameEl.textContent = name || 'Диспетчер';
+        if (nameEl) nameEl.textContent = name || 'Dispatcher';
     }
 
     setupEventListeners() {
@@ -324,7 +324,7 @@ class DispatcherSettingsManager {
         document.querySelectorAll('.custom-file-input').forEach(input => {
             input.addEventListener('change', function() {
                 const label = this.nextElementSibling;
-                if (label) label.textContent = this.files[0]?.name || 'Оберіть файл';
+                if (label) label.textContent = this.files[0]?.name || 'Selecione um ficheiro';
             });
         });
     }
@@ -351,7 +351,7 @@ class DispatcherSettingsManager {
     }
 }
 
-// Ініціалізація
+// Inicialização
 document.addEventListener('DOMContentLoaded', function() {
     window.settingsManager = new DispatcherSettingsManager();
     console.log('✅ DispatcherSettingsManager ready');

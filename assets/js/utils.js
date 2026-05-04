@@ -90,18 +90,18 @@ const Utils = {
         const hours = Math.floor(diff / 3600000);
         const days = Math.floor(diff / 86400000);
         
-        if (minutes < 1) return 'щойно';
-        if (minutes < 60) return `${minutes} хв тому`;
-        if (hours < 24) return `${hours} год тому`;
-        return `${days} дн тому`;
+        if (minutes < 1) return 'agora mesmo';
+        if (minutes < 60) return `${minutes} хв atrás`;
+        if (hours < 24) return `${hours} год atrás`;
+        return `${days} дн atrás`;
     },
     
     // Status badge generation
     getStatusBadge(status) {
         const statusMap = {
-            'active': { text: 'Активний', class: 'badge-success' },
-            'inactive': { text: 'Неактивний', class: 'badge-secondary' },
-            'maintenance': { text: 'Обслуговування', class: 'badge-warning' },
+            'active': { text: 'Ativo', class: 'badge-success' },
+            'inactive': { text: 'Inativo', class: 'badge-secondary' },
+            'maintenance': { text: 'Manutenção', class: 'badge-warning' },
             'broken': { text: 'Поломка', class: 'badge-danger' },
             'pending': { text: 'Очікування', class: 'badge-warning' },
             'in_progress': { text: 'В процесі', class: 'badge-primary' },
@@ -117,8 +117,8 @@ const Utils = {
     getPriorityBadge(priority) {
         const priorityMap = {
             'low': { text: 'Низький', class: 'badge-success' },
-            'medium': { text: 'Середній', class: 'badge-warning' },
-            'high': { text: 'Високий', class: 'badge-danger' },
+            'medium': { text: 'Agoедній', class: 'badge-warning' },
+            'high': { text: 'Altий', class: 'badge-danger' },
             'critical': { text: 'КРИТИЧНИЙ', class: 'badge-danger' }
         };
         
@@ -259,7 +259,7 @@ const Notifications = {
 const Loading = {
     element: null,
     
-    show(message = 'Завантаження...') {
+    show(message = 'A carregar...') {
         if (this.element) return;
         
         this.element = document.createElement('div');

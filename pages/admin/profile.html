@@ -10,7 +10,7 @@
     <!-- AdminLTE CSS -->
     <link rel="stylesheet" href="../../plugins/adminlte/adminlte.min.css">
     <link rel="stylesheet" href="../../plugins/fontawesome/css/all.min.css">
-    <!-- Chart.js не потребуexiste окремого CSS у версії 4.x -->
+    <!-- Chart.js não requer CSS separado na versão 4.x -->
     
     <link rel="stylesheet" href="/assets/css/ai-assistant.css">
     
@@ -914,11 +914,11 @@
                             <h5 class="mt-4">Cópias de segurança recentes</h5>
                             <div class="list-group">
                                 <div class="list-group-item d-flex justify-content-between align-items-center">
-                                    Atéвна резервна копія
+                                    Cópia de segurança completa
                                     <small class="text-muted">hoje, 02:00</small>
                                 </div>
                                 <div class="list-group-item d-flex justify-content-between align-items-center">
-                                    Інкрементна копія
+                                    Cópia incremental
                                     <small class="text-muted">ontem, 02:00</small>
                                 </div>
                             </div>
@@ -975,17 +975,9 @@
                                 </select>
                             </div>
                             <div class="form-group">
-                                <label for="language">Idioma</label>
-                                <select class="form-control" id="language">
-                                    <option value="uk">Ucraniano</option>
-                                    <option value="en">English</option>
-                                    <option value="ru">Russo</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
                                 <label for="timezone">Fuso horário</label>
                                 <select class="form-control" id="timezone">
-                                    <option value="Europe/Kiev">Lisboa (UTC+2)</option>
+                                    <option value="Europe/Lisbon">Lisboa (UTC+1/+2)</option>
                                     <option value="Europe/London">Londres (UTC+0)</option>
                                     <option value="America/New_York">Nova Iorque (UTC-5)</option>
                                 </select>
@@ -1042,7 +1034,7 @@
         </footer>
 </div>
 
-<!-- jQuery (ПЕРШИЙ!) -->
+<!-- jQuery (PRIMEIRO!) -->
 <script src="../../plugins/jquery/jquery.min.js"></script>
 
 <!-- Bootstrap 4 -->
@@ -1054,7 +1046,7 @@
     <!-- Sidebar initialization script -->
     <script src="../../assets/js/sidebar-init.js"></script>
 
-<!-- Chart.js (до ініціалізації gráficoів) -->
+<!-- Chart.js (antes da inicialização dos gráficos) -->
 <script src="../../plugins/chart.js/chart.umd.min.js"></script>
 
 <!-- 🌍 Sistema multilingue -->
@@ -1081,7 +1073,7 @@
         const activityChart = new Chart(ctx, {
             type: 'line',
             data: {
-                labels: ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Нд'],
+                labels: ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'],
                 datasets: [{
                     label: 'Atividade de utilizadores',
                     data: [65, 59, 80, 81, 56, 55, 40],
@@ -1133,7 +1125,7 @@
                 element.style.animationDelay = `${index * 0.1}s`;
             });
             
-            // 🔥 ПІДКЛЮЧЕНО ДО API /api/users/me
+            // 🔥 LIGADO À API /api/users/me
             await loadAdminProfile();
         });
         
@@ -1159,7 +1151,7 @@
                     
                     console.log('✅ Admin profile loaded:', userData);
                     
-                    // Оновлюexisteмо UI
+                    // Atualizamos o UI
                     if (userData.firstName) {
                         $('#adminName').text(`${userData.firstName} ${userData.lastName || ''}`);
                         $('.user-panel .info a').text(`${userData.firstName} ${userData.lastName || ''}`);
@@ -1174,7 +1166,7 @@
                         $('#adminRole').text(userData.role);
                     }
                     
-                    // Deберігаexisteмо в localStorage
+                    // Guardamos em localStorage
                     localStorage.setItem('userData', JSON.stringify(userData));
                 } else {
                     console.warn('⚠️ API failed, using localStorage');

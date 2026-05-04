@@ -11,10 +11,10 @@
  * - POST /api/requests/:id/assign - призначення техніка
  * - PUT /api/requests/:id - оновлення заявки
  * 
- * Роль-Based Data Access:
+ * Função-Based Data Access:
  * - Dispatcher бачить ВСІ заявки
- * - Техніки фільтруються по статусу (available, busy)
- * - Клієнти пов'язані з ліфтами через client field
+ * - Técnicoи фільтруються по статусу (available, busy)
+ * - Clienteи пов'язані з ліфтами через client field
  */
 
 class DispatcherDashboardReal {
@@ -51,7 +51,7 @@ class DispatcherDashboardReal {
      */
     async init() {
         try {
-            console.log('📡 Завантаження даних з API...');
+            console.log('📡 A carregar даних з API...');
             
             // Паралельне завантаження всіх даних
             await Promise.all([
@@ -62,7 +62,7 @@ class DispatcherDashboardReal {
             ]);
             
             // ✅ Перерахунок завдань техніків після завантаження заявок
-            // (Promise.all виконується паралельно, тому при нормалізації техніків
+            // (Promise.all виконується паралельно, atrás при нормалізації техніків
             //  заявки могли бути ще не завантажені → activeRequests = 0 у всіх)
             this.technicians = this.technicians.map(tech => {
                 const activeRequests = this.requests.filter(r =>
@@ -76,7 +76,7 @@ class DispatcherDashboardReal {
                 };
             });
             
-            console.log('✅ Всі дані завантажено:', {
+            console.log('✅ Todos дані завантажено:', {
                 requests: this.requests.length,
                 technicians: this.technicians.length,
                 lifts: this.lifts.length
@@ -88,20 +88,20 @@ class DispatcherDashboardReal {
             this.updateStats();
             this.renderActivities();
             
-            // Налаштування
+            // Definições
             this.setupEventListeners();
             this.setupFilters();
             this.setupWebSocket();
             
             console.log('✅ DispatcherDashboardReal готова до роботи!');
         } catch (error) {
-            console.error('❌ Помилка ініціалізації:', error);
+            console.error('❌ Erro ініціалізації:', error);
             this.showNotification('Erro ao carregar dados', 'error');
         }
     }
     
     /**
-     * 📋 Завантаження заявок з API
+     * 📋 A carregar заявок з API
      */
     async loadRequests() {
         try {
@@ -126,14 +126,14 @@ class DispatcherDashboardReal {
                 this.requests = [];
             }
         } catch (error) {
-            console.error('❌ Помилка завантаження заявок:', error);
+            console.error('❌ Erro завантаження заявок:', error);
             this.requests = [];
             throw error;
         }
     }
     
     /**
-     * 🔧 Завантаження техніків з API
+     * 🔧 A carregar техніків з API
      */
     async loadTechnicians() {
         try {
@@ -156,17 +156,17 @@ class DispatcherDashboardReal {
                 this.technicians = techArray.map(tech => this.normalizeTechnician(tech));
                 console.log('✅ Завантажено техніків:', this.technicians.length);
             } else {
-                console.warn('⚠️ Техніків не знайдено');
+                console.warn('⚠️ Técnicoів не знайдено');
                 this.technicians = [];
             }
         } catch (error) {
-            console.error('❌ Помилка завантаження техніків:', error);
+            console.error('❌ Erro завантаження техніків:', error);
             this.technicians = [];
         }
     }
     
     /**
-     * 🏢 Завантаження ліфтів з API
+     * 🏢 A carregar ліфтів з API
      */
     async loadLifts() {
         try {
@@ -198,13 +198,13 @@ class DispatcherDashboardReal {
                 this.lifts = [];
             }
         } catch (error) {
-            console.error('❌ Помилка завантаження ліфтів:', error);
+            console.error('❌ Erro завантаження ліфтів:', error);
             this.lifts = [];
         }
     }
     
     /**
-     * 📊 Завантаження статистики з API
+     * 📊 A carregar статистики з API
      */
     async loadStatistics() {
         try {
@@ -228,7 +228,7 @@ class DispatcherDashboardReal {
                 console.log('✅ Статистика завантажена:', this.statistics);
             }
         } catch (error) {
-            console.error('❌ Помилка завантаження статистики:', error);
+            console.error('❌ Erro завантаження статистики:', error);
             this.calculateLocalStatistics();
         }
     }
@@ -633,7 +633,7 @@ class DispatcherDashboardReal {
     }
     
     /**
-     * 📊 Оновлення статистики в UI
+     * 📊 Atualização статистики в UI
      */
     updateStats() {
         // Якщо API не повернув потрібні поля, розраховуємо локально
@@ -642,7 +642,7 @@ class DispatcherDashboardReal {
         }
         const stats = this.statistics;
         
-        // Оновлення карток
+        // Atualização карток
         this.updateStatCard('totalRequests', stats.total || 0);
         this.updateStatCard('pendingRequests', stats.pending || 0);
         this.updateStatCard('inProgressRequests', stats.inProgress || 0);
@@ -659,23 +659,23 @@ class DispatcherDashboardReal {
         ).length;
         this.updateStatCard('urgentRequests', urgentCount);
         
-        // Оновлення badge онлайн техніків
+        // Atualização badge онлайн техніків
         const onlineTechsEl = document.getElementById('onlineTechs');
         if (onlineTechsEl) {
             onlineTechsEl.textContent = `${availableTechsCount} online`;
         }
         
-        // Оновлення прогрес-барів (якщо є)
+        // Atualização прогрес-барів (якщо є)
         if (stats.total > 0) {
             const completionRate = Math.round((stats.completed / stats.total) * 100);
             this.updateProgressBar('completionRate', completionRate);
         }
         
-        console.log('✅ Статистика оновлена:', stats, 'Техніків вільних:', availableTechsCount, 'Термінових:', urgentCount);
+        console.log('✅ Статистика оновлена:', stats, 'Técnicoів вільних:', availableTechsCount, 'Термінових:', urgentCount);
     }
     
     /**
-     * 🎯 Оновлення значення stat-card
+     * 🎯 Atualização значення stat-card
      */
     updateStatCard(id, value) {
         const element = document.getElementById(id);
@@ -685,7 +685,7 @@ class DispatcherDashboardReal {
     }
     
     /**
-     * 📊 Оновлення прогрес-бару
+     * 📊 Atualização прогрес-бару
      */
     updateProgressBar(id, percentage) {
         const element = document.getElementById(id);
@@ -704,7 +704,7 @@ class DispatcherDashboardReal {
         
         activitiesList.innerHTML = '';
         
-        // Беремо останні 10 заявок
+        // Marемо останні 10 заявок
         const recentRequests = [...this.requests]
             .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
             .slice(0, 10);
@@ -736,17 +736,17 @@ class DispatcherDashboardReal {
     }
     
     /**
-     * 🎧 Налаштування обробників подій
+     * 🎧 Definições обробників подій
      */
     setupEventListeners() {
-        console.log('🎧 Налаштування обробників подій...');
+        console.log('🎧 Definições обробників подій...');
         
         if (typeof $ === 'undefined') {
             console.error('❌ jQuery не завантажено!');
             return;
         }
         
-        // Фільтри
+        // Filtroи
         $('#priorityFilter, #statusFilter, #technicianFilter, #dateFilter, #sortSelect').on('change', () => {
             this.renderRequests();
         });
@@ -779,7 +779,7 @@ class DispatcherDashboardReal {
             }
         });
         
-        // Оновлення даних
+        // Atualização даних
         $('#refreshBtn').on('click', () => {
             this.refreshData();
         });
@@ -788,7 +788,7 @@ class DispatcherDashboardReal {
     }
     
     /**
-     * 🔄 Оновлення вибраних заявок
+     * 🔄 Atualização вибраних заявок
      */
     updateSelectedRequests() {
         this.selectedRequests.clear();
@@ -799,7 +799,7 @@ class DispatcherDashboardReal {
     }
     
     /**
-     * 🔍 Налаштування фільтрів
+     * 🔍 Definições фільтрів
      */
     setupFilters() {
         // Заповнення dropdown техніків
@@ -816,7 +816,7 @@ class DispatcherDashboardReal {
     }
     
     /**
-     * 🌐 Налаштування Socket.IO для real-time оновлень
+     * 🌐 Definições Socket.IO для real-time оновлень
      */
     setupWebSocket() {
         try {
@@ -850,17 +850,17 @@ class DispatcherDashboardReal {
             
             // Real-time оновлення
             this.socket.on('new_request', (data) => {
-                console.log('📨 Нова заявка:', data);
+                console.log('📨 Nova заявка:', data);
                 this.refreshData();
             });
             
             this.socket.on('lift_updated', (data) => {
-                console.log('📨 Ліфт оновлено:', data);
+                console.log('📨 Elevador оновлено:', data);
                 this.refreshData();
             });
             
             this.socket.on('request_updated', (data) => {
-                console.log('📨 Заявка оновлена:', data);
+                console.log('📨 Pedido оновлена:', data);
                 this.refreshData();
             });
             
@@ -877,10 +877,10 @@ class DispatcherDashboardReal {
     }
     
     /**
-     * 🔄 Оновлення всіх даних
+     * 🔄 Atualização всіх даних
      */
     async refreshData() {
-        console.log('🔄 Оновлення даних...');
+        console.log('🔄 Atualização даних...');
         this.showNotification('A atualizar dados...', 'info');
         
         try {
@@ -910,7 +910,7 @@ class DispatcherDashboardReal {
             
             this.showNotification('Dados atualizados com sucesso', 'success');
         } catch (error) {
-            console.error('❌ Помилка оновлення:', error);
+            console.error('❌ Erro оновлення:', error);
             this.showNotification('Erro ao atualizar dados', 'error');
         }
     }
@@ -932,10 +932,10 @@ class DispatcherDashboardReal {
     }
     
     /**
-     * 👨‍🔧 Призначення техніка на заявку
+     * 👨‍🔧 Atribuir técnico на заявку
      */
     async assignRequest(id) {
-        console.log('👨‍🔧 Призначення техніка на заявку:', id);
+        console.log('👨‍🔧 Atribuir técnico на заявку:', id);
         
         const request = this.requests.find(r => r.id.toString() === id.toString());
         if (!request) {
@@ -1034,7 +1034,7 @@ class DispatcherDashboardReal {
                 throw new Error(data.message || 'Erro ao atribuir');
             }
         } catch (error) {
-            console.error('❌ Помилка призначення:', error);
+            console.error('❌ Erro призначення:', error);
             this.showNotification('Erro ao atribuir técnico', 'error');
         }
     }
@@ -1082,7 +1082,7 @@ class DispatcherDashboardReal {
                 throw new Error(data.message || 'Erro ao atualizar');
             }
         } catch (error) {
-            console.error('❌ Помилка оновлення:', error);
+            console.error('❌ Erro оновлення:', error);
             this.showNotification('Erro ao guardar alterações', 'error');
         }
     }
@@ -1091,7 +1091,7 @@ class DispatcherDashboardReal {
      * 🔔 Показ сповіщення
      */
     showNotification(message, type = 'info') {
-        console.log(`🔔 Сповіщення [${type}]:`, message);
+        console.log(`🔔 Notificações [${type}]:`, message);
         
         // Використовуємо Toastr якщо доступний
         if (typeof toastr !== 'undefined') {
@@ -1110,25 +1110,25 @@ class DispatcherDashboardReal {
         const stats = `
 Статистика диспетчерської панелі:
 
-📋 Заявки:
+📋 Pedidos:
 - Всього: ${this.statistics.total || 0}
 - Нові: ${this.statistics.pending || 0}
-- В роботі: ${this.statistics.inProgress || 0}
+- Em progresso: ${this.statistics.inProgress || 0}
 - Завершені: ${this.statistics.completed || 0}
 
-👨‍🔧 Техніки:
+👨‍🔧 Técnicoи:
 - Всього: ${this.technicians.length}
 - Disponíveis: ${this.technicians.filter(t => t.status === 'online').length}
 - Ocupados: ${this.technicians.filter(t => t.status === 'busy').length}
 
-🏢 Ліфти: ${this.lifts.length}
+🏢 Elevadores: ${this.lifts.length}
         `;
         
         alert(stats);
     }
     
     /**
-     * 📡 Відкрити моніторинг
+     * 📡 Abrir моніторинг
      */
     openMonitoring() {
         window.location.href = '/pages/dispatcher/monitoring.html';
@@ -1143,11 +1143,11 @@ class DispatcherDashboardReal {
     }
     
     /**
-     * 🚨 Аварійний протокол
+     * 🚨 Emergência протокол
      */
     emergencyProtocol() {
         if (confirm('Ativar protocolo de emergência?\n\nTodos os técnicos disponíveis serão notificados!')) {
-            // TODO: Реалізувати аварійний протокол
+            // TODO: Реалізувати avariйний протокол
             this.showNotification('Protocolo de emergência ativado', 'warning');
         }
     }
@@ -1156,7 +1156,7 @@ class DispatcherDashboardReal {
      * 📊 Показати звіт по техніках
      */
     showTechReport() {
-        console.log('📊 Звіт по техніках');
+        console.log('📊 Relatório по техніках');
         
         let html = `
             <table class="table table-bordered table-striped">
@@ -1201,10 +1201,10 @@ class DispatcherDashboardReal {
     }
     
     /**
-     * 💾 Експорт звіту по техніках в CSV
+     * 💾 Exportar звіту по техніках в CSV
      */
     exportTechReport() {
-        console.log('💾 Експорт звіту техніків в CSV');
+        console.log('💾 Exportar звіту техніків в CSV');
         
         let csv = 'Técnico,Estado,Tarefas,Classificação,Última atribuição\n';
         
@@ -1244,7 +1244,7 @@ class DispatcherDashboardReal {
      * 📋 Показати всі заявки
      */
     showAllRequests() {
-        console.log('📋 Всі заявки');
+        console.log('📋 Todos os pedidos');
         window.location.href = '/pages/dispatcher/assignments.html';
     }
     
@@ -1252,7 +1252,7 @@ class DispatcherDashboardReal {
      * 🔔 Показати сповіщення
      */
     async showNotifications() {
-        console.log('🔔 Сповіщення');
+        console.log('🔔 Notificações');
 
         const listEl = document.getElementById('notificationsList');
         if (listEl) {
@@ -1341,7 +1341,7 @@ class DispatcherDashboardReal {
     }
 
     /**
-     * 🎨 Тип сповіщення → Bootstrap клас
+     * 🎨 Tipo сповіщення → Bootstrap клас
      */
     _notifTypeToBootstrap(type) {
         const map = { info: 'info', success: 'success', warning: 'warning', error: 'danger', danger: 'danger', urgent: 'danger' };
@@ -1379,10 +1379,10 @@ class DispatcherDashboardReal {
     }
     
     /**
-     * 📊 Фільтрація активностей по типу
+     * 📊 Filtroація активностей по типу
      */
     filterActivities(type) {
-        console.log('🔍 Фільтр активностей:', type);
+        console.log('🔍 Filtro активностей:', type);
         
         // TODO: Реалізувати фільтрацію
         let filteredRequests = this.requests;
@@ -1480,10 +1480,10 @@ class DispatcherDashboardReal {
     }
     
     /**
-     * 📈 Генерація звіту
+     * 📈 A gerar relatório
      */
     generateReport() {
-        console.log('📈 Генерація звіту');
+        console.log('📈 A gerar relatório');
         
         // TODO: Реалізувати генерацію звітів
         alert('Funcionalidade de relatórios em desenvolvimento');

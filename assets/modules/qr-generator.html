@@ -1,4 +1,4 @@
-<!-- QR Generator Module для Адміністратора -->
+<!-- QR Generator Module для Administradorа -->
 <div class="content-header">
     <div class="container-fluid">
         <div class="row mb-2">
@@ -33,23 +33,23 @@
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label for="lift_id">Ліфт <span class="text-danger">*</span></label>
+                                        <label for="lift_id">Elevador <span class="text-danger">*</span></label>
                                         <select class="form-control" id="lift_id" required>
                                             <option value="">Оберіть ліфт...</option>
-                                            <option value="1">Ліфт №1 - ТРЦ "Центральний", 1 під'їзд</option>
-                                            <option value="2">Ліфт №2 - ТРЦ "Центральний", 2 під'їзд</option>
-                                            <option value="3">Ліфт №3 - БЦ "Сонячний", А блок</option>
-                                            <option value="4">Ліфт №4 - БЦ "Сонячний", Б блок</option>
-                                            <option value="5">Ліфт №5 - ЖК "Перлина", 12 під'їзд</option>
+                                            <option value="1">Elevador N.º1 - ТРЦ "Центральний", 1 під'їзд</option>
+                                            <option value="2">Elevador N.º2 - ТРЦ "Центральний", 2 під'їзд</option>
+                                            <option value="3">Elevador N.º3 - БЦ "Сонячний", А блок</option>
+                                            <option value="4">Elevador N.º4 - БЦ "Сонячний", Б блок</option>
+                                            <option value="5">Elevador N.º5 - ЖК "Перлина", 12 під'їзд</option>
                                         </select>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
                                     <div class="form-group">
-                                        <label for="qr_type">Тип QR-коду</label>
+                                        <label for="qr_type">Tipo de QR code</label>
                                         <select class="form-control" id="qr_type">
-                                            <option value="maintenance">Обслуговування</option>
-                                            <option value="emergency">Аварійний виклик</option>
+                                            <option value="maintenance">Manutenção</option>
+                                            <option value="emergency">Chamada de emergência</option>
                                             <option value="inspection">Технічний огляд</option>
                                             <option value="info">Інформаційний</option>
                                         </select>
@@ -58,17 +58,17 @@
                             </div>
                             
                             <div class="form-group">
-                                <label for="qr_description">Опис QR-коду</label>
-                                <textarea class="form-control" id="qr_description" rows="3" placeholder="Додатковий опис або примітки..."></textarea>
+                                <label for="qr_description">Descrição do QR code</label>
+                                <textarea class="form-control" id="qr_description" rows="3" placeholder="Descrição adicional ou notas..."></textarea>
                             </div>
                             
                             <div class="row">
                                 <div class="col-md-4">
                                     <div class="form-group">
-                                        <label for="qr_size">Розмір QR-коду</label>
+                                        <label for="qr_size">Tamanho do QR code</label>
                                         <select class="form-control" id="qr_size">
                                             <option value="150">Малий (150x150)</option>
-                                            <option value="200" selected>Середній (200x200)</option>
+                                            <option value="200" selected>Agoедній (200x200)</option>
                                             <option value="300">Великий (300x300)</option>
                                             <option value="500">Дуже великий (500x500)</option>
                                         </select>
@@ -76,7 +76,7 @@
                                 </div>
                                 <div class="col-md-4">
                                     <div class="form-group">
-                                        <label for="qr_format">Формат файлу</label>
+                                        <label for="qr_format">Formato do ficheiro</label>
                                         <select class="form-control" id="qr_format">
                                             <option value="png">PNG</option>
                                             <option value="jpg">JPG</option>
@@ -86,7 +86,7 @@
                                 </div>
                                 <div class="col-md-4">
                                     <div class="form-group">
-                                        <label for="qr_quantity">Кількість копій</label>
+                                        <label for="qr_quantity">Número de cópias</label>
                                         <input type="number" class="form-control" id="qr_quantity" value="1" min="1" max="100">
                                     </div>
                                 </div>
@@ -96,7 +96,7 @@
                                 <div class="custom-control custom-checkbox">
                                     <input type="checkbox" class="custom-control-input" id="include_logo">
                                     <label class="custom-control-label" for="include_logo">
-                                        Додати логотип компанії до QR-коду
+                                        Adicionar логотип компанії до QR-коду
                                     </label>
                                 </div>
                             </div>
@@ -135,7 +135,7 @@
                             </div>
                         </div>
                         <div id="qr-info" class="text-muted">
-                            <small>Заповніть форму для створення QR-коду</small>
+                            <small>Preencha o formulário para criar o QR code</small>
                         </div>
                     </div>
                 </div>
@@ -159,21 +159,21 @@
                         </button>
                         <button class="btn btn-warning btn-block" onclick="window.crmSystem.loadModule('qr-analytics')">
                             <i class="fas fa-chart-bar mr-2"></i>
-                            Аналітика QR
+                            Análise QR
                         </button>
                     </div>
                 </div>
             </div>
         </div>
         
-        <!-- Останні згенеровані QR-коди -->
+        <!-- Останні згенеровані Códigos QR -->
         <div class="row mt-4">
             <div class="col-12">
                 <div class="card">
                     <div class="card-header">
                         <h3 class="card-title">
                             <i class="fas fa-history mr-2"></i>
-                            Останні згенеровані QR-коди
+                            Останні згенеровані Códigos QR
                         </h3>
                     </div>
                     <div class="card-body">
@@ -182,20 +182,20 @@
                                 <thead>
                                     <tr>
                                         <th>QR-код</th>
-                                        <th>Ліфт</th>
-                                        <th>Тип</th>
-                                        <th>Дата створення</th>
-                                        <th>Статус</th>
+                                        <th>Elevador</th>
+                                        <th>Tipo</th>
+                                        <th>Data створення</th>
+                                        <th>Estado</th>
                                         <th>Дії</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <tr>
                                         <td><img src="https://via.placeholder.com/40x40/007bff/ffffff?text=QR" class="img-thumbnail"></td>
-                                        <td>Ліфт №1 - ТРЦ "Центральний"</td>
-                                        <td><span class="badge badge-primary">Обслуговування</span></td>
+                                        <td>Elevador N.º1 - ТРЦ "Центральний"</td>
+                                        <td><span class="badge badge-primary">Manutenção</span></td>
                                         <td>03.10.2025 14:30</td>
-                                        <td><span class="badge badge-success">Активний</span></td>
+                                        <td><span class="badge badge-success">Ativo</span></td>
                                         <td>
                                             <button class="btn btn-sm btn-info">
                                                 <i class="fas fa-download"></i>
@@ -210,10 +210,10 @@
                                     </tr>
                                     <tr>
                                         <td><img src="https://via.placeholder.com/40x40/28a745/ffffff?text=QR" class="img-thumbnail"></td>
-                                        <td>Ліфт №3 - БЦ "Сонячний"</td>
-                                        <td><span class="badge badge-danger">Аварійний</span></td>
+                                        <td>Elevador N.º3 - БЦ "Сонячний"</td>
+                                        <td><span class="badge badge-danger">Emergência</span></td>
                                         <td>03.10.2025 12:15</td>
-                                        <td><span class="badge badge-success">Активний</span></td>
+                                        <td><span class="badge badge-success">Ativo</span></td>
                                         <td>
                                             <button class="btn btn-sm btn-info">
                                                 <i class="fas fa-download"></i>
@@ -245,7 +245,7 @@ $(document).ready(function() {
         generateQRCode();
     });
     
-    // Оновлення попереднього перегляду при зміні даних
+    // Atualização попереднього перегляду при зміні даних
     $('#lift_id, #qr_type, #qr_size').on('change', updatePreview);
     $('#qr_description').on('input', updatePreview);
 });
@@ -270,8 +270,8 @@ function updatePreview() {
         `);
         
         $('#qr-info').html(`
-            <strong>Ліфт:</strong> ${$('#lift_id option:selected').text()}<br>
-            <strong>Тип:</strong> ${qrType}<br>
+            <strong>Elevador:</strong> ${$('#lift_id option:selected').text()}<br>
+            <strong>Tipo:</strong> ${qrType}<br>
             <strong>Розмір:</strong> ${size}x${size}
         `);
     }
@@ -291,14 +291,14 @@ function generateQRCode() {
     // Показати лоадер
     const submitBtn = $(event.target).find('button[type="submit"]');
     const originalText = submitBtn.html();
-    submitBtn.html('<i class="fas fa-spinner fa-spin mr-2"></i>Генерування...').prop('disabled', true);
+    submitBtn.html('<i class="fas fa-spinner fa-spin mr-2"></i>A gerar...').prop('disabled', true);
     
     // Імітація API запиту
     setTimeout(() => {
-        toastr.success('QR-код успішно згенеровано!');
+        toastr.success('QR code gerado com sucesso!');
         submitBtn.html(originalText).prop('disabled', false);
         
-        // Оновити таблицю останніх QR-кодів
+        // Atualizar таблицю останніх QR-кодів
         updateQRTable();
         
         // Очистити форму
@@ -311,12 +311,12 @@ function generateQRCode() {
                 </div>
             </div>
         `);
-        $('#qr-info').html('<small>Заповніть форму для створення QR-коду</small>');
+        $('#qr-info').html('<small>Preencha o formulário para criar o QR code</small>');
     }, 2000);
 }
 
 function updateQRTable() {
     // Тут буде логіка оновлення таблиці з сервера
-    console.log('Оновлення таблиці QR-кодів');
+    console.log('Atualização таблиці QR-кодів');
 }
 </script>

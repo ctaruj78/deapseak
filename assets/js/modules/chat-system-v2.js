@@ -23,7 +23,7 @@ class ChatSystem {
         this.reconnectAttempts = 0;
         this.maxReconnectAttempts = 5;
         
-        // Налаштування
+        // Definições
         this.messagePageSize = 50;
         this.isTyping = false;
         this.typingTimeout = null;
@@ -53,13 +53,13 @@ class ChatSystem {
             console.log('✅ Chat System ініціалізовано');
             
         } catch (error) {
-            console.error('❌ Помилка ініціалізації Chat System:', error);
+            console.error('❌ Erro ініціалізації Chat System:', error);
             this.loadFromLocalStorage();
         }
     }
 
     /**
-     * Завантаження контактів
+     * A carregar контактів
      */
     async loadContacts() {
         try {
@@ -75,7 +75,7 @@ class ChatSystem {
             if (response.ok) {
                 const allUsers = await response.json();
                 
-                // Фільтруємо користувачів (виключаємо себе)
+                // Filtroуємо користувачів (виключаємо себе)
                 this.contacts = allUsers.filter(user => 
                     user._id !== this.currentUser._id
                 ).map(user => ({
@@ -89,13 +89,13 @@ class ChatSystem {
                 return true;
             }
         } catch (error) {
-            console.error('Помилка завантаження контактів:', error);
+            console.error('Erro завантаження контактів:', error);
         }
         return false;
     }
 
     /**
-     * Завантаження каналів
+     * A carregar каналів
      */
     async loadChannels() {
         try {
@@ -118,7 +118,7 @@ class ChatSystem {
             this.renderChannels();
             return true;
         } catch (error) {
-            console.error('Помилка завантаження каналів:', error);
+            console.error('Erro завантаження каналів:', error);
             this.channels = this.createDefaultChannels();
             this.renderChannels();
         }
@@ -153,12 +153,12 @@ class ChatSystem {
                 lastMessage: {
                     text: 'Є питання по ліфту #123',
                     timestamp: new Date(Date.now() - Math.random() * 2 * 60 * 60 * 1000),
-                    sender: { firstName: 'Технік' }
+                    sender: { firstName: 'Técnico' }
                 }
             },
             {
                 _id: 'dispatchers',
-                name: 'Диспетчери',
+                name: 'Dispatcherи',
                 description: 'Канал для диспетчерів',
                 type: 'private',
                 members: ['dispatcher', 'admin'],
@@ -166,14 +166,14 @@ class ChatSystem {
                 lastMessage: {
                     text: 'Призначив нову заявку',
                     timestamp: new Date(Date.now() - Math.random() * 30 * 60 * 1000),
-                    sender: { firstName: 'Диспетчер' }
+                    sender: { firstName: 'Dispatcher' }
                 }
             }
         ];
     }
 
     /**
-     * Налаштування WebSocket підключення
+     * Definições WebSocket підключення
      */
     setupSocketConnection() {
         // В реальному проекті тут буде справжній WebSocket
@@ -194,14 +194,14 @@ class ChatSystem {
         const messageTemplates = [
             'Привіт! Як справи?',
             'Чи можеш допомогти з заявкою?',
-            'Ліфт відремонтовано',
+            'Elevador відремонтовано',
             'Дякую за роботу!',
             'Потрібна консультація',
             'Все готово',
             'Хай день!',
             'Гарної роботи!',
             'Питання по обслуговуванню',
-            'Звіт готовий'
+            'Relatório готовий'
         ];
 
         setInterval(() => {
@@ -258,7 +258,7 @@ class ChatSystem {
                         <div class="contact-details">
                             <small class="text-muted contact-role">${this.getRoleText(contact.role)}</small>
                             ${contact.isOnline ? 
-                                '<small class="text-success">Онлайн</small>' : 
+                                '<small class="text-success">Online</small>' : 
                                 `<small class="text-muted">Був(ла) ${this.getTimeAgo(contact.lastSeen)}</small>`
                             }
                         </div>
@@ -335,16 +335,16 @@ class ChatSystem {
         this.currentChat = contactId;
         this.currentChatType = 'direct';
         
-        // Оновлення активного контакту
+        // Atualização активного контакту
         this.renderContacts();
         
-        // Завантаження повідомлень
+        // A carregar повідомлень
         await this.loadMessages(contactId, 'direct');
         
-        // Оновлення заголовку чату
+        // Atualização заголовку чату
         this.updateChatHeader({
             name: `${contact.firstName} ${contact.lastName}`,
-            status: contact.isOnline ? 'Онлайн' : `Був(ла) ${this.getTimeAgo(contact.lastSeen)}`,
+            status: contact.isOnline ? 'Online' : `Був(ла) ${this.getTimeAgo(contact.lastSeen)}`,
             avatar: this.getAvatarUrl(contact)
         });
         
@@ -362,13 +362,13 @@ class ChatSystem {
         this.currentChat = channelId;
         this.currentChatType = 'channel';
         
-        // Оновлення активного каналу
+        // Atualização активного каналу
         this.renderChannels();
         
-        // Завантаження повідомлень каналу
+        // A carregar повідомлень каналу
         await this.loadMessages(channelId, 'channel');
         
-        // Оновлення заголовку чату
+        // Atualização заголовку чату
         this.updateChatHeader({
             name: `#${channel.name}`,
             status: `${channel.members?.length || 0} учасників`,
@@ -380,7 +380,7 @@ class ChatSystem {
     }
 
     /**
-     * Завантаження повідомлень
+     * A carregar повідомлень
      */
     async loadMessages(chatId, type) {
         try {
@@ -402,7 +402,7 @@ class ChatSystem {
             
             this.renderMessages();
         } catch (error) {
-            console.error('Помилка завантаження повідомлень:', error);
+            console.error('Erro завантаження повідомлень:', error);
             this.messages = this.generateTestMessages(chatId, type);
             this.renderMessages();
         }
@@ -431,7 +431,7 @@ class ChatSystem {
                 _id: Date.now() + i,
                 text: this.getRandomMessage(),
                 timestamp: new Date(Date.now() - (messageCount - i) * 60 * 60 * 1000),
-                sender: sender || { firstName: 'Невідомий', lastName: '' },
+                sender: sender || { firstName: 'Desconhecido', lastName: '' },
                 type: type,
                 chatId: chatId,
                 isOwn: isOwnMessage
@@ -543,10 +543,10 @@ class ChatSystem {
                 const sentMessage = await response.json();
                 this.addMessageToChat(sentMessage);
             } else {
-                throw new Error('Помилка відправки повідомлення');
+                throw new Error('Erro відправки повідомлення');
             }
         } catch (error) {
-            console.error('Помилка відправки повідомлення:', error);
+            console.error('Erro відправки повідомлення:', error);
             
             // Додаємо повідомлення локально (симуляція)
             const localMessage = {
@@ -574,7 +574,7 @@ class ChatSystem {
             this.renderMessages();
         }
         
-        // Оновлення списків контактів/каналів
+        // Atualização списків контактів/каналів
         this.updateLastMessage(message);
     }
 
@@ -597,7 +597,7 @@ class ChatSystem {
     }
 
     /**
-     * Налаштування обробників подій
+     * Definições обробників подій
      */
     setupEventListeners() {
         // Форма надсилання повідомлення
@@ -636,7 +636,7 @@ class ChatSystem {
             });
         }
 
-        // Пошук у чатах
+        // Pesquisa у чатах
         const searchInput = document.getElementById('chatSearch');
         if (searchInput) {
             searchInput.addEventListener('input', (e) => {
@@ -654,10 +654,10 @@ class ChatSystem {
 
     getRoleText(role) {
         const roles = {
-            'admin': 'Адміністратор',
-            'dispatcher': 'Диспетчер',
-            'tech': 'Технік',
-            'client': 'Клієнт'
+            'admin': 'Administrador',
+            'dispatcher': 'Dispatcher',
+            'tech': 'Técnico',
+            'client': 'Cliente'
         };
         return roles[role] || role;
     }
@@ -678,10 +678,10 @@ class ChatSystem {
         const time = new Date(timestamp);
         const diffInMinutes = Math.floor((now - time) / (1000 * 60));
         
-        if (diffInMinutes < 1) return 'щойно';
-        if (diffInMinutes < 60) return `${diffInMinutes} хв. тому`;
-        if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)} год. тому`;
-        return `${Math.floor(diffInMinutes / 1440)} дн. тому`;
+        if (diffInMinutes < 1) return 'agora mesmo';
+        if (diffInMinutes < 60) return `${diffInMinutes} хв. atrás`;
+        if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)} год. atrás`;
+        return `${Math.floor(diffInMinutes / 1440)} дн. atrás`;
     }
 
     formatTime(timestamp) {
@@ -698,9 +698,9 @@ class ChatSystem {
         yesterday.setDate(today.getDate() - 1);
         
         if (date.toDateString() === today.toDateString()) {
-            return 'Сьогодні';
+            return 'Hoje';
         } else if (date.toDateString() === yesterday.toDateString()) {
-            return 'Вчора';
+            return 'Ontem';
         } else {
             return date.toLocaleDateString('uk-UA');
         }
@@ -717,13 +717,13 @@ class ChatSystem {
         const messages = [
             'Привіт! 👋',
             'Як справи з роботою?',
-            'Ліфт відремонтовано ✅',
+            'Elevador відремонтовано ✅',
             'Потрібна допомога з заявкою',
             'Дякую за швидку роботу! 👍',
             'Все готово до здачі',
             'Гарного дня! ☀️',
             'Питання по обладнанню',
-            'Звіт надіслано',
+            'Relatório надіслано',
             'До зв\'язку!'
         ];
         return messages[Math.floor(Math.random() * messages.length)];
@@ -785,9 +785,9 @@ class ChatSystem {
         console.log('Діалог прикріплення файлів');
     }
 
-    // Пошук у чатах
+    // Pesquisa у чатах
     searchChats(query) {
-        console.log('Пошук:', query);
+        console.log('Pesquisa:', query);
     }
 
     // Обробка набору тексту
@@ -829,7 +829,7 @@ class ChatSystem {
         this.renderChannels();
     }
 
-    // Оновлення останнього повідомлення
+    // Atualização останнього повідомлення
     updateLastMessage(message) {
         if (message.type === 'direct') {
             const contact = this.contacts.find(c => c._id === message.chatId || c._id === message.sender._id);
@@ -851,7 +851,7 @@ class ChatSystem {
         }
     }
 
-    // Налаштування нотифікацій
+    // Definições нотифікацій
     setupNotifications() {
         if ('Notification' in window && Notification.permission === 'default') {
             Notification.requestPermission();
@@ -883,7 +883,7 @@ class ChatSystem {
         });
     }
 
-    // Завантаження з localStorage
+    // A carregar з localStorage
     loadFromLocalStorage() {
         try {
             const saved = JSON.parse(localStorage.getItem('chatData'));
@@ -899,7 +899,7 @@ class ChatSystem {
             this.renderContacts();
             this.renderChannels();
         } catch (error) {
-            console.error('Помилка завантаження з localStorage:', error);
+            console.error('Erro завантаження з localStorage:', error);
             this.contacts = [];
             this.channels = this.createDefaultChannels();
         }
@@ -916,7 +916,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// Експорт для використання в модулях
+// Exportar для використання в модулях
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = ChatSystem;
 }

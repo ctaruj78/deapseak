@@ -16,7 +16,7 @@ class VoiceAssistantClient {
 
   init() {
     if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
-      alert('Голосовий асистент не підтримується вашим браузером');
+      alert('Assistente de voz não é suportado pelo seu browser');
       return;
     }
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -47,7 +47,7 @@ class VoiceAssistantClient {
         return;
       }
     }
-    alert('Команда не розпізнана: ' + text);
+    alert('Comando não reconhecido: ' + text);
   }
 }
 

@@ -15,22 +15,22 @@ class TechDashboard {
         this.setupEventListeners();
         this.startClocks();
         
-        console.log('✅ Панель техніка успішно ініціалізовано');
+        console.log('✅ Панель техніка com sucesso ініціалізовано');
     }
 
     loadUserInfo() {
         try {
             this.currentUser = JSON.parse(localStorage.getItem('currentUser')) || { 
-                firstName: 'Технік', 
+                firstName: 'Técnico', 
                 lastName: '',
-                position: 'Технік з обслуговування'
+                position: 'Técnico з обслуговування'
             };
             
-            $('#techName').text(this.currentUser.firstName || 'Технік');
-            $('#userName').text(this.currentUser.firstName || 'Технік');
+            $('#techName').text(this.currentUser.firstName || 'Técnico');
+            $('#userName').text(this.currentUser.firstName || 'Técnico');
             
         } catch (error) {
-            console.error('Помилка завантаження даних користувача:', error);
+            console.error('Erro ao carregar dados користувача:', error);
         }
     }
 
@@ -65,7 +65,7 @@ class TechDashboard {
                 request.status !== 'cancelled'
             );
         } catch (error) {
-            console.error('Помилка отримання завдань:', error);
+            console.error('Erro отримання завдань:', error);
             return [];
         }
     }
@@ -94,16 +94,16 @@ class TechDashboard {
             $('#upcomingMaintenanceCount').text(upcoming.length);
             
         } catch (error) {
-            console.error('Помилка завантаження техобслуговування:', error);
+            console.error('Erro завантаження техобслуговування:', error);
         }
     }
 
     loadRecentActivity() {
-        // Завантаження останньої активності
+        // A carregar останньої активності
         const activities = [
-            { action: 'Завдання завершено', details: 'Ремонт ліфта #LFT-001', time: '2 хвилини тому', icon: 'fa-check-circle', color: 'success' },
-            { action: 'Нове завдання', details: 'Профілактика ліфта #LFT-005', time: '15 хвилин тому', icon: 'fa-tasks', color: 'info' },
-            { action: 'Оновлення статусу', details: 'Завдання #TASK-024 в процесі', time: '1 годину тому', icon: 'fa-sync', color: 'warning' }
+            { action: 'Tarefa concluída', details: 'Reparação ліфта #LFT-001', time: '2 хвилини atrás', icon: 'fa-check-circle', color: 'success' },
+            { action: 'Нове завдання', details: 'Профілактика ліфта #LFT-005', time: '15 хвилин atrás', icon: 'fa-tasks', color: 'info' },
+            { action: 'Atualização статусу', details: 'Tarefa #TASK-024 в процесі', time: '1 horasу atrás', icon: 'fa-sync', color: 'warning' }
         ];
         
         this.renderRecentActivity(activities);
@@ -133,14 +133,14 @@ class TechDashboard {
                         <br>
                         <small class="text-muted">${task.description || 'Без опису'}</small>
                     </td>
-                    <td>${task.location || 'Не вказано'}</td>
+                    <td>${task.location || 'Não especificado'}</td>
                     <td>${this.formatTime(new Date(task.dueDate))}</td>
                     <td>
                         <button class="btn btn-sm btn-primary" onclick="techDashboard.startTask('${task.id}')">
-                            <i class="fas fa-play"></i> Почати
+                            <i class="fas fa-play"></i> Iniciar
                         </button>
                         <button class="btn btn-sm btn-success ml-2" onclick="techDashboard.completeTask('${task.id}')">
-                            <i class="fas fa-check"></i> Завершити
+                            <i class="fas fa-check"></i> Concluir
                         </button>
                         <a href="task-map.html?id=${task.id}" class="btn btn-sm btn-info ml-2" target="_blank">
                             <i class="fas fa-map-marker-alt"></i> Карта
@@ -181,8 +181,8 @@ class TechDashboard {
                 }
             }
         } catch (error) {
-            console.error('Помилка завершення завдання:', error);
-            this.showNotification('Помилка при завершенні завдання', 'error');
+            console.error('Erro завершення завдання:', error);
+            this.showNotification('Erro при завершенні завдання', 'error');
         }
     }
 
@@ -190,7 +190,7 @@ class TechDashboard {
     _completeTaskFinalize(requests, taskIndex, taskId) {
         localStorage.setItem('maintenanceRequests', JSON.stringify(requests));
         this.loadTodayTasks();
-        this.showNotification('Завдання завершено, звіт сформовано', 'success');
+        this.showNotification('Tarefa concluída, звіт сформовано', 'success');
         // Перенаправлення на сторінку звіту
         setTimeout(() => {
             window.location.href = `task-report.html?id=${taskId}`;
@@ -203,7 +203,7 @@ class TechDashboard {
             taskId: task.id,
             title: task.title,
             description: task.description,
-            technician: this.currentUser?.firstName || 'Технік',
+            technician: this.currentUser?.firstName || 'Técnico',
             startedAt: task.startedAt,
             completedAt: new Date().toISOString(),
             geoStart: task.geoStart || null,
@@ -227,7 +227,7 @@ class TechDashboard {
                         <div>
                             <h6 class="mb-1">${lift.model || 'Невідома модель'}</h6>
                             <p class="mb-1 text-muted">
-                                <i class="fas fa-map-marker-alt"></i> ${lift.location || 'Не вказано'}
+                                <i class="fas fa-map-marker-alt"></i> ${lift.location || 'Não especificado'}
                             </p>
                             <small class="text-muted">
                                 <i class="fas fa-calendar"></i> ${this.formatDate(new Date(lift.nextMaintenance))}
@@ -264,9 +264,9 @@ class TechDashboard {
     }
 
     getUrgencyClass(daysLeft) {
-        if (daysLeft.includes('Сьогодні') || daysLeft.includes('Завтра') || daysLeft.includes('Протерміновано')) {
+        if (daysLeft.includes('Hoje') || daysLeft.includes('Amanhã') || daysLeft.includes('Протерміновано')) {
             return 'urgent';
-        } else if (daysLeft.includes('Через')) {
+        } else if (daysLeft.includes('Junез')) {
             return 'warning';
         }
         return 'normal';
@@ -274,8 +274,8 @@ class TechDashboard {
 
     getPriorityLabel(priority) {
         const priorities = {
-            'high': 'Високий',
-            'medium': 'Середній',
+            'high': 'Altий',
+            'medium': 'Agoедній',
             'low': 'Низький'
         };
         return priorities[priority] || priority;
@@ -294,10 +294,10 @@ class TechDashboard {
         const diffTime = nextDate - today;
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
         
-        if (diffDays === 0) return 'Сьогодні';
-        if (diffDays === 1) return 'Завтра';
+        if (diffDays === 0) return 'Hoje';
+        if (diffDays === 1) return 'Amanhã';
         if (diffDays < 0) return 'Протерміновано';
-        return `Через ${diffDays} дн`;
+        return `Junез ${diffDays} дн`;
     }
 
     formatTime(date) {
@@ -316,18 +316,18 @@ class TechDashboard {
     }
 
     startClocks() {
-        // Оновлення часу
+        // Atualização часу
         setInterval(() => {
             const now = new Date();
             $('#currentTime').text(now.toLocaleTimeString('uk-UA'));
         }, 1000);
 
-        // Оновлення часу при завантаженні
+        // Atualização часу при завантаженні
         $('#currentTime').text(new Date().toLocaleTimeString('uk-UA'));
     }
 
     setupEventListeners() {
-        // Оновлення даних кожні 2 хвилини
+        // Atualização даних кожні 2 хвилини
         setInterval(() => {
             this.loadStatistics();
             this.loadTodayTasks();
@@ -385,8 +385,8 @@ class TechDashboard {
                 }
             }
         } catch (error) {
-            console.error('Помилка старту завдання:', error);
-            this.showNotification('Помилка при старті завдання', 'error');
+            console.error('Erro старту завдання:', error);
+            this.showNotification('Erro при старті завдання', 'error');
         }
 
     }

@@ -20,10 +20,10 @@ class FeedbackRequest {
         </div>
       </div>
       <div class="mb-3">
-        <label>Коментар:</label>
+        <label>Comentário:</label>
         <textarea id="feedbackComment" class="form-control" rows="2" placeholder="Ваші враження..."></textarea>
       </div>
-      <button class="btn btn-success" id="submitFeedbackBtn">Відправити фідбек</button>
+      <button class="btn btn-success" id="submitFeedbackBtn">Enviar фідбек</button>
     `;
     document.querySelectorAll('.star').forEach(star => {
       star.onclick = () => { this.rating = parseInt(star.dataset.value); this.render(containerSelector); };
@@ -33,8 +33,8 @@ class FeedbackRequest {
   }
 
   submitFeedback() {
-    if (this.rating === 0) { alert('Оцініть роботу!'); return; }
-    alert(`Дякуємо за оцінку: ${this.rating}★\nКоментар: ${this.comment}`);
+    if (this.rating === 0) { alert('Avalie o trabalho!'); return; }
+    alert(`Дякуємо за оцінку: ${this.rating}★\nComentário: ${this.comment}`);
     // Тут можна додати інтеграцію з сервером
     this.rating = 0;
     this.comment = '';

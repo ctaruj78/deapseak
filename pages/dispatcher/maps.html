@@ -603,7 +603,7 @@
             
             const lift = lifts.find(l => l.id === liftId);
             if (!lift) {
-                console.error('❌ Elevador не encontrado:', liftId);
+                console.error('❌ Elevador não encontrado:', liftId);
                 unlockRouteButton(liftId);
                 return;
             }
@@ -804,7 +804,7 @@
                     styles: [{color: '#007bff', weight: 5, opacity: 0.7}]
                 },
                 createMarker: function() { return null; }, // Не створювати додаткові маркери
-                language: 'en', // Виutilizовуexisteмо англійську, бо українська не підтримуexisteться
+                language: 'en', // Utilizamos inglês porque o ucraniano não é suportado
                 fitSelectedRoutes: true,
                 addWaypoints: false
             }).on('routesfound', function(e) {
@@ -953,7 +953,7 @@
         }
 
         async function refreshMap() {
-            console.log('🔄 Оновлення мапи...');
+            console.log('🔄 Atualização мапи...');
             
             // Atualizar dados desde API
             await loadLiftsFromAPI();

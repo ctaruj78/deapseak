@@ -18,7 +18,7 @@ class UserManager {
         this.setupEventListeners();
         this.setupSearch();
         this.setupFilters();
-        console.log('✅ Менеджер користувачів успішно ініціалізовано');
+        console.log('✅ Менеджер користувачів com sucesso ініціалізовано');
     }
 
     loadUsers() {
@@ -51,8 +51,8 @@ class UserManager {
                 this.afterLoad();
             }
         } catch (error) {
-            console.error('Помилка завантаження користувачів:', error);
-            this.showNotification('Помилка завантаження даних', 'error');
+            console.error('Erro завантаження користувачів:', error);
+            this.showNotification('Erro ao carregar dados', 'error');
         }
     }
 
@@ -67,7 +67,7 @@ class UserManager {
         return [
             {
                 id: 'ADM-001',
-                firstName: 'Адміністратор',
+                firstName: 'Administrador',
                 lastName: 'Системи',
                 email: 'admin@deapseak.com',
                 role: 'admin',
@@ -99,14 +99,14 @@ class UserManager {
                 role: 'dispatcher',
                 status: 'active',
                 phone: '+351934567803',
-                department: 'Диспетчерська',
+                department: 'Dispatcherська',
                 createdAt: '2024-02-01',
                 lastLogin: '2024-03-15',
                 password: this.hashPassword('dispatch123')
             },
             {
                 id: 'CLI-001',
-                firstName: 'ТОВ',
+                firstName: 'ManutençãoВ',
                 lastName: 'Будівельник',
                 email: 'client@builder.com',
                 role: 'client',
@@ -130,8 +130,8 @@ class UserManager {
                 localStorage.setItem('users', JSON.stringify(this.allUsers));
             }
         } catch (error) {
-            console.error('Помилка збереження даних:', error);
-            this.showNotification('Помилка збереження даних', 'error');
+            console.error('Erro ao guardar даних:', error);
+            this.showNotification('Erro ao guardar даних', 'error');
         }
     }
 
@@ -179,10 +179,10 @@ class UserManager {
                 <tr>
                     <td colspan="8" class="text-center py-4">
                         <i class="fas fa-users fa-3x text-muted mb-3"></i>
-                        <h5>Користувачів не знайдено</h5>
+                        <h5>Utilizadorів не знайдено</h5>
                         <p class="text-muted">Спробуйте змінити фільтри або додати нового користувача</p>
                         <button class="btn btn-primary" data-toggle="modal" data-target="#userModal">
-                            <i class="fas fa-plus"></i> Додати користувача
+                            <i class="fas fa-plus"></i> Adicionar utilizador
                         </button>
                     </td>
                 </tr>
@@ -349,10 +349,10 @@ class UserManager {
 
     openModal(user = null) {
         if (user) {
-            $('#modalTitle').text('Редагувати користувача');
+            $('#modalTitle').text('Editar utilizador');
             this.fillForm(user);
         } else {
-            $('#modalTitle').text('Додати користувача');
+            $('#modalTitle').text('Adicionar utilizador');
             this.resetForm();
         }
         
@@ -373,7 +373,7 @@ class UserManager {
         $('#userRole').val(user.role || '');
         $('#userStatus').val(user.status || 'active');
         
-        // Пароль не обов'язковий при редагуванні
+        // Palavra-passe не обов'язковий при редагуванні
         $('#userPassword').prop('required', false);
         $('#userPassword').attr('placeholder', 'Залиште порожнім для збереження поточного пароля');
     }
@@ -423,7 +423,7 @@ class UserManager {
             const existingIndex = this.allUsers.findIndex(u => u.id === formData.id);
             
             if (existingIndex >= 0) {
-                // Оновлення існуючого користувача
+                // Atualização існуючого користувача
                 if (!password) {
                     formData.password = this.allUsers[existingIndex].password;
                 }
@@ -445,11 +445,11 @@ class UserManager {
             this.updateStats();
             
             this.closeModal();
-            this.showNotification('Користувача успішно збережено', 'success');
+            this.showNotification('Utilizadorа com sucesso збережено', 'success');
             
         } catch (error) {
-            console.error('Помилка збереження користувача:', error);
-            this.showNotification('Помилка збереження користувача', 'error');
+            console.error('Erro ao guardar користувача:', error);
+            this.showNotification('Erro ao guardar користувача', 'error');
         }
     }
 
@@ -468,7 +468,7 @@ class UserManager {
         }
 
         if (!user.lastName || !user.lastName.trim()) {
-            errors.push('Прізвище обов\'язкове');
+            errors.push('Apelido обов\'язкове');
             $('#userLastName').addClass('is-invalid');
             isValid = false;
         }
@@ -484,7 +484,7 @@ class UserManager {
         }
 
         if (!user.id && !$('#userPassword').val()) {
-            errors.push('Пароль обов\'язковий для нового користувача');
+            errors.push('Palavra-passe обов\'язковий для нового користувача');
             $('#userPassword').addClass('is-invalid');
             isValid = false;
         }
@@ -502,7 +502,7 @@ class UserManager {
     }
 
     toggleUserStatus(id) {
-        if (!confirm('Ви впевнені, що хочете змінити статус цього користувача?')) {
+        if (!confirm('Tem a certeza que pretende alterar o estado deste utilizador?')) {
             return;
         }
 
@@ -516,7 +516,7 @@ class UserManager {
             this.updateStats();
             
             this.showNotification(
-                `Статус користувача змінено на ${this.getStatusLabel(this.allUsers[userIndex].status)}`, 
+                `Estado користувача змінено на ${this.getStatusLabel(this.allUsers[userIndex].status)}`, 
                 'success'
             );
         }
@@ -530,11 +530,11 @@ class UserManager {
                 <strong>ID:</strong> ${user.id}<br>
                 <strong>Повне ім'я:</strong> ${user.firstName} ${user.lastName}<br>
                 <strong>Email:</strong> ${user.email}<br>
-                <strong>Телефон:</strong> ${user.phone || 'Не вказано'}<br>
-                <strong>Відділ:</strong> ${user.department || 'Не вказано'}<br>
-                <strong>Роль:</strong> ${this.getRoleLabel(user.role)}<br>
-                <strong>Статус:</strong> ${this.getStatusLabel(user.status)}<br>
-                <strong>Дата реєстрації:</strong> ${this.formatDate(user.createdAt)}<br>
+                <strong>Telefone:</strong> ${user.phone || 'Não especificado'}<br>
+                <strong>Відділ:</strong> ${user.department || 'Não especificado'}<br>
+                <strong>Função:</strong> ${this.getRoleLabel(user.role)}<br>
+                <strong>Estado:</strong> ${this.getStatusLabel(user.status)}<br>
+                <strong>Data реєстрації:</strong> ${this.formatDate(user.createdAt)}<br>
                 <strong>Останнє оновлення:</strong> ${this.formatDate(user.updatedAt)}
             `;
             
@@ -544,18 +544,18 @@ class UserManager {
 
     getRoleLabel(role) {
         const roles = {
-            'admin': 'Адміністратор',
-            'technician': 'Технік',
-            'dispatcher': 'Диспетчер',
-            'client': 'Клієнт'
+            'admin': 'Administrador',
+            'technician': 'Técnico',
+            'dispatcher': 'Dispatcher',
+            'client': 'Cliente'
         };
         return roles[role] || role;
     }
 
     getStatusLabel(status) {
         const statuses = {
-            'active': 'Активний',
-            'inactive': 'Неактивний'
+            'active': 'Ativo',
+            'inactive': 'Inativo'
         };
         return statuses[status] || status;
     }
@@ -582,7 +582,7 @@ class UserManager {
         if (!dateString) return '-';
         try {
             const date = new Date(dateString);
-            return date.toLocaleDateString('uk-UA');
+            return date.toLocaleDateString('pt-PT');
         } catch (error) {
             return dateString;
         }

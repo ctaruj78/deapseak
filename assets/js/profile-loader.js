@@ -1,6 +1,6 @@
 /**
  * 👤 Універсальний завантажувач профілю користувача
- * Працює для всіх ролей: admin, client, dispatcher, tech
+ * Em funcionamento для всіх ролей: admin, client, dispatcher, tech
  */
 
 (function() {
@@ -18,11 +18,11 @@
     }
 
     /**
-     * Завантаження даних користувача з API
+     * A carregar даних користувача з API
      */
     async function loadUserProfile() {
         try {
-            console.log('📡 Завантаження профілю користувача...');
+            console.log('📡 A carregar профілю користувача...');
             
             const response = await fetch('/api/users/me', {
                 headers: {
@@ -55,20 +55,20 @@
             return userData;
 
         } catch (error) {
-            console.error('❌ Помилка завантаження профілю:', error);
+            console.error('❌ Erro завантаження профілю:', error);
             showError('Не вдалося завантажити дані профілю');
             return null;
         }
     }
 
     /**
-     * Оновлення UI з даними користувача
+     * Atualização UI з даними користувача
      */
     function updateProfileUI(user) {
-        // Ім'я користувача
+        // Nome користувача
         const nameElements = document.querySelectorAll('[data-user-name]');
         nameElements.forEach(el => {
-            const fullName = user.name || user.username || 'Невідомо';
+            const fullName = user.name || user.username || 'Desconhecido';
             if (el.tagName === 'INPUT') {
                 el.value = fullName;
             } else {
@@ -87,42 +87,42 @@
             }
         });
 
-        // Роль
+        // Função
         const roleElements = document.querySelectorAll('[data-user-role]');
         roleElements.forEach(el => {
             const roleNames = {
-                'admin': 'Адміністратор',
-                'client': 'Клієнт',
-                'dispatcher': 'Диспетчер',
-                'technician': 'Технік'
+                'admin': 'Administrador',
+                'client': 'Cliente',
+                'dispatcher': 'Dispatcher',
+                'technician': 'Técnico'
             };
             el.textContent = roleNames[user.role] || user.role;
         });
 
-        // Телефон
+        // Telefone
         const phoneElements = document.querySelectorAll('[data-user-phone]');
         phoneElements.forEach(el => {
             const phone = user.phone || '';
             if (el.tagName === 'INPUT') {
                 el.value = phone;
             } else {
-                el.textContent = phone || 'Не вказано';
+                el.textContent = phone || 'Não especificado';
             }
         });
 
-        // Адреса
+        // Endereço
         const addressElements = document.querySelectorAll('[data-user-address]');
         addressElements.forEach(el => {
-            el.textContent = user.address || 'Не вказано';
+            el.textContent = user.address || 'Não especificado';
         });
 
-        // Компанія
+        // Empresa
         const companyElements = document.querySelectorAll('[data-user-company]');
         companyElements.forEach(el => {
-            el.textContent = user.company || 'Не вказано';
+            el.textContent = user.company || 'Não especificado';
         });
 
-        // Дата реєстрації
+        // Data реєстрації
         const createdElements = document.querySelectorAll('[data-user-created]');
         createdElements.forEach(el => {
             if (user.createdAt) {
@@ -151,10 +151,10 @@
             });
         }
 
-        // Статус
+        // Estado
         const statusElements = document.querySelectorAll('[data-user-status]');
         statusElements.forEach(el => {
-            const statusText = user.isActive ? 'Активний' : 'Неактивний';
+            const statusText = user.isActive ? 'Ativo' : 'Inativo';
             const statusClass = user.isActive ? 'badge-success' : 'badge-danger';
             el.innerHTML = `<span class="badge ${statusClass}">${statusText}</span>`;
         });
@@ -175,11 +175,11 @@
     }
 
     /**
-     * Оновлення профілю (POST)
+     * Atualização профілю (POST)
      */
     window.updateUserProfile = async function(formData) {
         try {
-            console.log('📤 Оновлення профілю...', formData);
+            console.log('📤 Atualização профілю...', formData);
 
             const response = await fetch('/api/users/me', {
                 method: 'PUT',
@@ -204,15 +204,15 @@
             updateProfileUI(updatedUser);
 
             if (typeof toastr !== 'undefined') {
-                toastr.success('Профіль успішно оновлено!');
+                toastr.success('Perfil atualizado com sucesso!');
             } else {
-                alert('Профіль успішно оновлено!');
+                alert('Perfil atualizado com sucesso!');
             }
 
             return updatedUser;
 
         } catch (error) {
-            console.error('❌ Помилка оновлення профілю:', error);
+            console.error('❌ Erro оновлення профілю:', error);
             showError('Не вдалося оновити профіль');
             return null;
         }
@@ -239,21 +239,21 @@
 
             if (!response.ok) {
                 const error = await response.json();
-                throw new Error(error.message || 'Помилка зміни пароля');
+                throw new Error(error.message || 'Erro зміни пароля');
             }
 
-            console.log('✅ Пароль змінено');
+            console.log('✅ Palavra-passe змінено');
 
             if (typeof toastr !== 'undefined') {
-                toastr.success('Пароль успішно змінено!');
+                toastr.success('Palavra-passe com sucesso змінено!');
             } else {
-                alert('Пароль успішно змінено!');
+                alert('Palavra-passe com sucesso змінено!');
             }
 
             return true;
 
         } catch (error) {
-            console.error('❌ Помилка зміни пароля:', error);
+            console.error('❌ Erro зміни пароля:', error);
             showError(error.message || 'Не вдалося змінити пароль');
             return false;
         }
@@ -266,7 +266,7 @@
         loadUserProfile();
     }
 
-    // Експортуємо для використання
+    // Exportarуємо для використання
     window.ProfileLoader = {
         load: loadUserProfile,
         update: window.updateUserProfile,

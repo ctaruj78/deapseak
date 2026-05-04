@@ -1,5 +1,5 @@
 class DispatcherDashboard {
-    // Звіт по роботі техніків
+    // Relatório по роботі техніків
     showTechReport() {
         // Формуємо дані по техніках
         let html = `<table class="table table-bordered table-striped"><thead><tr><th>Técnico</th><th>Estado</th><th>Tarefas</th><th>Avaliação</th><th>Última atribuição</th></tr></thead><tbody>`;
@@ -14,7 +14,7 @@ class DispatcherDashboard {
     }
 
     exportTechReport() {
-        // Експорт у CSV
+        // Exportar у CSV
         let csv = 'Técnico,Estado,Tarefas,Avaliação,Última atribuição\n';
         this.technicians.forEach(tech => {
             const lastReq = this.requests.filter(r => r.assignedTo === `${tech.firstName} ${tech.lastName}`).sort((a,b) => new Date(b.date)-new Date(a.date))[0];
@@ -59,7 +59,7 @@ class DispatcherDashboard {
         }
     }
 
-    // Налаштування обробників подій
+    // Definições обробників подій
     setupEventListeners() {
             console.log('Setting up event listeners, jQuery available:', typeof $ !== 'undefined');
             if (typeof $ === 'undefined') {
@@ -68,7 +68,7 @@ class DispatcherDashboard {
             }
 
             try {
-            // Фільтрація та сортування заявок
+            // Filtroація та сортування заявок
             $('#priorityFilter, #statusFilter, #technicianFilter, #dateFilter, #sortSelect').on('change', () => {
                 this.renderRequests();
             });
@@ -104,7 +104,7 @@ class DispatcherDashboard {
                 }
             });
 
-        // Оновлення даних
+        // Atualização даних
         $('#refreshBtn').on('click', () => {
             this.loadRequests();
             this.loadTechnicians();
@@ -141,7 +141,7 @@ class DispatcherDashboard {
         }
     }
 
-    // Завантаження заявок
+    // A carregar заявок
     async loadRequests() {
         // Використовуємо демо-дані для дашборду
         this.loadDemoRequests();
@@ -196,22 +196,22 @@ class DispatcherDashboard {
             },
             {
                 id: 1005,
-                title: "Діагностика сервера",
+                title: "Diagnóstico сервера",
                 client: "ПП 'Сигма'",
                 priority: "medium",
                 status: "completed",
-                date: new Date(Date.now() - 172800000).toLocaleDateString('uk-UA') + " 14:10",
+                date: new Date(Date.now() - 172800000).toLocaleDateString('pt-PT') + " 14:10",
                 assignedTo: "Василь Шевченко",
-                description: "Повна діагностика серверного обладнання",
+                description: "Повна діагностика серверного equipamentos",
                 location: "Дніпро, вул. Набережна, 5"
             },
             {
                 id: 1006,
                 title: "Відновлення даних",
-                client: "ТОВ 'Дельта'",
+                client: "ManutençãoВ 'Дельта'",
                 priority: "high",
                 status: "new",
-                date: new Date().toLocaleDateString('uk-UA') + " 13:45",
+                date: new Date().toLocaleDateString('pt-PT') + " 13:45",
                 assignedTo: null,
                 description: "Екстрене відновлення даних з резервної копії",
                 location: "Запоріжжя, пр. Соборний, 18"
@@ -387,7 +387,7 @@ class DispatcherDashboard {
         `;
     }
 
-    // Завантаження техніків
+    // A carregar техніків
     async loadTechnicians() {
         // Використовуємо демо-дані для дашборду
         this.loadDemoTechnicians();
@@ -552,7 +552,7 @@ class DispatcherDashboard {
         });
     }
 
-    // Завантаження активностей
+    // A carregar активностей
     async loadActivities() {
         // Використовуємо демо-дані для дашборду
         this.loadDemoActivities();
@@ -643,7 +643,7 @@ class DispatcherDashboard {
         });
     }
 
-    // Завантаження сповіщень
+    // A carregar сповіщень
     async loadNotifications() {
         // Використовуємо демо-дані для дашборду
         this.loadDemoNotifications();
@@ -681,7 +681,7 @@ class DispatcherDashboard {
         this.updateNotificationBadge();
     }
 
-    // Оновлення бейджа сповіщень
+    // Atualização бейджа сповіщень
     updateNotificationBadge() {
         const unreadCount = this.notifications.filter(n => !n.read).length;
         const notificationDot = document.getElementById('notificationDot');
@@ -694,7 +694,7 @@ class DispatcherDashboard {
         }
     }
 
-    // Фільтрація активностей
+    // Filtroація активностей
     filterActivities(type) {
         const activitiesContainer = document.getElementById('recentActivities');
         activitiesContainer.innerHTML = '';
@@ -727,7 +727,7 @@ class DispatcherDashboard {
         });
     }
 
-    // Оновлення статистики
+    // Atualização статистики
     updateStats() {
         const totalRequests = this.requests.length;
         const pendingRequests = this.requests.filter(r => r.status === 'new').length;
@@ -744,7 +744,7 @@ class DispatcherDashboard {
         if (availableTechsElement) availableTechsElement.textContent = availableTechs;
         if (urgentRequestsElement) urgentRequestsElement.textContent = urgentRequests;
         
-        // Оновлення бейджів
+        // Atualização бейджів
         const statsBadge = document.getElementById('statsBadge');
         const assignmentsBadge = document.getElementById('assignmentsBadge');
         const monitoringBadge = document.getElementById('monitoringBadge');
@@ -756,7 +756,7 @@ class DispatcherDashboard {
         if (techsBadge) techsBadge.textContent = availableTechs;
     }
 
-    // Налаштування реальних оновлень
+    // Definições реальних оновлень
     setupRealTimeUpdates() {
         // Симуляція реальних оновлень
         setInterval(() => {
@@ -856,18 +856,18 @@ class DispatcherDashboard {
                 this.updateNotificationBadge();
                 this.renderActivities();
                 
-                // Сповіщення про нову заявку
+                // Notificações про нову заявку
                 this.showNotification(`Novo pedido #${newRequest.id}`, 'info');
             }
             
-            // Оновлення часу останнього оновлення
+            // Atualização часу останнього оновлення
             const now = new Date();
             document.getElementById('lastUpdate').textContent = 
                 `Atualizado: ${now.toLocaleTimeString('pt-PT')}`;
                 
             // Пульсація для індикатора реального часу
             $('.real-time-badge').fadeOut(500).fadeIn(500);
-        }, 10000); // Оновлення кожні 10 секунд
+        }, 10000); // Atualização кожні 10 секунд
     }
 
     // Отримання текстового представлення статусу
@@ -912,7 +912,7 @@ class DispatcherDashboard {
                     </div>
                     <div class="row mt-3">
                         <div class="col-12">
-                            <p><strong>Опис:</strong></p>
+                            <p><strong>Descrição:</strong></p>
                             <p>${request.description}</p>
                         </div>
                     </div>
@@ -986,7 +986,7 @@ class DispatcherDashboard {
                 techSelect.appendChild(techOption);
             });
             
-            // Встановлення дедлайну (за замовчуванням - через 2 дні)
+            // Встановлення prazoу (за замовчуванням - через 2 дні)
             const deadline = new Date();
             deadline.setDate(deadline.getDate() + 2);
             document.getElementById('deadline').value = deadline.toISOString().slice(0, 16);
@@ -1028,7 +1028,7 @@ class DispatcherDashboard {
             
             // Заповнення техніка якщо призначено
             const editAssignedSelect = document.getElementById('editAssignedTo');
-            editAssignedSelect.innerHTML = '<option value="">Не призначено</option>';
+            editAssignedSelect.innerHTML = '<option value="">Não atribuído</option>';
             
             // Додавання доступних техніків
             this.technicians.forEach(tech => {
@@ -1083,7 +1083,7 @@ class DispatcherDashboard {
             techSelect.appendChild(option);
         });
         
-        // Встановлення дедлайну (за замовчуванням - через 2 дні)
+        // Встановлення prazoу (за замовчуванням - через 2 дні)
         const deadline = new Date();
         deadline.setDate(deadline.getDate() + 2);
         document.getElementById('deadline').value = deadline.toISOString().slice(0, 16);
@@ -1134,8 +1134,8 @@ class DispatcherDashboard {
                     const activity = {
                         id: this.activities.length + 1,
                         type: "assignment",
-                        message: `Заявку #${requestId} призначено техніку ${tech.firstName} ${tech.lastName}`,
-                        timestamp: new Date().toLocaleString('uk-UA'),
+                        message: `Заявку #${requestId} atribuída ao técnico ${tech.firstName} ${tech.lastName}`,
+                        timestamp: new Date().toLocaleString('pt-PT'),
                         icon: "fas fa-user-check",
                         color: "text-success"
                     };
@@ -1144,7 +1144,7 @@ class DispatcherDashboard {
                     this.renderTechnicians();
                     this.renderActivities();
                     this.updateStats();
-                    this.showNotification('Заявку успішно призначено', 'success');
+                    this.showNotification('Заявку com sucesso призначено', 'success');
                 }
                 $('#assignmentModal').modal('hide');
             } else {
@@ -1152,10 +1152,10 @@ class DispatcherDashboard {
                 try {
                     errorText = await response.text();
                 } catch (e) {}
-                this.showNotification('Помилка призначення заявки: ' + (errorText || response.statusText), 'error');
+                this.showNotification('Erro призначення заявки: ' + (errorText || response.statusText), 'error');
             }
         } catch (error) {
-            this.showNotification('Помилка призначення заявки: ' + error.message, 'error');
+            this.showNotification('Erro призначення заявки: ' + error.message, 'error');
         }
     }
 
@@ -1171,7 +1171,7 @@ class DispatcherDashboard {
         window.location.href = 'monitoring.html';
     }
 
-    // Надіслати розсилку
+    // Enviar розсилку
     sendBroadcast() {
         const message = prompt('Введіть повідомлення для розсилки всім технікам:');
         if (message) {
@@ -1183,7 +1183,7 @@ class DispatcherDashboard {
                 id: this.activities.length + 1,
                 type: "system",
                 message: `Відправлено розсилку технікам: ${message.substring(0, 50)}...`,
-                timestamp: new Date().toLocaleString('uk-UA'),
+                timestamp: new Date().toLocaleString('pt-PT'),
                 icon: "fas fa-bullhorn",
                 color: "text-warning"
             };
@@ -1192,7 +1192,7 @@ class DispatcherDashboard {
         }
     }
 
-    // Генерація звіту
+    // A gerar relatório
     generateReport() {
         const reportType = prompt('Оберіть тип звіту:\n1 - Щоденний\n2 - Тижневий\n3 - Місячний');
         if (reportType) {
@@ -1201,7 +1201,7 @@ class DispatcherDashboard {
             
             // Симуляція генерації звіту
             setTimeout(() => {
-                this.showNotification('Звіт успішно згенеровано та відправлено на email', 'success');
+                this.showNotification('Relatório com sucesso згенеровано та відправлено на email', 'success');
             }, 2000);
         }
     }
@@ -1254,7 +1254,7 @@ class DispatcherDashboard {
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрити</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
                 <button type="button" class="btn btn-primary" onclick="window.print()">Друк</button>
             </div>
         `;
@@ -1262,18 +1262,18 @@ class DispatcherDashboard {
         this.showCustomModal(stats);
     }
 
-    // Аварійний протокол
+    // Emergência протокол
     emergencyProtocol() {
-        if (confirm('Активувати аварійний протокол? Це сповістить всіх техніків про критичну ситуацію.')) {
-            // Симуляція активації аварійного протоколу
-            this.showNotification('Аварійний протокол активовано! Всі техніки сповіщені.', 'warning');
+        if (confirm('Ativar protocolo de emergência? Isto notificará todos os técnicos sobre a situação crítica.')) {
+            // Симуляція активації avariйного протоколу
+            this.showNotification('Emergência протокол активовано! Todos техніки сповіщені.', 'warning');
             
             // Додавання активності
             const activity = {
                 id: this.activities.length + 1,
                 type: "emergency",
-                message: "Активовано аварійний протокол",
-                timestamp: new Date().toLocaleString('uk-UA'),
+                message: "Активовано avariйний протокол",
+                timestamp: new Date().toLocaleString('pt-PT'),
                 icon: "fas fa-exclamation-triangle",
                 color: "text-danger"
             };
@@ -1292,7 +1292,7 @@ class DispatcherDashboard {
         window.location.href = 'technicians.html';
     }
 
-    // Надіслати повідомлення техніку
+    // Enviar повідомлення техніку
     messageTechnician(techId) {
         const tech = this.technicians.find(t => t.id === techId);
         if (tech) {
@@ -1306,7 +1306,7 @@ class DispatcherDashboard {
                     id: this.activities.length + 1,
                     type: "message",
                     message: `Відправлено повідомлення техніку ${tech.firstName} ${tech.lastName}`,
-                    timestamp: new Date().toLocaleString('uk-UA'),
+                    timestamp: new Date().toLocaleString('pt-PT'),
                     icon: "fas fa-comment",
                     color: "text-info"
                 };
@@ -1325,7 +1325,7 @@ class DispatcherDashboard {
             notificationsList.innerHTML = `
                 <div class="text-center py-4">
                     <i class="fas fa-bell-slash fa-3x text-muted mb-3"></i>
-                    <p class="text-muted">Немає сповіщень</p>
+                    <p class="text-muted">Sem notificações</p>
                 </div>
             `;
         } else {
@@ -1355,7 +1355,7 @@ class DispatcherDashboard {
         if (notification && !notification.read) {
             notification.read = true;
             this.updateNotificationBadge();
-            this.showNotifications(); // Оновлення списку
+            this.showNotifications(); // Atualização списку
         }
     }
 
@@ -1366,12 +1366,12 @@ class DispatcherDashboard {
         });
         this.updateNotificationBadge();
         $('#notificationsModal').modal('hide');
-        this.showNotification('Всі сповіщення позначено як прочитані', 'success');
+        this.showNotification('Todos сповіщення позначено як прочитані', 'success');
     }
 
     // Показати повідомлення
     showMessages() {
-        alert('Функціонал повідомлень буде реалізовано в наступній версії');
+        alert('A funcionalidade de notificações será implementada na próxima versão');
     }
 
     // Показати сповіщення (toast)
@@ -1481,7 +1481,7 @@ class DispatcherDashboard {
             if (response.ok) {
                 const updatedRequest = await response.json();
                 
-                // Оновлення локальних даних
+                // Atualização локальних даних
                 const requestIndex = this.requests.findIndex(r => r.id == requestId);
                 if (requestIndex !== -1) {
                     this.requests[requestIndex] = {
@@ -1501,7 +1501,7 @@ class DispatcherDashboard {
                     id: this.activities.length + 1,
                     type: "edit",
                     message: `Заявку #${requestId} відредаговано: ${title}`,
-                    timestamp: new Date().toLocaleString('uk-UA'),
+                    timestamp: new Date().toLocaleString('pt-PT'),
                     icon: "fas fa-edit",
                     color: "text-info"
                 };
@@ -1510,23 +1510,23 @@ class DispatcherDashboard {
                 this.renderRequests();
                 this.renderActivities();
                 this.updateStats();
-                this.showNotification('Заявку успішно оновлено', 'success');
+                this.showNotification('Заявку com sucesso оновлено', 'success');
                 $('#editRequestModal').modal('hide');
             } else {
                 let errorText = '';
                 try {
                     errorText = await response.text();
                 } catch (e) {}
-                this.showNotification('Помилка оновлення заявки: ' + (errorText || response.statusText), 'error');
+                this.showNotification('Erro оновлення заявки: ' + (errorText || response.statusText), 'error');
             }
         } catch (error) {
-            this.showNotification('Помилка оновлення заявки: ' + error.message, 'error');
+            this.showNotification('Erro оновлення заявки: ' + error.message, 'error');
         }
     }
 
     // Видалення заявки
     async deleteRequest(requestId) {
-        if (!confirm('Ви впевнені, що хочете видалити цю заявку?')) {
+        if (!confirm('Tem a certeza que pretende eliminar este pedido?')) {
             return;
         }
         
@@ -1547,7 +1547,7 @@ class DispatcherDashboard {
                     id: this.activities.length + 1,
                     type: "delete",
                     message: `Заявку #${requestId} видалено`,
-                    timestamp: new Date().toLocaleString('uk-UA'),
+                    timestamp: new Date().toLocaleString('pt-PT'),
                     icon: "fas fa-trash",
                     color: "text-danger"
                 };
@@ -1556,22 +1556,22 @@ class DispatcherDashboard {
                 this.renderRequests();
                 this.renderActivities();
                 this.updateStats();
-                this.showNotification('Заявку успішно видалено', 'success');
+                this.showNotification('Заявку com sucesso видалено', 'success');
             } else {
                 let errorText = '';
                 try {
                     errorText = await response.text();
                 } catch (e) {}
-                this.showNotification('Помилка видалення заявки: ' + (errorText || response.statusText), 'error');
+                this.showNotification('Erro видалення заявки: ' + (errorText || response.statusText), 'error');
             }
         } catch (error) {
-            this.showNotification('Помилка видалення заявки: ' + error.message, 'error');
+            this.showNotification('Erro видалення заявки: ' + error.message, 'error');
         }
     }
 
     // Масове управління заявками
     async bulkDelete() {
-        if (!confirm(`Ви впевнені, що хочете видалити ${this.selectedRequests.size} заявок?`)) {
+        if (!confirm(`Tem a certeza que pretende eliminar ${this.selectedRequests.size} pedidos?`)) {
             return;
         }
         
@@ -1593,7 +1593,7 @@ class DispatcherDashboard {
         const successCount = results.filter(r => r.success).length;
         const failCount = results.length - successCount;
         
-        // Видалення успішно видалених заявок з локальних даних
+        // Видалення com sucesso видалених заявок з локальних даних
         results.forEach(result => {
             if (result.success) {
                 this.requests = this.requests.filter(r => r.id != result.requestId);
@@ -1605,7 +1605,7 @@ class DispatcherDashboard {
         this.updateStats();
         
         if (failCount === 0) {
-            this.showNotification(`Успішно видалено ${successCount} заявок`, 'success');
+            this.showNotification(`Eliminado com sucesso ${successCount} заявок`, 'success');
         } else {
             this.showNotification(`Видалено ${successCount} заявок, помилок: ${failCount}`, 'warning');
         }
@@ -1622,7 +1622,7 @@ class DispatcherDashboard {
         this.selectedRequests.clear();
         this.renderRequests();
         this.updateStats();
-        this.showNotification('Техніка призначено для вибраних заявок', 'info');
+        this.showNotification('Técnicoа призначено для вибраних заявок', 'info');
     }
 
     bulkComplete() {
@@ -1634,7 +1634,7 @@ class DispatcherDashboard {
         this.selectedRequests.clear();
         this.renderRequests();
         this.updateStats();
-        this.showNotification('Вибрані заявки завершено', 'success');
+        this.showNotification('Вибрані заявки concluída', 'success');
     }
 }
 

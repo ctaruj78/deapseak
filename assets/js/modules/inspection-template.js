@@ -15,8 +15,8 @@ $(function(){
         };
         try {
             const result = await LiftAPI.request('/inspections', 'POST', formData);
-            CommonUtils.showNotification('Інспекцію успішно збережено!', 'success');
-            if (window.notificationManager) notificationManager.showNotification('Інспекцію успішно збережено!', 'success');
+            CommonUtils.showNotification('Інспекцію com sucesso збережено!', 'success');
+            if (window.notificationManager) notificationManager.showNotification('Інспекцію com sucesso збережено!', 'success');
         } catch (error) {
             let inspections = StorageManager.load('pending_inspections') || [];
             inspections.push({ ...formData, timestamp: Date.now() });

@@ -26,7 +26,7 @@ class WebSocketClient {
             this.ws = new WebSocket(this.serverUrl);
             this.setupEventHandlers();
         } catch (error) {
-            console.error('❌ Помилка підключення WebSocket:', error);
+            console.error('❌ Erro підключення WebSocket:', error);
             this.scheduleReconnect();
         }
     }
@@ -37,7 +37,7 @@ class WebSocketClient {
             this.isConnected = true;
             this.reconnectAttempts = 0;
             
-            // Надіслати повідомлення з черги
+            // Enviar повідомлення з черги
             this.flushMessageQueue();
             
             // Викликати обробник підключення
@@ -49,7 +49,7 @@ class WebSocketClient {
                 const message = JSON.parse(event.data);
                 this.handleMessage(message);
             } catch (error) {
-                console.error('❌ Помилка парсингу повідомлення:', error);
+                console.error('❌ Erro парсингу повідомлення:', error);
             }
         };
 
@@ -85,12 +85,12 @@ class WebSocketClient {
                 break;
                 
             case 'user_joined_room':
-                console.log(`👤 Користувач ${data.userId} приєднався до кімнати`);
+                console.log(`👤 Utilizador ${data.userId} приєднався до кімнати`);
                 this.emit('user_joined', data);
                 break;
                 
             case 'user_left_room':
-                console.log(`👤 Користувач ${data.userId} покинув кімнату`);
+                console.log(`👤 Utilizador ${data.userId} покинув кімнату`);
                 this.emit('user_left', data);
                 break;
                 
@@ -100,7 +100,7 @@ class WebSocketClient {
                 break;
                 
             case 'assignment_updated':
-                console.log(`📋 Оновлення заявки ${data.assignmentId}`);
+                console.log(`📋 Atualização заявки ${data.assignmentId}`);
                 this.emit('assignment_update', data);
                 break;
                 
@@ -119,12 +119,12 @@ class WebSocketClient {
                 break;
                 
             case 'error':
-                console.error('❌ Серверна помилка:', data.error);
+                console.error('❌ Agoверна помилка:', data.error);
                 this.emit('server_error', data);
                 break;
                 
             default:
-                console.warn('⚠️ Невідомий тип повідомлення:', type);
+                console.warn('⚠️ Desconhecido тип повідомлення:', type);
         }
     }
 
@@ -146,7 +146,7 @@ class WebSocketClient {
         if (this.isConnected && this.ws.readyState === WebSocket.OPEN) {
             this.ws.send(JSON.stringify(message));
         } else {
-            // Додати до черги якщо не підключено
+            // Adicionar до черги якщо не підключено
             this.messageQueue.push(message);
         }
     }
@@ -266,7 +266,7 @@ class WebSocketClient {
                 try {
                     handler(data);
                 } catch (error) {
-                    console.error(`❌ Помилка в обробнику події ${event}:`, error);
+                    console.error(`❌ Erro в обробнику події ${event}:`, error);
                 }
             });
         }

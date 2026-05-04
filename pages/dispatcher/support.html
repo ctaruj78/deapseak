@@ -178,7 +178,7 @@
                         <div class="card-header bg-white">
                             <h3 class="card-title">
                                 <i class="fas fa-plus-circle mr-2 text-primary"></i>
-                                Criar pedido до tecnicamenteї підтримки
+                                Criar pedido de suporte técnico
                             </h3>
                         </div>
                         <div class="card-body">
@@ -365,7 +365,7 @@
             document.getElementById('recentTickets').insertAdjacentHTML('afterbegin', html);
 
             if (typeof Swal !== 'undefined') {
-                Swal.fire({ icon: 'success', title: 'Pedido enviado!', html: `Ваш número pedido: <strong>${ticketNum}</strong><br>Aguarde resposta на вашу endereço email.`, confirmButtonColor: '#667eea' });
+                Swal.fire({ icon: 'success', title: 'Pedido enviado!', html: `O seu número de pedido: <strong>${ticketNum}</strong><br>Aguarde resposta no seu email.`, confirmButtonColor: '#667eea' });
             } else {
                 alert('Pedido ' + ticketNum + ' enviado! Aguarde resposta por email.');
             }

@@ -43,11 +43,11 @@ class ScheduleManager {
                     type: req.type || 'task',
                     start: new Date(req.scheduledDate || req.createdAt),
                     end: new Date(req.deadline || req.scheduledDate || req.createdAt),
-                    lift: `${req.lift?.model || 'Ліфт'} - ${req.lift?.location || 'Адреса'}`,
+                    lift: `${req.lift?.model || 'Elevador'} - ${req.lift?.location || 'Endereço'}`,
                     priority: req.priority || 'medium',
                     status: req.status || 'scheduled',
                     description: req.description || '',
-                    technician: req.assignedTo?.firstName ? `${req.assignedTo.firstName} ${req.assignedTo.lastName}` : 'Не призначено'
+                    technician: req.assignedTo?.firstName ? `${req.assignedTo.firstName} ${req.assignedTo.lastName}` : 'Não atribuído'
                 }));
                 
                 console.log('✅ Розклад завантажений з API:', this.events.length);
@@ -57,12 +57,12 @@ class ScheduleManager {
                 throw new Error(`API status: ${response.status}`);
             }
         } catch (error) {
-            console.error('❌ Помилка завантаження розкладу з API:', error);
+            console.error('❌ Erro завантаження розкладу з API:', error);
             // Fallback: спроба завантажити з localStorage
             this.events = JSON.parse(localStorage.getItem('scheduleEvents')) || [];
             
             if (this.events.length === 0) {
-                console.warn('⚠️ Використовуються демо-дані (API недоступне)');
+                console.warn('⚠️ Використовуються демо-дані (API indisponível)');
                 this.events = this.createSampleEvents();
                 localStorage.setItem('scheduleEvents', JSON.stringify(this.events));
             }
@@ -91,7 +91,7 @@ class ScheduleManager {
             },
             {
                 id: 'event-2',
-                title: 'Інспекція безпеки - Schindler 3300',
+                title: 'Inspeção безпеки - Schindler 3300',
                 type: 'inspection',
                 start: new Date(today.getFullYear(), today.getMonth(), today.getDate(), 14, 0),
                 end: new Date(today.getFullYear(), today.getMonth(), today.getDate(), 16, 0),
@@ -103,14 +103,14 @@ class ScheduleManager {
             },
             {
                 id: 'event-3',
-                title: 'Аварійний ремонт - KONE MonoSpace',
+                title: 'Reparação de emergência - KONE MonoSpace',
                 type: 'emergency',
                 start: new Date(tomorrow.getFullYear(), tomorrow.getMonth(), tomorrow.getDate(), 10, 0),
                 end: new Date(tomorrow.getFullYear(), tomorrow.getMonth(), tomorrow.getDate(), 13, 0),
                 lift: 'KONE MonoSpace - вул. Шевченка, 78',
                 priority: 'high',
                 status: 'scheduled',
-                description: 'Ремонт дверей ліфта',
+                description: 'Reparação дверей ліфта',
                 technician: 'Петро Сидоренко'
             },
             {
@@ -131,7 +131,7 @@ class ScheduleManager {
     setupEventListeners() {
         // Обробка зміни виду
         $('#workSchedule, #notifications').on('change', () => {
-            this.showNotification('Налаштування оновлено', 'info');
+            this.showNotification('Definições оновлено', 'info');
         });
     }
 
@@ -147,7 +147,7 @@ class ScheduleManager {
                 right: 'dayGridMonth,timeGridWeek,timeGridDay'
             },
             buttonText: {
-                today: 'Сьогодні',
+                today: 'Hoje',
                 month: 'Місяць',
                 week: 'Тиждень',
                 day: 'День'
@@ -264,7 +264,7 @@ class ScheduleManager {
                         <button class="btn btn-sm btn-info btn-icon" onclick="scheduleManager.viewEvent('${event.id}')" title="Перегляд">
                             <i class="fas fa-eye"></i>
                         </button>
-                        <button class="btn btn-sm btn-warning btn-icon" onclick="scheduleManager.editEvent('${event.id}')" title="Редагувати">
+                        <button class="btn btn-sm btn-warning btn-icon" onclick="scheduleManager.editEvent('${event.id}')" title="Editar">
                             <i class="fas fa-edit"></i>
                         </button>
                         ${event.status === 'scheduled' ? 
@@ -279,18 +279,18 @@ class ScheduleManager {
 
     getTypeText(type) {
         const types = {
-            'task': 'Завдання',
-            'inspection': 'Інспекція',
-            'maintenance': 'ТО',
-            'emergency': 'Аварія'
+            'task': 'Tarefa',
+            'inspection': 'Inspeção',
+            'maintenance': 'Manutenção',
+            'emergency': 'Avaria'
         };
         return types[type] || type;
     }
 
     getPriorityText(priority) {
         const priorities = {
-            'high': 'Високий',
-            'medium': 'Середній',
+            'high': 'Altий',
+            'medium': 'Agoедній',
             'low': 'Низький'
         };
         return priorities[priority] || priority;
@@ -299,7 +299,7 @@ class ScheduleManager {
     getStatusText(status) {
         const statuses = {
             'scheduled': 'Заплановано',
-            'in-progress': 'В роботі',
+            'in-progress': 'Em progresso',
             'completed': 'Завершено',
             'cancelled': 'Скасовано'
         };
@@ -436,9 +436,9 @@ class ScheduleManager {
                         <div>
                             <h5>${event.title}</h5>
                             <p class="mb-1"><strong>Час:</strong> ${eventTime}</p>
-                            <p class="mb-1"><strong>Тип:</strong> ${eventType}</p>
+                            <p class="mb-1"><strong>Tipo:</strong> ${eventType}</p>
                             <p class="mb-1"><strong>Локація:</strong> ${event.lift}</p>
-                            <p class="mb-0"><strong>Статус:</strong> <span class="badge badge-${this.getStatusClass(event.status)}">${this.getStatusText(event.status)}</span></p>
+                            <p class="mb-0"><strong>Estado:</strong> <span class="badge badge-${this.getStatusClass(event.status)}">${this.getStatusText(event.status)}</span></p>
                         </div>
                         <div class="btn-group">
                             <button class="btn btn-sm btn-info" onclick="scheduleManager.viewEvent('${event.id}')">
@@ -479,7 +479,7 @@ class ScheduleManager {
         const modalContent = this.createEventDetails(event);
         $('#eventDetailsContent').html(modalContent);
         
-        // Оновлення видимості кнопки старту
+        // Atualização видимості кнопки старту
         if (event.status === 'scheduled') {
             $('#startEventBtn').show();
         } else {
@@ -505,10 +505,10 @@ class ScheduleManager {
                             ${this.formatDateTime(event.start)} - ${this.formatTime(event.end)}
                         </div>
                         <div class="info-item">
-                            <strong><i class="fas fa-tag"></i> Тип:</strong> ${typeText}
+                            <strong><i class="fas fa-tag"></i> Tipo:</strong> ${typeText}
                         </div>
                         <div class="info-item">
-                            <strong><i class="fas fa-exclamation-circle"></i> Пріоритет:</strong> 
+                            <strong><i class="fas fa-exclamation-circle"></i> Prioridade:</strong> 
                             <span class="badge badge-${event.priority === 'high' ? 'danger' : event.priority === 'medium' ? 'warning' : 'success'}">
                                 ${priorityText}
                             </span>
@@ -519,10 +519,10 @@ class ScheduleManager {
                             <strong><i class="fas fa-map-marker-alt"></i> Локація:</strong> ${event.lift}
                         </div>
                         <div class="info-item">
-                            <strong><i class="fas fa-user-cog"></i> Технік:</strong> ${event.technician}
+                            <strong><i class="fas fa-user-cog"></i> Técnico:</strong> ${event.technician}
                         </div>
                         <div class="info-item">
-                            <strong><i class="fas fa-check-circle"></i> Статус:</strong> 
+                            <strong><i class="fas fa-check-circle"></i> Estado:</strong> 
                             <span class="badge badge-${this.getStatusClass(event.status)}">${statusText}</span>
                         </div>
                     </div>
@@ -530,7 +530,7 @@ class ScheduleManager {
 
                 ${event.description ? `
                     <div class="mt-4">
-                        <h5><i class="fas fa-align-left"></i> Опис</h5>
+                        <h5><i class="fas fa-align-left"></i> Descrição</h5>
                         <p>${event.description}</p>
                     </div>
                 ` : ''}
@@ -539,7 +539,7 @@ class ScheduleManager {
                     <h5><i class="fas fa-info-circle"></i> Додаткова інформація</h5>
                     <div class="alert alert-info">
                         <p class="mb-0">
-                            <i class="fas fa-clock"></i> Тривалість: ${this.getDuration(event)} хвилин<br>
+                            <i class="fas fa-clock"></i> Duração: ${this.getDuration(event)} хвилин<br>
                             <i class="fas fa-calendar"></i> Створено: ${this.formatDateTime(event.createdAt || event.start)}
                         </p>
                     </div>
@@ -664,7 +664,7 @@ class ScheduleManager {
     }
 
     convertToCSV(events) {
-        const headers = ['Дата', 'Час', 'Тип', 'Подія', 'Локація', 'Пріоритет', 'Статус', 'Технік'];
+        const headers = ['Data', 'Час', 'Tipo', 'Подія', 'Локація', 'Prioridade', 'Estado', 'Técnico'];
         const rows = events.map(event => [
             this.formatDate(event.start),
             `${this.formatTime(event.start)}-${this.formatTime(event.end)}`,
@@ -688,7 +688,7 @@ class ScheduleManager {
         link.download = filename;
         link.click();
         
-        this.showNotification('Експорт успішно завершено', 'success');
+        this.showNotification('Exportar com sucesso concluída', 'success');
     }
 
     saveSettings() {
@@ -702,7 +702,7 @@ class ScheduleManager {
         };
         
         localStorage.setItem('scheduleSettings', JSON.stringify(settings));
-        this.showNotification('Налаштування збережено!', 'success');
+        this.showNotification('Definições guardadas!', 'success');
     }
 
     showNotification(message, type = 'info') {

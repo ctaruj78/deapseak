@@ -15,14 +15,14 @@ $(function(){
         };
         try {
             const result = await LiftAPI.request('/reports', 'POST', formData);
-            CommonUtils.showNotification('Звіт успішно збережено!', 'success');
-            if (window.notificationManager) notificationManager.showNotification('Звіт успішно збережено!', 'success');
+            CommonUtils.showNotification('Relatório com sucesso збережено!', 'success');
+            if (window.notificationManager) notificationManager.showNotification('Relatório com sucesso збережено!', 'success');
         } catch (error) {
             let reports = StorageManager.load('pending_reports') || [];
             reports.push({ ...formData, timestamp: Date.now() });
             StorageManager.save('pending_reports', reports);
-            CommonUtils.showNotification('Звіт збережено локально (offline)', 'warning');
-            if (window.notificationManager) notificationManager.showNotification('Звіт збережено локально (offline)', 'warning');
+            CommonUtils.showNotification('Relatório збережено локально (offline)', 'warning');
+            if (window.notificationManager) notificationManager.showNotification('Relatório збережено локально (offline)', 'warning');
         }
         $('#reportForm')[0].reset();
     });

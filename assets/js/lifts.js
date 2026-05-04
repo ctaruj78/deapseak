@@ -28,11 +28,11 @@ class LiftManager {
         $('#add-lift-button').on('click', () => {
             console.log('Add lift button clicked');
             this.resetForm();
-            $('#modalTitle').text('Додати ліфт');
+            $('#modalTitle').text('Adicionar ліфт');
             $('#liftModal').modal('show');
         });
 
-        // Оновлення кількості серійних номерів
+        // Atualização кількості серійних номерів
         $('#lift-lift-count').on('change', function () {
             const count = $(this).val();
             const serialInputs = $('#lift-serial-inputs');
@@ -40,7 +40,7 @@ class LiftManager {
             for (let i = 0; i < count; i++) {
                 serialInputs.append(`
                     <div class="input-group mb-2">
-                        <input type="text" class="form-control lift-serial" placeholder="Серійний номер ліфта ${i + 1}" required>
+                        <input type="text" class="form-control lift-serial" placeholder="Número de série ліфта ${i + 1}" required>
                     </div>
                 `);
             }
@@ -113,7 +113,7 @@ class LiftManager {
             saveDataToLocalStorage();
             $('#liftModal').modal('hide');
             this.updateLiftTable();
-            if (typeof toastr !== 'undefined') toastr.success('Ліфт(и) додано.');
+            if (typeof toastr !== 'undefined') toastr.success('Elevador(и) додано.');
             console.log('Lift saved successfully - Total lifts:', allLifts.length);
         });
 
@@ -129,8 +129,8 @@ class LiftManager {
                 $('#detail-model').text(this.getModelDisplay(lift));
                 $('#detail-type').text(this.getLiftTypeLabel(lift.type));
                 $('#detail-status').html(`<span class="badge ${this.getStatusBadgeClass(lift.status)}">${this.getStatusText(lift.status)}</span>`);
-                $('#detail-capacity').text(lift.capacity ? lift.capacity + ' осіб' : '-');
-                $('#detail-speed').text(lift.speed ? lift.speed + ' м/с' : '-');
+                $('#detail-capacity').text(lift.capacity ? lift.capacity + ' pessoas' : '-');
+                $('#detail-speed').text(lift.speed ? lift.speed + ' m/s' : '-');
                 $('#detail-serial').text(lift.serial || '-');
                 $('#detail-frequency').text(lift.inspectionFrequency ? lift.inspectionFrequency + ' місяців' : '-');
                 $('#detail-address').text(lift.address || '-');
@@ -155,7 +155,7 @@ class LiftManager {
             // або викликати існуючий обробник
         });
 
-        // Редагування ліфта
+        // Editar elevador
         $('#lifts-table-body').on('click', '.edit-btn', function () {
             console.log('Edit button clicked for lift:', $(this).data('id'));
             const liftId = $(this).data('id');
@@ -172,7 +172,7 @@ class LiftManager {
                 $('#edit-lift-speed').val(lift.speed);
                 $('#edit-lift-last-inspection').val(lift.lastInspection);
                 $('#edit-lift-inspection-frequency').val(lift.inspectionFrequency);
-                $('#edit-report-status').text(lift.report ? 'Звіт завантажено' : 'Звіт відсутній');
+                $('#edit-report-status').text(lift.report ? 'Relatório завантажено' : 'Relatório відсутній');
                 $('#editLiftModal').modal('show');
             }
         });
@@ -194,19 +194,19 @@ class LiftManager {
                     reader.onload = function (e) {
                         lift.report = e.target.result;
                         CommonUtils.saveLifts(allLifts);
-                        $('#edit-report-status').text('Звіт завантажено');
-                        if (typeof toastr !== 'undefined') toastr.success('Звіт оновлено.');
+                        $('#edit-report-status').text('Relatório завантажено');
+                        if (typeof toastr !== 'undefined') toastr.success('Relatório оновлено.');
                     };
                     reader.readAsDataURL(fileInput);
                 }
                 CommonUtils.saveLifts(allLifts);
                 $('#editLiftModal').modal('hide');
                 this.updateLiftTable();
-                if (typeof toastr !== 'undefined') toastr.success('Ліфт оновлено.');
+                if (typeof toastr !== 'undefined') toastr.success('Elevador оновлено.');
             }
         });
 
-        // Призначення техніка
+        // Atribuir técnico
         $('#lifts-table-body').on('click', '.assign-tech-btn', function () {
             console.log('Assign tech button clicked for lift:', $(this).data('id'));
             const liftId = $(this).data('id');
@@ -229,7 +229,7 @@ class LiftManager {
                 CommonUtils.saveLifts(allLifts);
                 $('#assignTechModal').modal('hide');
                 this.updateLiftTable();
-                if (typeof toastr !== 'undefined') toastr.success('Технік призначено.');
+                if (typeof toastr !== 'undefined') toastr.success('Técnico призначено.');
             }
         });
 
@@ -341,7 +341,7 @@ class LiftManager {
             if (coords) {
                 $('#liftLat').val(coords.lat);
                 $('#liftLng').val(coords.lng);
-                // Оновлення карти
+                // Atualização карти
                 if (this.map) {
                     this.map.setView([coords.lat, coords.lng], 15);
                     if (this.marker) {
@@ -351,13 +351,13 @@ class LiftManager {
                         .bindPopup(address)
                         .openPopup();
                 }
-                CommonUtils.showNotification('Координати отримано успішно', 'success');
+                CommonUtils.showNotification('Координати отримано com sucesso', 'success');
             } else {
                 CommonUtils.showNotification('Адресу не знайдено', 'error');
             }
         } catch (error) {
             console.error('Geocoding error:', error);
-            CommonUtils.showNotification('Помилка отримання координат', 'error');
+            CommonUtils.showNotification('Erro отримання координат', 'error');
         }
     }
 
@@ -381,10 +381,10 @@ class LiftManager {
                 <tr>
                     <td colspan="10" class="text-center py-4 empty-state">
                         <i class="fas fa-elevator fa-3x mb-3 text-muted"></i>
-                        <h5>Ліфтів не знайдено</h5>
+                        <h5>Elevadorів не знайдено</h5>
                         <p class="mb-3">Додайте перший ліфт до системи</p>
                         <button class="btn btn-primary" data-toggle="modal" data-target="#liftModal">
-                            <i class="fas fa-plus"></i> Додати ліфт
+                            <i class="fas fa-plus"></i> Adicionar ліфт
                         </button>
                     </td>
                 </tr>
@@ -392,7 +392,7 @@ class LiftManager {
             return;
         }
 
-        // Групування ліфтів за адресою для чергування кольорів
+        // Dezпування ліфтів за адресою для чергування кольорів
         const _addrKey = lift => {
             const a = lift.address;
             if (a && typeof a === 'object') {
@@ -431,12 +431,12 @@ class LiftManager {
                     <td>${this.sanitizeHTML(lift.nextMaintenance || '-')}</td>
                     <td>
                         <div class="btn-group">
-                            <button class="btn btn-info btn-sm details-btn" data-id="${lift.id}">Деталі</button>
-                            <button class="btn btn-warning btn-sm edit-btn" data-id="${lift.id}">Редагувати</button>
-                            <button class="btn btn-success btn-sm assign-tech-btn" data-id="${lift.id}">Призначити техніка</button>
-                            <button class="btn btn-primary btn-sm request-btn" data-id="${lift.id}">Заявка</button>
+                            <button class="btn btn-info btn-sm details-btn" data-id="${lift.id}">Detalhes</button>
+                            <button class="btn btn-warning btn-sm edit-btn" data-id="${lift.id}">Editar</button>
+                            <button class="btn btn-success btn-sm assign-tech-btn" data-id="${lift.id}">Atribuir техніка</button>
+                            <button class="btn btn-primary btn-sm request-btn" data-id="${lift.id}">Pedido</button>
                             <button class="btn btn-secondary btn-sm qrcode-btn" data-id="${lift.id}">QR-код</button>
-                            <button class="btn btn-danger btn-sm delete-btn" data-id="${lift.id}">Видалити</button>
+                            <button class="btn btn-danger btn-sm delete-btn" data-id="${lift.id}">Eliminar</button>
                         </div>
                     </td>
                 </tr>
@@ -460,7 +460,7 @@ class LiftManager {
     $('#liftForm')[0].reset();
     $('#liftId').val('');
     $('#municipalNumber').val('');
-    $('#modalTitle').text('Додати ліфт');
+    $('#modalTitle').text('Adicionar ліфт');
     $('#liftForm input, #liftForm select').removeClass('is-invalid');
     $('#inspectionReport').val('');
     $('#liftLat').val('');
@@ -485,7 +485,7 @@ class LiftManager {
     $('#nextMaintenance').val(lift.nextMaintenance || '');
     $('#liftStatus').val(lift.status || 'active');
 
-        // Оновлення карти
+        // Atualização карти
         if (lift.lat && lift.lng && this.map) {
             this.map.setView([lift.lat, lift.lng], 15);
             if (this.marker) {
@@ -504,7 +504,7 @@ class LiftManager {
             const requiredFields = [
                 'municipalNumber', 'liftModel', 'liftType', 'liftAddress', 'liftPostcode',
                 'liftCapacity', 'liftSpeed', 'liftLocation', 'liftLat', 'liftLng', 'liftStatus'
-            ]; // ТО та email необов'язкові
+            ]; // Manutenção та email необов'язкові
             
             let isValid = true;
 
@@ -530,7 +530,7 @@ class LiftManager {
             });
 
             if (!isValid) {
-                CommonUtils.showNotification('Заповніть всі обов\'язкові поля', 'error');
+                CommonUtils.showNotification('Preencha todos os campos obrigatórios', 'error');
                 return;
             }
 
@@ -576,11 +576,11 @@ class LiftManager {
             CommonUtils.saveLifts(allLifts);
             $('#liftModal').modal('hide');
             this.loadLifts();
-            CommonUtils.showNotification('Ліфт успішно збережено', 'success');
+            CommonUtils.showNotification('Elevador com sucesso збережено', 'success');
 
         } catch (error) {
             console.error('Error saving lift:', error);
-            CommonUtils.showNotification('Помилка збереження ліфта', 'error');
+            CommonUtils.showNotification('Erro ao guardar ліфта', 'error');
         }
     }
 
@@ -601,16 +601,16 @@ class LiftManager {
         const lift = allLifts.find(l => l.id === id);
         if (lift) {
             this.fillForm(lift);
-            $('#modalTitle').text('Редагувати ліфт');
+            $('#modalTitle').text('Editar ліфт');
         }
     }
 
     deleteLift(id) {
-        if (confirm('Ви впевнені, що хочете видалити цей ліфт?')) {
+        if (confirm('Tem a certeza que pretende eliminar este elevador?')) {
             allLifts = allLifts.filter(lift => lift.id !== id);
             CommonUtils.saveLifts(allLifts);
             this.loadLifts();
-            CommonUtils.showNotification('Ліфт успішно видалено', 'success');
+            CommonUtils.showNotification('Elevador com sucesso видалено', 'success');
         }
     }
 
@@ -679,7 +679,7 @@ class LiftManager {
                     id: CommonUtils.generateLiftId(),
                     model: model,
                     serial: serial,
-                    address: $('#liftLocation').val() || 'Нова адреса'
+                    address: $('#liftLocation').val() || 'Nova адреса'
                 };
             }
 
@@ -705,12 +705,12 @@ class LiftManager {
                 throw new Error('QRCode library not loaded');
             }
 
-            $('#qrInfo').text(`Ліфт: ${lift.model} | Серійний: ${lift.serial}`);
+            $('#qrInfo').text(`Elevador: ${lift.model} | Agoійний: ${lift.serial}`);
             $('#qrModal').modal('show');
 
         } catch (error) {
             console.error('QR generation error:', error);
-            CommonUtils.showNotification('Помилка генерації QR коду', 'error');
+            CommonUtils.showNotification('Erro генерації QR коду', 'error');
         }
     }
 
@@ -732,7 +732,7 @@ class LiftManager {
             }
         } catch (error) {
             console.error('QR download error:', error);
-            CommonUtils.showNotification('Помилка завантаження QR коду', 'error');
+            CommonUtils.showNotification('Erro завантаження QR коду', 'error');
         }
     }
 
@@ -744,39 +744,39 @@ class LiftManager {
 
             const worksheet = XLSX.utils.json_to_sheet(allLifts.map(lift => ({
                 'ID': lift.id,
-                'Модель': lift.model,
-                'Тип': this.getLiftTypeLabel(lift.type),
-                'Адреса': lift.address,
-                'Статус': this.getStatusLabel(lift.status),
-                'Клієнт': lift.client,
-                'Серійний номер': lift.serial,
-                'Останнє ТО': this.formatDate(lift.lastMaintenance),
-                'Наступне ТО': this.formatDate(lift.nextMaintenance),
+                'Modelo': lift.model,
+                'Tipo': this.getLiftTypeLabel(lift.type),
+                'Endereço': lift.address,
+                'Estado': this.getStatusLabel(lift.status),
+                'Cliente': lift.client,
+                'Número de série': lift.serial,
+                'Última manutenção': this.formatDate(lift.lastMaintenance),
+                'Próxima manutenção': this.formatDate(lift.nextMaintenance),
                 'Виробник': lift.manufacturer
             })));
 
             const workbook = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(workbook, worksheet, 'Ліфти');
+            XLSX.utils.book_append_sheet(workbook, worksheet, 'Elevadores');
             XLSX.writeFile(workbook, 'lifts_export.xlsx');
             CommonUtils.showNotification('Дані експортовано в Excel', 'success');
 
         } catch (error) {
             console.error('Excel export error:', error);
-            CommonUtils.showNotification('Помилка експорту в Excel', 'error');
+            CommonUtils.showNotification('Erro експорту в Excel', 'error');
         }
     }
 
     getLiftTypeLabel(type) {
         const types = {
-            'passenger': 'Пасажирський',
-            'cargo': 'Вантажний',
-            'freight': 'Вантажний',
-            'hospital': 'Лікарняний',
-            'service': 'Службовий',
-            'panoramic': 'Панорамний',
+            'passenger': 'Passageiro',
+            'cargo': 'Carga',
+            'freight': 'Carga',
+            'hospital': 'Hospitalar',
+            'service': 'Serviço',
+            'panoramic': 'Panorâmico',
             'escalator': 'Ескалатор',
             'platform': 'Платформа',
-            'other': 'Інший'
+            'other': 'Outro'
         };
         return types[type] || type || '-';
     }
@@ -811,9 +811,9 @@ class LiftManager {
 
     getStatusLabel(status) {
         const statuses = {
-            'active': 'Активний',
-            'maintenance': 'Обслуговування',
-            'inactive': 'Неактивний'
+            'active': 'Ativo',
+            'maintenance': 'Manutenção',
+            'inactive': 'Inativo'
         };
         return statuses[status] || status;
     }
@@ -906,12 +906,12 @@ class LiftManager {
         repairEntries.forEach(entry => {
             const item = `
                 <li class="list-group-item">
-                    <strong>Дата:</strong> ${entry.date || 'Невідомо'}<br>
-                    <strong>Тип:</strong> ${entry.type === 'status_update' ? 'Зміна статусу' : 'Завантаження фото'}<br>
-                    <strong>Статус:</strong> ${this.getStatusText(entry.status)}<br>
-                    <strong>Технік:</strong> ${entry.tech || 'Невідомо'}<br>
-                    <strong>Тривалість:</strong> ${entry.duration || 'N/A'} хв<br>
-                    ${entry.data ? `<a href="${entry.data}" download="repair_photo_${entry.date}.jpg">Завантажити фото</a>` : ''}
+                    <strong>Data:</strong> ${entry.date || 'Desconhecido'}<br>
+                    <strong>Tipo:</strong> ${entry.type === 'status_update' ? 'Зміна статусу' : 'A carregar фото'}<br>
+                    <strong>Estado:</strong> ${this.getStatusText(entry.status)}<br>
+                    <strong>Técnico:</strong> ${entry.tech || 'Desconhecido'}<br>
+                    <strong>Duração:</strong> ${entry.duration || 'N/A'} хв<br>
+                    ${entry.data ? `<a href="${entry.data}" download="repair_photo_${entry.date}.jpg">Descarregar фото</a>` : ''}
                 </li>
             `;
             repairList.append(item);
@@ -930,10 +930,10 @@ class LiftManager {
         lift.inspectionHistory.forEach(entry => {
             const item = `
                 <li class="list-group-item">
-                    <strong>Дата:</strong> ${entry.date || 'Невідомо'}<br>
-                    <strong>Технік:</strong> ${entry.tech || 'Невідомо'}<br>
-                    <strong>Коментар:</strong> ${entry.comment || 'Без коментаря'}<br>
-                    ${entry.report ? `<a href="${entry.report}" download="inspection_${lift.id}_${entry.date}.pdf">Завантажити звіт</a>` : 'Звіт відсутній'}
+                    <strong>Data:</strong> ${entry.date || 'Desconhecido'}<br>
+                    <strong>Técnico:</strong> ${entry.tech || 'Desconhecido'}<br>
+                    <strong>Comentário:</strong> ${entry.comment || 'Без коментаря'}<br>
+                    ${entry.report ? `<a href="${entry.report}" download="inspection_${lift.id}_${entry.date}.pdf">Descarregar звіт</a>` : 'Relatório відсутній'}
                 </li>
             `;
             inspectionList.append(item);
@@ -979,10 +979,10 @@ class LiftManager {
 
     getStatusText(status) {
         const statuses = {
-            'active': 'Активний',
-            'maintenance': 'Обслуговування',
-            'inactive': 'Неактивний',
-            'out_of_service': 'Поза обслуговуванням',
+            'active': 'Ativo',
+            'maintenance': 'Manutenção',
+            'inactive': 'Inativo',
+            'out_of_service': 'Fora de serviço',
             'completed': 'Завершено'
         };
         return statuses[status] || status;
@@ -994,7 +994,7 @@ class LiftManager {
         
         // Перевірка чи завантажені ліфти
         if (!this.lifts || !Array.isArray(this.lifts)) {
-            console.log('⏳ Ліфти ще не завантажені, пропускаємо оновлення таблиці');
+            console.log('⏳ Elevadores ще не завантажені, пропускаємо оновлення таблиці');
             return;
         }
         
@@ -1038,7 +1038,7 @@ class LiftManager {
         } else {
             $('#no-lifts-message').hide();
             $('#lifts-table').show();
-            // Групування за адресою для чергування кольорів
+            // Dezпування за адресою для чергування кольорів
             const _addrKey2 = lift => {
                 const a = lift.address;
                 if (a && typeof a === 'object') {
@@ -1068,12 +1068,12 @@ class LiftManager {
                         <td>${this.sanitizeHTML(lift.lastMaintenance || '-')}</td>
                         <td>${this.sanitizeHTML(lift.nextMaintenance || '-')}</td>
                         <td>
-                            <button class="btn btn-info btn-sm details-btn" data-id="${lift.id}">Деталі</button>
-                            <button class="btn btn-warning btn-sm edit-btn" data-id="${lift.id}">Редагувати</button>
-                            <button class="btn btn-success btn-sm assign-tech-btn" data-id="${lift.id}">Призначити техніка</button>
-                            <button class="btn btn-primary btn-sm request-btn" data-id="${lift.id}">Заявка</button>
+                            <button class="btn btn-info btn-sm details-btn" data-id="${lift.id}">Detalhes</button>
+                            <button class="btn btn-warning btn-sm edit-btn" data-id="${lift.id}">Editar</button>
+                            <button class="btn btn-success btn-sm assign-tech-btn" data-id="${lift.id}">Atribuir техніка</button>
+                            <button class="btn btn-primary btn-sm request-btn" data-id="${lift.id}">Pedido</button>
                             <button class="btn btn-secondary btn-sm qrcode-btn" data-id="${lift.id}">QR-код</button>
-                            <button class="btn btn-danger btn-sm delete-btn" data-id="${lift.id}">Видалити</button>
+                            <button class="btn btn-danger btn-sm delete-btn" data-id="${lift.id}">Eliminar</button>
                         </td>
                     </tr>
                 `);

@@ -20,8 +20,8 @@ $(function(){
         }
         try {
             const result = await LiftAPI.request('/emails', 'POST', formData);
-            CommonUtils.showNotification('Email успішно відправлено!', 'success');
-            if (window.notificationManager) notificationManager.showNotification('Email успішно відправлено!', 'success');
+            CommonUtils.showNotification('Email com sucesso відправлено!', 'success');
+            if (window.notificationManager) notificationManager.showNotification('Email com sucesso відправлено!', 'success');
         } catch (error) {
             let emails = StorageManager.load('pending_emails') || [];
             emails.push({ ...formData, timestamp: Date.now() });

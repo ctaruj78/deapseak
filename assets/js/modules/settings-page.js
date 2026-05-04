@@ -35,10 +35,10 @@ class SettingsPage {
             <div class="row mt-4">
                 <div class="col-12">
                     <button class="btn btn-primary btn-lg" id="save-settings">
-                        <i class="fas fa-save"></i> Зберегти
+                        <i class="fas fa-save"></i> Guardar
                     </button>
                     <button class="btn btn-secondary btn-lg ml-2" id="reset-settings">
-                        <i class="fas fa-undo"></i> Скинути
+                        <i class="fas fa-undo"></i> Repor
                     </button>
                 </div>
             </div>
@@ -92,13 +92,13 @@ class SettingsPage {
             <div class="col-md-6">
                 <div class="card card-info">
                     <div class="card-header">
-                        <h3 class="card-title"><i class="fas fa-bell"></i> Сповіщення</h3>
+                        <h3 class="card-title"><i class="fas fa-bell"></i> Notificações</h3>
                     </div>
                     <div class="card-body">
                         <div class="custom-control custom-switch mb-3">
                             <input type="checkbox" class="custom-control-input" id="notif-email"
                                 ${notif.email !== false ? 'checked' : ''}>
-                            <label class="custom-control-label" for="notif-email">Email сповіщення</label>
+                            <label class="custom-control-label" for="notif-email">Notificações por email</label>
                         </div>
                         <div class="custom-control custom-switch mb-3">
                             <input type="checkbox" class="custom-control-input" id="notif-push"
@@ -106,11 +106,11 @@ class SettingsPage {
                             <label class="custom-control-label" for="notif-push">Push сповіщення</label>
                         </div>
                         <hr>
-                        <h6 class="text-muted">Типи сповіщень:</h6>
+                        <h6 class="text-muted">Tipoи сповіщень:</h6>
                         <div class="custom-control custom-switch mb-2">
                             <input type="checkbox" class="custom-control-input" id="notif-new-request"
                                 ${notif.newRequest !== false ? 'checked' : ''}>
-                            <label class="custom-control-label" for="notif-new-request">Новий запит</label>
+                            <label class="custom-control-label" for="notif-new-request">Novo запит</label>
                         </div>
                         <div class="custom-control custom-switch mb-2">
                             <input type="checkbox" class="custom-control-input" id="notif-status-change"
@@ -165,10 +165,10 @@ class SettingsPage {
             const lang = $(this).val();
             try {
                 await settingsManager.updateLanguage(lang);
-                toastr.success('Мову змінено. Сторінка оновиться...');
+                toastr.success('Idioma alterado. A página será atualizada...');
                 setTimeout(function() { location.reload(); }, 1500);
             } catch (error) {
-                toastr.error('Помилка зміни мови');
+                toastr.error('Erro ao alterar o idioma');
             }
         });
 
@@ -204,19 +204,19 @@ class SettingsPage {
             }
 
             await settingsManager.saveSettings(newSettings);
-            toastr.success('✅ Налаштування збережено!');
+            toastr.success('✅ Definições guardadas!');
         } catch (error) {
             console.error('Save error:', error);
-            toastr.error('❌ Помилка збереження');
+            toastr.error('❌ Erro ao guardar');
         }
     }
 
     async resetSettings() {
-        if (!confirm('Ви впевнені? Всі налаштування будуть скинуті до стандартних.')) return;
+        if (!confirm('Tem a certeza? Todas as definições serão repostas para os valores predefinidos.')) return;
         try {
             await settingsManager.resetSettings();
         } catch (error) {
-            toastr.error('Помилка скидання налаштувань');
+            toastr.error('Erro ao repor as definições');
         }
     }
 

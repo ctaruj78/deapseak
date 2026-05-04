@@ -85,7 +85,7 @@ function initSidebarTreeview() {
 }
 
 /**
- * Завантажити sidebar і ініціалізувати після завантаження
+ * Descarregar sidebar і ініціалізувати після завантаження
  */
 function loadSidebarWithInit(sidebarPath = 'includes/sidebar.html') {
     console.log('📂 Loading sidebar from:', sidebarPath);

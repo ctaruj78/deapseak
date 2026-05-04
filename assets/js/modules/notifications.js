@@ -24,7 +24,7 @@ class NotificationManager {
     }
 
     init() {
-        // Завантаження збережених нотифікацій
+        // A carregar збережених нотифікацій
         this.notifications = StorageManager.load('notifications') || [];
         this.updateUnreadCount();
 
@@ -119,7 +119,7 @@ class NotificationManager {
         return filtered;
     }
 
-    // Оновлення кількості непрочитаних
+    // Atualização кількості непрочитаних
     updateUnreadCount() {
         this.unreadCount = this.notifications.filter(n => !n.read).length;
     }
@@ -349,7 +349,7 @@ class NotificationManager {
     static maintenance(liftName, message, data = {}) {
         return window.notificationManager.add({
             type: this.NOTIFICATION_TYPES.MAINTENANCE,
-            title: `Обслуговування: ${liftName}`,
+            title: `Manutenção: ${liftName}`,
             message,
             data,
             channels: [this.NOTIFICATION_CHANNELS.IN_APP, this.NOTIFICATION_CHANNELS.PUSH]
@@ -436,7 +436,7 @@ if (typeof document !== 'undefined') {
     document.head.appendChild(style);
 }
 
-// Експорт для Node.js
+// Exportar для Node.js
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = NotificationManager;
 }

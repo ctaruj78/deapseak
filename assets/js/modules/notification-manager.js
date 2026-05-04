@@ -39,7 +39,7 @@ class NotificationManager {
             this.updateBadges();
             
         } catch (error) {
-            console.error('Помилка завантаження сповіщень:', error);
+            console.error('Erro завантаження сповіщень:', error);
             this.loadDemoNotifications();
         }
     }
@@ -451,7 +451,7 @@ class NotificationManager {
         document.getElementById('notificationCount').textContent = unreadCount;
         document.getElementById('notificationsBadge').textContent = unreadCount;
         
-        // Оновлення заголовка вкладки
+        // Atualização заголовка вкладки
         document.title = unreadCount > 0 ? `(${unreadCount}) Notificações - Cliente` : 'Notificações - Cliente';
     }
 

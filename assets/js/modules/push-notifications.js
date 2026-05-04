@@ -1,5 +1,5 @@
 // push-notifications.js
-// Push-нотифікації для техніка про нові завдання чи аварії
+// Push-нотифікації для техніка про нові завдання чи avariї
 
 class PushNotifications {
   constructor() {
@@ -8,7 +8,7 @@ class PushNotifications {
 
   async init() {
     if (!('Notification' in window)) {
-      alert('Push-нотифікації не підтримуються вашим браузером');
+      alert('Notificações push não são suportadas pelo seu browser');
       return;
     }
     this.permission = await Notification.requestPermission();

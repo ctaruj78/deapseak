@@ -88,7 +88,7 @@ class DeapSeaKEventBus {
                         this.off(event, listener.id);
                     }
                 } catch (error) {
-                    console.error(`❌ Помилка в обробнику події "${event}":`, error);
+                    console.error(`❌ Erro в обробнику події "${event}":`, error);
                 }
             });
         }
@@ -115,9 +115,9 @@ class DeapSeaKEventBus {
      * Системні події для автоматичної інтеграції модулів
      */
     setupSystemEvents() {
-        // Ліфт створено → Автоматично генеруємо QR код
+        // Elevador створено → Автоматично генеруємо QR код
         this.on('lift:created', (data) => {
-            console.log('🏢 Ліфт створено, генеруємо QR код...');
+            console.log('🏢 Elevador створено, генеруємо QR код...');
             
             setTimeout(() => {
                 const qrData = {
@@ -137,9 +137,9 @@ class DeapSeaKEventBus {
             this.emit('analytics:qr-created', data, { source: 'qr-system' });
         });
 
-        // Інспекція заплановано → Налаштовуємо email сповіщення
+        // Inspeção заплановано → Налаштовуємо email сповіщення
         this.on('inspection:scheduled', (data) => {
-            console.log('📅 Інспекція заплановано, налаштовуємо сповіщення...');
+            console.log('📅 Inspeção заплановано, налаштовуємо сповіщення...');
             
             if (data.autoEmails) {
                 this.emit('email:schedule-notification', {
@@ -201,12 +201,12 @@ class DeapSeaKEventBus {
     showUserNotification(eventData) {
         const { event, data } = eventData;
         
-        // Налаштування сповіщень для користувача
+        // Definições сповіщень для користувача
         const notificationConfig = {
-            'lift:created': { type: 'success', message: 'Ліфт успішно створено!' },
+            'lift:created': { type: 'success', message: 'Elevador com sucesso створено!' },
             'qr:generated': { type: 'info', message: 'QR код автоматично згенеровано' },
-            'inspection:scheduled': { type: 'success', message: 'Інспекція заплановано, email буде надіслано автоматично' },
-            'email:sent': { type: 'success', message: 'Email сповіщення надіслано' },
+            'inspection:scheduled': { type: 'success', message: 'Inspeção заплановано, email буде надіслано автоматично' },
+            'email:sent': { type: 'success', message: 'Notificações por email надіслано' },
             'system:error': { type: 'error', message: 'Виникла системна помилка' }
         };
 
@@ -249,7 +249,7 @@ class DeapSeaKEventBus {
     }
 
     /**
-     * Статистика системи
+     * Estatísticas do sistema
      */
     getSystemStats() {
         const stats = {

@@ -11,7 +11,7 @@ class PredictiveMaintenanceSystem {
         this.mlModels = new Map();
         this.isInitialized = false;
         
-        // Налаштування системи прогнозування
+        // Definições системи прогнозування
         this.config = {
             predictionHorizon: 90, // днів в майбутне
             riskThresholds: {
@@ -24,7 +24,7 @@ class PredictiveMaintenanceSystem {
                 inspection: 90, // днів
                 minor_service: 180,
                 major_service: 365,
-                overhaul: 1095 // 3 роки
+                overhaul: 1095 // 3 anos
             },
             componentWeights: {
                 motor: 0.25,
@@ -65,13 +65,13 @@ class PredictiveMaintenanceSystem {
             
             // Запускаємо періодичний аналіз
             this.startPredictiveAnalysis();
-            console.log('✅ Періодичний аналіз запущено');
+            console.log('✅ Períodoичний аналіз запущено');
             
             this.isInitialized = true;
             console.log('✅ Predictive Maintenance System готовий!');
             
         } catch (error) {
-            console.error('❌ Помилка ініціалізації Predictive Maintenance System:', error);
+            console.error('❌ Erro ініціалізації Predictive Maintenance System:', error);
             
             // Встановлюємо мінімальну робочу конфігурацію
             this.isInitialized = false;
@@ -98,7 +98,7 @@ class PredictiveMaintenanceSystem {
     }
 
     async loadHistoricalData() {
-        console.log('📚 Завантаження історичних даних технічного обслуговування...');
+        console.log('📚 A carregar історичних даних технічного обслуговування...');
         
         try {
             // Завантажуємо дані ліфтів з API
@@ -149,7 +149,7 @@ class PredictiveMaintenanceSystem {
                     console.warn('⚠️ Токен не знайдено в localStorage');
                 }
             } catch (e) {
-                console.error('❌ Помилка запиту до API /api/lifts:', e);
+                console.error('❌ Erro запиту до API /api/lifts:', e);
                 console.warn('⚠️ Спробуємо localStorage як fallback');
             }
             
@@ -193,7 +193,7 @@ class PredictiveMaintenanceSystem {
                     this.analyzeElevatorCondition(lift);
                     processedLifts++;
                 } catch (e) {
-                    console.warn(`⚠️ Помилка аналізу ліфта ${index}:`, e);
+                    console.warn(`⚠️ Erro аналізу ліфта ${index}:`, e);
                 }
             });
             
@@ -204,7 +204,7 @@ class PredictiveMaintenanceSystem {
                     this.analyzeInspectionHistory(inspection);
                     processedInspections++;
                 } catch (e) {
-                    console.warn(`⚠️ Помилка аналізу інспекції ${index}:`, e);
+                    console.warn(`⚠️ Erro аналізу інспекції ${index}:`, e);
                 }
             });
             
@@ -228,7 +228,7 @@ class PredictiveMaintenanceSystem {
         const condition = {
             liftId: liftId,
             municipalNumber: lift.municipalNumber || liftId,
-            address: lift.address ? `${lift.address.street || ''}, ${lift.address.city || ''}`.trim() : 'Адреса не вказана',
+            address: lift.address ? `${lift.address.street || ''}, ${lift.address.city || ''}`.trim() : 'Endereço não especificado',
             age: ageInYears,
             status: lift.status || 'active',
             lastInspection: this.getLastInspectionDate(liftId),
@@ -244,7 +244,7 @@ class PredictiveMaintenanceSystem {
         // Генеруємо рекомендації
         condition.recommendations = this.generateMaintenanceRecommendations(condition);
         
-        // Прогнозуємо наступні дати ТО
+        // Прогнозуємо наступні дати Manutenção
         condition.nextMaintenanceDates = this.predictNextMaintenanceDates(condition);
         
         this.maintenanceData.set(liftId, condition);
@@ -295,7 +295,7 @@ class PredictiveMaintenanceSystem {
             
             // Деградація з часом (різна для різних компонентів)
             const degradationRates = {
-                motor: 0.05, // 5% на рік
+                motor: 0.05, // 5% на ano
                 cables: 0.03,
                 brakes: 0.07,
                 doors: 0.06,
@@ -391,7 +391,7 @@ class PredictiveMaintenanceSystem {
         totalRisk += usageRisk * 0.1;
         totalWeight += 0.1;
         
-        // 4. РИЗИК НА ОСНОВІ ІСТОРІЇ РЕМОНТІВ ТА ІНСПЕКЦІЙ (вага 35%) - НОВИЙ!
+        // 4. РИЗИК НА ОСНОВІ ІСManutençãoРІЇ РЕМОНТІВ ТА ІНСПЕКЦІЙ (вага 35%) - НОВИЙ!
         const historyRisk = this.calculateHistoryBasedRisk(condition.maintenanceHistory);
         totalRisk += historyRisk * 0.35;
         totalWeight += 0.35;
@@ -412,7 +412,7 @@ class PredictiveMaintenanceSystem {
         if (totalWeight > 0) {
             totalRisk = totalRisk / totalWeight;
         } else {
-            totalRisk = 0.5; // Середній ризик якщо немає даних
+            totalRisk = 0.5; // Agoедній ризик якщо немає даних
         }
         
         // Перевіряємо чи результат валідний
@@ -425,24 +425,24 @@ class PredictiveMaintenanceSystem {
     }
 
     /**
-     * 📊 НОВИЙ МЕТОД: Розрахунок ризику на основі історії втручань
+     * 📊 НОВИЙ МЕManutençãoД: Розрахунок ризику на основі історії втручань
      */
     calculateHistoryBasedRisk(history) {
         if (!history || history.length === 0) {
-            return 0.5; // Середній ризик якщо немає історії
+            return 0.5; // Agoедній ризик якщо немає історії
         }
         
         let historyRisk = 0;
         const now = Date.now();
         
-        // Аналізуємо останні 2 роки (730 днів)
+        // Аналізуємо останні 2 anos (730 днів)
         const recentHistory = history.filter(event => {
             const eventDate = new Date(event.date).getTime();
             const daysAgo = (now - eventDate) / (1000 * 60 * 60 * 24);
             return daysAgo <= 730;
         });
         
-        // 1. ЧАСТОТА ВТРУЧАНЬ - чим більше, тим гірше
+        // 1. ЧАСManutençãoТА ВТРУЧАНЬ - чим більше, тим гірше
         const interventionFrequency = recentHistory.length / 730; // втручань на день
         const frequencyRisk = Math.min(interventionFrequency * 100, 0.4); // макс 0.4
         
@@ -466,20 +466,20 @@ class PredictiveMaintenanceSystem {
         // 3. ТРЕНД ПОГІРШЕННЯ - чи збільшується частота проблем?
         const trendRisk = this.analyzeTrend(recentHistory);
         
-        // 4. ТИП ВТРУЧАНЬ - аварійні ремонти = високий ризик
+        // 4. ТИП ВТРУЧАНЬ - avariйні ремонти = високий ризик
         const emergencyCount = recentHistory.filter(e => 
             e.type === 'emergency' || e.type === 'repair' || e.inspectionType === 'repair'
         ).length;
         const emergencyRatio = recentHistory.length > 0 ? emergencyCount / recentHistory.length : 0;
         const emergencyRisk = Math.min(emergencyRatio * 0.5, 0.2); // макс 0.2
         
-        // 5. ПОВТОРЮВАНІ ПРОБЛЕМИ - чи є однакові проблеми?
+        // 5. ПОВManutençãoРЮВАНІ ПРОБЛЕМИ - чи є однакові проблеми?
         const repeatRisk = this.detectRepeatIssues(recentHistory);
         
         // Сумарний ризик з історії
         historyRisk = frequencyRisk + severityRisk + trendRisk + emergencyRisk + repeatRisk;
         
-        console.log(`📊 Аналіз історії: частота=${frequencyRisk.toFixed(2)}, серйозність=${severityRisk.toFixed(2)}, тренд=${trendRisk.toFixed(2)}, аварії=${emergencyRisk.toFixed(2)}, повтори=${repeatRisk.toFixed(2)} => ВСЬОГО=${historyRisk.toFixed(2)}`);
+        console.log(`📊 Аналіз історії: частота=${frequencyRisk.toFixed(2)}, серйозність=${severityRisk.toFixed(2)}, тренд=${trendRisk.toFixed(2)}, avariї=${emergencyRisk.toFixed(2)}, повтори=${repeatRisk.toFixed(2)} => ВСЬОГО=${historyRisk.toFixed(2)}`);
         
         return Math.min(historyRisk, 0.99);
     }
@@ -514,7 +514,7 @@ class PredictiveMaintenanceSystem {
     detectRepeatIssues(history) {
         if (history.length < 2) return 0;
         
-        // Групуємо по типу проблеми
+        // Dezпуємо по типу проблеми
         const issueTypes = {};
         history.forEach(event => {
             const type = event.inspectionType || event.type || 'unknown';
@@ -557,7 +557,7 @@ class PredictiveMaintenanceSystem {
                     component: component,
                     action: 'scheduled_maintenance',
                     priority: 'medium',
-                    description: `🔧 Планове ТО для ${component} - середній ризик`,
+                    description: `🔧 Manutenção planeada для ${component} - середній ризик`,
                     reason: `Стан компонента: ${(data.condition * 100).toFixed(0)}%`,
                     estimatedCost: this.estimateMaintenanceCost(component, 'preventive'),
                     timeframe: '1-2 тижні'
@@ -565,7 +565,7 @@ class PredictiveMaintenanceSystem {
             }
         });
         
-        // 2. РЕКОМЕНДАЦІЇ НА ОСНОВІ ІСТОРІЇ ВТРУЧАНЬ
+        // 2. РЕКОМЕНДАЦІЇ НА ОСНОВІ ІСManutençãoРІЇ ВТРУЧАНЬ
         if (condition.maintenanceHistory && condition.maintenanceHistory.length > 0) {
             const historyRecommendations = this.generateHistoryBasedRecommendations(condition.maintenanceHistory, condition);
             recommendations.push(...historyRecommendations);
@@ -596,7 +596,7 @@ class PredictiveMaintenanceSystem {
                 action: 'overdue_inspection',
                 priority: 'critical',
                 description: '⏰ ПРОСТРОЧЕНА інспекція - більше року без перевірки',
-                reason: `Остання інспекція: ${Math.floor(daysSinceInspection)} днів тому`,
+                reason: `Остання інспекція: ${Math.floor(daysSinceInspection)} днів atrás`,
                 estimatedCost: 3000,
                 timeframe: 'НЕГАЙНО'
             });
@@ -607,7 +607,7 @@ class PredictiveMaintenanceSystem {
                 action: 'upcoming_inspection',
                 priority: 'high',
                 description: '📅 Час планової інспекції - пройшло більше 6 місяців',
-                reason: `Остання інспекція: ${Math.floor(daysSinceInspection)} днів тому`,
+                reason: `Остання інспекція: ${Math.floor(daysSinceInspection)} днів atrás`,
                 estimatedCost: 2500,
                 timeframe: '1-2 тижні'
             });
@@ -635,12 +635,12 @@ class PredictiveMaintenanceSystem {
     }
 
     /**
-     * 🔍 НОВИЙ МЕТОД: Генерація рекомендацій на основі історії
+     * 🔍 НОВИЙ МЕManutençãoД: Генерація рекомендацій на основі історії
      */
     generateHistoryBasedRecommendations(history, condition) {
         const recommendations = [];
         
-        // Аналізуємо останні 2 роки
+        // Аналізуємо останні 2 anos
         const now = Date.now();
         const recentHistory = history.filter(event => {
             const eventDate = new Date(event.date).getTime();
@@ -670,7 +670,7 @@ class PredictiveMaintenanceSystem {
             }
         });
         
-        // 2. Аналізуємо частоту аварійних ремонтів
+        // 2. Аналізуємо частоту avariйних ремонтів
         const emergencyCount = recentHistory.filter(e => 
             e.type === 'emergency' || e.type === 'repair' || e.severity === 'critical'
         ).length;
@@ -681,8 +681,8 @@ class PredictiveMaintenanceSystem {
                 component: 'system',
                 action: 'preventive_overhaul',
                 priority: 'critical',
-                description: `⚡ Необхідний капітальний ремонт - ${emergencyCount} аварійних втручань за 2 роки`,
-                reason: `Занадто часті аварійні ситуації`,
+                description: `⚡ Необхідний капітальний ремонт - ${emergencyCount} avariйних втручань за 2 anos`,
+                reason: `Занадто часті avariйні ситуації`,
                 estimatedCost: 25000,
                 timeframe: '1 місяць'
             });
@@ -692,8 +692,8 @@ class PredictiveMaintenanceSystem {
                 component: 'system',
                 action: 'comprehensive_check',
                 priority: 'high',
-                description: `🔍 Комплексна діагностика - виявлено ${emergencyCount} аварії`,
-                reason: `Підвищена частота аварійних ситуацій`,
+                description: `🔍 Комплексна діагностика - виявлено ${emergencyCount} avariї`,
+                reason: `Підвищена частота avariйних ситуацій`,
                 estimatedCost: 6000,
                 timeframe: '2 тижні'
             });
@@ -711,7 +711,7 @@ class PredictiveMaintenanceSystem {
                     component: 'system',
                     action: 'maintenance_program',
                     priority: 'high',
-                    description: '📈 Впровадити посилену програму ТО - тренд погіршення стану',
+                    description: '📈 Впровадити посилену програму Manutenção - тренд погіршення стану',
                     reason: `Частота проблем збільшилась на ${((recentPeriod.length / olderPeriod.length - 1) * 100).toFixed(0)}%`,
                     estimatedCost: 12000,
                     timeframe: '1 місяць'
@@ -731,7 +731,7 @@ class PredictiveMaintenanceSystem {
                     component: 'system',
                     action: 'follow_up_inspection',
                     priority: 'critical',
-                    description: `🔴 Контрольна перевірка після критичної інспекції ${Math.floor(daysSince)} днів тому`,
+                    description: `🔴 Контрольна перевірка після критичної інспекції ${Math.floor(daysSince)} днів atrás`,
                     reason: `Критична проблема потребує моніторингу`,
                     estimatedCost: 3500,
                     timeframe: '3-5 днів'
@@ -759,7 +759,7 @@ class PredictiveMaintenanceSystem {
         const dates = {};
         const now = new Date();
         
-        // Прогнозуємо дати для різних типів ТО
+        // Прогнозуємо дати для різних типів Manutenção
         Object.keys(this.config.maintenanceIntervals).forEach(maintenanceType => {
             const baseInterval = this.config.maintenanceIntervals[maintenanceType];
             
@@ -794,7 +794,7 @@ class PredictiveMaintenanceSystem {
         // Знижуємо впевненість для старих ліфтів
         if (condition.age > 20) confidence -= 0.2;
         
-        // Знижуємо впевненість якщо мало даних про ТО
+        // Знижуємо впевненість якщо мало даних про Manutenção
         if (!condition.maintenanceHistory || condition.maintenanceHistory.length < 3) {
             confidence -= 0.15;
         }
@@ -812,7 +812,7 @@ class PredictiveMaintenanceSystem {
         
         // Спрощені ML моделі (в реальному проекті тут будуть складніші алгоритми)
         
-        // Модель прогнозування відмов
+        // Modelo прогнозування відмов
         this.mlModels.set('failure_prediction', {
             type: 'ensemble',
             accuracy: 0.85,
@@ -820,7 +820,7 @@ class PredictiveMaintenanceSystem {
             predict: (features) => this.predictFailureProbability(features)
         });
         
-        // Модель оптимізації графіку ТО
+        // Modelo оптимізації графіку Manutenção
         this.mlModels.set('schedule_optimization', {
             type: 'genetic_algorithm',
             accuracy: 0.78,
@@ -828,7 +828,7 @@ class PredictiveMaintenanceSystem {
             optimize: (constraints) => this.optimizeMaintenanceSchedule(constraints)
         });
         
-        // Модель оцінки вартості
+        // Modelo оцінки вартості
         this.mlModels.set('cost_estimation', {
             type: 'regression',
             accuracy: 0.82,
@@ -892,7 +892,7 @@ class PredictiveMaintenanceSystem {
                 });
                 
                 remainingBudget -= lift.estimatedCost;
-                currentDate.setDate(currentDate.getDate() + 7); // 1 тиждень між ТО
+                currentDate.setDate(currentDate.getDate() + 7); // 1 тиждень між Manutenção
             }
         });
         
@@ -930,12 +930,12 @@ class PredictiveMaintenanceSystem {
     }
 
     setupAlertRules() {
-        console.log('🚨 Налаштування правил алертів...');
+        console.log('🚨 Definições правил алертів...');
         
         // Критичні алерти
         this.alertRules.set('critical_failure_risk', {
             condition: (data) => data.failureRisk > this.config.riskThresholds.critical,
-            message: (data) => `КРИТИЧНО: Ліфт ${data.liftId} має критичний ризик відмови (${(data.failureRisk * 100).toFixed(1)}%)`,
+            message: (data) => `КРИТИЧНО: Elevador ${data.liftId} має критичний ризик відмови (${(data.failureRisk * 100).toFixed(1)}%)`,
             action: 'immediate_shutdown',
             priority: 'critical'
         });
@@ -943,15 +943,15 @@ class PredictiveMaintenanceSystem {
         // Алерти високого ризику
         this.alertRules.set('high_failure_risk', {
             condition: (data) => data.failureRisk > this.config.riskThresholds.high,
-            message: (data) => `УВАГА: Ліфт ${data.liftId} потребує негайного ТО (ризик: ${(data.failureRisk * 100).toFixed(1)}%)`,
+            message: (data) => `УВАГА: Elevador ${data.liftId} потребує негайного Manutenção (ризик: ${(data.failureRisk * 100).toFixed(1)}%)`,
             action: 'urgent_maintenance',
             priority: 'high'
         });
         
-        // Алерти прострочених ТО
+        // Алерти прострочених Manutenção
         this.alertRules.set('overdue_maintenance', {
             condition: (data) => this.isMaintenanceOverdue(data),
-            message: (data) => `Прострочено ТО для ліфта ${data.liftId}`,
+            message: (data) => `Прострочено Manutenção для ліфта ${data.liftId}`,
             action: 'schedule_maintenance',
             priority: 'medium'
         });
@@ -1024,7 +1024,7 @@ class PredictiveMaintenanceSystem {
     startPredictiveAnalysis() {
         console.log('🔄 Запуск періодичного аналізу...');
         
-        // Запускаємо аналіз кожні 6 годин
+        // Запускаємо аналіз кожні 6 horas
         setInterval(() => {
             this.runFullAnalysis();
         }, 6 * 60 * 60 * 1000);
@@ -1048,7 +1048,7 @@ class PredictiveMaintenanceSystem {
             // Генеруємо алерти
             this.generateSystemAlerts();
             
-            // Оптимізуємо графіки ТО
+            // Оптимізуємо графіки Manutenção
             this.optimizeMaintenanceSchedules();
             
             // Оновлюємо статистику
@@ -1062,9 +1062,9 @@ class PredictiveMaintenanceSystem {
                 }, { source: 'predictive-maintenance' });
             }
             
-            console.log('✅ Повний аналіз завершено');
+            console.log('✅ Повний аналіз concluída');
         } catch (error) {
-            console.error('❌ Помилка при аналізі:', error);
+            console.error('❌ Erro при аналізі:', error);
         }
     }
 
@@ -1102,7 +1102,7 @@ class PredictiveMaintenanceSystem {
             // Додаємо в матрицю ризиків
             const riskItem = {
                 liftId: data.municipalNumber || liftId,
-                address: data.address || 'Адреса не вказана',
+                address: data.address || 'Endereço não especificado',
                 risk: (data.failureRisk || 0) * 100,
                 riskScore: data.failureRisk || 0,
                 level: data.failureRisk > 0.6 ? 'HIGH' : 
@@ -1136,7 +1136,7 @@ class PredictiveMaintenanceSystem {
         predictions.nextQuarter.estimatedCosts = Math.round(predictions.nextMonth.estimatedCosts * 2.2);
         predictions.nextQuarter.riskMatrix = [...predictions.nextMonth.riskMatrix];
         
-        // Прогноз на рік (спрощено)
+        // Прогноз на ano (спрощено)
         predictions.nextYear.expectedFailures = Math.round(predictions.nextMonth.expectedFailures * 8);
         predictions.nextYear.maintenanceNeeded = Math.round(predictions.nextMonth.maintenanceNeeded * 6);
         predictions.nextYear.estimatedCosts = Math.round(predictions.nextMonth.estimatedCosts * 7);
@@ -1225,18 +1225,18 @@ class PredictiveMaintenanceSystem {
         const type = (inspection.inspectionType || inspection.type || '').toLowerCase();
         const findings = (inspection.findings || inspection.comments || '').toLowerCase();
         
-        // Критичний рівень
+        // Crítico рівень
         if (status === 'failed' || type === 'emergency' || type === 'repair') {
             return 'critical';
         }
         
-        // Високий рівень якщо є ключові слова в описі
-        const highSeverityKeywords = ['аварі', 'поломк', 'небезпек', 'ризик', 'негайн', 'критич'];
+        // Altий рівень якщо є ключові слова в описі
+        const highSeverityKeywords = ['avari', 'поломк', 'небезпек', 'ризик', 'негайн', 'критич'];
         if (highSeverityKeywords.some(keyword => findings.includes(keyword))) {
             return 'high';
         }
         
-        // Середній рівень для ремонтних робіт
+        // Agoедній рівень для ремонтних робіт
         if (type === 'maintenance' || type === 'repair') {
             return 'medium';
         }
@@ -1292,7 +1292,7 @@ class PredictiveMaintenanceSystem {
             const riskPercent = (data.failureRisk * 100).toFixed(1);
             let category = '';
             
-            // Високий ризик = все >60% (включає critical >80%)
+            // Alto risco = все >60% (включає critical >80%)
             if (data.failureRisk > this.config.riskThresholds.medium) {
                 stats.highRiskLifts++;
                 if (data.failureRisk > this.config.riskThresholds.high) {
@@ -1301,11 +1301,11 @@ class PredictiveMaintenanceSystem {
                     category = 'ВИСОКИЙ';
                 }
             } else if (data.failureRisk > this.config.riskThresholds.low) {
-                // Середній ризик = 30-60%
+                // Agoедній ризик = 30-60%
                 stats.mediumRiskLifts++;
                 category = 'СЕРЕДНІЙ';
             } else {
-                // Низький ризик = <30%
+                // Baixo risco = <30%
                 stats.lowRiskLifts++;
                 category = 'НИЗЬКИЙ';
             }
@@ -1320,10 +1320,10 @@ class PredictiveMaintenanceSystem {
         stats.averageAge = totalAge / stats.totalLifts || 0;
         
         console.log('✅ Фінальна статистика:', {
-            'Високий ризик': stats.highRiskLifts,
-            'Середній ризик': stats.mediumRiskLifts,
-            'Низький ризик': stats.lowRiskLifts,
-            'Середній вік': stats.averageAge.toFixed(1)
+            'Alto risco': stats.highRiskLifts,
+            'Agoедній ризик': stats.mediumRiskLifts,
+            'Baixo risco': stats.lowRiskLifts,
+            'Agoедній вік': stats.averageAge.toFixed(1)
         });
         
         localStorage.setItem('maintenance_statistics', JSON.stringify(stats));
@@ -1367,7 +1367,7 @@ class PredictiveMaintenanceSystem {
     setupEventBusIntegration() {
         if (!window.eventBus) return;
         
-        console.log('📡 Налаштування EventBus для Predictive Maintenance...');
+        console.log('📡 Definições EventBus для Predictive Maintenance...');
         
         // Слухаємо створення ліфтів
         eventBus.on('lift:created', (data) => {
@@ -1425,7 +1425,7 @@ class PredictiveMaintenanceSystem {
         // Зберігаємо оптимізований графік
         localStorage.setItem('optimized_maintenance_schedule', JSON.stringify(optimizedSchedule));
         
-        console.log(`📅 Оптимізовано графік ТО для ${optimizedSchedule.schedule.length} ліфтів`);
+        console.log(`📅 Оптимізовано графік Manutenção для ${optimizedSchedule.schedule.length} ліфтів`);
     }
 
     estimateTotalCost(parameters) {
@@ -1500,7 +1500,7 @@ class PredictiveMaintenanceSystem {
         
         components.forEach(component => {
             // Базова деградація залежно від віку
-            let condition = Math.max(0.1, 1.0 - (ageInYears * 0.03)); // 3% на рік
+            let condition = Math.max(0.1, 1.0 - (ageInYears * 0.03)); // 3% на ano
             
             // Додаткові фактори для різних компонентів
             switch(component) {
@@ -1642,7 +1642,7 @@ class PredictiveMaintenanceSystem {
             
             matrix.push({
                 liftId: data.municipalNumber || liftId,
-                address: data.address || 'Адреса не вказана',
+                address: data.address || 'Endereço não especificado',
                 risk: riskPercent,
                 riskScore: data.failureRisk || 0,
                 level: level,
@@ -1726,7 +1726,7 @@ class PredictiveMaintenanceSystem {
     }
 }
 
-// Експорт та автоініціалізація
+// Exportar та автоініціалізація
 if (typeof window !== 'undefined') {
     window.PredictiveMaintenanceSystem = PredictiveMaintenanceSystem;
     

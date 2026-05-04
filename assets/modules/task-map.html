@@ -178,7 +178,7 @@
                             <div class="card-tools">
                                 <div class="btn-group">
                                     <button type="button" class="btn btn-sm btn-info" onclick="refreshMap()">
-                                        <i class="fas fa-sync"></i> Оновити
+                                        <i class="fas fa-sync"></i> Atualizar
                                     </button>
                                     <button type="button" class="btn btn-sm btn-primary" onclick="centerMap()">
                                         <i class="fas fa-crosshairs"></i> Центрувати
@@ -234,14 +234,14 @@
                     <!-- Filters -->
                     <div class="card">
                         <div class="card-header">
-                            <h3 class="card-title">Фільтри</h3>
+                            <h3 class="card-title">Filtroи</h3>
                         </div>
                         <div class="card-body">
                             <div class="filter-panel">
                                 <div class="form-group">
-                                    <label>Статус завдання</label>
+                                    <label>Estado da tarefa</label>
                                     <select class="form-control" id="statusFilter" onchange="filterTasks()">
-                                        <option value="all">Всі статуси</option>
+                                        <option value="all">Todos статуси</option>
                                         <option value="urgent">Термінові</option>
                                         <option value="normal">Звичайні</option>
                                         <option value="in-progress">Виконуються</option>
@@ -249,25 +249,25 @@
                                     </select>
                                 </div>
                                 <div class="form-group">
-                                    <label>Технік</label>
+                                    <label>Técnico</label>
                                     <select class="form-control" id="techFilter" onchange="filterTasks()">
-                                        <option value="all">Всі техніки</option>
+                                        <option value="all">Todos техніки</option>
                                         <option value="TECH001">Іванов І.І.</option>
                                         <option value="TECH002">Петров П.П.</option>
                                         <option value="TECH003">Сидоров С.С.</option>
                                     </select>
                                 </div>
                                 <div class="form-group">
-                                    <label>Тип завдання</label>
+                                    <label>Tipo de tarefa</label>
                                     <select class="form-control" id="typeFilter" onchange="filterTasks()">
-                                        <option value="all">Всі типи</option>
-                                        <option value="maintenance">ТО</option>
-                                        <option value="repair">Ремонт</option>
-                                        <option value="emergency">Аварія</option>
+                                        <option value="all">Todos типи</option>
+                                        <option value="maintenance">Manutenção</option>
+                                        <option value="repair">Reparação</option>
+                                        <option value="emergency">Avaria</option>
                                         <option value="inspection">Перевірка</option>
                                     </select>
                                 </div>
-                                <button class="btn btn-primary btn-block" onclick="applyFilters()">Застосувати</button>
+                                <button class="btn btn-primary btn-block" onclick="applyFilters()">Aplicar</button>
                                 <button class="btn btn-secondary btn-block" onclick="clearFilters()">Очистити</button>
                             </div>
                         </div>
@@ -297,7 +297,7 @@
                             </div>
                             <div class="legend-item">
                                 <div class="legend-color" style="background: #17a2b8;"></div>
-                                <span>Техніки</span>
+                                <span>Técnicoи</span>
                             </div>
                         </div>
                     </div>
@@ -312,13 +312,13 @@
                                 <i class="fas fa-plus mr-2"></i>Нове завдання
                             </button>
                             <button class="btn btn-info btn-block mb-2" onclick="assignTechnician()">
-                                <i class="fas fa-user-check mr-2"></i>Призначити техніка
+                                <i class="fas fa-user-check mr-2"></i>Atribuir техніка
                             </button>
                             <button class="btn btn-warning btn-block mb-2" onclick="generateReport()">
-                                <i class="fas fa-chart-line mr-2"></i>Звіт маршрутів
+                                <i class="fas fa-chart-line mr-2"></i>Relatório маршрутів
                             </button>
                             <button class="btn btn-secondary btn-block" onclick="exportMap()">
-                                <i class="fas fa-download mr-2"></i>Експорт карти
+                                <i class="fas fa-download mr-2"></i>Exportar mapa
                             </button>
                         </div>
                     </div>
@@ -330,7 +330,7 @@
     <!-- Task info popup -->
     <div class="task-info-card" id="taskInfoCard">
         <div id="taskInfoContent"></div>
-        <button class="btn btn-sm btn-secondary float-right mt-2" onclick="hideTaskInfo()">Закрити</button>
+        <button class="btn btn-sm btn-secondary float-right mt-2" onclick="hideTaskInfo()">Fechar</button>
     </div>
 </div>
 
@@ -339,29 +339,29 @@ const taskData = {
     'T001': {
         id: 'T001',
         address: 'вул. Хрещатик, 1',
-        type: 'Аварія',
-        priority: 'Термінова',
-        technician: 'Не призначено',
+        type: 'Avaria',
+        priority: 'Urgente',
+        technician: 'Não atribuído',
         created: '21.12.2024 09:30',
-        description: 'Ліфт зупинився між поверхами'
+        description: 'Elevador parado entre andares'
     },
     'T002': {
         id: 'T002',
         address: 'вул. Володимирська, 15',
-        type: 'ТО',
-        priority: 'Термінова',
+        type: 'Manutenção',
+        priority: 'Urgente',
         technician: 'Іванов І.І.',
         created: '21.12.2024 08:15',
-        description: 'Планове технічне обслуговування'
+        description: 'Manutenção técnica planeada'
     },
     'T003': {
         id: 'T003',
         address: 'пр-т Перемоги, 42',
-        type: 'Ремонт',
-        priority: 'Звичайна',
+        type: 'Reparação',
+        priority: 'Normal',
         technician: 'Петров П.П.',
         created: '20.12.2024 16:20',
-        description: 'Заміна кнопок виклику'
+        description: 'Substituição de botões de chamada'
     }
 };
 
@@ -369,7 +369,7 @@ const techData = {
     'TECH001': {
         id: 'TECH001',
         name: 'Іванов Іван Іванович',
-        status: 'На завданні',
+        status: 'Em tarefa',
         currentTask: 'T002',
         phone: '+38 (098) 123-45-67',
         experience: '5 років'
@@ -377,10 +377,10 @@ const techData = {
     'TECH002': {
         id: 'TECH002',
         name: 'Петров Петро Петрович',
-        status: 'В дорозі',
+        status: 'A caminho',
         currentTask: 'T003',
         phone: '+38 (098) 765-43-21',
-        experience: '3 роки'
+        experience: '3 anos'
     }
 };
 
@@ -391,16 +391,16 @@ function showTaskInfo(taskId, event) {
     
     if (task) {
         content.innerHTML = `
-            <h6><strong>Завдання ${task.id}</strong></h6>
-            <p><strong>Адреса:</strong> ${task.address}</p>
-            <p><strong>Тип:</strong> ${task.type}</p>
-            <p><strong>Пріоритет:</strong> ${task.priority}</p>
-            <p><strong>Технік:</strong> ${task.technician}</p>
+            <h6><strong>Tarefa ${task.id}</strong></h6>
+            <p><strong>Endereço:</strong> ${task.address}</p>
+            <p><strong>Tipo:</strong> ${task.type}</p>
+            <p><strong>Prioridade:</strong> ${task.priority}</p>
+            <p><strong>Técnico:</strong> ${task.technician}</p>
             <p><strong>Створено:</strong> ${task.created}</p>
-            <p><strong>Опис:</strong> ${task.description}</p>
+            <p><strong>Descrição:</strong> ${task.description}</p>
             <div class="mt-2">
-                <button class="btn btn-sm btn-primary mr-1" onclick="editTask('${taskId}')">Редагувати</button>
-                <button class="btn btn-sm btn-success" onclick="completeTask('${taskId}')">Завершити</button>
+                <button class="btn btn-sm btn-primary mr-1" onclick="editTask('${taskId}')">Editar</button>
+                <button class="btn btn-sm btn-success" onclick="completeTask('${taskId}')">Concluir</button>
             </div>
         `;
         
@@ -418,12 +418,12 @@ function showTechInfo(techId, event) {
     if (tech) {
         content.innerHTML = `
             <h6><strong>${tech.name}</strong></h6>
-            <p><strong>Статус:</strong> ${tech.status}</p>
+            <p><strong>Estado:</strong> ${tech.status}</p>
             <p><strong>Поточне завдання:</strong> ${tech.currentTask}</p>
-            <p><strong>Телефон:</strong> ${tech.phone}</p>
+            <p><strong>Telefone:</strong> ${tech.phone}</p>
             <p><strong>Досвід:</strong> ${tech.experience}</p>
             <div class="mt-2">
-                <button class="btn btn-sm btn-info mr-1" onclick="contactTech('${techId}')">Зв'язатися</button>
+                <button class="btn btn-sm btn-info mr-1" onclick="contactTech('${techId}')">Contactar</button>
                 <button class="btn btn-sm btn-warning" onclick="reassignTech('${techId}')">Перепризначити</button>
             </div>
         `;
@@ -443,12 +443,12 @@ function filterTasks() {
     const tech = document.getElementById('techFilter').value;
     const type = document.getElementById('typeFilter').value;
     
-    console.log('Фільтрація:', { status, tech, type });
+    console.log('Filtroація:', { status, tech, type });
 }
 
 function applyFilters() {
     filterTasks();
-    toastr.info('Фільтри застосовано');
+    toastr.info('Filtros aplicados');
 }
 
 function clearFilters() {
@@ -456,60 +456,60 @@ function clearFilters() {
     document.getElementById('techFilter').value = 'all';
     document.getElementById('typeFilter').value = 'all';
     filterTasks();
-    toastr.info('Фільтри очищено');
+    toastr.info('Filtros limpos');
 }
 
 function refreshMap() {
-    toastr.info('Карта оновлена');
+    toastr.info('Mapa atualizado');
 }
 
 function centerMap() {
-    toastr.info('Карта відцентрована');
+    toastr.info('Mapa centrado');
 }
 
 function optimizeRoutes() {
-    toastr.info('Оптимізація маршрутів...');
+    toastr.info('A otimizar rotas...');
     setTimeout(() => {
-        toastr.success('Маршрути оптимізовано');
+        toastr.success('Rotas otimizadas');
     }, 2000);
 }
 
 function createTask() {
-    alert('Створення нового завдання');
+    alert('Criar nova tarefa');
 }
 
 function assignTechnician() {
-    alert('Призначення техніка');
+    alert('Atribuir técnico');
 }
 
 function generateReport() {
-    alert('Генерація звіту маршрутів');
+    alert('A gerar relatório de rotas');
 }
 
 function exportMap() {
-    alert('Експорт карти');
+    alert('Exportar mapa');
 }
 
 function editTask(taskId) {
     hideTaskInfo();
-    alert('Редагування завдання: ' + taskId);
+    alert('Editar tarefa: ' + taskId);
 }
 
 function completeTask(taskId) {
     hideTaskInfo();
-    if(confirm('Позначити завдання як завершене?')) {
-        toastr.success('Завдання ' + taskId + ' завершено');
+    if(confirm('Marcar tarefa como concluída?')) {
+        toastr.success('Tarefa ' + taskId + ' concluída');
     }
 }
 
 function contactTech(techId) {
     hideTaskInfo();
-    alert('Зв\'язок з технікою: ' + techId);
+    alert('Contactar técnico: ' + techId);
 }
 
 function reassignTech(techId) {
     hideTaskInfo();
-    alert('Перепризначення техніка: ' + techId);
+    alert('Reatribuir técnico: ' + techId);
 }
 
 // Hide popup when clicking outside

@@ -1,4 +1,4 @@
-<!-- Lift Management Module для Адміністраторів -->
+<!-- Lift Management Module для Administradorів -->
 <div class="content-header">
     <div class="container-fluid">
         <div class="row mb-2">
@@ -8,7 +8,7 @@
             <div class="col-sm-6">
                 <ol class="breadcrumb float-sm-right">
                     <li class="breadcrumb-item"><a href="#" onclick="window.crmSystem.loadDashboard()">Головна</a></li>
-                    <li class="breadcrumb-item active">Ліфти</li>
+                    <li class="breadcrumb-item active">Elevadores</li>
                 </ol>
             </div>
         </div>
@@ -23,7 +23,7 @@
                 <div class="small-box bg-info">
                     <div class="inner">
                         <h3 id="total-lifts">0</h3>
-                        <p>Всього ліфтів</p>
+                        <p>Total de elevadores</p>
                     </div>
                     <div class="icon">
                         <i class="fas fa-elevator"></i>
@@ -76,17 +76,17 @@
                         </h3>
                         <div class="card-tools">
                             <button type="button" class="btn btn-primary btn-sm" onclick="showAddLiftModal()">
-                                <i class="fas fa-plus"></i> Додати ліфт
+                                <i class="fas fa-plus"></i> Adicionar ліфт
                             </button>
                             <div class="btn-group ml-2">
                                 <button type="button" class="btn btn-sm btn-outline-primary active" data-status-filter="all">
-                                    Всі
+                                    Todos
                                 </button>
                                 <button type="button" class="btn btn-sm btn-outline-success" data-status-filter="active">
                                     Активні
                                 </button>
                                 <button type="button" class="btn btn-sm btn-outline-warning" data-status-filter="maintenance">
-                                    На ТО
+                                    Em manutenção
                                 </button>
                                 <button type="button" class="btn btn-sm btn-outline-danger" data-status-filter="inactive">
                                     Неактивні
@@ -99,12 +99,12 @@
                             <table id="lifts-table" class="table table-striped">
                                 <thead>
                                     <tr>
-                                        <th>Ліфт</th>
-                                        <th>Адреса</th>
-                                        <th>Тип</th>
-                                        <th>Статус</th>
-                                        <th>Останнє ТО</th>
-                                        <th>Наступне ТО</th>
+                                        <th>Elevador</th>
+                                        <th>Endereço</th>
+                                        <th>Tipo</th>
+                                        <th>Estado</th>
+                                        <th>Última manutenção</th>
+                                        <th>Próxima manutenção</th>
                                         <th>Дії</th>
                                     </tr>
                                 </thead>
@@ -134,20 +134,20 @@
                         </button>
                         <button class="btn btn-info btn-block mb-2" onclick="window.crmSystem.loadModule('analytics')">
                             <i class="fas fa-chart-bar mr-2"></i>
-                            Аналітика
+                            Análise
                         </button>
                         <button class="btn btn-success btn-block mb-2" onclick="exportLiftsData()">
                             <i class="fas fa-download mr-2"></i>
-                            Експорт даних
+                            Exportar даних
                         </button>
                         <button class="btn btn-warning btn-block" onclick="window.crmSystem.loadModule('maintenance-schedule')">
                             <i class="fas fa-calendar-alt mr-2"></i>
-                            Графік ТО
+                            Графік Manutenção
                         </button>
                     </div>
                 </div>
 
-                <!-- Сьогодні потребують уваги -->
+                <!-- Hoje потребують уваги -->
                 <div class="card">
                     <div class="card-header">
                         <h3 class="card-title">
@@ -186,7 +186,7 @@
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h4 class="modal-title">Додати новий ліфт</h4>
+                <h4 class="modal-title">Adicionar новий ліфт</h4>
                 <button type="button" class="close" data-dismiss="modal">
                     <span>&times;</span>
                 </button>
@@ -196,19 +196,19 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label for="liftModel">Модель ліфта</label>
+                                <label for="liftModel">Modelo do elevador</label>
                                 <input type="text" class="form-control" id="liftModel" required>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label for="liftType">Тип ліфта</label>
+                                <label for="liftType">Tipo de elevador</label>
                                 <select class="form-control" id="liftType" required>
                                     <option value="">Оберіть тип</option>
-                                    <option value="passenger">Пасажирський</option>
-                                    <option value="cargo">Вантажний</option>
-                                    <option value="hospital">Лікарняний</option>
-                                    <option value="service">Службовий</option>
+                                    <option value="passenger">Passageiro</option>
+                                    <option value="cargo">Carga</option>
+                                    <option value="hospital">Hospitalar</option>
+                                    <option value="service">Serviço</option>
                                 </select>
                             </div>
                         </div>
@@ -216,13 +216,13 @@
                     <div class="row">
                         <div class="col-md-8">
                             <div class="form-group">
-                                <label for="liftAddress">Адреса</label>
+                                <label for="liftAddress">Endereço</label>
                                 <input type="text" class="form-control" id="liftAddress" required>
                             </div>
                         </div>
                         <div class="col-md-4">
                             <div class="form-group">
-                                <label for="liftPostcode">Поштовий індекс</label>
+                                <label for="liftPostcode">Código postal</label>
                                 <input type="text" class="form-control" id="liftPostcode" required>
                             </div>
                         </div>
@@ -230,19 +230,19 @@
                     <div class="row">
                         <div class="col-md-4">
                             <div class="form-group">
-                                <label for="liftCapacity">Вантажопідйомність (осіб)</label>
+                                <label for="liftCapacity">Capacidade (pessoas)</label>
                                 <input type="number" class="form-control" id="liftCapacity" min="1" required>
                             </div>
                         </div>
                         <div class="col-md-4">
                             <div class="form-group">
-                                <label for="liftSpeed">Швидкість (м/с)</label>
+                                <label for="liftSpeed">Velocidade (m/s)</label>
                                 <input type="number" class="form-control" id="liftSpeed" step="0.1" min="0.1" required>
                             </div>
                         </div>
                         <div class="col-md-4">
                             <div class="form-group">
-                                <label for="inspectionFrequency">Частота ТО (міс.)</label>
+                                <label for="inspectionFrequency">Frequência de manutenção (meses)</label>
                                 <select class="form-control" id="inspectionFrequency" required>
                                     <option value="3">3 місяці</option>
                                     <option value="6" selected>6 місяців</option>
@@ -254,13 +254,13 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label for="clientName">Назва клієнта</label>
+                                <label for="clientName">Nome do cliente</label>
                                 <input type="text" class="form-control" id="clientName" required>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label for="clientEmail">Email клієнта</label>
+                                <label for="clientEmail">Email do cliente</label>
                                 <input type="email" class="form-control" id="clientEmail" required>
                             </div>
                         </div>
@@ -268,8 +268,8 @@
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Скасувати</button>
-                <button type="button" class="btn btn-primary" onclick="addLift()">Додати ліфт</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="addLift()">Adicionar ліфт</button>
             </div>
         </div>
     </div>
@@ -328,7 +328,7 @@ $(document).ready(function() {
 });
 
 function setupEventListeners() {
-    // Фільтрація по статусу
+    // Filtroація по статусу
     $('[data-status-filter]').on('click', function() {
         const filter = $(this).data('status-filter');
         $('[data-status-filter]').removeClass('active');
@@ -346,7 +346,7 @@ async function loadLiftsData() {
         const sampleLifts = [
             {
                 id: "lift_001",
-                model: "Ліфт №1",
+                model: "Elevador N.º1",
                 type: "passenger",
                 address: "вул. Шевченка, 10",
                 postcode: "01001",
@@ -361,7 +361,7 @@ async function loadLiftsData() {
             },
             {
                 id: "lift_002",
-                model: "Ліфт №2",
+                model: "Elevador N.º2",
                 type: "passenger",
                 address: "вул. Франка, 25",
                 postcode: "01015",
@@ -376,7 +376,7 @@ async function loadLiftsData() {
             },
             {
                 id: "lift_003",
-                model: "Ліфт №3",
+                model: "Elevador N.º3",
                 type: "cargo",
                 address: "пр. Перемоги, 50",
                 postcode: "01135",
@@ -391,7 +391,7 @@ async function loadLiftsData() {
             },
             {
                 id: "lift_004",
-                model: "Ліфт №4",
+                model: "Elevador N.º4",
                 type: "hospital",
                 address: "вул. Лесі Українки, 15",
                 postcode: "01011",
@@ -406,7 +406,7 @@ async function loadLiftsData() {
             },
             {
                 id: "lift_005",
-                model: "Ліфт №5",
+                model: "Elevador N.º5",
                 type: "passenger",
                 address: "вул. Сагайдачного, 8",
                 postcode: "04070",
@@ -427,10 +427,10 @@ async function loadLiftsData() {
         loadAttentionNeeded();
         loadRecentEvents();
         
-        toastr.success('Дані ліфтів завантажено успішно');
+        toastr.success('Dados dos elevadores carregados com sucesso');
     } catch (error) {
-        console.error('Помилка завантаження даних ліфтів:', error);
-        toastr.error('Помилка завантаження даних ліфтів');
+        console.error('Erro ao carregar dados dos elevadores:', error);
+        toastr.error('Erro ao carregar dados dos elevadores');
     }
 }
 
@@ -455,7 +455,7 @@ function renderLiftsTable() {
                 </td>
                 <td>
                     <span class="badge badge-info">${typeText}</span><br>
-                    <small>${lift.capacity} осіб, ${lift.speed} м/с</small>
+                    <small>${lift.capacity} pessoas, ${lift.speed} m/s</small>
                 </td>
                 <td>
                     <span class="badge badge-${getStatusBadgeClass(lift.status)} ${statusClass}">
@@ -471,16 +471,16 @@ function renderLiftsTable() {
                 </td>
                 <td>
                     <div class="btn-group">
-                        <button class="btn btn-sm btn-primary" onclick="viewLiftDetails('${lift.id}')" title="Деталі">
+                        <button class="btn btn-sm btn-primary" onclick="viewLiftDetails('${lift.id}')" title="Detalhes">
                             <i class="fas fa-eye"></i>
                         </button>
-                        <button class="btn btn-sm btn-warning" onclick="editLift('${lift.id}')" title="Редагувати">
+                        <button class="btn btn-sm btn-warning" onclick="editLift('${lift.id}')" title="Editar">
                             <i class="fas fa-edit"></i>
                         </button>
                         <button class="btn btn-sm btn-success" onclick="generateLiftQR('${lift.id}')" title="QR код">
                             <i class="fas fa-qrcode"></i>
                         </button>
-                        <button class="btn btn-sm btn-danger" onclick="deleteLift('${lift.id}')" title="Видалити">
+                        <button class="btn btn-sm btn-danger" onclick="deleteLift('${lift.id}')" title="Eliminar">
                             <i class="fas fa-trash"></i>
                         </button>
                     </div>
@@ -530,13 +530,13 @@ function loadAttentionNeeded() {
     );
     
     if (needAttention.length === 0) {
-        attentionDiv.append('<p class="text-muted">Всі ліфти в нормальному стані</p>');
+        attentionDiv.append('<p class="text-muted">Todos os elevadores em estado normal</p>');
         return;
     }
     
     needAttention.forEach(lift => {
         const alertClass = lift.status === 'inactive' ? 'danger' : 'warning';
-        const reason = lift.status === 'inactive' ? 'Неактивний' : 'Потрібне ТО';
+        const reason = lift.status === 'inactive' ? 'Inativo' : 'Manutenção necessária';
         
         attentionDiv.append(`
             <div class="alert alert-${alertClass} p-2 mb-2">
@@ -554,10 +554,10 @@ function loadRecentEvents() {
     
     // Імітуємо останні події
     const events = [
-        { time: '14:30', title: 'ТО завершено', lift: 'Ліфт №1', type: 'success' },
-        { time: '13:15', title: 'Аварійний виклик', lift: 'Ліфт №3', type: 'danger' },
-        { time: '11:00', title: 'Планове ТО', lift: 'Ліфт №2', type: 'warning' },
-        { time: '09:30', title: 'Новий ліфт додано', lift: 'Ліфт №5', type: 'success' }
+        { time: '14:30', title: 'Manutenção concluída', lift: 'Elevador N.º1', type: 'success' },
+        { time: '13:15', title: 'Chamada de emergência', lift: 'Elevador N.º3', type: 'danger' },
+        { time: '11:00', title: 'Manutenção planeada', lift: 'Elevador N.º2', type: 'warning' },
+        { time: '09:30', title: 'Novo elevador adicionado', lift: 'Elevador N.º5', type: 'success' }
     ];
     
     events.forEach(event => {
@@ -578,9 +578,9 @@ function loadRecentEvents() {
 // Допоміжні функції
 function getStatusText(status) {
     const statuses = {
-        'active': 'Активний',
-        'maintenance': 'На ТО',
-        'inactive': 'Неактивний'
+        'active': 'Ativo',
+        'maintenance': 'Em manutenção',
+        'inactive': 'Inativo'
     };
     return statuses[status] || status;
 }
@@ -596,10 +596,10 @@ function getStatusBadgeClass(status) {
 
 function getTypeText(type) {
     const types = {
-        'passenger': 'Пасажирський',
-        'cargo': 'Вантажний',
-        'hospital': 'Лікарняний',
-        'service': 'Службовий'
+        'passenger': 'Passageiro',
+        'cargo': 'Carga',
+        'hospital': 'Hospitalar',
+        'service': 'Serviço'
     };
     return types[type] || type;
 }
@@ -624,7 +624,7 @@ function showAddLiftModal() {
 function addLift() {
     const form = $('#addLiftForm')[0];
     if (!form.checkValidity()) {
-        toastr.error('Заповніть всі обов\'язкові поля');
+        toastr.error('Preencha todos os campos obrigatórios');
         return;
     }
     
@@ -650,7 +650,7 @@ function addLift() {
     
     $('#addLiftModal').modal('hide');
     $('#addLiftForm')[0].reset();
-    toastr.success('Ліфт успішно додано');
+    toastr.success('Elevador adicionado com sucesso');
 }
 
 function calculateNextMaintenance(frequencyMonths) {
@@ -663,34 +663,34 @@ function viewLiftDetails(liftId) {
     const lift = liftsData.find(l => l.id === liftId);
     if (lift) {
         // Тут може бути модальне вікно з деталями
-        alert(`Деталі ліфта:\n\nМодель: ${lift.model}\nАдреса: ${lift.address}\nКлієнт: ${lift.clientName}\nСтатус: ${getStatusText(lift.status)}`);
+        alert(`Detalhes do elevador:\n\nModelo: ${lift.model}\nEndereço: ${lift.address}\nCliente: ${lift.clientName}\nEstado: ${getStatusText(lift.status)}`);
     }
 }
 
 function editLift(liftId) {
-    toastr.info('Функція редагування в розробці');
+    toastr.info('Função de edição em desenvolvimento');
 }
 
 function generateLiftQR(liftId) {
-    toastr.success('Переходимо до генератора QR кодів...');
+    toastr.success('A abrir o gerador de QR codes...');
     window.crmSystem.loadModule('qr-generator');
 }
 
 function deleteLift(liftId) {
-    if (confirm('Ви впевнені, що хочете видалити цей ліфт?')) {
+    if (confirm('Tem a certeza que pretende eliminar este elevador?')) {
         liftsData = liftsData.filter(lift => lift.id !== liftId);
         renderLiftsTable();
         updateLiftStats();
         loadAttentionNeeded();
-        toastr.success('Ліфт видалено');
+        toastr.success('Elevador eliminado');
     }
 }
 
 function exportLiftsData() {
     // Імітуємо експорт
-    toastr.info('Підготовка файлу для завантаження...');
+    toastr.info('A preparar ficheiro para descarregar...');
     setTimeout(() => {
-        toastr.success('Дані експортовано успішно!');
+        toastr.success('Dados exportados com sucesso!');
     }, 2000);
 }
 </script>

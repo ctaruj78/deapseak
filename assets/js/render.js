@@ -33,31 +33,31 @@ class Renderer {
                         <i class="fas fa-users"></i> Керування користувачами
                     </button>
                     <button class="btn primary" onclick="Router.navigate('/lifts')">
-                        <i class="fas fa-elevator"></i> Всі ліфти
+                        <i class="fas fa-elevator"></i> Todos ліфти
                     </button>
                     <button class="btn primary" onclick="Router.navigate('/reports')">
-                        <i class="fas fa-chart-bar"></i> Звіти
+                        <i class="fas fa-chart-bar"></i> Relatórioи
                     </button>
                 </div>
 
                 <div class="stats-grid">
                     <div class="stat-card">
-                        <h3><i class="fas fa-elevator"></i> Всього ліфтів</h3>
+                        <h3><i class="fas fa-elevator"></i> Total de elevadores</h3>
                         <p id="total-lifts">0</p>
                         <span class="stat-trend" id="lifts-trend"></span>
                     </div>
                     <div class="stat-card">
-                        <h3><i class="fas fa-tools"></i> На ремонті</h3>
+                        <h3><i class="fas fa-tools"></i> Em reparação</h3>
                         <p id="repairing-lifts">0</p>
                         <span class="stat-trend" id="repairs-trend"></span>
                     </div>
                     <div class="stat-card">
-                        <h3><i class="fas fa-ticket-alt"></i> Активних заявок</h3>
+                        <h3><i class="fas fa-ticket-alt"></i> Pedidos ativos</h3>
                         <p id="active-requests">0</p>
                         <span class="stat-trend" id="requests-trend"></span>
                     </div>
                     <div class="stat-card">
-                        <h3><i class="fas fa-users"></i> Користувачів</h3>
+                        <h3><i class="fas fa-users"></i> Utilizadorів</h3>
                         <p id="total-users">0</p>
                         <span class="stat-trend" id="users-trend"></span>
                     </div>
@@ -65,7 +65,7 @@ class Renderer {
                 
                 <div class="admin-grid">
                     <div class="chart-container">
-                        <h3>Статуси ліфтів</h3>
+                        <h3>Estadoи ліфтів</h3>
                         <canvas id="lifts-status-chart" width="400" height="250"></canvas>
                     </div>
                     
@@ -79,13 +79,13 @@ class Renderer {
                     <h3>Швидкі дії</h3>
                     <div class="actions-grid">
                         <button class="btn secondary" onclick="AdminManager.addNewUser()">
-                            <i class="fas fa-user-plus"></i> Додати користувача
+                            <i class="fas fa-user-plus"></i> Adicionar користувача
                         </button>
                         <button class="btn secondary" onclick="AdminManager.generateReport()">
-                            <i class="fas fa-file-export"></i> Експорт звіту
+                            <i class="fas fa-file-export"></i> Exportar звіту
                         </button>
                         <button class="btn secondary" onclick="AdminManager.systemSettings()">
-                            <i class="fas fa-cog"></i> Налаштування
+                            <i class="fas fa-cog"></i> Definições
                         </button>
                     </div>
                 </div>
@@ -111,7 +111,7 @@ class Renderer {
                     </div>
                     
                     <button class="btn primary" onclick="TechnicianManager.startNewTask()">
-                        <i class="fas fa-plus"></i> Почати нове завдання
+                        <i class="fas fa-plus"></i> Iniciar нове завдання
                     </button>
                 </div>
 
@@ -154,7 +154,7 @@ class Renderer {
                         <div class="performance-card">
                             <div class="performance-metric">
                                 <span class="metric-value" id="avg-time">0хв</span>
-                                <span class="metric-label">Середній час</span>
+                                <span class="metric-label">Agoедній час</span>
                             </div>
                         </div>
                         <div class="performance-card">
@@ -176,18 +176,18 @@ class Renderer {
                 
                 <div class="client-header">
                     <div class="client-info">
-                        <h3 id="client-name">Завантаження...</h3>
+                        <h3 id="client-name">A carregar...</h3>
                         <p class="client-contact" id="client-contact"></p>
                     </div>
                     
                     <button id="new-request-btn" class="btn primary">
-                        <i class="fas fa-plus"></i> Нова заявка
+                        <i class="fas fa-plus"></i> Nova заявка
                     </button>
                 </div>
 
                 <div class="client-stats">
                     <div class="client-stat">
-                        <span class="stat-label">Всього ліфтів:</span>
+                        <span class="stat-label">Total de elevadores:</span>
                         <span class="stat-value" id="client-total-lifts">0</span>
                     </div>
                     <div class="client-stat">
@@ -195,7 +195,7 @@ class Renderer {
                         <span class="stat-value" id="client-active-lifts">0</span>
                     </div>
                     <div class="client-stat">
-                        <span class="stat-label">Активних заявок:</span>
+                        <span class="stat-label">Pedidos ativos:</span>
                         <span class="stat-value" id="client-active-requests">0</span>
                     </div>
                 </div>
@@ -214,10 +214,10 @@ class Renderer {
                     <h3>Швидкі дії</h3>
                     <div class="actions-grid">
                         <button class="btn secondary" onclick="ClientManager.viewAllRequests()">
-                            <i class="fas fa-list"></i> Всі мої заявки
+                            <i class="fas fa-list"></i> Todos мої заявки
                         </button>
                         <button class="btn secondary" onclick="ClientManager.contactSupport()">
-                            <i class="fas fa-headset"></i> Зв'язатися з підтримкою
+                            <i class="fas fa-headset"></i> Contactar з підтримкою
                         </button>
                         <button class="btn secondary" onclick="ClientManager.downloadDocs()">
                             <i class="fas fa-download"></i> Документація
@@ -236,7 +236,7 @@ class Renderer {
                 <div class="dispatcher-controls">
                     <div class="control-group">
                         <button class="btn primary" onclick="DispatcherManager.viewAllRequests()">
-                            <i class="fas fa-tasks"></i> Всі заявки
+                            <i class="fas fa-tasks"></i> Todos os pedidos
                         </button>
                         <button class="btn primary" onclick="DispatcherManager.createEmergency()">
                             <i class="fas fa-exclamation-triangle"></i> Екстрена заявка
@@ -245,16 +245,16 @@ class Renderer {
                     
                     <div class="filters">
                         <select id="status-filter" onchange="DispatcherManager.filterRequests()">
-                            <option value="all">Всі статуси</option>
+                            <option value="all">Todos статуси</option>
                             <option value="pending">Очікують</option>
-                            <option value="in-progress">В роботі</option>
+                            <option value="in-progress">Em progresso</option>
                             <option value="completed">Завершені</option>
                         </select>
                         
                         <select id="priority-filter" onchange="DispatcherManager.filterRequests()">
-                            <option value="all">Всі пріоритети</option>
-                            <option value="high">Високий</option>
-                            <option value="medium">Середній</option>
+                            <option value="all">Todos пріоритети</option>
+                            <option value="high">Altий</option>
+                            <option value="medium">Agoедній</option>
                             <option value="low">Низький</option>
                         </select>
                     </div>
@@ -270,14 +270,14 @@ class Renderer {
                         <p id="pending-requests">0</p>
                     </div>
                     <div class="stat-card">
-                        <h3><i class="fas fa-user-check"></i> Техніків онлайн</h3>
+                        <h3><i class="fas fa-user-check"></i> Técnicoів онлайн</h3>
                         <p id="online-technicians">0</p>
                     </div>
                 </div>
 
                 <div class="dispatcher-grid">
                     <div class="requests-panel">
-                        <h3>Активні заявки <span class="badge" id="active-requests-count">0</span></h3>
+                        <h3>Pedidos ativos <span class="badge" id="active-requests-count">0</span></h3>
                         <div id="requests-list" class="dispatcher-requests-list"></div>
                     </div>
                     
@@ -305,7 +305,7 @@ class Renderer {
                             <i class="fas fa-bullhorn"></i> Розсилка
                         </button>
                         <button class="btn secondary" onclick="DispatcherManager.generateDispatchReport()">
-                            <i class="fas fa-file-alt"></i> Звіт диспетчера
+                            <i class="fas fa-file-alt"></i> Relatório диспетчера
                         </button>
                     </div>
                 </div>
@@ -330,7 +330,7 @@ class Renderer {
                     break;
             }
         } catch (error) {
-            console.error('Помилка оновлення контенту:', error);
+            console.error('Erro оновлення контенту:', error);
             this.showError('Не вдалося завантажити дані');
         }
     }
@@ -343,7 +343,7 @@ class Renderer {
             LiftAPI.getActivities()
         ]);
 
-        // Оновлення статистики
+        // Atualização статистики
         document.getElementById('total-lifts').textContent = lifts.length;
         document.getElementById('repairing-lifts').textContent = 
             lifts.filter(lift => lift.status === 'repairing').length;
@@ -351,10 +351,10 @@ class Renderer {
             requests.filter(req => req.status !== 'completed').length;
         document.getElementById('total-users').textContent = users.length;
 
-        // Оновлення активності
+        // Atualização активності
         this.renderActivities(activities.slice(0, 10));
         
-        // Оновлення графіків
+        // Atualização графіків
         this.renderLiftsStatusChart(lifts);
     }
 
@@ -376,7 +376,7 @@ class Renderer {
         this.renderTasksList('current-tasks-list', currentTasks);
         this.renderTasksList('upcoming-tasks-list', upcomingTasks);
 
-        // Оновлення статистики продуктивності
+        // Atualização статистики продуктивності
         if (performance) {
             document.getElementById('completion-rate').textContent = 
                 `${performance.completionRate}%`;
@@ -466,11 +466,11 @@ class Renderer {
                 </div>
                 <div class="task-actions">
                     <button class="btn small" onclick="TechnicianManager.viewTask(${task.id})">
-                        Деталі
+                        Detalhes
                     </button>
                     ${task.status === 'assigned' ? `
                     <button class="btn small primary" onclick="TechnicianManager.startTask(${task.id})">
-                        Почати
+                        Iniciar
                     </button>
                     ` : ''}
                 </div>
@@ -497,14 +497,14 @@ class Renderer {
                 </div>
                 <div class="lift-info">
                     <p><i class="fas fa-map-marker-alt"></i> ${lift.location}</p>
-                    <p><i class="fas fa-calendar"></i> Останнє ТО: ${this.formatDate(lift.lastMaintenance)}</p>
+                    <p><i class="fas fa-calendar"></i> Última manutenção: ${this.formatDate(lift.lastMaintenance)}</p>
                 </div>
                 <div class="lift-actions">
                     <button class="btn small" onclick="ClientManager.viewLift(${lift.id})">
-                        Деталі
+                        Detalhes
                     </button>
                     <button class="btn small primary" onclick="ClientManager.createRequest(${lift.id})">
-                        Заявка
+                        Pedido
                     </button>
                 </div>
             </div>
@@ -549,11 +549,11 @@ class Renderer {
                 </div>
                 <div class="request-actions">
                     <button class="btn small" onclick="DispatcherManager.viewRequest(${request.id})">
-                        Деталі
+                        Detalhes
                     </button>
                     ${request.status === 'pending' ? `
                     <button class="btn small primary" onclick="DispatcherManager.assignRequest(${request.id})">
-                        Призначити
+                        Atribuir
                     </button>
                     ` : ''}
                 </div>
@@ -564,8 +564,8 @@ class Renderer {
     // Допоміжні методи
     static getPriorityLabel(priority) {
         const labels = {
-            'high': 'Високий',
-            'medium': 'Середній',
+            'high': 'Altий',
+            'medium': 'Agoедній',
             'low': 'Низький'
         };
         return labels[priority] || priority;
@@ -573,11 +573,11 @@ class Renderer {
 
     static getStatusLabel(status) {
         const labels = {
-            'active': 'Активний',
-            'inactive': 'Неактивний',
-            'repairing': 'На ремонті',
-            'pending': 'Очікує',
-            'in-progress': 'В роботі',
+            'active': 'Ativo',
+            'inactive': 'Inativo',
+            'repairing': 'Em reparação',
+            'pending': 'Pendente',
+            'in-progress': 'Em progresso',
             'completed': 'Завершено',
             'assigned': 'Призначено',
             'scheduled': 'Заплановано'

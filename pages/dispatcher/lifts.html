@@ -1474,7 +1474,7 @@
             container.querySelectorAll('[data-elift-idx]').forEach(function(inp) {
                 vals[inp.dataset.eliftIdx] = inp.value;
             });
-            // Також guardar основний
+            // Simож guardar основний
             var mainInp = document.getElementById('enhancedMunicipalNumber');
             vals[1] = mainInp ? mainInp.value : (vals[1] || '');
 
@@ -3100,7 +3100,7 @@ Equipa FestLift
             
             // Ініціалізуexisteмо LiftManager desde assets/js/lifts.js
             // ⚠️ На цій na página рендеринг da tabela керуexisteться através de loadLiftsFromAPI + displayLiftsInTable
-            // тому вимикаexisteмо авторендер LiftManager para уникнути конфлікту contadorів
+            // atrás вимикаexisteмо авторендер LiftManager para уникнути конфлікту contadorів
             console.log('Document ready, initializing LiftManager...');
             if (typeof LiftManager !== 'undefined') {
                 console.log('LiftManager class found, creating instance...');
@@ -3214,17 +3214,6 @@ Equipa FestLift
     })();
     </script>
 
-    </div>
-        </div>
-        <div class="ai-chat-input">
-          <textarea class="ai-message-input" placeholder="Escreva uma mensagem..."></textarea>
-          <div class="ai-chat-actions">
-            <button class="ai-send-message"><i class="fas fa-paper-plane"></i> Enviar</button>
-            <button class="ai-voice-toggle"><i class="fas fa-microphone"></i> Voz</button>
-          </div>
-        </div>
-      </div>
-    </div>
     <script>
     // Função para відкриття модального вікна do elevador (apenas desde картою)
     // Глобальна функція para відкриття модального вікна do elevador
@@ -5075,7 +5064,7 @@ Equipa FestLift</textarea>
         });
 
         // 🎨 Atéрядковий індекс кожної унікальної endereçoи (para alternância de cores)
-        // Також будуexisteться desde повного da lista — estável entre páginaми
+        // Simож будуexisteться desde повного da lista — estável entre páginaми
         const addressGroupIndex = {};
         let groupCounter = 0;
         sourceForGrouping.forEach(lift => {
@@ -5462,7 +5451,7 @@ Equipa FestLift</textarea>
                 const detailCn = lift.contractNumber || lift.maintenanceContract?.contractNumber || '';
                 $('#detail-contract-number').text(detailCn || 'Não especificado');
                 
-                // Дати de manutenção
+                // Datas de manutenção
                 // Se lift.lastInspectionDate не instalado, беремо desde осeннього registo inspectionHistory
                 const _sortedHist = (lift.inspectionHistory || []).slice().sort((a, b) =>
                     new Date(b.date || b.inspectionDate || 0) - new Date(a.date || a.inspectionDate || 0));
@@ -5706,7 +5695,7 @@ Equipa FestLift</textarea>
             
             let lift;
             if (result && result.success && result.data) {
-                // Сервер devolve: {success:true, data:{lift:{...}}}
+                // Agoвер devolve: {success:true, data:{lift:{...}}}
                 // apiCall обгорeexiste: {success, data: <serverResponse>}
                 const rd = result.data;
                 const rdd = rd && rd.data;
@@ -5918,7 +5907,7 @@ Equipa FestLift</textarea>
             } catch (e) { /* ignore */ }
             window.editMapInstance = null;
         }
-        // Також знищуexisteмо mapa enhanced-lift-modal.js se вона inicializado
+        // Simож знищуexisteмо mapa enhanced-lift-modal.js se вона inicializado
         if (window.enhancedLiftModal && window.enhancedLiftModal.map) {
             try { window.enhancedLiftModal.map.remove(); } catch (e) { /* ignore */ }
             window.enhancedLiftModal.map = null;
@@ -6284,7 +6273,7 @@ Equipa FestLift</textarea>
         lifts = lifts.filter(l => (l._id || l.id) !== liftId);
         localStorage.setItem('lifts', JSON.stringify(lifts));
         
-        // Також спробувати eliminar através de API
+        // Simож спробувати eliminar através de API
         const deleteResult = await apiCall(`/api/lifts/${liftId}`, 'DELETE');
         if (deleteResult.success) {
             console.log('✅ Elevador eliminado da API');
@@ -8414,7 +8403,7 @@ Equipa FestLift</textarea>
             conditional: '<span class="badge badge-warning">⚠️ Reinspecção</span>',
             completed:   '<span class="badge badge-info">Concluído</span>'
         };
-        const typeLabels = { inspection: 'Inspecção', maintenance: 'IT', repair: 'Reparação', emergency: 'Avaria', annual: 'Inspекція', routine: 'Manutenção', certification: 'Сертифікація', technical: 'Técnica', safety: 'Verificação de segurança' };
+        const typeLabels = { inspection: 'Inspecção', maintenance: 'IT', repair: 'Reparação', emergency: 'Avaria', annual: 'Inspeção', routine: 'Manutenção', certification: 'Certificação', technical: 'Técnica', safety: 'Verificação de segurança' };
 
         let html = '<div class="table-responsive"><table class="table table-sm table-bordered table-hover mb-1" style="font-size:0.8rem;">';
         html += '<thead class="thead-light"><tr><th>Data</th><th>Tipo</th><th>Estado</th><th>Válido até</th></tr></thead><tbody>';

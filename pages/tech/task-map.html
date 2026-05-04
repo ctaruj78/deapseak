@@ -57,7 +57,7 @@
                 const response = await AuthManager.fetchWithAuth(`/api/lifts/${liftId}`);
                 
                 if (!response.ok) {
-                    throw new Error('Elevador не encontrado');
+                    throw new Error('Elevador não encontrado');
                 }
 
                 const data = await response.json();
@@ -73,7 +73,7 @@
         function getUserLocation() {
             return new Promise((resolve, reject) => {
                 if (!navigator.geolocation) {
-                    reject(new Error('A geolocalização не підтримуexisteться вашим браузером'));
+                    reject(new Error('A geolocalização não é suportada pelo seu navegador'));
                     return;
                 }
                 
@@ -155,7 +155,7 @@
                         popupAnchor: [1, -34],
                         shadowSize: [41, 41]
                     })
-                }).addTo(map).bindPopup('📍 Ваша позиція');
+                }).addTo(map).bindPopup('📍 A sua posição');
 
                 // Маркер do elevador
                 L.marker([liftLat, liftLng], {
@@ -272,7 +272,7 @@
                         shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
                         iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34], shadowSize: [41, 41]
                     })
-                }).addTo(map).bindPopup('📍 Ваша позиція');
+                }).addTo(map).bindPopup('📍 A sua posição');
             }
 
             const statusColor = {
@@ -328,7 +328,7 @@
                 document.getElementById('taskInfo').innerHTML = `
                     <div class="alert alert-danger">
                         <i class="fas fa-exclamation-triangle"></i>
-                        Elevador не encontrado
+                        Elevador não encontrado
                     </div>
                 `;
                 return;

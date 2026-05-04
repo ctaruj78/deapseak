@@ -7,10 +7,10 @@ class LiftStatusManager {
     };
 
     static STATUS_LABELS = {
-        working: 'Працює',
-        repairing: 'На ремонті',
+        working: 'Em funcionamento',
+        repairing: 'Em reparação',
         needs_inspection: 'Потрібна перевірка',
-        out_of_service: 'Не працює'
+        out_of_service: 'Fora de serviço'
     };
 
     static getStatusBadge(status) {
@@ -22,11 +22,11 @@ class LiftStatusManager {
     static async updateStatus(liftId, newStatus) {
         try {
             await LiftAPI.updateLiftStatus(liftId, newStatus);
-            DOMHelper.showNotification(`Статус ліфта оновлено на: ${this.STATUS_LABELS[newStatus]}`);
+            DOMHelper.showNotification(`Estado ліфта оновлено на: ${this.STATUS_LABELS[newStatus]}`);
             Renderer.updateDynamicContent();
         } catch (error) {
-            console.error('Помилка оновлення статусу:', error);
-            DOMHelper.showNotification('Помилка оновлення статусу', 'error');
+            console.error('Erro оновлення статусу:', error);
+            DOMHelper.showNotification('Erro оновлення статусу', 'error');
         }
     }
 }

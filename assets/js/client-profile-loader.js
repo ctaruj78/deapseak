@@ -1,5 +1,5 @@
 /**
- * 🔄 Завантаження профілю клієнта для profile.html
+ * 🔄 A carregar профілю клієнта для profile.html
  */
 
 (async function() {
@@ -16,11 +16,11 @@
     }
 
     /**
-     * Завантаження даних користувача з API
+     * A carregar даних користувача з API
      */
     async function loadUserProfile() {
         try {
-            console.log('📡 Завантаження профілю з /api/users/me...');
+            console.log('📡 A carregar профілю з /api/users/me...');
             
             const response = await fetch('/api/users/me', {
                 headers: {
@@ -58,42 +58,42 @@
             return userData;
 
         } catch (error) {
-            console.error('❌ Помилка завантаження профілю:', error);
+            console.error('❌ Erro завантаження профілю:', error);
             showError('Не вдалося завантажити дані профілю');
             return null;
         }
     }
 
     /**
-     * Оновлення UI з даними користувача
+     * Atualização UI з даними користувача
      */
     function updateProfileUI(user) {
-        console.log('🎨 Оновлення UI профілю...');
+        console.log('🎨 Atualização UI профілю...');
 
-        // Ім'я в header профілю
-        const fullName = `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.username || 'Клієнт';
+        // Nome в header профілю
+        const fullName = `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.username || 'Cliente';
         $('#profileName').text(fullName);
         
         // Email в header
         $('#profileEmail').text(user.email || 'Немає email');
         
-        // Ім'я в info tab
+        // Nome в info tab
         $('#infoFullName').text(fullName);
         
         // Email в info tab
         $('#infoEmail').text(user.email || 'Немає email');
         
-        // Телефон
+        // Telefone
         if (user.phone) {
             $('#infoPhone').text(user.phone);
         }
         
-        // Компанія
+        // Empresa
         if (user.company || user.companyName) {
             $('#infoCompany').text(user.company || user.companyName);
         }
         
-        // Адреса
+        // Endereço
         $('#infoAddress').text(user.address || '—');
         $('#infoCity').text(user.city || '—');
         $('#infoRegion').text(user.region || '—');
@@ -107,11 +107,11 @@
     }
 
     /**
-     * Завантаження статистики клієнта
+     * A carregar статистики клієнта
      */
     async function loadClientStats(userId) {
         try {
-            console.log('📊 Завантаження статистики клієнта...');
+            console.log('📊 A carregar статистики клієнта...');
 
             // Статистика ліфтів
             const liftsResponse = await fetch('/api/lifts', {
@@ -125,7 +125,7 @@
                 const liftsData = await liftsResponse.json();
                 const lifts = liftsData.data || liftsData.lifts || liftsData;
                 $('#statsLifts').text(lifts.length || 0);
-                console.log(`✅ Ліфтів: ${lifts.length}`);
+                console.log(`✅ Elevadorів: ${lifts.length}`);
             }
 
             // Статистика запитів
@@ -150,7 +150,7 @@
             $('#statsYears').text(years || '< 1');
 
         } catch (error) {
-            console.error('❌ Помилка завантаження статистики:', error);
+            console.error('❌ Erro завантаження статистики:', error);
         }
     }
 
@@ -162,7 +162,7 @@
         if (typeof Swal !== 'undefined') {
             Swal.fire({
                 icon: 'error',
-                title: 'Помилка',
+                title: 'Erro',
                 text: message,
                 toast: true,
                 position: 'top-end',
@@ -177,7 +177,7 @@
     // Автоматичне завантаження при ініціалізації
     await loadUserProfile();
 
-    // Експортуємо функцію для повторного завантаження
+    // Exportarуємо функцію для повторного завантаження
     window.reloadClientProfile = loadUserProfile;
 
     console.log('✅ Профіль клієнта ініціалізовано');

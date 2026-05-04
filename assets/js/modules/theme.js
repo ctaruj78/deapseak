@@ -62,7 +62,7 @@ class ThemeManager {
     }
 
     init() {
-        // Завантаження збереженої теми
+        // A carregar збереженої теми
         const savedTheme = StorageManager.load('theme') || 'light';
         this.setTheme(savedTheme);
 
@@ -190,7 +190,7 @@ class ThemeManager {
         const currentTheme = this.themes[this.currentTheme];
         if (!currentTheme) return false;
 
-        // Оновлення змінних теми
+        // Atualização змінних теми
         const updatedVariables = { ...currentTheme.variables, ...colors };
         currentTheme.variables = updatedVariables;
 
@@ -209,7 +209,7 @@ class ThemeManager {
         this.applyTheme(this.currentTheme);
     }
 
-    // Експорт налаштувань теми
+    // Exportar налаштувань теми
     exportThemeSettings() {
         return {
             currentTheme: this.currentTheme,
@@ -218,7 +218,7 @@ class ThemeManager {
         };
     }
 
-    // Імпорт налаштувань теми
+    // Importar налаштувань теми
     importThemeSettings(settings) {
         try {
             if (settings.currentTheme) {
@@ -346,7 +346,7 @@ if (typeof window !== 'undefined') {
     window.themeManager = new ThemeManager();
 }
 
-// Експорт для Node.js
+// Exportar для Node.js
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = ThemeManager;
 }

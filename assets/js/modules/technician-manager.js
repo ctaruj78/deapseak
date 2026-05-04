@@ -12,7 +12,7 @@ class TechnicianManager {
         this.setupRealTimeUpdates();
     }
 
-    // Завантаження списку техніків
+    // A carregar списку техніків
     async loadTechnicians() {
         try {
             // Симуляція завантаження з API
@@ -32,7 +32,7 @@ class TechnicianManager {
                 this.loadDemoTechnicians();
             }
         } catch (error) {
-            console.error('Помилка завантаження техніків:', error);
+            console.error('Erro завантаження техніків:', error);
             this.loadDemoTechnicians();
         }
     }
@@ -83,7 +83,7 @@ class TechnicianManager {
                 currentAssignments: 1,
                 avatar: "../../assets/img/avatars/tech3.png",
                 location: "Одеса, вул. Дерибасівська, 10",
-                notes: "Експерт з обладнання"
+                notes: "Експерт з equipamentos"
             },
             {
                 id: 4,
@@ -225,7 +225,7 @@ class TechnicianManager {
         
         this.currentTechnician = tech;
         
-        // Оновлення модального вікна
+        // Atualização модального вікна
         document.getElementById('viewTechAvatar').src = tech.avatar || '../../assets/img/avatars/tech-default.png';
         document.getElementById('viewTechName').textContent = `${tech.firstName} ${tech.lastName}`;
         
@@ -244,7 +244,7 @@ class TechnicianManager {
         
         statusElement.innerHTML = `<span class="status-indicator ${statusClass}"></span><span>${statusText}</span>`;
         
-        // Оновлення інших полів
+        // Atualização інших полів
         document.getElementById('viewTechEmail').textContent = tech.email;
         document.getElementById('viewTechPhone').textContent = tech.phone;
         
@@ -269,13 +269,13 @@ class TechnicianManager {
         
         document.getElementById('viewTechWorkload').textContent = `${workloadText} (${tech.currentAssignments} tarefas)`;
         
-        // Оновлення навичок
+        // Atualização навичок
         const skillsContainer = document.getElementById('viewTechSkills');
         skillsContainer.innerHTML = tech.skills.map(skill => 
             `<span class="skill-badge">${skill}</span>`
         ).join('');
         
-        // Оновлення завдань (симуляція)
+        // Atualização завдань (симуляція)
         const assignmentsContainer = document.getElementById('viewTechAssignments');
         assignmentsContainer.innerHTML = '';
         
@@ -297,7 +297,7 @@ class TechnicianManager {
             assignmentsContainer.innerHTML = '<li class="list-group-item text-center text-muted">Sem tarefas atuais</li>';
         }
         
-        // Оновлення локації
+        // Atualização локації
         const locationContainer = document.getElementById('viewTechLocation');
         locationContainer.innerHTML = `
             <i class="fas fa-map-marker-alt mr-2"></i>
@@ -366,7 +366,7 @@ class TechnicianManager {
         try {
             // Симуляція збереження через API
             if (techData.id) {
-                // Оновлення існуючого техніка
+                // Atualização існуючого техніка
                 const response = await fetch(`/api/technicians/${techData.id}`, {
                     method: 'PUT',
                     headers: {
@@ -385,7 +385,7 @@ class TechnicianManager {
                     this.showNotification('Técnico atualizado com sucesso', 'success');
                 }
             } else {
-                // Додавання нового техніка
+                // Adicionar novo técnico
                 const response = await fetch('/api/technicians', {
                     method: 'POST',
                     headers: {
@@ -423,7 +423,7 @@ class TechnicianManager {
             
             $('#technicianModal').modal('hide');
         } catch (error) {
-            console.error('Помилка збереження техніка:', error);
+            console.error('Erro ao guardar техніка:', error);
             this.showNotification('Erro ao guardar técnico', 'error');
         }
     }
@@ -454,7 +454,7 @@ if (!confirm('Tem a certeza que quer eliminar este técnico?')) return;
         }
     }
 
-    // Надіслати повідомлення техніку
+    // Enviar повідомлення техніку
     messageTechnician(techId) {
         const tech = this.technicians.find(t => String(t.id) === String(techId));
         if (!tech) return;
@@ -465,7 +465,7 @@ if (!confirm('Tem a certeza que quer eliminar este técnico?')) return;
         }
     }
 
-    // Фільтрація техніків
+    // Filtroація техніків
     filterTechnicians() {
         const statusFilter = document.getElementById('statusFilter').value;
         const specialtyFilter = document.getElementById('specialtyFilter').value;
@@ -482,7 +482,7 @@ if (!confirm('Tem a certeza que quer eliminar este técnico?')) return;
         this.renderTechnicians();
     }
 
-    // Пошук техніків
+    // Pesquisa техніків
     searchTechnicians() {
         const searchTerm = document.getElementById('searchInput').value.toLowerCase();
         
@@ -505,7 +505,7 @@ if (!confirm('Tem a certeza que quer eliminar este técnico?')) return;
         this.renderTechnicians();
     }
 
-    // Оновлення статистики
+    // Atualização статистики
     updateStats() {
         const totalTechs = this.technicians.length;
         const availableTechs = this.technicians.filter(t => t.status === 'online').length;
@@ -522,14 +522,14 @@ if (!confirm('Tem a certeza que quer eliminar este técnico?')) return;
         if (elAvg) elAvg.textContent = `${avgCompletion}%`;
     }
 
-    // Оновлення бейджів
+    // Atualização бейджів
     updateBadges() {
         const onlineTechs = this.technicians.filter(t => t.status === 'online').length;
         const badge = document.getElementById('techsBadge');
         if (badge) badge.textContent = onlineTechs;
     }
 
-    // Налаштування реальних оновлень
+    // Definições реальних оновлень
     setupRealTimeUpdates() {
         // Симуляція реальних оновлень статусу техніків
         setInterval(() => {
@@ -548,12 +548,12 @@ if (!confirm('Tem a certeza que quer eliminar este técnico?')) return;
                 this.updateStats();
                 this.updateBadges();
                 
-                // Оновлення часу останнього оновлення
+                // Atualização часу останнього оновлення
                 const now = new Date();
                 const lastUpdate = document.getElementById('lastUpdate');
                 if (lastUpdate) lastUpdate.textContent = `Atualizado: ${now.toLocaleTimeString()}`;
             }
-        }, 30000); // Оновлення кожні 30 секунд
+        }, 30000); // Atualização кожні 30 секунд
     }
 
     // Показати сповіщення

@@ -39,13 +39,13 @@ class AssignmentManager {
             
             console.log('✅ Assignment Manager ініціалізовано з QR підтримкою');
         } catch (error) {
-            console.error('❌ Помилка ініціалізації Assignment Manager:', error);
+            console.error('❌ Erro ініціалізації Assignment Manager:', error);
             this.loadFromLocalStorage(); // Fallback на локальні дані
         }
     }
 
     /**
-     * Завантаження даних з API
+     * A carregar даних з API
      */
     async loadData(filters = {}) {
         try {
@@ -79,7 +79,7 @@ class AssignmentManager {
                 
                 return { assignments: this.assignments, technicians: this.technicians };
             } else {
-                throw new Error('Помилка завантаження з API');
+                throw new Error('Erro завантаження з API');
             }
         } catch (error) {
             console.warn('⚠️ Використання локальних даних:', error.message);
@@ -88,7 +88,7 @@ class AssignmentManager {
     }
 
     /**
-     * Завантаження з localStorage
+     * A carregar з localStorage
      */
     loadFromLocalStorage() {
         this.assignments = JSON.parse(localStorage.getItem('assignments')) || [];
@@ -124,14 +124,14 @@ class AssignmentManager {
                     address: 'Rua da Liberdade, 123, Lisboa',
                     building: 'ЖК "Центральний"',
                     floor: '15',
-                    liftNumber: 'Ліфт №1'
+                    liftNumber: 'Elevador N.º1'
                 },
                 qrCode: {
                     code: 'QR001',
                     scanHistory: []
                 },
                 timestamps: {
-                    created: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 дні тому
+                    created: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 дні atrás
                     updated: new Date()
                 },
                 metadata: {
@@ -156,11 +156,11 @@ class AssignmentManager {
                     address: 'Av. dos Aliados, 45, Porto',
                     building: 'ЖК "Сонячний"',
                     floor: '12',
-                    liftNumber: 'Ліфт №2'
+                    liftNumber: 'Elevador N.º2'
                 },
                 assignment: {
                     assignedTo: 'tech1',
-                    assignedAt: new Date(Date.now() - 4 * 60 * 60 * 1000), // 4 години тому
+                    assignedAt: new Date(Date.now() - 4 * 60 * 60 * 1000), // 4 horasи atrás
                     instructions: 'Повна перевірка всіх систем'
                 },
                 qrCode: {
@@ -168,7 +168,7 @@ class AssignmentManager {
                     scanHistory: []
                 },
                 timestamps: {
-                    created: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000), // 1 день тому
+                    created: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000), // 1 день atrás
                     updated: new Date()
                 },
                 metadata: {
@@ -201,7 +201,7 @@ class AssignmentManager {
             }
         ];
 
-        // Зберегти тестові дані
+        // Guardar тестові дані
         localStorage.setItem('assignments', JSON.stringify(this.assignments));
         localStorage.setItem('technicians', JSON.stringify(this.technicians));
     }
@@ -251,14 +251,14 @@ class AssignmentManager {
                     await this.linkQRToAssignment(createdAssignment._id, assignmentData.qrCode.code);
                 }
                 
-                this.showNotification('✅ Заявка успішно створена', 'success');
+                this.showNotification('✅ Pedido com sucesso створена', 'success');
                 return createdAssignment;
             } else {
-                throw new Error('Помилка створення заявки');
+                throw new Error('Erro створення заявки');
             }
         } catch (error) {
-            console.error('Помилка створення заявки:', error);
-            this.showNotification('❌ Помилка створення заявки', 'error');
+            console.error('Erro створення заявки:', error);
+            this.showNotification('❌ Erro створення заявки', 'error');
         }
     }
 
@@ -293,18 +293,18 @@ class AssignmentManager {
 
             if (response.ok) {
                 await this.loadData();
-                this.showNotification('✅ Заявка призначена техніку', 'success');
+                this.showNotification('✅ Pedido призначена техніку', 'success');
                 
                 // Відправка сповіщення техніку
                 await this.sendNotificationToTechnician(technicianId, assignmentId);
                 
                 return true;
             } else {
-                throw new Error('Помилка призначення заявки');
+                throw new Error('Erro призначення заявки');
             }
         } catch (error) {
-            console.error('Помилка призначення заявки:', error);
-            this.showNotification('❌ Помилка призначення заявки', 'error');
+            console.error('Erro призначення заявки:', error);
+            this.showNotification('❌ Erro призначення заявки', 'error');
         }
     }
 
@@ -315,7 +315,7 @@ class AssignmentManager {
         try {
             const token = localStorage.getItem('authToken');
             
-            // Пошук заявки за QR кодом
+            // Pesquisa заявки за QR кодом
             const response = await fetch(`${this.apiUrl}/assignments/by-qr/${qrCode}`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -339,13 +339,13 @@ class AssignmentManager {
                 this.showQRNotFoundDialog(qrCode);
             }
         } catch (error) {
-            console.error('Помилка обробки QR:', error);
-            this.showNotification('❌ Помилка сканування QR коду', 'error');
+            console.error('Erro обробки QR:', error);
+            this.showNotification('❌ Erro сканування QR коду', 'error');
         }
     }
 
     /**
-     * Реєстрація QR сканування
+     * Реєстрація Leitura QR
      */
     async recordQRScan(assignmentId, qrCode, action = 'scanned') {
         try {
@@ -368,7 +368,7 @@ class AssignmentManager {
                 body: JSON.stringify(scanData)
             });
         } catch (error) {
-            console.error('Помилка реєстрації QR сканування:', error);
+            console.error('Erro реєстрації Leitura QR:', error);
         }
     }
 
@@ -393,7 +393,7 @@ class AssignmentManager {
                 <div class="col-12">
                     <div class="alert alert-info text-center">
                         <i class="fas fa-info-circle mr-2"></i>
-                        Заявки не знайдено. <a href="#" onclick="assignmentManager.showCreateDialog()">Створити нову заявку</a>
+                        Pedidos не знайдено. <a href="#" onclick="assignmentManager.showCreateDialog()">Створити нову заявку</a>
                     </div>
                 </div>
             `;
@@ -443,17 +443,17 @@ class AssignmentManager {
                         <div class="assignment-details">
                             <div class="detail-row mb-1">
                                 <i class="fas fa-building text-muted mr-2"></i>
-                                <small>${assignment.client?.company || 'Не вказано'}</small>
+                                <small>${assignment.client?.company || 'Não especificado'}</small>
                             </div>
                             
                             <div class="detail-row mb-1">
                                 <i class="fas fa-map-marker-alt text-muted mr-2"></i>
-                                <small>${assignment.location?.address || 'Не вказано'}</small>
+                                <small>${assignment.location?.address || 'Não especificado'}</small>
                             </div>
                             
                             <div class="detail-row mb-1">
                                 <i class="fas fa-user text-muted mr-2"></i>
-                                <small>${assignedTech || 'Не призначено'}</small>
+                                <small>${assignedTech || 'Não atribuído'}</small>
                             </div>
                             
                             <div class="detail-row">
@@ -465,21 +465,21 @@ class AssignmentManager {
                     
                     <div class="card-footer">
                         <div class="btn-group btn-group-sm w-100" role="group">
-                            <button class="btn btn-outline-primary" onclick="assignmentManager.viewAssignment('${assignment._id}')" title="Переглянути">
+                            <button class="btn btn-outline-primary" onclick="assignmentManager.viewAssignment('${assignment._id}')" title="Ver">
                                 <i class="fas fa-eye"></i>
                             </button>
                             
                             ${this.currentUser.role === 'dispatcher' ? `
-                                <button class="btn btn-outline-warning" onclick="assignmentManager.editAssignment('${assignment._id}')" title="Редагувати">
+                                <button class="btn btn-outline-warning" onclick="assignmentManager.editAssignment('${assignment._id}')" title="Editar">
                                     <i class="fas fa-edit"></i>
                                 </button>
-                                <button class="btn btn-outline-success" onclick="assignmentManager.showAssignDialog('${assignment._id}')" title="Призначити">
+                                <button class="btn btn-outline-success" onclick="assignmentManager.showAssignDialog('${assignment._id}')" title="Atribuir">
                                     <i class="fas fa-user-plus"></i>
                                 </button>
                             ` : ''}
                             
                             ${this.currentUser.role === 'tech' && assignment.assignment?.assignedTo === this.currentUser._id ? `
-                                <button class="btn btn-outline-info" onclick="assignmentManager.startWork('${assignment._id}')" title="Почати роботу">
+                                <button class="btn btn-outline-info" onclick="assignmentManager.startWork('${assignment._id}')" title="Iniciar роботу">
                                     <i class="fas fa-play"></i>
                                 </button>
                             ` : ''}
@@ -497,31 +497,31 @@ class AssignmentManager {
     }
 
     /**
-     * Фільтрація заявок
+     * Filtroація заявок
      */
     getFilteredAssignments() {
         return this.assignments.filter(assignment => {
-            // Фільтр по статусу
+            // Filtro по статусу
             if (this.filters.status !== 'all' && assignment.status !== this.filters.status) {
                 return false;
             }
             
-            // Фільтр по пріоритету
+            // Filtro по пріоритету
             if (this.filters.priority !== 'all' && assignment.priority !== this.filters.priority) {
                 return false;
             }
             
-            // Фільтр по техніку
+            // Filtro по техніку
             if (this.filters.technician !== 'all' && assignment.assignment?.assignedTo !== this.filters.technician) {
                 return false;
             }
             
-            // Фільтр по категорії
+            // Filtro по категорії
             if (this.filters.category !== 'all' && assignment.metadata?.category !== this.filters.category) {
                 return false;
             }
             
-            // Пошук
+            // Pesquisa
             if (this.searchQuery && !this.matchesSearch(assignment)) {
                 return false;
             }
@@ -547,11 +547,11 @@ class AssignmentManager {
 
     getStatusText(status) {
         const texts = {
-            'new': 'Нова',
-            'assigned': 'Призначена',
-            'in-progress': 'В роботі', 
-            'completed': 'Завершена',
-            'cancelled': 'Скасована',
+            'new': 'Nova',
+            'assigned': 'Atribuída',
+            'in-progress': 'Em progresso', 
+            'completed': 'Concluída',
+            'cancelled': 'Cancelada',
             'on-hold': 'Призупинена'
         };
         return texts[status] || status;
@@ -570,17 +570,17 @@ class AssignmentManager {
     getPriorityText(priority) {
         const texts = {
             'low': 'Низький',
-            'medium': 'Середній',
-            'high': 'Високий',
+            'medium': 'Agoедній',
+            'high': 'Altий',
             'urgent': 'Терміновий'
         };
         return texts[priority] || priority;
     }
 
     getTechnicianName(techId) {
-        if (!techId) return 'Не призначено';
+        if (!techId) return 'Não atribuído';
         const tech = this.technicians.find(t => t._id === techId);
-        return tech ? `${tech.firstName} ${tech.lastName}` : 'Невідомий технік';
+        return tech ? `${tech.firstName} ${tech.lastName}` : 'Desconhecido технік';
     }
 
     matchesSearch(assignment) {
@@ -615,7 +615,7 @@ class AssignmentManager {
     }
 
     /**
-     * Оновлення статистики
+     * Atualização статистики
      */
     updateStatistics() {
         const stats = {
@@ -627,7 +627,7 @@ class AssignmentManager {
             highPriority: this.assignments.filter(a => a.priority === 'high' || a.priority === 'urgent').length
         };
 
-        // Оновлення елементів інтерфейсу
+        // Atualização елементів інтерфейсу
         const updateElement = (id, value) => {
             const element = document.getElementById(id);
             if (element) element.textContent = value;
@@ -642,10 +642,10 @@ class AssignmentManager {
     }
 
     /**
-     * Налаштування подій
+     * Definições подій
      */
     setupEventListeners() {
-        // Фільтри
+        // Filtroи
         document.addEventListener('change', (e) => {
             if (e.target.hasAttribute('data-filter')) {
                 const filterType = e.target.getAttribute('data-filter');
@@ -654,7 +654,7 @@ class AssignmentManager {
             }
         });
 
-        // Пошук
+        // Pesquisa
         const searchInput = document.getElementById('assignmentSearch');
         if (searchInput) {
             searchInput.addEventListener('input', (e) => {
@@ -668,7 +668,7 @@ class AssignmentManager {
      * Автооновлення даних
      */
     setupAutoRefresh() {
-        // Оновлення кожні 30 секунд
+        // Atualização кожні 30 секунд
         setInterval(() => {
             if (document.visibilityState === 'visible') {
                 this.loadData(this.filters);
@@ -677,7 +677,7 @@ class AssignmentManager {
     }
 
     /**
-     * Завантаження шаблонів
+     * A carregar шаблонів
      */
     async loadTemplates() {
         try {
@@ -694,7 +694,7 @@ class AssignmentManager {
                 this.templates = await response.json();
             }
         } catch (error) {
-            console.error('Помилка завантаження шаблонів:', error);
+            console.error('Erro завантаження шаблонів:', error);
         }
     }
 
@@ -738,9 +738,9 @@ class AssignmentManager {
         // Тут буде код для відкриття діалогу призначення техніку
     }
 
-    // Початок роботи техніком
+    // Início роботи техніком
     startWork(id) {
-        console.log('Початок роботи над заявкою:', id);
+        console.log('Início роботи над заявкою:', id);
         this.updateAssignmentStatus(id, 'in-progress');
     }
 
@@ -757,7 +757,7 @@ class AssignmentManager {
     }
 
     /**
-     * Оновлення статусу заявки
+     * Atualização статусу заявки
      */
     async updateAssignmentStatus(assignmentId, status, additionalData = {}) {
         try {
@@ -783,14 +783,14 @@ class AssignmentManager {
 
             if (response.ok) {
                 await this.loadData();
-                this.showNotification(`✅ Статус оновлено на "${this.getStatusText(status)}"`, 'success');
+                this.showNotification(`✅ Estado оновлено на "${this.getStatusText(status)}"`, 'success');
                 return true;
             } else {
-                throw new Error('Помилка оновлення статусу');
+                throw new Error('Erro оновлення статусу');
             }
         } catch (error) {
-            console.error('Помилка оновлення статусу:', error);
-            this.showNotification('❌ Помилка оновлення статусу', 'error');
+            console.error('Erro оновлення статусу:', error);
+            this.showNotification('❌ Erro оновлення статусу', 'error');
         }
     }
 
@@ -840,23 +840,23 @@ class AssignmentManager {
                             </h3>
                             <div class="card-tools">
                                 <button type="button" class="btn btn-primary btn-sm" onclick="assignmentManager.showCreateModal()">
-                                    <i class="fas fa-plus"></i> Нова заявка
+                                    <i class="fas fa-plus"></i> Nova заявка
                                 </button>
                             </div>
                         </div>
                         <div class="card-body">
-                            <!-- Фільтри -->
+                            <!-- Filtroи -->
                             <div class="row mb-3">
                                 <div class="col-md-3">
                                     <select class="form-control" id="statusFilter">
-                                        <option value="">Всі статуси</option>
-                                        <option value="pending">Очікує</option>
-                                        <option value="in_progress">В роботі</option>
+                                        <option value="">Todos статуси</option>
+                                        <option value="pending">Pendente</option>
+                                        <option value="in_progress">Em progresso</option>
                                         <option value="completed">Завершено</option>
                                     </select>
                                 </div>
                                 <div class="col-md-4">
-                                    <input type="text" class="form-control" id="searchFilter" placeholder="Пошук...">
+                                    <input type="text" class="form-control" id="searchFilter" placeholder="Pesquisa...">
                                 </div>
                                 <div class="col-md-2">
                                     <button class="btn btn-info" onclick="assignmentManager.showQRScanner()">
@@ -871,10 +871,10 @@ class AssignmentManager {
                                     <thead>
                                         <tr>
                                             <th>ID</th>
-                                            <th>Тип</th>
-                                            <th>Опис</th>
-                                            <th>Статус</th>
-                                            <th>Клієнт</th>
+                                            <th>Tipo</th>
+                                            <th>Descrição</th>
+                                            <th>Estado</th>
+                                            <th>Cliente</th>
                                             <th>Створено</th>
                                             <th>Дії</th>
                                         </tr>
@@ -882,7 +882,7 @@ class AssignmentManager {
                                     <tbody id="assignments-table-body">
                                         <tr>
                                             <td colspan="7" class="text-center">
-                                                <i class="fas fa-spinner fa-spin"></i> Завантаження...
+                                                <i class="fas fa-spinner fa-spin"></i> A carregar...
                                             </td>
                                         </tr>
                                     </tbody>
@@ -902,7 +902,7 @@ class AssignmentManager {
                     <div class="card">
                         <div class="card-header">
                             <h3 class="card-title">
-                                <i class="fas fa-plus"></i> Нова заявка
+                                <i class="fas fa-plus"></i> Nova заявка
                             </h3>
                         </div>
                         <div class="card-body">
@@ -910,11 +910,11 @@ class AssignmentManager {
                                 <div class="row">
                                     <div class="col-md-6">
                                         <div class="form-group">
-                                            <label for="assignment-type">Тип заявки</label>
+                                            <label for="assignment-type">Tipo заявки</label>
                                             <select class="form-control" id="assignment-type" required>
                                                 <option value="">Оберіть тип</option>
                                                 <option value="maintenance">Технічне обслуговування</option>
-                                                <option value="repair">Ремонт</option>
+                                                <option value="repair">Reparação</option>
                                                 <option value="installation">Встановлення</option>
                                                 <option value="inspection">Перевірка</option>
                                             </select>
@@ -922,10 +922,10 @@ class AssignmentManager {
                                     </div>
                                     <div class="col-md-6">
                                         <div class="form-group">
-                                            <label for="assignment-priority">Пріоритет</label>
+                                            <label for="assignment-priority">Prioridade</label>
                                             <select class="form-control" id="assignment-priority">
                                                 <option value="normal">Звичайний</option>
-                                                <option value="high">Високий</option>
+                                                <option value="high">Altий</option>
                                                 <option value="urgent">Терміновий</option>
                                             </select>
                                         </div>
@@ -933,7 +933,7 @@ class AssignmentManager {
                                 </div>
 
                                 <div class="form-group">
-                                    <label for="assignment-description">Опис проблеми</label>
+                                    <label for="assignment-description">Descrição проблеми</label>
                                     <textarea class="form-control" id="assignment-description" rows="4" 
                                               placeholder="Опишіть детально проблему або вимоги до роботи..."></textarea>
                                 </div>
@@ -941,14 +941,14 @@ class AssignmentManager {
                                 <div class="row">
                                     <div class="col-md-6">
                                         <div class="form-group">
-                                            <label for="client-name">Ім'я клієнта</label>
+                                            <label for="client-name">Nome do cliente</label>
                                             <input type="text" class="form-control" id="client-name" 
                                                    placeholder="Повне ім'я клієнта">
                                         </div>
                                     </div>
                                     <div class="col-md-6">
                                         <div class="form-group">
-                                            <label for="client-phone">Телефон</label>
+                                            <label for="client-phone">Telefone</label>
                                             <input type="tel" class="form-control" id="client-phone" 
                                                    placeholder="+351 9XX XXX XXX">
                                         </div>
@@ -956,7 +956,7 @@ class AssignmentManager {
                                 </div>
 
                                 <div class="form-group">
-                                    <label for="assignment-location">Адреса</label>
+                                    <label for="assignment-location">Endereço</label>
                                     <textarea class="form-control" id="assignment-location" rows="2" 
                                               placeholder="Повна адреса об'єкта"></textarea>
                                 </div>
@@ -966,7 +966,7 @@ class AssignmentManager {
                                         <i class="fas fa-save"></i> Створити заявку
                                     </button>
                                     <button type="button" class="btn btn-secondary ml-2" onclick="crmNav.loadModule('assignment-manager')">
-                                        <i class="fas fa-times"></i> Скасувати
+                                        <i class="fas fa-times"></i> Cancelar
                                     </button>
                                 </div>
                             </form>
@@ -978,11 +978,11 @@ class AssignmentManager {
     }
 
     setupContainerEvents(containerId) {
-        // Налаштування обробників подій для контейнера
+        // Definições обробників подій для контейнера
         const container = document.getElementById(containerId);
         if (!container) return;
 
-        // Фільтри
+        // Filtroи
         const statusFilter = container.querySelector('#statusFilter');
         const searchFilter = container.querySelector('#searchFilter');
 
@@ -1017,18 +1017,18 @@ class AssignmentManager {
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <h2><i class="fas fa-tasks"></i> Управління заявками</h2>
                     <button class="btn btn-primary" onclick="assignmentManager.showCreateForm()">
-                        <i class="fas fa-plus"></i> Нова заявка
+                        <i class="fas fa-plus"></i> Nova заявка
                     </button>
                 </div>
                 
-                <!-- Фільтри та пошук -->
+                <!-- Filtroи та пошук -->
                 <div class="card mb-4">
                     <div class="card-body">
                         <div class="row">
                             <div class="col-md-3">
                                 <select class="form-control" id="status-filter">
-                                    <option value="">Всі статуси</option>
-                                    <option value="pending">Очікує</option>
+                                    <option value="">Todos статуси</option>
+                                    <option value="pending">Pendente</option>
                                     <option value="in-progress">Виконується</option>
                                     <option value="completed">Завершено</option>
                                     <option value="cancelled">Скасовано</option>
@@ -1036,15 +1036,15 @@ class AssignmentManager {
                             </div>
                             <div class="col-md-3">
                                 <select class="form-control" id="priority-filter">
-                                    <option value="">Всі пріоритети</option>
+                                    <option value="">Todos пріоритети</option>
                                     <option value="low">Низький</option>
-                                    <option value="medium">Середній</option>
-                                    <option value="high">Високий</option>
-                                    <option value="urgent">Терміново</option>
+                                    <option value="medium">Agoедній</option>
+                                    <option value="high">Altий</option>
+                                    <option value="urgent">Urgente</option>
                                 </select>
                             </div>
                             <div class="col-md-4">
-                                <input type="text" class="form-control" id="search-input" placeholder="Пошук заявок...">
+                                <input type="text" class="form-control" id="search-input" placeholder="Pesquisa заявок...">
                             </div>
                             <div class="col-md-2">
                                 <button class="btn btn-outline-secondary btn-block" onclick="assignmentManager.scanQRCode()">
@@ -1059,7 +1059,7 @@ class AssignmentManager {
                 <div id="assignments-list-container">
                     <div class="text-center">
                         <i class="fas fa-spinner fa-spin fa-2x"></i>
-                        <p>Завантаження заявок...</p>
+                        <p>A carregar заявок...</p>
                     </div>
                 </div>
 
@@ -1068,16 +1068,16 @@ class AssignmentManager {
             </div>
         `;
 
-        // Налаштування обробників подій для CRM
+        // Definições обробників подій для CRM
         this.setupCRMEventListeners();
         
-        // Завантаження даних
+        // A carregar даних
         this.loadAssignments();
     }
 
-    // Налаштування обробників подій для CRM
+    // Definições обробників подій для CRM
     setupCRMEventListeners() {
-        // Фільтри
+        // Filtroи
         const statusFilter = document.getElementById('status-filter');
         const priorityFilter = document.getElementById('priority-filter');
         const searchInput = document.getElementById('search-input');
@@ -1112,17 +1112,17 @@ class AssignmentManager {
 
         let filteredAssignments = [...this.assignments];
 
-        // Фільтр по статусу
+        // Filtro по статусу
         if (status) {
             filteredAssignments = filteredAssignments.filter(a => a.status === status);
         }
 
-        // Фільтр по пріоритету
+        // Filtro по пріоритету
         if (priority) {
             filteredAssignments = filteredAssignments.filter(a => a.priority === priority);
         }
 
-        // Пошук
+        // Pesquisa
         if (search) {
             const searchLower = search.toLowerCase();
             filteredAssignments = filteredAssignments.filter(a => 
@@ -1179,7 +1179,7 @@ class AssignmentManager {
                                     <div class="d-flex justify-content-between align-items-center">
                                         <div>
                                             <h6 class="mb-1">${assignment.title || 'Без назви'}</h6>
-                                            <small class="text-muted">${assignment.location || 'Не вказано'}</small>
+                                            <small class="text-muted">${assignment.location || 'Não especificado'}</small>
                                         </div>
                                         <span class="badge badge-${this.getStatusColor(assignment.status)}">
                                             ${this.getStatusText(assignment.status)}
@@ -1190,13 +1190,13 @@ class AssignmentManager {
                         </div>
                         <div class="card-footer">
                             <a href="#" onclick="assignmentManager.renderInContainer('main-content')" class="btn btn-sm btn-outline-primary btn-block">
-                                Переглянути всі
+                                Ver всі
                             </a>
                         </div>
                     ` : `
                         <div class="text-center py-4">
                             <i class="fas fa-inbox fa-2x text-muted mb-2"></i>
-                            <p class="text-muted mb-0">Заявки відсутні</p>
+                            <p class="text-muted mb-0">Pedidos відсутні</p>
                         </div>
                     `}
                 </div>
@@ -1215,7 +1215,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-    // Експорт для використання в модулях
+    // Exportar для використання в модулях
     if (typeof module !== 'undefined' && module.exports) {
         module.exports = AssignmentManager;
     }

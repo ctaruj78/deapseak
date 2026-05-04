@@ -43,7 +43,7 @@ class ReportManager {
 
                 localStorage.setItem('reportData', JSON.stringify(this.reportData));
             } else {
-                throw new Error('API недоступне');
+                throw new Error('API indisponível');
             }
         } catch (error) {
             console.warn('Використання локальних даних:', error);
@@ -132,7 +132,7 @@ class ReportManager {
         $('#escalations').text(metrics.escalations);
         $('#customerSatisfaction').text(metrics.customerSatisfaction + '%');
         
-        // Оновлення трендів
+        // Atualização трендів
         this.updateTrends();
     }
 
@@ -232,7 +232,7 @@ class ReportManager {
             this.charts.priority = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
-                    labels: ['Високий пріоритет', 'Середній пріоритет'],
+                    labels: ['Altий пріоритет', 'Agoедній пріоритет'],
                     datasets: [{
                         data: [priorityData.high, priorityData.medium],
                         backgroundColor: ['#dc3545', '#ffc107'],
@@ -273,7 +273,7 @@ class ReportManager {
                     plugins: {
                         title: {
                             display: true,
-                            text: 'Продуктивність техніків'
+                            text: 'Desempenho техніків'
                         }
                     }
                 }
@@ -286,8 +286,8 @@ class ReportManager {
         if (ctx) {
             const existing = Chart.getChart(ctx);
             if (existing) existing.destroy();
-            // Групування по днях тижня
-            const daysOfWeek = ['Нд', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'];
+            // Dezпування по днях тижня
+            const daysOfWeek = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
             const workloadData = daysOfWeek.map(() => 0);
             
             this.reportData.assignments.forEach(assignment => {
@@ -301,7 +301,7 @@ class ReportManager {
                 data: {
                     labels: daysOfWeek,
                     datasets: [{
-                        label: 'Завантаження',
+                        label: 'A carregar',
                         data: workloadData,
                         backgroundColor: '#6f42c1'
                     }]
@@ -312,7 +312,7 @@ class ReportManager {
                     plugins: {
                         title: {
                             display: true,
-                            text: 'Завантаження по днях тижня'
+                            text: 'A carregar по днях тижня'
                         }
                     }
                 }
@@ -321,7 +321,7 @@ class ReportManager {
     }
 
     updateCharts() {
-        // Оновлення всіх графіків
+        // Atualização всіх графіків
         Object.values(this.charts).forEach(chart => {
             if (chart && chart.canvas && document.body.contains(chart.canvas)) {
                 chart.update();
@@ -374,7 +374,7 @@ class ReportManager {
                 deviation: -1.2
             },
             {
-                metric: 'Середній час виконання (хв)',
+                metric: 'Agoедній час виконання (хв)',
                 current: Math.round(this.reportData.assignments.reduce((sum, day) => sum + day.avgTime, 0) / 
                                   this.reportData.assignments.length),
                 previous: 145,
@@ -442,7 +442,7 @@ class ReportManager {
         
         const kpis = [
             { name: 'Оборот', value: '125,000₴', target: '120,000₴', status: 'success' },
-            { name: 'Вартість', value: '85,000₴', target: '80,000₴', status: 'warning' },
+            { name: 'Custo', value: '85,000₴', target: '80,000₴', status: 'warning' },
             { name: 'Прибуток', value: '40,000₴', target: '35,000₴', status: 'success' },
             { name: 'ROI', value: '47%', target: '40%', status: 'success' }
         ];
@@ -460,7 +460,7 @@ class ReportManager {
     }
 
     updateReportDate() {
-        $('#reportDate').text(`Звіт на: ${new Date().toLocaleDateString('uk-UA')}`);
+        $('#reportDate').text(`Relatório de: ${new Date().toLocaleDateString('pt-PT')}`);
     }
 
     setupEventListeners() {
@@ -495,7 +495,7 @@ class ReportManager {
     }
 
     setupAutoRefresh() {
-        // Автоматичне оновлення даних кожні 5 хвилин
+        // Автоматичне оновлення даних кожні 5 minилин
         setInterval(() => {
             this.loadReportData();
         }, 300000);
@@ -507,7 +507,7 @@ class ReportManager {
         // Тут буде логіка фільтрації даних
         setTimeout(() => {
             this.updateAllUI();
-            this.showToast('Фільтри застосовано', 'success');
+            this.showToast('Filtros aplicados', 'success');
         }, 1000);
     }
 
@@ -525,19 +525,19 @@ class ReportManager {
     }
 
     generateReport() {
-        this.showToast('Генерація звіту...', 'info');
+        this.showToast('A gerar relatório...', 'info');
         
         // Імітація генерації звіту
         setTimeout(() => {
             this.updateAllUI();
-            this.showToast('Звіт успішно згенеровано', 'success');
+            this.showToast('Relatório com sucesso згенеровано', 'success');
         }, 2000);
     }
 
     generatePerformanceReport() {
-        this.showModal('Звіт продуктивності', `
+        this.showModal('Relatório продуктивності', `
             <div class="report-preview">
-                <h4>Звіт продуктивності</h4>
+                <h4>Relatório продуктивності</h4>
                 <p>Детальний аналіз продуктивності техніків та системи</p>
                 <div class="export-options">
                     <button class="btn btn-outline-primary" onclick="reportManager.exportPDF('performance')">
@@ -586,9 +586,9 @@ class ReportManager {
     }
 
     generateQualityReport() {
-        this.showModal('Звіт якості', `
+        this.showModal('Relatório якості', `
             <div class="report-preview">
-                <h4>Звіт якості</h4>
+                <h4>Relatório якості</h4>
                 <p>Показники якості обслуговування та задоволеності клієнтів</p>
                 <div class="export-options">
                     <button class="btn btn-outline-primary" onclick="reportManager.exportPDF('quality')">
@@ -611,22 +611,22 @@ class ReportManager {
         
         // Імітація експорту всіх звітів
         setTimeout(() => {
-            this.showToast('Всі звіти експортовано успішно', 'success');
+            this.showToast('Todos звіти експортовано com sucesso', 'success');
         }, 3000);
     }
 
     exportPDF(type) {
-        this.showToast(`Експорт ${type} звіту в PDF...`, 'info');
+        this.showToast(`Exportar ${type} звіту в PDF...`, 'info');
         // Логіка експорту в PDF
     }
 
     exportExcel(type) {
-        this.showToast(`Експорт ${type} звіту в Excel...`, 'info');
+        this.showToast(`Exportar ${type} звіту в Excel...`, 'info');
         // Логіка експорту в Excel
     }
 
     exportHTML(type) {
-        this.showToast(`Експорт ${type} звіту в HTML...`, 'info');
+        this.showToast(`Exportar ${type} звіту в HTML...`, 'info');
         // Логіка експорту в HTML
     }
 
@@ -641,7 +641,7 @@ class ReportManager {
         const includeCharts = $('#includeCharts').is(':checked');
         const includeRecommendations = $('#includeRecommendations').is(':checked');
         
-        this.showToast('Налаштування застосовано', 'success');
+        this.showToast('Definições застосовано', 'success');
         $('#reportSettingsModal').modal('hide');
         
         // Застосування налаштувань
@@ -701,7 +701,7 @@ class ReportManager {
     }
 
     formatCurrency(amount) {
-        return new Intl.NumberFormat('uk-UA', {
+        return new Intl.NumberFormat('pt-PT', {
             style: 'currency',
             currency: 'EUR'
         }).format(amount);

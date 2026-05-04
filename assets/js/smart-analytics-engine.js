@@ -34,10 +34,10 @@ class SmartAnalyticsEngine {
     }
 
     /**
-     * 📈 Завантаження та аналіз історичних даних
+     * 📈 A carregar та аналіз історичних даних
      */
     loadHistoricalData() {
-        console.log('📚 Завантаження історичних даних...');
+        console.log('📚 A carregar історичних даних...');
         
         // Завантажуємо всі дані з localStorage
         const lifts = JSON.parse(localStorage.getItem('lifts') || '[]');
@@ -144,7 +144,7 @@ class SmartAnalyticsEngine {
             const source = event.metadata?.source || 'unknown';
             analysis.eventsBySource[source] = (analysis.eventsBySource[source] || 0) + 1;
             
-            // Остання активність (за останні 24 години)
+            // Остання активність (за останні 24 horasи)
             const eventDate = new Date(event.metadata.timestamp);
             const hoursAgo = (Date.now() - eventDate.getTime()) / (1000 * 60 * 60);
             if (hoursAgo <= 24) {
@@ -215,7 +215,7 @@ class SmartAnalyticsEngine {
         const createdDate = new Date(lift.createdAt || Date.now());
         const monthsOld = (Date.now() - createdDate.getTime()) / (1000 * 60 * 60 * 24 * 30);
         
-        // Ліфти старше 6 місяців потребують перевірки
+        // Elevadores старше 6 місяців потребують перевірки
         return monthsOld > 6;
     }
 
@@ -305,7 +305,7 @@ class SmartAnalyticsEngine {
                 type: 'maintenance',
                 priority: 'high',
                 title: 'Потрібне технічне обслуговування',
-                description: `${liftsAnalysis.maintenanceNeeded} ліфтів потребують планового ТО`,
+                description: `${liftsAnalysis.maintenanceNeeded} ліфтів потребують планового Manutenção`,
                 action: 'Заплануйте інспекції для цих ліфтів'
             });
         }
@@ -317,7 +317,7 @@ class SmartAnalyticsEngine {
                 priority: 'urgent',
                 title: 'Прострочені інспекції',
                 description: `${inspectionsAnalysis.overdue} інспекцій прострочено`,
-                action: 'Негайно зверніться до відповідальних осіб'
+                action: 'Негайно зверніться до відповідальних pessoas'
             });
         }
 
@@ -326,7 +326,7 @@ class SmartAnalyticsEngine {
             recommendations.push({
                 type: 'performance',
                 priority: 'medium',
-                title: 'Високе навантаження системи',
+                title: 'Altе навантаження системи',
                 description: 'Система обробляє багато подій',
                 action: 'Розгляньте оптимізацію або збільшення ресурсів'
             });
@@ -336,7 +336,7 @@ class SmartAnalyticsEngine {
     }
 
     /**
-     * 📡 Налаштування інтеграції з EventBus
+     * 📡 Definições інтеграції з EventBus
      */
     setupEventBusIntegration() {
         if (!window.eventBus) return;
@@ -483,7 +483,7 @@ class SmartAnalyticsEngine {
     }
 }
 
-// Експорт для використання в інших модулях
+// Exportar для використання в інших модулях
 if (typeof window !== 'undefined') {
     window.SmartAnalyticsEngine = SmartAnalyticsEngine;
 }

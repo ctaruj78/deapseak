@@ -33,7 +33,7 @@ class ToolManager {
                 this.tools = await response.json();
                 localStorage.setItem('tools', JSON.stringify(this.tools));
             } else {
-                throw new Error('API недоступне');
+                throw new Error('API indisponível');
             }
         } catch (error) {
             console.warn('Використання локальних даних:', error);
@@ -139,7 +139,7 @@ class ToolManager {
                 quantity: 2,
                 minQuantity: 2,
                 condition: 'excellent',
-                notes: 'Новий, з автоматичним відключенням'
+                notes: 'Novo, з автоматичним відключенням'
             },
             {
                 id: 'TOOL-005',
@@ -163,7 +163,7 @@ class ToolManager {
                         date: '2024-06-05',
                         type: 'diagnostic',
                         technician: 'Іван Петренко',
-                        notes: 'Діагностика дисплея - потребує заміни'
+                        notes: 'Diagnóstico дисплея - потребує заміни'
                     }
                 ]
             }
@@ -186,7 +186,7 @@ class ToolManager {
             this.applyFilters();
         });
 
-        // Пошук
+        // Pesquisa
         $('#searchInput').on('input', (e) => {
             this.searchTools(e.target.value);
         });
@@ -208,21 +208,21 @@ class ToolManager {
     applyFilters() {
         let filteredTools = [...this.tools];
 
-        // Фільтрація за статусом
+        // Filtroація за статусом
         if (this.filters.status !== 'all') {
             filteredTools = filteredTools.filter(tool => 
                 tool.status === this.filters.status
             );
         }
 
-        // Фільтрація за категорією
+        // Filtroація за категорією
         if (this.filters.category !== 'all') {
             filteredTools = filteredTools.filter(tool => 
                 tool.category === this.filters.category
             );
         }
 
-        // Фільтрація за локацією
+        // Filtroація за локацією
         if (this.filters.location !== 'all') {
             filteredTools = filteredTools.filter(tool => 
                 tool.location === this.filters.location
@@ -354,7 +354,7 @@ class ToolManager {
         const statuses = {
             'available': 'Доступний',
             'in-use': 'Використовується',
-            'maintenance': 'Обслуговування',
+            'maintenance': 'Manutenção',
             'broken': 'Несправний'
         };
         return statuses[status] || status;
@@ -381,7 +381,7 @@ class ToolManager {
 
     formatDate(dateString) {
         if (!dateString) return '-';
-        return new Date(dateString).toLocaleDateString('uk-UA');
+        return new Date(dateString).toLocaleDateString('pt-PT');
     }
 
     updateStats(tools = this.tools) {
@@ -403,7 +403,7 @@ class ToolManager {
         $('#totalPages').text(totalPages);
         $('#currentPage').text(this.currentPage);
 
-        // Оновлення стану кнопок пагінації
+        // Atualização стану кнопок пагінації
         $('.page-item').removeClass('disabled');
         if (this.currentPage === 1) {
             $('.page-item:first-child').addClass('disabled');
@@ -472,7 +472,7 @@ class ToolManager {
         container.empty();
 
         if (lowStockTools.length === 0) {
-            container.html('<p class="text-muted text-center">Всі інструменти в достатній кількості</p>');
+            container.html('<p class="text-muted text-center">Todas as ferramentas em quantidade suficiente</p>');
             return;
         }
 
@@ -500,8 +500,8 @@ class ToolManager {
 
     scanTool() {
         $('#scanToolModal').modal('show');
-        // Тут буде реалізація QR сканування
-        this.showNotification('Функція QR сканування в розробці', 'info');
+        // Тут буде реалізація Leitura QR
+        this.showNotification('Функція Leitura QR em desenvolvimento', 'info');
     }
 
     saveTools() {
@@ -510,8 +510,8 @@ class ToolManager {
 
     // Нові методи для HTML інтерфейсу
     loadUserInfo() {
-        const user = JSON.parse(localStorage.getItem('currentUser')) || { name: 'Технік' };
-        $('#userName').text(user.name || 'Технік');
+        const user = JSON.parse(localStorage.getItem('currentUser')) || { name: 'Técnico' };
+        $('#userName').text(user.name || 'Técnico');
     }
 
     updateStatistics() {
@@ -532,7 +532,7 @@ class ToolManager {
     }
 
     setupEventListeners() {
-        // Фільтри
+        // Filtroи
         $('#statusFilter').on('change', () => {
             this.filters.status = $('#statusFilter').val();
             this.applyFilters();
@@ -611,7 +611,7 @@ class ToolManager {
                     <td>${this.formatDate(tool.lastInspection)}</td>
                     <td>
                         <div class="action-buttons">
-                            <button class="btn btn-sm btn-info btn-action" onclick="toolManager.viewTool('${tool.id}')" title="Переглянути">
+                            <button class="btn btn-sm btn-info btn-action" onclick="toolManager.viewTool('${tool.id}')" title="Ver">
                                 <i class="fas fa-eye"></i>
                             </button>
                             <button class="btn btn-sm btn-warning btn-action" onclick="toolManager.checkoutTool('${tool.id}')" title="Видати">
@@ -636,7 +636,7 @@ class ToolManager {
         $('#totalPages').text(totalPages);
         $('#currentPage').text(this.currentPage);
 
-        // Оновлення стану кнопок пагінації
+        // Atualização стану кнопок пагінації
         $('.page-item').removeClass('disabled');
         if (this.currentPage === 1) {
             $('.page-item:first-child').addClass('disabled');
@@ -704,7 +704,7 @@ class ToolManager {
                         <span class="detail-value">${tool.id}</span>
                     </div>
                     <div class="detail-item">
-                        <span class="detail-label">Назва:</span>
+                        <span class="detail-label">Nome:</span>
                         <span class="detail-value">${tool.name}</span>
                     </div>
                     <div class="detail-item">
@@ -713,14 +713,14 @@ class ToolManager {
                     </div>
                     <div class="detail-item">
                         <span class="detail-label">Виробник:</span>
-                        <span class="detail-value">${tool.manufacturer || 'Невідомий'}</span>
+                        <span class="detail-value">${tool.manufacturer || 'Desconhecido'}</span>
                     </div>
                     <div class="detail-item">
-                        <span class="detail-label">Модель:</span>
+                        <span class="detail-label">Modelo:</span>
                         <span class="detail-value">${tool.model || 'Невідома'}</span>
                     </div>
                     <div class="detail-item">
-                        <span class="detail-label">Серійний номер:</span>
+                        <span class="detail-label">Número de série:</span>
                         <span class="detail-value">${tool.serialNumber || 'Немає'}</span>
                     </div>
                 </div>
@@ -728,7 +728,7 @@ class ToolManager {
                 <div class="detail-section">
                     <h5><i class="fas fa-cogs"></i> Стан та локація</h5>
                     <div class="detail-item">
-                        <span class="detail-label">Статус:</span>
+                        <span class="detail-label">Estado:</span>
                         <span class="detail-value">
                             <span class="tool-status status-${tool.status}">${this.getStatusText(tool.status)}</span>
                         </span>
@@ -752,9 +752,9 @@ class ToolManager {
                 </div>
 
                 <div class="detail-section">
-                    <h5><i class="fas fa-calendar-alt"></i> Дати</h5>
+                    <h5><i class="fas fa-calendar-alt"></i> Datas</h5>
                     <div class="detail-item">
-                        <span class="detail-label">Дата покупки:</span>
+                        <span class="detail-label">Data покупки:</span>
                         <span class="detail-value">${this.formatDate(tool.purchaseDate)}</span>
                     </div>
                     <div class="detail-item">
@@ -783,7 +783,7 @@ class ToolManager {
                             <div class="maintenance-item ${item.type === 'completed' ? 'completed' : ''}">
                                 <div class="date">${this.formatDate(item.date)}</div>
                                 <div class="description">${item.notes}</div>
-                                <small>Технік: ${item.technician}</small>
+                                <small>Técnico: ${item.technician}</small>
                             </div>
                         `).join('')}
                     </div>
@@ -799,7 +799,7 @@ class ToolManager {
                                 <div class="technician">${item.technician}</div>
                                 <div class="dates">
                                     Видано: ${this.formatDate(item.checkoutDate)}
-                                    ${item.returnDate ? `Повернено: ${this.formatDate(item.returnDate)}` : `Очікується: ${this.formatDate(item.expectedReturn)}`}
+                                    ${item.returnDate ? `Повернено: ${this.formatDate(item.returnDate)}` : `Pendenteться: ${this.formatDate(item.expectedReturn)}`}
                                 </div>
                                 <span class="status ${item.returned ? 'returned' : 'active'}">${item.returned ? 'Повернено' : 'Активно'}</span>
                             </div>
@@ -811,7 +811,7 @@ class ToolManager {
 
         $('#toolDetailsContent').html(detailsHtml);
 
-        // Оновлення кнопок в залежності від статусу
+        // Atualização кнопок в залежності від статусу
         const checkoutBtn = $('#checkoutBtn');
         const maintenanceBtn = $('#maintenanceBtn');
 
@@ -844,14 +844,14 @@ class ToolManager {
         const notes = $('#checkoutNotes').val().trim();
 
         if (!technicianName || !expectedReturnDate) {
-            this.showNotification('Будь ласка, заповніть всі обов\'язкові поля', 'error');
+            this.showNotification('Por favor, заповніть всі обов\'язкові поля', 'error');
             return;
         }
 
         const tool = this.tools.find(t => t.id === toolId);
         if (!tool) return;
 
-        // Оновлення статусу інструменту
+        // Atualização статусу інструменту
         tool.status = 'in-use';
         tool.currentUser = technicianName;
         tool.checkoutDate = new Date().toISOString().split('T')[0];
@@ -908,7 +908,7 @@ class ToolManager {
         container.empty();
 
         if (lowStockTools.length === 0) {
-            container.html('<p class="text-muted text-center">Всі інструменти в достатній кількості</p>');
+            container.html('<p class="text-muted text-center">Todas as ferramentas em quantidade suficiente</p>');
             return;
         }
 
@@ -936,8 +936,8 @@ class ToolManager {
 
     scanTool() {
         $('#scanToolModal').modal('show');
-        // Тут буде реалізація QR сканування
-        this.showNotification('Функція QR сканування в розробці', 'info');
+        // Тут буде реалізація Leitura QR
+        this.showNotification('Функція Leitura QR em desenvolvimento', 'info');
     }
 
     saveTools() {
@@ -975,7 +975,7 @@ class ToolManager {
         const statuses = {
             available: 'Доступний',
             'in-use': 'Використовується',
-            maintenance: 'Обслуговування',
+            maintenance: 'Manutenção',
             broken: 'Несправний'
         };
         return statuses[status] || status;
@@ -1001,9 +1001,9 @@ class ToolManager {
     }
 
     formatDate(dateString) {
-        if (!dateString) return 'Невідомо';
+        if (!dateString) return 'Desconhecido';
         const date = new Date(dateString);
-        return date.toLocaleDateString('uk-UA');
+        return date.toLocaleDateString('pt-PT');
     }
 }
 

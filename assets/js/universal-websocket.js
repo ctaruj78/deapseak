@@ -14,7 +14,7 @@ class UniversalWebSocketManager {
         this.connectionId = null;
         this.eventHandlers = {};
         
-        // Налаштування за ролями
+        // Definições за ролями
         this.roleConfig = {
             admin: {
                 events: ['lift_update', 'request_update', 'user_activity', 'system_alert'],
@@ -64,7 +64,7 @@ class UniversalWebSocketManager {
             
             // Обробка подій Socket.IO
             this.socket.on('connect', () => {
-                console.log('[WebSocket] Підключено успішно, Socket ID:', this.socket.id);
+                console.log('[WebSocket] Підключено com sucesso, Socket ID:', this.socket.id);
                 this.reconnectAttempts = 0;
                 this.handleOpen();
             });
@@ -74,7 +74,7 @@ class UniversalWebSocketManager {
                     console.log('[WebSocket] Автентифіковано:', data.user);
                     this.trigger('connected', { userRole: this.userRole });
                 } else {
-                    console.error('[WebSocket] Помилка автентифікації:', data.error);
+                    console.error('[WebSocket] Erro автентифікації:', data.error);
                 }
             });
             
@@ -84,7 +84,7 @@ class UniversalWebSocketManager {
             });
             
             this.socket.on('error', (error) => {
-                console.error('[WebSocket] Помилка:', error);
+                console.error('[WebSocket] Erro:', error);
                 this.handleError(error);
             });
 
@@ -99,7 +99,7 @@ class UniversalWebSocketManager {
             }
             
         } catch (error) {
-            console.error('[WebSocket] Помилка підключення:', error);
+            console.error('[WebSocket] Erro підключення:', error);
             this.scheduleReconnect();
         }
     }
@@ -207,7 +207,7 @@ class UniversalWebSocketManager {
                 try {
                     handler(data);
                 } catch (error) {
-                    console.error(`[WebSocket] Помилка в обробнику події ${event}:`, error);
+                    console.error(`[WebSocket] Erro в обробнику події ${event}:`, error);
                 }
             });
         }
@@ -245,7 +245,7 @@ class UniversalWebSocketManager {
     }
 }
 
-// Експорт для використання в різних середовищах
+// Exportar для використання в різних середовищах
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = UniversalWebSocketManager;
 } else if (typeof window !== 'undefined') {

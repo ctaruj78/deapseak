@@ -766,8 +766,8 @@
                 user: 'Utilizador',
                 security: 'Segurança',
                 maintenance: 'Manutenção',
-                lift_delete_request: 'Pedido на eliminação',
-                deletion_request: 'Pedido на eliminação'
+                lift_delete_request: 'Pedido de eliminação',
+                deletion_request: 'Pedido de eliminação'
             };
             return labels[type] || type;
         }
@@ -928,7 +928,7 @@
         });
 
         $(document).on('click', '.delete-notification', async function() {
-            if (!confirm('Tem a certeza que quer eliminar це notificações?')) return;
+            if (!confirm('Tem a certeza que quer eliminar estas notificações?')) return;
 
             const id = $(this).data('id');
             const token = localStorage.getItem('liftmanager_jwt') || localStorage.getItem('authToken') || localStorage.getItem('token');
@@ -957,7 +957,7 @@
         $(document).on('click', '.approve-deletion', async function() {
             const liftId = $(this).data('lift-id');
             const notificationId = $(this).data('notification-id');
-            if (!confirm('Tem a certeza que quer eliminar цей elevador? Цю дію не pode-se cancelar.')) return;
+            if (!confirm('Tem a certeza que quer eliminar este elevador? Esta ação não pode ser cancelada.')) return;
 
             try {
                 const token = localStorage.getItem('liftmanager_jwt') || localStorage.getItem('authToken') || localStorage.getItem('token');
@@ -986,7 +986,7 @@
         $(document).on('click', '.reject-deletion', async function() {
             const liftId = $(this).data('lift-id');
             const notificationId = $(this).data('notification-id');
-            const reason = prompt('Motivo відхилення (необов,язково):') ;
+            const reason = prompt('Motivo da rejeição (opcional):') ;
 
             try {
                 const token = localStorage.getItem('liftmanager_jwt') || localStorage.getItem('authToken') || localStorage.getItem('token');

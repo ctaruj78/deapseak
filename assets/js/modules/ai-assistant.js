@@ -41,8 +41,8 @@ class AIAssistant {
             };
 
             this.recognition.onerror = (event) => {
-                console.error('Помилка розпізнавання мови:', event.error);
-                this.showNotification('Помилка розпізнавання мови: ' + event.error, 'error');
+                console.error('Erro de reconhecimento de voz:', event.error);
+                this.showNotification('Erro de reconhecimento de voz: ' + event.error, 'error');
                 this.updateUIStatus('idle');
             };
 
@@ -56,21 +56,21 @@ class AIAssistant {
     }
 
     setupEventListeners() {
-        // Глобальний хоткей для активації (Ctrl+Space)
+        // Atalho global para ativação (Ctrl+Space)
         document.addEventListener('keydown', (e) => {
             if (e.ctrlKey && e.code === 'Space') {
                 e.preventDefault();
                 this.toggleChat();
             }
             
-            // Alt+V для голосового управління
+            // Alt+V para controlo por voz
             if (e.altKey && e.code === 'KeyV') {
                 e.preventDefault();
                 this.toggleListening();
             }
         });
 
-        // Клік по кнопці асистента
+        // Clique no botão do assistente
         document.addEventListener('click', (e) => {
             if (e.target.closest('.ai-assistant-btn')) {
                 this.toggleChat();
@@ -108,7 +108,7 @@ class AIAssistant {
             }
         });
 
-        // Enter для відправки повідомлення
+        // Enter para enviar mensagem
         document.addEventListener('keydown', (e) => {
             const input = document.querySelector('.ai-message-input');
             if (input && e.key === 'Enter' && !e.shiftKey && this.isChatOpen) {
@@ -130,7 +130,7 @@ class AIAssistant {
                 <i class="fas fa-magic"></i>
                 <span class="ai-pulse"></span>
             `;
-            aiButton.title = 'AI Асистент (Ctrl+Space)';
+            aiButton.title = 'Assistente AI (Ctrl+Space)';
             document.body.appendChild(aiButton);
         }
     }
@@ -151,7 +151,7 @@ class AIAssistant {
         document.querySelector('.ai-chat-container').classList.add('active');
         this.isChatOpen = true;
         
-        // Фокус на input
+        // Foco no campo de texto
         setTimeout(() => {
             const input = document.querySelector('.ai-message-input');
             if (input) input.focus();
@@ -175,59 +175,59 @@ class AIAssistant {
                 <div class="ai-chat-header">
                     <div class="ai-chat-title">
                         <i class="fas fa-magic"></i>
-                        <h4>AI Асистент</h4>
+                        <h4>Assistente AI</h4>
                         <span class="ai-status-indicator"></span>
                     </div>
                     <div class="ai-chat-controls">
-                        <button class="ai-settings-toggle" title="Налаштування">
+                        <button class="ai-settings-toggle" title="Configurações">
                             <i class="fas fa-cog"></i>
                         </button>
-                        <button class="ai-clear-chat" title="Очистити чат">
+                        <button class="ai-clear-chat" title="Limpar chat">
                             <i class="fas fa-trash"></i>
                         </button>
-                        <button class="ai-chat-close" title="Закрити">
+                        <button class="ai-chat-close" title="Fechar">
                             <i class="fas fa-times"></i>
                         </button>
                     </div>
                 </div>
                 
                 <div class="ai-settings-panel">
-                    <h5>Налаштування асистента</h5>
+                    <h5>Configurações do assistente</h5>
                     <div class="ai-setting">
                         <label>
                             <input type="checkbox" id="ai-voice-enabled" ${this.settings.voiceEnabled ? 'checked' : ''}>
-                            Голосове управління
+                            Controlo por voz
                         </label>
                     </div>
                     <div class="ai-setting">
                         <label>
                             <input type="checkbox" id="ai-auto-open" ${this.settings.autoOpen ? 'checked' : ''}>
-                            Автоматичне відкриття
+                            Abertura automática
                         </label>
                     </div>
                     <div class="ai-setting">
                         <label>
                             <input type="checkbox" id="ai-sound-effects" ${this.settings.soundEffects ? 'checked' : ''}>
-                            Звукові ефекти
+                            Efeitos de som
                         </label>
                     </div>
-                    <button class="ai-settings-save">Зберегти</button>
+                    <button class="ai-settings-save">Guardar</button>
                 </div>
                 
                 <div class="ai-chat-messages"></div>
                 
                 <div class="ai-command-suggestions">
-                    <div class="ai-suggestion-title">Популярні команди:</div>
+                    <div class="ai-suggestion-title">Comandos populares:</div>
                     <div class="ai-suggestion-list"></div>
                 </div>
                 
                 <div class="ai-chat-input">
-                    <textarea class="ai-message-input" placeholder="Напишіть повідомлення або натисніть 🎤 для голосу..."></textarea>
+                    <textarea class="ai-message-input" placeholder="Escreva uma mensagem ou pressione 🎤 para voz..."></textarea>
                     <div class="ai-chat-actions">
-                        <button class="ai-voice-toggle" title="Голосове управління">
+                        <button class="ai-voice-toggle" title="Controlo por voz">
                             <i class="fas fa-microphone"></i>
                         </button>
-                        <button class="ai-send-message" title="Надіслати">
+                        <button class="ai-send-message" title="Enviar">
                             <i class="fas fa-paper-plane"></i>
                         </button>
                     </div>
@@ -237,12 +237,12 @@ class AIAssistant {
         
         document.body.insertAdjacentHTML('beforeend', chatHTML);
         this.updateSuggestions();
-        this.addMessage('assistant', 'Привіт! Я ваш AI асистент. Чим можу допомогти?');
+        this.addMessage('assistant', 'Olá! Sou o seu assistente AI. Em que posso ajudar?');
     }
 
     toggleListening() {
         if (!this.recognition || !this.settings.voiceEnabled) {
-            this.showNotification('Голосове управління не доступне', 'warning');
+            this.showNotification('Controlo por voz não disponível', 'warning');
             return;
         }
 
@@ -258,10 +258,10 @@ class AIAssistant {
             this.recognition.start();
             this.isListening = true;
             this.updateUIStatus('listening');
-            this.showNotification('Слухаю... Говоріть', 'info');
+            this.showNotification('A ouvir... Fale', 'info');
             this.playSound('start');
         } catch (error) {
-            console.error('Помилка запуску розпізнавання:', error);
+            console.error('Erro ao iniciar reconhecimento de voz:', error);
         }
     }
 
@@ -272,16 +272,16 @@ class AIAssistant {
             this.updateUIStatus('idle');
             this.playSound('stop');
         } catch (error) {
-            console.error('Помилка зупинки розпізнавання:', error);
+            console.error('Erro ao parar reconhecimento de voz:', error);
         }
     }
 
     processCommand(command) {
-        console.log('Отримано команду:', command);
+        console.log('Comando recebido:', command);
         this.addMessage('user', command);
         this.updateUIStatus('processing');
         
-        // Аналіз команди та відповідь
+        // Análise do comando e resposta
         setTimeout(() => {
             const response = this.generateResponse(command);
             this.addMessage('assistant', response.text);
@@ -299,38 +299,38 @@ class AIAssistant {
         const userRole = this.getCurrentUserRole();
         const currentPage = this.getCurrentPage();
         
-        // Загальні команди для всіх ролей
-        if (lowerCommand.includes('допомога') || lowerCommand.includes('команди')) {
+        // Comandos gerais para todas as funções
+        if (lowerCommand.includes('ajuda') || lowerCommand.includes('comandos')) {
             return {
                 text: this.getHelpMessage(userRole),
                 action: null
             };
         }
 
-        if (lowerCommand.includes('час') || lowerCommand.includes('котра година')) {
+        if (lowerCommand.includes('hora') || lowerCommand.includes('que horas')) {
             return {
-                text: `Зараз ${new Date().toLocaleTimeString('uk-UA')}`,
+                text: `São agora ${new Date().toLocaleTimeString('pt-PT')}`,
                 action: null
             };
         }
 
-        if (lowerCommand.includes('дата') || lowerCommand.includes('який число')) {
+        if (lowerCommand.includes('data') || lowerCommand.includes('que dia')) {
             return {
-                text: `Сьогодні ${new Date().toLocaleDateString('uk-UA', { 
+                text: `Hoje ${new Date().toLocaleDateString('pt-PT', { 
                     weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' 
                 })}`,
                 action: null
             };
         }
 
-        if (lowerCommand.includes('налаштування') || lowerCommand.includes('опції')) {
+        if (lowerCommand.includes('configurações') || lowerCommand.includes('opções')) {
             return {
-                text: 'Відкриваю налаштування асистента...',
+                text: 'A abrir configurações do assistente...',
                 action: () => this.toggleSettings()
             };
         }
 
-        // Специфічні команди для ролей
+        // Comandos específicos por função
         switch(userRole) {
             case 'admin':
                 return this.processAdminCommand(lowerCommand, currentPage);
@@ -347,197 +347,197 @@ class AIAssistant {
 
     processAdminCommand(command, currentPage) {
         const responses = {
-            'створити кр': {
-                text: 'Відкриваю генератор QR-кодів...',
+            'criar qr': {
+                text: 'A abrir gerador de QR-codes...',
                 action: () => window.location.href = 'qr-generator.html'
             },
-            'статистика': {
-                text: 'Показую статистику системи...',
+            'estatísticas': {
+                text: 'A mostrar estatísticas do sistema...',
                 action: () => window.location.href = 'analytics.html'
             },
-            'користувач': {
-                text: 'Відкриваю управління користувачами...',
+            'utilizador': {
+                text: 'A abrir gestão de utilizadores...',
                 action: () => window.location.href = 'users.html'
             },
-            'звіт': {
-                text: 'Генерую звіт...',
+            'relatório': {
+                text: 'A gerar relatório...',
                 action: () => this.generateReport()
             },
-            'новий користувач': {
-                text: 'Створюю нового користувача...',
+            'novo utilizador': {
+                text: 'A criar novo utilizador...',
                 action: () => this.createNewUser()
             },
-            'бек ап': {
-                text: 'Створюю резервну копію даних...',
+            'cópia segurança': {
+                text: 'A criar cópia de segurança...',
                 action: () => this.createBackup()
             },
-            'аналіз даних': {
-                text: 'Проводжу глибокий аналіз даних системи...',
+            'análise dados': {
+                text: 'A efetuar análise aprofundada dos dados do sistema...',
                 action: () => this.performDataAnalysis()
             },
-            'оптимізувати': {
-                text: 'Оптимізую продуктивність системи...',
+            'otimizar': {
+                text: 'A otimizar o desempenho do sistema...',
                 action: () => this.optimizeSystem()
             },
-            'інтеграція': {
-                text: 'Перевіряю інтеграції з зовнішніми сервісами...',
+            'integração': {
+                text: 'A verificar integrações com serviços externos...',
                 action: () => this.checkIntegrations()
             },
-            'безпека': {
-                text: 'Перевіряю стан безпеки системи...',
+            'segurança': {
+                text: 'A verificar o estado de segurança do sistema...',
                 action: () => this.securityAudit()
             },
-            'автоматизація': {
-                text: 'Налаштовую автоматичні процеси...',
+            'automatização': {
+                text: 'A configurar processos automáticos...',
                 action: () => this.setupAutomation()
             },
-            'моніторинг': {
-                text: 'Відкриваю панель моніторингу...',
+            'monitorização': {
+                text: 'A abrir painel de monitorização...',
                 action: () => window.location.href = 'monitoring.html'
             },
-            'сповіщення': {
-                text: 'Керую системою сповіщень...',
+            'notificações': {
+                text: 'A gerir o sistema de notificações...',
                 action: () => this.manageNotifications()
             },
-            'експорт всіх': {
-                text: 'Експортую всі дані системи...',
+            'exportar tudo': {
+                text: 'A exportar todos os dados do sistema...',
                 action: () => this.exportAllData()
             },
-            'імпорт': {
-                text: 'Відкриваю інструменти імпорту...',
+            'importar': {
+                text: 'A abrir ferramentas de importação...',
                 action: () => window.location.href = 'import-tools.html'
             },
-            'логі': {
-                text: 'Показую системні логи...',
+            'registos': {
+                text: 'A mostrar registos do sistema...',
                 action: () => this.showSystemLogs()
             },
-            'діагностика': {
-                text: 'Запускаю діагностику системи...',
+            'diagnóstico': {
+                text: 'A executar diagnóstico do sistema...',
                 action: () => this.runDiagnostics()
             }
         };
 
         return this.findMatchingResponse(command, responses) || {
-            text: 'Команда не розпізнана. Скажіть "допомога" для списку команд.',
+            text: 'Comando não reconhecido. Diga "ajuda" para ver a lista de comandos.',
             action: null
         };
     }
 
     processTechnicianCommand(command, currentPage) {
-        // Перевірка на запити про регуляції
-        if (command.includes('регуляц') || command.includes('закон') || command.includes('norma') || 
+        // Verificar pedidos sobre regulamentos
+        if (command.includes('regulam') || command.includes('lei') || command.includes('norma') || 
             command.includes('decreto') || command.includes('ipac') || command.includes('dgeg')) {
             return this.processRegulationQuery(command);
         }
 
-        // Перевірка на запити про інспекції та модифікації
-        if (command.includes('інспекц') || command.includes('inspeç') || command.includes('modificaç')) {
+        // Verificar pedidos sobre inspeções e modificações
+        if (command.includes('inspeç') || command.includes('inspeç') || command.includes('modificaç')) {
             return this.processInspectionQuery(command);
         }
 
         const responses = {
-            'сканувати': {
-                text: 'Відкриваю сканер QR-кодів...',
+            'escanear': {
+                text: 'A abrir leitor de QR-codes...',
                 action: () => window.location.href = 'scanner.html'
             },
-            'завдання': {
-                text: 'Показую ваші поточні завдання...',
+            'tarefas': {
+                text: 'A mostrar as suas tarefas atuais...',
                 action: () => window.location.href = 'tasks.html'
             },
-            'графік': {
-                text: 'Відкриваю ваш робочий графік...',
+            'horário': {
+                text: 'A abrir o seu horário de trabalho...',
                 action: () => window.location.href = 'schedule.html'
             },
-            'звіт техніка': {
-                text: 'Створюю звіт про роботу...',
+            'relatório técnico': {
+                text: 'A criar relatório de trabalho...',
                 action: () => this.createTechnicianReport()
             },
-            'запчастини': {
-                text: 'Перевіряю наявність запчастин...',
+            'peças sobressalentes': {
+                text: 'A verificar disponibilidade de peças...',
                 action: () => window.location.href = 'inventory.html'
             }
         };
 
         return this.findMatchingResponse(command, responses) || {
-            text: 'Команда не розпізнана. Скажіть "допомога" для списку команд.',
+            text: 'Comando não reconhecido. Diga "ajuda" para ver a lista de comandos.',
             action: null
         };
     }
 
     processClientCommand(command, currentPage) {
         const responses = {
-            'ліфт': {
-                text: 'Перевіряю стан ваших ліфтів...',
+            'elevador': {
+                text: 'A verificar o estado dos seus elevadores...',
                 action: () => window.location.href = 'my-lifts.html'
             },
-            'заявка': {
-                text: 'Відкриваю створення заявки...',
+            'pedido': {
+                text: 'A abrir criação de pedido...',
                 action: () => window.location.href = 'report-issue.html'
             },
-            'рахунок': {
-                text: 'Показую ваші рахунки...',
+            'fatura': {
+                text: 'A mostrar as suas faturas...',
                 action: () => window.location.href = 'invoices.html'
             },
-            'договір': {
-                text: 'Показую інформацію про договір...',
+            'contrato': {
+                text: 'A mostrar informação do contrato...',
                 action: () => window.location.href = 'contract.html'
             },
-            'технік': {
-                text: 'Перевіряю інформацію про вашого техніка...',
+            'técnico': {
+                text: 'A verificar informação do seu técnico...',
                 action: () => this.showAssignedTechnician()
             }
         };
 
         return this.findMatchingResponse(command, responses) || {
-            text: 'Команда не розпізнана. Скажіть "допомога" для списку команд.',
+            text: 'Comando não reconhecido. Diga "ajuda" para ver a lista de comandos.',
             action: null
         };
     }
 
     processDispatcherCommand(command, currentPage) {
         const responses = {
-            'завдання': {
-                text: 'Показую всі активні завдання...',
+            'tarefas': {
+                text: 'A mostrar todas as tarefas ativas...',
                 action: () => window.location.href = 'all-tasks.html'
             },
-            'техніки': {
-                text: 'Показую статус техніків...',
+            'técnicos': {
+                text: 'A mostrar estado dos técnicos...',
                 action: () => window.location.href = 'technicians.html'
             },
-            'моніторинг': {
-                text: 'Відкриваю моніторинг системи...',
+            'monitorização': {
+                text: 'A abrir monitorização do sistema...',
                 action: () => window.location.href = 'monitoring.html'
             },
-            'терміново': {
-                text: 'Створюю термінове завдання...',
+            'urgente': {
+                text: 'A criar tarefa urgente...',
                 action: () => this.createUrgentTask()
             }
         };
 
         return this.findMatchingResponse(command, responses) || {
-            text: 'Команда не розпізнана. Скажіть "допомога" для списку команд.',
+            text: 'Comando não reconhecido. Diga "ajuda" para ver a lista de comandos.',
             action: null
         };
     }
 
     processGuestCommand(command, currentPage) {
         const responses = {
-            'увійти': {
-                text: 'Відкриваю сторінку входу...',
+            'entrar': {
+                text: 'A abrir página de início de sessão...',
                 action: () => window.location.href = 'login.html'
             },
-            'реєстрація': {
-                text: 'Відкриваю сторінку реєстрації...',
+            'registo': {
+                text: 'A abrir página de registo...',
                 action: () => window.location.href = 'register.html'
             },
-            'контакти': {
-                text: 'Показую контактну інформацію...',
+            'contactos': {
+                text: 'A mostrar informação de contacto...',
                 action: () => window.location.href = 'contacts.html'
             }
         };
 
         return this.findMatchingResponse(command, responses) || {
-            text: 'Будь ласка, увійдіть в систему для отримання повного доступу до функцій.',
+            text: 'Por favor, inicie sessão para ter acesso completo às funcionalidades.',
             action: null
         };
     }
@@ -554,61 +554,61 @@ class AIAssistant {
     getHelpMessage(role) {
         const helpMessages = {
             'admin': `
-Доступні команди:
-• "створити QR" - Генератор QR-кодів
-• "статистика" - Статистика системи
-• "користувачі" - Управління користувачами
-• "звіт" - Генерація звітів
-• "новий користувач" - Створення користувача
-• "бек ап" - Резервне копіювання
-• "час" - Поточний час
-• "дата" - Поточна дата
-• "налаштування" - Налаштування асистента
+Comandos disponíveis:
+• "criar QR" - Gerador de QR-codes
+• "estatísticas" - Estatísticas do sistema
+• "utilizadores" - Gestão de utilizadores
+• "relatório" - Geração de relatórios
+• "novo utilizador" - Criar utilizador
+• "cópia segurança" - Cópia de segurança
+• "hora" - Hora atual
+• "data" - Data de hoje
+• "configurações" - Configurações do assistente
             `,
             'technician': `
-Доступні команди:
-• "сканувати" - Сканер QR-кодів
-• "завдання" - Мої завдання
-• "графік" - Робочий графік
-• "звіт техніка" - Звіт про роботу
-• "запчастини" - Склад запчастин
-• "час" - Поточний час
-• "налаштування" - Налаштування асистента
+Comandos disponíveis:
+• "escanear" - Leitor de QR-codes
+• "tarefas" - As minhas tarefas
+• "horário" - Horário de trabalho
+• "relatório técnico" - Relatório de trabalho
+• "peças sobressalentes" - Stock de peças
+• "hora" - Hora atual
+• "configurações" - Configurações do assistente
             `,
             'client': `
-Доступні команди:
-• "стан ліфта" - Стан моїх ліфтів
-• "заявка" - Створення заявки
-• "рахунки" - Мої рахунки
-• "договір" - Інформація про договір
-• "технік" - Мій технік
-• "час" - Поточний час
-• "налаштування" - Налаштування асистента
+Comandos disponíveis:
+• "estado elevador" - Estado dos meus elevadores
+• "pedido" - Criar pedido
+• "faturas" - As minhas faturas
+• "contrato" - Informação do contrato
+• "técnico" - O meu técnico
+• "hora" - Hora atual
+• "configurações" - Configurações do assistente
             `,
             'dispatcher': `
-Доступні команди:
-• "завдання" - Всі активні завдання
-• "техніки" - Статус техніків
-• "моніторинг" - Моніторинг системи
-• "терміново" - Термінове завдання
-• "час" - Поточний час
-• "налаштування" - Налаштування асистента
+Comandos disponíveis:
+• "tarefas" - Todas as tarefas ativas
+• "técnicos" - Estado dos técnicos
+• "monitorização" - Monitorização do sistema
+• "urgente" - Tarefa urgente
+• "hora" - Hora atual
+• "configurações" - Configurações do assistente
             `,
             'guest': `
-Доступні команди:
-• "увійти" - Сторінка входу
-• "реєстрація" - Сторінка реєстрації
-• "контакти" - Контактна інформація
-• "час" - Поточний час
-• "налаштування" - Налаштування асистента
+Comandos disponíveis:
+• "entrar" - Página de início de sessão
+• "registo" - Página de registo
+• "contactos" - Informação de contacto
+• "hora" - Hora atual
+• "configurações" - Configurações do assistente
             `
         };
 
-        return helpMessages[role] || 'Скажіть "допомога" для отримання списку команд.';
+        return helpMessages[role] || 'Diga "ajuda" para obter a lista de comandos.';
     }
 
     getCurrentUserRole() {
-        // В реальному додатку тут буде перевірка з localStorage або API
+        // Numa app real haverá verificação com localStorage ou API
         const user = JSON.parse(localStorage.getItem('currentUser')) || {};
         return user.role || 'guest';
     }
@@ -625,7 +625,7 @@ class AIAssistant {
             messageDiv.innerHTML = `
                 <div class="ai-message-content">
                     <div class="ai-message-text">${this.formatMessage(text)}</div>
-                    <div class="ai-message-time">${new Date().toLocaleTimeString('uk-UA')}</div>
+                    <div class="ai-message-time">${new Date().toLocaleTimeString('pt-PT')}</div>
                 </div>
             `;
             chatContainer.appendChild(messageDiv);
@@ -634,7 +634,7 @@ class AIAssistant {
     }
 
     formatMessage(text) {
-        // Форматування тексту (посилання, списки тощо)
+        // Formatação de texto (links, listas, etc.)
         return text
             .replace(/\n/g, '<br>')
             .replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank">$1</a>');
@@ -657,7 +657,7 @@ class AIAssistant {
     }
 
     showNotification(message, type) {
-        // Використовуємо нотифікації
+        // Usar notificações
         const notification = document.createElement('div');
         notification.className = `ai-notification ai-notification-${type}`;
         notification.innerHTML = `
@@ -712,7 +712,7 @@ class AIAssistant {
         const chatContainer = document.querySelector('.ai-chat-messages');
         if (chatContainer) {
             chatContainer.innerHTML = '';
-            this.addMessage('assistant', 'Чат очищено. Чим можу допомогти?');
+            this.addMessage('assistant', 'Chat limpo. Em que posso ajudar?');
         }
     }
 
@@ -732,22 +732,22 @@ class AIAssistant {
 
     getCommandSuggestions(role) {
         const baseSuggestions = [
-            { command: 'допомога', text: 'Допомога', icon: '❓' },
-            { command: 'час', text: 'Котра година?', icon: '⏰' }
+            { command: 'ajuda', text: 'Ajuda', icon: '❓' },
+            { command: 'hora', text: 'Que horas são?', icon: '⏰' }
         ];
         
         const roleSuggestions = {
             'admin': [
-                { command: 'створити QR', text: 'Створити QR', icon: '📱' },
-                { command: 'статистика', text: 'Статистика', icon: '📊' }
+                { command: 'criar QR', text: 'Criar QR', icon: '📱' },
+                { command: 'estatísticas', text: 'Estatísticas', icon: '📊' }
             ],
             'technician': [
-                { command: 'сканувати', text: 'Сканувати', icon: '📷' },
-                { command: 'завдання', text: 'Мої завдання', icon: '✅' }
+                { command: 'escanear', text: 'Escanear', icon: '📷' },
+                { command: 'tarefas', text: 'As minhas tarefas', icon: '✅' }
             ],
             'client': [
-                { command: 'стан ліфта', text: 'Стан ліфтів', icon: '🏢' },
-                { command: 'заявка', text: 'Створити заявку', icon: '📝' }
+                { command: 'estado elevador', text: 'Estado dos elevadores', icon: '🏢' },
+                { command: 'pedido', text: 'Criar pedido', icon: '📝' }
             ]
         };
         
@@ -763,7 +763,7 @@ class AIAssistant {
             role: this.getCurrentUserRole()
         });
         
-        // Зберігаємо тільки останні 50 команд
+        // Guardar apenas as últimas 50 comandos
         localStorage.setItem('aiCommandHistory', JSON.stringify(history.slice(0, 50)));
     }
 
@@ -780,75 +780,119 @@ class AIAssistant {
         localStorage.setItem('aiAssistantPrefs', JSON.stringify(this.settings));
     }
 
-    // Допоміжні методи для конкретних дій
+    // Métodos auxiliares para ações específicas
     generateReport() {
-        this.showNotification('Генерація звіту...', 'info');
-        // Логіка генерації звіту
+        this.showNotification('A gerar relatório...', 'info');
+        // Lógica de geração de relatório
     }
 
     createNewUser() {
-        this.showNotification('Створення нового користувача...', 'info');
-        // Логіка створення користувача
+        this.showNotification('A criar novo utilizador...', 'info');
+        // Lógica de criação de utilizador
     }
 
     createBackup() {
-        this.showNotification('Створення резервної копії...', 'info');
-        // Логіка створення бекапу
+        this.showNotification('A criar cópia de segurança...', 'info');
+        // Lógica de criação de cópia de segurança
     }
 
     createTechnicianReport() {
-        this.showNotification('Створення звіту техніка...', 'info');
-        // Логіка звіту техніка
+        this.showNotification('A criar relatório do técnico...', 'info');
+        // Lógica do relatório do técnico
     }
 
     showAssignedTechnician() {
-        this.showNotification('Пошук інформації про техніка...', 'info');
-        // Логіка пошуку техніка
+        this.showNotification('A procurar informação do técnico...', 'info');
+        // Lógica de pesquisa do técnico
     }
 
     createUrgentTask() {
-        this.showNotification('Створення термінового завдання...', 'info');
-        // Логіка створення термінового завдання
+        this.showNotification('A criar tarefa urgente...', 'info');
+        // Lógica de criação de tarefa urgente
     }
 
-    // Супер потужності для адміна
+    // Funcionalidades avançadas do admin
     performDataAnalysis() {
-        this.addMessage('assistant', '🔍 Аналізую дані системи...\n\n📈 Знайдено тенденції:\n• Зростання використання на 15%\n• Найпопулярніші QR-коди: ліфти\n• Піки активності: 9:00-11:00\n\n💡 Рекомендації:\n• Оптимізувати ранкові години\n• Додати більше QR для техніків');
+        this.addMessage('assistant', '🔍 A analisar dados do sistema...
+
+📈 Tendências encontradas:
+• Crescimento de utilização em 15%
+• 3 elevadores com manutenção pendente
+• Tempo médio de resposta: 2.3h');
     }
 
     optimizeSystem() {
-        this.addMessage('assistant', '⚡ Оптимізую систему...\n\n✅ Виконано:\n• Очищено кеш (2.3MB)\n• Оптимізовано базу даних\n• Стиснуто зображення\n\n🚀 Продуктивність покращена на 23%');
+        this.addMessage('assistant', '⚡ A otimizar o sistema...
+
+✅ Concluído:
+• Cache limpa (2.3MB)
+• Base de dados otimizada
+• Sessões expiradas removidas');
     }
 
     checkIntegrations() {
-        this.addMessage('assistant', '🔗 Перевіряю інтеграції...\n\n📡 Статус:\n• API LiftMaster: ✅ Активний\n• Email сервіс: ✅ Активний\n• SMS шлюз: ⚠️ Обмежено\n• Cloud storage: ✅ Активний\n\n🔧 Виправлено 2 проблеми');
+        this.addMessage('assistant', '🔗 A verificar integrações...
+
+📡 Estado:
+• API FestLift: ✅ Ativo
+• Servidor de email: ✅ Ativo
+• WebSocket: ✅ Ligado');
     }
 
     securityAudit() {
-        this.addMessage('assistant', '🔒 Проводжу аудит безпеки...\n\n🛡️ Результати:\n• Паролі: ✅ Сильні\n• Доступи: ✅ Обмежені\n• Логи: ✅ Моніторяться\n• Оновлення: ⚠️ Потрібно 3\n\n🔐 Застосовано 5 покращень');
+        this.addMessage('assistant', '🔒 A efetuar auditoria de segurança...
+
+🛡️ Resultados:
+• Palavras-passe: ✅ Seguras
+• Acessos: ✅ Configurados
+• JWT: ✅ Válido');
     }
 
     setupAutomation() {
-        this.addMessage('assistant', '🤖 Налаштовую автоматизацію...\n\n⚙️ Активовано:\n• Автогенерація звітів\n• Автоматичні сповіщення\n• Резервне копіювання\n• Моніторинг продуктивності\n\n⏰ Заощаджено 12 годин на тиждень');
+        this.addMessage('assistant', '🤖 A configurar automatização...
+
+⚙️ Ativado:
+• Geração automática de relatórios
+• Atribuição automática de técnicos
+• Notificações automáticas');
     }
 
     manageNotifications() {
-        this.addMessage('assistant', '📢 Керую сповіщеннями...\n\n📨 Налаштовано:\n• Email сповіщення: 45 користувачів\n• SMS alerts: 12 техніків\n• Push notifications: 78 пристроїв\n\n📊 Ефективність: 94% доставка');
+        this.addMessage('assistant', '📢 A gerir notificações...
+
+📨 Configurado:
+• Email: 45 utilizadores
+• WebSocket: ativo
+• SMS: não disponível');
     }
 
     exportAllData() {
-        this.addMessage('assistant', '📤 Експортую всі дані...\n\n💾 Створено:\n• QR-коди: qr_export.json (2.1MB)\n• Користувачі: users_export.csv\n• Ліфти: lifts_export.xlsx\n• Логи: system_logs.zip\n\n📁 Файли готові до завантаження');
+        this.addMessage('assistant', '📤 A exportar todos os dados...
+
+💾 Criado:
+• QR-codes: qr_export.json (2.1MB)
+• Utilizadores: users_export.csv');
     }
 
     showSystemLogs() {
-        this.addMessage('assistant', '📋 Показую системні логи...\n\n📝 Останні події:\n• 14:32: QR сканування #QR0042\n• 14:28: Користувач admin увійшов\n• 14:25: Створено новий QR-код\n• 14:20: Оновлено профіль техніка\n\n🔍 Детальний лог доступний в розділі "Моніторинг"');
+        this.addMessage('assistant', '📋 A mostrar registos do sistema...
+
+📝 Últimos eventos:
+• 14:32: Leitura QR #QR0042
+• 14:28: Login admin
+• 14:15: Novo pedido criado');
     }
 
     runDiagnostics() {
-        this.addMessage('assistant', '🔧 Запускаю діагностику...\n\n⚡ Перевірено:\n• Сервер: ✅ Відповідає (45ms)\n• База даних: ✅ Підключена\n• API: ✅ Функціонують\n• Пам\'ять: ✅ 78% вільно\n• Диск: ⚠️ 85% заповнено\n\n🩺 Здоров\'я системи: 92%');
+        this.addMessage('assistant', '🔧 A executar diagnóstico...
+
+⚡ Verificado:
+• Servidor: ✅ A responder (45ms)
+• Base de dados: ✅ Ligada
+• WebSocket: ✅ Ativo');
     }
 
-    // Нові методи для роботи з регуляціями (Circular IPAC 06/2025)
+    // Novos métodos para regulamentos (Circular IPAC 06/2025)
     processRegulationQuery(command) {
         const lowerCommand = command.toLowerCase();
         
@@ -856,83 +900,83 @@ class AIAssistant {
             return {
                 text: `📋 Circular IPAC 06/2025 (20.12.2025)
 
-🎯 Основні вимоги:
-1️⃣ Визначення специфікації інспекції:
-   • Закон на дату введення в експлуатацію
-   • Закони для важливих модифікацій
+🎯 Requisitos principais:
+1️⃣ Determinação da especificação de inspeção:
+   • Lei à data de entrada em serviço
+   • Leis para modificações importantes
 
-2️⃣ Реєстрація невідповідностей:
-   • Всі невідповідності мають бути зареєстровані
-   • Результат має відповідати перевіркам
+2️⃣ Registo de não-conformidades:
+   • Todas as não-conformidades devem ser registadas
+   • O resultado deve corresponder às verificações
 
-3️⃣ ЗАБОРОНЕНІ дескриптори в звітах:
-   ❌ "Немає декларації відповідності модифікації"
-   ❌ "Немає оцінки уповноваженого органу"
+3️⃣ Descritores PROIBIDOS nos relatórios:
+   ❌ "Sem declaração de conformidade da modificação"
+   ❌ "Sem avaliação do organismo notificado"
    
-   ✅ Натомість використовувати СПОСТЕРЕЖЕННЯ
+   ✅ Em vez disso, usar OBSERVAÇÕES
 
-💡 Рекомендована практика:
-   Якщо модифікація без документації - додати 
-   спостереження в звіті, а не відмовлятися від інспекції
+💡 Prática recomendada:
+   Se houver modificação sem documentação — adicionar
+   observação no relatório, sem recusar a inspeção
 
-📚 Джерело: www.ipac.pt`,
+📚 Fonte: www.ipac.pt`,
                 action: null
             };
         }
 
-        if (lowerCommand.includes('modificaç') || lowerCommand.includes('модифікац')) {
+        if (lowerCommand.includes('modificaç') || lowerCommand.includes('modificaç')) {
             return {
-                text: `🔧 Модифікації ліфтів (IPAC 06/2025)
+                text: `🔧 Modificações de elevadores (IPAC 06/2025)
 
-📋 Що перевіряти:
-✅ Технічний стан після модифікації
-✅ Відповідність застосовному законодавству
-✅ Безпека експлуатації
+📋 O que verificar:
+✅ Estado técnico após modificação
+✅ Conformidade com a legislação aplicável
+✅ Segurança de funcionamento
 
-❌ Що НЕ перевіряти:
-❌ Наявність документів від інших органів
-❌ Декларації відповідності модифікацій
-❌ Оцінки уповноважених органів
+❌ O que NÃO verificar:
+❌ Existência de documentos de outros organismos
+❌ Declarações de conformidade de modificações
+❌ Avaliações de organismos notificados
 
-💡 Якщо модифікація без документації:
-   → Додати СПОСТЕРЕЖЕННЯ в звіт
-   → Продовжити технічну інспекцію
-   → НЕ відмовлятися від інспекції
+💡 Se houver modificação sem documentação:
+   → Adicionar OBSERVAÇÃO no relatório
+   → Continuar com a inspeção técnica
+   → NÃO recusar a inspeção
 
-🎯 Ваша компетенція:
-   • Технічна перевірка установки
-   • Оцінка безпеки
-   • Виявлення невідповідностей`,
+🎯 A sua competência:
+   • Verificação técnica da instalação
+   • Avaliação de segurança
+   • Identificação de não-conformidades`,
                 action: null
             };
         }
 
-        if (lowerCommand.includes('inspeç') || lowerCommand.includes('інспекц')) {
+        if (lowerCommand.includes('inspeç') || lowerCommand.includes('inspeç')) {
             return {
-                text: `🔍 Методологія інспекції (IPAC 06/2025)
+                text: `🔍 Metodologia de inspeção (IPAC 06/2025)
 
-📝 Крок 1: Визначити специфікацію
-   • Знайти дату введення в експлуатацію
-   • Визначити застосовний закон (Decreto 513/70, DL 320/2002, EN 81-20:2020 тощо)
-   • Якщо були модифікації - додати відповідні закони
+📝 Passo 1: Determinar a especificação
+   • Encontrar a data de entrada em serviço
+   • Determinar a lei aplicável (Decreto 513/70, DL 320/2002, EN 81-20:2020, etc.)
+   • Se houve modificações — adicionar as leis correspondentes
 
-📝 Крок 2: Провести інспекцію
-   • Перевірити відповідність визначеній специфікації
-   • Зареєструвати всі невідповідності
-   • НЕ вимагати документи від інших органів
+📝 Passo 2: Realizar a inspeção
+   • Verificar conformidade com a especificação definida
+   • Registar todas as não-conformidades
+   • NÃO exigir documentos de outros organismos
 
-📝 Крок 3: Оформити звіт
-   ✅ Використовувати технічні невідповідності
-   ✅ Додавати спостереження про модифікації
-   ❌ НЕ використовувати заборонені дескриптори
+📝 Passo 3: Elaborar o relatório
+   ✅ Usar não-conformidades técnicas
+   ✅ Adicionar observações sobre modificações
+   ❌ NÃO usar descritores proibidos
 
-🎯 Результат має базуватися ТІЛЬКИ на технічних перевірках!`,
+🎯 O resultado deve basear-se APENAS em verificações técnicas!`,
                 action: null
             };
         }
 
         return {
-            text: 'Для отримання інформації про регуляції запитайте:\n• "IPAC 2025" - Circular IPAC 06/2025\n• "модифікації" - Про модифікації ліфтів\n• "інспекція" - Методологія інспекції',
+            text: 'Para obter informação sobre regulamentos, pergunte:\n• "IPAC 2025" - Circular IPAC 06/2025\n• "modificações" - Sobre modificações de elevadores\n• "inspeção" - Metodologia de inspeção',
             action: null
         };
     }
@@ -940,65 +984,65 @@ class AIAssistant {
     processInspectionQuery(command) {
         const lowerCommand = command.toLowerCase();
 
-        if (lowerCommand.includes('специфікац') || lowerCommand.includes('specification')) {
+        if (lowerCommand.includes('specificaç') || lowerCommand.includes('specification')) {
             return {
-                text: `📋 Специфікація інспекції
+                text: `📋 Especificação da inspeção
 
-🗓️ Як визначити:
-1. Дата введення в експлуатацію → Базовий закон
-2. Дати модифікацій → Додаткові закони
+🗓️ Como determinar:
+1. Data de entrada em serviço → Lei base
+2. Datas de modificações → Leis adicionais
 
-📅 Періоди законодавства:
+📅 Períodos da legislação:
 • 1970-1980: Decreto 513/70
 • 1981-1998: Decreto Regulamentar 13/80
 • 1999-2002: Decreto-Lei 295/98
 • 2003-2020: Decreto-Lei 320/2002
 • 2021+: EN 81-20:2020 + EN 81-50:2020
 
-💡 Приклад:
-   Ліфт 1985 + модифікація 2015:
-   → DR 13/80 (база) + DL 320/2002 (модифікація)
+💡 Exemplo:
+   Elevador 1985 + modificação 2015:
+   → DR 13/80 (base) + DL 320/2002 (modificação)
 
-🔍 Система автоматично визначить специфікацію!`,
+🔍 O sistema determinará a especificação automaticamente!`,
                 action: () => window.location.href = 'inspection-specification.html'
             };
         }
 
-        if (lowerCommand.includes('звіт') || lowerCommand.includes('relatório')) {
+        if (lowerCommand.includes('relatório') || lowerCommand.includes('relatório')) {
             return {
-                text: `📄 Складання звіту інспекції
+                text: `📄 Elaboração do relatório de inspeção
 
-✅ МОЖНА використовувати:
-• Технічні невідповідності з посиланням на закон
-• Вимірювання та тести
-• Спостереження про стан установки
+✅ PODE usar:
+• Não-conformidades técnicas com referência legal
+• Medições e testes
+• Observações sobre o estado da instalação
 
-❌ НЕ МОЖНА використовувати:
-• "Немає декларації відповідності"
-• "Не оцінено уповноваженим органом"
-• Відмова від інспекції через документи
+❌ NÃO PODE usar:
+• "Sem declaração de conformidade"
+• "Não avaliado por organismo notificado"
+• Recusa de inspeção por causa de documentos
 
-💡 Замість цього:
-   СПОСТЕРЕЖЕННЯ: "Виявлено модифікацію без 
-   документації. Рекомендується отримати оцінку 
-   уповноваженого органу."
+💡 Em vez disso:
+   OBSERVAÇÃO: "Detetada modificação sem
+   documentação. Recomenda-se obter avaliação
+   do organismo notificado."
 
-🎯 Результат = ТІЛЬКИ технічні перевірки!`,
+🎯 Resultado = APENAS verificações técnicas!`,
                 action: () => window.location.href = 'inspection-report-validator.html'
             };
         }
 
         return {
-            text: 'Запитайте:\n• "специфікація" - Як визначити\n• "звіт" - Як оформити\n• "модифікації" - Особливості перевірки',
+            text: 'Pergunte:\n• "especificação" - Como determinar\n• "relatório" - Como elaborar\n• "modificações" - Particularidades da verificação',
             action: null
         };
     }
 }
 
-// Глобальний екземпляр асистента
+// Instância global do assistente
 let aiAssistant = null;
 
-// Ініціалізація при завантаженні сторінки
+// Inicialização ao carregar a página
 document.addEventListener('DOMContentLoaded', function() {
     aiAssistant = new AIAssistant();
 });

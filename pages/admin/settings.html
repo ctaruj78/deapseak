@@ -453,10 +453,10 @@ async function initializeSettings() {
             return;
         }
 
-        // 🔥 ПІДКЛЮЧЕНО ДО РЕАЛЬНОГО API /api/settings
+        // 🔥 CONNECTED TO REAL API /api/settings
         const token = localStorage.getItem('token');
         
-        // A carregar налаштувань desde API
+        // A carregar configurações desde API
         const settingsResponse = await fetch('/api/settings', {
             headers: { 'Authorization': `Bearer ${token}` }
         });

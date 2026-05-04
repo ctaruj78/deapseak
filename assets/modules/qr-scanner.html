@@ -1,4 +1,4 @@
-<!-- QR Scanner Module для Техніків -->
+<!-- QR Scanner Module для Técnicoів -->
 <div class="content-header">
     <div class="container-fluid">
         <div class="row mb-2">
@@ -35,7 +35,7 @@
                                     <p class="h5 text-primary">Камера для сканування QR-кодів</p>
                                     <button class="btn btn-primary" id="start-camera">
                                         <i class="fas fa-video mr-2"></i>
-                                        Запустити камеру
+                                        Запустити
                                     </button>
                                 </div>
                             </div>
@@ -54,7 +54,7 @@
                         
                         <div class="alert alert-info">
                             <i class="fas fa-info-circle mr-2"></i>
-                            <strong>Інструкції:</strong> Наведіть камеру на QR-код ліфта для отримання інформації та можливості звітування.
+                            <strong>Інструкції:</strong> Наведіть на QR-код ліфта для отримання інформації та можливості звітування.
                         </div>
                     </div>
                 </div>
@@ -69,9 +69,9 @@
                     </div>
                     <div class="card-body">
                         <div class="form-group">
-                            <label for="manual-qr-code">Код QR (якщо камера не працює)</label>
+                            <label for="manual-qr-code">Código QR (se a câmara não funcionar)</label>
                             <div class="input-group">
-                                <input type="text" class="form-control" id="manual-qr-code" placeholder="Введіть код QR...">
+                                <input type="text" class="form-control" id="manual-qr-code" placeholder="Introduza o código QR...">
                                 <div class="input-group-append">
                                     <button class="btn btn-primary" type="button" id="manual-scan">
                                         <i class="fas fa-search"></i>
@@ -144,7 +144,7 @@
                         <div class="card-tools">
                             <button class="btn btn-sm btn-primary" onclick="refreshScanHistory()">
                                 <i class="fas fa-sync-alt mr-1"></i>
-                                Оновити
+                                Atualizar
                             </button>
                         </div>
                     </div>
@@ -154,34 +154,34 @@
                                 <thead>
                                     <tr>
                                         <th>Час</th>
-                                        <th>Ліфт</th>
+                                        <th>Elevador</th>
                                         <th>Локація</th>
-                                        <th>Тип операції</th>
-                                        <th>Статус</th>
+                                        <th>Tipo операції</th>
+                                        <th>Estado</th>
                                         <th>Дії</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <tr>
                                         <td>14:30</td>
-                                        <td>Ліфт №1</td>
+                                        <td>Elevador N.º1</td>
                                         <td>ТРЦ "Центральний", 1 під'їзд</td>
                                         <td><span class="badge badge-primary">Планове обслуговування</span></td>
                                         <td><span class="badge badge-success">Завершено</span></td>
                                         <td>
-                                            <button class="btn btn-sm btn-info" title="Деталі">
+                                            <button class="btn btn-sm btn-info" title="Detalhes">
                                                 <i class="fas fa-eye"></i>
                                             </button>
                                         </td>
                                     </tr>
                                     <tr>
                                         <td>12:15</td>
-                                        <td>Ліфт №3</td>
+                                        <td>Elevador N.º3</td>
                                         <td>БЦ "Сонячний", А блок</td>
                                         <td><span class="badge badge-warning">Технічний огляд</span></td>
                                         <td><span class="badge badge-success">Завершено</span></td>
                                         <td>
-                                            <button class="btn btn-sm btn-info" title="Деталі">
+                                            <button class="btn btn-sm btn-info" title="Detalhes">
                                                 <i class="fas fa-eye"></i>
                                             </button>
                                         </td>
@@ -228,7 +228,7 @@ function startCamera() {
         simulateQRScan('LIFT_001_MAINTENANCE');
     }, 3000);
     
-    toastr.info('Камера запущена. Наведіть на QR-код ліфта.');
+    toastr.info('Câmara iniciada. Aponte para o QR code do elevador.');
 }
 
 function switchCamera() {
@@ -236,7 +236,7 @@ function switchCamera() {
     $(event.target).addClass('active');
     
     const cameraType = $(event.target).attr('id') === 'camera-front' ? 'передню' : 'задню';
-    toastr.info(`Перемикання на ${cameraType} камеру`);
+    toastr.info(`A mudar para câmara ${cameraType}`);
 }
 
 function manualScan() {
@@ -245,7 +245,7 @@ function manualScan() {
         simulateQRScan(qrCode);
         $('#manual-qr-code').val('');
     } else {
-        toastr.warning('Будь ласка, введіть код QR');
+        toastr.warning('Por favor, introduza o código QR');
     }
 }
 
@@ -254,16 +254,16 @@ function simulateQRScan(qrCode) {
     const liftData = {
         'LIFT_001_MAINTENANCE': {
             id: 'LIFT_001',
-            name: 'Ліфт №1',
+            name: 'Elevador N.º1',
             location: 'ТРЦ "Центральний", 1 під\'їзд',
-            type: 'Пасажирський',
+            type: 'Passageiro',
             lastMaintenance: '28.09.2025',
-            status: 'Активний',
+            status: 'Ativo',
             task: 'Планове обслуговування'
         },
         'LIFT_003_INSPECTION': {
             id: 'LIFT_003',
-            name: 'Ліфт №3',
+            name: 'Elevador N.º3',
             location: 'БЦ "Сонячний", А блок',
             type: 'Вантажо-пасажирський',
             lastMaintenance: '25.09.2025',
@@ -274,22 +274,22 @@ function simulateQRScan(qrCode) {
     
     const lift = liftData[qrCode] || {
         id: 'UNKNOWN',
-        name: 'Невідомий ліфт',
+        name: 'Desconhecido ліфт',
         location: 'Невідома локація',
         type: 'Невизначено',
-        lastMaintenance: 'Невідомо',
-        status: 'Невідомо',
+        lastMaintenance: 'Desconhecido',
+        status: 'Desconhecido',
         task: 'Перевірити QR-код'
     };
     
     displayScanResult(lift);
     addToScanHistory(lift);
     
-    toastr.success('QR-код успішно відсканований!');
+    toastr.success('QR code lido com sucesso!');
 }
 
 function displayScanResult(lift) {
-    const statusClass = lift.status === 'Активний' ? 'success' : 
+    const statusClass = lift.status === 'Ativo' ? 'success' : 
                        lift.status === 'Потребує огляду' ? 'warning' : 'danger';
     
     $('#scan-result').html(`
@@ -311,7 +311,7 @@ function displayScanResult(lift) {
                             <td>${lift.location}</td>
                         </tr>
                         <tr>
-                            <th>Тип:</th>
+                            <th>Tipo:</th>
                             <td>${lift.type}</td>
                         </tr>
                         <tr>
@@ -319,7 +319,7 @@ function displayScanResult(lift) {
                             <td>${lift.lastMaintenance}</td>
                         </tr>
                         <tr>
-                            <th>Статус:</th>
+                            <th>Estado:</th>
                             <td><span class="badge badge-${statusClass}">${lift.status}</span></td>
                         </tr>
                         <tr>
@@ -333,11 +333,11 @@ function displayScanResult(lift) {
             <div class="text-center">
                 <button class="btn btn-success mr-2" onclick="startTask('${lift.id}')">
                     <i class="fas fa-play mr-1"></i>
-                    Почати роботу
+                    Iniciar роботу
                 </button>
                 <button class="btn btn-info mr-2" onclick="reportIssue('${lift.id}')">
                     <i class="fas fa-exclamation-triangle mr-1"></i>
-                    Звіт про проблему
+                    Relatório про проблему
                 </button>
                 <button class="btn btn-secondary" onclick="viewHistory('${lift.id}')">
                     <i class="fas fa-history mr-1"></i>
@@ -358,7 +358,7 @@ function addToScanHistory(lift) {
             <td><span class="badge badge-primary">${lift.task}</span></td>
             <td><span class="badge badge-info">Відсканований</span></td>
             <td>
-                <button class="btn btn-sm btn-info" title="Деталі">
+                <button class="btn btn-sm btn-info" title="Detalhes">
                     <i class="fas fa-eye"></i>
                 </button>
             </td>
@@ -369,22 +369,22 @@ function addToScanHistory(lift) {
 }
 
 function startTask(liftId) {
-    toastr.success(`Розпочато виконання завдання для ${liftId}`);
+    toastr.success(`Execução de tarefa iniciada para ${liftId}`);
     // Тут буде логіка початку завдання
 }
 
 function reportIssue(liftId) {
-    toastr.info(`Відкриття форми звіту про проблему для ${liftId}`);
+    toastr.info(`A abrir formulário de problema para ${liftId}`);
     // Тут буде логіка звітування про проблему
 }
 
 function viewHistory(liftId) {
-    toastr.info(`Перегляд історії обслуговування для ${liftId}`);
+    toastr.info(`Ver histórico de manutenção de ${liftId}`);
     // Тут буде логіка перегляду історії
 }
 
 function refreshScanHistory() {
-    toastr.info('Оновлення історії сканувань...');
+    toastr.info('A atualizar histórico de leituras...');
     // Тут буде логіка оновлення з сервера
 }
 </script>

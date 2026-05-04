@@ -39,7 +39,7 @@ class AdminDashboard {
 
             this.updateStatsUI(stats);
         } catch (error) {
-            console.error('Помилка завантаження статистики:', error);
+            console.error('Erro завантаження статистики:', error);
         }
     }
 
@@ -75,7 +75,7 @@ class AdminDashboard {
             
             this.renderScansTable(recentScans);
         } catch (error) {
-            console.error('Помилка завантаження сканувань:', error);
+            console.error('Erro завантаження сканувань:', error);
         }
     }
 
@@ -94,7 +94,7 @@ class AdminDashboard {
                          style="cursor: pointer;">
                 </td>
                 <td>${scan.liftId}</td>
-                <td>${scan.liftName || 'Невідомо'}</td>
+                <td>${scan.liftName || 'Desconhecido'}</td>
                 <td>${this.formatDateTime(scan.timestamp)}</td>
                 <td>${this.getStatusBadge(scan.status)}</td>
                 <td>
@@ -138,16 +138,16 @@ class AdminDashboard {
                     <div class="col-md-6">
                         <h5>Інформація про сканування</h5>
                         <p><strong>ID ліфта:</strong> ${scan.liftId}</p>
-                        <p><strong>Назва:</strong> ${scan.liftName || 'Невідомо'}</p>
+                        <p><strong>Nome:</strong> ${scan.liftName || 'Desconhecido'}</p>
                         <p><strong>Час сканування:</strong> ${this.formatDateTime(scan.timestamp)}</p>
-                        <p><strong>Статус:</strong> ${this.getStatusText(scan.status)}</p>
+                        <p><strong>Estado:</strong> ${this.getStatusText(scan.status)}</p>
                     </div>
                     <div class="col-md-6 text-center">
                         <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${scan.liftId}" 
                              class="img-fluid mb-3">
                         <br>
                         <button class="btn btn-primary btn-sm" onclick="downloadQR('${scan.liftId}')">
-                            <i class="fas fa-download"></i> Завантажити QR
+                            <i class="fas fa-download"></i> Descarregar QR
                         </button>
                     </div>
                 </div>
@@ -158,21 +158,21 @@ class AdminDashboard {
     getStatusBadge(status) {
         const badges = {
             'completed': '<span class="badge badge-success">Завершено</span>',
-            'pending': '<span class="badge badge-warning">В роботі</span>',
+            'pending': '<span class="badge badge-warning">Em progresso</span>',
             'issue': '<span class="badge badge-danger">Проблема</span>',
             'cancelled': '<span class="badge badge-secondary">Скасовано</span>'
         };
-        return badges[status] || '<span class="badge badge-info">Невідомо</span>';
+        return badges[status] || '<span class="badge badge-info">Desconhecido</span>';
     }
 
     getStatusText(status) {
         const statuses = {
             'completed': 'Завершено',
-            'pending': 'В роботі',
+            'pending': 'Em progresso',
             'issue': 'Проблема',
             'cancelled': 'Скасовано'
         };
-        return statuses[status] || 'Невідомо';
+        return statuses[status] || 'Desconhecido';
     }
 
     formatDateTime(dateString) {
@@ -218,7 +218,7 @@ class AdminDashboard {
             inactive: lifts.filter(lift => lift.status === 'inactive').length
         };
 
-        console.log('Статуси ліфтів:', statusCount);
+        console.log('Estadoи ліфтів:', statusCount);
     }
 
     getLast7Days() {
@@ -238,7 +238,7 @@ class AdminDashboard {
             
             this.renderPendingTasks(pendingTasks);
         } catch (error) {
-            console.error('Помилка завантаження завдань:', error);
+            console.error('Erro завантаження завдань:', error);
         }
     }
 
@@ -261,9 +261,9 @@ class AdminDashboard {
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
                         <h6 class="mb-1">${task.title}</h6>
-                        <small class="text-muted">Ліфт: ${task.liftId}</small>
+                        <small class="text-muted">Elevador: ${task.liftId}</small>
                     </div>
-                    <span class="badge badge-warning">Очікує</span>
+                    <span class="badge badge-warning">Pendente</span>
                 </div>
                 <small class="text-muted">Створено: ${this.formatDateTime(task.createdAt)}</small>
             </div>
@@ -271,7 +271,7 @@ class AdminDashboard {
     }
 
     setupEventListeners() {
-        // Оновлення статистики кожні 5 хвилин
+        // Atualização статистики кожні 5 хвилин
         setInterval(() => this.loadStatistics(), 300000);
         
         // Обробка кнопок швидкого доступу
@@ -305,7 +305,7 @@ class AdminDashboard {
     }
 
     generateReport() {
-        // Генерація звіту
+        // A gerar relatório
         $('#reportModal').modal('show');
     }
 
@@ -337,10 +337,10 @@ class AdminDashboard {
 
     getRoleLabel(role) {
         const roles = {
-            'admin': 'Адміністратор',
-            'technician': 'Технік',
-            'client': 'Клієнт',
-            'dispatcher': 'Диспетчер'
+            'admin': 'Administrador',
+            'technician': 'Técnico',
+            'client': 'Cliente',
+            'dispatcher': 'Dispatcher'
         };
         return roles[role] || role;
     }

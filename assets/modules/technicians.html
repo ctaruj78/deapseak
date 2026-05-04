@@ -19,7 +19,7 @@
                 <div class="col-sm-6">
                     <ol class="breadcrumb float-sm-right">
                         <li class="breadcrumb-item"><a href="#" onclick="window.crmSystem.loadDashboard()">Головна</a></li>
-                        <li class="breadcrumb-item active">Техніки</li>
+                        <li class="breadcrumb-item active">Técnicoи</li>
                     </ol>
                 </div>
             </div>
@@ -57,7 +57,7 @@
                     <div class="small-box bg-warning">
                         <div class="inner">
                             <h3>2</h3>
-                            <p>На завданні</p>
+                            <p>Em tarefa</p>
                         </div>
                         <div class="icon">
                             <i class="fas fa-tools"></i>
@@ -85,7 +85,7 @@
                             <h3 class="card-title">Список техніків</h3>
                             <div class="card-tools">
                                 <button type="button" class="btn btn-primary btn-sm" onclick="addTechnician()">
-                                    <i class="fas fa-plus"></i> Додати техніка
+                                    <i class="fas fa-plus"></i> Adicionar техніка
                                 </button>
                             </div>
                         </div>
@@ -94,8 +94,8 @@
                                 <thead>
                                     <tr>
                                         <th>ID</th>
-                                        <th>Ім'я</th>
-                                        <th>Статус</th>
+                                        <th>Nome</th>
+                                        <th>Estado</th>
                                         <th>Поточне завдання</th>
                                         <th>Рейтинг</th>
                                         <th>Дії</th>
@@ -157,7 +157,7 @@
                                                 </div>
                                             </div>
                                         </td>
-                                        <td><span class="badge badge-warning">На завданні</span></td>
+                                        <td><span class="badge badge-warning">Em tarefa</span></td>
                                         <td>T003 - пр-т Перемоги, 42</td>
                                         <td>
                                             <div class="progress progress-xs">
@@ -198,7 +198,7 @@
                                             </div>
                                         </td>
                                         <td><span class="badge badge-danger">Недоступний</span></td>
-                                        <td><span class="text-muted">Лікарняний</span></td>
+                                        <td><span class="text-muted">Hospitalar</span></td>
                                         <td>
                                             <div class="progress progress-xs">
                                                 <div class="progress-bar bg-info" style="width: 88%"></div>
@@ -239,14 +239,14 @@
                                         <table class="table table-sm">
                                             <thead>
                                                 <tr>
-                                                    <th>Технік</th>
-                                                    <th>Пн</th>
-                                                    <th>Вт</th>
-                                                    <th>Ср</th>
-                                                    <th>Чт</th>
-                                                    <th>Пт</th>
-                                                    <th>Сб</th>
-                                                    <th>Нд</th>
+                                                    <th>Técnico</th>
+                                                    <th>Seg</th>
+                                                    <th>Ter</th>
+                                                    <th>Qua</th>
+                                                    <th>Qui</th>
+                                                    <th>Sex</th>
+                                                    <th>Sáb</th>
+                                                    <th>Dom</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -284,7 +284,7 @@
                     <!-- Performance -->
                     <div class="card">
                         <div class="card-header">
-                            <h3 class="card-title">Продуктивність</h3>
+                            <h3 class="card-title">Desempenho</h3>
                         </div>
                         <div class="card-body">
                             <div class="info-box mb-3">
@@ -297,14 +297,14 @@
                             <div class="info-box mb-3">
                                 <span class="info-box-icon bg-success"><i class="fas fa-clock"></i></span>
                                 <div class="info-box-content">
-                                    <span class="info-box-text">Середній час</span>
+                                    <span class="info-box-text">Agoедній час</span>
                                     <span class="info-box-number">2.3 год</span>
                                 </div>
                             </div>
                             <div class="info-box">
                                 <span class="info-box-icon bg-warning"><i class="fas fa-star"></i></span>
                                 <div class="info-box-content">
-                                    <span class="info-box-text">Середній рейтинг</span>
+                                    <span class="info-box-text">Agoедній рейтинг</span>
                                     <span class="info-box-number">4.5/5</span>
                                 </div>
                             </div>
@@ -369,7 +369,7 @@
                                 <i class="fas fa-calendar mr-2"></i>Створити розклад
                             </button>
                             <button class="btn btn-info btn-block mb-2" onclick="performanceReport()">
-                                <i class="fas fa-chart-line mr-2"></i>Звіт продуктивності
+                                <i class="fas fa-chart-line mr-2"></i>Relatório продуктивності
                             </button>
                             <button class="btn btn-warning btn-block" onclick="trainingSchedule()">
                                 <i class="fas fa-graduation-cap mr-2"></i>Навчання
@@ -384,39 +384,39 @@
 
 <script>
 function addTechnician() {
-    alert('Додавання нового техніка');
+    alert('Adicionar novo técnico');
 }
 
 function assignTask(techId) {
-    alert('Призначення завдання техніку: ' + techId);
+    alert('Atribuir tarefa ao técnico: ' + techId);
 }
 
 function viewTechDetails(techId) {
-    alert('Перегляд деталей техніка: ' + techId);
+    alert('Ver detalhes do técnico: ' + techId);
 }
 
 function callTech(techId) {
-    alert('Дзвінок техніку: ' + techId);
+    alert('Ligar ao técnico: ' + techId);
 }
 
 function editTech(techId) {
-    alert('Редагування даних техніка: ' + techId);
+    alert('Editar dados do técnico: ' + techId);
 }
 
 function massNotification() {
-    alert('Масове оповіщення техніків');
+    alert('Notificação em massa para técnicos');
 }
 
 function generateSchedule() {
-    alert('Генерація робочого розкладу');
+    alert('Gerar horário de trabalho');
 }
 
 function performanceReport() {
-    alert('Звіт про продуктивність техніків');
+    alert('Relatório de desempenho dos técnicos');
 }
 
 function trainingSchedule() {
-    alert('Планування навчання для техніків');
+    alert('Planear formação para técnicos');
 }
 </script>
 </body>

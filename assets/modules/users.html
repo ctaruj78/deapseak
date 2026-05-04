@@ -20,7 +20,7 @@
                 <div class="col-sm-6">
                     <ol class="breadcrumb float-sm-right">
                         <li class="breadcrumb-item"><a href="#" onclick="window.crmSystem.loadDashboard()">Головна</a></li>
-                        <li class="breadcrumb-item active">Користувачі</li>
+                        <li class="breadcrumb-item active">Utilizadorі</li>
                     </ol>
                 </div>
             </div>
@@ -47,7 +47,7 @@
                     <div class="small-box bg-success">
                         <div class="inner">
                             <h3>42</h3>
-                            <p>Клієнти</p>
+                            <p>Clienteи</p>
                         </div>
                         <div class="icon">
                             <i class="fas fa-user-tie"></i>
@@ -58,7 +58,7 @@
                     <div class="small-box bg-warning">
                         <div class="inner">
                             <h3>15</h3>
-                            <p>Техніки</p>
+                            <p>Técnicoи</p>
                         </div>
                         <div class="icon">
                             <i class="fas fa-tools"></i>
@@ -69,7 +69,7 @@
                     <div class="small-box bg-danger">
                         <div class="inner">
                             <h3>5</h3>
-                            <p>Диспетчери</p>
+                            <p>Dispatcherи</p>
                         </div>
                         <div class="icon">
                             <i class="fas fa-headset"></i>
@@ -86,10 +86,10 @@
                             <h3 class="card-title">Список користувачів</h3>
                             <div class="card-tools">
                                 <button type="button" class="btn btn-primary btn-sm" onclick="addNewUser()">
-                                    <i class="fas fa-plus"></i> Додати користувача
+                                    <i class="fas fa-plus"></i> Adicionar користувача
                                 </button>
                                 <button type="button" class="btn btn-info btn-sm" onclick="exportUsers()">
-                                    <i class="fas fa-download"></i> Експорт
+                                    <i class="fas fa-download"></i> Exportar
                                 </button>
                             </div>
                         </div>
@@ -98,23 +98,23 @@
                             <div class="row mb-3">
                                 <div class="col-md-3">
                                     <select class="form-control" id="roleFilter" onchange="filterUsers()">
-                                        <option value="">Всі ролі</option>
-                                        <option value="admin">Адміністратор</option>
-                                        <option value="dispatcher">Диспетчер</option>
-                                        <option value="tech">Технік</option>
-                                        <option value="client">Клієнт</option>
+                                        <option value="">Todos ролі</option>
+                                        <option value="admin">Administrador</option>
+                                        <option value="dispatcher">Dispatcher</option>
+                                        <option value="tech">Técnico</option>
+                                        <option value="client">Cliente</option>
                                     </select>
                                 </div>
                                 <div class="col-md-3">
                                     <select class="form-control" id="statusFilter" onchange="filterUsers()">
-                                        <option value="">Всі статуси</option>
+                                        <option value="">Todos статуси</option>
                                         <option value="active">Активні</option>
                                         <option value="inactive">Неактивні</option>
                                         <option value="blocked">Заблоковані</option>
                                     </select>
                                 </div>
                                 <div class="col-md-4">
-                                    <input type="text" class="form-control" id="searchUsers" placeholder="Пошук користувачів..." onkeyup="searchUsers()">
+                                    <input type="text" class="form-control" id="searchUsers" placeholder="Pesquisar utilizadores..." onkeyup="searchUsers()">
                                 </div>
                                 <div class="col-md-2">
                                     <button class="btn btn-secondary btn-block" onclick="clearFilters()">Очистити</button>
@@ -126,10 +126,10 @@
                                 <thead>
                                     <tr>
                                         <th>ID</th>
-                                        <th>Ім'я</th>
+                                        <th>Nome</th>
                                         <th>Email</th>
-                                        <th>Роль</th>
-                                        <th>Статус</th>
+                                        <th>Função</th>
+                                        <th>Estado</th>
                                         <th>Останній вхід</th>
                                         <th>Дії</th>
                                     </tr>
@@ -139,8 +139,8 @@
                                         <td>001</td>
                                         <td>Іваненко Іван Іванович</td>
                                         <td>admin@example.com</td>
-                                        <td><span class="badge badge-danger">Адміністратор</span></td>
-                                        <td><span class="badge badge-success">Активний</span></td>
+                                        <td><span class="badge badge-danger">Administrador</span></td>
+                                        <td><span class="badge badge-success">Ativo</span></td>
                                         <td>21.12.2024 14:30</td>
                                         <td>
                                             <button class="btn btn-info btn-sm" onclick="viewUser('001')">
@@ -158,8 +158,8 @@
                                         <td>002</td>
                                         <td>Петров Петро Петрович</td>
                                         <td>dispatcher@example.com</td>
-                                        <td><span class="badge badge-warning">Диспетчер</span></td>
-                                        <td><span class="badge badge-success">Активний</span></td>
+                                        <td><span class="badge badge-warning">Dispatcher</span></td>
+                                        <td><span class="badge badge-success">Ativo</span></td>
                                         <td>21.12.2024 12:15</td>
                                         <td>
                                             <button class="btn btn-info btn-sm" onclick="viewUser('002')">
@@ -177,8 +177,8 @@
                                         <td>003</td>
                                         <td>Сидоров Сидір Сидорович</td>
                                         <td>tech@example.com</td>
-                                        <td><span class="badge badge-info">Технік</span></td>
-                                        <td><span class="badge badge-success">Активний</span></td>
+                                        <td><span class="badge badge-info">Técnico</span></td>
+                                        <td><span class="badge badge-success">Ativo</span></td>
                                         <td>20.12.2024 16:45</td>
                                         <td>
                                             <button class="btn btn-info btn-sm" onclick="viewUser('003')">
@@ -196,8 +196,8 @@
                                         <td>004</td>
                                         <td>Коваленко Олена Олександрівна</td>
                                         <td>client@example.com</td>
-                                        <td><span class="badge badge-primary">Клієнт</span></td>
-                                        <td><span class="badge badge-warning">Неактивний</span></td>
+                                        <td><span class="badge badge-primary">Cliente</span></td>
+                                        <td><span class="badge badge-warning">Inativo</span></td>
                                         <td>18.12.2024 09:20</td>
                                         <td>
                                             <button class="btn btn-info btn-sm" onclick="viewUser('004')">
@@ -237,13 +237,13 @@
                         <div class="card-body">
                             <div class="timeline">
                                 <div class="time-label">
-                                    <span class="bg-green">Сьогодні</span>
+                                    <span class="bg-green">Hoje</span>
                                 </div>
                                 <div>
                                     <i class="fas fa-user bg-blue"></i>
                                     <div class="timeline-item">
                                         <span class="time"><i class="fas fa-clock"></i> 14:30</span>
-                                        <h3 class="timeline-header">Новий користувач зареєстрований</h3>
+                                        <h3 class="timeline-header">Novo користувач зареєстрований</h3>
                                         <div class="timeline-body">
                                             Марченко Марія Михайлівна зареєструвалась як клієнт
                                         </div>
@@ -253,7 +253,7 @@
                                     <i class="fas fa-edit bg-yellow"></i>
                                     <div class="timeline-item">
                                         <span class="time"><i class="fas fa-clock"></i> 12:15</span>
-                                        <h3 class="timeline-header">Оновлення профілю</h3>
+                                        <h3 class="timeline-header">Atualização профілю</h3>
                                         <div class="timeline-body">
                                             Петров П.П. оновив контактну інформацію
                                         </div>
@@ -273,7 +273,7 @@
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h4 class="modal-title" id="userModalTitle">Додати користувача</h4>
+                <h4 class="modal-title" id="userModalTitle">Adicionar користувача</h4>
                 <button type="button" class="close" data-dismiss="modal">
                     <span aria-hidden="true">&times;</span>
                 </button>
@@ -283,7 +283,7 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label>Ім'я</label>
+                                <label>Nome</label>
                                 <input type="text" class="form-control" name="name" required>
                             </div>
                         </div>
@@ -297,19 +297,19 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label>Роль</label>
+                                <label>Função</label>
                                 <select class="form-control" name="role" required>
                                     <option value="">Виберіть роль</option>
-                                    <option value="admin">Адміністратор</option>
-                                    <option value="dispatcher">Диспетчер</option>
-                                    <option value="tech">Технік</option>
-                                    <option value="client">Клієнт</option>
+                                    <option value="admin">Administrador</option>
+                                    <option value="dispatcher">Dispatcher</option>
+                                    <option value="tech">Técnico</option>
+                                    <option value="client">Cliente</option>
                                 </select>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label>Телефон</label>
+                                <label>Telefone</label>
                                 <input type="tel" class="form-control" name="phone">
                             </div>
                         </div>
@@ -317,13 +317,13 @@
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label>Пароль</label>
+                                <label>Palavra-passe</label>
                                 <input type="password" class="form-control" name="password" required>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label>Підтвердження паролю</label>
+                                <label>Confirmar palavra-passe</label>
                                 <input type="password" class="form-control" name="password_confirm" required>
                             </div>
                         </div>
@@ -331,8 +331,8 @@
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">Скасувати</button>
-                <button type="button" class="btn btn-primary" onclick="saveUser()">Зберегти</button>
+                <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="saveUser()">Guardar</button>
             </div>
         </div>
     </div>
@@ -340,46 +340,46 @@
 
 <script>
 function addNewUser() {
-    document.getElementById('userModalTitle').textContent = 'Додати користувача';
+    document.getElementById('userModalTitle').textContent = 'Adicionar користувача';
     document.getElementById('userForm').reset();
     $('#userModal').modal('show');
 }
 
 function editUser(userId) {
-    document.getElementById('userModalTitle').textContent = 'Редагувати користувача';
+    document.getElementById('userModalTitle').textContent = 'Editar користувача';
     // Load user data here
     $('#userModal').modal('show');
 }
 
 function viewUser(userId) {
-    alert('Перегляд деталей користувача: ' + userId);
+    alert('Ver detalhes do utilizador: ' + userId);
 }
 
 function toggleUserStatus(userId) {
-    if(confirm('Змінити статус користувача?')) {
-        alert('Статус змінено для користувача: ' + userId);
+    if(confirm('Alterar estado do utilizador?')) {
+        alert('Estado alterado para o utilizador: ' + userId);
     }
 }
 
 function saveUser() {
     const form = document.getElementById('userForm');
     if(form.checkValidity()) {
-        alert('Користувач збережений');
+        alert('Utilizador guardado');
         $('#userModal').modal('hide');
     } else {
-        alert('Заповніть всі обов\'язкові поля');
+        alert('Preencha todos os campos obrigatórios');
     }
 }
 
 function filterUsers() {
     const role = document.getElementById('roleFilter').value;
     const status = document.getElementById('statusFilter').value;
-    alert(`Фільтрація по ролі: ${role}, статусу: ${status}`);
+    alert(`Filtrar por função: ${role}, estado: ${status}`);
 }
 
 function searchUsers() {
     const query = document.getElementById('searchUsers').value;
-    console.log('Пошук користувачів:', query);
+    console.log('Pesquisa користувачів:', query);
 }
 
 function clearFilters() {
@@ -390,7 +390,7 @@ function clearFilters() {
 }
 
 function exportUsers() {
-    alert('Експорт списку користувачів');
+    alert('Exportar lista de utilizadores');
 }
 </script>
 </body>

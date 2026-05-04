@@ -48,7 +48,7 @@ class I18n {
         this.updatePageContent();
     }
 
-    // Завантаження перекладів
+    // A carregar перекладів
     loadTranslations() {
         this.translations = {
             uk: {
@@ -56,38 +56,38 @@ class I18n {
                 app_name: 'DeapSeaK',
                 welcome: 'Вітаємо',
                 logout: 'Вийти',
-                save: 'Зберегти',
-                cancel: 'Скасувати',
-                delete: 'Видалити',
-                edit: 'Редагувати',
-                add: 'Додати',
-                search: 'Пошук',
-                filter: 'Фільтр',
-                export: 'Експорт',
-                import: 'Імпорт',
-                back: 'Назад',
-                next: 'Далі',
-                previous: 'Назад',
-                loading: 'Завантаження...',
-                error: 'Помилка',
+                save: 'Guardar',
+                cancel: 'Cancelar',
+                delete: 'Eliminar',
+                edit: 'Editar',
+                add: 'Adicionar',
+                search: 'Pesquisa',
+                filter: 'Filtro',
+                export: 'Exportar',
+                import: 'Importar',
+                back: 'Voltar',
+                next: 'Seguinte',
+                previous: 'Voltar',
+                loading: 'A carregar...',
+                error: 'Erro',
                 success: 'Успішно',
-                warning: 'Попередження',
+                warning: 'Aviso',
                 info: 'Інформація',
                 
                 // Навігація
                 dashboard: 'Дашборд',
-                lifts: 'Ліфти',
-                requests: 'Запити',
-                users: 'Користувачі',
-                analytics: 'Аналітика',
-                settings: 'Налаштування',
+                lifts: 'Elevadores',
+                requests: 'Pedidoи',
+                users: 'Utilizadorі',
+                analytics: 'Análise',
+                settings: 'Definições',
                 profile: 'Профіль',
                 
-                // Налаштування
+                // Definições
                 general_settings: 'Загальні налаштування',
                 language: 'Мова',
                 theme: 'Тема',
-                notifications: 'Сповіщення',
+                notifications: 'Notificações',
                 security: 'Безпека',
                 privacy: 'Приватність',
                 appearance: 'Зовнішній вигляд',
@@ -95,38 +95,38 @@ class I18n {
                 light_mode: 'Світлий режим',
                 auto_mode: 'Автоматично',
                 
-                // Ліфти
+                // Elevadores
                 lift_number: 'Номер ліфта',
-                lift_address: 'Адреса',
-                lift_status: 'Статус',
-                lift_type: 'Тип ліфта',
-                add_lift: 'Додати ліфт',
-                edit_lift: 'Редагувати ліфт',
+                lift_address: 'Endereço',
+                lift_status: 'Estado',
+                lift_type: 'Tipo de elevador',
+                add_lift: 'Adicionar ліфт',
+                edit_lift: 'Editar ліфт',
                 
-                // Запити
-                request_title: 'Назва запиту',
-                request_description: 'Опис',
-                request_status: 'Статус запиту',
-                request_priority: 'Пріоритет',
+                // Pedidoи
+                request_title: 'Nome запиту',
+                request_description: 'Descrição',
+                request_status: 'Estado запиту',
+                request_priority: 'Prioridade',
                 create_request: 'Створити запит',
                 
-                // Користувачі
+                // Utilizadorі
                 user_name: 'Ім\'я',
                 user_email: 'Email',
-                user_role: 'Роль',
-                user_phone: 'Телефон',
+                user_role: 'Função',
+                user_phone: 'Telefone',
                 
                 // Ролі
-                role_admin: 'Адміністратор',
-                role_dispatcher: 'Диспетчер',
-                role_technician: 'Технік',
-                role_client: 'Клієнт',
+                role_admin: 'Administrador',
+                role_dispatcher: 'Dispatcher',
+                role_technician: 'Técnico',
+                role_client: 'Cliente',
                 
                 // Повідомлення
-                email_notifications: 'Email сповіщення',
+                email_notifications: 'Notificações por email',
                 push_notifications: 'Push сповіщення',
-                sms_notifications: 'SMS сповіщення',
-                notification_new_request: 'Новий запит',
+                sms_notifications: 'Notificações por SMS',
+                notification_new_request: 'Novo запит',
                 notification_status_change: 'Зміна статусу',
                 notification_assignment: 'Призначення',
             },
@@ -308,7 +308,7 @@ class I18n {
         return translation;
     }
 
-    // Оновлення контенту сторінки
+    // Atualização контенту сторінки
     updatePageContent() {
         // Оновлюємо всі елементи з data-i18n атрибутом
         document.querySelectorAll('[data-i18n]').forEach(element => {
@@ -347,7 +347,7 @@ class I18n {
 // Глобальний екземпляр
 const i18n = new I18n();
 
-// Експорт для використання в інших модулях
+// Exportar для використання в інших модулях
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = I18n;
 }

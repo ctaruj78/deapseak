@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Ініціалізація головної сторінки
     Renderer.renderDashboard(currentUser);
     
-    // Завантаження даних
+    // A carregar даних
     DataLoader.loadInitialData();
 });
 
@@ -63,25 +63,25 @@ class Router {
 class DataLoader {
     static async loadInitialData() {
         try {
-            // Завантаження ліфтів
+            // A carregar ліфтів
             const lifts = await LiftAPI.getLifts();
             StorageManager.save('lifts', lifts);
             
-            // Завантаження заявок
+            // A carregar заявок
             const requests = await LiftAPI.getRepairRequests();
             StorageManager.save('repair_requests', requests);
             
-            // Завантаження користувачів
+            // A carregar користувачів
             if (AuthManager.checkRole('admin')) {
                 const users = await LiftAPI.getUsers();
                 StorageManager.save('users', users);
             }
             
-            // Оновлення інтерфейсу
+            // Atualização інтерфейсу
             Renderer.updateDynamicContent();
         } catch (error) {
-            console.error('Помилка завантаження даних:', error);
-            DOMHelper.showNotification('Помилка завантаження даних', 'error');
+            console.error('Erro ao carregar dados:', error);
+            DOMHelper.showNotification('Erro ao carregar dados', 'error');
         }
     }
 }

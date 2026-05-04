@@ -14,7 +14,7 @@ class MonitoringManager {
         this.alerts = [];
         this.systemMetrics = {};
         
-        // Налаштування
+        // Definições
         this.autoRefresh = true;
         this.refreshInterval = 30000; // 30 секунд
         this.websocket = null;
@@ -48,13 +48,13 @@ class MonitoringManager {
             console.log('✅ Monitoring Manager ініціалізовано');
             
         } catch (error) {
-            console.error('❌ Помилка ініціалізації Monitoring Manager:', error);
+            console.error('❌ Erro ініціалізації Monitoring Manager:', error);
             this.loadFromLocalStorage();
         }
     }
 
     /**
-     * Завантаження даних з API
+     * A carregar даних з API
      */
     async loadData() {
         try {
@@ -64,7 +64,7 @@ class MonitoringManager {
                 'Content-Type': 'application/json'
             };
 
-            // Завантаження ліфтів
+            // A carregar ліфтів
             const liftsRes = await fetch(`${this.apiUrl}/lifts`, { headers });
             if (liftsRes.ok) {
                 const liftsData = await liftsRes.json();
@@ -73,7 +73,7 @@ class MonitoringManager {
                 this.lifts = [];
             }
 
-            // Завантаження техніків (спеціальний endpoint, завжди повертає тільки техніків)
+            // A carregar техніків (спеціальний endpoint, завжди повертає тільки техніків)
             try {
                 const techsRes = await fetch(`${this.apiUrl}/technicians`, { headers });
                 if (techsRes.ok) {
@@ -87,7 +87,7 @@ class MonitoringManager {
                 this.technicians = this.getDefaultTechnicians();
             }
 
-            // Завантаження заявок (assignments)
+            // A carregar заявок (assignments)
             try {
                 const reqRes = await fetch(`${this.apiUrl}/requests`, { headers });
                 if (reqRes.ok) {
@@ -102,7 +102,7 @@ class MonitoringManager {
                 this.assignments = [];
             }
 
-            // Завантаження сповіщень
+            // A carregar сповіщень
             try {
                 const notifRes = await fetch(`${this.apiUrl}/notifications`, { headers });
                 if (notifRes.ok) {
@@ -135,13 +135,13 @@ class MonitoringManager {
             // Зберігання для офлайн режиму
             this.saveToLocalStorage();
             
-            // Оновлення інтерфейсу
+            // Atualização інтерфейсу
             this.updateAllUI();
             this.lastUpdate = new Date();
             
             return true;
         } catch (error) {
-            console.warn('⚠️ Помилка завантаження даних:', error);
+            console.warn('⚠️ Erro ao carregar dados:', error);
             return false;
         }
     }
@@ -190,7 +190,7 @@ class MonitoringManager {
     }
 
     /**
-     * Завантаження з localStorage
+     * A carregar з localStorage
      */
     loadFromLocalStorage() {
         try {
@@ -212,7 +212,7 @@ class MonitoringManager {
                 this.generateTestData();
             }
         } catch (error) {
-            console.error('Помилка завантаження з localStorage:', error);
+            console.error('Erro завантаження з localStorage:', error);
             this.generateTestData();
         }
     }
@@ -298,7 +298,7 @@ class MonitoringManager {
                 _id: '1',
                 type: 'error',
                 title: 'Критична помилка ліфта',
-                description: 'Ліфт #3 - помилка E003: несправність двигуна',
+                description: 'Elevador #3 - помилка E003: несправність двигуна',
                 liftId: '3',
                 severity: 'critical',
                 timestamp: new Date(Date.now() - 15 * 60 * 1000),
@@ -308,8 +308,8 @@ class MonitoringManager {
             {
                 _id: '2',
                 type: 'warning',
-                title: 'Перевищення вібрації',
-                description: 'Ліфт #2 - вібрація перевищує норму (8.5)',
+                title: 'Excesso de vibração',
+                description: 'Elevador #2 - вібрація перевищує норму (8.5)',
                 liftId: '2',
                 severity: 'warning',
                 timestamp: new Date(Date.now() - 45 * 60 * 1000),
@@ -320,7 +320,7 @@ class MonitoringManager {
                 _id: '3',
                 type: 'info',
                 title: 'Планове обслуговування',
-                description: 'Ліфт #1 - наближається дата планового ТО',
+                description: 'Elevador #1 - наближається дата планового Manutenção',
                 liftId: '1',
                 severity: 'info',
                 timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000),
@@ -333,7 +333,7 @@ class MonitoringManager {
     }
 
     /**
-     * Оновлення всього інтерфейсу
+     * Atualização всього інтерфейсу
      */
     updateAllUI() {
         this.updateDashboard();
@@ -348,10 +348,10 @@ class MonitoringManager {
     }
 
     /**
-     * Оновлення головної панелі
+     * Atualização головної панелі
      */
     updateDashboard() {
-        // Оновлення загальних показників
+        // Atualização загальних показників
         const updateElement = (id, value, format = 'text') => {
             const element = document.getElementById(id);
             if (element) {
@@ -379,13 +379,13 @@ class MonitoringManager {
         updateElement('avgResponse', `${avgSec}с`);
         updateElement('emergencyCases', this.systemMetrics.emergencyCases ?? 0, 'number');
         updateElement('systemUptime', this.systemMetrics.averageUptime?.toFixed(1) ?? '100', 'percent');
-        // Також оновлюємо лічильник у заголовку
+        // Simож оновлюємо лічильник у заголовку
         updateElement('alertsCount', this.systemMetrics.pendingAlerts ?? 0, 'number');
         updateElement('activeTasksCount', `${this.systemMetrics.activeAssignments ?? 0} активних`);
     }
 
     /**
-     * Оновлення сітки ліфтів
+     * Atualização сітки ліфтів
      */
     updateLiftsGrid() {
         const container = document.getElementById('liftsGrid') || 
@@ -424,7 +424,7 @@ class MonitoringManager {
                                 </div>
                                 <div class="info-row">
                                     <i class="fas fa-weight-hanging text-muted mr-2"></i>
-                                    <span class="small">Вантажопідйомність: ${lift.capacity || '—'} кг | ${lift.floors || '—'} пов.</span>
+                                    <span class="small">Вантажопідйомність: ${lift.capacity || '—'} kg | ${lift.floors || '—'} пов.</span>
                                 </div>
                             </div>
 
@@ -450,7 +450,7 @@ class MonitoringManager {
                                     </div>
                                     <div class="col-6">
                                         <div class="metric-item">
-                                            <span class="metric-label">№ Серійний</span>
+                                            <span class="metric-label">№ Agoійний</span>
                                             <span class="metric-value small">${lift.serialNumber || '—'}</span>
                                         </div>
                                     </div>
@@ -468,13 +468,13 @@ class MonitoringManager {
                                     <div class="col-4 text-center">
                                         <span class="indicator ${['maintenance','inspection'].includes(lift.status) ? 'active warning' : ''}">
                                             <i class="fas fa-tools"></i>
-                                            <small>ТО</small>
+                                            <small>Manutenção</small>
                                         </span>
                                     </div>
                                     <div class="col-4 text-center">
                                         <span class="indicator ${['repair','out_of_service'].includes(lift.status) ? 'active danger' : ''}">
                                             <i class="fas fa-exclamation-triangle"></i>
-                                            <small>Ремонт</small>
+                                            <small>Reparação</small>
                                         </span>
                                     </div>
                                 </div>
@@ -483,14 +483,14 @@ class MonitoringManager {
                         
                         <div class="card-footer">
                             <div class="btn-group btn-group-sm w-100" role="group">
-                                <button class="btn btn-outline-primary" onclick="monitoringManager.viewLiftDetails('${lift._id}')" title="Деталі">
+                                <button class="btn btn-outline-primary" onclick="monitoringManager.viewLiftDetails('${lift._id}')" title="Detalhes">
                                     <i class="fas fa-eye"></i>
                                 </button>
                                 <button class="btn btn-outline-info" onclick="monitoringManager.showLiftHistory('${lift._id}')" title="Історія">
                                     <i class="fas fa-history"></i>
                                 </button>
                                 ${this.currentUser.role === 'dispatcher' || this.currentUser.role === 'admin' ? `
-                                    <button class="btn btn-outline-warning" onclick="monitoringManager.createMaintenanceRequest('${lift._id}')" title="ТО">
+                                    <button class="btn btn-outline-warning" onclick="monitoringManager.createMaintenanceRequest('${lift._id}')" title="Manutenção">
                                         <i class="fas fa-tools"></i>
                                     </button>
                                 ` : ''}
@@ -504,11 +504,11 @@ class MonitoringManager {
             `;
         });
 
-        container.innerHTML = html || '<div class="alert alert-info">Ліфти не знайдено</div>';
+        container.innerHTML = html || '<div class="alert alert-info">Elevadores не знайдено</div>';
     }
 
     /**
-     * Оновлення панелі сповіщень
+     * Atualização панелі сповіщень
      */
     updateAlertsPanel() {
         const container = document.getElementById('alertsContainer') || 
@@ -536,14 +536,14 @@ class MonitoringManager {
                     <div class="alert-header d-flex justify-content-between align-items-start">
                         <div class="alert-title">
                             <i class="${this.getAlertIcon(severity)} mr-2"></i>
-                            <strong>${alert.title || alert.message || 'Сповіщення'}</strong>
+                            <strong>${alert.title || alert.message || 'Notificações'}</strong>
                             <span class="badge badge-${this.getAlertBadgeClass(severity)} ml-2">
                                 ${severity.toUpperCase()}
                             </span>
                         </div>
                         <div class="alert-actions">
                             ${!(alert.acknowledged || alert.read) ? `
-                                <button class="btn btn-sm btn-outline-secondary" onclick="monitoringManager.acknowledgeAlert('${alert._id || ''}')" title="Підтвердити">
+                                <button class="btn btn-sm btn-outline-secondary" onclick="monitoringManager.acknowledgeAlert('${alert._id || ''}')" title="Confirmar">
                                     <i class="fas fa-check"></i>
                                 </button>
                             ` : ''}
@@ -557,14 +557,14 @@ class MonitoringManager {
                         <small class="text-muted">
                             <i class="fas fa-clock mr-1"></i>
                             ${timeAgo}
-                            ${alert.liftId ? ` | Ліфт: ${this.getLiftAddress(alert.liftId)}` : ''}
+                            ${alert.liftId ? ` | Elevador: ${this.getLiftAddress(alert.liftId)}` : ''}
                         </small>
                     </div>
                 </div>
             `;
         });
 
-        container.innerHTML = html || '<div class="alert alert-info">Сповіщення відсутні</div>';
+        container.innerHTML = html || '<div class="alert alert-info">Notificações відсутні</div>';
     }
 
     /**
@@ -594,12 +594,12 @@ class MonitoringManager {
             this.techMarkers = {};
             console.log('🗺️ Карта Leaflet ініціалізована');
         } catch (err) {
-            console.error('❌ Помилка ініціалізації карти:', err);
+            console.error('❌ Erro ініціалізації карти:', err);
         }
     }
 
     /**
-     * Оновлення маркерів техніків на карті
+     * Atualização маркерів техніків на карті
      */
     updateMapMarkers() {
         if (!this.map || typeof L === 'undefined') return;
@@ -617,7 +617,7 @@ class MonitoringManager {
             if (!lat || !lng) return;
 
             const color = statusColors[tech.status] || '#6c757d';
-            const name = `${tech.firstName || ''} ${tech.lastName || ''}`.trim() || tech.email || 'Технік';
+            const name = `${tech.firstName || ''} ${tech.lastName || ''}`.trim() || tech.email || 'Técnico';
             const iconHtml = `<div style="background:${color};width:14px;height:14px;border-radius:50%;border:2px solid white;box-shadow:0 0 4px rgba(0,0,0,.4)"></div>`;
             const icon = L.divIcon({ html: iconHtml, className: '', iconSize: [14, 14], iconAnchor: [7, 7] });
 
@@ -625,7 +625,7 @@ class MonitoringManager {
                 this.techMarkers[tech._id].setLatLng([lat, lng]);
             } else {
                 this.techMarkers[tech._id] = L.marker([lat, lng], { icon })
-                    .bindPopup(`<strong>${name}</strong><br>Статус: ${tech.status || '—'}`)
+                    .bindPopup(`<strong>${name}</strong><br>Estado: ${tech.status || '—'}`)
                     .addTo(this.map);
             }
         });
@@ -648,19 +648,19 @@ class MonitoringManager {
         }
 
         if (!techs.length) {
-            container.innerHTML = '<p class="text-muted text-center p-3">Техніки не знайдені</p>';
+            container.innerHTML = '<p class="text-muted text-center p-3">Técnicoи не знайдені</p>';
             return;
         }
 
         const statusBadge = s => {
             const map = { online: 'success', active: 'success', busy: 'warning', offline: 'secondary' };
             const cls = map[s] || 'secondary';
-            const lbl = { online: 'Онлайн', active: 'Активний', busy: 'Зайнятий', offline: 'Офлайн' }[s] || s || '—';
+            const lbl = { online: 'Online', active: 'Ativo', busy: 'Ocupado', offline: 'Offline' }[s] || s || '—';
             return `<span class="badge badge-${cls}">${lbl}</span>`;
         };
 
         const html = techs.map(tech => {
-            const name = `${tech.firstName || ''} ${tech.lastName || ''}`.trim() || tech.email || 'Технік';
+            const name = `${tech.firstName || ''} ${tech.lastName || ''}`.trim() || tech.email || 'Técnico';
             const initials = name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
             // Кількість активних завдань для цього техніка
             const techId = String(tech._id);
@@ -689,7 +689,7 @@ class MonitoringManager {
     }
 
     /**
-     * Пошукова фільтрація техніків (викликається з HTML)
+     * Pesquisaова фільтрація техніків (викликається з HTML)
      */
     filterTechnicians(query) {
         this.renderTechnicians(query);
@@ -708,7 +708,7 @@ class MonitoringManager {
         }
 
         const priorityLabel = p => {
-            const m = { high: ['danger', 'Висока'], critical: ['danger', 'Критична'], medium: ['warning', 'Середня'], low: ['secondary', 'Низька'] };
+            const m = { high: ['danger', 'Alta'], critical: ['danger', 'Критична'], medium: ['warning', 'Agoедня'], low: ['secondary', 'Baixa'] };
             const [cls, lbl] = m[p] || ['secondary', p || '—'];
             return `<span class="badge badge-${cls}">${lbl}</span>`;
         };
@@ -730,7 +730,7 @@ class MonitoringManager {
             return `
                 <div class="d-flex align-items-start p-2 border-bottom" style="gap:10px">
                     <div class="flex-grow-1 overflow-hidden">
-                        <div class="font-weight-bold text-truncate small">${task.title || task.description || 'Завдання'}</div>
+                        <div class="font-weight-bold text-truncate small">${task.title || task.description || 'Tarefa'}</div>
                         <div class="text-muted" style="font-size:11px">
                             <i class="fas fa-map-marker-alt mr-1"></i>${liftAddr} &nbsp;
                             <i class="fas fa-user mr-1"></i>${techName}
@@ -764,7 +764,7 @@ class MonitoringManager {
         setInterval(() => {
             if (!this.isInitialized || !Array.isArray(this.lifts)) return;
             
-            // Оновлення даних ліфтів
+            // Atualização даних ліфтів
             this.lifts.forEach(lift => {
                 if (lift.status === 'active') {
                     // Симуляція руху ліфта
@@ -797,10 +797,10 @@ class MonitoringManager {
                 }
             });
             
-            // Оновлення метрик
+            // Atualização метрик
             this.updateSystemMetrics();
             
-            // Оновлення інтерфейсу
+            // Atualização інтерфейсу
             this.updateLiftsGrid();
             this.updateMetrics();
             
@@ -809,7 +809,7 @@ class MonitoringManager {
     }
 
     /**
-     * Оновлення системних метрик
+     * Atualização системних метрик
      */
     updateSystemMetrics() {
         const errorLifts = this.lifts.filter(l => ['repair', 'out_of_service'].includes(l.status)).length;
@@ -867,10 +867,10 @@ class MonitoringManager {
     getStatusText(status) {
         const texts = {
             'operational': 'Операційний',
-            'maintenance': 'Обслуговування',
+            'maintenance': 'Manutenção',
             'inspection': 'Огляд',
-            'repair': 'Ремонт',
-            'out_of_service': 'Неактивний'
+            'repair': 'Reparação',
+            'out_of_service': 'Inativo'
         };
         return texts[status] || status;
     }
@@ -917,9 +917,9 @@ class MonitoringManager {
         const diffInMinutes = Math.floor((now - time) / (1000 * 60));
         
         if (diffInMinutes < 1) return 'Щойно';
-        if (diffInMinutes < 60) return `${diffInMinutes} хв. тому`;
-        if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)} год. тому`;
-        return `${Math.floor(diffInMinutes / 1440)} дн. тому`;
+        if (diffInMinutes < 60) return `${diffInMinutes} хв. atrás`;
+        if (diffInMinutes < 1440) return `${Math.floor(diffInMinutes / 60)} год. atrás`;
+        return `${Math.floor(diffInMinutes / 1440)} дн. atrás`;
     }
 
     getLiftAddress(liftId) {
@@ -933,7 +933,7 @@ class MonitoringManager {
     }
 
     /**
-     * Налаштування автооновлення
+     * Definições автооновлення
      */
     setupAutoRefresh() {
         if (this.refreshInterval) {
@@ -946,7 +946,7 @@ class MonitoringManager {
     }
 
     /**
-     * Налаштування обробників подій
+     * Definições обробників подій
      */
     setupEventListeners() {
         // Toggle автооновлення
@@ -965,7 +965,7 @@ class MonitoringManager {
             });
         }
 
-        // Пошук техніків
+        // Pesquisa техніків
         const techSearch = document.getElementById('techSearch');
         if (techSearch) {
             techSearch.addEventListener('input', (e) => {
@@ -983,10 +983,10 @@ class MonitoringManager {
     }
 
     /**
-     * Оновлення графіків
+     * Atualização графіків
      */
     updateCharts() {
-        // Оновлення даних графіків
+        // Atualização даних графіків
         console.log('📊 Графіки оновлено');
     }
 
@@ -1006,9 +1006,9 @@ class MonitoringManager {
         // Тут буде код для відображення історії
     }
 
-    // Створення заявки на ТО
+    // Створення заявки на Manutenção
     createMaintenanceRequest(liftId) {
-        console.log('Створення заявки на ТО для ліфта:', liftId);
+        console.log('Створення заявки на Manutenção для ліфта:', liftId);
         // Тут буде інтеграція з assignment-manager
     }
 
@@ -1036,10 +1036,10 @@ class MonitoringManager {
                     }
                 });
                 
-                console.log('✅ Сповіщення підтверджено:', alertId);
+                console.log('✅ Notificações підтверджено:', alertId);
             }
         } catch (error) {
-            console.error('❌ Помилка підтвердження сповіщення:', error);
+            console.error('❌ Erro підтвердження сповіщення:', error);
         }
     }
 
@@ -1062,22 +1062,22 @@ class MonitoringManager {
                     }
                 });
                 
-                console.log('✅ Сповіщення вирішено:', alertId);
+                console.log('✅ Notificações вирішено:', alertId);
             }
         } catch (error) {
-            console.error('❌ Помилка вирішення сповіщення:', error);
+            console.error('❌ Erro вирішення сповіщення:', error);
         }
     }
 
     /**
-     * Оновлення метрик в інтерфейсі
+     * Atualização метрик в інтерфейсі
      */
     updateMetrics() {
         this.updateDashboard();
     }
 
     /**
-     * Оновлення статусу підключення
+     * Atualização статусу підключення
      */
     updateConnectionStatus() {
         const statusElement = document.getElementById('connectionStatus');
@@ -1095,12 +1095,12 @@ class MonitoringManager {
     }
 
     /**
-     * Початок реального моніторингу
+     * Início реального моніторингу
      */
     startRealTimeUpdates() {
         console.log('🚀 Реальний моніторинг запущено');
         
-        // Оновлення статусу підключення
+        // Atualização статусу підключення
         setInterval(() => {
             this.updateConnectionStatus();
         }, 1000);
@@ -1145,7 +1145,7 @@ class MonitoringManager {
                     <div class="small-box bg-success">
                         <div class="inner">
                             <h3 id="active-lifts-count">0</h3>
-                            <p>Активних ліфтів</p>
+                            <p>Elevadores ativos</p>
                         </div>
                         <div class="icon">
                             <i class="fas fa-check-circle"></i>
@@ -1196,7 +1196,7 @@ class MonitoringManager {
                     <div class="card">
                         <div class="card-header">
                             <h3 class="card-title">
-                                <i class="fas fa-chart-line"></i> Завантаження системи
+                                <i class="fas fa-chart-line"></i> A carregar системи
                             </h3>
                         </div>
                         <div class="card-body">
@@ -1214,13 +1214,13 @@ class MonitoringManager {
                             </h3>
                             <div class="card-tools">
                                 <button class="btn btn-sm btn-primary" onclick="crmNav.loadModule('monitoring-manager', 'alerts')">
-                                    Всі алерти
+                                    Todos алерти
                                 </button>
                             </div>
                         </div>
                         <div class="card-body p-0">
                             <div id="recent-alerts-list">
-                                <p class="p-3 text-muted">Завантаження алертів...</p>
+                                <p class="p-3 text-muted">A carregar алертів...</p>
                             </div>
                         </div>
                     </div>
@@ -1228,16 +1228,16 @@ class MonitoringManager {
             </div>
 
             <div class="row">
-                <!-- Статус ліфтів -->
+                <!-- Estado dos elevadores -->
                 <div class="col-md-12">
                     <div class="card">
                         <div class="card-header">
                             <h3 class="card-title">
-                                <i class="fas fa-list"></i> Статус ліфтів
+                                <i class="fas fa-list"></i> Estado dos elevadores
                             </h3>
                             <div class="card-tools">
                                 <button class="btn btn-sm btn-info" id="refresh-button" onclick="monitoringManager.refreshData()">
-                                    <i class="fas fa-sync"></i> Оновити
+                                    <i class="fas fa-sync"></i> Atualizar
                                 </button>
                             </div>
                         </div>
@@ -1247,8 +1247,8 @@ class MonitoringManager {
                                     <thead>
                                         <tr>
                                             <th>ID</th>
-                                            <th>Адреса</th>
-                                            <th>Статус</th>
+                                            <th>Endereço</th>
+                                            <th>Estado</th>
                                             <th>Поверх</th>
                                             <th>Температура</th>
                                             <th>Останнє оновлення</th>
@@ -1258,7 +1258,7 @@ class MonitoringManager {
                                     <tbody id="lifts-status-table">
                                         <tr>
                                             <td colspan="7" class="text-center p-3">
-                                                <i class="fas fa-spinner fa-spin"></i> Завантаження...
+                                                <i class="fas fa-spinner fa-spin"></i> A carregar...
                                             </td>
                                         </tr>
                                     </tbody>
@@ -1287,27 +1287,27 @@ class MonitoringManager {
                             </div>
                         </div>
                         <div class="card-body">
-                            <!-- Фільтри алертів -->
+                            <!-- Filtroи алертів -->
                             <div class="row mb-3">
                                 <div class="col-md-3">
                                     <select class="form-control" id="alert-severity-filter">
-                                        <option value="">Всі рівні</option>
+                                        <option value="">Todos рівні</option>
                                         <option value="low">Низький</option>
-                                        <option value="medium">Середній</option>
-                                        <option value="high">Високий</option>
-                                        <option value="critical">Критичний</option>
+                                        <option value="medium">Agoедній</option>
+                                        <option value="high">Altий</option>
+                                        <option value="critical">Crítico</option>
                                     </select>
                                 </div>
                                 <div class="col-md-3">
                                     <select class="form-control" id="alert-status-filter">
-                                        <option value="">Всі статуси</option>
+                                        <option value="">Todos статуси</option>
                                         <option value="active">Активні</option>
                                         <option value="acknowledged">Підтверджені</option>
                                         <option value="resolved">Вирішені</option>
                                     </select>
                                 </div>
                                 <div class="col-md-4">
-                                    <input type="text" class="form-control" id="alert-search" placeholder="Пошук алертів...">
+                                    <input type="text" class="form-control" id="alert-search" placeholder="Pesquisa алертів...">
                                 </div>
                                 <div class="col-md-2">
                                     <button class="btn btn-info btn-block" onclick="monitoringManager.refreshAlerts()">
@@ -1320,7 +1320,7 @@ class MonitoringManager {
                             <div id="alerts-container">
                                 <div class="text-center p-4">
                                     <i class="fas fa-spinner fa-spin fa-2x"></i>
-                                    <p class="mt-2">Завантаження алертів...</p>
+                                    <p class="mt-2">A carregar алертів...</p>
                                 </div>
                             </div>
                         </div>
@@ -1331,11 +1331,11 @@ class MonitoringManager {
     }
 
     setupContainerEvents(containerId) {
-        // Налаштування обробників подій для контейнера
+        // Definições обробників подій для контейнера
         const container = document.getElementById(containerId);
         if (!container) return;
 
-        // Фільтри алертів
+        // Filtroи алертів
         const severityFilter = container.querySelector('#alert-severity-filter');
         const statusFilter = container.querySelector('#alert-status-filter');
         const searchInput = container.querySelector('#alert-search');
@@ -1372,7 +1372,7 @@ class MonitoringManager {
                     <h2><i class="fas fa-chart-line"></i> Моніторинг системи</h2>
                     <div>
                         <button class="btn btn-outline-primary mr-2" onclick="monitoringManager.refreshData()">
-                            <i class="fas fa-sync-alt"></i> Оновити
+                            <i class="fas fa-sync-alt"></i> Atualizar
                         </button>
                         <button class="btn btn-warning" onclick="monitoringManager.testAlert()">
                             <i class="fas fa-exclamation-triangle"></i> Тест алерт
@@ -1432,7 +1432,7 @@ class MonitoringManager {
                             </div>
                             <div class="card-body" id="lifts-status-container">
                                 <div class="text-center">
-                                    <i class="fas fa-spinner fa-spin"></i> Завантаження...
+                                    <i class="fas fa-spinner fa-spin"></i> A carregar...
                                 </div>
                             </div>
                         </div>
@@ -1448,7 +1448,7 @@ class MonitoringManager {
                             </div>
                             <div class="card-body" id="alerts-container">
                                 <div class="text-center">
-                                    <i class="fas fa-spinner fa-spin"></i> Завантаження...
+                                    <i class="fas fa-spinner fa-spin"></i> A carregar...
                                 </div>
                             </div>
                         </div>
@@ -1638,23 +1638,23 @@ class MonitoringManager {
         const msg = textarea ? textarea.value.trim() : '';
         const priority = select ? select.value : 'normal';
         if (!msg) {
-            alert('Введіть текст повідомлення');
+            alert('Introduza o texto da mensagem');
             return;
         }
-        console.log(`📡 Трансляція (${priority}): ${msg}`);
+        console.log(`📡 Maiнсляція (${priority}): ${msg}`);
         if (typeof $ !== 'undefined') {
             $('#broadcastModal').modal('hide');
         }
         if (textarea) textarea.value = '';
-        alert(`Повідомлення надіслано (пріоритет: ${priority})`);
+        alert(`Mensagem enviada (prioridade: ${priority})`);
     }
 
     /**
-     * Експорт логів
+     * Exportar логів
      */
     exportLogs() {
         const rows = [
-            ['Час', 'Тип', 'Повідомлення'],
+            ['Час', 'Tipo', 'Повідомлення'],
             ...this.alerts.map(a => [
                 a.timestamp ? new Date(a.timestamp).toLocaleString() : '',
                 a.type || a.severity || '',
@@ -1682,20 +1682,20 @@ class MonitoringManager {
         const techsOnline = this.technicians.filter(t => ['online', 'active'].includes(t.status)).length;
         const report = [
             `=== Системна діагностика ===`,
-            `Дата: ${new Date().toLocaleString()}`,
+            `Data: ${new Date().toLocaleString()}`,
             ``,
-            `Ліфти:`,
+            `Elevadores:`,
             `  Всього: ${liftsTotal}`,
             `  Операційних: ${operationalLifts}`,
-            `  На ремонті: ${repairLifts}`,
+            `  Em reparação: ${repairLifts}`,
             ``,
-            `Техніки:`,
-            `  Онлайн: ${techsOnline} / ${this.technicians.length}`,
+            `Técnicoи:`,
+            `  Online: ${techsOnline} / ${this.technicians.length}`,
             ``,
-            `Завдання:`,
+            `Tarefa:`,
             `  Активних: ${this.assignments.length}`,
             ``,
-            `Сповіщення:`,
+            `Notificações:`,
             `  Непрочитаних: ${this.alerts.filter(a => !a.read && !a.readAt).length}`,
         ].join('\n');
         alert(report);
@@ -1712,7 +1712,7 @@ class MonitoringManager {
         );
         if (interval !== null && !isNaN(parseInt(interval))) {
             this.refreshInterval = parseInt(interval) * 1000;
-            alert(`✅ Інтервал оновлення встановлено: ${interval}с`);
+            alert(`✅ Intervalo de atualização definido: ${interval}s`);
         }
     }
 }
@@ -1727,7 +1727,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// Експорт для використання в модулях
+// Exportar для використання в модулях
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = MonitoringManager;
 }

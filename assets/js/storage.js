@@ -4,7 +4,7 @@ class StorageManager {
             localStorage.setItem(key, JSON.stringify(data));
             return true;
         } catch (error) {
-            console.error('Помилка збереження даних:', error);
+            console.error('Erro ao guardar даних:', error);
             this.handleStorageError(error, key, data);
             return false;
         }
@@ -15,7 +15,7 @@ class StorageManager {
             const data = localStorage.getItem(key);
             return data ? JSON.parse(data) : null;
         } catch (error) {
-            console.error('Помилка завантаження даних:', error);
+            console.error('Erro ao carregar dados:', error);
             return null;
         }
     }
@@ -25,7 +25,7 @@ class StorageManager {
             localStorage.removeItem(key);
             return true;
         } catch (error) {
-            console.error('Помилка видалення даних:', error);
+            console.error('Erro видалення даних:', error);
             return false;
         }
     }
@@ -35,7 +35,7 @@ class StorageManager {
             localStorage.clear();
             return true;
         } catch (error) {
-            console.error('Помилка очищення сховища:', error);
+            console.error('Erro очищення сховища:', error);
             return false;
         }
     }
@@ -44,7 +44,7 @@ class StorageManager {
         try {
             return Object.keys(localStorage);
         } catch (error) {
-            console.error('Помилка отримання ключів:', error);
+            console.error('Erro отримання ключів:', error);
             return [];
         }
     }
@@ -59,7 +59,7 @@ class StorageManager {
             }
             return total;
         } catch (error) {
-            console.error('Помилка розрахунку розміру:', error);
+            console.error('Erro розрахунку розміру:', error);
             return 0;
         }
     }
@@ -152,7 +152,7 @@ class StorageManager {
             const json = JSON.stringify(data);
             return btoa(unescape(encodeURIComponent(json)));
         } catch (error) {
-            console.error('Помилка шифрування:', error);
+            console.error('Erro шифрування:', error);
             return data;
         }
     }
@@ -162,7 +162,7 @@ class StorageManager {
             const json = decodeURIComponent(escape(atob(encryptedData)));
             return JSON.parse(json);
         } catch (error) {
-            console.error('Помилка дешифрування:', error);
+            console.error('Erro дешифрування:', error);
             return encryptedData;
         }
     }
@@ -216,7 +216,7 @@ class StorageManager {
             isAvailable: this.isAvailable()
         };
 
-        // Групування за типами даних
+        // Dezпування за типами даних
         stats.byType = {
             user: keys.filter(k => k.includes('user')).length,
             lift: keys.filter(k => k.includes('lift')).length,

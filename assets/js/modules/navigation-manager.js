@@ -17,7 +17,7 @@
                 window.location.href = href;
             }
         },
-        // Доступність: фокусування на перший елемент
+        // Disponibilidade: фокусування на перший елемент
         focusFirst: function(modalId) {
             if ($(modalId).length) {
                 $(modalId).find('input, button, a, select, textarea').first().focus();
@@ -60,7 +60,7 @@
                 window.location.href = href;
             }
         },
-        // Доступність: фокусування на перший елемент
+        // Disponibilidade: фокусування на перший елемент
         focusFirst: function(modalId) {
             if ($(modalId).length) {
                 $(modalId).find('input, button, a, select, textarea').first().focus();

@@ -68,14 +68,14 @@ class MaintenanceCharts {
             data: {
                 labels: trendData.periods,
                 datasets: [{
-                    label: 'Витрати на техобслуговування',
+                    label: 'Custos de manutenção',
                     data: trendData.costs,
                     borderColor: '#e74c3c',
                     backgroundColor: this.hexToRgba('#e74c3c', 0.1),
                     fill: true,
                     tension: 0.4
                 }, {
-                    label: 'Бюджет',
+                    label: 'Orçamento',
                     data: trendData.budget,
                     borderColor: '#3498db',
                     borderDash: [5, 5],
@@ -107,7 +107,7 @@ class MaintenanceCharts {
             data: {
                 labels: probabilityData.equipment,
                 datasets: [{
-                    label: 'Ймовірність відмови (%)',
+                    label: 'Probabilidade de falha (%)',
                     data: probabilityData.probabilities,
                     backgroundColor: probabilityData.probabilities.map(p => 
                         p > 0.7 ? '#e74c3c' : p > 0.4 ? '#f39c12' : '#27ae60'
@@ -139,7 +139,7 @@ class MaintenanceCharts {
             data: {
                 labels: trendData.periods,
                 datasets: [{
-                    label: 'Час простою (години)',
+                    label: 'Tempo de inatividade (horas)',
                     data: trendData.downtimeHours,
                     borderColor: '#e74c3c',
                     backgroundColor: this.hexToRgba('#e74c3c', 0.1),
@@ -193,15 +193,15 @@ class MaintenanceCharts {
         const chart = new Chart(ctx, {
             type: 'radar',
             data: {
-                labels: ['Доступність', 'Продуктивність', 'Якість', 'Загальний OEE'],
+                labels: ['Disponibilidade', 'Desempenho', 'Qualidade', 'OEE total'],
                 datasets: [{
-                    label: 'Фактичні показники',
+                    label: 'Indicadores reais',
                     data: [oeeData.availability, oeeData.performance, oeeData.quality, oeeData.overall],
                     backgroundColor: this.hexToRgba('#3498db', 0.2),
                     borderColor: '#3498db',
                     pointBackgroundColor: '#3498db'
                 }, {
-                    label: 'Цільові показники',
+                    label: 'Indicadores objetivo',
                     data: [0.9, 0.95, 0.99, 0.85], // Target values
                     backgroundColor: this.hexToRgba('#27ae60', 0.2),
                     borderColor: '#27ae60',
@@ -275,7 +275,7 @@ class MaintenanceCharts {
                             label: (context) => {
                                 const total = context.dataset.data.reduce((a, b) => a + b, 0);
                                 const percentage = ((context.raw / total) * 100).toFixed(1);
-                                return `${context.label}: ${context.raw} обладнання (${percentage}%)`;
+                                return `${context.label}: ${context.raw} equipamentos (${percentage}%)`;
                             }
                         }
                     }
@@ -308,11 +308,11 @@ class MaintenanceCharts {
         
         switch (chartType) {
             case 'health-status':
-                return `${label}: ${value} обладнання`;
+                return `${label}: ${value} equipamentos`;
             case 'cost-trend':
                 return `${label}: ${this.formatFinancialValue(value, 'currency')}`;
             case 'downtime':
-                return `${label}: ${value} годин`;
+                return `${label}: ${value} horas`;
             case 'predictive':
                 return `${label}: ${(value * 100).toFixed(1)}%`;
             default:

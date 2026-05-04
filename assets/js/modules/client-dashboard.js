@@ -12,7 +12,7 @@ class ClientDashboard {
     }
 
     loadUserData() {
-        // Завантаження даних користувача з localStorage або API
+        // A carregar даних користувача з localStorage або API
         const userData = localStorage.getItem('userData');
         if (userData) {
             this.currentUser = JSON.parse(userData);
@@ -32,7 +32,7 @@ class ClientDashboard {
                 lastName: 'Петренко',
                 email: 'client@example.com',
                 phone: '+351912345678',
-                company: 'ТОВ "Українські будівлі"'
+                company: 'ManutençãoВ "Українські будівлі"'
             };
             
             localStorage.setItem('userData', JSON.stringify(this.currentUser));
@@ -75,13 +75,13 @@ class ClientDashboard {
     // ─── Стани завантаження ───
     renderActivitiesLoading() {
         $('#recentActivityList').html(
-            '<tr><td colspan="4" class="text-center text-muted py-3"><i class="fas fa-spinner fa-spin mr-2"></i>Завантаження...</td></tr>'
+            '<tr><td colspan="4" class="text-center text-muted py-3"><i class="fas fa-spinner fa-spin mr-2"></i>A carregar...</td></tr>'
         );
     }
 
     renderMaintenanceLoading() {
         $('#maintenanceSchedule').html(
-            '<div class="text-center text-muted py-3"><i class="fas fa-spinner fa-spin mr-2"></i>Завантаження...</div>'
+            '<div class="text-center text-muted py-3"><i class="fas fa-spinner fa-spin mr-2"></i>A carregar...</div>'
         );
     }
 
@@ -106,11 +106,11 @@ class ClientDashboard {
 
         recent.forEach(req => {
             const statusMap = {
-                open:        { cls: 'bg-primary',   text: 'Відкрита' },
-                in_progress: { cls: 'bg-info',      text: 'В роботі' },
-                assigned:    { cls: 'bg-warning',   text: 'Призначена' },
-                completed:   { cls: 'bg-success',   text: 'Завершена' },
-                cancelled:   { cls: 'bg-danger',    text: 'Скасована' }
+                open:        { cls: 'bg-primary',   text: 'Aberta' },
+                in_progress: { cls: 'bg-info',      text: 'Em progresso' },
+                assigned:    { cls: 'bg-warning',   text: 'Atribuída' },
+                completed:   { cls: 'bg-success',   text: 'Concluída' },
+                cancelled:   { cls: 'bg-danger',    text: 'Cancelada' }
             };
             const s = statusMap[req.status] || { cls: 'bg-secondary', text: req.status || '—' };
             const dt = new Date(req.updatedAt || req.createdAt);
@@ -120,7 +120,7 @@ class ClientDashboard {
 
             container.append(`
                 <tr>
-                    <td>${req.title || 'Заявка на обслуговування'}<br><small class="text-muted">${liftAddr}</small></td>
+                    <td>${req.title || 'Pedido на обслуговування'}<br><small class="text-muted">${liftAddr}</small></td>
                     <td><span class="badge ${s.cls}">${s.text}</span></td>
                     <td>${timeStr}<br><small>${dateStr}</small></td>
                     <td>
@@ -180,12 +180,12 @@ class ClientDashboard {
                 priorityLabel = `<span class="badge badge-danger ml-1">Прострочено (${Math.abs(daysLeft)} дн.)</span>`;
             } else if (daysLeft <= 30) {
                 priority = 'urgent';
-                priorityLabel = `<span class="badge badge-danger ml-1">Через ${daysLeft} дн.</span>`;
+                priorityLabel = `<span class="badge badge-danger ml-1">Junез ${daysLeft} дн.</span>`;
             } else if (daysLeft <= 60) {
                 priority = 'soon';
-                priorityLabel = `<span class="badge badge-warning ml-1">Через ${daysLeft} дн.</span>`;
+                priorityLabel = `<span class="badge badge-warning ml-1">Junез ${daysLeft} дн.</span>`;
             } else {
-                priorityLabel = `<span class="badge badge-success ml-1">Через ${daysLeft} дн.</span>`;
+                priorityLabel = `<span class="badge badge-success ml-1">Junез ${daysLeft} дн.</span>`;
             }
 
             const addr = lift.address ? `${lift.address.street || ''}, ${lift.address.city || ''}`.trim().replace(/^,|,$/, '').trim() : (lift.municipalNumber || '—');
@@ -210,7 +210,7 @@ class ClientDashboard {
         });
     }
 
-    // ─── Сповіщення — з реального API ───
+    // ─── Notificações — з реального API ───
     renderNotifications(notifications) {
         const container = $('#notificationsList');
         container.empty();
@@ -219,7 +219,7 @@ class ClientDashboard {
         $('#alertsCount').text(unread);
 
         if (!notifications || notifications.length === 0) {
-            container.html('<div class="text-center text-muted py-3">Немає сповіщень</div>');
+            container.html('<div class="text-center text-muted py-3">Sem notificações</div>');
             return;
         }
 
@@ -229,7 +229,7 @@ class ClientDashboard {
             container.append(`
                 <div class="alert ${alertClass} alert-dismissible">
                     <button type="button" class="close" data-dismiss="alert">×</button>
-                    <h5>${n.title || 'Сповіщення'}</h5>
+                    <h5>${n.title || 'Notificações'}</h5>
                     <p>${n.message || ''}</p>
                     ${dt ? `<small class="text-muted">${dt}</small>` : ''}
                 </div>
@@ -255,7 +255,7 @@ class ClientDashboard {
         this.liftsChart = new Chart(ctx, {
             type: 'doughnut',
             data: {
-                labels: ['Працюють', 'Обслуговування', 'Ремонт', 'Не працюють'],
+                labels: ['Працюють', 'Manutenção', 'Reparação', 'Не працюють'],
                 datasets: [{
                     data: [operational, maintenance, repair, outOfService],
                     backgroundColor: [
@@ -283,7 +283,7 @@ class ClientDashboard {
         });
     }
 
-    // Оновити діаграму з реальними даними (викликається після API)
+    // Atualizar діаграму з реальними даними (викликається після API)
     updateChart(lifts) {
         const existingChart = Chart.getChart('liftsChart');
         if (existingChart) existingChart.destroy();
@@ -304,17 +304,17 @@ class ClientDashboard {
         $(document).on('click', '#markAllRead', () => {
             $('#notificationsList .alert').alert('close');
             $('#alertsCount').text('0');
-            this.showNotification('Всі сповіщення позначено як прочитані', 'success');
+            this.showNotification('Todos сповіщення позначено як прочитані', 'success');
         });
     }
 
     refreshActivities() {
-        this.showNotification('Оновлення...', 'info');
+        this.showNotification('Atualização...', 'info');
         // Реальне оновлення через initializeClientDashboard у dashboard.html
     }
 
     markAsRead(notificationId) {
-        this.showNotification('Сповіщення позначено як прочитане', 'success');
+        this.showNotification('Notificações позначено як прочитане', 'success');
     }
 
     showNotification(message, type = 'info') {

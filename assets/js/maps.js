@@ -6,7 +6,7 @@ $(document).ready(function() {
             const lifts = JSON.parse(localStorage.getItem('lifts')) || [];
             return lifts.filter(lift => lift.lat && lift.lng); // Тільки ліфти з координатами
         } catch (error) {
-            console.error('Помилка завантаження ліфтів:', error);
+            console.error('Erro завантаження ліфтів:', error);
             return [];
         }
     }
@@ -25,10 +25,10 @@ $(document).ready(function() {
     // Функція для отримання мітки статусу
     function getStatusLabel(status) {
         const labels = {
-            'active': 'Активний',
-            'maintenance': 'Обслуговування',
-            'inactive': 'Неактивний',
-            'operational': 'Працює'
+            'active': 'Ativo',
+            'maintenance': 'Manutenção',
+            'inactive': 'Inativo',
+            'operational': 'Em funcionamento'
         };
         return labels[status] || status;
     }
@@ -52,7 +52,7 @@ $(document).ready(function() {
         $('#routeToLift').empty();
         $('#routeToLift').append('<option value="">Оберіть ліфт...</option>');
 
-        // Завантаження та відображення ліфтів
+        // A carregar та відображення ліфтів
         const lifts = loadLiftsFromStorage();
 
         if (lifts.length === 0) {
@@ -67,11 +67,11 @@ $(document).ready(function() {
                     <div class="lift-popup">
                         <h6><i class="fas fa-elevator"></i> ${lift.model}</h6>
                         <p><strong>ID:</strong> ${lift.id}</p>
-                        <p><strong>Адреса:</strong> ${lift.location || lift.address || 'Невідомо'}</p>
-                        <p><strong>Статус:</strong> <span style="color: ${statusColor}">${getStatusLabel(lift.status)}</span></p>
-                        <p><strong>Клієнт:</strong> ${lift.clientName || 'Невідомий'}</p>
-                        <p><strong>Останнє ТО:</strong> ${lift.lastMaintenance ? new Date(lift.lastMaintenance).toLocaleDateString('uk-UA') : 'Невідомо'}</p>
-                        <button class="btn btn-primary btn-sm" onclick="window.open('lifts.html', '_blank')">Переглянути</button>
+                        <p><strong>Endereço:</strong> ${lift.location || lift.address || 'Desconhecido'}</p>
+                        <p><strong>Estado:</strong> <span style="color: ${statusColor}">${getStatusLabel(lift.status)}</span></p>
+                        <p><strong>Cliente:</strong> ${lift.clientName || 'Desconhecido'}</p>
+                        <p><strong>Última manutenção:</strong> ${lift.lastMaintenance ? new Date(lift.lastMaintenance).toLocaleDateString('uk-UA') : 'Desconhecido'}</p>
+                        <button class="btn btn-primary btn-sm" onclick="window.open('lifts.html', '_blank')">Ver</button>
                     </div>
                 `, {
                     maxWidth: 300
@@ -102,7 +102,7 @@ $(document).ready(function() {
     $('#btnRefreshMap').click(function() {
         const btn = $(this);
         const originalHtml = btn.html();
-        btn.html('<i class="fas fa-spinner fa-spin"></i> Оновлення...').prop('disabled', true);
+        btn.html('<i class="fas fa-spinner fa-spin"></i> Atualização...').prop('disabled', true);
 
         setTimeout(() => {
             updateMapMarkers();
@@ -131,7 +131,7 @@ $(document).ready(function() {
         // Показати індикатор завантаження
         const btn = $(this);
         const originalText = btn.html();
-        btn.html('<i class="fas fa-spinner fa-spin"></i> Пошук...').prop('disabled', true);
+        btn.html('<i class="fas fa-spinner fa-spin"></i> Pesquisa...').prop('disabled', true);
 
         $.get('https://nominatim.openstreetmap.org/search', {
             q: address,
@@ -150,7 +150,7 @@ $(document).ready(function() {
                 alert('Адресу не знайдено!');
             }
         }).fail(function() {
-            alert('Помилка пошуку адреси. Перевірте інтернет-з\'єднання.');
+            alert('Erro пошуку адреси. Перевірте інтернет-з\'єднання.');
         }).always(function() {
             btn.html(originalText).prop('disabled', false);
         });
@@ -167,7 +167,7 @@ $(document).ready(function() {
         if (routeLayer) map.removeLayer(routeLayer);
 
         if (!navigator.geolocation) {
-            alert('Геолокація не підтримується вашим браузером');
+            alert('Geolocalização não suportada pelo seu browser');
             return;
         }
 
@@ -189,14 +189,14 @@ $(document).ready(function() {
 
             // Додавання маркерів початку та кінця
             L.marker(start).addTo(map).bindPopup('Ваше місцезнаходження').openPopup();
-            L.marker(end).addTo(map).bindPopup('Ліфт').openPopup();
+            L.marker(end).addTo(map).bindPopup('Elevador').openPopup();
 
             // Підгонка карти до маршруту
             map.fitBounds([start, end], { padding: [20, 20] });
 
             btn.html(originalText).prop('disabled', false);
         }, function(error) {
-            console.error('Помилка геолокації:', error);
+            console.error('Erro геолокації:', error);
             let errorMessage = 'Не вдалося отримати ваше місцезнаходження';
             switch(error.code) {
                 case error.PERMISSION_DENIED:
@@ -223,7 +223,7 @@ $(document).ready(function() {
         updateMapMarkers();
     };
 
-    // Оновлення карти при фокусі на вікні (якщо користувач повернувся з іншої сторінки)
+    // Atualização карти при фокусі на вікні (якщо користувач повернувся з іншої сторінки)
     $(window).focus(function() {
         updateMapMarkers();
         updateLastUpdateTime();
@@ -238,7 +238,7 @@ $(document).ready(function() {
         }
     });
 
-    // Періодичне оновлення карти (кожні 30 секунд)
+    // Períodoичне оновлення карти (кожні 30 секунд)
     setInterval(function() {
         const lifts = loadLiftsFromStorage();
         const currentMarkersCount = markers.length;

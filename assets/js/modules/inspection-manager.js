@@ -44,31 +44,31 @@ class InspectionManager {
                 this.inspections = requests.map(req => ({
                     id: req._id || req.id,
                     type: req.type || 'inspection',
-                    title: req.description || req.title || 'Інспекція',
+                    title: req.description || req.title || 'Inspeção',
                     liftId: req.lift?._id || req.lift?.id,
-                    lift: `${req.lift?.model || 'Ліфт'} - ${req.lift?.location || 'Адреса'}`,
+                    lift: `${req.lift?.model || 'Elevador'} - ${req.lift?.location || 'Endereço'}`,
                     priority: req.priority || 'medium',
                     status: req.status || 'planned',
                     scheduledDate: req.scheduledDate || req.createdAt,
                     completedDate: req.completedAt,
-                    technician: req.assignedTo?.firstName ? `${req.assignedTo.firstName} ${req.assignedTo.lastName}` : 'Не призначено',
+                    technician: req.assignedTo?.firstName ? `${req.assignedTo.firstName} ${req.assignedTo.lastName}` : 'Não atribuído',
                     notes: req.notes || req.description || '',
                     progress: req.progress || 0
                 }));
                 
-                console.log('✅ Інспекції завантажені з API:', this.inspections.length);
+                console.log('✅ Inspeções завантажені з API:', this.inspections.length);
                 localStorage.setItem('inspections', JSON.stringify(this.inspections));
             } else {
                 console.warn('⚠️ API /api/requests returned non-OK status:', response.status);
                 throw new Error(`API status: ${response.status}`);
             }
         } catch (error) {
-            console.error('❌ Помилка завантаження інспекцій з API:', error);
+            console.error('❌ Erro завантаження інспекцій з API:', error);
             // Fallback: спроба завантажити з localStorage
             this.inspections = JSON.parse(localStorage.getItem('inspections')) || [];
             
             if (this.inspections.length === 0) {
-                console.warn('⚠️ Використовуються демо-дані (API недоступне)');
+                console.warn('⚠️ Використовуються демо-дані (API indisponível)');
                 this.inspections = this.createSampleInspections();
                 localStorage.setItem('inspections', JSON.stringify(this.inspections));
             }
@@ -94,12 +94,12 @@ class InspectionManager {
                 score: 95,
                 technician: 'Іван Петренко',
                 checklist: [
-                    { item: 'Перевірка гальмівної системи', status: 'completed', result: 'passed', notes: 'Гальма в нормі' },
-                    { item: 'Перевірка датчиків безпеки', status: 'completed', result: 'passed', notes: 'Всі датчики працюють' },
+                    { item: 'Перевірка гальмівної системи', status: 'completed', result: 'passed', notes: 'Travões в нормі' },
+                    { item: 'Перевірка датчиків безпеки', status: 'completed', result: 'passed', notes: 'Todos датчики працюють' },
                     { item: 'Перевірка освітлення', status: 'completed', result: 'passed', notes: 'Освітлення в робочому стані' }
                 ],
                 photos: ['safety1.jpg', 'safety2.jpg'],
-                notes: 'Ліфт у відмінному технічному стані. Всі системи безпеки працюють належним чином.'
+                notes: 'Elevador у відмінному технічному стані. Todos системи безпеки працюють належним чином.'
             },
             {
                 id: 'INS-2024-002',
@@ -139,7 +139,7 @@ class InspectionManager {
                 status: 'overdue',
                 scheduledDate: '2024-01-10T11:00:00',
                 technician: 'Іван Петренко',
-                notes: 'Клієнт скаржиться на шум під час роботи ліфта'
+                notes: 'Cliente скаржиться на шум під час роботи ліфта'
             }
         ];
     }
@@ -160,7 +160,7 @@ class InspectionManager {
             this.applyFilters();
         });
 
-        // Пошук
+        // Pesquisa
         $('#searchInput').on('input', (e) => {
             this.searchInspections(e.target.value);
         });
@@ -169,21 +169,21 @@ class InspectionManager {
     applyFilters() {
         let filteredInspections = [...this.inspections];
 
-        // Фільтрація за статусом
+        // Filtroація за статусом
         if (this.filters.status !== 'all') {
             filteredInspections = filteredInspections.filter(inspection => 
                 inspection.status === this.filters.status
             );
         }
 
-        // Фільтрація за типом
+        // Filtroація за типом
         if (this.filters.type !== 'all') {
             filteredInspections = filteredInspections.filter(inspection => 
                 inspection.type === this.filters.type
             );
         }
 
-        // Фільтрація за пріоритетом
+        // Filtroація за пріоритетом
         if (this.filters.priority !== 'all') {
             filteredInspections = filteredInspections.filter(inspection => 
                 inspection.priority === this.filters.priority
@@ -270,7 +270,7 @@ class InspectionManager {
                         <button class="btn btn-sm btn-info btn-icon" onclick="inspectionManager.viewInspection('${inspection.id}')" title="Перегляд">
                             <i class="fas fa-eye"></i>
                         </button>
-                        <button class="btn btn-sm btn-secondary btn-icon" onclick="inspectionManager.downloadReport('${inspection.id}')" title="Звіт">
+                        <button class="btn btn-sm btn-secondary btn-icon" onclick="inspectionManager.downloadReport('${inspection.id}')" title="Relatório">
                             <i class="fas fa-download"></i>
                         </button>
                         ${inspection.status === 'in-progress' ? 
@@ -291,9 +291,9 @@ class InspectionManager {
         const statuses = {
             'planned': 'Запланована',
             'in-progress': 'В процесі',
-            'completed': 'Завершена',
+            'completed': 'Concluída',
             'overdue': 'Протермінована',
-            'cancelled': 'Скасована'
+            'cancelled': 'Cancelada'
         };
         return statuses[status] || status;
     }
@@ -302,17 +302,17 @@ class InspectionManager {
         const types = {
             'safety': 'Безпека',
             'technical': 'Технічна',
-            'periodic': 'Періодична',
+            'periodic': 'Períodoична',
             'emergency': 'Аварійна',
-            'custom': 'Інша'
+            'custom': 'Outro'
         };
         return types[type] || type;
     }
 
     getPriorityText(priority) {
         const priorities = {
-            'high': 'Високий',
-            'medium': 'Середній',
+            'high': 'Altий',
+            'medium': 'Agoедній',
             'low': 'Низький'
         };
         return priorities[priority] || priority;
@@ -324,7 +324,7 @@ class InspectionManager {
         if (inspection.result === 'passed') {
             return `<span class="text-success"><i class="fas fa-check-circle"></i> Пройдено (${inspection.score}%)</span>`;
         } else if (inspection.result === 'failed') {
-            return `<span class="text-danger"><i class="fas fa-times-circle"></i> Не пройдено</span>`;
+            return `<span class="text-danger"><i class="fas fa-times-circle"></i> Reprovado</span>`;
         } else {
             return `<span class="text-warning"><i class="fas fa-exclamation-circle"></i> Умовно пройдено</span>`;
         }
@@ -413,7 +413,7 @@ class InspectionManager {
         };
 
         if (!formData.type || !formData.liftId || !formData.scheduledDate) {
-            this.showNotification('Будь ласка, заповніть обов\'язкові поля', 'error');
+            this.showNotification('Por favor, заповніть обов\'язкові поля', 'error');
             return;
         }
 
@@ -432,18 +432,18 @@ class InspectionManager {
         $('#newInspectionModal').modal('hide');
         this.applyFilters();
         
-        this.showNotification('Інспекцію успішно створено!', 'success');
+        this.showNotification('Інспекцію com sucesso створено!', 'success');
     }
 
     generateInspectionTitle(type) {
         const titles = {
             'safety': 'Перевірка безпеки',
             'technical': 'Технічний огляд',
-            'periodic': 'Періодична перевірка',
+            'periodic': 'Períodoична перевірка',
             'emergency': 'Аварійна перевірка',
             'custom': 'Спеціальна перевірка'
         };
-        return titles[type] || 'Нова інспекція';
+        return titles[type] || 'Nova інспекція';
     }
 
     viewInspection(inspectionId) {
@@ -454,7 +454,7 @@ class InspectionManager {
         const modalContent = this.createInspectionDetails(inspection);
         $('#inspectionDetailsContent').html(modalContent);
         
-        // Оновлення видимості кнопки продовження
+        // Atualização видимості кнопки продовження
         if (inspection.status === 'in-progress') {
             $('#continueInspectionBtn').show();
         } else {
@@ -487,10 +487,10 @@ class InspectionManager {
                 <div class="row mb-4">
                     <div class="col-md-6">
                         <div class="info-item">
-                            <strong><i class="fas fa-elevator"></i> Ліфт:</strong> ${inspection.lift}
+                            <strong><i class="fas fa-elevator"></i> Elevador:</strong> ${inspection.lift}
                         </div>
                         <div class="info-item">
-                            <strong><i class="fas fa-tag"></i> Тип:</strong> ${typeText}
+                            <strong><i class="fas fa-tag"></i> Tipo:</strong> ${typeText}
                         </div>
                         <div class="info-item">
                             <strong><i class="fas fa-calendar"></i> Заплановано:</strong> ${this.formatDateTime(inspection.scheduledDate)}
@@ -498,7 +498,7 @@ class InspectionManager {
                     </div>
                     <div class="col-md-6">
                         <div class="info-item">
-                            <strong><i class="fas fa-user-cog"></i> Технік:</strong> ${inspection.technician || 'Не призначено'}
+                            <strong><i class="fas fa-user-cog"></i> Técnico:</strong> ${inspection.technician || 'Não atribuído'}
                         </div>
                         ${inspection.completedDate ? `
                             <div class="info-item">
@@ -507,7 +507,7 @@ class InspectionManager {
                         ` : ''}
                         ${inspection.duration ? `
                             <div class="info-item">
-                                <strong><i class="fas fa-clock"></i> Тривалість:</strong> ${inspection.duration} хв
+                                <strong><i class="fas fa-clock"></i> Duração:</strong> ${inspection.duration} хв
                             </div>
                         ` : ''}
                     </div>
@@ -516,7 +516,7 @@ class InspectionManager {
                 ${inspection.description ? `
                     <div class="card mb-4">
                         <div class="card-header">
-                            <h5 class="card-title"><i class="fas fa-align-left"></i> Опис інспекції</h5>
+                            <h5 class="card-title"><i class="fas fa-align-left"></i> Descrição інспекції</h5>
                         </div>
                         <div class="card-body">
                             <p class="card-text">${inspection.description}</p>
@@ -541,7 +541,7 @@ class InspectionManager {
                                         <div class="d-flex justify-content-between align-items-center">
                                             <span>${item.item}</span>
                                             <span class="badge ${item.status === 'completed' ? (item.result === 'passed' ? 'badge-success' : 'badge-danger') : 'badge-secondary'}">
-                                                ${item.status === 'completed' ? (item.result === 'passed' ? 'Пройдено' : 'Не пройдено') : 'В очікуванні'}
+                                                ${item.status === 'completed' ? (item.result === 'passed' ? 'Пройдено' : 'Reprovado') : 'В очікуванні'}
                                             </span>
                                         </div>
                                         ${item.notes ? `<p class="mb-0 mt-2"><small>${item.notes}</small></p>` : ''}
@@ -555,7 +555,7 @@ class InspectionManager {
                 ${inspection.photos && inspection.photos.length > 0 ? `
                     <div class="card mb-4">
                         <div class="card-header">
-                            <h5 class="card-title"><i class="fas fa-images"></i> Фотографії</h5>
+                            <h5 class="card-title"><i class="fas fa-images"></i> Fotografiaграфії</h5>
                         </div>
                         <div class="card-body">
                             <div class="d-flex flex-wrap">
@@ -589,7 +589,7 @@ class InspectionManager {
                         <div class="card-body">
                             <div class="text-center">
                                 <h2 class="${inspection.result === 'passed' ? 'text-success' : 'text-danger'}">
-                                    ${inspection.result === 'passed' ? 'Пройдено' : 'Не пройдено'}
+                                    ${inspection.result === 'passed' ? 'Пройдено' : 'Reprovado'}
                                     ${inspection.score ? ` (${inspection.score}%)` : ''}
                                 </h2>
                             </div>
@@ -636,7 +636,7 @@ class InspectionManager {
             link.download = `звіт_інспекція_${inspectionId}.pdf`;
             link.click();
             
-            this.showNotification('Звіт успішно завантажено', 'success');
+            this.showNotification('Relatório com sucesso завантажено', 'success');
         }, 1500);
     }
 
@@ -646,19 +646,19 @@ class InspectionManager {
             ЗВІТ ПРО ІНСПЕКЦІЮ #${inspection.id}
             ===================================
             
-            Назва: ${inspection.title}
-            Тип: ${this.getTypeText(inspection.type)}
-            Ліфт: ${inspection.lift}
-            Статус: ${this.getStatusText(inspection.status)}
-            Пріоритет: ${this.getPriorityText(inspection.priority)}
+            Nome: ${inspection.title}
+            Tipo: ${this.getTypeText(inspection.type)}
+            Elevador: ${inspection.lift}
+            Estado: ${this.getStatusText(inspection.status)}
+            Prioridade: ${this.getPriorityText(inspection.priority)}
             
             Заплановано: ${this.formatDateTime(inspection.scheduledDate)}
             ${inspection.startedDate ? `Розпочато: ${this.formatDateTime(inspection.startedDate)}` : ''}
             ${inspection.completedDate ? `Завершено: ${this.formatDateTime(inspection.completedDate)}` : ''}
             
-            ${inspection.description ? `Опис: ${inspection.description}` : ''}
+            ${inspection.description ? `Descrição: ${inspection.description}` : ''}
             
-            ${inspection.result ? `Результат: ${inspection.result === 'passed' ? 'Пройдено' : 'Не пройдено'}${inspection.score ? ` (${inspection.score}%)` : ''}` : ''}
+            ${inspection.result ? `Результат: ${inspection.result === 'passed' ? 'Пройдено' : 'Reprovado'}${inspection.score ? ` (${inspection.score}%)` : ''}` : ''}
             
             ===================================
             Згенеровано: ${new Date().toLocaleString('uk-UA')}
@@ -666,17 +666,17 @@ class InspectionManager {
     }
 
     loadSafetyChecklist() {
-        this.showNotification('Завантаження чек-листу безпеки...', 'info');
+        this.showNotification('A carregar чек-листу безпеки...', 'info');
         // Тут буде реальна логіка завантаження
     }
 
     loadTechnicalChecklist() {
-        this.showNotification('Завантаження технічного чек-листу...', 'info');
+        this.showNotification('A carregar технічного чек-листу...', 'info');
         // Тут буде реальна логіка завантаження
     }
 
     loadAnnualChecklist() {
-        this.showNotification('Завантаження щорічного чек-листу...', 'info');
+        this.showNotification('A carregar щорічного чек-листу...', 'info');
         // Тут буде реальна логіка завантаження
     }
 
@@ -696,7 +696,7 @@ class InspectionManager {
     }
 
     convertToCSV(inspections) {
-        const headers = ['ID', 'Тип', 'Ліфт', 'Статус', 'Пріоритет', 'Заплановано', 'Технік', 'Результат'];
+        const headers = ['ID', 'Tipo', 'Elevador', 'Estado', 'Prioridade', 'Заплановано', 'Técnico', 'Результат'];
         const rows = inspections.map(inspection => [
             inspection.id,
             this.getTypeText(inspection.type),
@@ -704,7 +704,7 @@ class InspectionManager {
             this.getStatusText(inspection.status),
             this.getPriorityText(inspection.priority),
             this.formatDate(inspection.scheduledDate),
-            inspection.technician || 'Не призначено',
+            inspection.technician || 'Não atribuído',
             inspection.result || '-'
         ]);
         
@@ -720,7 +720,7 @@ class InspectionManager {
         link.download = filename;
         link.click();
         
-        this.showNotification('Експорт успішно завершено', 'success');
+        this.showNotification('Exportar com sucesso concluída', 'success');
     }
 
     printInspections() {

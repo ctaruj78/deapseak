@@ -6,7 +6,7 @@ class RequestTracking {
     this.container = null;
     this.progress = [
       { step: 'Створено', done: true },
-      { step: 'В роботі', done: false },
+      { step: 'Em progresso', done: false },
       { step: 'Завершено', done: false }
     ];
     this.photosBefore = [];
@@ -25,12 +25,12 @@ class RequestTracking {
         </ul>
       </div>
       <div class="mb-3">
-        <strong>Фото до ремонту:</strong>
+        <strong>Fotografia до ремонту:</strong>
         <div id="photosBefore" class="d-flex flex-wrap gap-2">${this.photosBefore.map(url => `<img src="${url}" width="80" class="mr-2 mb-2" alt="До ремонту">`).join('')}</div>
         <input type="file" id="uploadBefore" multiple accept="image/*" class="form-control-file mb-2">
       </div>
       <div class="mb-3">
-        <strong>Фото після ремонту:</strong>
+        <strong>Fotografia після ремонту:</strong>
         <div id="photosAfter" class="d-flex flex-wrap gap-2">${this.photosAfter.map(url => `<img src="${url}" width="80" class="mr-2 mb-2" alt="Після ремонту">`).join('')}</div>
         <input type="file" id="uploadAfter" multiple accept="image/*" class="form-control-file mb-2">
       </div>

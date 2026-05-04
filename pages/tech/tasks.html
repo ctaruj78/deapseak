@@ -889,7 +889,7 @@
                     
                     if (!response || !response.ok) {
                         const error = await response.json();
-                        throw new Error(error.message || 'Erro поchatку trabalhos');
+                        throw new Error(error.message || 'Erro ao iniciar trabalho');
                     }
                     
                     alert('Tarefas iniciadas!');
@@ -897,7 +897,7 @@
                     await this.loadTasks();
                     
                 } catch (error) {
-                    console.error('Erro поchatку trabalhos:', error);
+                    console.error('Erro ao iniciar trabalho:', error);
                     alert('Não foi possível iniciar o trabalho: ' + error.message);
                 }
             }
@@ -905,14 +905,14 @@
             // Concluir tarefas
             async completeTask(requestId) {
                 // Pedidoуexisteмо descrição concluídoї trabalhos
-                const workDescription = prompt('Опишіть виконану роботу:', 'Trabalho concluído згідно desde regulamentoом. Todas неcorretamenteсті усунуто.');
+                const workDescription = prompt('Descreva o trabalho realizado:', 'Trabalho concluído de acordo com os regulamentos. Todas as irregularidades foram corrigidas.');
                 
                 if (!workDescription || workDescription.trim() === '') {
                     alert('Descrição do trabalho concluído é obrigatório para concluir tarefas');
                     return;
                 }
                 
-                if (!confirm('Tem a certeza que quer concluir це tarefas?')) {
+                if (!confirm('Tem a certeza que quer concluir estas tarefas?')) {
                     return;
                 }
                 

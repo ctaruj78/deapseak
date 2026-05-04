@@ -838,7 +838,7 @@
                         $('#btn-export-pdf, #btn-export-excel').prop('disabled', false).data('report-id', data.id);
                     },
                     error: function(xhr) {
-                        const msg = xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : 'Erro генерації relatório';
+                        const msg = xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : 'Erro na geração do relatório';
                         alert(msg);
                     },
                     complete: function() {

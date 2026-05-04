@@ -13,7 +13,7 @@ class MapManager {
 
     async init() {
         try {
-            // Завантаження Leaflet CSS та JS
+            // A carregar Leaflet CSS та JS
             await this.loadLeaflet();
 
             // Ініціалізація карти
@@ -27,13 +27,13 @@ class MapManager {
 
     async loadLeaflet() {
         if (typeof L === 'undefined') {
-            // Завантаження CSS
+            // A carregar CSS
             const cssLink = document.createElement('link');
             cssLink.rel = 'stylesheet';
             cssLink.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
             document.head.appendChild(cssLink);
 
-            // Завантаження JS
+            // A carregar JS
             await this.loadScript('https://unpkg.com/leaflet@1.9.4/dist/leaflet.js');
         }
     }
@@ -106,10 +106,10 @@ class MapManager {
                     const popupContent = `
                         <div class="lift-popup">
                             <h6>${lift.name}</h6>
-                            <p><strong>Адреса:</strong> ${lift.location.address || 'Невідомо'}</p>
-                            <p><strong>Статус:</strong> <span style="color: ${statusColor}">${lift.status}</span></p>
-                            <p><strong>Останнє обслуговування:</strong> ${lift.lastMaintenance || 'Невідомо'}</p>
-                            <button class="btn btn-primary btn-sm" onclick="viewLiftDetails(${lift.id})">Переглянути</button>
+                            <p><strong>Endereço:</strong> ${lift.location.address || 'Desconhecido'}</p>
+                            <p><strong>Estado:</strong> <span style="color: ${statusColor}">${lift.status}</span></p>
+                            <p><strong>Останнє обслуговування:</strong> ${lift.lastMaintenance || 'Desconhecido'}</p>
+                            <button class="btn btn-primary btn-sm" onclick="viewLiftDetails(${lift.id})">Ver</button>
                         </div>
                     `;
 
@@ -173,7 +173,7 @@ class MapManager {
             },
             (error) => {
                 console.error('Geolocation error:', error);
-                NotificationManager.error('Помилка геолокації', 'Не вдалося визначити ваше місцезнаходження');
+                NotificationManager.error('Erro геолокації', 'Не вдалося визначити ваше місцезнаходження');
             }
         );
     }
@@ -241,7 +241,7 @@ if (typeof window !== 'undefined') {
     window.MapManager = MapManager;
 }
 
-// Експорт для Node.js
+// Exportar для Node.js
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = MapManager;
 }

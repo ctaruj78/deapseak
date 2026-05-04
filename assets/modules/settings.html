@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Налаштування системи</title>
+    <title>Definições do sistema</title>
     <link rel="stylesheet" href="../plugins/adminlte/css/adminlte.min.css">
     <link rel="stylesheet" href="../plugins/fontawesome-free/css/all.min.css">
     <link rel="stylesheet" href="../plugins/bootstrap-switch/css/bootstrap3/bootstrap-switch.min.css">
@@ -15,12 +15,12 @@
         <div class="container-fluid">
             <div class="row mb-2">
                 <div class="col-sm-6">
-                    <h1 class="m-0">Налаштування системи</h1>
+                    <h1 class="m-0">Definições do sistema</h1>
                 </div>
                 <div class="col-sm-6">
                     <ol class="breadcrumb float-sm-right">
-                        <li class="breadcrumb-item"><a href="#" onclick="window.crmSystem.loadDashboard()">Головна</a></li>
-                        <li class="breadcrumb-item active">Налаштування</li>
+                        <li class="breadcrumb-item"><a href="#" onclick="window.crmSystem.loadDashboard()">Início</a></li>
+                        <li class="breadcrumb-item active">Definições</li>
                     </ol>
                 </div>
             </div>
@@ -35,43 +35,35 @@
                 <div class="col-md-6">
                     <div class="card card-primary">
                         <div class="card-header">
-                            <h3 class="card-title">Загальні налаштування</h3>
+                            <h3 class="card-title">Definições gerais</h3>
                         </div>
                         <form>
                             <div class="card-body">
                                 <div class="form-group">
-                                    <label for="companyName">Назва компанії</label>
-                                    <input type="text" class="form-control" id="companyName" value="ЛіфтСервіс Україна">
+                                    <label for="companyName">Nome da empresa</label>
+                                    <input type="text" class="form-control" id="companyName" value="FestLift">
                                 </div>
                                 <div class="form-group">
-                                    <label for="companyEmail">Email компанії</label>
-                                    <input type="email" class="form-control" id="companyEmail" value="info@liftservice.ua">
+                                    <label for="companyEmail">Email da empresa</label>
+                                    <input type="email" class="form-control" id="companyEmail" value="info@festlift.pt">
                                 </div>
                                 <div class="form-group">
-                                    <label for="companyPhone">Телефон</label>
-                                    <input type="tel" class="form-control" id="companyPhone" value="+38 (044) 123-45-67">
+                                    <label for="companyPhone">Telefone</label>
+                                    <input type="tel" class="form-control" id="companyPhone" value="+351 210 000 000">
                                 </div>
                                 <div class="form-group">
-                                    <label for="timezone">Часовий пояс</label>
+                                    <label for="timezone">Fuso horário</label>
                                     <select class="form-control" id="timezone">
-                                        <option selected>Europe/Kiev (UTC+2)</option>
+                                        <option selected>Europe/Lisbon (UTC+1/+2)</option>
                                         <option>Europe/London (UTC+0)</option>
                                         <option>Europe/Berlin (UTC+1)</option>
                                         <option>America/New_York (UTC-5)</option>
                                     </select>
                                 </div>
-                                <div class="form-group">
-                                    <label for="language">Мова системи</label>
-                                    <select class="form-control" id="language">
-                                        <option selected>Українська</option>
-                                        <option>English</option>
-                                        <option>Русский</option>
-                                    </select>
-                                </div>
                             </div>
                             <div class="card-footer">
-                                <button type="button" class="btn btn-primary" onclick="saveGeneralSettings()">Зберегти</button>
-                                <button type="button" class="btn btn-default float-right" onclick="resetGeneralSettings()">Скинути</button>
+                                <button type="button" class="btn btn-primary" onclick="saveGeneralSettings()">Guardar</button>
+                                <button type="button" class="btn btn-default float-right" onclick="resetGeneralSettings()">Repor</button>
                             </div>
                         </form>
                     </div>
@@ -81,54 +73,54 @@
                 <div class="col-md-6">
                     <div class="card card-info">
                         <div class="card-header">
-                            <h3 class="card-title">Функції системи</h3>
+                            <h3 class="card-title">Funcionalidades do sistema</h3>
                         </div>
                         <div class="card-body">
                             <div class="form-group">
-                                <label>QR-коди</label>
+                                <label>Códigos QR</label>
                                 <div class="custom-control custom-switch">
                                     <input type="checkbox" class="custom-control-input" id="enableQR" checked>
-                                    <label class="custom-control-label" for="enableQR">Увімкнути QR-коди</label>
+                                    <label class="custom-control-label" for="enableQR">Ativar Códigos QR</label>
                                 </div>
                             </div>
                             <div class="form-group">
-                                <label>Мобільний додаток</label>
+                                <label>Aplicação móvel</label>
                                 <div class="custom-control custom-switch">
                                     <input type="checkbox" class="custom-control-input" id="enableMobile" checked>
-                                    <label class="custom-control-label" for="enableMobile">Мобільний доступ</label>
+                                    <label class="custom-control-label" for="enableMobile">Acesso móvel</label>
                                 </div>
                             </div>
                             <div class="form-group">
-                                <label>Сповіщення</label>
+                                <label>Notificações</label>
                                 <div class="custom-control custom-switch">
                                     <input type="checkbox" class="custom-control-input" id="enableNotifications" checked>
-                                    <label class="custom-control-label" for="enableNotifications">Email сповіщення</label>
+                                    <label class="custom-control-label" for="enableNotifications">Notificações por email</label>
                                 </div>
                             </div>
                             <div class="form-group">
-                                <label>SMS сповіщення</label>
+                                <label>Notificações por SMS</label>
                                 <div class="custom-control custom-switch">
                                     <input type="checkbox" class="custom-control-input" id="enableSMS">
-                                    <label class="custom-control-label" for="enableSMS">SMS повідомлення</label>
+                                    <label class="custom-control-label" for="enableSMS">Mensagens SMS</label>
                                 </div>
                             </div>
                             <div class="form-group">
-                                <label>Аналітика</label>
+                                <label>Análise</label>
                                 <div class="custom-control custom-switch">
                                     <input type="checkbox" class="custom-control-input" id="enableAnalytics" checked>
-                                    <label class="custom-control-label" for="enableAnalytics">Збір статистики</label>
+                                    <label class="custom-control-label" for="enableAnalytics">Recolha de estatísticas</label>
                                 </div>
                             </div>
                             <div class="form-group">
-                                <label>API доступ</label>
+                                <label>Acesso API</label>
                                 <div class="custom-control custom-switch">
                                     <input type="checkbox" class="custom-control-input" id="enableAPI">
-                                    <label class="custom-control-label" for="enableAPI">Зовнішній API</label>
+                                    <label class="custom-control-label" for="enableAPI">API externo</label>
                                 </div>
                             </div>
                         </div>
                         <div class="card-footer">
-                            <button type="button" class="btn btn-info" onclick="saveFeatureSettings()">Зберегти налаштування</button>
+                            <button type="button" class="btn btn-info" onclick="saveFeatureSettings()">Guardar definições</button>
                         </div>
                     </div>
                 </div>
@@ -139,39 +131,39 @@
                 <div class="col-md-6">
                     <div class="card card-warning">
                         <div class="card-header">
-                            <h3 class="card-title">База даних</h3>
+                            <h3 class="card-title">Base de dados</h3>
                         </div>
                         <div class="card-body">
                             <div class="info-box">
                                 <span class="info-box-icon bg-warning"><i class="fas fa-database"></i></span>
                                 <div class="info-box-content">
-                                    <span class="info-box-text">Розмір БД</span>
+                                    <span class="info-box-text">Tamanho da BD</span>
                                     <span class="info-box-number">245.6 MB</span>
                                 </div>
                             </div>
                             <div class="info-box">
                                 <span class="info-box-icon bg-info"><i class="fas fa-table"></i></span>
                                 <div class="info-box-content">
-                                    <span class="info-box-text">Таблиць</span>
+                                    <span class="info-box-text">Coleções</span>
                                     <span class="info-box-number">18</span>
                                 </div>
                             </div>
                             <div class="info-box">
                                 <span class="info-box-icon bg-success"><i class="fas fa-clock"></i></span>
                                 <div class="info-box-content">
-                                    <span class="info-box-text">Останній бекап</span>
+                                    <span class="info-box-text">Última cópia de seg.</span>
                                     <span class="info-box-number" style="font-size: 14px;">21.12.2024 02:00</span>
                                 </div>
                             </div>
                             <div class="btn-group-vertical btn-block">
                                 <button class="btn btn-warning" onclick="backupDatabase()">
-                                    <i class="fas fa-download"></i> Створити бекап
+                                    <i class="fas fa-download"></i> Criar cópia de segurança
                                 </button>
                                 <button class="btn btn-info" onclick="optimizeDatabase()">
-                                    <i class="fas fa-cog"></i> Оптимізувати БД
+                                    <i class="fas fa-cog"></i> Otimizar BD
                                 </button>
                                 <button class="btn btn-secondary" onclick="viewDatabaseStats()">
-                                    <i class="fas fa-chart-line"></i> Статистика
+                                    <i class="fas fa-chart-line"></i> Estatísticas
                                 </button>
                             </div>
                         </div>
@@ -182,41 +174,41 @@
                 <div class="col-md-6">
                     <div class="card card-danger">
                         <div class="card-header">
-                            <h3 class="card-title">Безпека</h3>
+                            <h3 class="card-title">Segurança</h3>
                         </div>
                         <div class="card-body">
                             <div class="form-group">
-                                <label for="sessionTimeout">Час сесії (хвилини)</label>
+                                <label for="sessionTimeout">Tempo de sessão (minutos)</label>
                                 <input type="number" class="form-control" id="sessionTimeout" value="60">
                             </div>
                             <div class="form-group">
-                                <label for="maxLoginAttempts">Максимум спроб входу</label>
+                                <label for="maxLoginAttempts">Máximo de tentativas de início de sessão</label>
                                 <input type="number" class="form-control" id="maxLoginAttempts" value="5">
                             </div>
                             <div class="form-group">
-                                <label>Двофакторна автентифікація</label>
+                                <label>Autenticação de dois fatores</label>
                                 <div class="custom-control custom-switch">
                                     <input type="checkbox" class="custom-control-input" id="enable2FA">
-                                    <label class="custom-control-label" for="enable2FA">Увімкнути 2FA</label>
+                                    <label class="custom-control-label" for="enable2FA">Ativar 2FA</label>
                                 </div>
                             </div>
                             <div class="form-group">
-                                <label>Логування дій</label>
+                                <label>Registo de ações</label>
                                 <div class="custom-control custom-switch">
                                     <input type="checkbox" class="custom-control-input" id="enableLogging" checked>
-                                    <label class="custom-control-label" for="enableLogging">Журнал активності</label>
+                                    <label class="custom-control-label" for="enableLogging">Registo de atividade</label>
                                 </div>
                             </div>
                             <div class="form-group">
-                                <label>IP блокування</label>
+                                <label>Bloqueio de IP</label>
                                 <div class="custom-control custom-switch">
                                     <input type="checkbox" class="custom-control-input" id="enableIPBlock" checked>
-                                    <label class="custom-control-label" for="enableIPBlock">Блокувати підозрілі IP</label>
+                                    <label class="custom-control-label" for="enableIPBlock">Bloquear IPs suspeitos</label>
                                 </div>
                             </div>
                         </div>
                         <div class="card-footer">
-                            <button type="button" class="btn btn-danger" onclick="saveSecuritySettings()">Зберегти налаштування безпеки</button>
+                            <button type="button" class="btn btn-danger" onclick="saveSecuritySettings()">Guardar definições de segurança</button>
                         </div>
                     </div>
                 </div>
@@ -227,7 +219,7 @@
                 <div class="col-12">
                     <div class="card card-success">
                         <div class="card-header">
-                            <h3 class="card-title">Системна інформація</h3>
+                            <h3 class="card-title">Informação do sistema</h3>
                         </div>
                         <div class="card-body">
                             <div class="row">
@@ -235,7 +227,7 @@
                                     <div class="info-box">
                                         <span class="info-box-icon bg-success"><i class="fas fa-server"></i></span>
                                         <div class="info-box-content">
-                                            <span class="info-box-text">Версія системи</span>
+                                            <span class="info-box-text">Sessão do sistema</span>
                                             <span class="info-box-number">v2.1.4</span>
                                         </div>
                                     </div>
@@ -244,7 +236,7 @@
                                     <div class="info-box">
                                         <span class="info-box-icon bg-info"><i class="fas fa-memory"></i></span>
                                         <div class="info-box-content">
-                                            <span class="info-box-text">Використання RAM</span>
+                                            <span class="info-box-text">Utilização de RAM</span>
                                             <span class="info-box-number">68%</span>
                                         </div>
                                     </div>
@@ -253,7 +245,7 @@
                                     <div class="info-box">
                                         <span class="info-box-icon bg-warning"><i class="fas fa-hdd"></i></span>
                                         <div class="info-box-content">
-                                            <span class="info-box-text">Вільно місця</span>
+                                            <span class="info-box-text">Espaço livre</span>
                                             <span class="info-box-number">15.2 GB</span>
                                         </div>
                                     </div>
@@ -263,7 +255,7 @@
                                         <span class="info-box-icon bg-danger"><i class="fas fa-clock"></i></span>
                                         <div class="info-box-content">
                                             <span class="info-box-text">Uptime</span>
-                                            <span class="info-box-number" style="font-size: 16px;">15д 8г</span>
+                                            <span class="info-box-number" style="font-size: 16px;">15d 8h</span>
                                         </div>
                                     </div>
                                 </div>
@@ -271,16 +263,16 @@
                             <div class="row mt-3">
                                 <div class="col-12">
                                     <button class="btn btn-success mr-2" onclick="checkForUpdates()">
-                                        <i class="fas fa-sync"></i> Перевірити оновлення
+                                        <i class="fas fa-sync"></i> Verificar atualizações
                                     </button>
                                     <button class="btn btn-warning mr-2" onclick="restartSystem()">
-                                        <i class="fas fa-power-off"></i> Перезапуск системи
+                                        <i class="fas fa-power-off"></i> Reiniciar sistema
                                     </button>
                                     <button class="btn btn-info mr-2" onclick="exportSettings()">
-                                        <i class="fas fa-download"></i> Експорт налаштувань
+                                        <i class="fas fa-download"></i> Exportar definições
                                     </button>
                                     <button class="btn btn-secondary" onclick="importSettings()">
-                                        <i class="fas fa-upload"></i> Імпорт налаштувань
+                                        <i class="fas fa-upload"></i> Importar definições
                                     </button>
                                 </div>
                             </div>
@@ -294,60 +286,60 @@
 
 <script>
 function saveGeneralSettings() {
-    toastr.success('Загальні налаштування збережено');
+    toastr.success('Definições gerais guardadas');
 }
 
 function resetGeneralSettings() {
-    if(confirm('Скинути всі загальні налаштування до значень за замовчуванням?')) {
-        toastr.info('Налаштування скинуто');
+    if(confirm('Repor todas as definições gerais para os valores predefinidos?')) {
+        toastr.info('Definições repostas');
     }
 }
 
 function saveFeatureSettings() {
-    toastr.success('Налаштування функцій збережено');
+    toastr.success('Definições de funcionalidades guardadas');
 }
 
 function saveSecuritySettings() {
-    toastr.success('Налаштування безпеки збережено');
+    toastr.success('Definições de segurança guardadas');
 }
 
 function backupDatabase() {
-    toastr.info('Створення бекапу бази даних...');
+    toastr.info('A criar cópia de segurança da base de dados...');
     setTimeout(() => {
-        toastr.success('Бекап створено успішно');
+        toastr.success('Cópia de segurança criada com sucesso');
     }, 2000);
 }
 
 function optimizeDatabase() {
-    toastr.info('Оптимізація бази даних...');
+    toastr.info('A otimizar base de dados...');
     setTimeout(() => {
-        toastr.success('База даних оптимізована');
+        toastr.success('Base de dados otimizada');
     }, 3000);
 }
 
 function viewDatabaseStats() {
-    alert('Перегляд детальної статистики бази даних');
+    alert('Ver estatísticas detalhadas da base de dados');
 }
 
 function checkForUpdates() {
-    toastr.info('Перевірка оновлень...');
+    toastr.info('A verificar atualizações...');
     setTimeout(() => {
-        toastr.success('Система використовує найновішу версію');
+        toastr.success('O sistema está atualizado');
     }, 2000);
 }
 
 function restartSystem() {
-    if(confirm('Перезапустити систему? Всі користувачі будуть відключені.')) {
-        toastr.warning('Система перезапускається...');
+    if(confirm('Reiniciar o sistema? Todos os utilizadores serão desligados.')) {
+        toastr.warning('O sistema está a reiniciar...');
     }
 }
 
 function exportSettings() {
-    toastr.success('Налаштування експортовано');
+    toastr.success('Definições exportadas');
 }
 
 function importSettings() {
-    alert('Виберіть файл для імпорту налаштувань');
+    alert('Selecione um ficheiro para importar definições');
 }
 </script>
 </body>

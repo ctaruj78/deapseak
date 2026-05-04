@@ -35,7 +35,7 @@ class CalendarSystem {
             }
         });
 
-        // Фільтри
+        // Filtroи
         document.querySelectorAll('.filter-option input').forEach(input => {
             input.addEventListener('change', () => this.applyFilters());
         });
@@ -69,7 +69,7 @@ class CalendarSystem {
         container.innerHTML = '';
 
         // Дні тижня
-        const daysOfWeek = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Нд'];
+        const daysOfWeek = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
         daysOfWeek.forEach(day => {
             const header = document.createElement('div');
             header.className = 'calendar-day-header';
@@ -180,7 +180,7 @@ class CalendarSystem {
     }
 
     updateView() {
-        // Оновлення активних кнопок
+        // Atualização активних кнопок
         document.querySelectorAll('.view-btn').forEach(btn => {
             btn.classList.toggle('active', btn.dataset.view === this.view);
         });
@@ -334,8 +334,8 @@ class CalendarSystem {
     getEventTypeLabel(type) {
         const types = {
             'maintenance': 'Техобслуговування',
-            'inspection': 'Інспекція',
-            'repair': 'Ремонт',
+            'inspection': 'Inspeção',
+            'repair': 'Reparação',
             'meeting': 'Зустріч'
         };
         return types[type] || type;

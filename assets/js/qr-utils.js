@@ -33,7 +33,7 @@ const qrUtils = (function() {
             
             return await response.json();
         } catch (error) {
-            console.error('Помилка отримання QR-кодів:', error);
+            console.error('Erro отримання QR-кодів:', error);
             throw error;
         }
     }
@@ -55,7 +55,7 @@ const qrUtils = (function() {
             
             return await response.json();
         } catch (error) {
-            console.error(`Помилка отримання QR-коду з ID ${id}:`, error);
+            console.error(`Erro отримання QR-коду з ID ${id}:`, error);
             throw error;
         }
     }
@@ -78,7 +78,7 @@ const qrUtils = (function() {
             
             return await response.json();
         } catch (error) {
-            console.error('Помилка збереження QR-коду:', error);
+            console.error('Erro ao guardar QR-коду:', error);
             throw error;
         }
     }
@@ -100,7 +100,7 @@ const qrUtils = (function() {
             
             return await response.json();
         } catch (error) {
-            console.error(`Помилка видалення QR-коду з ID ${id}:`, error);
+            console.error(`Erro видалення QR-коду з ID ${id}:`, error);
             throw error;
         }
     }
@@ -123,7 +123,7 @@ const qrUtils = (function() {
             
             return await response.json();
         } catch (error) {
-            console.error('Помилка масового створення QR-кодів для ліфтів:', error);
+            console.error('Erro масового створення QR-кодів для ліфтів:', error);
             throw error;
         }
     }
@@ -131,7 +131,7 @@ const qrUtils = (function() {
     /**
      * Реєстрація сканування QR-коду
      * @param {String|Object} qrData - Дані QR-коду
-     * @param {String} scannedBy - Користувач, який відсканував QR-код
+     * @param {String} scannedBy - Utilizador, який відсканував QR-код
      * @param {Object} deviceInfo - Інформація про пристрій
      * @returns {Promise} Promise з результатом операції
      */
@@ -156,7 +156,7 @@ const qrUtils = (function() {
             
             return await response.json();
         } catch (error) {
-            console.error('Помилка сканування QR-коду:', error);
+            console.error('Erro сканування QR-коду:', error);
             throw error;
         }
     }
@@ -177,7 +177,7 @@ const qrUtils = (function() {
             
             return await response.json();
         } catch (error) {
-            console.error('Помилка отримання статистики QR-кодів:', error);
+            console.error('Erro отримання статистики QR-кодів:', error);
             throw error;
         }
     }
@@ -211,7 +211,7 @@ const qrUtils = (function() {
             
             return await response.json();
         } catch (error) {
-            console.error('Помилка отримання історії сканувань:', error);
+            console.error('Erro отримання історії сканувань:', error);
             throw error;
         }
     }
@@ -256,7 +256,7 @@ const qrUtils = (function() {
     /**
      * Сканування QR-коду з відео потоку камери
      * @param {HTMLVideoElement} videoElement - Елемент відео для сканування
-     * @param {Function} onScanSuccess - Функція, яка викликається при успішному скануванні
+     * @param {Function} onScanSuccess - Функція, яка викликається при com sucessoму скануванні
      * @param {Function} onScanError - Функція, яка викликається при помилці сканування
      * @returns {Object} Об'єкт для керування скануванням
      */
@@ -278,7 +278,7 @@ const qrUtils = (function() {
                 
                 // Запускаємо сканування
                 await scanner.start(
-                    { facingMode: "environment" }, // Налаштування для задньої камери
+                    { facingMode: "environment" }, // Definições для задньої камери
                     {
                         fps: 10,
                         qrbox: 250
@@ -290,7 +290,7 @@ const qrUtils = (function() {
                         }
                     },
                     (errorMessage) => {
-                        // Помилка сканування
+                        // Erro сканування
                         if (onScanError) {
                             onScanError(errorMessage);
                         }
@@ -312,7 +312,7 @@ const qrUtils = (function() {
                 await scanner.stop();
                 isScanning = false;
             } catch (error) {
-                console.error('Помилка зупинки сканера QR-кодів:', error);
+                console.error('Erro зупинки сканера QR-кодів:', error);
             }
         }
         

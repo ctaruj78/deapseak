@@ -25,9 +25,11 @@
             </ul>
         </nav>
         <!-- ═══════════════════════════════════════════════════════════ -->
-<!-- ЕТАЛОННИЙ SIDEBAR ДЛЯ КЛІЄНТСЬКИХ СManutençãoРІНОК -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- SIDEBAR DE REFERÊNCIA PARA PÁGINAS DO CLIENTE -->
 <!-- Versão: 2.0 Portugal (2026-01-13) -->
-<!-- ⚠️ НЕ РЕДАГУЙТЕ ОКРЕМО! Виutilizовуйте цей ficheiro як еeлон -->
+<!-- ⚠️ NÃO EDITAR INDIVIDUALMENTE! Utilize este ficheiro como referência -->
+<!-- ═══════════════════════════════════════════════════════════ -->
 <!-- ═══════════════════════════════════════════════════════════ -->
 
 <aside class="main-sidebar sidebar-dark-primary elevation-4">
@@ -60,7 +62,7 @@
                     </a>
                 </li>
                 
-                <!-- 3. AI Previsãoування -->
+                <!-- 3. Previsões AI -->
                 <li class="nav-item">
                     <a href="/pages/client/ai-predictions.html" class="nav-link" id="nav-ai-predictions">
                         <i class="nav-icon fas fa-brain"></i>
@@ -147,7 +149,7 @@
                     </a>
                 </li>
                 
-                <!-- Definições (окремо внизу) -->
+                <!-- Definições (em baixo, separado) -->
                 <li class="nav-header">DEFINIÇÕES</li>
                 
                 <!-- Saída -->
@@ -164,13 +166,13 @@
     </div>
 </aside>
 
-<!-- Скрипт para підсвічування активного itemу -->
+<!-- Script para destacar o item ativo -->
 <script>
 (function() {
-    // Визнаouти поточну a página
+    // Determinar a página atual
     const currentPage = window.location.pathname.split('/').pop().replace('.html', '');
     
-    // Мапінг de páginas на ID навігації
+    // Mapeamento de páginas para ID de navegação
     const pageMap = {
         'dashboard': 'nav-dashboard',
         'my-lifts': 'nav-my-lifts',
@@ -186,7 +188,7 @@
         'profile': 'nav-profile'
     };
     
-    // Підсвітити ativo item
+    // Destacar o item ativo
     const activeNav = pageMap[currentPage];
     if (activeNav) {
         const navLink = document.getElementById(activeNav);
@@ -195,7 +197,7 @@
         }
     }
     
-    // Descarregar ліouльники desde API
+    // Carregar contadores desde API
     loadClientCounts();
     
     function loadClientCounts() {
@@ -230,7 +232,7 @@
         })
         .catch(err => console.warn('Failed to load requests count:', err));
         
-        // Quantidade рахунків
+        // Quantidade de faturas por pagar
         fetch('/api/invoices?status=unpaid', {
             headers: { 'Authorization': `Bearer ${token}` }
         })
@@ -262,12 +264,12 @@
         .catch(err => console.warn('Failed to load notifications count:', err));
     }
     
-    // Оновлювати ліouльники кожні 30 segundos
+    // Atualizar contadores a cada 30 segundos
     setInterval(loadClientCounts, 30000);
 })();
 </script>
 
-<!-- Стилі para badge purple -->
+<!-- Estilos para badge purple -->
 <style>
 .badge-purple {
     background: linear-gradient(135deg, #6f42c1, #8e44ad);
@@ -364,9 +366,9 @@
                                         </div>
                                     </div>
                                     <div class="form-group d-flex justify-content-between align-items-center mb-0">
-                                        <label for="notifySMS" class="mb-0"><i class="fas fa-sms mr-2 text-warning"></i>SMS</label>
+                                        <label for="notifySMS" class="mb-0"><i class="fas fa-sms mr-2 text-muted"></i>SMS <small class="text-muted">(não disponível)</small></label>
                                         <div class="custom-control custom-switch">
-                                            <input type="checkbox" class="custom-control-input" id="notifySMS">
+                                            <input type="checkbox" class="custom-control-input" id="notifySMS" disabled>
                                             <label class="custom-control-label" for="notifySMS"></label>
                                         </div>
                                     </div>
@@ -453,7 +455,7 @@
         return sessionStorage.getItem('liftmanager_jwt') || localStorage.getItem('liftmanager_jwt') || localStorage.getItem('token');
     }
 
-    // ── A carregar збережених налаштувань de notificações ──────────────────────
+    // ── Carregar definições de notificações guardadas ──────────────────────
     function loadNotificationSettings() {
         const saved = JSON.parse(localStorage.getItem('client_notification_settings') || '{}');
         const defaults = {
@@ -472,7 +474,7 @@
         });
     }
 
-    // ── Deбереження налаштувань de notificações ──────────────────────────────────
+    // ── Guardar definições de notificações ────────────────────────────────────
     $('#saveNotifications').on('click', function() {
         const settings = {};
         ['notifyEmail','notifyPush','notifySMS','notifyMaintenance','notifyEmergency','notifyInvoice','notifyStatus'].forEach(k => {
@@ -526,7 +528,7 @@
         }
     });
 
-    // ── A carregar аваeра ───────────────────────────────────────────────
+    // ── Carregar avatar ──────────────────────────────────────────────────
     $('#avatarInput').on('change', async function(e) {
         const file = e.target.files[0];
         if (!file) return;
@@ -535,14 +537,14 @@
             return;
         }
 
-        // Mostrar прев'ю
+        // Mostrar pré-visualização
         const reader = new FileReader();
         reader.onload = function(ev) {
             $('#avatarPreview').attr('src', ev.target.result);
         };
         reader.readAsDataURL(file);
 
-        // Descarregar на servidor
+        // Carregar no servidor
         const formData = new FormData();
         formData.append('avatar', file);
 
@@ -559,13 +561,13 @@
                 showToast('Não foi possível carregar o avatar', 'error');
             }
         } catch {
-            // Se API неacessoне — guardar локально
+            // Se API inacessível — guardar localmente
             localStorage.setItem('client_avatar', $('#avatarPreview').attr('src'));
             showToast('Avatar guardado localmente', 'success');
         }
     });
 
-    // ── Утиліe: toast ─────────────────────────────────────────────────────
+    // ── Utilitário: toast ─────────────────────────────────────────────────
     function showToast(message, type) {
         const color = type === 'success' ? '#28a745' : '#dc3545';
         const icon  = type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle';
@@ -576,7 +578,7 @@
 
     $(document).ready(function() {
         loadNotificationSettings();
-        // Відновити збережений аваeр
+        // Restaurar avatar guardado
         const savedAvatar = localStorage.getItem('client_avatar');
         if (savedAvatar) $('#avatarPreview').attr('src', savedAvatar);
     });

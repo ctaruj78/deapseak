@@ -16,38 +16,38 @@ class ReportsSystem {
         this.loadReportTemplates();
         this.setupEventListeners();
         this.setupDefaultDates();
-        console.log('✅ Система звітів успішно ініціалізована');
+        console.log('✅ Система звітів com sucesso ініціалізована');
     }
 
     loadReportTemplates() {
         this.reportTemplates = {
             maintenance: {
-                title: 'Звіт про технічне обслуговування',
+                title: 'Relatório про технічне обслуговування',
                 description: 'Детальний звіт про роботи з технічного обслуговування ліфтів',
                 icon: 'fas fa-tools',
                 fields: ['period', 'technician', 'status', 'priority'],
-                columns: ['ID', 'Ліфт', 'Технік', 'Статус', 'Дата створення', 'Дата завершення']
+                columns: ['ID', 'Elevador', 'Técnico', 'Estado', 'Data створення', 'Data завершення']
             },
             financial: {
                 title: 'Фінансовий звіт',
                 description: 'Фінансова звітність та аналітика доходів/витрат',
                 icon: 'fas fa-money-bill-wave',
                 fields: ['period', 'client', 'serviceType', 'paymentStatus'],
-                columns: ['ID', 'Клієнт', 'Послуга', 'Сума', 'Статус оплати', 'Дата']
+                columns: ['ID', 'Cliente', 'Послуга', 'Сума', 'Estado оплати', 'Data']
             },
             performance: {
-                title: 'Звіт про продуктивність',
+                title: 'Relatório про продуктивність',
                 description: 'Аналіз продуктивності техніків та ефективності робіт',
                 icon: 'fas fa-chart-line',
                 fields: ['period', 'technician', 'metric', 'comparisonPeriod'],
-                columns: ['Технік', 'Завдань', 'Завершено', 'Середній час', 'Ефективність']
+                columns: ['Técnico', 'Завдань', 'Завершено', 'Agoедній час', 'Ефективність']
             },
             inventory: {
-                title: 'Звіт по інвентаризації',
+                title: 'Relatório по інвентаризації',
                 description: 'Залишки запчастин, матеріалів та комплектуючих',
                 icon: 'fas fa-boxes',
                 fields: ['category', 'location', 'minStock', 'status'],
-                columns: ['Категорія', 'Найменування', 'Кількість', 'Мін. запас', 'Статус']
+                columns: ['Категорія', 'Найменування', 'Кількість', 'Мін. запас', 'Estado']
             }
         };
     }
@@ -66,12 +66,12 @@ class ReportsSystem {
             this.setQuickPeriod(days);
         });
 
-        // Генерація звіту
+        // A gerar relatório
         $(document).on('click', '#generateReportBtn', () => {
             this.generateReport();
         });
 
-        // Експорт
+        // Exportar
         $(document).on('click', '#exportPdfBtn', () => {
             this.exportToPDF();
         });
@@ -85,7 +85,7 @@ class ReportsSystem {
             this.scheduleReport();
         });
 
-        // Фільтри
+        // Filtroи
         $('#technicianFilter, #statusFilter, #priorityFilter').on('change', () => {
             this.applyFilters();
         });
@@ -125,7 +125,7 @@ class ReportsSystem {
         const template = this.reportTemplates[this.currentReportType];
         if (!template) return;
 
-        // Оновлення заголовка
+        // Atualização заголовка
         $('#reportTitle').text(template.title);
         $('#reportDescription').text(template.description);
     }
@@ -140,11 +140,11 @@ class ReportsSystem {
             this.currentReport = reportResult;
             this.displayReport(reportResult);
             
-            this.showNotification('Звіт успішно згенеровано', 'success');
+            this.showNotification('Relatório com sucesso згенеровано', 'success');
 
         } catch (error) {
-            console.error('Помилка генерації звіту:', error);
-            this.showNotification('Помилка генерації звіту', 'error');
+            console.error('Erro генерації звіту:', error);
+            this.showNotification('Erro генерації звіту', 'error');
         } finally {
             this.showLoading(false);
         }
@@ -177,7 +177,7 @@ class ReportsSystem {
     generateSampleReportData(reportData) {
         const { reportType, startDate, endDate } = reportData;
         const baseData = {
-            title: this.reportTemplates[reportType]?.title || 'Звіт',
+            title: this.reportTemplates[reportType]?.title || 'Relatório',
             period: `${this.formatDateDisplay(startDate)} - ${this.formatDateDisplay(endDate)}`,
             generatedAt: new Date().toLocaleString('uk-UA'),
             filters: reportData
@@ -192,7 +192,7 @@ class ReportsSystem {
                         completed: 38,
                         inProgress: 5,
                         pending: 2,
-                        averageTime: '2.5 години'
+                        averageTime: '2.5 horasи'
                     },
                     details: this.generateMaintenanceDetails()
                 };
@@ -218,7 +218,7 @@ class ReportsSystem {
                         totalTasks: 67,
                         completed: 58,
                         completionRate: '86.6%',
-                        averageCompletionTime: '3.2 години'
+                        averageCompletionTime: '3.2 horasи'
                     },
                     details: this.generatePerformanceDetails()
                 };
@@ -249,16 +249,16 @@ class ReportsSystem {
                 status: 'Завершено',
                 createdDate: '15.01.2024',
                 completedDate: '16.01.2024',
-                priority: 'Високий'
+                priority: 'Altий'
             },
             {
                 id: '#12346',
                 lift: 'Schindler 3300 - пр. Перемоги, 45',
                 technician: 'Марія Коваленко',
-                status: 'В роботі',
+                status: 'Em progresso',
                 createdDate: '16.01.2024',
                 completedDate: '-',
-                priority: 'Середній'
+                priority: 'Agoедній'
             },
             {
                 id: '#12347',
@@ -276,8 +276,8 @@ class ReportsSystem {
         return [
             {
                 id: '#F001',
-                client: 'ТОВ "Будівельник"',
-                service: 'Щомісячне ТО',
+                client: 'ManutençãoВ "Будівельник"',
+                service: 'Щомісячне Manutenção',
                 amount: '₴15,000',
                 status: 'Оплачено',
                 date: '15.01.2024',
@@ -286,9 +286,9 @@ class ReportsSystem {
             {
                 id: '#F002',
                 client: 'ЖК "Сонячний"',
-                service: 'Аварійний ремонт',
+                service: 'Reparação de emergência',
                 amount: '₴8,500',
-                status: 'Очікує оплати',
+                status: 'Pendente оплати',
                 date: '18.01.2024',
                 invoice: '#INV-2024-002'
             }
@@ -344,7 +344,7 @@ class ReportsSystem {
             },
             {
                 category: 'Запобіжні пристрої',
-                item: 'Аварійний гальмів',
+                item: 'Emergência гальмів',
                 quantity: 0,
                 minStock: 3,
                 status: 'Відсутній',
@@ -359,7 +359,7 @@ class ReportsSystem {
         
         reportResult.html(reportHTML).slideDown();
         
-        // Оновлення статистичних карток
+        // Atualização статистичних карток
         this.updateStatsCards(reportData.summary);
     }
 
@@ -388,7 +388,7 @@ class ReportsSystem {
         return `
             <div class="report-header text-center mb-4">
                 <h2>${reportData.title}</h2>
-                <p class="text-muted">Період: ${reportData.period}</p>
+                <p class="text-muted">Período: ${reportData.period}</p>
                 <p class="text-small text-muted">Згенеровано: ${reportData.generatedAt}</p>
             </div>
         `;
@@ -422,9 +422,9 @@ class ReportsSystem {
         const configs = {
             total: { icon: 'fas fa-tasks', color: 'info', label: 'Всього' },
             completed: { icon: 'fas fa-check-circle', color: 'success', label: 'Завершено' },
-            inProgress: { icon: 'fas fa-spinner', color: 'warning', label: 'В роботі' },
+            inProgress: { icon: 'fas fa-spinner', color: 'warning', label: 'Em progresso' },
             pending: { icon: 'fas fa-clock', color: 'secondary', label: 'В очікуванні' },
-            totalRevenue: { icon: 'fas fa-money-bill-wave', color: 'success', label: 'Дохід' },
+            totalRevenue: { icon: 'fas fa-money-bill-wave', color: 'success', label: 'Receita' },
             expenses: { icon: 'fas fa-receipt', color: 'danger', label: 'Витрати' },
             profit: { icon: 'fas fa-chart-line', color: 'info', label: 'Прибуток' },
             totalItems: { icon: 'fas fa-boxes', color: 'primary', label: 'Всього items' },
@@ -468,20 +468,20 @@ class ReportsSystem {
     formatTableHeader(key) {
         const translations = {
             'id': 'ID',
-            'lift': 'Ліфт',
-            'technician': 'Технік',
-            'status': 'Статус',
-            'createdDate': 'Дата створення',
-            'completedDate': 'Дата завершення',
-            'priority': 'Пріоритет',
-            'client': 'Клієнт',
+            'lift': 'Elevador',
+            'technician': 'Técnico',
+            'status': 'Estado',
+            'createdDate': 'Data створення',
+            'completedDate': 'Data завершення',
+            'priority': 'Prioridade',
+            'client': 'Cliente',
             'service': 'Послуга',
             'amount': 'Сума',
-            'date': 'Дата',
+            'date': 'Data',
             'invoice': 'Рахунок',
             'totalTasks': 'Завдань',
             'completed': 'Завершено',
-            'avgTime': 'Середній час',
+            'avgTime': 'Agoедній час',
             'efficiency': 'Ефективність',
             'rating': 'Рейтинг',
             'category': 'Категорія',
@@ -510,10 +510,10 @@ class ReportsSystem {
     getStatusClass(status) {
         const classes = {
             'Завершено': 'badge-success',
-            'В роботі': 'badge-warning',
+            'Em progresso': 'badge-warning',
             'В очікуванні': 'badge-secondary',
             'Оплачено': 'badge-success',
-            'Очікує оплати': 'badge-warning',
+            'Pendente оплати': 'badge-warning',
             'В наявності': 'badge-success',
             'Низький запас': 'badge-warning',
             'Відсутній': 'badge-danger'
@@ -523,8 +523,8 @@ class ReportsSystem {
 
     getPriorityClass(priority) {
         const classes = {
-            'Високий': 'badge-danger',
-            'Середній': 'badge-warning',
+            'Altий': 'badge-danger',
+            'Agoедній': 'badge-warning',
             'Низький': 'badge-info'
         };
         return classes[priority] || 'badge-secondary';
@@ -535,10 +535,10 @@ class ReportsSystem {
             <div class="report-footer mt-4 pt-3 border-top">
                 <div class="row">
                     <div class="col-md-6">
-                        <small class="text-muted">Фільтри: ${JSON.stringify(reportData.filters)}</small>
+                        <small class="text-muted">Filtroи: ${JSON.stringify(reportData.filters)}</small>
                     </div>
                     <div class="col-md-6 text-right">
-                        <small class="text-muted">Звіт згенеровано автоматично</small>
+                        <small class="text-muted">Relatório згенеровано автоматично</small>
                     </div>
                 </div>
             </div>
@@ -547,7 +547,7 @@ class ReportsSystem {
 
     updateStatsCards(summary) {
         // Додаткова логіка оновлення статистики
-        console.log('Оновлення статистичних карток:', summary);
+        console.log('Atualização статистичних карток:', summary);
     }
 
     applyFilters() {
@@ -558,7 +558,7 @@ class ReportsSystem {
         };
 
         console.log('Застосовано фільтри:', filters);
-        this.showNotification('Фільтри застосовано', 'info');
+        this.showNotification('Filtros aplicados', 'info');
     }
 
     async exportToPDF() {
@@ -599,9 +599,9 @@ class ReportsSystem {
             $('#reportResult').html(`
                 <div class="text-center py-5">
                     <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status">
-                        <span class="sr-only">Завантаження...</span>
+                        <span class="sr-only">A carregar...</span>
                     </div>
-                    <p>Генерація звіту...</p>
+                    <p>A gerar relatório...</p>
                 </div>
             `).slideDown();
         } else {

@@ -5,7 +5,7 @@
  * Features:
  * - Drag-to-scroll мишкою для горизонтального скролу
  * - Автоматична ініціалізація при завантаженні DOM
- * - Працює з динамічно доданими таблицями (MutationObserver)
+ * - Em funcionamento з динамічно доданими таблицями (MutationObserver)
  * - Не блокує інтерактивні елементи (кнопки, посилання)
  * - Підтримка тачпадів та мишок
  * 
@@ -115,7 +115,7 @@
                 container.scrollLeft = scrollLeft - walkX;
             }
             
-            // Вертикальний скрол (якщо є)
+            // Setтикальний скрол (якщо є)
             if (container.scrollHeight > container.clientHeight) {
                 container.scrollTop = scrollTop - walkY;
             }

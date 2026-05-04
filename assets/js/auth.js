@@ -1,6 +1,6 @@
 /**
  * ═══════════════════════════════════════════════════════════
- * AUTH MANAGER - СИСТЕМА АВТОРИЗАЦІЇ
+ * AUTH MANAGER - СИСТЕМА АВManutençãoРИЗАЦІЇ
  * ═══════════════════════════════════════════════════════════
  * ⚠️ ВАЖЛИВО: ВСІ API ЗАПИТИ ЙДУТЬ ЧЕРЕЗ UNIFIED SERVER НА ПОРТ 5000
  * ⚠️ НІКОЛИ НЕ ЗМІНЮЙТЕ ПОРТ БЕЗ ЯВНОГО ЗАПИТУ КОРИСТУВАЧА!
@@ -39,13 +39,13 @@ class AuthManager {
         const cookieAge = rememberMe ? 31536000 : 604800;
         document.cookie = `auth_token=${token}; path=/; max-age=${cookieAge}`;
         
-        console.log('✅ Користувач увійшов в систему:', user);
+        console.log('✅ Utilizador увійшов в систему:', user);
         console.log('✅ userData збережено для перевірки доступу');
         if (rememberMe) console.log('✅ Режим "Запам\'ятати" активовано - сесія 365 днів');
         return true;
     }
 
-    // Оновлення access token через refresh token (без виходу з системи)
+    // Atualização access token через refresh token (без виходу з системи)
     static async refreshAccessToken() {
         const refreshToken = localStorage.getItem(this.REFRESH_KEY);
         if (!refreshToken) return false;
@@ -74,7 +74,7 @@ class AuthManager {
             }
             return false;
         } catch (e) {
-            console.error('❌ Помилка оновлення токену:', e);
+            console.error('❌ Erro оновлення токену:', e);
             return false;
         }
     }
@@ -102,7 +102,7 @@ class AuthManager {
         
         document.cookie = 'auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
         
-        console.log('👋 Користувач вийшов з системи');
+        console.log('👋 Utilizador вийшов з системи');
         
         // Очищуємо історію браузера перед редиректом
         window.history.replaceState(null, '', '/pages/auth/login.html');
@@ -136,7 +136,7 @@ class AuthManager {
                 return false;
             }
             
-            // Якщо токен закінчується менш ніж через 24 години — оновлюємо заздалегідь
+            // Якщо токен закінчується менш ніж через 24 horasи — оновлюємо заздалегідь
             if (payload.exp && (payload.exp - now) < 86400) {
                 console.log('🔄 Токен закінчується < 24h, оновлюємо у фоні...');
                 this.refreshAccessToken().catch(() => {});
@@ -152,7 +152,7 @@ class AuthManager {
             console.log('✅ isAuthenticated: Токен валідний');
             return true;
         } catch (error) {
-            console.error('❌ Помилка перевірки токена:', error);
+            console.error('❌ Erro перевірки токена:', error);
             return false;
         }
     }
@@ -179,7 +179,7 @@ class AuthManager {
                 email: payload.email || userData.email
             };
         } catch (error) {
-            console.error('❌ Помилка читання даних користувача:', error);
+            console.error('❌ Erro читання даних користувача:', error);
             return null;
         }
     }
@@ -261,7 +261,7 @@ class AuthManager {
             
             return response;
         } catch (error) {
-            console.error('❌ Помилка запиту:', error);
+            console.error('❌ Erro запиту:', error);
             throw error;
         }
     }
@@ -305,12 +305,12 @@ class AuthManager {
                         return;
                     }
                 } catch (e) {
-                    console.error('❌ Помилка refresh на старті:', e);
+                    console.error('❌ Erro refresh на старті:', e);
                     this._doLoginRedirect(pathname);
                     return;
                 }
             } else {
-                console.log('❌ Користувач не авторизований (no refresh token), редірект на логін');
+                console.log('❌ Utilizador не авторизований (no refresh token), редірект на логін');
                 this._doLoginRedirect(pathname);
                 return;
             }
@@ -326,7 +326,7 @@ class AuthManager {
             // Нормалізуємо роль: 'tech' і 'technician' — одне й те саме
             const normalize = r => (r === 'technician' ? 'tech' : r);
             if (userRole && normalize(userRole) !== normalize(bodyRequiredRole)) {
-                console.warn(`⚠️ Роль "${userRole}" не має доступу до сторінки для "${bodyRequiredRole}". Редірект...`);
+                console.warn(`⚠️ Função "${userRole}" не має доступу до сторінки для "${bodyRequiredRole}". Редірект...`);
                 // Редіректимо на відповідну панель за роллю
                 const roleRedirects = {
                     'admin':      '/pages/admin/admin-dashboard.html',
@@ -411,7 +411,7 @@ if (typeof window !== 'undefined') {
 
             // All known sidebar name element IDs across panels
             // sidebarFullName = admin user-panel link; sidebarName = brand area (admin/dispatcher)
-            const placeholders = ['—', 'Cliente', 'Технік', 'Диспетчер', 'Адміністратор', 'Адміністратор Системи', 'Адміністратор системи', ''];
+            const placeholders = ['—', 'Cliente', 'Técnico', 'Dispatcher', 'Administrador', 'Administrador Системи', 'Administrador системи', ''];
             ['sidebarFullName', 'sidebarName', 'sidebarUserName', 'clientName', 'techName', 'adminName'].forEach(function(id) {
                 const el = document.getElementById(id);
                 // Only set if still showing placeholder (don't override runtime-set values)

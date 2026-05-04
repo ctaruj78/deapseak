@@ -8,7 +8,7 @@ class PushNotificationsClient {
 
   async init() {
     if (!('Notification' in window)) {
-      alert('Push-нотифікації не підтримуються вашим браузером');
+      alert('Notificações push não são suportadas pelo seu browser');
       return;
     }
     this.permission = await Notification.requestPermission();
@@ -25,11 +25,11 @@ class PushNotificationsClient {
   }
 
   notifyRequestCompleted(request) {
-    this.send('Заявку виконано', `Заявка №${request.id} завершена.`);
+    this.send('Заявку виконано', `Pedido №${request.id} завершена.`);
   }
 
   notifyEmergency(msg) {
-    this.send('Термінова сповіщення!', msg);
+    this.send('Urgente сповіщення!', msg);
   }
 }
 

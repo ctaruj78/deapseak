@@ -56,7 +56,7 @@ class OfflineStorage {
     }
 
     /**
-     * Зберегти заявки
+     * Guardar заявки
      */
     async saveRequests(requests) {
         if (!this.db) await this.init();
@@ -88,7 +88,7 @@ class OfflineStorage {
             request.onsuccess = () => {
                 let results = request.result;
 
-                // Фільтрація
+                // Filtroація
                 if (filter.status) {
                     results = results.filter(r => r.status === filter.status);
                 }
@@ -120,7 +120,7 @@ class OfflineStorage {
     }
 
     /**
-     * Додати заявку в чергу синхронізації
+     * Adicionar заявку в чергу синхронізації
      */
     async addToSyncQueue(action, data) {
         if (!this.db) await this.init();

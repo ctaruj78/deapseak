@@ -570,7 +570,7 @@ document.addEventListener("DOMContentLoaded", function() {
             Swal.fire({
                 icon: 'error',
                 title: 'Erro de acesso à câmara',
-                text: 'Não foi possível отримати lista disponíveis камер. Verifique дозволи камери у вашому браузері.',
+                text: 'Não foi possível obter a lista de câmeras disponíveis. Verifique as permissões da câmera no seu navegador.',
                 confirmButtonText: 'Entendido'
             });
         }
@@ -617,7 +617,7 @@ document.addEventListener("DOMContentLoaded", function() {
             Swal.fire({
                 icon: 'error',
                 title: 'Erro ao iniciar câmara',
-                text: error.message || 'Não foi possível запустити камеру para leitura.',
+                text: error.message || 'Não foi possível iniciar a leitura.',
                 confirmButtonText: 'Entendido'
             });
         }
@@ -659,7 +659,7 @@ document.addEventListener("DOMContentLoaded", function() {
             Swal.fire({
                 icon: 'error',
                 title: 'Erro ao processar código QR',
-                text: 'Não foi possível обробити відскаnovaний QR-code. Tente ainda раз.',
+                text: 'Não foi possível processar o QR code lido. Tente novamente.',
                 confirmButtonText: 'Entendido'
             });
         } finally {
@@ -704,7 +704,7 @@ document.addEventListener("DOMContentLoaded", function() {
             Swal.fire({
                 icon: 'error',
                 title: 'Erro ao processar código QR',
-                text: 'Não foi possível reconhecer QR-code у carregadoму ficheiroі. Verifique, що ficheiro містить чіткий QR-code.',
+                text: 'Não foi possível reconhecer o QR code no ficheiro carregado. Verifique se o ficheiro contém um QR code nítido.',
                 confirmButtonText: 'Entendido'
             });
         } finally {
@@ -751,7 +751,7 @@ document.addEventListener("DOMContentLoaded", function() {
             Swal.fire({
                 icon: 'error',
                 title: 'Erro ao processar dados',
-                text: 'Não foi possível обробити введені dados. Verifique formato dados і tente ainda раз.',
+                text: 'Não foi possível processar os dados introduzidos. Verifique o formato dos dados e tente novamente.',
                 confirmButtonText: 'Entendido'
             });
         } finally {
@@ -1173,7 +1173,7 @@ document.addEventListener("DOMContentLoaded", function() {
         // Implementação de criação de tarefas por resultados de leitura
         Swal.fire({
             icon: 'info',
-            title: 'Створення tarefas',
+            title: 'Criação de tarefas',
             text: 'A função de criação de tarefas por resultados de leitura estará disponível na próxima versão.',
             confirmButtonText: 'Entendido'
         });
@@ -1184,7 +1184,7 @@ document.addEventListener("DOMContentLoaded", function() {
         // Implementação de submissão de relatório por resultados de leitura
         Swal.fire({
             icon: 'info',
-            title: 'Atéдання relatório',
+            title: 'Relatório atualizado',
             text: 'A função de submissão de relatório por resultados de leitura estará disponível na próxima versão.',
             confirmButtonText: 'Entendido'
         });

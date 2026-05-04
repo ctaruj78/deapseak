@@ -11,10 +11,10 @@ async function viewLift(liftId) {
     currentViewLiftId = liftId;
     
     try {
-        // Завантажити дані ліфта
+        // Descarregar дані ліфта
         const lift = await loadLiftData(liftId);
         if (!lift) {
-            showAlert('Ліфт не знайдено', 'danger');
+            showAlert('Elevador não encontrado', 'danger');
             return;
         }
         
@@ -44,13 +44,13 @@ async function viewLift(liftId) {
         }
         
     } catch (error) {
-        console.error('❌ Помилка завантаження ліфта:', error);
-        showAlert('Помилка завантаження даних ліфта', 'danger');
+        console.error('❌ Erro завантаження ліфта:', error);
+        showAlert('Erro ao carregar dados ліфта', 'danger');
     }
 }
 
 /**
- * Завантажити дані ліфта з API або localStorage
+ * Descarregar дані ліфта з API або localStorage
  */
 async function loadLiftData(liftId) {
     try {
@@ -68,7 +68,7 @@ async function loadLiftData(liftId) {
             return result.data;
         }
     } catch (error) {
-        console.warn('⚠️ Помилка завантаження з API:', error);
+        console.warn('⚠️ Erro завантаження з API:', error);
     }
     
     // Fallback до localStorage або allLifts
@@ -137,10 +137,10 @@ function populateViewModal(lift) {
     
     // Технічні дані
     document.getElementById('viewCapacity').textContent = lift.capacity 
-        ? `${lift.capacity} кг` 
+        ? `${lift.capacity} kg` 
         : '-';
     document.getElementById('viewSpeed').textContent = lift.speed 
-        ? `${lift.speed} м/с` 
+        ? `${lift.speed} m/s` 
         : '-';
     
     const lastInspection = lift.lastInspectionDate 
@@ -155,7 +155,7 @@ function populateViewModal(lift) {
     
     document.getElementById('viewNotes').textContent = lift.notes || 'Немає приміток';
     
-    // Завантажити документи
+    // Descarregar документи
     loadViewModalDocuments(lift._id || lift.id);
 }
 
@@ -164,10 +164,10 @@ function populateViewModal(lift) {
  */
 function getStatusBadge(status) {
     const statusMap = {
-        'active': '<span class="badge badge-success">Активний</span>',
-        'inactive': '<span class="badge badge-danger">Неактивний</span>',
+        'active': '<span class="badge badge-success">Ativo</span>',
+        'inactive': '<span class="badge badge-danger">Inativo</span>',
         'maintenance': '<span class="badge badge-warning">На обслуговуванні</span>',
-        'operational': '<span class="badge badge-success">Працює</span>'
+        'operational': '<span class="badge badge-success">Em funcionamento</span>'
     };
     return statusMap[status] || `<span class="badge badge-secondary">${status}</span>`;
 }
@@ -193,7 +193,7 @@ function initViewModalMap(lift) {
         lng = -9.1393;
     }
     
-    // Видалити стару карту якщо є
+    // Eliminar стару карту якщо є
     if (viewModalMap) {
         viewModalMap.remove();
         viewModalMap = null;
@@ -207,27 +207,27 @@ function initViewModalMap(lift) {
             attribution: '© OpenStreetMap contributors'
         }).addTo(viewModalMap);
         
-        // Додати маркер
+        // Adicionar маркер
         L.marker([lat, lng])
             .addTo(viewModalMap)
-            .bindPopup(`<b>${lift.municipalNumber || 'Ліфт'}</b><br>${lift.address || ''}`)
+            .bindPopup(`<b>${lift.municipalNumber || 'Elevador'}</b><br>${lift.address || ''}`)
             .openPopup();
             
-        // Оновити розмір карти
+        // Atualizar розмір карти
         setTimeout(() => {
             viewModalMap.invalidateSize();
         }, 300);
     } catch (error) {
-        console.error('❌ Помилка ініціалізації карти:', error);
+        console.error('❌ Erro ініціалізації карти:', error);
     }
 }
 
 /**
- * Завантажити документи для перегляду
+ * Descarregar документи для перегляду
  */
 async function loadViewModalDocuments(liftId) {
     const container = document.getElementById('viewDocumentsList');
-    container.innerHTML = '<p class="text-center"><i class="fas fa-spinner fa-spin"></i> Завантаження...</p>';
+    container.innerHTML = '<p class="text-center"><i class="fas fa-spinner fa-spin"></i> A carregar...</p>';
     
     try {
         const token = localStorage.getItem('authToken');
@@ -239,7 +239,7 @@ async function loadViewModalDocuments(liftId) {
         });
         
         if (!response.ok) {
-            throw new Error('Помилка завантаження документів');
+            throw new Error('Erro завантаження документів');
         }
         
         const result = await response.json();
@@ -274,7 +274,7 @@ async function loadViewModalDocuments(liftId) {
         }
         
         if (inspections.length > 0) {
-            html += '<h6><i class="fas fa-clipboard-check"></i> Звіти інспекції</h6>';
+            html += '<h6><i class="fas fa-clipboard-check"></i> Relatórioи інспекції</h6>';
             html += '<ul class="list-group">';
             inspections.forEach(doc => {
                 html += `
@@ -293,8 +293,8 @@ async function loadViewModalDocuments(liftId) {
         container.innerHTML = html;
         
     } catch (error) {
-        console.error('❌ Помилка завантаження документів:', error);
-        container.innerHTML = '<p class="text-center text-danger">Помилка завантаження документів</p>';
+        console.error('❌ Erro завантаження документів:', error);
+        container.innerHTML = '<p class="text-center text-danger">Erro завантаження документів</p>';
     }
 }
 
@@ -313,16 +313,16 @@ function switchToEdit() {
 }
 
 /**
- * Закрити модальне вікно перегляду
+ * Fechar модальне вікно перегляду
  */
 function closeViewModal() {
-    // Видалити карту
+    // Eliminar карту
     if (viewModalMap) {
         viewModalMap.remove();
         viewModalMap = null;
     }
     
-    // Закрити модальне вікно
+    // Fechar модальне вікно
     if (typeof $.fn.modal !== 'undefined') {
         $('#viewLiftModal').modal('hide');
     } else {
@@ -359,7 +359,7 @@ function showAlert(message, type = 'info') {
         </div>
     `;
     
-    // Додати alert в контейнер
+    // Adicionar alert в контейнер
     const container = document.querySelector('.content-wrapper') || document.body;
     const alertDiv = document.createElement('div');
     alertDiv.innerHTML = alertHtml;

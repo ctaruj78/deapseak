@@ -88,7 +88,7 @@ const CONFIG = {
         PASSWORD_MIN_LENGTH: 8
     },
 
-    // 🔍 Діагностика конфігурації
+    // 🔍 Diagnóstico конфігурації
     debug() {
         console.group('🔧 CONFIG - Конфігурація системи');
         console.log('📍 Hostname:', window.location.hostname);
@@ -122,7 +122,7 @@ function initializeTestData() {
                 password: 'admin123',
                 email: 'admin@deapseak.com',
                 role: 'admin',
-                firstName: 'Адміністратор',
+                firstName: 'Administrador',
                 lastName: 'Системи',
                 phone: '+351912345678',
                 avatar: null,
@@ -136,7 +136,7 @@ function initializeTestData() {
                 email: 'tech1@deapseak.com',
                 role: 'tech',
                 firstName: 'Іван',
-                lastName: 'Технік',
+                lastName: 'Técnico',
                 phone: '+351923456789',
                 avatar: null,
                 isActive: true,
@@ -149,7 +149,7 @@ function initializeTestData() {
                 email: 'client1@deapseak.com',
                 role: 'client',
                 firstName: 'Петро',
-                lastName: 'Клієнт',
+                lastName: 'Cliente',
                 phone: '+351934567890',
                 avatar: null,
                 isActive: true,

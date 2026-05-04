@@ -2535,9 +2535,9 @@
                         });
                         if (r && r.ok) {
                             await dispatcherManager.loadAssignments();
-                            Swal.fire({ icon: 'success', title: 'Дедлайн продоjáно!', text: `Nova data: ${newDeadline.toLocaleDateString('pt-PT')}`, timer: 2000, showConfirmButton: false, customClass: { popup: 'swal-dispatch' } });
+                            Swal.fire({ icon: 'success', title: 'Prazo prolongado!', text: `Nova data: ${newDeadline.toLocaleDateString('pt-PT')}`, timer: 2000, showConfirmButton: false, customClass: { popup: 'swal-dispatch' } });
                         } else {
-                            Swal.fire({ icon: 'error', title: 'Erro', text: 'Não foi possível atualizar дедлайн', customClass: { popup: 'swal-dispatch' } });
+                            Swal.fire({ icon: 'error', title: 'Erro', text: 'Não foi possível atualizar prazo', customClass: { popup: 'swal-dispatch' } });
                         }
                     } catch(e) {
                         Swal.fire({ icon: 'error', title: 'Erro', text: e.message, customClass: { popup: 'swal-dispatch' } });
@@ -2551,7 +2551,7 @@
                     });
 
                     if (overdue.length === 0) {
-                        Swal.fire({ icon: 'info', title: 'Não há прострочених', text: 'Todos os pedidos в нормальному estadoі.', confirmButtonColor: '#17a2b8', customClass: { popup: 'swal-dispatch' } });
+                        Swal.fire({ icon: 'info', title: 'Não há pedidos em atraso', text: 'Todos os pedidos estão em estado normal.', confirmButtonColor: '#17a2b8', customClass: { popup: 'swal-dispatch' } });
                         return;
                     }
 
@@ -2562,7 +2562,7 @@
                     }).join('');
 
                     const { value: formValues, isConfirmed } = await Swal.fire({
-                        title: 'Переatribuição pedidos',
+                        title: 'Reatribuição de pedidos',
                         html: `<div style="text-align:left;padding:4px 0">
                                    <div class="swal-alert-box swal-alert-warning">
                                        <strong>⚠️ Encontrado ${overdue.length} pedidos em atraso</strong>
@@ -2622,7 +2622,7 @@
                             } catch (e) {}
                         }
                         await dispatcherManager.loadAssignments();
-                        Swal.fire({ icon: 'success', title: 'Concluído!', text: `Переatribuído e продоjáно дедлайн: ${count} junto ${overdue.length} pedidos на +${days} dias.`, confirmButtonColor: '#28a745', customClass: { popup: 'swal-dispatch' } });
+                        Swal.fire({ icon: 'success', title: 'Concluído!', text: `Reatribuído e prazo prolongado: ${count} junto ${overdue.length} pedidos em +${days} dias.`, confirmButtonColor: '#28a745', customClass: { popup: 'swal-dispatch' } });
                     }
                 },
 
@@ -2693,7 +2693,7 @@
                     }
                     const selectedItems = document.querySelectorAll('#availableRequests .list-group-item.active');
                     if (selectedItems.length === 0) {
-                        Swal.fire({ icon: 'warning', title: 'Erro', text: 'Selecione хоча б одну o pedido!', confirmButtonColor: '#f39c12', customClass: { popup: 'swal-dispatch' } });
+                        Swal.fire({ icon: 'warning', title: 'Erro', text: 'Selecione pelo menos um pedido!', confirmButtonColor: '#f39c12', customClass: { popup: 'swal-dispatch' } });
                         return;
                     }
                     let successCount = 0;
@@ -2716,7 +2716,7 @@
                 
                 // Iniciar роботу
                 startWork: async function(requestId) {
-                    if (!confirm('Iniciar роботу над ціexisteю заявкою?')) {
+                    if (!confirm('Iniciar trabalho neste pedido?')) {
                         return;
                     }
                     
@@ -2735,7 +2735,7 @@
                         await this.loadAssignments();
                         
                     } catch (error) {
-                        console.error('Erro поchatку trabalhos:', error);
+                        console.error('Erro ao iniciar trabalho:', error);
                         alert('Não foi possível iniciar o trabalho: ' + error.message);
                     }
                 },
@@ -2780,7 +2780,7 @@
                             method: 'POST',
                             body: JSON.stringify({
                                 technicianId: selectedTech._id,
-                                instructions: 'Atribuído диспетчером'
+                                instructions: 'Atribuído pelo dispatcher'
                             })
                         });
                         
@@ -2813,21 +2813,21 @@
                         
                         if (!response || !response.ok) {
                             const error = await response.json();
-                            throw new Error(error.message || 'Erro adição comentárioя');
+                            throw new Error(error.message || 'Erro ao adicionar comentário');
                         }
                         
                         alert('Comentário adicionado!');
                         await this.loadAssignments();
                         
                     } catch (error) {
-                        console.error('Erro adição comentárioя:', error);
+                        console.error('Erro ao adicionar comentário:', error);
                         alert('Não foi possível adicionar comentário: ' + error.message);
                     }
                 },
                 
                 // Concluir o pedido
                 completeRequest: async function(requestId) {
-                    if (!confirm('Concluir цю o pedido?')) {
+                    if (!confirm('Concluir este pedido?')) {
                         return;
                     }
                     
@@ -2836,7 +2836,7 @@
                             method: 'POST',
                             body: JSON.stringify({
                                 workDetails: {
-                                    summary: 'Concluído диспетчером'
+                                    summary: 'Concluído pelo dispatcher'
                                 }
                             })
                         });

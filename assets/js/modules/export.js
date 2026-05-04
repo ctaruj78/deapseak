@@ -4,13 +4,13 @@ class ExportManager {
     }
 
     init() {
-        // Завантаження залежностей динамічно
+        // A carregar залежностей динамічно
         this.loadDependencies();
     }
 
     async loadDependencies() {
         try {
-            // Завантаження jsPDF
+            // A carregar jsPDF
             if (typeof jsPDF === 'undefined') {
                 await this.loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
             }
@@ -18,7 +18,7 @@ class ExportManager {
                 await this.loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js');
             }
 
-            // Завантаження SheetJS для Excel
+            // A carregar SheetJS для Excel
             if (typeof XLSX === 'undefined') {
                 await this.loadScript('https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js');
             }
@@ -39,7 +39,7 @@ class ExportManager {
         });
     }
 
-    // Експорт у PDF
+    // Exportar у PDF
     async exportToPDF(data, filename = 'report.pdf', options = {}) {
         try {
             if (typeof jsPDF === 'undefined') {
@@ -51,11 +51,11 @@ class ExportManager {
 
             // Заголовок
             doc.setFontSize(20);
-            doc.text(options.title || 'Звіт LiftManager', 20, 30);
+            doc.text(options.title || 'Relatório LiftManager', 20, 30);
 
-            // Дата
+            // Data
             doc.setFontSize(12);
-            doc.text(`Дата: ${new Date().toLocaleDateString('uk-UA')}`, 20, 45);
+            doc.text(`Data: ${new Date().toLocaleDateString('uk-UA')}`, 20, 45);
 
             // Таблиця даних
             if (data && Array.isArray(data) && data.length > 0) {
@@ -82,15 +82,15 @@ class ExportManager {
 
             // Збереження
             doc.save(filename);
-            NotificationManager.success('Експорт завершено', `PDF файл ${filename} збережено`);
+            NotificationManager.success('Exportar concluída', `PDF файл ${filename} збережено`);
 
         } catch (error) {
             console.error('PDF export failed:', error);
-            NotificationManager.error('Помилка експорту', 'Не вдалося експортувати PDF');
+            NotificationManager.error('Erro експорту', 'Не вдалося експортувати PDF');
         }
     }
 
-    // Експорт у Excel
+    // Exportar у Excel
     async exportToExcel(data, filename = 'report.xlsx', sheetName = 'Data') {
         try {
             if (typeof XLSX === 'undefined') {
@@ -108,15 +108,15 @@ class ExportManager {
 
             // Збереження файлу
             XLSX.writeFile(wb, filename);
-            NotificationManager.success('Експорт завершено', `Excel файл ${filename} збережено`);
+            NotificationManager.success('Exportar concluída', `Excel файл ${filename} збережено`);
 
         } catch (error) {
             console.error('Excel export failed:', error);
-            NotificationManager.error('Помилка експорту', 'Не вдалося експортувати Excel');
+            NotificationManager.error('Erro експорту', 'Не вдалося експортувати Excel');
         }
     }
 
-    // Експорт CSV
+    // Exportar CSV
     exportToCSV(data, filename = 'report.csv') {
         try {
             if (!data || !Array.isArray(data) || data.length === 0) {
@@ -149,15 +149,15 @@ class ExportManager {
             link.click();
             document.body.removeChild(link);
 
-            NotificationManager.success('Експорт завершено', `CSV файл ${filename} збережено`);
+            NotificationManager.success('Exportar concluída', `CSV файл ${filename} збережено`);
 
         } catch (error) {
             console.error('CSV export failed:', error);
-            NotificationManager.error('Помилка експорту', 'Не вдалося експортувати CSV');
+            NotificationManager.error('Erro експорту', 'Не вдалося експортувати CSV');
         }
     }
 
-    // Експорт звіту з дашборду
+    // Exportar звіту з дашборду
     async exportDashboardReport() {
         try {
             // Отримання даних з API
@@ -175,7 +175,7 @@ class ExportManager {
                 generatedAt: new Date().toISOString()
             };
 
-            // Експорт у різні формати
+            // Exportar у різні формати
             const filename = `dashboard-report-${new Date().toISOString().split('T')[0]}`;
 
             // PDF звіт
@@ -183,7 +183,7 @@ class ExportManager {
                 lifts.slice(0, 50), // Обмежуємо до 50 записів для PDF
                 `${filename}.pdf`,
                 {
-                    title: 'Звіт дашборду LiftManager',
+                    title: 'Relatório дашборду LiftManager',
                     orientation: 'l' // landscape
                 }
             );
@@ -193,7 +193,7 @@ class ExportManager {
 
         } catch (error) {
             console.error('Dashboard export failed:', error);
-            NotificationManager.error('Помилка експорту звіту', 'Не вдалося експортувати звіт дашборду');
+            NotificationManager.error('Erro експорту звіту', 'Не вдалося експортувати звіт дашборду');
         }
     }
 
@@ -221,7 +221,7 @@ if (typeof window !== 'undefined') {
     window.exportManager = new ExportManager();
 }
 
-// Експорт для Node.js
+// Exportar для Node.js
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = ExportManager;
 }

@@ -47,7 +47,7 @@ const qrManager = (function() {
 
     // Load data from API
     async function loadInitialData() {
-        console.log('🔄 Завантаження даних з API...');
+        console.log('🔄 A carregar даних з API...');
         
         try {
             const token = localStorage.getItem('token');
@@ -125,9 +125,9 @@ const qrManager = (function() {
             // Показуємо помилку користувачу
             if (error.name === 'AbortError') {
                 console.error('⏱️ Timeout: завантаження триває понад 15 секунд');
-                alert('Завантаження даних займає занадто багато часу.\nПеревірте з\'єднання з інтернетом та спробуйте оновити сторінку (F5).');
+                alert('A carregar даних займає занадто багато часу.\nПеревірте з\'єднання з інтернетом та спробуйте оновити сторінку (F5).');
             } else {
-                console.error('🔥 Помилка:', error.message);
+                console.error('🔥 Erro:', error.message);
             }
             
             currentQRs = [];
@@ -139,7 +139,7 @@ const qrManager = (function() {
 
     // Setup event listeners
     function setupEventListeners() {
-        console.log('🔗 Налаштування event listeners...');
+        console.log('🔗 Definições event listeners...');
         
         // Перевірка чи елементи існують
         if (!$('#searchInput').length) {
@@ -209,7 +209,7 @@ const qrManager = (function() {
         const page = filtered.slice(start, end);
 
         if (page.length === 0) {
-            tbody.html('<tr><td colspan="10" class="text-center text-muted py-4"><i class="fas fa-search fa-2x d-block mb-2"></i>Немає даних для відображення</td></tr>');
+            tbody.html('<tr><td colspan="10" class="text-center text-muted py-4"><i class="fas fa-search fa-2x d-block mb-2"></i>Sem dados для відображення</td></tr>');
             renderPagination(0);
             return;
         }
@@ -217,7 +217,7 @@ const qrManager = (function() {
         page.forEach(qr => {
             const createdDate = qr.created ? new Date(qr.created).toLocaleDateString('uk-UA') : '-';
             const expiryDate = qr.liftData?.nextInspectionDate ? new Date(qr.liftData.nextInspectionDate).toLocaleDateString('uk-UA') : '-';
-            const liftType = qr.liftType === 'cargo' ? 'Вантажний' : 'Пасажирський';
+            const liftType = qr.liftType === 'cargo' ? 'Carga' : 'Passageiro';
             
             tbody.append(`
                 <tr>
@@ -229,15 +229,15 @@ const qrManager = (function() {
                     <td><small class="text-muted">${qr.id.slice(-8)}</small></td>
                     <td><span class="badge badge-info">${liftType}</span></td>
                     <td>${qr.name}</td>
-                    <td><span class="badge badge-${qr.status === 'active' ? 'success' : 'secondary'}">${qr.status === 'active' ? 'Активний' : 'Неактивний'}</span></td>
+                    <td><span class="badge badge-${qr.status === 'active' ? 'success' : 'secondary'}">${qr.status === 'active' ? 'Ativo' : 'Inativo'}</span></td>
                     <td>${createdDate}</td>
                     <td>${expiryDate}</td>
                     <td><span class="badge badge-light">${qr.scans}</span></td>
                     <td>
-                        <button class="btn btn-sm btn-primary" onclick="qrManager.viewQR('${qr.id}')" title="Переглянути">
+                        <button class="btn btn-sm btn-primary" onclick="qrManager.viewQR('${qr.id}')" title="Ver">
                             <i class="fas fa-eye"></i>
                         </button>
-                        <button class="btn btn-sm btn-outline-secondary ml-1" onclick="qrManager.printSingleById('${qr.id}')" title="Друкувати">
+                        <button class="btn btn-sm btn-outline-secondary ml-1" onclick="qrManager.printSingleById('${qr.id}')" title="Imprimir">
                             <i class="fas fa-print"></i>
                         </button>
                     </td>
@@ -282,7 +282,7 @@ const qrManager = (function() {
         const page = filtered.slice(start, end);
 
         if (page.length === 0) {
-            container.html('<div class="col-12 text-center text-muted py-5"><i class="fas fa-search fa-2x d-block mb-2"></i>Немає даних для відображення</div>');
+            container.html('<div class="col-12 text-center text-muted py-5"><i class="fas fa-search fa-2x d-block mb-2"></i>Sem dados для відображення</div>');
             renderPagination(0);
             return;
         }
@@ -296,8 +296,8 @@ const qrManager = (function() {
 
         page.forEach(qr => {
             const statusColor = qr.status === 'active' ? 'success' : 'secondary';
-            const statusLabel = qr.status === 'active' ? 'Активний' : 'Неактивний';
-            const liftType = qr.liftType === 'cargo' ? '<i class="fas fa-dolly"></i> Вантажний' : '<i class="fas fa-user"></i> Пасажирський';
+            const statusLabel = qr.status === 'active' ? 'Ativo' : 'Inativo';
+            const liftType = qr.liftType === 'cargo' ? '<i class="fas fa-dolly"></i> Carga' : '<i class="fas fa-user"></i> Passageiro';
 
             row.append(`
                 <div class="${colClass} col-sm-6 mb-3">
@@ -313,13 +313,13 @@ const qrManager = (function() {
                             <div class="text-muted small">${liftType} &bull; ${qr.location}</div>
                         </div>
                         <div class="card-footer d-flex justify-content-center gap-1 py-2 px-2" style="gap:4px;">
-                            <button class="btn btn-sm btn-primary flex-grow-1" onclick="qrManager.viewQR('${qr.id}')" title="Переглянути деталі">
-                                <i class="fas fa-eye"></i> Деталі
+                            <button class="btn btn-sm btn-primary flex-grow-1" onclick="qrManager.viewQR('${qr.id}')" title="Ver detalhes">
+                                <i class="fas fa-eye"></i> Detalhes
                             </button>
-                            <button class="btn btn-sm btn-outline-info" onclick="qrManager.printSingleById('${qr.id}')" title="Друкувати QR">
+                            <button class="btn btn-sm btn-outline-info" onclick="qrManager.printSingleById('${qr.id}')" title="Imprimir QR">
                                 <i class="fas fa-print"></i>
                             </button>
-                            <button class="btn btn-sm btn-outline-success" onclick="qrManager.downloadById('${qr.id}')" title="Завантажити QR">
+                            <button class="btn btn-sm btn-outline-success" onclick="qrManager.downloadById('${qr.id}')" title="Descarregar QR">
                                 <i class="fas fa-download"></i>
                             </button>
                         </div>
@@ -448,13 +448,13 @@ const qrManager = (function() {
         currentPage = 1;
         renderQRTable();
         updateStatistics();
-        showNotification(`Фільтр: ${status === 'all' ? 'Всі' : status}`, 'info');
+        showNotification(`Filtro: ${status === 'all' ? 'Todos' : status}`, 'info');
     }
 
     // Search
     function searchQR() {
         const searchValue = $('#searchInput').val();
-        console.log('🔍 Пошук:', searchValue);
+        console.log('🔍 Pesquisa:', searchValue);
         currentFilters.search = searchValue;
         currentPage = 1;
         renderQRTable();
@@ -491,10 +491,10 @@ const qrManager = (function() {
 
         // Display details
         const statusBadge = qr.status === 'active' ? 
-            '<span class="badge badge-success">Активний</span>' : 
-            '<span class="badge badge-secondary">Неактивний</span>';
+            '<span class="badge badge-success">Ativo</span>' : 
+            '<span class="badge badge-secondary">Inativo</span>';
         
-        const liftType = qr.liftType === 'cargo' ? 'Вантажний' : 'Пасажирський';
+        const liftType = qr.liftType === 'cargo' ? 'Carga' : 'Passageiro';
         const createdDate = qr.created ? new Date(qr.created).toLocaleDateString('uk-UA') : '-';
         
         $('#viewQRContent').html(`
@@ -505,13 +505,13 @@ const qrManager = (function() {
                 <dt class="col-sm-4">ID:</dt>
                 <dd class="col-sm-8"><code>${qr.id}</code></dd>
                 
-                <dt class="col-sm-4">Статус:</dt>
+                <dt class="col-sm-4">Estado:</dt>
                 <dd class="col-sm-8">${statusBadge}</dd>
                 
-                <dt class="col-sm-4">Тип:</dt>
+                <dt class="col-sm-4">Tipo:</dt>
                 <dd class="col-sm-8">${liftType}</dd>
                 
-                <dt class="col-sm-4">Адреса:</dt>
+                <dt class="col-sm-4">Endereço:</dt>
                 <dd class="col-sm-8">${qr.name}</dd>
                 
                 <dt class="col-sm-4">Місто:</dt>
@@ -578,8 +578,8 @@ const qrManager = (function() {
                 <h2>${qr.code}</h2>
                 <img src="${canvas.toDataURL()}" alt="QR Code"/>
                 <div class="details">
-                    <p><strong>Адреса:</strong> ${qr.name}</p>
-                    <p><strong>Тип:</strong> ${qr.liftType === 'cargo' ? 'Вантажний' : 'Пасажирський'}</p>
+                    <p><strong>Endereço:</strong> ${qr.name}</p>
+                    <p><strong>Tipo:</strong> ${qr.liftType === 'cargo' ? 'Carga' : 'Passageiro'}</p>
                     <p><strong>Місто:</strong> ${qr.location}</p>
                 </div>
                 <script>
@@ -624,24 +624,24 @@ const qrManager = (function() {
         currentPage = 1;
         renderQRTable();
         updateStatistics();
-        showNotification('Фільтри скинуто', 'success');
+        showNotification('Filtroи скинуто', 'success');
     }
 
     // Export functions
     function exportToCSV() {
         const data = filterQRData();
         if (data.length === 0) {
-            showNotification('Немає даних для експорту', 'warning');
+            showNotification('Sem dados для експорту', 'warning');
             return;
         }
-        const headers = ['Код QR', 'ID', 'Тип', 'Адреса', 'Місто', 'Статус', 'Дата створення'];
+        const headers = ['Код QR', 'ID', 'Tipo', 'Endereço', 'Місто', 'Estado', 'Data створення'];
         const rows = data.map(qr => [
             qr.code,
             qr.id,
-            qr.liftType === 'cargo' ? 'Вантажний' : 'Пасажирський',
+            qr.liftType === 'cargo' ? 'Carga' : 'Passageiro',
             `"${qr.name.replace(/"/g, '""')}"`,
             qr.location,
-            qr.status === 'active' ? 'Активний' : 'Неактивний',
+            qr.status === 'active' ? 'Ativo' : 'Inativo',
             qr.created ? new Date(qr.created).toLocaleDateString('uk-UA') : '-'
         ]);
         const csv = [headers.join(';'), ...rows.map(r => r.join(';'))].join('\n');
@@ -652,21 +652,21 @@ const qrManager = (function() {
         a.download = `QR-codes-${new Date().toISOString().slice(0, 10)}.csv`;
         a.click();
         URL.revokeObjectURL(url);
-        showNotification(`Експортовано ${data.length} записів у CSV`, 'success');
+        showNotification(`Exportarовано ${data.length} записів у CSV`, 'success');
     }
 
     function exportToPDF() {
-        showNotification('Для PDF використовуйте "Друкувати всі" → PrintPDF', 'info');
+        showNotification('Для PDF використовуйте "Imprimir всі" → PrintPDF', 'info');
     }
 
     function exportToXLSX() {
-        showNotification('Експорт XLSX - використовуйте CSV з відкриттям у Excel', 'info');
+        showNotification('Exportar XLSX - використовуйте CSV з відкриттям у Excel', 'info');
     }
 
     function exportToJSON() {
         const data = filterQRData();
         if (data.length === 0) {
-            showNotification('Немає даних для експорту', 'warning');
+            showNotification('Sem dados для експорту', 'warning');
             return;
         }
         const json = JSON.stringify(data.map(qr => ({
@@ -685,7 +685,7 @@ const qrManager = (function() {
         a.download = `QR-codes-${new Date().toISOString().slice(0, 10)}.json`;
         a.click();
         URL.revokeObjectURL(url);
-        showNotification(`Експортовано ${data.length} записів у JSON`, 'success');
+        showNotification(`Exportarовано ${data.length} записів у JSON`, 'success');
     }
 
     // Build print HTML for an array of QR objects
@@ -697,7 +697,7 @@ const qrManager = (function() {
                 <div class="qr-code-text">${qr.code}</div>
                 <div class="qr-address">${qr.name}</div>
                 <div class="qr-city">${qr.location}</div>
-                <div class="qr-status ${qr.status === 'active' ? 'status-active' : 'status-inactive'}">${qr.status === 'active' ? '● Активний' : '○ Неактивний'}</div>
+                <div class="qr-status ${qr.status === 'active' ? 'status-active' : 'status-inactive'}">${qr.status === 'active' ? '● Ativo' : '○ Inativo'}</div>
             </div>
         `).join('');
 
@@ -728,7 +728,7 @@ const qrManager = (function() {
         </style>
         </head><body>
         <div class="no-print">
-            <button onclick="window.print()"><i>🖨</i> Друкувати (${qrs.length} QR кодів)</button>
+            <button onclick="window.print()"><i>🖨</i> Imprimir (${qrs.length} QR кодів)</button>
         </div>
         <h2>QR Коди ліфтів &mdash; FestLift <small style="font-weight:normal;font-size:12px;">${new Date().toLocaleDateString('uk-UA')}</small></h2>
         <div class="qr-grid">${items}</div>
@@ -752,7 +752,7 @@ const qrManager = (function() {
         }
         showNotification(`Підготовка ${data.length} QR кодів для друку...`, 'info');
         const win = window.open('', '_blank', 'width=900,height=700');
-        win.document.write(buildPrintHtml(data, 'Всі QR коди - FestLift'));
+        win.document.write(buildPrintHtml(data, 'Todos Códigos QR - FestLift'));
         win.document.close();
     }
 
@@ -763,14 +763,14 @@ const qrManager = (function() {
         }).get();
 
         if (selected.length === 0) {
-            showNotification('Виберіть QR коди для друку', 'warning');
+            showNotification('Виберіть Códigos QR для друку', 'warning');
             return;
         }
 
         const qrs = currentQRs.filter(qr => selected.includes(qr.id));
         showNotification(`Підготовка ${qrs.length} QR кодів для друку...`, 'info');
         const win = window.open('', '_blank', 'width=900,height=700');
-        win.document.write(buildPrintHtml(qrs, 'Вибрані QR коди - FestLift'));
+        win.document.write(buildPrintHtml(qrs, 'Вибрані Códigos QR - FestLift'));
         win.document.close();
     }
 

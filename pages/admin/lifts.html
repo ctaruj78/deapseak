@@ -1737,7 +1737,7 @@
             container.querySelectorAll('[data-elift-idx]').forEach(function(inp) {
                 vals[inp.dataset.eliftIdx] = inp.value;
             });
-            // Також guardar основний
+            // Simож guardar основний
             var mainInp = document.getElementById('enhancedMunicipalNumber');
             vals[1] = mainInp ? mainInp.value : (vals[1] || '');
 
@@ -3439,7 +3439,7 @@ Equipa FestLift
             conditional: '<span class="badge badge-warning">⚠️ Reinspecção</span>',
             completed:   '<span class="badge badge-info">Concluído</span>'
         };
-        const typeLabels = { inspection: 'Inspecção', maintenance: 'IT', repair: 'Reparação', emergency: 'Avaria', annual: 'Inspекція', routine: 'Manutenção', certification: 'Сертифікація', technical: 'Técnica', safety: 'Verificação de segurança' };
+        const typeLabels = { inspection: 'Inspecção', maintenance: 'IT', repair: 'Reparação', emergency: 'Avaria', annual: 'Inspeção', routine: 'Manutenção', certification: 'Certificação', technical: 'Técnica', safety: 'Verificação de segurança' };
 
         let html = '<div class="table-responsive"><table class="table table-sm table-bordered table-hover mb-1" style="font-size:0.8rem;">';
         html += '<thead class="thead-light"><tr><th>Data</th><th>Tipo</th><th>Estado</th><th>Válido até</th></tr></thead><tbody>';
@@ -3487,7 +3487,7 @@ Equipa FestLift
                     const daysAgo = (Date.now() - new Date(window._adminStep4LastReportDate)) / 86400000;
                     if (daysAgo < 30) {
                         const dateStr = new Date(window._adminStep4LastReportDate).toLocaleDateString('pt-PT');
-                        const proceed = confirm('\u26a0\ufe0f Atenção: Já existe um relatório para este elevador de ' + dateStr + ' (' + Math.ceil(daysAgo) + ' dias тому).\n\nAdicionar ainda один relatório?');
+                        const proceed = confirm('\u26a0\ufe0f Atenção: Já existe um relatório para este elevador de ' + dateStr + ' (' + Math.ceil(daysAgo) + ' dias atrás).\n\nAdicionar mais um relatório?');
                         if (!proceed) return;
                     }
                 }
@@ -3592,7 +3592,7 @@ Email de contacto: info@festlift.pt`;
 
     // Кнопки в модалі (ініціалізація одноразово)
     $(document).on('click', '#btnSendToClient', async function() {
-        const ok = await _sendInspReqEmail('#inspReqModal_clientEmail','#inspReqModal_clientSubject','#inspReqModal_clientBody','Mensagem clienteу enviado!');
+        const ok = await _sendInspReqEmail('#inspReqModal_clientEmail','#inspReqModal_clientSubject','#inspReqModal_clientBody','Mensagem ao cliente enviada!');
         if (ok) $(this).removeClass('btn-primary').addClass('btn-success').html('<i class="fas fa-check mr-1"></i> Enviado');
     });
     $(document).on('click', '#btnSendToMun', async function() {
@@ -4579,7 +4579,7 @@ Email de contacto: info@festlift.pt`;
         });
 
         // 🎨 Atéрядковий індекс кожної унікальної endereçoи (para alternância de cores)
-        // Також будуexisteться desde повного da lista — estável entre páginaми
+        // Simож будуexisteться desde повного da lista — estável entre páginaми
         const addressGroupIndex = {};
         let groupCounter = 0;
         sourceForGrouping.forEach(lift => {
@@ -4922,7 +4922,7 @@ Email de contacto: info@festlift.pt`;
                 
                 // Horaтоe de inspeções - apenas se вказана
                 $('#detail-frequency').text(
-                    lift.inspectionFrequency ? (lift.inspectionFrequency === 24 ? '2 anos' : lift.inspectionFrequency === 12 ? '1 ano' : `${lift.inspectionFrequency} міс.`) : 'Não especificado'
+                    lift.inspectionFrequency ? (lift.inspectionFrequency === 24 ? '2 anos' : lift.inspectionFrequency === 12 ? '1 ano' : `${lift.inspectionFrequency} meses`) : 'Não especificado'
                 );
                 
                 // Localização desde нової структури
@@ -4978,7 +4978,7 @@ Email de contacto: info@festlift.pt`;
                 $('#detail-contract-number').text(cn || 'Não especificado');
                 $('#detail-contract-price').text(cp ? `${cp} €` : 'Não especificado');
                 
-                // Дати de manutenção — запасний варіант: беремо desde inspectionHistory, se поле на рівні do elevador не заповнене
+                // Datas de manutenção — запасний варіант: беремо desde inspectionHistory, se поле на рівні do elevador не заповнене
                 const _sortedHist = (lift.inspectionHistory || []).slice().sort((a, b) =>
                     new Date(b.date || b.inspectionDate || 0) - new Date(a.date || a.inspectionDate || 0));
                 const _lastHistEntry = _sortedHist[0] || null;
@@ -5036,7 +5036,7 @@ Email de contacto: info@festlift.pt`;
                 // Relatório inspeções (показуexisteмо найсвіжіший desde історії)
                 const lastReport = _lastHistEntry;
                 const _adminRtMap = { annual: 'inspection', certification: 'inspection', routine: 'maintenance', emergency: 'emergency' };
-                const _adminInspTypeLabels = { inspection: 'Inspecção', maintenance: 'Manutenção técnica', repair: 'Reparação', emergency: 'Emergência', annual: 'Inspекція', routine: 'Manutenção', certification: 'Сертифікація' };
+                const _adminInspTypeLabels = { inspection: 'Inspecção', maintenance: 'Manutenção técnica', repair: 'Reparação', emergency: 'Emergência', annual: 'Inspeção', routine: 'Manutenção', certification: 'Certificação' };
                 
                 const _lrDateAdmin = lastReport ? (lastReport.date || lastReport.inspectionDate) : null;
                 $('#detail-inspection-date').text(
@@ -5229,7 +5229,7 @@ Email de contacto: info@festlift.pt`;
             
             let lift;
             if (result && result.success && result.data) {
-                // Сервер devolve: {success:true, data:{lift:{...}}}
+                // Agoвер devolve: {success:true, data:{lift:{...}}}
                 // apiCall обгорeexiste: {success, data: <serverResponse>}
                 // Тому result.data = {success, data:{lift:{...}}} і result.data.data = {lift:{...}}
                 const rd = result.data;
@@ -5776,7 +5776,7 @@ Email de contacto: info@festlift.pt`;
         lifts = lifts.filter(l => (l._id || l.id) !== liftId);
         localStorage.setItem('lifts', JSON.stringify(lifts));
         
-        // Також спробувати eliminar através de API
+        // Simож спробувати eliminar através de API
         const deleteResult = await apiCall(`/api/lifts/${liftId}`, 'DELETE');
         if (deleteResult.success) {
             console.log('✅ Elevador eliminado da API');
@@ -6088,7 +6088,7 @@ Email de contacto: info@festlift.pt`;
             }
             const pdfFile = fileInput && fileInput.files && fileInput.files[0] ? fileInput.files[0] : null;
 
-            // Беремо clauses сeтистику desde розпарсеного PDF (se existe)
+            // Marемо clauses сeтистику desde розпарсеного PDF (se existe)
             const parsedData = window.currentParsedInspectionData;
             const c1Count = parsedData ? (parsedData.clauseStats.C1 || 0) : 0;
             const c2Count = parsedData ? (parsedData.clauseStats.C2 || 0) : 0;
@@ -6694,7 +6694,7 @@ Email de contacto: info@festlift.pt`;
                     }
                 }
                 const msg = sharedCount > 0
-                    ? `Contrato com sucesso carregado e застосовано до ${sharedCount + 1} elevadores neste endereço!`
+                    ? `Contrato com sucesso carregado e aplicado a ${sharedCount + 1} elevadores neste endereço!`
                     : 'Contrato carregado com sucesso!';
                 alert(msg);
                 $('#uploadContractModal').modal('hide');

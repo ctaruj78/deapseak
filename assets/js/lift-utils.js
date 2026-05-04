@@ -2,11 +2,11 @@
 class LiftUtils {
     static formatStatus(status) {
         const statusMap = {
-            'active': { text: 'Активний', class: 'status-active', icon: 'fa-check-circle' },
-            'maintenance': { text: 'Обслуговування', class: 'status-maintenance', icon: 'fa-wrench' },
-            'repair': { text: 'Ремонт', class: 'status-repair', icon: 'fa-tools' },
-            'emergency': { text: 'Аварійний', class: 'status-emergency', icon: 'fa-exclamation-triangle' },
-            'inactive': { text: 'Неактивний', class: 'status-inactive', icon: 'fa-times-circle' }
+            'active': { text: 'Ativo', class: 'status-active', icon: 'fa-check-circle' },
+            'maintenance': { text: 'Manutenção', class: 'status-maintenance', icon: 'fa-wrench' },
+            'repair': { text: 'Reparação', class: 'status-repair', icon: 'fa-tools' },
+            'emergency': { text: 'Emergência', class: 'status-emergency', icon: 'fa-exclamation-triangle' },
+            'inactive': { text: 'Inativo', class: 'status-inactive', icon: 'fa-times-circle' }
         };
         
         const statusInfo = statusMap[status] || { text: status, class: 'status-unknown', icon: 'fa-question-circle' };
@@ -24,30 +24,30 @@ class LiftUtils {
             'thyssen': 'ThyssenKrupp',
             'mitsubishi': 'Mitsubishi Electric',
             'fujitec': 'Fujitec',
-            'other': 'Інший'
+            'other': 'Outro'
         };
         return brandMap[brand] || brand;
     }
 
     static formatType(type) {
         const typeMap = {
-            'passenger': 'Пасажирський',
-            'cargo': 'Вантажний',
-            'hospital': 'Лікарняний',
-            'panoramic': 'Панорамний',
-            'machine-room-less': 'Безмашинний'
+            'passenger': 'Passageiro',
+            'cargo': 'Carga',
+            'hospital': 'Hospitalar',
+            'panoramic': 'Panorâmico',
+            'machine-room-less': 'Sem casa de máquinas'
         };
         return typeMap[type] || type;
     }
 
     static formatDate(dateString) {
-        if (!dateString) return 'Не вказано';
+        if (!dateString) return 'Não especificado';
         const date = new Date(dateString);
         return date.toLocaleDateString('uk-UA');
     }
 
     static formatCoordinates(lat, lng) {
-        if (!lat || !lng) return 'Не вказано';
+        if (!lat || !lng) return 'Não especificado';
         return `${parseFloat(lat).toFixed(6)}, ${parseFloat(lng).toFixed(6)}`;
     }
 
@@ -66,35 +66,35 @@ class LiftUtils {
                     </div>
                     <div class="card-body">
                         <p class="card-text">
-                            <strong>Адреса:</strong><br>
+                            <strong>Endereço:</strong><br>
                             <small class="text-muted">
                                 <i class="fas fa-map-marker-alt mr-1"></i>
-                                ${lift.address || 'Не вказано'}
+                                ${lift.address || 'Não especificado'}
                             </small>
                         </p>
                         <p class="card-text">
-                            <strong>Бренд:</strong> ${this.formatBrand(lift.brand)}<br>
-                            <strong>Модель:</strong> ${lift.model || 'Не вказано'}
+                            <strong>Marca:</strong> ${this.formatBrand(lift.brand)}<br>
+                            <strong>Modelo:</strong> ${lift.model || 'Não especificado'}
                         </p>
                         <p class="card-text">
-                            <strong>Тип:</strong> ${this.formatType(lift.type)}<br>
-                            <strong>Місткість:</strong> ${lift.capacity || 'Не вказано'} осіб
+                            <strong>Tipo:</strong> ${this.formatType(lift.type)}<br>
+                            <strong>Capacidade:</strong> ${lift.capacity || 'Não especificado'} pessoas
                         </p>
                         <p class="card-text">
-                            <strong>Клієнт:</strong><br>
-                            <small class="text-muted">${lift.clientName || 'Не вказано'}</small>
+                            <strong>Cliente:</strong><br>
+                            <small class="text-muted">${lift.clientName || 'Não especificado'}</small>
                         </p>
                     </div>
                     <div class="card-footer bg-light">
                         <div class="btn-group w-100" role="group">
                             <button type="button" class="btn btn-sm btn-outline-primary view-lift" data-lift-id="${lift.id}">
-                                <i class="fas fa-eye"></i> Деталі
+                                <i class="fas fa-eye"></i> Detalhes
                             </button>
                             <button type="button" class="btn btn-sm btn-outline-success edit-lift" data-lift-id="${lift.id}">
-                                <i class="fas fa-edit"></i> Редагувати
+                                <i class="fas fa-edit"></i> Editar
                             </button>
                             <button type="button" class="btn btn-sm btn-outline-danger delete-lift" data-lift-id="${lift.id}">
-                                <i class="fas fa-trash"></i> Видалити
+                                <i class="fas fa-trash"></i> Eliminar
                             </button>
                         </div>
                     </div>
@@ -108,43 +108,43 @@ class LiftUtils {
             <tr data-lift-id="${lift.id}">
                 <td>
                     <strong>${lift.municipalNumber || 'МН-' + lift.id}</strong><br>
-                    <small class="text-muted">${lift.serialNumber || 'Не вказано'}</small>
+                    <small class="text-muted">${lift.serialNumber || 'Não especificado'}</small>
                 </td>
                 <td>
                     <div class="d-flex align-items-center">
                         <i class="fas fa-map-marker-alt text-muted mr-2"></i>
                         <div>
-                            <div>${lift.address || 'Не вказано'}</div>
+                            <div>${lift.address || 'Não especificado'}</div>
                             <small class="text-muted">${lift.buildingName || ''}</small>
                         </div>
                     </div>
                 </td>
                 <td>
                     <div>${this.formatBrand(lift.brand)}</div>
-                    <small class="text-muted">${lift.model || 'Не вказано'}</small>
+                    <small class="text-muted">${lift.model || 'Não especificado'}</small>
                 </td>
                 <td>
                     <div>${this.formatType(lift.type)}</div>
-                    <small class="text-muted">${lift.capacity || 'Не вказано'} осіб</small>
+                    <small class="text-muted">${lift.capacity || 'Não especificado'} pessoas</small>
                 </td>
                 <td>${this.formatStatus(lift.status)}</td>
                 <td>
-                    <div>${lift.clientName || 'Не вказано'}</div>
+                    <div>${lift.clientName || 'Não especificado'}</div>
                     <small class="text-muted">${lift.clientEmail || ''}</small>
                 </td>
                 <td>${this.formatDate(lift.lastMaintenance)}</td>
                 <td>
                     <div class="btn-group" role="group">
-                        <button type="button" class="btn btn-sm btn-outline-info view-lift" data-lift-id="${lift.id}" title="Переглянути деталі">
+                        <button type="button" class="btn btn-sm btn-outline-info view-lift" data-lift-id="${lift.id}" title="Ver detalhes">
                             <i class="fas fa-eye"></i>
                         </button>
-                        <button type="button" class="btn btn-sm btn-outline-primary edit-lift" data-lift-id="${lift.id}" title="Редагувати">
+                        <button type="button" class="btn btn-sm btn-outline-primary edit-lift" data-lift-id="${lift.id}" title="Editar">
                             <i class="fas fa-edit"></i>
                         </button>
                         <button type="button" class="btn btn-sm btn-outline-warning qr-lift" data-lift-id="${lift.id}" title="QR код">
                             <i class="fas fa-qrcode"></i>
                         </button>
-                        <button type="button" class="btn btn-sm btn-outline-danger delete-lift" data-lift-id="${lift.id}" title="Видалити">
+                        <button type="button" class="btn btn-sm btn-outline-danger delete-lift" data-lift-id="${lift.id}" title="Eliminar">
                             <i class="fas fa-trash"></i>
                         </button>
                     </div>
@@ -158,60 +158,60 @@ class LiftUtils {
         
         // Required fields validation
         const requiredFields = [
-            { field: 'municipalNumber', name: 'Муніципальний номер' },
-            { field: 'serialNumber', name: 'Серійний номер' },
-            { field: 'brand', name: 'Бренд' },
-            { field: 'model', name: 'Модель' },
-            { field: 'type', name: 'Тип ліфта' },
-            { field: 'capacity', name: 'Пасажиромісткість' },
-            { field: 'speed', name: 'Швидкість' },
-            { field: 'address', name: 'Адреса' },
-            { field: 'postcode', name: 'Поштовий код' },
-            { field: 'lat', name: 'Широта' },
-            { field: 'lng', name: 'Довгота' },
+            { field: 'municipalNumber', name: 'Número municipal' },
+            { field: 'serialNumber', name: 'Número de série' },
+            { field: 'brand', name: 'Marca' },
+            { field: 'model', name: 'Modelo' },
+            { field: 'type', name: 'Tipo de elevador' },
+            { field: 'capacity', name: 'Capacidade' },
+            { field: 'speed', name: 'Velocidade' },
+            { field: 'address', name: 'Endereço' },
+            { field: 'postcode', name: 'Código postal' },
+            { field: 'lat', name: 'Latitude' },
+            { field: 'lng', name: 'Longitude' },
             { field: 'clientName', name: 'Ім\'я клієнта' },
-            { field: 'clientEmail', name: 'Email клієнта' },
-            { field: 'status', name: 'Статус' }
+            { field: 'clientEmail', name: 'Email do cliente' },
+            { field: 'status', name: 'Estado' }
         ];
 
         requiredFields.forEach(({ field, name }) => {
             if (!liftData[field] || liftData[field].toString().trim() === '') {
-                errors.push(`Поле "${name}" є обов'язковим`);
+                errors.push(`Поле "${name}" é obrigatório`);
             }
         });
 
         // Email validation
         if (liftData.clientEmail && !this.isValidEmail(liftData.clientEmail)) {
-            errors.push('Некоректний формат email клієнта');
+            errors.push('Formato de email inválido');
         }
 
         // Phone validation
         if (liftData.clientPhone && !this.isValidPhone(liftData.clientPhone)) {
-            errors.push('Некоректний формат телефону');
+            errors.push('Formato de telefone inválido');
         }
 
         // Postal code validation
         if (liftData.postcode && !this.isValidPostalCode(liftData.postcode)) {
-            errors.push('Некоректний формат поштового коду');
+            errors.push('Formato de código postal inválido');
         }
 
         // Coordinates validation
         if (liftData.lat && (isNaN(liftData.lat) || liftData.lat < -90 || liftData.lat > 90)) {
-            errors.push('Некоректне значення широти (-90 до 90)');
+            errors.push('Valor de latitude inválido (-90 a 90)');
         }
 
         if (liftData.lng && (isNaN(liftData.lng) || liftData.lng < -180 || liftData.lng > 180)) {
-            errors.push('Некоректне значення довготи (-180 до 180)');
+            errors.push('Valor de longitude inválido (-180 a 180)');
         }
 
         // Capacity validation
         if (liftData.capacity && (isNaN(liftData.capacity) || liftData.capacity < 1 || liftData.capacity > 50)) {
-            errors.push('Пасажиромісткість повинна бути від 1 до 50 осіб');
+            errors.push('A capacidade deve estar entre 1 e 50 pessoas');
         }
 
         // Speed validation
         if (liftData.speed && (isNaN(liftData.speed) || liftData.speed < 0.1 || liftData.speed > 10)) {
-            errors.push('Швидкість повинна бути від 0.1 до 10 м/с');
+            errors.push('Velocidade повинна бути від 0.1 до 10 m/s');
         }
 
         return errors;
@@ -264,25 +264,25 @@ class LiftUtils {
 
     static exportToCSV(lifts) {
         const headers = [
-            'Муніципальний номер',
-            'Серійний номер',
-            'Бренд',
-            'Модель',
-            'Тип',
-            'Пасажиромісткість',
-            'Швидкість',
-            'Адреса',
-            'Поштовий код',
-            'Клієнт',
-            'Email клієнта',
-            'Телефон клієнта',
-            'Статус',
-            'Останнє ТО',
-            'Наступне ТО',
-            'Частота ТО (міс.)',
-            'Призначений технік',
-            'Широта',
-            'Довгота'
+            'Número municipal',
+            'Número de série',
+            'Marca',
+            'Modelo',
+            'Tipo',
+            'Capacidade',
+            'Velocidade',
+            'Endereço',
+            'Código postal',
+            'Cliente',
+            'Email do cliente',
+            'Telefone do cliente',
+            'Estado',
+            'Última manutenção',
+            'Próxima manutenção',
+            'Frequência de manutenção (meses)',
+            'Técnico atribuído',
+            'Latitude',
+            'Longitude'
         ];
 
         const csvContent = [

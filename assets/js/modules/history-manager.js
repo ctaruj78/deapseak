@@ -33,7 +33,7 @@ class HistoryManager {
                 this.events = Array.isArray(raw) ? raw : (raw.data || []);
                 localStorage.setItem('maintenanceHistory', JSON.stringify(this.events));
             } else {
-                throw new Error('API недоступне');
+                throw new Error('API indisponível');
             }
         } catch (error) {
             console.warn('Використання локальних даних:', error);
@@ -66,7 +66,7 @@ class HistoryManager {
                 location: 'вул. Центральна, 12',
                 technician: 'Іван Петренко',
                 status: 'completed',
-                description: 'Планове технічне обслуговування',
+                description: 'Manutenção técnica planeada',
                 duration: 120,
                 cost: 2500,
                 rating: 5,
@@ -81,11 +81,11 @@ class HistoryManager {
                 location: 'пр. Перемоги, 45',
                 technician: 'Марія Коваленко',
                 status: 'completed',
-                description: 'Аварійний ремонт дверей',
+                description: 'Reparação de emergência дверей',
                 duration: 180,
                 cost: 4500,
                 rating: 4,
-                details: 'Ремонт механізму дверей, заміна датчиків безпеки, калібрування системи'
+                details: 'Reparação механізму дверей, заміна датчиків безпеки, калібрування системи'
             },
             {
                 id: 'event3',
@@ -111,7 +111,7 @@ class HistoryManager {
                 location: 'вул. Центральна, 12',
                 technician: 'Олексій Іваненко',
                 status: 'completed',
-                description: 'Ремонт системи керування',
+                description: 'Reparação системи керування',
                 duration: 150,
                 cost: 3200,
                 rating: 4,
@@ -124,9 +124,9 @@ class HistoryManager {
                 liftId: 'lift2',
                 lift: 'Schindler 3300',
                 location: 'пр. Перемоги, 45',
-                technician: 'Сергій Мельник',
+                technician: 'Agoгій Мельник',
                 status: 'completed',
-                description: 'Планове ТО після сезону',
+                description: 'Manutenção planeada після сезону',
                 duration: 135,
                 cost: 2800,
                 rating: 5,
@@ -166,7 +166,7 @@ class HistoryManager {
             this.applyFilters();
         });
 
-        // Пошук за текстом
+        // Pesquisa за текстом
         $('#searchInput').on('input', (e) => {
             this.applyFilters();
         });
@@ -175,7 +175,7 @@ class HistoryManager {
     applyFilters() {
         let filteredEvents = [...this.events];
 
-        // Фільтрація за періодом
+        // Filtroація за періодом
         if (this.filters.period !== 'all') {
             const days = parseInt(this.filters.period);
             const cutoffDate = new Date();
@@ -186,21 +186,21 @@ class HistoryManager {
             );
         }
 
-        // Фільтрація за типом події
+        // Filtroація за типом події
         if (this.filters.eventType !== 'all') {
             filteredEvents = filteredEvents.filter(event => 
                 event.type === this.filters.eventType
             );
         }
 
-        // Фільтрація за ліфтом
+        // Filtroація за ліфтом
         if (this.filters.lift !== 'all') {
             filteredEvents = filteredEvents.filter(event => 
                 event.liftId === this.filters.lift
             );
         }
 
-        // Пошук за текстом
+        // Pesquisa за текстом
         const searchTerm = ($('#searchInput').val() || '').toLowerCase();
         if (searchTerm) {
             filteredEvents = filteredEvents.filter(event =>
@@ -239,7 +239,7 @@ class HistoryManager {
                     <h4>Подій не знайдено</h4>
                     <p>Спробуйте змінити параметри фільтрів</p>
                     <button class="btn btn-primary mt-3" onclick="historyManager.resetFilters()">
-                        <i class="fas fa-sync"></i> Скинути фільтри
+                        <i class="fas fa-sync"></i> Repor фільтри
                     </button>
                 </div>
             `);
@@ -265,19 +265,19 @@ class HistoryManager {
                     <div class="timeline-icon">${this.getEventIcon(event.type)}</div>
                     <div class="timeline-details">
                         <h4>${event.description}</h4>
-                        <p><strong><i class="fas fa-elevator"></i> Ліфт:</strong> ${event.lift}</p>
+                        <p><strong><i class="fas fa-elevator"></i> Elevador:</strong> ${event.lift}</p>
                         <p><strong><i class="fas fa-map-marker-alt"></i> Локація:</strong> ${event.location}</p>
-                        <p><strong><i class="fas fa-user-cog"></i> Технік:</strong> ${event.technician}</p>
-                        <p><strong><i class="fas fa-clock"></i> Тривалість:</strong> ${event.duration} хв</p>
-                        <p><strong><i class="fas fa-money-bill-wave"></i> Вартість:</strong> €${(event.cost ?? 0).toLocaleString('pt-PT', { minimumFractionDigits: 2 })}</p>
+                        <p><strong><i class="fas fa-user-cog"></i> Técnico:</strong> ${event.technician}</p>
+                        <p><strong><i class="fas fa-clock"></i> Duração:</strong> ${event.duration} min</p>
+                        <p><strong><i class="fas fa-money-bill-wave"></i> Custo:</strong> €${(event.cost ?? 0).toLocaleString('pt-PT', { minimumFractionDigits: 2 })}</p>
                         <p><strong><i class="fas fa-star"></i> Оцінка:</strong> ${this.getRatingStars(event.rating)}</p>
                         <span class="${statusClass}">${statusText}</span>
                         <div class="mt-3">
                             <button class="btn btn-sm btn-info" onclick="historyManager.showEventDetails('${event.id}')">
-                                <i class="fas fa-info-circle"></i> Деталі
+                                <i class="fas fa-info-circle"></i> Detalhes
                             </button>
                             <button class="btn btn-sm btn-secondary" onclick="historyManager.downloadEventReport('${event.id}')">
-                                <i class="fas fa-download"></i> Звіт
+                                <i class="fas fa-download"></i> Relatório
                             </button>
                         </div>
                     </div>
@@ -308,7 +308,7 @@ class HistoryManager {
     getStatusText(status) {
         const statuses = {
             'completed': 'Завершено',
-            'in-progress': 'В роботі',
+            'in-progress': 'Em progresso',
             'pending': 'В очікуванні'
         };
         return statuses[status] || status;
@@ -319,11 +319,11 @@ class HistoryManager {
     }
 
     formatDate(dateString) {
-        return new Date(dateString).toLocaleDateString('uk-UA');
+        return new Date(dateString).toLocaleDateString('pt-PT');
     }
 
     formatTime(dateString) {
-        return new Date(dateString).toLocaleTimeString('uk-UA', { 
+        return new Date(dateString).toLocaleTimeString('pt-PT', { 
             hour: '2-digit', 
             minute: '2-digit' 
         });
@@ -339,14 +339,14 @@ class HistoryManager {
         const avgResponseTime = events.length > 0 
             ? Math.round(events.reduce((sum, e) => sum + (e.duration || 0), 0) / events.length)
             : 0;
-        $('#avgResponseTime').text(`${avgResponseTime} хв`);
+        $('#avgResponseTime').text(`${avgResponseTime} min`);
 
         const avgRating = events.length > 0
             ? (events.reduce((sum, e) => sum + (e.rating || 0), 0) / events.length).toFixed(1)
             : '0.0';
         $('#avgRating').text(avgRating);
 
-        // Оновлення загальних витрат
+        // Atualização загальних витрат
         const totalCost = events.reduce((sum, e) => sum + (e.cost || 0), 0);
         $('#totalCost').text(`₴${totalCost.toLocaleString()}`);
     }
@@ -360,7 +360,7 @@ class HistoryManager {
                 if (existing) existing.destroy();
             }
         });
-        // Також знищити збережені посилання (на випадок розбіжності)
+        // Simож знищити збережені посилання (на випадок розбіжності)
         Object.values(this.charts).forEach(chart => {
             try { if (chart) chart.destroy(); } catch {}
         });
@@ -377,7 +377,7 @@ class HistoryManager {
         return new Chart(ctx, {
             type: 'doughnut',
             data: {
-                labels: ['Технічне обслуговування', 'Ремонт', 'Інспекція', 'Аварійне'],
+                labels: ['Технічне обслуговування', 'Reparação', 'Inspeção', 'Аварійне'],
                 datasets: [{
                     data: this.calculateEventTypeData(this.events),
                     backgroundColor: ['#36a2eb', '#ff6384', '#ffcd56', '#4bc0c0'],
@@ -436,9 +436,9 @@ class HistoryManager {
         return new Chart(ctx, {
             type: 'radar',
             data: {
-                labels: ['Швидкість', 'Якість', 'Професійність', 'Комунікація', 'Загальна оцінка'],
+                labels: ['Velocidade', 'Qualidade', 'Професійність', 'Комунікація', 'Загальна оцінка'],
                 datasets: [{
-                    label: 'Середні оцінки',
+                    label: 'Agoедні оцінки',
                     data: this.calculateRatingsData(this.events),
                     backgroundColor: 'rgba(54, 162, 235, 0.2)',
                     borderColor: 'rgba(54, 162, 235, 1)',
@@ -521,7 +521,7 @@ class HistoryManager {
     }
 
     getLastSixMonths() {
-        const months = ['Січ', 'Лют', 'Бер', 'Кві', 'Тра', 'Чер', 'Лип', 'Сер', 'Вер', 'Жов', 'Лис', 'Гру'];
+        const months = ['Jan', 'Fev', 'Mar', 'Кві', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
         const currentMonth = new Date().getMonth();
         const result = [];
         
@@ -577,23 +577,23 @@ class HistoryManager {
                 <hr>
                 <div class="row">
                     <div class="col-md-6">
-                        <p><strong><i class="fas fa-elevator"></i> Ліфт:</strong> ${event.lift}</p>
+                        <p><strong><i class="fas fa-elevator"></i> Elevador:</strong> ${event.lift}</p>
                         <p><strong><i class="fas fa-map-marker-alt"></i> Локація:</strong> ${event.location}</p>
-                        <p><strong><i class="fas fa-user-cog"></i> Технік:</strong> ${event.technician}</p>
-                        <p><strong><i class="fas fa-calendar-alt"></i> Дата:</strong> ${this.formatDate(event.date)}</p>
+                        <p><strong><i class="fas fa-user-cog"></i> Técnico:</strong> ${event.technician}</p>
+                        <p><strong><i class="fas fa-calendar-alt"></i> Data:</strong> ${this.formatDate(event.date)}</p>
                     </div>
                     <div class="col-md-6">
-                        <p><strong><i class="fas fa-clock"></i> Тривалість:</strong> ${event.duration} хвилин</p>
-                        <p><strong><i class="fas fa-money-bill-wave"></i> Вартість:</strong> €${(event.cost ?? 0).toLocaleString('pt-PT', { minimumFractionDigits: 2 })}</p>
+                        <p><strong><i class="fas fa-clock"></i> Duração:</strong> ${event.duration} minилин</p>
+                        <p><strong><i class="fas fa-money-bill-wave"></i> Custo:</strong> €${(event.cost ?? 0).toLocaleString('pt-PT', { minimumFractionDigits: 2 })}</p>
                         <p><strong><i class="fas fa-star"></i> Оцінка:</strong> ${this.getRatingStars(event.rating)}</p>
-                        <p><strong><i class="fas fa-check-circle"></i> Статус:</strong> 
+                        <p><strong><i class="fas fa-check-circle"></i> Estado:</strong> 
                             <span class="${this.getStatusClass(event.status)}">${this.getStatusText(event.status)}</span>
                         </p>
                     </div>
                 </div>
                 ${event.details ? `
                 <div class="mt-4">
-                    <h5><i class="fas fa-list"></i> Деталі робіт:</h5>
+                    <h5><i class="fas fa-list"></i> Detalhes робіт:</h5>
                     <div class="bg-light p-3 rounded">
                         <p class="mb-0">${event.details}</p>
                     </div>
@@ -608,7 +608,7 @@ class HistoryManager {
                 <div class="modal-dialog modal-lg" role="document">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <h5 class="modal-title">Деталі події обслуговування</h5>
+                            <h5 class="modal-title">Detalhes події обслуговування</h5>
                             <button type="button" class="close" data-dismiss="modal">
                                 <span>&times;</span>
                             </button>
@@ -617,9 +617,9 @@ class HistoryManager {
                             ${modalContent}
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрити</button>
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
                             <button type="button" class="btn btn-primary" onclick="historyManager.downloadEventReport('${event.id}')">
-                                <i class="fas fa-download"></i> Завантажити звіт
+                                <i class="fas fa-download"></i> Descarregar звіт
                             </button>
                         </div>
                     </div>
@@ -643,7 +643,7 @@ class HistoryManager {
         
         // Імітація завантаження
         setTimeout(() => {
-            this.showNotification('Звіт успішно завантажено', 'success');
+            this.showNotification('Relatório com sucesso carregado', 'success');
             
             // Створення простих даних для завантаження
             const reportData = `
@@ -651,21 +651,21 @@ class HistoryManager {
                 ========================
                 
                 Подія: ${event.description}
-                Ліфт: ${event.lift}
+                Elevador: ${event.lift}
                 Локація: ${event.location}
-                Технік: ${event.technician}
-                Дата: ${this.formatDate(event.date)}
+                Técnico: ${event.technician}
+                Data: ${this.formatDate(event.date)}
                 Час: ${this.formatTime(event.date)}
-                Тривалість: ${event.duration} хвилин
-                Вартість: €${(event.cost ?? 0).toLocaleString('pt-PT', { minimumFractionDigits: 2 })}
+                Duração: ${event.duration} minилин
+                Custo: €${(event.cost ?? 0).toLocaleString('pt-PT', { minimumFractionDigits: 2 })}
                 Оцінка: ${event.rating}/5
-                Статус: ${this.getStatusText(event.status)}
+                Estado: ${this.getStatusText(event.status)}
                 
-                Деталі робіт:
+                Detalhes робіт:
                 ${event.details || 'Немає додаткових деталей'}
                 
                 ========================
-                Згенеровано: ${new Date().toLocaleString('uk-UA')}
+                Згенеровано: ${new Date().toLocaleString('pt-PT')}
             `;
             
             // Створення файлу для завантаження
@@ -687,40 +687,40 @@ class HistoryManager {
         setTimeout(() => {
             const filteredEvents = this.getFilteredEvents();
             if (filteredEvents.length === 0) {
-                this.showNotification('Немає даних для експорту', 'warning');
+                this.showNotification('Sem dados для експорту', 'warning');
                 return;
             }
             
-            this.showNotification('PDF-звіт успішно сформовано', 'success');
+            this.showNotification('PDF-звіт com sucesso сформовано', 'success');
             
             // Створення простих даних для PDF (імітація)
             let pdfContent = `
-                ЗВІТ ПРО ІСТОРІЮ ОБСЛУГОВУВАННЯ
+                ЗВІТ ПРО ІСManutençãoРІЮ ОБСЛУГОВУВАННЯ
                 ================================
                 
-                Період: ${this.getPeriodText()}
-                Тип подій: ${this.getEventTypeText()}
-                Ліфт: ${this.getLiftText()}
+                Período: ${this.getPeriodText()}
+                Tipo подій: ${this.getEventTypeText()}
+                Elevador: ${this.getLiftText()}
                 
                 Загальна статистика:
                 - Всього подій: ${filteredEvents.length}
                 - Технічних обслуговувань: ${filteredEvents.filter(e => e.type === 'maintenance').length}
-                - Середній час реакції: ${this.calculateAverageDuration(filteredEvents)} хв
-                - Середня оцінка: ${this.calculateAverageRating(filteredEvents).toFixed(1)}
+                - Agoедній час реакції: ${this.calculateAverageDuration(filteredEvents)} min
+                - Agoедня оцінка: ${this.calculateAverageRating(filteredEvents).toFixed(1)}
                 - Загальні витрати: ₴${this.calculateTotalCost(filteredEvents).toLocaleString()}
                 
                 Детальний перелік:
                 ${filteredEvents.map(event => `
                 ${this.formatDate(event.date)} - ${event.description}
-                Ліфт: ${event.lift}, Технік: ${event.technician}
-                Вартість: €${(event.cost ?? 0).toLocaleString('pt-PT', { minimumFractionDigits: 2 })}, Оцінка: ${event.rating}/5
+                Elevador: ${event.lift}, Técnico: ${event.technician}
+                Custo: €${(event.cost ?? 0).toLocaleString('pt-PT', { minimumFractionDigits: 2 })}, Оцінка: ${event.rating}/5
                 `).join('\n')}
                 
                 ================================
-                Згенеровано: ${new Date().toLocaleString('uk-UA')}
+                Згенеровано: ${new Date().toLocaleString('pt-PT')}
             `;
             
-            // Завантаження текстового файлу (імітація PDF)
+            // A carregar текстового файлу (імітація PDF)
             const blob = new Blob([pdfContent], { type: 'text/plain' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -739,14 +739,14 @@ class HistoryManager {
         setTimeout(() => {
             const filteredEvents = this.getFilteredEvents();
             if (filteredEvents.length === 0) {
-                this.showNotification('Немає даних для експорту', 'warning');
+                this.showNotification('Sem dados для експорту', 'warning');
                 return;
             }
             
-            this.showNotification('Excel-звіт успішно сформовано', 'success');
+            this.showNotification('Excel-звіт com sucesso сформовано', 'success');
             
             // Створення CSV (імітація Excel)
-            let csvContent = 'Дата,Тип,Опис,Ліфт,Технік,Тривалість (хв),Вартість (грн),Оцінка\n';
+            let csvContent = 'Data,Tipo,Descrição,Elevador,Técnico,Duração (хв),Custo (грн),Оцінка\n';
             
             filteredEvents.forEach(event => {
                 csvContent += `"${this.formatDate(event.date)}",`;
@@ -759,7 +759,7 @@ class HistoryManager {
                 csvContent += `"${event.rating}"\n`;
             });
             
-            // Завантаження CSV файлу
+            // A carregar CSV файлу
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -806,7 +806,7 @@ class HistoryManager {
         const periods = {
             '30': 'Останні 30 днів',
             '90': 'Останні 3 місяці',
-            '365': 'Останній рік',
+            '365': 'Останній ano',
             'all': 'Вся історія'
         };
         return periods[this.filters.period] || this.filters.period;
@@ -814,17 +814,17 @@ class HistoryManager {
 
     getEventTypeText(type = null) {
         const types = {
-            'all': 'Всі події',
+            'all': 'Todos події',
             'maintenance': 'Технічне обслуговування',
-            'repair': 'Ремонт',
-            'inspection': 'Інспекція',
+            'repair': 'Reparação',
+            'inspection': 'Inspeção',
             'emergency': 'Аварійне обслуговування'
         };
         return type ? types[type] || type : types[this.filters.eventType];
     }
 
     getLiftText() {
-        if (this.filters.lift === 'all') return 'Всі ліфти';
+        if (this.filters.lift === 'all') return 'Todos ліфти';
         
         const lifts = {
             'lift1': 'Otis Gen2 - вул. Центральна, 12',

@@ -1,4 +1,4 @@
-<!-- Tasks Module для Техніків -->
+<!-- Tasks Module для Técnicoів -->
 <div class="content-header">
     <div class="container-fluid">
         <div class="row mb-2">
@@ -8,7 +8,7 @@
             <div class="col-sm-6">
                 <ol class="breadcrumb float-sm-right">
                     <li class="breadcrumb-item"><a href="#" onclick="window.crmSystem.loadDashboard()">Головна</a></li>
-                    <li class="breadcrumb-item active">Завдання</li>
+                    <li class="breadcrumb-item active">Tarefa</li>
                 </ol>
             </div>
         </div>
@@ -34,7 +34,7 @@
                 <div class="small-box bg-success">
                     <div class="inner">
                         <h3 id="completed-tasks">2</h3>
-                        <p>Виконано сьогодні</p>
+                        <p>Concluído сьогодні</p>
                     </div>
                     <div class="icon">
                         <i class="fas fa-check-circle"></i>
@@ -56,7 +56,7 @@
                 <div class="small-box bg-danger">
                     <div class="inner">
                         <h3 id="urgent-tasks">1</h3>
-                        <p>Терміново</p>
+                        <p>Urgente</p>
                     </div>
                     <div class="icon">
                         <i class="fas fa-exclamation-triangle"></i>
@@ -77,32 +77,32 @@
                         <div class="card-tools">
                             <div class="btn-group">
                                 <button type="button" class="btn btn-sm btn-outline-primary active" data-filter="all">
-                                    Всі
+                                    Todos
                                 </button>
                                 <button type="button" class="btn btn-sm btn-outline-warning" data-filter="pending">
                                     В процесі
                                 </button>
                                 <button type="button" class="btn btn-sm btn-outline-danger" data-filter="urgent">
-                                    Терміново
+                                    Urgente
                                 </button>
                             </div>
                         </div>
                     </div>
                     <div class="card-body p-0">
                         <div id="tasks-list">
-                            <!-- Завдання з високим пріоритетом -->
+                            <!-- Tarefa з високим пріоритетом -->
                             <div class="task-item urgent p-3 border-left-danger" data-task-id="1" data-priority="urgent">
                                 <div class="d-flex justify-content-between align-items-start">
                                     <div class="flex-grow-1">
                                         <h5 class="mb-1">
                                             <span class="badge badge-danger mr-2">ТЕРМІНОВО</span>
-                                            Аварійний ремонт ліфта №3
+                                            Reparação de emergência ліфта №3
                                         </h5>
                                         <p class="mb-2 text-muted">
                                             <i class="fas fa-map-marker-alt mr-1"></i>
                                             БЦ "Сонячний", А блок
                                         </p>
-                                        <p class="mb-2">Ліфт зупинився між 3 та 4 поверхами. Пасажири евакуйовані. Потрібна термінова діагностика та ремонт.</p>
+                                        <p class="mb-2">Elevador зупинився між 3 та 4 поверхами. Пасажири евакуйовані. Потрібна термінова діагностика та ремонт.</p>
                                         <div class="task-meta">
                                             <span class="badge badge-info mr-2">
                                                 <i class="fas fa-clock mr-1"></i>
@@ -116,7 +116,7 @@
                                     </div>
                                     <div class="task-actions ml-3">
                                         <button class="btn btn-success btn-sm" onclick="startTask(1)">
-                                            <i class="fas fa-play"></i> Почати
+                                            <i class="fas fa-play"></i> Iniciar
                                         </button>
                                         <button class="btn btn-info btn-sm" onclick="viewTaskDetails(1)">
                                             <i class="fas fa-eye"></i>
@@ -175,7 +175,7 @@
                                             <i class="fas fa-map-marker-alt mr-1"></i>
                                             ЖК "Перлина", 12 під'їзд
                                         </p>
-                                        <p class="mb-2">Щотижнева перевірка систем безпеки та аварійного зв'язку.</p>
+                                        <p class="mb-2">Щотижнева перевірка систем безпеки та avariйного зв'язку.</p>
                                         <div class="task-meta">
                                             <span class="badge badge-info mr-2">
                                                 <i class="fas fa-clock mr-1"></i>
@@ -185,7 +185,7 @@
                                     </div>
                                     <div class="task-actions ml-3">
                                         <button class="btn btn-success btn-sm" onclick="startTask(3)">
-                                            <i class="fas fa-play"></i> Почати
+                                            <i class="fas fa-play"></i> Iniciar
                                         </button>
                                         <button class="btn btn-info btn-sm" onclick="viewTaskDetails(3)">
                                             <i class="fas fa-eye"></i>
@@ -223,12 +223,12 @@
                         </button>
                         <button class="btn btn-warning btn-block" onclick="reportEmergency()">
                             <i class="fas fa-exclamation-triangle mr-2"></i>
-                            Аварійний виклик
+                            Chamada de emergência
                         </button>
                     </div>
                 </div>
 
-                <!-- Завдання на сьогодні -->
+                <!-- Tarefa на сьогодні -->
                 <div class="card">
                     <div class="card-header">
                         <h3 class="card-title">
@@ -239,13 +239,13 @@
                     <div class="card-body">
                         <div class="timeline">
                             <div class="time-label">
-                                <span class="bg-primary">Сьогодні</span>
+                                <span class="bg-primary">Hoje</span>
                             </div>
                             <div>
                                 <i class="fas fa-check bg-success"></i>
                                 <div class="timeline-item">
                                     <span class="time"><i class="fas fa-clock"></i> 09:00</span>
-                                    <h3 class="timeline-header">Обслуговування ліфта №1</h3>
+                                    <h3 class="timeline-header">Manutenção ліфта №1</h3>
                                     <div class="timeline-body">
                                         <span class="badge badge-success">Завершено</span>
                                     </div>
@@ -255,9 +255,9 @@
                                 <i class="fas fa-wrench bg-warning"></i>
                                 <div class="timeline-item">
                                     <span class="time"><i class="fas fa-clock"></i> 14:30</span>
-                                    <h3 class="timeline-header">Аварійний ремонт</h3>
+                                    <h3 class="timeline-header">Reparação de emergência</h3>
                                     <div class="timeline-body">
-                                        <span class="badge badge-danger">Терміново</span>
+                                        <span class="badge badge-danger">Urgente</span>
                                     </div>
                                 </div>
                             </div>
@@ -265,7 +265,7 @@
                                 <i class="fas fa-search bg-info"></i>
                                 <div class="timeline-item">
                                     <span class="time"><i class="fas fa-clock"></i> 15:00</span>
-                                    <h3 class="timeline-header">Інспекція безпеки</h3>
+                                    <h3 class="timeline-header">Inspeção безпеки</h3>
                                     <div class="timeline-body">
                                         <span class="badge badge-info">Заплановано</span>
                                     </div>
@@ -392,7 +392,7 @@
 <script>
 // Ініціалізація модуля завдань
 $(document).ready(function() {
-    // Фільтрація завдань
+    // Filtroація завдань
     $('[data-filter]').on('click', function() {
         const filter = $(this).data('filter');
         $('[data-filter]').removeClass('active');
@@ -422,19 +422,19 @@ function filterTasks(filter) {
 
 function startTask(taskId) {
     // Імітація початку завдання
-    toastr.info(`Розпочинаємо виконання завдання #${taskId}`);
+    toastr.info(`A iniciar execução da tarefa #${taskId}`);
     
     // Оновлюємо статус завдання
     const taskElement = $(`.task-item[data-task-id="${taskId}"]`);
     taskElement.removeClass('pending').addClass('in-progress');
     
-    // Замінюємо кнопку "Почати" на "В процесі"
+    // Замінюємо кнопку "Iniciar" на "В процесі"
     taskElement.find('.task-actions').html(`
         <button class="btn btn-warning btn-sm" onclick="pauseTask(${taskId})">
             <i class="fas fa-pause"></i> Пауза
         </button>
         <button class="btn btn-success btn-sm" onclick="completeTask(${taskId})">
-            <i class="fas fa-check"></i> Завершити
+            <i class="fas fa-check"></i> Concluir
         </button>
         <button class="btn btn-info btn-sm" onclick="viewTaskDetails(${taskId})">
             <i class="fas fa-eye"></i>
@@ -445,12 +445,12 @@ function startTask(taskId) {
 }
 
 function continueTask(taskId) {
-    toastr.info(`Продовжуємо виконання завдання #${taskId}`);
+    toastr.info(`A retomar execução da tarefa #${taskId}`);
     startTask(taskId);
 }
 
 function pauseTask(taskId) {
-    toastr.warning(`Призупинено виконання завдання #${taskId}`);
+    toastr.warning(`Execução pausada da tarefa #${taskId}`);
     
     const taskElement = $(`.task-item[data-task-id="${taskId}"]`);
     taskElement.find('.task-actions').html(`
@@ -464,38 +464,38 @@ function pauseTask(taskId) {
 }
 
 function completeTask(taskId) {
-    toastr.success(`Завдання #${taskId} успішно завершено!`);
+    toastr.success(`Tarefa #${taskId} concluída com sucesso!`);
     
     const taskElement = $(`.task-item[data-task-id="${taskId}"]`);
     taskElement.removeClass('pending in-progress').addClass('completed');
-    taskElement.find('.badge:first').removeClass('badge-danger badge-primary badge-info').addClass('badge-success').text('ЗАВЕРШЕНО');
+    taskElement.find('.badge:first').removeClass('badge-danger badge-primary badge-info').addClass('badge-success').text('CONCLUÍDO');
     taskElement.find('.task-actions').html(`
         <button class="btn btn-secondary btn-sm" disabled>
-            <i class="fas fa-check"></i> Виконано
+            <i class="fas fa-check"></i> Concluído
         </button>
     `);
     
     // Додаємо прогрес-бар на 100%
     taskElement.find('.progress-bar').css('width', '100%').removeClass('bg-warning').addClass('bg-success');
-    taskElement.find('small').text('Прогрес: 100%');
+    taskElement.find('small').text('Progresso: 100%');
     
     updateTaskStats();
 }
 
 function viewTaskDetails(taskId) {
     // Імітація відкриття деталей завдання
-    toastr.info(`Перегляд деталей завдання #${taskId}`);
+    toastr.info(`Ver detalhes da tarefa #${taskId}`);
     
     // Тут може бути модальне вікно з детальною інформацією
-    alert(`Деталі завдання #${taskId}\n\nТут будуть відображатися:\n- Повний опис завдання\n- Технічні характеристики\n- Історія виконання\n- Файли та документи\n- Коментарі`);
+    alert(`Detalhes da tarefa #${taskId}\n\nAqui serão apresentados:\n- Descrição completa da tarefa\n- Características técnicas\n- Histórico de execução\n- Ficheiros e documentos\n- Comentários`);
 }
 
 function reportEmergency() {
-    toastr.error('Формування аварійного виклику...');
+    toastr.error('A criar chamada de emergência...');
     
-    // Імітація аварійного виклику
+    // Імітація avariйного виклику
     setTimeout(() => {
-        toastr.success('Аварійний виклик відправлено! Диспетчер буде повідомлений.');
+        toastr.success('Chamada de emergência enviada! O dispatcher será notificado.');
     }, 1500);
 }
 

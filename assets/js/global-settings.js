@@ -40,7 +40,7 @@
         }
     }
     
-    // Застосувати тему
+    // Aplicar тему
     function applyTheme(theme) {
         const body = document.body;
         
@@ -69,7 +69,7 @@
         body.setAttribute('data-theme', theme);
     }
     
-    // Застосувати мову
+    // Aplicar мову
     function applyLanguage(language) {
         // Встановлюємо lang атрибут
         document.documentElement.lang = language;
@@ -82,7 +82,7 @@
         }
     }
     
-    // Застосувати всі налаштування
+    // Aplicar всі налаштування
     function applyGlobalSettings() {
         const settings = getStoredSettings();
         
@@ -112,7 +112,7 @@
     // Застосовуємо налаштування одразу (ще до завантаження DOM)
     applyGlobalSettings();
     
-    // Також застосовуємо після завантаження DOM (на всяк випадок)
+    // Simож застосовуємо після завантаження DOM (на всяк випадок)
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', applyGlobalSettings);
     }
@@ -125,7 +125,7 @@
         }
     });
     
-    // Експортуємо функції глобально
+    // Exportarуємо функції глобально
     window.GlobalSettings = {
         apply: applyGlobalSettings,
         applyTheme: applyTheme,

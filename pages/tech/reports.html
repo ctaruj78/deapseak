@@ -551,7 +551,7 @@
                 this.reports = [
                     { id: 1, date: '2025-09-28', type: 'daily', name: 'Relatório diário 28.09.2025', status: 'completed', size: '2.3 MB' },
                     { id: 2, date: '2025-09-27', type: 'weekly', name: 'Relatório semanal 22-28.09.2025', status: 'completed', size: '5.1 MB' },
-                    { id: 3, date: '2025-09-01', type: 'monthly', name: 'Mensal relatório вересень 2025', status: 'pending', size: '-' }
+                    { id: 3, date: '2025-09-01', type: 'monthly', name: 'Relatório mensal setembro 2025', status: 'pending', size: '-' }
                 ];
                 this.filteredReports = [...this.reports];
                 this.renderReportsTable();
@@ -646,7 +646,7 @@
                     daily: 'Diário',
                     weekly: 'Semanal',
                     monthly: 'Mensal',
-                    custom: 'Utilizувацький'
+                    custom: 'Personalizado'
                 };
                 return labels[type] || type;
             }

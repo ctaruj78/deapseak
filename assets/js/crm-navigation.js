@@ -98,13 +98,13 @@ class CRMNavigationManager {
                 icon: 'fas fa-tasks',
                 items: [
                     {
-                        title: 'Всі заявки',
+                        title: 'Todos os pedidos',
                         icon: 'far fa-circle',
                         module: 'assignment-manager',
                         action: 'list'
                     },
                     {
-                        title: 'Нова заявка',
+                        title: 'Nova заявка',
                         icon: 'far fa-circle',
                         module: 'assignment-manager',
                         action: 'create'
@@ -135,7 +135,7 @@ class CRMNavigationManager {
                         badge: { type: 'danger', text: 'NEW' }
                     },
                     {
-                        title: 'Звіти',
+                        title: 'Relatórioи',
                         icon: 'far fa-circle',
                         module: 'monitoring-manager',
                         action: 'reports'
@@ -191,12 +191,12 @@ class CRMNavigationManager {
                 ]
             },
             {
-                title: 'Користувачі',
+                title: 'Utilizadorі',
                 icon: 'fas fa-users',
                 module: 'users'
             },
             {
-                title: 'Налаштування',
+                title: 'Definições',
                 icon: 'fas fa-cog',
                 module: 'settings'
             }
@@ -204,7 +204,7 @@ class CRMNavigationManager {
 
         const dispatcherMenu = [
             {
-                title: 'Заявки',
+                title: 'Pedidos',
                 icon: 'fas fa-clipboard-list',
                 items: [
                     {
@@ -214,7 +214,7 @@ class CRMNavigationManager {
                         action: 'my'
                     },
                     {
-                        title: 'Призначити',
+                        title: 'Atribuir',
                         icon: 'far fa-circle',
                         module: 'assignment-manager',
                         action: 'assign'
@@ -254,7 +254,7 @@ class CRMNavigationManager {
                 action: 'my-tasks'
             },
             {
-                title: 'Звіти',
+                title: 'Relatórioи',
                 icon: 'fas fa-file-alt',
                 module: 'assignment-manager',
                 action: 'reports'
@@ -280,7 +280,7 @@ class CRMNavigationManager {
                 action: 'client'
             },
             {
-                title: 'Нова заявка',
+                title: 'Nova заявка',
                 icon: 'fas fa-plus-circle',
                 module: 'assignment-manager',
                 action: 'create'
@@ -304,13 +304,13 @@ class CRMNavigationManager {
     }
 
     /**
-     * Завантаження модуля
+     * A carregar модуля
      */
     async loadModule(moduleName, action = '') {
         try {
-            console.log(`🔄 Завантаження модуля: ${moduleName} (${action})`);
+            console.log(`🔄 A carregar модуля: ${moduleName} (${action})`);
             
-            // Оновлення активного стану меню
+            // Atualização активного стану меню
             this.setActiveMenuItem(moduleName, action);
             
             // Показати індикатор завантаження
@@ -352,13 +352,13 @@ class CRMNavigationManager {
             this.activeModule = moduleName;
             
         } catch (error) {
-            console.error('❌ Помилка завантаження модуля:', error);
-            this.showError(`Помилка завантаження модуля: ${moduleName}`);
+            console.error('❌ Erro завантаження модуля:', error);
+            this.showError(`Erro завантаження модуля: ${moduleName}`);
         }
     }
 
     /**
-     * Завантаження дашборду
+     * A carregar дашборду
      */
     async loadDashboard() {
         const content = document.getElementById('main-content');
@@ -387,7 +387,7 @@ class CRMNavigationManager {
                             <div class="small-box bg-info">
                                 <div class="inner">
                                     <h3 id="stats-assignments">-</h3>
-                                    <p>Активні заявки</p>
+                                    <p>Pedidos ativos</p>
                                 </div>
                                 <div class="icon">
                                     <i class="fas fa-tasks"></i>
@@ -402,7 +402,7 @@ class CRMNavigationManager {
                             <div class="small-box bg-success">
                                 <div class="inner">
                                     <h3 id="stats-lifts">-</h3>
-                                    <p>Ліфтів в роботі</p>
+                                    <p>Elevadorів в роботі</p>
                                 </div>
                                 <div class="icon">
                                     <i class="fas fa-chart-line"></i>
@@ -462,7 +462,7 @@ class CRMNavigationManager {
                                             <i class="fas fa-qrcode"></i> Сканувати QR
                                         </button>
                                         <button type="button" class="btn btn-success btn-block mb-2" onclick="crmNav.loadModule('chat-system')">
-                                            <i class="fas fa-comment"></i> Відкрити чат
+                                            <i class="fas fa-comment"></i> Abrir чат
                                         </button>
                                         <button type="button" class="btn btn-warning btn-block" onclick="crmNav.loadModule('monitoring-manager')">
                                             <i class="fas fa-chart-bar"></i> Моніторинг
@@ -481,7 +481,7 @@ class CRMNavigationManager {
                                 </div>
                                 <div class="card-body">
                                     <div id="recent-activities">
-                                        <p class="text-muted">Завантаження останніх дій...</p>
+                                        <p class="text-muted">A carregar останніх дій...</p>
                                     </div>
                                 </div>
                             </div>
@@ -491,12 +491,12 @@ class CRMNavigationManager {
             </section>
         `;
 
-        // Завантаження статистики дашборду
+        // A carregar статистики дашборду
         await this.loadDashboardStats();
     }
 
     /**
-     * Завантаження модуля управління заявками
+     * A carregar модуля управління заявками
      */
     async loadAssignmentManager(action) {
         const content = document.getElementById('main-content');
@@ -511,7 +511,7 @@ class CRMNavigationManager {
                         <div class="col-sm-6">
                             <ol class="breadcrumb float-sm-right">
                                 <li class="breadcrumb-item"><a href="#" onclick="crmNav.loadModule('dashboard')">Головна</a></li>
-                                <li class="breadcrumb-item active">Заявки</li>
+                                <li class="breadcrumb-item active">Pedidos</li>
                             </ol>
                         </div>
                     </div>
@@ -538,7 +538,7 @@ class CRMNavigationManager {
     }
 
     /**
-     * Завантаження модуля моніторингу
+     * A carregar модуля моніторингу
      */
     async loadMonitoringManager(action) {
         const content = document.getElementById('main-content');
@@ -580,7 +580,7 @@ class CRMNavigationManager {
     }
 
     /**
-     * Завантаження чат системи
+     * A carregar чат системи
      */
     async loadChatSystem(action) {
         const content = document.getElementById('main-content');
@@ -677,13 +677,13 @@ class CRMNavigationManager {
     }
 
     /**
-     * Завантаження статистики дашборду
+     * A carregar статистики дашборду
      */
     async loadDashboardStats() {
         try {
             const token = localStorage.getItem('authToken');
             
-            // Завантаження статистики заявок
+            // A carregar статистики заявок
             const assignmentsResponse = await fetch(`${this.apiUrl}/assignments/stats`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -693,7 +693,7 @@ class CRMNavigationManager {
                 document.getElementById('stats-assignments').textContent = assignmentsStats.active || 0;
             }
             
-            // Завантаження статистики моніторингу
+            // A carregar статистики моніторингу
             const monitoringResponse = await fetch(`${this.apiUrl}/monitoring/stats`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -704,7 +704,7 @@ class CRMNavigationManager {
                 document.getElementById('stats-alerts').textContent = monitoringStats.activeAlerts || 0;
             }
             
-            // Завантаження статистики чату
+            // A carregar статистики чату
             const chatResponse = await fetch(`${this.apiUrl}/chat/stats`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -715,19 +715,19 @@ class CRMNavigationManager {
             }
             
         } catch (error) {
-            console.error('Помилка завантаження статистики:', error);
+            console.error('Erro завантаження статистики:', error);
         }
     }
 
     // Допоміжні методи
     
     setActiveMenuItem(moduleName, action) {
-        // Видалити активні класи
+        // Eliminar активні класи
         document.querySelectorAll('.nav-link').forEach(link => {
             link.classList.remove('active');
         });
         
-        // TODO: Додати логіку встановлення активного пункту меню
+        // TODO: Adicionar логіку встановлення активного пункту меню
     }
 
     showLoading() {
@@ -735,7 +735,7 @@ class CRMNavigationManager {
         content.innerHTML = `
             <div class="text-center mt-5">
                 <i class="fas fa-spinner fa-spin fa-3x text-primary"></i>
-                <p class="mt-3">Завантаження...</p>
+                <p class="mt-3">A carregar...</p>
             </div>
         `;
     }
@@ -744,7 +744,7 @@ class CRMNavigationManager {
         const content = document.getElementById('main-content');
         content.innerHTML = `
             <div class="alert alert-danger m-3">
-                <h4><i class="fas fa-exclamation-triangle"></i> Помилка!</h4>
+                <h4><i class="fas fa-exclamation-triangle"></i> Erro!</h4>
                 ${message}
             </div>
         `;
@@ -753,14 +753,14 @@ class CRMNavigationManager {
     updateUserInfo() {
         const user = this.currentUser;
         
-        // Оновити інформацію користувача в інтерфейсі
+        // Atualizar інформацію користувача в інтерфейсі
         const usernameElement = document.getElementById('current-username');
         const roleElement = document.getElementById('current-role-badge');
         const sidebarUsername = document.getElementById('sidebar-username');
         const sidebarRole = document.getElementById('sidebar-role');
         
         if (usernameElement) {
-            usernameElement.textContent = `${user.firstName || 'Користувач'} ${user.lastName || ''}`;
+            usernameElement.textContent = `${user.firstName || 'Utilizador'} ${user.lastName || ''}`;
         }
         
         if (roleElement) {
@@ -769,7 +769,7 @@ class CRMNavigationManager {
         }
         
         if (sidebarUsername) {
-            sidebarUsername.textContent = `${user.firstName || 'Користувач'} ${user.lastName || ''}`;
+            sidebarUsername.textContent = `${user.firstName || 'Utilizador'} ${user.lastName || ''}`;
         }
         
         if (sidebarRole) {
@@ -779,10 +779,10 @@ class CRMNavigationManager {
 
     getRoleText(role) {
         const roles = {
-            'admin': 'Адміністратор',
-            'dispatcher': 'Диспетчер',
-            'tech': 'Технік',
-            'client': 'Клієнт'
+            'admin': 'Administrador',
+            'dispatcher': 'Dispatcher',
+            'tech': 'Técnico',
+            'client': 'Cliente'
         };
         return roles[role] || 'Гість';
     }
@@ -806,7 +806,7 @@ class CRMNavigationManager {
     setupEventListeners() {
         // Обробники подій для CRM навігації
         document.addEventListener('click', (e) => {
-            // Закрити мобільне меню після кліку
+            // Fechar мобільне меню після кліку
             if (e.target.closest('.nav-link')) {
                 document.body.classList.remove('sidebar-open');
             }
@@ -842,7 +842,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.crmNav = crmNav; // Глобальний доступ
 });
 
-// Експорт
+// Exportar
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = CRMNavigationManager;
 }

@@ -75,26 +75,26 @@
                 <div class="col-12">
                     <div class="card">
                         <div class="card-header">
-                            <h3 class="card-title">Фільтри карти</h3>
+                            <h3 class="card-title">Filtroи карти</h3>
                         </div>
                         <div class="card-body">
                             <div class="row">
                                 <div class="col-md-3">
                                     <div class="form-group">
-                                        <label>Статус ліфтів</label>
+                                        <label>Estado dos elevadores</label>
                                         <select class="form-control" id="statusFilter" onchange="filterLifts()">
-                                            <option value="all">Всі статуси</option>
+                                            <option value="all">Todos статуси</option>
                                             <option value="working">Працюючі</option>
-                                            <option value="maintenance">Потребують ТО</option>
+                                            <option value="maintenance">Потребують Manutenção</option>
                                             <option value="emergency">Аварійні</option>
                                         </select>
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="form-group">
-                                        <label>Район</label>
+                                        <label>Zona</label>
                                         <select class="form-control" id="districtFilter" onchange="filterLifts()">
-                                            <option value="all">Всі райони</option>
+                                            <option value="all">Todos райони</option>
                                             <option value="center">Центральний</option>
                                             <option value="left-bank">Лівобережний</option>
                                             <option value="right-bank">Правобережний</option>
@@ -103,9 +103,9 @@
                                 </div>
                                 <div class="col-md-3">
                                     <div class="form-group">
-                                        <label>Модель ліфта</label>
+                                        <label>Modelo do elevador</label>
                                         <select class="form-control" id="modelFilter" onchange="filterLifts()">
-                                            <option value="all">Всі моделі</option>
+                                            <option value="all">Todos моделі</option>
                                             <option value="otis">OTIS</option>
                                             <option value="kone">KONE</option>
                                             <option value="schindler">Schindler</option>
@@ -116,7 +116,7 @@
                                     <div class="form-group">
                                         <label>&nbsp;</label>
                                         <button class="btn btn-primary btn-block" onclick="refreshMap()">
-                                            <i class="fas fa-sync"></i> Оновити карту
+                                            <i class="fas fa-sync"></i> Atualizar карту
                                         </button>
                                     </div>
                                 </div>
@@ -176,7 +176,7 @@
                             </div>
                             <div class="mb-2">
                                 <span class="badge badge-warning mr-2">●</span>
-                                Потребують ТО (8)
+                                Потребують Manutenção (8)
                             </div>
                             <div class="mb-2">
                                 <span class="badge badge-danger mr-2">●</span>
@@ -201,14 +201,14 @@
                             <div class="info-box mb-3">
                                 <span class="info-box-icon bg-success"><i class="fas fa-elevator"></i></span>
                                 <div class="info-box-content">
-                                    <span class="info-box-text">Ліфтів</span>
+                                    <span class="info-box-text">Elevadorів</span>
                                     <span class="info-box-number">156</span>
                                 </div>
                             </div>
                             <div class="info-box">
                                 <span class="info-box-icon bg-warning"><i class="fas fa-users"></i></span>
                                 <div class="info-box-content">
-                                    <span class="info-box-text">Техніків</span>
+                                    <span class="info-box-text">Técnicoів</span>
                                     <span class="info-box-number">12</span>
                                 </div>
                             </div>
@@ -222,7 +222,7 @@
     <!-- Lift info popup -->
     <div class="lift-info-popup" id="liftInfoPopup">
         <div id="liftInfoContent"></div>
-        <button class="btn btn-sm btn-secondary float-right mt-2" onclick="hideLiftInfo()">Закрити</button>
+        <button class="btn btn-sm btn-secondary float-right mt-2" onclick="hideLiftInfo()">Fechar</button>
     </div>
 </div>
 
@@ -232,7 +232,7 @@ const liftData = {
         id: 'L001',
         address: 'вул. Хрещатик, 1',
         model: 'OTIS Gen2',
-        status: 'Працює',
+        status: 'Em funcionamento',
         lastMaintenance: '15.11.2024',
         nextMaintenance: '15.02.2025'
     },
@@ -240,7 +240,7 @@ const liftData = {
         id: 'L002',
         address: 'вул. Володимирська, 15',
         model: 'KONE MonoSpace',
-        status: 'Потребує ТО',
+        status: 'Потребує Manutenção',
         lastMaintenance: '10.10.2024',
         nextMaintenance: '10.01.2025'
     },
@@ -248,7 +248,7 @@ const liftData = {
         id: 'L003',
         address: 'пр-т Перемоги, 42',
         model: 'Schindler 5500',
-        status: 'Аварія',
+        status: 'Avaria',
         lastMaintenance: '05.09.2024',
         nextMaintenance: '-'
     }
@@ -278,11 +278,11 @@ function showLiftInfo(liftId, event) {
     if (lift) {
         content.innerHTML = `
             <h6><strong>${lift.id}</strong></h6>
-            <p><strong>Адреса:</strong> ${lift.address}</p>
-            <p><strong>Модель:</strong> ${lift.model}</p>
-            <p><strong>Статус:</strong> ${lift.status}</p>
-            <p><strong>Останнє ТО:</strong> ${lift.lastMaintenance}</p>
-            <p><strong>Наступне ТО:</strong> ${lift.nextMaintenance}</p>
+            <p><strong>Endereço:</strong> ${lift.address}</p>
+            <p><strong>Modelo:</strong> ${lift.model}</p>
+            <p><strong>Estado:</strong> ${lift.status}</p>
+            <p><strong>Última manutenção:</strong> ${lift.lastMaintenance}</p>
+            <p><strong>Próxima manutenção:</strong> ${lift.nextMaintenance}</p>
         `;
         
         popup.style.left = event.pageX + 'px';
@@ -296,7 +296,7 @@ function hideLiftInfo() {
 }
 
 function refreshMap() {
-    toastr.info('Карта оновлена');
+    toastr.info('Mapa atualizado');
 }
 
 function toggleFullscreen() {

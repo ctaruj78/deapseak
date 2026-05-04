@@ -14,7 +14,7 @@ class Messenger {
       <h4>Месенджер з диспетчером</h4>
       <div id="chatWindow" style="height:150px;overflow-y:auto;border:1px solid #ccc;padding:5px;margin-bottom:10px;"></div>
       <input type="text" id="chatInput" class="form-control mb-2" placeholder="Введіть повідомлення...">
-      <button class="btn btn-primary btn-sm" id="sendMsgBtn">Відправити</button>
+      <button class="btn btn-primary btn-sm" id="sendMsgBtn">Enviar</button>
     `;
     document.getElementById('sendMsgBtn').onclick = () => this.sendMessage();
   }
@@ -23,10 +23,10 @@ class Messenger {
     const input = document.getElementById('chatInput');
     const text = input.value.trim();
     if (!text) return;
-    this.addMessage('Технік', text);
+    this.addMessage('Técnico', text);
     input.value = '';
     // Тут можна додати інтеграцію з сервером/диспетчером
-    setTimeout(() => this.addMessage('Диспетчер', 'Прийнято!'), 1000);
+    setTimeout(() => this.addMessage('Dispatcher', 'Прийнято!'), 1000);
   }
 
   addMessage(sender, text) {

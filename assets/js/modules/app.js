@@ -41,7 +41,7 @@ window.LiftMaster = {
         this.setupInterceptors();
         this.setupServiceWorker();
         
-        console.log('✅ LiftMaster Pro успішно ініціалізовано');
+        console.log('✅ LiftMaster Pro com sucesso ініціалізовано');
     },
     
     // Ініціалізація AdminLTE
@@ -93,7 +93,7 @@ window.LiftMaster = {
         return true;
     },
     
-    // Налаштування обробників подій
+    // Definições обробників подій
     setupEventListeners: function() {
         // Глобальні обробники
         $(document).on('click', '[data-toggle="modal"]', this.handleModalOpen);
@@ -122,7 +122,7 @@ window.LiftMaster = {
         $(document).on('change', '#themeSwitch', this.handleThemeChange);
     },
     
-    // Налаштування перехоплювачів запитів
+    // Definições перехоплювачів запитів
     setupInterceptors: function() {
         // Перехоплення AJAX запитів
         if (typeof $ !== 'undefined' && $.ajax) {
@@ -144,15 +144,15 @@ window.LiftMaster = {
                 if (xhr.status === 401) {
                     LiftMaster.handleUnauthorized();
                 } else if (xhr.status === 403) {
-                    LiftMaster.showNotification('Доступ заборонено', 'error');
+                    LiftMaster.showNotification('Acesso negado', 'error');
                 } else if (xhr.status >= 500) {
-                    LiftMaster.showNotification('Помилка сервера', 'error');
+                    LiftMaster.showNotification('Erro do servidor', 'error');
                 }
             });
         }
     },
     
-    // Налаштування Service Worker
+    // Definições Service Worker
     setupServiceWorker: function() {
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker
@@ -161,12 +161,12 @@ window.LiftMaster = {
                     console.log('✅ Service Worker зареєстровано:', registration);
                 })
                 .catch(function(error) {
-                    console.log('❌ Помилка реєстрації Service Worker:', error);
+                    console.log('❌ Erro реєстрації Service Worker:', error);
                 });
         }
     },
     
-    // Завантаження даних користувача
+    // A carregar даних користувача
     loadUserData: function() {
         const userData = localStorage.getItem('userData');
         if (userData) {
@@ -174,21 +174,21 @@ window.LiftMaster = {
                 this.state.user = JSON.parse(userData);
                 this.updateUserInterface();
             } catch (error) {
-                console.error('Помилка парсингу даних користувача:', error);
+                console.error('Erro парсингу даних користувача:', error);
                 localStorage.removeItem('userData');
             }
         }
     },
     
-    // Оновлення інтерфейсу користувача
+    // Atualização інтерфейсу користувача
     updateUserInterface: function() {
         if (this.state.user) {
-            // Оновлення імені користувача
-            $('.user-name').text(this.state.user.name || 'Користувач');
+            // Atualização імені користувача
+            $('.user-name').text(this.state.user.name || 'Utilizador');
             $('.user-email').text(this.state.user.email || '');
             $('.user-role').text(this.state.user.role ? this.state.user.role.toUpperCase() : 'USER');
             
-            // Оновлення аватара
+            // Atualização аватара
             if (this.state.user.avatar) {
                 $('.user-avatar').attr('src', this.state.user.avatar);
             }
@@ -268,7 +268,7 @@ window.LiftMaster = {
     },
     
     // Індикатор завантаження
-    showLoading: function(message = 'Завантаження...') {
+    showLoading: function(message = 'A carregar...') {
         // Перевіряємо, чи вже є індикатор
         if ($('#loadingOverlay').length === 0) {
             const overlay = $(`
@@ -462,7 +462,7 @@ window.LiftMaster = {
     },
     
     handleUnauthorized: function() {
-        this.showNotification('Сесія закінчилася. Будь ласка, увійдіть знову.', 'error');
+        this.showNotification('A sessão expirou. Por favor, inicie sessão novamente.', 'error');
         this.logout();
     },
     
@@ -472,7 +472,7 @@ window.LiftMaster = {
         const url = form.attr('action') || window.location.href;
         const method = form.attr('method') || 'POST';
         
-        this.showLoading('Збереження...');
+        this.showLoading('A guardar...');
         
         // Валідація форми
         if (!this.validateForm(form)) {
@@ -490,25 +490,25 @@ window.LiftMaster = {
         })
         .then(response => {
             if (!response.ok) {
-                throw new Error('Помилка сервера');
+                throw new Error('Erro do servidor');
             }
             return response.json();
         })
         .then(data => {
             this.hideLoading();
-            this.showNotification('Дані успішно збережено', 'success');
+            this.showNotification('Dados guardados com sucesso', 'success');
             
             // Закриття модального вікна
             form.closest('.modal').modal('hide');
             
-            // Оновлення даних
+            // Atualização даних
             if (typeof window.liftManager !== 'undefined') {
                 window.liftManager.loadLifts();
             }
         })
         .catch(error => {
             this.hideLoading();
-            this.showNotification('Помилка збереження: ' + error.message, 'error');
+            this.showNotification('Erro ao guardar: ' + error.message, 'error');
         });
     },
     
@@ -529,7 +529,7 @@ window.LiftMaster = {
     logout: function() {
         this.removeAuthToken();
         localStorage.removeItem('userData');
-        this.showNotification('Вихід успішний', 'success');
+        this.showNotification('Sessão terminada com sucesso', 'success');
         setTimeout(() => {
             this.redirectToLogin();
         }, 1000);
@@ -566,7 +566,7 @@ window.LiftMaster = {
         }
     },
     
-    // Експорт та імпорт
+    // Exportar та імпорт
     exportToCSV: function(data, filename) {
         const csv = this.convertToCSV(data);
         const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -630,7 +630,7 @@ $(document).ready(function() {
     // Ініціалізація додатку
     LiftMaster.init();
     
-    // Завантаження теми
+    // A carregar теми
     const savedTheme = localStorage.getItem('theme');
     if (savedTheme === 'dark') {
         $('body').addClass('dark-theme');
@@ -644,15 +644,15 @@ $(document).ready(function() {
 // Глобальні обробники помилок
 window.addEventListener('error', function(e) {
     console.error('Global error:', e.error);
-    LiftMaster.showNotification('Сталася неочікувана помилка', 'error');
+    LiftMaster.showNotification('Ocorreu um erro inesperado', 'error');
 });
 
 window.addEventListener('unhandledrejection', function(e) {
     console.error('Unhandled promise rejection:', e.reason);
-    LiftMaster.showNotification('Помилка виконання операції', 'error');
+    LiftMaster.showNotification('Erro ao executar operação', 'error');
 });
 
-// Експорт для використання в інших модулях
+// Exportar для використання в інших модулях
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = LiftMaster;
 }
@@ -671,7 +671,7 @@ class CommonUtils {
             return liftsData ? JSON.parse(liftsData) : [];
             
         } catch (error) {
-            console.error('Помилка отримання ліфтів:', error);
+            console.error('Erro отримання ліфтів:', error);
             return [];
         }
     }

@@ -1246,7 +1246,7 @@ class ServiceRequestManager {
                             title: (() => {
                                 if (req.title && req.title !== 'Sem título') return req.title;
                                 // Autogeração desde tipoу + endereçoи
-                                const typeMap = { maintenance: 'IT', repair: 'Reparação', inspection: 'Inspecção', consultation: 'Consulta', emergency: 'Avaria', orcamento: 'Орсаменто' };
+                                const typeMap = { maintenance: 'IT', repair: 'Reparação', inspection: 'Inspecção', consultation: 'Consulta', emergency: 'Avaria', orcamento: 'Orçamento' };
                                 const typePart = typeMap[req.type] || req.type || 'Pedido';
                                 const addr = (() => {
                                     const a = req.lift?.address || {};
@@ -1396,7 +1396,7 @@ class ServiceRequestManager {
                         timestamp: new Date('2025-10-06T11:05:00').toISOString(),
                         action: 'started',
                         message: 'Técnico iniciou trabalho',
-                        user: 'Сидоров П.П.'
+                        user: 'Técnico Demo'
                     }
                 ]
             },
@@ -1431,13 +1431,13 @@ class ServiceRequestManager {
                         timestamp: new Date('2025-10-03T10:00:00').toISOString(),
                         action: 'started',
                         message: 'Inspecção iniciada',
-                        user: 'Козлов А.А.'
+                        user: 'Técnico B'
                     },
                     {
                         timestamp: new Date('2025-10-03T12:30:00').toISOString(),
                         action: 'completed',
                         message: 'Inspecção concluída com sucesso',
-                        user: 'Козлов А.А.'
+                        user: 'Técnico B'
                     }
                 ]
             }
@@ -1528,7 +1528,7 @@ class ServiceRequestManager {
             
             console.log('✅ Select de elevadores заповнено, total опцій:', select.find('option').length);
 
-            // Також оновлюexisteмо select у формі edição
+            // Simож оновлюexisteмо select у формі edição
             const editSelect = $('#editRequestLift');
             if (editSelect.length) {
                 editSelect.empty().append('<option value="">Selecione o elevador...</option>');
@@ -1608,7 +1608,7 @@ class ServiceRequestManager {
         container.empty();
 
         if (this.requests.length === 0) {
-            container.html('<div class="alert alert-info m-0"><i class="fas fa-info-circle mr-2"></i>Deаявок не encontrado</div>');
+            container.html('<div class="alert alert-info m-0"><i class="fas fa-info-circle mr-2"></i>Nenhum pedido encontrado</div>');
             $('#requestsCount').text('');
             return;
         }
@@ -1616,7 +1616,7 @@ class ServiceRequestManager {
         const priorityColors = { critical: 'danger', urgent: 'danger', high: 'warning', medium: 'info', low: 'success' };
         const priorityIcons  = { critical: 'exclamation-triangle', urgent: 'exclamation-triangle', high: 'bolt', medium: 'wrench', low: 'clipboard-check' };
         const statusColors   = { new: 'primary', pending: 'primary', assigned: 'warning', in_progress: 'info', completed: 'success', cancelled: 'secondary' };
-        const statusTexts    = { new: 'Nova', pending: 'Nova', assigned: 'Atribuída', in_progress: 'Em curso', completed: 'Виконана', cancelled: 'Скасована' };
+        const statusTexts    = { new: 'Nova', pending: 'Nova', assigned: 'Atribuída', in_progress: 'Em curso', completed: 'Concluída', cancelled: 'Cancelada' };
 
         this.requests.forEach(request => {
             const requestId = (request._id && request._id.toString) ? request._id.toString() : (request._id || request.id || '');
@@ -1715,7 +1715,7 @@ class ServiceRequestManager {
             repair: 'Reparação',
             inspection: 'Inspecção',
             consultation: 'Consulta',
-            orcamento: 'Орсаменто'
+            orcamento: 'Orçamento'
         };
         return texts[type] || type;
     }
@@ -1738,16 +1738,16 @@ class ServiceRequestManager {
             assigned: 'Atribuída',
             in_progress: 'Em curso',
             completed: 'Concluída',
-            cancelled: 'Скасована'
+            cancelled: 'Cancelada'
         };
         return texts[status] || status;
     }
 
     getTechnicianName(techId) {
         const techs = {
-            tech1: 'Петров І.В.',
-            tech2: 'Сидоров П.П.',
-            tech3: 'Козлов А.А.'
+            tech1: 'Técnico A',
+            tech2: 'Técnico Demo',
+            tech3: 'Técnico B'
         };
         return techs[techId] || 'Desconhecido';
     }

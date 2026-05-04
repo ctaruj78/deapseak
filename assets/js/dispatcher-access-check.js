@@ -14,7 +14,7 @@
         checkDispatcherAccess();
     });
     
-    // Також перевіряємо відразу (якщо DOMContentLoaded вже спрацював)
+    // Simож перевіряємо відразу (якщо DOMContentLoaded вже спрацював)
     if (document.readyState === 'complete' || document.readyState === 'interactive') {
         checkDispatcherAccess();
     }
@@ -25,19 +25,19 @@
             const userRole = userData.role;
             
             console.log('🔒 Перевірка доступу до диспетчерської панелі...');
-            console.log('👤 Роль користувача:', userRole);
+            console.log('👤 Função користувача:', userRole);
             
             // Дозволені ролі: dispatcher та admin
             const allowedRoles = ['dispatcher', 'admin'];
             
             if (!userRole || !allowedRoles.includes(userRole)) {
-                console.error('❌ Доступ заборонено! Роль:', userRole);
+                console.error('❌ Acesso negado! Função:', userRole);
                 
                 alert(
-                    '❌ Доступ заборонено!\n\n' +
+                    '❌ Acesso negado!\n\n' +
                     'Ця сторінка доступна тільки для:\n' +
-                    '• Диспетчерів\n' +
-                    '• Адміністраторів\n\n' +
+                    '• Dispatcherів\n' +
+                    '• Administradorів\n\n' +
                     `Ваша роль: ${userRole || 'не визначена'}\n\n` +
                     'Ви будете перенаправлені на сторінку входу.'
                 );
@@ -51,14 +51,14 @@
             return true;
             
         } catch (error) {
-            console.error('❌ Помилка перевірки доступу:', error);
-            alert('Помилка авторизації. Увійдіть в систему заново.');
+            console.error('❌ Erro перевірки доступу:', error);
+            alert('Erro авторизації. Увійдіть в систему заново.');
             window.location.href = '/pages/auth/login.html';
             return false;
         }
     }
     
-    // Експортуємо функцію для використання в інших скриптах
+    // Exportarуємо функцію для використання в інших скриптах
     window.checkDispatcherAccess = checkDispatcherAccess;
     
 })();

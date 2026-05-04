@@ -79,7 +79,7 @@ class SimpleLiftModal {
             
         } catch (error) {
             console.error('❌ Error in form submission:', error);
-            this.showMessage('Помилка обробки форми: ' + error.message, 'error');
+            this.showMessage('Erro ao processar formulário: ' + error.message, 'error');
         }
     }
     
@@ -104,7 +104,7 @@ class SimpleLiftModal {
             accessCode: $('#accessCode').val() || '',
             lat: parseFloat($('#liftLat').val()) || null,
             lng: parseFloat($('#liftLng').val()) || null,
-            clientName: $('#clientName').val() || 'Невказано',
+            clientName: $('#clientName').val() || 'Não especificado',
             clientEmail: $('#clientEmail').val() || '',
             clientPhone: $('#clientPhone').val() || '',
             contactPerson: $('#contactPerson').val() || '',
@@ -184,8 +184,8 @@ class SimpleLiftModal {
             // Зберігаємо в localStorage
             this.saveToStorage();
             
-            // Успіх
-            this.showMessage('Ліфт успішно збережено!', 'success');
+            // Sucesso
+            this.showMessage('Elevador com sucesso збережено!', 'success');
             $('#liftModal').modal('hide');
             
             // Оновлюємо таблицю якщо є
@@ -210,7 +210,7 @@ class SimpleLiftModal {
             
         } catch (error) {
             console.error('❌ Error saving lift:', error);
-            this.showMessage('Помилка збереження: ' + error.message, 'error');
+            this.showMessage('Erro ao guardar: ' + error.message, 'error');
         }
     }
     
@@ -248,7 +248,7 @@ class SimpleLiftModal {
         $('#liftId').val('');
         $('.is-invalid').removeClass('is-invalid');
         $('.invalid-feedback').remove();
-        $('#modalTitle').text('Додати ліфт');
+        $('#modalTitle').text('Adicionar ліфт');
     }
     
     loadLiftForEdit(liftData) {
@@ -334,10 +334,10 @@ class SimpleLiftModal {
     
     getStatusText(status) {
         switch (status) {
-            case 'operational': return 'Працює';
-            case 'maintenance': return 'ТО';
-            case 'broken': return 'Поламаний';
-            case 'inactive': return 'Неактивний';
+            case 'operational': return 'Em funcionamento';
+            case 'maintenance': return 'Manutenção';
+            case 'broken': return 'Avariado';
+            case 'inactive': return 'Inativo';
             default: return 'Невизначено';
         }
     }
@@ -359,7 +359,7 @@ class SimpleLiftModal {
                 $('#liftModal').modal('show');
             }
         } else {
-            this.showMessage('Ліфт не знайдено', 'error');
+            this.showMessage('Elevador não encontrado', 'error');
         }
     }
     
@@ -369,7 +369,7 @@ class SimpleLiftModal {
         if (lift) {
             this.showLiftDetails(lift);
         } else {
-            this.showMessage('Ліфт не знайдено', 'error');
+            this.showMessage('Elevador não encontrado', 'error');
         }
     }
     
@@ -377,11 +377,11 @@ class SimpleLiftModal {
         console.log('🗑️ Delete lift:', liftId);
         const lift = this.findLiftById(liftId);
         if (lift) {
-            if (confirm(`Ви впевнені, що хочете видалити ліфт ${lift.municipalNumber}?`)) {
+            if (confirm(`Tem a certeza que pretende eliminar o elevador ${lift.municipalNumber}?`)) {
                 this.performDelete(liftId);
             }
         } else {
-            this.showMessage('Ліфт не знайдено', 'error');
+            this.showMessage('Elevador não encontrado', 'error');
         }
     }
     
@@ -391,7 +391,7 @@ class SimpleLiftModal {
         if (lift) {
             this.openTicketModal(lift);
         } else {
-            this.showMessage('Ліфт не знайдено', 'error');
+            this.showMessage('Elevador não encontrado', 'error');
         }
     }
     
@@ -422,7 +422,7 @@ class SimpleLiftModal {
         $('#liftStatus').val(lift.status || '');
         
         this.currentLiftId = lift.id;
-        $('#modalTitle').text('Редагувати ліфт');
+        $('#modalTitle').text('Editar ліфт');
     }
     
     showLiftDetails(lift) {
@@ -432,7 +432,7 @@ class SimpleLiftModal {
                 <div class="modal-dialog modal-lg">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <h5 class="modal-title">Деталі ліфта ${lift.municipalNumber}</h5>
+                            <h5 class="modal-title">Detalhes ліфта ${lift.municipalNumber}</h5>
                             <button type="button" class="close" data-dismiss="modal">
                                 <span>&times;</span>
                             </button>
@@ -441,22 +441,22 @@ class SimpleLiftModal {
                             <div class="row">
                                 <div class="col-md-6">
                                     <h6>Основна інформація</h6>
-                                    <p><strong>Муніципальний №:</strong> ${lift.municipalNumber || 'Невказано'}</p>
-                                    <p><strong>Серійний №:</strong> ${lift.serialNumber || 'Невказано'}</p>
-                                    <p><strong>Бренд:</strong> ${lift.brand || 'Невказано'}</p>
-                                    <p><strong>Модель:</strong> ${lift.model || 'Невказано'}</p>
-                                    <p><strong>Адреса:</strong> ${lift.address || 'Невказано'}</p>
-                                    <p><strong>Код домофону:</strong> ${lift.accessCode || 'Невказано'}</p>
-                                    <p><strong>Статус:</strong> <span class="badge badge-${this.getStatusColor(lift.status)}">${this.getStatusText(lift.status)}</span></p>
+                                    <p><strong>N.º Municipal:</strong> ${lift.municipalNumber || 'Não especificado'}</p>
+                                    <p><strong>Agoійний №:</strong> ${lift.serialNumber || 'Não especificado'}</p>
+                                    <p><strong>Marca:</strong> ${lift.brand || 'Não especificado'}</p>
+                                    <p><strong>Modelo:</strong> ${lift.model || 'Não especificado'}</p>
+                                    <p><strong>Endereço:</strong> ${lift.address || 'Não especificado'}</p>
+                                    <p><strong>Código do intercomunicador:</strong> ${lift.accessCode || 'Não especificado'}</p>
+                                    <p><strong>Estado:</strong> <span class="badge badge-${this.getStatusColor(lift.status)}">${this.getStatusText(lift.status)}</span></p>
                                 </div>
                                 <div class="col-md-6">
                                     <h6>Технічна інформація</h6>
-                                    <p><strong>Тип:</strong> ${lift.type || 'Невказано'}</p>
-                                    <p><strong>Пасажиромісткість:</strong> ${lift.capacity || 'Невказано'} осіб</p>
-                                    <p><strong>Швидкість:</strong> ${lift.speed || 'Невказано'} м/с</p>
-                                    <p><strong>Остання інспекція:</strong> ${lift.lastInspection || 'Невказано'}</p>
-                                    <p><strong>Наступна інспекція:</strong> ${lift.nextInspection || 'Невказано'}</p>
-                                    <p><strong>Технік:</strong> ${lift.tech || 'Автопризначення'}</p>
+                                    <p><strong>Tipo:</strong> ${lift.type || 'Não especificado'}</p>
+                                    <p><strong>Capacidade:</strong> ${lift.capacity || 'Não especificado'} pessoas</p>
+                                    <p><strong>Velocidade:</strong> ${lift.speed || 'Não especificado'} m/s</p>
+                                    <p><strong>Остання інспекція:</strong> ${lift.lastInspection || 'Não especificado'}</p>
+                                    <p><strong>Наступна інспекція:</strong> ${lift.nextInspection || 'Não especificado'}</p>
+                                    <p><strong>Técnico:</strong> ${lift.tech || 'Автопризначення'}</p>
                                 </div>
                             </div>
                         </div>
@@ -488,11 +488,11 @@ class SimpleLiftModal {
                 if (typeof window.loadLiftsFromAPI === 'function') {
                     window.loadLiftsFromAPI();
                 }
-                this.showMessage('Ліфт успішно видалено', 'success');
+                this.showMessage('Elevador com sucesso видалено', 'success');
             }
         } catch (error) {
             console.error('❌ Error deleting lift:', error);
-            this.showMessage('Помилка видалення: ' + error.message, 'error');
+            this.showMessage('Erro видалення: ' + error.message, 'error');
         }
     }
     
@@ -502,8 +502,8 @@ class SimpleLiftModal {
         // Convert MongoDB ObjectId to string
         const liftId = window.safeId ? window.safeId(lift) : ((lift._id && lift._id.toString) ? lift._id.toString() : (lift._id || lift.id || ''));
         if (!liftId) {
-            console.error('❌ Ліфт без ID:', lift);
-            this.showMessage('Помилка: ID ліфта не знайдено', 'error');
+            console.error('❌ Elevador без ID:', lift);
+            this.showMessage('Erro: ID ліфта не знайдено', 'error');
             return;
         }
         
@@ -520,32 +520,32 @@ class SimpleLiftModal {
                         <div class="modal-body">
                             <form id="ticketForm">
                                 <div class="form-group">
-                                    <label for="ticketType">Тип заявки</label>
+                                    <label for="ticketType">Tipo заявки</label>
                                     <select id="ticketType" class="form-control" required>
                                         <option value="">Оберіть тип...</option>
                                         <option value="maintenance">Планове обслуговування</option>
-                                        <option value="repair">Ремонт</option>
-                                        <option value="inspection">Інспекція</option>
+                                        <option value="repair">Reparação</option>
+                                        <option value="inspection">Inspeção</option>
                                         <option value="emergency">Аварійна заявка</option>
                                     </select>
                                 </div>
                                 <div class="form-group">
-                                    <label for="ticketDescription">Опис проблеми</label>
+                                    <label for="ticketDescription">Descrição проблеми</label>
                                     <textarea id="ticketDescription" class="form-control" rows="4" required placeholder="Детальний опис проблеми або робіт..."></textarea>
                                 </div>
                                 <div class="form-group">
-                                    <label for="ticketPriority">Пріоритет</label>
+                                    <label for="ticketPriority">Prioridade</label>
                                     <select id="ticketPriority" class="form-control" required>
                                         <option value="low">Низький</option>
-                                        <option value="medium" selected>Середній</option>
-                                        <option value="high">Високий</option>
-                                        <option value="critical">Критичний</option>
+                                        <option value="medium" selected>Agoедній</option>
+                                        <option value="high">Altий</option>
+                                        <option value="critical">Crítico</option>
                                     </select>
                                 </div>
                             </form>
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Скасувати</button>
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
                             <button type="button" class="btn btn-primary" onclick="window.simpleLiftModal.createTicketForLift('${liftId}')">Створити заявку</button>
                         </div>
                     </div>
@@ -565,7 +565,7 @@ class SimpleLiftModal {
         const ticketPriority = $('#ticketPriority').val();
         
         if (!ticketType || !ticketDescription) {
-            this.showMessage('Заповніть всі обов\'язкові поля', 'warning');
+            this.showMessage('Preencha todos os campos obrigatórios', 'warning');
             return;
         }
         
@@ -588,7 +588,7 @@ class SimpleLiftModal {
         localStorage.setItem('tickets', JSON.stringify(tickets));
         
         $('#ticketModal').modal('hide');
-        this.showMessage('Заявку створено успішно!', 'success');
+        this.showMessage('Заявку створено com sucesso!', 'success');
         
         console.log('✅ Ticket created:', ticket);
     }

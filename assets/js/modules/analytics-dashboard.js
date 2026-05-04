@@ -13,7 +13,7 @@ class AnalyticsDashboard {
     }
 
     async loadData() {
-        // Завантаження даних для аналітики
+        // A carregar даних для аналітики
         this.data = {
             maintenance: await this.loadMaintenanceData(),
             financial: await this.loadFinancialData(),
@@ -27,7 +27,7 @@ class AnalyticsDashboard {
         const lifts = JSON.parse(localStorage.getItem('lifts')) || [];
         const requests = JSON.parse(localStorage.getItem('maintenanceRequests')) || [];
         
-        // Обробка даних для аналітики ТО
+        // Обробка даних для аналітики Manutenção
         return {
             totalMaintenance: requests.length,
             completed: requests.filter(r => r.status === 'completed').length,
@@ -40,7 +40,7 @@ class AnalyticsDashboard {
 
     generateWeeklyData(requests) {
         // Генерація тижневих даних для графіка
-        const days = ['Понеділок', 'Вівторок', 'Середа', 'Четвер', 'П\'ятниця', 'Субота', 'Неділя'];
+        const days = ['Понеділок', 'Вівторок', 'Agoеда', 'Четвер', 'П\'ятниця', 'Субота', 'Неділя'];
         const weeklyData = {};
         
         days.forEach(day => {
@@ -73,7 +73,7 @@ class AnalyticsDashboard {
     }
 
     async loadFinancialData() {
-        // Завантаження фінансових даних
+        // A carregar фінансових даних
         const invoices = JSON.parse(localStorage.getItem('invoices')) || [];
         
         return {
@@ -87,7 +87,7 @@ class AnalyticsDashboard {
 
     generateMonthlyData() {
         // Генерація місячних даних для графіка
-        const months = ['Січень', 'Лютий', 'Березень', 'Квітень', 'Травень', 'Червень'];
+        const months = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho'];
         const monthlyData = [];
         
         months.forEach(() => {
@@ -213,7 +213,7 @@ class AnalyticsDashboard {
             data: {
                 labels: Object.keys(weeklyData),
                 datasets: [{
-                    label: 'Кількість ТО',
+                    label: 'Quantidade de manutenções',
                     data: Object.values(weeklyData),
                     backgroundColor: 'rgba(60, 141, 188, 0.8)',
                     borderColor: 'rgba(60, 141, 188, 1)',
@@ -229,7 +229,7 @@ class AnalyticsDashboard {
                     },
                     title: {
                         display: true,
-                        text: 'Щотижнева активність ТО'
+                        text: 'Щотижнева активність Manutenção'
                     }
                 },
                 scales: {
@@ -250,7 +250,7 @@ class AnalyticsDashboard {
         this.charts.liftsStatus = new Chart(ctx, {
             type: 'doughnut',
             data: {
-                labels: ['Активні', 'На ТО', 'Неактивні'],
+                labels: ['Активні', 'Em manutenção', 'Неактивні'],
                 datasets: [{
                     data: [
                         this.data.lifts.active,
@@ -288,9 +288,9 @@ class AnalyticsDashboard {
         this.charts.performance = new Chart(ctx, {
             type: 'radar',
             data: {
-                labels: ['Швидкість', 'Якість', 'Надійність', 'Ефективність', 'Комуникація'],
+                labels: ['Velocidade', 'Qualidade', 'Надійність', 'Ефективність', 'Комуникація'],
                 datasets: [{
-                    label: 'Середня оцінка',
+                    label: 'Agoедня оцінка',
                     data: [4.5, 4.8, 4.3, 4.6, 4.7],
                     fill: true,
                     backgroundColor: 'rgba(60, 141, 188, 0.2)',
@@ -324,7 +324,7 @@ class AnalyticsDashboard {
         this.charts.financial = new Chart(ctx, {
             type: 'line',
             data: {
-                labels: ['Січ', 'Лют', 'Бер', 'Кві', 'Тра', 'Чер'],
+                labels: ['Jan', 'Fev', 'Mar', 'Кві', 'Mai', 'Jun'],
                 datasets: [{
                     label: 'Доходи',
                     data: monthlyData,
@@ -362,9 +362,9 @@ class AnalyticsDashboard {
         this.charts.trends = new Chart(ctx, {
             type: 'line',
             data: {
-                labels: ['Січ', 'Лют', 'Бер', 'Кві', 'Тра', 'Чер', 'Лип', 'Сер', 'Вер', 'Жов', 'Лис', 'Гру'],
+                labels: ['Jan', 'Fev', 'Mar', 'Кві', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],
                 datasets: [{
-                    label: 'Фактичні показники',
+                    label: 'Indicadores reais',
                     data: [65, 59, 80, 81, 56, 55, 72, 68, 75, 82, 78, 85],
                     borderColor: 'rgb(220, 53, 69)',
                     tension: 0.1,
@@ -399,20 +399,20 @@ class AnalyticsDashboard {
         const period = document.getElementById('timePeriod').value;
         const analyticsType = document.getElementById('analyticsType').value;
 
-        // Оновлення даних графіків на основі вибраних параметрів
+        // Atualização даних графіків на основі вибраних параметрів
         this.refreshChartData(period, analyticsType);
         this.updateKPICards();
     }
 
     refreshChartData(period, analyticsType) {
-        // Оновлення даних для всіх графіків
+        // Atualização даних для всіх графіків
         Object.values(this.charts).forEach(chart => {
             chart.update();
         });
     }
 
     updateKPICards() {
-        // Оновлення карток з ключовими показниками
+        // Atualização карток з ключовими показниками
         document.getElementById('totalMaintenance').textContent = this.data.maintenance.totalMaintenance;
         document.getElementById('completedRequests').textContent = this.data.maintenance.completed;
         document.getElementById('totalRevenue').textContent = this.formatCurrency(this.data.financial.totalRevenue);
@@ -492,7 +492,7 @@ class AnalyticsDashboard {
         // Використання toast-сповіщень AdminLTE
         const toast = $(`<div class="toast" role="alert" aria-live="assertive" aria-atomic="true">
             <div class="toast-header">
-                <strong class="mr-auto">Аналітика</strong>
+                <strong class="mr-auto">Análise</strong>
                 <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>

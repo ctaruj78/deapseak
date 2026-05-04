@@ -38,7 +38,7 @@ class FinancialCharts {
             data: {
                 labels: trendData.periods,
                 datasets: [{
-                    label: 'Дохід',
+                    label: 'Receita',
                     data: trendData.values,
                     borderColor: '#27ae60',
                     backgroundColor: this.hexToRgba('#27ae60', 0.1),
@@ -100,7 +100,7 @@ class FinancialCharts {
                 labels: maData.dates,
                 datasets: [
                     {
-                        label: 'Ціна',
+                        label: 'Preço',
                         data: maData.prices,
                         borderColor: '#2c3e50',
                         tension: 0.1
@@ -185,14 +185,14 @@ class FinancialCharts {
                         tension: 0.4
                     },
                     {
-                        label: 'Прогноз доходу',
+                        label: 'Previsão de receita',
                         data: forecastData.forecast,
                         borderColor: '#e74c3c',
                         borderDash: [5, 5],
                         tension: 0.4
                     },
                     {
-                        label: 'Довірчий інтервал',
+                        label: 'Intervalo de confiança',
                         data: forecastData.upperBound,
                         borderColor: 'transparent',
                         backgroundColor: this.hexToRgba('#e74c3c', 0.1),

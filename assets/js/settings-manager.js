@@ -55,7 +55,7 @@ class SettingsManager {
         };
     }
 
-    // Завантажити налаштування з сервера
+    // Descarregar налаштування з сервера
     async loadSettings() {
         try {
             // Спочатку показуємо локальні налаштування для швидкості
@@ -89,7 +89,7 @@ class SettingsManager {
         }
     }
 
-    // Зберегти налаштування на сервер
+    // Guardar налаштування на сервер
     async saveSettings(newSettings) {
         try {
             const token = AuthManager.getAuthToken();
@@ -123,7 +123,7 @@ class SettingsManager {
         }
     }
 
-    // Оновити мову
+    // Atualizar мову
     async updateLanguage(language) {
         try {
             const token = AuthManager.getAuthToken();
@@ -164,7 +164,7 @@ class SettingsManager {
         }
     }
 
-    // Оновити тему
+    // Atualizar тему
     async updateTheme(theme) {
         try {
             const token = AuthManager.getAuthToken();
@@ -203,7 +203,7 @@ class SettingsManager {
         }
     }
 
-    // Оновити налаштування сповіщень
+    // Atualizar налаштування сповіщень
     async updateNotifications(notifications) {
         try {
             const token = AuthManager.getAuthToken();
@@ -234,7 +234,7 @@ class SettingsManager {
         }
     }
 
-    // Скинути налаштування
+    // Repor налаштування
     async resetSettings() {
         try {
             const token = AuthManager.getAuthToken();
@@ -268,12 +268,12 @@ class SettingsManager {
         }
     }
 
-    // Зберегти локально
+    // Guardar локально
     saveLocal(settings) {
         localStorage.setItem('user_settings', JSON.stringify(settings));
     }
 
-    // Застосувати тему
+    // Aplicar тему
     applyTheme(theme) {
         const body = document.body;
         body.classList.remove('dark-mode', 'light-mode');
@@ -325,13 +325,13 @@ class SettingsManager {
 
 // Глобальний екземпляр (робимо доступним через window)
 window.settingsManager = new SettingsManager();
-// Також створюємо const для сумісності
+// Simож створюємо const для сумісності
 const settingsManager = window.settingsManager;
 
 // НЕ ініціалізуємо автоматично - буде викликано вручну зі сторінки
 // після завантаження всіх залежностей
 
-// Експорт
+// Exportar
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = SettingsManager;
 }

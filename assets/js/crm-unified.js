@@ -40,16 +40,16 @@ class CRMUnified {
                 console.warn('CRMDataManager не доступний, використовуємо базову функціональність');
             }
             
-            // Завантаження даних користувача
+            // A carregar даних користувача
             await this.loadUserData();
             
-            // Налаштування рольового доступу
+            // Definições рольового доступу
             this.setupRoleAccess();
             
             // Генерація навігації
             this.renderNavigation();
             
-            // Завантаження дашборду
+            // A carregar дашборду
             this.loadDashboard();
             
             // Налаштовуємо інтерактивність
@@ -70,17 +70,17 @@ class CRMUnified {
             this.currentUser = mockUserData;
             this.userRole = mockUserData.role;
             
-            // Оновлення інтерфейсу користувача
+            // Atualização інтерфейсу користувача
             this.updateUserInterface();
             
         } catch (error) {
-            console.error('Помилка завантаження даних користувача:', error);
+            console.error('Erro ao carregar dados користувача:', error);
             this.handleAuthError();
         }
     }
     
     handleAuthError() {
-        console.warn('Помилка автентифікації, перенаправлення на логін');
+        console.warn('Erro автентифікації, перенаправлення на логін');
         window.location.href = '/login.html';
     }
     
@@ -93,10 +93,10 @@ class CRMUnified {
                 <div style="display: flex; justify-content: center; align-items: center; height: 100vh; background: #f8f9fa;">
                     <div style="text-align: center; padding: 40px; background: white; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
                         <i class="fas fa-exclamation-triangle" style="font-size: 4rem; color: #dc3545; margin-bottom: 20px;"></i>
-                        <h2>Помилка завантаження системи</h2>
+                        <h2>Erro завантаження системи</h2>
                         <p>Сталася критична помилка під час ініціалізації CRM системи.</p>
                         <div style="margin: 20px 0; padding: 15px; background: #f8f9fa; border-radius: 5px; font-family: monospace; text-align: left;">
-                            ${error.message || 'Невідома помилка'}
+                            ${error.message || 'Erro desconhecido'}
                         </div>
                         <button onclick="location.reload()" style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer;">
                             Перезавантажити
@@ -148,12 +148,12 @@ class CRMUnified {
     
     updateUserInterface() {
         const roleLabels = {
-            admin: 'Адміністратор',
-            dispatcher: 'Диспетчер',
-            tech: 'Технік'
+            admin: 'Administrador',
+            dispatcher: 'Dispatcher',
+            tech: 'Técnico'
         };
         
-        // Оновлення елементів інтерфейсу з перевіркою існування
+        // Atualização елементів інтерфейсу з перевіркою існування
         const elements = {
             'current-username': this.currentUser.name,
             'sidebar-username': this.currentUser.name,
@@ -192,18 +192,18 @@ class CRMUnified {
                 'qr-generator',  // Генератор QR
                 'qr-management', // Управління QR системою
                 'qr-history',    // Історія сканувань  
-                'qr-analytics',  // Аналітика QR
+                'qr-analytics',  // Análise QR
                 'qr-batch',      // Пакетне керування
                 
                 // Основні модулі управління
                 'lifts',         // Управління ліфтами
                 'maps',          // Мапа ліфтів
                 'users',         // Управління користувачами
-                'settings',      // Налаштування системи
+                'settings',      // Definições системи
                 
-                // Аналітика та звітність
+                // Análise та звітність
                 'analytics-full', // Повна аналітика
-                'reports',       // Звіти
+                'reports',       // Relatórioи
                 
                 // Розумні системи управління
                 'ai-assistant',      // AI помічник для прийняття рішень
@@ -230,15 +230,15 @@ class CRMUnified {
                 'clients',       // Робота з клієнтами
                 'monitoring',    // Моніторинг процесів
                 
-                // Аналітика та звітність
+                // Análise та звітність
                 'analytics-basic', // Базова аналітика
-                'reports',        // Звіти
+                'reports',        // Relatórioи
                 
                 // Координаційні системи
                 'ai-assistant',      // AI для планування
                 'assignment-manager', // Розподіл завдань
                 'monitoring-manager', // Контроль виконання
-                'batch-manager',     // Групові операції
+                'batch-manager',     // Dezпові операції
                 'chat-system'        // Координаційний чат
             ],
             tech: [
@@ -256,7 +256,7 @@ class CRMUnified {
                 // Навчання та довідка
                 'knowledge-base', // База знань
                 'manuals',       // Технічні інструкції
-                'videos',        // Відео-гайди та навчання
+                'videos',        // Vídeo-гайди та навчання
                 
                 // Робочі інструменти
                 'tools',         // Інструменти техніка
@@ -360,7 +360,7 @@ class CRMUnified {
                     { title: 'Генератор QR', icon: 'fas fa-plus-circle', action: () => this.loadModule('qr-generator') },
                     { title: 'Управління QR', icon: 'fas fa-cog', action: () => this.loadModule('qr-management') },
                     { title: 'Історія сканувань', icon: 'fas fa-history', action: () => this.loadModule('qr-history') },
-                    { title: 'Аналітика QR', icon: 'fas fa-chart-line', action: () => this.loadModule('qr-analytics') },
+                    { title: 'Análise QR', icon: 'fas fa-chart-line', action: () => this.loadModule('qr-analytics') },
                     { title: 'Пакетне керування', icon: 'fas fa-layer-group', action: () => this.loadModule('qr-batch') }
                 ]
             },
@@ -379,7 +379,7 @@ class CRMUnified {
                 action: () => this.loadModule('qr-scanner')
             },
             lifts: {
-                title: 'Ліфти',
+                title: 'Elevadores',
                 icon: 'fas fa-elevator',
                 submenu: [
                     { title: 'Управління ліфтами', icon: 'fas fa-list', action: () => this.loadModule('lifts') },
@@ -387,12 +387,12 @@ class CRMUnified {
                 ]
             },
             users: {
-                title: 'Користувачі',
+                title: 'Utilizadorі',
                 icon: 'fas fa-users',
                 action: () => this.loadModule('users')
             },
             'analytics-full': {
-                title: 'Аналітика',
+                title: 'Análise',
                 icon: 'fas fa-chart-bar',
                 action: () => this.loadModule('analytics')
             },
@@ -402,12 +402,12 @@ class CRMUnified {
                 action: () => this.loadModule('analytics-basic')
             },
             reports: {
-                title: 'Звіти',
+                title: 'Relatórioи',
                 icon: 'fas fa-file-alt',
                 action: () => this.loadModule('reports')
             },
             settings: {
-                title: 'Налаштування',
+                title: 'Definições',
                 icon: 'fas fa-cog',
                 action: () => this.loadModule('settings')
             },
@@ -417,12 +417,12 @@ class CRMUnified {
                 action: () => this.loadModule('assignments')
             },
             technicians: {
-                title: 'Техніки',
+                title: 'Técnicoи',
                 icon: 'fas fa-hard-hat',
                 action: () => this.loadModule('technicians')
             },
             clients: {
-                title: 'Клієнти',
+                title: 'Clienteи',
                 icon: 'fas fa-handshake',
                 action: () => this.loadModule('clients')
             },
@@ -521,7 +521,7 @@ class CRMUnified {
             
             // Додаткові модулі для техніків
             'inspections': {
-                title: 'Інспекції',
+                title: 'Inspeções',
                 icon: 'fas fa-search',
                 action: () => this.loadModule('inspections')
             },
@@ -531,7 +531,7 @@ class CRMUnified {
                 action: () => this.loadModule('manuals')
             },
             'videos': {
-                title: 'Відео-гайди',
+                title: 'Vídeo-гайди',
                 icon: 'fas fa-video',
                 action: () => this.loadModule('videos')
             },
@@ -541,7 +541,7 @@ class CRMUnified {
                 action: () => this.loadModule('task-map')
             },
             'notifications': {
-                title: 'Сповіщення',
+                title: 'Notificações',
                 icon: 'fas fa-bell',
                 action: () => this.loadModule('notifications')
             }
@@ -600,9 +600,9 @@ class CRMUnified {
     
     generateDashboard() {
         const roleNames = {
-            admin: 'Адміністратора',
-            dispatcher: 'Диспетчера',
-            tech: 'Техніка'
+            admin: 'Administradorа',
+            dispatcher: 'Dispatcherа',
+            tech: 'Técnicoа'
         };
         
         return `
@@ -649,7 +649,7 @@ class CRMUnified {
                     <div class="small-box bg-info stats-card">
                         <div class="inner">
                             <h3 id="total-lifts">156</h3>
-                            <p>Всього ліфтів</p>
+                            <p>Total de elevadores</p>
                         </div>
                         <div class="icon">
                             <i class="fas fa-elevator"></i>
@@ -670,7 +670,7 @@ class CRMUnified {
                             <i class="fas fa-qrcode"></i>
                         </div>
                         <a href="#" class="small-box-footer" onclick="window.crmSystem.loadModule('qr-analytics')">
-                            Аналітика <i class="fas fa-arrow-circle-right"></i>
+                            Análise <i class="fas fa-arrow-circle-right"></i>
                         </a>
                     </div>
                 </div>
@@ -700,7 +700,7 @@ class CRMUnified {
                             <i class="fas fa-tasks"></i>
                         </div>
                         <a href="#" class="small-box-footer" onclick="window.crmSystem.loadModule('assignments')">
-                            Переглянути <i class="fas fa-arrow-circle-right"></i>
+                            Ver <i class="fas fa-arrow-circle-right"></i>
                         </a>
                     </div>
                 </div>
@@ -729,13 +729,13 @@ class CRMUnified {
                                     <i class="fas fa-plus"></i> Створити QR-код
                                 </button>
                                 <button class="btn btn-success mb-2" onclick="window.crmSystem.loadModule('lifts')">
-                                    <i class="fas fa-plus"></i> Додати ліфт
+                                    <i class="fas fa-plus"></i> Adicionar ліфт
                                 </button>
                                 <button class="btn btn-info mb-2" onclick="window.crmSystem.loadModule('users')">
-                                    <i class="fas fa-user-plus"></i> Новий користувач
+                                    <i class="fas fa-user-plus"></i> Novo користувач
                                 </button>
                                 <button class="btn btn-warning" onclick="window.crmSystem.loadModule('reports')">
-                                    <i class="fas fa-file-export"></i> Експорт звіту
+                                    <i class="fas fa-file-export"></i> Exportar звіту
                                 </button>
                             </div>
                         </div>
@@ -758,7 +758,7 @@ class CRMUnified {
                             <i class="fas fa-clipboard-list"></i>
                         </div>
                         <a href="#" class="small-box-footer" onclick="window.crmSystem.loadModule('assignments')">
-                            Переглянути <i class="fas fa-arrow-circle-right"></i>
+                            Ver <i class="fas fa-arrow-circle-right"></i>
                         </a>
                     </div>
                 </div>
@@ -782,13 +782,13 @@ class CRMUnified {
                     <div class="small-box bg-info stats-card">
                         <div class="inner">
                             <h3 id="client-requests">45</h3>
-                            <p>Запитів клієнтів</p>
+                            <p>Pedidoів клієнтів</p>
                         </div>
                         <div class="icon">
                             <i class="fas fa-handshake"></i>
                         </div>
                         <a href="#" class="small-box-footer" onclick="window.crmSystem.loadModule('clients')">
-                            Переглянути <i class="fas fa-arrow-circle-right"></i>
+                            Ver <i class="fas fa-arrow-circle-right"></i>
                         </a>
                     </div>
                 </div>
@@ -820,10 +820,10 @@ class CRMUnified {
                                 <table class="table table-striped">
                                     <thead>
                                         <tr>
-                                            <th>Технік</th>
-                                            <th>Завдання</th>
-                                            <th>Статус</th>
-                                            <th>Пріоритет</th>
+                                            <th>Técnico</th>
+                                            <th>Tarefa</th>
+                                            <th>Estado</th>
+                                            <th>Prioridade</th>
                                             <th>Дії</th>
                                         </tr>
                                     </thead>
@@ -852,7 +852,7 @@ class CRMUnified {
                             <i class="fas fa-tasks"></i>
                         </div>
                         <a href="#" class="small-box-footer" onclick="window.crmSystem.loadModule('tasks')">
-                            Переглянути <i class="fas fa-arrow-circle-right"></i>
+                            Ver <i class="fas fa-arrow-circle-right"></i>
                         </a>
                     </div>
                 </div>
@@ -861,7 +861,7 @@ class CRMUnified {
                     <div class="small-box bg-success stats-card">
                         <div class="inner">
                             <h3 id="completed-today">3</h3>
-                            <p>Виконано сьогодні</p>
+                            <p>Concluído сьогодні</p>
                         </div>
                         <div class="icon">
                             <i class="fas fa-check-circle"></i>
@@ -945,17 +945,17 @@ class CRMUnified {
     }
     
     initAdminDashboard() {
-        // Завантаження статистики для адміна
+        // A carregar статистики для адміна
         this.loadAdminStats();
     }
     
     initDispatcherDashboard() {
-        // Завантаження даних для диспетчера
+        // A carregar даних для диспетчера
         this.loadDispatcherData();
     }
     
     initTechDashboard() {
-        // Завантаження завдань для техніка
+        // A carregar завдань для техніка
         this.loadTechTasks();
     }
     
@@ -989,7 +989,7 @@ class CRMUnified {
     }
     
     async loadModule(moduleId) {
-        console.log(`Завантаження модуля: ${moduleId}`);
+        console.log(`A carregar модуля: ${moduleId}`);
         
         // Спеціальний випадок для dashboard - використовуємо власну функцію
         if (moduleId === 'dashboard') {
@@ -1010,7 +1010,7 @@ class CRMUnified {
                 <div class="container-fluid">
                     <div class="row mb-2">
                         <div class="col-sm-6">
-                            <h1 class="m-0">Завантаження...</h1>
+                            <h1 class="m-0">A carregar...</h1>
                         </div>
                     </div>
                 </div>
@@ -1019,7 +1019,7 @@ class CRMUnified {
                 <div class="container-fluid">
                     <div class="text-center" style="padding: 50px;">
                         <i class="fas fa-spinner fa-spin fa-3x text-primary"></i>
-                        <p class="mt-3">Завантаження модуля ${moduleId}...</p>
+                        <p class="mt-3">A carregar модуля ${moduleId}...</p>
                     </div>
                 </div>
             </section>
@@ -1037,7 +1037,7 @@ class CRMUnified {
             this.initModuleAfterLoad(moduleId);
             
         } catch (error) {
-            console.error(`Помилка завантаження модуля ${moduleId}:`, error);
+            console.error(`Erro завантаження модуля ${moduleId}:`, error);
             document.getElementById('main-content').innerHTML = this.getDefaultModuleContent(moduleId);
         }
         
@@ -1116,17 +1116,17 @@ class CRMUnified {
                 description: 'Створення та відстеження завдань'
             },
             'analytics': {
-                title: 'Аналітика системи',
+                title: 'Análise системи',
                 icon: 'fas fa-chart-bar',
                 description: 'Статистика та аналіз даних'
             },
             'reports': {
-                title: 'Звіти',
+                title: 'Relatórioи',
                 icon: 'fas fa-file-alt',
                 description: 'Генерація та перегляд звітів'
             },
             'settings': {
-                title: 'Налаштування',
+                title: 'Definições',
                 icon: 'fas fa-cogs',
                 description: 'Системні налаштування'
             }
@@ -1145,7 +1145,7 @@ class CRMUnified {
         // Загальні дії для всіх модулів
         actions.push(`
             <button type="button" class="btn btn-primary" data-action="refresh-data">
-                <i class="fas fa-sync"></i> Оновити
+                <i class="fas fa-sync"></i> Atualizar
             </button>
         `);
         
@@ -1155,13 +1155,13 @@ class CRMUnified {
                 if (this.hasPermission('users.create')) {
                     actions.unshift(`
                         <button type="button" class="btn btn-success" data-action="add-user">
-                            <i class="fas fa-plus"></i> Додати користувача
+                            <i class="fas fa-plus"></i> Adicionar користувача
                         </button>
                     `);
                 }
                 actions.push(`
                     <button type="button" class="btn btn-info" data-action="export-data" data-type="users">
-                        <i class="fas fa-download"></i> Експорт
+                        <i class="fas fa-download"></i> Exportar
                     </button>
                 `);
                 break;
@@ -1170,13 +1170,13 @@ class CRMUnified {
                 if (this.hasPermission('lifts.create')) {
                     actions.unshift(`
                         <button type="button" class="btn btn-success" data-action="add-lift">
-                            <i class="fas fa-plus"></i> Додати ліфт
+                            <i class="fas fa-plus"></i> Adicionar ліфт
                         </button>
                     `);
                 }
                 actions.push(`
                     <button type="button" class="btn btn-info" data-action="export-data" data-type="lifts">
-                        <i class="fas fa-download"></i> Експорт
+                        <i class="fas fa-download"></i> Exportar
                     </button>
                 `);
                 break;
@@ -1237,7 +1237,7 @@ class CRMUnified {
                             <h3 class="card-title">Список користувачів</h3>
                             <div class="card-tools">
                                 <div class="input-group input-group-sm" style="width: 250px;">
-                                    <input type="text" class="form-control" placeholder="Пошук користувачів..." id="users-search">
+                                    <input type="text" class="form-control" placeholder="Pesquisar utilizadores..." id="users-search">
                                     <div class="input-group-append">
                                         <button type="button" class="btn btn-default">
                                             <i class="fas fa-search"></i>
@@ -1251,10 +1251,10 @@ class CRMUnified {
                                 <thead>
                                     <tr>
                                         <th data-sort="id">ID</th>
-                                        <th data-sort="name">Ім'я</th>
+                                        <th data-sort="name">Nome</th>
                                         <th data-sort="email">Email</th>
-                                        <th data-sort="role">Роль</th>
-                                        <th data-sort="status">Статус</th>
+                                        <th data-sort="role">Função</th>
+                                        <th data-sort="status">Estado</th>
                                         <th data-sort="created">Створено</th>
                                         <th>Дії</th>
                                     </tr>
@@ -1279,22 +1279,22 @@ class CRMUnified {
                                             </td>
                                             <td>
                                                 <span class="badge badge-${user.active ? 'success' : 'secondary'}">
-                                                    ${user.active ? 'Активний' : 'Неактивний'}
+                                                    ${user.active ? 'Ativo' : 'Inativo'}
                                                 </span>
                                             </td>
                                             <td>${this.formatDate(user.createdAt)}</td>
                                             <td>
                                                 <div class="btn-group btn-group-sm">
-                                                    <button type="button" class="btn btn-info" data-action="view-details" data-type="user" data-id="${user.id}" title="Переглянути">
+                                                    <button type="button" class="btn btn-info" data-action="view-details" data-type="user" data-id="${user.id}" title="Ver">
                                                         <i class="fas fa-eye"></i>
                                                     </button>
                                                     ${this.hasPermission('users.edit') ? `
-                                                        <button type="button" class="btn btn-warning" data-action="edit-user" data-id="${user.id}" title="Редагувати">
+                                                        <button type="button" class="btn btn-warning" data-action="edit-user" data-id="${user.id}" title="Editar">
                                                             <i class="fas fa-edit"></i>
                                                         </button>
                                                     ` : ''}
                                                     ${this.hasPermission('users.delete') ? `
-                                                        <button type="button" class="btn btn-danger" data-action="delete-user" data-id="${user.id}" title="Видалити">
+                                                        <button type="button" class="btn btn-danger" data-action="delete-user" data-id="${user.id}" title="Eliminar">
                                                             <i class="fas fa-trash"></i>
                                                         </button>
                                                     ` : ''}
@@ -1353,7 +1353,7 @@ class CRMUnified {
             case 'tasks':
                 this.initTasks();
                 break;
-            // Додати інші модулі за потребою
+            // Adicionar інші модулі за потребою
         }
     }
     
@@ -1423,7 +1423,7 @@ class CRMUnified {
         const content = `
             <div class="forbidden-content">
                 <i class="fas fa-ban text-danger"></i>
-                <h2>Доступ заборонено</h2>
+                <h2>Acesso negado</h2>
                 <p>У вас немає прав для доступу до цього розділу.</p>
                 <button class="btn btn-primary" onclick="window.crmSystem.loadDashboard()">
                     Повернутися до головної
@@ -1434,7 +1434,7 @@ class CRMUnified {
     }
     
     async getModuleContent(moduleId) {
-        console.log(`Завантаження модуля: ${moduleId}`);
+        console.log(`A carregar модуля: ${moduleId}`);
         
         try {
             // Визначаємо шлях до файлу залежно від модуля та ролі
@@ -1447,16 +1447,16 @@ class CRMUnified {
                 
                 if (response.ok) {
                     const htmlContent = await response.text();
-                    console.log(`Модуль ${moduleId} успішно завантажено`);
+                    console.log(`Модуль ${moduleId} com sucesso завантажено`);
                     return this.extractContentFromHtml(htmlContent);
                 } else {
-                    console.error(`Помилка HTTP ${response.status} для модуля ${moduleId}`);
+                    console.error(`Erro HTTP ${response.status} для модуля ${moduleId}`);
                 }
             } else {
                 console.error(`Шлях для модуля ${moduleId} не знайдено`);
             }
         } catch (error) {
-            console.error(`Помилка завантаження модуля ${moduleId}:`, error);
+            console.error(`Erro завантаження модуля ${moduleId}:`, error);
         }
         
         // Якщо не вдалося завантажити - показуємо заглушку
@@ -1467,7 +1467,7 @@ class CRMUnified {
     getModulePath(moduleId) {
         // Визначаємо шлях до файлу залежно від модуля та ролі користувача
         
-        // Рольово-специфічні модулі
+        // Funçãoово-специфічні модулі
         if (this.userRole === 'tech') {
             const techModulePaths = {
                 'tasks': '/pages/tech/tasks.html',
@@ -1501,7 +1501,7 @@ class CRMUnified {
             // Нові функціональні модулі
             'lift-management': '/assets/modules/lift-management.html',
             'tasks': '/assets/modules/tasks.html',
-            'analytics': '/assets/modules/analytics.html',    // Новий модуль аналітики
+            'analytics': '/assets/modules/analytics.html',    // Novo модуль аналітики
             'analytics-full': '/pages/admin/analytics.html',    // Повна аналітика для адміна
             'analytics-basic': '/assets/modules/analytics.html', // Базова аналітика для диспетчера
             
@@ -1602,13 +1602,13 @@ class CRMUnified {
                         <div class="card-body">
                             <div class="alert alert-warning">
                                 <i class="fas fa-exclamation-triangle"></i>
-                                <strong>Увага!</strong> Модуль "${moduleId}" ще не реалізований або недоступний для вашої ролі.
+                                <strong>Atenção!</strong> Модуль "${moduleId}" ще не реалізований або недоступний для вашої ролі.
                             </div>
                             <p>Поточна роль: <span class="badge badge-info">${this.userRole}</span></p>
                             <p>Доступні права:</p>
                             <ul>
                                 ${Object.entries(this.permissions).map(([key, value]) => 
-                                    `<li>${key}: <span class="badge ${value ? 'badge-success' : 'badge-danger'}">${value ? 'Так' : 'Ні'}</span></li>`
+                                    `<li>${key}: <span class="badge ${value ? 'badge-success' : 'badge-danger'}">${value ? 'Sim' : 'Não'}</span></li>`
                                 ).join('')}
                             </ul>
                         </div>
@@ -1634,25 +1634,25 @@ class CRMUnified {
     
     handleAuthError() {
         // Обробка помилки авторизації
-        alert('Помилка авторизації. Перенаправлення на сторінку входу...');
+        alert('Erro авторизації. Перенаправлення на сторінку входу...');
         window.location.href = '/login.html';
     }
 
-    // === ІНТЕРАКТИВНІ МЕТОДИ ===
+    // === ІНТЕРАКТИВНІ МЕManutençãoДИ ===
 
     setupInteractivity() {
-        console.log('Налаштування інтерактивності...');
+        console.log('Definições інтерактивності...');
         
-        // Налаштування глобальних обробників подій
+        // Definições глобальних обробників подій
         this.setupGlobalEventHandlers();
         
-        // Налаштування модальних вікон
+        // Definições модальних вікон
         this.setupModals();
         
-        // Налаштування форм
+        // Definições форм
         this.setupForms();
         
-        // Налаштування таблиць з інтерактивністю
+        // Definições таблиць з інтерактивністю
         this.setupInteractiveTables();
         
         console.log('Інтерактивність налаштовано');
@@ -1744,8 +1744,8 @@ class CRMUnified {
                     console.warn(`Невідома дія: ${action}`);
             }
         } catch (error) {
-            console.error(`Помилка виконання дії ${action}:`, error);
-            this.showErrorMessage(`Помилка: ${error.message}`);
+            console.error(`Erro виконання дії ${action}:`, error);
+            this.showErrorMessage(`Erro: ${error.message}`);
         } finally {
             element.disabled = false;
         }
@@ -1778,7 +1778,7 @@ class CRMUnified {
     }
 
     setupForms() {
-        // Налаштування валідації форм
+        // Definições валідації форм
         document.querySelectorAll('form[data-validate="true"]').forEach(form => {
             form.addEventListener('submit', (e) => {
                 if (!this.validateForm(form)) {
@@ -1807,7 +1807,7 @@ class CRMUnified {
     }
 
     setupInteractiveTables() {
-        // Налаштування сортування таблиць
+        // Definições сортування таблиць
         document.querySelectorAll('table[data-sortable="true"]').forEach(table => {
             const headers = table.querySelectorAll('th[data-sort]');
             headers.forEach(header => {
@@ -1830,12 +1830,12 @@ class CRMUnified {
         const isEdit = !!user;
 
         const { value: formValues } = await this.swal.fire({
-            title: isEdit ? 'Редагувати користувача' : 'Додати користувача',
+            title: isEdit ? 'Editar користувача' : 'Adicionar користувача',
             html: this.getUserFormHTML(user),
             focusConfirm: false,
             showCancelButton: true,
-            confirmButtonText: isEdit ? 'Зберегти' : 'Створити',
-            cancelButtonText: 'Скасувати',
+            confirmButtonText: isEdit ? 'Guardar' : 'Створити',
+            cancelButtonText: 'Cancelar',
             width: '600px',
             preConfirm: () => {
                 return this.getUserFormData();
@@ -1850,9 +1850,9 @@ class CRMUnified {
                     await this.createUser(formValues);
                 }
                 await this.refreshCurrentModule();
-                this.showSuccessMessage(isEdit ? 'Користувача оновлено' : 'Користувача створено');
+                this.showSuccessMessage(isEdit ? 'Utilizadorа оновлено' : 'Utilizadorа створено');
             } catch (error) {
-                this.showErrorMessage('Помилка збереження: ' + error.message);
+                this.showErrorMessage('Erro ao guardar: ' + error.message);
             }
         }
     }
@@ -1860,7 +1860,7 @@ class CRMUnified {
     getUserFormHTML(user = null) {
         return `
             <div class="form-group text-left">
-                <label for="user-name">Ім'я користувача</label>
+                <label for="user-name">Nome користувача</label>
                 <input type="text" id="user-name" class="form-control" value="${user?.name || ''}" required>
             </div>
             <div class="form-group text-left">
@@ -1868,17 +1868,17 @@ class CRMUnified {
                 <input type="email" id="user-email" class="form-control" value="${user?.email || ''}" required>
             </div>
             <div class="form-group text-left">
-                <label for="user-role">Роль</label>
+                <label for="user-role">Função</label>
                 <select id="user-role" class="form-control" required>
                     <option value="">Оберіть роль</option>
-                    <option value="admin" ${user?.role === 'admin' ? 'selected' : ''}>Адміністратор</option>
-                    <option value="dispatcher" ${user?.role === 'dispatcher' ? 'selected' : ''}>Диспетчер</option>
-                    <option value="tech" ${user?.role === 'tech' ? 'selected' : ''}>Технік</option>
-                    <option value="client" ${user?.role === 'client' ? 'selected' : ''}>Клієнт</option>
+                    <option value="admin" ${user?.role === 'admin' ? 'selected' : ''}>Administrador</option>
+                    <option value="dispatcher" ${user?.role === 'dispatcher' ? 'selected' : ''}>Dispatcher</option>
+                    <option value="tech" ${user?.role === 'tech' ? 'selected' : ''}>Técnico</option>
+                    <option value="client" ${user?.role === 'client' ? 'selected' : ''}>Cliente</option>
                 </select>
             </div>
             <div class="form-group text-left">
-                <label for="user-phone">Телефон</label>
+                <label for="user-phone">Telefone</label>
                 <input type="tel" id="user-phone" class="form-control" value="${user?.phone || ''}">
             </div>
         `;
@@ -1902,12 +1902,12 @@ class CRMUnified {
         const isEdit = !!lift;
 
         const { value: formValues } = await this.swal.fire({
-            title: isEdit ? 'Редагувати ліфт' : 'Додати ліфт',
+            title: isEdit ? 'Editar ліфт' : 'Adicionar ліфт',
             html: this.getLiftFormHTML(lift),
             focusConfirm: false,
             showCancelButton: true,
-            confirmButtonText: isEdit ? 'Зберегти' : 'Створити',
-            cancelButtonText: 'Скасувати',
+            confirmButtonText: isEdit ? 'Guardar' : 'Створити',
+            cancelButtonText: 'Cancelar',
             width: '700px',
             preConfirm: () => {
                 return this.getLiftFormData();
@@ -1922,9 +1922,9 @@ class CRMUnified {
                     await this.createLift(formValues);
                 }
                 await this.refreshCurrentModule();
-                this.showSuccessMessage(isEdit ? 'Ліфт оновлено' : 'Ліфт створено');
+                this.showSuccessMessage(isEdit ? 'Elevador оновлено' : 'Elevador створено');
             } catch (error) {
-                this.showErrorMessage('Помилка збереження: ' + error.message);
+                this.showErrorMessage('Erro ao guardar: ' + error.message);
             }
         }
     }
@@ -1942,21 +1942,21 @@ class CRMUnified {
                         <input type="number" id="lift-floor" class="form-control" value="${lift?.floor || ''}" required>
                     </div>
                     <div class="form-group text-left">
-                        <label for="lift-model">Модель</label>
+                        <label for="lift-model">Modelo</label>
                         <input type="text" id="lift-model" class="form-control" value="${lift?.model || ''}">
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="form-group text-left">
-                        <label for="lift-status">Статус</label>
+                        <label for="lift-status">Estado</label>
                         <select id="lift-status" class="form-control" required>
-                            <option value="active" ${lift?.status === 'active' ? 'selected' : ''}>Активний</option>
+                            <option value="active" ${lift?.status === 'active' ? 'selected' : ''}>Ativo</option>
                             <option value="maintenance" ${lift?.status === 'maintenance' ? 'selected' : ''}>На обслуговуванні</option>
-                            <option value="inactive" ${lift?.status === 'inactive' ? 'selected' : ''}>Неактивний</option>
+                            <option value="inactive" ${lift?.status === 'inactive' ? 'selected' : ''}>Inativo</option>
                         </select>
                     </div>
                     <div class="form-group text-left">
-                        <label for="lift-capacity">Вантажопідйомність (кг)</label>
+                        <label for="lift-capacity">Вантажопідйомність (kg)</label>
                         <input type="number" id="lift-capacity" class="form-control" value="${lift?.capacity || ''}">
                     </div>
                     <div class="form-group text-left">
@@ -2005,17 +2005,17 @@ class CRMUnified {
         if (this.dataManager) {
             return this.dataManager.updateUser(id, userData);
         }
-        console.log('Оновлення користувача:', id, userData);
+        console.log('Atualização користувача:', id, userData);
     }
 
     async deleteUser(id) {
         const confirmed = await this.swal.fire({
-            title: 'Видалити користувача?',
+            title: 'Eliminar користувача?',
             text: 'Цю дію неможливо скасувати!',
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonText: 'Так, видалити!',
-            cancelButtonText: 'Скасувати'
+            confirmButtonText: 'Sim, видалити!',
+            cancelButtonText: 'Cancelar'
         });
 
         if (confirmed.isConfirmed) {
@@ -2024,9 +2024,9 @@ class CRMUnified {
                     await this.dataManager.deleteUser(id);
                 }
                 await this.refreshCurrentModule();
-                this.showSuccessMessage('Користувача видалено');
+                this.showSuccessMessage('Utilizadorа видалено');
             } catch (error) {
-                this.showErrorMessage('Помилка видалення: ' + error.message);
+                this.showErrorMessage('Erro видалення: ' + error.message);
             }
         }
     }
@@ -2054,17 +2054,17 @@ class CRMUnified {
         if (this.dataManager) {
             return this.dataManager.updateLift(id, liftData);
         }
-        console.log('Оновлення ліфта:', id, liftData);
+        console.log('Atualização ліфта:', id, liftData);
     }
 
     async deleteLift(id) {
         const confirmed = await this.swal.fire({
-            title: 'Видалити ліфт?',
+            title: 'Eliminar ліфт?',
             text: 'Цю дію неможливо скасувати!',
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonText: 'Так, видалити!',
-            cancelButtonText: 'Скасувати'
+            confirmButtonText: 'Sim, видалити!',
+            cancelButtonText: 'Cancelar'
         });
 
         if (confirmed.isConfirmed) {
@@ -2073,14 +2073,14 @@ class CRMUnified {
                     await this.dataManager.deleteLift(id);
                 }
                 await this.refreshCurrentModule();
-                this.showSuccessMessage('Ліфт видалено');
+                this.showSuccessMessage('Elevador eliminado');
             } catch (error) {
-                this.showErrorMessage('Помилка видалення: ' + error.message);
+                this.showErrorMessage('Erro видалення: ' + error.message);
             }
         }
     }
 
-    // === HELPER МЕТОДИ ===
+    // === HELPER МЕManutençãoДИ ===
 
     async refreshCurrentModule() {
         if (this.currentModule) {
@@ -2094,7 +2094,7 @@ class CRMUnified {
         } else if (this.swal) {
             this.swal.fire({
                 icon: 'success',
-                title: 'Успіх!',
+                title: 'Sucesso!',
                 text: message,
                 timer: 3000,
                 showConfirmButton: false
@@ -2110,7 +2110,7 @@ class CRMUnified {
         } else if (this.swal) {
             this.swal.fire({
                 icon: 'error',
-                title: 'Помилка!',
+                title: 'Erro!',
                 text: message
             });
         } else {
@@ -2129,11 +2129,11 @@ class CRMUnified {
 
             if (this.dataManager) {
                 const qrCode = await this.dataManager.generateQRCode(qrData);
-                this.showSuccessMessage('QR-код згенеровано успішно');
+                this.showSuccessMessage('QR-код згенеровано com sucesso');
                 return qrCode;
             }
         } catch (error) {
-            this.showErrorMessage('Помилка генерації QR-кода: ' + error.message);
+            this.showErrorMessage('Erro генерації QR-кода: ' + error.message);
         }
     }
 
@@ -2152,7 +2152,7 @@ class CRMUnified {
                         data = this.dataManager.getAllTasks();
                         break;
                     default:
-                        throw new Error(`Невідомий тип для експорту: ${type}`);
+                        throw new Error(`Desconhecido тип для експорту: ${type}`);
                 }
             } else {
                 data = { message: `Тестові дані для ${type}` };
@@ -2168,9 +2168,9 @@ class CRMUnified {
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
 
-            this.showSuccessMessage(`Дані ${type} експортовано успішно`);
+            this.showSuccessMessage(`Дані ${type} експортовано com sucesso`);
         } catch (error) {
-            this.showErrorMessage('Помилка експорту: ' + error.message);
+            this.showErrorMessage('Erro експорту: ' + error.message);
         }
     }
 
@@ -2194,13 +2194,13 @@ class CRMUnified {
                         }
                         break;
                     default:
-                        throw new Error(`Невідомий тип: ${type}`);
+                        throw new Error(`Desconhecido тип: ${type}`);
                 }
                 await this.refreshCurrentModule();
-                this.showSuccessMessage('Статус змінено успішно');
+                this.showSuccessMessage('Estado змінено com sucesso');
             }
         } catch (error) {
-            this.showErrorMessage('Помилка зміни статусу: ' + error.message);
+            this.showErrorMessage('Erro зміни estado: ' + error.message);
         }
     }
 
@@ -2221,9 +2221,9 @@ class CRMUnified {
                                         <th data-sort="id">ID</th>
                                         <th data-sort="building">Будівля</th>
                                         <th data-sort="floor">Поверх</th>
-                                        <th data-sort="model">Модель</th>
-                                        <th data-sort="status">Статус</th>
-                                        <th data-sort="lastMaintenance">Останнє ТО</th>
+                                        <th data-sort="model">Modelo</th>
+                                        <th data-sort="status">Estado</th>
+                                        <th data-sort="lastMaintenance">Última manutenção</th>
                                         <th>Дії</th>
                                     </tr>
                                 </thead>
@@ -2233,7 +2233,7 @@ class CRMUnified {
                                             <td>${lift.id}</td>
                                             <td>${lift.building}</td>
                                             <td>${lift.floor}</td>
-                                            <td>${lift.model || 'Не вказано'}</td>
+                                            <td>${lift.model || 'Não especificado'}</td>
                                             <td>
                                                 <span class="badge badge-${this.getStatusBadgeColor(lift.status)}">
                                                     ${this.getStatusLabel(lift.status)}
@@ -2242,11 +2242,11 @@ class CRMUnified {
                                             <td>${this.formatDate(lift.lastMaintenance)}</td>
                                             <td>
                                                 <div class="btn-group btn-group-sm">
-                                                    <button type="button" class="btn btn-info" data-action="view-details" data-type="lift" data-id="${lift.id}" title="Переглянути">
+                                                    <button type="button" class="btn btn-info" data-action="view-details" data-type="lift" data-id="${lift.id}" title="Ver">
                                                         <i class="fas fa-eye"></i>
                                                     </button>
                                                     ${this.hasPermission('lifts.edit') ? `
-                                                        <button type="button" class="btn btn-warning" data-action="edit-lift" data-id="${lift.id}" title="Редагувати">
+                                                        <button type="button" class="btn btn-warning" data-action="edit-lift" data-id="${lift.id}" title="Editar">
                                                             <i class="fas fa-edit"></i>
                                                         </button>
                                                     ` : ''}
@@ -2254,7 +2254,7 @@ class CRMUnified {
                                                         <i class="fas fa-qrcode"></i>
                                                     </button>
                                                     ${this.hasPermission('lifts.delete') ? `
-                                                        <button type="button" class="btn btn-danger" data-action="delete-lift" data-id="${lift.id}" title="Видалити">
+                                                        <button type="button" class="btn btn-danger" data-action="delete-lift" data-id="${lift.id}" title="Eliminar">
                                                             <i class="fas fa-trash"></i>
                                                         </button>
                                                     ` : ''}
@@ -2350,7 +2350,7 @@ class CRMUnified {
         return [
             {
                 id: 1,
-                title: 'Планове ТО ліфта №1',
+                title: 'Manutenção planeada ліфта №1',
                 assignee: 'Олексій Сидоренко',
                 priority: 'medium',
                 status: 'pending',
@@ -2358,7 +2358,7 @@ class CRMUnified {
             },
             {
                 id: 2,
-                title: 'Ремонт двигуна ліфта №2',
+                title: 'Reparação двигуна ліфта №2',
                 assignee: 'Віктор Петров',
                 priority: 'high',
                 status: 'in-progress',
@@ -2389,10 +2389,10 @@ class CRMUnified {
 
     getRoleLabel(role) {
         const labels = {
-            admin: 'Адміністратор',
-            dispatcher: 'Диспетчер',
-            tech: 'Технік',
-            client: 'Клієнт'
+            admin: 'Administrador',
+            dispatcher: 'Dispatcher',
+            tech: 'Técnico',
+            client: 'Cliente'
         };
         return labels[role] || role;
     }
@@ -2409,10 +2409,10 @@ class CRMUnified {
 
     getStatusLabel(status) {
         const labels = {
-            active: 'Активний',
-            maintenance: 'На ТО',
-            inactive: 'Неактивний',
-            error: 'Помилка'
+            active: 'Ativo',
+            maintenance: 'Em manutenção',
+            inactive: 'Inativo',
+            error: 'Erro'
         };
         return labels[status] || status;
     }
@@ -2430,9 +2430,9 @@ class CRMUnified {
     getPriorityLabel(priority) {
         const labels = {
             low: 'Низький',
-            medium: 'Середній',
-            high: 'Високий',
-            urgent: 'Терміново'
+            medium: 'Agoедній',
+            high: 'Altий',
+            urgent: 'Urgente'
         };
         return labels[priority] || priority;
     }
@@ -2449,8 +2449,8 @@ class CRMUnified {
 
     getTaskStatusLabel(status) {
         const labels = {
-            pending: 'Очікує',
-            'in-progress': 'В роботі',
+            pending: 'Pendente',
+            'in-progress': 'Em progresso',
             completed: 'Завершено',
             cancelled: 'Скасовано'
         };
@@ -2458,7 +2458,7 @@ class CRMUnified {
     }
 
     formatDate(dateString) {
-        if (!dateString) return 'Не вказано';
+        if (!dateString) return 'Não especificado';
         const date = new Date(dateString);
         return date.toLocaleDateString('uk-UA');
     }
@@ -2479,10 +2479,10 @@ function logout() {
 // Ініціалізація системи після завантаження сторінки
 function initializeCRM() {
     try {
-        console.log('Початок ініціалізації CRM...');
+        console.log('Início ініціалізації CRM...');
         window.crmSystem = new CRMUnified();
     } catch (error) {
-        console.error('Помилка при створенні CRM системи:', error);
+        console.error('Erro при створенні CRM системи:', error);
     }
 }
 
@@ -2494,7 +2494,7 @@ if (document.readyState === 'loading') {
     initializeCRM();
 }
 
-// Експорт для використання в інших модулях
+// Exportar для використання в інших модулях
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = CRMUnified;
 }

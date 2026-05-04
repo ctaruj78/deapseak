@@ -25,7 +25,7 @@ class FormValidator {
         const value = field.val();
         
         if (!value || value.trim() === '') {
-            this.addError(field, `${fieldName} є обов'язковим полем`);
+            this.addError(field, `${fieldName} é obrigatório полем`);
             return false;
         }
         
@@ -53,7 +53,7 @@ class FormValidator {
     }
 
     // Валідація телефону (міжнародний формат)
-    phone(selector, fieldName = 'Телефон') {
+    phone(selector, fieldName = 'Telefone') {
         const field = this.form.find(selector);
         const value = field.val();
         
@@ -150,12 +150,12 @@ class FormValidator {
         let valid = true;
         
         if (latField.val() && (isNaN(lat) || lat < -90 || lat > 90)) {
-            this.addError(latField, 'Широта має бути від -90 до 90');
+            this.addError(latField, 'Latitude має бути від -90 до 90');
             valid = false;
         }
         
         if (lngField.val() && (isNaN(lng) || lng < -180 || lng > 180)) {
-            this.addError(lngField, 'Довгота має бути від -180 до 180');
+            this.addError(lngField, 'Longitude має бути від -180 до 180');
             valid = false;
         }
         
@@ -220,7 +220,7 @@ class FormValidator {
         
         // Використовуємо toastr якщо доступний
         if (typeof toastr !== 'undefined') {
-            toastr.error(message, 'Помилка валідації', {
+            toastr.error(message, 'Erro валідації', {
                 timeOut: 8000,
                 closeButton: true,
                 progressBar: true,
@@ -232,7 +232,7 @@ class FormValidator {
     }
 }
 
-// Експорт для використання
+// Exportar для використання
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = FormValidator;
 }

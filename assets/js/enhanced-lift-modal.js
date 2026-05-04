@@ -38,7 +38,7 @@ class EnhancedLiftModal {
             this.getCurrentLocation();
         });
         
-        // Оновлення карти при зміні координат (вручну)
+        // Atualização карти при зміні координат (вручну)
         $(document).off('input', '#enhancedLiftLat, #enhancedLiftLng').on('input', '#enhancedLiftLat, #enhancedLiftLng', () => {
             this.coordsManuallyEdited = true;
             this.updateMapFromCoords();
@@ -63,7 +63,7 @@ class EnhancedLiftModal {
             setTimeout(() => this.initializeMap(), 500);
         });
         
-        // Оновлення розміру карти коли вкладка стає активною
+        // Atualização розміру карти коли вкладка стає активною
         $('a[data-toggle="tab"]').on('shown.bs.tab', (e) => {
             if ($(e.target).attr('href') === '#location-info' && this.map) {
                 setTimeout(() => this.map.invalidateSize(), 100);
@@ -107,7 +107,7 @@ class EnhancedLiftModal {
             if (user.phone) $('#enhancedClientPhone').val(user.phone);
 
             // Маленька підказка
-            const hint = $('<small class="text-success client-lookup-hint"><i class="fas fa-check-circle mr-1"></i>Клієнта знайдено: ' + (fullName || email) + '</small>');
+            const hint = $('<small class="text-success client-lookup-hint"><i class="fas fa-check-circle mr-1"></i>Clienteа знайдено: ' + (fullName || email) + '</small>');
             $('#enhancedClientEmail').closest('.form-group').find('.client-lookup-hint').remove();
             $('#enhancedClientEmail').closest('.form-group').append(hint);
             setTimeout(() => hint.fadeOut(() => hint.remove()), 3000);
@@ -186,7 +186,7 @@ class EnhancedLiftModal {
             // Додаємо новий маркер
             this.marker = L.marker([lat, lng])
                 .addTo(this.map)
-                .bindPopup('Розташування ліфта');
+                .bindPopup('Localização do elevador');
             
             // Центруємо карту на маркері
             this.map.setView([lat, lng], Math.max(this.map.getZoom(), 15));
@@ -209,24 +209,24 @@ class EnhancedLiftModal {
 
     getCurrentLocation() {
         if (!navigator.geolocation) {
-            this.showMessage('Геолокація не підтримується вашим браузером', 'warning');
+            this.showMessage('Geolocalização não suportada pelo seu browser', 'warning');
             return;
         }
 
         const btn = $('#enhancedBtnCurrentLocation');
         const originalHtml = btn.html();
-        btn.html('<i class="fas fa-spinner fa-spin"></i> Отримання...').prop('disabled', true);
+        btn.html('<i class="fas fa-spinner fa-spin"></i> A obter...').prop('disabled', true);
 
         navigator.geolocation.getCurrentPosition(
             (position) => {
                 const { latitude, longitude } = position.coords;
                 this.setCoordinates(latitude, longitude);
-                this.showMessage('Координати успішно отримані!', 'success');
+                this.showMessage('Coordenadas obtidas com sucesso!', 'success');
                 btn.html(originalHtml).prop('disabled', false);
             },
             (error) => {
                 console.error('Enhanced geolocation error:', error);
-                this.showMessage('Не вдалось отримати координати: ' + error.message, 'error');
+                this.showMessage('Não foi possível obter coordenadas: ' + error.message, 'error');
                 btn.html(originalHtml).prop('disabled', false);
             },
             { timeout: 10000, enableHighAccuracy: true }
@@ -238,7 +238,7 @@ class EnhancedLiftModal {
         const postcode = $('#enhancedLiftPostcode').val().trim();
 
         if (!address) {
-            this.showMessage('Введіть адресу для пошуку координат', 'warning');
+            this.showMessage('Introduza um endereço para pesquisar coordenadas', 'warning');
             return;
         }
 
@@ -254,7 +254,7 @@ class EnhancedLiftModal {
             .then(data => {
                 btn.html(originalHtml).prop('disabled', false);
                 if (!data.success) {
-                    this.showMessage('Адресу не знайдено. Уточніть назву вулиці та поштовий код.', 'warning');
+                    this.showMessage('Endereço não encontrado. Verifique o nome da rua e o código postal.', 'warning');
                     return;
                 }
                 const results = data.results || [{ lat: data.lat, lng: data.lng, display: data.display, city: data.city, postcode: data.postcode }];
@@ -269,13 +269,13 @@ class EnhancedLiftModal {
                         $('#enhancedLiftPostcode').val(r.postcode);
                     }
                     const cityLabel = r.city || r.display.split(',')[0];
-                    this.showMessage(`Координати визначено: ${cityLabel}`, 'success');
+                    this.showMessage(`Coordenadas definidas: ${cityLabel}`, 'success');
                 }
             })
             .catch(error => {
                 console.error('Enhanced geocoding error:', error);
                 btn.html(originalHtml).prop('disabled', false);
-                this.showMessage('Помилка геокодування. Перевірте з\'єднання.', 'error');
+                this.showMessage('Erro геокодування. Перевірте з\'єднання.', 'error');
             });
     }
 
@@ -296,7 +296,7 @@ class EnhancedLiftModal {
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content">
                     <div class="modal-header py-2 bg-info text-white">
-                        <h6 class="modal-title mb-0"><i class="fas fa-map-marker-alt mr-1"></i>Знайдено кілька адрес — оберіть правильну</h6>
+                        <h6 class="modal-title mb-0"><i class="fas fa-map-marker-alt mr-1"></i>Encontrados vários endereços — seleccione o correto</h6>
                         <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
                     </div>
                     <div class="modal-body p-2">
@@ -316,7 +316,7 @@ class EnhancedLiftModal {
                 $('#enhancedLiftPostcode').val(chosen.postcode);
             }
             const cityLabel = chosen.city || chosen.display.split(',')[0];
-            self.showMessage(`Координати встановлено: ${cityLabel}`, 'success');
+            self.showMessage(`Coordenadas estabelecidas: ${cityLabel}`, 'success');
             $('#enhancedGeoChoiceModal').modal('hide');
         });
         $('#enhancedGeoChoiceModal').on('hidden.bs.modal', function() { $(this).remove(); });
@@ -351,7 +351,7 @@ class EnhancedLiftModal {
                 if (!val) missingNumbers.push(i);
             }
             if (missingNumbers.length > 0) {
-                this.showMessage(`⚠️ Заповніть муніципальний номер для ліфта ${missingNumbers.join(', ')} — це обов'язкове поле`, 'warning');
+                this.showMessage(`⚠️ Preencha o número municipal do elevador ${missingNumbers.join(', ')} — é um campo obrigatório`, 'warning');
                 // Підсвічуємо порожні поля
                 missingNumbers.forEach(i => {
                     const inp = document.querySelector(`#eLiftRowsContainer input[data-elift-idx="${i}"]`);
@@ -367,7 +367,7 @@ class EnhancedLiftModal {
             
         } catch (error) {
             console.error('❌ Error in enhanced form submission:', error);
-            this.showMessage('Помилка обробки форми: ' + error.message, 'error');
+            this.showMessage('Erro ao processar formulário: ' + error.message, 'error');
         }
     }
 
@@ -405,7 +405,7 @@ class EnhancedLiftModal {
             lng: $('#enhancedLiftLng').val() ? parseFloat($('#enhancedLiftLng').val()) : null,
             // Збираємо додаткові муніципальні номери якщо є
             additionalMunicipalNumbers: this.collectAdditionalMunicipalNumbers(),
-            clientName: $('#enhancedClientName').val() || 'Невказано',
+            clientName: $('#enhancedClientName').val() || 'Não especificado',
             clientEmail: $('#enhancedClientEmail').val() || '',
             clientPhone: $('#enhancedClientPhone').val() || '',
             sendAccessEmail: $('#enhancedSendAccessEmail').is(':checked'),
@@ -473,20 +473,20 @@ class EnhancedLiftModal {
                 // Позначаємо поле як валідне без перевірки (значення відомо з editMunicipalNumber)
                 $('#enhancedMunicipalNumber').removeClass('is-invalid').addClass('is-valid');
             } else {
-                validator.required('#enhancedMunicipalNumber', 'Муніципальний номер');
+                validator.required('#enhancedMunicipalNumber', 'Número municipal');
             }
-            validator.required('#enhancedLiftAddress', 'Адреса');
+            validator.required('#enhancedLiftAddress', 'Endereço');
             // Email не обов'язковий при редагуванні (клієнт вже прив'язаний)
             if (!isEdit) {
-                validator.required('#enhancedClientEmail', 'Email клієнта');
+                validator.required('#enhancedClientEmail', 'Email do cliente');
             }
             
             // Email формат (тільки якщо заповнений)
             if ($('#enhancedClientEmail').val()) {
-                validator.email('#enhancedClientEmail', 'Email клієнта');
+                validator.email('#enhancedClientEmail', 'Email do cliente');
             }
             
-            // Телефон — лише перевіряємо format якщо вже заповнений І має нестандартні символи
+            // Telefone — лише перевіряємо format якщо вже заповнений І має нестандартні символи
             // (phone є необов'язковим, формат не блокує збереження)
             
             // Числові поля
@@ -495,7 +495,7 @@ class EnhancedLiftModal {
             }
             
             if ($('#enhancedLiftSpeed').val()) {
-                validator.number('#enhancedLiftSpeed', 'Швидкість', { min: 0.1, max: 10 });
+                validator.number('#enhancedLiftSpeed', 'Velocidade', { min: 0.1, max: 10 });
             }
             
             if (!validator.isValid()) {
@@ -515,7 +515,7 @@ class EnhancedLiftModal {
         }
         
         // Fallback валідація якщо FormValidator не завантажився
-        // Також перевіряємо municipal number у динамічному контейнері нового дизайну
+        // Simож перевіряємо municipal number у динамічному контейнері нового дизайну
         if (!data.municipalNumber || data.municipalNumber.trim() === '') {
             const dynInput = document.querySelector('#eLiftRowsContainer input[data-elift-idx="1"]');
             if (dynInput && dynInput.value.trim()) {
@@ -601,8 +601,8 @@ class EnhancedLiftModal {
             console.log('❌ Missing required fields:', missing);
             const fieldLabels = {
                 municipalNumber: 'Муніципальний № (Вкладка Об\'єкт)',
-                address: 'Адреса (Вкладка Об\'єкт)',
-                clientEmail: 'Email клієнта (Вкладка Клієнт)'
+                address: 'Endereço (Вкладка Об\'єкт)',
+                clientEmail: 'Email do cliente (Вкладка Cliente)'
             };
             const labels = missing.map(f => fieldLabels[f] || f);
             this.showMessage('⚠️ Заповніть обов\'язкові поля: ' + labels.join(' · '), 'warning');
@@ -687,7 +687,7 @@ class EnhancedLiftModal {
                 installYear: liftData.installYear || null,
                 installationDate: liftData.installationYear ? `${liftData.installationYear}-01-01` : null,
                 address: addressObj, // ✅ Правильний формат об'єкта
-                postalCode: liftData.postcode, // 📮 Поштовий індекс для визначення муніципалітету
+                postalCode: liftData.postcode, // 📮 Código postal для визначення муніципалітету
                 clientName: liftData.clientName,
                 clientEmail: liftData.clientEmail,
                 clientPhone: liftData.clientPhone,
@@ -726,9 +726,9 @@ class EnhancedLiftModal {
             let result;
             let liftObject;
             if (isEdit) {
-                // Оновлення існуючого ліфта
+                // Atualização існуючого ліфта
                 // ⚠️ Використовуємо fetch напряму — AuthManager.fetchWithAuth повертає вже розпарсений JSON,
-                // тому перевірка response.ok на ньому не працює і призводить до помилки "Network error"
+                // atrás перевірка response.ok на ньому не працює і призводить до помилки "Network error"
                 console.log(`🔄 Updating lift ${liftId} via API...`);
                 const response = await fetch(AuthManager.getApiUrl(`/api/lifts/${liftId}`), {
                     method: 'PUT',
@@ -775,7 +775,7 @@ class EnhancedLiftModal {
                         emailStatus = '📧 Запрошення відправлено на email';
                     }
                     this.showMessage(
-                        `✅ Ліфт збережено! 👤 Новий клієнт створено автоматично:<br>` +
+                        `✅ Elevador збережено! 👤 Novo клієнт створено автоматично:<br>` +
                         `<strong>${nc.email}</strong><br>` +
                         `🔑 Тимчасовий пароль: <code style="background:#fff;padding:2px 6px;border-radius:3px">${nc.password}</code><br>` +
                         emailStatus,
@@ -783,7 +783,7 @@ class EnhancedLiftModal {
                     );
                     window.__lastNewClient = null;
                 } else {
-                    this.showMessage(isEdit ? 'Ліфт успішно оновлено!' : 'Ліфт успішно збережено!', 'success');
+                    this.showMessage(isEdit ? 'Elevador com sucesso оновлено!' : 'Elevador com sucesso збережено!', 'success');
                 }
                 $('#enhancedLiftModal').modal('hide');
                 
@@ -797,7 +797,7 @@ class EnhancedLiftModal {
                     }
                 }
                 
-                // Скидаємо currentLiftId та editAddress після успішного збереження
+                // Скидаємо currentLiftId та editAddress після com sucessoго збереження
                 this.currentLiftId = null;
                 this.editAddress = {};
                 this.editMunicipalNumber = '';
@@ -813,10 +813,10 @@ class EnhancedLiftModal {
                             console.log(`🏗️ Зберігаємо ліфт #${additionalInfo.liftNumber}:`, additionalInfo.municipalNumber);
                             await window.saveLiftToAPI(additionalApiData);
                             savedCount++;
-                            console.log(`✅ Ліфт #${additionalInfo.liftNumber} збережено`);
+                            console.log(`✅ Elevador #${additionalInfo.liftNumber} збережено`);
                         } catch (err) {
-                            console.error(`❌ Помилка збереження ліфта #${additionalInfo.liftNumber}:`, err);
-                            this.showMessage(`⚠️ Ліфт №${additionalInfo.municipalNumber} не вдалося зберегти: ${err.message}`, 'warning');
+                            console.error(`❌ Erro ao guardar ліфта #${additionalInfo.liftNumber}:`, err);
+                            this.showMessage(`⚠️ Elevador N.º${additionalInfo.municipalNumber} не вдалося зберегти: ${err.message}`, 'warning');
                         }
                     }
                     if (savedCount > 1) {
@@ -829,12 +829,12 @@ class EnhancedLiftModal {
                     this.refreshTable();
                 }, 500);
             } else {
-                throw new Error(result?.error || result?.message || 'Невідома помилка');
+                throw new Error(result?.error || result?.message || 'Erro desconhecido');
             }
             
         } catch (error) {
             console.error('❌ Error saving enhanced lift:', error);
-            this.showMessage('Помилка збереження: ' + error.message, 'error');
+            this.showMessage('Erro ao guardar: ' + error.message, 'error');
         }
     }
 
@@ -871,7 +871,7 @@ class EnhancedLiftModal {
             liftManager: typeof window.liftManager
         });
         
-        // Пріоритет: loadLiftsFromAPI > liftManager.loadLifts
+        // Prioridade: loadLiftsFromAPI > liftManager.loadLifts
         // loadLiftsFromAPI вже викликає applyAllFilters() всередині — пошук збережеться
         if (typeof window.loadLiftsFromAPI === 'function') {
             window.loadLiftsFromAPI();
@@ -891,7 +891,7 @@ class EnhancedLiftModal {
         $('#enhancedLiftId').val('');
         $('.is-invalid').removeClass('is-invalid');
         $('.invalid-feedback').remove();
-        $('#enhancedModalTitle').text('Додати ліфт з картою');
+        $('#enhancedModalTitle').text('Adicionar elevador com mapa');
         
         // Скидаємо ID поточного ліфта, координати та збережену адресу
         this.currentLiftId = null;
@@ -930,7 +930,7 @@ class EnhancedLiftModal {
             munInput.readOnly = true;
             munInput.style.backgroundColor = '#f5f5f5';
             munInput.style.cursor = 'not-allowed';
-            munInput.title = 'Муніципальний номер не можна змінити після реєстрації ліфта';
+            munInput.title = 'Número municipal не можна змінити після реєстрації ліфта';
         }
 
         // Додатковий захист: відновити значення муніципального номера після показу модалки
@@ -943,7 +943,7 @@ class EnhancedLiftModal {
                 el.readOnly = true;
                 el.style.backgroundColor = '#f5f5f5';
                 el.style.cursor = 'not-allowed';
-                el.title = 'Муніципальний номер не можна змінити після реєстрації ліфта';
+                el.title = 'Número municipal не можна змінити після реєстрації ліфта';
             }
         };
         $('#enhancedLiftModal').one('shown.bs.modal', _restoreMun);
@@ -996,7 +996,7 @@ class EnhancedLiftModal {
             }, 500);
         }
         
-        $('#enhancedModalTitle').text('Редагувати ліфт (з картою)');
+        $('#enhancedModalTitle').text('Editar elevador (com mapa)');
         console.log('✅ Enhanced lift data loaded for editing. Current ID:', this.currentLiftId);
     }
 
@@ -1105,7 +1105,7 @@ class EnhancedLiftModal {
         const municipalNumber = $(`#${inputId}`).val();
         
         if (!municipalNumber || !municipalNumber.trim()) {
-            this.showMessage('Будь ласка, введіть муніципальний номер ліфта перед генерацією QR', 'error');
+            this.showMessage('Por favor, введіть муніципальний номер ліфта перед генерацією QR', 'error');
             console.error('❌ Municipal number is empty');
             // Фокусуємо поле
             if (liftNumber === 1) {
@@ -1120,7 +1120,7 @@ class EnhancedLiftModal {
         const address = $('#enhancedLiftAddress').val() || '';
         
         if (!address || !address.trim()) {
-            this.showMessage('Будь ласка, введіть адресу ліфта перед генерацією QR', 'error');
+            this.showMessage('Por favor, введіть адресу ліфта перед генерацією QR', 'error');
             console.error('❌ Address is empty');
             // Фокусуємо поле
             $('#enhancedLiftAddress').focus();
@@ -1130,7 +1130,7 @@ class EnhancedLiftModal {
         // Перевірка доступності бібліотеки (qrcode або QRCode)
         if (typeof QRCode === 'undefined' && typeof qrcode === 'undefined') {
             console.error('❌ QRCode library not loaded');
-            this.showMessage('Помилка: бібліотека QR-коду не завантажена', 'error');
+            this.showMessage('Erro: бібліотека QR-коду не завантажена', 'error');
             return;
         }
         
@@ -1157,7 +1157,7 @@ class EnhancedLiftModal {
         const $container = $(previewContainer);
         if ($container.length === 0) {
             console.error(`❌ Container ${previewContainer} not found`);
-            this.showMessage('Помилка: контейнер для QR-коду не знайдено', 'error');
+            this.showMessage('Erro: контейнер для QR-коду не знайдено', 'error');
             return;
         }
         
@@ -1199,7 +1199,7 @@ class EnhancedLiftModal {
                 console.log('✅ QR очищено, залишено тільки один елемент');
             }, 100);
             
-            // Діагностика: що саме створилось
+            // Diagnóstico: що саме створилось
             setTimeout(() => {
                 console.log('🔍 Container HTML:', $container[0].innerHTML.substring(0, 200));
                 console.log('🔍 Container children count:', $container[0].children.length);
@@ -1250,12 +1250,12 @@ class EnhancedLiftModal {
             this.showMessage(`QR-код створено для ліфта №${liftNumber}`, 'success');
         } catch (error) {
             console.error('❌ QR generation error:', error);
-            this.showMessage('Помилка генерації QR-коду: ' + error.message, 'error');
-            $container.html(`<div class="text-danger"><i class="fas fa-exclamation-triangle"></i> Помилка</div>`);
+            this.showMessage('Erro генерації QR-коду: ' + error.message, 'error');
+            $container.html(`<div class="text-danger"><i class="fas fa-exclamation-triangle"></i> Erro</div>`);
         }
     }
 
-    // Завантаження QR-коду як PNG
+    // A carregar QR-коду як PNG
     downloadQRCode(inputId, liftNumber = 1) {
         const municipalNumber = $(`#${inputId}`).val().trim();
         const previewContainer = liftNumber === 1 ? '#mainQrPreview' : `#qrPreview${liftNumber}`;
@@ -1287,13 +1287,13 @@ class EnhancedLiftModal {
         
         link.click();
         
-        this.showMessage('QR-код завантажено', 'success');
+        this.showMessage('QR-код carregado', 'success');
     }
 
     // Друк QR-коду
     printQRCode(inputId, liftNumber = 1) {
         const municipalNumber = $(`#${inputId}`).val().trim();
-        const address = $('#enhancedLiftAddress').val() || 'Адреса не вказана';
+        const address = $('#enhancedLiftAddress').val() || 'Endereço não especificado';
         const previewContainer = liftNumber === 1 ? '#mainQrPreview' : `#qrPreview${liftNumber}`;
         
         // qrcode-generator створює IMG, а не canvas!
@@ -1326,13 +1326,13 @@ class EnhancedLiftModal {
             </head>
             <body>
                 <h2>QR-код доступу до ліфта</h2>
-                <div class="info municipal">Муніципальний номер: ${municipalNumber}</div>
-                <div class="info">Ліфт №${liftNumber}</div>
-                <div class="info">Адреса: ${address}</div>
+                <div class="info municipal">Número municipal: ${municipalNumber}</div>
+                <div class="info">Elevador N.º${liftNumber}</div>
+                <div class="info">Endereço: ${address}</div>
                 <div class="qr-container">
                     <img src="${qrElement.tagName === 'IMG' ? qrElement.src : qrElement.toDataURL()}" alt="QR код ліфта">
                 </div>
-                <div class="info">Створено: ${new Date().toLocaleString('uk-UA')}</div>
+                <div class="info">Створено: ${new Date().toLocaleString('pt-PT')}</div>
             </body>
             </html>
         `);
@@ -1370,7 +1370,7 @@ class EnhancedLiftModal {
             console.log('✅ Модальне вікно інспекції відкрито');
         } else {
             console.error('❌ Модальне вікно інспекції не знайдено!');
-            this.showMessage('Помилка: модальне вікно не знайдено', 'error');
+            this.showMessage('Erro: модальне вікно не знайдено', 'error');
         }
     }
 
@@ -1384,18 +1384,18 @@ class EnhancedLiftModal {
             window.saveInspectionReport();
         } else {
             console.error('❌ Функція saveInspectionReport не знайдена');
-            this.showMessage('Помилка збереження: функція не знайдена', 'error');
+            this.showMessage('Erro ao guardar: функція не знайдена', 'error');
         }
     }
     
     getInspectionTypeText(type) {
         switch (type) {
             case 'routine': return 'Планова інспекція';
-            case 'maintenance': return 'ТО';
+            case 'maintenance': return 'Manutenção';
             case 'repair': return 'Після ремонту';
             case 'emergency': return 'Аварійна перевірка';
             case 'annual': return 'Річна інспекція';
-            default: return 'Інспекція';
+            default: return 'Inspeção';
         }
     }
     
@@ -1403,7 +1403,7 @@ class EnhancedLiftModal {
         switch (result) {
             case 'passed': return 'Пройшов';
             case 'minor_issues': return 'Незначні зауваження';
-            case 'major_issues': return 'Серйозні проблеми';
+            case 'major_issues': return 'Agoйозні проблеми';
             case 'failed': return 'Не пройшов';
             default: return 'Результат невизначений';
         }

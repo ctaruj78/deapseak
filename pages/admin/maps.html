@@ -1086,7 +1086,7 @@
             
             const lift = lifts.find(l => l.id === liftId);
             if (!lift) {
-                console.error('❌ Elevador не encontrado:', liftId);
+                console.error('❌ Elevador não encontrado:', liftId);
                 unlockRouteButton(liftId);
                 return;
             }
@@ -1193,11 +1193,11 @@
         async function regeocodeAll() {
             const btn = $('#btnRegeocodeAll');
             const confirmed = confirm(
-                'Це виправить coordenadas ВСІХ de elevadores desde неправильними ou ausentesми координаeми.\n\n' +
+                'Isto irá corrigir coordenadas de TODOS os elevadores com coordenadas incorretas ou ausentes.\n\n' +
                 'Clique em OK para re-geocoding completo (pode demorar vários minutos).\n' +
-                'Clique Cancel para correção лише de elevadores беdesde координат.'
+                'Clique em Cancelar para corrigir apenas os elevadores sem coordenadas.'
             );
-            const force = confirmed; // OK = force=true (todos), Cancel = apenas порожні
+            const force = confirmed; // OK = force=true (todos), Cancel = apenas os sem coordenadas
             
             btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> A corrigir...');
             
@@ -1318,7 +1318,7 @@
                     styles: [{color: '#007bff', weight: 5, opacity: 0.7}]
                 },
                 createMarker: function() { return null; }, // Не створювати додаткові маркери
-                language: 'en', // Виutilizовуexisteмо англійську, бо українська не підтримуexisteться
+                language: 'en', // Utilizamos inglês porque o ucraniano não é suportado
                 fitSelectedRoutes: true,
                 addWaypoints: false
             }).on('routesfound', function(e) {
@@ -1467,7 +1467,7 @@
         }
 
         async function refreshMap() {
-            console.log('🔄 Оновлення мапи...');
+            console.log('🔄 Atualização мапи...');
             
             // Atualizar dados desde API
             await loadLiftsFromAPI();

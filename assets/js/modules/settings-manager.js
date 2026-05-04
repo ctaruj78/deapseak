@@ -17,7 +17,7 @@ class SettingsManager {
 
     loadUserData() {
         this.userData = JSON.parse(localStorage.getItem('userData')) || {
-            firstName: 'Диспетчер',
+            firstName: 'Dispatcher',
             lastName: 'Системи',
             email: 'dispatcher@example.com',
             phone: '+351912000000',
@@ -56,7 +56,7 @@ class SettingsManager {
     }
 
     loadSettings() {
-        // Завантаження збережених налаштувань
+        // A carregar збережених налаштувань
         this.settings = JSON.parse(localStorage.getItem('systemSettings')) || this.getDefaultSettings();
     }
 
@@ -175,23 +175,23 @@ class SettingsManager {
             adminSections.forEach(section => section.style.display = 'block');
             if (adminBadge) {
                 adminBadge.className = 'role-badge badge-danger';
-                adminBadge.textContent = 'Адміністратор';
+                adminBadge.textContent = 'Administrador';
             }
             if (systemRole) {
-                systemRole.textContent = 'Адміністратор';
+                systemRole.textContent = 'Administrador';
             }
         } else {
             adminSections.forEach(section => section.style.display = 'none');
             if (adminBadge) {
                 adminBadge.className = 'role-badge badge-info';
-                adminBadge.textContent = 'Диспетчер';
+                adminBadge.textContent = 'Dispatcher';
             }
             if (systemRole) {
-                systemRole.textContent = 'Диспетчер';
+                systemRole.textContent = 'Dispatcher';
             }
         }
 
-        document.getElementById('userRole').textContent = this.userRole === 'admin' ? 'Адміністратор' : 'Диспетчер';
+        document.getElementById('userRole').textContent = this.userRole === 'admin' ? 'Administrador' : 'Dispatcher';
     }
 
     initializeFormValues() {
@@ -203,7 +203,7 @@ class SettingsManager {
         this.updateFormValues('security', this.settings.security);
         this.updateFormValues('appearance', this.settings.appearance);
 
-        // Оновлення дати останнього бекапу
+        // Atualização дати останнього бекапу
         if (this.settings.backup.lastBackup) {
             const lastBackupElement = document.getElementById('lastBackupDate');
             if (lastBackupElement) {
@@ -250,7 +250,7 @@ class SettingsManager {
         };
 
         this.saveSettings();
-        this.showNotification('Загальні налаштування збережено', 'success');
+        this.showNotification('Definições gerais guardadas', 'success');
     }
 
     saveNotificationSettings() {
@@ -264,7 +264,7 @@ class SettingsManager {
         };
 
         this.saveSettings();
-        this.showNotification('Налаштування сповіщень збережено', 'success');
+        this.showNotification('Definições сповіщень збережено', 'success');
     }
 
     saveIntegrationSettings() {
@@ -276,7 +276,7 @@ class SettingsManager {
         };
 
         this.saveSettings();
-        this.showNotification('Налаштування інтеграцій збережено', 'success');
+        this.showNotification('Definições інтеграцій збережено', 'success');
     }
 
     saveSecuritySettings() {
@@ -290,7 +290,7 @@ class SettingsManager {
         };
 
         this.saveSettings();
-        this.showNotification('Налаштування безпеки збережено', 'success');
+        this.showNotification('Definições de segurança guardadas', 'success');
     }
 
     saveAppearanceSettings() {
@@ -303,7 +303,7 @@ class SettingsManager {
 
         this.saveSettings();
         this.applyAppearanceSettings();
-        this.showNotification('Налаштування зовнішнього вигляду збережено', 'success');
+        this.showNotification('Definições зовнішнього вигляду збережено', 'success');
     }
 
     saveProfile() {
@@ -320,7 +320,7 @@ class SettingsManager {
         localStorage.setItem('userData', JSON.stringify(this.userData));
         
         this.updateUserInterface();
-        this.showNotification('Профіль успішно оновлено', 'success');
+        this.showNotification('Профіль com sucesso оновлено', 'success');
     }
 
     async changePassword() {
@@ -329,7 +329,7 @@ class SettingsManager {
         const confirmPassword = document.getElementById('confirmPassword').value;
 
         if (!currentPassword || !newPassword || !confirmPassword) {
-            this.showNotification('Будь ласка, заповніть всі поля', 'warning');
+            this.showNotification('Por favor, заповніть всі поля', 'warning');
             return;
         }
 
@@ -339,21 +339,21 @@ class SettingsManager {
         }
 
         if (newPassword.length < this.settings.security.minPasswordLength) {
-            this.showNotification(`Пароль повинен містити至少 ${this.settings.security.minPasswordLength} символів`, 'error');
+            this.showNotification(`Palavra-passe повинен містити至少 ${this.settings.security.minPasswordLength} символів`, 'error');
             return;
         }
 
         try {
             // Симуляція зміни пароля
-            this.showNotification('Пароль успішно змінено', 'success');
+            this.showNotification('Palavra-passe com sucesso змінено', 'success');
             
             // Очищення полів
             document.getElementById('currentPassword').value = '';
             document.getElementById('newPassword').value = '';
             document.getElementById('confirmPassword').value = '';
         } catch (error) {
-            console.error('Помилка зміни пароля:', error);
-            this.showNotification('Помилка зміни пароля', 'error');
+            console.error('Erro зміни пароля:', error);
+            this.showNotification('Erro зміни пароля', 'error');
         }
     }
 
@@ -380,7 +380,7 @@ class SettingsManager {
         // Застосування зовнішнього вигляду
         this.applyAppearanceSettings();
         
-        // Оновлення інтерфейсу
+        // Atualização інтерфейсу
         this.updateUI();
     }
 
@@ -436,21 +436,21 @@ class SettingsManager {
     }
 
     updateUI() {
-        // Оновлення назви компанії в заголовку
-        document.title = `${this.settings.general.companyName} - Налаштування`;
+        // Atualização назви компанії в заголовку
+        document.title = `${this.settings.general.companyName} - Definições`;
         
-        // Оновлення інформації про користувача
+        // Atualização інформації про користувача
         this.updateUserInterface();
     }
 
     updateUserInterface() {
-        // Оновлення імені користувача
+        // Atualização імені користувача
         document.getElementById('userName').textContent = 
             `${this.userData.firstName} ${this.userData.lastName}`;
         
-        // Оновлення ролі
+        // Atualização ролі
         document.getElementById('userRole').textContent = 
-            this.userRole === 'admin' ? 'Адміністратор' : 'Диспетчер';
+            this.userRole === 'admin' ? 'Administrador' : 'Dispatcher';
     }
 
     async createBackup() {
@@ -476,7 +476,7 @@ class SettingsManager {
             linkElement.setAttribute('download', `backup-${new Date().toISOString().split('T')[0]}.json`);
             linkElement.click();
 
-            // Оновлення дати останнього бекапу
+            // Atualização дати останнього бекапу
             this.settings.backup.lastBackup = new Date().toISOString();
             this.saveSettings();
             
@@ -485,11 +485,11 @@ class SettingsManager {
                 lastBackupElement.textContent = new Date().toLocaleString('uk-UA');
             }
 
-            this.showNotification('Резервну копію успішно створено', 'success');
+            this.showNotification('Резервну копію com sucesso створено', 'success');
 
         } catch (error) {
-            console.error('Помилка створення резервної копії:', error);
-            this.showNotification('Помилка створення резервної копії', 'error');
+            console.error('Erro створення резервної копії:', error);
+            this.showNotification('Erro створення резервної копії', 'error');
         }
     }
 
@@ -512,7 +512,7 @@ class SettingsManager {
                 return;
             }
 
-            if (confirm('Відновлення резервної копії перезапише поточні дані. Продовжити?')) {
+            if (confirm('A restauração da cópia de segurança irá substituir os dados actuais. Continuar?')) {
                 // Відновлення даних
                 localStorage.setItem('users', JSON.stringify(backupData.data.users || []));
                 localStorage.setItem('lifts', JSON.stringify(backupData.data.lifts || []));
@@ -531,19 +531,19 @@ class SettingsManager {
                     this.updateUserInterface();
                 }
 
-                this.showNotification('Дані успішно відновлено з резервної копії', 'success');
+                this.showNotification('Дані com sucesso відновлено з резервної копії', 'success');
                 
                 // Очистити поле файлу
                 fileInput.value = '';
                 const label = fileInput.nextElementSibling;
                 if (label && label.classList.contains('custom-file-label')) {
-                    label.textContent = 'Обрати файл...';
+                    label.textContent = 'Selecionar файл...';
                 }
             }
 
         } catch (error) {
-            console.error('Помилка відновлення резервної копії:', error);
-            this.showNotification('Помилка відновлення резервної копії', 'error');
+            console.error('Erro відновлення резервної копії:', error);
+            this.showNotification('Erro відновлення резервної копії', 'error');
         }
     }
 
@@ -576,13 +576,13 @@ class SettingsManager {
                 this.userData.avatar = e.target.result;
                 localStorage.setItem('userData', JSON.stringify(this.userData));
                 
-                // Оновлення аватара в інтерфейсі
+                // Atualização аватара в інтерфейсі
                 const avatarImg = document.querySelector('.user-panel .image img');
                 if (avatarImg) {
                     avatarImg.src = e.target.result;
                 }
                 
-                this.showNotification('Аватар успішно оновлено', 'success');
+                this.showNotification('Аватар com sucesso оновлено', 'success');
             };
             reader.readAsDataURL(file);
         }
@@ -606,7 +606,7 @@ class SettingsManager {
             if (element) {
                 element.addEventListener('change', () => {
                     this.saveSettings();
-                    this.showNotification('Налаштування збережено', 'success');
+                    this.showNotification('Definições guardadas', 'success');
                 });
             }
         });
@@ -650,11 +650,11 @@ class SettingsManager {
 
     // Метод для скидання налаштувань до стандартних
     resetToDefaults() {
-        if (confirm('Скинути всі налаштування до стандартних значень? Ця дія незворотня.')) {
+        if (confirm('Repor todas as definições para os valores predefinidos? Esta acção é irreversível.')) {
             this.settings = this.getDefaultSettings();
             this.saveSettings();
             this.initializeFormValues();
-            this.showNotification('Налаштування скинуто до стандартних', 'success');
+            this.showNotification('Definições repostas до стандартних', 'success');
         }
     }
 
@@ -668,7 +668,7 @@ class SettingsManager {
         linkElement.setAttribute('download', 'settings-export.json');
         linkElement.click();
         
-        this.showNotification('Налаштування успішно експортовано', 'success');
+        this.showNotification('Definições com sucesso експортовано', 'success');
     }
 
     // Метод для імпорту налаштувань
@@ -678,18 +678,18 @@ class SettingsManager {
         this.readFileAsText(file).then(content => {
             const importedSettings = JSON.parse(content);
             if (this.validateSettings(importedSettings)) {
-                if (confirm('Імпорт налаштувань перезапише поточні налаштування. Продовжити?')) {
+                if (confirm('Importar definições irá substituir as definições actuais. Continuar?')) {
                     this.settings = importedSettings;
                     this.saveSettings();
                     this.initializeFormValues();
-                    this.showNotification('Налаштування успішно імпортовано', 'success');
+                    this.showNotification('Definições com sucesso імпортовано', 'success');
                 }
             } else {
                 this.showNotification('Невірний формат файлу налаштувань', 'error');
             }
         }).catch(error => {
-            console.error('Помилка імпорту налаштувань:', error);
-            this.showNotification('Помилка імпорту налаштувань', 'error');
+            console.error('Erro імпорту налаштувань:', error);
+            this.showNotification('Erro імпорту налаштувань', 'error');
         });
     }
 
@@ -704,7 +704,7 @@ class SettingsManager {
     // Додаткові методи для адміністратора
     manageUsers() {
         if (this.userRole !== 'admin') {
-            this.showNotification('Доступ заборонено. Необхідні права адміністратора', 'error');
+            this.showNotification('Acesso negado. Необхідні права адміністратора', 'error');
             return;
         }
         this.showNotification('Функціонал керування користувачами буде реалізовано в наступній версії', 'info');
@@ -712,7 +712,7 @@ class SettingsManager {
 
     systemMonitoring() {
         if (this.userRole !== 'admin') {
-            this.showNotification('Доступ заборонено. Необхідні права адміністратора', 'error');
+            this.showNotification('Acesso negado. Необхідні права адміністратора', 'error');
             return;
         }
         this.showNotification('Функціонал моніторингу системи буде реалізовано в наступній версії', 'info');
@@ -720,7 +720,7 @@ class SettingsManager {
 
     manageRoles() {
         if (this.userRole !== 'admin') {
-            this.showNotification('Доступ заборонено. Необхідні права адміністратора', 'error');
+            this.showNotification('Acesso negado. Необхідні права адміністратора', 'error');
             return;
         }
         this.showNotification('Функціонал керування ролями буде реалізовано в наступній версії', 'info');
@@ -730,12 +730,12 @@ class SettingsManager {
         this.showNotification('Виконання діагностики системи...', 'info');
         
         setTimeout(() => {
-            this.showNotification('Діагностика завершена. Система працює стабільно', 'success');
+            this.showNotification('Diagnóstico завершена. Система працює стабільно', 'success');
         }, 1500);
     }
 
     checkUpdates() {
-        this.showNotification('Перевірка оновлень...', 'info');
+        this.showNotification('A verificar atualizações...', 'info');
         
         setTimeout(() => {
             this.showNotification('Ви використовуєте останню версію системи', 'success');

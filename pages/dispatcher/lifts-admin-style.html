@@ -2478,17 +2478,6 @@ Equipa FestLift
         });
     </script>
 
-    </div>
-        </div>
-        <div class="ai-chat-input">
-          <textarea class="ai-message-input" placeholder="Escreva uma mensagem..."></textarea>
-          <div class="ai-chat-actions">
-            <button class="ai-send-message"><i class="fas fa-paper-plane"></i> Enviar</button>
-            <button class="ai-voice-toggle"><i class="fas fa-microphone"></i> Voz</button>
-          </div>
-        </div>
-      </div>
-    </div>
     <script>
     // Função para відкриття модального вікна do elevador (apenas desde картою)
     // Глобальна функція para відкриття модального вікна do elevador
@@ -4407,7 +4396,7 @@ Equipa FestLift</textarea>
                 
                 // Horaтоe de inspeções - apenas se вказана
                 $('#detail-frequency').text(
-                    lift.inspectionFrequency ? `${lift.inspectionFrequency} міс.` : 'Não especificado'
+                    lift.inspectionFrequency ? `${lift.inspectionFrequency} meses` : 'Não especificado'
                 );
                 
                 // Localização desde нової структури
@@ -4460,7 +4449,7 @@ Equipa FestLift</textarea>
                 $('#detail-contract-number').text(cn || 'Não especificado');
                 $('#detail-contract-price').text(cp ? `${cp} €` : 'Não especificado');
                 
-                // Дати de manutenção — nextMaintenance é calculado: lastMaintenance + 1 mês (não armazenado)
+                // Datas de manutenção — nextMaintenance é calculado: lastMaintenance + 1 mês (não armazenado)
                 const _lastMaint = lift.lastMaintenance;
                 $('#detail-last-maintenance').text(
                     _lastMaint ? new Date(_lastMaint).toLocaleDateString('pt-PT') : 'Não especificado'
@@ -4651,7 +4640,7 @@ Equipa FestLift</textarea>
             
             let lift;
             if (result && result.success && result.data) {
-                // Сервер devolve: {success:true, data:{lift:{...}}}
+                // Agoвер devolve: {success:true, data:{lift:{...}}}
                 // apiCall обгорeexiste: {success, data: <serverResponse>}
                 const rd = result.data;
                 const rdd = rd && rd.data;
@@ -5119,7 +5108,7 @@ Equipa FestLift</textarea>
         lifts = lifts.filter(l => (l._id || l.id) !== liftId);
         localStorage.setItem('lifts', JSON.stringify(lifts));
         
-        // Також спробувати eliminar através de API
+        // Simож спробувати eliminar através de API
         const deleteResult = await apiCall(`/api/lifts/${liftId}`, 'DELETE');
         if (deleteResult.success) {
             console.log('✅ Elevador eliminado da API');
@@ -5452,7 +5441,7 @@ Equipa FestLift</textarea>
         let typeIcon = 'fa-clipboard-check';
         if (type.toLowerCase().includes('reparação') || type === 'repair') {
             typeIcon = 'fa-wrench';
-        } else if (type.toLowerCase().includes('аварі') || type === 'emergency') {
+        } else if (type.toLowerCase().includes('avari') || type === 'emergency') {
             typeIcon = 'fa-exclamation-triangle';
         } else if (type.toLowerCase().includes('manutenção') || type === 'maintenance') {
             typeIcon = 'fa-tools';
@@ -5904,7 +5893,7 @@ Equipa FestLift</textarea>
                     }
                 }
                 const msg = sharedCount > 0
-                    ? `Contrato com sucesso carregado e застосовано до ${sharedCount + 1} elevadores neste endereço!`
+                    ? `Contrato com sucesso carregado e aplicado a ${sharedCount + 1} elevadores neste endereço!`
                     : 'Contrato carregado com sucesso!';
                 alert(msg);
                 $('#uploadContractModal').modal('hide');

@@ -312,7 +312,7 @@ class DatabaseManager {
         const technician = await this.getUserById(technicianId);
         if (technician) {
             CommonUtils.showNotification(
-                `Технік ${technician.firstName} отримав нове завдання`,
+                `Técnico ${technician.firstName} отримав нове завдання`,
                 'info'
             );
         }

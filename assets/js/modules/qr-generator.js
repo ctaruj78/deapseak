@@ -22,18 +22,18 @@ const qrGenerator = (function() {
         ],
         location: [
             { value: 'building', text: 'Будівля' },
-            { value: 'address', text: 'Адреса' },
+            { value: 'address', text: 'Endereço' },
             { value: 'map', text: 'На карті' }
         ],
         equipment: [
-            { value: 'specs', text: 'Технічні характеристики' },
+            { value: 'specs', text: 'Características técnicas' },
             { value: 'manual', text: 'Інструкція' },
             { value: 'warranty', text: 'Гарантія' }
         ],
         maintenance: [
-            { value: 'schedule', text: 'Графік ТО' },
+            { value: 'schedule', text: 'Графік Manutenção' },
             { value: 'checklist', text: 'Чек-лист' },
-            { value: 'report', text: 'Звіт ТО' }
+            { value: 'report', text: 'Relatório Manutenção' }
         ],
         custom: [
             { value: 'url', text: 'URL посилання' },
@@ -42,18 +42,18 @@ const qrGenerator = (function() {
         ]
     };
     
-    // Завантаження списку ліфтів
+    // A carregar списку ліфтів
     async function loadLifts() {
         try {
             const lifts = JSON.parse(localStorage.getItem('lifts') || '[]');
             return lifts;
         } catch (error) {
-            console.error('Помилка завантаження ліфтів:', error);
+            console.error('Erro завантаження ліфтів:', error);
             return [];
         }
     }
     
-    // Оновлення списку призначень
+    // Atualização списку призначень
     function updateTargetOptions(type) {
         const targetSelect = $('#qrTarget');
         targetSelect.empty();
@@ -112,13 +112,13 @@ const qrGenerator = (function() {
             errorCorrectionLevel: 'H'
         }, function(error) {
             if (error) {
-                console.error('Помилка генерації QR:', error);
-                previewDiv.innerHTML = '<p class="text-danger">Помилка генерації QR-коду</p>';
+                console.error('Erro генерації QR:', error);
+                previewDiv.innerHTML = '<p class="text-danger">Erro генерації QR-коду</p>';
                 return;
             }
             
             // Показуємо текст що закодовано
-            $('#qrText').html(`<small class="text-muted">Закодовано: ${data.substring(0, 50)}${data.length > 50 ? '...' : ''}</small>`);
+            $('#qrText').html(`<small class="text-muted">Codificado: ${data.substring(0, 50)}${data.length > 50 ? '...' : ''}</small>`);
             
             // Показуємо інформацію
             const info = `
@@ -138,7 +138,7 @@ const qrGenerator = (function() {
         });
     }
     
-    // Завантаження PNG
+    // A carregar PNG
     function downloadPNG() {
         if (!qrCanvas) return;
         
@@ -148,16 +148,16 @@ const qrGenerator = (function() {
         link.click();
     }
     
-    // Завантаження SVG (використовуємо canvas як fallback)
+    // A carregar SVG (використовуємо canvas як fallback)
     function downloadSVG() {
         if (!currentQRCode) return;
-        alert('SVG експорт буде додано в наступній версії. Використовуйте PNG.');
+        alert('A exportação SVG será adicionada na próxima versão. Utilize PNG.');
     }
     
-    // Завантаження PDF
+    // A carregar PDF
     function downloadPDF() {
         if (!qrCanvas) return;
-        alert('PDF експорт буде додано в наступній версії. Використовуйте PNG.');
+        alert('A exportação PDF será adicionada na próxima versão. Utilize PNG.');
     }
     
     // Копіювання в буфер обміну
@@ -167,10 +167,10 @@ const qrGenerator = (function() {
         qrCanvas.toBlob(function(blob) {
             const item = new ClipboardItem({ 'image/png': blob });
             navigator.clipboard.write([item]).then(function() {
-                alert('QR-код скопійовано в буфер обміну!');
+                alert('QR code copiado para a área de transferência!');
             }, function(error) {
-                console.error('Помилка копіювання:', error);
-                alert('Не вдалося скопіювати QR-код');
+                console.error('Erro копіювання:', error);
+                alert('Não foi possível copiar o QR code');
             });
         });
     }
@@ -216,7 +216,7 @@ const qrGenerator = (function() {
             console.log('📋 Form submitted:', { type, target, customData });
             
             if (!type || !target) {
-                alert('Будь ласка, заповніть всі обов\'язкові поля');
+                alert('Por favor, заповніть всі обов\'язкові поля');
                 return;
             }
             

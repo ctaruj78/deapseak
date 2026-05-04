@@ -11,7 +11,7 @@ const scanHistory = (function() {
     // Load scans from localStorage/API
     async function loadScans() {
         try {
-            console.log('📊 Завантаження історії сканувань...');
+            console.log('📊 A carregar історії сканувань...');
 
             // Try localStorage first
             const localScans = JSON.parse(localStorage.getItem('qr_scan_history') || '[]');
@@ -45,7 +45,7 @@ const scanHistory = (function() {
             initializeMap();
 
         } catch (error) {
-            console.error('❌ Помилка завантаження історії:', error);
+            console.error('❌ Erro завантаження історії:', error);
             scansData = [];
             filteredScans = [];
         }
@@ -89,7 +89,7 @@ const scanHistory = (function() {
                     <td>${index + 1}</td>
                     <td>${date.toLocaleDateString('uk-UA')} ${date.toLocaleTimeString('uk-UA')}</td>
                     <td>${scan.liftId || scan.qrCode || 'N/A'}</td>
-                    <td>${scan.location || 'Невідомо'}</td>
+                    <td>${scan.location || 'Desconhecido'}</td>
                     <td>${scan.user || 'Система'}</td>
                     <td><span class="badge badge-${statusClass}"><i class="fas fa-${statusIcon}"></i> ${scan.status}</span></td>
                     <td>
@@ -121,7 +121,7 @@ const scanHistory = (function() {
         const scansWithCoords = scansData.filter(s => s.latitude && s.longitude);
         
         if (scansWithCoords.length === 0) {
-            $('#scanMap').html('<div class="text-center p-4"><i class="fas fa-map-marker-alt fa-3x text-muted mb-3"></i><p>Немає даних про локацію сканувань</p></div>');
+            $('#scanMap').html('<div class="text-center p-4"><i class="fas fa-map-marker-alt fa-3x text-muted mb-3"></i><p>Sem dados про локацію сканувань</p></div>');
             return;
         }
 
@@ -136,7 +136,7 @@ const scanHistory = (function() {
         scansWithCoords.forEach(scan => {
             const marker = L.marker([scan.latitude, scan.longitude]).addTo(map);
             marker.bindPopup(`
-                <strong>${scan.liftId || 'Ліфт'}</strong><br>
+                <strong>${scan.liftId || 'Elevador'}</strong><br>
                 ${scan.location || ''}<br>
                 <small>${new Date(scan.timestamp).toLocaleString('uk-UA')}</small>
             `);
@@ -200,11 +200,11 @@ const scanHistory = (function() {
     function exportToExcel() {
         const data = filteredScans.map((scan, i) => ({
             '№': i + 1,
-            'Дата': new Date(scan.timestamp).toLocaleString('uk-UA'),
-            'Ліфт': scan.liftId || 'N/A',
-            'Локація': scan.location || 'Невідомо',
-            'Користувач': scan.user || 'Система',
-            'Статус': scan.status
+            'Data': new Date(scan.timestamp).toLocaleString('uk-UA'),
+            'Elevador': scan.liftId || 'N/A',
+            'Локація': scan.location || 'Desconhecido',
+            'Utilizador': scan.user || 'Система',
+            'Estado': scan.status
         }));
 
         const worksheet = XLSX.utils.json_to_sheet(data);
@@ -215,7 +215,7 @@ const scanHistory = (function() {
 
     // Clear history
     function clearHistory() {
-        if (!confirm('Ви впевнені що хочете очистити всю історію сканувань?')) return;
+        if (!confirm('Tem a certeza que pretende limpar todo o histórico de digitalizações?')) return;
 
         localStorage.removeItem('qr_scan_history');
         scansData = [];
@@ -235,14 +235,14 @@ const scanHistory = (function() {
             <div class="scan-details">
                 <div class="row">
                     <div class="col-md-6">
-                        <p><strong>Дата і час:</strong> ${new Date(scan.timestamp).toLocaleString('uk-UA')}</p>
-                        <p><strong>Ліфт ID:</strong> ${scan.liftId || 'N/A'}</p>
+                        <p><strong>Data і час:</strong> ${new Date(scan.timestamp).toLocaleString('uk-UA')}</p>
+                        <p><strong>Elevador ID:</strong> ${scan.liftId || 'N/A'}</p>
                         <p><strong>QR-код:</strong> ${scan.qrCode || 'N/A'}</p>
                     </div>
                     <div class="col-md-6">
-                        <p><strong>Локація:</strong> ${scan.location || 'Невідомо'}</p>
-                        <p><strong>Користувач:</strong> ${scan.user || 'Система'}</p>
-                        <p><strong>Статус:</strong> <span class="badge badge-${scan.status === 'success' ? 'success' : 'danger'}">${scan.status}</span></p>
+                        <p><strong>Локація:</strong> ${scan.location || 'Desconhecido'}</p>
+                        <p><strong>Utilizador:</strong> ${scan.user || 'Система'}</p>
+                        <p><strong>Estado:</strong> <span class="badge badge-${scan.status === 'success' ? 'success' : 'danger'}">${scan.status}</span></p>
                     </div>
                 </div>
                 ${scan.notes ? `<hr><p><strong>Примітки:</strong> ${scan.notes}</p>` : ''}
@@ -291,8 +291,8 @@ const scanHistory = (function() {
             $('#dateRange').daterangepicker({
                 locale: {
                     format: 'DD.MM.YYYY',
-                    applyLabel: 'Застосувати',
-                    cancelLabel: 'Скасувати'
+                    applyLabel: 'Aplicar',
+                    cancelLabel: 'Cancelar'
                 }
             });
         }

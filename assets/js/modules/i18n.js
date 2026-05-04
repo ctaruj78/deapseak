@@ -7,15 +7,15 @@ class I18nManager {
     }
 
     init() {
-        // Завантаження збереженої мови
+        // A carregar збереженої мови
         const savedLang = StorageManager.load('language') || 'uk';
         this.setLanguage(savedLang);
 
-        // Завантаження перекладів
+        // A carregar перекладів
         this.loadTranslations();
     }
 
-    // Завантаження перекладів
+    // A carregar перекладів
     async loadTranslations() {
         try {
             // В реальному додатку це буде завантаження з API або файлів
@@ -23,68 +23,68 @@ class I18nManager {
                 uk: {
                     // Загальні
                     'dashboard': 'Дашборд',
-                    'lifts': 'Ліфти',
-                    'users': 'Користувачі',
-                    'reports': 'Звіти',
-                    'settings': 'Налаштування',
+                    'lifts': 'Elevadores',
+                    'users': 'Utilizadorі',
+                    'reports': 'Relatórioи',
+                    'settings': 'Definições',
                     'logout': 'Вийти',
-                    'save': 'Зберегти',
-                    'cancel': 'Скасувати',
-                    'edit': 'Редагувати',
-                    'delete': 'Видалити',
-                    'add': 'Додати',
-                    'search': 'Пошук',
-                    'loading': 'Завантаження...',
-                    'error': 'Помилка',
+                    'save': 'Guardar',
+                    'cancel': 'Cancelar',
+                    'edit': 'Editar',
+                    'delete': 'Eliminar',
+                    'add': 'Adicionar',
+                    'search': 'Pesquisa',
+                    'loading': 'A carregar...',
+                    'error': 'Erro',
                     'success': 'Успішно',
-                    'warning': 'Попередження',
+                    'warning': 'Aviso',
                     'info': 'Інформація',
 
                     // Дашборд
-                    'active_lifts': 'Активних ліфтів',
+                    'active_lifts': 'Elevadores ativos',
                     'serviced_today': 'Обслугованих сьогодні',
                     'problem_lifts': 'Проблемних ліфтів',
                     'new_scans': 'Нових сканувань',
                     'quick_actions': 'Швидкі дії',
                     'create_qr': 'Створити QR',
-                    'add_lift': 'Додати ліфт',
-                    'add_user': 'Додати користувача',
-                    'daily_report': 'Звіт за день',
+                    'add_lift': 'Adicionar ліфт',
+                    'add_user': 'Adicionar користувача',
+                    'daily_report': 'Relatório за день',
                     'recent_scans': 'Останні сканування',
-                    'view_all_scans': 'Переглянути всі сканування',
-                    'analytics': 'Аналітика',
+                    'view_all_scans': 'Ver всі сканування',
+                    'analytics': 'Análise',
                     'status_distribution': 'Розподіл за статусом',
 
                     // Нотифікації
-                    'notifications': 'Сповіщення',
+                    'notifications': 'Notificações',
                     'new_notifications': 'нових сповіщень',
                     'no_notifications': 'Немає нових сповіщень',
-                    'view_all_notifications': 'Переглянути всі сповіщення',
-                    'maintenance': 'Обслуговування',
+                    'view_all_notifications': 'Ver всі сповіщення',
+                    'maintenance': 'Manutenção',
                     'assignment': 'Нове завдання',
                     'payment': 'Оплата',
 
-                    // Статуси
-                    'active': 'Активний',
-                    'inactive': 'Неактивний',
-                    'maintenance': 'Обслуговування',
+                    // Estadoи
+                    'active': 'Ativo',
+                    'inactive': 'Inativo',
+                    'maintenance': 'Manutenção',
                     'completed': 'Завершено',
-                    'pending': 'Очікує',
-                    'in_progress': 'В роботі',
+                    'pending': 'Pendente',
+                    'in_progress': 'Em progresso',
 
-                    // Місяці
-                    'jan': 'Січ',
-                    'feb': 'Лют',
-                    'mar': 'Бер',
+                    // Meses
+                    'jan': 'Jan',
+                    'feb': 'Fev',
+                    'mar': 'Mar',
                     'apr': 'Кві',
-                    'may': 'Тра',
-                    'jun': 'Чер',
-                    'jul': 'Лип',
-                    'aug': 'Сер',
-                    'sep': 'Вер',
-                    'oct': 'Жов',
-                    'nov': 'Лис',
-                    'dec': 'Гру'
+                    'may': 'Mai',
+                    'jun': 'Jun',
+                    'jul': 'Jul',
+                    'aug': 'Ago',
+                    'sep': 'Set',
+                    'oct': 'Out',
+                    'nov': 'Nov',
+                    'dec': 'Dez'
                 },
                 en: {
                     // General
@@ -167,7 +167,7 @@ class I18nManager {
             // Повідомлення слухачів
             this.notifyListeners('languageChanged', language);
 
-            // Оновлення DOM елементів
+            // Atualização DOM елементів
             this.updateDOMTranslations();
 
             return true;
@@ -203,7 +203,7 @@ class I18nManager {
         return text;
     }
 
-    // Оновлення всіх елементів з data-i18n атрибутами
+    // Atualização всіх елементів з data-i18n атрибутами
     updateDOMTranslations() {
         const elements = document.querySelectorAll('[data-i18n]');
         elements.forEach(element => {
@@ -212,14 +212,14 @@ class I18nManager {
             element.textContent = this.translate(key, fallback);
         });
 
-        // Оновлення placeholder'ів
+        // Atualização placeholder'ів
         const placeholders = document.querySelectorAll('[data-i18n-placeholder]');
         placeholders.forEach(element => {
             const key = element.getAttribute('data-i18n-placeholder');
             element.placeholder = this.translate(key);
         });
 
-        // Оновлення title атрибутів
+        // Atualização title атрибутів
         const titles = document.querySelectorAll('[data-i18n-title]');
         titles.forEach(element => {
             const key = element.getAttribute('data-i18n-title');
@@ -285,7 +285,7 @@ class I18nManager {
         return 'uk'; // default
     }
 
-    // Експорт/імпорт перекладів (для розробки)
+    // Exportar/імпорт перекладів (для розробки)
     exportTranslations() {
         return JSON.stringify(this.translations, null, 2);
     }
@@ -315,7 +315,7 @@ if (typeof window !== 'undefined') {
     window.__ = __;
 }
 
-// Експорт для Node.js
+// Exportar для Node.js
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = I18nManager;
 }

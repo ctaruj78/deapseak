@@ -672,7 +672,7 @@
         <!-- Footer -->
         <footer class="main-footer">
             <strong>Copyright &copy; 2024 <a href="#">LiftMaster Pro</a>.</strong>
-            Todas права protegidos.
+            Todos os direitos reservados.
             <div class="float-right d-none d-sm-inline-block">
                 <b>Versão</b> 2.0.0
             </div>
@@ -709,7 +709,7 @@
         let speechRecognition = null;
         let isSpeaking = false;
 
-        // Deупинити TTS при переході на іншу a página
+        // Parar TTS ao mudar de página
         window.addEventListener('pagehide', () => {
             if ('speechSynthesis' in window) {
                 window.speechSynthesis.cancel();
@@ -721,10 +721,10 @@
             }
         });
 
-        // При поверненні para a página — синхронізувати сeн TTS desde UI
+        // Ao regressar à página — sincronizar estado TTS desde UI
         window.addEventListener('pageshow', () => {
             if ('speechSynthesis' in window && window.speechSynthesis.speaking) {
-                // TTS ainda говорить, mas JS-сeн скинувся — зупиняexisteмо
+                // TTS ainda a reproduzir, mas estado JS foi resetado — paramos
                 window.speechSynthesis.cancel();
                 isSpeaking = false;
                 const speakBtn = document.getElementById('speakBtn');
@@ -735,7 +735,7 @@
             }
         });
         
-        // Ініціалізація Web Speech API
+        // Inicialização da Web Speech API
         if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             speechRecognition = new SpeechRecognition();
@@ -778,7 +778,7 @@
             });
         }
         
-        // Голосове введення
+        // Introdução por voz
         function toggleVoiceInput() {
             if (speechRecognition) {
                 try {
@@ -789,7 +789,7 @@
             }
         }
         
-        // Text-to-Speech озвучування
+        // Leitura Text-to-Speech
         function toggleSpeech() {
             if ('speechSynthesis' in window) {
                 if (isSpeaking) {
@@ -812,14 +812,14 @@
                     .replace(/`([^`]+)`/g, '$1');
                 
                 const utterance = new SpeechSynthesisUtterance(cleanText);
-                utterance.lang = 'pt-PT'; // Європейська португальська
+                utterance.lang = 'pt-PT'; // Português europeu
                 utterance.rate = 0.9;
                 utterance.pitch = 1;
                 
-                // ЖОРСТКА DeOUРОНА бразильського португальського
+                // BLOQUEIO para português do Brasil
                 const voices = window.speechSynthesis.getVoices();
                 
-                // Спочатку filtroуexisteмо ВСІ бразильські голоси
+                // Primeiro filtrar TODAS as vozes brasileiras
                 const nonBrazilianVoices = voices.filter(voice => 
                     !voice.lang.includes('BR') && 
                     !voice.lang.includes('Brazil') &&
@@ -827,12 +827,12 @@
                     !voice.name.toLowerCase().includes('brasil')
                 );
                 
-                // Спочатку шукаexisteмо Joana Neural (prioridade)
+                // Primeiro procurar Joana Neural (prioridade)
                 const joanaVoice = nonBrazilianVoices.find(voice =>
                     voice.name.toLowerCase().includes('joana')
                 );
                 
-                // Se Joana не знайдена — шукаexisteмо будь-який pt-PT
+                // Se Joana não encontrada — procurar qualquer pt-PT
                 const portugueseVoice = joanaVoice || nonBrazilianVoices.find(voice => 
                     voice.lang === 'pt-PT' || 
                     (voice.lang.startsWith('pt') && voice.name.toLowerCase().includes('portugal'))
@@ -840,25 +840,25 @@
                 
                 if (portugueseVoice) {
                     utterance.voice = portugueseVoice;
-                    console.log('✅ Виutilizовуexisteться ПОРТУГАЛЬСЬКИЙ голос:', portugueseVoice.name, portugueseVoice.lang);
+                    console.log('✅ A usar voz PORTUGUESA:', portugueseVoice.name, portugueseVoice.lang);
                 } else {
-                    // Pesquisa будь-якого португальського (exceto бразильського)
+                    // Pesquisar qualquer voz portuguesa (exceto brasileira)
                     const anyPortuguese = nonBrazilianVoices.find(voice => voice.lang.startsWith('pt'));
                     
                     if (anyPortuguese) {
                         utterance.voice = anyPortuguese;
-                        console.log('⚠️ Виutilizовуexisteться альтернативний НЕ-бразильський голос:', anyPortuguese.name, anyPortuguese.lang);
+                        console.log('⚠️ A usar voz alternativa NÃO-brasileira:', anyPortuguese.name, anyPortuguese.lang);
                     } else {
-                        // ОСТАННІЙ ВАРІАНТ: se apenas бразильські голоси, НЕ виutilizовуexisteмо TTS
+                        // ÚLTIMO RECURSO: se apenas vozes brasileiras disponíveis, NÃO usar TTS
                         const hasBrazilianOnly = voices.some(v => v.lang.includes('BR') || v.lang.includes('Brazil'));
                         
                         if (hasBrazilianOnly) {
-                            console.error('❌ ПОМИЛКА: Disponíveis apenas бразильські голоси (pt-BR). TTS ВИМКНЕНО!');
-                            console.warn('💡 Всenovosть португальську мову (pt-PT) в configuraçõesх do sistema');
+                            console.error('❌ ERRO: Apenas vozes brasileiras disponíveis (pt-BR). TTS DESATIVADO!');
+                            console.warn('💡 Instale o idioma português europeu (pt-PT) nas configurações do sistema');
                             alert('⚠️ Acompanhamento de voz indisponível!\n\nO sistema encontrou apenas o português do Brasil (pt-BR).\n\nPara funcionarhos necessária a língua portuguesa europeia (pt-PT).\n\n📌 Instruções:\nWindows: Settings → Language → Add Portuguese (Portugal)\nmacOS: System Preferences → Accessibility → Spoken Content');
-                            return; // НЕ ОDeВУЧУВАТИ
+                            return; // NÃO REPRODUZIR
                         } else {
-                            console.warn('⚠️ Atéртугальський голос не encontrado, виutilizовуexisteться системний predefinido');
+                            console.warn('⚠️ Voz portuguesa não encontrada, a usar voz predefinida do sistema');
                         }
                     }
                 }
@@ -886,11 +886,11 @@
         if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
             API_URL = 'http://localhost:5000';
         } else if (window.location.hostname.includes('github.dev') || window.location.hostname.includes('app.github.dev')) {
-            // GitHub Codespaces - замінюexisteмо порт в URL
+            // GitHub Codespaces - substituir porta no URL
             const currentUrl = window.location.origin;
             API_URL = currentUrl.replace(/-\d+\.app\.github\.dev/, '-5000.app.github.dev');
         } else {
-            // Fallback - просто змінюexisteмо порт
+            // Fallback - apenas substituir porta
             API_URL = window.location.origin.replace(':3000', ':5000');
         }
         
@@ -898,15 +898,15 @@
 
         let currentAnalysisFile = null;
         
-        // Розкрити a página — відміняexisteмо __no_fouc, яку всeвляexiste global-settings.js
-        // (ця página не виutilizовуexiste sidebar-init.js, тому revealPage() не викликаexisteться)
+        // Revelar a página — cancelar __no_fouc aplicado por global-settings.js
+        // (esta página não usa sidebar-init.js, por isso revealPage() não é chamado)
         (function() {
             var s = document.getElementById('__no_fouc');
             if (s) s.remove();
             if (document.body) document.body.style.opacity = '1';
         }());
 
-        // Helper функція para отримання tokenа
+        // Função auxiliar para obter o token
         function getAuthToken() {
             return sessionStorage.getItem('liftmanager_jwt') ||
                    localStorage.getItem('liftmanager_jwt') ||
@@ -914,7 +914,7 @@
                    localStorage.getItem('authToken');
         }
         
-        // Helper функція para headers desde tokenом
+        // Função auxiliar para headers com token
         function getAuthHeaders(contentType = 'application/json') {
             const headers = {};
             const token = getAuthToken();
@@ -946,24 +946,24 @@
                 body: JSON.stringify({ message })
             })
             .then(res => {
-                // Verificação на erro авторизації
+                // Verificação de erro de autorização
                 if (res.status === 401) {
                     console.error('❌ JWT Token expired or invalid');
                     document.getElementById('typingIndicator').classList.remove('active');
                     
-                    // Mostrar mensagem desde можливістю переloginитися
-                    const errorMsg = '⚠️ Сесія прострочена. Будь ласка, увійдіть знову.';
+                    // Mostrar mensagem com opção de re-autenticação
+                    const errorMsg = '⚠️ Sessão expirada. Por favor, inicie sessão novamente.';
                     addChatMessage(errorMsg, false);
                     
-                    // Limpar tokenи
+                    // Limpar tokens
                     localStorage.removeItem('token');
                     localStorage.removeItem('lm_token');
                     localStorage.removeItem('deapseak_token');
                     sessionStorage.removeItem('token');
                     
-                    // Перенаправити на login através de 2 segundosи
+                    // Redirecionar para login após 2 segundos
                     setTimeout(() => {
-                        if (confirm('Сесія прострочена. Перейти para a página входу?')) {
+                        if (confirm('Sessão expirada. Ir para a página de início de sessão?')) {
                             window.location.replace('/pages/auth/login.html');
                         }
                     }, 2000);
@@ -988,7 +988,7 @@
                 console.error('Chat error:', err);
                 document.getElementById('typingIndicator').classList.remove('active');
                 
-                // Не показувати повторне mensagem se já показали про expired token
+                // Não mostrar mensagem repetida se já foi mostrada a de token expirado
                 if (!err.message.includes('Unauthorized')) {
                     addChatMessage('❌ Erro de ligação com o servidor', false);
                 }
@@ -1041,7 +1041,7 @@
             container.insertBefore(msgDiv, typingIndicator);
             container.scrollTop = container.scrollHeight;
             
-            // Guardar осeнню resposta AI e mostrar botão озвучування
+            // Guardar última resposta AI e mostrar botão de leitura
             if (!isUser) {
                 lastResponse = text;
                 const speakBtn = document.getElementById('speakBtn');
@@ -1052,7 +1052,7 @@
         }
 
         function clearChat() {
-            if (confirm('Limpar всю історію чату?')) {
+            if (confirm('Limpar todo o histórico do chat?')) {
                 const container = document.getElementById('chatMessages');
                 const children = Array.from(container.children);
                 children.forEach((child, index) => {
@@ -1090,7 +1090,7 @@
                 method: 'POST',
                 headers: getAuthHeaders(),
                 body: JSON.stringify({ 
-                    message: `Юридична консульeція: ${question}`,
+                    message: `Consulta jurídica: ${question}`,
                     context: 'legal'
                 })
             })
@@ -1159,12 +1159,12 @@
                 'vigente_obrigatória_condicional': { color: 'warning', text: 'Obrigatório (condicional)' },
                 'vigente_obrigatória_modernização': { color: 'info', text: 'Modernização (obrig.)' },
                 'vigente_parcial': { color: 'warning', text: 'Parcialmente vigente' },
-                'vigente_opcional': { color: 'secondary', text: "Необов'язковий" },
+                'vigente_opcional': { color: 'secondary', text: 'Opcional' },
                 'revogado': { color: 'dark', text: 'Revogado' },
             };
 
             regulations.forEach(reg => {
-                const regStatusInfo = regStatusMap[reg.status] || { color: 'secondary', text: reg.status || 'Невідомий' };
+                const regStatusInfo = regStatusMap[reg.status] || { color: 'secondary', text: reg.status || 'Desconhecido' };
                 const statusColor = regStatusInfo.color;
                 const statusText = regStatusInfo.text;
                 
@@ -1216,9 +1216,9 @@
                 'vigente': { color: 'success', text: 'Vigente' },
                 'vigente_obrigatoria': { color: 'danger', text: "Obrigatório" },
                 'vigente_obrigatória': { color: 'danger', text: "Obrigatório" },
-                'vigente_obrigatória_condicional': { color: 'warning', text: "Обов'язковий (умовно)" },
+                'vigente_obrigatória_condicional': { color: 'warning', text: 'Obrigatório (condicional)' },
                 'vigente_obrigatória_modernização': { color: 'info', text: 'Modernização (obrig.)' },
-                'vigente_parcial': { color: 'warning', text: 'Horaтково діючий' },
+                'vigente_parcial': { color: 'warning', text: 'Parcialmente vigente' },
                 'vigente_opcional': { color: 'secondary', text: 'Opcional' },
                 'revogado': { color: 'dark', text: 'Revogado' },
             };
