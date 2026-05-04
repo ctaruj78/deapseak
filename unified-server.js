@@ -109,16 +109,15 @@ async function geocodeAddress(address) {
         const { street = '', zipCode = '', city = '', country = 'Portugal' } = address;
         searchLabel = [street, zipCode, city].filter(Boolean).join(', ');
 
-        // Step 1 — postal code (XXXX-XXX is unique per street segment in Portugal)
-        if (zipCode) {
-            const p = new URLSearchParams({ postalcode: zipCode, country, format: 'json', limit: '3', countrycodes: 'pt', addressdetails: '1' });
-            if (city) p.set('city', city);
-            results = await nominatimRequest(`${BASE}?${p}`);
-            if (results && results.length > 0) console.log(`🌍 Geocoding [postalcode]: ${searchLabel}`);
+        // Step 1 — street + postal code (most precise: narrows to exact street within the postal area)
+        if (zipCode && street) {
+            const cleanStreet = street.replace(/\bnº\b\.?/gi, '').replace(/\s+/g, ' ').trim();
+            const s1 = [cleanStreet, zipCode, country].filter(Boolean).join(', ');
+            results = await nominatimRequest(`${BASE}?q=${encodeURIComponent(s1)}&${COMMON}`);
+            if (results && results.length > 0) console.log(`🌍 Geocoding [street+zip]: ${searchLabel}`);
         }
 
-        // Step 2 — street + city free-form (handles house numbers embedded in street field)
-        // Normalize: remove Portuguese "nº" prefix so Nominatim matches door numbers correctly
+        // Step 2 — street + city (if zip produced nothing)
         if (!results || results.length === 0) {
             const cleanStreet = street.replace(/\bnº\b\.?/gi, '').replace(/\s+/g, ' ').trim();
             const s2 = [cleanStreet, city, country].filter(Boolean).join(', ');
@@ -126,7 +125,15 @@ async function geocodeAddress(address) {
             if (results && results.length > 0) console.log(`🌍 Geocoding [street+city]: ${searchLabel}`);
         }
 
-        // Step 3 — full address free-form last resort (strip nº too)
+        // Step 3 — postal code + city only (when street name is too unusual for OSM)
+        if (!results || results.length === 0) {
+            const p = new URLSearchParams({ postalcode: zipCode, country, format: 'json', limit: '3', countrycodes: 'pt', addressdetails: '1' });
+            if (city) p.set('city', city);
+            results = await nominatimRequest(`${BASE}?${p}`);
+            if (results && results.length > 0) console.log(`🌍 Geocoding [postalcode]: ${searchLabel}`);
+        }
+
+        // Step 4 — full address free-form last resort
         if (!results || results.length === 0) {
             const cleanFull = searchLabel.replace(/\bnº\b\.?/gi, '').replace(/\s+/g, ' ').trim();
             results = await nominatimRequest(`${BASE}?q=${encodeURIComponent(cleanFull)}&${COMMON}`);
