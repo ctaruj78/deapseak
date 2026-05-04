@@ -56,7 +56,7 @@ async function isOllamaAvailable() {
 const emailService = require('./backend/services/emailService');
 
 const app = express();
-app.set('trust proxy', 1); // Довіряємо проксі (Codespaces / nginx)
+app.set('trust proxy', 1); // Confiar no proxy (Codespaces / nginx)
 
 // ═══════════════════════════════════════════════════════════
 // 🌍 GEOCODING - Конвертація адреси в координати
@@ -80,7 +80,7 @@ async function geocodeAddress(address) {
         }
         
         if (!searchAddress) {
-            console.warn('⚠️ Geocoding: порожня адреса');
+            console.warn('⚠️ Geocoding: endereço vazio');
             return resolve(null);
         }
         
@@ -121,7 +121,7 @@ async function geocodeAddress(address) {
                                 best = cityMatch;
                                 console.log(`🏙️ City-match: вибрано "${best.display_name}" замість першого результату`);
                             } else {
-                                console.warn(`⚠️ Geocoding: немає результату для міста "${address.city}", використовуємо перший`);
+                                console.warn(`⚠️ Geocoding: sem resultado para a cidade "${address.city}", a usar o primeiro`);
                             }
                         }
                         
@@ -143,7 +143,7 @@ async function geocodeAddress(address) {
                             city: cityName           // 🏙️ Місто для автозаповнення address.city
                         });
                     } else {
-                        console.warn('⚠️ Geocoding: адреса не знайдена:', searchAddress);
+                        console.warn('⚠️ Geocoding: endereço não encontrado:', searchAddress);
                         resolve(null);
                     }
                 } catch (error) {
@@ -173,20 +173,20 @@ app.use(helmet({
 const loginLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 хвилин
     max: 5,                    // max 5 спроб входу за 15 хв (захист від брутфорсу)
-    message: { success: false, message: 'Забагато спроб входу. Спробуйте через 15 хвилин.' },
+    message: { success: false, message: 'Demasiadas tentativas de login. Tente novamente em 15 minutos.' },
     standardHeaders: true,
     legacyHeaders: false,
-    skipSuccessfulRequests: true, // Рахуємо тільки невдалі спроби
+    skipSuccessfulRequests: true, // Contamos apenas tentativas falhadas
 });
 const aiLimiter = rateLimit({
     windowMs: 60 * 1000, // 1 хвилина
     max: 30,             // max 30 AI-запитів на хвилину
-    message: { success: false, message: 'Забагато запитів до AI. Зачекайте хвилину.' }
+    message: { success: false, message: 'Demasiados pedidos ao AI. Aguarde um minuto.' }
 });
 const generalLimiter = rateLimit({
     windowMs: 60 * 1000,
     max: 300,            // 300 запитів/хв для загального API
-    message: { success: false, message: 'Забагато запитів. Зачекайте хвилину.' }
+    message: { success: false, message: 'Demasiados pedidos. Aguarde um minuto.' }
 });
 
 // Middleware - CORS
@@ -250,10 +250,10 @@ mongoose.connect(mongooseURI).then(() => {
 // JWT secret
 if (!process.env.JWT_SECRET) {
     if (process.env.NODE_ENV === 'production') {
-        console.error('❌ FATAL: JWT_SECRET не встановлений у .env! Сервер зупиниться.');
+        console.error('❌ FATAL: JWT_SECRET não definido em .env! O servidor irá parar.');
         process.exit(1);
     } else {
-        console.warn('⚠️  УВАГА: JWT_SECRET не встановлений у .env! Використовується небезпечний fallback. НЕ для production!');
+        console.warn('⚠️  AVISO: JWT_SECRET não definido em .env! A usar fallback inseguro. НЕ для production!');
     }
 }
 const JWT_SECRET = process.env.JWT_SECRET || 'deapseak_secret_key_2024';
@@ -291,7 +291,7 @@ app.get('/api/health', async (req, res) => {
 // ═══════════════════════════════════════════════════════════
 app.get('/api/geocode', async (req, res) => {
     const q = (req.query.q || '').trim();
-    if (!q) return res.status(400).json({ success: false, message: 'Параметр q обовʼязковий' });
+    if (!q) return res.status(400).json({ success: false, message: 'Parâmetro q é obrigatório' });
 
     const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=5&countrycodes=pt&addressdetails=1`;
     try {
@@ -304,7 +304,7 @@ app.get('/api/geocode', async (req, res) => {
         if (!response.ok) throw new Error(`Nominatim HTTP ${response.status}`);
         const data = await response.json();
         if (!data || data.length === 0) {
-            return res.json({ success: false, message: 'Адресу не знайдено' });
+            return res.json({ success: false, message: 'Endereço não encontrado' });
         }
         // Повертаємо перший результат + всі варіанти для вибору
         const best = data[0];
@@ -327,7 +327,7 @@ app.get('/api/geocode', async (req, res) => {
         });
     } catch (err) {
         console.error('❌ /api/geocode error:', err.message);
-        return res.status(502).json({ success: false, message: 'Помилка геокодування: ' + err.message });
+        return res.status(502).json({ success: false, message: 'Erro de geocodificação: ' + err.message });
     }
 });
 
@@ -346,7 +346,7 @@ app.get('/api/geocode', async (req, res) => {
 app.get('/api/notifications', authenticateToken, async (req, res) => {
     try {
         if (!db) {
-            return res.status(503).json({ success: false, message: 'База даних недоступна' });
+            return res.status(503).json({ success: false, message: 'Base de dados indisponível' });
         }
         
         const notifications = await db.collection('notifications')
@@ -357,21 +357,21 @@ app.get('/api/notifications', authenticateToken, async (req, res) => {
         
         res.json({ success: true, notifications: notifications || [] });
     } catch (error) {
-        console.error('❌ Помилка отримання сповіщень:', error);
-        res.status(500).json({ success: false, message: 'Помилка сервера' });
+        console.error('❌ Erro ao obter notificações:', error);
+        res.status(500).json({ success: false, message: 'Erro do servidor' });
     }
 });
 
 // Delete notification
 app.delete('/api/notifications/:id', authenticateToken, async (req, res) => {
     try {
-        if (!db) return res.status(503).json({ success: false, message: 'База даних недоступна' });
+        if (!db) return res.status(503).json({ success: false, message: 'Base de dados indisponível' });
         const { ObjectId } = require('mongodb');
         await db.collection('notifications').deleteOne({ _id: new ObjectId(req.params.id) });
-        res.json({ success: true, message: 'Сповіщення видалено' });
+        res.json({ success: true, message: 'Notificação eliminada' });
     } catch (error) {
         console.error('❌ Помилка видалення сповіщення:', error);
-        res.status(500).json({ success: false, message: 'Помилка сервера' });
+        res.status(500).json({ success: false, message: 'Erro do servidor' });
     }
 });
 
@@ -379,7 +379,7 @@ app.delete('/api/notifications/:id', authenticateToken, async (req, res) => {
 app.patch('/api/notifications/:id/read', authenticateToken, async (req, res) => {
     try {
         if (!db) {
-            return res.status(503).json({ success: false, message: 'База даних недоступна' });
+            return res.status(503).json({ success: false, message: 'Base de dados indisponível' });
         }
         
         const { ObjectId } = require('mongodb');
@@ -388,10 +388,10 @@ app.patch('/api/notifications/:id/read', authenticateToken, async (req, res) => 
             { $set: { read: true, readAt: new Date() } }
         );
         
-        res.json({ success: true, message: 'Сповіщення позначено як прочитане' });
+        res.json({ success: true, message: 'Notificação marcada como lida' });
     } catch (error) {
         console.error('❌ Помилка оновлення сповіщення:', error);
-        res.status(500).json({ success: false, message: 'Помилка сервера' });
+        res.status(500).json({ success: false, message: 'Erro do servidor' });
     }
 });
 
@@ -403,7 +403,7 @@ app.patch('/api/notifications/:id/read', authenticateToken, async (req, res) => 
 app.get('/api/qr/codes', authenticateToken, async (req, res) => {
     try {
         if (!db) {
-            return res.status(503).json({ success: false, message: 'База даних недоступна' });
+            return res.status(503).json({ success: false, message: 'Base de dados indisponível' });
         }
 
         const { page = 1, limit = 20, status } = req.query;
@@ -457,7 +457,7 @@ app.get('/api/qr/codes', authenticateToken, async (req, res) => {
         });
     } catch (error) {
         console.error('❌ Помилка отримання QR кодів:', error);
-        res.status(500).json({ success: false, message: 'Помилка сервера' });
+        res.status(500).json({ success: false, message: 'Erro do servidor' });
     }
 });
 
@@ -465,20 +465,20 @@ app.get('/api/qr/codes', authenticateToken, async (req, res) => {
 app.get('/api/qr/codes/:id', authenticateToken, async (req, res) => {
     try {
         if (!db) {
-            return res.status(503).json({ success: false, message: 'База даних недоступна' });
+            return res.status(503).json({ success: false, message: 'Base de dados indisponível' });
         }
         
         const { ObjectId } = require('mongodb');
         const qrCode = await db.collection('qr_scans').findOne({ _id: new ObjectId(req.params.id) });
         
         if (!qrCode) {
-            return res.status(404).json({ success: false, message: 'QR код не знайдено' });
+            return res.status(404).json({ success: false, message: 'QR code não encontrado' });
         }
         
         res.json({ success: true, data: qrCode });
     } catch (error) {
         console.error('❌ Помилка отримання QR коду:', error);
-        res.status(500).json({ success: false, message: 'Помилка сервера' });
+        res.status(500).json({ success: false, message: 'Erro do servidor' });
     }
 });
 
@@ -486,7 +486,7 @@ app.get('/api/qr/codes/:id', authenticateToken, async (req, res) => {
 app.post('/api/qr/codes', authenticateToken, async (req, res) => {
     try {
         if (!db) {
-            return res.status(503).json({ success: false, message: 'База даних недоступна' });
+            return res.status(503).json({ success: false, message: 'Base de dados indisponível' });
         }
         
         const qrCodeData = {
@@ -499,10 +499,10 @@ app.post('/api/qr/codes', authenticateToken, async (req, res) => {
         const result = await db.collection('qr_scans').insertOne(qrCodeData);
         qrCodeData._id = result.insertedId;
         
-        res.json({ success: true, message: 'QR код створено', data: qrCodeData });
+        res.json({ success: true, message: 'QR code criado', data: qrCodeData });
     } catch (error) {
         console.error('❌ Помилка створення QR коду:', error);
-        res.status(500).json({ success: false, message: 'Помилка сервера' });
+        res.status(500).json({ success: false, message: 'Erro do servidor' });
     }
 });
 
@@ -510,7 +510,7 @@ app.post('/api/qr/codes', authenticateToken, async (req, res) => {
 app.put('/api/qr/codes/:id', authenticateToken, async (req, res) => {
     try {
         if (!db) {
-            return res.status(503).json({ success: false, message: 'База даних недоступна' });
+            return res.status(503).json({ success: false, message: 'Base de dados indisponível' });
         }
         
         const { ObjectId } = require('mongodb');
@@ -525,13 +525,13 @@ app.put('/api/qr/codes/:id', authenticateToken, async (req, res) => {
         );
         
         if (result.matchedCount === 0) {
-            return res.status(404).json({ success: false, message: 'QR код не знайдено' });
+            return res.status(404).json({ success: false, message: 'QR code não encontrado' });
         }
         
-        res.json({ success: true, message: 'QR код оновлено' });
+        res.json({ success: true, message: 'QR code atualizado' });
     } catch (error) {
         console.error('❌ Помилка оновлення QR коду:', error);
-        res.status(500).json({ success: false, message: 'Помилка сервера' });
+        res.status(500).json({ success: false, message: 'Erro do servidor' });
     }
 });
 
@@ -539,20 +539,20 @@ app.put('/api/qr/codes/:id', authenticateToken, async (req, res) => {
 app.delete('/api/qr/codes/:id', authenticateToken, async (req, res) => {
     try {
         if (!db) {
-            return res.status(503).json({ success: false, message: 'База даних недоступна' });
+            return res.status(503).json({ success: false, message: 'Base de dados indisponível' });
         }
         
         const { ObjectId } = require('mongodb');
         const result = await db.collection('qr_scans').deleteOne({ _id: new ObjectId(req.params.id) });
         
         if (result.deletedCount === 0) {
-            return res.status(404).json({ success: false, message: 'QR код не знайдено' });
+            return res.status(404).json({ success: false, message: 'QR code não encontrado' });
         }
         
-        res.json({ success: true, message: 'QR код видалено' });
+        res.json({ success: true, message: 'QR code eliminado' });
     } catch (error) {
         console.error('❌ Помилка видалення QR коду:', error);
-        res.status(500).json({ success: false, message: 'Помилка сервера' });
+        res.status(500).json({ success: false, message: 'Erro do servidor' });
     }
 });
 
@@ -560,7 +560,7 @@ app.delete('/api/qr/codes/:id', authenticateToken, async (req, res) => {
 app.get('/api/qr/history', authenticateToken, async (req, res) => {
     try {
         if (!db) {
-            return res.status(503).json({ success: false, message: 'База даних недоступна' });
+            return res.status(503).json({ success: false, message: 'Base de dados indisponível' });
         }
         
         const history = await db.collection('qr_scans')
@@ -572,7 +572,7 @@ app.get('/api/qr/history', authenticateToken, async (req, res) => {
         res.json({ success: true, data: history || [] });
     } catch (error) {
         console.error('❌ Помилка отримання історії QR:', error);
-        res.status(500).json({ success: false, message: 'Помилка сервера' });
+        res.status(500).json({ success: false, message: 'Erro do servidor' });
     }
 });
 
@@ -580,7 +580,7 @@ app.get('/api/qr/history', authenticateToken, async (req, res) => {
 app.post('/api/qr/scan', authenticateToken, async (req, res) => {
     try {
         if (!db) {
-            return res.status(503).json({ success: false, message: 'База даних недоступна' });
+            return res.status(503).json({ success: false, message: 'Base de dados indisponível' });
         }
         
         const { qrCode, liftId, action } = req.body;
@@ -596,10 +596,10 @@ app.post('/api/qr/scan', authenticateToken, async (req, res) => {
         
         await db.collection('qr_scans').insertOne(scan);
         
-        res.json({ success: true, message: 'QR код відскановано', data: scan });
+        res.json({ success: true, message: 'QR code digitalizado', data: scan });
     } catch (error) {
         console.error('❌ Помилка запису QR скану:', error);
-        res.status(500).json({ success: false, message: 'Помилка сервера' });
+        res.status(500).json({ success: false, message: 'Erro do servidor' });
     }
 });
 
@@ -607,7 +607,7 @@ app.post('/api/qr/scan', authenticateToken, async (req, res) => {
 app.get('/api/qr/stats', authenticateToken, async (req, res) => {
     try {
         if (!db) {
-            return res.status(503).json({ success: false, message: 'База даних недоступна' });
+            return res.status(503).json({ success: false, message: 'Base de dados indisponível' });
         }
         
         const now = new Date();
@@ -646,8 +646,8 @@ app.get('/api/qr/stats', authenticateToken, async (req, res) => {
         
         res.json({ success: true, stats });
     } catch (error) {
-        console.error('❌ Помилка отримання статистики QR:', error);
-        res.status(500).json({ success: false, message: 'Помилка сервера' });
+        console.error('❌ Erro ao obter estatísticas QR:', error);
+        res.status(500).json({ success: false, message: 'Erro do servidor' });
     }
 });
 
@@ -659,7 +659,7 @@ app.get('/api/qr/stats', authenticateToken, async (req, res) => {
 app.get('/api/knowledge-base', authenticateToken, async (req, res) => {
     try {
         if (!db) {
-            return res.status(503).json({ success: false, message: 'База даних недоступна' });
+            return res.status(503).json({ success: false, message: 'Base de dados indisponível' });
         }
         const articles = await db.collection('knowledge_base')
             .find({})
@@ -668,7 +668,7 @@ app.get('/api/knowledge-base', authenticateToken, async (req, res) => {
         res.json(articles);
     } catch (error) {
         console.error('❌ Помилка отримання бази знань:', error);
-        res.status(500).json({ success: false, message: 'Помилка сервера' });
+        res.status(500).json({ success: false, message: 'Erro do servidor' });
     }
 });
 
@@ -676,14 +676,14 @@ app.get('/api/knowledge-base', authenticateToken, async (req, res) => {
 app.post('/api/knowledge-base', authenticateToken, async (req, res) => {
     try {
         if (!db) {
-            return res.status(503).json({ success: false, message: 'База даних недоступна' });
+            return res.status(503).json({ success: false, message: 'Base de dados indisponível' });
         }
         const article = { ...req.body, createdAt: new Date(), updatedAt: new Date() };
         const result = await db.collection('knowledge_base').insertOne(article);
         res.status(201).json({ success: true, id: result.insertedId });
     } catch (error) {
         console.error('❌ Помилка створення статті:', error);
-        res.status(500).json({ success: false, message: 'Помилка сервера' });
+        res.status(500).json({ success: false, message: 'Erro do servidor' });
     }
 });
 
@@ -694,7 +694,7 @@ app.post('/api/knowledge-base', authenticateToken, async (req, res) => {
 app.get('/api/inspections', authenticateToken, async (req, res) => {
     try {
         if (!db) {
-            return res.status(503).json({ success: false, message: 'База даних недоступна' });
+            return res.status(503).json({ success: false, message: 'Base de dados indisponível' });
         }
         const limit = parseInt(req.query.limit) || 0;
         let cursor = db.collection('inspections')
@@ -705,7 +705,7 @@ app.get('/api/inspections', authenticateToken, async (req, res) => {
         res.json({ success: true, data: inspections || [] });
     } catch (error) {
         console.error('❌ Помилка отримання інспекцій:', error);
-        res.status(500).json({ success: false, message: 'Помилка сервера' });
+        res.status(500).json({ success: false, message: 'Erro do servidor' });
     }
 });
 
@@ -744,7 +744,7 @@ app.get('/api/inspections/next-number', authenticateToken, async (req, res) => {
 app.get('/api/inspections/:id', authenticateToken, async (req, res) => {
     try {
         if (!db) {
-            return res.status(503).json({ success: false, message: 'База даних недоступна' });
+            return res.status(503).json({ success: false, message: 'Base de dados indisponível' });
         }
         
         const { ObjectId } = require('mongodb');
@@ -752,13 +752,13 @@ app.get('/api/inspections/:id', authenticateToken, async (req, res) => {
             .findOne({ _id: new ObjectId(req.params.id) });
         
         if (!inspection) {
-            return res.status(404).json({ success: false, message: 'Інспекцію не знайдено' });
+            return res.status(404).json({ success: false, message: 'Inspeção não encontrada' });
         }
         
         res.json({ success: true, data: inspection });
     } catch (error) {
         console.error('❌ Помилка отримання інспекції:', error);
-        res.status(500).json({ success: false, message: 'Помилка сервера' });
+        res.status(500).json({ success: false, message: 'Erro do servidor' });
     }
 });
 
@@ -766,7 +766,7 @@ app.get('/api/inspections/:id', authenticateToken, async (req, res) => {
 app.post('/api/inspections', authenticateToken, async (req, res) => {
     try {
         if (!db) {
-            return res.status(503).json({ success: false, message: 'База даних недоступна' });
+            return res.status(503).json({ success: false, message: 'Base de dados indisponível' });
         }
         const now = new Date();
         // Auto-generate report number if not provided
@@ -830,7 +830,7 @@ app.post('/api/inspections', authenticateToken, async (req, res) => {
 app.delete('/api/inspections/:id', authenticateToken, async (req, res) => {
     try {
         if (!db) {
-            return res.status(503).json({ success: false, message: 'База даних недоступна' });
+            return res.status(503).json({ success: false, message: 'Base de dados indisponível' });
         }
         const { ObjectId } = require('mongodb');
         const result = await db.collection('inspections').deleteOne({ _id: new ObjectId(req.params.id) });
@@ -853,7 +853,7 @@ app.delete('/api/inspections/:id', authenticateToken, async (req, res) => {
 app.get('/api/tasks', authenticateToken, async (req, res) => {
     try {
         if (!db) {
-            return res.status(503).json({ success: false, message: 'База даних недоступна' });
+            return res.status(503).json({ success: false, message: 'Base de dados indisponível' });
         }
         
         let query = {};
@@ -870,7 +870,7 @@ app.get('/api/tasks', authenticateToken, async (req, res) => {
         res.json({ success: true, data: tasks || [] });
     } catch (error) {
         console.error('❌ Помилка отримання завдань:', error);
-        res.status(500).json({ success: false, message: 'Помилка сервера' });
+        res.status(500).json({ success: false, message: 'Erro do servidor' });
     }
 });
 
@@ -878,7 +878,7 @@ app.get('/api/tasks', authenticateToken, async (req, res) => {
 app.get('/api/tasks/:id', authenticateToken, async (req, res) => {
     try {
         if (!db) {
-            return res.status(503).json({ success: false, message: 'База даних недоступна' });
+            return res.status(503).json({ success: false, message: 'Base de dados indisponível' });
         }
         
         const { ObjectId } = require('mongodb');
@@ -886,13 +886,13 @@ app.get('/api/tasks/:id', authenticateToken, async (req, res) => {
             .findOne({ _id: new ObjectId(req.params.id) });
         
         if (!task) {
-            return res.status(404).json({ success: false, message: 'Завдання не знайдено' });
+            return res.status(404).json({ success: false, message: 'Tarefa não encontrada' });
         }
         
         res.json({ success: true, data: task });
     } catch (error) {
         console.error('❌ Помилка отримання завдання:', error);
-        res.status(500).json({ success: false, message: 'Помилка сервера' });
+        res.status(500).json({ success: false, message: 'Erro do servidor' });
     }
 });
 
@@ -904,7 +904,7 @@ app.get('/api/tasks/:id', authenticateToken, async (req, res) => {
 app.get('/api/statistics', authenticateToken, async (req, res) => {
     try {
         if (!db) {
-            return res.status(503).json({ success: false, message: 'База даних недоступна' });
+            return res.status(503).json({ success: false, message: 'Base de dados indisponível' });
         }
         
         const [liftsCount, usersCount, requestsCount, tasksCount] = await Promise.all([
@@ -942,8 +942,8 @@ app.get('/api/statistics', authenticateToken, async (req, res) => {
             }
         });
     } catch (error) {
-        console.error('❌ Помилка отримання статистики:', error);
-        res.status(500).json({ success: false, message: 'Помилка сервера' });
+        console.error('❌ Erro ao obter estatísticas:', error);
+        res.status(500).json({ success: false, message: 'Erro do servidor' });
     }
 });
 
@@ -951,7 +951,7 @@ app.get('/api/statistics', authenticateToken, async (req, res) => {
 app.get('/api/dashboard/public', async (req, res) => {
     try {
         if (!db) {
-            return res.status(503).json({ success: false, message: 'База даних недоступна' });
+            return res.status(503).json({ success: false, message: 'Base de dados indisponível' });
         }
         
         const [usersCount, liftsCount, requestsCount] = await Promise.all([
@@ -971,7 +971,7 @@ app.get('/api/dashboard/public', async (req, res) => {
         });
     } catch (error) {
         console.error('❌ Помилка public dashboard:', error);
-        res.status(500).json({ success: false, message: 'Помилка сервера' });
+        res.status(500).json({ success: false, message: 'Erro do servidor' });
     }
 });
 
@@ -979,7 +979,7 @@ app.get('/api/dashboard/public', async (req, res) => {
 app.get('/api/dashboard', authenticateToken, async (req, res) => {
     try {
         if (!db) {
-            return res.status(503).json({ success: false, message: 'База даних недоступна' });
+            return res.status(503).json({ success: false, message: 'Base de dados indisponível' });
         }
         
         const role = req.user.role;
@@ -1017,7 +1017,7 @@ app.get('/api/dashboard', authenticateToken, async (req, res) => {
         });
     } catch (error) {
         console.error('❌ Помилка отримання dashboard:', error);
-        res.status(500).json({ success: false, message: 'Помилка сервера' });
+        res.status(500).json({ success: false, message: 'Erro do servidor' });
     }
 });
 
@@ -1029,7 +1029,7 @@ app.get('/api/users/me', authenticateToken, async (req, res) => {
         if (!db) {
             return res.status(503).json({
                 success: false,
-                message: 'База даних недоступна'
+                message: 'Base de dados indisponível'
             });
         }
 
@@ -1039,10 +1039,10 @@ app.get('/api/users/me', authenticateToken, async (req, res) => {
         const user = await users.findOne({ _id: new ObjectId(req.user.id) });
 
         if (!user) {
-            console.log('❌ Користувач не знайдений в БД:', req.user.id);
+            console.log('❌ Utilizador não encontrado в БД:', req.user.id);
             return res.status(404).json({
                 success: false,
-                message: 'Користувач не знайдений'
+                message: 'Utilizador não encontrado'
             });
         }
 
@@ -1058,10 +1058,10 @@ app.get('/api/users/me', authenticateToken, async (req, res) => {
         });
 
     } catch (error) {
-        console.error('❌ Помилка завантаження профілю:', error);
+        console.error('❌ Erro ao carregar perfil:', error);
         res.status(500).json({
             success: false,
-            message: 'Помилка завантаження профілю'
+            message: 'Erro ao carregar perfil'
         });
     }
 });
@@ -1080,11 +1080,11 @@ app.put('/api/users/me', authenticateToken, async (req, res) => {
 
         await db.collection('users').updateOne({ _id: userId }, { $set: updateData });
         const updated = await db.collection('users').findOne({ _id: userId }, { projection: { password: 0 } });
-        console.log('✅ Профіль оновлено:', req.user.email);
+        console.log('✅ Perfil atualizado:', req.user.email);
         res.json({ ...updated, id: updated._id.toString() });
     } catch (error) {
-        console.error('❌ Помилка оновлення профілю:', error);
-        res.status(500).json({ success: false, message: 'Помилка оновлення профілю' });
+        console.error('❌ Erro ao atualizar perfil:', error);
+        res.status(500).json({ success: false, message: 'Erro ao atualizar perfil' });
     }
 });
 
@@ -1099,10 +1099,10 @@ function authenticateToken(req, res, next) {
     // Auth token extracted — no debug log (security)
 
     if (!token) {
-        console.log('❌ Токен не надано');
+        console.log('❌ Token não fornecido');
         return res.status(401).json({
             success: false,
-            message: 'Токен авторизації не надано'
+            message: 'Token de autorização não fornecido'
         });
     }
 
@@ -1111,7 +1111,7 @@ function authenticateToken(req, res, next) {
             console.log('❌ JWT verify error:', err.message); // server-side only
             return res.status(403).json({
                 success: false,
-                message: 'Невалідний або прострочений токен'
+                message: 'Token inválido ou expirado'
             });
         }
         console.log('✅ Token valid, user:', user.username);
@@ -1127,7 +1127,7 @@ function requireRole(...roles) {
             console.warn(`⛔ Access denied: ${req.user?.role || 'unknown'} tried ${req.method} ${req.path}`);
             return res.status(403).json({
                 success: false,
-                message: 'Доступ заборонено. Недостатньо прав.'
+                message: 'Acesso negado. Permissões insuficientes.'
             });
         }
         next();
@@ -1488,14 +1488,14 @@ app.post('/api/lifts/regeocode-all', authenticateToken, requireRole('admin'), as
         });
     } catch (error) {
         console.error('❌ Regeocode error:', error);
-        res.status(500).json({ success: false, message: 'Помилка масового геокодування: ' + error.message });
+        res.status(500).json({ success: false, message: 'Erro de geocodificação em massa: ' + error.message });
     }
 });
 
 // GET /api/lifts/stats - статистика ліфтів (МАЄ БУТИ ПЕРЕД /api/lifts/:id!)
 app.get('/api/lifts/stats', authenticateToken, async (req, res) => {
     if (req.user.role !== 'admin' && req.user.role !== 'dispatcher') {
-        return res.status(403).json({ success: false, message: 'Доступ заборонено' });
+        return res.status(403).json({ success: false, message: 'Acesso negado' });
     }
     try {
         const liftsCollection = db.collection('lifts');
@@ -1524,10 +1524,10 @@ app.get('/api/lifts/stats', authenticateToken, async (req, res) => {
             }
         });
     } catch (error) {
-        console.error('❌ Помилка отримання статистики ліфтів:', error);
+        console.error('❌ Erro ao obter estatísticas ліфтів:', error);
         res.status(500).json({
             success: false,
-            message: 'Помилка отримання статистики'
+            message: 'Erro ao obter estatísticas'
         });
     }
 });
@@ -1591,10 +1591,10 @@ app.get('/api/lifts/notifications', authenticateToken, async (req, res) => {
             }
         });
     } catch (error) {
-        console.error('❌ Помилка отримання сповіщень:', error);
+        console.error('❌ Erro ao obter notificações:', error);
         res.status(500).json({
             success: false,
-            message: 'Помилка отримання сповіщень'
+            message: 'Erro ao obter notificações'
         });
     }
 });
@@ -1614,7 +1614,7 @@ app.get('/api/lifts', authenticateToken, async (req, res) => {
                 console.error('❌ userId відсутній в токені:', req.user);
                 return res.status(400).json({
                     success: false,
-                    message: 'Некоректний токен користувача'
+                    message: 'Token de utilizador incorreto'
                 });
             }
             // Шукаємо по обох форматах: string і ObjectId (сумісність з різними способами збереження)
@@ -1753,10 +1753,10 @@ app.get('/api/lifts', authenticateToken, async (req, res) => {
             data: liftsWithClients
         });
     } catch (error) {
-        console.error('❌ Помилка отримання ліфтів:', error);
+        console.error('❌ Erro ao obter elevadores:', error);
         res.status(500).json({
             success: false,
-            message: 'Помилка отримання ліфтів'
+            message: 'Erro ao obter elevadores'
         });
     }
 });
@@ -1769,7 +1769,7 @@ app.post('/api/lifts', authenticateToken, async (req, res) => {
             console.warn(`⚠️ ${req.user.role} ${req.user.username} намагається створити ліфт`);
             return res.status(403).json({
                 success: false,
-                message: 'Тільки адміністратор або диспетчер можуть створювати ліфти'
+                message: 'Apenas administrador ou operador podem criar elevadores'
             });
         }
         
@@ -1785,7 +1785,7 @@ app.post('/api/lifts', authenticateToken, async (req, res) => {
         if (req.body.capacity !== undefined) {
             const capacity = Number(req.body.capacity);
             if (isNaN(capacity) || capacity <= 0) {
-                validationErrors.push('Вантажопідйомність має бути додатним числом');
+                validationErrors.push('A capacidade de carga deve ser um número positivo');
             }
         }
         
@@ -1793,14 +1793,14 @@ app.post('/api/lifts', authenticateToken, async (req, res) => {
         if (req.body.speed !== undefined) {
             const speed = Number(req.body.speed);
             if (isNaN(speed) || speed <= 0) {
-                validationErrors.push('Швидкість має бути додатним числом');
+                validationErrors.push('A velocidade deve ser um número positiva');
             }
         }
         
         if (validationErrors.length > 0) {
             return res.status(400).json({
                 success: false,
-                message: 'Помилка валідації',
+                message: 'Erro de validação',
                 errors: validationErrors
             });
         }
@@ -1919,17 +1919,17 @@ app.post('/api/lifts', authenticateToken, async (req, res) => {
 
         // 🔄 НОРМАЛІЗАЦІЯ enum: driveType та doorType (legacy display text → DB code)
         const DRIVE_MAP_US = {
-            'гідравлічний': 'hydraulic', 'hydraulic': 'hydraulic',
-            'канатний (mrl)': 'traction_mrl', 'traction_mrl': 'traction_mrl',
-            'канатний (з машинним залом)': 'traction', 'traction': 'traction',
-            'гвинтовий': 'platform', 'платформний': 'platform', 'platform': 'platform',
-            'goods': 'goods', 'вантажний': 'goods'
+            'hydraulic': 'hydraulic', 'hydraulic': 'hydraulic',
+            'traction_mrl': 'traction_mrl', 'traction_mrl': 'traction_mrl',
+            'traction_mr': 'traction', 'traction': 'traction',
+            'screw': 'platform', 'platform': 'platform', 'platform': 'platform',
+            'goods': 'goods', 'freight': 'goods'
         };
         const DOOR_MAP_US = {
-            'автоматичні (2-стулкові)': 'automatic', 'автоматичні (4-стулкові)': 'automatic',
-            'телескопічні': 'automatic', 'automatic': 'automatic',
-            'напівавтоматичні': 'swing', 'розпашні': 'swing', 'swing': 'swing',
-            'ручні': 'gate', 'gate': 'gate'
+            'automatic_2panel': 'automatic', 'automatic_4panel': 'automatic',
+            'telescopic': 'automatic', 'automatic': 'automatic',
+            'semiautomatic': 'swing', 'swing': 'swing', 'swing': 'swing',
+            'manual': 'gate', 'gate': 'gate'
         };
         if (liftData.driveType) {
             const norm = DRIVE_MAP_US[liftData.driveType.toLowerCase()];
@@ -2009,7 +2009,7 @@ app.post('/api/lifts', authenticateToken, async (req, res) => {
                 { $set: updateData }
             );
             
-            message = 'Ліфт оновлено успішно';
+            message = 'Elevador atualizado com sucesso';
             result = {
                 _id: existingLift._id,
                 ...updateData
@@ -2021,7 +2021,7 @@ app.post('/api/lifts', authenticateToken, async (req, res) => {
             const newLift = {
                 ...liftData,
                 qrCode: qrCode, // ✅ QR код генерується автоматично
-                location: locationData, // Використовуємо геокодовані координати або ручні
+                location: locationData, // Використовуємо геокодовані координати або manual
                 municipality: municipalityData, // 🏛️ Дані муніципалітету
                 createdAt: new Date().toISOString(),
                 createdBy: req.user.username,
@@ -2030,7 +2030,7 @@ app.post('/api/lifts', authenticateToken, async (req, res) => {
             
             const insertResult = await db.collection('lifts').insertOne(newLift);
             
-            message = 'Ліфт створено успішно';
+            message = 'Elevador criado com sucesso';
             result = {
                 _id: insertResult.insertedId,
                 ...newLift
@@ -2216,10 +2216,10 @@ app.post('/api/lifts', authenticateToken, async (req, res) => {
             newClient: newClientInfo
         });
     } catch (error) {
-        console.error('❌ Помилка створення ліфта:', error);
+        console.error('❌ Erro ao criar elevador:', error);
         res.status(500).json({
             success: false,
-            message: 'Помилка створення ліфта'
+            message: 'Erro ao criar elevador'
         });
     }
 });
@@ -2234,7 +2234,7 @@ app.get('/api/lifts/:id', authenticateToken, async (req, res) => {
         if (!lift) {
             return res.status(404).json({
                 success: false,
-                message: 'Ліфт не знайдено'
+                message: 'Elevador não encontrado'
             });
         }
         
@@ -2272,7 +2272,7 @@ app.get('/api/lifts/:id', authenticateToken, async (req, res) => {
                 console.warn(`⚠️ Клієнт ${req.user.username} намагається отримати чужий ліфт ${liftId}`);
                 return res.status(403).json({
                     success: false,
-                    message: 'Немає доступу до цього ліфта'
+                    message: 'Sem acesso a este elevador'
                 });
             }
         }
@@ -2290,7 +2290,7 @@ app.get('/api/lifts/:id', authenticateToken, async (req, res) => {
                 console.warn(`⚠️ Технік ${req.user.username} намагається отримати ліфт ${liftId} без завдання`);
                 return res.status(403).json({
                     success: false,
-                    message: 'Немає активного завдання для цього ліфта'
+                    message: 'Sem tarefa ativa para este elevador'
                 });
             }
         }
@@ -2300,10 +2300,10 @@ app.get('/api/lifts/:id', authenticateToken, async (req, res) => {
             data: liftWithClient  // 🔧 Консистентна структура відповіді (data замість lift)
         });
     } catch (error) {
-        console.error('❌ Помилка отримання ліфта:', error);
+        console.error('❌ Erro ao obter elevador:', error);
         res.status(500).json({
             success: false,
-            message: 'Помилка отримання ліфта'
+            message: 'Erro ao obter elevador'
         });
     }
 });
@@ -2316,7 +2316,7 @@ app.get('/api/lifts/:id/history', authenticateToken, async (req, res) => {
 
         const lift = await db.collection('lifts').findOne({ _id: liftId });
         if (!lift) {
-            return res.status(404).json({ success: false, message: 'Ліфт не знайдено' });
+            return res.status(404).json({ success: false, message: 'Elevador não encontrado' });
         }
 
         // 🔐 Перевірка прав доступу
@@ -2324,7 +2324,7 @@ app.get('/api/lifts/:id/history', authenticateToken, async (req, res) => {
             const clientId = req.user.id || req.user.userId;
             const liftClientId = lift.client ? lift.client.toString() : null;
             if (liftClientId !== clientId) {
-                return res.status(403).json({ success: false, message: 'Немає доступу до цього ліфта' });
+                return res.status(403).json({ success: false, message: 'Sem acesso a este elevador' });
             }
         }
 
@@ -2359,7 +2359,7 @@ app.get('/api/lifts/:id/history', authenticateToken, async (req, res) => {
         res.json({ success: true, data: history });
     } catch (error) {
         console.error('❌ Помилка отримання історії ліфта:', error);
-        res.status(500).json({ success: false, message: 'Помилка отримання історії обслуговування' });
+        res.status(500).json({ success: false, message: 'Erro ao obter histórico de manutenção' });
     }
 });
 
@@ -2375,7 +2375,7 @@ app.put('/api/lifts/:id', authenticateToken, async (req, res) => {
         if (!lift) {
             return res.status(404).json({
                 success: false,
-                message: 'Ліфт не знайдено'
+                message: 'Elevador não encontrado'
             });
         }
         
@@ -2384,7 +2384,7 @@ app.put('/api/lifts/:id', authenticateToken, async (req, res) => {
             console.warn(`⚠️ Клієнт ${req.user.username} намагається оновити чужий ліфт ${liftId}`);
             return res.status(403).json({
                 success: false,
-                message: 'Немає прав для оновлення цього ліфта'
+                message: 'Sem permissões para atualizar este elevador'
             });
         }
         
@@ -2393,7 +2393,7 @@ app.put('/api/lifts/:id', authenticateToken, async (req, res) => {
             console.warn(`⚠️ Технік ${req.user.username} намагається оновити ліфт ${liftId}`);
             return res.status(403).json({
                 success: false,
-                message: 'Техніки не можуть редагувати ліфти'
+                message: 'Os técnicos não podem editar elevadores'
             });
         }
         
@@ -2423,17 +2423,17 @@ app.put('/api/lifts/:id', authenticateToken, async (req, res) => {
 
         // 🔄 НОРМАЛІЗАЦІЯ enum: driveType та doorType (legacy display text → DB code)
         const DRIVE_MAP_PUT = {
-            'гідравлічний': 'hydraulic', 'hydraulic': 'hydraulic',
-            'канатний (mrl)': 'traction_mrl', 'traction_mrl': 'traction_mrl',
-            'канатний (з машинним залом)': 'traction', 'traction': 'traction',
-            'гвинтовий': 'platform', 'платформний': 'platform', 'platform': 'platform',
-            'goods': 'goods', 'вантажний': 'goods'
+            'hydraulic': 'hydraulic', 'hydraulic': 'hydraulic',
+            'traction_mrl': 'traction_mrl', 'traction_mrl': 'traction_mrl',
+            'traction_mr': 'traction', 'traction': 'traction',
+            'screw': 'platform', 'platform': 'platform', 'platform': 'platform',
+            'goods': 'goods', 'freight': 'goods'
         };
         const DOOR_MAP_PUT = {
-            'автоматичні (2-стулкові)': 'automatic', 'автоматичні (4-стулкові)': 'automatic',
-            'телескопічні': 'automatic', 'automatic': 'automatic',
-            'напівавтоматичні': 'swing', 'розпашні': 'swing', 'swing': 'swing',
-            'ручні': 'gate', 'gate': 'gate'
+            'automatic_2panel': 'automatic', 'automatic_4panel': 'automatic',
+            'telescopic': 'automatic', 'automatic': 'automatic',
+            'semiautomatic': 'swing', 'swing': 'swing', 'swing': 'swing',
+            'manual': 'gate', 'gate': 'gate'
         };
         if (updateData.driveType) {
             const norm = DRIVE_MAP_PUT[updateData.driveType.toLowerCase()];
@@ -2475,7 +2475,7 @@ app.put('/api/lifts/:id', authenticateToken, async (req, res) => {
         if (result.matchedCount === 0) {
             return res.status(404).json({
                 success: false,
-                message: 'Ліфт не знайдено'
+                message: 'Elevador não encontrado'
             });
         }
         
@@ -2484,14 +2484,14 @@ app.put('/api/lifts/:id', authenticateToken, async (req, res) => {
         
         res.json({
             success: true,
-            message: 'Ліфт оновлено успішно',
+            message: 'Elevador atualizado com sucesso',
             data: updatedLift
         });
     } catch (error) {
-        console.error('❌ Помилка оновлення ліфта:', error);
+        console.error('❌ Erro ao atualizar elevador:', error);
         res.status(500).json({
             success: false,
-            message: 'Помилка оновлення ліфта'
+            message: 'Erro ao atualizar elevador'
         });
     }
 });
@@ -2501,7 +2501,7 @@ app.post('/api/lifts/:id/contract', authenticateToken, upload.single('contract')
     try {
         // 🔐 Тільки admin та dispatcher можуть завантажувати контракти
         if (req.user.role !== 'admin' && req.user.role !== 'dispatcher') {
-            return res.status(403).json({ success: false, message: 'Доступ заборонено' });
+            return res.status(403).json({ success: false, message: 'Acesso negado' });
         }
         const { ObjectId } = require('mongodb');
         const liftId = new ObjectId(req.params.id);
@@ -2509,7 +2509,7 @@ app.post('/api/lifts/:id/contract', authenticateToken, upload.single('contract')
         if (!req.file) {
             return res.status(400).json({
                 success: false,
-                message: 'Файл контракту не завантажено'
+                message: 'Ficheiro de contrato não carregado'
             });
         }
         
@@ -2522,7 +2522,7 @@ app.post('/api/lifts/:id/contract', authenticateToken, upload.single('contract')
         
         const contractData = {
             contractFile: `/uploads/pdfs/${req.file.filename}`, // Повний шлях для відображення
-            contractNumber: req.body.contractNumber || 'Без номера',
+            contractNumber: req.body.contractNumber || 'Sem número',
             startDate: req.body.startDate || null,
             endDate: req.body.endDate || null,
             description: req.body.notes || '',
@@ -2547,20 +2547,20 @@ app.post('/api/lifts/:id/contract', authenticateToken, upload.single('contract')
         if (result.matchedCount === 0) {
             return res.status(404).json({
                 success: false,
-                message: 'Ліфт не знайдено'
+                message: 'Elevador não encontrado'
             });
         }
         
         res.json({
             success: true,
-            message: 'Контракт успішно завантажено',
+            message: 'Contrato carregado com sucesso',
             contract: contractData
         });
     } catch (error) {
-        console.error('❌ Помилка завантаження контракту:', error);
+        console.error('❌ Erro ao carregar contrato:', error);
         res.status(500).json({
             success: false,
-            message: 'Помилка завантаження контракту'
+            message: 'Erro ao carregar contrato'
         });
     }
 });
@@ -2571,11 +2571,11 @@ app.get('/api/lifts/:id/contract', authenticateToken, async (req, res) => {
         const { ObjectId } = require('mongodb');
         const liftId = new ObjectId(req.params.id);
         const lift = await db.collection('lifts').findOne({ _id: liftId }, { projection: { maintenanceContract: 1 } });
-        if (!lift) return res.status(404).json({ success: false, message: 'Ліфт не знайдено' });
+        if (!lift) return res.status(404).json({ success: false, message: 'Elevador não encontrado' });
         res.json({ success: true, data: { contract: lift.maintenanceContract || null } });
     } catch (error) {
         console.error('❌ Помилка отримання контракту:', error);
-        res.status(500).json({ success: false, message: 'Помилка сервера' });
+        res.status(500).json({ success: false, message: 'Erro do servidor' });
     }
 });
 
@@ -2585,7 +2585,7 @@ app.delete('/api/lifts/:id/contract', authenticateToken, async (req, res) => {
         const { ObjectId } = require('mongodb');
         const liftId = new ObjectId(req.params.id);
         const lift = await db.collection('lifts').findOne({ _id: liftId }, { projection: { maintenanceContract: 1 } });
-        if (!lift) return res.status(404).json({ success: false, message: 'Ліфт не знайдено' });
+        if (!lift) return res.status(404).json({ success: false, message: 'Elevador não encontrado' });
 
         // Видаляємо файл з диску
         if (lift.maintenanceContract?.path) {
@@ -2597,12 +2597,12 @@ app.delete('/api/lifts/:id/contract', authenticateToken, async (req, res) => {
             { _id: liftId },
             { $unset: { maintenanceContract: '' }, $set: { updatedAt: new Date().toISOString() } }
         );
-        if (result.matchedCount === 0) return res.status(404).json({ success: false, message: 'Ліфт не знайдено' });
+        if (result.matchedCount === 0) return res.status(404).json({ success: false, message: 'Elevador não encontrado' });
 
-        res.json({ success: true, message: 'Контракт успішно видалено' });
+        res.json({ success: true, message: 'Contrato eliminado com sucesso' });
     } catch (error) {
-        console.error('❌ Помилка видалення контракту:', error);
-        res.status(500).json({ success: false, message: 'Помилка видалення контракту' });
+        console.error('❌ Erro ao eliminar contrato:', error);
+        res.status(500).json({ success: false, message: 'Erro ao eliminar contrato' });
     }
 });
 
@@ -2616,10 +2616,10 @@ app.post('/api/lifts/:id/contract/email', authenticateToken, async (req, res) =>
         if (!email) return res.status(400).json({ success: false, message: 'Email є обов\'язковим' });
 
         const lift = await db.collection('lifts').findOne({ _id: liftId }, { projection: { maintenanceContract: 1, municipalNumber: 1, 'client.email': 1 } });
-        if (!lift) return res.status(404).json({ success: false, message: 'Ліфт не знайдено' });
+        if (!lift) return res.status(404).json({ success: false, message: 'Elevador não encontrado' });
 
         const contract = lift.maintenanceContract;
-        if (!contract?.contractFile) return res.status(404).json({ success: false, message: 'Контракт не завантажено' });
+        if (!contract?.contractFile) return res.status(404).json({ success: false, message: 'Contrato não carregado' });
 
         const path = require('path');
         const filePath = contract.path || path.join('/workspaces/deapseak', contract.contractFile);
@@ -2669,8 +2669,8 @@ app.post('/api/lifts/:id/contract/share-to-siblings', authenticateToken, async (
         const liftId = new ObjectId(req.params.id);
 
         const lift = await db.collection('lifts').findOne({ _id: liftId });
-        if (!lift) return res.status(404).json({ success: false, message: 'Ліфт не знайдено' });
-        if (!lift.maintenanceContract) return res.status(400).json({ success: false, message: 'Контракт відсутній' });
+        if (!lift) return res.status(404).json({ success: false, message: 'Elevador não encontrado' });
+        if (!lift.maintenanceContract) return res.status(400).json({ success: false, message: 'Contrato ausente' });
 
         const street = lift.address?.street;
         const zipCode = lift.address?.zipCode;
@@ -2700,7 +2700,7 @@ app.post('/api/lifts/:id/inspection-report', authenticateToken, upload.single('p
     try {
         // 🔐 Тільки admin, dispatcher, technician можуть додавати звіти
         if (req.user.role === 'client') {
-            return res.status(403).json({ success: false, message: 'Клієнти не можуть додавати звіти інспекції' });
+            return res.status(403).json({ success: false, message: 'Clientes não podem adicionar relatórios de inspeção' });
         }
         const { ObjectId } = require('mongodb');
         const liftId = new ObjectId(req.params.id);
@@ -2782,20 +2782,20 @@ app.post('/api/lifts/:id/inspection-report', authenticateToken, upload.single('p
         if (result.matchedCount === 0) {
             return res.status(404).json({
                 success: false,
-                message: 'Ліфт не знайдено'
+                message: 'Elevador não encontrado'
             });
         }
         
         res.status(201).json({
             success: true,
-            message: 'Звіт інспекції успішно додано',
+            message: 'Relatório de inspeção adicionado com sucesso',
             report: reportData
         });
     } catch (error) {
-        console.error('❌ Помилка додавання звіту:', error);
+        console.error('❌ Erro ao adicionar relatório:', error);
         res.status(500).json({
             success: false,
-            message: 'Помилка додавання звіту'
+            message: 'Erro ao adicionar relatório'
         });
     }
 });
@@ -2808,7 +2808,7 @@ app.delete('/api/lifts/:id/inspection-report/:index', authenticateToken, async (
         const idx = parseInt(req.params.index);
 
         if (isNaN(idx) || idx < 0) {
-            return res.status(400).json({ success: false, message: 'Невірний індекс звіту' });
+            return res.status(400).json({ success: false, message: 'Índice de relatório inválido' });
         }
 
         // Крок 1: $unset елемент масиву
@@ -2823,7 +2823,7 @@ app.delete('/api/lifts/:id/inspection-report/:index', authenticateToken, async (
         );
 
         if (result.matchedCount === 0) {
-            return res.status(404).json({ success: false, message: 'Ліфт не знайдено' });
+            return res.status(404).json({ success: false, message: 'Elevador não encontrado' });
         }
 
         // Крок 3: перерахунок кореневих полів з актуальної історії
@@ -2853,10 +2853,10 @@ app.delete('/api/lifts/:id/inspection-report/:index', authenticateToken, async (
             { $set: { lastInspectionDate: newLastDate, nextInspectionDate: newNextDate, inspectionStatus: newStatus } }
         );
 
-        res.json({ success: true, message: 'Звіт видалено' });
+        res.json({ success: true, message: 'Relatório eliminado' });
     } catch (error) {
-        console.error('❌ Помилка видалення звіту:', error);
-        res.status(500).json({ success: false, message: 'Помилка видалення звіту' });
+        console.error('❌ Erro ao eliminar relatório:', error);
+        res.status(500).json({ success: false, message: 'Erro ao eliminar relatório' });
     }
 });
 
@@ -2868,10 +2868,10 @@ app.post('/api/lifts/:id/inspection-report/:index/attach-pdf', authenticateToken
         const idx = parseInt(req.params.index);
 
         if (isNaN(idx) || idx < 0) {
-            return res.status(400).json({ success: false, message: 'Невірний індекс звіту' });
+            return res.status(400).json({ success: false, message: 'Índice de relatório inválido' });
         }
         if (!req.file) {
-            return res.status(400).json({ success: false, message: 'Файл не завантажено' });
+            return res.status(400).json({ success: false, message: 'Ficheiro não carregado' });
         }
 
         const fileUrl = `/uploads/pdfs/${req.file.filename}`;
@@ -2885,13 +2885,13 @@ app.post('/api/lifts/:id/inspection-report/:index/attach-pdf', authenticateToken
         );
 
         if (result.matchedCount === 0) {
-            return res.status(404).json({ success: false, message: 'Ліфт не знайдено' });
+            return res.status(404).json({ success: false, message: 'Elevador não encontrado' });
         }
 
         res.json({ success: true, fileUrl, message: 'PDF прив\'язано до звіту' });
     } catch (error) {
-        console.error('❌ Помилка приєднання PDF:', error);
-        res.status(500).json({ success: false, message: 'Помилка приєднання PDF' });
+        console.error('❌ Erro ao anexar PDF:', error);
+        res.status(500).json({ success: false, message: 'Erro ao anexar PDF' });
     }
 });
 
@@ -2943,16 +2943,16 @@ app.post('/api/lifts/:id/request-deletion', authenticateToken, async (req, res) 
 
         // Тільки dispatcher може подавати заявку
         if (!['dispatcher', 'admin'].includes(req.user.role)) {
-            return res.status(403).json({ success: false, message: 'Недостатньо прав' });
+            return res.status(403).json({ success: false, message: 'Permissões insuficientes' });
         }
 
         // Знайти ліфт
         const lift = await db.collection('lifts').findOne({ _id: liftId });
         if (!lift) {
-            return res.status(404).json({ success: false, message: 'Ліфт не знайдено' });
+            return res.status(404).json({ success: false, message: 'Elevador não encontrado' });
         }
 
-        // Позначити ліфт як "очікує видалення"
+        // Позначити ліфт як "pending_deletion"
         await db.collection('lifts').updateOne(
             { _id: liftId },
             { $set: { pendingDeletion: true, deletionRequestedBy: req.user.id, deletionRequestedAt: new Date() } }
@@ -2966,7 +2966,7 @@ app.post('/api/lifts/:id/request-deletion', authenticateToken, async (req, res) 
             await db.collection('notifications').insertOne({
                 userId: admin._id.toString(),
                 type: 'lift_delete_request',
-                title: 'Запит на видалення ліфта',
+                title: 'Pedido de remoção de elevador',
                 message: `Диспетчер ${req.user.firstName || req.user.username} запитує видалення ліфта: ${lift.name || lift.address || liftId}`,
                 liftId: liftId.toString(),
                 requestedBy: req.user.id,
@@ -2979,10 +2979,10 @@ app.post('/api/lifts/:id/request-deletion', authenticateToken, async (req, res) 
             });
         }
 
-        res.json({ success: true, message: 'Запит на видалення відправлено адміністратору' });
+        res.json({ success: true, message: 'Pedido de remoção enviado ao administrador' });
     } catch (error) {
         console.error('❌ Помилка запиту на видалення:', error);
-        res.status(500).json({ success: false, message: 'Помилка сервера' });
+        res.status(500).json({ success: false, message: 'Erro do servidor' });
     }
 });
 
@@ -2993,7 +2993,7 @@ app.post('/api/lifts/:id/approve-deletion', authenticateToken, async (req, res) 
         const liftId = new ObjectId(req.params.id);
 
         if (req.user.role !== 'admin') {
-            return res.status(403).json({ success: false, message: 'Тільки адміністратор може підтверджувати видалення' });
+            return res.status(403).json({ success: false, message: 'Apenas o administrador pode confirmar eliminação' });
         }
 
         const lift = await db.collection('lifts').findOne({ _id: liftId });
@@ -3009,7 +3009,7 @@ app.post('/api/lifts/:id/approve-deletion', authenticateToken, async (req, res) 
 
         if (!lift) {
             // Ліфт вже був видалений — вважаємо операцію успішною
-            return res.json({ success: true, message: 'Ліфт вже видалено' });
+            return res.json({ success: true, message: 'Elevador já eliminado' });
         }
 
         // Видалити ліфт
@@ -3020,7 +3020,7 @@ app.post('/api/lifts/:id/approve-deletion', authenticateToken, async (req, res) 
             await db.collection('notifications').insertOne({
                 userId: lift.deletionRequestedBy.toString(),
                 type: 'system',
-                title: 'Видалення ліфта підтверджено',
+                title: 'Remoção do elevador confirmada',
                 message: `Адміністратор підтвердив видалення ліфта: ${lift.name || lift.address || liftId}`,
                 icon: 'fas fa-check-circle',
                 priority: 'normal',
@@ -3030,10 +3030,10 @@ app.post('/api/lifts/:id/approve-deletion', authenticateToken, async (req, res) 
             });
         }
 
-        res.json({ success: true, message: 'Ліфт успішно видалено' });
+        res.json({ success: true, message: 'Elevador eliminado com sucesso' });
     } catch (error) {
         console.error('❌ Помилка підтвердження видалення:', error);
-        res.status(500).json({ success: false, message: 'Помилка сервера' });
+        res.status(500).json({ success: false, message: 'Erro do servidor' });
     }
 });
 
@@ -3044,15 +3044,15 @@ app.post('/api/lifts/:id/reject-deletion', authenticateToken, async (req, res) =
         const liftId = new ObjectId(req.params.id);
 
         if (req.user.role !== 'admin') {
-            return res.status(403).json({ success: false, message: 'Тільки адміністратор може відхиляти запити' });
+            return res.status(403).json({ success: false, message: 'Apenas o administrador pode rejeitar pedidos' });
         }
 
         const lift = await db.collection('lifts').findOne({ _id: liftId });
         if (!lift) {
-            return res.status(404).json({ success: false, message: 'Ліфт не знайдено' });
+            return res.status(404).json({ success: false, message: 'Elevador não encontrado' });
         }
 
-        // Зняти мітку "очікує видалення"
+        // Зняти мітку "pending_deletion"
         await db.collection('lifts').updateOne(
             { _id: liftId },
             { $unset: { pendingDeletion: '', deletionRequestedBy: '', deletionRequestedAt: '' } }
@@ -3064,7 +3064,7 @@ app.post('/api/lifts/:id/reject-deletion', authenticateToken, async (req, res) =
             await db.collection('notifications').insertOne({
                 userId: lift.deletionRequestedBy.toString(),
                 type: 'system',
-                title: 'Запит на видалення відхилено',
+                title: 'Pedido de remoção rejeitado',
                 message: `Адміністратор відхилив видалення ліфта: ${lift.name || lift.address || liftId}${reason ? '. Причина: ' + reason : ''}`,
                 icon: 'fas fa-times-circle',
                 priority: 'normal',
@@ -3083,10 +3083,10 @@ app.post('/api/lifts/:id/reject-deletion', authenticateToken, async (req, res) =
             );
         }
 
-        res.json({ success: true, message: 'Запит на видалення відхилено' });
+        res.json({ success: true, message: 'Pedido de remoção rejeitado' });
     } catch (error) {
         console.error('❌ Помилка відхилення запиту:', error);
-        res.status(500).json({ success: false, message: 'Помилка сервера' });
+        res.status(500).json({ success: false, message: 'Erro do servidor' });
     }
 });
 
@@ -3101,7 +3101,7 @@ app.delete('/api/lifts/:id', authenticateToken, async (req, res) => {
             console.warn(`⚠️ ${req.user.role} ${req.user.username} намагається видалити ліфт ${liftId}`);
             return res.status(403).json({
                 success: false,
-                message: 'Тільки адміністратор може видаляти ліфти'
+                message: 'Apenas o administrador pode eliminar elevadores'
             });
         }
         
@@ -3110,19 +3110,19 @@ app.delete('/api/lifts/:id', authenticateToken, async (req, res) => {
         if (result.deletedCount === 0) {
             return res.status(404).json({
                 success: false,
-                message: 'Ліфт не знайдено'
+                message: 'Elevador não encontrado'
             });
         }
         
         res.json({
             success: true,
-            message: 'Ліфт видалено успішно'
+            message: 'Elevador eliminado com sucesso'
         });
     } catch (error) {
-        console.error('❌ Помилка видалення ліфта:', error);
+        console.error('❌ Erro ao eliminar elevador:', error);
         res.status(500).json({
             success: false,
-            message: 'Помилка видалення ліфта'
+            message: 'Erro ao eliminar elevador'
         });
     }
 });
@@ -3170,7 +3170,7 @@ const uploadLiftDoc = multer({
         if (allowedTypes.includes(file.mimetype)) {
             cb(null, true);
         } else {
-            cb(new Error('Недопустимий тип файлу. Дозволені: PDF, DOC, DOCX, JPG, PNG'));
+            cb(new Error('Tipo de ficheiro não permitido. Permitidos: PDF, DOC, DOCX, JPG, PNG'));
         }
     }
 });
@@ -3189,7 +3189,7 @@ app.post('/api/lifts/:id/documents', authenticateToken, uploadLiftDoc.single('do
         if (!req.file) {
             return res.status(400).json({
                 success: false,
-                message: 'Файл не завантажено'
+                message: 'Ficheiro não carregado'
             });
         }
         
@@ -3198,7 +3198,7 @@ app.post('/api/lifts/:id/documents', authenticateToken, uploadLiftDoc.single('do
             await fs.unlink(req.file.path);
             return res.status(400).json({
                 success: false,
-                message: 'Недійсний тип документа'
+                message: 'Tipo de documento inválido'
             });
         }
         
@@ -3233,7 +3233,7 @@ app.post('/api/lifts/:id/documents', authenticateToken, uploadLiftDoc.single('do
             await fs.unlink(req.file.path);
             return res.status(404).json({
                 success: false,
-                message: 'Ліфт не знайдено'
+                message: 'Elevador não encontrado'
             });
         }
         
@@ -3241,7 +3241,7 @@ app.post('/api/lifts/:id/documents', authenticateToken, uploadLiftDoc.single('do
         
         res.json({
             success: true,
-            message: 'Документ успішно завантажено',
+            message: 'Documento carregado com sucesso',
             document: document
         });
     } catch (error) {
@@ -3258,7 +3258,7 @@ app.post('/api/lifts/:id/documents', authenticateToken, uploadLiftDoc.single('do
         
         res.status(500).json({
             success: false,
-            message: 'Помилка завантаження документа'
+            message: 'Erro ao carregar documento'
         });
     }
 });
@@ -3294,10 +3294,10 @@ app.get('/api/lifts/:id/documents', authenticateToken, async (req, res) => {
         );
         
         if (!lift) {
-            console.error('❌ Ліфт не знайдено:', liftId);
+            console.error('❌ Elevador não encontrado:', liftId);
             return res.status(404).json({
                 success: false,
-                message: 'Ліфт не знайдено'
+                message: 'Elevador não encontrado'
             });
         }
         
@@ -3309,7 +3309,7 @@ app.get('/api/lifts/:id/documents', authenticateToken, async (req, res) => {
         console.error('❌ Error fetching documents:', error);
         res.status(500).json({
             success: false,
-            message: 'Помилка завантаження документів'
+            message: 'Erro ao carregar documentos'
         });
     }
 });
@@ -3326,7 +3326,7 @@ app.delete('/api/lifts/:liftId/documents/:docId', authenticateToken, async (req,
             console.warn(`⚠️ ${req.user.role} ${req.user.username} намагається видалити документ`);
             return res.status(403).json({
                 success: false,
-                message: 'Тільки адміністратор може видаляти документи'
+                message: 'Apenas o administrador pode eliminar documentos'
             });
         }
         
@@ -3339,7 +3339,7 @@ app.delete('/api/lifts/:liftId/documents/:docId', authenticateToken, async (req,
         if (!lift) {
             return res.status(404).json({
                 success: false,
-                message: 'Ліфт не знайдено'
+                message: 'Elevador não encontrado'
             });
         }
         
@@ -3348,7 +3348,7 @@ app.delete('/api/lifts/:liftId/documents/:docId', authenticateToken, async (req,
         if (!document) {
             return res.status(404).json({
                 success: false,
-                message: 'Документ не знайдено'
+                message: 'Documento não encontrado'
             });
         }
         
@@ -3374,13 +3374,13 @@ app.delete('/api/lifts/:liftId/documents/:docId', authenticateToken, async (req,
         
         res.json({
             success: true,
-            message: 'Документ видалено успішно'
+            message: 'Documento eliminado com sucesso'
         });
     } catch (error) {
         console.error('❌ Error deleting document:', error);
         res.status(500).json({
             success: false,
-            message: 'Помилка видалення документа'
+            message: 'Erro ao eliminar documento'
         });
     }
 });
@@ -3404,10 +3404,10 @@ app.get('/api/municipalities', authenticateToken, async (req, res) => {
             statistics: municipalitiesData.statistics
         });
     } catch (error) {
-        console.error('❌ Помилка завантаження муніципалітетів:', error);
+        console.error('❌ Erro ao carregar municípios:', error);
         res.status(500).json({
             success: false,
-            message: 'Помилка завантаження муніципалітетів'
+            message: 'Erro ao carregar municípios'
         });
     }
 });
@@ -3422,7 +3422,7 @@ app.post('/api/municipalities/detect', authenticateToken, async (req, res) => {
         if (!address && !postalCode) {
             return res.status(400).json({
                 success: false,
-                message: 'Необхідно надати адресу або поштовий код'
+                message: 'É necessário fornecer endereço ou código postal'
             });
         }
         
@@ -3502,10 +3502,10 @@ app.get('/api/municipalities/:id/lifts', authenticateToken, async (req, res) => 
             total: lifts.length
         });
     } catch (error) {
-        console.error('❌ Помилка отримання ліфтів муніципалітету:', error);
+        console.error('❌ Erro ao obter elevadores муніципалітету:', error);
         res.status(500).json({
             success: false,
-            message: 'Помилка отримання ліфтів'
+            message: 'Erro ao obter elevadores'
         });
     }
 });
@@ -3540,10 +3540,10 @@ app.get('/api/municipalities/stats', authenticateToken, async (req, res) => {
             data: stats
         });
     } catch (error) {
-        console.error('❌ Помилка отримання статистики:', error);
+        console.error('❌ Erro ao obter estatísticas:', error);
         res.status(500).json({
             success: false,
-            message: 'Помилка отримання статистики'
+            message: 'Erro ao obter estatísticas'
         });
     }
 });
@@ -3575,7 +3575,7 @@ app.get('/api/users/profile', authenticateToken, async (req, res) => {
         if (!user) {
             return res.status(404).json({
                 success: false,
-                message: 'Користувач не знайдений'
+                message: 'Utilizador não encontrado'
             });
         }
         
@@ -3584,10 +3584,10 @@ app.get('/api/users/profile', authenticateToken, async (req, res) => {
             data: user
         });
     } catch (error) {
-        console.error('❌ Помилка отримання профілю:', error);
+        console.error('❌ Erro ao obter perfil:', error);
         res.status(500).json({
             success: false,
-            message: 'Помилка отримання профілю',
+            message: 'Erro ao obter perfil',
             error: error.message
         });
     }
@@ -3603,12 +3603,12 @@ app.get('/api/users/by-email', authenticateToken, async (req, res) => {
             { email: { $regex: new RegExp(`^${email.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`, 'i') } },
             { projection: { password: 0 } }
         );
-        if (!user) return res.status(404).json({ success: false, error: 'Користувача не знайдено' });
+        if (!user) return res.status(404).json({ success: false, error: 'Utilizador não encontrado' });
 
         res.json({ success: true, data: user });
     } catch (error) {
         console.error('❌ Помилка пошуку по email:', error);
-        res.status(500).json({ success: false, error: 'Помилка сервера' });
+        res.status(500).json({ success: false, error: 'Erro do servidor' });
     }
 });
 
@@ -3622,10 +3622,10 @@ app.get('/api/users/technicians', authenticateToken, async (req, res) => {
         
         res.json(technicians);
     } catch (error) {
-        console.error('❌ Помилка завантаження техніків:', error);
+        console.error('❌ Erro ao carregar técnicos:', error);
         res.status(500).json({
             success: false,
-            message: 'Помилка завантаження техніків'
+            message: 'Erro ao carregar técnicos'
         });
     }
 });
@@ -3657,10 +3657,10 @@ app.get('/api/technicians', authenticateToken, async (req, res) => {
 
         res.json(result);
     } catch (error) {
-        console.error('❌ Помилка завантаження техніків:', error);
+        console.error('❌ Erro ao carregar técnicos:', error);
         res.status(500).json({
             success: false,
-            message: 'Помилка завантаження техніків'
+            message: 'Erro ao carregar técnicos'
         });
     }
 });
@@ -3883,7 +3883,7 @@ app.get('/api/users', authenticateToken, async (req, res) => {
             if (!req.query.role) {
                 return res.status(403).json({
                     success: false,
-                    message: 'Доступ заборонено. Диспетчери повинні вказати параметр role.'
+                    message: 'Acesso negado. Диспетчери повинні вказати параметр role.'
                 });
             }
 
@@ -3891,7 +3891,7 @@ app.get('/api/users', authenticateToken, async (req, res) => {
             if (req.query.role && !allowedRoles.includes(req.query.role)) {
                 return res.status(403).json({
                     success: false,
-                    message: 'Доступ заборонено. Диспетчери можуть переглядати тільки клієнтів та техніків.'
+                    message: 'Acesso negado. Диспетчери можуть переглядати тільки клієнтів та техніків.'
                 });
             }
             
@@ -3943,7 +3943,7 @@ app.get('/api/users', authenticateToken, async (req, res) => {
         if (req.user.role !== 'admin') {
             return res.status(403).json({
                 success: false,
-                message: 'Доступ заборонено. Тільки адміністратори можуть переглядати список користувачів.'
+                message: 'Acesso negado. Тільки адміністратори можуть переглядати список користувачів.'
             });
         }
         
@@ -3964,10 +3964,10 @@ app.get('/api/users', authenticateToken, async (req, res) => {
             data: users
         });
     } catch (error) {
-        console.error('❌ Помилка отримання користувачів:', error);
+        console.error('❌ Erro ao obter utilizadores:', error);
         res.status(500).json({
             success: false,
-            message: 'Помилка отримання користувачів'
+            message: 'Erro ao obter utilizadores'
         });
     }
 });
@@ -3993,7 +3993,7 @@ app.get('/api/analytics/dashboard', authenticateToken, async (req, res) => {
         if (!allowedRoles.includes(req.user.role)) {
             return res.status(403).json({
                 success: false,
-                message: 'Доступ заборонено. Тільки адміністратори та диспетчери можуть переглядати аналітику.'
+                message: 'Acesso negado. Тільки адміністратори та диспетчери можуть переглядати аналітику.'
             });
         }
         
@@ -4018,7 +4018,7 @@ app.get('/api/analytics/dashboard', authenticateToken, async (req, res) => {
         console.error('❌ Помилка отримання dashboard статистики:', error);
         res.status(500).json({
             success: false,
-            message: 'Помилка отримання статистики'
+            message: 'Erro ao obter estatísticas'
         });
     }
 });
@@ -4047,10 +4047,10 @@ app.get('/api/ai/health', authenticateToken, async (req, res) => {
             }
         });
     } catch (error) {
-        console.error('❌ Помилка перевірки AI системи:', error);
+        console.error('❌ Erro na verificação do sistema AI:', error);
         res.status(500).json({
             success: false,
-            message: 'Помилка перевірки AI системи',
+            message: 'Erro na verificação do sistema AI',
             error: error.message
         });
     }
@@ -4064,7 +4064,7 @@ app.post('/api/users', authenticateToken, async (req, res) => {
         // 🔒 Тільки admin та dispatcher можуть створювати юзерів
         if (!['admin', 'dispatcher'].includes(req.user.role)) {
             console.warn(`⛔ ${req.user.role} ${req.user.email} спробував POST /api/users`);
-            return res.status(403).json({ success: false, error: 'Доступ заборонено' });
+            return res.status(403).json({ success: false, error: 'Acesso negado' });
         }
 
         // Перевірка обов'язкових полів
@@ -4078,12 +4078,12 @@ app.post('/api/users', authenticateToken, async (req, res) => {
         // 🔒 Валідація ролі — dispatcher не може створювати admin/dispatcher
         const validRoles = ['client', 'technician', 'admin', 'dispatcher'];
         if (!validRoles.includes(role)) {
-            return res.status(400).json({ success: false, error: 'Недійсна роль' });
+            return res.status(400).json({ success: false, error: 'Papel inválido' });
         }
         if (req.user.role === 'dispatcher' && !['client', 'technician'].includes(role)) {
             return res.status(403).json({
                 success: false,
-                error: 'Диспетчери можуть створювати тільки клієнтів та техніків'
+                error: 'Os operadores só podem criar clientes e técnicos'
             });
         }
 
@@ -4092,7 +4092,7 @@ app.post('/api/users', authenticateToken, async (req, res) => {
         if (existingUser) {
             return res.status(400).json({
                 success: false,
-                error: 'Користувач з таким email вже існує'
+                error: 'Utilizador com este email já existe'
             });
         }
 
@@ -4130,10 +4130,10 @@ app.post('/api/users', authenticateToken, async (req, res) => {
             data: { ...userWithoutPassword, _id: result.insertedId }
         });
     } catch (error) {
-        console.error('❌ Помилка створення користувача:', error);
+        console.error('❌ Erro ao criar utilizador:', error);
         res.status(500).json({
             success: false,
-            error: 'Помилка створення користувача'
+            error: 'Erro ao criar utilizador'
         });
     }
 });
@@ -4146,12 +4146,12 @@ app.put('/api/users/:id', authenticateToken, async (req, res) => {
         // 🔒 Тільки admin та dispatcher можуть оновлювати юзерів
         if (!['admin', 'dispatcher'].includes(req.user.role)) {
             console.warn(`⛔ ${req.user.role} ${req.user.email} спробував PUT /api/users/:id`);
-            return res.status(403).json({ success: false, error: 'Доступ заборонено' });
+            return res.status(403).json({ success: false, error: 'Acesso negado' });
         }
 
         // 🔒 Валідація ObjectId
         if (!isValidObjectId(req.params.id)) {
-            return res.status(400).json({ success: false, error: 'Недійсний ID' });
+            return res.status(400).json({ success: false, error: 'ID inválido' });
         }
         const userId = new ObjectId(req.params.id);
         const { email, password, firstName, lastName, role, status, phone, company, address } = req.body;
@@ -4161,7 +4161,7 @@ app.put('/api/users/:id', authenticateToken, async (req, res) => {
             if (!['client', 'technician'].includes(role)) {
                 return res.status(403).json({
                     success: false,
-                    error: 'Диспетчери можуть редагувати тільки клієнтів та техніків'
+                    error: 'Os operadores só podem editar clientes e técnicos'
                 });
             }
         }
@@ -4204,7 +4204,7 @@ app.put('/api/users/:id', authenticateToken, async (req, res) => {
         if (!result) {
             return res.status(404).json({
                 success: false,
-                error: 'Користувача не знайдено'
+                error: 'Utilizador não encontrado'
             });
         }
 
@@ -4214,17 +4214,17 @@ app.put('/api/users/:id', authenticateToken, async (req, res) => {
             data: result
         });
     } catch (error) {
-        console.error('❌ Помилка оновлення користувача:', error);
+        console.error('❌ Erro ao atualizar utilizador:', error);
         // Duplicate email
         if (error.code === 11000 || (error.message && error.message.includes('E11000'))) {
             return res.status(409).json({
                 success: false,
-                error: 'Цей email вже використовується іншим користувачем'
+                error: 'Este email já está a ser utilizado por outro utilizador'
             });
         }
         res.status(500).json({
             success: false,
-            error: 'Помилка оновлення користувача'
+            error: 'Erro ao atualizar utilizador'
         });
     }
 });
@@ -4237,12 +4237,12 @@ app.delete('/api/users/:id', authenticateToken, async (req, res) => {
         // 🔒 Тільки admin та dispatcher можуть видаляти юзерів
         if (!['admin', 'dispatcher'].includes(req.user.role)) {
             console.warn(`⛔ ${req.user.role} ${req.user.email} спробував DELETE /api/users/:id`);
-            return res.status(403).json({ success: false, message: 'Доступ заборонено' });
+            return res.status(403).json({ success: false, message: 'Acesso negado' });
         }
 
         // 🔒 Валідація ObjectId
         if (!isValidObjectId(req.params.id)) {
-            return res.status(400).json({ success: false, message: 'Недійсний ID' });
+            return res.status(400).json({ success: false, message: 'ID inválido' });
         }
         const userId = new ObjectId(req.params.id);
         
@@ -4250,7 +4250,7 @@ app.delete('/api/users/:id', authenticateToken, async (req, res) => {
         if ((req.user.id || req.user.userId) === req.params.id) {
             return res.status(400).json({
                 success: false,
-                message: 'Ви не можете видалити свій власний акаунт'
+                message: 'Não pode eliminar a sua própria conta'
             });
         }
         
@@ -4262,7 +4262,7 @@ app.delete('/api/users/:id', authenticateToken, async (req, res) => {
             if (!userToDelete) {
                 return res.status(404).json({
                     success: false,
-                    message: 'Користувача не знайдено'
+                    message: 'Utilizador não encontrado'
                 });
             }
             
@@ -4270,7 +4270,7 @@ app.delete('/api/users/:id', authenticateToken, async (req, res) => {
             if (userToDelete.role === 'admin' || userToDelete.role === 'dispatcher') {
                 return res.status(403).json({
                     success: false,
-                    message: `Доступ заборонено! Диспетчери не можуть видаляти адміністраторів та інших диспетчерів. Роль користувача: ${userToDelete.role}`
+                    message: `Acesso negado! Диспетчери не можуть видаляти адміністраторів та інших диспетчерів. Роль користувача: ${userToDelete.role}`
                 });
             }
             
@@ -4282,20 +4282,20 @@ app.delete('/api/users/:id', authenticateToken, async (req, res) => {
         if (result.deletedCount === 0) {
             return res.status(404).json({
                 success: false,
-                message: 'Користувача не знайдено'
+                message: 'Utilizador não encontrado'
             });
         }
         
         console.log('✅ Видалено користувача:', userId);
         res.json({
             success: true,
-            message: 'Користувача успішно видалено'
+            message: 'Utilizador eliminado com sucesso'
         });
     } catch (error) {
-        console.error('❌ Помилка видалення користувача:', error);
+        console.error('❌ Erro ao eliminar utilizador:', error);
         res.status(500).json({
             success: false,
-            message: 'Помилка видалення користувача'
+            message: 'Erro ao eliminar utilizador'
         });
     }
 });
@@ -4308,12 +4308,12 @@ app.get('/api/users/:id', authenticateToken, async (req, res) => {
         // 🔒 Тільки admin/dispatcher або сам юзер (власний профіль)
         const isSelf = (req.user.id || req.user.userId) === req.params.id;
         if (!['admin', 'dispatcher'].includes(req.user.role) && !isSelf) {
-            return res.status(403).json({ success: false, message: 'Доступ заборонено' });
+            return res.status(403).json({ success: false, message: 'Acesso negado' });
         }
 
         // 🔒 Валідація ObjectId
         if (!isValidObjectId(req.params.id)) {
-            return res.status(400).json({ success: false, message: 'Недійсний ID' });
+            return res.status(400).json({ success: false, message: 'ID inválido' });
         }
         const userId = new ObjectId(req.params.id);
         
@@ -4327,7 +4327,7 @@ app.get('/api/users/:id', authenticateToken, async (req, res) => {
         if (!user) {
             return res.status(404).json({
                 success: false,
-                message: 'Користувача не знайдено'
+                message: 'Utilizador não encontrado'
             });
         }
         
@@ -4336,10 +4336,10 @@ app.get('/api/users/:id', authenticateToken, async (req, res) => {
             data: user
         });
     } catch (error) {
-        console.error('❌ Помилка отримання користувача:', error);
+        console.error('❌ Erro ao obter utilizador:', error);
         res.status(500).json({
             success: false,
-            message: 'Помилка отримання користувача'
+            message: 'Erro ao obter utilizador'
         });
     }
 });
@@ -4349,14 +4349,14 @@ app.post('/api/users/:id/reset-password', authenticateToken, async (req, res) =>
     try {
         const { ObjectId } = require('mongodb');
         if (!['admin', 'dispatcher'].includes(req.user.role)) {
-            return res.status(403).json({ success: false, error: 'Доступ заборонено' });
+            return res.status(403).json({ success: false, error: 'Acesso negado' });
         }
         if (!isValidObjectId(req.params.id)) {
-            return res.status(400).json({ success: false, error: 'Недійсний ID' });
+            return res.status(400).json({ success: false, error: 'ID inválido' });
         }
         const userId = new ObjectId(req.params.id);
         const user = await db.collection('users').findOne({ _id: userId }, { projection: { password: 0 } });
-        if (!user) return res.status(404).json({ success: false, error: 'Користувача не знайдено' });
+        if (!user) return res.status(404).json({ success: false, error: 'Utilizador não encontrado' });
 
         // Генеруємо тимчасовий пароль
         const rawPassword =
@@ -4379,10 +4379,10 @@ app.post('/api/users/:id/reset-password', authenticateToken, async (req, res) =>
             console.warn('⚠️ Не вдалося надіслати email з паролем:', emailErr.message);
         }
 
-        res.json({ success: true, message: 'Пароль скинуто', data: { temporaryPassword: rawPassword } });
+        res.json({ success: true, message: 'Palavra-passe redefinida', data: { temporaryPassword: rawPassword } });
     } catch (error) {
         console.error('❌ Помилка скидання пароля:', error);
-        res.status(500).json({ success: false, error: 'Помилка сервера' });
+        res.status(500).json({ success: false, error: 'Erro do servidor' });
     }
 });
 
@@ -4391,7 +4391,7 @@ app.post('/api/users/:id/reset-password', authenticateToken, async (req, res) =>
 // GET /api/requests/stats - статистика запитів (МАЄ БУТИ ПЕРЕД /api/requests/:id!)
 app.get('/api/requests/stats', authenticateToken, async (req, res) => {
     if (req.user.role !== 'admin' && req.user.role !== 'dispatcher') {
-        return res.status(403).json({ success: false, message: 'Доступ заборонено' });
+        return res.status(403).json({ success: false, message: 'Acesso negado' });
     }
     try {
         const requestsCollection = db.collection('requests');
@@ -4427,10 +4427,10 @@ app.get('/api/requests/stats', authenticateToken, async (req, res) => {
             }
         });
     } catch (error) {
-        console.error('❌ Помилка отримання статистики запитів:', error);
+        console.error('❌ Erro ao obter estatísticas запитів:', error);
         res.status(500).json({
             success: false,
-            message: 'Помилка отримання статистики'
+            message: 'Erro ao obter estatísticas'
         });
     }
 });
@@ -4634,10 +4634,10 @@ app.get('/api/requests', authenticateToken, async (req, res) => {
             data: enriched
         });
     } catch (error) {
-        console.error('❌ Помилка отримання заявок:', error);
+        console.error('❌ Erro ao obter pedidos:', error);
         res.status(500).json({
             success: false,
-            message: 'Помилка отримання заявок'
+            message: 'Erro ao obter pedidos'
         });
     }
 });
@@ -4666,7 +4666,7 @@ app.get('/api/requests/:id', authenticateToken, async (req, res) => {
         if (!request) {
             return res.status(404).json({
                 success: false,
-                message: 'Заявку не знайдено'
+                message: 'Pedido não encontrado'
             });
         }
 
@@ -4674,7 +4674,7 @@ app.get('/api/requests/:id', authenticateToken, async (req, res) => {
         if (role === 'tech' || role === 'technician') {
             const assignedToMe = request.technician === userId || request.technicianId === userId;
             if (!assignedToMe) {
-                return res.status(403).json({ success: false, message: 'Доступ заборонено' });
+                return res.status(403).json({ success: false, message: 'Acesso negado' });
             }
         } else if (role === 'client') {
             const clientLifts = await db.collection('lifts')
@@ -4682,7 +4682,7 @@ app.get('/api/requests/:id', authenticateToken, async (req, res) => {
                 .toArray();
             const liftIds = clientLifts.map(l => l._id.toString());
             if (!liftIds.includes(request.liftId)) {
-                return res.status(403).json({ success: false, message: 'Доступ заборонено' });
+                return res.status(403).json({ success: false, message: 'Acesso negado' });
             }
         }
         // admin / dispatcher: always allowed
@@ -4767,10 +4767,10 @@ app.get('/api/requests/:id', authenticateToken, async (req, res) => {
             data: { request: enrichedRequest }   // підтримка обох форматів відповіді
         });
     } catch (error) {
-        console.error('❌ Помилка отримання заявки:', error);
+        console.error('❌ Erro ao obter pedido:', error);
         res.status(500).json({
             success: false,
-            message: 'Помилка отримання заявки'
+            message: 'Erro ao obter pedido'
         });
     }
 });
@@ -4808,7 +4808,7 @@ app.post('/api/requests', authenticateToken, async (req, res) => {
             requestNumber,
             // Автоматично генеруємо заголовок якщо не вказано
             title: req.body.title || (() => {
-                const typeMap = { maintenance: 'Технічне обслуговування', repair: 'Ремонт', inspection: 'Технічний огляд', consultation: 'Консультація', emergency: 'Аварійна ситуація' };
+                const typeMap = { maintenance: 'Manutenção técnica', repair: 'Reparação', inspection: 'Inspeção técnica', consultation: 'Consulta', emergency: 'Situação de emergência' };
                 const typeName = typeMap[req.body.type] || req.body.type || 'Заявка';
                 if (liftData?.address) {
                     const parts = [];
@@ -4821,18 +4821,18 @@ app.post('/api/requests', authenticateToken, async (req, res) => {
             })(),
             // Якщо знайшли ліфт - збагачуємо дані
             liftAddress: (() => {
-                if (!liftData?.address) return req.body.liftAddress || 'Адреса невідома';
+                if (!liftData?.address) return req.body.liftAddress || 'Endereço desconhecido';
                 
                 // Якщо address - об'єкт, формуємо рядок
                 if (typeof liftData.address === 'object') {
                     const parts = [];
                     if (liftData.address.street) parts.push(liftData.address.street);
                     if (liftData.address.city) parts.push(liftData.address.city);
-                    return parts.join(', ') || 'Адреса невідома';
+                    return parts.join(', ') || 'Endereço desconhecido';
                 }
                 return liftData.address;
             })(),
-            liftClient: liftData?.client || req.body.liftClient || 'Клієнт невідомий',
+            liftClient: liftData?.client || req.body.liftClient || 'Cliente desconhecido',
             liftMunicipalNumber: liftData?.municipalNumber || req.body.liftMunicipalNumber || '',
             liftLocation: liftData?.location || req.body.liftLocation || null,
             createdAt: new Date().toISOString(),
@@ -4850,17 +4850,17 @@ app.post('/api/requests', authenticateToken, async (req, res) => {
         
         res.json({
             success: true,
-            message: 'Заявку створено успішно',
+            message: 'Pedido criado com sucesso',
             data: {
                 _id: result.insertedId,
                 ...newRequest
             }
         });
     } catch (error) {
-        console.error('❌ Помилка створення заявки:', error);
+        console.error('❌ Erro ao criar pedido:', error);
         res.status(500).json({
             success: false,
-            message: 'Помилка створення заявки'
+            message: 'Erro ao criar pedido'
         });
     }
 });
@@ -4883,19 +4883,19 @@ app.put('/api/requests/:id', authenticateToken, async (req, res) => {
         if (result.matchedCount === 0) {
             return res.status(404).json({
                 success: false,
-                message: 'Заявку не знайдено'
+                message: 'Pedido não encontrado'
             });
         }
         
         res.json({
             success: true,
-            message: 'Заявку оновлено успішно'
+            message: 'Pedido atualizado успішно'
         });
     } catch (error) {
-        console.error('❌ Помилка оновлення заявки:', error);
+        console.error('❌ Erro ao atualizar pedido:', error);
         res.status(500).json({
             success: false,
-            message: 'Помилка оновлення заявки'
+            message: 'Erro ao atualizar pedido'
         });
     }
 });
@@ -4965,20 +4965,20 @@ app.patch('/api/requests/:id/status', authenticateToken, async (req, res) => {
         if (result.matchedCount === 0) {
             return res.status(404).json({
                 success: false,
-                message: 'Заявку не знайдено'
+                message: 'Pedido não encontrado'
             });
         }
         
         res.json({
             success: true,
-            message: 'Статус заявки оновлено успішно',
+            message: 'Estado do pedido atualizado com sucesso',
             data: updateData
         });
     } catch (error) {
         console.error('❌ Помилка зміни статусу:', error);
         res.status(500).json({
             success: false,
-            message: 'Помилка зміни статусу заявки'
+            message: 'Erro ao alterar estado do pedido'
         });
     }
 });
@@ -4995,7 +4995,7 @@ app.post('/api/requests/:id/comment', authenticateToken, async (req, res) => {
         if (!commentText || !commentText.trim()) {
             return res.status(400).json({
                 success: false,
-                message: 'Коментар не може бути порожнім'
+                message: 'O comentário não pode estar vazio'
             });
         }
         
@@ -5026,22 +5026,22 @@ app.post('/api/requests/:id/comment', authenticateToken, async (req, res) => {
         if (result.matchedCount === 0) {
             return res.status(404).json({
                 success: false,
-                message: 'Заявку не знайдено'
+                message: 'Pedido não encontrado'
             });
         }
         
-        console.log('✅ Коментар додано успішно');
+        console.log('✅ Comentário adicionado com sucesso');
         
         res.json({
             success: true,
-            message: 'Коментар додано успішно',
+            message: 'Comentário adicionado com sucesso',
             data: newComment
         });
     } catch (error) {
-        console.error('❌ Помилка додавання коментаря:', error);
+        console.error('❌ Erro ao adicionar comentário:', error);
         res.status(500).json({
             success: false,
-            message: 'Помилка додавання коментаря'
+            message: 'Erro ao adicionar comentário'
         });
     }
 });
@@ -5090,22 +5090,22 @@ app.post('/api/requests/:id/complete', authenticateToken, async (req, res) => {
         if (result.matchedCount === 0) {
             return res.status(404).json({
                 success: false,
-                message: 'Заявку не знайдено'
+                message: 'Pedido não encontrado'
             });
         }
         
-        console.log('✅ Заявку завершено успішно');
+        console.log('✅ Pedido concluído com sucesso');
         
         res.json({
             success: true,
-            message: 'Заявку завершено успішно',
+            message: 'Pedido concluído com sucesso',
             data: updateData
         });
     } catch (error) {
-        console.error('❌ Помилка завершення заявки:', error);
+        console.error('❌ Erro ao concluir pedido:', error);
         res.status(500).json({
             success: false,
-            message: 'Помилка завершення заявки'
+            message: 'Erro ao concluir pedido'
         });
     }
 });
@@ -5123,14 +5123,14 @@ app.post('/api/requests/:id/assign', authenticateToken, async (req, res) => {
         if (req.user.role !== 'admin' && req.user.role !== 'dispatcher') {
             return res.status(403).json({
                 success: false,
-                message: 'У вас немає прав для призначення техніків'
+                message: 'Não tem permissões para atribuir técnicos'
             });
         }
         
         if (!technicianId) {
             return res.status(400).json({
                 success: false,
-                message: 'Не вказано техніка'
+                message: 'Técnico não especificado'
             });
         }
         
@@ -5142,14 +5142,14 @@ app.post('/api/requests/:id/assign', authenticateToken, async (req, res) => {
         if (!technician) {
             return res.status(404).json({
                 success: false,
-                message: 'Техніка не знайдено'
+                message: 'Técnico não encontrado'
             });
         }
         
         if (technician.role !== 'tech' && technician.role !== 'technician') {
             return res.status(400).json({
                 success: false,
-                message: 'Вибраний користувач не є техніком'
+                message: 'O utilizador selecionado não é técnico'
             });
         }
         
@@ -5183,22 +5183,22 @@ app.post('/api/requests/:id/assign', authenticateToken, async (req, res) => {
         if (result.matchedCount === 0) {
             return res.status(404).json({
                 success: false,
-                message: 'Заявку не знайдено'
+                message: 'Pedido não encontrado'
             });
         }
         
-        console.log('✅ Техніка призначено успішно');
+        console.log('✅ Técnico atribuído com sucesso');
         
         res.json({
             success: true,
-            message: 'Техніка призначено успішно',
+            message: 'Técnico atribuído com sucesso',
             data: updateData
         });
     } catch (error) {
-        console.error('❌ Помилка призначення техніка:', error);
+        console.error('❌ Erro ao atribuir técnico:', error);
         res.status(500).json({
             success: false,
-            message: 'Помилка призначення техніка'
+            message: 'Erro ao atribuir técnico'
         });
     }
 });
@@ -5209,7 +5209,7 @@ app.delete('/api/requests/:id', authenticateToken, async (req, res) => {
         if (req.user.role !== 'admin') {
             return res.status(403).json({
                 success: false,
-                message: 'Видалення заявок дозволено тільки адміністратору'
+                message: 'A eliminação de pedidos é permitida apenas ao administrador'
             });
         }
 
@@ -5221,19 +5221,19 @@ app.delete('/api/requests/:id', authenticateToken, async (req, res) => {
         if (result.deletedCount === 0) {
             return res.status(404).json({
                 success: false,
-                message: 'Заявку не знайдено'
+                message: 'Pedido não encontrado'
             });
         }
         
         res.json({
             success: true,
-            message: 'Заявку видалено успішно'
+            message: 'Pedido eliminado com sucesso'
         });
     } catch (error) {
-        console.error('❌ Помилка видалення заявки:', error);
+        console.error('❌ Erro ao eliminar pedido:', error);
         res.status(500).json({
             success: false,
-            message: 'Помилка видалення заявки'
+            message: 'Erro ao eliminar pedido'
         });
     }
 });
@@ -5243,7 +5243,7 @@ app.post('/api/requests/:id/archive', authenticateToken, async (req, res) => {
     try {
         const role = req.user.role;
         if (!['admin', 'dispatcher'].includes(role)) {
-            return res.status(403).json({ success: false, message: 'Недостатньо прав для архівування' });
+            return res.status(403).json({ success: false, message: 'Permissões insuficientes для архівування' });
         }
         const requestQuery = buildRequestQuery(req.params.id);
         const result = await db.collection('requests').updateOne(requestQuery, {
@@ -5255,12 +5255,12 @@ app.post('/api/requests/:id/archive', authenticateToken, async (req, res) => {
             }
         });
         if (result.matchedCount === 0) {
-            return res.status(404).json({ success: false, message: 'Заявку не знайдено' });
+            return res.status(404).json({ success: false, message: 'Pedido não encontrado' });
         }
-        res.json({ success: true, message: 'Заявку переміщено до архіву' });
+        res.json({ success: true, message: 'Pedido movido para arquivo' });
     } catch (error) {
-        console.error('❌ Помилка архівування заявки:', error);
-        res.status(500).json({ success: false, message: 'Помилка архівування' });
+        console.error('❌ Erro ao arquivar заявки:', error);
+        res.status(500).json({ success: false, message: 'Erro ao arquivar' });
     }
 });
 
@@ -5268,7 +5268,7 @@ app.post('/api/requests/:id/archive', authenticateToken, async (req, res) => {
 app.post('/api/requests/:id/unarchive', authenticateToken, async (req, res) => {
     try {
         if (req.user.role !== 'admin') {
-            return res.status(403).json({ success: false, message: 'Відновлення з архіву — тільки для адміністратора' });
+            return res.status(403).json({ success: false, message: 'Restauro do arquivo — apenas para administrador' });
         }
         const requestQuery = buildRequestQuery(req.params.id);
         const result = await db.collection('requests').updateOne(requestQuery, {
@@ -5276,12 +5276,12 @@ app.post('/api/requests/:id/unarchive', authenticateToken, async (req, res) => {
             $set: { updatedAt: new Date().toISOString() }
         });
         if (result.matchedCount === 0) {
-            return res.status(404).json({ success: false, message: 'Заявку не знайдено' });
+            return res.status(404).json({ success: false, message: 'Pedido não encontrado' });
         }
-        res.json({ success: true, message: 'Заявку відновлено з архіву' });
+        res.json({ success: true, message: 'Pedido restaurado do arquivo' });
     } catch (error) {
-        console.error('❌ Помилка відновлення:', error);
-        res.status(500).json({ success: false, message: 'Помилка відновлення' });
+        console.error('❌ Erro ao restaurar:', error);
+        res.status(500).json({ success: false, message: 'Erro ao restaurar' });
     }
 });
 
@@ -5290,7 +5290,7 @@ app.post('/api/requests/:id/false-call', authenticateToken, async (req, res) => 
     try {
         const role = req.user.role;
         if (!['admin', 'dispatcher'].includes(role)) {
-            return res.status(403).json({ success: false, message: 'Недостатньо прав' });
+            return res.status(403).json({ success: false, message: 'Permissões insuficientes' });
         }
         const requestQuery = buildRequestQuery(req.params.id);
         const result = await db.collection('requests').updateOne(requestQuery, {
@@ -5306,12 +5306,12 @@ app.post('/api/requests/:id/false-call', authenticateToken, async (req, res) => 
             }
         });
         if (result.matchedCount === 0) {
-            return res.status(404).json({ success: false, message: 'Заявку не знайдено' });
+            return res.status(404).json({ success: false, message: 'Pedido não encontrado' });
         }
-        res.json({ success: true, message: 'Заявку позначено як фальшивий виклик і архівовано' });
+        res.json({ success: true, message: 'Pedido marcado como chamada falsa e arquivado' });
     } catch (error) {
         console.error('❌ Помилка позначення фальшивого виклику:', error);
-        res.status(500).json({ success: false, message: 'Помилка операції' });
+        res.status(500).json({ success: false, message: 'Erro na operação' });
     }
 });
 
@@ -5325,7 +5325,7 @@ app.post('/api/requests/:id/cancel', authenticateToken, async (req, res) => {
         const request = await db.collection('requests').findOne(requestQuery);
 
         if (!request) {
-            return res.status(404).json({ success: false, message: 'Заявку не знайдено' });
+            return res.status(404).json({ success: false, message: 'Pedido não encontrado' });
         }
 
         // Клієнт може скасувати тільки свою заявку і тільки в статусі pending/assigned
@@ -5333,16 +5333,16 @@ app.post('/api/requests/:id/cancel', authenticateToken, async (req, res) => {
             const liftDoc = await db.collection('lifts').findOne({ _id: request.liftId });
             const liftOwnerId = liftDoc ? (liftDoc.client || liftDoc.clientId || '').toString() : '';
             if (liftOwnerId !== userId) {
-                return res.status(403).json({ success: false, message: 'Ви не можете скасувати чужу заявку' });
+                return res.status(403).json({ success: false, message: 'Não pode cancelar o pedido de outro utilizador' });
             }
             if (!['pending', 'assigned', 'new'].includes(request.status)) {
                 return res.status(400).json({
                     success: false,
-                    message: 'Заявку можна скасувати лише до початку виконання'
+                    message: 'O pedido só pode ser cancelado antes do início da execução'
                 });
             }
         } else if (!['admin', 'dispatcher'].includes(role)) {
-            return res.status(403).json({ success: false, message: 'Недостатньо прав' });
+            return res.status(403).json({ success: false, message: 'Permissões insuficientes' });
         }
 
         const result = await db.collection('requests').updateOne(requestQuery, {
@@ -5354,10 +5354,10 @@ app.post('/api/requests/:id/cancel', authenticateToken, async (req, res) => {
             }
         });
 
-        res.json({ success: true, message: 'Заявку скасовано' });
+        res.json({ success: true, message: 'Pedido cancelado' });
     } catch (error) {
-        console.error('❌ Помилка скасування заявки:', error);
-        res.status(500).json({ success: false, message: 'Помилка скасування' });
+        console.error('❌ Erro ao cancelar заявки:', error);
+        res.status(500).json({ success: false, message: 'Erro ao cancelar' });
     }
 });
 
@@ -5400,10 +5400,10 @@ app.get('/api/settings', authenticateToken, async (req, res) => {
             settings: userSettings
         });
     } catch (error) {
-        console.error('❌ Помилка отримання налаштувань:', error);
+        console.error('❌ Erro ao obter configurações:', error);
         res.status(500).json({
             success: false,
-            message: 'Помилка отримання налаштувань'
+            message: 'Erro ao obter configurações'
         });
     }
 });
@@ -5428,14 +5428,14 @@ app.put('/api/settings', authenticateToken, async (req, res) => {
         
         res.json({
             success: true,
-            message: 'Налаштування збережено',
+            message: 'Configurações guardadas',
             modified: result.modifiedCount
         });
     } catch (error) {
-        console.error('❌ Помилка збереження налаштувань:', error);
+        console.error('❌ Erro ao guardar configurações:', error);
         res.status(500).json({
             success: false,
-            message: 'Помилка збереження налаштувань'
+            message: 'Erro ao guardar configurações'
         });
     }
 });
@@ -5449,7 +5449,7 @@ app.put('/api/settings/language', authenticateToken, async (req, res) => {
         if (!language) {
             return res.status(400).json({
                 success: false,
-                message: 'Мова не вказана'
+                message: 'Idioma não especificado'
             });
         }
         
@@ -5466,14 +5466,14 @@ app.put('/api/settings/language', authenticateToken, async (req, res) => {
         
         res.json({
             success: true,
-            message: 'Мову змінено',
+            message: 'Idioma alterado',
             language
         });
     } catch (error) {
-        console.error('❌ Помилка зміни мови:', error);
+        console.error('❌ Erro ao alterar idioma:', error);
         res.status(500).json({
             success: false,
-            message: 'Помилка зміни мови'
+            message: 'Erro ao alterar idioma'
         });
     }
 });
@@ -5487,7 +5487,7 @@ app.put('/api/settings/theme', authenticateToken, async (req, res) => {
         if (!theme) {
             return res.status(400).json({
                 success: false,
-                message: 'Тема не вказана'
+                message: 'Tema não especificado'
             });
         }
         
@@ -5504,14 +5504,14 @@ app.put('/api/settings/theme', authenticateToken, async (req, res) => {
         
         res.json({
             success: true,
-            message: 'Тему змінено',
+            message: 'Tema alterado',
             theme
         });
     } catch (error) {
-        console.error('❌ Помилка зміни теми:', error);
+        console.error('❌ Erro ao alterar tema:', error);
         res.status(500).json({
             success: false,
-            message: 'Помилка зміни теми'
+            message: 'Erro ao alterar tema'
         });
     }
 });
@@ -5722,24 +5722,24 @@ function analyzeInspectionReport(reportText) {
     if (c1Count > 0) {
         recommendations.push({
             icon: '🛑',
-            text: 'Негайно припинити експлуатацію ліфта до усунення критичних порушень'
+            text: 'Cessar imediatamente a operação do elevador até corrigir violações críticas'
         });
     }
     if (c2Count > 0) {
         recommendations.push({
             icon: '⏰',
-            text: 'Усунути помірні порушення протягом 30 днів'
+            text: 'Corrigir violações moderadas em 30 dias'
         });
     }
     if (c3Count > 0) {
         recommendations.push({
             icon: '📝',
-            text: 'Запланувати усунення легких порушень протягом 90 днів'
+            text: 'Programar correção de violações menores em 90 dias'
         });
     }
     recommendations.push({
         icon: '🔧',
-        text: 'Звернутися до сертифікованої компанії для проведення робіт'
+        text: 'Contactar empresa certificada para a realização dos trabalhos'
     });
     
     return {
@@ -8533,7 +8533,7 @@ app.get('/api/maintenance-history', authenticateToken, async (req, res) => {
         res.json(history);
     } catch (error) {
         console.error('❌ Помилка maintenance-history:', error);
-        res.status(500).json({ success: false, message: 'Помилка отримання історії обслуговування' });
+        res.status(500).json({ success: false, message: 'Erro ao obter histórico de manutenção' });
     }
 });
 
@@ -8935,7 +8935,7 @@ app.post('/api/send-email', authenticateToken, async (req, res) => {
         if (req.user.role !== 'admin') {
             return res.status(403).json({
                 success: false,
-                error: 'Доступ заборонено. Тільки адміністратори можуть надсилати email.'
+                error: 'Acesso negado. Тільки адміністратори можуть надсилати email.'
             });
         }
 
@@ -8954,7 +8954,7 @@ app.post('/api/send-email', authenticateToken, async (req, res) => {
         if (!emailRegex.test(to)) {
             return res.status(400).json({
                 success: false,
-                error: 'Невірний формат email'
+                error: 'Formato de email inválido'
             });
         }
 
@@ -8975,7 +8975,7 @@ app.post('/api/send-email', authenticateToken, async (req, res) => {
             console.error('❌ SMTP error:', smtpError);
             return res.status(500).json({
                 success: false,
-                error: 'Помилка SMTP: ' + smtpError.message
+                error: 'Erro SMTP: ' + smtpError.message
             });
         }
 
@@ -8983,7 +8983,7 @@ app.post('/api/send-email', authenticateToken, async (req, res) => {
         console.error('❌ Email sending error:', error);
         return res.status(500).json({
             success: false,
-            error: 'Помилка надсилання email: ' + error.message
+            error: 'Erro ao enviar email: ' + error.message
         });
     }
 });
@@ -9807,11 +9807,11 @@ app.post('/api/email/send-contract', authenticateToken, upload.single('pdf'), as
         const mailOptions = {
             from: process.env.EMAIL_FROM,
             to: email,
-            subject: subject || 'Контракт - FestLift',
+            subject: subject || 'Contrato - FestLift',
             html: `
                 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
                     <h2 style="color: #007bff;">📄 Контракт на обслуговування</h2>
-                    <p>${message || 'Шановний клієнте! Надсилаємо вам контракт на обслуговування ліфта.'}</p>
+                    <p>${message || 'Prezado(a) cliente! Enviamos-lhe o contrato de manutenção do elevador.'}</p>
                     ${pdfFile ? '<p><strong>Контракт додано у вкладенні.</strong></p>' : ''}
                     <hr>
                     <p style="color: #666; font-size: 12px;">
@@ -9838,7 +9838,7 @@ app.post('/api/email/send-contract', authenticateToken, upload.single('pdf'), as
         }
         
         console.log(`✅ Contract sent to ${email}`);
-        res.json({ success: true, message: 'Контракт успішно відправлено' });
+        res.json({ success: true, message: 'Contrato enviado com sucesso' });
     } catch (error) {
         console.error('❌ Error sending contract:', error);
         res.status(500).json({
@@ -9875,11 +9875,11 @@ app.post('/api/email/send-inspection-pdf', authenticateToken, upload.single('pdf
         const mailOptions = {
             from: process.env.EMAIL_FROM,
             to: email,
-            subject: subject || 'Звіт інспекції - FestLift',
+            subject: subject || 'Relatório de inspeção - FestLift',
             html: `
                 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
                     <h2 style="color: #007bff;">📋 Звіт інспекції ліфта</h2>
-                    <p>${message || 'Шановний клієнте! Надсилаємо вам звіт інспекції вашого ліфта.'}</p>
+                    <p>${message || 'Prezado(a) cliente! Enviamos-lhe o relatório de inspeção do seu elevador.'}</p>
                     ${pdfFile ? '<p><strong>Звіт додано у вкладенні.</strong></p>' : ''}
                     <div style="background: #fff3cd; padding: 15px; border-left: 4px solid #ffc107; margin: 20px 0;">
                         <p style="margin: 0;"><strong>⚠️ Важливо:</strong> Ознайомтеся зі звітом та зверніть увагу на рекомендації.</p>
@@ -9909,7 +9909,7 @@ app.post('/api/email/send-inspection-pdf', authenticateToken, upload.single('pdf
         }
         
         console.log(`✅ Inspection PDF sent to ${email}`);
-        res.json({ success: true, message: 'Звіт інспекції успішно відправлено' });
+        res.json({ success: true, message: 'Relatório de inspeção enviado com sucesso' });
     } catch (error) {
         console.error('❌ Error sending inspection PDF:', error);
         res.status(500).json({
@@ -10003,7 +10003,7 @@ app.post('/api/email/send-template', authenticateToken, async (req, res) => {
         const mailOptions = {
             from: process.env.EMAIL_FROM || process.env.SMTP_FROM || '"LiftMaster Pro" <info@festlift.pt>',
             to: email,
-            subject: subject || 'Тестовий email - FestLift',
+            subject: subject || 'Email de teste - FestLift',
             html: htmlContent
         };
 
@@ -10087,7 +10087,7 @@ app.post('/api/regulations/check-updates', authenticateToken, async (req, res) =
         if (req.user.role !== 'admin') {
             return res.status(403).json({
                 success: false,
-                message: 'Доступ дозволено тільки адміністраторам'
+                message: 'Acesso permitido apenas a administradores'
             });
         }
 
@@ -10098,7 +10098,7 @@ app.post('/api/regulations/check-updates', authenticateToken, async (req, res) =
 
         res.json({
             success: true,
-            message: 'Перевірка завершена',
+            message: 'Verificação concluída',
             data: report
         });
 
@@ -10106,7 +10106,7 @@ app.post('/api/regulations/check-updates', authenticateToken, async (req, res) =
         console.error('❌ Помилка перевірки регламентів:', error);
         res.status(500).json({
             success: false,
-            message: 'Помилка при перевірці оновлень',
+            message: 'Erro ao verificar atualizações',
             error: error.message
         });
     }
@@ -10132,14 +10132,14 @@ app.get('/api/regulations/last-check', authenticateToken, async (req, res) => {
             res.json({
                 success: true,
                 data: null,
-                message: 'Перевірка ще не виконувалась'
+                message: 'Verificação ainda não realizada'
             });
         }
     } catch (error) {
         console.error('❌ Помилка читання звіту:', error);
         res.status(500).json({
             success: false,
-            message: 'Помилка при отриманні звіту'
+            message: 'Erro ao obter relatório'
         });
     }
 });
@@ -10159,7 +10159,7 @@ app.get('/api/reports', authenticateToken, async (req, res) => {
             .slice(0, 50);
         res.json({ reports: list, total: list.length });
     } catch (error) {
-        res.status(500).json({ message: 'Помилка отримання звітів' });
+        res.status(500).json({ message: 'Erro ao obter relatórios' });
     }
 });
 
@@ -10169,7 +10169,7 @@ app.post('/api/reports/generate', authenticateToken, async (req, res) => {
         const { type = 'maintenance', startDate, endDate, technicianId, status } = req.body;
 
         if (!startDate || !endDate) {
-            return res.status(400).json({ message: 'Вкажіть startDate та endDate' });
+            return res.status(400).json({ message: 'Indique startDate e endDate' });
         }
 
         const start = new Date(startDate);
@@ -10177,7 +10177,7 @@ app.post('/api/reports/generate', authenticateToken, async (req, res) => {
         end.setHours(23, 59, 59, 999);
 
         if (isNaN(start.getTime()) || isNaN(end.getTime())) {
-            return res.status(400).json({ message: 'Невірний формат дати' });
+            return res.status(400).json({ message: 'Formato de data inválido' });
         }
 
         const query = {
@@ -10232,21 +10232,21 @@ app.post('/api/reports/generate', authenticateToken, async (req, res) => {
         res.json(report);
     } catch (error) {
         console.error('❌ Reports generate error:', error);
-        res.status(500).json({ message: 'Помилка генерації звіту', error: error.message });
+        res.status(500).json({ message: 'Erro ao gerar relatório', error: error.message });
     }
 });
 
 // GET /api/reports/:id/pdf - заглушка PDF
 app.get('/api/reports/:id/pdf', authenticateToken, (req, res) => {
     const report = generatedReportsStore.get(req.params.id);
-    if (!report) return res.status(404).json({ message: 'Звіт не знайдено' });
+    if (!report) return res.status(404).json({ message: 'Relatório não encontrado' });
     res.json({ message: 'PDF export не реалізовано', report });
 });
 
 // GET /api/reports/:id/excel - заглушка Excel
 app.get('/api/reports/:id/excel', authenticateToken, (req, res) => {
     const report = generatedReportsStore.get(req.params.id);
-    if (!report) return res.status(404).json({ message: 'Звіт не знайдено' });
+    if (!report) return res.status(404).json({ message: 'Relatório não encontrado' });
     res.json({ message: 'Excel export не реалізовано', report });
 });
 
