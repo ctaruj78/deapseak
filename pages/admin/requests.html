@@ -1567,7 +1567,7 @@ class ServiceRequestManager {
             const data = await resp.json();
             const users = (Array.isArray(data.data) ? data.data : null) || [];
             if (!users.length) {
-                clientSelect.append('<option value="" disabled>Clienteів не encontrado</option>');
+                clientSelect.append('<option value="" disabled>Nenhum cliente encontrado</option>');
                 return;
             }
             users.forEach(u => {
@@ -1660,7 +1660,7 @@ class ServiceRequestManager {
                             <div class="btn-group btn-group-sm">
                                 <button class="btn btn-outline-secondary" onclick="serviceManager.viewRequest('${requestId}')" title="Detalhes"><i class="fas fa-eye"></i></button>
                                 ${request.status !== 'completed' ? `<button class="btn btn-warning" onclick="openEnhancedAssignModal('${requestId}')" title="Atribuir técnico"><i class="fas fa-user-plus"></i></button>` : ''}
-                                ${isOverdue ? `<button class="btn btn-warning" onclick="serviceManager.extendDeadline('${requestId}')" title="Continuar дедлайн"><i class="fas fa-calendar-plus"></i></button>` : ''}
+                                ${isOverdue ? `<button class="btn btn-warning" onclick="serviceManager.extendDeadline('${requestId}')" title="Prolongar prazo"><i class="fas fa-calendar-plus"></i></button>` : ''}
                                 <button class="btn btn-outline-primary" onclick="serviceManager.editRequest('${requestId}')" title="Editar"><i class="fas fa-edit"></i></button>
                                 <button class="btn btn-outline-warning" onclick="serviceManager.archiveRequest('${requestId}')" title="Arquivar"><i class="fas fa-archive"></i></button>
                                 <button class="btn btn-outline-danger" onclick="serviceManager.deleteRequest('${requestId}')" title="Eliminar permanentemente"><i class="fas fa-trash"></i></button>

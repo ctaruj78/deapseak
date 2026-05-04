@@ -2,7 +2,7 @@ class DispatcherDashboard {
     // Звіт по роботі техніків
     showTechReport() {
         // Формуємо дані по техніках
-        let html = `<table class="table table-bordered table-striped"><thead><tr><th>Технік</th><th>Статус</th><th>Завдань</th><th>Рейтинг</th><th>Останнє призначення</th></tr></thead><tbody>`;
+        let html = `<table class="table table-bordered table-striped"><thead><tr><th>Técnico</th><th>Estado</th><th>Tarefas</th><th>Avaliação</th><th>Última atribuição</th></tr></thead><tbody>`;
         this.technicians.forEach(tech => {
             // Знаходимо останню заявку для техніка
             const lastReq = this.requests.filter(r => r.assignedTo === `${tech.firstName} ${tech.lastName}`).sort((a,b) => new Date(b.date)-new Date(a.date))[0];
@@ -15,7 +15,7 @@ class DispatcherDashboard {
 
     exportTechReport() {
         // Експорт у CSV
-        let csv = 'Технік,Статус,Завдань,Рейтинг,Останнє призначення\n';
+        let csv = 'Técnico,Estado,Tarefas,Avaliação,Última atribuição\n';
         this.technicians.forEach(tech => {
             const lastReq = this.requests.filter(r => r.assignedTo === `${tech.firstName} ${tech.lastName}`).sort((a,b) => new Date(b.date)-new Date(a.date))[0];
             csv += `${tech.firstName} ${tech.lastName},${tech.status},${tech.currentAssignments},${tech.rating},${lastReq ? lastReq.date : '-'}\n`;
@@ -109,7 +109,7 @@ class DispatcherDashboard {
             this.loadRequests();
             this.loadTechnicians();
             this.loadActivities();
-            this.showNotification('Дані оновлено', 'success');
+            this.showNotification('Dados atualizados', 'success');
         });
 
         // Швидкі дії
@@ -282,9 +282,9 @@ class DispatcherDashboard {
                 <tr>
                     <td colspan="7" class="text-center py-4">
                         <i class="fas fa-inbox fa-2x text-muted mb-2"></i>
-                        <p class="text-muted">Заявки не знайдені</p>
+                        <p class="text-muted">Pedidos não encontrados</p>
                         <button class="btn btn-sm btn-primary" onclick="dispatcherDashboard.loadRequests()">
-                            <i class="fas fa-sync"></i> Спробувати знову
+                            <i class="fas fa-sync"></i> Tentar novamente
                         </button>
                     </td>
                 </tr>
@@ -298,18 +298,18 @@ class DispatcherDashboard {
             var priorityClass = '';
             var priorityText = '';
             switch (request.priority) {
-                case 'high': priorityClass = 'priority-high'; priorityText = 'Високий'; break;
-                case 'medium': priorityClass = 'priority-medium'; priorityText = 'Середній'; break;
-                case 'low': priorityClass = 'priority-low'; priorityText = 'Низький'; break;
+                case 'high': priorityClass = 'priority-high'; priorityText = 'Alto'; break;
+                case 'medium': priorityClass = 'priority-medium'; priorityText = 'Médio'; break;
+                case 'low': priorityClass = 'priority-low'; priorityText = 'Baixo'; break;
             }
             // Визначення статусу
             var statusText = '';
             var statusClass = '';
             switch (request.status) {
-                case 'new': statusText = 'Нова'; statusClass = 'badge badge-danger'; break;
-                case 'assigned': statusText = 'Призначена'; statusClass = 'badge badge-warning'; break;
-                case 'in-progress': statusText = 'В роботі'; statusClass = 'badge badge-info'; break;
-                case 'completed': statusText = 'Завершена'; statusClass = 'badge badge-success'; break;
+                case 'new': statusText = 'Novo'; statusClass = 'badge badge-danger'; break;
+                case 'assigned': statusText = 'Atribuído'; statusClass = 'badge badge-warning'; break;
+                case 'in-progress': statusText = 'Em curso'; statusClass = 'badge badge-info'; break;
+                case 'completed': statusText = 'Concluído'; statusClass = 'badge badge-success'; break;
             }
             tr.innerHTML = `
                 <td><input type="checkbox" class="request-select" data-id="${request.id}"></td>
@@ -323,16 +323,16 @@ class DispatcherDashboard {
                 <td>${request.date}</td>
                 <td>
                     <div class="btn-group btn-group-sm">
-                        <button class="btn btn-info btn-xs" data-action="view" data-id="${request.id}" onclick="window.dispatcherDashboard.viewRequest(${request.id})" title="Перегляд">
+                        <button class="btn btn-info btn-xs" data-action="view" data-id="${request.id}" onclick="window.dispatcherDashboard.viewRequest(${request.id})" title="Ver">
                             <i class="fas fa-eye"></i>
                         </button>
-                        <button class="btn btn-warning btn-xs" data-action="assign" data-id="${request.id}" onclick="window.dispatcherDashboard.assignRequest(${request.id})" title="Призначити">
+                        <button class="btn btn-warning btn-xs" data-action="assign" data-id="${request.id}" onclick="window.dispatcherDashboard.assignRequest(${request.id})" title="Atribuir">
                             <i class="fas fa-user-plus"></i>
                         </button>
-                        <button class="btn btn-success btn-xs" data-action="edit" data-id="${request.id}" onclick="window.dispatcherDashboard.editRequest(${request.id})" title="Редагувати">
+                        <button class="btn btn-success btn-xs" data-action="edit" data-id="${request.id}" onclick="window.dispatcherDashboard.editRequest(${request.id})" title="Editar">
                             <i class="fas fa-edit"></i>
                         </button>
-                        <button class="btn btn-danger btn-xs" data-action="delete" data-id="${request.id}" onclick="window.dispatcherDashboard.deleteRequest(${request.id})" title="Видалити">
+                        <button class="btn btn-danger btn-xs" data-action="delete" data-id="${request.id}" onclick="window.dispatcherDashboard.deleteRequest(${request.id})" title="Eliminar">
                             <i class="fas fa-trash"></i>
                         </button>
                     </div>
@@ -371,16 +371,16 @@ class DispatcherDashboard {
         bulkPanel.style.display = 'block';
         bulkPanel.innerHTML = `
             <div class="alert alert-info py-2 px-3 mb-2">
-                <strong>Вибрано заявок: ${this.selectedRequests.size}</strong>
+                <strong>Pedidos selecionados: ${this.selectedRequests.size}</strong>
                 <div class="btn-group float-right" role="group">
-                    <button class="btn btn-danger btn-sm" onclick="window.dispatcherDashboard.bulkDelete()" title="Видалити вибрані">
-                        🗑️ Видалити
+                    <button class="btn btn-danger btn-sm" onclick="window.dispatcherDashboard.bulkDelete()" title="Eliminar selecionados">
+                        🗑️ Eliminar
                     </button>
-                    <button class="btn btn-warning btn-sm" onclick="window.dispatcherDashboard.bulkAssign()" title="Призначити техніка">
-                        👥 Призначити
+                    <button class="btn btn-warning btn-sm" onclick="window.dispatcherDashboard.bulkAssign()" title="Atribuir técnico">
+                        👥 Atribuir
                     </button>
-                    <button class="btn btn-success btn-sm" onclick="window.dispatcherDashboard.bulkComplete()" title="Завершити вибрані">
-                        ✅ Завершити
+                    <button class="btn btn-success btn-sm" onclick="window.dispatcherDashboard.bulkComplete()" title="Concluir selecionados">
+                        ✅ Concluir
                     </button>
                 </div>
             </div>
@@ -475,7 +475,7 @@ class DispatcherDashboard {
         const onlineTechs = this.technicians.filter(t => t.status === 'online').length;
         const onlineTechsElement = document.getElementById('onlineTechs');
         if (onlineTechsElement) {
-            onlineTechsElement.textContent = `${onlineTechs} онлайн`;
+            onlineTechsElement.textContent = `${onlineTechs} online`;
         }
         
         // Сортування: спочатку онлайн, потім зайняті, потім офлайн
@@ -490,23 +490,27 @@ class DispatcherDashboard {
             
             // Визначення статусу
             let statusClass = 'offline';
-            let statusText = 'Офлайн';
+            let statusText = 'Offline';
             
             if (tech.status === 'online') {
                 statusClass = 'online';
-                statusText = 'Онлайн';
+                statusText = 'Disponível';
             } else if (tech.status === 'busy') {
                 statusClass = 'busy';
-                statusText = 'Зайнятий';
+                statusText = 'Ocupado';
             }
             
-            // Визначення спеціалізації
+            // Determinação da especialização
             const specialties = {
-                'network': 'Мережі',
-                'hardware': 'Обладнання',
-                'software': 'ПЗ',
-                'security': 'Безпека',
-                'general': 'Загальна'
+                'network': 'Redes',
+                'hardware': 'Equipamento',
+                'software': 'Software',
+                'security': 'Segurança',
+                'general': 'Geral',
+                'hydraulic': 'Hidráulica',
+                'electric': 'Elétrica',
+                'mechanical': 'Mecânica',
+                'maintenance': 'Manutenção'
             };
             
             // Визначення класу завантаження
@@ -531,7 +535,7 @@ class DispatcherDashboard {
                         <div class="tech-load-progress ${loadClass}"></div>
                     </div>
                     <div class="d-flex justify-content-between align-items-center">
-                        <small class="text-muted">${tech.currentAssignments} завдань</small>
+                        <small class="text-muted">${tech.currentAssignments} tarefas</small>
                         <small class="text-warning">
                             <i class="fas fa-star"></i> ${tech.rating}
                         </small>
@@ -560,48 +564,48 @@ class DispatcherDashboard {
             {
                 id: 1,
                 type: "assignment",
-                message: "Заявку #1002 призначено техніку Олександр Петренко",
-                timestamp: new Date(Date.now() - 3600000).toLocaleString('uk-UA'),
+                message: "Pedido #1002 atribuído ao técnico Alexandre Pereira",
+                timestamp: new Date(Date.now() - 3600000).toLocaleString('pt-PT'),
                 icon: "fas fa-user-check",
                 color: "text-info"
             },
             {
                 id: 2,
                 type: "completion",
-                message: "Заявку #1005 завершено техніком Василь Шевченко",
-                timestamp: new Date(Date.now() - 7200000).toLocaleString('uk-UA'),
+                message: "Pedido #1005 concluído pelo técnico Basil Shevchenko",
+                timestamp: new Date(Date.now() - 7200000).toLocaleString('pt-PT'),
                 icon: "fas fa-check-circle",
                 color: "text-success"
             },
             {
                 id: 3,
                 type: "assignment",
-                message: "Створено нову заявку #1004 для ТОВ 'Омега'",
-                timestamp: new Date(Date.now() - 10800000).toLocaleString('uk-UA'),
+                message: "Criado novo pedido #1004 para FestLift Portugal",
+                timestamp: new Date(Date.now() - 10800000).toLocaleString('pt-PT'),
                 icon: "fas fa-ticket-alt",
                 color: "text-info"
             },
             {
                 id: 4,
                 type: "system",
-                message: "Система оновлена до версії 2.1.0",
-                timestamp: new Date(Date.now() - 14400000).toLocaleString('uk-UA'),
+                message: "Sistema atualizado para a versão 2.1.0",
+                timestamp: new Date(Date.now() - 14400000).toLocaleString('pt-PT'),
                 icon: "fas fa-sync",
                 color: "text-warning"
             },
             {
                 id: 5,
                 type: "completion",
-                message: "Технік Марія Іваненко розпочав роботу над заявкою #1003",
-                timestamp: new Date(Date.now() - 18000000).toLocaleString('uk-UA'),
+                message: "Técnico Maria Ivanenko iniciou trabalho no pedido #1003",
+                timestamp: new Date(Date.now() - 18000000).toLocaleString('pt-PT'),
                 icon: "fas fa-play-circle",
                 color: "text-success"
             },
             {
                 id: 6,
                 type: "emergency",
-                message: "Створено термінову заявку #1006 - відновлення даних",
-                timestamp: new Date(Date.now() - 21600000).toLocaleString('uk-UA'),
+                message: "Criado pedido urgente #1006 - recuperação de dados",
+                timestamp: new Date(Date.now() - 21600000).toLocaleString('pt-PT'),
                 icon: "fas fa-exclamation-triangle",
                 color: "text-danger"
             }
@@ -632,7 +636,7 @@ class DispatcherDashboard {
                     </h6>
                     <small class="text-muted">${activity.timestamp}</small>
                 </div>
-                <small class="text-muted">Натисніть для деталей</small>
+                <small class="text-muted">Clique para ver detalhes</small>
             `;
             
             activitiesContainer.appendChild(div);
@@ -650,27 +654,27 @@ class DispatcherDashboard {
         this.notifications = [
             {
                 id: 1,
-                title: "Нова заявка",
-                message: "Отримано нову заявку #1006 від ТОВ 'Дельта'",
+                title: "Novo pedido",
+                message: "Novo pedido #1006 recebido de LDA 'Delta'",
                 type: "info",
                 read: false,
-                timestamp: new Date().toLocaleString('uk-UA')
+                timestamp: new Date().toLocaleString('pt-PT')
             },
             {
                 id: 2,
-                title: "Технік онлайн",
-                message: "Технік Ігор Мельник тепер онлайн",
+                title: "Técnico online",
+                message: "Técnico Igor Melnyk está online",
                 type: "success",
                 read: false,
-                timestamp: new Date(Date.now() - 300000).toLocaleString('uk-UA')
+                timestamp: new Date(Date.now() - 300000).toLocaleString('pt-PT')
             },
             {
                 id: 3,
-                title: "Завершено завдання",
-                message: "Заявку #1005 успішно завершено",
+                title: "Tarefa concluída",
+                message: "Pedido #1005 concluído com sucesso",
                 type: "success",
                 read: true,
-                timestamp: new Date(Date.now() - 1800000).toLocaleString('uk-UA')
+                timestamp: new Date(Date.now() - 1800000).toLocaleString('pt-PT')
             }
         ];
         
@@ -716,7 +720,7 @@ class DispatcherDashboard {
                     </h6>
                     <small class="text-muted">${activity.timestamp}</small>
                 </div>
-                <small class="text-muted">Натисніть для деталей</small>
+                <small class="text-muted">Clique para ver detalhes</small>
             `;
             
             activitiesContainer.appendChild(div);
@@ -769,8 +773,8 @@ class DispatcherDashboard {
                     const activity = {
                         id: this.activities.length + 1,
                         type: "system",
-                        message: `Статус заявки #${this.requests[randomIndex].id} змінено з "${this.getStatusText(oldStatus)}" на "${this.getStatusText(this.requests[randomIndex].status)}"`,
-                        timestamp: new Date().toLocaleString('uk-UA'),
+                        message: `Estado do pedido #${this.requests[randomIndex].id} alterado de "${this.getStatusText(oldStatus)}" para "${this.getStatusText(this.requests[randomIndex].status)}"`,
+                        timestamp: new Date().toLocaleString('pt-PT'),
                         icon: "fas fa-sync",
                         color: "text-info"
                     };
@@ -797,8 +801,8 @@ class DispatcherDashboard {
                     const activity = {
                         id: this.activities.length + 1,
                         type: "system",
-                        message: `Технік ${this.technicians[randomIndex].firstName} ${this.technicians[randomIndex].lastName} тепер ${this.getStatusText(this.technicians[randomIndex].status)}`,
-                        timestamp: new Date().toLocaleString('uk-UA'),
+                        message: `Técnico ${this.technicians[randomIndex].firstName} ${this.technicians[randomIndex].lastName} agora está ${this.getStatusText(this.technicians[randomIndex].status)}`,
+                        timestamp: new Date().toLocaleString('pt-PT'),
                         icon: "fas fa-user",
                         color: "text-info"
                     };
@@ -813,14 +817,14 @@ class DispatcherDashboard {
             if (Math.random() > 0.9) {
                 const newRequest = {
                     id: 1000 + this.requests.length + 1,
-                    title: "Нова автоматична заявка",
-                    client: "Тестовий клієнт",
+                    title: "Novo pedido automático",
+                    client: "Cliente de teste",
                     priority: Math.random() > 0.7 ? "high" : (Math.random() > 0.5 ? "medium" : "low"),
                     status: "new",
-                    date: new Date().toLocaleString('uk-UA'),
+                    date: new Date().toLocaleString('pt-PT'),
                     assignedTo: null,
-                    description: "Автоматично створена тестова заявка",
-                    location: "Тестова локація"
+                    description: "Pedido de teste criado automaticamente",
+                    location: "Localização de teste"
                 };
                 
                 this.requests.unshift(newRequest);
@@ -829,8 +833,8 @@ class DispatcherDashboard {
                 const activity = {
                     id: this.activities.length + 1,
                     type: "assignment",
-                    message: `Створено нову заявку #${newRequest.id} - ${newRequest.title}`,
-                    timestamp: new Date().toLocaleString('uk-UA'),
+                    message: `Criado novo pedido #${newRequest.id} - ${newRequest.title}`,
+                    timestamp: new Date().toLocaleString('pt-PT'),
                     icon: "fas fa-ticket-alt",
                     color: "text-info"
                 };
@@ -839,11 +843,11 @@ class DispatcherDashboard {
                 // Додавання сповіщення
                 const notification = {
                     id: this.notifications.length + 1,
-                    title: "Нова заявка",
-                    message: `Отримано нову заявку #${newRequest.id} від ${newRequest.client}`,
+                    title: "Novo pedido",
+                    message: `Recebido novo pedido #${newRequest.id} de ${newRequest.client}`,
                     type: "info",
                     read: false,
-                    timestamp: new Date().toLocaleString('uk-UA')
+                    timestamp: new Date().toLocaleString('pt-PT')
                 };
                 this.notifications.unshift(notification);
                 
@@ -853,13 +857,13 @@ class DispatcherDashboard {
                 this.renderActivities();
                 
                 // Сповіщення про нову заявку
-                this.showNotification(`Нова заявка #${newRequest.id}`, 'info');
+                this.showNotification(`Novo pedido #${newRequest.id}`, 'info');
             }
             
             // Оновлення часу останнього оновлення
             const now = new Date();
             document.getElementById('lastUpdate').textContent = 
-                `Оновлено: ${now.toLocaleTimeString('uk-UA')}`;
+                `Atualizado: ${now.toLocaleTimeString('pt-PT')}`;
                 
             // Пульсація для індикатора реального часу
             $('.real-time-badge').fadeOut(500).fadeIn(500);
@@ -869,13 +873,13 @@ class DispatcherDashboard {
     // Отримання текстового представлення статусу
     getStatusText(status) {
         switch (status) {
-            case 'new': return 'Нова';
-            case 'assigned': return 'Призначена';
-            case 'in-progress': return 'В роботі';
-            case 'completed': return 'Завершена';
-            case 'online': return 'Онлайн';
-            case 'busy': return 'Зайнятий';
-            case 'offline': return 'Офлайн';
+            case 'new': return 'Novo';
+            case 'assigned': return 'Atribuído';
+            case 'in-progress': return 'Em curso';
+            case 'completed': return 'Concluído';
+            case 'online': return 'Disponível';
+            case 'busy': return 'Ocupado';
+            case 'offline': return 'Offline';
             default: return status;
         }
     }
@@ -888,7 +892,7 @@ class DispatcherDashboard {
             console.log('Found request:', request.title);
             const modalContent = `
                 <div class="modal-header">
-                    <h5 class="modal-title">Заявка #${request.id}</h5>
+                    <h5 class="modal-title">Pedido #${request.id}</h5>
                     <button type="button" class="close" data-dismiss="modal">
                         <span>&times;</span>
                     </button>
@@ -896,14 +900,14 @@ class DispatcherDashboard {
                 <div class="modal-body">
                     <div class="row">
                         <div class="col-md-6">
-                            <p><strong>Заголовок:</strong> ${request.title}</p>
-                            <p><strong>Клієнт:</strong> ${request.client}</p>
-                            <p><strong>Пріоритет:</strong> <span class="priority-badge priority-${request.priority}">${this.getPriorityText(request.priority)}</span></p>
+                            <p><strong>Título:</strong> ${request.title}</p>
+                            <p><strong>Cliente:</strong> ${request.client}</p>
+                            <p><strong>Prioridade:</strong> <span class="priority-badge priority-${request.priority}">${this.getPriorityText(request.priority)}</span></p>
                         </div>
                         <div class="col-md-6">
-                            <p><strong>Статус:</strong> <span class="badge badge-${this.getStatusClass(request.status)}">${this.getStatusText(request.status)}</span></p>
-                            <p><strong>Дата:</strong> ${request.date}</p>
-                            <p><strong>Призначено:</strong> ${request.assignedTo || 'Не призначено'}</p>
+                            <p><strong>Estado:</strong> <span class="badge badge-${this.getStatusClass(request.status)}">${this.getStatusText(request.status)}</span></p>
+                            <p><strong>Data:</strong> ${request.date}</p>
+                            <p><strong>Atribuído a:</strong> ${request.assignedTo || 'Sem atribuição'}</p>
                         </div>
                     </div>
                     <div class="row mt-3">
@@ -914,13 +918,13 @@ class DispatcherDashboard {
                     </div>
                     <div class="row mt-3">
                         <div class="col-12">
-                            <p><strong>Локація:</strong> ${request.location}</p>
+                            <p><strong>Localização:</strong> ${request.location}</p>
                         </div>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрити</button>
-                    <button type="button" class="btn btn-primary" onclick="window.dispatcherDashboard.assignRequest(${request.id})">Призначити</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
+                    <button type="button" class="btn btn-primary" onclick="window.dispatcherDashboard.assignRequest(${request.id})">Atribuir</button>
                 </div>
             `;
             
@@ -944,9 +948,9 @@ class DispatcherDashboard {
     // Отримання текстового представлення пріоритету
     getPriorityText(priority) {
         switch (priority) {
-            case 'high': return 'Високий';
-            case 'medium': return 'Середній';
-            case 'low': return 'Низький';
+            case 'high': return 'Alto';
+            case 'medium': return 'Médio';
+            case 'low': return 'Baixo';
             default: return priority;
         }
     }

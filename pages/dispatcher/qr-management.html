@@ -240,7 +240,7 @@
                     </a>
                 </li>
                 <li class="nav-item d-none d-sm-inline-block">
-                    <a href="admin-dashboard.html" class="nav-link">Início</a>
+                    <a href="dashboard.html" class="nav-link">Início</a>
                 </li>
                 <li class="nav-item d-none d-sm-inline-block">
                     <a href="#" class="nav-link">QR-códigos</a>
@@ -263,7 +263,7 @@
 
         <!-- Sidebar -->
         <aside class="main-sidebar sidebar-dark-primary elevation-4">
-            <a href="admin-dashboard.html" class="brand-link">
+            <a href="dashboard.html" class="brand-link">
     <span class="elevation-3" style="display:inline-flex;align-items:center;justify-content:center;width:33px;height:33px;border-radius:50%;background:linear-gradient(135deg,#007bff,#6f42c1);color:#fff;font-size:17px;margin-right:8px;opacity:.9;flex-shrink:0;"><i class="fas fa-headset"></i></span>
     <span class="brand-text font-weight-light" style="line-height:1.4;">FestLift <small style="opacity:.7;font-size:11px;">Painel Dispatcher</small><br><small id="sidebarUserName" style="opacity:.85;font-size:11px;color:#c2b0f5;font-weight:400;">—</small></span>
 </a>
@@ -274,7 +274,7 @@
     <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
         <!-- Dashboard -->
         <li class="nav-item">
-            <a href="/pages/admin/admin-dashboard.html" class="nav-link">
+            <a href="/pages/dispatcher/dashboard.html" class="nav-link">
                 <i class="nav-icon fas fa-tachometer-alt"></i>
                 <p>Dashboard</p>
             </a>
@@ -460,7 +460,7 @@
                         </div>
                         <div class="col-sm-6">
                             <ol class="breadcrumb float-sm-right">
-                                <li class="breadcrumb-item"><a href="admin-dashboard.html">Início</a></li>
+                                <li class="breadcrumb-item"><a href="dashboard.html">Início</a></li>
                                 <li class="breadcrumb-item"><a href="#">QR Sistema</a></li>
                                 <li class="breadcrumb-item active">Gestão de QR-codes</li>
                             </ol>
@@ -1174,7 +1174,7 @@
                 } else if (newStatus === 'inactive') {
                     statusBadge.addClass('badge-secondary').text('Inativo');
                 } else if (newStatus === 'expired') {
-                    statusBadge.addClass('badge-danger').text('Протерміnovaний');
+                    statusBadge.addClass('badge-danger').text('Expirado');
                 }
             });
             

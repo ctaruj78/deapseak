@@ -96,7 +96,7 @@ class DispatcherDashboardReal {
             console.log('✅ DispatcherDashboardReal готова до роботи!');
         } catch (error) {
             console.error('❌ Помилка ініціалізації:', error);
-            this.showNotification('Помилка завантаження даних', 'error');
+            this.showNotification('Erro ao carregar dados', 'error');
         }
     }
     
@@ -240,7 +240,7 @@ class DispatcherDashboardReal {
         return {
             id: req._id || req.id,
             requestNumber: req.requestNumber || null,
-            title: req.title || req.description || 'Заявка без назви',
+            title: req.title || req.description || 'Pedido sem título',
             client: this.getClientName(req.clientId || req.client),
             clientId: req.clientId || req.client,
             priority: req.priority || 'medium',
@@ -249,7 +249,7 @@ class DispatcherDashboardReal {
             assignedTo: this.getTechnicianName(req.technician || req.assignedTo),
             technicianId: req.technician || req.assignedTo,
             description: req.description || req.title || '',
-            location: this.getLiftAddress(req.liftId) || req.liftAddress || req.location || 'Не вказано',
+            location: this.getLiftAddress(req.liftId) || req.liftAddress || req.location || 'Não especificado',
             liftId: req.liftId,
             type: req.type || 'maintenance',
             urgent: req.urgent || req.priority === 'high',
@@ -269,16 +269,16 @@ class DispatcherDashboardReal {
         
         return {
             id: tech._id || tech.id,
-            firstName: tech.firstName || tech.name?.split(' ')[0] || 'Технік',
+            firstName: tech.firstName || tech.name?.split(' ')[0] || 'Técnico',
             lastName: tech.lastName || tech.name?.split(' ')[1] || '',
             email: tech.email,
-            phone: tech.phone || 'Не вказано',
+            phone: tech.phone || 'Não especificado',
             status: this.determineTechStatus(activeRequests),
             currentAssignments: activeRequests,
             rating: tech.rating || 4.5,
-            specialty: tech.specialty || 'Загальне обслуговування',
+            specialty: tech.specialty || 'Manutenção Geral',
             avatar: tech.avatar || '/assets/img/default-avatar.png',
-            location: tech.location || 'Не вказано'
+            location: tech.location || 'Não especificado'
         };
     }
     
@@ -295,13 +295,13 @@ class DispatcherDashboardReal {
      * 👤 Отримання імені клієнта
      */
     getClientName(clientId) {
-        if (!clientId) return 'Невідомий клієнт';
+        if (!clientId) return 'Cliente desconhecido';
         
         // Шукаємо в завантажених користувачах
         // TODO: Завантажувати користувачів окремо
         
         // Поки що повертаємо ID
-        return `Клієнт ${clientId.toString().slice(-4)}`;
+        return `Cliente ${clientId.toString().slice(-4)}`;
     }
     
     /**
@@ -335,24 +335,24 @@ class DispatcherDashboardReal {
             if (lift.address.street) parts.push(lift.address.street);
             if (lift.address.city) parts.push(lift.address.city);
             if (lift.address.postalCode) parts.push(lift.address.postalCode);
-            return parts.join(', ') || 'Адреса не вказана';
+            return parts.join(', ') || 'Endereço não especificado';
         }
         
         // Якщо address - рядок
-        return lift.address || 'Адреса не вказана';
+        return lift.address || 'Endereço não especificado';
     }
     
     /**
      * 📅 Форматування дати
      */
     formatDate(date) {
-        if (!date) return new Date().toLocaleDateString('uk-UA');
+        if (!date) return new Date().toLocaleDateString('pt-PT');
         
         const d = new Date(date);
-        if (isNaN(d.getTime())) return new Date().toLocaleDateString('uk-UA');
+        if (isNaN(d.getTime())) return new Date().toLocaleDateString('pt-PT');
         
-        const dateStr = d.toLocaleDateString('uk-UA');
-        const timeStr = d.toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' });
+        const dateStr = d.toLocaleDateString('pt-PT');
+        const timeStr = d.toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' });
         
         return `${dateStr} ${timeStr}`;
     }
@@ -396,9 +396,9 @@ class DispatcherDashboardReal {
                 <tr>
                     <td colspan="7" class="text-center py-4">
                         <i class="fas fa-inbox fa-2x text-muted mb-2"></i>
-                        <p class="text-muted">Заявки не знайдені</p>
+                        <p class="text-muted">Pedidos não encontrados</p>
                         <button class="btn btn-sm btn-primary" onclick="window.dispatcherDashboard.loadRequests()">
-                            <i class="fas fa-sync"></i> Оновити
+                            <i class="fas fa-sync"></i> Atualizar
                         </button>
                     </td>
                 </tr>
@@ -457,13 +457,13 @@ class DispatcherDashboardReal {
             </td>
             <td class="text-center align-middle" style="width:80px">
                 <div class="btn-group btn-group-sm" role="group">
-                    <button class="btn btn-outline-info btn-action" data-action="view" data-id="${request.id}" title="Переглянути">
+                    <button class="btn btn-outline-info btn-action" data-action="view" data-id="${request.id}" title="Ver">
                         <i class="fas fa-eye"></i>
                     </button>
-                    <button class="btn btn-outline-success btn-action" data-action="assign" data-id="${request.id}" title="Призначити">
+                    <button class="btn btn-outline-success btn-action" data-action="assign" data-id="${request.id}" title="Atribuir">
                         <i class="fas fa-user-plus"></i>
                     </button>
-                    <button class="btn btn-outline-warning btn-action" data-action="edit" data-id="${request.id}" title="Редагувати">
+                    <button class="btn btn-outline-warning btn-action" data-action="edit" data-id="${request.id}" title="Editar">
                         <i class="fas fa-edit"></i>
                     </button>
                 </div>
@@ -478,9 +478,9 @@ class DispatcherDashboardReal {
      */
     getPriorityBadge(priority) {
         const badges = {
-            'high': '<span class="badge badge-danger">Високий</span>',
-            'medium': '<span class="badge badge-warning">Середній</span>',
-            'low': '<span class="badge badge-success">Низький</span>'
+            'high': '<span class="badge badge-danger">Alto</span>',
+            'medium': '<span class="badge badge-warning">Médio</span>',
+            'low': '<span class="badge badge-success">Baixo</span>'
         };
         return badges[priority] || badges['medium'];
     }
@@ -490,11 +490,11 @@ class DispatcherDashboardReal {
      */
     getStatusBadge(status) {
         const badges = {
-            'pending': '<span class="badge badge-secondary">Нова</span>',
-            'assigned': '<span class="badge badge-info">Призначена</span>',
-            'in_progress': '<span class="badge badge-primary">В роботі</span>',
-            'completed': '<span class="badge badge-success">Завершена</span>',
-            'cancelled': '<span class="badge badge-dark">Скасована</span>'
+            'pending': '<span class="badge badge-secondary">Novo</span>',
+            'assigned': '<span class="badge badge-info">Atribuído</span>',
+            'in_progress': '<span class="badge badge-primary">Em curso</span>',
+            'completed': '<span class="badge badge-success">Concluído</span>',
+            'cancelled': '<span class="badge badge-dark">Cancelado</span>'
         };
         return badges[status] || badges['pending'];
     }
@@ -524,8 +524,8 @@ class DispatcherDashboardReal {
             
             let dateMatch = true;
             if (filters.date) {
-                const reqDate = new Date(request.createdAt).toLocaleDateString('uk-UA');
-                const filterDate = new Date(filters.date).toLocaleDateString('uk-UA');
+                const reqDate = new Date(request.createdAt).toLocaleDateString('pt-PT');
+                const filterDate = new Date(filters.date).toLocaleDateString('pt-PT');
                 dateMatch = reqDate === filterDate;
             }
             
@@ -579,7 +579,7 @@ class DispatcherDashboardReal {
             techList.innerHTML = `
                 <div class="text-center py-3">
                     <i class="fas fa-users-slash fa-2x text-muted mb-2"></i>
-                    <p class="text-muted">Техніків не знайдено</p>
+                    <p class="text-muted">Nenhum técnico encontrado</p>
                 </div>
             `;
             return;
@@ -607,10 +607,10 @@ class DispatcherDashboardReal {
         }[tech.status] || 'offline';
         
         const statusText = {
-            'online': 'Доступний',
-            'busy': 'Зайнятий',
-            'offline': 'Офлайн'
-        }[tech.status] || 'Невідомо';
+            'online': 'Disponível',
+            'busy': 'Ocupado',
+            'offline': 'Offline'
+        }[tech.status] || 'Desconhecido';
         
         div.innerHTML = `
             <img src="${tech.avatar}" alt="${tech.firstName}" class="tech-avatar">
@@ -619,7 +619,7 @@ class DispatcherDashboardReal {
                 <br>
                 <small class="text-muted">
                     <span class="status-indicator ${statusClass}"></span>
-                    ${statusText} | Завдань: ${tech.currentAssignments}
+                    ${statusText} | Tarefas: ${tech.currentAssignments}
                 </small>
             </div>
             <div class="text-right">
@@ -662,7 +662,7 @@ class DispatcherDashboardReal {
         // Оновлення badge онлайн техніків
         const onlineTechsEl = document.getElementById('onlineTechs');
         if (onlineTechsEl) {
-            onlineTechsEl.textContent = `${availableTechsCount} онлайн`;
+            onlineTechsEl.textContent = `${availableTechsCount} online`;
         }
         
         // Оновлення прогрес-барів (якщо є)
@@ -712,7 +712,7 @@ class DispatcherDashboardReal {
         if (recentRequests.length === 0) {
             activitiesList.innerHTML = `
                 <div class="list-group-item text-center">
-                    <small class="text-muted">Активностей немає</small>
+                    <small class="text-muted">Sem atividades</small>
                 </div>
             `;
             return;
@@ -805,7 +805,7 @@ class DispatcherDashboardReal {
         // Заповнення dropdown техніків
         const techFilter = document.getElementById('technicianFilter');
         if (techFilter && this.technicians.length > 0) {
-            techFilter.innerHTML = '<option value="all">Всі техніки</option>';
+            techFilter.innerHTML = '<option value="all">Todos os técnicos</option>';
             this.technicians.forEach(tech => {
                 const option = document.createElement('option');
                 option.value = tech.id;
@@ -881,7 +881,7 @@ class DispatcherDashboardReal {
      */
     async refreshData() {
         console.log('🔄 Оновлення даних...');
-        this.showNotification('Оновлення даних...', 'info');
+        this.showNotification('A atualizar dados...', 'info');
         
         try {
             await Promise.all([
@@ -908,10 +908,10 @@ class DispatcherDashboardReal {
             this.updateStats();
             this.renderActivities();
             
-            this.showNotification('Дані оновлено успішно', 'success');
+            this.showNotification('Dados atualizados com sucesso', 'success');
         } catch (error) {
             console.error('❌ Помилка оновлення:', error);
-            this.showNotification('Помилка оновлення даних', 'error');
+            this.showNotification('Erro ao atualizar dados', 'error');
         }
     }
     
@@ -923,12 +923,12 @@ class DispatcherDashboardReal {
         
         const request = this.requests.find(r => r.id.toString() === id.toString());
         if (!request) {
-            this.showNotification('Заявку не знайдено', 'error');
+            this.showNotification('Pedido não encontrado', 'error');
             return;
         }
         
         // TODO: Показати модальне вікно з деталями
-        alert(`Деталі заявки:\n\nID: ${request.id}\nТип: ${request.title}\nКлієнт: ${request.client}\nСтатус: ${request.status}\nПріоритет: ${request.priority}\n\n${request.description}`);
+        alert(`Detalhes do pedido:\n\nID: ${request.id}\nTítulo: ${request.title}\nCliente: ${request.client}\nEstado: ${request.status}\nPrioridade: ${request.priority}\n\n${request.description}`);
     }
     
     /**
@@ -939,7 +939,7 @@ class DispatcherDashboardReal {
         
         const request = this.requests.find(r => r.id.toString() === id.toString());
         if (!request) {
-            this.showNotification('Заявку не знайдено', 'error');
+            this.showNotification('Pedido não encontrado', 'error');
             return;
         }
         
@@ -949,12 +949,12 @@ class DispatcherDashboardReal {
         // Заповнюємо список техніків
         const techSelect = $('#techSelect');
         techSelect.empty();
-        techSelect.append('<option value="">Оберіть техніка...</option>');
+        techSelect.append('<option value="">Selecione um técnico...</option>');
         
         this.technicians
             .filter(t => t.status === 'online' || t.status === 'busy')
             .forEach(tech => {
-                techSelect.append(`<option value="${tech.id}">${tech.firstName} ${tech.lastName} (${tech.currentAssignments} завдань)</option>`);
+                techSelect.append(`<option value="${tech.id}">${tech.firstName} ${tech.lastName} (${tech.currentAssignments} tarefas)</option>`);
             });
         
         // Показуємо модальне вікно
@@ -969,7 +969,7 @@ class DispatcherDashboardReal {
         
         const request = this.requests.find(r => r.id.toString() === id.toString());
         if (!request) {
-            this.showNotification('Заявку не знайдено', 'error');
+            this.showNotification('Pedido não encontrado', 'error');
             return;
         }
         
@@ -1000,7 +1000,7 @@ class DispatcherDashboardReal {
         const notifyClient = $('#notifyClient').is(':checked');
         
         if (!requestId || !technicianId) {
-            this.showNotification('Виберіть заявку та техніка', 'error');
+            this.showNotification('Selecione um pedido e um técnico', 'error');
             return;
         }
         
@@ -1027,15 +1027,15 @@ class DispatcherDashboardReal {
             const data = await response.json();
             
             if (data.success) {
-                this.showNotification('Техніка призначено успішно', 'success');
+                this.showNotification('Técnico atribuído com sucesso', 'success');
                 $('#assignmentModal').modal('hide');
                 await this.refreshData();
             } else {
-                throw new Error(data.message || 'Помилка призначення');
+                throw new Error(data.message || 'Erro ao atribuir');
             }
         } catch (error) {
             console.error('❌ Помилка призначення:', error);
-            this.showNotification('Помилка призначення техніка', 'error');
+            this.showNotification('Erro ao atribuir técnico', 'error');
         }
     }
     
@@ -1075,15 +1075,15 @@ class DispatcherDashboardReal {
             const data = await response.json();
             
             if (data.success) {
-                this.showNotification('Зміни збережено', 'success');
+                this.showNotification('Alterações guardadas', 'success');
                 $('#editRequestModal').modal('hide');
                 await this.refreshData();
             } else {
-                throw new Error(data.message || 'Помилка оновлення');
+                throw new Error(data.message || 'Erro ao atualizar');
             }
         } catch (error) {
             console.error('❌ Помилка оновлення:', error);
-            this.showNotification('Помилка збереження змін', 'error');
+            this.showNotification('Erro ao guardar alterações', 'error');
         }
     }
     
@@ -1118,8 +1118,8 @@ class DispatcherDashboardReal {
 
 👨‍🔧 Техніки:
 - Всього: ${this.technicians.length}
-- Доступні: ${this.technicians.filter(t => t.status === 'online').length}
-- Зайняті: ${this.technicians.filter(t => t.status === 'busy').length}
+- Disponíveis: ${this.technicians.filter(t => t.status === 'online').length}
+- Ocupados: ${this.technicians.filter(t => t.status === 'busy').length}
 
 🏢 Ліфти: ${this.lifts.length}
         `;
@@ -1139,16 +1139,16 @@ class DispatcherDashboardReal {
      */
     sendBroadcast() {
         // TODO: Реалізувати розсилку
-        alert('Функція розсилки в розробці');
+        alert('Funcionalidade de envio em desenvolvimento');
     }
     
     /**
      * 🚨 Аварійний протокол
      */
     emergencyProtocol() {
-        if (confirm('Активувати аварійний протокол?\n\nБудуть сповіщені всі доступні техніки!')) {
+        if (confirm('Ativar protocolo de emergência?\n\nTodos os técnicos disponíveis serão notificados!')) {
             // TODO: Реалізувати аварійний протокол
-            this.showNotification('Аварійний протокол активовано', 'warning');
+            this.showNotification('Protocolo de emergência ativado', 'warning');
         }
     }
     
@@ -1162,11 +1162,11 @@ class DispatcherDashboardReal {
             <table class="table table-bordered table-striped">
                 <thead>
                     <tr>
-                        <th>Технік</th>
-                        <th>Статус</th>
-                        <th>Завдань</th>
-                        <th>Рейтинг</th>
-                        <th>Останнє призначення</th>
+                        <th>Técnico</th>
+                        <th>Estado</th>
+                        <th>Tarefas</th>
+                        <th>Classificação</th>
+                        <th>Última atribuição</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -1185,7 +1185,7 @@ class DispatcherDashboardReal {
                     <td>${tech.firstName} ${tech.lastName}</td>
                     <td>
                         <span class="status-indicator ${tech.status}"></span>
-                        ${tech.status === 'online' ? 'Доступний' : tech.status === 'busy' ? 'Зайнятий' : 'Офлайн'}
+                        ${tech.status === 'online' ? 'Disponível' : tech.status === 'busy' ? 'Ocupado' : 'Offline'}
                     </td>
                     <td>${tech.currentAssignments}</td>
                     <td>${tech.rating} ⭐</td>
@@ -1206,7 +1206,7 @@ class DispatcherDashboardReal {
     exportTechReport() {
         console.log('💾 Експорт звіту техніків в CSV');
         
-        let csv = 'Технік,Статус,Завдань,Рейтинг,Останнє призначення\n';
+        let csv = 'Técnico,Estado,Tarefas,Classificação,Última atribuição\n';
         
         this.technicians.forEach(tech => {
             const techRequests = this.requests.filter(r => 
@@ -1214,7 +1214,7 @@ class DispatcherDashboardReal {
             ).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
             
             const lastReq = techRequests[0];
-            const status = tech.status === 'online' ? 'Доступний' : tech.status === 'busy' ? 'Зайнятий' : 'Офлайн';
+            const status = tech.status === 'online' ? 'Disponível' : tech.status === 'busy' ? 'Ocupado' : 'Offline';
             
             csv += `${tech.firstName} ${tech.lastName},${status},${tech.currentAssignments},${tech.rating},${lastReq ? lastReq.date : '-'}\n`;
         });
@@ -1229,7 +1229,7 @@ class DispatcherDashboardReal {
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
         
-        this.showNotification('Звіт експортовано', 'success');
+        this.showNotification('Relatório exportado', 'success');
     }
     
     /**
@@ -1256,7 +1256,7 @@ class DispatcherDashboardReal {
 
         const listEl = document.getElementById('notificationsList');
         if (listEl) {
-            listEl.innerHTML = '<div class="text-center py-3"><i class="fas fa-spinner fa-spin"></i> Завантаження...</div>';
+            listEl.innerHTML = '<div class="text-center py-3"><i class="fas fa-spinner fa-spin"></i> A carregar...</div>';
         }
         $('#notificationsModal').modal('show');
 
@@ -1292,11 +1292,11 @@ class DispatcherDashboardReal {
 
             notifications = recentRequests.map(req => {
                 const statusMap = {
-                    'pending':   { msg: `Нова заявка: ${req.title || req.description || 'без опису'}`, type: 'info' },
-                    'assigned':  { msg: `Призначено техніка: ${req.title || req.description || '—'}`, type: 'primary' },
-                    'in_progress': { msg: `В роботі: ${req.title || req.description || '—'}`, type: 'warning' },
-                    'completed': { msg: `Виконано: ${req.title || req.description || '—'}`, type: 'success' },
-                    'cancelled': { msg: `Скасовано: ${req.title || req.description || '—'}`, type: 'secondary' }
+                    'pending':   { msg: `Novo pedido: ${req.title || req.description || 'sem descrição'}`, type: 'info' },
+                    'assigned':  { msg: `Técnico atribuído: ${req.title || req.description || '—'}`, type: 'primary' },
+                    'in_progress': { msg: `Em curso: ${req.title || req.description || '—'}`, type: 'warning' },
+                    'completed': { msg: `Concluído: ${req.title || req.description || '—'}`, type: 'success' },
+                    'cancelled': { msg: `Cancelado: ${req.title || req.description || '—'}`, type: 'secondary' }
                 };
                 const mapped = statusMap[req.status] || { msg: req.title || req.description || '—', type: 'info' };
                 const isUrgent = req.priority === 'urgent' || req.priority === 'high';
@@ -1311,7 +1311,7 @@ class DispatcherDashboardReal {
 
         let html = '';
         if (notifications.length === 0) {
-            html = '<p class="text-center text-muted py-4"><i class="fas fa-bell-slash"></i> Немає нових сповіщень</p>';
+            html = '<p class="text-center text-muted py-4"><i class="fas fa-bell-slash"></i> Sem novas notificações</p>';
         } else {
             notifications.forEach(notif => {
                 const opacity = notif.read ? ' style="opacity:0.6"' : '';
@@ -1334,10 +1334,10 @@ class DispatcherDashboardReal {
     _relativeTime(date) {
         if (!date) return '';
         const diff = Math.floor((Date.now() - new Date(date).getTime()) / 1000);
-        if (diff < 60)  return `${diff} сек тому`;
-        if (diff < 3600) return `${Math.floor(diff / 60)} хв тому`;
-        if (diff < 86400) return `${Math.floor(diff / 3600)} год тому`;
-        return `${Math.floor(diff / 86400)} дн тому`;
+        if (diff < 60)  return `${diff} seg atrás`;
+        if (diff < 3600) return `${Math.floor(diff / 60)} min atrás`;
+        if (diff < 86400) return `${Math.floor(diff / 3600)} h atrás`;
+        return `${Math.floor(diff / 86400)} d atrás`;
     }
 
     /**
@@ -1355,7 +1355,7 @@ class DispatcherDashboardReal {
         console.log('💬 Повідомлення');
         
         // TODO: Реалізувати чат
-        alert('Функція повідомлень в розробці');
+        alert('Funcionalidade de mensagens em desenvolvimento');
     }
     
     /**
@@ -1375,7 +1375,7 @@ class DispatcherDashboardReal {
             console.warn('⚠️ Не вдалося позначити як прочитані:', e);
         }
         $('#notificationsModal').modal('hide');
-        this.showNotification('Всі сповіщення прочитані', 'success');
+        this.showNotification('Todas as notificações marcadas como lidas', 'success');
     }
     
     /**
@@ -1413,7 +1413,7 @@ class DispatcherDashboardReal {
         if (recentRequests.length === 0) {
             activitiesList.innerHTML = `
                 <div class="list-group-item text-center">
-                    <small class="text-muted">Активностей немає</small>
+                    <small class="text-muted">Sem atividades</small>
                 </div>
             `;
             return;
@@ -1448,7 +1448,7 @@ class DispatcherDashboardReal {
         // Заповнюємо список заявок
         const requestSelect = $('#requestSelect');
         requestSelect.empty();
-        requestSelect.append('<option value="">Оберіть заявку...</option>');
+        requestSelect.append('<option value="">Selecione um pedido...</option>');
         
         this.requests
             .filter(r => r.status === 'pending')
@@ -1463,14 +1463,14 @@ class DispatcherDashboardReal {
         // Заповнюємо список техніків
         const techSelect = $('#techSelect');
         techSelect.empty();
-        techSelect.append('<option value="">Оберіть техніка...</option>');
+        techSelect.append('<option value="">Selecione um técnico...</option>');
         
         this.technicians
             .filter(t => t.status === 'online' || t.status === 'busy')
             .forEach(tech => {
                 techSelect.append(`
                     <option value="${tech.id}">
-                        ${tech.firstName} ${tech.lastName} (${tech.currentAssignments} завдань)
+                        ${tech.firstName} ${tech.lastName} (${tech.currentAssignments} tarefas)
                     </option>
                 `);
             });
@@ -1486,7 +1486,7 @@ class DispatcherDashboardReal {
         console.log('📈 Генерація звіту');
         
         // TODO: Реалізувати генерацію звітів
-        alert('Функція звітів в розробці');
+        alert('Funcionalidade de relatórios em desenvolvimento');
     }
 }
 

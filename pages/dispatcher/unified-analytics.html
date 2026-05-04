@@ -1792,7 +1792,7 @@ setTimeout(() => {
                 // API endpoint may not exist yet
                 if (document.getElementById('reports-table')) {
                     document.getElementById('reports-table').innerHTML =
-                        '<tr><td colspan="6" class="text-center text-muted">Relatórioів поки não há. Clique "Criar relatório".</td></tr>';
+                        '<tr><td colspan="6" class="text-center text-muted">Ainda não há relatórios. Clique "Criar relatório".</td></tr>';
                 }
                 ['stat-generated-today','stat-scheduled','stat-errors'].forEach(id => {
                     const e = document.getElementById(id); if(e) e.textContent = '0';

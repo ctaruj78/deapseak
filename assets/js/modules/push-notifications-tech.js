@@ -39,7 +39,7 @@ class PushNotificationsTech {
 
   showNotification(request) {
     if (Notification.permission === 'granted') {
-      new Notification('Нова заявка!', {
+      new Notification('Novo pedido!', {
         body: `${request.title}\n${request.location || ''}`,
         icon: '../../assets/img/icons/tech.png',
         tag: `request-${request.id}`

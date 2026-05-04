@@ -25,7 +25,7 @@ class PushNotifications {
   }
 
   notifyEmergency(msg) {
-    this.send('Аварія!', msg);
+    this.send('Emergência!', msg);
   }
 }
 

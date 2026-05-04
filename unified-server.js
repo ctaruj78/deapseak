@@ -3759,6 +3759,23 @@ async function createUserWithInvite(userData, role, createdBy, req) {
     return { user: newDoc, created: true, rawPassword, emailSent, emailError };
 }
 
+// GET /api/clients - lista todos os clientes (users com role=client)
+app.get('/api/clients', authenticateToken, async (req, res) => {
+    try {
+        if (req.user.role !== 'admin' && req.user.role !== 'dispatcher') {
+            return res.status(403).json({ success: false, message: 'Acesso negado' });
+        }
+        const clients = await db.collection('users').find(
+            { role: 'client' },
+            { projection: { password: 0 } }
+        ).sort({ createdAt: -1 }).toArray();
+        res.json({ success: true, data: clients, total: clients.length });
+    } catch (error) {
+        console.error('❌ Erro ao listar clientes:', error);
+        res.status(500).json({ success: false, message: error.message || 'Erro ao listar clientes' });
+    }
+});
+
 // POST /api/clients - dispatcher cria novo cliente (User com role=client)
 app.post('/api/clients', authenticateToken, async (req, res) => {
     try {

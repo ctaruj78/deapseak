@@ -116,8 +116,8 @@ class TechnicianManager {
             grid.innerHTML = `
                 <div class="col-12 text-center py-5">
                     <i class="fas fa-users fa-3x text-muted mb-3"></i>
-                    <h4 class="text-muted">Техніки не знайдені</h4>
-                    <p>Спробуйте змінити критерії пошуку або додати нового техніка</p>
+                    <h4 class="text-muted">Nenhum técnico encontrado</h4>
+                    <p>Tente alterar os critérios de pesquisa ou adicionar um novo técnico</p>
                 </div>
             `;
             return;
@@ -136,35 +136,39 @@ class TechnicianManager {
         
         // Визначення класу завантаження
         let workloadClass = 'workload-low';
-        let workloadText = 'Низьке';
+        let workloadText = 'Baixa';
         
         if (tech.workload === 'medium') {
             workloadClass = 'workload-medium';
-            workloadText = 'Середнє';
+            workloadText = 'Média';
         } else if (tech.workload === 'high') {
             workloadClass = 'workload-high';
-            workloadText = 'Високе';
+            workloadText = 'Alta';
         }
         
-        // Визначення статусу
+        // Determinação do estado
         let statusClass = 'offline';
-        let statusText = 'Офлайн';
+        let statusText = 'Offline';
         
         if (tech.status === 'online') {
             statusClass = 'online';
-            statusText = 'Онлайн';
+            statusText = 'Disponível';
         } else if (tech.status === 'busy') {
             statusClass = 'busy';
-            statusText = 'Зайнятий';
+            statusText = 'Ocupado';
         }
         
-        // Визначення спеціалізації
+        // Determinação da especialização
         const specialties = {
-            'network': 'Мережі',
-            'hardware': 'Обладнання',
-            'software': 'ПЗ',
-            'security': 'Безпека',
-            'general': 'Загальна'
+            'network': 'Redes',
+            'hardware': 'Equipamento',
+            'software': 'Software',
+            'security': 'Segurança',
+            'general': 'Geral',
+            'hydraulic': 'Hidráulica',
+            'electric': 'Elétrica',
+            'mechanical': 'Mecânica',
+            'maintenance': 'Manutenção'
         };
         
         col.innerHTML = `
@@ -184,14 +188,14 @@ class TechnicianManager {
                     <div class="workload-progress ${workloadClass}"></div>
                 </div>
                 <div class="text-center small mb-2">
-                    Завантаження: ${workloadText} (${tech.currentAssignments} завдань)
+                    Carga: ${workloadText} | Tarefas: ${tech.currentAssignments}
                 </div>
                 
                 <div class="text-center">
                     ${tech.skills.slice(0, 3).map(skill => 
                         `<span class="skill-badge">${skill}</span>`
                     ).join('')}
-                    ${tech.skills.length > 3 ? '<span class="skill-badge">+ще</span>' : ''}
+                    ${tech.skills.length > 3 ? '<span class="skill-badge">+mais</span>' : ''}
                 </div>
                 
                 <div class="action-buttons">
@@ -225,17 +229,17 @@ class TechnicianManager {
         document.getElementById('viewTechAvatar').src = tech.avatar || '../../assets/img/avatars/tech-default.png';
         document.getElementById('viewTechName').textContent = `${tech.firstName} ${tech.lastName}`;
         
-        // Оновлення статусу
+        // Atualização do estado
         const statusElement = document.getElementById('viewTechStatus');
         let statusClass = 'offline';
-        let statusText = 'Офлайн';
+        let statusText = 'Offline';
         
         if (tech.status === 'online') {
             statusClass = 'online';
-            statusText = 'Онлайн';
+            statusText = 'Disponível';
         } else if (tech.status === 'busy') {
             statusClass = 'busy';
-            statusText = 'Зайнятий';
+            statusText = 'Ocupado';
         }
         
         statusElement.innerHTML = `<span class="status-indicator ${statusClass}"></span><span>${statusText}</span>`;
@@ -245,21 +249,25 @@ class TechnicianManager {
         document.getElementById('viewTechPhone').textContent = tech.phone;
         
         const specialties = {
-            'network': 'Мережі',
-            'hardware': 'Обладнання',
-            'software': 'ПЗ',
-            'security': 'Безпека',
-            'general': 'Загальна'
+            'network': 'Redes',
+            'hardware': 'Equipamento',
+            'software': 'Software',
+            'security': 'Segurança',
+            'general': 'Geral',
+            'hydraulic': 'Hidráulica',
+            'electric': 'Elétrica',
+            'mechanical': 'Mecânica',
+            'maintenance': 'Manutenção'
         };
         
-        document.getElementById('viewTechSpecialty').textContent = specialties[tech.specialty];
+        document.getElementById('viewTechSpecialty').textContent = specialties[tech.specialty] || tech.specialty;
         
-        // Оновлення завантаження
-        let workloadText = 'Низьке';
-        if (tech.workload === 'medium') workloadText = 'Середнє';
-        else if (tech.workload === 'high') workloadText = 'Високе';
+        // Atualização da carga
+        let workloadText = 'Baixa';
+        if (tech.workload === 'medium') workloadText = 'Média';
+        else if (tech.workload === 'high') workloadText = 'Alta';
         
-        document.getElementById('viewTechWorkload').textContent = `${workloadText} (${tech.currentAssignments} завдань)`;
+        document.getElementById('viewTechWorkload').textContent = `${workloadText} (${tech.currentAssignments} tarefas)`;
         
         // Оновлення навичок
         const skillsContainer = document.getElementById('viewTechSkills');
@@ -275,25 +283,25 @@ class TechnicianManager {
             for (let i = 1; i <= Math.min(tech.currentAssignments, 3); i++) {
                 const li = document.createElement('li');
                 li.className = 'list-group-item';
-                li.textContent = `Завдання #${1000 + i} - Клієнт ${i}`;
+                li.textContent = `Tarefa #${1000 + i} - Cliente ${i}`;
                 assignmentsContainer.appendChild(li);
             }
             
             if (tech.currentAssignments > 3) {
                 const li = document.createElement('li');
                 li.className = 'list-group-item text-center';
-                li.textContent = `...і ще ${tech.currentAssignments - 3} завдань`;
+                li.textContent = `...e mais ${tech.currentAssignments - 3} tarefas`;
                 assignmentsContainer.appendChild(li);
             }
         } else {
-            assignmentsContainer.innerHTML = '<li class="list-group-item text-center text-muted">Немає поточних завдань</li>';
+            assignmentsContainer.innerHTML = '<li class="list-group-item text-center text-muted">Sem tarefas atuais</li>';
         }
         
         // Оновлення локації
         const locationContainer = document.getElementById('viewTechLocation');
         locationContainer.innerHTML = `
             <i class="fas fa-map-marker-alt mr-2"></i>
-            <span>${tech.location || 'Локація не вказана'}</span>
+            <span>${tech.location || 'Localização não disponível'}</span>
         `;
         
         // Показати модальне вікно
@@ -302,7 +310,7 @@ class TechnicianManager {
 
     // Показати модальне вікно додавання техніка
     showAddTechnicianModal() {
-        document.getElementById('technicianModalTitle').textContent = 'Додати техніка';
+        document.getElementById('technicianModalTitle').textContent = 'Adicionar técnico';
         document.getElementById('technicianForm').reset();
         document.getElementById('techId').value = '';
         $('#technicianModal').modal('show');
@@ -316,7 +324,7 @@ class TechnicianManager {
             
             this.currentTechnician = tech;
             
-            document.getElementById('technicianModalTitle').textContent = 'Редагувати техніка';
+            document.getElementById('technicianModalTitle').textContent = 'Editar técnico';
             document.getElementById('techId').value = tech.id;
             document.getElementById('techFirstName').value = tech.firstName;
             document.getElementById('techLastName').value = tech.lastName;
@@ -374,7 +382,7 @@ class TechnicianManager {
                     if (index !== -1) {
                         this.technicians[index] = updatedTech;
                     }
-                    this.showNotification('Техніка успішно оновлено', 'success');
+                    this.showNotification('Técnico atualizado com sucesso', 'success');
                 }
             } else {
                 // Додавання нового техніка
@@ -416,13 +424,13 @@ class TechnicianManager {
             $('#technicianModal').modal('hide');
         } catch (error) {
             console.error('Помилка збереження техніка:', error);
-            this.showNotification('Помилка збереження техніка', 'error');
+            this.showNotification('Erro ao guardar técnico', 'error');
         }
     }
 
     // Видалення техніка
     async deleteTechnician(techId) {
-        if (!confirm('Ви впевнені, що хочете видалити цього техніка?')) return;
+if (!confirm('Tem a certeza que quer eliminar este técnico?')) return;
         
         try {
             const response = await fetch(`/api/technicians/${techId}`, {
@@ -438,11 +446,11 @@ class TechnicianManager {
                 this.renderTechnicians();
                 this.updateStats();
                 this.updateBadges();
-                this.showNotification('Техніка успішно видалено', 'success');
+                this.showNotification('Técnico eliminado com sucesso', 'success');
             }
         } catch (error) {
-            console.error('Помилка видалення техніка:', error);
-            this.showNotification('Помилка видалення техніка', 'error');
+            console.error('Erro ao eliminar técnico:', error);
+            this.showNotification('Erro ao eliminar técnico', 'error');
         }
     }
 
@@ -451,10 +459,9 @@ class TechnicianManager {
         const tech = this.technicians.find(t => String(t.id) === String(techId));
         if (!tech) return;
         
-        const message = prompt(`Написати повідомлення для ${tech.firstName} ${tech.lastName}:`);
+        const message = prompt(`Escrever mensagem para ${tech.firstName} ${tech.lastName}:`);
         if (message) {
-            // Симуляція відправки повідомлення
-            this.showNotification(`Повідомлення відправлено для ${tech.firstName} ${tech.lastName}`, 'info');
+            this.showNotification(`Mensagem enviada para ${tech.firstName} ${tech.lastName}`, 'info');
         }
     }
 
@@ -544,7 +551,7 @@ class TechnicianManager {
                 // Оновлення часу останнього оновлення
                 const now = new Date();
                 const lastUpdate = document.getElementById('lastUpdate');
-                if (lastUpdate) lastUpdate.textContent = `Оновлено: ${now.toLocaleTimeString()}`;
+                if (lastUpdate) lastUpdate.textContent = `Atualizado: ${now.toLocaleTimeString()}`;
             }
         }, 30000); // Оновлення кожні 30 секунд
     }
@@ -559,13 +566,13 @@ class TechnicianManager {
         }
     }
 
-    // Показати сповіщення (для навігації)
+    // Mostrar notificações (para navegação)
     showNotifications() {
-        alert('Функціонал сповіщень буде реалізовано в наступній версії');
+        alert('Funcionalidade de notificações será implementada na próxima versão');
     }
 
     // Показати повідомлення (для навігації)
     showMessages() {
-        alert('Функціонал повідомлень буде реалізовано в наступній версії');
+        alert('Funcionalidade de mensagens será implementada na próxima versão');
     }
 }

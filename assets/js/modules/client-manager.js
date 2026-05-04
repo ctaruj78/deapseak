@@ -58,7 +58,7 @@ class ClientManager {
                     const type = user.type || user.clientType || (user.companyName ? 'business' : 'individual');
                     
                     // Формуємо повне ім'я
-                    const fullName = user.companyName || `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'Без імені';
+                    const fullName = user.companyName || `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'Sem nome';
                     
                     // Підраховуємо заявки для цього клієнта з завантажених даних
                     const uid = String(user._id);
@@ -77,14 +77,14 @@ class ClientManager {
                         lastName: user.lastName || '',
                         companyName: user.companyName || '',
                         type: type,
-                        email: user.email || 'Не вказано',
-                        phone: user.phone || 'Не вказано',
+                        email: user.email || 'Não especificado',
+                        phone: user.phone || 'Não especificado',
                         status: user.status || 'active',
                         priority: user.priority || 'medium',
-                        address: user.address || 'Не вказано',
+                        address: user.address || 'Não especificado',
                         contactPerson: user.contactPerson || fullName,
-                        contactPosition: user.contactPosition || 'Клієнт',
-                        contractInfo: user.contractInfo || `Договір від ${new Date(user.createdAt || Date.now()).toLocaleDateString('uk-UA')}`,
+                        contactPosition: user.contactPosition || 'Cliente',
+                        contractInfo: user.contractInfo || `Contrato de ${new Date(user.createdAt || Date.now()).toLocaleDateString('pt-PT')}`,
                         notes: user.notes || '',
                         rating: user.rating || null,
                         totalRequests: clientReqs.length,
@@ -101,13 +101,13 @@ class ClientManager {
                     requestNumber: req.requestNumber || null,
                     clientId: req.client?._id || req.clientId,
                     clientName: req.client
-                        ? (`${req.client.firstName || ''} ${req.client.lastName || ''}`.trim() || req.client.companyName || req.client.username || req.client.email || 'Невідомо')
-                        : (req.clientName || 'Невідомо'),
-                    title: req.title || req.description?.substring(0, 50) || 'Без назви',
+                        ? (`${req.client.firstName || ''} ${req.client.lastName || ''}`.trim() || req.client.companyName || req.client.username || req.client.email || 'Desconhecido')
+                        : (req.clientName || 'Desconhecido'),
+                    title: req.title || req.description?.substring(0, 50) || 'Sem título',
                     priority: req.priority || 'medium',
                     status: req.status || 'new',
                     _rawDate: req.createdAt || null,
-                    date: req.createdAt ? new Date(req.createdAt).toLocaleString('uk-UA') : '—'
+                    date: req.createdAt ? new Date(req.createdAt).toLocaleString('pt-PT') : '—'
                 }));
                 
                 console.log('✅ Клієнтів оброблено:', this.clients.length);
@@ -130,7 +130,7 @@ class ClientManager {
         this.clients = [
             {
                 id: 1,
-                name: "ТОВ 'Альфа'",
+                name: "LDA 'Alfa'",
                 type: "business",
                 email: "info@alpha.com",
                 phone: "+351912345601",
@@ -148,7 +148,7 @@ class ClientManager {
             },
             {
                 id: 2,
-                name: "ПП 'Бета'",
+                name: "LDA 'Beta'",
                 type: "business",
                 email: "contact@beta.ua",
                 phone: "+351923456702",
@@ -166,7 +166,7 @@ class ClientManager {
             },
             {
                 id: 3,
-                name: "ТОВ 'Гамма'",
+                name: "LDA 'Gama'",
                 type: "business",
                 email: "support@gamma.org",
                 phone: "+351934567803",
@@ -246,13 +246,13 @@ class ClientManager {
                     requestNumber: req.requestNumber || null,
                     clientId: req.client?._id || req.clientId,
                     clientName: req.client
-                        ? (`${req.client.firstName || ''} ${req.client.lastName || ''}`.trim() || req.client.companyName || req.client.username || req.client.email || 'Невідомо')
-                        : (req.clientName || 'Невідомо'),
-                    title: req.title || req.description?.substring(0, 50) || 'Без назви',
+                        ? (`${req.client.firstName || ''} ${req.client.lastName || ''}`.trim() || req.client.companyName || req.client.username || req.client.email || 'Desconhecido')
+                        : (req.clientName || 'Desconhecido'),
+                    title: req.title || req.description?.substring(0, 50) || 'Sem título',
                     priority: req.priority || 'medium',
                     status: req.status || 'new',
                     _rawDate: req.createdAt || null,
-                    date: req.createdAt ? new Date(req.createdAt).toLocaleString('uk-UA') : '—'
+                    date: req.createdAt ? new Date(req.createdAt).toLocaleString('pt-PT') : '—'
                 }));
                 
                 this.renderRecentRequests();
@@ -272,20 +272,20 @@ class ClientManager {
             {
                 id: 1001,
                 clientId: 1,
-                clientName: "ТОВ 'Альфа'",
-                title: "Не працює мережеве з'єднання",
+                clientName: "LDA 'Alfa'",
+                title: "Falha na ligação de rede",
                 priority: "high",
                 status: "new",
-                date: new Date().toLocaleString('uk-UA')
+                date: new Date().toLocaleString('pt-PT')
             },
             {
                 id: 1002,
                 clientId: 2,
-                clientName: "ПП 'Бета'",
+                clientName: "LDA 'Beta'",
                 title: "Заміна жорсткого диска",
                 priority: "medium",
                 status: "assigned",
-                date: new Date(Date.now() - 3600000).toLocaleString('uk-UA')
+                date: new Date(Date.now() - 3600000).toLocaleString('pt-PT')
             },
             {
                 id: 1003,
@@ -294,7 +294,7 @@ class ClientManager {
                 title: "Встановлення оновлення ПЗ",
                 priority: "high",
                 status: "in-progress",
-                date: new Date(Date.now() - 7200000).toLocaleString('uk-UA')
+                date: new Date(Date.now() - 7200000).toLocaleString('pt-PT')
             },
             {
                 id: 1004,
@@ -303,16 +303,16 @@ class ClientManager {
                 title: "Налаштування Wi-Fi",
                 priority: "low",
                 status: "completed",
-                date: new Date(Date.now() - 10800000).toLocaleString('uk-UA')
+                date: new Date(Date.now() - 10800000).toLocaleString('pt-PT')
             },
             {
                 id: 1005,
                 clientId: 1,
-                clientName: "ТОВ 'Альфа'",
+                clientName: "LDA 'Alfa'",
                 title: "Консультація з безпеки",
                 priority: "medium",
                 status: "new",
-                date: new Date(Date.now() - 14400000).toLocaleString('uk-UA')
+                date: new Date(Date.now() - 14400000).toLocaleString('pt-PT')
             }
         ];
         
@@ -328,8 +328,8 @@ class ClientManager {
             grid.innerHTML = `
                 <div class="col-12 text-center py-5">
                     <i class="fas fa-building fa-3x text-muted mb-3"></i>
-                    <h4 class="text-muted">Клієнти не знайдені</h4>
-                    <p>Спробуйте змінити критерії пошуку або додати нового клієнта</p>
+                    <h4 class="text-muted">Nenhum cliente encontrado</h4>
+                    <p>Tente alterar os critérios de pesquisa ou adicionar um novo cliente</p>
                 </div>
             `;
             return;
@@ -363,23 +363,23 @@ class ClientManager {
         switch (client.status) {
             case 'active':
                 statusClass = 'badge-success';
-                statusText = 'Активний';
+                statusText = 'Ativo';
                 break;
             case 'inactive':
                 statusClass = 'badge-secondary';
-                statusText = 'Неактивний';
+                statusText = 'Inativo';
                 break;
             case 'suspended':
                 statusClass = 'badge-warning';
-                statusText = 'Призупинений';
+                statusText = 'Suspenso';
                 break;
         }
         
         // Визначення типу
         const typeText = {
-            'business': 'Бізнес',
-            'individual': 'Фіз. особа',
-            'government': 'Державний'
+            'business': 'Empresa',
+            'individual': 'Particular',
+            'government': 'Público'
         }[client.type] || client.type;
         
         card.innerHTML = `
@@ -394,22 +394,22 @@ class ClientManager {
             
             <div class="text-center mb-3">
                 <span class="priority-badge priority-${client.priority}">
-                    ${this.getPriorityText(client.priority)} пріоритет
+                    ${this.getPriorityText(client.priority)} prioridade
                 </span>
             </div>
             
             <div class="row text-center mb-3">
                 <div class="col-4">
                     <div class="text-success font-weight-bold">${client.liftsCount || 0}</div>
-                    <small class="text-muted">Ліфтів</small>
+                    <small class="text-muted">Elevadores</small>
                 </div>
                 <div class="col-4">
                     <div class="text-primary font-weight-bold">${client.totalRequests}</div>
-                    <small class="text-muted">Заявок</small>
+                    <small class="text-muted">Pedidos</small>
                 </div>
                 <div class="col-4">
                     <div class="text-warning font-weight-bold">${client.rating != null ? client.rating : '—'}</div>
-                    <small class="text-muted">Рейтинг</small>
+                    <small class="text-muted">Avaliação</small>
                 </div>
             </div>
             
@@ -419,11 +419,11 @@ class ClientManager {
             
             <div class="action-buttons mt-3">
                 <button class="btn btn-sm btn-primary" onclick="clientManager.viewClient('${client.id || client._id}')">
-                    <i class="fas fa-eye"></i> Переглянути
+                    <i class="fas fa-eye"></i> Ver
                 </button>
                 ${client.liftsCount > 0 ? `
                 <button class="btn btn-sm btn-success" onclick="clientManager.viewAllClientLifts('${client._id || client.id}')">
-                    <i class="fas fa-elevator"></i> Ліфти (${client.liftsCount})
+                    <i class="fas fa-elevator"></i> Elevadores (${client.liftsCount})
                 </button>` : ''}
                 <button class="btn btn-sm btn-info" onclick="window.location.href='tel:${client.phone}'">
                     <i class="fas fa-phone"></i>
@@ -453,23 +453,23 @@ class ClientManager {
             switch (client.status) {
                 case 'active':
                     statusClass = 'badge-success';
-                    statusText = 'Активний';
+                    statusText = 'Ativo';
                     break;
                 case 'inactive':
                     statusClass = 'badge-secondary';
-                    statusText = 'Неактивний';
+                    statusText = 'Inativo';
                     break;
                 case 'suspended':
                     statusClass = 'badge-warning';
-                    statusText = 'Призупинений';
+                    statusText = 'Suspenso';
                     break;
             }
             
             // Визначення типу
             const typeText = {
-                'business': 'Бізнес',
-                'individual': 'Фіз. особа',
-                'government': 'Державний'
+                'business': 'Empresa',
+                'individual': 'Particular',
+                'government': 'Público'
             }[client.type] || client.type;
             
             tr.innerHTML = `
@@ -484,7 +484,7 @@ class ClientManager {
                 <td><span class="priority-badge priority-${client.priority}">${this.getPriorityText(client.priority)}</span></td>
                 <td>
                     <span class="font-weight-bold">${client.totalRequests}</span>
-                    <small class="text-muted">(${client.activeRequests} актив.)</small>
+                    <small class="text-muted">(${client.activeRequests} ativos)</small>
                 </td>
                 <td>
                     <span class="text-warning">
@@ -493,18 +493,18 @@ class ClientManager {
                 </td>
                 <td>
                     <div class="btn-group btn-group-sm">
-                        <button class="btn btn-info" onclick="clientManager.viewClient('${client.id || client._id}')" title="Переглянути">
+                        <button class="btn btn-info" onclick="clientManager.viewClient('${client.id || client._id}')" title="Ver">
                             <i class="fas fa-eye"></i>
                         </button>
                         <button class="btn btn-success" onclick="clientManager.sendEmail('${client.id || client._id}')" title="Email">
                             <i class="fas fa-envelope"></i>
                         </button>
                         ${this.userRole === 'admin' || this.userRole === 'dispatcher' ? `
-                        <button class="btn btn-warning" onclick="clientManager.editClient('${client.id || client._id}')" title="Редагувати">
+                        <button class="btn btn-warning" onclick="clientManager.editClient('${client.id || client._id}')" title="Editar">
                             <i class="fas fa-edit"></i>
                         </button>` : ''}
                         ${this.userRole === 'admin' ? `
-                        <button class="btn btn-danger" onclick="clientManager.deleteClient('${client.id || client._id}')" title="Видалити">
+                        <button class="btn btn-danger" onclick="clientManager.deleteClient('${client.id || client._id}')" title="Eliminar">
                             <i class="fas fa-trash"></i>
                         </button>` : ''}
                     </div>
@@ -535,15 +535,15 @@ class ClientManager {
             switch (request.priority) {
                 case 'high':
                     priorityClass = 'priority-high';
-                    priorityText = 'Високий';
+                    priorityText = 'Alto';
                     break;
                 case 'medium':
                     priorityClass = 'priority-medium';
-                    priorityText = 'Середній';
+                    priorityText = 'Médio';
                     break;
                 case 'low':
                     priorityClass = 'priority-low';
-                    priorityText = 'Низький';
+                    priorityText = 'Baixo';
                     break;
             }
             
@@ -554,19 +554,19 @@ class ClientManager {
             switch (request.status) {
                 case 'new':
                     statusClass = 'badge-danger';
-                    statusText = 'Нова';
+                    statusText = 'Novo';
                     break;
                 case 'assigned':
                     statusClass = 'badge-warning';
-                    statusText = 'Призначена';
+                    statusText = 'Atribuído';
                     break;
                 case 'in-progress':
                     statusClass = 'badge-info';
-                    statusText = 'В роботі';
+                    statusText = 'Em curso';
                     break;
                 case 'completed':
                     statusClass = 'badge-success';
-                    statusText = 'Завершена';
+                    statusText = 'Concluído';
                     break;
             }
             
@@ -603,7 +603,7 @@ class ClientManager {
         
         if (!client) {
             console.error('❌ Клієнта не знайдено:', clientId);
-            alert('Клієнта не знайдено');
+            alert('Cliente não encontrado');
             return;
         }
         
@@ -626,14 +626,14 @@ class ClientManager {
                             </div>
                         </div>
                         
-                        <h6>Контактна інформація:</h6>
+                        <h6>Informação de Contacto:</h6>
                         <p><i class="fas fa-envelope mr-2 text-primary"></i> ${client.email}</p>
                         <p><i class="fas fa-phone mr-2 text-success"></i> <a href="tel:${client.phone}">${client.phone}</a></p>
                         <p><i class="fas fa-map-marker-alt mr-2 text-danger"></i> ${client.address}</p>
                         
                         <div class="mt-3">
                             <button class="btn btn-sm btn-success" onclick="window.location.href='tel:${client.phone}'">
-                                <i class="fas fa-phone-alt"></i> Зателефонувати
+                                <i class="fas fa-phone-alt"></i> Ligar
                             </button>
                             <button class="btn btn-sm btn-primary" onclick="clientManager.sendEmail('${client.id || client._id}')">
                                 <i class="fas fa-envelope"></i> Email
@@ -642,44 +642,44 @@ class ClientManager {
                     </div>
                     
                     <div class="col-md-6">
-                        <h6>Деталі клієнта:</h6>
-                        <p><strong>Тип:</strong> ${this.getTypeText(client.type)}</p>
-                        <p><strong>Статус:</strong> <span class="badge badge-${client.status === 'active' ? 'success' : client.status === 'suspended' ? 'warning' : 'secondary'}">${this.getStatusText(client.status)}</span></p>
-                        <p><strong>Пріоритет:</strong> <span class="priority-badge priority-${client.priority}">${this.getPriorityText(client.priority)}</span></p>
-                        <p><strong>Рейтинг:</strong> <span class="text-warning"><i class="fas fa-star"></i> ${client.rating != null ? client.rating : '—'}</span></p>
+                        <h6>Detalhes do Cliente:</h6>
+                        <p><strong>Tipo:</strong> ${this.getTypeText(client.type)}</p>
+                        <p><strong>Estado:</strong> <span class="badge badge-${client.status === 'active' ? 'success' : client.status === 'suspended' ? 'warning' : 'secondary'}">${this.getStatusText(client.status)}</span></p>
+                        <p><strong>Prioridade:</strong> <span class="priority-badge priority-${client.priority}">${this.getPriorityText(client.priority)}</span></p>
+                        <p><strong>Classificação:</strong> <span class="text-warning"><i class="fas fa-star"></i> ${client.rating != null ? client.rating : '—'}</span></p>
                         
-                        <h6 class="mt-3">Контактна особа:</h6>
+                        <h6 class="mt-3">Pessoa de Contacto:</h6>
                         <p>${client.contactPerson} (${client.contactPosition})</p>
                     </div>
                 </div>
                 
                 <div class="row mt-3">
                     <div class="col-12">
-                        <h6>Інформація про договір:</h6>
+                        <h6>Informação do Contrato:</h6>
                         <p class="text-muted">${client.contractInfo}</p>
                     </div>
                 </div>
                 
                 <div class="row mt-3">
                     <div class="col-12">
-                        <h6>Статистика заявок:</h6>
+                        <h6>Estatísticas de Pedidos:</h6>
                         <div class="row text-center">
                             <div class="col-4">
                                 <div class="stats-box-sm">
                                     <div class="stats-number" id="modalStatTotal">${client.totalRequests}</div>
-                                    <div class="stats-label">Всього</div>
+                                    <div class="stats-label">Total</div>
                                 </div>
                             </div>
                             <div class="col-4">
                                 <div class="stats-box-sm">
                                     <div class="stats-number" id="modalStatActive">${client.activeRequests}</div>
-                                    <div class="stats-label">Активних</div>
+                                    <div class="stats-label">Ativos</div>
                                 </div>
                             </div>
                             <div class="col-4">
                                 <div class="stats-box-sm">
                                     <div class="stats-number" id="modalStatCompleted">${client.totalRequests - client.activeRequests}</div>
-                                    <div class="stats-label">Завершено</div>
+                                    <div class="stats-label">Concluídos</div>
                                 </div>
                             </div>
                         </div>
@@ -688,10 +688,10 @@ class ClientManager {
                 
                 <div class="row mt-3">
                     <div class="col-12">
-                        <h6>Ліфти клієнта: <span id="clientLiftsBadge" class="badge badge-success">...</span></h6>
+                        <h6>Elevadores do Cliente: <span id="clientLiftsBadge" class="badge badge-success">...</span></h6>
                         <div id="clientLiftsContainer">
                             <div class="text-center py-3">
-                                <i class="fas fa-spinner fa-spin"></i> Завантаження ліфтів...
+                                <i class="fas fa-spinner fa-spin"></i> A carregar elevadores...
                             </div>
                         </div>
                     </div>
@@ -699,10 +699,10 @@ class ClientManager {
                 
                 <div class="row mt-3">
                     <div class="col-12">
-                        <h6>Заявки клієнта: <span id="clientRequestsBadge" class="badge badge-info">...</span></h6>
+                        <h6>Pedidos do Cliente: <span id="clientRequestsBadge" class="badge badge-info">...</span></h6>
                         <div id="clientRequestsContainer">
                             <div class="text-center py-2">
-                                <i class="fas fa-spinner fa-spin"></i> Завантаження заявок...
+                                <i class="fas fa-spinner fa-spin"></i> A carregar pedidos...
                             </div>
                         </div>
                     </div>
@@ -711,18 +711,18 @@ class ClientManager {
                 ${client.notes ? `
                 <div class="row mt-3">
                     <div class="col-12">
-                        <h6>Додаткові нотатки:</h6>
+                        <h6>Notas adicionais:</h6>
                         <p class="text-muted">${client.notes}</p>
                     </div>
                 </div>
                 ` : ''}
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Закрити</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
                 <button type="button" class="btn btn-warning" onclick="clientManager.sendPasswordToClient('${client._id || client.id}')">
-                    <i class="fas fa-key"></i> Надіслати пароль
+                    <i class="fas fa-key"></i> Enviar senha
                 </button>
-                <button type="button" class="btn btn-primary" onclick="clientManager.editClient('${client._id || client.id}')">Редагувати</button>
+                <button type="button" class="btn btn-primary" onclick="clientManager.editClient('${client._id || client.id}')">Editar</button>
             </div>
         `;
         
@@ -749,7 +749,7 @@ class ClientManager {
             });
             
             if (!response.ok) {
-                throw new Error('Помилка завантаження ліфтів');
+                throw new Error('Erro ao carregar elevadores');
             }
             
             const result = await response.json();
@@ -762,24 +762,24 @@ class ClientManager {
             if (lifts.length === 0) {
                 container.innerHTML = `
                     <div class="alert alert-info">
-                        <i class="fas fa-info-circle"></i> У цього клієнта ще немає ліфтів
+                        <i class="fas fa-info-circle"></i> Este cliente ainda não tem elevadores
                     </div>
                 `;
                 return;
             }
             
             const statusMap = {
-                'operational': { badge: 'success', text: 'Активний' },
-                'maintenance': { badge: 'warning', text: 'Обслуговування' },
-                'repair': { badge: 'danger', text: 'Ремонт' },
-                'out_of_service': { badge: 'secondary', text: 'Неактивний' },
-                'inspection': { badge: 'info', text: 'Огляд' }
+                'operational': { badge: 'success', text: 'Ativo' },
+                'maintenance': { badge: 'warning', text: 'Manutenção' },
+                'repair': { badge: 'danger', text: 'Reparação' },
+                'out_of_service': { badge: 'secondary', text: 'Inativo' },
+                'inspection': { badge: 'info', text: 'Inspeção' }
             };
             
             container.innerHTML = `
                 <div class="list-group">
                     ${lifts.map(lift => {
-                        const st = statusMap[lift.status] || { badge: 'secondary', text: lift.status || 'Невідомо' };
+                        const st = statusMap[lift.status] || { badge: 'secondary', text: lift.status || 'Desconhecido' };
                         const addr = typeof lift.address === 'object'
                             ? [lift.address.street, lift.address.city].filter(Boolean).join(', ')
                             : (lift.address || '');
@@ -787,16 +787,16 @@ class ClientManager {
                         <a href="#" onclick="event.preventDefault();clientManager._openLiftPage('${lift._id}')" class="list-group-item list-group-item-action" style="cursor: pointer;">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
-                                    <strong><i class="fas fa-elevator text-primary"></i> ${lift.municipalNumber || 'Без номера'}</strong>
+                                    <strong><i class="fas fa-elevator text-primary"></i> ${lift.municipalNumber || 'Sem número'}</strong>
                                     <br>
                                     <small class="text-muted">
-                                        <i class="fas fa-map-marker-alt"></i> ${addr || 'Адреса невідома'}
+                                        <i class="fas fa-map-marker-alt"></i> ${addr || 'Endereço desconhecido'}
                                     </small>
-                                    ${lift.capacity ? `<br><small class="text-muted"><i class="fas fa-weight"></i> ${lift.capacity} кг</small>` : ''}
+                                    ${lift.capacity ? `<br><small class="text-muted"><i class="fas fa-weight"></i> ${lift.capacity} kg</small>` : ''}
                                 </div>
                                 <div class="text-right">
                                     <span class="badge badge-${st.badge}">${st.text}</span>
-                                    ${lift.nextInspectionDate ? `<br><small class="text-muted"><i class="fas fa-calendar"></i> ${new Date(lift.nextInspectionDate).toLocaleDateString('uk-UA')}</small>` : ''}
+                                    ${lift.nextInspectionDate ? `<br><small class="text-muted"><i class="fas fa-calendar"></i> ${new Date(lift.nextInspectionDate).toLocaleDateString('pt-PT')}</small>` : ''}
                                 </div>
                             </div>
                         </a>
@@ -805,7 +805,7 @@ class ClientManager {
                 </div>
                 <div class="mt-2">
                     <a href="#" onclick="event.preventDefault();clientManager.viewAllClientLifts('${clientId}')" class="btn btn-sm btn-outline-primary">
-                        <i class="fas fa-external-link-alt"></i> Відкрити всі ліфти
+                        <i class="fas fa-external-link-alt"></i> Ver todos os elevadores
                     </a>
                 </div>
             `;
@@ -922,34 +922,34 @@ class ClientManager {
             if (elCompleted) elCompleted.textContent = closedCount;
 
             if (requests.length === 0) {
-                container.innerHTML = `<div class="alert alert-info mb-0"><i class="fas fa-info-circle"></i> Заявок ще немає</div>`;
+                container.innerHTML = `<div class="alert alert-info mb-0"><i class="fas fa-info-circle"></i> Ainda não há pedidos</div>`;
                 return;
             }
 
             const statusMap = {
-                'new': { badge: 'info', text: 'Нова' },
-                'open': { badge: 'info', text: 'Відкрита' },
-                'assigned': { badge: 'primary', text: 'Призначена' },
-                'in_progress': { badge: 'warning', text: 'В роботі' },
-                'pending': { badge: 'warning', text: 'Очікує' },
-                'completed': { badge: 'success', text: 'Завершена' },
-                'cancelled': { badge: 'secondary', text: 'Скасована' }
+                'new': { badge: 'info', text: 'Novo' },
+                'open': { badge: 'info', text: 'Aberto' },
+                'assigned': { badge: 'primary', text: 'Atribuído' },
+                'in_progress': { badge: 'warning', text: 'Em curso' },
+                'pending': { badge: 'warning', text: 'Pendente' },
+                'completed': { badge: 'success', text: 'Concluído' },
+                'cancelled': { badge: 'secondary', text: 'Cancelado' }
             };
             const priorityMap = {
-                'critical': { badge: 'danger', text: 'Критичний' },
-                'high': { badge: 'warning', text: 'Високий' },
-                'medium': { badge: 'info', text: 'Середній' },
-                'normal': { badge: 'info', text: 'Середній' },
-                'low': { badge: 'secondary', text: 'Низький' }
+                'critical': { badge: 'danger', text: 'Crítico' },
+                'high': { badge: 'warning', text: 'Alto' },
+                'medium': { badge: 'info', text: 'Médio' },
+                'normal': { badge: 'info', text: 'Médio' },
+                'low': { badge: 'secondary', text: 'Baixo' }
             };
 
             container.innerHTML = `
                 <div class="list-group">
                     ${requests.slice(0, 10).map(req => {
-                        const st = statusMap[req.status] || { badge: 'secondary', text: req.status || 'Невідомо' };
+                        const st = statusMap[req.status] || { badge: 'secondary', text: req.status || 'Desconhecido' };
                         const pr = priorityMap[req.priority] || { badge: 'secondary', text: req.priority || '' };
-                        const title = req.title || req.description?.substring(0, 60) || 'Без назви';
-                        const date = req.createdAt ? new Date(req.createdAt).toLocaleDateString('uk-UA') : (req.date || '');
+                        const title = req.title || req.description?.substring(0, 60) || 'Sem título';
+                        const date = req.createdAt ? new Date(req.createdAt).toLocaleDateString('pt-PT') : (req.date || '');
                         return `
                         <div class="list-group-item">
                             <div class="d-flex justify-content-between align-items-start">
@@ -965,7 +965,7 @@ class ClientManager {
                         </div>`;
                     }).join('')}
                 </div>
-                ${requests.length > 10 ? `<small class="text-muted mt-1 d-block">Показано 10 з ${requests.length} заявок</small>` : ''}
+                ${requests.length > 10 ? `<small class="text-muted mt-1 d-block">A mostrar 10 de ${requests.length} pedidos</small>` : ''}
             `;
         } catch (error) {
             console.error('❌ Помилка завантаження заявок:', error);
@@ -975,9 +975,9 @@ class ClientManager {
             const requests = this.requests.filter(r => String(r.clientId) === cid);
             if (badge) badge.textContent = requests.length;
             if (requests.length === 0) {
-                container.innerHTML = `<div class="alert alert-info mb-0"><i class="fas fa-info-circle"></i> Заявок ще немає</div>`;
+                container.innerHTML = `<div class="alert alert-info mb-0"><i class="fas fa-info-circle"></i> Ainda não há pedidos</div>`;
             } else {
-                container.innerHTML = `<div class="alert alert-warning mb-0"><i class="fas fa-exclamation-triangle"></i> Завантажено ${requests.length} заявок з кешу</div>`;
+                container.innerHTML = `<div class="alert alert-warning mb-0"><i class="fas fa-exclamation-triangle"></i> ${requests.length} pedidos carregados da cache</div>`;
             }
         }
     }
@@ -988,7 +988,7 @@ class ClientManager {
         const formEl = document.getElementById('clientForm');
         const idEl = document.getElementById('clientId');
         
-        if (titleEl) titleEl.textContent = 'Додати клієнта';
+        if (titleEl) titleEl.textContent = 'Adicionar Cliente';
         if (formEl) formEl.reset();
         if (idEl) idEl.value = '';
         
@@ -1004,7 +1004,7 @@ class ClientManager {
         
         // ✅ Диспетчер може редагувати клієнтів (практично для роботи)
         if (this.userRole !== 'admin' && this.userRole !== 'dispatcher') {
-            alert('❌ Доступ заборонено! Тільки адміністратори та диспетчери можуть редагувати клієнтів.');
+            alert('❌ Acesso negado! Apenas administradores e despachantes podem editar clientes.');
             return;
         }
         
@@ -1018,7 +1018,7 @@ class ClientManager {
         
         if (!client) {
             console.error('❌ Клієнта не знайдено:', clientId);
-            alert('Клієнта не знайдено');
+            alert('Cliente não encontrado');
             return;
         }
         
@@ -1039,7 +1039,7 @@ class ClientManager {
         const contractInfoEl = document.getElementById('contractInfo');
         const notesEl = document.getElementById('clientNotes');
         
-        if (titleEl) titleEl.textContent = 'Редагувати клієнта';
+        if (titleEl) titleEl.textContent = 'Editar Cliente';
         if (idEl) idEl.value = client.id;
         if (nameEl) nameEl.value = client.name;
         if (typeEl) typeEl.value = client.type;
@@ -1099,10 +1099,10 @@ class ClientManager {
             lastName: nameParts.slice(1).join(' ') || '',
             clientType: clientData.type,
             email: clientData.email,
-            phone: clientData.phone !== 'Не вказано' ? clientData.phone : '',
+            phone: clientData.phone !== 'Não especificado' ? clientData.phone : '',
             priority: clientData.priority,
             status: clientData.status,
-            address: clientData.address !== 'Не вказано' ? clientData.address : '',
+            address: clientData.address !== 'Não especificado' ? clientData.address : '',
             contactPerson: clientData.contactPerson,
             contactPosition: clientData.contactPosition,
             contractInfo: clientData.contractInfo,
@@ -1148,10 +1148,10 @@ class ClientManager {
                         };
                         this.clients[index] = merged;
                     }
-                    this.showNotification('Клієнта успішно оновлено', 'success');
+                    this.showNotification('Cliente atualizado com sucesso', 'success');
                 } else {
                     const errData = await response.json().catch(() => ({}));
-                    this.showNotification(errData.message || 'Помилка збереження клієнта', 'error');
+                    this.showNotification(errData.message || 'Erro ao guardar cliente', 'error');
                     return;
                 }
             } else {
@@ -1160,7 +1160,7 @@ class ClientManager {
                 const postPayload = {
                     email: apiPayload.email,
                     password: Math.random().toString(36).slice(2, 8).toUpperCase() + Math.floor(1000 + Math.random() * 9000) + '!',
-                    firstName: apiPayload.firstName || nameParts[0] || 'Клієнт',
+                    firstName: apiPayload.firstName || nameParts[0] || 'Cliente',
                     lastName: apiPayload.lastName || nameParts.slice(1).join(' ') || '',
                     role: 'client',
                     phone: apiPayload.phone || '',
@@ -1204,9 +1204,9 @@ class ClientManager {
                         avatar: (nc.firstName || clientData.name || 'K').charAt(0).toUpperCase()
                     };
                     this.clients.push(newEntry);
-                    this.showNotification(`✅ Клієнта створено!\n🔑 Тимчасовий пароль: ${postPayload.password}`, 'success');
+                    this.showNotification(`✅ Cliente criado!\n🔑 Senha temporária: ${postPayload.password}`, 'success');
                 } else {
-                    this.showNotification(newClientData.error || newClientData.message || 'Помилка створення клієнта', 'error');
+                    this.showNotification(newClientData.error || newClientData.message || 'Erro ao criar cliente', 'error');
                     return;
                 }
             }
@@ -1218,7 +1218,7 @@ class ClientManager {
             $('#clientModal').modal('hide');
         } catch (error) {
             console.error('Помилка збереження клієнта:', error);
-            this.showNotification('Помилка збереження клієнта', 'error');
+            this.showNotification('Erro ao guardar cliente', 'error');
         }
     }
 
@@ -1226,11 +1226,11 @@ class ClientManager {
     async deleteClient(clientId) {
         // 🔒 Перевірка ролі користувача
         if (this.userRole === 'dispatcher') {
-            alert('❌ Доступ заборонено! Тільки адміністратори можуть видаляти клієнтів.');
+            alert('❌ Acesso negado! Apenas administradores podem eliminar clientes.');
             return;
         }
         
-        if (!confirm('Ви впевнені, що хочете видалити цього клієнта?')) return;
+        if (!confirm('Tem a certeza que pretende eliminar este cliente?')) return;
         
         try {
             const response = await fetch(`/api/users/${clientId}`, {
@@ -1245,11 +1245,11 @@ class ClientManager {
                 this.filteredClients = this.filteredClients.filter(c => c.id !== clientId);
                 this.renderClients();
                 this.updateStats();
-                this.showNotification('Клієнта успішно видалено', 'success');
+                this.showNotification('Cliente eliminado com sucesso', 'success');
             }
         } catch (error) {
             console.error('Помилка видалення клієнта:', error);
-            this.showNotification('Помилка видалення клієнта', 'error');
+            this.showNotification('Erro ao eliminar cliente', 'error');
         }
     }
 
@@ -1258,9 +1258,9 @@ class ClientManager {
         const client = this.clients.find(c => c.id === clientId);
         if (!client) return;
         
-        const message = prompt(`Написати повідомлення для ${client.name}:`);
+        const message = prompt(`Escrever mensagem para ${client.name}:`);
         if (message) {
-            this.showNotification(`Повідомлення відправлено для ${client.name}`, 'info');
+            this.showNotification(`Mensagem enviada para ${client.name}`, 'info');
         }
     }
 
@@ -1268,7 +1268,7 @@ class ClientManager {
     viewRequest(requestId) {
         const request = this.requests.find(r => r.id === requestId);
         if (request) {
-            alert(`Деталі заявки #${request.id}\n\nКлієнт: ${request.clientName}\nЗаголовок: ${request.title}\nПріоритет: ${request.priority}\nСтатус: ${request.status}`);
+            alert(`Detalhes do pedido #${request.id}\n\nCliente: ${request.clientName}\nTítulo: ${request.title}\nPrioridade: ${request.priority}\nEstado: ${request.status}`);
         }
     }
 
@@ -1291,7 +1291,7 @@ class ClientManager {
 
     // Надіслати тимчасовий пароль клієнту
     async sendPasswordToClient(clientId) {
-        if (!confirm('Надіслати новий тимчасовий пароль клієнту на email?')) return;
+        if (!confirm('Enviar nova senha temporária para o email do cliente?')) return;
         const token = localStorage.getItem('authToken');
         try {
             const res = await fetch(`/api/users/${clientId}/reset-password`, {
@@ -1303,12 +1303,12 @@ class ClientManager {
             });
             const data = await res.json();
             if (data.success) {
-                this.showNotification(`Пароль відправлено. Тимчасовий пароль: ${data.data.temporaryPassword}`, 'success');
+                this.showNotification(`Senha enviada. Senha temporária: ${data.data.temporaryPassword}`, 'success');
             } else {
-                this.showNotification(data.message || 'Помилка надсилання пароля', 'error');
+                this.showNotification(data.message || 'Erro ao enviar senha', 'error');
             }
         } catch (e) {
-            this.showNotification('Помилка з\'єднання', 'error');
+            this.showNotification('Erro de ligação', 'error');
         }
     }
 
@@ -1325,7 +1325,7 @@ class ClientManager {
         
         if (!client) {
             console.error('❌ Клієнта не знайдено:', clientId);
-            alert('Клієнта не знайдено');
+            alert('Cliente não encontrado');
             return;
         }
         
@@ -1338,7 +1338,7 @@ class ClientManager {
             <div class="modal-header">
                 <h5 class="modal-title">
                     <i class="fas fa-envelope mr-2"></i>
-                    Відправити Email - ${client.name}
+                    Enviar Email - ${client.name}
                 </h5>
                 <button type="button" class="close" data-dismiss="modal">
                     <span>&times;</span>
@@ -1347,23 +1347,23 @@ class ClientManager {
             <div class="modal-body">
                 <form id="emailForm">
                     <div class="form-group">
-                        <label>Кому:</label>
+                        <label>Para:</label>
                         <input type="email" class="form-control" value="${client.email}" readonly>
                     </div>
                     <div class="form-group">
-                        <label>Тема:</label>
-                        <input type="text" class="form-control" id="emailSubject" placeholder="Введіть тему...">
+                        <label>Assunto:</label>
+                        <input type="text" class="form-control" id="emailSubject" placeholder="Introduza o assunto...">
                     </div>
                     <div class="form-group">
-                        <label>Повідомлення:</label>
-                        <textarea class="form-control" id="emailBody" rows="8" placeholder="Введіть текст повідомлення..."></textarea>
+                        <label>Mensagem:</label>
+                        <textarea class="form-control" id="emailBody" rows="8" placeholder="Introduza o texto da mensagem..."></textarea>
                     </div>
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Скасувати</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
                 <button type="button" class="btn btn-primary" onclick="clientManager.sendClientEmail('${client.email}')">
-                    <i class="fas fa-paper-plane mr-2"></i>Відправити
+                    <i class="fas fa-paper-plane mr-2"></i>Enviar
                 </button>
             </div>
         `;
@@ -1377,7 +1377,7 @@ class ClientManager {
         const body = document.getElementById('emailBody')?.value;
         
         if (!subject || !body) {
-            alert('Заповніть тему та текст повідомлення');
+            alert('Preencha o assunto e o texto da mensagem');
             return;
         }
         
@@ -1396,15 +1396,15 @@ class ClientManager {
             });
             
             if (response.ok) {
-                alert('Email успішно відправлено!');
+                alert('Email enviado com sucesso!');
                 $('#customModal').modal('hide');
             } else {
                 const error = await response.json();
-                alert('Помилка відправки email: ' + (error.message || 'Невідома помилка'));
+                alert('Erro ao enviar email: ' + (error.message || 'Erro desconhecido'));
             }
         } catch (error) {
             console.error('Помилка відправки email:', error);
-            alert('Помилка відправки email: ' + error.message);
+            alert('Erro ao enviar email: ' + error.message);
         }
     }
 
@@ -1441,12 +1441,12 @@ class ClientManager {
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
         
-        this.showNotification('Дані клієнтів експортовано', 'success');
+        this.showNotification('Dados dos clientes exportados', 'success');
     }
 
     // Показати всі заявки
     showAllRequests() {
-        alert('Функціонал перегляду всіх заявок буде реалізовано в наступній версії');
+        alert('Funcionalidade de visualização de todos os pedidos será implementada na próxima versão');
     }
 
     // Оновлення статистики
@@ -1480,7 +1480,7 @@ class ClientManager {
             const now = new Date();
             const lastUpdateEl = document.getElementById('lastUpdate');
             if (lastUpdateEl) {
-                lastUpdateEl.textContent = `Оновлено: ${now.toLocaleTimeString('uk-UA')}`;
+                lastUpdateEl.textContent = `Atualizado: ${now.toLocaleTimeString('pt-PT')}`;
             }
         }, 30000);
     }
@@ -1488,39 +1488,39 @@ class ClientManager {
     // Допоміжні методи
     getPriorityText(priority) {
         switch (priority) {
-            case 'high': return 'Високий';
-            case 'medium': return 'Середній';
-            case 'low': return 'Низький';
+            case 'high': return 'Alto';
+            case 'medium': return 'Médio';
+            case 'low': return 'Baixo';
             default: return priority;
         }
     }
 
     getStatusText(status) {
         switch (status) {
-            case 'active': return 'Активний';
-            case 'inactive': return 'Неактивний';
-            case 'suspended': return 'Призупинений';
+            case 'active': return 'Ativo';
+            case 'inactive': return 'Inativo';
+            case 'suspended': return 'Suspenso';
             default: return status;
         }
     }
 
     getTypeText(type) {
         switch (type) {
-            case 'business': return 'Бізнес';
-            case 'individual': return 'Фізична особа';
-            case 'government': return 'Державна установа';
+            case 'business': return 'Empresa';
+            case 'individual': return 'Particular';
+            case 'government': return 'Entidade Pública';
             default: return type;
         }
     }
 
     // Показати сповіщення
     showNotifications() {
-        alert('Функціонал сповіщень буде реалізовано в наступній версії');
+        alert('Funcionalidade de notificações será implementada na próxima versão');
     }
 
     // Показати повідомлення
     showMessages() {
-        alert('Функціонал повідомлень буде реалізовано в наступній версії');
+        alert('Funcionalidade de mensagens será implementada na próxima versão');
     }
 
     // Показати кастомне модальне вікно

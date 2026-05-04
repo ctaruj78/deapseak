@@ -49,8 +49,8 @@ class NotificationManager {
         this.notifications = [
             {
                 id: 1,
-                title: "Заплановане технічне обслуговування",
-                message: "Заплановано технічне обслуговування ліфта №3 у вашому будинку. Дата: 15.05.2024, 10:00-12:00",
+                title: "Manutenção técnica programada",
+                message: "Manutenção técnica do elevador nº3 no seu edifício está agendada. Data: 15.05.2024, 10:00-12:00",
                 type: "maintenance",
                 priority: "high",
                 read: false,
@@ -60,8 +60,8 @@ class NotificationManager {
             },
             {
                 id: 2,
-                title: "Нова заявка прийнята",
-                message: "Ваша заявка №2456 прийнята до роботи. Технік буде призначений протягом 24 годин.",
+                title: "Novo pedido aceite",
+                message: "O seu pedido nº2456 foi aceite. Um técnico será atribuído dentro de 24 horas.",
                 type: "info",
                 priority: "medium",
                 read: true,
@@ -71,8 +71,8 @@ class NotificationManager {
             },
             {
                 id: 3,
-                title: "Оплата рахунку",
-                message: "Новий рахунок №789 доступний для оплати. Термін оплати: до 20.05.2024",
+                title: "Pagamento de fatura",
+                message: "Nova fatura nº789 disponível para pagamento. Prazo: até 20.05.2024",
                 type: "billing",
                 priority: "high",
                 read: false,
@@ -82,8 +82,8 @@ class NotificationManager {
             },
             {
                 id: 4,
-                title: "Попередження про несправність",
-                message: "Ліфт №1 вимагає уваги техніка. Заявка створена автоматично.",
+                title: "Aviso de avaria",
+                message: "O elevador nº1 requer atenção de um técnico. Pedido criado automaticamente.",
                 type: "alert",
                 priority: "critical",
                 read: false,
@@ -93,8 +93,8 @@ class NotificationManager {
             },
             {
                 id: 5,
-                title: "Оновлення статусу заявки",
-                message: "Заявка №2456 виконана. Технік: Іван Петренко. Час виконання: 2 години 15 хвилин.",
+                title: "Atualização do estado do pedido",
+                message: "Pedido nº2456 concluído. Técnico: João Silva. Duração: 2 horas 15 minutos.",
                 type: "update",
                 priority: "low",
                 read: true,
@@ -104,8 +104,8 @@ class NotificationManager {
             },
             {
                 id: 6,
-                title: "Щомісячний звіт",
-                message: "Ваш щомісячний звіт про роботу ліфтів готовий. Усього обслуговувань: 12, Аварій: 0",
+                title: "Relatório mensal",
+                message: "O seu relatório mensal do funcionamento dos elevadores está pronto. Total de manutenções: 12, Avarias: 0",
                 type: "info",
                 priority: "low",
                 read: true,
@@ -115,8 +115,8 @@ class NotificationManager {
             },
             {
                 id: 7,
-                title: "Заміна запчастини",
-                message: "У ліфті №2 замінено трос підйому. Гарантія: 12 місяців.",
+                title: "Substituição de peça",
+                message: "O cabo de elevação do elevador nº2 foi substituído. Garantia: 12 meses.",
                 type: "maintenance",
                 priority: "medium",
                 read: false,
@@ -163,7 +163,7 @@ class NotificationManager {
         };
         
         localStorage.setItem('notificationSettings', JSON.stringify(this.settings));
-        this.showNotification('Налаштування збережено', 'success');
+        this.showNotification('Definições guardadas', 'success');
     }
 
     saveNotifications() {
@@ -178,8 +178,8 @@ class NotificationManager {
             container.innerHTML = `
                 <div class="empty-state">
                     <i class="fas fa-bell-slash"></i>
-                    <h4>Сповіщень не знайдено</h4>
-                    <p>${this.searchTerm ? 'Спробуйте інший запит пошуку' : 'У вас немає сповіщень за обраним фільтром'}</p>
+                    <h4>Sem notificações</h4>
+                    <p>${this.searchTerm ? 'Tente outro termo de pesquisa' : 'Não tem notificações para o filtro selecionado'}</p>
                 </div>
             `;
             return;
@@ -217,10 +217,10 @@ class NotificationManager {
                         <div class="d-flex justify-content-between align-items-start">
                             <h5 class="notification-title">${notification.title}</h5>
                             <div class="notification-actions">
-                                <button class="btn btn-sm btn-outline-secondary" onclick="notificationManager.toggleRead(${notification.id})" title="${notification.read ? 'Позначити як непрочитане' : 'Позначити як прочитане'}">
+                                <button class="btn btn-sm btn-outline-secondary" onclick="notificationManager.toggleRead(${notification.id})" title="${notification.read ? 'Marcar como não lido' : 'Marcar como lido'}">
                                     <i class="fas ${notification.read ? 'fa-envelope' : 'fa-envelope-open'}"></i>
                                 </button>
-                                <button class="btn btn-sm btn-outline-danger" onclick="notificationManager.deleteNotification(${notification.id})" title="Видалити">
+                                <button class="btn btn-sm btn-outline-danger" onclick="notificationManager.deleteNotification(${notification.id})" title="Eliminar">
                                     <i class="fas fa-trash"></i>
                                 </button>
                             </div>
@@ -236,11 +236,11 @@ class NotificationManager {
             <div class="card-footer bg-transparent">
                 <div class="btn-group btn-group-sm">
                     <button class="btn btn-outline-primary" onclick="notificationManager.viewNotification(${notification.id})">
-                        <i class="fas fa-eye"></i> Переглянути
+                        <i class="fas fa-eye"></i> Ver
                     </button>
                     ${notification.actionUrl ? `
                     <button class="btn btn-outline-success" onclick="location.href='${notification.actionUrl}'">
-                        <i class="fas fa-external-link-alt"></i> Деталі
+                        <i class="fas fa-external-link-alt"></i> Detalhes
                     </button>
                     ` : ''}
                 </div>
@@ -331,7 +331,7 @@ class NotificationManager {
             new Date(b.timestamp) - new Date(a.timestamp)
         );
         this.renderNotifications();
-        this.showNotification('Відсортовано за датою', 'info');
+        this.showNotification('Ordenado por data', 'info');
     }
 
     sortByPriority() {
@@ -340,7 +340,7 @@ class NotificationManager {
             priorityOrder[b.priority] - priorityOrder[a.priority]
         );
         this.renderNotifications();
-        this.showNotification('Відсортовано за пріоритетом', 'info');
+        this.showNotification('Ordenado por prioridade', 'info');
     }
 
     viewNotification(id) {
@@ -391,7 +391,7 @@ class NotificationManager {
             this.filterNotifications(this.currentFilter);
             this.updateBadges();
             this.showNotification(
-                notification.read ? 'Сповіщення прочитано' : 'Сповіщення позначено як непрочитане', 
+                notification.read ? 'Notificação lida' : 'Notificação marcada como não lida', 
                 'success'
             );
         }
@@ -405,27 +405,27 @@ class NotificationManager {
         this.saveNotifications();
         this.filterNotifications(this.currentFilter);
         this.updateBadges();
-        this.showNotification('Всі сповіщення позначено як прочитані', 'success');
+        this.showNotification('Todas as notificações marcadas como lidas', 'success');
     }
 
     deleteNotification(id) {
-        if (confirm('Видалити це сповіщення?')) {
+        if (confirm('Eliminar esta notificação?')) {
             this.notifications = this.notifications.filter(n => n.id !== id);
             this.saveNotifications();
             this.filterNotifications(this.currentFilter);
             this.updateBadges();
-            this.showNotification('Сповіщення видалено', 'success');
+            this.showNotification('Notificação eliminada', 'success');
         }
     }
 
     clearAll() {
-        if (confirm('Видалити всі сповіщення? Цю дію не можна скасувати.')) {
+        if (confirm('Eliminar todas as notificações? Esta ação não pode ser desfeita.')) {
             this.notifications = [];
             this.saveNotifications();
             this.filteredNotifications = [];
             this.renderNotifications();
             this.updateBadges();
-            this.showNotification('Всі сповіщення видалено', 'success');
+            this.showNotification('Todas as notificações eliminadas', 'success');
         }
     }
 
@@ -452,7 +452,7 @@ class NotificationManager {
         document.getElementById('notificationsBadge').textContent = unreadCount;
         
         // Оновлення заголовка вкладки
-        document.title = unreadCount > 0 ? `(${unreadCount}) Сповіщення - Клієнт` : 'Сповіщення - Клієнт';
+        document.title = unreadCount > 0 ? `(${unreadCount}) Notificações - Cliente` : 'Notificações - Cliente';
     }
 
     // Допоміжні методи
@@ -480,10 +480,10 @@ class NotificationManager {
         };
         
         const texts = {
-            critical: 'Критичний',
-            high: 'Високий',
-            medium: 'Середній',
-            low: 'Низький'
+            critical: 'Crítico',
+            high: 'Alto',
+            medium: 'Médio',
+            low: 'Baixo'
         };
         
         return `<span class="notification-badge ${classes[priority]}">${texts[priority]}</span>`;
@@ -501,12 +501,12 @@ class NotificationManager {
 
     getPriorityText(priority) {
         const texts = {
-            critical: 'Критичний',
-            high: 'Високий',
-            medium: 'Середній',
-            low: 'Низький'
+            critical: 'Crítico',
+            high: 'Alto',
+            medium: 'Médio',
+            low: 'Baixo'
         };
-        return texts[priority] || 'Невідомо';
+        return texts[priority] || 'Desconhecido';
     }
 
     getTimeAgo(timestamp) {
@@ -518,10 +518,10 @@ class NotificationManager {
         const hours = Math.floor(diff / 3600000);
         const days = Math.floor(diff / 86400000);
         
-        if (minutes < 1) return 'щойно';
-        if (minutes < 60) return `${minutes} хв тому`;
-        if (hours < 24) return `${hours} год тому`;
-        if (days < 7) return `${days} дн тому`;
+        if (minutes < 1) return 'agora mesmo';
+        if (minutes < 60) return `${minutes} min atrás`;
+        if (hours < 24) return `${hours} h atrás`;
+        if (days < 7) return `${days} d atrás`;
         
         return time.toLocaleDateString('uk-UA');
     }
@@ -529,7 +529,7 @@ class NotificationManager {
     showNotification(message, type = 'info') {
         const toast = $(`<div class="toast" role="alert" aria-live="assertive" aria-atomic="true">
             <div class="toast-header">
-                <strong class="mr-auto">Сповіщення</strong>
+                <strong class="mr-auto">Notificações</strong>
                 <small class="text-muted">${new Date().toLocaleTimeString('uk-UA')}</small>
                 <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
@@ -567,16 +567,16 @@ class NotificationManager {
         const types = ['maintenance', 'alert', 'info', 'update', 'billing'];
         const priorities = ['low', 'medium', 'high', 'critical'];
         const messages = [
-            'Нове планове обслуговування заплановано на наступний тиждень.',
-            'Виявлено потенційну несправність у системі безпеки.',
-            'Оновлено графік роботи техніків на цей місяць.',
-            'Ваша остання заявка успішно виконана.',
-            'Новий рахунок доступний для перегляду в особистому кабінеті.'
+            'Nova manutenção programada para a próxima semana.',
+            'Detetada potencial falha no sistema de segurança.',
+            'Calendário de trabalho dos técnicos atualizado para este mês.',
+            'O seu último pedido foi concluído com sucesso.',
+            'Nova fatura disponível para consulta na área pessoal.'
         ];
         
         const newNotification = {
             id: Math.max(...this.notifications.map(n => n.id), 0) + 1,
-            title: 'Нове сповіщення',
+            title: 'Nova notificação',
             message: messages[Math.floor(Math.random() * messages.length)],
             type: types[Math.floor(Math.random() * types.length)],
             priority: priorities[Math.floor(Math.random() * priorities.length)],
@@ -590,7 +590,7 @@ class NotificationManager {
         this.saveNotifications();
         this.filterNotifications(this.currentFilter);
         this.updateBadges();
-        this.showNotification('Демо-сповіщення додано', 'success');
+        this.showNotification('Notificação de demonstração adicionada', 'success');
     }
 }
 

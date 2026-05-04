@@ -972,9 +972,9 @@ class PredictiveMaintenanceDashboard {
                 return v >= 0.4 && v < 0.7;
             }).length;
             const compBadge = poorComp > 0
-                ? `<span class="badge badge-danger">${poorComp} кр.</span>`
+                ? `<span class="badge badge-danger">${poorComp} crit.</span>`
                 : warnComp > 0
-                    ? `<span class="badge badge-warning">${warnComp} пг.</span>`
+                    ? `<span class="badge badge-warning">${warnComp} avg.</span>`
                     : `<span class="badge badge-success">✓</span>`;
 
             // Detail row content
@@ -1040,7 +1040,7 @@ class PredictiveMaintenanceDashboard {
     }
 
     renderComponentStatus(components) {
-        if (!components) return '<p class="text-muted">Dados неdisponíveis</p>';
+        if (!components) return '<p class="text-muted">Dados indisponíveis</p>';
         
         return Object.entries(components).map(([name, data]) => {
             // Перевіряexisteмо чи data.condition existe e existe числом
@@ -1065,7 +1065,7 @@ class PredictiveMaintenanceDashboard {
 
     renderRecommendations(recommendations) {
         if (!recommendations || recommendations.length === 0) {
-            return '<p class="text-success">Рекомендацій não há</p>';
+            return '<p class="text-success">Sem recomendações</p>';
         }
         
         return recommendations.slice(0, 3).map(rec => `
@@ -1083,7 +1083,7 @@ class PredictiveMaintenanceDashboard {
         const schedule = JSON.parse(localStorage.getItem('optimized_maintenance_schedule') || '{}');
         
         if (!schedule.schedule || schedule.schedule.length === 0) {
-            container.html('<p class="text-muted">Gráfico Manutenção será згенерований após análise</p>');
+            container.html('<p class="text-muted">Gráfico de Manutenção será gerado após análise</p>');
             return;
         }
         

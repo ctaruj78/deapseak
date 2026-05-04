@@ -21,7 +21,7 @@ class PushNotificationsClient {
   }
 
   notifyNewRequest(request) {
-    this.send('Нова заявка', `Ваша заявка №${request.id} створена.`);
+    this.send('Novo pedido', `O seu pedido nº${request.id} foi criado.`);
   }
 
   notifyRequestCompleted(request) {

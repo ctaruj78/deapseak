@@ -1,0 +1,29 @@
+/* FestLift - Custom CSS Overrides */
+/* Add custom styles here that override AdminLTE defaults */
+
+/* Smooth transitions for page elements */
+.card {
+    transition: box-shadow 0.2s ease;
+}
+
+.card:hover {
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+/* Custom button styles */
+.btn-festlift {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+}
+
+/* Responsive table adjustments */
+.table-responsive {
+    border-radius: 4px;
+}
+
+/* Badge styling */
+.badge-festlift {
+    background-color: #6f42c1;
+    color: #fff;
+}

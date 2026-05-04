@@ -829,7 +829,7 @@
                         const items = Array.isArray(data.items) ? data.items : [];
                         const tbody = items.map(function(r) {
                             return '<tr><td>' + (r.id || r._id || '—') + '</td><td>' + (r.lift || '—') + '</td><td>' + (r.technician || '—') + '</td><td>' + (r.status || '—') + '</td><td>' + (r.createdAt ? new Date(r.createdAt).toLocaleDateString('pt-PT') : '—') + '</td><td>' + (r.completedAt ? new Date(r.completedAt).toLocaleDateString('pt-PT') : '—') + '</td></tr>';
-                        }).join('') || '<tr><td colspan="6" class="text-center">Sem dados за selecionado período</td></tr>';
+                        }).join('') || '<tr><td colspan="6" class="text-center">Sem dados para o período selecionado</td></tr>';
                         $('#report-result-placeholder').closest('tbody').html(tbody);
                         if (data.stats) {
                             $('#result-completed').text(data.stats.completed || 0);
@@ -859,7 +859,7 @@
                 if (reportId) window.open('/api/reports/' + reportId + '/excel', '_blank');
             });
 
-            // A carregar lista технікiв
+            // A carregar lista de técnicos
             const token = localStorage.getItem('liftmanager_jwt') || localStorage.getItem('authToken') || localStorage.getItem('token');
             if (token) {
                 $.ajax({
