@@ -483,7 +483,7 @@ router.get('/', authenticate, authorizeRoles('admin', 'dispatcher'), async (req,
             query.archived = { $ne: true };
         }
         
-        // Пошук по клієнту або номеру
+        // Пошук по клієнту ou номеру
         if (search) {
             query.$or = [
                 { numero: new RegExp(search, 'i') },
@@ -846,7 +846,7 @@ router.post('/:id/enviar', authenticate, authorizeRoles('admin', 'dispatcher'), 
             });
         }
         
-        // Отримати email з body або використати з орçаменту
+        // Отримати email з body ou використати з орçаменту
         const emailDestino = req.body.email || orcamento.cliente.email;
         
         console.log(`📧 Enviando orçamento ${orcamento.numero} para ${emailDestino}`);

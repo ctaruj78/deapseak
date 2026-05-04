@@ -107,7 +107,7 @@ exports.createRequest = async (req, res, next) => {
     try {
         const {
             lift: liftFromBody,
-            liftId: liftIdFromBody,       // сумісність з фронтом (старе поле)
+            liftId: liftIdFromBody,       // compatibilidade com frontend (campo legacy)
             title,
             description,
             priority,
@@ -120,7 +120,7 @@ exports.createRequest = async (req, res, next) => {
 
         const lift = liftFromBody || liftIdFromBody;
 
-        // Клієнт: адмін/диспетчер може вказати довільного клієнта, клієнт — тільки себе
+        // Cliente: адмін/диспетчер може вказати довільного клієнта, клієнт — тільки себе
         const clientId = (['admin', 'dispatcher'].includes(req.user.role) && clientFromBody)
             ? clientFromBody
             : req.user.id;
@@ -128,14 +128,14 @@ exports.createRequest = async (req, res, next) => {
         // Перевірка існування ліфта
         const liftExists = await Lift.findById(lift);
         if (!liftExists) {
-            throw new AppError('Ліфт не знайдено', 404);
+            throw new AppError('Elevador não encontrado', 404);
         }
 
         // Створення запиту
         const requestData = {
             lift,
             client: clientId,
-            title: title || description?.substring(0, 60) || 'Нова заявка',
+            title: title || description?.substring(0, 60) || 'Novo pedido',
             description,
             priority: priority || 'medium',
             photosBefore: photosBefore || []
@@ -164,7 +164,7 @@ exports.createRequest = async (req, res, next) => {
 
         res.status(201).json({
             success: true,
-            message: 'Запит створено',
+            message: 'Pedido criado',
             data: { request }
         });
     } catch (error) {
@@ -199,7 +199,7 @@ exports.getAllRequests = async (req, res, next) => {
         if (client) query.client = client;
         if (assignedTo) query.assignedTo = assignedTo;
 
-        // Пошук по заголовку або опису
+        // Пошук по заголовку ou опису
         if (search) {
             query.$or = [
                 { title: { $regex: search, $options: 'i' } },
@@ -260,14 +260,14 @@ exports.getRequestById = async (req, res, next) => {
             .populate('comments.user', 'firstName lastName');
 
         if (!request) {
-            throw new AppError('Запит не знайдено', 404);
+            throw new AppError('Pedido não encontrado', 404);
         }
 
         // Перевірка доступу (клієнт може бачити тільки свої запити)
         // Тільки для нового формату де client заповнений
         if (req.user.role === 'client' && request.client) {
             if (request.client._id && request.client._id.toString() !== req.user.id) {
-                throw new AppError('Доступ заборонено', 403);
+                throw new AppError('Acesso negado', 403);
             }
         }
 
@@ -299,16 +299,16 @@ exports.updateRequest = async (req, res, next) => {
         const request = await Request.findById(req.params.id);
 
         if (!request) {
-            throw new AppError('Запит не знайдено', 404);
+            throw new AppError('Pedido não encontrado', 404);
         }
 
         // Перевірка прав (клієнт може редагувати тільки свої запити у статусі 'new')
         if (req.user.role === 'client') {
             if (request.client.toString() !== req.user.id) {
-                throw new AppError('Доступ заборонено', 403);
+                throw new AppError('Acesso negado', 403);
             }
             if (request.status !== 'new') {
-                throw new AppError('Можна редагувати тільки нові запити', 400);
+                throw new AppError('Só é possível editar pedidos novos', 400);
             }
         }
 
@@ -323,7 +323,7 @@ exports.updateRequest = async (req, res, next) => {
 
         res.json({
             success: true,
-            message: 'Запит оновлено',
+            message: 'Pedido atualizado',
             data: { request }
         });
     } catch (error) {
@@ -345,7 +345,7 @@ exports.assignRequest = async (req, res, next) => {
         // Перевірка техніка
         const technician = await User.findById(technicianId);
         if (!technician || technician.role !== 'technician') {
-            throw new AppError('Невірний технік', 400);
+            throw new AppError('Técnico inválido', 400);
         }
 
         // Перевірка навантаження техніка
@@ -356,7 +356,7 @@ exports.assignRequest = async (req, res, next) => {
         const request = await Request.findById(req.params.id);
 
         if (!request) {
-            throw new AppError('Запит не знайдено', 404);
+            throw new AppError('Pedido não encontrado', 404);
         }
 
         await request.changeStatus('assigned', req.user.id);
@@ -414,7 +414,7 @@ exports.updateRequestStatus = async (req, res, next) => {
         const request = await Request.findById(req.params.id);
 
         if (!request) {
-            throw new AppError('Запит не знайдено', 404);
+            throw new AppError('Pedido não encontrado', 404);
         }
 
         // Перевірка прав
@@ -469,7 +469,7 @@ exports.addComment = async (req, res, next) => {
         const request = await Request.findById(req.params.id);
 
         if (!request) {
-            throw new AppError('Запит не знайдено', 404);
+            throw new AppError('Pedido não encontrado', 404);
         }
 
         await request.addComment(req.user.id, text);
@@ -497,7 +497,7 @@ exports.addComment = async (req, res, next) => {
  */
 exports.addPhotos = async (req, res, next) => {
     try {
-        const { photos, type } = req.body; // type: 'before' або 'after'
+        const { photos, type } = req.body; // type: 'before' ou 'after'
 
         if (!photos || !Array.isArray(photos) || photos.length === 0) {
             throw new AppError('Надайте масив фото', 400);
@@ -506,7 +506,7 @@ exports.addPhotos = async (req, res, next) => {
         const request = await Request.findById(req.params.id);
 
         if (!request) {
-            throw new AppError('Запит не знайдено', 404);
+            throw new AppError('Pedido não encontrado', 404);
         }
 
         if (type === 'before') {
@@ -514,7 +514,7 @@ exports.addPhotos = async (req, res, next) => {
         } else if (type === 'after') {
             request.photosAfter.push(...photos);
         } else {
-            throw new AppError('Невірний тип фото (before/after)', 400);
+            throw new AppError('Tipo de foto inválido (before/after)', 400);
         }
 
         await request.save();
@@ -539,12 +539,12 @@ exports.updateWorkDetails = async (req, res, next) => {
         const request = await Request.findById(req.params.id);
 
         if (!request) {
-            throw new AppError('Запит не знайдено', 404);
+            throw new AppError('Pedido não encontrado', 404);
         }
 
         // Тільки призначений технік може оновлювати деталі роботи
         if (req.user.role === 'technician' && request.assignedTo?.toString() !== req.user.id) {
-            throw new AppError('Доступ заборонено', 403);
+            throw new AppError('Acesso negado', 403);
         }
 
         if (workDescription) request.workDescription = workDescription;
@@ -573,12 +573,12 @@ exports.completeRequest = async (req, res, next) => {
         const request = await Request.findById(req.params.id);
 
         if (!request) {
-            throw new AppError('Запит не знайдено', 404);
+            throw new AppError('Pedido não encontrado', 404);
         }
 
         // Тільки призначений технік може завершити запит
         if (req.user.role === 'technician' && request.assignedTo?.toString() !== req.user.id) {
-            throw new AppError('Доступ заборонено', 403);
+            throw new AppError('Acesso negado', 403);
         }
 
         // Зменшити навантаження техніка
@@ -641,12 +641,12 @@ exports.cancelRequest = async (req, res, next) => {
         const request = await Request.findById(req.params.id);
 
         if (!request) {
-            throw new AppError('Запит не знайдено', 404);
+            throw new AppError('Pedido não encontrado', 404);
         }
 
         // Клієнт може скасувати тільки свій запит
         if (req.user.role === 'client' && request.client.toString() !== req.user.id) {
-            throw new AppError('Доступ заборонено', 403);
+            throw new AppError('Acesso negado', 403);
         }
 
         // Зменшити навантаження техніка при скасуванні призначеного запиту
@@ -688,7 +688,7 @@ exports.deleteRequest = async (req, res, next) => {
         const request = await Request.findByIdAndDelete(req.params.id);
 
         if (!request) {
-            throw new AppError('Запит не знайдено', 404);
+            throw new AppError('Pedido não encontrado', 404);
         }
 
         res.json({
@@ -768,7 +768,7 @@ exports.exportRequestPDF = async (req, res, next) => {
             .populate('lift', 'municipalNumber');
 
         if (!request) {
-            throw new AppError('Заявку не знайдено', 404);
+            throw new AppError('Pedido não encontrado', 404);
         }
 
         const pdfBuffer = await exportService.exportRequestToPDF(request);

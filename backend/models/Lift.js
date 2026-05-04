@@ -63,7 +63,7 @@ const liftSchema = new mongoose.Schema({
     installationDate: Date,
     lastInspectionDate: Date,
     nextInspectionDate: { type: Date, index: true },
-    inspectionFrequency: { type: Number, default: 6 }, // місяців
+    inspectionFrequency: { type: Number, default: 6 }, // meses
     maintenanceNotes: String,
     status: {
         type: String,
@@ -76,7 +76,7 @@ const liftSchema = new mongoose.Schema({
         inspector: String,
         notes: String,
         photos: [String],
-        reportFile: String, // PDF файл звіту
+        reportFile: String, // ficheiro PDF do relatório
         reportType: { type: String, enum: ['routine', 'emergency', 'annual', 'certification'], default: 'routine' },
         inspectionType: { type: String, enum: ['inspection', 'maintenance', 'repair', 'emergency'] },
         status: { type: String, enum: ['passed', 'failed', 'conditional', 'completed'], default: 'passed' }
@@ -107,7 +107,7 @@ const liftSchema = new mongoose.Schema({
         notes: String
     }],
     maintenanceContract: {
-        contractFile: String, // PDF файл контракту
+        contractFile: String, // ficheiro PDF do contrato
         contractNumber: String,
         startDate: Date,
         endDate: Date,
@@ -141,9 +141,9 @@ liftSchema.index({ location: '2dsphere' });
 
 // ── Normalize legacy/UI display values → DB enum codes ────────────────────
 const DRIVE_MAP = {
-    'гідравлічний': 'hydraulic',
+    'hydraulic': 'hydraulic',
     'hydraulic':    'hydraulic',
-    'канатний (mrl)': 'traction_mrl',
+    'traction_mrl': 'traction_mrl',
     'traction_mrl': 'traction_mrl',
     'канатний (з машинним залом)': 'traction',
     'traction':     'traction',

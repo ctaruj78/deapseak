@@ -6,7 +6,7 @@ exports.getRecentNotifications = async (req, res) => {
     const userId = String(req.user._id || req.user.id);
     const role = req.user.role;
 
-    // Dispatcher/admin бачить усі сповіщення; технік — лише свої або загальні
+    // Dispatcher/admin бачить усі сповіщення; технік — лише свої ou загальні
     const query = (role === 'admin' || role === 'dispatcher')
       ? {}
       : { $or: [{ recipientId: userId }, { recipientId: null }, { recipientId: '' }] };

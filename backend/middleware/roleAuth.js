@@ -8,13 +8,13 @@ const { AppError } = require('./errorHandler');
 const authorizeRoles = (...allowedRoles) => {
     return (req, res, next) => {
         if (!req.user) {
-            return next(new AppError('Користувач не автентифікований', 401));
+            return next(new AppError('Utilizador não autenticado', 401));
         }
 
         if (!allowedRoles.includes(req.user.role)) {
             return next(
                 new AppError(
-                    `Доступ заборонено. Потрібна роль: ${allowedRoles.join(' або ')}`,
+                    `Acesso negado. Papel necessário: ${allowedRoles.join(' ou ')}`,
                     403
                 )
             );
@@ -34,7 +34,7 @@ const isClient = authorizeRoles('client');
 const isOwnerOrAdmin = (resourceUserId) => {
     return (req, res, next) => {
         if (!req.user) {
-            return next(new AppError('Користувач не автентифікований', 401));
+            return next(new AppError('Utilizador não autenticado', 401));
         }
 
         const isOwner = req.user.userId === resourceUserId || req.user.id === resourceUserId;
@@ -42,7 +42,7 @@ const isOwnerOrAdmin = (resourceUserId) => {
 
         if (!isOwner && !isAdmin) {
             return next(
-                new AppError('Ви не маєте доступу до цього ресурсу', 403)
+                new AppError('Não tem acesso a este recurso', 403)
             );
         }
 

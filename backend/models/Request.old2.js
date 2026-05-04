@@ -9,13 +9,13 @@ const requestSchema = new mongoose.Schema({
         type: String,
         required: [true, 'Назва заявки є обов\'язковою'],
         trim: true,
-        maxlength: [200, 'Назва не може перевищувати 200 символів']
+        maxlength: [200, 'Título não pode exceder 200 caracteres']
     },
     description: {
         type: String,
         required: [true, 'Опис заявки є обов\'язковим'],
         trim: true,
-        maxlength: [2000, 'Опис не може перевищувати 2000 символів']
+        maxlength: [2000, 'Descrição não pode exceder 2000 caracteres']
     },
     // Ліфт
     liftId: {
@@ -49,7 +49,7 @@ const requestSchema = new mongoose.Schema({
         type: String,
         enum: {
             values: ['new', 'assigned', 'in_progress', 'completed', 'cancelled'],
-            message: 'Статус має бути: new, assigned, in_progress, completed або cancelled'
+            message: 'Статус має бути: new, assigned, in_progress, completed ou cancelled'
         },
         default: 'new'
     },
@@ -57,7 +57,7 @@ const requestSchema = new mongoose.Schema({
         type: String,
         enum: {
             values: ['low', 'medium', 'high', 'urgent'],
-            message: 'Пріоритет має бути: low, medium, high або urgent'
+            message: 'Пріоритет має бути: low, medium, high ou urgent'
         },
         default: 'medium'
     },

@@ -135,7 +135,7 @@ function parseDate(str) {
         .replace(/[;,]+$/, '')
         .trim();
 
-    // DD/MM/YYYY або DD-MM-YYYY або DD.MM.YYYY
+    // DD/MM/YYYY ou DD-MM-YYYY ou DD.MM.YYYY
     let match = clean.match(/^(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{4})$/);
     if (match) {
         const day = parseInt(match[1], 10);
@@ -144,7 +144,7 @@ function parseDate(str) {
         return new Date(year, month - 1, day);
     }
 
-    // YYYY/MM/DD або YYYY-MM-DD
+    // YYYY/MM/DD ou YYYY-MM-DD
     match = clean.match(/^(\d{4})[\/.\-](\d{1,2})[\/.\-](\d{1,2})$/);
     if (match) {
         const year = parseInt(match[1], 10);
@@ -336,7 +336,7 @@ router.post('/parse-inspection-pdf', authenticate, authorizeRoles('admin', 'disp
         }
 
         if (!tmpPath) {
-            return res.status(400).json({ success: false, message: 'Файл PDF не завантажено' });
+            return res.status(400).json({ success: false, message: 'Ficheiro PDF não carregado' });
         }
 
         try {
@@ -352,7 +352,7 @@ router.post('/parse-inspection-pdf', authenticate, authorizeRoles('admin', 'disp
                 if (fs.existsSync(tmpPath)) fs.unlinkSync(tmpPath);
                 return res.status(422).json({
                     success: false,
-                    message: 'Не вдалося прочитати текст з PDF. Можливо, файл є скан-зображенням без текстового шару або пошкоджений.',
+                    message: 'Não foi possível ler o texto do PDF. Possivelmente é uma imagem digitalizada sem текстового шару ou пошкоджений.',
                     details: parsed?.error || null
                 });
             }
@@ -488,7 +488,7 @@ router.post('/parse-inspection-pdf', authenticate, authorizeRoles('admin', 'disp
             console.error('❌ PDF inspection parser error:', err);
             return res.status(500).json({
                 success: false,
-                message: 'Помилка при аналізі PDF',
+                message: 'Erro ao analisar PDF',
                 error: err.message
             });
         }
@@ -511,13 +511,13 @@ router.post('/:id/confirm-inspection-from-pdf', authenticate, authorizeRoles('ad
         } = req.body;
 
         const lift = await Lift.findById(req.params.id);
-        if (!lift) return res.status(404).json({ success: false, message: 'Ліфт não знайдено' });
+        if (!lift) return res.status(404).json({ success: false, message: 'Elevador não encontrado' });
 
         // Build violation notes summary
         let violationNotes = notes || '';
         if (violations && violations.length) {
             violationNotes = (notes ? notes + '\n\n' : '') +
-                'Порушення:\n' + violations.map(v => `• [${v.classification || v.severity || v.type || '?'}] ${v.description || v.text || v}`).join('\n');
+                'Violações:\n' + violations.map(v => `• [${v.classification || v.severity || v.type || '?'}] ${v.description || v.text || v}`).join('\n');
         }
 
         // Normalize reportType to valid enum values
@@ -568,7 +568,7 @@ router.post('/:id/confirm-inspection-from-pdf', authenticate, authorizeRoles('ad
 
         res.json({
             success: true,
-            message: 'Звіт інспекції збережено',
+            message: 'Relatório de inspeção guardado',
             inspectionEntry: report,
             nextInspectionDate: nextInspectionDateSaved
         });
@@ -589,11 +589,11 @@ router.patch('/:id/update-inspection-dates', authenticate, authorizeRoles('admin
         if (nextInspectionDate) update.nextInspectionDate = new Date(nextInspectionDate);
 
         if (!Object.keys(update).length) {
-            return res.status(400).json({ success: false, message: 'Немає полів для оновлення' });
+            return res.status(400).json({ success: false, message: 'Sem campos para atualizarя' });
         }
 
         const lift = await Lift.findByIdAndUpdate(req.params.id, { $set: update }, { new: true }).lean();
-        if (!lift) return res.status(404).json({ success: false, message: 'Ліфт не знайдено' });
+        if (!lift) return res.status(404).json({ success: false, message: 'Elevador não encontrado' });
 
         res.json({ success: true, message: 'Дати інспекції оновлено', lift });
     } catch (err) {

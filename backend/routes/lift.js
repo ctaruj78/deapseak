@@ -4,7 +4,7 @@ const controller = require('../controllers/liftController');
 const { authenticate } = require('../middleware/auth');
 const { authorizeRoles } = require('../middleware/roleAuth');
 
-// 🔐 Всі роути захищені автентифікацією + роллю admin або dispatcher
+// 🔐 Всі роути захищені автентифікацією + роллю admin ou dispatcher
 const adminOrDispatcher = [authenticate, authorizeRoles('admin', 'dispatcher')];
 
 // MongoDB routes

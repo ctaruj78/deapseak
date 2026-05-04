@@ -40,7 +40,7 @@ exports.register = async (req, res, next) => {
         });
 
         if (existingUser) {
-            throw new AppError('Користувач з таким email або username вже існує', 400);
+            throw new AppError('Користувач з таким email ou username вже існує', 400);
         }
 
         // 🔐 SECURITY: публічна реєстрація ЗАВЖДИ створює клієнта.
@@ -52,7 +52,7 @@ exports.register = async (req, res, next) => {
             firstName,
             lastName,
             phone,
-            role: 'client' // ЗАВЖДИ client — роль призначає тільки admin
+            role: 'client' // SEMPRE client — papel atribuído apenas pelo administrador
         });
 
         // Генерація токенів
@@ -71,8 +71,8 @@ exports.register = async (req, res, next) => {
         const response = {
             success: true,
             message: temporaryPassword 
-                ? 'Користувача створено. Тимчасовий пароль надіслано в відповіді.' 
-                : 'Користувача успішно зареєстровано',
+                ? 'Utilizador criado. Palavra-passe temporária enviada na resposta.' 
+                : 'Utilizador registado com sucesso',
             data: {
                 user: userResponse,
                 token,
@@ -98,20 +98,20 @@ exports.login = async (req, res, next) => {
     try {
         // Підтримуємо як 'login' (старий формат), так і 'email' (новий формат)
         const { login, email, password } = req.body;
-        const loginValue = login || email; // Використовуємо login або email
+        const loginValue = login || email; // Використовуємо login ou email
 
         if (!loginValue || !password) {
-            throw new AppError('Будь ласка, надайте email/username та пароль', 400);
+            throw new AppError('Por favor, forneça email/username e palavra-passe', 400);
         }
 
-        // Пошук користувача (email або username)
+        // Пошук користувача (email ou username)
         const user = await User.findOne({
             $or: [{ email: loginValue }, { username: loginValue }]
         }).select('+password +loginAttempts +lockUntil'); // Включаємо пароль та lockout поля
 
         if (!user) {
             // Однакова відповідь щоб не дати можливість розрізнити існування email
-            throw new AppError('Невірний email/username або пароль', 401);
+            throw new AppError('Email ou palavra-passe incorretos', 401);
         }
 
         // 🔐 Перевірка account lockout
@@ -134,10 +134,10 @@ exports.login = async (req, res, next) => {
         if (!isPasswordValid) {
             // Збільшуємо лічильник невдалих спроб
             await user.incrementLoginAttempts();
-            throw new AppError('Невірний email/username або пароль', 401);
+            throw new AppError('Email ou palavra-passe incorretos', 401);
         }
 
-        // ✅ Успішний вхід - скидаємо лічильник
+        // ✅ Login efetuado com sucesso - скидаємо лічильник
         await user.resetLoginAttempts();
 
         // Оновлення lastLogin (через updateOne щоб не запускати валідацію Mongoose)
@@ -160,7 +160,7 @@ exports.login = async (req, res, next) => {
 
         res.json({
             success: true,
-            message: 'Успішний вхід',
+            message: 'Login efetuado com sucesso',
             data: {
                 user: userResponse,
                 token,
@@ -181,7 +181,7 @@ exports.getProfile = async (req, res, next) => {
         const user = await User.findById(req.user.id).select('-password');
 
         if (!user) {
-            throw new AppError('Користувача не знайдено', 404);
+            throw new AppError('Utilizador não encontrado', 404);
         }
 
         res.json({
@@ -227,7 +227,7 @@ exports.updateProfile = async (req, res, next) => {
         ).select('-password');
 
         if (!user) {
-            throw new AppError('Користувача не знайдено', 404);
+            throw new AppError('Utilizador não encontrado', 404);
         }
 
         res.json({
@@ -254,13 +254,13 @@ exports.changePassword = async (req, res, next) => {
         const user = await User.findById(req.user.id).select('+password');
 
         if (!user) {
-            throw new AppError('Користувача не знайдено', 404);
+            throw new AppError('Utilizador não encontrado', 404);
         }
 
         // Перевірка поточного пароля
         const isPasswordValid = await user.comparePassword(currentPassword);
         if (!isPasswordValid) {
-            throw new AppError('Невірний поточний пароль', 401);
+            throw new AppError('Palavra-passe atual incorreta', 401);
         }
 
         // Оновлення пароля (автоматично хешується)
@@ -292,7 +292,7 @@ exports.getAllUsers = async (req, res, next) => {
             query.role = role;
         }
 
-        // Пошук по імені або email
+        // Пошук по імені ou email
         if (search) {
             query.$or = [
                 { firstName: { $regex: search, $options: 'i' } },
@@ -338,7 +338,7 @@ exports.getUserById = async (req, res, next) => {
         const user = await User.findById(req.params.id).select('-password');
 
         if (!user) {
-            throw new AppError('Користувача не знайдено', 404);
+            throw new AppError('Utilizador não encontrado', 404);
         }
 
         res.json({
@@ -368,7 +368,7 @@ exports.updateUserRole = async (req, res, next) => {
         ).select('-password');
 
         if (!user) {
-            throw new AppError('Користувача не знайдено', 404);
+            throw new AppError('Utilizador não encontrado', 404);
         }
 
         res.json({
@@ -389,12 +389,12 @@ exports.deleteUser = async (req, res, next) => {
         const user = await User.findByIdAndDelete(req.params.id);
 
         if (!user) {
-            throw new AppError('Користувача не знайдено', 404);
+            throw new AppError('Utilizador não encontrado', 404);
         }
 
         res.json({
             success: true,
-            message: 'Користувача видалено'
+            message: 'Utilizador eliminado'
         });
     } catch (error) {
         next(error);
@@ -409,7 +409,7 @@ exports.toggleUserBan = async (req, res, next) => {
         const user = await User.findById(req.params.id).select('-password');
 
         if (!user) {
-            throw new AppError('Користувача не знайдено', 404);
+            throw new AppError('Utilizador não encontrado', 404);
         }
 
         // Не можна забанити самого себе
@@ -427,7 +427,7 @@ exports.toggleUserBan = async (req, res, next) => {
 
         res.json({
             success: true,
-            message: user.isActive ? 'Користувача розблоковано' : 'Користувача заблоковано',
+            message: user.isActive ? 'Utilizador desbloqueado' : 'Utilizador bloqueado',
             data: { user }
         });
     } catch (error) {
@@ -473,11 +473,11 @@ exports.requestPasswordReset = async (req, res, next) => {
         try {
             await emailService.sendPasswordResetEmail(user.email, resetUrl, user.firstName);
         } catch (emailError) {
-            console.error('Помилка відправки email:', emailError);
+            console.error('Erro ao enviar email:', emailError);
             user.resetPasswordToken = undefined;
             user.resetPasswordExpire = undefined;
             await user.save();
-            throw new AppError('Помилка відправки email', 500);
+            throw new AppError('Erro ao enviar email', 500);
         }
 
         res.json({
@@ -509,7 +509,7 @@ exports.resetPassword = async (req, res, next) => {
         });
 
         if (!user) {
-            throw new AppError('Токен недійсний або прострочений', 400);
+            throw new AppError('Token inválido ou expirado', 400);
         }
 
         user.password = newPassword;
@@ -519,7 +519,7 @@ exports.resetPassword = async (req, res, next) => {
 
         res.json({
             success: true,
-            message: 'Пароль успішно змінено'
+            message: 'Palavra-passe alterada com sucesso'
         });
     } catch (error) {
         next(error);
@@ -534,20 +534,20 @@ exports.refreshToken = async (req, res, next) => {
     try {
         const { refreshToken } = req.body;
         if (!refreshToken) {
-            return res.status(400).json({ success: false, message: 'Refresh token не надано' });
+            return res.status(400).json({ success: false, message: 'Refresh token não fornecido' });
         }
 
         let decoded;
         try {
             decoded = verifyRefreshToken(refreshToken);
         } catch (e) {
-            return res.status(403).json({ success: false, message: 'Refresh token недійсний або прострочений. Будь ласка, увійдіть знову.' });
+            return res.status(403).json({ success: false, message: 'Refresh token недійсний ou прострочений. Будь ласка, увійдіть знову.' });
         }
 
         // Перевіряємо чи користувач ще існує і активний (явно false — не блокуємо undefined)
         const user = await User.findById(decoded.id).select('-password');
         if (!user || user.isActive === false) {
-            return res.status(403).json({ success: false, message: 'Користувача не знайдено або заблоковано' });
+            return res.status(403).json({ success: false, message: 'Utilizador não encontrado ou bloqueado' });
         }
 
         // Генеруємо новий access token (7 днів)
@@ -585,7 +585,7 @@ exports.adminCreateUser = async (req, res, next) => {
         // Перевірка унікальності
         const existing = await User.findOne({ $or: [{ email }, { username: resolvedUsername }] });
         if (existing) {
-            throw new AppError('Користувач з таким email або username вже існує', 400);
+            throw new AppError('Користувач з таким email ou username вже існує', 400);
         }
 
         // Якщо пароль не передано — генеруємо тимчасовий
@@ -641,7 +641,7 @@ exports.adminCreateUser = async (req, res, next) => {
 exports.adminResetUserPassword = async (req, res, next) => {
     try {
         const user = await User.findById(req.params.id);
-        if (!user) throw new AppError('Користувача не знайдено', 404);
+        if (!user) throw new AppError('Utilizador não encontrado', 404);
 
         const newPassword = generateTemporaryPassword();
         user.password = newPassword;
@@ -689,7 +689,7 @@ exports.updateUserById = async (req, res, next) => {
         ).select('-password -refreshToken -resetPasswordToken');
 
         if (!user) {
-            return res.status(404).json({ success: false, message: 'Користувача не знайдено' });
+            return res.status(404).json({ success: false, message: 'Utilizador não encontrado' });
         }
 
         res.json({ success: true, message: 'Дані клієнта оновлено', data: { user } });

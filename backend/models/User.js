@@ -11,8 +11,8 @@ const userSchema = new mongoose.Schema({
         required: [true, 'Username є обов\'язковим'],
         unique: true,
         trim: true,
-        minlength: [3, 'Username має бути мінімум 3 символи'],
-        maxlength: [50, 'Username не може перевищувати 50 символів']
+        minlength: [3, 'Username deve ter no mínimo 3 caracteres'],
+        maxlength: [50, 'Username não pode exceder 50 caracteres']
     },
     email: {
         type: String,
@@ -20,7 +20,7 @@ const userSchema = new mongoose.Schema({
         unique: true,
         lowercase: true,
         trim: true,
-        match: [/^\S+@\S+\.\S+$/, 'Невірний формат email']
+        match: [/^\S+@\S+\.\S+$/, 'Formato de email inválido']
     },
     password: {
         type: String,
@@ -32,7 +32,7 @@ const userSchema = new mongoose.Schema({
         type: String,
         enum: {
             values: ['admin', 'dispatcher', 'technician', 'tech', 'client'],
-            message: 'Роль має бути: admin, dispatcher, technician, tech або client'
+            message: 'Роль має бути: admin, dispatcher, technician, tech ou client'
         },
         default: 'client'
     },
@@ -53,13 +53,13 @@ const userSchema = new mongoose.Schema({
         trim: true,
         validate: {
             validator: function(v) {
-                // Дозволяємо пусте значення або формати +380, 380, 0, +351, +1 тощо
+                // Дозволяємо пусте значення ou формати +380, 380, 0, +351, +1 тощо
                 // Пробіли, дефіси та дужки допускаються
                 if (!v || v === '') return true;
                 const stripped = v.replace(/[\s\-().]/g, '');
                 return /^(\+\d{1,4}|0)\d{6,14}$/.test(stripped);
             },
-            message: 'Невірний формат телефону'
+            message: 'Formato de telefone inválido'
         }
     },
     isActive: {

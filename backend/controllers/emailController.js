@@ -4,7 +4,7 @@ const { AppError } = require('../middleware/errorHandler');
 let transporter = null;
 
 /**
- * Отримати або створити SMTP транспорт
+ * Отримати ou створити SMTP транспорт
  */
 function getTransporter() {
     if (transporter) {
@@ -57,7 +57,7 @@ exports.sendEmail = async (req, res, next) => {
         // Валідація email
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(to)) {
-            throw new AppError('Невірний формат email', 400);
+            throw new AppError('Formato de email inválido', 400);
         }
 
         console.log('📧 =============== EMAIL SENDING REQUEST ===============');
@@ -82,13 +82,13 @@ exports.sendEmail = async (req, res, next) => {
 
             const info = await smtpTransporter.sendMail(mailOptions);
             
-            console.log('✅ Email успішно надіслано через Brevo!');
+            console.log('✅ Email enviado com sucesso via Brevo!');
             console.log('📨 Message ID:', info.messageId);
             console.log('======================================================');
 
             res.json({
                 success: true,
-                message: 'Email успішно надіслано через Brevo',
+                message: 'Email enviado com sucesso via Brevo',
                 data: {
                     to,
                     subject,
@@ -122,7 +122,7 @@ exports.sendEmail = async (req, res, next) => {
         }
 
     } catch (error) {
-        console.error('❌ Помилка надсилання email:', error);
+        console.error('❌ Erro ao enviar email:', error);
         console.log('======================================================');
         next(error);
     }
@@ -136,7 +136,7 @@ exports.sendPasswordEmail = async (req, res, next) => {
         const { email, password, appUrl } = req.body;
 
         if (!email || !password) {
-            throw new AppError('Не вказано email або пароль', 400);
+            throw new AppError('Не вказано email ou пароль', 400);
         }
 
         const html = `

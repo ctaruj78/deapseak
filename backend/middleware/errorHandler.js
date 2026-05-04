@@ -39,7 +39,7 @@ const errorHandler = (err, req, res, next) => {
             res.status(500).json({
                 success: false,
                 status: 'error',
-                message: 'Щось пішло не так!'
+                message: 'Algo correu mal!'
             });
         }
     }

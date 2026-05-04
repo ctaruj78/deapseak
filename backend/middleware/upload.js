@@ -27,7 +27,7 @@ const contractFileFilter = (req, file, cb) => {
     if (file.mimetype === 'application/pdf') {
         cb(null, true);
     } else {
-        cb(new Error('Тільки PDF файли дозволені для контрактів'), false);
+        cb(new Error('Apenas ficheiros PDF são permitidos para contratos'), false);
     }
 };
 
@@ -37,7 +37,7 @@ const reportFileFilter = (req, file, cb) => {
     if (allowedTypes.includes(file.mimetype)) {
         cb(null, true);
     } else {
-        cb(new Error('Тільки PDF та зображення дозволені'), false);
+        cb(new Error('Apenas PDF e imagens são permitidos'), false);
     }
 };
 
@@ -47,7 +47,7 @@ const imageFileFilter = (req, file, cb) => {
     if (allowedTypes.includes(file.mimetype)) {
         cb(null, true);
     } else {
-        cb(new Error('Тільки зображення дозволені'), false);
+        cb(new Error('Apenas imagens são permitidas'), false);
     }
 };
 

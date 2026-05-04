@@ -12,7 +12,7 @@ const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET ||
     (process.env.JWT_SECRET ? process.env.JWT_SECRET + '_refresh_v1' : null);
 
 if (!JWT_SECRET) {
-    console.error('⚠️  CRITICAL: JWT_SECRET не вказано в .env! Сервер буде вразливий.');
+    console.error('⚠️  CRITICAL: JWT_SECRET não definido em .env! Servidor vulnerável.');
     process.exit(1);
 }
 
@@ -23,18 +23,18 @@ const authenticate = (req, res, next) => {
         const token = authHeader && authHeader.split(' ')[1];
 
         if (!token) {
-            return next(new AppError('Токен доступу відсутній', 401));
+            return next(new AppError('Token de acesso não fornecido', 401));
         }
 
         jwt.verify(token, JWT_SECRET, (err, decoded) => {
             if (err) {
-                return next(new AppError('Недійсний або прострочений токен', 403));
+                return next(new AppError('Недійсний ou прострочений токен', 403));
             }
             req.user = decoded;
             next();
         });
     } catch (error) {
-        next(new AppError('Помилка автентифікації', 401));
+        next(new AppError('Erro de autenticação', 401));
     }
 };
 
@@ -53,7 +53,7 @@ const verifyRefreshToken = (token) => {
     try {
         return jwt.verify(token, JWT_REFRESH_SECRET);
     } catch (error) {
-        throw new AppError('Недійсний refresh токен', 403);
+        throw new AppError('Refresh token inválido', 403);
     }
 };
 

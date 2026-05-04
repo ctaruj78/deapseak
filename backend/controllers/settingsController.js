@@ -12,7 +12,7 @@ exports.getUserSettings = async (req, res, next) => {
         const user = await User.findById(req.user.id).select('settings');
         
         if (!user) {
-            return next(new AppError('Користувача не знайдено', 404));
+            return next(new AppError('Utilizador não encontrado', 404));
         }
 
         // Якщо налаштувань немає, створюємо дефолтні
@@ -36,7 +36,7 @@ exports.updateUserSettings = async (req, res, next) => {
         const user = await User.findById(req.user.id);
         
         if (!user) {
-            return next(new AppError('Користувача не знайдено', 404));
+            return next(new AppError('Utilizador não encontrado', 404));
         }
 
         // Об'єднуємо існуючі налаштування з новими
@@ -50,7 +50,7 @@ exports.updateUserSettings = async (req, res, next) => {
 
         res.json({
             success: true,
-            message: 'Налаштування оновлено',
+            message: 'Configurações atualizadas',
             settings: user.settings
         });
     } catch (error) {
@@ -64,7 +64,7 @@ exports.resetSettings = async (req, res, next) => {
         const user = await User.findById(req.user.id);
         
         if (!user) {
-            return next(new AppError('Користувача не знайдено', 404));
+            return next(new AppError('Utilizador não encontrado', 404));
         }
 
         user.settings = getDefaultSettings();
@@ -72,7 +72,7 @@ exports.resetSettings = async (req, res, next) => {
 
         res.json({
             success: true,
-            message: 'Налаштування скинуто до стандартних',
+            message: 'Configurações redefinidas para os valores predefinidos',
             settings: user.settings
         });
     } catch (error) {
@@ -86,13 +86,13 @@ exports.updateLanguage = async (req, res, next) => {
         const { language } = req.body;
         
         if (!['uk', 'en', 'pt'].includes(language)) {
-            return next(new AppError('Непідтримувана мова', 400));
+            return next(new AppError('Idioma não suportado', 400));
         }
 
         const user = await User.findById(req.user.id);
         
         if (!user) {
-            return next(new AppError('Користувача не знайдено', 404));
+            return next(new AppError('Utilizador não encontrado', 404));
         }
 
         if (!user.settings) {
@@ -104,7 +104,7 @@ exports.updateLanguage = async (req, res, next) => {
 
         res.json({
             success: true,
-            message: 'Мову змінено',
+            message: 'Idioma alterado',
             language
         });
     } catch (error) {
@@ -118,13 +118,13 @@ exports.updateTheme = async (req, res, next) => {
         const { theme } = req.body;
         
         if (!['light', 'dark', 'auto'].includes(theme)) {
-            return next(new AppError('Непідтримувана тема', 400));
+            return next(new AppError('Tema não suportado', 400));
         }
 
         const user = await User.findById(req.user.id);
         
         if (!user) {
-            return next(new AppError('Користувача не знайдено', 404));
+            return next(new AppError('Utilizador não encontrado', 404));
         }
 
         if (!user.settings) {
@@ -136,7 +136,7 @@ exports.updateTheme = async (req, res, next) => {
 
         res.json({
             success: true,
-            message: 'Тему змінено',
+            message: 'Tema alterado',
             theme
         });
     } catch (error) {
@@ -152,7 +152,7 @@ exports.updateNotifications = async (req, res, next) => {
         const user = await User.findById(req.user.id);
         
         if (!user) {
-            return next(new AppError('Користувача не знайдено', 404));
+            return next(new AppError('Utilizador não encontrado', 404));
         }
 
         if (!user.settings) {

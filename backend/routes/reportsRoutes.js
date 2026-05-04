@@ -21,7 +21,7 @@ router.post('/generate', authenticate, authorizeRoles('admin', 'dispatcher'), as
         const { type = 'maintenance', startDate, endDate, technicianId, status } = req.body;
 
         if (!startDate || !endDate) {
-            return res.status(400).json({ message: 'Вкажіть startDate та endDate' });
+            return res.status(400).json({ message: 'Indique startDate e endDate' });
         }
 
         const start = new Date(startDate);
@@ -29,7 +29,7 @@ router.post('/generate', authenticate, authorizeRoles('admin', 'dispatcher'), as
         end.setHours(23, 59, 59, 999);
 
         if (isNaN(start.getTime()) || isNaN(end.getTime())) {
-            return res.status(400).json({ message: 'Невірний формат дати' });
+            return res.status(400).json({ message: 'Formato de data inválido' });
         }
 
         // Будуємо запит до БД
@@ -84,21 +84,21 @@ router.post('/generate', authenticate, authorizeRoles('admin', 'dispatcher'), as
         res.json(report);
     } catch (err) {
         console.error('Reports generate error:', err);
-        res.status(500).json({ message: 'Помилка генерації звіту', error: err.message });
+        res.status(500).json({ message: 'Erro ao gerar relatório', error: err.message });
     }
 });
 
 // GET /api/reports/:id/pdf - заглушка PDF (повертає JSON поки не підключена бібліотека)
 router.get('/:id/pdf', authenticate, (req, res) => {
     const report = generatedReports.get(req.params.id);
-    if (!report) return res.status(404).json({ message: 'Звіт не знайдено' });
-    res.json({ message: 'PDF export не реалізовано', report });
+    if (!report) return res.status(404).json({ message: 'Relatório não encontrado' });
+    res.json({ message: 'Exportação PDF não implementada', report });
 });
 
 // GET /api/reports/:id/excel - заглушка Excel
 router.get('/:id/excel', authenticate, (req, res) => {
     const report = generatedReports.get(req.params.id);
-    if (!report) return res.status(404).json({ message: 'Звіт не знайдено' });
+    if (!report) return res.status(404).json({ message: 'Relatório não encontrado' });
     res.json({ message: 'Excel export не реалізовано', report });
 });
 

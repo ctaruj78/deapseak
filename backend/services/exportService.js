@@ -18,27 +18,27 @@ class ExportService {
                 doc.on('error', reject);
 
                 // Header
-                doc.fontSize(20).text('Заявка на обслуговування', { align: 'center' });
+                doc.fontSize(20).text('Pedido de manutenção', { align: 'center' });
                 doc.moveDown();
 
                 // Request Info
                 doc.fontSize(12);
-                doc.text(`Номер заявки: #${request._id}`);
-                doc.text(`Статус: ${this.getStatusText(request.status)}`);
-                doc.text(`Пріоритет: ${this.getPriorityText(request.priority)}`);
-                doc.text(`Дата створення: ${new Date(request.createdAt).toLocaleString('pt-PT')}`);
+                doc.text(`Número do pedido: #${request._id}`);
+                doc.text(`Estado: ${this.getStatusText(request.status)}`);
+                doc.text(`Prioridade: ${this.getPriorityText(request.priority)}`);
+                doc.text(`Data de criação: ${new Date(request.createdAt).toLocaleString('pt-PT')}`);
                 doc.moveDown();
 
                 // Details
                 doc.fontSize(14).text('Деталі:', { underline: true });
                 doc.fontSize(12);
                 doc.text(`Назва: ${request.title}`);
-                doc.text(`Опис: ${request.description}`);
+                doc.text(`Descrição: ${request.description}`);
                 doc.moveDown();
 
                 // Client Info
                 if (request.client) {
-                    doc.fontSize(14).text('Клієнт:', { underline: true });
+                    doc.fontSize(14).text('Cliente:', { underline: true });
                     doc.fontSize(12);
                     doc.text(`Ім'я: ${request.client.firstName} ${request.client.lastName}`);
                     doc.text(`Email: ${request.client.email}`);
@@ -48,7 +48,7 @@ class ExportService {
 
                 // Technician Info
                 if (request.assignedTo) {
-                    doc.fontSize(14).text('Технік:', { underline: true });
+                    doc.fontSize(14).text('Técnico:', { underline: true });
                     doc.fontSize(12);
                     doc.text(`Ім'я: ${request.assignedTo.firstName} ${request.assignedTo.lastName}`);
                     doc.text(`Email: ${request.assignedTo.email}`);

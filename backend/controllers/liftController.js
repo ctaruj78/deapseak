@@ -46,7 +46,7 @@ exports.getAllLifts = async (req, res, next) => {
             query.client = req.user.id;
         } else if (req.user.role === 'technician') {
             // Технік бачить тільки ліфти з призначених завдань — обмеженого доступу до /api/lifts
-            // Дозволяємо фільтр по technician або повертаємо порожній список
+            // Дозволяємо фільтр по technician ou повертаємо порожній список
             if (technician) {
                 query.technician = technician;
             } else {
@@ -174,8 +174,8 @@ exports.requestDeletion = async (req, res, next) => {
             const notifications = admins.map(admin => ({
                 userId: admin._id.toString(),
                 type: 'deletion_request',
-                title: 'Запит на видалення ліфта',
-                message: `Диспетчер ${req.user.email} запитав видалення ліфта №${lift.municipalNumber || lift._id}`,
+                title: 'Pedido de remoção de elevador',
+                message: `Operador ${req.user.email} solicitou remoção do elevador №${lift.municipalNumber || lift._id}`,
                 liftId: lift._id,
                 requestedBy: req.user.id,
                 read: false,
@@ -189,7 +189,7 @@ exports.requestDeletion = async (req, res, next) => {
             console.error('⚠️ Notification error:', notifErr.message);
         }
 
-        res.json({ success: true, message: 'Запит на видалення відправлено адміністратору' });
+        res.json({ success: true, message: 'Pedido de remoção enviado ao administradorістратору' });
     } catch (error) {
         next(error);
     }
@@ -291,7 +291,7 @@ exports.generateLiftQR = async (req, res, next) => {
         const lift = await Lift.findById(req.params.id);
         
         if (!lift) {
-            throw new AppError('Ліфт не знайдено', 404);
+            throw new AppError('Elevador não encontrado', 404);
         }
 
         const format = req.query.format || 'dataURL';
@@ -348,7 +348,7 @@ exports.addInspectionReport = async (req, res, next) => {
 
         const lift = await Lift.findById(req.params.id);
         if (!lift) {
-            throw new AppError('Ліфт не знайдено', 404);
+            throw new AppError('Elevador não encontrado', 404);
         }
 
         // Accept custom inspection date from form; fall back to today
@@ -384,7 +384,7 @@ exports.addInspectionReport = async (req, res, next) => {
 
         res.json({
             success: true,
-            message: 'Звіт інспекції додано',
+            message: 'Relatório de inspeção adicionado',
             data: { lift }
         });
     } catch (error) {
@@ -398,14 +398,14 @@ exports.addInspectionReport = async (req, res, next) => {
 exports.uploadMaintenanceContract = async (req, res, next) => {
     try {
         if (!req.file) {
-            throw new AppError('Файл контракту не завантажено', 400);
+            throw new AppError('Ficheiro de contrato não carregado', 400);
         }
 
         const { contractNumber, startDate, endDate, description } = req.body;
 
         const lift = await Lift.findById(req.params.id);
         if (!lift) {
-            throw new AppError('Ліфт не знайдено', 404);
+            throw new AppError('Elevador não encontrado', 404);
         }
 
         lift.maintenanceContract = {
@@ -440,11 +440,11 @@ exports.getMaintenanceContract = async (req, res, next) => {
             .populate('maintenanceContract.uploadedBy', 'firstName lastName email');
 
         if (!lift) {
-            throw new AppError('Ліфт не знайдено', 404);
+            throw new AppError('Elevador não encontrado', 404);
         }
 
         if (!lift.maintenanceContract || !lift.maintenanceContract.contractFile) {
-            throw new AppError('Контракт не знайдено', 404);
+            throw new AppError('Contrato não encontrado', 404);
         }
 
         // Перевірка доступу
@@ -452,7 +452,7 @@ exports.getMaintenanceContract = async (req, res, next) => {
         const isOwner = lift.client && lift.client.toString() === req.user.id;
 
         if (userRole === 'client' && !isOwner) {
-            throw new AppError('Доступ заборонено', 403);
+            throw new AppError('Acesso negado', 403);
         }
 
         res.json({
@@ -472,7 +472,7 @@ exports.deleteMaintenanceContract = async (req, res, next) => {
         const lift = await Lift.findById(req.params.id);
         
         if (!lift) {
-            throw new AppError('Ліфт не знайдено', 404);
+            throw new AppError('Elevador não encontrado', 404);
         }
 
         // Тільки адмін може видаляти контракти
@@ -498,7 +498,7 @@ exports.deleteMaintenanceContract = async (req, res, next) => {
 exports.shareContractToSiblings = async (req, res, next) => {
     try {
         const lift = await Lift.findById(req.params.id);
-        if (!lift) throw new AppError('Ліфт не знайдено', 404);
+        if (!lift) throw new AppError('Elevador não encontrado', 404);
 
         if (!lift.maintenanceContract || !lift.maintenanceContract.contractFile) {
             throw new AppError('У цього ліфта немає контракту для поширення', 400);
@@ -560,11 +560,11 @@ exports.emailMaintenanceContract = async (req, res, next) => {
             .populate('maintenanceContract.uploadedBy', 'firstName lastName');
 
         if (!lift) {
-            throw new AppError('Ліфт не знайдено', 404);
+            throw new AppError('Elevador não encontrado', 404);
         }
 
         if (!lift.maintenanceContract || !lift.maintenanceContract.contractFile) {
-            throw new AppError('Контракт не знайдено', 404);
+            throw new AppError('Contrato não encontrado', 404);
         }
 
         // Перевірка доступу
@@ -572,7 +572,7 @@ exports.emailMaintenanceContract = async (req, res, next) => {
         const isOwner = lift.client && lift.client._id.toString() === req.user.id;
 
         if (userRole === 'client' && !isOwner) {
-            throw new AppError('Доступ заборонено', 403);
+            throw new AppError('Acesso negado', 403);
         }
 
         // TODO: Інтегрувати з emailService для відправки

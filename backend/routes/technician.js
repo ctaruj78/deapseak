@@ -5,7 +5,7 @@ const { body } = require('express-validator');
 const { authenticate } = require('../middleware/auth');
 const { authorizeRoles } = require('../middleware/roleAuth');
 
-// 🔐 Всі роути вимагають автентифікацію + роль admin або dispatcher
+// 🔐 Всі роути вимагають автентифікацію + роль admin ou dispatcher
 const adminOrDispatcher = [authenticate, authorizeRoles('admin', 'dispatcher')];
 
 // MongoDB routes

@@ -87,21 +87,21 @@ class EmailService {
         try {
             await this._sendEmail(
                 [{ email: client.email, name: `${client.firstName} ${client.lastName}` }],
-                `✅ Нова заявка #${request._id} створена`,
+                `✅ Novo pedido #${request._id} створена`,
                 `
                     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                        <h2 style="color: #28a745;">Заявка успішно створена</h2>
-                        <p>Шановний ${client.firstName} ${client.lastName}!</p>
-                        <p>Ваша заявка на обслуговування ліфта була успішно створена та передана в роботу.</p>
+                        <h2 style="color: #28a745;">Pedido criado com sucesso</h2>
+                        <p>Caro(a) ${client.firstName} ${client.lastName}!</p>
+                        <p>O seu pedido de manutenção do elevador foi criado e atribuído com sucesso.</p>
                         
                         <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
-                            <h3 style="margin-top: 0;">Деталі заявки:</h3>
-                            <p><strong>Номер:</strong> #${request._id}</p>
+                            <h3 style="margin-top: 0;">Detalhes do pedido:</h3>
+                            <p><strong>Número:</strong> #${request._id}</p>
                             <p><strong>Назва:</strong> ${request.title}</p>
                             <p><strong>Тип:</strong> ${this.getRequestTypeText(request.type)}</p>
-                            <p><strong>Пріоритет:</strong> ${this.getPriorityText(request.priority)}</p>
-                            <p><strong>Статус:</strong> ${this.getStatusText(request.status)}</p>
-                            <p><strong>Дата створення:</strong> ${new Date(request.createdAt).toLocaleString('pt-PT')}</p>
+                            <p><strong>Prioridade:</strong> ${this.getPriorityText(request.priority)}</p>
+                            <p><strong>Estado:</strong> ${this.getStatusText(request.status)}</p>
+                            <p><strong>Data de criação:</strong> ${new Date(request.createdAt).toLocaleString('pt-PT')}</p>
                         </div>
 
                         <p>Ми повідомимо вас про зміну статусу заявки.</p>
@@ -128,11 +128,11 @@ class EmailService {
                 html: `
                     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
                         <h2 style="color: #007bff;">Техніка призначено</h2>
-                        <p>Шановний ${client.firstName} ${client.lastName}!</p>
+                        <p>Caro(a) ${client.firstName} ${client.lastName}!</p>
                         <p>До вашої заявки призначено техніка.</p>
                         
                         <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
-                            <h3 style="margin-top: 0;">Технік:</h3>
+                            <h3 style="margin-top: 0;">Técnico:</h3>
                             <p><strong>Ім'я:</strong> ${technician.firstName} ${technician.lastName}</p>
                             <p><strong>Телефон:</strong> ${technician.phone || 'Не вказано'}</p>
                             <p><strong>Email:</strong> ${technician.email}</p>
@@ -140,7 +140,7 @@ class EmailService {
 
                         <div style="background: #e9ecef; padding: 15px; border-radius: 8px;">
                             <p><strong>Заявка:</strong> #${request._id} - ${request.title}</p>
-                            <p><strong>Статус:</strong> ${this.getStatusText(request.status)}</p>
+                            <p><strong>Estado:</strong> ${this.getStatusText(request.status)}</p>
                         </div>
 
                         <p style="margin-top: 20px;">Технік зв'яжеться з вами найближчим часом.</p>
@@ -168,16 +168,16 @@ class EmailService {
                 html: `
                     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
                         <h2 style="color: #ffc107;">Нове завдання призначено</h2>
-                        <p>Шановний ${technician.firstName} ${technician.lastName}!</p>
+                        <p>Caro(a) ${technician.firstName} ${technician.lastName}!</p>
                         <p>Вам призначено нову заявку на обслуговування.</p>
                         
                         <div style="background: #fff3cd; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #ffc107;">
                             <h3 style="margin-top: 0;">Деталі завдання:</h3>
-                            <p><strong>Номер:</strong> #${request._id}</p>
+                            <p><strong>Número:</strong> #${request._id}</p>
                             <p><strong>Назва:</strong> ${request.title}</p>
-                            <p><strong>Опис:</strong> ${request.description}</p>
+                            <p><strong>Descrição:</strong> ${request.description}</p>
                             <p><strong>Тип:</strong> ${this.getRequestTypeText(request.type)}</p>
-                            <p><strong>Пріоритет:</strong> ${this.getPriorityText(request.priority)}</p>
+                            <p><strong>Prioridade:</strong> ${this.getPriorityText(request.priority)}</p>
                             <p><strong>Ліфт ID:</strong> ${request.liftId}</p>
                         </div>
 
@@ -209,7 +209,7 @@ class EmailService {
                 html: `
                     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
                         <h2 style="color: #17a2b8;">Статус заявки змінено</h2>
-                        <p>Шановний ${client.firstName} ${client.lastName}!</p>
+                        <p>Caro(a) ${client.firstName} ${client.lastName}!</p>
                         <p>Статус вашої заявки було оновлено.</p>
                         
                         <div style="background: #d1ecf1; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #17a2b8;">
@@ -240,8 +240,8 @@ class EmailService {
                 html: `
                     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
                         <h2 style="color: #28a745;">Заявка завершена!</h2>
-                        <p>Шановний ${client.firstName} ${client.lastName}!</p>
-                        <p>Ваша заявка на обслуговування ліфта була успішно виконана.</p>
+                        <p>Caro(a) ${client.firstName} ${client.lastName}!</p>
+                        <p>O seu pedido de manutenção do elevador foi concluído com sucesso.</p>
                         
                         <div style="background: #d4edda; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #28a745;">
                             <h3 style="margin-top: 0;">Виконана робота:</h3>
@@ -280,7 +280,7 @@ class EmailService {
                 html: `
                     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
                         <h2 style="color: #dc3545;">Запит на скидання паролю</h2>
-                        <p>Шановний ${firstName || 'користувач'}!</p>
+                        <p>Caro(a) ${firstName || 'користувач'}!</p>
                         <p>Ви отримали цей лист, оскільки був надісланий запит на скидання паролю для вашого облікового запису в системі DeapSeaK.</p>
                         
                         <div style="background: #f8d7da; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #dc3545;">
