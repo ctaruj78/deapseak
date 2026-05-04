@@ -62,101 +62,92 @@ app.set('trust proxy', 1); // Confiar no proxy (Codespaces / nginx)
 // 🌍 GEOCODING - Конвертація адреси в координати
 // ═══════════════════════════════════════════════════════════
 // Використовує OpenStreetMap Nominatim API (безкоштовно)
-async function geocodeAddress(address) {
-    return new Promise((resolve, reject) => {
-        // Формуємо адресу для запиту
-        let searchAddress = '';
-        if (typeof address === 'string') {
-            searchAddress = address;
-        } else if (typeof address === 'object' && address !== null) {
-            // Об'єкт адреси: {street, city, zipCode, country}
-            const parts = [
-                address.street,
-                address.zipCode,
-                address.city,
-                address.country
-            ].filter(Boolean);
-            searchAddress = parts.join(', ');
-        }
-        
-        if (!searchAddress) {
-            console.warn('⚠️ Geocoding: endereço vazio');
-            return resolve(null);
-        }
-        
-        // URL для Nominatim API
-        const encodedAddress = encodeURIComponent(searchAddress);
-        // limit=3 дозволяє вибрати кращий результат при співпаданні назви вулиці в кількох містах
-        const url = `https://nominatim.openstreetmap.org/search?q=${encodedAddress}&format=json&limit=3&countrycodes=pt&addressdetails=1`;
-        
-        console.log('🌍 Geocoding:', searchAddress);
-        
-        https.get(url, {
-            headers: {
-                'User-Agent': 'FestLift-LiftManagement/2.0'
-            }
-        }, (response) => {
+// Nominatim rate limiter: max 1 request per second (Nominatim usage policy)
+let _nominatimLastCall = 0;
+async function nominatimRequest(url) {
+    const now = Date.now();
+    const wait = Math.max(0, 1100 - (now - _nominatimLastCall));
+    if (wait > 0) await new Promise(r => setTimeout(r, wait));
+    _nominatimLastCall = Date.now();
+    return new Promise((resolve) => {
+        https.get(url, { headers: { 'User-Agent': 'FestLift-LiftManagement/2.0' } }, (res) => {
             let data = '';
-            
-            response.on('data', (chunk) => {
-                data += chunk;
-            });
-            
-            response.on('end', () => {
-                try {
-                    const results = JSON.parse(data);
-                    
-                    if (results && results.length > 0) {
-                        // 🏙️ Якщо адреса містить місто — шукаємо відповідний результат
-                        // щоб уникнути повернення вулиці з іншого міста (напр. Setúbal замість Lisboa)
-                        let best = results[0];
-                        if (typeof address === 'object' && address !== null && address.city) {
-                            const cityLower = address.city.toLowerCase().trim();
-                            const cityMatch = results.find(r => {
-                                const nom = r.address || {};
-                                const resultCity = (nom.city || nom.town || nom.village || nom.municipality || nom.suburb || nom.quarter || '').toLowerCase();
-                                return resultCity.includes(cityLower) || cityLower.includes(resultCity);
-                            });
-                            if (cityMatch) {
-                                best = cityMatch;
-                                console.log(`🏙️ City-match: вибрано "${best.display_name}" замість першого результату`);
-                            } else {
-                                console.warn(`⚠️ Geocoding: sem resultado para a cidade "${address.city}", a usar o primeiro`);
-                            }
-                        }
-                        
-                        const lat = parseFloat(best.lat);
-                        const lon = parseFloat(best.lon);
-                        
-                        // 🏙️ Витягуємо назву міста з Nominatim address даних
-                        let cityName = '';
-                        if (best.address) {
-                            const nom = best.address;
-                            cityName = nom.city || nom.town || nom.village || nom.municipality || nom.suburb || nom.quarter || nom.county || '';
-                        }
-                        
-                        console.log(`✅ Geocoded: ${searchAddress} → [${lon}, ${lat}] city: ${cityName}`);
-                        
-                        resolve({
-                            type: 'Point',
-                            coordinates: [lon, lat], // GeoJSON формат: [longitude, latitude]
-                            city: cityName           // 🏙️ Місто для автозаповнення address.city
-                        });
-                    } else {
-                        console.warn('⚠️ Geocoding: endereço não encontrado:', searchAddress);
-                        resolve(null);
-                    }
-                } catch (error) {
-                    console.error('❌ Geocoding parse error:', error);
-                    resolve(null);
-                }
-            });
-        }).on('error', (error) => {
-            console.error('❌ Geocoding request error:', error);
-            resolve(null); // Не блокуємо створення ліфта якщо геокодування не спрацювало
-        });
+            res.on('data', c => data += c);
+            res.on('end', () => { try { resolve(JSON.parse(data)); } catch { resolve(null); } });
+        }).on('error', () => resolve(null));
     });
 }
+
+// Helper: pick best result (prefer city match)
+function pickBestResult(results, cityHint) {
+    if (!results || results.length === 0) return null;
+    let best = results[0];
+    if (cityHint) {
+        const cl = cityHint.toLowerCase().trim();
+        const m = results.find(r => {
+            const n = r.address || {};
+            const rc = (n.city || n.town || n.village || n.municipality || n.suburb || n.quarter || '').toLowerCase();
+            return rc.includes(cl) || cl.includes(rc);
+        });
+        if (m) best = m;
+    }
+    return best;
+}
+
+// 🌍 3-step fallback geocoder — postal code first (most precise in Portugal), then free-form
+async function geocodeAddress(address) {
+    const BASE = 'https://nominatim.openstreetmap.org/search';
+    const COMMON = 'format=json&limit=3&countrycodes=pt&addressdetails=1';
+    let searchLabel = '';
+    let results = null;
+
+    if (typeof address === 'string') {
+        searchLabel = address;
+        results = await nominatimRequest(`${BASE}?q=${encodeURIComponent(address)}&${COMMON}`);
+
+    } else if (typeof address === 'object' && address !== null) {
+        const { street = '', zipCode = '', city = '', country = 'Portugal' } = address;
+        searchLabel = [street, zipCode, city].filter(Boolean).join(', ');
+
+        // Step 1 — postal code (XXXX-XXX is unique per street segment in Portugal)
+        if (zipCode) {
+            const p = new URLSearchParams({ postalcode: zipCode, country, format: 'json', limit: '3', countrycodes: 'pt', addressdetails: '1' });
+            if (city) p.set('city', city);
+            results = await nominatimRequest(`${BASE}?${p}`);
+            if (results && results.length > 0) console.log(`🌍 Geocoding [postalcode]: ${searchLabel}`);
+        }
+
+        // Step 2 — street + city free-form (handles house numbers embedded in street field)
+        // Normalize: remove Portuguese "nº" prefix so Nominatim matches door numbers correctly
+        if (!results || results.length === 0) {
+            const cleanStreet = street.replace(/\bnº\b\.?/gi, '').replace(/\s+/g, ' ').trim();
+            const s2 = [cleanStreet, city, country].filter(Boolean).join(', ');
+            results = await nominatimRequest(`${BASE}?q=${encodeURIComponent(s2)}&${COMMON}`);
+            if (results && results.length > 0) console.log(`🌍 Geocoding [street+city]: ${searchLabel}`);
+        }
+
+        // Step 3 — full address free-form last resort (strip nº too)
+        if (!results || results.length === 0) {
+            const cleanFull = searchLabel.replace(/\bnº\b\.?/gi, '').replace(/\s+/g, ' ').trim();
+            results = await nominatimRequest(`${BASE}?q=${encodeURIComponent(cleanFull)}&${COMMON}`);
+            if (results && results.length > 0) console.log(`🌍 Geocoding [freeform]: ${searchLabel}`);
+        }
+    }
+
+    const best = pickBestResult(results, typeof address === 'object' ? address.city : null);
+    if (!best) {
+        console.warn(`⚠️ Geocoding: endereço não encontrado: ${searchLabel}`);
+        return null;
+    }
+
+    const lat = parseFloat(best.lat);
+    const lon = parseFloat(best.lon);
+    const n = best.address || {};
+    const cityName = n.city || n.town || n.village || n.municipality || n.suburb || n.quarter || n.county || '';
+    console.log(`✅ Geocoded: ${searchLabel} → [${lon}, ${lat}] city: ${cityName}`);
+    return { type: 'Point', coordinates: [lon, lat], city: cityName };
+}
+
 // ═══════════════════════════════════════════════════════════
 // ⚠️ КРИТИЧНО: ФІКСОВАНИЙ ПОРТ 5000 - НЕ ЗМІНЮЙТЕ!
 // ═══════════════════════════════════════════════════════════
@@ -1462,8 +1453,7 @@ app.post('/api/lifts/regeocode-all', authenticateToken, requireRole('admin'), as
                 continue;
             }
             
-            // Додаємо невелику затримку щоб не перевантажити Nominatim
-            await new Promise(r => setTimeout(r, 300));
+            // Rate-limiting is handled inside nominatimRequest (1.1s per call)
             
             const geocoded = await geocodeAddress(lift.address);
             if (geocoded) {
@@ -1483,7 +1473,7 @@ app.post('/api/lifts/regeocode-all', authenticateToken, requireRole('admin'), as
         
         res.json({
             success: true,
-            message: `Геокодування завершено: виправлено ${fixed}, помилок ${failed}`,
+            message: `Geocodificação concluída: corrigidos ${fixed}, erros ${failed}`,
             total: lifts.length, fixed, failed, results
         });
     } catch (error) {
