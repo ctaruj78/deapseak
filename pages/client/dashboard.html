@@ -850,7 +850,7 @@
             
             // Atualização horaу
             setInterval(() => {
-                $('#lastUpdateTime').text(new Date().toLocaleTimeString('uk-UA'));
+                $('#lastUpdateTime').text(new Date().toLocaleTimeString('pt-PT'));
             }, 1000);
 
             // Escuro assunto
@@ -1138,7 +1138,7 @@
                                         <h6 class="mb-1">${request.title || 'Pedido de manutenção'}</h6>
                                         <small class="text-muted">
                                             ${request.lift?.address || 'Morada não indicada'} • 
-                                            ${new Date(request.createdAt).toLocaleDateString('uk-UA')}
+                                            ${new Date(request.createdAt).toLocaleDateString('pt-PT')}
                                         </small>
                                     </div>
                                     <div class="text-right">

@@ -628,7 +628,7 @@ results.failed > 0 ?
 async function main() {
     console.log('\n' + '█'.repeat(70));
     log('🧪', 'ПОВНЕ ТЕСТУВАННЯ СИСТЕМИ DeapSeaK v2', 'cyan');
-    log('📅', `Дата: ${new Date().toLocaleString('uk-UA')}`, 'gray');
+    log('📅', `Дата: ${new Date().toLocaleString('pt-PT')}`, 'gray');
     console.log('█'.repeat(70) + '\n');
     
     const results = {

@@ -101,7 +101,7 @@ class AnalyticsDashboard {
         const months = {};
         invoices.forEach(inv => {
             if (inv.date) {
-                const month = new Date(inv.date).toLocaleString('uk-UA', { month: 'long', year: 'numeric' });
+                const month = new Date(inv.date).toLocaleString('pt-PT', { month: 'long', year: 'numeric' });
                 months[month] = (months[month] || 0) + (inv.amount || 0);
             }
         });
@@ -347,7 +347,7 @@ class AnalyticsDashboard {
                         beginAtZero: true,
                         ticks: {
                             callback: function(value) {
-                                return value.toLocaleString('uk-UA') + ' ₴';
+                                return value.toLocaleString('pt-PT') + ' ₴';
                             }
                         }
                     }
@@ -420,7 +420,7 @@ class AnalyticsDashboard {
     }
 
     formatCurrency(amount) {
-        return new Intl.NumberFormat('uk-UA', { 
+        return new Intl.NumberFormat('pt-PT', { 
             style: 'currency', 
             currency: 'EUR',
             minimumFractionDigits: 0 
@@ -480,7 +480,7 @@ class AnalyticsDashboard {
             <body>
                 <div class="header">
                     <h1>Аналітичний звіт</h1>
-                    <p>Згенеровано: ${new Date().toLocaleString('uk-UA')}</p>
+                    <p>Згенеровано: ${new Date().toLocaleString('pt-PT')}</p>
                 </div>
                 <pre>{{REPORT_DATA}}</pre>
             </body>

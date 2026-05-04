@@ -1262,7 +1262,7 @@ class ServiceRequestManager {
                         ${request.technicianName || (request.technician ? 'Призначено' : 'Не призначено')}
                     </td>
                     <td>
-                        ${new Date(request.createdAt).toLocaleDateString('uk-UA', {
+                        ${new Date(request.createdAt).toLocaleDateString('pt-PT', {
                             day: '2-digit',
                             month: '2-digit',
                             year: 'numeric',
@@ -1475,7 +1475,7 @@ class ServiceRequestManager {
                 </div>
                 ${request.scheduledAt ? `
                 <div class="mb-3">
-                    <strong>Заплановано на:</strong> ${new Date(request.scheduledAt).toLocaleString('uk-UA')}
+                    <strong>Заплановано на:</strong> ${new Date(request.scheduledAt).toLocaleString('pt-PT')}
                 </div>
                 ` : ''}
             </div>
@@ -1489,7 +1489,7 @@ class ServiceRequestManager {
                 <div class="timeline-content">
                     <div class="d-flex justify-content-between">
                         <strong>${item.message}</strong>
-                        <small class="text-muted">${new Date(item.timestamp).toLocaleString('uk-UA')}</small>
+                        <small class="text-muted">${new Date(item.timestamp).toLocaleString('pt-PT')}</small>
                     </div>
                     <div class="text-muted">${item.user}</div>
                 </div>
@@ -2415,7 +2415,7 @@ async function loadComments(requestId) {
         
         const commentsHtml = comments.map(comment => {
             const username = comment.user?.username || comment.user?.firstName || 'Користувач';
-            const timestamp = new Date(comment.createdAt).toLocaleString('uk-UA');
+            const timestamp = new Date(comment.createdAt).toLocaleString('pt-PT');
             
             return `
                 <div class="border-bottom pb-2 mb-2">

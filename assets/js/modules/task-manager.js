@@ -334,16 +334,16 @@ class TaskManager {
     }
 
     formatDate(dateString) {
-        return new Date(dateString).toLocaleDateString('uk-UA');
+        return new Date(dateString).toLocaleDateString('pt-PT');
     }
 
     formatDateTime(dateString) {
-        return new Date(dateString).toLocaleString('uk-UA');
+        return new Date(dateString).toLocaleString('pt-PT');
     }
 
     formatDeadline(dateString) {
         if (!dateString) return '-';
-        return new Date(dateString).toLocaleDateString('uk-UA');
+        return new Date(dateString).toLocaleDateString('pt-PT');
     }
 
     updateStats(tasks = this.tasks) {
@@ -711,7 +711,7 @@ class TaskManager {
             ${task.result ? `Результат: ${task.result === 'success' ? 'Успішно' : 'Не вдалося'}` : ''}
             
             ===================================
-            Згенеровано: ${new Date().toLocaleString('uk-UA')}
+            Згенеровано: ${new Date().toLocaleString('pt-PT')}
         `;
     }
 

@@ -215,8 +215,8 @@ const qrManager = (function() {
         }
 
         page.forEach(qr => {
-            const createdDate = qr.created ? new Date(qr.created).toLocaleDateString('uk-UA') : '-';
-            const expiryDate = qr.liftData?.nextInspectionDate ? new Date(qr.liftData.nextInspectionDate).toLocaleDateString('uk-UA') : '-';
+            const createdDate = qr.created ? new Date(qr.created).toLocaleDateString('pt-PT') : '-';
+            const expiryDate = qr.liftData?.nextInspectionDate ? new Date(qr.liftData.nextInspectionDate).toLocaleDateString('pt-PT') : '-';
             const liftType = qr.liftType === 'cargo' ? 'Carga' : 'Passageiro';
             
             tbody.append(`
@@ -495,7 +495,7 @@ const qrManager = (function() {
             '<span class="badge badge-secondary">Inativo</span>';
         
         const liftType = qr.liftType === 'cargo' ? 'Carga' : 'Passageiro';
-        const createdDate = qr.created ? new Date(qr.created).toLocaleDateString('uk-UA') : '-';
+        const createdDate = qr.created ? new Date(qr.created).toLocaleDateString('pt-PT') : '-';
         
         $('#viewQRContent').html(`
             <dl class="row">
@@ -642,7 +642,7 @@ const qrManager = (function() {
             `"${qr.name.replace(/"/g, '""')}"`,
             qr.location,
             qr.status === 'active' ? 'Ativo' : 'Inativo',
-            qr.created ? new Date(qr.created).toLocaleDateString('uk-UA') : '-'
+            qr.created ? new Date(qr.created).toLocaleDateString('pt-PT') : '-'
         ]);
         const csv = [headers.join(';'), ...rows.map(r => r.join(';'))].join('\n');
         const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
@@ -730,9 +730,9 @@ const qrManager = (function() {
         <div class="no-print">
             <button onclick="window.print()"><i>🖨</i> Imprimir (${qrs.length} QR кодів)</button>
         </div>
-        <h2>QR Коди ліфтів &mdash; FestLift <small style="font-weight:normal;font-size:12px;">${new Date().toLocaleDateString('uk-UA')}</small></h2>
+        <h2>QR Коди ліфтів &mdash; FestLift <small style="font-weight:normal;font-size:12px;">${new Date().toLocaleDateString('pt-PT')}</small></h2>
         <div class="qr-grid">${items}</div>
-        <div class="print-meta">Роздруковано: ${new Date().toLocaleString('uk-UA')} | FestLift Sistema de Gestão</div>
+        <div class="print-meta">Роздруковано: ${new Date().toLocaleString('pt-PT')} | FestLift Sistema de Gestão</div>
         <script src="${qrScriptSrc}"><\/script>
         <script>
         window.onload = function() {

@@ -2033,12 +2033,12 @@ class EnhancedClientSystem extends ClientSystem {
     
     formatDate(dateString) {
         const date = new Date(dateString);
-        return date.toLocaleDateString('uk-UA');
+        return date.toLocaleDateString('pt-PT');
     }
     
     formatDateTime(dateString) {
         const date = new Date(dateString);
-        return date.toLocaleDateString('uk-UA') + ' ' + date.toLocaleTimeString('uk-UA', {hour: '2-digit', minute: '2-digit'});
+        return date.toLocaleDateString('pt-PT') + ' ' + date.toLocaleTimeString('pt-PT', {hour: '2-digit', minute: '2-digit'});
     }
     
     // Методи для модальних вікон та взаємодії

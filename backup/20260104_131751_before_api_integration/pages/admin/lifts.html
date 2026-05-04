@@ -2636,7 +2636,7 @@
 
     async function sendInspectionEmail(inspection) {
         const template = document.getElementById('emailTemplate').value;
-        const formattedDate = new Date(inspection.date).toLocaleDateString('uk-UA');
+        const formattedDate = new Date(inspection.date).toLocaleDateString('pt-PT');
         const emailContent = template.replace('{INSPECTION_DATE}', formattedDate);
         
         try {
@@ -3898,12 +3898,12 @@
                     </span>
                 </td>
                 <td>
-                    ${lift.lastInspectionDate ? new Date(lift.lastInspectionDate).toLocaleDateString('uk-UA') : 
-                      lift.lastMaintenance ? new Date(lift.lastMaintenance).toLocaleDateString('uk-UA') : 'Не вказано'}
+                    ${lift.lastInspectionDate ? new Date(lift.lastInspectionDate).toLocaleDateString('pt-PT') : 
+                      lift.lastMaintenance ? new Date(lift.lastMaintenance).toLocaleDateString('pt-PT') : 'Не вказано'}
                 </td>
                 <td>
-                    ${lift.nextInspectionDate ? new Date(lift.nextInspectionDate).toLocaleDateString('uk-UA') : 
-                      lift.nextMaintenance ? new Date(lift.nextMaintenance).toLocaleDateString('uk-UA') : 'Не вказано'}
+                    ${lift.nextInspectionDate ? new Date(lift.nextInspectionDate).toLocaleDateString('pt-PT') : 
+                      lift.nextMaintenance ? new Date(lift.nextMaintenance).toLocaleDateString('pt-PT') : 'Не вказано'}
                 </td>
                 <td>
                     <div class="btn-group btn-group-sm" role="group">
@@ -4153,12 +4153,12 @@
                 
                 // Дати обслуговування
                 $('#detail-last-maintenance').text(
-                    lift.lastInspectionDate ? new Date(lift.lastInspectionDate).toLocaleDateString('uk-UA') :
-                    lift.lastMaintenance ? new Date(lift.lastMaintenance).toLocaleDateString('uk-UA') : 'Не вказано'
+                    lift.lastInspectionDate ? new Date(lift.lastInspectionDate).toLocaleDateString('pt-PT') :
+                    lift.lastMaintenance ? new Date(lift.lastMaintenance).toLocaleDateString('pt-PT') : 'Не вказано'
                 );
                 $('#detail-next-maintenance').text(
-                    lift.nextInspectionDate ? new Date(lift.nextInspectionDate).toLocaleDateString('uk-UA') :
-                    lift.nextMaintenance ? new Date(lift.nextMaintenance).toLocaleDateString('uk-UA') : 'Не вказано'
+                    lift.nextInspectionDate ? new Date(lift.nextInspectionDate).toLocaleDateString('pt-PT') :
+                    lift.nextMaintenance ? new Date(lift.nextMaintenance).toLocaleDateString('pt-PT') : 'Не вказано'
                 );
                 
                 // Звіт інспекції (показуємо останній звіт з історії)
@@ -4167,7 +4167,7 @@
                     : null;
                 
                 $('#detail-inspection-date').text(
-                    lastReport && lastReport.date ? new Date(lastReport.date).toLocaleDateString('uk-UA') : 'Не вказано'
+                    lastReport && lastReport.date ? new Date(lastReport.date).toLocaleDateString('pt-PT') : 'Не вказано'
                 );
                 $('#detail-inspection-type').text(lastReport ? lastReport.type || 'Не вказано' : 'Не вказано');
                 $('#detail-inspection-status').text(lastReport ? lastReport.status || 'Не вказано' : 'Не вказано');
@@ -4175,10 +4175,10 @@
                 
                 // Додаткова інформація
                 $('#detail-created').text(
-                    lift.createdAt ? new Date(lift.createdAt).toLocaleString('uk-UA') : 'Не вказано'
+                    lift.createdAt ? new Date(lift.createdAt).toLocaleString('pt-PT') : 'Не вказано'
                 );
                 $('#detail-updated').text(
-                    lift.updatedAt ? new Date(lift.updatedAt).toLocaleString('uk-UA') : 'Не вказано'
+                    lift.updatedAt ? new Date(lift.updatedAt).toLocaleString('pt-PT') : 'Не вказано'
                 );
                 
                 // Додаємо обробник для кнопки редагування
@@ -4893,7 +4893,7 @@
         let html = '<div class="list-group">';
         reportsToDisplay.forEach((report, index) => {
                 const date = report.inspectionDate || report.date 
-                    ? new Date(report.inspectionDate || report.date).toLocaleDateString('uk-UA') 
+                    ? new Date(report.inspectionDate || report.date).toLocaleDateString('pt-PT') 
                     : 'Невідома дата';
                 const type = report.inspectionType || report.type || 'Не вказано';
                 const notes = report.comments || report.findings || report.notes || 'Без коментарів';
@@ -5040,7 +5040,7 @@
         console.log('👁️ Перегляд звіту:', report);
         
         const date = report.inspectionDate || report.date 
-            ? new Date(report.inspectionDate || report.date).toLocaleDateString('uk-UA', {
+            ? new Date(report.inspectionDate || report.date).toLocaleDateString('pt-PT', {
                 year: 'numeric',
                 month: 'long',
                 day: 'numeric'
@@ -5124,7 +5124,7 @@
                 </div>
                 <div class="card-footer text-muted">
                     <small>
-                        <i class="fas fa-clock"></i> Створено: ${report.createdAt ? new Date(report.createdAt).toLocaleString('uk-UA') : 'Не вказано'}
+                        <i class="fas fa-clock"></i> Створено: ${report.createdAt ? new Date(report.createdAt).toLocaleString('pt-PT') : 'Не вказано'}
                     </small>
                 </div>
             </div>
@@ -5148,7 +5148,7 @@
         console.log('🖨️ Друк звіту:', report);
         
         const date = report.inspectionDate || report.date 
-            ? new Date(report.inspectionDate || report.date).toLocaleDateString('uk-UA', {
+            ? new Date(report.inspectionDate || report.date).toLocaleDateString('pt-PT', {
                 year: 'numeric',
                 month: 'long',
                 day: 'numeric'
@@ -5289,7 +5289,7 @@
                 </div>
                 
                 <div class="footer">
-                    <p>Звіт створено ${new Date().toLocaleString('uk-UA')}</p>
+                    <p>Звіт створено ${new Date().toLocaleString('pt-PT')}</p>
                     <p><strong>LiftMaster Pro</strong> - Система управління ліфтами</p>
                 </div>
             </body>
@@ -5352,8 +5352,8 @@
             }
             
             // Є контракт - показуємо інформацію
-            const startDate = contract.startDate ? new Date(contract.startDate).toLocaleDateString('uk-UA') : 'Невідомо';
-            const endDate = contract.endDate ? new Date(contract.endDate).toLocaleDateString('uk-UA') : 'Невідомо';
+            const startDate = contract.startDate ? new Date(contract.startDate).toLocaleDateString('pt-PT') : 'Невідомо';
+            const endDate = contract.endDate ? new Date(contract.endDate).toLocaleDateString('pt-PT') : 'Невідомо';
             const contractNumber = contract.contractNumber || 'Не вказано';
             const description = contract.description || '';
             
@@ -5739,7 +5739,7 @@
                             `"${lift.model || ''}"`,
                             `"${cityStr}"`,
                             lift.status || 'operational',
-                            lift.createdAt ? new Date(lift.createdAt).toLocaleDateString('uk-UA') : ''
+                            lift.createdAt ? new Date(lift.createdAt).toLocaleDateString('pt-PT') : ''
                         ];
                         csvRows.push(row.join(','));
                     });

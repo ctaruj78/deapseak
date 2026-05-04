@@ -787,11 +787,11 @@ document.addEventListener("DOMContentLoaded", function() {
                                 </tr>
                                 <tr>
                                     <th>Останнє обслуговування</th>
-                                    <td>${lift.lastMaintenance ? new Date(lift.lastMaintenance).toLocaleDateString('uk-UA') : 'Не виконувалось'}</td>
+                                    <td>${lift.lastMaintenance ? new Date(lift.lastMaintenance).toLocaleDateString('pt-PT') : 'Не виконувалось'}</td>
                                 </tr>
                                 <tr>
                                     <th>Наступне обслуговування</th>
-                                    <td>${lift.nextMaintenance ? new Date(lift.nextMaintenance).toLocaleDateString('uk-UA') : 'Не заплановано'}</td>
+                                    <td>${lift.nextMaintenance ? new Date(lift.nextMaintenance).toLocaleDateString('pt-PT') : 'Не заплановано'}</td>
                                 </tr>
                             </table>
                             <div class="mt-3">
@@ -843,7 +843,7 @@ document.addEventListener("DOMContentLoaded", function() {
                                 </tr>
                                 <tr>
                                     <th>Створено</th>
-                                    <td>${request.createdAt ? new Date(request.createdAt).toLocaleDateString('uk-UA') + ' ' + new Date(request.createdAt).toLocaleTimeString('uk-UA') : 'Не вказано'}</td>
+                                    <td>${request.createdAt ? new Date(request.createdAt).toLocaleDateString('pt-PT') + ' ' + new Date(request.createdAt).toLocaleTimeString('pt-PT') : 'Не вказано'}</td>
                                 </tr>
                             </table>
                             <div class="mt-3">
@@ -957,8 +957,8 @@ document.addEventListener("DOMContentLoaded", function() {
                 scanHistory.data.forEach(scan => {
                     // Форматування дати і часу
                     const scanDate = new Date(scan.scannedAt);
-                    const formattedDate = scanDate.toLocaleDateString('uk-UA');
-                    const formattedTime = scanDate.toLocaleTimeString('uk-UA');
+                    const formattedDate = scanDate.toLocaleDateString('pt-PT');
+                    const formattedTime = scanDate.toLocaleTimeString('pt-PT');
                     
                     // Визначення типу QR-коду і його іконки
                     let typeIcon = 'fas fa-qrcode';

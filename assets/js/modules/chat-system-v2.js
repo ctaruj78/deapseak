@@ -685,7 +685,7 @@ class ChatSystem {
     }
 
     formatTime(timestamp) {
-        return new Date(timestamp).toLocaleTimeString('uk-UA', {
+        return new Date(timestamp).toLocaleTimeString('pt-PT', {
             hour: '2-digit',
             minute: '2-digit'
         });
@@ -702,7 +702,7 @@ class ChatSystem {
         } else if (date.toDateString() === yesterday.toDateString()) {
             return 'Ontem';
         } else {
-            return date.toLocaleDateString('uk-UA');
+            return date.toLocaleDateString('pt-PT');
         }
     }
 

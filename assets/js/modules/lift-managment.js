@@ -65,7 +65,7 @@ class LiftManagement {
 
     formatDate(dateString) {
         if (!dateString) return '-';
-        return new Date(dateString).toLocaleDateString('uk-UA');
+        return new Date(dateString).toLocaleDateString('pt-PT');
     }
 
     setupEventListeners() {

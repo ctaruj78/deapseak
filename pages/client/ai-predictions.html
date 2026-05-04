@@ -815,7 +815,7 @@ function createPredictionRow(lift, prediction) {
     const riskLabel = getRiskLabel(risk);
     const age = (prediction.age || 0).toFixed(1);
     const lastInspection = prediction.lastInspection
-        ? new Date(prediction.lastInspection).toLocaleDateString('uk-UA') : '—';
+        ? new Date(prediction.lastInspection).toLocaleDateString('pt-PT') : '—';
     
     const components = prediction.componentConditions || {};
     const poorComponents = Object.values(components).filter(c => (c.condition || 0.7) < 0.4).length;

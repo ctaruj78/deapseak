@@ -308,11 +308,11 @@ class RequestsManager {
     }
 
     formatDate(dateString) {
-        return new Date(dateString).toLocaleDateString('uk-UA');
+        return new Date(dateString).toLocaleDateString('pt-PT');
     }
 
     formatDateTime(dateString) {
-        return new Date(dateString).toLocaleString('uk-UA');
+        return new Date(dateString).toLocaleString('pt-PT');
     }
 
     updateStats(requests = this.requests) {
@@ -558,7 +558,7 @@ class RequestsManager {
                             <h5 class="card-title"><i class="fas fa-money-bill-wave"></i> Custo</h5>
                         </div>
                         <div class="card-body">
-                            <h4 class="text-success">₴${request.cost.toLocaleString('uk-UA', { minimumFractionDigits: 2 })}</h4>
+                            <h4 class="text-success">₴${request.cost.toLocaleString('pt-PT', { minimumFractionDigits: 2 })}</h4>
                         </div>
                     </div>
                 ` : request.estimatedCost ? `
@@ -567,7 +567,7 @@ class RequestsManager {
                             <h5 class="card-title"><i class="fas fa-money-bill-wave"></i> Орієнтовна вартість</h5>
                         </div>
                         <div class="card-body">
-                            <h4 class="text-warning">₴${request.estimatedCost.toLocaleString('uk-UA', { minimumFractionDigits: 2 })}</h4>
+                            <h4 class="text-warning">₴${request.estimatedCost.toLocaleString('pt-PT', { minimumFractionDigits: 2 })}</h4>
                         </div>
                     </div>
                 ` : ''}
@@ -592,7 +592,7 @@ class RequestsManager {
                     </div>
                     <div class="card-body">
                         <ul class="list-group">
-                            ${request.history.map(h => `<li class="list-group-item"><b>${h.action}</b> <span class="text-muted float-right">${new Date(h.timestamp).toLocaleString('uk-UA')}</span></li>`).join('')}
+                            ${request.history.map(h => `<li class="list-group-item"><b>${h.action}</b> <span class="text-muted float-right">${new Date(h.timestamp).toLocaleString('pt-PT')}</span></li>`).join('')}
                         </ul>
                     </div>
                 </div>
@@ -652,11 +652,11 @@ class RequestsManager {
             Descrição:
             ${request.description}
             
-            ${request.cost ? `Custo: ₴${request.cost.toLocaleString('uk-UA', { minimumFractionDigits: 2 })}` : ''}
+            ${request.cost ? `Custo: ₴${request.cost.toLocaleString('pt-PT', { minimumFractionDigits: 2 })}` : ''}
             ${request.rating ? `Оцінка: ${'⭐'.repeat(request.rating)}` : ''}
             
             =============================
-            Згенеровано: ${new Date().toLocaleString('uk-UA')}
+            Згенеровано: ${new Date().toLocaleString('pt-PT')}
         `;
     }
 

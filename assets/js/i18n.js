@@ -16,7 +16,7 @@ class I18n {
     // Визначення мови браузера
     detectLanguage() {
         try {
-            const browserLang = navigator.language || navigator.userLanguage || 'uk-UA';
+            const browserLang = navigator.language || navigator.userLanguage || 'pt-PT';
             const langCode = browserLang.split('-')[0];
             return this.supportedLanguages.includes(langCode) ? langCode : 'uk';
         } catch (error) {

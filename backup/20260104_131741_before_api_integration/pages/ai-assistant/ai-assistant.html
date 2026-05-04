@@ -1074,7 +1074,7 @@
             const typingIndicator = container.querySelector('.typing-indicator').parentElement;
             
             const now = new Date();
-            const timeStr = now.toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' });
+            const timeStr = now.toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' });
             
             const msgDiv = document.createElement('div');
             msgDiv.className = `direct-chat-msg ${isUser ? 'right' : ''}`;
@@ -1914,7 +1914,7 @@
         function updateLastCheckInfo(timestamp) {
             const infoDiv = document.getElementById('lastCheckInfo');
             const date = new Date(timestamp);
-            const formatted = date.toLocaleString('uk-UA', {
+            const formatted = date.toLocaleString('pt-PT', {
                 year: 'numeric',
                 month: '2-digit',
                 day: '2-digit',

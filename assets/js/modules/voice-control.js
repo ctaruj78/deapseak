@@ -20,7 +20,7 @@ class VoiceControl {
             
             this.recognition.continuous = true;
             this.recognition.interimResults = true;
-            this.recognition.lang = 'uk-UA';
+            this.recognition.lang = 'pt-PT';
 
             this.recognition.onresult = (event) => this.handleRecognitionResult(event);
             this.recognition.onerror = (event) => this.handleRecognitionError(event);

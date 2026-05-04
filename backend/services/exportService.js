@@ -26,7 +26,7 @@ class ExportService {
                 doc.text(`Номер заявки: #${request._id}`);
                 doc.text(`Статус: ${this.getStatusText(request.status)}`);
                 doc.text(`Пріоритет: ${this.getPriorityText(request.priority)}`);
-                doc.text(`Дата створення: ${new Date(request.createdAt).toLocaleString('uk-UA')}`);
+                doc.text(`Дата створення: ${new Date(request.createdAt).toLocaleString('pt-PT')}`);
                 doc.moveDown();
 
                 // Details
@@ -68,7 +68,7 @@ class ExportService {
 
                 // Footer
                 doc.moveDown(2);
-                doc.fontSize(10).text(`Згенеровано: ${new Date().toLocaleString('uk-UA')}`, {
+                doc.fontSize(10).text(`Згенеровано: ${new Date().toLocaleString('pt-PT')}`, {
                     align: 'center'
                 });
 
@@ -116,7 +116,7 @@ class ExportService {
                 priority: this.getPriorityText(request.priority),
                 client: request.client ? `${request.client.firstName} ${request.client.lastName}` : 'Н/Д',
                 technician: request.assignedTo ? `${request.assignedTo.firstName} ${request.assignedTo.lastName}` : 'Не призначено',
-                createdAt: new Date(request.createdAt).toLocaleDateString('uk-UA'),
+                createdAt: new Date(request.createdAt).toLocaleDateString('pt-PT'),
                 lift: request.lift?.municipalNumber || 'Н/Д'
             });
         });
@@ -164,7 +164,7 @@ class ExportService {
 
                 // Footer
                 doc.moveDown(2);
-                doc.fontSize(10).text(`Згенеровано: ${new Date().toLocaleString('uk-UA')}`, {
+                doc.fontSize(10).text(`Згенеровано: ${new Date().toLocaleString('pt-PT')}`, {
                     align: 'center'
                 });
 
@@ -236,8 +236,8 @@ class ExportService {
                 status: this.getLiftStatusText(lift.status),
                 capacity: lift.capacity ? `${lift.capacity} осіб` : 'Н/Д',
                 floors: lift.floors || 'Н/Д',
-                installationDate: lift.installationDate ? new Date(lift.installationDate).toLocaleDateString('uk-UA') : 'Н/Д',
-                lastInspection: lift.lastInspection ? new Date(lift.lastInspection).toLocaleDateString('uk-UA') : 'Н/Д'
+                installationDate: lift.installationDate ? new Date(lift.installationDate).toLocaleDateString('pt-PT') : 'Н/Д',
+                lastInspection: lift.lastInspection ? new Date(lift.lastInspection).toLocaleDateString('pt-PT') : 'Н/Д'
             });
         });
 

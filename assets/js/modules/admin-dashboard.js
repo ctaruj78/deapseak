@@ -177,7 +177,7 @@ class AdminDashboard {
 
     formatDateTime(dateString) {
         const date = new Date(dateString);
-        return date.toLocaleString('uk-UA', {
+        return date.toLocaleString('pt-PT', {
             day: '2-digit',
             month: '2-digit',
             year: 'numeric',
@@ -374,7 +374,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Додаткові утиліти
 function formatDate(date) {
-    return new Date(date).toLocaleDateString('uk-UA');
+    return new Date(date).toLocaleDateString('pt-PT');
 }
 
 function showNotification(message, type = 'info') {

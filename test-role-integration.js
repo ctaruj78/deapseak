@@ -464,7 +464,7 @@ function summary() {
 // ─── Main ─────────────────────────────────────────────────────────────────────
 (async () => {
   console.log(c('bold', '\n🔗 CROSS-ROLE INTEGRATION TEST — FestLift / DeapSeaK'));
-  console.log(c('dim', `   ${new Date().toLocaleString('uk-UA')}   http://${BASE_HOST}:${BASE_PORT}\n`));
+  console.log(c('dim', `   ${new Date().toLocaleString('pt-PT')}   http://${BASE_HOST}:${BASE_PORT}\n`));
 
   try {
     await checkHealth();

@@ -39,7 +39,7 @@ export const formatDate = (dateStr) => {
   if (!dateStr) return 'Не вказано';
   try {
     const date = new Date(dateStr);
-    return date.toLocaleDateString('uk-UA', {
+    return date.toLocaleDateString('pt-PT', {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric',
@@ -56,7 +56,7 @@ export const formatDateOnly = (dateStr) => {
   if (!dateStr) return 'Не вказано';
   try {
     const date = new Date(dateStr);
-    return date.toLocaleDateString('uk-UA', {
+    return date.toLocaleDateString('pt-PT', {
       day: '2-digit',
       month: '2-digit',
       year: 'numeric',

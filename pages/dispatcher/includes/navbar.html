@@ -103,7 +103,7 @@ async function loadNotifications() {
                     <a href="#" class="dropdown-item">
                         <i class="fas fa-${n.type === 'request' ? 'clipboard-list' : 'info-circle'} mr-2"></i>
                         ${n.message}
-                        <span class="float-right text-muted text-sm">${new Date(n.createdAt).toLocaleDateString('uk-UA')}</span>
+                        <span class="float-right text-muted text-sm">${new Date(n.createdAt).toLocaleDateString('pt-PT')}</span>
                     </a>
                 `).join('<div class="dropdown-divider"></div>');
             }

@@ -179,7 +179,7 @@ class ReportsSystem {
         const baseData = {
             title: this.reportTemplates[reportType]?.title || 'Relatório',
             period: `${this.formatDateDisplay(startDate)} - ${this.formatDateDisplay(endDate)}`,
-            generatedAt: new Date().toLocaleString('uk-UA'),
+            generatedAt: new Date().toLocaleString('pt-PT'),
             filters: reportData
         };
 
@@ -657,7 +657,7 @@ class ReportsSystem {
     formatDateDisplay(dateString) {
         if (!dateString) return '';
         const date = new Date(dateString);
-        return date.toLocaleDateString('uk-UA');
+        return date.toLocaleDateString('pt-PT');
     }
 }
 

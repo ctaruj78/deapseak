@@ -24,7 +24,7 @@ class VoiceAR {
     }
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     this.recognition = new SpeechRecognition();
-    this.recognition.lang = 'uk-UA';
+    this.recognition.lang = 'pt-PT';
     this.recognition.continuous = false;
     this.recognition.interimResults = false;
     this.recognition.onresult = (event) => {

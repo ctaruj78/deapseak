@@ -287,7 +287,7 @@ class MaintenanceCharts {
                         beginAtZero: true,
                         ticks: {
                             callback: (value) => {
-                                return new Intl.NumberFormat('uk-UA', {
+                                return new Intl.NumberFormat('pt-PT', {
                                     style: 'currency',
                                     currency: 'EUR',
                                     minimumFractionDigits: 0

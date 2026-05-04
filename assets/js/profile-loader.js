@@ -127,7 +127,7 @@
         createdElements.forEach(el => {
             if (user.createdAt) {
                 const date = new Date(user.createdAt);
-                el.textContent = date.toLocaleDateString('uk-UA');
+                el.textContent = date.toLocaleDateString('pt-PT');
             }
         });
 

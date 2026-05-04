@@ -331,11 +331,11 @@ class InspectionManager {
     }
 
     formatDate(dateString) {
-        return new Date(dateString).toLocaleDateString('uk-UA');
+        return new Date(dateString).toLocaleDateString('pt-PT');
     }
 
     formatDateTime(dateString) {
-        return new Date(dateString).toLocaleString('uk-UA');
+        return new Date(dateString).toLocaleString('pt-PT');
     }
 
     updateStats(inspections = this.inspections) {
@@ -661,7 +661,7 @@ class InspectionManager {
             ${inspection.result ? `Результат: ${inspection.result === 'passed' ? 'Пройдено' : 'Reprovado'}${inspection.score ? ` (${inspection.score}%)` : ''}` : ''}
             
             ===================================
-            Згенеровано: ${new Date().toLocaleString('uk-UA')}
+            Згенеровано: ${new Date().toLocaleString('pt-PT')}
         `;
     }
 

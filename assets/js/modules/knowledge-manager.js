@@ -477,7 +477,7 @@ class KnowledgeManager {
     }
 
     formatDate(dateString) {
-        return new Date(dateString).toLocaleDateString('uk-UA');
+        return new Date(dateString).toLocaleDateString('pt-PT');
     }
 
     viewArticle(articleId) {
@@ -670,7 +670,7 @@ class KnowledgeManager {
                 ${article.content.replace(/<[^>]*>/g, '')}
                 
                 ================================
-                Завантажено: ${new Date().toLocaleString('uk-UA')}
+                Завантажено: ${new Date().toLocaleString('pt-PT')}
             `;
             
             const blob = new Blob([content], { type: 'application/pdf' });

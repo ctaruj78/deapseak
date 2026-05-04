@@ -477,7 +477,7 @@
                         <td>${this.categoryLabel(t.category)}</td>
                         <td><span class="priority-badge priority-${t.priority || 'medium'}">${this.priorityLabel(t.priority)}</span></td>
                         <td><span class="ticket-status status-${(t.status || 'open').replace('_','-')}">${this.statusLabel(t.status)}</span></td>
-                        <td>${t.createdAt ? new Date(t.createdAt).toLocaleDateString('uk-UA') : '—'}</td>
+                        <td>${t.createdAt ? new Date(t.createdAt).toLocaleDateString('pt-PT') : '—'}</td>
                         <td>
                             <button class="btn btn-sm btn-info" onclick="ticketsManager.viewTicket('${id}')" title="Ver">
                                 <i class="fas fa-eye"></i>
@@ -517,7 +517,7 @@
                         </div>
                         <div class="col-md-6">
                             <p><strong>Estado:</strong> <span class="ticket-status status-${(t.status||'open').replace('_','-')}">${this.statusLabel(t.status)}</span></p>
-                            <p><strong>Data:</strong> ${t.createdAt ? new Date(t.createdAt).toLocaleString('uk-UA') : '—'}</p>
+                            <p><strong>Data:</strong> ${t.createdAt ? new Date(t.createdAt).toLocaleString('pt-PT') : '—'}</p>
                         </div>
                         <div class="col-12 mt-3">
                             <h6>Descrição:</h6>

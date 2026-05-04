@@ -10,7 +10,7 @@ window.LiftMaster = {
         mapCenter: [38.7223, -9.1393], // Lisboa по дефолту
         mapZoom: 12,
         itemsPerPage: 10,
-        dateFormat: 'uk-UA',
+        dateFormat: 'pt-PT',
         currency: 'EUR'
     },
     

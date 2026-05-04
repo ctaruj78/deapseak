@@ -2643,7 +2643,7 @@ app.post('/api/lifts/:id/contract/email', authenticateToken, async (req, res) =>
                     <ul>
                         <li><strong>Ліфт №:</strong> ${lift.municipalNumber || '-'}</li>
                         <li><strong>Контракт №:</strong> ${contract.contractNumber || '-'}</li>
-                        ${contract.startDate ? `<li><strong>Початок дії:</strong> ${new Date(contract.startDate).toLocaleDateString('uk-UA')}</li>` : ''}
+                        ${contract.startDate ? `<li><strong>Початок дії:</strong> ${new Date(contract.startDate).toLocaleDateString('pt-PT')}</li>` : ''}
                     </ul>
                     <p>Файл контракту додано у вкладенні.</p>
                     <hr>

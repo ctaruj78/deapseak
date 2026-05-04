@@ -1069,7 +1069,7 @@ async function main() {
     console.log(clr('bold', clr('cyan', `
 ╔══════════════════════════════════════════════════════════════════╗
 ║       DeapSeaK — ПОВНА ПЕРЕВІРКА СИСТЕМИ                        ║
-║       ${new Date().toLocaleString('uk-UA').padEnd(56)}║
+║       ${new Date().toLocaleString('pt-PT').padEnd(56)}║
 ╚══════════════════════════════════════════════════════════════════╝`)));
     console.log(`  Адреса API: ${clr('cyan', BASE_URL)}\n`);
 

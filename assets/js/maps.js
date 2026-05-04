@@ -70,7 +70,7 @@ $(document).ready(function() {
                         <p><strong>Endereço:</strong> ${lift.location || lift.address || 'Desconhecido'}</p>
                         <p><strong>Estado:</strong> <span style="color: ${statusColor}">${getStatusLabel(lift.status)}</span></p>
                         <p><strong>Cliente:</strong> ${lift.clientName || 'Desconhecido'}</p>
-                        <p><strong>Última manutenção:</strong> ${lift.lastMaintenance ? new Date(lift.lastMaintenance).toLocaleDateString('uk-UA') : 'Desconhecido'}</p>
+                        <p><strong>Última manutenção:</strong> ${lift.lastMaintenance ? new Date(lift.lastMaintenance).toLocaleDateString('pt-PT') : 'Desconhecido'}</p>
                         <button class="btn btn-primary btn-sm" onclick="window.open('lifts.html', '_blank')">Ver</button>
                     </div>
                 `, {
@@ -114,7 +114,7 @@ $(document).ready(function() {
     // Функція для оновлення часу останнього оновлення
     function updateLastUpdateTime() {
         const now = new Date();
-        const timeString = now.toLocaleTimeString('uk-UA', {
+        const timeString = now.toLocaleTimeString('pt-PT', {
             hour: '2-digit',
             minute: '2-digit',
             second: '2-digit'

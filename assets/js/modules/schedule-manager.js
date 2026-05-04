@@ -317,11 +317,11 @@ class ScheduleManager {
     }
 
     formatDate(date) {
-        return new Date(date).toLocaleDateString('uk-UA');
+        return new Date(date).toLocaleDateString('pt-PT');
     }
 
     formatTime(date) {
-        return new Date(date).toLocaleTimeString('uk-UA', { 
+        return new Date(date).toLocaleTimeString('pt-PT', { 
             hour: '2-digit', 
             minute: '2-digit' 
         });
@@ -555,7 +555,7 @@ class ScheduleManager {
     }
 
     formatDateTime(date) {
-        return new Date(date).toLocaleString('uk-UA');
+        return new Date(date).toLocaleString('pt-PT');
     }
 
     startEvent(eventId) {

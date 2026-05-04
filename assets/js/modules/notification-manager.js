@@ -523,14 +523,14 @@ class NotificationManager {
         if (hours < 24) return `${hours} h atrás`;
         if (days < 7) return `${days} d atrás`;
         
-        return time.toLocaleDateString('uk-UA');
+        return time.toLocaleDateString('pt-PT');
     }
 
     showNotification(message, type = 'info') {
         const toast = $(`<div class="toast" role="alert" aria-live="assertive" aria-atomic="true">
             <div class="toast-header">
                 <strong class="mr-auto">Notificações</strong>
-                <small class="text-muted">${new Date().toLocaleTimeString('uk-UA')}</small>
+                <small class="text-muted">${new Date().toLocaleTimeString('pt-PT')}</small>
                 <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>

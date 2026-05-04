@@ -348,14 +348,14 @@ class AnalyticsCharts {
     formatValue(value, format) {
         switch (format) {
             case 'currency':
-                return new Intl.NumberFormat('uk-UA', {
+                return new Intl.NumberFormat('pt-PT', {
                     style: 'currency',
                     currency: 'EUR'
                 }).format(value);
             case 'percent':
                 return `${value.toFixed(1)}%`;
             case 'number':
-                return new Intl.NumberFormat('uk-UA').format(value);
+                return new Intl.NumberFormat('pt-PT').format(value);
             default:
                 return value;
         }

@@ -37,7 +37,7 @@ async function testRegulationsAPI() {
             console.log(`   - Перевірено: ${data.data.total_checked} регламентів`);
             console.log(`   - Нових знайдено: ${data.data.new_regulations}`);
             console.log(`   - Оновлено: ${data.data.updated_regulations}`);
-            console.log(`   - Час: ${new Date(data.data.timestamp).toLocaleString('uk-UA')}`);
+            console.log(`   - Час: ${new Date(data.data.timestamp).toLocaleString('pt-PT')}`);
         } else {
             console.log(`❌ Помилка: ${data.message}`);
         }
@@ -60,7 +60,7 @@ async function testRegulationsAPI() {
         if (data2.success && data2.data) {
             console.log('✅ Звіт отримано!\n');
             console.log('📄 Деталі:');
-            console.log(`   - Час перевірки: ${new Date(data2.data.timestamp).toLocaleString('uk-UA')}`);
+            console.log(`   - Час перевірки: ${new Date(data2.data.timestamp).toLocaleString('pt-PT')}`);
             console.log(`   - Всього перевірено: ${data2.data.total_checked}`);
             console.log(`   - Результат: ${data2.data.new_regulations} нових, ${data2.data.updated_regulations} оновлених`);
         } else {

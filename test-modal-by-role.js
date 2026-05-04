@@ -437,7 +437,7 @@ async function main() {
 
     console.log(`\n${c.bold}${c.bgBlue}${c.white}`);
     console.log(`  🔬 СИМУЛЯЦІЯ РОЛЕЙ — ТЕСТ МОДАЛЬНОГО ВІКНА ЛІФТА  `);
-    console.log(`${c.reset}${c.dim}  ${new Date().toLocaleString('uk-UA')}  |  ${BASE}${c.reset}\n`);
+    console.log(`${c.reset}${c.dim}  ${new Date().toLocaleString('pt-PT')}  |  ${BASE}${c.reset}\n`);
 
     // Перевірка сервера
     try {

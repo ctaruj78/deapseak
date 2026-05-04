@@ -144,12 +144,12 @@ function populateViewModal(lift) {
         : '-';
     
     const lastInspection = lift.lastInspectionDate 
-        ? new Date(lift.lastInspectionDate).toLocaleDateString('uk-UA')
+        ? new Date(lift.lastInspectionDate).toLocaleDateString('pt-PT')
         : '-';
     document.getElementById('viewLastInspection').textContent = lastInspection;
     
     const nextInspection = lift.nextInspectionDate 
-        ? new Date(lift.nextInspectionDate).toLocaleDateString('uk-UA')
+        ? new Date(lift.nextInspectionDate).toLocaleDateString('pt-PT')
         : '-';
     document.getElementById('viewNextInspection').textContent = nextInspection;
     
@@ -265,7 +265,7 @@ async function loadViewModalDocuments(liftId) {
                         <i class="fas fa-file-pdf text-danger"></i> 
                         <a href="${API_URL}${doc.url}" target="_blank">${doc.filename}</a>
                         <small class="text-muted float-right">
-                            ${new Date(doc.uploadedAt).toLocaleDateString('uk-UA')}
+                            ${new Date(doc.uploadedAt).toLocaleDateString('pt-PT')}
                         </small>
                     </li>
                 `;
@@ -282,7 +282,7 @@ async function loadViewModalDocuments(liftId) {
                         <i class="fas fa-file-pdf text-danger"></i> 
                         <a href="${API_URL}${doc.url}" target="_blank">${doc.filename}</a>
                         <small class="text-muted float-right">
-                            ${new Date(doc.uploadedAt).toLocaleDateString('uk-UA')}
+                            ${new Date(doc.uploadedAt).toLocaleDateString('pt-PT')}
                         </small>
                     </li>
                 `;

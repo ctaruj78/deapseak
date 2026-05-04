@@ -101,7 +101,7 @@ class EmailService {
                             <p><strong>Тип:</strong> ${this.getRequestTypeText(request.type)}</p>
                             <p><strong>Пріоритет:</strong> ${this.getPriorityText(request.priority)}</p>
                             <p><strong>Статус:</strong> ${this.getStatusText(request.status)}</p>
-                            <p><strong>Дата створення:</strong> ${new Date(request.createdAt).toLocaleString('uk-UA')}</p>
+                            <p><strong>Дата створення:</strong> ${new Date(request.createdAt).toLocaleString('pt-PT')}</p>
                         </div>
 
                         <p>Ми повідомимо вас про зміну статусу заявки.</p>
@@ -246,7 +246,7 @@ class EmailService {
                         <div style="background: #d4edda; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #28a745;">
                             <h3 style="margin-top: 0;">Виконана робота:</h3>
                             <p><strong>Заявка:</strong> #${request._id} - ${request.title}</p>
-                            <p><strong>Дата завершення:</strong> ${new Date(request.completedAt || Date.now()).toLocaleString('uk-UA')}</p>
+                            <p><strong>Дата завершення:</strong> ${new Date(request.completedAt || Date.now()).toLocaleString('pt-PT')}</p>
                             ${request.workDetails ? `<p><strong>Деталі:</strong> ${request.workDetails}</p>` : ''}
                         </div>
 

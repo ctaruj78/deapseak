@@ -607,7 +607,7 @@
                         lat: lift.location?.coordinates?.[1] || 50.4501,
                         lng: lift.location?.coordinates?.[0] || 30.5234,
                         status: mapStatus(lift.status),
-                        lastMaintenance: lift.lastInspectionDate ? new Date(lift.lastInspectionDate).toLocaleDateString('uk-UA') : 'Невідомо',
+                        lastMaintenance: lift.lastInspectionDate ? new Date(lift.lastInspectionDate).toLocaleDateString('pt-PT') : 'Невідомо',
                         municipalNumber: lift.municipalNumber
                     };
                 });

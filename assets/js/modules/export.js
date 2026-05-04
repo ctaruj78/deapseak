@@ -55,7 +55,7 @@ class ExportManager {
 
             // Data
             doc.setFontSize(12);
-            doc.text(`Data: ${new Date().toLocaleDateString('uk-UA')}`, 20, 45);
+            doc.text(`Data: ${new Date().toLocaleDateString('pt-PT')}`, 20, 45);
 
             // Таблиця даних
             if (data && Array.isArray(data) && data.length > 0) {

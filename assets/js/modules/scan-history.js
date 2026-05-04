@@ -87,7 +87,7 @@ const scanHistory = (function() {
             const row = `
                 <tr>
                     <td>${index + 1}</td>
-                    <td>${date.toLocaleDateString('uk-UA')} ${date.toLocaleTimeString('uk-UA')}</td>
+                    <td>${date.toLocaleDateString('pt-PT')} ${date.toLocaleTimeString('pt-PT')}</td>
                     <td>${scan.liftId || scan.qrCode || 'N/A'}</td>
                     <td>${scan.location || 'Desconhecido'}</td>
                     <td>${scan.user || 'Система'}</td>
@@ -138,7 +138,7 @@ const scanHistory = (function() {
             marker.bindPopup(`
                 <strong>${scan.liftId || 'Elevador'}</strong><br>
                 ${scan.location || ''}<br>
-                <small>${new Date(scan.timestamp).toLocaleString('uk-UA')}</small>
+                <small>${new Date(scan.timestamp).toLocaleString('pt-PT')}</small>
             `);
         });
 
@@ -200,7 +200,7 @@ const scanHistory = (function() {
     function exportToExcel() {
         const data = filteredScans.map((scan, i) => ({
             '№': i + 1,
-            'Data': new Date(scan.timestamp).toLocaleString('uk-UA'),
+            'Data': new Date(scan.timestamp).toLocaleString('pt-PT'),
             'Elevador': scan.liftId || 'N/A',
             'Локація': scan.location || 'Desconhecido',
             'Utilizador': scan.user || 'Система',
@@ -235,7 +235,7 @@ const scanHistory = (function() {
             <div class="scan-details">
                 <div class="row">
                     <div class="col-md-6">
-                        <p><strong>Data і час:</strong> ${new Date(scan.timestamp).toLocaleString('uk-UA')}</p>
+                        <p><strong>Data і час:</strong> ${new Date(scan.timestamp).toLocaleString('pt-PT')}</p>
                         <p><strong>Elevador ID:</strong> ${scan.liftId || 'N/A'}</p>
                         <p><strong>QR-код:</strong> ${scan.qrCode || 'N/A'}</p>
                     </div>

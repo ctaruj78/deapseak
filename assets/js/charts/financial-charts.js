@@ -333,7 +333,7 @@ class FinancialCharts {
                         beginAtZero: true,
                         ticks: {
                             callback: (value) => {
-                                return new Intl.NumberFormat('uk-UA', {
+                                return new Intl.NumberFormat('pt-PT', {
                                     style: 'currency',
                                     currency: 'EUR'
                                 }).format(value);
@@ -364,7 +364,7 @@ class FinancialCharts {
     formatFinancialValue(value, format) {
         switch (format) {
             case 'currency':
-                return new Intl.NumberFormat('uk-UA', {
+                return new Intl.NumberFormat('pt-PT', {
                     style: 'currency',
                     currency: 'EUR',
                     minimumFractionDigits: 0,
@@ -375,7 +375,7 @@ class FinancialCharts {
             case 'ratio':
                 return value.toFixed(2);
             case 'number':
-                return new Intl.NumberFormat('uk-UA').format(value);
+                return new Intl.NumberFormat('pt-PT').format(value);
             default:
                 return value;
         }

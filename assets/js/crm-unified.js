@@ -2460,7 +2460,7 @@ class CRMUnified {
     formatDate(dateString) {
         if (!dateString) return 'Não especificado';
         const date = new Date(dateString);
-        return date.toLocaleDateString('uk-UA');
+        return date.toLocaleDateString('pt-PT');
     }
 }
 

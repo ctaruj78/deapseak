@@ -7,7 +7,7 @@ class AIAssistant {
             voiceEnabled: true,
             autoOpen: false,
             soundEffects: true,
-            language: 'uk-UA'
+            language: 'pt-PT'
         };
         this.defaultSettings = {...this.settings};
         this.init();

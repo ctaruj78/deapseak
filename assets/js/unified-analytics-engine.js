@@ -772,7 +772,7 @@ class UnifiedAnalyticsEngine {
         for (let i = 6; i >= 0; i--) {
             const date = new Date();
             date.setDate(date.getDate() - i);
-            labels.push(date.toLocaleDateString('uk-UA', { weekday: 'short' }));
+            labels.push(date.toLocaleDateString('pt-PT', { weekday: 'short' }));
             
             // Генеруємо випадкові дані для демо
             liftsActivity.push(Math.floor(Math.random() * 50) + 30);
@@ -791,7 +791,7 @@ class UnifiedAnalyticsEngine {
         for (let i = 29; i >= 0; i--) {
             const date = new Date();
             date.setDate(date.getDate() - i);
-            labels.push(date.toLocaleDateString('uk-UA', { day: 'numeric', month: 'short' }));
+            labels.push(date.toLocaleDateString('pt-PT', { day: 'numeric', month: 'short' }));
             
             planned.push(Math.floor(Math.random() * 5) + 1);
             emergency.push(Math.floor(Math.random() * 2));
@@ -808,7 +808,7 @@ class UnifiedAnalyticsEngine {
         for (let i = 0; i < 7; i++) {
             const date = new Date();
             date.setDate(date.getDate() + i);
-            labels.push(date.toLocaleDateString('uk-UA', { weekday: 'short' }));
+            labels.push(date.toLocaleDateString('pt-PT', { weekday: 'short' }));
             
             // Генеруємо прогнози
             breakdown.push(Math.max(0, Math.min(100, Math.random() * 30 + 10)));

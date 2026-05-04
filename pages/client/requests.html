@@ -1197,7 +1197,7 @@
 
                     // Data
                     const dateStr = request.createdAt
-                        ? new Date(request.createdAt).toLocaleString('uk-UA', {day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'})
+                        ? new Date(request.createdAt).toLocaleString('pt-PT', {day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'})
                         : '—';
 
                     // Morada do elevador
@@ -1289,10 +1289,10 @@
                             </div>
                             <div class="col-md-6">
                                 <h6>Detalhes</h6>
-                                <p><strong>Criado em:</strong> ${new Date(request.createdAt).toLocaleString('uk-UA')}</p>
+                                <p><strong>Criado em:</strong> ${new Date(request.createdAt).toLocaleString('pt-PT')}</p>
                                 ${request.technicianName ? `<p><strong>Técnico:</strong> ${request.technicianName}</p>` : '<p><strong>Técnico:</strong> <span class="text-muted">Não atribuído</span></p>'}
-                                ${request.deadline ? `<p><strong>Prazo:</strong> ${new Date(request.deadline).toLocaleString('uk-UA')}</p>` : ''}
-                                ${request.completedAt ? `<p><strong>Concluído em:</strong> ${new Date(request.completedAt).toLocaleString('uk-UA')}</p>` : ''}
+                                ${request.deadline ? `<p><strong>Prazo:</strong> ${new Date(request.deadline).toLocaleString('pt-PT')}</p>` : ''}
+                                ${request.completedAt ? `<p><strong>Concluído em:</strong> ${new Date(request.completedAt).toLocaleString('pt-PT')}</p>` : ''}
                             </div>
                             <div class="col-12 mt-3">
                                 <h6>Descrição</h6>

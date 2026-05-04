@@ -79,7 +79,7 @@ const Utils = {
             hour: '2-digit',
             minute: '2-digit'
         };
-        return new Date(date).toLocaleDateString('uk-UA', { ...defaultOptions, ...options });
+        return new Date(date).toLocaleDateString('pt-PT', { ...defaultOptions, ...options });
     },
     
     // Relative time formatting

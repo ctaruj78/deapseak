@@ -599,7 +599,7 @@ class AssignmentManager {
     }
 
     formatDate(dateString) {
-        return new Date(dateString).toLocaleDateString('uk-UA', {
+        return new Date(dateString).toLocaleDateString('pt-PT', {
             year: 'numeric',
             month: 'short',
             day: 'numeric',

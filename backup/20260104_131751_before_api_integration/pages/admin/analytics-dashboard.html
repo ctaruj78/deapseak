@@ -723,7 +723,7 @@ class SmartAnalyticsDashboard {
 
     addEventToTimeline(type, action, details) {
         const now = new Date();
-        const timeString = now.toLocaleTimeString('uk-UA');
+        const timeString = now.toLocaleTimeString('pt-PT');
         
         const eventHtml = `
             <div class="event-item ${type}" data-timestamp="${now.getTime()}">
@@ -820,7 +820,7 @@ class SmartAnalyticsDashboard {
         for (let i = 6; i >= 0; i--) {
             const date = new Date();
             date.setDate(date.getDate() - i);
-            days.push(date.toLocaleDateString('uk-UA', { month: 'short', day: 'numeric' }));
+            days.push(date.toLocaleDateString('pt-PT', { month: 'short', day: 'numeric' }));
         }
         return days;
     }

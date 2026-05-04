@@ -301,14 +301,14 @@ class TechDashboard {
     }
 
     formatTime(date) {
-        return date.toLocaleTimeString('uk-UA', { 
+        return date.toLocaleTimeString('pt-PT', { 
             hour: '2-digit', 
             minute: '2-digit' 
         });
     }
 
     formatDate(date) {
-        return date.toLocaleDateString('uk-UA', {
+        return date.toLocaleDateString('pt-PT', {
             day: '2-digit',
             month: '2-digit',
             year: 'numeric'
@@ -319,11 +319,11 @@ class TechDashboard {
         // Atualização часу
         setInterval(() => {
             const now = new Date();
-            $('#currentTime').text(now.toLocaleTimeString('uk-UA'));
+            $('#currentTime').text(now.toLocaleTimeString('pt-PT'));
         }, 1000);
 
         // Atualização часу при завантаженні
-        $('#currentTime').text(new Date().toLocaleTimeString('uk-UA'));
+        $('#currentTime').text(new Date().toLocaleTimeString('pt-PT'));
     }
 
     setupEventListeners() {

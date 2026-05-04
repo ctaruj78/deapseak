@@ -90,7 +90,7 @@ class PDFGenerator {
         // Date
         this.pdf.setFontSize(10);
         this.pdf.setFont(undefined, 'normal');
-        this.pdf.text(`Data створення: ${new Date().toLocaleDateString('uk-UA')}`, this.pageWidth - this.margin, 30, { align: 'right' });
+        this.pdf.text(`Data створення: ${new Date().toLocaleDateString('pt-PT')}`, this.pageWidth - this.margin, 30, { align: 'right' });
 
         this.currentY = 60;
     }
@@ -137,7 +137,7 @@ class PDFGenerator {
         this.pdf.setFont(undefined, 'normal');
 
         const inspectionDetails = [
-            ['Data інспекції:', new Date(inspection.date).toLocaleDateString('uk-UA')],
+            ['Data інспекції:', new Date(inspection.date).toLocaleDateString('pt-PT')],
             ['Técnico:', inspection.technician],
             ['Duração:', `${inspection.duration} хвилин`],
             ['Tipo інспекції:', inspection.type],

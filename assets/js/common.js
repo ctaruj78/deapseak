@@ -11,7 +11,7 @@ class CommonUtils {
     }
 
     static formatCurrency(amount, currency = 'EUR') {
-        return new Intl.NumberFormat('uk-UA', {
+        return new Intl.NumberFormat('pt-PT', {
             style: 'currency',
             currency: currency
         }).format(amount);
@@ -189,7 +189,7 @@ class CommonUtils {
                 <body>
                     <h2>${title}</h2>
                     <div class="print-info">
-                        <strong>Згенеровано:</strong> ${new Date().toLocaleString('uk-UA')}
+                        <strong>Згенеровано:</strong> ${new Date().toLocaleString('pt-PT')}
                     </div>
                     <img src="${canvas.toDataURL('image/png')}" alt="QR Code" style="max-width: 300px;">
                     <div class="print-info">

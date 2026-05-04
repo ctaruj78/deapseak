@@ -256,7 +256,7 @@ class DashboardLoader {
         const el = document.getElementById('lastUpdate');
         if (el) {
             const now = new Date();
-            el.textContent = now.toLocaleTimeString('uk-UA', {
+            el.textContent = now.toLocaleTimeString('pt-PT', {
                 hour: '2-digit',
                 minute: '2-digit',
                 second: '2-digit'

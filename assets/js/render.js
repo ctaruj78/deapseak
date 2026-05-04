@@ -586,7 +586,7 @@ class Renderer {
     }
 
     static formatDate(dateString) {
-        return new Date(dateString).toLocaleDateString('uk-UA');
+        return new Date(dateString).toLocaleDateString('pt-PT');
     }
 
     static showError(message) {

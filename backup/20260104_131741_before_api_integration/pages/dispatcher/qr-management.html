@@ -620,11 +620,11 @@ document.addEventListener("DOMContentLoaded", function() {
         qrCodes.forEach(qrCode => {
             // Форматування дати створення
             const createdDate = qrCode.createdAt ? 
-                new Date(qrCode.createdAt).toLocaleDateString('uk-UA') : 'Не вказано';
+                new Date(qrCode.createdAt).toLocaleDateString('pt-PT') : 'Не вказано';
             
             // Форматування терміну дії
             const expiryDate = qrCode.expiryDate ? 
-                new Date(qrCode.expiryDate).toLocaleDateString('uk-UA') : 'Без терміну';
+                new Date(qrCode.expiryDate).toLocaleDateString('pt-PT') : 'Без терміну';
             
             // Статус
             const statusClass = qrCode.status === 'active' ? 'status-active' : 

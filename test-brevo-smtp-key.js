@@ -50,7 +50,7 @@ sendSmtpEmail.to = [{
 
 sendSmtpEmail.subject = '✅ Тест Brevo API з SMTP ключем';
 
-const currentTime = new Date().toLocaleString('uk-UA');
+const currentTime = new Date().toLocaleString('pt-PT');
 
 sendSmtpEmail.htmlContent = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">

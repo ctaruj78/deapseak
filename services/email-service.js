@@ -150,7 +150,7 @@ class EmailService {
                 <p><strong>Номер заявки:</strong> #${requestData.id}</p>
                 <p><strong>Назва:</strong> ${requestData.title}</p>
                 <p><strong>Виконавець:</strong> ${requestData.assignedTo || 'Не вказано'}</p>
-                <p><strong>Дата завершення:</strong> ${new Date().toLocaleDateString('uk-UA')}</p>
+                <p><strong>Дата завершення:</strong> ${new Date().toLocaleDateString('pt-PT')}</p>
             </div>
             
             <p>Якщо у вас виникли питання, будь ласка, зв'яжіться з нами.</p>

@@ -172,7 +172,7 @@ class CalendarSystem {
     }
 
     updateHeader() {
-        const monthYear = this.currentDate.toLocaleDateString('uk-UA', {
+        const monthYear = this.currentDate.toLocaleDateString('pt-PT', {
             month: 'long',
             year: 'numeric'
         });
@@ -324,7 +324,7 @@ class CalendarSystem {
 
     formatEventDate(dateString) {
         const date = new Date(dateString);
-        return date.toLocaleDateString('uk-UA', {
+        return date.toLocaleDateString('pt-PT', {
             weekday: 'short',
             month: 'short',
             day: 'numeric'

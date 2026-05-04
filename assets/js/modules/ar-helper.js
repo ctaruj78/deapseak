@@ -768,7 +768,7 @@ class ARHelper {
         // Показуємо деталі хот-споту
         const details = `
             <strong>${hotspot.title}</strong><br>
-            <small>Створено: ${hotspot.timestamp.toLocaleString('uk-UA')}</small>
+            <small>Створено: ${hotspot.timestamp.toLocaleString('pt-PT')}</small>
         `;
         this.showNotification(details, 'info');
     }
@@ -863,7 +863,7 @@ class ARHelper {
 
             ctx.font = '16px Arial';
             ctx.fillText(`Model: ${this.currentModel?.name || 'None'}`, canvas.width / 2, canvas.height / 2 - 10);
-            ctx.fillText(`Time: ${new Date().toLocaleString('uk-UA')}`, canvas.width / 2, canvas.height / 2 + 20);
+            ctx.fillText(`Time: ${new Date().toLocaleString('pt-PT')}`, canvas.width / 2, canvas.height / 2 + 20);
             ctx.fillText(`Active Tools: ${this.activeTool || 'None'}`, canvas.width / 2, canvas.height / 2 + 50);
 
             // Додаємо рамку
@@ -916,11 +916,11 @@ class ARHelper {
             const screenshotElement = `
                 <div class="screenshot-item" style="width: 150px;">
                     <img src="${screenshot.image}" 
-                         alt="Screenshot ${screenshot.timestamp.toLocaleString('uk-UA')}"
+                         alt="Screenshot ${screenshot.timestamp.toLocaleString('pt-PT')}"
                          class="img-fluid rounded"
                          style="height: 100px; object-fit: cover; width: 100%;">
                     <div class="text-center mt-1">
-                        <small class="text-muted">${screenshot.timestamp.toLocaleTimeString('uk-UA')}</small>
+                        <small class="text-muted">${screenshot.timestamp.toLocaleTimeString('pt-PT')}</small>
                         <br>
                         <button class="btn btn-sm btn-outline-primary mt-1" onclick="arHelper.downloadScreenshot(${screenshot.id})">
                             <i class="fas fa-download"></i>

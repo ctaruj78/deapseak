@@ -11,7 +11,7 @@ class VoiceInterface {
         this.synthesis = null;
         this.isListening = false;
         this.isSupported = false;
-        this.language = 'uk-UA';
+        this.language = 'pt-PT';
         this.voiceCommands = new Map();
         
         // Налаштування

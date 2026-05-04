@@ -22,7 +22,7 @@ class SettingsManager {
             email: 'dispatcher@example.com',
             phone: '+351912000000',
             role: 'dispatcher',
-            lastLogin: new Date().toLocaleString('uk-UA')
+            lastLogin: new Date().toLocaleString('pt-PT')
         };
 
         this.userRole = this.userData.role || 'dispatcher';
@@ -207,7 +207,7 @@ class SettingsManager {
         if (this.settings.backup.lastBackup) {
             const lastBackupElement = document.getElementById('lastBackupDate');
             if (lastBackupElement) {
-                lastBackupElement.textContent = new Date(this.settings.backup.lastBackup).toLocaleString('uk-UA');
+                lastBackupElement.textContent = new Date(this.settings.backup.lastBackup).toLocaleString('pt-PT');
             }
         }
 
@@ -482,7 +482,7 @@ class SettingsManager {
             
             const lastBackupElement = document.getElementById('lastBackupDate');
             if (lastBackupElement) {
-                lastBackupElement.textContent = new Date().toLocaleString('uk-UA');
+                lastBackupElement.textContent = new Date().toLocaleString('pt-PT');
             }
 
             this.showNotification('Резервну копію com sucesso створено', 'success');
@@ -617,7 +617,7 @@ class SettingsManager {
         const toast = $(`<div class="toast" role="alert" aria-live="assertive" aria-atomic="true">
             <div class="toast-header">
                 <strong class="mr-auto">Система</strong>
-                <small class="text-muted">${new Date().toLocaleTimeString('uk-UA')}</small>
+                <small class="text-muted">${new Date().toLocaleTimeString('pt-PT')}</small>
                 <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>

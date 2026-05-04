@@ -361,7 +361,7 @@ async function main() {
     console.log(`${B}╔══════════════════════════════════════════════════════╗`);
     console.log(`║     DEAPSEAK — КОМПЛЕКСНИЙ АУДИТ СИСТЕМИ              ║`);
     console.log(`╚══════════════════════════════════════════════════════╝${X}`);
-    console.log(`Target: ${BASE}  |  Date: ${new Date().toLocaleString('uk-UA')}\n`);
+    console.log(`Target: ${BASE}  |  Date: ${new Date().toLocaleString('pt-PT')}\n`);
 
     await checkServer();
     await checkAuth();

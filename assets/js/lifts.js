@@ -141,8 +141,8 @@ class LiftManager {
                 $('#detail-access-code').text(lift.accessCode || '-');
                 $('#detail-last-maintenance').text(lift.lastMaintenance || '-');
                 $('#detail-next-maintenance').text(lift.nextMaintenance || '-');
-                $('#detail-created').text(lift.createdAt ? new Date(lift.createdAt).toLocaleString('uk-UA') : '-');
-                $('#detail-updated').text(lift.updatedAt ? new Date(lift.updatedAt).toLocaleString('uk-UA') : '-');
+                $('#detail-created').text(lift.createdAt ? new Date(lift.createdAt).toLocaleString('pt-PT') : '-');
+                $('#detail-updated').text(lift.updatedAt ? new Date(lift.updatedAt).toLocaleString('pt-PT') : '-');
                 
                 $('#liftDetailsModal').modal('show');
             }
@@ -830,7 +830,7 @@ class LiftManager {
     formatDate(dateString) {
         if (!dateString) return '-';
         try {
-            return new Date(dateString).toLocaleDateString('uk-UA');
+            return new Date(dateString).toLocaleDateString('pt-PT');
         } catch (error) {
             return dateString;
         }

@@ -8,7 +8,7 @@ class DeapSeaKVoiceControl {
         this.isListening = false;
         this.recognition = null;
         this.synthesis = window.speechSynthesis;
-        this.currentLanguage = 'uk-UA';
+        this.currentLanguage = 'pt-PT';
         this.commands = new Map();
         this.contextMode = 'general'; // general, lift-creation, inspection, qr-generation
         
@@ -468,7 +468,7 @@ class DeapSeaKVoiceControl {
 
         // Слухаємо планування інспекцій
         eventBus.on('inspection:scheduled', (data) => {
-            this.speak(`Інспекцію заплановано на ${new Date(data.date).toLocaleDateString('uk-UA')}`);
+            this.speak(`Інспекцію заплановано на ${new Date(data.date).toLocaleDateString('pt-PT')}`);
         }, { module: 'voice-control' });
 
         console.log('✅ EventBus інтеграція для Voice Control налаштована');
@@ -476,7 +476,7 @@ class DeapSeaKVoiceControl {
 
     // Додаткові методи
     changeLanguage() {
-        const languages = ['uk-UA', 'en-US', 'ru-RU'];
+        const languages = ['pt-PT', 'en-US', 'ru-RU'];
         const currentIndex = languages.indexOf(this.currentLanguage);
         const nextIndex = (currentIndex + 1) % languages.length;
         

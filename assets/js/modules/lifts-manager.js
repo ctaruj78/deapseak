@@ -275,7 +275,7 @@ class LiftsManager {
 
     formatDate(dateString) {
         if (!dateString) return 'Sem dados';
-        return new Date(dateString).toLocaleDateString('uk-UA');
+        return new Date(dateString).toLocaleDateString('pt-PT');
     }
 
     formatLocation(lift) {
@@ -591,7 +591,7 @@ class LiftsManager {
             const typeLabel = typeLabels[typeRaw] || typeRaw;
             const typeIcon = typeIcons[typeRaw] || 'fa-clipboard-check text-secondary';
             const date = (report.inspectionDate || report.date)
-                ? new Date(report.inspectionDate || report.date).toLocaleDateString('uk-UA', { year: 'numeric', month: '2-digit', day: '2-digit' })
+                ? new Date(report.inspectionDate || report.date).toLocaleDateString('pt-PT', { year: 'numeric', month: '2-digit', day: '2-digit' })
                 : 'Data desconhecida';
             const status = report.status || 'completed';
             const notes = report.comments || report.findings || report.notes || '';
@@ -658,8 +658,8 @@ class LiftsManager {
             return `<div class="alert alert-info mb-0"><i class="fas fa-info-circle"></i> Contrato ainda não carregado pelo administrador</div>`;
         }
 
-        const startDate = contract.startDate ? new Date(contract.startDate).toLocaleDateString('uk-UA') : 'Desconhecido';
-        const endDate = contract.endDate ? new Date(contract.endDate).toLocaleDateString('uk-UA') : null;
+        const startDate = contract.startDate ? new Date(contract.startDate).toLocaleDateString('pt-PT') : 'Desconhecido';
+        const endDate = contract.endDate ? new Date(contract.endDate).toLocaleDateString('pt-PT') : null;
         const contractNumber = contract.contractNumber || 'Não especificado';
         const description = contract.description || '';
         const fileUrl = contract.contractFile.startsWith('/') ? contract.contractFile : `/uploads/${contract.contractFile}`;
@@ -718,7 +718,7 @@ class LiftsManager {
         const typeRaw = report.inspectionType || report.type || '';
         const typeLabel = typeLabels[typeRaw] || typeRaw || 'Relatório';
         const date = (report.inspectionDate || report.date)
-            ? new Date(report.inspectionDate || report.date).toLocaleDateString('uk-UA', { year: 'numeric', month: 'long', day: 'numeric' })
+            ? new Date(report.inspectionDate || report.date).toLocaleDateString('pt-PT', { year: 'numeric', month: 'long', day: 'numeric' })
             : 'Data desconhecida';
         const notes = report.comments || report.findings || report.notes || '';
         const inspector = report.inspectorName || report.inspector || '';
@@ -788,7 +788,7 @@ class LiftsManager {
         const typeRaw = report.inspectionType || report.type || '';
         const typeLabel = typeLabels[typeRaw] || typeRaw;
         const date = (report.inspectionDate || report.date)
-            ? new Date(report.inspectionDate || report.date).toLocaleDateString('uk-UA')
+            ? new Date(report.inspectionDate || report.date).toLocaleDateString('pt-PT')
             : '';
 
         const email = prompt(`Enviar звіт "${typeLabel} ${date}" на Email:\n(Введіть адресу одержувача)`, '');
@@ -865,7 +865,7 @@ class LiftsManager {
         const typeRaw = report.inspectionType || report.type || '';
         const typeLabel = typeLabels[typeRaw] || typeRaw;
         const date = (report.inspectionDate || report.date)
-            ? new Date(report.inspectionDate || report.date).toLocaleDateString('uk-UA')
+            ? new Date(report.inspectionDate || report.date).toLocaleDateString('pt-PT')
             : 'Data desconhecida';
         const notes = report.comments || report.findings || report.notes || '';
 
