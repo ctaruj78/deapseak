@@ -1598,6 +1598,7 @@ app.get('/api/lifts/notifications', authenticateToken, async (req, res) => {
 
 app.get('/api/lifts', authenticateToken, async (req, res) => {
     try {
+        if (!db) return res.status(503).json({ success: false, message: 'Base de dados indisponível.' });
         const { ObjectId } = require('mongodb');
         let query = {};
         
@@ -1761,7 +1762,16 @@ app.get('/api/lifts', authenticateToken, async (req, res) => {
 // POST /api/lifts - створення нового ліфта
 app.post('/api/lifts', authenticateToken, async (req, res) => {
     try {
-        // 🔐 ПЕРЕВІРКА ПРАВ - тільки admin/dispatcher можуть створювати ліфти
+        // � ПЕРЕВІРКА ПІДКЛЮЧЕННЯ ДО MongoDB
+        if (!db) {
+            console.error('❌ POST /api/lifts: MongoDB not connected');
+            return res.status(503).json({
+                success: false,
+                message: 'Base de dados indisponível. Tente novamente em alguns segundos.'
+            });
+        }
+
+        // �🔐 ПЕРЕВІРКА ПРАВ - тільки admin/dispatcher можуть створювати ліфти
         if (req.user.role !== 'admin' && req.user.role !== 'dispatcher') {
             console.warn(`⚠️ ${req.user.role} ${req.user.username} намагається створити ліфт`);
             return res.status(403).json({
@@ -2223,9 +2233,12 @@ app.post('/api/lifts', authenticateToken, async (req, res) => {
 
 app.get('/api/lifts/:id', authenticateToken, async (req, res) => {
     try {
+        if (!db) return res.status(503).json({ success: false, message: 'Base de dados indisponível.' });
         const { ObjectId } = require('mongodb');
-        const liftId = new ObjectId(req.params.id);
-        
+        let liftId;
+        try { liftId = new ObjectId(req.params.id); } catch (e) {
+            return res.status(400).json({ success: false, message: 'ID de elevador inválido' });
+        }
         const lift = await db.collection('lifts').findOne({ _id: liftId });
         
         if (!lift) {
@@ -2363,9 +2376,12 @@ app.get('/api/lifts/:id/history', authenticateToken, async (req, res) => {
 // PUT /api/lifts/:id - оновлення ліфта
 app.put('/api/lifts/:id', authenticateToken, async (req, res) => {
     try {
+        if (!db) return res.status(503).json({ success: false, message: 'Base de dados indisponível.' });
         const { ObjectId } = require('mongodb');
-        const liftId = new ObjectId(req.params.id);
-        
+        let liftId;
+        try { liftId = new ObjectId(req.params.id); } catch (e) {
+            return res.status(400).json({ success: false, message: 'ID de elevador inválido' });
+        }
         // 🔐 ПЕРЕВІРКА ПРАВ ДОСТУПУ
         const lift = await db.collection('lifts').findOne({ _id: liftId });
         
