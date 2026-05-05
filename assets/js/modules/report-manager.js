@@ -25,7 +25,9 @@ class ReportManager {
 
     async loadReportData() {
         try {
-            const token = localStorage.getItem('token') || sessionStorage.getItem('token') || '';
+            const token = (typeof AuthManager !== 'undefined' ? AuthManager.getAuthToken() : null)
+                || localStorage.getItem('liftmanager_jwt') || sessionStorage.getItem('liftmanager_jwt')
+                || localStorage.getItem('token') || sessionStorage.getItem('token') || '';
             const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
 
             const [requestsRes, liftsRes] = await Promise.all([
@@ -91,9 +93,9 @@ class ReportManager {
         this.reportData = {
             assignments: assignments.reverse(),
             technicians: [
-                { id: 'TECH-001', name: 'Іван Петренко', completed: 45, efficiency: 92, rating: 4.8 },
-                { id: 'TECH-002', name: 'Марія Коваленко', completed: 38, efficiency: 88, rating: 4.9 },
-                { id: 'TECH-003', name: 'Петро Сидоренко', completed: 32, efficiency: 85, rating: 4.6 }
+                { id: 'TECH-001', name: 'João Silva', completed: 45, efficiency: 92, rating: 4.8 },
+                { id: 'TECH-002', name: 'Carlos Ferreira', completed: 38, efficiency: 88, rating: 4.9 },
+                { id: 'TECH-003', name: 'Rui Santos', completed: 32, efficiency: 85, rating: 4.6 }
             ],
             customers: [
                 { rating: 5, count: 45 },
@@ -141,13 +143,14 @@ class ReportManager {
         const completedAssignments = this.reportData.assignments.reduce((sum, day) => sum + day.completed, 0);
         const totalTime = this.reportData.assignments.reduce((sum, day) => sum + day.avgTime, 0);
         
+        const count = this.reportData.assignments.length;
         return {
             totalAssignments: totalAssignments,
-            completionRate: Math.round((completedAssignments / totalAssignments) * 100),
-            avgTime: totalTime / this.reportData.assignments.length,
-            slaCompliance: 95, // Приклад значення
+            completionRate: totalAssignments > 0 ? Math.round((completedAssignments / totalAssignments) * 100) : 0,
+            avgTime: count > 0 ? totalTime / count : 0,
+            slaCompliance: 95,
             escalations: Math.floor(totalAssignments * 0.05),
-            customerSatisfaction: 92 // Приклад значення
+            customerSatisfaction: 92
         };
     }
 
@@ -188,7 +191,7 @@ class ReportManager {
                     labels: this.reportData.assignments.map(a => a.date),
                     datasets: [
                         {
-                            label: 'Всього заявок',
+                            label: 'Total de pedidos',
                             data: this.reportData.assignments.map(a => a.total),
                             borderColor: '#007bff',
                             backgroundColor: 'rgba(0, 123, 255, 0.1)',
@@ -196,7 +199,7 @@ class ReportManager {
                             tension: 0.4
                         },
                         {
-                            label: 'Завершено',
+                            label: 'Concluídos',
                             data: this.reportData.assignments.map(a => a.completed),
                             borderColor: '#28a745',
                             backgroundColor: 'rgba(40, 167, 69, 0.1)',
@@ -211,7 +214,7 @@ class ReportManager {
                     plugins: {
                         title: {
                             display: true,
-                            text: 'Динаміка заявок'
+                            text: 'Evolução dos pedidos'
                         }
                     }
                 }
@@ -232,7 +235,7 @@ class ReportManager {
             this.charts.priority = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
-                    labels: ['Altий пріоритет', 'Agoедній пріоритет'],
+                    labels: ['Alta prioridade', 'Prioridade média'],
                     datasets: [{
                         data: [priorityData.high, priorityData.medium],
                         backgroundColor: ['#dc3545', '#ffc107'],
@@ -262,7 +265,7 @@ class ReportManager {
                 data: {
                     labels: this.reportData.technicians.map(t => t.name),
                     datasets: [{
-                        label: 'Завершено завдань',
+                        label: 'Tarefas concluídas',
                         data: this.reportData.technicians.map(t => t.completed),
                         backgroundColor: '#17a2b8'
                     }]
@@ -273,7 +276,7 @@ class ReportManager {
                     plugins: {
                         title: {
                             display: true,
-                            text: 'Desempenho техніків'
+                            text: 'Desempenho dos técnicos'
                         }
                     }
                 }
@@ -301,7 +304,7 @@ class ReportManager {
                 data: {
                     labels: daysOfWeek,
                     datasets: [{
-                        label: 'A carregar',
+                        label: 'Volume de trabalho',
                         data: workloadData,
                         backgroundColor: '#6f42c1'
                     }]
@@ -312,7 +315,7 @@ class ReportManager {
                     plugins: {
                         title: {
                             display: true,
-                            text: 'A carregar по днях тижня'
+                            text: 'Carga por dia da semana'
                         }
                     }
                 }
@@ -357,7 +360,7 @@ class ReportManager {
     calculateDetailedStats() {
         return [
             {
-                metric: 'Загальна кількість заявок',
+                metric: 'Total de pedidos',
                 current: this.reportData.assignments.reduce((sum, day) => sum + day.total, 0),
                 previous: 285,
                 change: 5.2,
@@ -365,25 +368,23 @@ class ReportManager {
                 deviation: 2.3
             },
             {
-                metric: 'Відсоток завершення',
-                current: Math.round((this.reportData.assignments.reduce((sum, day) => sum + day.completed, 0) / 
-                                  this.reportData.assignments.reduce((sum, day) => sum + day.total, 0)) * 100),
+                metric: 'Percentagem de conclusão',
+                current: (() => { const t = this.reportData.assignments.reduce((sum, day) => sum + day.total, 0); return t > 0 ? Math.round((this.reportData.assignments.reduce((sum, day) => sum + day.completed, 0) / t) * 100) : 0; })(),
                 previous: 88,
                 change: 4.5,
                 target: 95,
                 deviation: -1.2
             },
             {
-                metric: 'Agoедній час виконання (хв)',
-                current: Math.round(this.reportData.assignments.reduce((sum, day) => sum + day.avgTime, 0) / 
-                                  this.reportData.assignments.length),
+                metric: 'Tempo médio de execução (min)',
+                current: (() => { const c = this.reportData.assignments.length; return c > 0 ? Math.round(this.reportData.assignments.reduce((sum, day) => sum + day.avgTime, 0) / c) : 0; })(),
                 previous: 145,
                 change: -12.4,
                 target: 120,
                 deviation: 8.3
             },
             {
-                metric: 'Відповідність SLA',
+                metric: 'Conformidade SLA',
                 current: 95,
                 previous: 92,
                 change: 3.3,
@@ -391,7 +392,7 @@ class ReportManager {
                 deviation: -3.1
             },
             {
-                metric: 'Задоволеність клієнтів',
+                metric: 'Satisfação dos clientes',
                 current: 92,
                 previous: 89,
                 change: 3.4,
@@ -406,10 +407,10 @@ class ReportManager {
         container.empty();
         
         const comparisons = [
-            { label: 'Поточний місяць', value: 120, target: 130 },
-            { label: 'Попередній місяць', value: 110, target: 125 },
-            { label: 'Цього року', value: 850, target: 900 },
-            { label: 'Минулого року', value: 780, target: 850 }
+            { label: 'Mês atual', value: 120, target: 130 },
+            { label: 'Mês anterior', value: 110, target: 125 },
+            { label: 'Este ano', value: 850, target: 900 },
+            { label: 'Ano passado', value: 780, target: 850 }
         ];
         
         comparisons.forEach(comp => {
@@ -427,7 +428,7 @@ class ReportManager {
                         <div class="performance-fill ${progressClass}" style="width: ${percentage}%"></div>
                     </div>
                     <div class="d-flex justify-content-between">
-                        <small class="text-muted">Виконання</small>
+                        <small class="text-muted">Execução</small>
                         <small class="font-weight-bold">${percentage}%</small>
                     </div>
                 </div>
@@ -441,9 +442,9 @@ class ReportManager {
         container.empty();
         
         const kpis = [
-            { name: 'Оборот', value: '125,000₴', target: '120,000₴', status: 'success' },
-            { name: 'Custo', value: '85,000₴', target: '80,000₴', status: 'warning' },
-            { name: 'Прибуток', value: '40,000₴', target: '35,000₴', status: 'success' },
+            { name: 'Faturação', value: '125.000€', target: '120.000€', status: 'success' },
+            { name: 'Custo', value: '85.000€', target: '80.000€', status: 'warning' },
+            { name: 'Lucro', value: '40.000€', target: '35.000€', status: 'success' },
             { name: 'ROI', value: '47%', target: '40%', status: 'success' }
         ];
         
@@ -452,7 +453,7 @@ class ReportManager {
                 <div class="metric-card mb-3">
                     <div class="metric-value text-${kpi.status}">${kpi.value}</div>
                     <div class="metric-label">${kpi.name}</div>
-                    <small class="text-muted">Ціль: ${kpi.target}</small>
+                    <small class="text-muted">Meta: ${kpi.target}</small>
                 </div>
             `;
             container.append(kpiElement);

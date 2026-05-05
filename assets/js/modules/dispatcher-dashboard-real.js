@@ -611,9 +611,25 @@ class DispatcherDashboardReal {
             'busy': 'Ocupado',
             'offline': 'Offline'
         }[tech.status] || 'Desconhecido';
+
+        const specialtyMap = {
+            'general': 'Geral',
+            'electric': 'Elétrica',
+            'electrical': 'Elétrica',
+            'mechanical': 'Mecânica',
+            'hydraulic': 'Hidráulica',
+            'maintenance': 'Manutenção',
+            'network': 'Redes',
+            'hardware': 'Equipamento',
+            'software': 'Software',
+            'security': 'Segurança',
+            'repair': 'Reparação',
+            'inspection': 'Inspeção'
+        };
+        const specialtyText = specialtyMap[tech.specialty] || tech.specialty || 'Geral';
         
         div.innerHTML = `
-            <img src="${tech.avatar}" alt="${tech.firstName}" class="tech-avatar">
+            <img src="${tech.avatar}" alt="Técnico" class="tech-avatar">
             <div class="flex-grow-1">
                 <strong>${tech.firstName} ${tech.lastName}</strong>
                 <br>
@@ -625,7 +641,7 @@ class DispatcherDashboardReal {
             <div class="text-right">
                 <span class="badge badge-info">${tech.rating} ⭐</span>
                 <br>
-                <small class="text-muted">${tech.specialty}</small>
+                <small class="text-muted">${specialtyText}</small>
             </div>
         `;
         

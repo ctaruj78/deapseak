@@ -2693,6 +2693,135 @@ app.post('/api/lifts/:id/contract/share-to-siblings', authenticateToken, async (
         res.status(500).json({ success: false, message: error.message });
     }
 });
+
+// POST /api/lifts/parse-inspection-pdf - Аналіз PDF звіту та пошук ліфта (повинен бути ДО /api/lifts/:id/...)
+app.post('/api/lifts/parse-inspection-pdf', authenticateToken, (req, res, next) => {
+    upload.single('pdf')(req, res, (err) => {
+        if (err) return res.status(400).json({ success: false, message: 'Erro ao processar ficheiro: ' + err.message });
+        next();
+    });
+}, async (req, res) => {
+    try {
+        if (req.user.role === 'client') {
+            return res.status(403).json({ success: false, message: 'Acesso negado' });
+        }
+        if (!req.file) {
+            return res.status(400).json({ success: false, message: 'Ficheiro PDF não fornecido' });
+        }
+
+        console.log('🔍 Parsing inspection PDF:', req.file.originalname);
+
+        // Parse with universal parser
+        const parsed = await parseInspectionReport(req.file.path);
+        await cleanupFile(req.file.path);
+
+        if (!parsed.success) {
+            return res.status(422).json({ success: false, message: parsed.error || 'Não foi possível analisar o PDF' });
+        }
+
+        // Normalise extracted data
+        const violations = parsed.violations || [];
+        const hasC1 = violations.some(v => (v.classification || v.type) === 'C1');
+        const hasC2 = violations.some(v => ['C2','C2*'].includes(v.classification || v.type));
+
+        let status = 'passed';
+        if (hasC1) status = 'failed';
+        else if (hasC2) status = 'conditional';
+
+        // Map certType from status
+        const certType = status === 'passed' ? 'cert_2_years' : (hasC1 ? 'immobilization' : 'reinspection');
+
+        // Extract dates from metadata
+        const meta = parsed.metadata || {};
+        const rawDate = meta.inspectionDate || meta.date || '';
+        const rawNext = meta.nextInspectionDate || meta.validUntil || '';
+
+        // Convert to ISO (supports YYYY/MM/DD and DD/MM/YYYY)
+        function toISO(str) {
+            if (!str) return '';
+            const s = String(str).trim();
+            // YYYY-MM-DD or YYYY/MM/DD
+            if (/^\d{4}[-\/]\d{2}[-\/]\d{2}$/.test(s)) return s.replace(/\//g, '-');
+            // DD/MM/YYYY or DD-MM-YYYY
+            const m = s.match(/^(\d{2})[-\/](\d{2})[-\/](\d{4})$/);
+            if (m) return `${m[3]}-${m[2]}-${m[1]}`;
+            return s.substring(0, 10);
+        }
+
+        const dateISO = toISO(rawDate);
+        const nextISO = toISO(rawNext) || (() => {
+            if (!dateISO) return '';
+            const d = new Date(dateISO);
+            if (isNaN(d)) return '';
+            if (status === 'failed') d.setDate(d.getDate() + 90);
+            else if (status === 'conditional') d.setDate(d.getDate() + 180);
+            else d.setFullYear(d.getFullYear() + 2);
+            return d.toISOString().substring(0, 10);
+        })();
+
+        const extractedData = {
+            date: dateISO,
+            validUntil: nextISO,
+            inspector: meta.inspector || meta.company || '',
+            company: meta.company || meta.maintenanceCompany || '',
+            address: meta.location || meta.address || '',
+            postalCode: meta.postalCode || '',
+            status: status,
+            certType: certType,
+            violations: violations.map(v => ({
+                type: v.classification || v.type || 'C3',
+                article: v.article || v.articleNumber || '',
+                description: v.description || v.text || ''
+            })),
+            savedFileUrl: null
+        };
+
+        // Try to match lift in DB by address/postal code
+        const liftsCol = db.collection('lifts');
+        const allLifts = await liftsCol.find({}, {
+            projection: { _id: 1, municipalNumber: 1, address: 1, 'location.city': 1 }
+        }).toArray();
+
+        let allMatches = [];
+        let suggestedLift = null;
+
+        if (extractedData.address || extractedData.postalCode) {
+            const addrLower = (extractedData.address || '').toLowerCase();
+            const postalNorm = (extractedData.postalCode || '').replace(/[\s-]/g, '');
+
+            allLifts.forEach(lift => {
+                let score = 0;
+                const liftStreet = ((lift.address && (lift.address.street || lift.address.full)) || '').toLowerCase();
+                const liftPostal = ((lift.address && lift.address.postalCode) || '').replace(/[\s-]/g, '');
+
+                if (postalNorm && liftPostal && postalNorm === liftPostal) score += 60;
+                if (addrLower && liftStreet) {
+                    // Simple word overlap scoring
+                    const words = addrLower.split(/\s+/).filter(w => w.length > 3);
+                    const matches = words.filter(w => liftStreet.includes(w));
+                    if (matches.length > 0) score += Math.min(40, Math.round(40 * matches.length / Math.max(words.length, 1)));
+                }
+                if (score > 20) allMatches.push({ ...lift, confidence: score });
+            });
+
+            allMatches.sort((a, b) => b.confidence - a.confidence);
+            if (allMatches.length > 0) suggestedLift = allMatches[0];
+        }
+
+        res.json({
+            success: true,
+            extractedData,
+            allMatches: allMatches.slice(0, 10),
+            suggestedLift: suggestedLift || null
+        });
+
+    } catch (error) {
+        console.error('❌ parse-inspection-pdf error:', error);
+        if (req.file) await cleanupFile(req.file.path).catch(() => {});
+        res.status(500).json({ success: false, message: error.message || 'Erro ao processar PDF' });
+    }
+});
+
 app.post('/api/lifts/:id/inspection-report', authenticateToken, upload.single('pdfFile'), async (req, res) => {
     try {
         // 🔐 Тільки admin, dispatcher, technician можуть додавати звіти
@@ -2794,6 +2923,105 @@ app.post('/api/lifts/:id/inspection-report', authenticateToken, upload.single('p
             success: false,
             message: 'Erro ao adicionar relatório'
         });
+    }
+});
+
+// POST /api/lifts/:id/confirm-inspection-from-pdf - Guardar inspeção após análise de PDF
+app.post('/api/lifts/:id/confirm-inspection-from-pdf', authenticateToken, async (req, res) => {
+    try {
+        if (req.user.role === 'client') {
+            return res.status(403).json({ success: false, message: 'Clientes não podem adicionar relatórios de inspeção' });
+        }
+        const { ObjectId } = require('mongodb');
+        let liftId;
+        try {
+            liftId = new ObjectId(req.params.id);
+        } catch (e) {
+            return res.status(400).json({ success: false, message: 'ID de elevador inválido' });
+        }
+
+        const {
+            inspector, notes, reportType, status,
+            savedFileUrl, lastInspectionDate, nextInspectionDate,
+            violations, address, postalCode, certType
+        } = req.body;
+
+        const resolvedStatus = status || 'passed';
+        const inspectionDateISO = lastInspectionDate
+            ? new Date(lastInspectionDate).toISOString()
+            : new Date().toISOString();
+
+        // Build next inspection date
+        const calcNext = () => {
+            const d = new Date(inspectionDateISO);
+            if (resolvedStatus === 'failed') d.setDate(d.getDate() + 90);
+            else if (resolvedStatus === 'conditional') d.setDate(d.getDate() + 180);
+            else d.setFullYear(d.getFullYear() + 2);
+            return d.toISOString();
+        };
+
+        let nextDateISO = calcNext();
+        if (nextInspectionDate) {
+            const nd = new Date(nextInspectionDate);
+            if (!isNaN(nd)) nextDateISO = nd.toISOString();
+        }
+
+        const reportData = {
+            date: inspectionDateISO,
+            inspectionDate: inspectionDateISO,
+            type: reportType || 'annual',
+            inspectionType: reportType || 'annual',
+            inspector: inspector || req.user.email || 'unknown',
+            notes: notes || '',
+            status: resolvedStatus,
+            certType: certType || '',
+            violations: Array.isArray(violations) ? violations : [],
+            fileUrl: savedFileUrl || null,
+            reportFile: savedFileUrl || null,
+            fromPdfParser: true,
+            c1Count: Array.isArray(violations) ? violations.filter(v => v.type === 'C1').length : 0,
+            c2Count: Array.isArray(violations) ? violations.filter(v => v.type === 'C2').length : 0,
+            c3Count: Array.isArray(violations) ? violations.filter(v => v.type === 'C3').length : 0
+        };
+
+        const setFields = {
+            lastInspectionDate: inspectionDateISO,
+            nextInspectionDate: nextDateISO,
+            inspectionStatus: resolvedStatus === 'passed' ? 'active' : 'needs_attention',
+            updatedAt: new Date().toISOString()
+        };
+
+        if (address) setFields['address.street'] = address;
+        if (postalCode) setFields['address.postalCode'] = postalCode;
+
+        if (resolvedStatus === 'passed') {
+            const expiry = new Date(inspectionDateISO);
+            expiry.setFullYear(expiry.getFullYear() + 2);
+            setFields.licenseDate = inspectionDateISO;
+            setFields.licenseExpiry = expiry.toISOString();
+        }
+
+        const result = await db.collection('lifts').updateOne(
+            { _id: liftId },
+            {
+                $push: { inspectionHistory: reportData },
+                $set: setFields
+            }
+        );
+
+        if (result.matchedCount === 0) {
+            return res.status(404).json({ success: false, message: 'Elevador não encontrado' });
+        }
+
+        console.log(`✅ PDF inspection confirmed for lift ${req.params.id} by ${req.user.email}`);
+        res.status(201).json({
+            success: true,
+            message: 'Relatório de inspeção guardado com sucesso',
+            report: reportData
+        });
+    } catch (error) {
+        console.error('❌ Erro confirm-inspection-from-pdf:', error);
+        res.status(500).json({ success: false, message: 'Erro ao guardar relatório de inspeção' });
     }
 });
 

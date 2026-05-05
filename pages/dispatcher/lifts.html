@@ -2793,9 +2793,10 @@ Equipa FestLift
             }
 
             try {
-                const token = localStorage.getItem('jwt_token') || 
-                             localStorage.getItem('liftmanager_jwt') || 
-                             localStorage.getItem('token');
+                const token = (typeof AuthManager!=='undefined' && AuthManager.getAuthToken())
+                             || localStorage.getItem('liftmanager_jwt')
+                             || localStorage.getItem('jwt_token')
+                             || localStorage.getItem('token');
                 
                 if (!token) {
                     alert('Autenticação necessária');
@@ -3434,9 +3435,9 @@ Equipa FestLift
         const emailContent = template.replace('{INSPECTION_DATE}', formattedDate);
         
         try {
-            const token = localStorage.getItem('jwt_token') || 
-                         localStorage.getItem('liftmanager_jwt') || 
-                         localStorage.getItem('token');
+            const token = (typeof AuthManager!=='undefined' && AuthManager.getAuthToken())
+                         || localStorage.getItem('liftmanager_jwt')
+                         || localStorage.getItem('token');
             
             if (!token) {
                 console.error('JWT token não encontrado');
@@ -4253,9 +4254,9 @@ Equipa FestLift</textarea>
         }
 
         try {
-            const token = localStorage.getItem('jwt_token') || 
-                         localStorage.getItem('liftmanager_jwt') || 
-                         localStorage.getItem('token');
+            const token = (typeof AuthManager!=='undefined' && AuthManager.getAuthToken())
+                         || localStorage.getItem('liftmanager_jwt')
+                         || localStorage.getItem('token');
             
             if (!token) {
                 alert('Autenticação necessária');
@@ -6599,7 +6600,7 @@ Equipa FestLift</textarea>
         if (!email) return;
 
         try {
-            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+            const token = AuthManager.getAuthToken();
             const response = await fetch('/api/email/send-inspection-report', {
                 method: 'POST',
                 headers: {
@@ -6654,7 +6655,7 @@ Equipa FestLift</textarea>
             document.body.removeChild(inp);
             if (!file) return;
 
-            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+            const token = AuthManager.getAuthToken();
             const formData = new FormData();
             formData.append('pdfFile', file);
 
@@ -6694,7 +6695,7 @@ Equipa FestLift</textarea>
         }
         
         try {
-            const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+            const token = AuthManager.getAuthToken();
             const pdfFile = fileInput && fileInput.files && fileInput.files[0] ? fileInput.files[0] : null;
 
             let result;
@@ -8309,7 +8310,7 @@ Equipa FestLift</textarea>
                     alert('Preencha os campos obrigatórios: data, tipo, descrição');
                     return;
                 }
-                var token = localStorage.getItem('authToken')||localStorage.getItem('token')||localStorage.getItem('liftmanager_jwt');
+                var token = (typeof AuthManager!=='undefined'&&AuthManager.getAuthToken())||localStorage.getItem('liftmanager_jwt')||localStorage.getItem('authToken')||localStorage.getItem('token');
                 var liftId = (window.enhancedLiftModal&&window.enhancedLiftModal.currentLiftId)||window.currentLiftId;
                 var body = {
                     title: type.value==='maintenance'?'Manutenção planeada':type.value==='repair'?'Reparação':'Intervenção',

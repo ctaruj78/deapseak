@@ -56,8 +56,7 @@ class AuthManager {
                 body: JSON.stringify({ refreshToken })
             });
             if (!resp.ok) {
-                console.warn('⚠️ Refresh token недійсний — виходимо');
-                this.logout();
+                console.warn('⚠️ Refresh token недійсний ou expirado — não é possível renovar');
                 return false;
             }
             const data = await resp.json();
@@ -301,6 +300,10 @@ class AuthManager {
                         console.log('✅ Token auto-refreshed on page load, продовжуємо...');
                         // Продовжуємо нижче до перевірки ролі
                     } else {
+                        // Clear invalid tokens before redirecting
+                        [this.TOKEN_KEY, this.USER_KEY, this.REFRESH_KEY, 'token', 'authToken'].forEach(k => {
+                            localStorage.removeItem(k); sessionStorage.removeItem(k);
+                        });
                         this._doLoginRedirect(pathname);
                         return;
                     }
