@@ -22,6 +22,9 @@ const pdfParse = require('pdf-parse');
 // Імпортуємо базу даних артикулів
 const regulationArticles = require('./regulation-articles-complete');
 
+// Імпортуємо matchByDescriptionText з окремого модуля
+const { matchByDescriptionText } = require('./violation-keywords');
+
 /**
  * BASE DE DADOS DE KEYWORDS DE VIOLAÇÕES
  * Permite reconhecer porушення pelo texto da descrição,
@@ -799,29 +802,35 @@ function extractViolations(text) {
     // Quebra o texto do relatório em frases/linhas e tenta reconhecer
     // violações apenas pela descrição textual, sem precisar de artigo.
     // Útil para PDFs com tabelas corrompidas, OCR defeituoso ou formatos desconhecidos.
-    console.log('  🔍 Format 7: keyword-based scan (frases sem artigo)...');
+    // NOTA: Ignorado para relatórios APROVADOS — evita falsos positivos do texto explicativo
+    //       da secção "NOTA DE CLÁUSULAS" que descreve as categorias C1/C2/C3.
     let count7 = 0;
+    if (statusChecks.approved && !statusChecks.failed) {
+        console.log('  ⏭️ Format 7 skipped: APROVADO report — keyword scan disabled to prevent false positives from explanatory text');
+    } else {
+        console.log('  🔍 Format 7: keyword-based scan (frases sem artigo)...');
 
-    // Dividimos em frases razoáveis (ponto/ponto+newline/newline simples)
-    const sentences = searchText
-        .split(/[.\n]+/)
-        .map(s => s.trim())
-        .filter(s => s.length > 20 && s.length < 400);
+        // Dividimos em frases razoáveis (ponto/ponto+newline/newline simples)
+        const sentences = searchText
+            .split(/[.\n]+/)
+            .map(s => s.trim())
+            .filter(s => s.length > 20 && s.length < 400);
 
-    for (const sentence of sentences) {
-        if (isExplanationText(sentence)) continue;
+        for (const sentence of sentences) {
+            if (isExplanationText(sentence)) continue;
 
-        const textHit = matchByDescriptionText(sentence);
-        if (!textHit || !textHit.article) continue;
+            const textHit = matchByDescriptionText(sentence);
+            if (!textHit || !textHit.article) continue;
 
-        // Verifica se já não foi encontrado por outro formato
-        const key = `${textHit.classification}-${textHit.article}-${sentence.substring(0, 30)}`;
-        if (seen.has(key)) continue;
+            // Verifica se já não foi encontrado por outro formato
+            const key = `${textHit.classification}-${textHit.article}-${sentence.substring(0, 30)}`;
+            if (seen.has(key)) continue;
 
-        seen.add(key);
-        violations.push(createViolation(textHit.classification, textHit.article, sentence));
-        count7++;
-        console.log(`  ✅ Format 7 keyword match: Art.${textHit.article} — "${sentence.substring(0, 60)}"`);
+            seen.add(key);
+            violations.push(createViolation(textHit.classification, textHit.article, sentence));
+            count7++;
+            console.log(`  ✅ Format 7 keyword match: Art.${textHit.article} — "${sentence.substring(0, 60)}"`);
+        }
     }
     console.log(`  📊 Format 7 (keyword scan) found: ${count7} violations`);
 
@@ -878,7 +887,18 @@ function isExplanationText(text) {
         /valida[çc][ãa]o\/inspetor/i,
         /propriet[áa]rio\s*empresa\s+de\s+manuten[çc][ãa]o/i,
         /obriga[çc][õo]es\s+do\s+propriet[áa]rio/i,
-        /classifica[çc][ãa]o\s+das\s+cl[áa]usulas/i
+        /classifica[çc][ãa]o\s+das\s+cl[áa]usulas/i,
+        // Extra patterns for NOTA DE CLÁUSULAS explanation section
+        /cl[áa]usulas?\s+tipo\s+C[123]/i,
+        /n[ãa]o\s+representam\s+um\s+risco\s+imediato/i,
+        /podem\s+aguardar\s+a\s+pr[óo]xima\s+inspe[çc][ãa]o/i,
+        /prazo\s+m[áa]ximo\s+de\s+(um|1)\s+m[eê]s/i,
+        /imobiliza[çc][ãa]o\s+imediata\s+do\s+elevador/i,
+        /risco\s+para\s+a\s+seguran[çc]a\s+dos\s+utilizadores/i,
+        /n[ãa]o\s+coloca[nm]\s+em\s+risco/i,
+        /classifica[çc][õo]es?\s+das?\s+n[ãa]o\s+conformidades/i,
+        /situa[çc][ãa]o\s+de\s+risco\s+elevado/i,
+        /prazo\s+m[áa]ximo\s+de\s+\d+\s+dias/i
     ];
     
     // Перевірка на пояснювальні фрази

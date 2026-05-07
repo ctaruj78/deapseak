@@ -1977,19 +1977,19 @@
 
     <!-- Modal de visualização do relatório -->
     <div class="modal fade" id="viewReportModal" tabindex="-1" role="dialog" aria-hidden="true">
-        <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-dialog modal-xl" role="document">
             <div class="modal-content">
-                <div class="modal-header bg-info text-white">
+                <div class="modal-header bg-info text-white py-2">
                     <h5 class="modal-title">
-                        <i class="fas fa-file-alt"></i> Detalhes do relatório
+                        <i class="fas fa-file-pdf mr-2"></i> Relatório de inspecção
                     </h5>
                     <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
-                <div class="modal-body">
+                <div class="modal-body p-0">
                     <div id="report-details-content">
-                        <!-- Detalhes do relatório aqui -->
+                        <!-- PDF ou detalhes do relatório aqui -->
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -5544,13 +5544,9 @@ Equipa FestLift</textarea>
                             inspAlert.innerHTML = '<i class="fas fa-clock mr-1"></i> Até ao fim do certificado <strong>' + daysToExpiry + ' dias</strong> (' + expiryDate.toLocaleDateString('pt-PT') + '). Hora de agendar inspecção.';
                             inspBlock.style.display = 'block';
                         }
-                    } else {
-                        window._currentInspectionLiftId = liftId;
-                        window._currentInspectionLift = lift;
-                        inspAlert.className = 'alert alert-secondary py-2 mb-2';
-                        inspAlert.innerHTML = '<i class="fas fa-info-circle mr-1"></i> Data do certificado não especificada. Solicite a inspecção manualmente.';
-                        inspBlock.style.display = 'block';
+                        // Certificado válido por > 60 dias: botão permanece oculto
                     }
+                    // Sem data de certificado: botão permanece oculto (não forçar inspeção)
                 })();
                 
                 // Deаванeжуexisteмо relatórioи de inspeções
@@ -6753,23 +6749,15 @@ Equipa FestLift</textarea>
     function viewReportDetails(report, reportIndex) {
         console.log('👁️ Visualização do relatório:', report, 'index:', reportIndex);
         
-        // Se індекс не antes deаний — шукаexisteмо по instalaçãoу
         if (reportIndex === undefined || reportIndex === null) {
             reportIndex = allReports.indexOf(report);
         }
         
         const fileUrl = report.fileUrl || report.reportFile || report.file || null;
         
-        // Se existe PDF — відкриваexisteмо відразу в novosй вкладці
-        if (fileUrl) {
-            window.open(fileUrl, '_blank');
-        }
-        
         const date = report.inspectionDate || report.date 
             ? new Date(report.inspectionDate || report.date).toLocaleDateString('pt-PT', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
+                year: 'numeric', month: 'long', day: 'numeric'
             }) 
             : 'Data desconhecida';
         const typeLabels = { inspection: 'Inspecção', maintenance: 'Manutenção técnica', repair: 'Reparação', emergency: 'Chamada de emergência' };
@@ -6784,6 +6772,8 @@ Equipa FestLift</textarea>
             statusBadge = 'Aprovado'; statusClass = 'success';
         } else if (status === 'failed') {
             statusBadge = 'Reprovado'; statusClass = 'danger';
+        } else if (status === 'conditional') {
+            statusBadge = 'Condicional'; statusClass = 'warning';
         } else {
             statusBadge = 'Concluído'; statusClass = 'info';
         }
@@ -6792,8 +6782,42 @@ Equipa FestLift</textarea>
         if (typeRaw === 'repair') typeIcon = 'fa-wrench';
         else if (typeRaw === 'emergency') typeIcon = 'fa-exclamation-triangle';
         else if (typeRaw === 'maintenance') typeIcon = 'fa-tools';
-        
-        const detailsHtml = `
+
+        const metaRow = `
+            <div class="row mb-2">
+                <div class="col-6"><strong><i class="fas fa-calendar text-muted mr-1"></i> Data:</strong><br>${date}</div>
+                <div class="col-6"><strong><i class="fas fa-user text-muted mr-1"></i> Inspector:</strong><br>${inspector || '<em class="text-muted">Não especificado</em>'}</div>
+            </div>`;
+        const notesRow = notes ? `
+            <div class="mt-2">
+                <strong><i class="fas fa-comment text-muted mr-1"></i> Comentários / Cláusulas:</strong>
+                <div class="p-2 bg-light rounded mt-1" style="white-space:pre-wrap;font-size:.9em;">${notes}</div>
+            </div>` : '';
+        const footer = `<small class="text-muted"><i class="fas fa-clock mr-1"></i> ${report.createdAt ? new Date(report.createdAt).toLocaleString('pt-PT') : date}</small>`;
+
+        let detailsHtml;
+        if (fileUrl) {
+            detailsHtml = `
+            <div>
+                <div class="d-flex align-items-center bg-${statusClass} text-white px-3 py-2 rounded-top">
+                    <i class="fas ${typeIcon} mr-2"></i>
+                    <strong>${type}</strong>
+                    <span class="badge badge-light text-${statusClass} ml-2">${statusBadge}</span>
+                    <a href="${fileUrl}" target="_blank" class="btn btn-sm btn-light ml-auto" title="Abrir em nova aba">
+                        <i class="fas fa-external-link-alt"></i> Nova aba
+                    </a>
+                    <a href="${fileUrl}" download class="btn btn-sm btn-light ml-1" title="Descarregar PDF">
+                        <i class="fas fa-download"></i>
+                    </a>
+                </div>
+                <iframe src="${fileUrl}" style="width:100%;height:62vh;border:1px solid #dee2e6;border-top:none;" title="Relatório PDF"></iframe>
+                <div class="p-3 border border-top-0 rounded-bottom">
+                    ${metaRow}${notesRow}
+                    <div class="mt-2">${footer}</div>
+                </div>
+            </div>`;
+        } else {
+            detailsHtml = `
             <div class="card border-0">
                 <div class="card-header bg-${statusClass} text-white py-2">
                     <h5 class="mb-0"><i class="fas ${typeIcon}"></i> ${type}
@@ -6801,37 +6825,18 @@ Equipa FestLift</textarea>
                     </h5>
                 </div>
                 <div class="card-body pb-2">
-                    <div class="row">
-                        <div class="col-6"><strong><i class="fas fa-calendar text-muted"></i> Data:</strong><br>${date}</div>
-                        <div class="col-6"><strong><i class="fas fa-user text-muted"></i> Inspector:</strong><br>${inspector || '<em class="text-muted">Não especificado</em>'}</div>
+                    <div class="alert alert-warning py-2 mb-3">
+                        <i class="fas fa-exclamation-triangle"></i> Ficheiro PDF não anexado a este relatório
+                        ${reportIndex >= 0 ? `
+                        <button class="btn btn-sm btn-warning ml-2" onclick="attachPDFToReport(${reportIndex}); $('#viewReportModal').modal('hide');">
+                            <i class="fas fa-paperclip"></i> Anexar PDF
+                        </button>` : ''}
                     </div>
-                    ${notes ? `
-                    <div class="mt-3">
-                        <strong><i class="fas fa-comment text-muted"></i> Comentários:</strong>
-                        <div class="p-2 bg-light rounded mt-1">${notes}</div>
-                    </div>` : ''}
-                    <div class="mt-3">
-                        <strong><i class="fas fa-file-pdf text-${fileUrl ? 'success' : 'muted'}"></i> Documento PDF:</strong>
-                        ${fileUrl ? `
-                        <div class="mt-1">
-                            <a href="${fileUrl}" target="_blank" class="btn btn-sm btn-outline-secondary">
-                                <i class="fas fa-external-link-alt"></i> Abrir em nova aba
-                            </a>
-                        </div>` : `
-                        <div class="mt-1">
-                            <span class="text-muted">PDF não anexado</span>
-                            ${reportIndex >= 0 ? `
-                            <button class="btn btn-sm btn-warning ml-2" onclick="attachPDFToReport(${reportIndex}); $('#viewReportModal').modal('hide');">
-                                <i class="fas fa-paperclip"></i> Anexar PDF
-                            </button>` : ''}
-                        </div>`}
-                    </div>
+                    ${metaRow}${notesRow}
                 </div>
-                <div class="card-footer text-muted py-1">
-                    <small><i class="fas fa-clock"></i> ${report.createdAt ? new Date(report.createdAt).toLocaleString('pt-PT') : date}</small>
-                </div>
-            </div>
-        `;
+                <div class="card-footer text-muted py-1">${footer}</div>
+            </div>`;
+        }
         
         document.getElementById('report-details-content').innerHTML = detailsHtml;
         
@@ -6859,13 +6864,19 @@ Equipa FestLift</textarea>
     }
     
     function printReport() {
-        // Se existe PDF — відкриваexisteмо para друку
+        // If a PDF is embedded in the modal iframe — print it directly
+        const iframe = document.querySelector('#report-details-content iframe');
+        if (iframe && iframe.src) {
+            try {
+                iframe.contentWindow.focus();
+                iframe.contentWindow.print();
+                return;
+            } catch(e) { /* cross-origin — fall through */ }
+        }
         if (window._currentReportFileUrl) {
             const printWin = window.open(window._currentReportFileUrl, '_blank');
             if (printWin) {
-                printWin.addEventListener('load', () => {
-                    try { printWin.print(); } catch(e) {}
-                });
+                printWin.addEventListener('load', () => { try { printWin.print(); } catch(e) {} });
             }
             return;
         }
@@ -8590,11 +8601,14 @@ Equipa FestLift</textarea>
                 // ── Populate lift select ─────────────────────────────────────
                 var sel = $('#pdfParserLiftSelect').empty();
                 var presetId = window._pdfPresetLiftId || null;
+                // Remove any previous ambiguity warning
+                $('#pdfParserAmbiguousWarn').remove();
 
                 if (data.allMatches && data.allMatches.length) {
                     data.allMatches.forEach(function(l) {
                         var addr = l.address ? (l.address.street + ', ' + (l.address.city || '')) : '';
-                        sel.append('<option value="' + l._id + '">[' + l.confidence + '%] ' + (l.municipalNumber || l._id) + ' — ' + addr + '</option>');
+                        var numCam = l.municipalNumber || l.serialNumber || '';
+                        sel.append('<option value="' + l._id + '">[' + l.confidence + '%] ' + (numCam || l._id) + ' — ' + addr + '</option>');
                     });
 
                     // Se aberto de elevador específico e esse elevador não está nos matches — adicionar separadamente
@@ -8611,13 +8625,17 @@ Equipa FestLift</textarea>
                     sel.prepend('<option value="">— Selecione o elevador —</option>');
                     sel.val(selectVal);
 
-                    // Painel auto-encontrado
+                    // Detect ambiguity: server flag OR multiple matches without a clear winner
+                    var isAmbiguous = data.ambiguous || (!data.suggestedLift && data.allMatches.length > 1);
+
+                    // Painel auto-encontrado: só mostrar se a correspondência é inequívoca
                     var topMatch = presetId
                         ? (data.allMatches.find(function(l){ return l._id === presetId; }) || data.suggestedLift)
                         : data.suggestedLift;
-                    if (topMatch && topMatch.confidence >= 60) {
+                    if (topMatch && topMatch.confidence >= 60 && !isAmbiguous) {
                         var tlAddr = topMatch.address ? (topMatch.address.street || '') : '';
-                        $('#pdfAutoLiftName').text((topMatch.municipalNumber || topMatch._id) + (tlAddr ? ' — ' + tlAddr : ''));
+                        var tlNum  = topMatch.municipalNumber || topMatch.serialNumber || topMatch._id;
+                        $('#pdfAutoLiftName').text(tlNum + (tlAddr ? ' — ' + tlAddr : ''));
                         $('#pdfAutoLiftConfidence').text(topMatch.confidence + '%');
                         $('#pdfAutoLiftFound').show();
                         $('#pdfAutoLiftNotFound').hide();
@@ -8639,6 +8657,14 @@ Equipa FestLift</textarea>
                         $('#pdfAutoLiftFound').hide();
                         $('#pdfAutoLiftNotFound').hide();
                         $('#pdfLiftSelectRow').show();
+                        // Show warning when multiple lifts at the same address cause ambiguity
+                        if (isAmbiguous) {
+                            var warnHtml = '<div id="pdfParserAmbiguousWarn" class="alert alert-warning py-2 mt-2 mb-0">' +
+                                '<i class="fas fa-exclamation-triangle mr-1"></i>' +
+                                '<strong>Vários elevadores neste endereço.</strong> Selecione o elevador correto pelo seu n.º camarial / n.º de série.' +
+                                '</div>';
+                            $('#pdfLiftSelectRow').after(warnHtml);
+                        }
                     }
                 } else {
                     // Sem matches — fallback: lista completa de elevadores

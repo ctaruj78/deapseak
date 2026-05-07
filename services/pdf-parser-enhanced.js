@@ -181,7 +181,10 @@ function extractMetadata(text) {
     // 📅 ДАТА - 6 форматів (пропускаємо якщо вже знайдено з GATECI)
     if (!metadata.date) {
     const datePatterns = [
-        /(?:DATA|Data|Emitido|Realizada)(?:\s+DA\s+INSPEÇÃO|\s+em|\s+de)?\s*:?\s*(\d{1,2}[-\/]\d{1,2}[-\/]\d{2,4})/i,
+        // GATECI / BV: "Data da Inspecção   DD/MM/YYYY" (old or new Portuguese spelling)
+        /Data\s+da\s+Inspe[çc][çc]?[ãa]o[:\s]{1,15}(\d{2}[\/\-]\d{2}[\/\-]\d{4})/i,
+        /Data\s+da\s+Inspe[çc][çc]?[ãa]o[:\s]{1,15}(\d{4}[\/\-]\d{2}[\/\-]\d{2})/i,
+        /(?:DATA|Data|Emitido|Realizada)(?:\s+DA\s+INSPE[ÇC][ÇC]?[ÃA]O|\s+em|\s+de)?\s*:?\s*(\d{1,2}[-\/]\d{1,2}[-\/]\d{2,4})/i,
         /data[:\s]+(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4})/i,
         /(\d{1,2}\s+de\s+\w+\s+de\s+\d{4})/i,  // 15 de Junho de 2024
         /(\d{4}[\/\-]\d{1,2}[\/\-]\d{1,2})/,  // 2024-06-15

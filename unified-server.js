@@ -1189,13 +1189,25 @@ async function parseInspectionReport(filePath) {
         const partialPDF = await pdfParse(buffer, { max: 1 });
         const text = partialPDF.text;
         
-        // Визначаємо тип звіту
-        if (text.includes('BUREAU VERITAS') || /(?:NB|DT)\d{4}-\d{4}/.test(text)) {
-            console.log('📋 Detected: Bureau Veritas report - using specialized parser');
+        // O parser BV suporta todos os formatos de entidades portuguesas;
+        // routeamos Bureau Veritas, GATECI, APCER, CERTIEL e NOMINARE para ele.
+        const isBV      = text.includes('BUREAU VERITAS') || /(?:NB|DT)\d{4}-\d{4}/.test(text);
+        const isKnownPT = /\b(?:GATECI|APCER|CERTIEL|NOMINARE)\b/i.test(text);
+
+        if (isBV || isKnownPT) {
+            console.log('📋 Detected known PT inspection entity — using BV/universal parser');
             return await parseBureauVeritasPDF(filePath);
         } else {
             console.log('📋 Using: Generic enhanced parser');
-            return await pdfParserEnhanced.parsePDF(filePath);
+            const enhanced = await pdfParserEnhanced.parsePDF(filePath);
+            // Se a data não foi extraída, tenta o parser BV como último recurso
+            const hasDate = enhanced && enhanced.metadata && enhanced.metadata.date;
+            if (!hasDate) {
+                console.log('⚠️ Enhanced parser found no date — falling back to BV parser');
+                const bvResult = await parseBureauVeritasPDF(filePath).catch(() => null);
+                if (bvResult && bvResult.success) return bvResult;
+            }
+            return enhanced;
         }
     } catch (error) {
         console.error('❌ Error in universal parser:', error);
@@ -2727,9 +2739,21 @@ app.post('/api/lifts/parse-inspection-pdf', authenticateToken, (req, res, next) 
 
         console.log('🔍 Parsing inspection PDF:', req.file.originalname);
 
+        // ── Save the uploaded file permanently before parsing ──────────────
+        const inspPdfDir = path.join(__dirname, 'uploads', 'inspection-pdfs');
+        await fs.mkdir(inspPdfDir, { recursive: true });
+        const savedFilename = `insp-${Date.now()}${path.extname(req.file.originalname) || '.pdf'}`;
+        const savedPath = path.join(inspPdfDir, savedFilename);
+        await fs.rename(req.file.path, savedPath).catch(async () => {
+            // rename may fail across filesystems – fall back to copy+delete
+            const buf = await fs.readFile(req.file.path).catch(() => null);
+            if (buf) await fs.writeFile(savedPath, buf);
+            await cleanupFile(req.file.path).catch(() => {});
+        });
+        const savedFileUrl = `/uploads/inspection-pdfs/${savedFilename}`;
+
         // Parse with universal parser
-        const parsed = await parseInspectionReport(req.file.path);
-        await cleanupFile(req.file.path);
+        const parsed = await parseInspectionReport(savedPath);
 
         if (!parsed.success) {
             return res.status(422).json({ success: false, message: parsed.error || 'Não foi possível analisar o PDF' });
@@ -2770,14 +2794,14 @@ app.post('/api/lifts/parse-inspection-pdf', authenticateToken, (req, res, next) 
             const d = new Date(dateISO);
             if (isNaN(d)) return '';
             if (status === 'failed') d.setDate(d.getDate() + 90);
-            else if (status === 'conditional') d.setDate(d.getDate() + 180);
-            else d.setFullYear(d.getFullYear() + 2);
+            else d.setFullYear(d.getFullYear() + 2); // C2/C3/conditional → 2 years
             return d.toISOString().substring(0, 10);
         })();
 
         const extractedData = {
             date: dateISO,
             validUntil: nextISO,
+            installationNumber: meta.installationNumber || meta.processNumber || meta.liftId || null,
             inspector: meta.inspector || meta.company || '',
             company: meta.company || meta.maintenanceCompany || '',
             address: meta.location || meta.address || '',
@@ -2789,46 +2813,75 @@ app.post('/api/lifts/parse-inspection-pdf', authenticateToken, (req, res, next) 
                 article: v.article || v.articleNumber || '',
                 description: v.description || v.text || ''
             })),
-            savedFileUrl: null
+            savedFileUrl: savedFileUrl
         };
 
-        // Try to match lift in DB by address/postal code
+        // Try to match lift in DB by address/postal code and installation number
         const liftsCol = db.collection('lifts');
         const allLifts = await liftsCol.find({}, {
-            projection: { _id: 1, municipalNumber: 1, address: 1, 'location.city': 1 }
+            projection: { _id: 1, municipalNumber: 1, serialNumber: 1, address: 1, 'location.city': 1 }
         }).toArray();
 
         let allMatches = [];
         let suggestedLift = null;
 
-        if (extractedData.address || extractedData.postalCode) {
+        const instNum   = (extractedData.installationNumber || '').trim();
+        const instBare  = instNum.replace(/^[A-Z]{2,8}[-\s]/i, '').trim();
+
+        if (extractedData.address || extractedData.postalCode || instNum) {
             const addrLower = (extractedData.address || '').toLowerCase();
             const postalNorm = (extractedData.postalCode || '').replace(/[\s-]/g, '');
 
             allLifts.forEach(lift => {
                 let score = 0;
+
+                // ── Installation / municipal / serial number match (highest weight) ──
+                if (instNum) {
+                    const variants = [instNum, instBare].filter(Boolean);
+                    const checkNum = (stored) => {
+                        if (!stored) return false;
+                        const s = stored.trim();
+                        const sBare = s.replace(/^[A-Z]{2,8}[-\s]/i, '').trim();
+                        return variants.some(v => v && (s === v || sBare === v));
+                    };
+                    if (checkNum(lift.serialNumber))    score += 60;
+                    else if (checkNum(lift.municipalNumber)) score += 55;
+                }
+
+                // ── Address / postal code match ───────────────────────────────────
                 const liftStreet = ((lift.address && (lift.address.street || lift.address.full)) || '').toLowerCase();
-                const liftPostal = ((lift.address && lift.address.postalCode) || '').replace(/[\s-]/g, '');
+                const liftPostal = ((lift.address && (lift.address.postalCode || lift.address.zipCode)) || '').replace(/[\s-]/g, '');
 
                 if (postalNorm && liftPostal && postalNorm === liftPostal) score += 60;
                 if (addrLower && liftStreet) {
                     // Simple word overlap scoring
                     const words = addrLower.split(/\s+/).filter(w => w.length > 3);
-                    const matches = words.filter(w => liftStreet.includes(w));
-                    if (matches.length > 0) score += Math.min(40, Math.round(40 * matches.length / Math.max(words.length, 1)));
+                    const hits = words.filter(w => liftStreet.includes(w));
+                    if (hits.length > 0) score += Math.min(40, Math.round(40 * hits.length / Math.max(words.length, 1)));
                 }
-                if (score > 20) allMatches.push({ ...lift, confidence: score });
+                if (score > 20) allMatches.push({ ...lift, confidence: Math.min(score, 100) });
             });
 
             allMatches.sort((a, b) => b.confidence - a.confidence);
-            if (allMatches.length > 0) suggestedLift = allMatches[0];
+            if (allMatches.length > 0) {
+                const topScore    = allMatches[0].confidence;
+                const runnerScore = allMatches.length > 1 ? allMatches[1].confidence : 0;
+                // Only auto-suggest when the top match is clearly better than the next one.
+                // If two or more lifts at the same address share a near-identical score
+                // (difference < 15 pts) the match is ambiguous — force the user to choose.
+                if (topScore - runnerScore >= 15) {
+                    suggestedLift = allMatches[0];
+                }
+                // else: suggestedLift stays null → frontend shows the dropdown
+            }
         }
 
         res.json({
             success: true,
             extractedData,
             allMatches: allMatches.slice(0, 10),
-            suggestedLift: suggestedLift || null
+            suggestedLift: suggestedLift || null,
+            ambiguous: !suggestedLift && allMatches.length > 1
         });
 
     } catch (error) {
@@ -2889,10 +2942,8 @@ app.post('/api/lifts/:id/inspection-report', authenticateToken, upload.single('p
             const d = new Date(reportData.date);
             if (reportData.status === 'failed') {
                 d.setDate(d.getDate() + 90);   // C1: 90 днів для усунення
-            } else if (reportData.status === 'conditional') {
-                d.setDate(d.getDate() + 180);  // C2: 180 днів для виправлення
             } else {
-                d.setMonth(d.getMonth() + 24); // passed/C3: 2 роки до наступної
+                d.setMonth(d.getMonth() + 24); // C2/C3/passed: 2 роки до наступної
             }
             return d.toISOString();
         };
@@ -2971,8 +3022,7 @@ app.post('/api/lifts/:id/confirm-inspection-from-pdf', authenticateToken, async 
         const calcNext = () => {
             const d = new Date(inspectionDateISO);
             if (resolvedStatus === 'failed') d.setDate(d.getDate() + 90);
-            else if (resolvedStatus === 'conditional') d.setDate(d.getDate() + 180);
-            else d.setFullYear(d.getFullYear() + 2);
+            else d.setFullYear(d.getFullYear() + 2); // C2/C3/conditional → 2 years
             return d.toISOString();
         };
 

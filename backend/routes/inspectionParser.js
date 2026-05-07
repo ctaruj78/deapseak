@@ -216,20 +216,12 @@ function calcValidUntil(inspDate, passed, c1Count, c2Count) {
     if (!inspDate) return null;
     const d = new Date(inspDate);
     if (c1Count > 0) {
-        // C1 = immobilisation, must fix and reinspect as soon as possible
+        // C1 = immobilisation — urgent fix + reinspect within 1 month
         d.setMonth(d.getMonth() + 1);
-    } else if (c2Count > 0) {
-        // C2 = reinspection required within ~30 days
-        d.setDate(d.getDate() + 30);
-    } else if (passed === true) {
-        // Clean pass (no C2/C1) → 2-year certificate
-        d.setMonth(d.getMonth() + 24);
-    } else if (passed === false) {
-        // Generic failure (no specific clause info)
-        d.setMonth(d.getMonth() + 6);
     } else {
-        // Unknown / conditional
-        d.setMonth(d.getMonth() + 12);
+        // C2/C3/clean → 2-year certificate
+        // (Owner must address C2 items within 30 days, but inspection cycle is 2 years)
+        d.setMonth(d.getMonth() + 24);
     }
     return d;
 }
@@ -238,11 +230,8 @@ function calcValidUntil(inspDate, passed, c1Count, c2Count) {
  * Determine certificate type label from clause counts and pass status.
  */
 function determineCertType(passed, c1Count, c2Count, c3Count) {
-    if (c1Count > 0) return 'immobilization';   // C1 → imobilização
-    if (c2Count > 0) return 'reinspection';      // C2 → re-inspeção obrigatória
-    if (passed === true) return 'cert_2_years';  // clean or only C3 → 2-year cert
-    if (passed === false) return 'reinspection'; // generic failed
-    return 'conditional';                        // unknown
+    if (c1Count > 0) return 'immobilization';   // C1 → imobilização imediata
+    return 'cert_2_years';                       // C2/C3/clean → certificado de 2 anos
 }
 
 /**
@@ -471,15 +460,26 @@ router.post('/parse-inspection-pdf', authenticate, authorizeRoles('admin', 'disp
                   .slice(0, 10);
             }
 
-            const topMatch = allMatches.length > 0 ? allMatches[0] : null;
+            const topMatch    = allMatches.length > 0 ? allMatches[0] : null;
+            const runnerMatch = allMatches.length > 1 ? allMatches[1] : null;
             const AUTO_MATCH_THRESHOLD = 35;
-            const suggestedLift = topMatch && topMatch.confidence >= AUTO_MATCH_THRESHOLD ? topMatch : null;
+            // Only suggest when: (a) score meets the threshold AND (b) the match is unambiguous,
+            // i.e. the top score is at least 15 pts higher than the runner-up.
+            // Two lifts at the same address that have no serial/municipal number in the PDF
+            // will share an identical address-based score → we must NOT auto-select either.
+            const scoreDiff   = topMatch && runnerMatch ? topMatch.confidence - runnerMatch.confidence : Infinity;
+            const suggestedLift = (topMatch && topMatch.confidence >= AUTO_MATCH_THRESHOLD && scoreDiff >= 15)
+                ? topMatch
+                : null;
+            const ambiguous = !suggestedLift && allMatches.length > 1;
 
-            return res.json({                success: true,
+            return res.json({
+                success: true,
                 extractedData,
                 suggestedLift,
                 confidence: suggestedLift?.confidence ?? 0,
                 allMatches,
+                ambiguous,
                 rawTextPreview: (parsed.rawText || '').substring(0, 500)
             });
 
