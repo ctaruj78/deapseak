@@ -1023,9 +1023,17 @@
                                             <i class="fas fa-file-pdf"></i> Exportar PDF
                                         </button>
                                     </div>
-                                    <div class="pagination-container d-flex justify-content-between align-items-center">
-                                        <div class="pagination-info">
+                                    <div class="pagination-container d-flex justify-content-between align-items-center flex-wrap" style="gap:.5rem">
+                                        <div class="pagination-info d-flex align-items-center" style="gap:.4rem">
                                             A mostrar <span id="showingCount">0</span> de <span id="totalCount">0</span> registos
+                                            <span class="text-muted mx-1">|</span>
+                                            <label class="mb-0 text-muted small" for="liftsPerPageSelect">Por página:</label>
+                                            <select id="liftsPerPageSelect" class="form-control form-control-sm d-inline-block" style="width:auto">
+                                                <option value="15">15</option>
+                                                <option value="20" selected>20</option>
+                                                <option value="50">50</option>
+                                                <option value="9999">Todos</option>
+                                            </select>
                                         </div>
                                         <ul class="pagination pagination-sm m-0" id="pagination">
                                             <!-- Paginação via JavaScript -->
@@ -4566,8 +4574,22 @@ Email de contacto: info@festlift.pt`;
         })();
     })();
 
+    // ── Paginação da tabela de elevadores ─────────────────────────────────────────────
+    let _liftsCurrentFilteredList = [];
+    let _liftsCurrentPage = 1;
+    let _liftsPageSize = 20;
+
     // Função apresentação de elevadores в da tabela
+    // Guarda a lista filtrada e reinicia para a página 1, depois delega para _renderCurrentLiftsPage()
     function displayLiftsInTable(lifts) {
+        _liftsCurrentFilteredList = lifts || [];
+        _liftsCurrentPage = 1;
+        _renderCurrentLiftsPage();
+    }
+
+    // Renderiza a página actual da lista guardada em _liftsCurrentFilteredList
+    function _renderCurrentLiftsPage() {
+        const lifts = _liftsCurrentFilteredList;
         console.log('📋 A mostrar elevadores na tabela:', lifts.length);
         
         // 🏠 Agrupamento за endereço — будуexisteмо desde ПОВНОГО da lista (window.allLiftsData),
@@ -4596,7 +4618,13 @@ Email de contacto: info@festlift.pt`;
         
         // ⚠️ НЕ переregistoexisteмо window.allLiftsData - це tem бути apenas completo lista!
         // window.allLiftsData всeновлюexisteться apenas при заванeженні desde API
-        
+
+        // ── Paginação por grupos de endereço (grupos nunca divididos entre páginas) ─────
+        const _pages = _computeLiftsPages(lifts, _liftsPageSize);
+        const _totalPages = Math.max(1, _pages.length);
+        _liftsCurrentPage = Math.min(_liftsCurrentPage, _totalPages);
+        const pageLifts = _pages[_liftsCurrentPage - 1] || [];
+
         const tableBody = document.getElementById('lifts-table-body');
         if (!tableBody) {
             console.error('❌ Tabela de elevadores não encontrada');
@@ -4616,13 +4644,13 @@ Email de contacto: info@festlift.pt`;
                     </td>
                 </tr>
             `;
-            // Оновлюexisteмо сeтистику (todos нулі)
+            _updateLiftsPaginationUI(0, 0, 1, 1);
             updateLiftsStatistics(lifts);
             return;
         }
 
-        // Adicionar рядки de elevadores
-        lifts.forEach(lift => {
+        // Adicionar рядки de elevadores (apenas da página actual)
+        pageLifts.forEach(lift => {
             // ✅ CORRECÇÃO: Converter ObjectId em string
             const liftId = (lift._id && lift._id.toString) ? lift._id.toString() : (lift._id || lift.id || '');
             
@@ -4748,11 +4776,108 @@ Email de contacto: info@festlift.pt`;
             tableBody.appendChild(row);
         });
         
-        console.log('✅ Elevadores mostrados na tabela:', lifts.length);
-        
-        // Оновлюexisteмо сeтистику
+        console.log('✅ Elevadores mostrados na tabela (pág. %d/%d): %d', _liftsCurrentPage, _totalPages, pageLifts.length);
+
+        // Actualiza contadores e botões de sectorInação
+        _updateLiftsPaginationUI(pageLifts.length, lifts.length, _liftsCurrentPage, _totalPages);
+        // Estatísticas sempre da lista filtrada completa (não só da página)
         updateLiftsStatistics(lifts);
     }
+
+    // ── Helpers de paginação da tabela de elevadores ──────────────────────────────────
+
+    // Divide a lista em páginas respeitando grupos por endereço (sem dividir grupos)
+    function _computeLiftsPages(lifts, pageSize) {
+        if (!lifts || lifts.length === 0) return [[]];
+        if (!pageSize || pageSize >= 9000) return [lifts.slice()]; // Todos
+
+        const groupOrder = [];
+        const groups = {};
+        lifts.forEach(lift => {
+            const addrKey = (lift.address && lift.address.street
+                ? (lift.address.street + ',' + (lift.address.city || '')).toLowerCase().trim()
+                : (typeof lift.address === 'string' ? lift.address : '').toLowerCase().trim())
+                || ('_id_' + ((lift._id && lift._id.toString ? lift._id.toString() : lift._id) || lift.id || Math.random()));
+            if (!groups[addrKey]) {
+                groups[addrKey] = [];
+                groupOrder.push(addrKey);
+            }
+            groups[addrKey].push(lift);
+        });
+
+        const pages = [[]];
+        let currentCount = 0;
+        groupOrder.forEach(key => {
+            const grp = groups[key];
+            if (currentCount > 0 && currentCount + grp.length > pageSize) {
+                pages.push([]);
+                currentCount = 0;
+            }
+            grp.forEach(l => pages[pages.length - 1].push(l));
+            currentCount += grp.length;
+        });
+        return pages;
+    }
+
+    // Actualiza os contadores e botões de paginação (#showingCount, #totalCount, #pagination)
+    function _updateLiftsPaginationUI(showing, total, currentPage, totalPages) {
+        const showingEl = document.getElementById('showingCount');
+        const totalEl   = document.getElementById('totalCount');
+        if (showingEl) showingEl.textContent = showing;
+        if (totalEl)   totalEl.textContent   = total;
+
+        const paginationEl = document.getElementById('pagination');
+        if (!paginationEl) return;
+        paginationEl.innerHTML = '';
+        if (totalPages <= 1) return;
+
+        const mkLi = (label, page, disabled, active) => {
+            const li = document.createElement('li');
+            li.className = 'page-item' + (disabled ? ' disabled' : '') + (active ? ' active' : '');
+            li.innerHTML = disabled
+                ? `<span class="page-link">${label}</span>`
+                : `<a class="page-link" href="#" onclick="_goToLiftsPage(${page}); return false;">${label}</a>`;
+            return li;
+        };
+
+        paginationEl.appendChild(mkLi('&laquo;', currentPage - 1, currentPage <= 1, false));
+
+        const delta = 2;
+        const rangeStart = Math.max(1, currentPage - delta);
+        const rangeEnd   = Math.min(totalPages, currentPage + delta);
+        if (rangeStart > 1) {
+            paginationEl.appendChild(mkLi('1', 1, false, false));
+            if (rangeStart > 2) paginationEl.appendChild(mkLi('…', null, true, false));
+        }
+        for (let p = rangeStart; p <= rangeEnd; p++) {
+            paginationEl.appendChild(mkLi(p, p, false, p === currentPage));
+        }
+        if (rangeEnd < totalPages) {
+            if (rangeEnd < totalPages - 1) paginationEl.appendChild(mkLi('…', null, true, false));
+            paginationEl.appendChild(mkLi(totalPages, totalPages, false, false));
+        }
+
+        paginationEl.appendChild(mkLi('&raquo;', currentPage + 1, currentPage >= totalPages, false));
+    }
+
+    // Navega para uma página específica e re-renderiza
+    function _goToLiftsPage(page) {
+        _liftsCurrentPage = page;
+        _renderCurrentLiftsPage();
+        // Scroll suave ao topo da tabela
+        const tbl = document.getElementById('lifts-table-body');
+        if (tbl) {
+            const wrapper = tbl.closest('.table-responsive') || tbl.closest('.card-body');
+            if (wrapper) wrapper.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }
+
+    // Selector de itens por página
+    $(document).on('change', '#liftsPerPageSelect', function() {
+        _liftsPageSize = parseInt(this.value, 10) || 20;
+        _liftsCurrentPage = 1;
+        _renderCurrentLiftsPage();
+    });
 
     // Função atualização сeтистики de elevadores
     function updateLiftsStatistics(lifts) {
@@ -5991,6 +6116,9 @@ Email de contacto: info@festlift.pt`;
                                 ${notes ? '<p class="mb-1"><small class="text-muted">' + notes.substring(0, 120) + (notes.length > 120 ? '…' : '') + '</small></p>' : ''}
                             </div>
                             <div class="btn-group-vertical ml-2">
+                                <button class="btn btn-sm btn-outline-secondary mb-1" onclick='editInspectionReport("${reportLiftId}", ${reportOrigIndex})' title="Editar relatório">
+                                    <i class="fas fa-pen"></i> Editar
+                                </button>
                                 <button class="btn btn-sm btn-outline-primary mb-1" onclick='viewReportDetails(${reportJson})' title="Ver detalhes">
                                     <i class="fas fa-eye"></i> Detalhes
                                 </button>
@@ -8092,6 +8220,16 @@ Email de contacto: info@festlift.pt`;
                 $('#pdfParserEditForm').hide();
                 $('#pdfParserToggleEdit').html('<i class="fas fa-pen mr-1"></i> Editar');
 
+                // If date not found — auto-open edit form so user must fill it in
+                if (!dateStr) {
+                    $('#pdfParserSummaryView').hide();
+                    $('#pdfParserEditForm').show();
+                    $('#pdfParserToggleEdit').html('<i class="fas fa-check mr-1"></i> Aplicar alterações');
+                    $('#pdfParserVerifyBanner')
+                        .removeClass('alert-warning').addClass('alert-danger')
+                        .html('<i class="fas fa-exclamation-triangle mr-1"></i><strong>Data de inspecção não detectada — preencha manualmente antes de guardar.</strong> <span class="ml-2 badge" id="pdfParserCertBadge" style="font-size:.85rem;"></span>');
+                }
+
                 // ── Violations ───────────────────────────────────────────────
                 if (ed.violations && ed.violations.length) {
                     var viols = ed.violations.map(function(v) {
@@ -8175,6 +8313,21 @@ Email de contacto: info@festlift.pt`;
 
         // Confirm button — "Sim, guardar"
         $(document).on('click', '#pdfParserConfirmBtn', async function() {
+            // Validate date is filled before proceeding
+            var dateVal = $('#pdfParserDate').val();
+            if (!dateVal) {
+                if (!$('#pdfParserEditForm').is(':visible')) {
+                    $('#pdfParserSummaryView').hide();
+                    $('#pdfParserEditForm').show();
+                    $('#pdfParserToggleEdit').html('<i class="fas fa-check mr-1"></i> Aplicar alterações');
+                }
+                $('#pdfParserDate').addClass('is-invalid').focus();
+                if (typeof toastr !== 'undefined') toastr.warning('Preencha a data de inspecção antes de guardar.');
+                else alert('Por favor preencha a data de inspecção antes de guardar.');
+                return;
+            }
+            $('#pdfParserDate').removeClass('is-invalid');
+
             // If edit form is still open, close it first (apply changes)
             if ($('#pdfParserEditForm').is(':visible')) {
                 $('#pdfParserToggleEdit').trigger('click');
@@ -8259,7 +8412,7 @@ Email de contacto: info@festlift.pt`;
      PDF Inspection Parser Modal
      ═══════════════════════════════════════════════════════════════════════ -->
 <div class="modal fade" id="pdfParserModal" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable" role="document">
         <div class="modal-content">
             <div class="modal-header bg-primary text-white py-2">
                 <h5 class="modal-title">
@@ -8442,6 +8595,170 @@ Email de contacto: info@festlift.pt`;
     </div>
 </div>
 <!-- /PDF Parser Modal -->
+
+<!-- ═══════════════════════════════════════════════════════════════════════════
+     Edit Inspection Report Modal
+     ═══════════════════════════════════════════════════════════════════════ -->
+<div class="modal fade" id="editInspectionReportModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-secondary text-white py-2">
+                <h5 class="modal-title"><i class="fas fa-pen mr-2"></i> Editar relatório de inspecção</h5>
+                <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="editInspRptLiftId">
+                <input type="hidden" id="editInspRptIndex">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group mb-2">
+                            <label class="small mb-1 font-weight-bold">Data de inspecção <span class="text-danger">*</span></label>
+                            <input type="date" id="editInspRptDate" class="form-control form-control-sm">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group mb-2">
+                            <label class="small mb-1 font-weight-bold">Válido até (próxima inspecção)</label>
+                            <input type="date" id="editInspRptValidUntil" class="form-control form-control-sm">
+                            <small class="text-muted">Deixe em branco para calcular automaticamente (+2 anos)</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group mb-2">
+                    <label class="small mb-1 font-weight-bold">Inspector / Empresa</label>
+                    <input type="text" id="editInspRptInspector" class="form-control form-control-sm" placeholder="Ex: Jorge Silva / GATECI">
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group mb-2">
+                            <label class="small mb-1 font-weight-bold">Resultado</label>
+                            <select id="editInspRptStatus" class="form-control form-control-sm">
+                                <option value="passed">✅ Aprovado (2 anos)</option>
+                                <option value="conditional">⚠️ Reinspecção</option>
+                                <option value="failed">❌ Reprovado / Imobilização</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group mb-2">
+                            <label class="small mb-1 font-weight-bold">Tipo</label>
+                            <select id="editInspRptType" class="form-control form-control-sm">
+                                <option value="annual">Anual / Periódica</option>
+                                <option value="routine">Planeada</option>
+                                <option value="certification">Certificação</option>
+                                <option value="reinspection">Reinspecção</option>
+                                <option value="emergency">Não planeada</option>
+                                <option value="inspection">Inspecção</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group mb-2">
+                    <label class="small mb-1 font-weight-bold">Notas</label>
+                    <textarea id="editInspRptNotes" class="form-control form-control-sm" rows="2"></textarea>
+                </div>
+                <div class="alert alert-info py-2 mb-0" style="font-size:.82rem;">
+                    <i class="fas fa-info-circle mr-1"></i>
+                    Guardar irá actualizar também <strong>Data do certificado</strong> e <strong>Validade do certificado</strong> do elevador com base no relatório mais recente.
+                </div>
+            </div>
+            <div class="modal-footer py-2">
+                <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary btn-sm" id="editInspRptSaveBtn">
+                    <i class="fas fa-save mr-1"></i> Guardar alterações
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- /Edit Inspection Report Modal -->
+
+<script>
+// ── Edit Inspection Report ──────────────────────────────────────────────────
+async function editInspectionReport(liftId, index) {
+    // Load current report data from allReports (already in-memory from renderReports)
+    var report = null;
+    if (typeof allReports !== 'undefined') {
+        report = allReports.find(function(r) { return r._originalIndex === index; });
+    }
+
+    $('#editInspRptLiftId').val(liftId);
+    $('#editInspRptIndex').val(index);
+
+    // Pre-fill fields
+    var dateVal = '';
+    if (report) {
+        var dt = report.inspectionDate || report.date || '';
+        if (dt) dateVal = new Date(dt).toISOString().substring(0, 10);
+    }
+    $('#editInspRptDate').val(dateVal).removeClass('is-invalid');
+
+    var vuVal = '';
+    if (report) {
+        var vu = report.validUntil || report.nextInspectionDate || '';
+        if (vu) vuVal = new Date(vu).toISOString().substring(0, 10);
+    }
+    $('#editInspRptValidUntil').val(vuVal);
+
+    $('#editInspRptInspector').val(report ? (report.inspector || report.inspectorName || '') : '');
+    $('#editInspRptStatus').val(report && report.status ? report.status : 'passed');
+    var typeVal = report ? (report.inspectionType || report.type || report.reportType || 'annual') : 'annual';
+    $('#editInspRptType').val(typeVal);
+    $('#editInspRptNotes').val(report ? (report.notes || report.comments || '') : '');
+
+    $('#editInspectionReportModal').modal('show');
+}
+
+$(document).on('click', '#editInspRptSaveBtn', async function() {
+    var liftId = $('#editInspRptLiftId').val();
+    var index  = $('#editInspRptIndex').val();
+    var dateVal = $('#editInspRptDate').val();
+
+    if (!dateVal) {
+        $('#editInspRptDate').addClass('is-invalid').focus();
+        if (typeof toastr !== 'undefined') toastr.warning('A data de inspecção é obrigatória.');
+        else alert('Por favor preencha a data de inspecção.');
+        return;
+    }
+    $('#editInspRptDate').removeClass('is-invalid');
+
+    var $btn = $(this);
+    $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-1"></i> A guardar...');
+
+    var token = (typeof AuthManager !== 'undefined') ? AuthManager.getAuthToken() :
+                localStorage.getItem('liftmanager_jwt');
+    try {
+        var body = {
+            inspectionDate:     dateVal,
+            nextInspectionDate: $('#editInspRptValidUntil').val() || null,
+            inspector:          $('#editInspRptInspector').val(),
+            status:             $('#editInspRptStatus').val(),
+            type:               $('#editInspRptType').val(),
+            notes:              $('#editInspRptNotes').val()
+        };
+
+        var resp = await fetch('/api/lifts/' + liftId + '/inspection-report/' + index, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+            body: JSON.stringify(body)
+        });
+        var result = await resp.json();
+        if (!result.success) throw new Error(result.message || 'Erro ao guardar');
+
+        $('#editInspectionReportModal').modal('hide');
+        if (typeof toastr !== 'undefined') toastr.success('✅ Relatório actualizado!');
+        else alert('Relatório actualizado com sucesso!');
+
+        // Reload detail view
+        if (typeof showLiftDetails === 'function' && liftId) {
+            showLiftDetails(liftId);
+        }
+    } catch (err) {
+        $btn.prop('disabled', false).html('<i class="fas fa-save mr-1"></i> Guardar alterações');
+        alert('Erro: ' + err.message);
+    }
+});
+</script>
 
 </body>
 </html>

@@ -139,6 +139,11 @@ class EnhancedLiftModal {
                 this.map = null;
             }
 
+            // Очищаємо Leaflet-стан з DOM-контейнера, якщо залишився після remove()
+            if (mapContainer._leaflet_id) {
+                delete mapContainer._leaflet_id;
+            }
+
             // Ініціалізуємо карту
             this.map = L.map('enhancedLiftMap').setView([38.7223, -9.1393], 12); // Lisboa по дефолту
             

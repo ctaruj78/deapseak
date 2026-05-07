@@ -1231,6 +1231,33 @@
                         return;
                     }
 
+                    // ── Upload de fotos pendentes ANTES de enviar o email ──
+                    if (window._pendingFotoFiles && window._pendingFotoFiles.length > 0) {
+                        console.log('📷 A enviar', window._pendingFotoFiles.length, 'fotos pendentes antes do email...');
+                        try {
+                            const fd = new FormData();
+                            for (const f of window._pendingFotoFiles) fd.append('fotos', f);
+                            const uploadRes = await fetch(`/api/orcamentos/${orcamentoId}/fotos`, {
+                                method: 'POST',
+                                headers: { 'Authorization': `Bearer ${token}` },
+                                body: fd
+                            });
+                            const uploadResult = await uploadRes.json();
+                            if (uploadResult.success) {
+                                renderFotosGrid(uploadResult.fotos);
+                                window._pendingFotoFiles = [];
+                                document.getElementById('fotosInput').value = '';
+                                console.log('✅ Fotos enviadas antes do email:', uploadResult.fotos.length);
+                            } else {
+                                console.warn('⚠️ Erro ao enviar fotos:', uploadResult.message);
+                                if (!confirm(`Aviso: As fotografias não foram guardadas (${uploadResult.message}).\nDeseja enviar o orçamento mesmo assim (sem fotos)?`)) return;
+                            }
+                        } catch (fotoErr) {
+                            console.error('❌ Erro ao enviar fotos:', fotoErr);
+                            if (!confirm('Aviso: Erro ao carregar as fotografias.\nDeseja enviar o orçamento mesmo assim (sem fotos)?')) return;
+                        }
+                    }
+
                     console.log('📤 Enviando email para:', clientEmail);
                     console.log('   Orçamento ID:', orcamentoId);
                     

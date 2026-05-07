@@ -326,11 +326,14 @@ function extractMetadata(text) {
     
     // 2. ДАТА ІНСПЕКЦІЇ - різні формати
     const datePatterns = [
-        /Data\s+da\s+Inspe[çc][çc]?[ãa]o[:\s]+(\d{2}\/\d{2}\/\d{4})/i, // DD/MM/YYYY
-        /Data\s+da\s+Inspe[çc][çc]?[ãa]o[:\s]+(\d{4}\/\d{2}\/\d{2})/i, // YYYY/MM/DD
-        /(\d{2}\s+de\s+\w+\s+de\s+\d{4})/i, // 30 de Junho de 2025
-        /(\d{4}\/\d{2}\/\d{2})/, // Будь-яка дата YYYY/MM/DD
-        /(\d{2}\/\d{2}\/\d{4})/ // Будь-яка дата DD/MM/YYYY
+        /Data\s+da\s+Inspe[çc][çc]?[ãa]o\s*[:\s]{1,30}(\d{2}[\/\-]\d{2}[\/\-]\d{4})/i, // DD/MM/YYYY or DD-MM-YYYY (wide whitespace)
+        /Data\s+da\s+Inspe[çc][çc]?[ãa]o\s*[:\s]{1,30}(\d{4}[\/\-]\d{2}[\/\-]\d{2})/i, // YYYY/MM/DD or YYYY-MM-DD
+        /Data\s+da\s+Inspe[çc][çc]?[ãa]o\s*[:\s]{1,30}(\d{2}\s+de\s+\w+\s+de\s+\d{4})/i, // 30 de Junho de 2025
+        /Inspe[çc][çc]?[ãa]o\s+realizada\s*(?:em|a)?\s*[:\s]{0,10}(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4})/i,
+        /data\s*(?:de\s+emiss[ãa]o|de\s+inspe[çc][ãa]o)?\s*[:\s]+(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4})/i,
+        /(\d{2}\s+de\s+\w+\s+de\s+\d{4})/i, // 30 de Junho de 2025 (anywhere)
+        /(\d{4}[\/\-]\d{2}[\/\-]\d{2})/, // Будь-яка дата YYYY/MM/DD or YYYY-MM-DD
+        /(\d{2}[\/\-]\d{2}[\/\-]\d{4})/ // Будь-яка дата DD/MM/YYYY or DD-MM-YYYY
     ];
     for (const pattern of datePatterns) {
         const match = text.match(pattern);
@@ -368,11 +371,23 @@ function extractMetadata(text) {
         metadata.liftId = metadata.installationNumber;
         console.log('  ✅ Installation No (cert):', metadata.installationNumber);
     }
-    // 4c. Validade (valid until)
-    const validadeMatch = text.match(/Validade[:\s]+([\d]{4}\/[\d]{2}\/[\d]{2})/i);
-    if (validadeMatch) {
-        metadata.validUntil = validadeMatch[1];
-        console.log('  ✅ Valid Until:', metadata.validUntil);
+    // 4c. Validade / Próxima inspecção (valid until) — multiple formats
+    const validUntilPatterns = [
+        /Validade\s*[:\s]+(\d{4}[\/\-]\d{2}[\/\-]\d{2})/i,              // YYYY/MM/DD or YYYY-MM-DD
+        /Validade\s*[:\s]+(\d{2}[\/\-]\d{2}[\/\-]\d{4})/i,              // DD/MM/YYYY or DD-MM-YYYY
+        /V[aá]lid[ao]\s+at[eé]\s*[:\s]+(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4})/i,
+        /Pr[oó]xima\s+Inspe[çc][çc]?[ãa]o\s*[:\s]{1,30}(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4})/i,
+        /Pr[oó]xima\s+Inspe[çc][çc]?[ãa]o\s*[:\s]{1,30}(\d{4}[\/\-]\d{2}[\/\-]\d{2})/i,
+        /Data\s+da\s+pr[oó]xima\s+inspe[çc][çc]?[ãa]o\s*[:\s]{1,30}(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4})/i,
+        /Prazo\s*(?:de\s+validade)?\s*[:\s]+(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4})/i,
+    ];
+    for (const vp of validUntilPatterns) {
+        const vm = text.match(vp);
+        if (vm) {
+            metadata.validUntil = vm[1];
+            console.log('  ✅ Valid Until:', metadata.validUntil);
+            break;
+        }
     }
     
     // 5. ЛОКАЦІЯ - Bureau Veritas має таблицю
@@ -465,7 +480,24 @@ function extractMetadata(text) {
             }
         }
         if (metadata.city) console.log('  ✅ City:', metadata.city);
-        if (metadata.postalCode) console.log('  ✅ PostalCode:', metadata.postalCode);
+        if (metadata.postalCode) console.log('  ✅ PostalCode (from location):', metadata.postalCode);
+    }
+
+    // Postal code fallback — scan full text directly for Portuguese format DDDD-DDD
+    if (!metadata.postalCode) {
+        // Prefer labeled form first
+        const cpLabelMatch = text.match(/C[oó]digo\s+Postal\s*[:\s]+(\d{4}[-\s]\d{3})/i);
+        if (cpLabelMatch) {
+            metadata.postalCode = cpLabelMatch[1].replace(/\s/, '-');
+            console.log('  ✅ PostalCode (labeled):', metadata.postalCode);
+        } else {
+            // Scan text for any PT postal code not inside a serial/process number context
+            const cpFreeMatch = text.match(/\b(\d{4})-(\d{3})\b/);
+            if (cpFreeMatch) {
+                metadata.postalCode = `${cpFreeMatch[1]}-${cpFreeMatch[2]}`;
+                console.log('  ✅ PostalCode (scan):', metadata.postalCode);
+            }
+        }
     }
 
     return metadata;

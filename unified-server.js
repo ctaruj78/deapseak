@@ -3091,6 +3091,80 @@ app.post('/api/lifts/:id/confirm-inspection-from-pdf', authenticateToken, async 
     }
 });
 
+// PATCH /api/lifts/:id/inspection-report/:index - actualizar um relatório de inspecção existente
+app.patch('/api/lifts/:id/inspection-report/:index', authenticateToken, async (req, res) => {
+    try {
+        if (req.user.role === 'client') {
+            return res.status(403).json({ success: false, message: 'Sem permissão' });
+        }
+        const { ObjectId } = require('mongodb');
+        let liftId;
+        try { liftId = new ObjectId(req.params.id); } catch (e) {
+            return res.status(400).json({ success: false, message: 'ID de elevador inválido' });
+        }
+        const idx = parseInt(req.params.index);
+        if (isNaN(idx) || idx < 0) {
+            return res.status(400).json({ success: false, message: 'Índice de relatório inválido' });
+        }
+
+        const lift = await db.collection('lifts').findOne({ _id: liftId }, { projection: { inspectionHistory: 1 } });
+        if (!lift) return res.status(404).json({ success: false, message: 'Elevador não encontrado' });
+
+        const history = lift.inspectionHistory || [];
+        if (idx >= history.length) return res.status(404).json({ success: false, message: 'Relatório não encontrado' });
+
+        const entry = { ...(history[idx] || {}) };
+        const { inspectionDate, nextInspectionDate, inspector, notes, status, type } = req.body;
+
+        if (inspectionDate) {
+            const d = new Date(inspectionDate);
+            if (!isNaN(d)) { entry.inspectionDate = d.toISOString(); entry.date = entry.inspectionDate; }
+        }
+        if (nextInspectionDate) {
+            const d = new Date(nextInspectionDate);
+            if (!isNaN(d)) { entry.nextInspectionDate = d.toISOString(); entry.validUntil = entry.nextInspectionDate; }
+        } else if (!entry.nextInspectionDate && entry.inspectionDate && (status || entry.status) === 'passed') {
+            const d = new Date(entry.inspectionDate);
+            d.setFullYear(d.getFullYear() + 2);
+            entry.nextInspectionDate = d.toISOString();
+            entry.validUntil = entry.nextInspectionDate;
+        }
+        if (inspector !== undefined) entry.inspector = inspector;
+        if (notes !== undefined) entry.notes = notes;
+        if (status !== undefined) entry.status = status;
+        if (type !== undefined) { entry.type = type; entry.inspectionType = type; }
+
+        history[idx] = entry;
+
+        // Recalculate root-level fields from the updated history
+        const sorted = history
+            .filter(r => r && (r.inspectionDate || r.date))
+            .sort((a, b) => new Date(b.inspectionDate || b.date) - new Date(a.inspectionDate || a.date));
+
+        const setFields = { inspectionHistory: history };
+        if (sorted.length > 0) {
+            const latest = sorted[0];
+            setFields.lastInspectionDate = latest.inspectionDate || latest.date || null;
+            setFields.nextInspectionDate = latest.validUntil || latest.nextInspectionDate || null;
+            setFields.inspectionStatus = latest.status || 'none';
+            if (latest.status === 'passed' && setFields.lastInspectionDate) {
+                setFields.licenseDate = setFields.lastInspectionDate;
+                const exp = new Date(setFields.lastInspectionDate);
+                exp.setFullYear(exp.getFullYear() + 2);
+                setFields.licenseExpiry = exp.toISOString();
+            }
+        }
+        setFields.updatedAt = new Date().toISOString();
+
+        await db.collection('lifts').updateOne({ _id: liftId }, { $set: setFields });
+        console.log(`✅ Inspection report #${idx} updated for lift ${req.params.id} by ${req.user.email}`);
+        res.json({ success: true, message: 'Relatório actualizado', report: entry });
+    } catch (error) {
+        console.error('❌ Erro ao actualizar relatório de inspecção:', error);
+        res.status(500).json({ success: false, message: error.message || 'Erro interno' });
+    }
+});
+
 // DELETE /api/lifts/:id/inspection-report/:index - видалення звіту з масиву
 app.delete('/api/lifts/:id/inspection-report/:index', authenticateToken, async (req, res) => {
     try {
