@@ -29,6 +29,11 @@
         .badge-aprovado { background-color: #28a745; }
         .badge-rejeitado { background-color: #dc3545; }
         .badge-expirado { background-color: #ffc107; color: #000; }
+        /* Toggle view */
+        .view-btn-active { background-color: #007bff !important; color: #fff !important; border-color: #007bff !important; }
+        #orcamentosTableWrapper .table td { vertical-align: middle; font-size: .875rem; }
+        #orcamentosTableWrapper .table th { font-size: .8rem; white-space: nowrap; }
+        #orcPagination { padding: 8px 0; }
     </style>
 </head>
 <body class="hold-transition sidebar-mini layout-fixed" data-required-role="dispatcher">
@@ -127,6 +132,14 @@
                                     <button class="btn btn-secondary" onclick="limparFiltros()">
                                         <i class="fas fa-eraser"></i> Limpar
                                     </button>
+                                    <div class="btn-group ml-2" role="group" title="Modo de visualização">
+                                        <button type="button" class="btn btn-outline-secondary view-btn-active" id="btnViewGrid" onclick="setViewMode('grid')" title="Sítki">
+                                            <i class="fas fa-th"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-outline-secondary" id="btnViewTable" onclick="setViewMode('table')" title="Tabela">
+                                            <i class="fas fa-list"></i>
+                                        </button>
+                                    </div>
                                     <a href="invoice-template.html" class="btn btn-success float-right">
                                         <i class="fas fa-plus"></i> Novo Orçamento
                                     </a>
@@ -147,9 +160,30 @@
                         </button>
                     </div>
 
-                    <!-- Lista de Orçamentos -->
-                    <div class="row" id="orcamentosList">
-                        <!-- Orçamentos serão carregados aqui -->
+                    <!-- Lista de Orçamentos — Sítki -->
+                    <div class="row" id="orcamentosList"></div>
+
+                    <!-- Lista de Orçamentos — Tabela -->
+                    <div id="orcamentosTableWrapper" style="display:none">
+                        <div class="card">
+                            <div class="card-body p-0">
+                                <table class="table table-striped table-hover mb-0">
+                                    <thead class="thead-light">
+                                        <tr>
+                                            <th>Número</th>
+                                            <th>Cliente</th>
+                                            <th>Morada</th>
+                                            <th>Data</th>
+                                            <th>Validade</th>
+                                            <th class="text-right">Total</th>
+                                            <th>Status</th>
+                                            <th>Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="orcamentosTableBody"></tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Loading -->
@@ -164,6 +198,12 @@
                         <i class="fas fa-info-circle fa-3x mb-3"></i>
                         <h5>Nenhum orçamento encontrado</h5>
                         <p>Crie o primeiro orçamento clicando no botão "Novo Orçamento"</p>
+                    </div>
+
+                    <!-- Paginação -->
+                    <div id="orcPagination" class="d-flex justify-content-between align-items-center mt-2" style="display:none!important">
+                        <small id="orcPaginationInfo" class="text-muted"></small>
+                        <ul class="pagination pagination-sm m-0" id="orcPaginationLinks"></ul>
                     </div>
                 </div>
             </section>
@@ -211,13 +251,12 @@
     </div>
 
     <script>
-        // API_BASE_URL deve estar vazio para URLs relativos (a funcionar в GitHub Codespaces)
         const API_BASE_URL = window.API_BASE_URL || '';
 
-        // Archive mode
         let _archiveMode = false;
-
-        // Pending action for status change modal
+        let _viewMode = 'grid';
+        let _currentPage = 1;
+        let _lastFiltros = {};
         let pendingStatusAction = null;
 
         function getToken() {
@@ -227,55 +266,55 @@
                    localStorage.getItem('lm_token');
         }
 
-        // Carregar orçamentos
-        async function carregarOrcamentos(filtros = {}) {
+        async function carregarOrcamentos(filtros = {}, page = 1) {
+            _lastFiltros = filtros;
+            _currentPage = page;
             const loading = document.getElementById('loading');
             const lista = document.getElementById('orcamentosList');
+            const tableBody = document.getElementById('orcamentosTableBody');
             const emptyState = document.getElementById('emptyState');
 
             loading.style.display = 'block';
             lista.innerHTML = '';
+            if (tableBody) tableBody.innerHTML = '';
             emptyState.style.display = 'none';
 
             try {
                 const token = getToken();
-
                 if (!token) {
                     alert('Não autorizado. Faça login novamente.');
                     window.location.href = '../auth/login.html';
                     return;
                 }
 
-                // Construir query params
                 const params = new URLSearchParams();
                 if (filtros.status) params.append('status', filtros.status);
-                if (filtros.cliente) params.append('cliente', filtros.cliente);
+                if (filtros.cliente) params.append('search', filtros.cliente);
                 if (filtros.dataDe) params.append('dataDe', filtros.dataDe);
                 if (filtros.dataAte) params.append('dataAte', filtros.dataAte);
                 if (_archiveMode) params.append('archived', 'true');
+                params.append('page', _currentPage);
+                params.append('limit', 20);
 
                 const response = await fetch(`${API_BASE_URL}/api/orcamentos?${params.toString()}`, {
-                    headers: {
-                        'Authorization': `Bearer ${getToken()}`
-                    }
+                    headers: { 'Authorization': `Bearer ${getToken()}` }
                 });
-
-                if (!response.ok) {
-                    throw new Error('Erro ao carregar orçamentos');
-                }
+                if (!response.ok) throw new Error('Erro ao carregar orçamentos');
 
                 const result = await response.json();
-                console.log('📋 Resultado da API:', result);
-                
-                // API retorna {success: true, data: [...], pagination: {...}}
                 const orcamentos = result.success ? result.data : (result.data || result);
+                const pagination = result.pagination || null;
 
                 if (!orcamentos || orcamentos.length === 0) {
                     emptyState.style.display = 'block';
+                    renderPagination(null);
                 } else {
-                    orcamentos.forEach(orcamento => {
-                        lista.innerHTML += criarCardOrcamento(orcamento);
-                    });
+                    if (_viewMode === 'table') {
+                        orcamentos.forEach(orc => { tableBody.innerHTML += criarLinhaTabela(orc); });
+                    } else {
+                        orcamentos.forEach(orc => { lista.innerHTML += criarCardOrcamento(orc); });
+                    }
+                    renderPagination(pagination);
                 }
             } catch (error) {
                 console.error('Erro:', error);
@@ -283,6 +322,80 @@
             } finally {
                 loading.style.display = 'none';
             }
+        }
+
+        function setViewMode(mode) {
+            _viewMode = mode;
+            const grid  = document.getElementById('orcamentosList');
+            const table = document.getElementById('orcamentosTableWrapper');
+            const btnGrid  = document.getElementById('btnViewGrid');
+            const btnTable = document.getElementById('btnViewTable');
+            if (mode === 'table') {
+                grid.style.display = 'none'; table.style.display = 'block';
+                btnGrid.classList.remove('view-btn-active'); btnTable.classList.add('view-btn-active');
+            } else {
+                grid.style.display = ''; table.style.display = 'none';
+                btnGrid.classList.add('view-btn-active'); btnTable.classList.remove('view-btn-active');
+            }
+            carregarOrcamentos(_lastFiltros, 1);
+        }
+
+        function renderPagination(pagination) {
+            const pag = document.getElementById('orcPagination');
+            if (!pag) return;
+            if (!pagination || pagination.pages <= 1) { pag.style.display = 'none'; return; }
+            pag.style.display = 'flex';
+            const { page, pages, total, limit } = pagination;
+            const from = (page - 1) * limit + 1;
+            const to = Math.min(page * limit, total);
+            document.getElementById('orcPaginationInfo').textContent = `A mostrar ${from}–${to} de ${total} orçamentos`;
+            const ul = document.getElementById('orcPaginationLinks');
+            ul.innerHTML = '';
+            const mkLi = (label, p, disabled, active) => {
+                const li = document.createElement('li');
+                li.className = 'page-item' + (disabled ? ' disabled' : '') + (active ? ' active' : '');
+                li.innerHTML = disabled
+                    ? `<span class="page-link">${label}</span>`
+                    : `<a class="page-link" href="#" onclick="carregarOrcamentos(_lastFiltros,${p});return false;">${label}</a>`;
+                return li;
+            };
+            ul.appendChild(mkLi('&laquo;', page - 1, page <= 1, false));
+            const delta = 2, rStart = Math.max(1, page - delta), rEnd = Math.min(pages, page + delta);
+            if (rStart > 1) { ul.appendChild(mkLi('1', 1, false, false)); if (rStart > 2) ul.appendChild(mkLi('…', null, true, false)); }
+            for (let p = rStart; p <= rEnd; p++) ul.appendChild(mkLi(p, p, false, p === page));
+            if (rEnd < pages) { if (rEnd < pages - 1) ul.appendChild(mkLi('…', null, true, false)); ul.appendChild(mkLi(pages, pages, false, false)); }
+            ul.appendChild(mkLi('&raquo;', page + 1, page >= pages, false));
+        }
+
+        function criarLinhaTabela(orc) {
+            const statusText = { rascunho:'Rascunho', enviado:'Enviado', aprovado:'Aprovado', rejeitado:'Rejeitado', expirado:'Expirado' };
+            const statusClass = { rascunho:'secondary', enviado:'info', aprovado:'success', rejeitado:'danger', expirado:'warning' };
+            const data = new Date(orc.data).toLocaleDateString('pt-PT');
+            const val = orc.validadeAte ? new Date(orc.validadeAte).toLocaleDateString('pt-PT') : '—';
+            const total = (orc.total || 0).toFixed(2);
+            const isArchived = orc.archived || false;
+            const sc = statusClass[orc.status] || 'secondary';
+            const st = statusText[orc.status] || orc.status;
+            const morada = orc.cliente.morada ? orc.cliente.morada.split('\n')[0] : '—';
+            const fotosBadge = orc.fotos && orc.fotos.length > 0 ? `<span class="badge badge-info">${orc.fotos.length}</span>` : '';
+            return `<tr>
+                <td><strong>${orc.numero}</strong>${isArchived ? ' <span class="badge badge-warning"><i class="fas fa-archive"></i></span>':''}</td>
+                <td>${orc.cliente.nome}<br><small class="text-muted">${orc.cliente.email}</small></td>
+                <td><small>${morada}</small></td>
+                <td>${data}</td>
+                <td>${val}</td>
+                <td class="text-right"><strong>€ ${total}</strong></td>
+                <td><span class="badge badge-${sc}">${st}</span></td>
+                <td>
+                    <button class="btn btn-xs btn-info" onclick="verOrcamento('${orc._id}')" title="Ver"><i class="fas fa-eye"></i></button>
+                    <button class="btn btn-xs btn-secondary" onclick="downloadPDF('${orc._id}','${orc.numero}')" title="PDF"><i class="fas fa-file-pdf"></i></button>
+                    <button class="btn btn-xs btn-outline-info" onclick="abrirModalFotos('${orc._id}','${orc.numero}')" title="Fotos"><i class="fas fa-camera"></i>${fotosBadge}</button>
+                    ${!isArchived ? `
+                    <button class="btn btn-xs btn-warning" onclick="editarOrcamento('${orc._id}')" title="Editar"><i class="fas fa-edit"></i></button>
+                    <button class="btn btn-xs btn-danger" onclick="eliminarOrcamento('${orc._id}')" title="Eliminar"><i class="fas fa-trash"></i></button>
+                    ` : ''}
+                </td>
+            </tr>`;
         }
 
         // Criar card de orçamento
@@ -359,6 +472,9 @@
                             <button class="btn btn-sm btn-secondary" onclick="downloadPDF('${orcamento._id}', '${orcamento.numero}'); event.stopPropagation();" title="Download PDF">
                                 <i class="fas fa-file-pdf"></i> PDF
                             </button>
+                            <button class="btn btn-sm btn-outline-info" onclick="abrirModalFotos('${orcamento._id}', '${orcamento.numero}'); event.stopPropagation();" title="Fotografias">
+                                <i class="fas fa-camera"></i> Fotos${orcamento.fotos && orcamento.fotos.length > 0 ? ` <span class="badge badge-info">${orcamento.fotos.length}</span>` : ''}
+                            </button>
                             ${!isArchived ? `
                             <button class="btn btn-sm btn-warning" onclick="editarOrcamento('${orcamento._id}'); event.stopPropagation();">
                                 <i class="fas fa-edit"></i> Editar
@@ -421,7 +537,7 @@
                 }
 
                 alert('Orçamento eliminado com sucesso!');
-                carregarOrcamentos();
+                carregarOrcamentos(_lastFiltros, 1);
             } catch (error) {
                 console.error('Erro:', error);
                 alert('Erro ao eliminar orçamento: ' + error.message);
@@ -497,7 +613,7 @@
                 $('#statusModal').modal('hide');
                 pendingStatusAction = null;
                 alert(data.message);
-                carregarOrcamentos();
+                carregarOrcamentos(_lastFiltros, _currentPage);
             } catch (error) {
                 console.error('Erro:', error);
                 alert('Erro: ' + error.message);
@@ -512,7 +628,6 @@
             abrirStatusModal(id, novoStatus);
         }
 
-        // Aplicar filtros
         function aplicarFiltros() {
             const filtros = {
                 status: document.getElementById('filterStatus').value,
@@ -520,16 +635,15 @@
                 dataDe: document.getElementById('filterDataDe').value,
                 dataAte: document.getElementById('filterDataAte').value
             };
-            carregarOrcamentos(filtros);
+            carregarOrcamentos(filtros, 1);
         }
 
-        // Limpar filtros
         function limparFiltros() {
             document.getElementById('filterStatus').value = '';
             document.getElementById('filterCliente').value = '';
             document.getElementById('filterDataDe').value = '';
             document.getElementById('filterDataAte').value = '';
-            carregarOrcamentos();
+            carregarOrcamentos({}, 1);
         }
 
         // Toggle modo arquivo
@@ -544,10 +658,9 @@
                 banner && banner.classList.add('d-none');
                 if (btn) { btn.classList.remove('btn-secondary'); btn.classList.add('btn-warning'); btn.innerHTML = '<i class="fas fa-archive mr-1"></i>Arquivo'; }
             }
-            carregarOrcamentos();
+            carregarOrcamentos(_lastFiltros, 1);
         }
 
-        // Arquivar orçamento
         async function arquivarOrcamento(id) {
             if (!confirm('Arquivar este orçamento? Ele deixará de aparecer na lista ativa.')) return;
             try {
@@ -558,9 +671,95 @@
                 const data = await res.json();
                 if (!data.success) throw new Error(data.message);
                 alert('✅ Orçamento arquivado.');
-                carregarOrcamentos();
+                carregarOrcamentos(_lastFiltros, 1);
             } catch (err) {
                 alert('Erro: ' + err.message);
+            }
+        }
+
+        // ── Fotos do Orçamento ──────────────────────────────────────────
+        let _fotosCurrentId = null;
+
+        async function abrirModalFotos(id, numero) {
+            _fotosCurrentId = id;
+            document.getElementById('fotosModalNumero').textContent = numero;
+            document.getElementById('fotosModalInput').value = '';
+            document.getElementById('fotosModalGrid').innerHTML = '<i class="fas fa-spinner fa-spin text-muted"></i>';
+            $('#fotosModal').modal('show');
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/orcamentos/${id}`, {
+                    headers: { 'Authorization': `Bearer ${getToken()}` }
+                });
+                const data = await res.json();
+                const orc = data.success ? data.data : data;
+                renderModalFotosGrid(orc.fotos || []);
+            } catch (err) {
+                document.getElementById('fotosModalGrid').innerHTML = '<small class="text-danger">Erro ao carregar fotos.</small>';
+            }
+        }
+
+        function renderModalFotosGrid(fotos) {
+            const grid = document.getElementById('fotosModalGrid');
+            if (!fotos || fotos.length === 0) {
+                grid.innerHTML = '<small class="text-muted">Sem fotografias ainda.</small>';
+                return;
+            }
+            grid.innerHTML = fotos.map((f, i) => `
+                <div style="position:relative;display:inline-block;">
+                    <a href="${f}" target="_blank">
+                        <img src="${f}" style="width:130px;height:95px;object-fit:cover;border-radius:6px;border:1px solid #ddd;">
+                    </a>
+                    <button onclick="removerFotoModal(${i})" title="Remover"
+                        style="position:absolute;top:3px;right:3px;background:rgba(220,53,69,0.9);border:none;border-radius:50%;color:white;width:24px;height:24px;font-size:13px;cursor:pointer;line-height:1;">
+                        &times;
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        async function removerFotoModal(idx) {
+            if (!_fotosCurrentId) return;
+            if (!confirm('Remover esta fotografia?')) return;
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/orcamentos/${_fotosCurrentId}/fotos/${idx}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${getToken()}` }
+                });
+                const data = await res.json();
+                if (!data.success) throw new Error(data.message);
+                renderModalFotosGrid(data.fotos);
+                carregarOrcamentos(_lastFiltros, _currentPage);
+            } catch (err) {
+                alert('Erro: ' + err.message);
+            }
+        }
+
+        async function uploadFotos() {
+            if (!_fotosCurrentId) return;
+            const input = document.getElementById('fotosModalInput');
+            if (!input.files || input.files.length === 0) { alert('Selecione pelo menos uma fotografia.'); return; }
+            const btn = document.getElementById('uploadFotosBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>A enviar...';
+            try {
+                const fd = new FormData();
+                for (const f of input.files) fd.append('fotos', f);
+                const res = await fetch(`${API_BASE_URL}/api/orcamentos/${_fotosCurrentId}/fotos`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${getToken()}` },
+                    body: fd
+                });
+                const data = await res.json();
+                if (!data.success) throw new Error(data.message);
+                renderModalFotosGrid(data.fotos);
+                input.value = '';
+                carregarOrcamentos(_lastFiltros, _currentPage);
+                alert(`✅ ${data.novasFotos.length} fotografia(s) adicionada(s)!`);
+            } catch (err) {
+                alert('Erro: ' + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-upload mr-1"></i>Enviar Fotos';
             }
         }
 
@@ -645,9 +844,8 @@
             }
         }
 
-        // Carregar ao iniciar
         document.addEventListener('DOMContentLoaded', () => {
-            carregarOrcamentos();
+            carregarOrcamentos({}, 1);
         });
     </script>
 <script src="../../assets/js/sidebar-init.js"></script>
@@ -656,6 +854,37 @@ $(document).ready(function() {
     loadSidebarWithInit("includes/sidebar.html");
 });
 </script>
+
+<!-- Modal: Fotos do Orçamento -->
+<div class="modal fade" id="fotosModal" tabindex="-1" role="dialog" aria-labelledby="fotosModalLabel">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title" id="fotosModalLabel">
+                    <i class="fas fa-camera mr-2"></i>Fotografias — <span id="fotosModalNumero"></span>
+                </h5>
+                <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+            </div>
+            <div class="modal-body">
+                <div id="fotosModalGrid" class="d-flex flex-wrap" style="gap:10px;min-height:60px;align-items:flex-start;"></div>
+                <hr>
+                <div class="form-group mb-0">
+                    <label><i class="fas fa-plus-circle text-info mr-1"></i>Adicionar novas fotografias</label>
+                    <input type="file" id="fotosModalInput" accept="image/*" multiple class="form-control-file mt-1">
+                    <small class="text-muted">Formatos aceites: JPG, PNG, WEBP, GIF. Máx 20 ficheiros de vez.</small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                    <i class="fas fa-times mr-1"></i>Fechar
+                </button>
+                <button type="button" class="btn btn-info" id="uploadFotosBtn" onclick="uploadFotos()">
+                    <i class="fas fa-upload mr-1"></i>Enviar Fotos
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <!-- Modal: Vincular Elevador -->
 <div class="modal fade" id="vincularModal" tabindex="-1" role="dialog" aria-labelledby="vincularModalLabel">

@@ -4579,6 +4579,21 @@ Email de contacto: info@festlift.pt`;
     let _liftsCurrentPage = 1;
     let _liftsPageSize = 20;
 
+    // Normaliza a chave de endereço para agrupar correctamente elevadores do mesmo edifício
+    // mesmo quando a rua está escrita com pequenas diferenças (vírgulas, espaços, etc.)
+    function _liftAddrKey(lift) {
+        if (lift.address && lift.address.street) {
+            const street = lift.address.street.replace(/[,\.]/g, ' ').replace(/\s+/g, ' ').trim().toLowerCase();
+            const city   = (lift.address.city || '').trim().toLowerCase();
+            const zip    = (lift.address.zipCode || '').replace(/\s+/g, '').trim().toLowerCase();
+            return street + '|' + city + (zip ? '|' + zip : '');
+        }
+        if (typeof lift.address === 'string' && lift.address) {
+            return lift.address.replace(/[,\.]/g, ' ').replace(/\s+/g, ' ').trim().toLowerCase();
+        }
+        return '_id_' + ((lift._id && lift._id.toString ? lift._id.toString() : lift._id) || lift.id || Math.random());
+    }
+
     // Função apresentação de elevadores в da tabela
     // Guarda a lista filtrada e reinicia para a página 1, depois delega para _renderCurrentLiftsPage()
     function displayLiftsInTable(lifts) {
@@ -4597,9 +4612,7 @@ Email de contacto: info@festlift.pt`;
         const sourceForGrouping = window.allLiftsData || lifts;
         const addressCount = {};
         sourceForGrouping.forEach(lift => {
-            const addr = lift.address && lift.address.street
-                ? (lift.address.street + ',' + (lift.address.city || '')).toLowerCase().trim()
-                : (typeof lift.address === 'string' ? lift.address : '').toLowerCase().trim();
+            const addr = _liftAddrKey(lift);
             if (addr) addressCount[addr] = (addressCount[addr] || 0) + 1;
         });
 
@@ -4608,9 +4621,7 @@ Email de contacto: info@festlift.pt`;
         const addressGroupIndex = {};
         let groupCounter = 0;
         sourceForGrouping.forEach(lift => {
-            const addr = lift.address && lift.address.street
-                ? (lift.address.street + ',' + (lift.address.city || '')).toLowerCase().trim()
-                : (typeof lift.address === 'string' ? lift.address : '').toLowerCase().trim();
+            const addr = _liftAddrKey(lift);
             if (addr && addressGroupIndex[addr] === undefined) {
                 addressGroupIndex[addr] = groupCounter++;
             }
@@ -4685,9 +4696,7 @@ Email de contacto: info@festlift.pt`;
                 : `<i class="fas fa-user-times text-warning ml-1" title="Cliente sem conta"></i>`;
             
             // 🏠 Verificação чи existe інші elevadores по тій самій endereço
-            const addrKey = lift.address && lift.address.street
-                ? (lift.address.street + ',' + (lift.address.city || '')).toLowerCase().trim()
-                : (typeof lift.address === 'string' ? lift.address : '').toLowerCase().trim();
+            const addrKey = _liftAddrKey(lift);
             const siblingsCount = addrKey ? (addressCount[addrKey] || 1) : 1;
             const hasSiblings = siblingsCount > 1;
 
@@ -4794,10 +4803,7 @@ Email de contacto: info@festlift.pt`;
         const groupOrder = [];
         const groups = {};
         lifts.forEach(lift => {
-            const addrKey = (lift.address && lift.address.street
-                ? (lift.address.street + ',' + (lift.address.city || '')).toLowerCase().trim()
-                : (typeof lift.address === 'string' ? lift.address : '').toLowerCase().trim())
-                || ('_id_' + ((lift._id && lift._id.toString ? lift._id.toString() : lift._id) || lift.id || Math.random()));
+            const addrKey = _liftAddrKey(lift);
             if (!groups[addrKey]) {
                 groups[addrKey] = [];
                 groupOrder.push(addrKey);
