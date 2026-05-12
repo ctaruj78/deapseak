@@ -146,10 +146,10 @@ class LiftsManager {
                 <div class="col-12">
                     <div class="empty-state">
                         <i class="fas fa-search fa-3x mb-3 text-muted"></i>
-                        <h4>Elevadorів не знайдено</h4>
-                        <p>Спробуйте змінити параметри пошуку або фільтри</p>
+                        <h4>Nenhum elevador encontrado</h4>
+                        <p>Tente alterar os parâmetros de pesquisa ou filtros</p>
                         <button class="btn btn-primary" onclick="liftsManager.resetFilters()">
-                            Repor фільтри
+                            Repor filtros
                         </button>
                     </div>
                 </div>
@@ -213,7 +213,7 @@ class LiftsManager {
                         </div>
                         <div class="p-3">
                             ${lift.municipalNumber ? `<p><strong><i class="fas fa-hashtag mr-2"></i>N.º Municipal:</strong> <span class="badge badge-dark">${lift.municipalNumber}</span></p>` : ''}
-                            <p><strong><i class="fas fa-map-marker-alt mr-2"></i>Локація:</strong> ${location}</p>
+                            <p><strong><i class="fas fa-map-marker-alt mr-2"></i>Localização:</strong> ${location}</p>
                             <p><strong><i class="fas fa-tag mr-2"></i>Tipo:</strong> ${typeText}</p>
                             <p><strong><i class="fas fa-wrench mr-2"></i>Última manutenção:</strong> ${this.formatDate(lift.lastInspectionDate || lift.lastMaintenance)}</p>
                             <p><strong><i class="fas fa-calendar-alt mr-2"></i>Próxima manutenção:</strong> ${this.formatDate(lift.nextInspectionDate || lift.nextMaintenance)}</p>
@@ -222,10 +222,10 @@ class LiftsManager {
                     </div>
                     <div class="card-footer">
                         <button class="btn btn-sm btn-primary" onclick="window.liftsManager.requestService('${lift.id || lift._id}')">
-                            <i class="fas fa-tools"></i> Замовити послугу
+                            <i class="fas fa-tools"></i> Solicitar serviço
                         </button>
                         <button class="btn btn-sm btn-info" onclick="window.liftsManager.viewHistory('${lift.id || lift._id}')">
-                            <i class="fas fa-history"></i> Історія
+                            <i class="fas fa-history"></i> Histórico
                         </button>
                         <button class="btn btn-sm btn-secondary" onclick="window.liftsManager.viewLiftDetails('${lift.id || lift._id}')">
                             <i class="fas fa-info-circle"></i> Detalhes
@@ -339,7 +339,7 @@ class LiftsManager {
         $('#liftDetailsContent').html(`
             <div class="text-center py-5">
                 <i class="fas fa-spinner fa-spin fa-2x text-primary"></i>
-                <p class="mt-2 text-muted">A carregar даних ліфта...</p>
+                <p class="mt-2 text-muted">A carregar dados do elevador...</p>
             </div>
         `);
         $('#liftDetailsModal').modal('show');
@@ -446,17 +446,17 @@ class LiftsManager {
         return `
             <div class="lift-details">
 
-                <!-- Основна інформація -->
+                <!-- Informação geral -->
                 <div class="row">
                     <div class="col-md-6">
                         <div class="card mb-3">
                             <div class="card-header bg-info text-white py-2">
-                                <h6 class="mb-0"><i class="fas fa-info-circle"></i> Основна інформація</h6>
+                                <h6 class="mb-0"><i class="fas fa-info-circle"></i> Informação geral</h6>
                             </div>
                             <div class="card-body p-2">
                                 <table class="table table-sm mb-0">
                                     <tr><td><strong>N.º Municipal:</strong></td><td>${lift.municipalNumber || '-'}</td></tr>
-                                    <tr><td><strong>Марка / Modelo:</strong></td><td>${lift.manufacturer ? lift.manufacturer + ' ' : ''}${lift.model || '-'}</td></tr>
+                                    <tr><td><strong>Marca / Modelo:</strong></td><td>${lift.manufacturer ? lift.manufacturer + ' ' : ''}${lift.model || '-'}</td></tr>
                                     <tr><td><strong>Tipo:</strong></td><td>${this.getTypeText(lift.type)}</td></tr>
                                     <tr><td><strong>Estado:</strong></td><td><span class="badge ${statusClass}">${statusText}</span></td></tr>
                                     <tr><td><strong>Capacidade:</strong></td><td>${capacityText}</td></tr>
@@ -472,13 +472,13 @@ class LiftsManager {
                     <div class="col-md-6">
                         <div class="card mb-3">
                             <div class="card-header bg-secondary text-white py-2">
-                                <h6 class="mb-0"><i class="fas fa-map-marker-alt"></i> Розташування</h6>
+                                <h6 class="mb-0"><i class="fas fa-map-marker-alt"></i> Localização</h6>
                             </div>
                             <div class="card-body p-2">
                                 <table class="table table-sm mb-0">
                                     <tr><td><strong>Endereço:</strong></td><td>${addressStr}</td></tr>
                                     ${postalCode ? `<tr><td><strong>Código postal:</strong></td><td>${postalCode}</td></tr>` : ''}
-                                    <tr><td><strong>Координати:</strong></td><td>${coordsText}</td></tr>
+                                    <tr><td><strong>Coordenadas:</strong></td><td>${coordsText}</td></tr>
                                     ${(lift.intercomCode || lift.accessCode) ? `<tr><td><strong>Código do intercomunicador:</strong></td><td>${lift.intercomCode || lift.accessCode}</td></tr>` : ''}
                                 </table>
                             </div>
@@ -501,7 +501,7 @@ class LiftsManager {
                 ${(lat && lng) ? `
                 <div class="card mb-3">
                     <div class="card-header bg-light py-2">
-                        <h6 class="mb-0"><i class="fas fa-map"></i> Карта розташування</h6>
+                        <h6 class="mb-0"><i class="fas fa-map"></i> Mapa de localização</h6>
                     </div>
                     <div class="card-body p-0">
                         <div id="clientLiftMap" style="height: 220px; width: 100%;"></div>
@@ -509,21 +509,21 @@ class LiftsManager {
                 </div>
                 ` : ''}
 
-                <!-- Контракт на обслуговування -->
+                <!-- Contrato de manutenção -->
                 <div class="card mb-3">
                     <div class="card-header bg-success text-white py-2 d-flex justify-content-between align-items-center">
-                        <h6 class="mb-0"><i class="fas fa-file-contract"></i> Контракт на обслуговування</h6>
+                        <h6 class="mb-0"><i class="fas fa-file-contract"></i> Contrato de manutenção</h6>
                     </div>
                     <div class="card-body p-2">
                         ${contractHtml}
                     </div>
                 </div>
 
-                <!-- Relatórioи інспекцій та втручань -->
+                <!-- Histórico de inspeções e intervenções -->
                 <div class="card mb-3">
                     <div class="card-header bg-primary text-white py-2 d-flex justify-content-between align-items-center">
-                        <h6 class="mb-0"><i class="fas fa-clipboard-list"></i> Історія інспекцій та втручань</h6>
-                        <span class="badge badge-light text-primary">${reports.length} записів</span>
+                        <h6 class="mb-0"><i class="fas fa-clipboard-list"></i> Histórico de inspeções e intervenções</h6>
+                        <span class="badge badge-light text-primary">${reports.length} registos</span>
                     </div>
                     <div class="card-body p-2">
                         <!-- Filtro по типу -->
@@ -531,19 +531,19 @@ class LiftsManager {
                         <div class="row mb-2">
                             <div class="col-md-4">
                                 <select id="clientReportTypeFilter" class="form-control form-control-sm" onchange="window.liftsManager.filterClientReports()">
-                                    <option value="">Todos типи</option>
+                                    <option value="">Todos os tipos</option>
                                     <option value="inspection">Inspeções</option>
                                     <option value="maintenance">Manutenção</option>
-                                    <option value="repair">Reparaçãoи</option>
-                                    <option value="emergency">Аварійні</option>
+                                    <option value="repair">Reparações</option>
+                                    <option value="emergency">Emergências</option>
                                 </select>
                             </div>
                             <div class="col-md-4">
                                 <select id="clientReportPeriodFilter" class="form-control form-control-sm" onchange="window.liftsManager.filterClientReports()">
-                                    <option value="all">Весь час</option>
-                                    <option value="30">Останні 30 днів</option>
-                                    <option value="90">Останні 3 місяці</option>
-                                    <option value="365">Останній ano</option>
+                                    <option value="all">Todo o período</option>
+                                    <option value="30">Últimos 30 dias</option>
+                                    <option value="90">Últimos 3 meses</option>
+                                    <option value="365">Último ano</option>
                                 </select>
                             </div>
                         </div>
@@ -646,7 +646,7 @@ class LiftsManager {
         });
         html += `</div>
             <div class="text-right mt-1">
-                <small class="text-muted">Показано ${reports.length} записів</small>
+                <small class="text-muted">A mostrar ${reports.length} registos</small>
             </div>`;
         return html;
     }
@@ -663,19 +663,19 @@ class LiftsManager {
         const contractNumber = contract.contractNumber || 'Não especificado';
         const description = contract.description || '';
         const fileUrl = contract.contractFile.startsWith('/') ? contract.contractFile : `/uploads/${contract.contractFile}`;
-        const periodText = endDate ? `${startDate} – ${endDate}` : `з ${startDate} (автоматичне продовження)`;
+        const periodText = endDate ? `${startDate} – ${endDate}` : `desde ${startDate} (renovação automática)`;
 
         return `
             <div class="d-flex align-items-start">
                 <div class="flex-grow-1">
                     <p class="mb-1"><i class="fas fa-file-contract text-success mr-2"></i>
-                        <strong>Контракт №${contractNumber}</strong>
+                        <strong>Contrato N.º ${contractNumber}</strong>
                     </p>
                     <p class="mb-1 text-muted"><small><i class="fas fa-calendar mr-1"></i>Período: ${periodText}</small></p>
                     ${description ? `<p class="mb-1 text-muted"><small>${description}</small></p>` : ''}
                 </div>
                 <div class="btn-group ml-2">
-                    <a href="${fileUrl}" target="_blank" class="btn btn-sm btn-primary" title="Ver контракт">
+                    <a href="${fileUrl}" target="_blank" class="btn btn-sm btn-primary" title="Ver contrato">
                         <i class="fas fa-eye"></i> Ver
                     </a>
                     <a href="${fileUrl}" download class="btn btn-sm btn-info" title="Descarregar PDF">
@@ -738,23 +738,23 @@ class LiftsManager {
                 <div class="card-body">
                     <div class="row mb-3">
                         <div class="col-6"><strong><i class="fas fa-calendar text-muted"></i> Data:</strong><br>${date}</div>
-                        <div class="col-6"><strong><i class="fas fa-user text-muted"></i> Інспектор:</strong><br>${inspector || '<em class="text-muted">Não especificado</em>'}</div>
+                        <div class="col-6"><strong><i class="fas fa-user text-muted"></i> Inspetor:</strong><br>${inspector || '<em class="text-muted">Não especificado</em>'}</div>
                     </div>
                     ${notes ? `<div class="mb-3"><strong><i class="fas fa-comment text-muted"></i> Comentários:</strong><div class="p-2 bg-light rounded mt-1">${notes}</div></div>` : ''}
                     ${fileUrl ? `
                     <div class="mb-3">
                         <div class="alert alert-success d-flex align-items-center py-2">
                             <i class="fas fa-file-pdf fa-2x mr-3 text-success"></i>
-                            <div class="flex-grow-1"><strong>PDF звіт доступний</strong></div>
+                            <div class="flex-grow-1"><strong>Relatório PDF disponível</strong></div>
                             <a href="${fileUrl}" target="_blank" class="btn btn-success btn-sm ml-2" onclick="window.open('${fileUrl}','_blank')">
                                 <i class="fas fa-external-link-alt"></i> Abrir PDF
                             </a>
                         </div>
-                    </div>` : '<div class="alert alert-secondary"><i class="fas fa-info-circle"></i> PDF не прикріплено до цього звіту</div>'}
+                    </div>` : '<div class="alert alert-secondary"><i class="fas fa-info-circle"></i> PDF não anexado a este relatório</div>'}
                 </div>
                 <div class="card-footer">
                     ${fileUrl ? `<a href="${fileUrl}" download class="btn btn-sm btn-info mr-2"><i class="fas fa-download"></i> Descarregar PDF</a>` : ''}
-                    <button class="btn btn-sm btn-outline-warning mr-2" onclick='window.liftsManager.forwardReportByEmail(${reportJson})'><i class="fas fa-envelope"></i> Переслати Email</button>
+                    <button class="btn btn-sm btn-outline-warning mr-2" onclick='window.liftsManager.forwardReportByEmail(${reportJson})'><i class="fas fa-envelope"></i> Reencaminhar por Email</button>
                     <button class="btn btn-sm btn-outline-success" onclick='window.liftsManager.printClientReport(${reportJson})'><i class="fas fa-print"></i> Imprimir</button>
                 </div>
             </div>
@@ -791,7 +791,7 @@ class LiftsManager {
             ? new Date(report.inspectionDate || report.date).toLocaleDateString('pt-PT')
             : '';
 
-        const email = prompt(`Enviar звіт "${typeLabel} ${date}" на Email:\n(Введіть адресу одержувача)`, '');
+        const email = prompt(`Enviar relatório "${typeLabel} ${date}" por email:\n(Introduza o endereço do destinatário)`, '');
         if (!email) return;
 
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -820,7 +820,7 @@ class LiftsManager {
     }
 
     forwardContractByEmail(fileUrl, contractNumber) {
-        const email = prompt(`Enviar контракт №${contractNumber} на Email:\n(Введіть адресу одержувача)`, '');
+        const email = prompt(`Enviar contrato N.º${contractNumber} por email:\n(Introduza o endereço do destinatário)`, '');
         if (!email) return;
 
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -876,7 +876,7 @@ class LiftsManager {
             <h2>Relatório: ${typeLabel}</h2>
             <table>
                 <tr><td><b>Data:</b></td><td>${date}</td></tr>
-                <tr><td><b>Інспектор:</b></td><td>${report.inspectorName || 'Não especificado'}</td></tr>
+                <tr><td><b>Inspetor:</b></td><td>${report.inspectorName || 'Não especificado'}</td></tr>
                 <tr><td><b>Estado:</b></td><td>${report.status || 'completed'}</td></tr>
                 <tr><td><b>Comentários:</b></td><td>${notes || '—'}</td></tr>
             </table>
@@ -892,20 +892,20 @@ class LiftsManager {
         const today = new Date();
         const daysDiff = Math.ceil((nextDate - today) / (1000 * 60 * 60 * 24));
         
-        if (daysDiff < 0) return 'Протерміновано';
-        if (daysDiff <= 3) return 'Термінове Manutenção';
-        if (daysDiff <= 7) return 'Скоро Manutenção';
-        if (daysDiff <= 30) return 'Заплановане Manutenção';
-        return 'В нормі';
+        if (daysDiff < 0) return 'Vencido';
+        if (daysDiff <= 3) return 'Manutenção urgente';
+        if (daysDiff <= 7) return 'Manutenção em breve';
+        if (daysDiff <= 30) return 'Manutenção planeada';
+        return 'Normal';
     }
 
     getMaintenanceStatusClass(status) {
         const classes = {
-            'Протерміновано': 'badge-danger',
-            'Термінове Manutenção': 'badge-danger',
-            'Скоро Manutenção': 'badge-warning',
-            'Заплановане Manutenção': 'badge-info',
-            'В нормі': 'badge-success',
+            'Vencido': 'badge-danger',
+            'Manutenção urgente': 'badge-danger',
+            'Manutenção em breve': 'badge-warning',
+            'Manutenção planeada': 'badge-info',
+            'Normal': 'badge-success',
             'Sem dados': 'badge-secondary'
         };
         return classes[status] || 'badge-secondary';
@@ -921,7 +921,7 @@ class LiftsManager {
         scheduleContainer.empty();
 
         if (schedule.length === 0) {
-            scheduleContainer.html('<p>Немає запланованих техобслуговувань</p>');
+            scheduleContainer.html('<p>Sem manutenções agendadas</p>');
             return;
         }
 
@@ -957,15 +957,15 @@ class LiftsManager {
         
         statsContainer.html(`
             <div class="stat-item">
-                <h5><i class="fas fa-chart-line"></i> Загальна доступність</h5>
-                <p><strong>${uptimePercent}%</strong> ліфтів працюють без проблем</p>
+                <h5><i class="fas fa-chart-line"></i> Disponibilidade geral</h5>
+                <p><strong>${uptimePercent}%</strong> elevadores sem problemas</p>
                 <p>Total de elevadores: <strong>${totalLifts}</strong></p>
             </div>
             <div class="stat-item">
-                <h5><i class="fas fa-tools"></i> Estado обслуговування</h5>
-                <p>Працюють: <strong>${operational}</strong></p>
-                <p>На обслуговуванні: <strong>${maintenance}</strong></p>
-                <p>Потребують уваги: <strong>${needsAttention}</strong></p>
+                <h5><i class="fas fa-tools"></i> Estado da manutenção</h5>
+                <p>Em funcionamento: <strong>${operational}</strong></p>
+                <p>Em manutenção: <strong>${maintenance}</strong></p>
+                <p>A necessitar de atenção: <strong>${needsAttention}</strong></p>
             </div>
         `);
     }
@@ -978,7 +978,7 @@ class LiftsManager {
         documentsContainer.html(`
             <div class="alert alert-info">
                 <i class="fas fa-info-circle"></i>
-                Документи ліфтів будуть доступні після їх додавання адміністратором.
+                Os documentos dos elevadores estarão disponíveis após serem adicionados pelo administrador.
             </div>
         `);
     }
@@ -998,40 +998,40 @@ class LiftsManager {
 
         // Показуємо модальне вікно для створення запиту
         Swal.fire({
-            title: 'Замовити послугу',
+            title: 'Solicitar serviço',
             html: `
                 <div class="text-left">
                     <p><strong>Elevador:</strong> ${lift.model || lift.name || 'Elevador'}</p>
                     <p><strong>Endereço:</strong> ${this.formatLocation(lift)}</p>
                     <hr>
                     <div class="form-group">
-                        <label>Tipo послуги:</label>
+                        <label>Tipo de serviço:</label>
                         <select id="serviceType" class="form-control">
-                            <option value="maintenance">Планове обслуговування</option>
+                            <option value="maintenance">Manutenção programada</option>
                             <option value="repair">Reparação</option>
                             <option value="inspection">Inspeção</option>
-                            <option value="consultation">Консультація</option>
-                            <option value="orcamento">Orçamento (Кошторис)</option>
-                            <option value="emergency">Аварійна ситуація</option>
+                            <option value="consultation">Consultoria</option>
+                            <option value="orcamento">Orçamento (Estimativa)</option>
+                            <option value="emergency">Situação de emergência</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>Descrição проблеми:</label>
-                        <textarea id="serviceDescription" class="form-control" rows="3" placeholder="Детально опишіть проблему або запит..."></textarea>
+                        <label>Descrição do problema:</label>
+                        <textarea id="serviceDescription" class="form-control" rows="3" placeholder="Descreva detalhadamente o problema ou pedido..."></textarea>
                     </div>
                     <div class="form-group">
                         <label>Prioridade:</label>
                         <select id="servicePriority" class="form-control">
-                            <option value="low">Низький</option>
-                            <option value="medium" selected>Agoедній</option>
-                            <option value="high">Altий</option>
+                            <option value="low">Baixo</option>
+                            <option value="medium" selected>Médio</option>
+                            <option value="high">Alto</option>
                             <option value="critical">Crítico 🔴</option>
                         </select>
                     </div>
                 </div>
             `,
             showCancelButton: true,
-            confirmButtonText: 'Enviar запит',
+            confirmButtonText: 'Enviar pedido',
             cancelButtonText: 'Cancelar',
             width: '600px',
             preConfirm: () => {
@@ -1040,7 +1040,7 @@ class LiftsManager {
                 const priority = document.getElementById('servicePriority').value;
                 
                 if (!description || description.trim().length < 10) {
-                    Swal.showValidationMessage('Por favor, опишіть проблему детальніше (мінімум 10 символів)');
+                    Swal.showValidationMessage('Por favor, descreva o problema com mais detalhe (mínimo 10 caracteres)');
                     return false;
                 }
                 
@@ -1077,18 +1077,18 @@ class LiftsManager {
                 Swal.fire({
                     icon: 'success',
                     title: 'Sucesso!',
-                    text: 'Ваш запит com sucesso відправлено. Ми зв\'яжемося з вами найближчим часом.',
+                    text: 'O seu pedido foi enviado com sucesso. Entraremos em contacto brevemente.',
                     confirmButtonText: 'OK'
                 });
             } else {
-                throw new Error('Erro відправки запиту');
+                throw new Error('Erro ao enviar pedido');
             }
         } catch (error) {
             console.error('Error submitting service request:', error);
             Swal.fire({
                 icon: 'error',
                 title: 'Erro',
-                text: 'Не вдалося відправити запит. Спробуйте пізніше.',
+                text: 'Não foi possível enviar o pedido. Tente novamente mais tarde.',
                 confirmButtonText: 'OK'
             });
         }
@@ -1149,7 +1149,7 @@ class LiftsManager {
                         </div>
                     `;
                 } else {
-                    historyHtml = '<p class="text-center text-muted">Історія обслуговування відсутня</p>';
+                    historyHtml = '<p class="text-center text-muted">Sem histórico de manutenção</p>';
                 }
             } else {
                 // Fallback to lift's maintenance history
@@ -1160,7 +1160,7 @@ class LiftsManager {
                                 <thead>
                                     <tr>
                                         <th>Data</th>
-                                        <th>Tipo робіт</th>
+                                        <th>Tipo de trabalho</th>
                                         <th>Técnico</th>
                                     </tr>
                                 </thead>
@@ -1177,12 +1177,12 @@ class LiftsManager {
                         </div>
                     `;
                 } else {
-                    historyHtml = '<p class="text-center text-muted">Історія обслуговування відсутня</p>';
+                    historyHtml = '<p class="text-center text-muted">Sem histórico de manutenção</p>';
                 }
             }
 
             Swal.fire({
-                title: `Історія: ${lift.model || lift.name || 'Elevador'}`,
+                title: `Histórico: ${lift.model || lift.name || 'Elevador'}`,
                 html: historyHtml,
                 width: '800px',
                 confirmButtonText: 'Fechar'
@@ -1192,7 +1192,7 @@ class LiftsManager {
             Swal.fire({
                 icon: 'error',
                 title: 'Erro',
-                text: 'Не вдалося завантажити історію',
+                text: 'Não foi possível carregar o histórico',
                 confirmButtonText: 'OK'
             });
         }

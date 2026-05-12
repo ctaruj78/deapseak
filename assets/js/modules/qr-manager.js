@@ -468,13 +468,13 @@ const qrManager = (function() {
         if (!qr) return;
 
         // Update modal title
-        $('#viewQRModalTitle').text(`QR Код: ${qr.code}`);
+        $('#viewQRModalTitle').text(`Código QR: ${qr.code}`);
         $('#qrCodeText').text(qr.code);
 
         // Перевірка наявності QRCode бібліотеки
         if (typeof QRCode === 'undefined') {
             console.error('❌ QRCode library not loaded');
-            $('#qrCodeCanvas').html('<div class="alert alert-warning">QR код бібліотека завантажується...</div>');
+            $('#qrCodeCanvas').html('<div class="alert alert-warning">Biblioteca QR a carregar...</div>');
             return;
         }
 
@@ -514,13 +514,13 @@ const qrManager = (function() {
                 <dt class="col-sm-4">Endereço:</dt>
                 <dd class="col-sm-8">${qr.name}</dd>
                 
-                <dt class="col-sm-4">Місто:</dt>
+                <dt class="col-sm-4">Cidade:</dt>
                 <dd class="col-sm-8">${qr.location}</dd>
                 
-                <dt class="col-sm-4">Створено:</dt>
+                <dt class="col-sm-4">Criado:</dt>
                 <dd class="col-sm-8">${createdDate}</dd>
                 
-                <dt class="col-sm-4">Сканувань:</dt>
+                <dt class="col-sm-4">Leituras:</dt>
                 <dd class="col-sm-8"><span class="badge badge-primary">${qr.scans}</span></dd>
             </dl>
         `);
@@ -580,7 +580,7 @@ const qrManager = (function() {
                 <div class="details">
                     <p><strong>Endereço:</strong> ${qr.name}</p>
                     <p><strong>Tipo:</strong> ${qr.liftType === 'cargo' ? 'Carga' : 'Passageiro'}</p>
-                    <p><strong>Місто:</strong> ${qr.location}</p>
+                    <p><strong>Cidade:</strong> ${qr.location}</p>
                 </div>
                 <script>
                     window.onload = function() {
@@ -634,7 +634,7 @@ const qrManager = (function() {
             showNotification('Sem dados для експорту', 'warning');
             return;
         }
-        const headers = ['Код QR', 'ID', 'Tipo', 'Endereço', 'Місто', 'Estado', 'Data створення'];
+        const headers = ['Código QR', 'ID', 'Tipo', 'Endereço', 'Cidade', 'Estado', 'Data de criação'];
         const rows = data.map(qr => [
             qr.code,
             qr.id,

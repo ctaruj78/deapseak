@@ -51,7 +51,7 @@ class RequestsManager {
             {
                 id: '12345',
                 title: 'Manutenção técnica planeada',
-                description: 'Щомісячне планове технічне обслуговування ліфта. Перевірка всіх систем безпеки, мастильних матеріалів та роботи дверей.',
+                description: 'Manutenção técnica mensal planeada do elevador. Verificação de todos os sistemas de segurança, lubrificantes e funcionamento das portas.',
                 liftId: 'lift1',
                 priority: 'medium',
                 status: 'completed',
@@ -60,15 +60,15 @@ class RequestsManager {
                 updatedAt: '2024-01-16T15:30:00Z',
                 completedAt: '2024-01-16T15:30:00Z',
                 assignedTo: 'tech1',
-                technician: 'Іван Петренко',
+                technician: 'Ivan Petrenko',
                 cost: 12500.00,
                 rating: 5,
                 photos: ['photo1.jpg', 'photo2.jpg']
             },
             {
                 id: '12346',
-                title: 'Reparação de emergência дверей',
-                description: 'Двері ліфта не закриваються належним чином. Виникає проблема з датчиками безпеки та механізмом блокування.',
+                title: 'Reparação de emergência das portas',
+                description: 'As portas do elevador não fecham corretamente. Problema com os sensores de segurança e mecanismo de bloqueio.',
                 liftId: 'lift2',
                 priority: 'high',
                 status: 'in-progress',
@@ -76,14 +76,14 @@ class RequestsManager {
                 createdAt: '2024-01-16T14:20:00Z',
                 updatedAt: '2024-01-17T09:15:00Z',
                 assignedTo: 'tech2',
-                technician: 'Марія Коваленко',
+                technician: 'Maria Kovalenko',
                 estimatedCost: 8300.00,
                 photos: ['photo3.jpg']
             },
             {
                 id: '12347',
-                title: 'Консультація щодо модернізації',
-                description: 'Консультація з приводу можливої модернізації ліфта та оновлення системи керування.',
+                title: 'Consulta sobre modernização',
+                description: 'Consulta sobre possível modernização do elevador e atualização do sistema de controlo.',
                 liftId: 'lift3',
                 priority: 'low',
                 status: 'pending',
@@ -94,8 +94,8 @@ class RequestsManager {
             },
             {
                 id: '12348',
-                title: 'Щорічний технічний огляд',
-                description: 'Повний технічний огляд ліфта згідно з графіком планових перевірок.',
+                title: 'Inspeção técnica anual',
+                description: 'Inspeção técnica completa do elevador de acordo com o calendário de verificações periódicas.',
                 liftId: 'lift1',
                 priority: 'medium',
                 status: 'in-progress',
@@ -103,7 +103,7 @@ class RequestsManager {
                 createdAt: '2024-01-20T09:00:00Z',
                 updatedAt: '2024-01-20T09:00:00Z',
                 assignedTo: 'tech3',
-                technician: 'Петро Сидоренко',
+                technician: 'Pedro Sidorenko',
                 estimatedCost: 15600.00
             }
         ];
@@ -142,11 +142,11 @@ class RequestsManager {
 
     updateRequestTitle(type) {
         const titles = {
-            'maintenance': 'Технічне обслуговування',
-            'repair': 'Reparação ліфта',
-            'inspection': 'Технічний огляд',
-            'consultation': 'Консультація',
-            'emergency': 'Аварійна ситуація'
+            'maintenance': 'Manutenção técnica',
+            'repair': 'Reparação do elevador',
+            'inspection': 'Inspeção técnica',
+            'consultation': 'Consultoria',
+            'emergency': 'Situação de emergência'
         };
         
         if (titles[type]) {
@@ -219,8 +219,8 @@ class RequestsManager {
                 <tr>
                     <td colspan="8" class="text-center py-5">
                         <i class="fas fa-search fa-3x text-muted mb-3"></i>
-                        <h4>Заявок не знайдено</h4>
-                        <p>Спробуйте змінити параметри фільтрів</p>
+                        <h4>Nenhum pedido encontrado</h4>
+                        <p>Tente alterar os filtros</p>
                     </td>
                 </tr>
             `);
@@ -258,14 +258,14 @@ class RequestsManager {
                 <td>${request.technician || 'Não atribuído'}</td>
                 <td>
                     <div class="btn-group">
-                        <button class="btn btn-sm btn-info btn-icon" onclick="requestsManager.viewRequest('${request.id}')" title="Перегляд">
+                        <button class="btn btn-sm btn-info btn-icon" onclick="requestsManager.viewRequest('${request.id}')" title="Ver">
                             <i class="fas fa-eye"></i>
                         </button>
                         <button class="btn btn-sm btn-secondary btn-icon" onclick="requestsManager.downloadReport('${request.id}')" title="Relatório">
                             <i class="fas fa-download"></i>
                         </button>
                         ${request.status === 'in-progress' && request.assignedTo ? 
-                            `<button class="btn btn-sm btn-success btn-icon" onclick="requestsManager.chatWithTech('${request.id}')" title="Чат">
+                            `<button class="btn btn-sm btn-success btn-icon" onclick="requestsManager.chatWithTech('${request.id}')" title="Chat">
                                 <i class="fas fa-comments"></i>
                             </button>` : ''}
                         ${request.status === 'pending' ? 
@@ -280,29 +280,29 @@ class RequestsManager {
 
     getLiftName(liftId) {
         const lifts = JSON.parse(localStorage.getItem('lifts')) || [
-            { id: 'lift1', model: 'Otis Gen2', location: 'вул. Центральна, 12' },
-            { id: 'lift2', model: 'Schindler 3300', location: 'пр. Перемоги, 45' },
-            { id: 'lift3', model: 'KONE MonoSpace', location: 'вул. Шевченка, 78' }
+            { id: 'lift1', model: 'Otis Gen2', location: 'Rua Central, 12' },
+            { id: 'lift2', model: 'Schindler 3300', location: 'Av. da Vitória, 45' },
+            { id: 'lift3', model: 'KONE MonoSpace', location: 'Rua Shevchenko, 78' }
         ];
         const lift = lifts.find(l => l.id === liftId);
-        return lift ? `${lift.model} - ${lift.location}` : 'Desconhecido ліфт';
+        return lift ? `${lift.model} - ${lift.location}` : 'Elevador desconhecido';
     }
 
     getPriorityText(priority) {
         const priorities = {
-            'high': 'Altий',
-            'medium': 'Agoедній',
-            'low': 'Низький'
+            'high': 'Alto',
+            'medium': 'Médio',
+            'low': 'Baixo'
         };
         return priorities[priority] || priority;
     }
 
     getStatusText(status) {
         const statuses = {
-            'pending': 'В очікуванні',
+            'pending': 'Em espera',
             'in-progress': 'Em progresso',
-            'completed': 'Завершено',
-            'cancelled': 'Скасовано'
+            'completed': 'Concluído',
+            'cancelled': 'Cancelado'
         };
         return statuses[status] || status;
     }
@@ -410,7 +410,7 @@ class RequestsManager {
         };
 
         if (!formData.type || !formData.liftId || !formData.title || !formData.description) {
-            this.showNotification('Por favor, заповніть всі обов\'язкові поля', 'error');
+            this.showNotification('Por favor, preencha todos os campos obrigatórios', 'error');
             return;
         }
 
@@ -431,7 +431,7 @@ class RequestsManager {
                 const result = await res.json();
                 photoUrls = result.files.map(f => f.url);
             } catch (err) {
-                this.showNotification('Erro завантаження фото', 'error');
+                this.showNotification('Erro ao carregar foto', 'error');
             }
         }
 
@@ -443,7 +443,7 @@ class RequestsManager {
             updatedAt: new Date().toISOString(),
             photos: photoUrls,
             history: [{
-                action: 'Створено заявку',
+                action: 'Pedido criado',
                 timestamp: new Date().toISOString()
             }]
         };
@@ -452,7 +452,7 @@ class RequestsManager {
         localStorage.setItem('maintenanceRequests', JSON.stringify(this.requests));
         $('#newRequestModal').modal('hide');
         this.applyFilters();
-        this.showNotification('Заявку com sucesso створено!', 'success');
+        this.showNotification('Pedido criado com sucesso!', 'success');
     }
 
     viewRequest(requestId) {
@@ -502,7 +502,7 @@ class RequestsManager {
                             <strong><i class="fas fa-tag"></i> Tipo:</strong> ${this.getRequestTypeText(request.type)}
                         </div>
                         <div class="info-item">
-                            <strong><i class="fas fa-calendar"></i> Створено:</strong> ${this.formatDateTime(request.createdAt)}
+                            <strong><i class="fas fa-calendar"></i> Criado:</strong> ${this.formatDateTime(request.createdAt)}
                         </div>
                     </div>
                     <div class="col-md-6">
@@ -513,12 +513,12 @@ class RequestsManager {
                         ` : ''}
                         ${request.startedAt ? `
                             <div class="info-item">
-                                <strong><i class="fas fa-play-circle"></i> Início робіт:</strong> ${this.formatDateTime(request.startedAt)}
+                                <strong><i class="fas fa-play-circle"></i> Início dos trabalhos:</strong> ${this.formatDateTime(request.startedAt)}
                             </div>
                         ` : ''}
                         ${request.completedAt ? `
                             <div class="info-item">
-                                <strong><i class="fas fa-check-circle"></i> Завершено:</strong> ${this.formatDateTime(request.completedAt)}
+                                <strong><i class="fas fa-check-circle"></i> Concluído:</strong> ${this.formatDateTime(request.completedAt)}
                             </div>
                         ` : ''}
                     </div>
@@ -526,18 +526,18 @@ class RequestsManager {
 
                 <div class="card mb-4">
                     <div class="card-header">
-                        <h5 class="card-title"><i class="fas fa-align-left"></i> Descrição проблеми</h5>
+                        <h5 class="card-title"><i class="fas fa-align-left"></i> Descrição do problema</h5>
                     </div>
                     <div class="card-body">
-                        <p class="card-text">${request.description || 'Немає детального опису'}</p>
-                        ${request.urgent ? '<span class="badge badge-danger">Urgente заявка</span>' : ''}
+                        <p class="card-text">${request.description || 'Sem descrição detalhada'}</p>
+                        ${request.urgent ? '<span class="badge badge-danger">Pedido urgente</span>' : ''}
                     </div>
                 </div>
 
                 ${request.photos && request.photos.length > 0 ? `
                     <div class="card mb-4">
                         <div class="card-header">
-                            <h5 class="card-title"><i class="fas fa-images"></i> Fotografiaграфії</h5>
+                            <h5 class="card-title"><i class="fas fa-images"></i> Fotografias</h5>
                         </div>
                         <div class="card-body">
                             <div class="d-flex flex-wrap">
@@ -564,7 +564,7 @@ class RequestsManager {
                 ` : request.estimatedCost ? `
                     <div class="card mb-4">
                         <div class="card-header">
-                            <h5 class="card-title"><i class="fas fa-money-bill-wave"></i> Орієнтовна вартість</h5>
+                            <h5 class="card-title"><i class="fas fa-money-bill-wave"></i> Custo estimado</h5>
                         </div>
                         <div class="card-body">
                             <h4 class="text-warning">₴${request.estimatedCost.toLocaleString('pt-PT', { minimumFractionDigits: 2 })}</h4>
@@ -575,7 +575,7 @@ class RequestsManager {
                 ${request.rating ? `
                     <div class="card mb-4">
                         <div class="card-header">
-                            <h5 class="card-title"><i class="fas fa-star"></i> Оцінка якості</h5>
+                            <h5 class="card-title"><i class="fas fa-star"></i> Avaliação de qualidade</h5>
                         </div>
                         <div class="card-body">
                             <div class="rating-stars h3">
@@ -588,7 +588,7 @@ class RequestsManager {
                 ${request.history && request.history.length > 0 ? `
                 <div class="card mb-4">
                     <div class="card-header">
-                        <h5 class="card-title"><i class="fas fa-history"></i> Історія дій</h5>
+                        <h5 class="card-title"><i class="fas fa-history"></i> Histórico de ações</h5>
                     </div>
                     <div class="card-body">
                         <ul class="list-group">
@@ -603,11 +603,11 @@ class RequestsManager {
 
     getRequestTypeText(type) {
         const types = {
-            'maintenance': 'Технічне обслуговування',
+            'maintenance': 'Manutenção técnica',
             'repair': 'Reparação',
-            'inspection': 'Технічний огляд',
-            'consultation': 'Консультація',
-            'emergency': 'Аварійна ситуація'
+            'inspection': 'Inspeção técnica',
+            'consultation': 'Consultoria',
+            'emergency': 'Situação de emergência'
         };
         return types[type] || type;
     }
@@ -616,7 +616,7 @@ class RequestsManager {
         const request = this.requests.find(req => req.id === requestId);
         if (!request) return;
 
-        this.showNotification(`Підготовка звіту для заявки #${requestId}...`, 'info');
+        this.showNotification(`Preparar relatório para o pedido #${requestId}...`, 'info');
         
         // Імітація створення PDF
         setTimeout(() => {
@@ -626,48 +626,48 @@ class RequestsManager {
             
             const link = document.createElement('a');
             link.href = url;
-            link.download = `звіт_заявка_${requestId}.pdf`;
+            link.download = `relatorio_pedido_${requestId}.pdf`;
             link.click();
             
-            this.showNotification('Relatório com sucesso завантажено', 'success');
+            this.showNotification('Relatório descarregado com sucesso', 'success');
         }, 1500);
     }
 
     generateReportContent(request) {
         // Імітація створення звіту
         return `
-            ЗВІТ ПО ЗАЯВЦІ #${request.id}
+            RELATÓRIO DO PEDIDO #${request.id}
             =============================
             
-            Заголовок: ${request.title}
+            Título: ${request.title}
             Tipo: ${this.getRequestTypeText(request.type)}
             Elevador: ${this.getLiftName(request.liftId)}
             Estado: ${this.getStatusText(request.status)}
             Prioridade: ${this.getPriorityText(request.priority)}
             
-            Створено: ${this.formatDateTime(request.createdAt)}
-            ${request.startedAt ? `Início робіт: ${this.formatDateTime(request.startedAt)}` : ''}
-            ${request.completedAt ? `Завершено: ${this.formatDateTime(request.completedAt)}` : ''}
+            Criado: ${this.formatDateTime(request.createdAt)}
+            ${request.startedAt ? `Início dos trabalhos: ${this.formatDateTime(request.startedAt)}` : ''}
+            ${request.completedAt ? `Concluído: ${this.formatDateTime(request.completedAt)}` : ''}
             
             Descrição:
             ${request.description}
             
-            ${request.cost ? `Custo: ₴${request.cost.toLocaleString('pt-PT', { minimumFractionDigits: 2 })}` : ''}
-            ${request.rating ? `Оцінка: ${'⭐'.repeat(request.rating)}` : ''}
+            ${request.cost ? `Custo: €${request.cost.toLocaleString('pt-PT', { minimumFractionDigits: 2 })}` : ''}
+            ${request.rating ? `Avaliação: ${'⭐'.repeat(request.rating)}` : ''}
             
             =============================
-            Згенеровано: ${new Date().toLocaleString('pt-PT')}
+            Gerado: ${new Date().toLocaleString('pt-PT')}
         `;
     }
 
     chatWithTech(requestId) {
         const request = this.requests.find(req => req.id === requestId);
         if (!request || !request.assignedTo) {
-            this.showNotification('Técnico не призначений для цієї заявки', 'warning');
+            this.showNotification('Técnico não atribuído a este pedido', 'warning');
             return;
         }
 
-        this.showNotification('Відкриття чату з техніком...', 'info');
+this.showNotification('A abrir chat com o técnico...', 'info');
         
         // Імітація переходу в чат
         setTimeout(() => {
@@ -682,7 +682,7 @@ class RequestsManager {
         // Логування дії
         if (!request.history) request.history = [];
         request.history.push({
-            action: `Estado змінено: ${oldStatus} → ${newStatus}`,
+            action: `Estado alterado: ${oldStatus} → ${newStatus}`,
             timestamp: request.updatedAt
         });
         localStorage.setItem('maintenanceRequests', JSON.stringify(this.requests));
@@ -692,9 +692,9 @@ class RequestsManager {
             if (newStatus === 'completed') {
                 window.pushNotificationsClient.notifyRequestCompleted(request);
             } else if (newStatus === 'cancelled') {
-                window.pushNotificationsClient.send('Заявку скасовано', `Pedido №${request.id} була скасована.`);
-            } else if (newStatus === 'in-progress') {
-                window.pushNotificationsClient.send('Pedido в роботі', `Pedido №${request.id} взята в роботу.`);
+                window.pushNotificationsClient.send('Pedido cancelado', `Pedido N.º${request.id} foi cancelado.`);
+                } else if (newStatus === 'in-progress') {
+                    window.pushNotificationsClient.send('Pedido em progresso', `Pedido N.º${request.id} foi aceite.`);
             }
         }
     }
@@ -704,13 +704,13 @@ class RequestsManager {
         const request = this.requests.find(req => req.id === requestId);
         if (!request) return;
         this.setRequestStatus(request, 'in-progress');
-        this.showNotification('Pedido взята в роботу', 'info');
+        this.showNotification('Pedido aceite e em progresso', 'info');
     }
     completeRequest(requestId) {
         const request = this.requests.find(req => req.id === requestId);
         if (!request) return;
         this.setRequestStatus(request, 'completed');
-        this.showNotification('Заявку виконано!', 'success');
+        this.showNotification('Pedido concluído com sucesso!', 'success');
     }
 
     cancelRequest(requestId) {
@@ -719,7 +719,7 @@ class RequestsManager {
 
         if (confirm('Tem a certeza que pretende cancelar este pedido?')) {
             this.setRequestStatus(request, 'cancelled');
-            this.showNotification('Заявку скасовано', 'success');
+            this.showNotification('Pedido cancelado', 'success');
         }
     }
 
@@ -727,19 +727,19 @@ class RequestsManager {
         const filteredRequests = this.getFilteredRequests();
         
         if (filteredRequests.length === 0) {
-            this.showNotification('Немає заявок для експорту', 'warning');
+            this.showNotification('Sem pedidos para exportar', 'warning');
             return;
         }
 
-        this.showNotification('Підготовка експорту...', 'info');
+        this.showNotification('A preparar exportação...', 'info');
         
         // Створення CSV
         const csvContent = this.convertToCSV(filteredRequests);
-        this.downloadCSV(csvContent, `заявки_${new Date().toISOString().split('T')[0]}.csv`);
+        this.downloadCSV(csvContent, `pedidos_${new Date().toISOString().split('T')[0]}.csv`);
     }
 
     convertToCSV(requests) {
-        const headers = ['ID', 'Tipo', 'Elevador', 'Заголовок', 'Prioridade', 'Estado', 'Técnico', 'Створено'];
+        const headers = ['ID', 'Tipo', 'Elevador', 'Título', 'Prioridade', 'Estado', 'Técnico', 'Criado'];
         const rows = requests.map(request => [
             request.id,
             this.getRequestTypeText(request.type),

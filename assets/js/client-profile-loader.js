@@ -59,7 +59,7 @@
 
         } catch (error) {
             console.error('❌ Erro завантаження профілю:', error);
-            showError('Не вдалося завантажити дані профілю');
+            showError('Não foi possível carregar os dados do perfil');
             return null;
         }
     }
@@ -75,13 +75,13 @@
         $('#profileName').text(fullName);
         
         // Email в header
-        $('#profileEmail').text(user.email || 'Немає email');
+        $('#profileEmail').text(user.email || 'Email não disponível');
         
         // Nome в info tab
         $('#infoFullName').text(fullName);
         
         // Email в info tab
-        $('#infoEmail').text(user.email || 'Немає email');
+        $('#infoEmail').text(user.email || 'Email não disponível');
         
         // Telefone
         if (user.phone) {

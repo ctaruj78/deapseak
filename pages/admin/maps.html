@@ -711,10 +711,9 @@
 
                 const data = await response.json();
                 console.log('📦 Отримані dados desde API:', data);
-                console.log('✅ Carregado de elevadores:', data.data?.length || 0);
-                
-                // Конвертуexisteмо dados desde MongoDB в formato para мапи
-                const rawLifts = data.data || [];
+                // API devolve: { success: true, data: { lifts: [...], pagination: {...} } }
+                const rawLifts = data.data?.lifts || (Array.isArray(data.data) ? data.data : []);
+                console.log('✅ Carregado de elevadores:', rawLifts.length);
                 
                 // Геоcódigoexisteмо elevadores desde ausentesми ou нульовими координаeми
                 const geocodePromises = rawLifts.map(async lift => {
@@ -726,6 +725,7 @@
                     
                     const fullAddress = [
                         lift.address?.street,
+                        lift.address?.zipCode,
                         lift.address?.city,
                         lift.address?.country
                     ].filter(Boolean).join(', ');
@@ -753,11 +753,10 @@
                         }
                     }
                     
-                    // Se геоcódigoвання não foi possível — виutilizовуexisteмо Lisboa predefinido
+                    // Se geocodificação não foi possível — omitir marcador (não usar Lisboa como fallback falso)
                     if (lat === null || lng === null) {
-                        console.warn(`⚠️ Elevador ${lift._id}: coordenadas ausentes, виutilizовуexisteмо Lisboa predefinido`);
-                        lat = 38.7223;
-                        lng = -9.1393;
+                        console.warn(`⚠️ Elevador ${lift.municipalNumber || lift._id}: sem coordenadas geocodificáveis, marcador omitido`);
+                        return null;
                     }
                     
                     console.log('🔄 Processamento do elevador:', lift._id, [lng, lat]);
@@ -778,9 +777,9 @@
                     };
                 });
                 
-                lifts = await Promise.all(geocodePromises);
+                lifts = (await Promise.all(geocodePromises)).filter(Boolean);
 
-                console.log('✅ Оброблено de elevadores para мапи:', lifts.length);
+                console.log('✅ Оброблено de elevadores para мапи:', lifts.length, '| Omitidos sem coordenadas:', rawLifts.length - lifts.length);
                 console.log('📍 Primeiro elevador:', lifts[0]);
             } catch (error) {
                 console.error('❌ Erro ao carregar elevadores:', error);

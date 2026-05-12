@@ -1685,15 +1685,15 @@ class PredictiveMaintenanceSystem {
     generateRecommendations() {
         const recommendations = [
             {
-                title: 'Профілактичне обслуговування',
-                description: 'Рекомендується провести профілактичний огляд гальмівної системи для ліфтів віком понад 10 років',
+                title: 'Manutenção preventiva',
+                description: 'Recomenda-se realizar inspeção preventiva do sistema de travagem em elevadores com mais de 10 anos',
                 priority: 'warning',
                 icon: 'fa-wrench',
                 confidence: 85
             },
             {
-                title: 'Планування інспекцій', 
-                description: 'Оптимальний час для наступного циклу інспекцій - через 2 тижні',
+                title: 'Planeamento de inspeções', 
+                description: 'O momento ideal para o próximo ciclo de inspeções é daqui a 2 semanas',
                 priority: 'info',
                 icon: 'fa-calendar-check',
                 confidence: 92
@@ -1713,8 +1713,8 @@ class PredictiveMaintenanceSystem {
 
             if (criticalCount > 0) {
                 recommendations.unshift({
-                    title: 'Критичне попередження',
-                    description: `Виявлено ${criticalCount} компонентів з критично низьким станом`,
+                    title: 'Aviso crítico',
+                    description: `Detetados ${criticalCount} componentes em estado criticamente baixo`,
                     priority: 'danger',
                     icon: 'fa-exclamation-triangle',
                     confidence: 95

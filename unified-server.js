@@ -2491,6 +2491,100 @@ app.put('/api/lifts/:id', authenticateToken, async (req, res) => {
             // Запит лише з location (без address) — наприклад, переміщення маркера з мапи
             console.log('✅ Оновлено координати маркера:', req.body.location.coordinates);
         }
+
+        // ─────────────────────────────────────────────────────
+        // 👤 AUTO-FIND/CREATE CLIENT USER при зміні clientEmail
+        // ─────────────────────────────────────────────────────
+        let newClientInfo = null;
+        const _putClientEmail = (req.body.clientEmail || '').trim().toLowerCase();
+        if (_putClientEmail) {
+            const existingClientUser = await db.collection('users').findOne({ email: _putClientEmail });
+            if (existingClientUser) {
+                // Знайдений існуючий акаунт — прив'язуємо ліфт до нього
+                updateData.client = existingClientUser._id;
+                console.log(`👤 Клієнт знайдений: ${_putClientEmail} (${existingClientUser._id})`);
+            } else {
+                // Новий email — створюємо акаунт клієнта автоматично
+                const rawPassword =
+                    Math.random().toString(36).slice(2, 6).toUpperCase() +
+                    Math.floor(1000 + Math.random() * 9000) +
+                    ['!', '@', '#', '$'][Math.floor(Math.random() * 4)];
+                const hashedPassword = await bcrypt.hash(rawPassword, 10);
+                const nameParts = (req.body.clientName || '').trim().split(/\s+/);
+                const baseUsername = _putClientEmail.split('@')[0].replace(/[^a-z0-9_.-]/gi, '_');
+                let candidateUsername = baseUsername;
+                let usernameAttempt = 1;
+                while (await db.collection('users').findOne({ username: candidateUsername })) {
+                    usernameAttempt++;
+                    candidateUsername = `${baseUsername}${usernameAttempt}`;
+                }
+                const newClientDoc = {
+                    email: _putClientEmail,
+                    username: candidateUsername,
+                    firstName: nameParts[0] || '',
+                    lastName: nameParts.slice(1).join(' ') || '',
+                    phone: req.body.clientPhone || '',
+                    password: hashedPassword,
+                    role: 'client',
+                    isActive: true,
+                    status: 'offline',
+                    createdAt: new Date().toISOString(),
+                    createdBy: req.user.username,
+                    invitedFromLift: liftId.toString()
+                };
+                const insertedClient = await db.collection('users').insertOne(newClientDoc);
+                updateData.client = insertedClient.insertedId;
+                newClientInfo = { email: _putClientEmail, password: rawPassword, created: true };
+                console.log(`👤 Novo клієнт criado automaticamente (PUT): ${_putClientEmail}`);
+
+                // 📧 Відправляємо запрошення, якщо адмін обрав opção
+                if (req.body.sendAccessEmail === true) {
+                    try {
+                        const siteBase = process.env.SITE_URL || `${req.protocol}://${req.headers.host}`;
+                        const liftAddr = req.body.address
+                            ? (typeof req.body.address === 'object'
+                                ? [req.body.address.street, req.body.address.zipCode, req.body.address.city].filter(Boolean).join(', ')
+                                : req.body.address)
+                            : '—';
+                        const inviteHtml = `<!DOCTYPE html><html lang="pt"><head><meta charset="UTF-8"><style>body{font-family:Arial,sans-serif;background:#f4f4f4}
+.wrap{max-width:600px;margin:30px auto;background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.12)}
+.header{background:linear-gradient(135deg,#1a237e,#1565c0);padding:32px 30px;text-align:center;color:#fff}
+.header h1{margin:0;font-size:26px}.body{padding:32px 30px}
+.creds{background:#e8f0fe;border-left:4px solid #1565c0;border-radius:6px;padding:18px 22px;margin:20px 0}
+.creds p{margin:6px 0;font-size:15px}.creds strong{color:#1a237e}
+.creds code{background:#fff;padding:3px 8px;border-radius:4px;font-size:15px;border:1px solid #c5cae9}
+.btn{display:inline-block;background:#1565c0;color:#fff!important;text-decoration:none;padding:13px 32px;border-radius:6px;font-size:15px;font-weight:bold;margin-top:20px}
+.footer{background:#f8f9fa;padding:18px 30px;text-align:center;font-size:12px;color:#888}
+.lift-box{background:#f0f4ff;border:1px solid #c5cae9;border-radius:6px;padding:14px 18px;margin:10px 0;font-size:14px}
+</style></head><body><div class="wrap">
+<div class="header"><h1>🏢 FestLift</h1><p>Plataforma de Gestão de Elevadores</p></div>
+<div class="body"><h2>Bem-vindo(a)${newClientDoc.firstName ? ', ' + newClientDoc.firstName : ''}!</h2>
+<p>A sua empresa foi registada na plataforma <strong>FestLift</strong> como cliente de manutenção de elevadores.</p>
+<div class="lift-box">🛗 <strong>Elevador:</strong> ${req.body.municipalNumber || '—'}<br>📍 <strong>Morada:</strong> ${liftAddr}</div>
+<div class="creds"><p>🔐 <strong>Os seus dados de acesso:</strong></p>
+<p><strong>Email:</strong> <code>${_putClientEmail}</code></p>
+<p><strong>Palavra-passe temporária:</strong> <code>${rawPassword}</code></p></div>
+<p style="font-size:13px;color:#e53935;font-weight:bold">⚠️ Por razões de segurança, altere a sua palavra-passe após o primeiro login.</p>
+<a href="${siteBase}/pages/auth/login.html" class="btn">Entrar na plataforma →</a>
+</div><div class="footer">FestLift Portugal &bull; Email gerado automaticamente.</div>
+</div></body></html>`;
+                        await emailService.sendEmail(
+                            _putClientEmail,
+                            'Bem-vindo(a) à FestLift — Os seus dados de acesso',
+                            inviteHtml
+                        );
+                        newClientInfo.emailSent = true;
+                        console.log(`📧 Email enviado para novo клієнта: ${_putClientEmail}`);
+                    } catch (emailErr) {
+                        console.warn(`⚠️ Erro ao enviar email para ${_putClientEmail}:`, emailErr.message);
+                        newClientInfo.emailSent = false;
+                        newClientInfo.emailError = emailErr.message;
+                    }
+                } else {
+                    newClientInfo.emailSkipped = true;
+                }
+            }
+        }
         
         const result = await db.collection('lifts').updateOne(
             { _id: liftId },
@@ -2510,7 +2604,8 @@ app.put('/api/lifts/:id', authenticateToken, async (req, res) => {
         res.json({
             success: true,
             message: 'Elevador atualizado com sucesso',
-            data: updatedLift
+            data: updatedLift,
+            newClient: newClientInfo
         });
     } catch (error) {
         console.error('❌ Erro ao atualizar elevador:', error);
@@ -4322,6 +4417,24 @@ app.get('/api/users', authenticateToken, async (req, res) => {
         const users = await db.collection('users').find(adminFilter, {
             projection: { password: 0, tempPasswordHint: 0 }
         }).toArray();
+
+        // Підрахунок ліфтів для клієнтів (тільки коли фільтр role=client)
+        if (req.query.role === 'client') {
+            const liftsCollection = db.collection('lifts');
+            for (let user of users) {
+                const userId = user._id.toString();
+                const orConditions = [
+                    { client: userId },
+                    { client: user._id },
+                    { 'client._id': userId },
+                    { 'client._id': user._id }
+                ];
+                if (user.email) orConditions.push({ clientEmail: user.email.toLowerCase() });
+                if (user.phone && user.phone.trim()) orConditions.push({ clientPhone: user.phone });
+                user.liftsCount = await liftsCollection.countDocuments({ $or: orConditions });
+                console.log(`📊 Admin query — клієнт ${user.email}: ${user.liftsCount} ліфтів`);
+            }
+        }
         
         // Повертаємо в форматі { success: true, data: [...] } для сумісності
         res.json({

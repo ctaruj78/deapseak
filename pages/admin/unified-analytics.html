@@ -1595,7 +1595,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     console.error('❌ Não foi possível encontrar elementos do separador AI');
                 }
             }
-        }, 2000); // Demaisна atraso para наaçõesності
+        }, 2000); // Atraso para carregamento das notificações
     } else {
         // Se não há hash, é análise normal
         updateParentMenu('analytics');
@@ -1702,7 +1702,7 @@ setTimeout(() => {
             createMunicipalitiesCharts();
             
         } catch (error) {
-            console.error('❌ Erro ao carregar análise municípioів:', error);
+            console.error('❌ Erro ao carregar análise de municípios:', error);
             showError('Erro carregamento dados');
         }
     }
@@ -1842,7 +1842,7 @@ setTimeout(() => {
         try {
             const token = localStorage.getItem('token');
             
-            // Obter todos os elevadores e municípioи
+            // Obter todos os elevadores e municípios
             const [liftsResponse, municipalitiesResponse] = await Promise.all([
                 fetch('/api/lifts', { headers: { 'Authorization': `Bearer ${token}` } }),
                 fetch('/api/municipalities', { headers: { 'Authorization': `Bearer ${token}` } })

@@ -81,15 +81,22 @@ const technicalTerms = [
     /não\s+está\s+conforme/i,
     /não\s+respeita/i,
     
-    // Проблеми стану
+    // Проблеми стану — основні
     /não\s+(?:é|está)/i,
     /deficient/i,
-    /inadequado/i,
-    /danificado/i,
+    /inadequad[oa]/i,
+    /danificad[oa]/i,
     /insuficient/i,
     /inapropriado/i,
     /incorreto/i,
     /não\s+(?:são|estão)/i,
+    
+    // Проблеми стану — розширені
+    /(?:mau\s+estado|deteriorad[oa]|desgastad[oa])/i,
+    /(?:oxidado|ferruge[mn]|corroíd[oa])/i,
+    /(?:part(?:ido|ida)|rach(?:ado|ada)|quebrad[oa])/i,
+    /(?:avari[ae]d[oa]|estragad[oa])/i,
+    /(?:obstruíd[oa]|bloquead[oa])/i,
     
     // Проблеми функціональності
     /não\s+funciona/i,
@@ -97,16 +104,59 @@ const technicalTerms = [
     /não\s+opera/i,
     /inoperante/i,
     /actua\s+com/i,  // "actua com o contrapeso assente" = проблема
+    /n[ãa]o\s+accion/i,
+    /inoperacion/i,
     
-    // Проблеми захисту
+    // Проблеми захисту та безпеça
     /não\s+(?:protegido|resguardado|seguro)/i,
-    /(?:desprotegido|não.*resguardadas)/i,
+    /(?:desprotegido|não.*resguardadas?)/i,
     /não\s+devidamente/i,
+    /sem\s+(?:proteção|protecção|resguardo|sinalização|dispositivo)/i,
+    /sem\s+(?:luz|iluminação|emergência)\b/i,
+
+    // Проблеми розмірів та габаритів
+    /(?:dimens[õo]es|largura|altura|dist[âa]ncia)\s+(?:insuficiente|inadequada)/i,
+    /(?:tem|possui)\s+\d+[,.]?\d*\s*(?:m|cm|mm)/i,
+    /(?:excede[m]?|superior\s+a)\s+\d/i,
+    /inferior\s+a\s+\d/i,
+    /folga\s+(?:excessive|excessiva|inadequada|superior)/i,
     
-    // Розміри та габарити
-    /(?:dimens[õo]es|largura|altura|distância)\s+(?:insuficiente|inadequada)/i,
-    /(?:tem|possui)\s+\d+[,.]?\d*\s*(?:m|cm|mm)/i
+    // Проблеми відповідності специфікаціям
+    /fora\s+das?\s+(?:especificações|normas|regulamento)/i,
+    /fora\s+d[oa]\s+(?:prazo|período|limite)/i,
+    /não\s+(?:laminad[oa]|temperad[oa]|homologad[oa]|certificad[oa])/i,
+    /não\s+conform(?:e|idade)/i,
+    /incumpre/i,
+    
+    // Проблеми позначення та сигналізації
+    /não\s+sinalizado/i,
+    /sinalética.*(?:deteriorad|desaparecid|ilegível|ausente)/i,
+    /sinalização\s+(?:inadequada|ausente|deficiente|ilegível)/i,
+    
+    // Проблеми доступу та ескейпу
+    /(?:saída\s+de\s+emergência|escotilha).*(?:não|sem|ausente|avari)/i,
+    /acesso\s+(?:impedido|obstruído|impossível)/i
 ];
+
+/**
+ * Артикули, порушення яких майже завжди технічно валідні.
+ * Для цих артикулів не вимагаємо точного match у technicalTerms,
+ * якщо violation має достатній опис і чіткий CX-тип.
+ */
+const articleWhitelist = new Set([
+    '7', '8', '9', '10', '11', '12', '13', '14', '15',  // Порти, кабіна, захист
+    '22', '23', '24', '25', '26',                          // Безпека
+    '30', '31', '32', '33', '34', '35',                    // Електричні
+    '45', '46', '47', '48', '49', '50',                    // Конструктив
+    '60', '61', '62', '63', '64', '65',                    // Додаткові
+    '74', '74.1', '74.2', '74.3',                          // Відповідність
+    '86', '87', '88'                                        // Перевірки
+]);
+
+/**
+ * Мінімальна довжина опису для whitelisted артикулів (менш строга)
+ */
+const WHITELIST_MIN_LENGTH = 15;
 
 /**
  * Перевіряє чи є текст валідним порушенням
@@ -114,9 +164,13 @@ const technicalTerms = [
  * @param {string} classification - C1, C2 або C3
  * @param {string} articleNum - Номер статті (наприклад, "22", "74.2")
  * @param {string} description - Опис порушення
+ * @param {Object} [options] - Опціональні параметри
+ * @param {number} [options.confidence] - Довіра джерела (0-1). При >= 0.85 пом'якшуємо валідацію.
  * @returns {Object} { valid: boolean, reason: string }
  */
-function isValidViolation(classification, articleNum, description) {
+function isValidViolation(classification, articleNum, description, options = {}) {
+    const confidence = options.confidence || 0.7;
+
     // 1. Перевірка класифікації
     if (!classification || !/^C[123]$/i.test(classification.trim())) {
         return { 
@@ -145,7 +199,6 @@ function isValidViolation(classification, articleNum, description) {
     let cleanDesc = description.replace(/\s+/g, ' ').trim();
     
     // ⭐ КРИТИЧНО: Видаляємо постфікси службових текстів В КІНЦІ
-    // Деякі реальні порушення мають службовий текст ПІСЛЯ технічного опису
     const serviceTextSuffixes = [
         /RESULTADO\s+DA\s+INSPE[ÇC][ÃA]O.*$/i,
         /Este\s+Relat[óo]rio.*$/i,
@@ -158,43 +211,56 @@ function isValidViolation(classification, articleNum, description) {
         cleanDesc = cleanDesc.replace(suffix, '').trim();
     }
     
-    if (cleanDesc.length < 20) {
+    const minLength = articleWhitelist.has(articleNum) ? WHITELIST_MIN_LENGTH : 20;
+    if (cleanDesc.length < minLength) {
         return { 
             valid: false, 
-            reason: `Опис занадто короткий (${cleanDesc.length} символів, мінімум 20)` 
+            reason: `Opção muito curta (${cleanDesc.length} chars, mínimo ${minLength})` 
         };
     }
     
     // 5. Перевірка на службові фрази (ПЕРШОЧЕРГОВО!)
-    // ВАЖЛИВО: Перевіряємо тільки ПОЧАТОК і СЕРЕДИНУ тексту, не кінець!
-    // Деякі реальні порушення містять службовий текст В КІНЦІ
-    const firstPart = cleanDesc.substring(0, Math.min(cleanDesc.length, 200)); // Перші 200 символів
+    const firstPart = cleanDesc.substring(0, Math.min(cleanDesc.length, 200));
     
     for (const pattern of serviceTextPatterns) {
         if (pattern.test(firstPart)) {
             return { 
                 valid: false, 
-                reason: `Службовий текст (містить: ${pattern.source.substring(0, 40)}...)` 
+                reason: `Texto de serviço (contém: ${pattern.source.substring(0, 40)}...)` 
             };
         }
     }
     
     // 6. Перевірка на технічний зміст
+    // ⭐ ПОСЛАБЛЕННЯ: для whitelisted артикулів або high-confidence джерел
+    //    достатньо щоб опис не був службовим текстом
+    const isWhitelisted = articleWhitelist.has(articleNum) || 
+                          articleWhitelist.has(articleNum.split('.')[0]);
+    const isHighConfidence = confidence >= 0.85;
+
     const hasTechnicalContent = technicalTerms.some(pattern => pattern.test(cleanDesc));
     
-    if (!hasTechnicalContent) {
-        return { 
-            valid: false, 
-            reason: 'Відсутній технічний зміст (немає опису конкретної проблеми)' 
-        };
+    if (!hasTechnicalContent && !isWhitelisted && !isHighConfidence) {
+        // Останній шанс: перевіряємо чи є хоча б один технічний термін
+        // в більш широкому розумінні (будь-яке заперечення + іменник)
+        const hasNegation = /\bnão\b|\bnem\b|\bsem\b|\bjamais\b/i.test(cleanDesc);
+        const hasNoun = /\b(?:porta|cabo|freio|motor|botão|painel|luz|iluminação|sensor|contato|proteção|sinalização|escotilha|balaustrada|ventilação|macacos?|amortecedor|limitador|parachoque|guia|car[ro]?ilho|cabina|caixa|sala|cubo|poço|pavimento|piso)\b/i.test(cleanDesc);
+        
+        if (!(hasNegation && hasNoun)) {
+            return { 
+                valid: false, 
+                reason: 'Sem conteúdo técnico (sem descrição de problema específico)' 
+            };
+        }
     }
     
     // 7. Перевірка на мінімальну кількість слів
     const words = cleanDesc.split(/\s+/).filter(w => w.length > 2);
-    if (words.length < 5) {
+    const minWords = isWhitelisted ? 4 : 5;
+    if (words.length < minWords) {
         return {
             valid: false,
-            reason: `Занадто мало слів (${words.length}, мінімум 5)`
+            reason: `Palavras a menos (${words.length}, mínimo ${minWords})`
         };
     }
     
@@ -243,5 +309,6 @@ module.exports = {
     isValidViolation,
     serviceTextPatterns,
     technicalTerms,
+    articleWhitelist,
     ValidationStats
 };

@@ -4286,7 +4286,7 @@ Email de contacto: info@festlift.pt`;
 
         const _urlParams = new URLSearchParams(window.location.search);
         const _clientId = _urlParams.get('clientId');
-        const _endpoint = _clientId ? `/api/lifts?client=${encodeURIComponent(_clientId)}` : '/api/lifts';
+        const _endpoint = _clientId ? `/api/lifts?clientId=${encodeURIComponent(_clientId)}` : '/api/lifts';
         if (_clientId) showClientFilterBanner(_clientId);
 
         try {
@@ -4686,10 +4686,14 @@ Email de contacto: info@festlift.pt`;
             // Prioridade: явно збережений clientName на elevadorі → nome облікового registo
             const client = lift.client || {};
             const hasLinkedAccount = !!(client._id || client.email);
-            const _savedName = lift.clientName && lift.clientName !== 'Não especificado' ? lift.clientName : '';
-            const _accountName = client.firstName && client.lastName ? `${client.firstName} ${client.lastName}` : '';
-            const clientName = _savedName || _accountName || 'Não especificado';
-            const clientEmail = client.email || lift.clientEmail || lift.email || 'Não especificado';
+            // clientName: якщо явно збережений (не порожній) — пріоритет; інакше ім'я акаунту; якщо нічого — 'Não especificado'
+            const _savedName = (lift.clientName && lift.clientName !== 'Não especificado') ? lift.clientName : null;
+            const _accountName = (client.firstName && client.lastName) ? `${client.firstName} ${client.lastName}` : null;
+            // null = не встановлено (використати fallback); '' = навмисно очищено (показати як відсутнє)
+            const clientName = (_savedName !== null ? _savedName : (_accountName || 'Não especificado'));
+            // Пріоритет: явно збережений clientEmail у ліфті (може відрізнятися від client.email)
+            // client.email є email облікового запису, clientEmail — фактичний email власника
+            const clientEmail = lift.clientEmail || client.email || lift.email || 'Não especificado';
             // Іконка-індикатор: se cliente беdesde акаунту — показуexisteмо aviso
             const clientBadge = hasLinkedAccount
                 ? `<i class="fas fa-user-check text-success ml-1" title="Cliente registado"></i>`
@@ -4976,10 +4980,20 @@ Email de contacto: info@festlift.pt`;
             const result = await apiCall(`/api/lifts/${liftId}`, 'GET');
             
             let lift;
-            if (result && result.success && result.data && result.data.data) {
-                // apiCall обгорeexiste: {success, data: {server response}}
-                // Server response: {success, data: {...lift...}}
-                lift = result.data.data;
+            if (result && result.success && result.data) {
+                // apiCall обгортає: {success, data: <server response>}
+                // Server response: {success: true, data: { lift: {...} }}
+                const _rd = result.data;
+                const _rdd = _rd && _rd.data;
+                if (_rdd && _rdd.lift && _rdd.lift._id) {
+                    lift = _rdd.lift;           // ✅ Стандартний формат: data.data.lift
+                } else if (_rdd && _rdd._id) {
+                    lift = _rdd;               // data.data — сам об'єкт ліфта
+                } else if (_rd.lift && _rd.lift._id) {
+                    lift = _rd.lift;           // data.lift
+                } else if (_rd._id) {
+                    lift = _rd;               // data — сам об'єкт ліфта
+                }
                 console.log('✅ Elevador carregado da API:', lift);
             } else if (result && !result.success) {
                 console.log('⚠️ Erro da API:', result.message);
@@ -5071,23 +5085,23 @@ Email de contacto: info@festlift.pt`;
                 $('#detail-address').text(addressStr);
                 $('#detail-postcode').text(postalCode);
                 
-                // Coordenadas desde location.coordinates
+                // Coordenadas desde location.coordinates — sem Lisboa como fallback falso
                 const coords = lift.location?.coordinates || [];
-                const latitude = coords[1] || lift.latitude || 38.7223; // Lisboa por defeito
-                const longitude = coords[0] || lift.longitude || -9.1393; // Lisboa por defeito
+                const _clat = (coords.length === 2 && !isNaN(coords[1]) && coords[1] !== 0) ? coords[1] : null;
+                const _clng = (coords.length === 2 && !isNaN(coords[0]) && coords[0] !== 0) ? coords[0] : null;
+                const latitude  = _clat ?? (lift.latitude  && lift.latitude  !== 0 ? lift.latitude  : null);
+                const longitude = _clng ?? (lift.longitude && lift.longitude !== 0 ? lift.longitude : null);
                 
                 console.log('📍 Coordenadas do elevador:', { 
                     coords, 
                     latitude, 
                     longitude, 
                     hasLocation: !!lift.location,
-                    locationData: lift.location,
-                    fullLiftObject: lift
+                    locationData: lift.location
                 });
                 
-                // Verificação чи coordenadas валіdias (не NaN і не 0,0)
-                const hasValidCoords = latitude && longitude && 
-                                      latitude !== 0 && longitude !== 0 &&
+                // Coordenadas válidas apenas se existem realmente na BD (não Lisboa como fallback)
+                const hasValidCoords = latitude !== null && longitude !== null &&
                                       !isNaN(latitude) && !isNaN(longitude);
                 
                 $('#detail-coordinates').text(
@@ -5100,7 +5114,9 @@ Email de contacto: info@festlift.pt`;
                 const _detailSavedName = lift.clientName && lift.clientName !== 'Não especificado' ? lift.clientName : '';
                 const _detailAccountName = client.firstName && client.lastName ? `${client.firstName} ${client.lastName}` : '';
                 const clientName = _detailSavedName || _detailAccountName || 'Não especificado';
-                const clientEmail = client.email || lift.clientEmail || lift.email || 'Não especificado';
+                // Пріоритет: lift.clientEmail (поле самого ліфту) → client.email (акаунт)
+                // Це відповідає логіці сітки ліфтів і дозволяє коректно відображати новий email після зміни клієнта
+                const clientEmail = lift.clientEmail || client.email || lift.email || 'Não especificado';
                 
                 $('#detail-client').text(clientName);
                 $('#detail-email').text(clientEmail);
@@ -5234,22 +5250,48 @@ Email de contacto: info@festlift.pt`;
                 // Mostrar janela modal
                 $('#liftDetailsModal').modal('show');
                 
-                // Coordenadas já отримані виainda (coords, latitude, longitude)
-                // Ініціалізуexisteмо mapa ПІСЛЯ того як модальне вікно повністю відкрите
-                // Перевіряexisteмо чи coordenadas валіdias
-                const canShowMap = hasValidCoords;
-                
+                // ── Mapa de detalhes ─────────────────────────────────────
+                // Se não há coordenadas na BD, tentar geocodificar o endereço em tempo real
+                let _mapLat = latitude;
+                let _mapLng = longitude;
+
+                if (!hasValidCoords) {
+                    const _mapCity4geo = lift.address?.city !== lift.address?.street ? lift.address?.city : '';
+                    const _geoQuery = [
+                        lift.address?.street,
+                        lift.address?.zipCode,
+                        _mapCity4geo,
+                        'Portugal'
+                    ].filter(Boolean).join(', ');
+                    if (_geoQuery.trim()) {
+                        try {
+                            const _geoR = await apiCall(`/api/geocode?q=${encodeURIComponent(_geoQuery)}`);
+                            const _gd = _geoR.success && _geoR.data;
+                            if (_gd && _gd.lat && _gd.lng) {
+                                _mapLat = _gd.lat;
+                                _mapLng = _gd.lng;
+                                console.log(`✅ Geocodificado para mapa de detalhes: ${_geoQuery} → [${_mapLng}, ${_mapLat}]`);
+                            }
+                        } catch (_ge) {
+                            console.warn('⚠️ Geocodificação para mapa de detalhes falhou:', _ge.message);
+                        }
+                    }
+                }
+
+                const canShowMap = _mapLat !== null && _mapLng !== null &&
+                                   !isNaN(_mapLat) && !isNaN(_mapLng);
+
                 if (canShowMap) {
                     console.log('🗺️ A preparar inicialização do mapa de detalhes:', { 
-                        lat: latitude, 
-                        lng: longitude,
-                        hasValidCoords 
+                        lat: _mapLat, 
+                        lng: _mapLng,
+                        fromDB: hasValidCoords
                     });
                     
-                    // Видаляexisteмо попереdias обробники
+                    // Видаляємо попередні обробники
                     $('#liftDetailsModal').off('shown.bs.modal');
                     
-                    // Додаexisteмо novo обробник
+                    // Додаємо новий обробник після відкриття модалу
                     $('#liftDetailsModal').one('shown.bs.modal', function() {
                         console.log('🗺️ Janela modal aberta, a inicializar mapa...');
                         
@@ -5260,20 +5302,14 @@ Email de contacto: info@festlift.pt`;
                         
                         setTimeout(() => {
                             const _mapCity = lift.address?.city !== lift.address?.street ? lift.address?.city : '';
-                            const addressStr = lift.address?.street 
+                            const _mapAddrStr = lift.address?.street 
                                 ? (_mapCity ? `${lift.address.street}, ${_mapCity}` : lift.address.street)
                                 : (typeof lift.address === 'string' ? lift.address : '');
-                            initDetailsMap(latitude, longitude, addressStr);
+                            initDetailsMap(_mapLat, _mapLng, _mapAddrStr + (!hasValidCoords ? ' (geocodificado)' : ''));
                         }, 200);
                     });
                 } else {
-                    console.warn('⚠️ Sem coordenadas para mostrar o mapa:', { 
-                        latitude, 
-                        longitude,
-                        coords,
-                        locationData: lift.location,
-                        fullLift: lift 
-                    });
+                    console.warn('⚠️ Sem coordenadas para mostrar o mapa — endereço também não geocodificável');
                 }
             }
         } catch (error) {
@@ -5435,21 +5471,26 @@ Email de contacto: info@festlift.pt`;
             $('#enhancedLiftAddress').val(address.street || lift.address || '');
             $('#enhancedLiftPostcode').val(address.zipCode || lift.postalCode || '');
             
-            // Coordenadas desde location.coordinates ou сeрого formatoу
+            // Coordenadas desde location.coordinates — sem Lisboa como fallback falso
             const coords = lift.location?.coordinates || [];
-            const lat = coords[1] || lift.latitude || 38.7223; // Lisboa por defeito
-            const lng = coords[0] || lift.longitude || -9.1393; // Lisboa por defeito
+            const _hasStoredCoords = coords.length === 2 &&
+                                     !isNaN(coords[0]) && !isNaN(coords[1]) &&
+                                     !(coords[0] === 0 && coords[1] === 0);
+            const lat = _hasStoredCoords ? coords[1] : (lift.latitude && lift.latitude !== 0 ? lift.latitude : '');
+            const lng = _hasStoredCoords ? coords[0] : (lift.longitude && lift.longitude !== 0 ? lift.longitude : '');
             $('#enhancedLiftLat').val(lat);
             $('#enhancedLiftLng').val(lng);
             
             // Cliente
-            // Prioridade: явно збережене clientName → nome desde облікового registo → порожньо
             const client = lift.client || {};
-            const savedClientName = lift.clientName && lift.clientName !== 'Não especificado' ? lift.clientName : '';
-            const accountName = client.firstName && client.lastName ? `${client.firstName} ${client.lastName}` : '';
-            $('#enhancedClientName').val(savedClientName || accountName);
-            $('#enhancedClientEmail').val(client.email || lift.clientEmail || lift.email || '');
-            $('#enhancedClientPhone').val(client.phone || lift.clientPhone || lift.phone || '');
+            // Якщо clientName явно збережений (не 'Não especificado') — показуємо його; інакше ім'я акаунту; якщо нічого — порожньо
+            const savedClientName = (lift.clientName && lift.clientName !== 'Não especificado') ? lift.clientName : null;
+            const accountName = (client.firstName && client.lastName) ? `${client.firstName} ${client.lastName}` : '';
+            $('#enhancedClientName').val(savedClientName !== null ? savedClientName : accountName);
+            // Пріоритет clientEmail (явно збережений) над client.email (з облікового запису)
+            // Це гарантує що при зміні email відображається саме нове значення, а не старий обліковий запис
+            $('#enhancedClientEmail').val(lift.clientEmail || client.email || lift.email || '');
+            $('#enhancedClientPhone').val(lift.clientPhone || client.phone || lift.phone || '');
             $('#enhancedContactPerson').val(lift.contactPerson || '');
             $('#enhancedAccessCode').val(lift.intercomCode || lift.accessCode || '');
 
@@ -5530,15 +5571,22 @@ Email de contacto: info@festlift.pt`;
             // Abrir janela modal
             $('#enhancedLiftModal').modal('show');
             
-            // Оновлюexisteмо mapa ПІСЛЯ відкриття модального вікна
-            if (lift.latitude && lift.longitude && typeof L !== 'undefined') {
+            // Оновлюємо mapa ПІСЛЯ відкриття модального вікна
+            // Визначаємо координати з location.coordinates (GeoJSON), а не з lift.latitude/longitude
+            const _editCoords = lift.location?.coordinates || [];
+            const _editHasCoords = _editCoords.length === 2 &&
+                                   !isNaN(_editCoords[0]) && !isNaN(_editCoords[1]) &&
+                                   !(_editCoords[0] === 0 && _editCoords[1] === 0);
+            const _editLat = _editHasCoords ? _editCoords[1] : (lift.latitude && lift.latitude !== 0 ? lift.latitude : null);
+            const _editLng = _editHasCoords ? _editCoords[0] : (lift.longitude && lift.longitude !== 0 ? lift.longitude : null);
+
+            if (_editLat && _editLng && typeof L !== 'undefined') {
                 $('#enhancedLiftModal').on('shown.bs.modal', function() {
-                    // Відchaveаexisteмо обробник após execução
                     $('#enhancedLiftModal').off('shown.bs.modal');
-                    
                     console.log('🗺️ A inicializar mapa de edição...');
                     setTimeout(() => {
-                        initEditMap(lift.latitude, lift.longitude, lift.address);
+                        const _editAddrStr = typeof lift.address === 'object' ? (lift.address?.street || '') : (lift.address || '');
+                        initEditMap(_editLat, _editLng, _editAddrStr);
                     }, 100);
                 });
             }

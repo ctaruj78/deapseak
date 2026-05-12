@@ -101,6 +101,7 @@
         function renderLiftInfo(lift) {
             const fullAddress = [
                 lift.address?.street,
+                lift.address?.zipCode,
                 lift.address?.city,
                 lift.address?.country
             ].filter(Boolean).join(', ');
@@ -141,9 +142,42 @@
                     maxZoom: 19
                 }).addTo(map);
 
-                // Coordenadas do elevador
-                const liftLat = lift.location?.coordinates?.[1] || 50.4501;
-                const liftLng = lift.location?.coordinates?.[0] || 30.5234;
+                // Coordenadas do elevador — sem fallback para coordenadas falsas
+                const _liftCoords = lift.location?.coordinates || [];
+                const _liftHasCoords = _liftCoords.length === 2 &&
+                                       !isNaN(_liftCoords[0]) && !isNaN(_liftCoords[1]) &&
+                                       !(_liftCoords[0] === 0 && _liftCoords[1] === 0);
+                let liftLat = _liftHasCoords ? _liftCoords[1] : null;
+                let liftLng = _liftHasCoords ? _liftCoords[0] : null;
+
+                // Se não há coordenadas na BD, geocodificar pelo endereço
+                if (!_liftHasCoords) {
+                    const _geoAddr = [
+                        lift.address?.street,
+                        lift.address?.zipCode,
+                        lift.address?.city,
+                        'Portugal'
+                    ].filter(Boolean).join(', ');
+                    if (_geoAddr.trim()) {
+                        try {
+                            const _geoR = await AuthManager.fetchWithAuth(`/api/geocode?q=${encodeURIComponent(_geoAddr)}`);
+                            if (_geoR.ok) {
+                                const _gd = await _geoR.json();
+                                if (_gd.success && _gd.lat && _gd.lng) {
+                                    liftLat = _gd.lat;
+                                    liftLng = _gd.lng;
+                                    console.log(`✅ Geocodificado: ${_geoAddr} → [${liftLng}, ${liftLat}]`);
+                                }
+                            }
+                        } catch (_ge) {
+                            console.warn('⚠️ Geocodificação do elevador falhou:', _ge.message);
+                        }
+                    }
+                }
+
+                if (!liftLat || !liftLng) {
+                    throw new Error('Sem coordenadas para o elevador — verifique o endereço registado');
+                }
 
                 // Маркер do utilizador
                 L.marker([userLocation.lat, userLocation.lng], {
@@ -211,9 +245,17 @@
             } catch (error) {
                 console.error('❌ Erro ініціалізації:', error);
                 
-                // Fallback: mostrar apenas elevador
-                const liftLat = lift.location?.coordinates?.[1] || 50.4501;
-                const liftLng = lift.location?.coordinates?.[0] || 30.5234;
+                // Fallback: mostrar apenas elevador se geolocalização falhou
+                const _fbCoords = lift.location?.coordinates || [];
+                const _fbHas = _fbCoords.length === 2 && !isNaN(_fbCoords[1]) && _fbCoords[1] !== 0;
+                const liftLatFb = _fbHas ? _fbCoords[1] : null;
+                const liftLngFb = _fbHas ? _fbCoords[0] : null;
+                if (!liftLatFb || !liftLngFb) {
+                    alert('Não foi possível determinar a sua posição nem as coordenadas do elevador.');
+                    return;
+                }
+                const liftLat = liftLatFb;
+                const liftLng = liftLngFb;
                 
                 map = L.map('map').setView([liftLat, liftLng], 15);
                 L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
@@ -242,7 +284,7 @@
                 const response = await AuthManager.fetchWithAuth('/api/lifts?limit=200');
                 if (response.ok) {
                     const data = await response.json();
-                    lifts = data.data || data.lifts || data || [];
+                    lifts = data.data?.lifts || (Array.isArray(data.data) ? data.data : []);
                     if (!Array.isArray(lifts)) lifts = [];
                 }
             } catch (e) {

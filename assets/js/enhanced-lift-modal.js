@@ -75,11 +75,9 @@ class EnhancedLiftModal {
             this.handleLiftsCountChange();
         });
 
-        // Автозаповнення клієнта по email (тільки для нового ліфта)
+        // Автозаповнення клієнта по email (для нових та при редагуванні)
         $(document).off('blur', '#enhancedClientEmail').on('blur', '#enhancedClientEmail', () => {
-            if (!this.currentLiftId) {
-                this.lookupClientByEmail();
-            }
+            this.lookupClientByEmail();
         });
         
         console.log('✅ Enhanced event listeners set up');
@@ -89,25 +87,46 @@ class EnhancedLiftModal {
         const email = $('#enhancedClientEmail').val().trim();
         if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return;
 
-        // Якщо ім'я вже заповнено — не перезаписувати
-        if ($('#enhancedClientName').val().trim()) return;
+        // При редагуванні — перезаписуємо дані клієнта, бо email змінився
+        // При створенні — не перезаписуємо якщо ім'я вже заповнено
+        const isEdit = !!this.currentLiftId;
+        if (!isEdit && $('#enhancedClientName').val().trim()) return;
 
         try {
             const token = localStorage.getItem('liftmanager_jwt') || localStorage.getItem('authToken') || localStorage.getItem('token');
             const resp = await fetch(`/api/users/by-email?email=${encodeURIComponent(email)}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
-            if (!resp.ok) return;
+            if (!resp.ok) {
+                // Клієнта не знайдено — в режимі редагування очищаємо старе ім'я клієнта,
+                // щоб адмін ввів нове і grelha не показувала ім'я попереднього клієнта
+                $('#enhancedClientEmail').closest('.form-group').find('.client-lookup-hint').remove();
+                if (isEdit) {
+                    $('#enhancedClientName').val('');
+                    const hint = $('<small class="text-warning client-lookup-hint"><i class="fas fa-user-plus mr-1"></i>Novo cliente — preencha o nome em baixo</small>');
+                    $('#enhancedClientEmail').closest('.form-group').append(hint);
+                    setTimeout(() => hint.fadeOut(() => hint.remove()), 5000);
+                } else {
+                    const hint = $('<small class="text-muted client-lookup-hint"><i class="fas fa-info-circle mr-1"></i>Akonto com este email não encontrado. Será criado automaticamente.</small>');
+                    $('#enhancedClientEmail').closest('.form-group').append(hint);
+                    setTimeout(() => hint.fadeOut(() => hint.remove()), 4000);
+                }
+                return;
+            }
             const result = await resp.json();
             const user = result.data || result.user || result;
-            if (!user || !user.email) return;
+            if (!user || !user.email) {
+                // API повернула ok, але дані порожні — email збережеться без прив'язки до акаунту
+                $('#enhancedClientEmail').closest('.form-group').find('.client-lookup-hint').remove();
+                return;
+            }
 
             const fullName = [user.firstName, user.lastName].filter(Boolean).join(' ');
             if (fullName) $('#enhancedClientName').val(fullName);
             if (user.phone) $('#enhancedClientPhone').val(user.phone);
 
-            // Маленька підказка
-            const hint = $('<small class="text-success client-lookup-hint"><i class="fas fa-check-circle mr-1"></i>Clienteа знайдено: ' + (fullName || email) + '</small>');
+            // Позитивна підказка — знайдено акаунт
+            const hint = $('<small class="text-success client-lookup-hint"><i class="fas fa-check-circle mr-1"></i>Акаунт знайдено: ' + (fullName || email) + '</small>');
             $('#enhancedClientEmail').closest('.form-group').find('.client-lookup-hint').remove();
             $('#enhancedClientEmail').closest('.form-group').append(hint);
             setTimeout(() => hint.fadeOut(() => hint.remove()), 3000);
@@ -410,7 +429,7 @@ class EnhancedLiftModal {
             lng: $('#enhancedLiftLng').val() ? parseFloat($('#enhancedLiftLng').val()) : null,
             // Збираємо додаткові муніципальні номери якщо є
             additionalMunicipalNumbers: this.collectAdditionalMunicipalNumbers(),
-            clientName: $('#enhancedClientName').val() || 'Não especificado',
+            clientName: $('#enhancedClientName').val().trim(),
             clientEmail: $('#enhancedClientEmail').val() || '',
             clientPhone: $('#enhancedClientPhone').val() || '',
             sendAccessEmail: $('#enhancedSendAccessEmail').is(':checked'),
@@ -726,6 +745,7 @@ class EnhancedLiftModal {
             }
             
             console.log('📤 Sending to API:', apiData);
+            console.log('📧 clientEmail to save:', apiData.clientEmail, '| liftId:', liftId);
             
             // Вибираємо метод та URL залежно від режиму
             let result;
@@ -753,7 +773,9 @@ class EnhancedLiftModal {
 
                 const responseData = await response.json();
                 result = { success: true, data: responseData };
-                liftObject = responseData.data || responseData.lift || responseData;
+                liftObject = responseData.data?.lift || responseData.data || responseData.lift || responseData;
+                // 👤 Зберігаємо newClient з відповіді (якщо було створено нового клієнта)
+                window.__lastNewClient = responseData.newClient || null;
             } else {
                 // Створення нового ліфта
                 if (typeof window.saveLiftToAPI === 'function') {
@@ -920,8 +942,16 @@ class EnhancedLiftModal {
         // Встановлюємо currentLiftId перед заповненням форми
         this.currentLiftId = liftData.id || liftData._id;
         this.editMunicipalNumber = liftData.municipalNumber || '';
+        // Встановлюємо editAddress з даних ліфта (city/country потрібні при збереженні)
+        const _addrObj = liftData.address || {};
+        this.editAddress = {
+            city:    typeof _addrObj === 'object' ? (_addrObj.city    || '') : '',
+            country: typeof _addrObj === 'object' ? (_addrObj.country || 'Portugal') : 'Portugal',
+            zipCode: typeof _addrObj === 'object' ? (_addrObj.zipCode || '') : ''
+        };
         console.log('🔧 Set currentLiftId:', this.currentLiftId);
         console.log('🔧 Set editMunicipalNumber:', this.editMunicipalNumber);
+        console.log('🔧 Set editAddress:', this.editAddress);
         
         // Переконуємось що eLiftRowsContainer заповнений (створює #enhancedMunicipalNumber в DOM)
         if (typeof eLiftUpdateRows === 'function') eLiftUpdateRows(1);
@@ -973,7 +1003,10 @@ class EnhancedLiftModal {
         // якщо адреса зміниться, backend перегеокодує автоматично
         this.coordsManuallyEdited = false;
         $('#enhancedClientName').val(liftData.clientName || '');
-        $('#enhancedClientEmail').val(liftData.clientEmail || '');
+        // Пріоритет: clientEmail (явно збережений email) > client.email (з облікового запису)
+        const _clientObj = liftData.client || {};
+        const _displayEmail = liftData.clientEmail || _clientObj.email || '';
+        $('#enhancedClientEmail').val(_displayEmail);
         $('#enhancedClientPhone').val(liftData.clientPhone || '');
         $('#enhancedContactPerson').val(liftData.contactPerson || '');
         $('#enhancedAccessCode').val(liftData.accessCode || '');

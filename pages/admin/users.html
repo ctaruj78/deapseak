@@ -556,6 +556,7 @@
                                                     <th>Email</th>
                                                     <th>Papel</th>
                                                     <th>Estado</th>
+                                                    <th>Elevadores</th>
                                                     <th>Data de registo</th>
                                                     <th>Ações</th>
                                                 </tr>
@@ -871,6 +872,24 @@
                         user._originalIndex = index + 1; // USER-001, USER-002, ...
                     });
                     
+                    // Carregar contagem de elevadores por cliente
+                    try {
+                        const resClients = await AuthManager.fetchWithAuth('/api/users?role=client');
+                        const dataClients = resClients ? await resClients.json() : null;
+                        const clientsList = dataClients ? (Array.isArray(dataClients) ? dataClients : (dataClients.data || dataClients.users || [])) : [];
+                        const _liftsMap = {};
+                        clientsList.forEach(c => {
+                            const cid = (c._id && c._id.toString) ? c._id.toString() : String(c._id || '');
+                            if (cid) _liftsMap[cid] = c.liftsCount || 0;
+                        });
+                        this.allUsers.forEach(u => {
+                            const uid = (u._id && u._id.toString) ? u._id.toString() : String(u._id || '');
+                            if (u.role === 'client' && uid && _liftsMap[uid] !== undefined) {
+                                u.liftsCount = _liftsMap[uid];
+                            }
+                        });
+                    } catch (e) { /* ignorar erro de liftsCount */ }
+                    
                     console.log('✅ Utilizadores carregados:', this.allUsers.length, this.allUsers);
                     
                 } catch (error) {
@@ -940,7 +959,7 @@
                 if (paginatedUsers.length === 0) {
                     tbody.html(`
                         <tr>
-                            <td colspan="7" class="text-center py-4">
+                            <td colspan="8" class="text-center py-4">
                                 <i class="fas fa-users fa-3x text-muted mb-3"></i>
                                 <h5>Utilizadores não encontrados</h5>
                                 <p class="text-muted">Tente alterar os filtros ou adicionar um novo utilizador</p>
@@ -970,6 +989,10 @@
                         ? `${user.firstName} ${user.lastName}` 
                         : user.email.split('@')[0];
                     
+                    const _liftsCountCell = user.role === 'client'
+                        ? `<a href="/pages/admin/lifts.html?clientId=${userId}" title="Ver elevadores deste cliente"><span class="badge badge-${(user.liftsCount || 0) > 0 ? 'success' : 'secondary'}">${user.liftsCount || 0}</span></a>`
+                        : '<span class="text-muted">—</span>';
+
                     const row = `
                         <tr>
                             <td>${displayId}</td>
@@ -977,6 +1000,7 @@
                             <td>${user.email}</td>
                             <td><span class="role-badge role-${user.role}">${this.getRoleLabel(user.role)}</span></td>
                             <td><span class="status-badge status-${user.status || 'active'}">${this.getStatusLabel(user.status || 'active')}</span></td>
+                            <td class="text-center">${_liftsCountCell}</td>
                             <td>${this.formatDate(user.createdAt)}</td>
                             <td class="action-buttons">
                                 <button class="btn btn-sm btn-primary" data-toggle="modal" data-target="#userModal" data-user-id="${userId}">

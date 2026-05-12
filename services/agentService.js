@@ -351,6 +351,12 @@ class AgentService {
             return await this._listRequests(role, clientEmail);
         }
 
+        // ── Inspection violations / clauses ──────────────────────────────────
+        if (/(clausula|clausulas|violacao|violacoes|deficiencia|deficiencias|nao conformidade|nao conformidades|c1|c2|c3|artigo|nao conformidade)/.test(m) &&
+            /(lista|listar|ver|mostra|quais|existem|encontrou|detectou|relatorio|inspecao|inspecoes)/.test(m)) {
+            return await this._listInspectionViolations(role, clientEmail, m);
+        }
+
         return null; // not handled locally → use Gemini
     }
 
@@ -404,6 +410,42 @@ class AgentService {
         }).join('\n');
 
         return `🔍 **Inspeções recentes** (${list.length}):\n\n${rows}`;
+    }
+
+    async _listInspectionViolations(role, clientEmail, msg = '') {
+        const query = { 'violations.0': { $exists: true } };
+        if (role === 'client' && clientEmail) query.clientEmail = clientEmail;
+
+        // Filter by classification if mentioned
+        let filterClass = null;
+        if (/\bc1\b/.test(msg)) filterClass = 'C1';
+        else if (/\bc2\b/.test(msg)) filterClass = 'C2';
+        else if (/\bc3\b/.test(msg)) filterClass = 'C3';
+
+        const list = await this.db.collection('inspections')
+            .find(query).sort({ createdAt: -1 }).limit(10).toArray();
+
+        if (list.length === 0) return '🔍 Nenhuma inspeção com cláusulas encontrada.';
+
+        const lines = list.map(i => {
+            const data = i.createdAt ? new Date(i.createdAt).toLocaleDateString('pt-PT') : '?';
+            const viols = (i.violations || []).filter(v => !filterClass || v.classification === filterClass);
+            if (viols.length === 0) return null;
+            const c1 = viols.filter(v => v.classification === 'C1').length;
+            const c2 = viols.filter(v => v.classification === 'C2').length;
+            const c3 = viols.filter(v => v.classification === 'C3').length;
+            const header = `📋 **${i.liftLocation || i.clientEmail || 'Elevador'}** (${data}) — C1:${c1} C2:${c2} C3:${c3}`;
+            const detail = viols.slice(0, 5).map(v =>
+                `  ${v.classification === 'C1' ? '🔴' : v.classification === 'C2' ? '🟡' : '🟢'} **${v.classification}** Art.${v.article || '?'}: ${(v.description || '').substring(0, 120)}`
+            ).join('\n');
+            const more = viols.length > 5 ? `\n  _(+${viols.length - 5} mais)_` : '';
+            return `${header}\n${detail}${more}`;
+        }).filter(Boolean).join('\n\n');
+
+        const title = filterClass
+            ? `📌 **Cláusulas ${filterClass}** nas inspeções recentes`
+            : `📌 **Cláusulas detectadas** nas inspeções recentes`;
+        return `${title}:\n\n${lines || 'Nenhuma cláusula encontrada com esse filtro.'}`;
     }
 
     async _listNotifications(role, clientEmail) {
@@ -1100,6 +1142,9 @@ Responde APENAS com o resumo dos problemas, sem introdução.`;
                 ctx.orcamentos = await this.db.collection('orcamentos')
                     .find({ 'cliente.email': clientEmail })
                     .sort({ createdAt: -1 }).limit(10).toArray();
+                ctx.recentInspections = await this.db.collection('inspections')
+                    .find({ clientEmail, 'violations.0': { $exists: true } })
+                    .sort({ createdAt: -1 }).limit(5).toArray();
             } else {
                 ctx.pendingNotifications = await this.db.collection('agent_notifications')
                     .find({ status: 'pending' }).sort({ createdAt: -1 }).limit(10).toArray();
@@ -1107,6 +1152,9 @@ Responde APENAS com o resumo dos problemas, sem introdução.`;
                     .find({}).sort({ decidedAt: -1 }).limit(10).toArray();
                 ctx.orcamentos = await this.db.collection('orcamentos')
                     .find({}).sort({ createdAt: -1 }).limit(20).toArray();
+                ctx.recentInspections = await this.db.collection('inspections')
+                    .find({ 'violations.0': { $exists: true } })
+                    .sort({ createdAt: -1 }).limit(8).toArray();
             }
         } catch (_) {}
         return ctx;
@@ -1129,6 +1177,19 @@ Responde APENAS com o resumo dos problemas, sem introdução.`;
             })
             .join('\n') || 'Nenhum orçamento registado.';
 
+        const inspections = (context.recentInspections || [])
+            .map(i => {
+                const data = i.createdAt ? new Date(i.createdAt).toLocaleDateString('pt-PT') : '?';
+                const viols = i.violations || [];
+                const c1 = viols.filter(v => v.classification === 'C1');
+                const c2 = viols.filter(v => v.classification === 'C2');
+                const c3 = viols.filter(v => v.classification === 'C3');
+                const topC1 = c1.slice(0, 3).map(v => `      ⚠️ C1 Art.${v.article || '?'}: ${(v.description || '').substring(0, 100)}`).join('\n');
+                const status = i.passed === false ? '❌ Reprovado' : i.passed === true ? '✅ Aprovado' : '—';
+                return `  - ${i.liftLocation || i.clientEmail || '?'} (${data}) ${status}: C1=${c1.length} C2=${c2.length} C3=${c3.length}${topC1 ? '\n' + topC1 : ''}`;
+            })
+            .join('\n') || 'Nenhuma inspeção com cláusulas recente.';
+
         const roleDesc = {
             admin: 'administrador do sistema com acesso total',
             dispatcher: 'despachante que gere orçamentos e técnicos',
@@ -1149,11 +1210,15 @@ ${decisions}
 ORÇAMENTOS (dados reais da base de dados):
 ${orcamentos}
 
+INSPEÇÕES COM CLÁUSULAS (dados reais — Decreto-Lei 320/2002):
+${inspections}
+
 REGRAS:
 - Nunca crias orçamentos ou tomas ações sem confirmação explícita
 - Se o utilizador diz "sim" a um orçamento, confirma e informa que será preparado
 - Se o utilizador adia, pergunta quando quer ser lembrado
-- Podes responder a perguntas técnicas sobre elevadores, normas EN 81-20, ISO 10816-3
+- Podes responder a perguntas técnicas sobre elevadores, normas EN 81-20, ISO 10816-3, DL 320/2002
+- Quando o utilizador pergunta sobre cláusulas (C1/C2/C3), refere os artigos do DL 320/2002 e explica o nível de risco
 - Sê conciso e profissional
 - Para clientes: usa linguagem simples, não técnica
 - Quando listares orçamentos, apresenta-os em formato legível com número, cliente, estado e valor`;

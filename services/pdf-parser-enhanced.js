@@ -22,6 +22,46 @@ const { matchByDescriptionText: matchViolationByText } = require('./violation-ke
 // Використовуємо повну базу даних
 const regulationArticles = regulationArticlesComplete;
 
+// ─────────────────────────────────────────────────────────────────────────────
+// ДОПОМІЖНІ ФУНКЦІЇ ДЛЯ РОЗУМНОГО РОЗПІЗНАВАННЯ
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Jaccard similarity між двома рядками (на рівні слів).
+ * Повертає 0.0 … 1.0 (1.0 = ідентичні).
+ */
+function jaccardSimilarity(str1, str2) {
+    const normalize = s => s.toLowerCase()
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9\s]/g, ' ')
+        .split(/\s+/)
+        .filter(w => w.length > 3);
+    const a = new Set(normalize(str1));
+    const b = new Set(normalize(str2));
+    if (a.size === 0 && b.size === 0) return 1;
+    const intersection = [...a].filter(w => b.has(w)).length;
+    const union = new Set([...a, ...b]).size;
+    return union === 0 ? 0 : intersection / union;
+}
+
+/**
+ * Score довіри залежно від формату виявлення:
+ *   standard/gateci-table  → 0.95 (структурований, чіткий)
+ *   article_first          → 0.92
+ *   gateci                 → 0.88
+ *   table / bullet_point   → 0.85
+ *   contextual             → 0.65 (розмитий — тільки C-маркер знайдено)
+ */
+const FORMAT_CONFIDENCE = {
+    'standard':      0.95,
+    'article_first': 0.92,
+    'gateci-table':  0.92,
+    'gateci':        0.88,
+    'table':         0.87,
+    'bullet_point':  0.85,
+    'contextual':    0.65
+};
+
 const classificationInfo = {
     'C1': {
         level: 'CRÍTICO',
@@ -447,11 +487,28 @@ function extractViolations(text) {
     console.log('📋 Format 5: Contextual search for missing clauses');
     const classificationMatches = [...text.matchAll(/\b(C[123])\b/g)];
     console.log(`  Found ${classificationMatches.length} C1/C2/C3 markers in text`);
-    
+    // ── Збираємо позиції та ключі вже знайдених структурованих порушень ────
+    // Це дозволяє Format 5 (contextual) уникати повторного захвату вже виявленого
+    const structuredKeys = new Set(
+        violations
+            .filter(v => v.format !== 'contextual')
+            .map(v => `${v.classification}-${v.article}`)
+    );
+    // Позиції в тексті вже знайдених описів (перші 40 символів - для швидкого пошуку)
+    const structuredDescFragments = violations
+        .filter(v => v.format !== 'contextual' && v.description.length >= 20)
+        .map(v => v.description.substring(0, 40).toLowerCase().replace(/\s+/g, ' '));
+
     let count5 = 0;
     classificationMatches.forEach((classMatch) => {
         const classification = classMatch[1];
         const position = classMatch.index;
+
+        // ── Швидка перевірка: чи є в цій позиції вже знайдена структурована клауза ──
+        // Беремо наступні 60 символів після C-маркера і порівнюємо з відомими фрагментами
+        const nearbyText = text.substring(position, position + 80).toLowerCase().replace(/\s+/g, ' ');
+        const isAlreadyCovered = structuredDescFragments.some(frag => nearbyText.includes(frag.substring(0, 25)));
+        if (isAlreadyCovered) return;
         
         // Контекст навколо класифікації
         const contextStart = Math.max(0, position - 100);
@@ -482,6 +539,19 @@ function extractViolations(text) {
             const afterClassDirect = text.substring(position + 2, position + 20);
             const directArt = afterClassDirect.match(/^[\s\n]*(\d+)[º°]/);
             if (directArt) articleNum = directArt[1];
+        }
+
+        // ── Якщо те саме article+classification вже точно знайдено F1-F4/F6/F7 ──
+        // Не блокуємо повністю (GATECI може мати кілька違反 з одним артикулом),
+        // але мінімум пропускаємо якщо вже є 2+ записів для цієї пари
+        if (articleNum) {
+            const pairKey = `${classification}-${articleNum}`;
+            const existingCount = violations.filter(v => 
+                v.format !== 'contextual' && 
+                v.classification === classification && 
+                v.article === articleNum
+            ).length;
+            if (existingCount >= 2) return; // вже достатньо знайдено структурованими форматами
         }
         
         // Витягуємо опис після C1/C2/C3
@@ -693,34 +763,63 @@ function extractViolations(text) {
     }
     console.log(`  Found: ${count7} violations`);
     
-    // Secondary dedup: prefer entries with a real article over NOTA for same description
-    const seenByDesc = new Map(); // "C3-A casa de..." → index in violations
-    const deduped = [];
+    // ─────────────────────────────────────────────────────────────────────
+    // SMART DEDUP 1: prefer real article over NOTA for identical description
+    // ─────────────────────────────────────────────────────────────────────
+    const seenByDesc = new Map(); // "C3-A casa de..." → index in dedup1
+    const dedup1 = [];
     for (const v of violations) {
         const descKey = `${v.classification}-${v.description.substring(0, 120)}`;
         if (seenByDesc.has(descKey)) {
-            const existing = deduped[seenByDesc.get(descKey)];
-            // Replace NOTA with real article if we now have one
-            if (existing.article === 'NOTA' && v.article !== 'NOTA') {
-                deduped[seenByDesc.get(descKey)] = v;
+            const existingIdx = seenByDesc.get(descKey);
+            const existing = dedup1[existingIdx];
+            // Replace NOTA with real article, or lower confidence with higher
+            if ((existing.article === 'NOTA' && v.article !== 'NOTA') ||
+                (existing.article === v.article && v.confidence > existing.confidence)) {
+                dedup1[existingIdx] = v;
             }
-            // else keep existing (first wins)
         } else {
-            seenByDesc.set(descKey, deduped.length);
-            deduped.push(v);
+            seenByDesc.set(descKey, dedup1.length);
+            dedup1.push(v);
         }
     }
 
-    console.log(`\n📊 TOTAL VIOLATIONS: ${violations.length} raw → ${deduped.length} after desc-dedup (F1:${count1} F2:${count2} F3:${count3} F4:${count4} F5:${count5} F6:${count6} F7:${count7})`);
+    // ─────────────────────────────────────────────────────────────────────
+    // SMART DEDUP 2: Jaccard semantic dedup (catches near-duplicate phrasings)
+    // Threshold: 0.72 — allows sufficiently different sub-clauses to coexist
+    // ─────────────────────────────────────────────────────────────────────
+    const JACCARD_THRESHOLD = 0.72;
+    const deduped = [];
+    for (const v of dedup1) {
+        let merged = false;
+        for (let i = 0; i < deduped.length; i++) {
+            const existing = deduped[i];
+            if (existing.classification !== v.classification) continue;
+            if (existing.article !== v.article) continue;
+            const sim = jaccardSimilarity(existing.description, v.description);
+            if (sim >= JACCARD_THRESHOLD) {
+                // Keep the higher confidence one
+                if (v.confidence > existing.confidence) {
+                    deduped[i] = v;
+                }
+                merged = true;
+                break;
+            }
+        }
+        if (!merged) deduped.push(v);
+    }
+
+    console.log(`\n📊 TOTAL VIOLATIONS: ${violations.length} raw → ${dedup1.length} (prefix-dedup) → ${deduped.length} (jaccard-dedup) | F1:${count1} F2:${count2} F3:${count3} F4:${count4} F5:${count5} F6:${count6} F7:${count7}`);
     console.log('========== VIOLATIONS EXTRACTION END ==========\n');
     
     return deduped;
 }
 
 /**
- * Створює об'єкт порушення з повною інформацією
+ * Створює об'єкт порушення з повною інформацією та оцінкою довіри.
  */
 function createViolation(classification, articleNum, description, format) {
+    const confidence = FORMAT_CONFIDENCE[format] || 0.70;
     // ⭐ СПЕЦІАЛЬНА ОБРОБКА ДЛЯ NOTA БЕЗ АРТИКУЛУ
     let finalArticleNum = articleNum;
     let isNota = false;
@@ -829,6 +928,8 @@ function createViolation(classification, articleNum, description, format) {
         article: finalArticleNum,
         description: description,
         format: format,
+        confidence: confidence,
+        confidenceLevel: confidence >= 0.88 ? 'high' : confidence >= 0.75 ? 'medium' : 'low',
         classificationInfo: classificationInfo[classification],
         articleInfo: article,
         detailedExplanation: `
@@ -863,22 +964,70 @@ ${classificationInfo[classification].prevention ? `✅ PREVENÇÃO:\n${classific
 }
 
 /**
- * Розпізнає тип звіту
+ * Розпізнає тип звіту та орган інспекції
+ * Повертає { type, inspectionBody, inspectionTypePT, confidence }
  */
 function detectReportType(text) {
-    if (text.includes('RELATÓRIO DE INSPEÇÃO TÉCNICA') || text.includes('RELATORIO DE INSPEÇÃO')) {
-        return 'technical_inspection';
+    const upper = text.toUpperCase();
+
+    // ── Орган інспекції ─────────────────────────────────────────────────
+    let inspectionBody = 'DESCONHECIDO';
+    if (/\bGATECI\b/i.test(text))     inspectionBody = 'GATECI';
+    else if (/\bCERTIEL\b/i.test(text)) inspectionBody = 'CERTIEL';
+    else if (/\bNOMINARE\b/i.test(text)) inspectionBody = 'NOMINARE';
+    else if (/\bBUREAU\s*VERITAS\b/i.test(text)) inspectionBody = 'BUREAU_VERITAS';
+    else if (/\bSGS\b/i.test(text))   inspectionBody = 'SGS';
+    else if (/\bTÜV\b/i.test(text))   inspectionBody = 'TÜV';
+    else if (/\bAPEME\b/i.test(text)) inspectionBody = 'APEME';
+    else if (/\bCUSTÓIAS\b|IEP\s+[\w\d]+\s+Artº/i.test(text)) inspectionBody = 'IEP';
+
+    // ── Тип інспекції ──────────────────────────────────────────────────
+    let type = 'unknown';
+    let inspectionTypePT = 'Desconhecido';
+    let confidence = 0.5;
+
+    if (/RELATÓRIO\s+DE\s+INSPE[ÇC][ÃA]O\s+TÉCNICA/i.test(text) ||
+        /RELATORIO\s+DE\s+INSPEÇÃO/i.test(text)) {
+        type = 'technical_inspection';
+        inspectionTypePT = 'Inspeção Técnica';
+        confidence = 0.95;
+    } else if (/INSPE[ÇC][ÃA]O\s+PERIÓDICA/i.test(text)) {
+        type = 'periodic_inspection';
+        inspectionTypePT = 'Inspeção Periódica';
+        confidence = 0.93;
+    } else if (/INSPE[ÇC][ÃA]O\s+EXTRAORDINÁRIA/i.test(text) ||
+               /INSPE[ÇC][ÃA]O\s+EXTRA[- ]ORDIN[AÁ]RIA/i.test(text)) {
+        type = 'extra_inspection';
+        inspectionTypePT = 'Inspeção Extraordinária';
+        confidence = 0.92;
+    } else if (/INSPE[ÇC][ÃA]O\s+(?:DE\s+)?PRIMEIRA\s+LIGA[ÇC][ÃA]O/i.test(text) ||
+               /PRIMEIRA\s+INSPE[ÇC][ÃA]O/i.test(text)) {
+        type = 'initial_inspection';
+        inspectionTypePT = 'Primeira Inspeção (Ligação)';
+        confidence = 0.92;
+    } else if (/REINSPE[ÇC][ÃA]O/i.test(text)) {
+        type = 'reinspection';
+        inspectionTypePT = 'Reinspetação';
+        confidence = 0.92;
+    } else if (/AUTO\s+DE\s+VISTORIA/i.test(text) || /VISTORIA\s+TÉCNICA/i.test(text)) {
+        type = 'vistoria';
+        inspectionTypePT = 'Vistoria Técnica';
+        confidence = 0.88;
+    } else if (/CERTIFICADO\s+DE\s+CONFORMIDADE/i.test(text) || /CERTIFICA[ÇC][ÃA]O/i.test(text)) {
+        type = 'certification';
+        inspectionTypePT = 'Certificado de Conformidade';
+        confidence = 0.90;
+    } else if (/NÃO\s+CONFORMIDADES/i.test(text) || /RELATÓRIO\s+DE\s+DEFICI[ÊE]NCIAS/i.test(text)) {
+        type = 'non_conformities';
+        inspectionTypePT = 'Relatório de Não Conformidades';
+        confidence = 0.82;
+    } else if (/INSPE[ÇC][ÃA]O|RELAT[ÓO]RIO/i.test(text)) {
+        type = 'inspection_generic';
+        inspectionTypePT = 'Relatório de Inspeção';
+        confidence = 0.65;
     }
-    if (text.includes('AUTO DE VISTORIA') || text.includes('VISTORIA TÉCNICA')) {
-        return 'vistoria';
-    }
-    if (text.includes('CERTIFICADO DE CONFORMIDADE') || text.includes('CERTIFICAÇÃO')) {
-        return 'certification';
-    }
-    if (text.includes('NÃO CONFORMIDADES') || text.includes('RELATÓRIO DE DEFICIÊNCIAS')) {
-        return 'non_conformities';
-    }
-    return 'unknown';
+
+    return { type, inspectionBody, inspectionTypePT, confidence };
 }
 
 /**
@@ -930,19 +1079,38 @@ function getViolationsStats(violations) {
  *   згадки C1/C2/C3 у пояснювальному тексті (не реальні порушення).
  */
 function preprocessReportText(text) {
-    // Знаходимо кінець секції дефектів / початок юридичного блоку
+    // Видаляємо загальні роз'яснювальні/юридичні блоки в кінці звіту різних форматів
     const stopPatterns = [
+        // Стандартні португальські блоки
         /OBRIGA[CÇ][OÕ]ES\s+DO\s+PROPRIET[AÁ]RIO/i,
         /EM\s+RELA[CÇ][AÃ]O\s+[AÀ]S\s+DEFICI[EÊ]NCIAS\s+DETETADAS/i,
         /Classificação\s+das\s+Cláusulas/i,
         /FONTE[:\s]+DIRE[CÇ][AÃ]O/i,
-        // Секція «Notas:» в кінці звіту IEP/Custóias (роз'яснення C1/C2/C3 + контакти)
-        /\nNotas?\s*:\s*\n[\s\S]{0,20}?C1\s+[-–]/i
+        // IEP / Custóias: «Notas: C1 –» блок
+        /\nNotas?\s*:\s*\n[\s\S]{0,20}?C1\s+[-–]/i,
+        // GATECI: роз'яснення типів клаузул
+        /C1\s+[-–]\s+Situações\s+de\s+elevado\s+risco/i,
+        /C2\s+[-–]\s+Situações\s+(?:que|com)\s+/i,
+        /As?\s+cláusulas?\s+do\s+tipo\s+C1/i,
+        // Legais / пояснення пунктів CERTIEL/SGS
+        /OBRIGA[CÇ][OÕ]ES\s+LEGAIS/i,
+        /COMO\s+PROCEDER\s+(?:EM\s+)?CASO/i,
+        /INFORMAÇÕES\s+COMPLEMENTARES/i,
+        /CONDI[ÇC][ÕO]ES\s+GERAIS/i,
+        /Prazos?\s+de\s+regulariza[çc][ãa]o/i,
+        // Підписна частина/footer GATECI/CERTIEL
+        /Entidade\s+Inspetora\s+Acreditada/i,
+        /O\s+presente\s+relatório\s+é\s+válido\s+durante/i,
+        /Assinatura\s+do\s+(?:Inspetor|Técnico)/i,
+        /Este\s+relatório\s+só\s+é\s+válido\s+com/i,
+        // BV / INSPECTA: legal disclaimer block
+        /Bureau\s+Veritas\s+declina\s+toda/i,
+        /Nota[s]?\s+Importantes?\s*:/i,
     ];
     for (const pat of stopPatterns) {
         const m = text.search(pat);
         if (m > 200) {
-            console.log(`✂️ Truncating text at position ${m} (legal section detected)`);
+            console.log(`✂️ Truncating text at position ${m} (legal/explanatory section: ${pat.source.substring(0, 40)})`);
             return text.substring(0, m);
         }
     }
@@ -982,7 +1150,10 @@ async function parsePDF(filePath) {
         // Відкидаємо юридичний розділ перед парсингом
         const cleanText = preprocessReportText(text);
         
-        const reportType = detectReportType(text);
+        const reportTypeInfo = detectReportType(text);
+        const reportType = reportTypeInfo.type;   // backward-compat string
+        const inspectionBody = reportTypeInfo.inspectionBody;
+        const inspectionTypePT = reportTypeInfo.inspectionTypePT;
         const metadata = extractMetadata(text);   // метадані — з повного тексту
         const violations = extractViolations(cleanText);
         const conclusion = extractConclusion(text);
@@ -1042,6 +1213,8 @@ async function parsePDF(filePath) {
             success: true,
             analysis: {
                 reportType,
+                inspectionBody,
+                inspectionTypePT,
                 metadata,
                 violations,
                 stats,
@@ -1056,6 +1229,8 @@ async function parsePDF(filePath) {
                 reportType: finalReportType
             },
             reportType,
+            inspectionBody,
+            inspectionTypePT,
             metadata,
             violations,
             stats,

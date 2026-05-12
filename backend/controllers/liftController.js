@@ -2,6 +2,63 @@ const { Lift, User } = require('../models');
 const { AppError } = require('../middleware/errorHandler');
 const qrService = require('../services/qrService');
 const exportService = require('../services/exportService');
+const crypto = require('crypto');
+
+// Утиліта: генерація тимчасового пароля (аналог authController)
+const _genTempPassword = (length = 10) => {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#$%';
+    let pw = '';
+    const bytes = crypto.randomBytes(length);
+    for (let i = 0; i < length; i++) pw += chars[bytes[i] % chars.length];
+    return pw;
+};
+
+// Утиліта: знайти або створити клієнта за email (повертає { user, created })
+// sendEmail: true = надіслати welcome email, false = пропустити
+const _findOrCreateClient = async (email, clientName, sendEmail = true) => {
+    const normalizedEmail = email.toLowerCase().trim();
+    let user = await User.findOne({ email: normalizedEmail });
+    if (user) return { user, created: false, tempPassword: null, emailSent: false };
+
+    // Розбиваємо clientName на firstName/lastName
+    const nameParts = (clientName || '').trim().split(/\s+/);
+    const firstName = nameParts[0] || 'Клієнт';
+    const lastName = nameParts.slice(1).join(' ') || normalizedEmail.split('@')[0];
+
+    const username = normalizedEmail.split('@')[0].replace(/[^a-zA-Z0-9_]/g, '_') + '_' + Date.now().toString().slice(-4);
+    const tempPassword = _genTempPassword();
+
+    user = await User.create({
+        username,
+        email: normalizedEmail,
+        password: tempPassword,
+        firstName,
+        lastName,
+        role: 'client',
+        isActive: true,
+        mustChangePassword: true
+    });
+
+    let emailSent = false;
+    let emailError = null;
+
+    if (sendEmail) {
+        // Спроба відправити welcome email (не блокуємо при невдачі)
+        try {
+            const emailService = require('../services/emailService');
+            await emailService.sendWelcomeClientEmail(user, tempPassword);
+            emailSent = true;
+            console.log('   📧 Welcome email відправлено:', normalizedEmail);
+        } catch (emailErr) {
+            emailError = emailErr.message;
+            console.warn('   ⚠️  Welcome email не відправлено:', emailErr.message);
+        }
+    } else {
+        console.log('   📭 sendEmail=false — welcome email пропущено для:', normalizedEmail);
+    }
+
+    return { user, created: true, tempPassword, emailSent, emailSkipped: !sendEmail, emailError };
+};
 
 exports.createLift = async (req, res, next) => {
     try {
@@ -12,9 +69,22 @@ exports.createLift = async (req, res, next) => {
         if (existingLift) throw new AppError('Lift with this number exists', 400);
 
         // Синхронізація client ↔ clientEmail при створенні
+        const sendEmail = req.body.sendAccessEmail !== false; // default: надіслати email
+        let newClientInfo = null;
+
         if (clientEmail && !client) {
-            const clientUser = await User.findOne({ email: clientEmail.toLowerCase().trim(), role: 'client' });
-            if (clientUser) client = clientUser._id;
+            const result = await _findOrCreateClient(clientEmail, req.body.clientName, sendEmail);
+            client = result.user._id;
+            if (result.created) {
+                newClientInfo = {
+                    created: true,
+                    email: result.user.email,
+                    password: result.tempPassword,
+                    emailSent: result.emailSent,
+                    emailSkipped: result.emailSkipped,
+                    emailError: result.emailError
+                };
+            }
         } else if (client && !clientEmail) {
             const clientUser = await User.findById(client).select('email role');
             if (!clientUser || clientUser.role !== 'client') throw new AppError('Invalid client', 400);
@@ -30,7 +100,7 @@ exports.createLift = async (req, res, next) => {
         }
         const lift = await Lift.create({ municipalNumber, address, location, client, clientEmail, technician, manufacturer, model, capacity, floors, installationDate, lastInspectionDate, nextInspectionDate, qrCode });
         await lift.populate(['client', 'technician']);
-        res.status(201).json({ success: true, message: 'Lift created', data: { lift } });
+        res.status(201).json({ success: true, message: 'Lift created', data: { lift }, newClient: newClientInfo });
     } catch (error) {
         next(error);
     }
@@ -101,6 +171,8 @@ exports.getLiftByMunicipalNumber = async (req, res, next) => {
 exports.updateLift = async (req, res, next) => {
     try {
         const updates = req.body;
+        console.log(`\n🔄 updateLift [${req.params.id}] — clientEmail:`, updates.clientEmail ?? '(not sent)', '| client:', updates.client ?? '(not sent)');
+
         if (updates.municipalNumber) {
             const existingLift = await Lift.findOne({ municipalNumber: updates.municipalNumber, _id: { $ne: req.params.id } });
             if (existingLift) throw new AppError('Municipal number exists', 400);
@@ -112,32 +184,85 @@ exports.updateLift = async (req, res, next) => {
             }
         }
 
+        // Поля для $set і опційний $unset (для client)
+        const $set = { ...updates };
+        const $unset = {};
+
         // 🔄 Синхронізація client ↔ clientEmail
-        // Якщо передано clientEmail — шукаємо User і оновлюємо client ObjectId
+        const sendEmail = updates.sendAccessEmail !== false; // default: надіслати email
+        let newClientInfo = null;
+
         if (updates.clientEmail !== undefined) {
             if (updates.clientEmail) {
-                const clientUser = await User.findOne({ email: updates.clientEmail.toLowerCase().trim(), role: 'client' });
-                updates.client = clientUser ? clientUser._id : null;
+                const result = await _findOrCreateClient(updates.clientEmail, updates.clientName, sendEmail);
+                const { user: clientUser, created } = result;
+                console.log('   ↳ Client:', created ? `CREATED NEW (${clientUser.email})` : `FOUND (${clientUser.email})`);
+
+                // Прив'язуємо (нового або існуючого) клієнта
+                $set.client = clientUser._id;
+
+                // ✅ Якщо клієнт вже існував — оновлюємо його ім'я/прізвище якщо змінились
+                if (!created && updates.clientName && updates.clientName.trim()) {
+                    const nameParts = updates.clientName.trim().split(/\s+/);
+                    const newFirstName = nameParts[0] || clientUser.firstName;
+                    const newLastName = nameParts.slice(1).join(' ') || clientUser.lastName || '';
+                    await User.findByIdAndUpdate(clientUser._id, {
+                        firstName: newFirstName,
+                        lastName: newLastName
+                    });
+                    console.log(`   ✏️  Оновлено ім'я клієнта ${clientUser.email}: ${newFirstName} ${newLastName}`);
+                }
+
+                // ✅ Якщо створено нового клієнта — зберігаємо дані для відповіді
+                if (created) {
+                    newClientInfo = {
+                        created: true,
+                        email: clientUser.email,
+                        password: result.tempPassword,
+                        emailSent: result.emailSent,
+                        emailSkipped: result.emailSkipped,
+                        emailError: result.emailError
+                    };
+                }
             } else {
                 // clientEmail очищено — знімаємо прив'язку
-                updates.client = null;
+                delete $set.client;
+                $unset.client = 1;
             }
-        }
-        // Якщо передано client ObjectId — оновлюємо clientEmail з профілю User
-        else if (updates.client !== undefined) {
+        } else if (updates.client !== undefined) {
             if (updates.client) {
-                const clientUser = await User.findById(updates.client).select('email role');
+                const clientUser = await User.findById(updates.client).select('email role firstName lastName');
                 if (!clientUser || clientUser.role !== 'client') throw new AppError('Invalid client', 400);
-                updates.clientEmail = clientUser.email;
+                $set.clientEmail = clientUser.email;
+                // Оновлюємо clientName у ліфті щоб відповідав User
+                if (!updates.clientName) {
+                    $set.clientName = `${clientUser.firstName || ''} ${clientUser.lastName || ''}`.trim();
+                }
             } else {
-                updates.clientEmail = null;
+                $unset.client = 1;
+                delete $set.client;
             }
         }
 
-        const lift = await Lift.findByIdAndUpdate(req.params.id, updates, { new: true, runValidators: true }).populate('client').populate('technician');
+        // Якщо address.city порожнє — відновлюємо з БД
+        if ($set.address && typeof $set.address === 'object' && !$set.address.city) {
+            const existingLift = await Lift.findById(req.params.id).select('address').lean();
+            if (existingLift?.address?.city) {
+                $set.address.city = existingLift.address.city;
+            }
+        }
+
+        const mongoUpdate = { $set };
+        if (Object.keys($unset).length > 0) mongoUpdate.$unset = $unset;
+
+        console.log('   ↳ mongoUpdate $set.client:', $set.client, '| $unset:', Object.keys($unset));
+
+        const lift = await Lift.findByIdAndUpdate(req.params.id, mongoUpdate, { new: true, runValidators: false }).populate('client').populate('technician');
         if (!lift) throw new AppError('Lift not found', 404);
-        res.json({ success: true, message: 'Lift updated', data: { lift } });
+        console.log(`   ✅ Saved — clientEmail: ${lift.clientEmail} | client: ${lift.client?._id || 'null'}`);
+        res.json({ success: true, message: 'Lift updated', data: { lift }, newClient: newClientInfo });
     } catch (error) {
+        console.error('   ❌ updateLift error:', error.message);
         next(error);
     }
 };

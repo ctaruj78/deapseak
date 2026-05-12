@@ -18,11 +18,21 @@ class ClientManager {
         this.setupRealTimeUpdates();
     }
 
+    // Хелпер: повертає JWT токен з будь-якого можливого ключа localStorage
+    _getToken() {
+        return (typeof AuthManager !== 'undefined' && AuthManager.getAuthToken && AuthManager.getAuthToken())
+            || localStorage.getItem('liftmanager_jwt')
+            || localStorage.getItem('token')
+            || this._getToken()
+            || sessionStorage.getItem('liftmanager_jwt')
+            || '';
+    }
+
     // A carregar клієнтів
     async loadClients() {
         try {
             console.log('🔄 A carregar клієнтів з API...');
-            const _token = localStorage.getItem('token') || localStorage.getItem('liftmanager_jwt') || localStorage.getItem('authToken') || '';
+            const _token = localStorage.getItem('token') || localStorage.getItem('liftmanager_jwt') || this._getToken() || '';
             const response = await fetch('/api/users?role=client', {
                 headers: {
                     'Authorization': `Bearer ${_token}`
@@ -227,7 +237,7 @@ class ClientManager {
 
     // A carregar заявок клієнтів
     async loadClientRequests() {
-        const _tok = localStorage.getItem('token') || localStorage.getItem('liftmanager_jwt') || localStorage.getItem('authToken') || '';
+        const _tok = localStorage.getItem('token') || localStorage.getItem('liftmanager_jwt') || this._getToken() || '';
         try {
             const response = await fetch('/api/requests', {
                 headers: {
@@ -744,7 +754,7 @@ class ClientManager {
         try {
             const response = await fetch(`/api/lifts?clientId=${clientId}`, {
                 headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    'Authorization': `Bearer ${this._getToken()}`
                 }
             });
             
@@ -895,7 +905,7 @@ class ClientManager {
 
         try {
             const response = await fetch(`/api/requests?clientId=${clientId}`, {
-                headers: { 'Authorization': `Bearer ${localStorage.getItem('authToken')}` }
+                headers: { 'Authorization': `Bearer ${this._getToken()}` }
             });
 
             let requests = [];
@@ -1116,7 +1126,7 @@ class ClientManager {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                        'Authorization': `Bearer ${this._getToken()}`
                     },
                     body: JSON.stringify(apiPayload)
                 });
@@ -1172,7 +1182,7 @@ class ClientManager {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                        'Authorization': `Bearer ${this._getToken()}`
                     },
                     body: JSON.stringify(postPayload)
                 });
@@ -1236,7 +1246,7 @@ class ClientManager {
             const response = await fetch(`/api/users/${clientId}`, {
                 method: 'DELETE',
                 headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    'Authorization': `Bearer ${this._getToken()}`
                 }
             });
             
@@ -1292,7 +1302,7 @@ class ClientManager {
     // Enviar тимчасовий пароль клієнту
     async sendPasswordToClient(clientId) {
         if (!confirm('Enviar nova senha temporária para o email do cliente?')) return;
-        const token = localStorage.getItem('authToken');
+        const token = this._getToken();
         try {
             const res = await fetch(`/api/users/${clientId}/reset-password`, {
                 method: 'POST',
@@ -1386,7 +1396,7 @@ class ClientManager {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    'Authorization': `Bearer ${this._getToken()}`
                 },
                 body: JSON.stringify({
                     to: email,

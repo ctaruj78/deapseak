@@ -85,7 +85,7 @@ class UnifiedAnalyticsEngine {
             
         } catch (error) {
             console.error('❌ Erro ініціалізації Analytics Engine:', error);
-            this.showError('Erro завантаження аналітичних даних');
+            this.showError('Erro ao carregar dados analíticos');
         }
     }
 
@@ -233,7 +233,7 @@ class UnifiedAnalyticsEngine {
             data: {
                 labels: data.labels,
                 datasets: [{
-                    label: 'Активність ліфтів',
+                    label: 'Atividade dos elevadores',
                     data: data.liftsActivity,
                     borderColor: this.config.charts.colors.primary,
                     backgroundColor: this.config.charts.colors.primary + '20',
@@ -245,7 +245,7 @@ class UnifiedAnalyticsEngine {
                     backgroundColor: this.config.charts.colors.success + '20',
                     tension: 0.4
                 }, {
-                    label: 'Manutenção виконано',
+                    label: 'Manutenção realizada',
                     data: data.maintenanceActivity,
                     borderColor: this.config.charts.colors.warning,
                     backgroundColor: this.config.charts.colors.warning + '20',
@@ -258,7 +258,7 @@ class UnifiedAnalyticsEngine {
                 plugins: {
                     title: {
                         display: true,
-                        text: 'Активність системи за останні 7 днів'
+                        text: 'Atividade do sistema nos últimos 7 dias'
                     },
                     legend: {
                         position: 'bottom'
@@ -291,7 +291,7 @@ class UnifiedAnalyticsEngine {
         this.charts.liftsStatus = new Chart(ctx, {
             type: 'doughnut',
             data: {
-                labels: ['Активні', 'Em manutenção', 'Offline', 'Помилки'],
+                labels: ['Ativos', 'Em manutenção', 'Offline', 'Com erros'],
                 datasets: [{
                     data: [
                         this.data.lifts.active,
@@ -333,7 +333,7 @@ class UnifiedAnalyticsEngine {
             data: {
                 labels: locationData.map(([location]) => location || 'Não especificado'),
                 datasets: [{
-                    label: 'Кількість ліфтів',
+                    label: 'Número de elevadores',
                     data: locationData.map(([, count]) => count),
                     backgroundColor: this.config.charts.colors.info,
                     borderColor: this.config.charts.colors.primary,
@@ -366,12 +366,12 @@ class UnifiedAnalyticsEngine {
             data: {
                 labels: maintenanceData.labels,
                 datasets: [{
-                    label: 'Планові Manutenção',
+                    label: 'Manutenção planeada',
                     data: maintenanceData.planned,
                     borderColor: this.config.charts.colors.success,
                     backgroundColor: this.config.charts.colors.success + '20'
                 }, {
-                    label: 'Екстрені Manutenção',
+                    label: 'Manutenção de emergência',
                     data: maintenanceData.emergency,
                     borderColor: this.config.charts.colors.danger,
                     backgroundColor: this.config.charts.colors.danger + '20'
@@ -401,7 +401,7 @@ class UnifiedAnalyticsEngine {
             data: {
                 labels: this.data.qr.timeDistribution.labels,
                 datasets: [{
-                    label: 'Сканування за horasами',
+                    label: 'Leituras por hora',
                     data: this.data.qr.timeDistribution.data,
                     backgroundColor: this.config.charts.colors.success,
                     borderColor: this.config.charts.colors.primary,
@@ -427,7 +427,7 @@ class UnifiedAnalyticsEngine {
             data: {
                 labels: this.data.qr.topUsers.map(u => u.name),
                 datasets: [{
-                    label: 'Сканувань',
+                    label: 'Leituras',
                     data: this.data.qr.topUsers.map(u => u.count),
                     backgroundColor: this.config.charts.colors.purple
                 }]
@@ -459,13 +459,13 @@ class UnifiedAnalyticsEngine {
             data: {
                 labels: predictions.labels,
                 datasets: [{
-                    label: 'Ймовірність поломки (%)',
+                    label: 'Probabilidade de falha (%)',
                     data: predictions.breakdown,
                     borderColor: this.config.charts.colors.danger,
                     backgroundColor: this.config.charts.colors.danger + '20',
                     tension: 0.4
                 }, {
-                    label: 'Прогноз навантаження (%)',
+                    label: 'Previsão de carga (%)' ,
                     data: predictions.load,
                     borderColor: this.config.charts.colors.warning,
                     backgroundColor: this.config.charts.colors.warning + '20',
@@ -512,8 +512,8 @@ class UnifiedAnalyticsEngine {
         if (this.data.lifts.offline > this.config.alertThresholds.liftsOffline) {
             alerts.push({
                 type: 'critical',
-                title: 'Багато ліфтів офлайн',
-                message: `${this.data.lifts.offline} ліфтів недоступні`,
+                title: 'Muitos elevadores offline',
+                message: `${this.data.lifts.offline} elevadores indisponíveis`,
                 icon: 'fas fa-exclamation-triangle'
             });
         }
@@ -522,8 +522,8 @@ class UnifiedAnalyticsEngine {
         if (this.data.maintenance.overdue.length > this.config.alertThresholds.maintenanceOverdue) {
             alerts.push({
                 type: 'warning',
-                title: 'Прострочені Manutenção',
-                message: `${this.data.maintenance.overdue.length} Manutenção потребують уваги`,
+                title: 'Manutenção em atraso',
+                message: `${this.data.maintenance.overdue.length} manutenções precisam de atenção`,
                 icon: 'fas fa-clock'
             });
         }
@@ -533,8 +533,8 @@ class UnifiedAnalyticsEngine {
         if (qrDrop > this.config.alertThresholds.qrScansDropped) {
             alerts.push({
                 type: 'info',
-                title: 'Зниження QR активності',
-                message: `Сканування впали на ${qrDrop}%`,
+                title: 'Redução da atividade QR',
+                message: `Leituras caíram ${qrDrop}%`,
                 icon: 'fas fa-chart-line-down'
             });
         }
@@ -581,9 +581,9 @@ class UnifiedAnalyticsEngine {
             recommendations.push({
                 type: 'maintenance',
                 priority: 'high',
-                title: 'Оптимізація графіка Manutenção',
-                description: 'Рекомендується перерозподіл навантаження між техніками для зменшення черги Manutenção.',
-                action: 'Ver графік'
+                title: 'Otimização do calendário de manutenção',
+                description: 'Recomenda-se redistribuir a carga de trabalho entre os técnicos para reduzir a fila de manutenção.',
+                action: 'Ver calendário'
             });
         }
         
@@ -592,9 +592,9 @@ class UnifiedAnalyticsEngine {
             recommendations.push({
                 type: 'qr',
                 priority: 'medium',
-                title: 'Baixa активність QR',
-                description: 'Hojeшня активність Leitura QR нижча за середню. Рекомендується перевірити доступність системи.',
-                action: 'Перевірити систему'
+                title: 'Baixa atividade QR',
+                description: 'A atividade de leitura QR de hoje está abaixo da média. Recomenda-se verificar a disponibilidade do sistema.',
+                action: 'Verificar sistema'
             });
         }
         
@@ -604,9 +604,9 @@ class UnifiedAnalyticsEngine {
             recommendations.push({
                 type: 'prediction',
                 priority: 'critical',
-                title: 'Alto risco поломок',
-                description: `${riskLifts.length} ліфтів мають високий ризик поломки найближчим часом.`,
-                action: 'Планувати Manutenção'
+                title: 'Alto risco de falhas',
+                description: `${riskLifts.length} elevadores têm alto risco de falha em breve.`,
+                action: 'Planear manutenção'
             });
         }
         
@@ -720,7 +720,7 @@ class UnifiedAnalyticsEngine {
     getTopQRUsers(scans) {
         const userCounts = {};
         scans.forEach(scan => {
-            const user = scan.user || 'Анонім';
+            const user = scan.user || 'Anónimo';
             userCounts[user] = (userCounts[user] || 0) + 1;
         });
         
@@ -820,21 +820,20 @@ class UnifiedAnalyticsEngine {
 
     // Розрахунки змін для KPI
     calculateLiftsChange() {
-        // Простий розрахунок для демо
-        return '+2% цього місяця';
+        return '+2% este mês';
     }
 
     calculateActiveChange() {
         const percentage = Math.round((this.data.lifts.active / this.data.lifts.total) * 100);
-        return `${percentage}% онлайн`;
+        return `${percentage}% online`;
     }
 
     calculateScansChange() {
-        return '+15% за тиждень';
+        return '+15% esta semana';
     }
 
     calculateMaintenanceChange() {
-        return this.data.maintenance.pending > 10 ? 'Requer atenção' : 'Планово';
+        return this.data.maintenance.pending > 10 ? 'Requer atenção' : 'Planeado';
     }
 
     calculateQRActivityDrop() {
@@ -879,7 +878,7 @@ class UnifiedAnalyticsEngine {
                 window.location.href = 'qr-management.html';
                 break;
             case 'prediction':
-                toastr.info('Відкриваємо планувальник Manutenção...');
+                toastr.info('A abrir o agendador de manutenção...');
                 break;
         }
     }
@@ -991,12 +990,12 @@ class UnifiedAnalyticsEngine {
                 
             } else {
                 console.error('❌ PredictiveMaintenanceSystem не знайдено');
-                this.showPredictiveError('Система AI прогнозування недоступна');
+            this.showPredictiveError('Sistema AI de previsão indisponível');
             }
             
         } catch (error) {
             console.error('❌ Erro ініціалізації AI прогнозування:', error);
-            this.showPredictiveError('Erro завантаження AI системи');
+            this.showPredictiveError('Erro ao carregar sistema AI');
         }
     }
 
@@ -1041,7 +1040,7 @@ class UnifiedAnalyticsEngine {
             this.predictiveSystem.getSystemPredictions() : 
             this.generateMockPredictions();
 
-        const labels = ['Тиждень 1', 'Тиждень 2', 'Тиждень 3', 'Тиждень 4', 'Тиждень 5', 'Тиждень 6'];
+        const labels = ['Semana 1', 'Semana 2', 'Semana 3', 'Semana 4', 'Semana 5', 'Semana 6'];
         const riskData = predictions.riskLevels || [15, 25, 35, 20, 45, 30];
 
         this.charts.prediction = new Chart(ctx, {
@@ -1049,7 +1048,7 @@ class UnifiedAnalyticsEngine {
             data: {
                 labels: labels,
                 datasets: [{
-                    label: 'Ризик поломок (%)',
+                    label: 'Risco de falhas (%)' ,
                     data: riskData,
                     borderColor: 'rgba(220, 53, 69, 1)',
                     backgroundColor: 'rgba(220, 53, 69, 0.1)',
@@ -1080,7 +1079,7 @@ class UnifiedAnalyticsEngine {
                     tooltip: {
                         callbacks: {
                             label: function(context) {
-                                return `Ризик: ${context.parsed.y}%`;
+                                return `Risco: ${context.parsed.y}%`;
                             }
                         }
                     }
@@ -1117,7 +1116,7 @@ class UnifiedAnalyticsEngine {
                             <div class="flex-grow-1">
                                 <h6 class="mb-1">${rec.title}</h6>
                                 <p class="mb-1">${rec.description}</p>
-                                <small class="text-muted">Точність: ${rec.confidence}%</small>
+                                <small class="text-muted">Precisão: ${rec.confidence}%</small>
                             </div>
                         </div>
                     </div>
@@ -1146,7 +1145,7 @@ class UnifiedAnalyticsEngine {
             container.innerHTML = `
                 <div class="alert alert-danger">
                     <i class="fas fa-exclamation-triangle"></i>
-                    <strong>Erro AI системи:</strong> ${message}
+                    <strong>Erro do sistema AI:</strong> ${message}
                 </div>
             `;
         }
@@ -1170,22 +1169,22 @@ class UnifiedAnalyticsEngine {
     generateMockRecommendations() {
         return [
             {
-                title: 'Критичне попередження',
-                description: 'Elevador #LFT-001 потребує термінової перевірки гальмівної системи',
+                title: 'Aviso crítico',
+                description: 'Elevador #LFT-001 necessita de verificação urgente do sistema de travagem',
                 priority: 'danger',
                 icon: 'fa-exclamation-triangle',
                 confidence: 95
             },
             {
-                title: 'Планове обслуговування',
-                description: 'Рекомендується провести Manutenção для ліфтів #LFT-005, #LFT-012 протягом тижня',
+                title: 'Manutenção planeada',
+                description: 'Recomenda-se realizar manutenção nos elevadores #LFT-005, #LFT-012 durante a semana',
                 priority: 'warning',
                 icon: 'fa-wrench',
                 confidence: 78
             },
             {
-                title: 'Оптимізація роботи',
-                description: 'Система рекомендує збільшити частоту інспекцій в ТРЦ "Глобус"',
+                title: 'Otimização operacional',
+                description: 'O sistema recomenda aumentar a frequência de inspeções no centro comercial "Globus"',
                 priority: 'info',
                 icon: 'fa-lightbulb',
                 confidence: 82
@@ -1200,7 +1199,7 @@ class UnifiedAnalyticsEngine {
         const ctx = document.getElementById('financial-chart');
         if (!ctx) return;
 
-        const labels = ['Jan', 'Fev', 'Mar', 'Кві', 'Mai', 'Jun'];
+        const labels = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun'];
         const revenueData = [45000, 52000, 48000, 61000, 55000, 67000];
         const expensesData = [25000, 28000, 30000, 32000, 29000, 35000];
 
@@ -1215,7 +1214,7 @@ class UnifiedAnalyticsEngine {
                     borderColor: 'rgba(40, 167, 69, 1)',
                     borderWidth: 1
                 }, {
-                    label: 'Витрати',
+                    label: 'Despesas',
                     data: expensesData,
                     backgroundColor: 'rgba(220, 53, 69, 0.8)',
                     borderColor: 'rgba(220, 53, 69, 1)',
@@ -1279,7 +1278,7 @@ class UnifiedAnalyticsEngine {
             data: {
                 labels: ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'],
                 datasets: [{
-                    label: 'Проведено інспекцій',
+                    label: 'Inspeções realizadas',
                     data: [12, 8, 15, 10, 14, 6, 3],
                     borderColor: 'rgba(0, 123, 255, 1)',
                     backgroundColor: 'rgba(0, 123, 255, 0.1)',
@@ -1303,7 +1302,7 @@ class UnifiedAnalyticsEngine {
         new Chart(ctx, {
             type: 'doughnut',
             data: {
-                labels: ['Успішно', 'Потребує ремонту', 'Критично'],
+                labels: ['Com sucesso', 'Necessita reparação', 'Crítico'],
                 datasets: [{
                     data: [75, 20, 5],
                     backgroundColor: [
@@ -1343,7 +1342,7 @@ class UnifiedAnalyticsEngine {
             data: {
                 labels: Array.from({length: 24}, (_, i) => i + ':00'),
                 datasets: [{
-                    label: 'Активність користувачів',
+                    label: 'Atividade dos utilizadores',
                     data: [2, 1, 0, 0, 1, 3, 8, 15, 22, 18, 16, 14, 12, 15, 18, 20, 17, 14, 10, 8, 6, 4, 3, 2],
                     borderColor: 'rgba(108, 117, 125, 1)',
                     backgroundColor: 'rgba(108, 117, 125, 0.2)',
@@ -1358,14 +1357,14 @@ class UnifiedAnalyticsEngine {
                     x: {
                         title: {
                             display: true,
-                            text: 'Година дня'
+                            text: 'Hora do dia'
                         }
                     },
                     y: {
                         beginAtZero: true,
                         title: {
                             display: true,
-                            text: 'Кількість користувачів'
+                            text: 'Número de utilizadores'
                         }
                     }
                 }
@@ -1417,21 +1416,21 @@ class UnifiedAnalyticsEngine {
 
         const reports = [
             {
-                name: 'Місячний звіт активності',
-                lastUpdate: '5 хв atrás',
-                status: 'Готовий',
+                name: 'Relatório mensal de atividade',
+                lastUpdate: 'há 5 min',
+                status: 'Pronto',
                 statusClass: 'success'
             },
             {
-                name: 'Тижневі інспекції',
-                lastUpdate: '1 год atrás', 
-                status: 'Генерується',
+                name: 'Inspeções semanais',
+                lastUpdate: 'há 1 hora', 
+                status: 'A gerar',
                 statusClass: 'warning'
             },
             {
-                name: 'Фінансовий квартальний',
-                lastUpdate: '2 horasи atrás',
-                status: 'Готовий',
+                name: 'Relatório financeiro trimestral',
+                lastUpdate: 'há 2 horas',
+                status: 'Pronto',
                 statusClass: 'success'
             }
         ];
@@ -1443,8 +1442,8 @@ class UnifiedAnalyticsEngine {
                 <td><span class="badge badge-${report.statusClass}">${report.status}</span></td>
                 <td>
                     <button class="btn btn-sm btn-outline-primary" 
-                            ${report.status !== 'Готовий' ? 'disabled' : ''}>
-                        ${report.status === 'Готовий' ? 'Descarregar' : 'Очікування'}
+                            ${report.status !== 'Pronto' ? 'disabled' : ''}>
+                        ${report.status === 'Pronto' ? 'Descarregar' : 'A aguardar'}
                     </button>
                 </td>
             </tr>
@@ -1456,7 +1455,7 @@ class UnifiedAnalyticsEngine {
      */
     bindReportButtons() {
         // Логіка для кнопок швидких звітів буде додана пізніше
-        console.log('Relatórioи ініціалізовані');
+        console.log('Relatórios inicializados');
     }
 
     /**
@@ -1703,16 +1702,16 @@ function initPredictionChart(attemptCount = 0) {
     
     // Тестові дані для прогнозів
     const predictionData = {
-        labels: ['Тиждень 1', 'Тиждень 2', 'Тиждень 3', 'Тиждень 4'],
+        labels: ['Semana 1', 'Semana 2', 'Semana 3', 'Semana 4'],
         datasets: [{
-            label: 'Ймовірність поломки (%)',
+            label: 'Probabilidade de falha (%)',
             data: [15, 23, 35, 48],
             borderColor: '#ff6b6b',
             backgroundColor: 'rgba(255, 107, 107, 0.1)',
             tension: 0.4,
             fill: true
         }, {
-            label: 'Рекомендоване Manutenção (%)',
+            label: 'Manutenção recomendada (%)' ,
             data: [25, 40, 60, 85],
             borderColor: '#4ecdc4',
             backgroundColor: 'rgba(78, 205, 196, 0.1)',
@@ -1730,7 +1729,7 @@ function initPredictionChart(attemptCount = 0) {
             plugins: {
                 title: {
                     display: true,
-                    text: 'Прогноз потреби в обслуговуванні'
+                    text: 'Previsão de necessidade de manutenção'
                 }
             },
             scales: {
@@ -1758,26 +1757,26 @@ function loadAIRecommendations() {
         {
             type: 'critical',
             icon: '🚨',
-            title: 'Критичне попередження',
-            text: 'Elevador #L003 потребує негайного огляду гальмівної системи'
+            title: 'Aviso crítico',
+            text: 'Elevador #L003 necessita de revisão imediata do sistema de travagem'
         },
         {
             type: 'warning',
             icon: '⚠️',
-            title: 'Планове обслуговування',
-            text: 'Рекомендується провести Manutenção ліфтів #L001, #L005 протягом 7 днів'
+            title: 'Manutenção planeada',
+            text: 'Recomenda-se realizar manutenção dos elevadores #L001, #L005 nos próximos 7 dias'
         },
         {
             type: 'info',
             icon: '💡',
-            title: 'Оптимізація',
-            text: 'Виявлено можливість зменшення енергоспоживання на 15%'
+            title: 'Otimização',
+            text: 'Identificada possibilidade de redução do consumo energético em 15%'
         },
         {
             type: 'success',
             icon: '✅',
-            title: 'Відмінна робота',
-            text: 'Elevadores #L002, #L004 працюють в оптимальному режимі'
+            title: 'Excelente desempenho',
+            text: 'Elevadores #L002, #L004 funcionam em modo ótimo'
         }
     ];
     

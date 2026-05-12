@@ -359,8 +359,8 @@ class NotificationManager {
     static assignment(technicianName, liftName, data = {}) {
         return window.notificationManager.add({
             type: this.NOTIFICATION_TYPES.ASSIGNMENT,
-            title: 'Нове завдання',
-            message: `${technicianName}, вам призначено обслуговування ліфта: ${liftName}`,
+            title: 'Nova tarefa',
+            message: `${technicianName}, foi-lhe atribuída a manutenção do elevador: ${liftName}`,
             data,
             channels: [this.NOTIFICATION_CHANNELS.IN_APP, this.NOTIFICATION_CHANNELS.PUSH, this.NOTIFICATION_CHANNELS.SMS]
         });
@@ -369,8 +369,8 @@ class NotificationManager {
     static payment(amount, description, data = {}) {
         return window.notificationManager.add({
             type: this.NOTIFICATION_TYPES.PAYMENT,
-            title: 'Оплата послуг',
-            message: `Отримано оплату: ${amount} за ${description}`,
+            title: 'Pagamento de serviços',
+            message: `Pagamento recebido: ${amount} por ${description}`,
             data,
             channels: [this.NOTIFICATION_CHANNELS.IN_APP, this.NOTIFICATION_CHANNELS.EMAIL]
         });
