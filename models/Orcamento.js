@@ -120,8 +120,7 @@ const orcamentoSchema = new mongoose.Schema({
 
     // ID do utilizador que aprovou/rejeitou
     aprovadoPorUser: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User'
+        type: mongoose.Schema.Types.Mixed
     },
 
     // Observação/motivo fornecido pelo cliente ou admin
@@ -131,13 +130,13 @@ const orcamentoSchema = new mongoose.Schema({
 
     // Ligação ao elevador (se detectado por morada) — mantido para compatibilidade
     liftId: {
-        type: mongoose.Schema.Types.ObjectId,
+        type: mongoose.Schema.Types.Mixed,
         default: null
     },
 
-    // Array de IDs de elevadores vinculados (um ou vários por morada)
+    // Array de elevadores vinculados (objectos {liftId, address, ...} ou IDs)
     lifts: {
-        type: [mongoose.Schema.Types.ObjectId],
+        type: [mongoose.Schema.Types.Mixed],
         default: []
     },
 

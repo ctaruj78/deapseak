@@ -3727,12 +3727,25 @@ app.post('/api/lifts/:id/documents', authenticateToken, uploadLiftDoc.single('do
 app.get('/api/lifts/:id/orcamentos', authenticateToken, async (req, res) => {
     try {
         const { ObjectId } = require('mongodb');
-        const Orcamento = require('./models/Orcamento');
-        const liftId = new ObjectId(req.params.id);
-        const orcamentos = await Orcamento.find({ liftId })
-            .sort({ data: -1 })
-            .select('-emailsEnviados -pdfPath')
-            .lean();
+        if (!db) return res.status(503).json({ success: false, message: 'Base de dados indisponível' });
+
+        const liftId = req.params.id;
+        let liftObjId;
+        try { liftObjId = new ObjectId(liftId); } catch { return res.status(400).json({ success: false, message: 'ID inválido' }); }
+
+        // Шукаємо орсаменти де:
+        //  1. старе поле liftId (string або ObjectId) збігається з цим ліфтом
+        //  2. новий масив lifts[] містить об'єкт з liftId = цьому ліфту
+        //  3. масив lifts[] містить рядок з ID ліфта (старий формат)
+        const orcamentos = await db.collection('orcamentos').find({
+            $or: [
+                { liftId: liftId },
+                { liftId: liftObjId },
+                { 'lifts.liftId': liftId },
+                { lifts: liftId }
+            ]
+        }).sort({ data: -1 }).toArray();
+
         res.json({ success: true, data: orcamentos });
     } catch (error) {
         console.error('❌ Erro ao buscar orçamentos do lift:', error);
@@ -9253,6 +9266,50 @@ app.put('/api/orcamentos/:id', authenticateToken, async (req, res) => {
     }
 });
 
+// PATCH /api/orcamentos/:id/status - Mudar status do orçamento
+app.patch('/api/orcamentos/:id/status', authenticateToken, async (req, res) => {
+    try {
+        if (!db) return res.status(503).json({ success: false, message: 'Base de dados indisponível' });
+        if (req.user.role !== 'admin' && req.user.role !== 'dispatcher') {
+            return res.status(403).json({ success: false, message: 'Sem permissão' });
+        }
+        const { ObjectId } = require('mongodb');
+        const { status, observacao } = req.body;
+
+        const validStatuses = ['rascunho', 'enviado', 'aprovado', 'rejeitado', 'expirado'];
+        if (!status || !validStatuses.includes(status)) {
+            return res.status(400).json({ success: false, message: `Status inválido. Valores aceites: ${validStatuses.join(', ')}` });
+        }
+
+        const updateData = {
+            status,
+            updatedAt: new Date().toISOString(),
+            [`statusHistory.${Date.now()}`]: {
+                status,
+                observacao: observacao || null,
+                alteradoPor: req.user.username,
+                data: new Date().toISOString()
+            }
+        };
+
+        const result = await db.collection('orcamentos').updateOne(
+            { _id: new ObjectId(req.params.id) },
+            { $set: updateData }
+        );
+
+        if (result.matchedCount === 0) {
+            return res.status(404).json({ success: false, message: 'Orçamento não encontrado' });
+        }
+
+        const statusLabels = { rascunho: 'Rascunho', enviado: 'Enviado', aprovado: 'Aprovado', rejeitado: 'Rejeitado', expirado: 'Expirado' };
+        console.log(`✅ Orçamento ${req.params.id} → status: ${status} (por ${req.user.username})`);
+        res.json({ success: true, message: `Status atualizado para: ${statusLabels[status]}` });
+    } catch (error) {
+        console.error('❌ Erro ao mudar status orçamento:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
+
 // DELETE /api/orcamentos/:id - Deletar orçamento
 app.delete('/api/orcamentos/:id', authenticateToken, async (req, res) => {
     try {
@@ -9284,6 +9341,75 @@ app.delete('/api/orcamentos/:id', authenticateToken, async (req, res) => {
 });
 */
 // Кінець LEGACY orcamentos endpoints
+
+// PATCH /api/orcamentos/:id/link-lift - Прив'язати орсаменто до одного або кількох ліфтів
+app.patch('/api/orcamentos/:id/link-lift', authenticateToken, async (req, res) => {
+    try {
+        if (!db) return res.status(503).json({ success: false, message: 'Base de dados indisponível' });
+        if (req.user.role !== 'admin' && req.user.role !== 'dispatcher') {
+            return res.status(403).json({ success: false, message: 'Sem permissão' });
+        }
+        const { ObjectId } = require('mongodb');
+        let { liftIds } = req.body;
+        if (!Array.isArray(liftIds)) {
+            return res.status(400).json({ success: false, message: 'liftIds deve ser um array' });
+        }
+        // Validate and filter IDs
+        const validIds = liftIds.filter(id => {
+            try { new ObjectId(String(id)); return true; } catch { return false; }
+        }).map(id => String(id));
+
+        let liftsData = [];
+        if (validIds.length > 0) {
+            const foundLifts = await db.collection('lifts')
+                .find({ _id: { $in: validIds.map(id => new ObjectId(id)) } })
+                .project({ _id: 1, municipalNumber: 1, address: 1, clientName: 1 })
+                .toArray();
+            liftsData = foundLifts.map(l => {
+                const addr = l.address || {};
+                const addrStr = typeof addr === 'string'
+                    ? addr
+                    : [addr.street, addr.zipCode, addr.city].filter(Boolean).join(', ');
+                return {
+                    liftId: l._id.toString(),
+                    municipalNumber: l.municipalNumber || null,
+                    address: addrStr,
+                    clientName: l.clientName || null
+                };
+            });
+        }
+
+        // Backward compatibility: keep single liftId + liftAddress fields pointing to first lift
+        const updateData = {
+            lifts: liftsData,
+            liftId: liftsData.length > 0 ? liftsData[0].liftId : null,
+            liftAddress: liftsData.length > 0 ? liftsData[0].address : null,
+            updatedAt: new Date().toISOString()
+        };
+
+        const result = await db.collection('orcamentos').updateOne(
+            { _id: new ObjectId(req.params.id) },
+            { $set: updateData }
+        );
+
+        if (result.matchedCount === 0) {
+            return res.status(404).json({ success: false, message: 'Orçamento não encontrado' });
+        }
+
+        const count = liftsData.length;
+        const msg = count === 0
+            ? 'Elevadores desvinculados'
+            : count === 1
+                ? `Vinculado a: ${liftsData[0].address || liftsData[0].municipalNumber || ''}`
+                : `Vinculado a ${count} elevadores`;
+
+        console.log(`✅ Orçamento ${req.params.id} vinculado a ${count} elevador(es)`);
+        res.json({ success: true, message: msg, lifts: liftsData });
+    } catch (error) {
+        console.error('❌ Erro ao vincular elevadores:', error);
+        res.status(500).json({ success: false, message: error.message });
+    }
+});
 
 // ═══════════════════════════════════════════════════════════
 // 📧 EMAIL ENDPOINTS - Brevo SMTP Integration
@@ -9874,8 +10000,11 @@ app.post('/api/email/send-orcamento', authenticateToken, async (req, res) => {
             `
         };
 
-        // Відправити через emailService (SMTP)
-        await emailService.sendEmail(clientEmail, mailOptions.subject, mailOptions.html);
+        // Відправити через emailService (SMTP) з BCC на адмін-пошту (копія відправнику)
+        const adminEmail = process.env.EMAIL_FROM
+            ? process.env.EMAIL_FROM.match(/<([^>]+)>/)?.[1] || process.env.SMTP_USER
+            : process.env.SMTP_USER;
+        await emailService.sendEmail(clientEmail, mailOptions.subject, mailOptions.html, adminEmail);
         
         // Atualizar orçamento com tracking
         await db.collection('orcamentos').updateOne(

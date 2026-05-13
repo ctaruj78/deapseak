@@ -14,6 +14,10 @@ class EmailService {
         const fromRaw = process.env.SMTP_FROM || process.env.EMAIL_FROM || '"DeapSeaK System" <noreply@deapseak.com>';
         this.from = fromRaw;
 
+        // Адмін BCC — копія всіх листів на ящик відправника
+        const fromEmail = fromRaw.match(/<([^>]+)>/)?.[1] || fromRaw;
+        this.adminBcc = process.env.EMAIL_BCC || fromEmail || null;
+
         if (this.smtpConfigured) {
             this.transporter = nodemailer.createTransport({
                 host: process.env.SMTP_HOST,
@@ -30,7 +34,7 @@ class EmailService {
     }
 
     // Helper method to send email via SMTP
-    async _sendEmail(to, subject, htmlContent, attachments = []) {
+    async _sendEmail(to, subject, htmlContent, attachments = [], bcc = null) {
         if (!this.smtpConfigured) {
             console.warn(`⚠️  Email não enviado para ${to} — SMTP não configurado`);
             return;
@@ -56,6 +60,12 @@ class EmailService {
             html: htmlContent
         };
 
+        // BCC: передане явно або автоматичне (admin copy) — але тільки якщо одержувач не є admin
+        const effectiveBcc = bcc || (this.adminBcc && toField !== this.adminBcc ? this.adminBcc : null);
+        if (effectiveBcc) {
+            mailOptions.bcc = effectiveBcc;
+        }
+
         // Inline attachments (logos etc.)
         if (attachments && attachments.length > 0) {
             mailOptions.attachments = attachments.map(a => ({
@@ -78,8 +88,8 @@ class EmailService {
     }
 
     // Публічний метод для відправки email (для API endpoints)
-    async sendEmail(to, subject, htmlContent) {
-        return await this._sendEmail(to, subject, htmlContent);
+    async sendEmail(to, subject, htmlContent, bcc = null) {
+        return await this._sendEmail(to, subject, htmlContent, [], bcc);
     }
 
     // Відправити email про нову заявку

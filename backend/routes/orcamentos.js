@@ -1224,7 +1224,7 @@ router.patch('/:id/status', authenticate, authorizeRoles('admin', 'dispatcher'),
             orcamento.aprovadoPorUser = req.user.id;
         }
         if (observacao) orcamento.observacao = observacao;
-        await orcamento.save();
+        await orcamento.save({ validateModifiedOnly: true });
 
         const msg = {
             aprovado:  'Orçamento aprovado com sucesso',
