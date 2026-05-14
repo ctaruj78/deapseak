@@ -193,6 +193,130 @@ const INSPECTION_TEMPLATES = (() => {
   ];
 
   // ================================================================
+  // DL 513/70 (RGAE) — Ascensores ANTIGOS — blocos específicos
+  // NÃO usar EN 81-20 aqui: soaleiro móvel, fotocélulas, variador de
+  // frequência e encoder NÃO existem nestes equipamentos.
+  // ================================================================
+
+  // --- DL 513/70 — Segurança ---
+  const DL513_SAFETY = [
+    item('pq-513',         'Para-quedas — estado, engrenagem e regulação da atuação',      'DL 513/70 Art. 77.º',   true),
+    item('lv-513',         'Limitador de velocidade — calibração, encravamento e desbloqueio', 'DL 513/70 Art. 78.º', true),
+    item('travao-513',     'Travão eletromagnético — folga pastilhas/disco, desgaste e ajuste', 'DL 513/70 Art. 57.º', true),
+    item('fc-sup-513',     'Fim-de-curso superior — contacto e ajuste mecânico',           'DL 513/70 Art. 90.º',   true),
+    item('fc-inf-513',     'Fim-de-curso inferior — contacto e ajuste mecânico',           'DL 513/70 Art. 90.º',   true),
+    item('cseg-513',       'Circuito de segurança — relés, contactores e contactos',       'DL 513/70 Art. 88.º',   true),
+    item('alarme-513',     'Alarme de emergência (campainha / interfone) — funcional',     'DL 513/70 Art. 83.º',   true),
+    item('ilum-emg-513',   'Iluminação de emergência na cabina — funcional',               'DL 320/2002 Art. 8.º'),
+    item('amort-513',      'Amortecedores ou batentes do fosso — estado e fixação',        'DL 513/70 Art. 73.º'),
+    item('cpeso-pq-513',   'Contrapeso — fixação dos blocos e encravamento do para-quedas', 'DL 513/70 Art. 70.º'),
+  ];
+
+  // --- DL 513/70 — Mecânica de tração com redutor (sem MRL, sem variador) ---
+  const DL513_MECH = [
+    item('oleo-nivel-513', 'Nível de óleo do redutor — quantidade e qualidade visual',    'DL 513/70 / Fab.',      true),
+    item('oleo-qual-513',  'Qualidade do óleo do redutor — cor, odor e contaminação',     'Manual fabricante'),
+    item('cabos-513',      'Cabos de suspensão — fios partidos, diâmetro e terminações',  'DL 513/70 Art. 66.º',   true),
+    item('polia-513',      'Polia de tração / tambor — ranhuras e desgaste',              'DL 513/70 Art. 65.º'),
+    item('motor-513',      'Motor elétrico — temperatura, escovas (se CC) e ruído',       'DL 513/70 Art. 56.º'),
+    item('acoplam-513',    'Acoplamento motor–redutor — estado e folga',                  'DL 513/70 Art. 57.º'),
+    item('guias-513',      'Guias da cabina e contrapeso — alinhamento e fixação',        'DL 513/70 Art. 62.º'),
+    item('sapatas-513',    'Sapatas de guiamento — desgaste e pressão de ajuste',         'DL 513/70 Art. 63.º'),
+    item('lub-cabos-513',  'Lubrificação dos cabos de suspensão (óleo específico)',        'DL 513/70 Art. 66.º'),
+    item('lub-guias-513',  'Lubrificação das guias (graxa adequada)',                     'Manual fabricante'),
+    item('lub-polias-513', 'Lubrificação de polias de desvio e mancais',                  'Manual fabricante'),
+  ];
+
+  // --- DL 513/70 — Portões de rede / guilhotina ---
+  const DL513_DOORS_GATE = [
+    item('portao-513',     'Portão de rede / guilhotina — estado geral, deformações e corrosão', 'DL 513/70 Art. 27.º', true),
+    item('fecho-portao-513','Mecanismo de fecho automático ao arranque — funcionamento',  'DL 513/70 Art. 28.º',   true),
+    item('ct-portao-513',  'Contactos elétricos do portão de cabina e de cada patamar',  'DL 513/70 Art. 88.º',   true),
+    item('engate-pat-513', 'Fechos de engate dos patamares — mecanismo e desgaste',      'DL 513/70 Art. 30.º',   true),
+    item('guias-portao-513','Guias do portão — estado e folga lateral',                  'DL 513/70 Art. 27.º'),
+    item('mola-portao-513','Mola de retorno do portão — tensão e funcionamento',         'DL 513/70 Art. 28.º'),
+    item('lub-portao-513', 'Lubrificação das guias e mecanismo do portão',               'Manual fabricante'),
+  ];
+
+  // --- DL 513/70 — Portas batentes (quando existem em vez de portões) ---
+  const DL513_DOORS_SWING = [
+    item('ptbat-513',      'Portas batentes — estado geral, folgas e deformações',        'DL 513/70 Art. 24.º',   true),
+    item('fechos-bat-513', 'Fechos mecânicos de patamar — engate e desgaste',             'DL 513/70 Art. 25.º',   true),
+    item('ct-bat-513',     'Contactos elétricos das portas de patamar',                   'DL 513/70 Art. 88.º',   true),
+    item('mola-bat-513',   'Molas de retorno — tensão e funcionamento',                   'DL 513/70 Art. 24.º'),
+    item('dobr-bat-513',   'Dobradiças — desgaste e folga',                               'DL 513/70 Art. 24.º'),
+    item('fecho-cab-513',  'Fecho da porta de cabina — operação manual segura',           'DL 513/70 Art. 26.º',   true),
+    item('lub-bat-513',    'Lubrificação de fechos e dobradiças',                         'Manual fabricante'),
+  ];
+
+  // --- DL 513/70 — Vão e fosso ---
+  const DL513_PIT = [
+    item('limp-fosso-513', 'Limpeza e estado geral do fosso',                             'DL 320/2002 Art. 8.º'),
+    item('agua-fosso-513', 'Ausência de água / humidade no fosso',                        'DL 513/70 Art. 4.º'),
+    item('ilum-fosso-513', 'Iluminação do fosso — funcional',                             'DL 513/70 Art. 8.º'),
+    item('amort-fosso-513','Amortecedores / batentes do fosso — estado e fixação',        'DL 513/70 Art. 73.º'),
+  ];
+
+  // --- DL 513/70 — Cabina (sem soaleiro móvel, sem fotocélulas) ---
+  const DL513_CABIN = [
+    item('limp-cab-513',   'Limpeza da cabina — paredes, chão e teto',                    'DL 320/2002 Art. 8.º'),
+    item('carga-nom-513',  'Placa de carga nominal — visível e legível',                  'DL 513/70 Art. 39.º'),
+    item('boton-cab-513',  'Botoneira de cabina — funcionamento e iluminação',            'DL 513/70 Art. 82.º'),
+    item('soaleiro-513',   'Soaleiro fixo da cabina — fixação e estado (sem peça móvel)', 'DL 513/70 Art. 34.º'),
+    item('ventil-cab-513', 'Ventilação da cabina — abertura(s) funcional(is)',            'DL 513/70 Art. 35.º'),
+  ];
+
+  // --- DL 513/70 — Sistemas elétricos (sem variador, sem encoder) ---
+  const DL513_ELECTRICAL = [
+    item('quadro-513',     'Quadro de manobra — relés, contactores, fusíveis e estado',   'DL 513/70 Art. 85.º'),
+    item('transf-seg-513', 'Transformador de segurança — tensão de controlo (50 V / 24 V)', 'DL 513/70 Art. 86.º', true),
+    item('aquec-quad-513', 'Ausência de aquecimento anormal no quadro (contactores)',     'DL 513/70 Art. 85.º'),
+    item('ilum-cab-513',   'Iluminação da cabina — lâmpadas e funcionamento',             'DL 513/70 Art. 83.º'),
+    item('boton-pat-513',  'Botoneiras de patamar — funcionamento e fixação',             'DL 513/70 Art. 82.º'),
+  ];
+
+  // --- DL 513/70 — Casa das máquinas (sempre presente neste tipo) ---
+  const DL513_MACHINE_ROOM = [
+    item('acesso-cm-513',  'Acesso à casa das máquinas — chave e sinalização',            'DL 513/70 Art. 48.º'),
+    item('limp-cm-513',    'Limpeza da casa das máquinas',                                'DL 320/2002 Art. 8.º'),
+    item('temp-cm-513',    'Ventilação / temperatura adequada',                           'DL 513/70 Art. 49.º'),
+    item('extintor-513',   'Extintor de incêndio — presente e dentro da validade',        'DL 513/70 Art. 52.º'),
+  ];
+
+  // --- DL 513/70 — Documentação ---
+  const DL513_DOCUMENTATION = [
+    item('livro-rev-513',  'Livro de revisões atualizado com a presente visita',           'DL 320/2002 Art. 12.º', true),
+    item('cert-valid-513', 'Certificado de conformidade / registo OI válido',             'DL 320/2002 Art. 14.º', true),
+    item('placa-id-513',   'Placa de identificação do ascensor — visível e legível',      'DL 513/70 Art. 14.º'),
+  ];
+
+  // --- DL 513/70 — Extras trimestrais ---
+  const DL513_QUARTERLY_EXTRA = [
+    item('teste-alarme-513','Teste funcional do alarme de emergência',                    'DL 320/2002 Art. 12.º', true),
+    item('nivel-513',       'Ensaio de nivelamento — precisão de paragem',               'DL 513/70 Art. 64.º'),
+    item('travao-ajuste-513','Travão — verificação do curso de paragem e ajuste',        'DL 513/70 Art. 57.º',   true),
+  ];
+
+  // --- DL 513/70 — Extras anuais ---
+  const DL513_ANNUAL_EXTRA = [
+    item('ins-cabos-513',  'Inspeção detalhada dos cabos — contagem de fios partidos',    'DL 513/70 Art. 66.º',   true),
+    item('ensaio-pq-513',  'Ensaio funcional do para-quedas (atuação à velocidade)',      'DL 513/70 Art. 77.º',   true),
+    item('ensaio-lv-513',  'Ensaio do limitador de velocidade — atuação nominal',         'DL 513/70 Art. 78.º',   true),
+    item('isolam-513',     'Medição da resistência de isolamento elétrico',               'DL 513/70 Art. 87.º'),
+    item('folgas-fosso-513','Verificação das folgas do fosso (altura inferior e superior)','DL 513/70 Art. 7.º'),
+    item('oleo-troca-513', 'Mudança de óleo do redutor — se ciclo cumprido',             'Manual fabricante'),
+  ];
+
+  // --- DL 513/70 — Preparação para inspeção OI ---
+  const DL513_PRE_INSPECTION_EXTRA = [
+    ...DL513_QUARTERLY_EXTRA,
+    ...DL513_ANNUAL_EXTRA,
+    item('ficha-tec-513',  'Ficha técnica do ascensor disponível para o OI',             'DL 95/2019'),
+    item('dossier-oi-513', 'Dossier de registo de inspeções anteriores completo',        'DL 320/2002 Art. 14.º'),
+    item('resgate-513',    'Instrução de resgate por chave de saída de emergência',       'DL 513/70 Art. 79.º',   true),
+  ];
+
+  // ================================================================
   // REPARAÇÃO — itens focados no trabalho de reparação
   // ================================================================
 
@@ -310,6 +434,81 @@ const INSPECTION_TEMPLATES = (() => {
         { id: 'emg-estado',      title: 'Estado Final do Equipamento',       icon: 'traffic-light',        color: 'success',  items: EMERGENCY_FINAL_STATUS,   binary: true },
         { id: 'emg-documentacao',title: 'Documentação da Emergência',        icon: 'file-exclamation',     color: 'info',     items: EMERGENCY_DOCUMENTATION,  binary: true },
       ];
+    }
+
+    // ================================================================
+    // DL 513/70 — Ascensores ANTIGOS (RGAE) — checklist adaptado
+    // Sem soaleiro móvel, fotocélulas, variador de frequência ou encoder
+    // ================================================================
+    if (driveType === 'dl513') {
+      const dl513Sections = [];
+
+      dl513Sections.push({
+        id: 'seguranca', title: 'Sistemas de Segurança (DL 513/70)',
+        icon: 'shield-alt', color: 'danger', items: DL513_SAFETY,
+      });
+
+      const dl513DoorItems = doorType === 'swing' ? DL513_DOORS_SWING : DL513_DOORS_GATE;
+      const dl513DoorTitle = doorType === 'swing'
+        ? 'Portas Batentes (DL 513/70)'
+        : 'Portões de Rede / Guilhotina (DL 513/70)';
+      const dl513DoorIcon  = doorType === 'swing' ? 'door-open' : 'grip-lines-vertical';
+      dl513Sections.push({
+        id: 'portas', title: dl513DoorTitle,
+        icon: dl513DoorIcon, color: 'primary', items: dl513DoorItems,
+      });
+
+      dl513Sections.push({
+        id: 'mecanica', title: 'Mecânica e Lubrificação (DL 513/70)',
+        icon: 'cogs', color: 'secondary', items: DL513_MECH,
+      });
+
+      dl513Sections.push({
+        id: 'fosso', title: 'Vão e Fosso',
+        icon: 'layer-group', color: 'dark', items: DL513_PIT,
+      });
+
+      dl513Sections.push({
+        id: 'cabina', title: 'Cabina',
+        icon: 'cube', color: 'info', items: DL513_CABIN,
+      });
+
+      dl513Sections.push({
+        id: 'eletrica', title: 'Sistemas Elétricos (DL 513/70)',
+        icon: 'bolt', color: 'warning', items: DL513_ELECTRICAL,
+      });
+
+      dl513Sections.push({
+        id: 'cm', title: 'Casa das Máquinas',
+        icon: 'warehouse', color: 'secondary', items: DL513_MACHINE_ROOM,
+      });
+
+      if (visitType === 'quarterly') {
+        dl513Sections.push({
+          id: 'trimestral', title: 'Verificações Trimestrais (DL 513/70)',
+          icon: 'calendar-check', color: 'success', items: DL513_QUARTERLY_EXTRA,
+        });
+      }
+      if (visitType === 'annual') {
+        dl513Sections.push({
+          id: 'anual', title: 'Verificações Anuais / Periódicas (DL 513/70)',
+          icon: 'star', color: 'success',
+          items: [...DL513_QUARTERLY_EXTRA, ...DL513_ANNUAL_EXTRA],
+        });
+      }
+      if (visitType === 'pre_inspection') {
+        dl513Sections.push({
+          id: 'pre-oi', title: 'Preparação para Inspeção OI (DL 513/70)',
+          icon: 'clipboard-check', color: 'success', items: DL513_PRE_INSPECTION_EXTRA,
+        });
+      }
+
+      dl513Sections.push({
+        id: 'documentacao', title: 'Documentação',
+        icon: 'file-alt', color: 'info', items: DL513_DOCUMENTATION,
+      });
+
+      return dl513Sections;
     }
 
     // ================================================================
@@ -486,6 +685,12 @@ const INSPECTION_TEMPLATES = (() => {
       norms: ['EN 81-41', 'DL 163/2006'],
       icon: 'wheelchair',
       color: 'success',
+    },
+    dl513: {
+      label: 'Ascensor Elétrico — DL 513/70 (RGAE) — instalação antiga',
+      norms: ['DL 513/70 (RGAE)', 'DL 320/2002 (alt. DL 176/2024)', 'EN 81-1 (referência)'],
+      icon: 'history',
+      color: 'warning',
     },
   };
 

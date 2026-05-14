@@ -1530,6 +1530,7 @@
                                                         <option value="hydraulic">Hidráulico</option>
                                                         <option value="traction_mrl">Por cabo (MRL)</option>
                                                         <option value="traction">Por cabo (com casa das máquinas)</option>
+                                                        <option value="dl513">Por cabo — DL 513/70 (instalação antiga)</option>
                                                         <option value="platform">Por parafuso / Plataforma</option>
                                                     </select>
                                                 </div>
@@ -5061,7 +5062,15 @@ Email de contacto: info@festlift.pt`;
                 $('#detail-floors').text(lift.floors ? `${lift.floors} and.` : (lift.floorsCount ? `${lift.floorsCount} and.` : 'Não especificado'));
                 
                 // Tipo de accionamento e portas
-                $('#detail-drive-type').text(lift.driveType || 'Não especificado');
+                const driveLabels = {
+                    traction: 'Por cabo (com casa das máquinas)',
+                    traction_mrl: 'Por cabo (MRL)',
+                    dl513: 'Por cabo — DL 513/70 (instalação antiga)',
+                    hydraulic: 'Hidráulico',
+                    goods: 'Monta-cargas',
+                    platform: 'Plataforma Elevatória',
+                };
+                $('#detail-drive-type').text(driveLabels[lift.driveType] || lift.driveType || 'Não especificado');
                 $('#detail-door-type').text(lift.doorType || 'Não especificado');
                 
                 // Роки
