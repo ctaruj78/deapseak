@@ -1243,9 +1243,6 @@
         // Inspection management
         const inspectionManager = {
             init() {
-                // 🔥 КРОК 1: Em primeiro lugar заванeжуexisteмо dados desde QR (se existe)
-                loadLiftDataFromURL();
-                
                 // Set current date
                 const today = new Date().toISOString().split('T')[0];
                 $('#inspectionDate').val(today);
@@ -1256,8 +1253,14 @@
                 // Bind events
                 this.bindEvents();
 
+                // Render checklist with default dropdown values immediately
+                refreshChecklist();
+
                 // Update report preview
                 updateReportPreview();
+
+                // Override with QR/URL data if present (may call refreshChecklist again)
+                loadLiftDataFromURL();
             },
 
             bindEvents() {
