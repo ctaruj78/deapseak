@@ -12,8 +12,132 @@
     <link rel="stylesheet" href="/plugins/fontawesome/css/all.min.css">
     <link rel="stylesheet" href="../../assets/css/main.css">
     <link rel="stylesheet" href="../../assets/css/auth.css">
+    <style>
+        /* === PRODUCTION LOGIN ANIMATIONS === */
+
+        body.login-page {
+            background: #0c1a35 !important;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Floating background blobs */
+        .fl-blob {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(90px);
+            opacity: 0.18;
+            pointer-events: none;
+            z-index: 0;
+            animation: blobFloat ease-in-out infinite;
+        }
+        .fl-blob-1 {
+            width: 520px; height: 520px;
+            background: #1565c0;
+            top: -120px; left: -120px;
+            animation-duration: 22s;
+        }
+        .fl-blob-2 {
+            width: 420px; height: 420px;
+            background: #6a1b9a;
+            bottom: -100px; right: -80px;
+            animation-duration: 28s;
+            animation-direction: reverse;
+        }
+        .fl-blob-3 {
+            width: 280px; height: 280px;
+            background: #0097a7;
+            top: 45%; left: 55%;
+            animation-duration: 18s;
+        }
+        @keyframes blobFloat {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            33%       { transform: translate(28px, -28px) scale(1.06); }
+            66%       { transform: translate(-18px, 18px) scale(0.94); }
+        }
+
+        /* Card entrance */
+        .login-box {
+            position: relative;
+            z-index: 1;
+            animation: cardEnter 0.65s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+        }
+        @keyframes cardEnter {
+            from { opacity: 0; transform: translateY(48px) scale(0.95); }
+            to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        /* Card glass-feel */
+        .login-box .card {
+            background: rgba(255, 255, 255, 0.97) !important;
+            border: none !important;
+            border-radius: 14px !important;
+            overflow: hidden;
+        }
+        .login-box .card-header.bg-primary {
+            background: linear-gradient(135deg, #1565c0, #6a1b9a) !important;
+            border-radius: 0 !important;
+            padding: 20px !important;
+        }
+
+        /* Logo */
+        .login-logo a {
+            color: #fff !important;
+            font-size: 1.9rem;
+            text-shadow: 0 2px 12px rgba(0,0,0,0.3);
+        }
+        .login-logo a b { color: #fff; }
+        .login-logo .fa-elevator {
+            display: inline-block;
+            animation: liftMove 3.5s ease-in-out infinite;
+        }
+        @keyframes liftMove {
+            0%, 100% { transform: translateY(0); }
+            25%       { transform: translateY(-8px); }
+            50%       { transform: translateY(-3px); }
+            75%       { transform: translateY(-10px); }
+        }
+
+        /* Button shine sweep */
+        .btn-primary {
+            background: linear-gradient(135deg, #1565c0, #6a1b9a) !important;
+            border: none !important;
+            position: relative;
+            overflow: hidden;
+            transition: box-shadow 0.3s, transform 0.15s;
+        }
+        .btn-primary:hover {
+            box-shadow: 0 6px 20px rgba(21, 101, 192, 0.5) !important;
+            transform: translateY(-1px);
+        }
+        .btn-primary::after {
+            content: '';
+            position: absolute;
+            top: -50%; left: -80%;
+            width: 55%; height: 200%;
+            background: rgba(255, 255, 255, 0.18);
+            transform: skewX(-20deg);
+            transition: left 0.5s ease;
+        }
+        .btn-primary:hover::after { left: 130%; }
+
+        /* Input focus glow */
+        .form-control:focus {
+            border-color: #1565c0 !important;
+            box-shadow: 0 0 0 3px rgba(21, 101, 192, 0.15) !important;
+            transition: box-shadow 0.2s, border-color 0.2s;
+        }
+
+        /* Card body subtle */
+        .login-box .card-body { padding: 28px !important; }
+    </style>
 </head>
 <body class="hold-transition login-page bg-light">
+    <!-- Animated background -->
+    <div class="fl-blob fl-blob-1"></div>
+    <div class="fl-blob fl-blob-2"></div>
+    <div class="fl-blob fl-blob-3"></div>
+
     <div class="login-box">
         <div class="login-logo mb-4">
             <a href="../../index.html"><i class="fas fa-elevator text-primary"></i> <b>FestLift</b></a>
