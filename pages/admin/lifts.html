@@ -6700,7 +6700,30 @@ Email de contacto: info@festlift.pt`;
     // ============================================
     // Функції para trabalhos desde contratoами
     // ============================================
-    
+
+    async function viewOrcamentoPDF(orcamentoId) {
+        try {
+            const token = localStorage.getItem('liftmanager_jwt') || sessionStorage.getItem('liftmanager_jwt') || localStorage.getItem('authToken');
+            const response = await fetch(`/api/orcamentos/${orcamentoId}/pdf`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (!response.ok) throw new Error('Erro ao gerar PDF');
+            const blob = await response.blob();
+            const url = URL.createObjectURL(blob);
+            const win = window.open(url, '_blank');
+            if (!win) {
+                // fallback se popup bloqueado
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `Orcamento_${orcamentoId}.pdf`;
+                a.click();
+            }
+            setTimeout(() => URL.revokeObjectURL(url), 60000);
+        } catch (e) {
+            toastr.error('Não foi possível abrir o PDF. Verifique a ligação.');
+        }
+    }
+
     async function loadLiftOrcamentos(liftId) {
         const container = document.getElementById('lift-orcamentos-section');
         if (!container) return;
@@ -6728,7 +6751,10 @@ Email de contacto: info@festlift.pt`;
                     <td>${o.cliente?.nome || '—'}</td>
                     <td>€${(o.total||0).toFixed(2)}</td>
                     <td>${statusBadge(o.status)}</td>
-                    <td><a href="/pages/admin/invoice-template.html?id=${o._id}&view=true" target="_blank" class="btn btn-xs btn-outline-info btn-sm"><i class="fas fa-eye"></i></a></td>
+                    <td class="text-nowrap">
+                        <button onclick="viewOrcamentoPDF('${o._id}')" class="btn btn-xs btn-outline-info btn-sm mr-1" title="Ver PDF"><i class="fas fa-file-pdf"></i></button>
+                        <a href="/pages/admin/invoice-template.html?id=${o._id}" target="_blank" class="btn btn-xs btn-outline-secondary btn-sm" title="Editar orçamento"><i class="fas fa-edit"></i></a>
+                    </td>
                 </tr>`).join('')}</tbody>
             </table>`;
         } catch (e) {

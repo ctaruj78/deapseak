@@ -3737,12 +3737,15 @@ app.get('/api/lifts/:id/orcamentos', authenticateToken, async (req, res) => {
         //  1. старе поле liftId (string або ObjectId) збігається з цим ліфтом
         //  2. новий масив lifts[] містить об'єкт з liftId = цьому ліфту
         //  3. масив lifts[] містить рядок з ID ліфта (старий формат)
+        //  4. масив lifts[] містить ObjectId (новий формат)
         const orcamentos = await db.collection('orcamentos').find({
             $or: [
                 { liftId: liftId },
                 { liftId: liftObjId },
                 { 'lifts.liftId': liftId },
-                { lifts: liftId }
+                { 'lifts.liftId': liftObjId },
+                { lifts: liftId },
+                { lifts: liftObjId }
             ]
         }).sort({ data: -1 }).toArray();
 

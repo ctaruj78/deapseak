@@ -603,7 +603,7 @@ router.get('/:id/pdf', authenticate, async (req, res) => {
 
         const pdfBuffer = await gerarPDFOrcamento(orcamento);
         res.setHeader('Content-Type', 'application/pdf');
-        res.setHeader('Content-Disposition', `attachment; filename="Orcamento_${orcamento.numero}.pdf"`);
+        res.setHeader('Content-Disposition', `inline; filename="Orcamento_${orcamento.numero}.pdf"`);
         res.send(pdfBuffer);
     } catch (error) {
         console.error('Erro ao gerar PDF autenticado:', error);
