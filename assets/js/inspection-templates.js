@@ -448,11 +448,23 @@ const INSPECTION_TEMPLATES = (() => {
         icon: 'shield-alt', color: 'danger', items: DL513_SAFETY,
       });
 
-      const dl513DoorItems = doorType === 'swing' ? DL513_DOORS_SWING : DL513_DOORS_GATE;
-      const dl513DoorTitle = doorType === 'swing'
-        ? 'Portas Batentes (DL 513/70)'
-        : 'Portões de Rede / Guilhotina (DL 513/70)';
-      const dl513DoorIcon  = doorType === 'swing' ? 'door-open' : 'grip-lines-vertical';
+      // Ascensor DL 513/70 pode ter modernização parcial com portas automáticas
+      let dl513DoorItems, dl513DoorTitle, dl513DoorIcon;
+      if (doorType === 'automatic') {
+        // Modernização: operador automático instalado → verifica itens EN 81-20 para o operador
+        dl513DoorItems = DOORS_AUTOMATIC;
+        dl513DoorTitle = 'Portas Automáticas (Modernização — DL 513/70)';
+        dl513DoorIcon  = 'sync-alt';
+      } else if (doorType === 'swing') {
+        dl513DoorItems = DL513_DOORS_SWING;
+        dl513DoorTitle = 'Portas Batentes (DL 513/70)';
+        dl513DoorIcon  = 'door-open';
+      } else {
+        // gate (padrão RGAE — portões de rede / guilhotina)
+        dl513DoorItems = DL513_DOORS_GATE;
+        dl513DoorTitle = 'Portões de Rede / Guilhotina (DL 513/70)';
+        dl513DoorIcon  = 'grip-lines-vertical';
+      }
       dl513Sections.push({
         id: 'portas', title: dl513DoorTitle,
         icon: dl513DoorIcon, color: 'primary', items: dl513DoorItems,
