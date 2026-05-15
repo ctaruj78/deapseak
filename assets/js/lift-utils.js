@@ -35,7 +35,8 @@ class LiftUtils {
             'cargo': 'Carga',
             'hospital': 'Hospitalar',
             'panoramic': 'Panorâmico',
-            'machine-room-less': 'Sem casa de máquinas'
+            'machine-room-less': 'Sem casa de máquinas',
+            'home-lift': 'Elevador doméstico'
         };
         return typeMap[type] || type;
     }

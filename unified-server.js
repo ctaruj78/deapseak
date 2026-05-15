@@ -54,6 +54,9 @@ async function isOllamaAvailable() {
 
 // 📧 Email Service (Brevo SMTP)
 const emailService = require('./backend/services/emailService');
+// 🚫 Desativar envio de emails de boas-vindas até produção estar pronta
+// Para ativar: definir SEND_WELCOME_EMAILS=true nas variáveis de ambiente
+const SEND_WELCOME_EMAILS = process.env.SEND_WELCOME_EMAILS === 'true';
 
 const app = express();
 app.set('trust proxy', 1); // Confiar no proxy (Codespaces / nginx)
@@ -2181,7 +2184,7 @@ app.post('/api/lifts', authenticateToken, async (req, res) => {
     <div class="creds">
       <p>🔐 <strong>Os seus dados de acesso:</strong></p>
       <p><strong>Email:</strong> <code>${clientEmail}</code></p>
-      <p><strong>Palavra-passe temporária:</strong> <code>${rawPassword}</code></p>
+      <p>A sua palavra-passe temporária será comunicada pelo administrador da conta.</p>
     </div>
 
     <p style="font-size:13px;color:#e53935;font-weight:bold">⚠️ Por razões de segurança, altere a sua palavra-passe após o primeiro login.</p>
@@ -2195,18 +2198,24 @@ app.post('/api/lifts', authenticateToken, async (req, res) => {
 </body>
 </html>`;
 
-                    try {
-                        await emailService.sendEmail(
-                            clientEmail,
-                            '🏢 FestLift — Bem-vindo(a)! Os seus dados de acesso',
-                            inviteHtml
-                        );
-                        console.log(`✅ Convite enviado para: ${clientEmail}`);
-                        newClientInfo.emailSent = true;
-                    } catch (emailErr) {
-                        console.warn(`⚠️ Falha ao enviar convite para ${clientEmail}:`, emailErr.message);
+                    if (!SEND_WELCOME_EMAILS) {
+                        console.log(`📭 [DEV] Email de boas-vindas não enviado para ${clientEmail} — SEND_WELCOME_EMAILS desativado`);
                         newClientInfo.emailSent = false;
-                        newClientInfo.emailError = emailErr.message;
+                        newClientInfo.emailSkipped = true;
+                    } else {
+                        try {
+                            await emailService.sendEmail(
+                                clientEmail,
+                                '🏢 FestLift — Bem-vindo(a)! Os seus dados de acesso',
+                                inviteHtml
+                            );
+                            console.log(`✅ Convite enviado para: ${clientEmail}`);
+                            newClientInfo.emailSent = true;
+                        } catch (emailErr) {
+                            console.warn(`⚠️ Falha ao enviar convite para ${clientEmail}:`, emailErr.message);
+                            newClientInfo.emailSent = false;
+                            newClientInfo.emailError = emailErr.message;
+                        }
                     }
                 } else {
                     console.log(`📭 Convite NÃO enviado para ${clientEmail} (sendAccessEmail=false)`);
@@ -2537,8 +2546,8 @@ app.put('/api/lifts/:id', authenticateToken, async (req, res) => {
                 newClientInfo = { email: _putClientEmail, password: rawPassword, created: true };
                 console.log(`👤 Novo клієнт criado automaticamente (PUT): ${_putClientEmail}`);
 
-                // 📧 Відправляємо запрошення, якщо адмін обрав opção
-                if (req.body.sendAccessEmail === true) {
+                // 📧 Відправляємо запрошення, якщо адмін обрав opção e produção ativa
+                if (SEND_WELCOME_EMAILS && req.body.sendAccessEmail === true) {
                     try {
                         const siteBase = process.env.SITE_URL || `${req.protocol}://${req.headers.host}`;
                         const liftAddr = req.body.address
@@ -2563,7 +2572,7 @@ app.put('/api/lifts/:id', authenticateToken, async (req, res) => {
 <div class="lift-box">🛗 <strong>Elevador:</strong> ${req.body.municipalNumber || '—'}<br>📍 <strong>Morada:</strong> ${liftAddr}</div>
 <div class="creds"><p>🔐 <strong>Os seus dados de acesso:</strong></p>
 <p><strong>Email:</strong> <code>${_putClientEmail}</code></p>
-<p><strong>Palavra-passe temporária:</strong> <code>${rawPassword}</code></p></div>
+<p>A sua palavra-passe temporária será comunicada pelo administrador da conta.</p></div>
 <p style="font-size:13px;color:#e53935;font-weight:bold">⚠️ Por razões de segurança, altere a sua palavra-passe após o primeiro login.</p>
 <a href="${siteBase}/pages/auth/login.html" class="btn">Entrar na plataforma →</a>
 </div><div class="footer">FestLift Portugal &bull; Email gerado automaticamente.</div>
@@ -4213,7 +4222,7 @@ async function createUserWithInvite(userData, role, createdBy, req) {
     <div class="creds">
       <p>🔐 <strong>Os seus dados de acesso:</strong></p>
       <p><strong>Email:</strong> <code>${email}</code></p>
-      <p><strong>Palavra-passe temporária:</strong> <code>${rawPassword}</code></p>
+      <p>A sua palavra-passe temporária será comunicada pelo administrador da conta.</p>
     </div>
     <p style="font-size:13px;color:#e53935;font-weight:bold">⚠️ Por razões de segurança, altere a sua palavra-passe após o primeiro login.</p>
     <a href="${siteBase}/pages/auth/login.html" class="btn">Entrar na plataforma →</a>
@@ -4223,13 +4232,18 @@ async function createUserWithInvite(userData, role, createdBy, req) {
 
     let emailSent = false;
     let emailError = null;
-    try {
-        await emailService.sendEmail(email, `🏢 FestLift — Bem-vindo(a)! Dados de acesso (${roleLabel})`, inviteHtml);
-        emailSent = true;
-        console.log(`✅ Convite enviado para ${role} ${email}`);
-    } catch (e) {
-        emailError = e.message;
-        console.warn(`⚠️ Falha ao enviar convite para ${email}:`, e.message);
+    if (!SEND_WELCOME_EMAILS) {
+        console.log(`📭 [DEV] Email de boas-vindas não enviado para ${email} — SEND_WELCOME_EMAILS desativado`);
+        emailSkipped = true;
+    } else {
+        try {
+            await emailService.sendEmail(email, `🏢 FestLift — Bem-vindo(a)! Dados de acesso (${roleLabel})`, inviteHtml);
+            emailSent = true;
+            console.log(`✅ Convite enviado para ${role} ${email}`);
+        } catch (e) {
+            emailError = e.message;
+            console.warn(`⚠️ Falha ao enviar convite para ${email}:`, e.message);
+        }
     }
 
     return { user: newDoc, created: true, rawPassword, emailSent, emailError };
