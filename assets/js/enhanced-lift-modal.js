@@ -414,6 +414,7 @@ class EnhancedLiftModal {
             brand: $('#enhancedLiftBrand').val() || '',
             model: $('#enhancedLiftModel').val() || '',
             type: $('#enhancedLiftType').val() || 'passenger',
+            liftSubtype: $('#enhancedLiftSubtype').val() || 'public',
             capacity: parseInt($('#enhancedLiftCapacity').val()) || 8,
             speed: parseFloat($('#enhancedLiftSpeed').val()) || 1.0,
             installationYear: parseInt($('#enhancedInstallationYear').val()) || new Date().getFullYear(),
@@ -496,8 +497,11 @@ class EnhancedLiftModal {
             if (isEdit && this.editMunicipalNumber) {
                 // Позначаємо поле як валідне без перевірки (значення відомо з editMunicipalNumber)
                 $('#enhancedMunicipalNumber').removeClass('is-invalid').addClass('is-valid');
-            } else {
+            } else if (needsMunicipalNumber) {
                 validator.required('#enhancedMunicipalNumber', 'Número municipal');
+            } else {
+                // Home lift / platform — municipal number not required
+                $('#enhancedMunicipalNumber').removeClass('is-invalid is-valid');
             }
             validator.required('#enhancedLiftAddress', 'Endereço');
             // Email не обов'язковий при редагуванні (клієнт вже прив'язаний)
@@ -547,7 +551,9 @@ class EnhancedLiftModal {
             }
         }
         // При редагуванні email не обов'язковий (клієнт вже прив'язаний)
-        const required = isEdit ? ['municipalNumber', 'address'] : ['municipalNumber', 'address', 'clientEmail'];
+        const required = isEdit ? ['address'] : ['address', 'clientEmail'];
+        // Для публічного ліфта municipalNumber обов'язковий
+        if (needsMunicipalNumber) required.unshift('municipalNumber');
         const missing = [];
         
         for (let field of required) {
@@ -576,7 +582,7 @@ class EnhancedLiftModal {
         // Спеціальна обробка для окремих полів
         const munField = document.getElementById('enhancedMunicipalNumber') ||
                          document.querySelector('#eLiftRowsContainer input[data-elift-idx="1"]');
-        if (!data.municipalNumber || data.municipalNumber.trim() === '') {
+        if (needsMunicipalNumber && (!data.municipalNumber || data.municipalNumber.trim() === '')) {
             if (munField) munField.classList.add('is-invalid');
         } else {
             if (munField) munField.classList.remove('is-invalid');
@@ -926,6 +932,8 @@ class EnhancedLiftModal {
         this.editAddress = {};
         this.editMunicipalNumber = '';
         this.coordsManuallyEdited = false;
+        // Reset subtype selector to public
+        if (typeof window.selectLiftSubtype === 'function') window.selectLiftSubtype('public');
         if (this.marker && this.map) {
             this.map.removeLayer(this.marker);
             this.marker = null;

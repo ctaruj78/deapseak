@@ -19,8 +19,8 @@ class AgentService {
         this.genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
         this.db = null;
         this.io = null;
-        // Try gemini-2.5-flash first, fall back if not available
-        this.model = 'gemini-2.5-flash';
+        // Try gemini-3-flash-preview first, fall back if not available
+        this.model = 'gemini-3-flash-preview';
     }
 
     /**
@@ -270,7 +270,7 @@ class AgentService {
             return result.response.text();
         } catch (err) {
             if (err.message && (err.message.includes('model') || err.message.includes('not found'))) {
-                this.model = 'gemini-1.5-flash';
+                this.model = 'gemini-2.5-flash';
                 const model = this.genAI.getGenerativeModel({ model: this.model });
                 const context = await this._buildContext(userRole, clientEmail);
                 const systemPrompt = this._buildSystemPrompt(userRole, context);

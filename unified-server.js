@@ -64,8 +64,10 @@ app.set('trust proxy', 1); // Confiar no proxy (Codespaces / nginx)
 // ═══════════════════════════════════════════════════════════
 // 🌍 GEOCODING - Конвертація адреси в координати
 // ═══════════════════════════════════════════════════════════
-// Використовує OpenStreetMap Nominatim API (безкоштовно)
-// Nominatim rate limiter: max 1 request per second (Nominatim usage policy)
+// Primary:  Google Maps Geocoding API (preciso, Portugal-aware)
+// Fallback: OpenStreetMap Nominatim (sem custo, 1 req/s)
+
+// ── Nominatim (fallback) ─────────────────────────────────
 let _nominatimLastCall = 0;
 async function nominatimRequest(url) {
     const now = Date.now();
@@ -81,7 +83,78 @@ async function nominatimRequest(url) {
     });
 }
 
-// Helper: pick best result (prefer city match)
+// ── Google Maps Geocoding API (primary) ─────────────────
+async function geocodeWithGoogle(queryStr) {
+    const apiKey = process.env.GOOGLE_MAPS_API_KEY;
+    if (!apiKey) return null;
+    try {
+        const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(queryStr)}&region=pt&language=pt&key=${apiKey}`;
+        const resp = await fetch(url);
+        if (!resp.ok) return null;
+        const data = await resp.json();
+        if (data.status !== 'OK' || !data.results || data.results.length === 0) {
+            console.warn(`⚠️ Google Maps geocode status: ${data.status} for "${queryStr}"`);
+            return null;
+        }
+        const best = data.results[0];
+        const loc = best.geometry.location;
+        // Extract city from address_components
+        const components = best.address_components || [];
+        const cityComp = components.find(c =>
+            c.types.includes('locality') ||
+            c.types.includes('administrative_area_level_2') ||
+            c.types.includes('sublocality')
+        );
+        const postalComp = components.find(c => c.types.includes('postal_code'));
+        const cityName = cityComp ? cityComp.long_name : '';
+        const postcode = postalComp ? postalComp.long_name : '';
+
+        // Build multi-result list for UI choice modal
+        const results = data.results.slice(0, 5).map(r => ({
+            lat: r.geometry.location.lat,
+            lng: r.geometry.location.lng,
+            display: r.formatted_address,
+            city: (r.address_components.find(c => c.types.includes('locality')) || {}).long_name || '',
+            postcode: (r.address_components.find(c => c.types.includes('postal_code')) || {}).long_name || '',
+            type: (r.types || [])[0] || ''
+        }));
+
+        console.log(`✅ [Google Maps] "${queryStr}" → [${loc.lng}, ${loc.lat}] city: ${cityName}`);
+        return { lat: loc.lat, lng: loc.lng, lon: loc.lng, city: cityName, postcode, display: best.formatted_address, results };
+    } catch (err) {
+        console.error('❌ Google Maps geocode error:', err.message);
+        return null;
+    }
+}
+
+// ── Google Maps Reverse Geocoding: coords → address ─────
+async function reverseGeocodeGoogle(lat, lng) {
+    const apiKey = process.env.GOOGLE_MAPS_API_KEY;
+    if (!apiKey) return null;
+    try {
+        const url = `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&region=pt&language=pt&key=${apiKey}`;
+        const resp = await fetch(url);
+        if (!resp.ok) return null;
+        const data = await resp.json();
+        if (data.status !== 'OK' || !data.results || data.results.length === 0) return null;
+        const best = data.results[0];
+        const components = best.address_components || [];
+        const getComp = (type) => (components.find(c => c.types.includes(type)) || {}).long_name || '';
+        return {
+            formatted: best.formatted_address,
+            street: [getComp('route'), getComp('street_number')].filter(Boolean).join(' '),
+            city: getComp('locality') || getComp('administrative_area_level_2'),
+            postcode: getComp('postal_code'),
+            district: getComp('administrative_area_level_1'),
+            country: getComp('country')
+        };
+    } catch (err) {
+        console.error('❌ Google Maps reverse geocode error:', err.message);
+        return null;
+    }
+}
+
+// ── Nominatim helper: pick best result (prefer city match)
 function pickBestResult(results, cityHint) {
     if (!results || results.length === 0) return null;
     let best = results[0];
@@ -97,8 +170,8 @@ function pickBestResult(results, cityHint) {
     return best;
 }
 
-// 🌍 3-step fallback geocoder — postal code first (most precise in Portugal), then free-form
-async function geocodeAddress(address) {
+// ── Nominatim multi-step fallback ────────────────────────
+async function geocodeWithNominatim(address) {
     const BASE = 'https://nominatim.openstreetmap.org/search';
     const COMMON = 'format=json&limit=3&countrycodes=pt&addressdetails=1';
     let searchLabel = '';
@@ -107,55 +180,63 @@ async function geocodeAddress(address) {
     if (typeof address === 'string') {
         searchLabel = address;
         results = await nominatimRequest(`${BASE}?q=${encodeURIComponent(address)}&${COMMON}`);
-
     } else if (typeof address === 'object' && address !== null) {
         const { street = '', zipCode = '', city = '', country = 'Portugal' } = address;
         searchLabel = [street, zipCode, city].filter(Boolean).join(', ');
 
-        // Step 1 — street + postal code (most precise: narrows to exact street within the postal area)
         if (zipCode && street) {
-            const cleanStreet = street.replace(/\bnº\b\.?/gi, '').replace(/\s+/g, ' ').trim();
-            const s1 = [cleanStreet, zipCode, country].filter(Boolean).join(', ');
+            const s1 = [street.replace(/\bnº\b\.?/gi, '').trim(), zipCode, country].filter(Boolean).join(', ');
             results = await nominatimRequest(`${BASE}?q=${encodeURIComponent(s1)}&${COMMON}`);
-            if (results && results.length > 0) console.log(`🌍 Geocoding [street+zip]: ${searchLabel}`);
         }
-
-        // Step 2 — street + city (if zip produced nothing)
-        if (!results || results.length === 0) {
-            const cleanStreet = street.replace(/\bnº\b\.?/gi, '').replace(/\s+/g, ' ').trim();
-            const s2 = [cleanStreet, city, country].filter(Boolean).join(', ');
+        if (!results?.length) {
+            const s2 = [street.replace(/\bnº\b\.?/gi, '').trim(), city, country].filter(Boolean).join(', ');
             results = await nominatimRequest(`${BASE}?q=${encodeURIComponent(s2)}&${COMMON}`);
-            if (results && results.length > 0) console.log(`🌍 Geocoding [street+city]: ${searchLabel}`);
         }
-
-        // Step 3 — postal code + city only (when street name is too unusual for OSM)
-        if (!results || results.length === 0) {
+        if (!results?.length) {
             const p = new URLSearchParams({ postalcode: zipCode, country, format: 'json', limit: '3', countrycodes: 'pt', addressdetails: '1' });
             if (city) p.set('city', city);
             results = await nominatimRequest(`${BASE}?${p}`);
-            if (results && results.length > 0) console.log(`🌍 Geocoding [postalcode]: ${searchLabel}`);
         }
-
-        // Step 4 — full address free-form last resort
-        if (!results || results.length === 0) {
-            const cleanFull = searchLabel.replace(/\bnº\b\.?/gi, '').replace(/\s+/g, ' ').trim();
-            results = await nominatimRequest(`${BASE}?q=${encodeURIComponent(cleanFull)}&${COMMON}`);
-            if (results && results.length > 0) console.log(`🌍 Geocoding [freeform]: ${searchLabel}`);
+        if (!results?.length) {
+            results = await nominatimRequest(`${BASE}?q=${encodeURIComponent(searchLabel)}&${COMMON}`);
         }
     }
 
     const best = pickBestResult(results, typeof address === 'object' ? address.city : null);
-    if (!best) {
-        console.warn(`⚠️ Geocoding: endereço não encontrado: ${searchLabel}`);
-        return null;
-    }
-
+    if (!best) return null;
     const lat = parseFloat(best.lat);
     const lon = parseFloat(best.lon);
     const n = best.address || {};
     const cityName = n.city || n.town || n.village || n.municipality || n.suburb || n.quarter || n.county || '';
-    console.log(`✅ Geocoded: ${searchLabel} → [${lon}, ${lat}] city: ${cityName}`);
-    return { type: 'Point', coordinates: [lon, lat], city: cityName };
+    return { lat, lng: lon, lon, city: cityName, display: best.display_name, results: results.map(r => ({
+        lat: parseFloat(r.lat), lng: parseFloat(r.lon),
+        display: r.display_name,
+        city: (r.address?.city || r.address?.town || r.address?.village || ''),
+        postcode: r.address?.postcode || '', type: r.type || ''
+    })) };
+}
+
+// ── Main geocoder: Google → Nominatim fallback ──────────
+async function geocodeAddress(address) {
+    const searchLabel = typeof address === 'string'
+        ? address
+        : [address.street, address.zipCode, address.city].filter(Boolean).join(', ');
+
+    // 1. Try Google Maps (most accurate for Portugal)
+    const googleResult = await geocodeWithGoogle(searchLabel);
+    if (googleResult) {
+        return { type: 'Point', coordinates: [googleResult.lon, googleResult.lat], city: googleResult.city };
+    }
+
+    // 2. Fallback to Nominatim
+    console.log(`⚠️ [Google Maps] failed, falling back to Nominatim for: ${searchLabel}`);
+    const nomResult = await geocodeWithNominatim(address);
+    if (!nomResult) {
+        console.warn(`⚠️ Geocoding: endereço não encontrado: ${searchLabel}`);
+        return null;
+    }
+    console.log(`✅ [Nominatim] "${searchLabel}" → [${nomResult.lon}, ${nomResult.lat}] city: ${nomResult.city}`);
+    return { type: 'Point', coordinates: [nomResult.lon, nomResult.lat], city: nomResult.city };
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -294,6 +375,22 @@ app.get('/api/geocode', async (req, res) => {
     const q = (req.query.q || '').trim();
     if (!q) return res.status(400).json({ success: false, message: 'Parâmetro q é obrigatório' });
 
+    // 1. Try Google Maps first (best accuracy for Portugal)
+    const goog = await geocodeWithGoogle(q);
+    if (goog) {
+        return res.json({
+            success: true,
+            lat: goog.lat,
+            lng: goog.lng,
+            display: goog.display,
+            city: goog.city,
+            postcode: goog.postcode || '',
+            source: 'google',
+            results: goog.results || []
+        });
+    }
+
+    // 2. Fallback: Nominatim
     const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=5&countrycodes=pt&addressdetails=1`;
     try {
         const response = await fetch(url, {
@@ -307,7 +404,6 @@ app.get('/api/geocode', async (req, res) => {
         if (!data || data.length === 0) {
             return res.json({ success: false, message: 'Endereço não encontrado' });
         }
-        // Повертаємо перший результат + всі варіанти для вибору
         const best = data[0];
         const results = data.map(r => ({
             lat: parseFloat(r.lat),
@@ -324,11 +420,51 @@ app.get('/api/geocode', async (req, res) => {
             display: best.display_name,
             city: best.address?.city || best.address?.town || best.address?.village || best.address?.municipality || best.address?.suburb || best.address?.quarter || '',
             postcode: best.address?.postcode || '',
-            results  // всі варіанти
+            source: 'nominatim',
+            results
         });
     } catch (err) {
         console.error('❌ /api/geocode error:', err.message);
         return res.status(502).json({ success: false, message: 'Erro de geocodificação: ' + err.message });
+    }
+});
+
+// ── Reverse geocoding: [lat, lng] → address (Google → Nominatim fallback) ──
+app.get('/api/geocode/reverse', async (req, res) => {
+    const lat = parseFloat(req.query.lat);
+    const lng = parseFloat(req.query.lng);
+    if (isNaN(lat) || isNaN(lng)) {
+        return res.status(400).json({ success: false, message: 'Parâmetros lat e lng são obrigatórios' });
+    }
+
+    // 1. Try Google Maps reverse geocoding
+    const goog = await reverseGeocodeGoogle(lat, lng);
+    if (goog) {
+        return res.json({ success: true, source: 'google', ...goog });
+    }
+
+    // 2. Fallback: Nominatim reverse
+    try {
+        const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&addressdetails=1`;
+        const response = await fetch(url, {
+            headers: { 'User-Agent': 'FestLift-LiftManagement/2.0 (info@festlift.pt)', 'Accept-Language': 'pt,en' }
+        });
+        if (!response.ok) throw new Error(`Nominatim reverse HTTP ${response.status}`);
+        const data = await response.json();
+        const a = data.address || {};
+        return res.json({
+            success: true,
+            source: 'nominatim',
+            formatted: data.display_name,
+            street: [(a.road || a.pedestrian || ''), (a.house_number || '')].filter(Boolean).join(' '),
+            city: a.city || a.town || a.village || a.municipality || '',
+            postcode: a.postcode || '',
+            district: a.state || a.county || '',
+            country: a.country || ''
+        });
+    } catch (err) {
+        console.error('❌ /api/geocode/reverse error:', err.message);
+        return res.status(502).json({ success: false, message: 'Erro de geocodificação reversa: ' + err.message });
     }
 });
 
@@ -1797,10 +1933,18 @@ app.post('/api/lifts', authenticateToken, async (req, res) => {
         
         // ✅ ВАЛІДАЦІЯ ОБОВ'ЯЗКОВИХ ПОЛІВ
         const validationErrors = [];
+        const liftSubtype = req.body.liftSubtype || 'public';
         
-        // Перевірка municipalNumber
-        if (!req.body.municipalNumber || req.body.municipalNumber.trim() === '') {
-            validationErrors.push('Муніципальний номер обов\'язковий');
+        // Перевірка municipalNumber — обов'язковий тільки для публічних ліфтів (câmara)
+        if (liftSubtype === 'public') {
+            if (!req.body.municipalNumber || req.body.municipalNumber.trim() === '') {
+                validationErrors.push('Муніципальний номер обов\'язковий');
+            }
+        } else if (!req.body.municipalNumber || req.body.municipalNumber.trim() === '') {
+            // Home lift / platform: auto-generate internal ID
+            const prefix = liftSubtype === 'home' ? 'HOME' : 'PLAT';
+            req.body.municipalNumber = `${prefix}-${Date.now().toString(36).toUpperCase()}`;
+            console.log(`🏠 Auto-generated internal ID for ${liftSubtype}: ${req.body.municipalNumber}`);
         }
         
         // Перевірка capacity (має бути додатним числом)
@@ -4537,7 +4681,7 @@ app.get('/api/ai/health', authenticateToken, async (req, res) => {
         const hasApiKey = !!process.env.GEMINI_API_KEY;
         const hasModel = !!process.env.GOOGLE_AI_MODEL;
         const isOllama = AI_PROVIDER === 'ollama' || (AI_PROVIDER === 'auto' && _ollamaCache.available === true);
-        const provider = isOllama ? `Ollama (${OLLAMA_MODEL})` : 'Google Gemini 2.5 Flash';
+        const provider = isOllama ? `Ollama (${OLLAMA_MODEL})` : 'Google Gemini 3 Flash';
         const configured = isOllama ? true : (hasApiKey && hasModel);
         const status = configured ? 'configured' : 'missing_api_key';
         
@@ -4545,7 +4689,7 @@ app.get('/api/ai/health', authenticateToken, async (req, res) => {
             success: true,
             status,
             provider,
-            model: isOllama ? OLLAMA_MODEL : (process.env.GOOGLE_AI_MODEL || 'gemini-2.0-flash-exp'),
+            model: isOllama ? OLLAMA_MODEL : (process.env.GOOGLE_AI_MODEL || 'gemini-3-flash-preview'),
             configured,
             features: {
                 chat: configured,
@@ -7638,8 +7782,27 @@ function buildAIUserPrompt(message, regulationsContext = null, reportTextContext
         const truncated = reportTextContext.length > maxChars
             ? reportTextContext.substring(0, maxChars) + '\n...(relatório truncado)'
             : reportTextContext;
-        contextualPrompt += `INSPECTION REPORT CONTENT (from uploaded PDF):\n---\n${truncated}\n---\n\n` +
-            `Please analyze this report and answer the user's question about it.\n\n`;
+        contextualPrompt +=
+`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+📄 RELATÓRIO DE INSPEÇÃO (extraído do PDF enviado pelo utilizador)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+${truncated}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+INSTRUÇÕES PARA ANÁLISE DO RELATÓRIO:
+1. Identifica e lista TODAS as não conformidades encontradas, agrupadas por severidade: C1, C2, C3.
+2. Para cada cláusula:
+   • Código exato (C1/C2/C3) e artigo de referência (Art.º XX)
+   • Descrição literal como está no relatório
+   • Risco concreto envolvido (o que pode acontecer)
+   • Prazo legal para correção (C1: imediato; C2: 2 anos pelo Despacho 27/2024; C3: manutenção programada)
+   • Ação corretiva específica recomendada
+3. Se o relatório indica ELEVADOR IMOBILIZADO (C1 presente) — anuncia isso com destaque MÁXIMO.
+4. Indica o prazo da próxima inspeção: se aprovado → 2 anos; se reprovado → 180 dias.
+5. Resume o estado geral: Aprovado / Reprovado / Condicionado, com total de C1/C2/C3.
+6. Responde SEMPRE em português pt-PT.
+
+`;
     }
 
     if (dbContext) {
@@ -7686,11 +7849,11 @@ async function callGeminiAI(message, role, username, regulationsContext = null, 
         const systemPrompt = getSystemPromptForRole(role, username);
 
         const model = genAI.getGenerativeModel({
-            model: "gemini-2.5-flash",
+            model: "gemini-3-flash-preview",
             systemInstruction: systemPrompt
         });
         
-        const contextualPrompt = buildAIUserPrompt(message, regulationsContext, reportTextContext, 8000, dbContext);
+        const contextualPrompt = buildAIUserPrompt(message, regulationsContext, reportTextContext, 50000, dbContext);
         
         const result = await model.generateContent(contextualPrompt);
         const response = await result.response;
@@ -7716,7 +7879,7 @@ async function callGeminiAI(message, role, username, regulationsContext = null, 
 async function callOllamaAI(message, role, username, regulationsContext = null, reportTextContext = null, dbContext = null) {
     try {
         const systemPrompt = getSystemPromptForRole(role, username);
-        const contextualPrompt = buildAIUserPrompt(message, regulationsContext, reportTextContext, 12000, dbContext);
+        const contextualPrompt = buildAIUserPrompt(message, regulationsContext, reportTextContext, 20000, dbContext);
         const text = await callOllamaRaw([
             { role: 'system', content: systemPrompt },
             { role: 'user', content: contextualPrompt }
@@ -7744,7 +7907,7 @@ async function callMainAI(message, role, username, regulationsContext = null, re
     }
 
     const response = await callGeminiAI(message, role, username, regulationsContext, reportTextContext, dbContext);
-    return { response, poweredBy: 'Google Gemini 2.5 Flash' };
+    return { response, poweredBy: 'Google Gemini 3 Flash' };
 }
 
 // ─── AI GUEST ENDPOINT (без авторизації, IP-ліміт 2 аналізи + 20 чат/добу) ──
@@ -7769,7 +7932,7 @@ async function _callGuestAI(prompt) {
         return callOllamaRaw([{ role: 'user', content: prompt }]);
     }
 
-    const models = ['gemini-2.5-flash', 'gemini-1.5-flash', 'gemini-1.5-flash-latest'];
+    const models = ['gemini-3-flash-preview', 'gemini-2.5-flash', 'gemini-1.5-flash'];
     let lastErr;
     for (const modelName of models) {
         try {

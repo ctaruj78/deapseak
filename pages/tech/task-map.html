@@ -77,22 +77,42 @@
                     return;
                 }
                 
-                console.log('📍 Pedido геоlocalizações...');
+                console.log('📍 Pedido de geolocalização...');
                 navigator.geolocation.getCurrentPosition(
-                    (position) => {
+                    async (position) => {
                         userLocation = {
                             lat: position.coords.latitude,
                             lng: position.coords.longitude,
                             accuracy: position.coords.accuracy
                         };
-                        console.log('✅ Геолокацію recebido:', userLocation);
+                        console.log('✅ Geolocalização recebida:', userLocation);
+
+                        // Reverse geocode for accurate address display
+                        try {
+                            const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken') || '';
+                            const revResp = await fetch(
+                                `/api/geocode/reverse?lat=${userLocation.lat}&lng=${userLocation.lng}`,
+                                { headers: { 'Authorization': `Bearer ${token}` } }
+                            );
+                            if (revResp.ok) {
+                                const revData = await revResp.json();
+                                if (revData.success && revData.formatted) {
+                                    userLocation.address = revData.formatted;
+                                    userLocation.city = revData.city || '';
+                                    console.log('📍 Endereço atual:', revData.formatted, `[${revData.source}]`);
+                                }
+                            }
+                        } catch (e) {
+                            console.warn('⚠️ Reverse geocode falhou:', e.message);
+                        }
+
                         resolve(userLocation);
                     },
                     (error) => {
-                        console.warn('⚠️ Erro геоlocalizações:', error.message);
+                        console.warn('⚠️ Erro de geolocalização:', error.message);
                         reject(error);
                     },
-                    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+                    { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
                 );
             });
         }
@@ -189,7 +209,7 @@
                         popupAnchor: [1, -34],
                         shadowSize: [41, 41]
                     })
-                }).addTo(map).bindPopup('📍 A sua posição');
+                }).addTo(map).bindPopup(`📍 A sua posição${userLocation.address ? '<br><small style="color:#555">' + userLocation.address + '</small>' : ''}`);
 
                 // Маркер do elevador
                 L.marker([liftLat, liftLng], {

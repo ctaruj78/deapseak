@@ -32,7 +32,7 @@ function isLikelyScanned(text) {
  * @param {number} maxPages - Максимальна кількість сторінок (дефолт 5)
  * @returns {Array<{base64: string, mimeType: string}>}
  */
-async function pdfToImages(pdfPath, maxPages = 5) {
+async function pdfToImages(pdfPath, maxPages = 10) {
     const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'pdf-ocr-'));
     const outputPrefix = path.join(tmpDir, 'page');
     
@@ -40,14 +40,14 @@ async function pdfToImages(pdfPath, maxPages = 5) {
         console.log(`🖼️ Converting PDF to images: ${pdfPath}`);
         console.log(`   tmpDir: ${tmpDir}`);
         
-        // pdftoppm: -r 200 (resolution), -l maxPages (last page), -png (format)
+        // pdftoppm: -r 300 (high resolution for OCR accuracy), -l maxPages, -png
         const result = spawnSync('pdftoppm', [
-            '-r', '200',
+            '-r', '300',
             '-l', String(maxPages),
             '-png',
             pdfPath,
             outputPrefix
-        ], { timeout: 60000 });
+        ], { timeout: 120000 });
         
         if (result.error) {
             throw new Error(`pdftoppm error: ${result.error.message}`);
@@ -99,7 +99,7 @@ async function pdfToImages(pdfPath, maxPages = 5) {
  */
 async function extractTextWithGemini(images, apiKey) {
     const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-3-flash-preview' });
     
     console.log(`🤖 Sending ${images.length} page(s) to Gemini Vision for OCR...`);
     
@@ -110,17 +110,23 @@ async function extractTextWithGemini(images, apiKey) {
         }
     }));
     
-    const prompt = `You are an OCR system for Portuguese elevator inspection reports.
-Extract ALL text from this document page EXACTLY as it appears, preserving:
-- The structure and layout (lines, paragraphs)
-- All uppercase/lowercase letters exactly
-- All numbers, dates, article references (Art.º, Artigo, etc.)
-- All violation classifications (C1, C2, C3)
-- All Portuguese special characters (ã, ç, é, ê, ô, etc.)
-- All punctuation and special symbols
+    const prompt = `You are a professional OCR engine specialised in Portuguese elevator inspection reports (Relatório de Inspeção de Elevadores).
 
-Do NOT translate, summarize, or interpret. Output ONLY the raw text content.
-If the page is blank or illegible, output "(empty page)".`;
+Your task: extract ALL visible text from this image with maximum accuracy.
+
+CRITICAL rules:
+1. Preserve EXACT spelling, including Portuguese accented characters: ã, â, á, à, ç, é, ê, í, ó, ô, ú, ü
+2. Keep ALL numbers, reference codes and article identifiers exactly: Art.º, Artigo, Decreto-Lei, Portaria, DL, Port.
+3. Extract all violation severity codes PRECISELY: C1, C2, C3 (case-sensitive, never skip)
+4. Preserve tabular and columnar layout using whitespace or pipe separators
+5. Keep dates in original format (DD/MM/YYYY, DD-MM-YYYY)
+6. Preserve header/footer content including page numbers, stamp text, signature lines
+7. Keep all UPPERCASE text uppercased, lowercase lowercased
+8. Do NOT summarise, translate, interpret, or omit any part of the text
+9. Do NOT add markdown formatting (* _ # etc.) — plain text only
+10. If a section is illegible or blank write: [ilegível]
+
+Output ONLY the raw extracted text, nothing else.`;
     
     const result = await model.generateContent([prompt, ...imageParts]);
     const response = await result.response;
@@ -139,7 +145,7 @@ If the page is blank or illegible, output "(empty page)".`;
  * @param {number} maxPages - Максимум сторінок для аналізу
  * @returns {{success: boolean, text: string, method: string}}
  */
-async function ocrPDF(pdfPath, apiKey, maxPages = 8) {
+async function ocrPDF(pdfPath, apiKey, maxPages = 10) {
     try {
         if (!apiKey) {
             return {
