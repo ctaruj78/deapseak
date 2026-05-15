@@ -992,6 +992,11 @@ router.post('/:id/enviar', authenticate, authorizeRoles('admin', 'dispatcher'), 
                 email: emailDestino, // Використати emailDestino замість orcamento.cliente.email
                 name: orcamento.cliente.nome
             }];
+            // BCC на адресу відправника (info@festlift.pt) щоб отримувати копію кожного листа
+            const adminBcc = process.env.EMAIL_BCC || senderEmail;
+            if (adminBcc && adminBcc.toLowerCase() !== emailDestino.toLowerCase()) {
+                sendSmtpEmail.bcc = [{ email: adminBcc, name: senderName }];
+            }
             sendSmtpEmail.subject = mailOptions.subject;
             sendSmtpEmail.htmlContent = mailOptions.html;
             
@@ -1004,6 +1009,7 @@ router.post('/:id/enviar', authenticate, authorizeRoles('admin', 'dispatcher'), 
             console.log('📧 Відправка через Brevo API:');
             console.log('   From:', JSON.stringify(sendSmtpEmail.sender));
             console.log('   To:', JSON.stringify(sendSmtpEmail.to));
+            if (sendSmtpEmail.bcc) console.log('   BCC:', JSON.stringify(sendSmtpEmail.bcc));
             console.log('   Subject:', sendSmtpEmail.subject);
             console.log('   Attachment:', `Orcamento_${orcamento.numero}.pdf (${pdfBuffer.length} bytes)`);
 
@@ -1107,9 +1113,13 @@ router.post('/:id/enviar', authenticate, authorizeRoles('admin', 'dispatcher'), 
                         </div>
                     `;
                     
+                    const smtpFrom = process.env.SMTP_FROM || process.env.SMTP_USER;
+                    const smtpFromEmail = (smtpFrom || '').match(/<([^>]+)>/)?.[1] || smtpFrom;
+                    const smtpBcc = process.env.EMAIL_BCC || smtpFromEmail || null;
                     await transporter.sendMail({
-                        from: process.env.SMTP_FROM || process.env.SMTP_USER,
+                        from: smtpFrom,
                         to: emailDestino,
+                        bcc: smtpBcc && smtpBcc.toLowerCase() !== emailDestino.toLowerCase() ? smtpBcc : undefined,
                         subject: `Orçamento ${orcamento.numero} - FestLift - Elevadores e Serviços, Lda.`,
                         html: emailHTML,
                         attachments: [{
