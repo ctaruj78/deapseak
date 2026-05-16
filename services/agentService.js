@@ -67,17 +67,27 @@ class AgentService {
             }
 
             // Check if there's already an open/postponed notification for this lift
+            // Also suppress if was rejected within last 30 days (avoid spam)
+            const thirtyDaysAgo30 = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
             const existingOpen = await this.db.collection('agent_notifications').findOne({
                 liftLocation: inspection.liftLocation,
                 type: 'quote_request',
-                status: { $in: ['pending', 'postponed'] }
+                $or: [
+                    { status: { $in: ['pending', 'postponed'] } },
+                    { status: 'rejected', createdAt: { $gte: thirtyDaysAgo30 } }
+                ]
             });
 
             // Build AI summary of problems
             const summary = await this._buildProblemSummary(inspection, nokItems);
 
             if (existingOpen) {
-                // Update existing notification with new findings
+                // If it was rejected recently — suppress silently, don't re-open
+                if (existingOpen.status === 'rejected') {
+                    console.log(`🤖 Agent: suppressing new notification for ${inspection.liftLocation} — rejected ${Math.ceil((Date.now() - new Date(existingOpen.createdAt)) / 86400000)} days ago`);
+                    return;
+                }
+                // Update existing pending/postponed notification with new findings
                 await this.db.collection('agent_notifications').updateOne(
                     { _id: existingOpen._id },
                     {
@@ -639,11 +649,20 @@ class AgentService {
                 const daysLeft = Math.ceil((new Date(lift.nextInspectionDate) - today) / (1000 * 60 * 60 * 24));
                 const isOverdue = daysLeft < 0;
 
-                // Check if already notified today
+                // Check if already notified (pending) OR rejected within last 30 days
+                // — prevents re-showing the same lift every day after rejection
+                const thirtyDaysAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
                 const already = await this.db.collection('agent_notifications').findOne({
                     type: 'expiry_reminder',
                     liftLocation: lift.address || lift.location,
-                    createdAt: { $gte: new Date(today.toDateString()) }
+                    $or: [
+                        { status: 'pending' },
+                        { status: 'rejected',   createdAt: { $gte: thirtyDaysAgo } },
+                        { status: 'confirmed',  createdAt: { $gte: thirtyDaysAgo } },
+                        { status: 'postponed' },
+                        // Even if status unknown, suppress same-day duplicates
+                        { createdAt: { $gte: new Date(today.toDateString()) } },
+                    ]
                 });
                 if (already) continue;
 
