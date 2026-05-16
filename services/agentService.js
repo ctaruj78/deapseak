@@ -877,31 +877,44 @@ class AgentService {
                 const daysLeft = Math.ceil((new Date(lift.nextInspectionDate) - today) / (1000 * 60 * 60 * 24));
                 const isOverdue = daysLeft < 0;
 
+                // Resolve address safely (may be object or string)
+                const liftAddressStr = (() => {
+                    const a = lift.address || lift.location;
+                    if (!a) return lift.municipalNumber || String(lift._id);
+                    if (typeof a === 'object') {
+                        return `${a.street || ''}, ${a.city || a.concelho || ''}`.trim().replace(/^,\s*|,\s*$/g, '') || lift.municipalNumber || String(lift._id);
+                    }
+                    return String(a);
+                })();
+
                 // Check if already notified (pending) OR rejected within last 30 days
                 // — prevents re-showing the same lift every day after rejection
                 const thirtyDaysAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
                 const already = await this.db.collection('agent_notifications').findOne({
                     type: 'expiry_reminder',
-                    liftLocation: lift.address || lift.location,
                     $or: [
+                        { liftId: lift._id },
+                        { liftLocation: liftAddressStr },
+                    ],
+                    $and: [{ $or: [
                         { status: 'pending' },
                         { status: 'rejected',   createdAt: { $gte: thirtyDaysAgo } },
                         { status: 'confirmed',  createdAt: { $gte: thirtyDaysAgo } },
                         { status: 'postponed' },
-                        // Even if status unknown, suppress same-day duplicates
                         { createdAt: { $gte: new Date(today.toDateString()) } },
-                    ]
+                    ]}]
                 });
                 if (already) continue;
 
                 const msg = isOverdue
-                    ? `⚠️ INSPEÇÃO VENCIDA há ${Math.abs(daysLeft)} dias — ${lift.address || lift.location} (${lift.municipalNumber || ''}). Cliente: ${lift.clientName || lift.clientEmail || 'desconhecido'}.`
-                    : `🔔 Inspeção expira em ${daysLeft} dias — ${lift.address || lift.location}. Cliente: ${lift.clientName || lift.clientEmail || 'desconhecido'}.`;
+                    ? `⚠️ INSPEÇÃO VENCIDA há ${Math.abs(daysLeft)} dias — ${liftAddressStr} (${lift.municipalNumber || ''}). Cliente: ${lift.clientName || lift.clientEmail || 'desconhecido'}.`
+                    : `🔔 Inspeção expira em ${daysLeft} dias — ${liftAddressStr}. Cliente: ${lift.clientName || lift.clientEmail || 'desconhecido'}.`;
 
                 const notif = {
                     type: 'expiry_reminder',
                     status: 'pending',
-                    liftLocation: lift.address || lift.location,
+                    liftId: lift._id,
+                    liftLocation: liftAddressStr,
                     liftMunicipal: lift.municipalNumber || '',
                     clientName: lift.clientName || '',
                     clientEmail: lift.clientEmail || '',
@@ -929,9 +942,9 @@ class AgentService {
                 if (lift.clientEmail) {
                     this._pushToClient(lift.clientEmail, 'agent_reminder', {
                         message: isOverdue
-                            ? `A inspeção do seu elevador em ${lift.address || lift.location} está VENCIDA há ${Math.abs(daysLeft)} dias. Por favor contacte-nos.`
-                            : `A inspeção do seu elevador em ${lift.address || lift.location} expira em ${daysLeft} dias.`,
-                        liftLocation: lift.address || lift.location,
+                            ? `A inspeção do seu elevador em ${liftAddressStr} está VENCIDA há ${Math.abs(daysLeft)} dias. Por favor contacte-nos.`
+                            : `A inspeção do seu elevador em ${liftAddressStr} expira em ${daysLeft} dias.`,
+                        liftLocation: liftAddressStr,
                         daysLeft
                     });
                 }

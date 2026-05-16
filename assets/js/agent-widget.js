@@ -155,6 +155,15 @@
     }
 
     // ─── Notifications rendering ───────────────────────────────────────────────
+    function safeAddr(loc) {
+        if (!loc) return '—';
+        if (typeof loc === 'string') return loc;
+        if (typeof loc === 'object') {
+            return `${loc.street || ''}, ${loc.city || loc.concelho || ''}`.trim().replace(/^,\s*|,\s*$/g, '') || JSON.stringify(loc);
+        }
+        return String(loc);
+    }
+
     function renderNotifications() {
         const view = document.getElementById('agent-notif-view');
         if (notifications.length === 0) {
@@ -204,7 +213,7 @@
 
             card.innerHTML = `
 ${clientRequestBadge}
-<div class="notif-location">📍 ${n.liftLocation || '—'} ${n.clientName ? '— ' + n.clientName : ''}</div>
+<div class="notif-location">📍 ${safeAddr(n.liftLocation)} ${n.clientName ? '— ' + n.clientName : ''}</div>
 <div class="notif-msg">${(n.agentMessage || '').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>')}</div>
 <div class="notif-date">${dateStr}${n.status === 'postponed' ? ' · Adiado' : ''}</div>
 ${actionHtml}`;
@@ -391,7 +400,7 @@ ${actionHtml}`;
                 .join('<br>');
 
             const html = `📋 <strong>Rascunho ${data.numero}</strong> criado para <strong>${data.clientName || ''}</strong><br>` +
-                `📍 ${data.liftLocation || ''}<br><br>` +
+                `📍 ${safeAddr(data.liftLocation)}<br><br>` +
                 `<small>${servicosList}</small><br><br>` +
                 `<a href="${link}" style="display:inline-block;margin-top:6px;padding:6px 14px;background:#2563eb;color:#fff;border-radius:20px;text-decoration:none;font-size:12px;font-weight:600">💰 Definir preços e enviar</a>`;
 
