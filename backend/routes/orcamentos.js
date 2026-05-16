@@ -163,20 +163,26 @@ async function gerarPDFOrcamento(orcamento) {
             
             // Linhas da tabela
             let yPos = tableTop + 25;
-            doc.font('Helvetica');
+            doc.font('Helvetica').fontSize(10);
             
             orcamento.servicos.forEach((servico) => {
-                if (yPos > 700) { // Nova página se necessário
+                // Calcular altura real do texto de descrição (pode ter múltiplas linhas)
+                const descText = servico.descricao || '';
+                const descHeight = doc.heightOfString(descText, { width: 240 });
+                const rowHeight = Math.max(descHeight, 12) + 10; // padding de 10pt
+
+                if (yPos + rowHeight > 700) { // Nova página se necessário
                     doc.addPage();
                     yPos = 50;
                 }
                 
-                doc.text(servico.descricao, col1, yPos, { width: 240 });
+                doc.font('Helvetica').fontSize(10);
+                doc.text(descText, col1, yPos, { width: 240, lineBreak: true });
                 doc.text(servico.quantidade.toString(), col2, yPos, { width: 70, align: 'right' });
                 doc.text(`€${servico.precoUnitario.toFixed(2)}`, col3, yPos, { width: 90, align: 'right' });
                 doc.text(`€${servico.total.toFixed(2)}`, col4, yPos, { width: 70, align: 'right' });
                 
-                yPos += 25;
+                yPos += rowHeight;
             });
             
             // Linha antes dos totais

@@ -1221,11 +1221,12 @@
                                  localStorage.getItem('jwt_token') ||
                                  localStorage.getItem('token') || 
                                  localStorage.getItem('lm_token');
+                    const validToken = token && token !== 'null' && token !== 'undefined' && token.trim() !== '';
                     
-                    console.log('🔑 Sending email with token:', token ? 'EXISTS' : 'NOT FOUND');
+                    console.log('🔑 Sending email with token:', validToken ? 'EXISTS' : 'NOT FOUND');
                     console.log('🔑 Token keys in localStorage:', Object.keys(localStorage).filter(k => k.includes('token') || k.includes('jwt')));
                     
-                    if (!token) {
+                    if (!validToken) {
                         alert('Autenticação necessária. Faça login novamente.');
                         window.location.href = '/pages/auth/login.html';
                         return;
@@ -1239,10 +1240,11 @@
                             for (const f of window._pendingFotoFiles) fd.append('fotos', f);
                             const uploadRes = await fetch(`/api/orcamentos/${orcamentoId}/fotos`, {
                                 method: 'POST',
-                                headers: { 'Authorization': `Bearer ${token}` },
+                                headers: { 'Authorization': `Bearer ${validToken}` },
                                 body: fd
                             });
-                            const uploadResult = await uploadRes.json();
+                            const uploadFotosText = await uploadRes.text();
+                            const uploadResult = uploadFotosText ? JSON.parse(uploadFotosText) : {};
                             if (uploadResult.success) {
                                 renderFotosGrid(uploadResult.fotos);
                                 window._pendingFotoFiles = [];
@@ -1265,7 +1267,7 @@
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${token}`
+                            'Authorization': `Bearer ${validToken}`
                         },
                         body: JSON.stringify({
                             email: clientEmail
@@ -1275,7 +1277,14 @@
                     console.log('📨 Response status:', response.status);
                     console.log('📨 Response ok:', response.ok);
                     
-                    const result = await response.json();
+                    // Safe JSON parse — corpo pode estar vazio
+                    let result;
+                    try {
+                        const text = await response.text();
+                        result = text ? JSON.parse(text) : {};
+                    } catch (_) {
+                        result = {};
+                    }
                     console.log('📧 Resultado completo:', result);
 
                     if (response.ok && result.success) {
@@ -1410,9 +1419,12 @@
                              localStorage.getItem('token') || 
                              localStorage.getItem('lm_token');
                 
-                console.log('🔑 Token encontrado:', token ? 'SIM' : 'NÃO');
+                // Rejeitar tokens inválidos ("null", "undefined", strings vazias)
+                const validToken = token && token !== 'null' && token !== 'undefined' && token.trim() !== '';
                 
-                if (!token) {
+                console.log('🔑 Token encontrado:', validToken ? 'SIM' : 'NÃO');
+                
+                if (!validToken) {
                     alert('❌ Sessão expirada. Faça login novamente.');
                     window.location.href = '../auth/login.html';
                     return;
@@ -1433,16 +1445,29 @@
                     method: method,
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
+                        'Authorization': `Bearer ${validToken}`
                     },
                     body: JSON.stringify(data)
                 });
                 
                 console.log('📡 Resposta recebida:', response.status, response.statusText);
-                
-                const result = await response.json();
+
+                // Safe JSON parse — corpo pode estar vazio (proxy 401/404)
+                let result;
+                try {
+                    const text = await response.text();
+                    result = text ? JSON.parse(text) : {};
+                } catch (_) {
+                    result = {};
+                }
                 console.log('📋 Resultado:', result);
-                
+
+                if (response.status === 401) {
+                    alert('❌ Sessão expirada. Faça login novamente.');
+                    window.location.href = '../auth/login.html';
+                    return;
+                }
+
                 if (response.ok && result.success) {
                     // Obter dados орçаменту (pode бути в result.data ou result.orcamento)
                     const orcamentoData = result.data || result.orcamento || {};
@@ -1462,10 +1487,11 @@
                             for (const f of window._pendingFotoFiles) fd.append('fotos', f);
                             const uploadRes = await fetch(`/api/orcamentos/${orcamentoId}/fotos`, {
                                 method: 'POST',
-                                headers: { 'Authorization': `Bearer ${token}` },
+                                headers: { 'Authorization': `Bearer ${validToken}` },
                                 body: fd
                             });
-                            const uploadResult = await uploadRes.json();
+                            const uploadText = await uploadRes.text();
+                            const uploadResult = uploadText ? JSON.parse(uploadText) : {};
                             if (uploadResult.success) {
                                 renderFotosGrid(uploadResult.fotos);
                                 window._pendingFotoFiles = [];
