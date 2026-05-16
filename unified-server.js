@@ -11312,6 +11312,39 @@ app.get('/api/agent/lift-history', authenticateToken, async (req, res) => {
     }
 });
 
+// ─── CLIENT AUTONOMOUS AGENT ─────────────────────────────────────────────────
+
+// GET /api/agent/my-problems — client proactive scan of their lifts
+// Called when client opens their assistant to show any pending alerts
+app.get('/api/agent/my-problems', authenticateToken, async (req, res) => {
+    try {
+        if (req.user.role !== 'client') return res.status(403).json({ success: false, error: 'Client only' });
+        const scan = await agentService.scanClientLiftsForProblems(req.user.email, req.user.id);
+        res.json({ success: true, data: scan });
+    } catch (err) {
+        console.error('❌ /api/agent/my-problems:', err.message);
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+// POST /api/agent/client-decide — client responds to an alert (yes/no to a quote request)
+app.post('/api/agent/client-decide', authenticateToken, async (req, res) => {
+    try {
+        if (req.user.role !== 'client') return res.status(403).json({ success: false, error: 'Client only' });
+        const { notificationId, action, message } = req.body;
+        if (!notificationId || !action) return res.status(400).json({ success: false, error: 'Missing notificationId or action' });
+        if (!['yes', 'no'].includes(action)) return res.status(400).json({ success: false, error: 'action must be yes or no' });
+        const result = await agentService.handleClientDecision(
+            notificationId, action, message || '', req.user
+        );
+        res.json(result);
+    } catch (err) {
+        console.error('❌ /api/agent/client-decide:', err.message);
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+// ─────────────────────────────────────────────────────────────────────────────
+
 server.listen(PORT, '0.0.0.0', () => {
     console.log(`🚀 Unified сервер запущено на http://0.0.0.0:${PORT}`);
     console.log(`📁 Статичні файли: ${__dirname}`);

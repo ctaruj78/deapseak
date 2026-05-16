@@ -166,19 +166,29 @@
         notifications.forEach(n => {
             const card = document.createElement('div');
             const isExpiry = n.type === 'expiry_reminder';
-            const statusClass = isExpiry ? 'expiry' : (n.status || 'pending');
+            const isClientRequest = n.type === 'client_quote_request';
+            const statusClass = isExpiry ? 'expiry' : isClientRequest ? 'client-request' : (n.status || 'pending');
             card.className = `agent-notif-card ${statusClass}`;
+            if (isClientRequest) card.style.cssText = 'border-left:4px solid #28a745;background:#f0fff4;';
 
             const dateStr = n.createdAt ? new Date(n.createdAt).toLocaleDateString('pt-PT') : '';
+
+            // Special header for client-initiated requests
+            const clientRequestBadge = isClientRequest
+                ? `<div style="background:#28a745;color:#fff;padding:4px 10px;border-radius:4px;font-size:12px;margin-bottom:8px;display:inline-block;">
+                       🙋 PEDIDO PELO CLIENTE ${n.clientMessage ? `— "${n.clientMessage}"` : ''}
+                   </div><br>`
+                : '';
 
             let actionHtml = '';
             if ((n.status === 'pending' || n.status === 'postponed') && (role === 'admin' || role === 'dispatcher')) {
                 const cumHtml = n.type === 'quote_request'
                     ? `<button class="agent-btn cumulative" data-id="${n._id}" data-action="cumulative">📋 Tudo pendente</button>`
                     : '';
+                const yesLabel = isClientRequest ? '✅ Criar orçamento (cliente pediu!)' : '✅ Sim';
                 actionHtml = `
 <div class="agent-actions">
-  <button class="agent-btn yes"     data-id="${n._id}" data-action="yes">✅ Sim</button>
+  <button class="agent-btn yes"     data-id="${n._id}" data-action="yes">${yesLabel}</button>
   <button class="agent-btn no"      data-id="${n._id}" data-action="no">❌ Não</button>
   <button class="agent-btn postpone" data-id="${n._id}" data-action="postpone">⏳ Adiar</button>
   ${cumHtml}
@@ -193,6 +203,7 @@
             }
 
             card.innerHTML = `
+${clientRequestBadge}
 <div class="notif-location">📍 ${n.liftLocation || '—'} ${n.clientName ? '— ' + n.clientName : ''}</div>
 <div class="notif-msg">${(n.agentMessage || '').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>')}</div>
 <div class="notif-date">${dateStr}${n.status === 'postponed' ? ' · Adiado' : ''}</div>
@@ -236,9 +247,15 @@ ${actionHtml}`;
     }
 
     async function sendDecision(notifId, action, reason) {
-        const res = await apiFetch('/api/agent/decide', {
+        // Route to client-specific endpoint if user is client
+        const endpoint = role === 'client' ? '/api/agent/client-decide' : '/api/agent/decide';
+        const body = role === 'client'
+            ? { notificationId: notifId, action, message: reason }
+            : { notificationId: notifId, action, reason };
+
+        const res = await apiFetch(endpoint, {
             method: 'POST',
-            body: JSON.stringify({ notificationId: notifId, action, reason })
+            body: JSON.stringify(body)
         });
 
         if (res.success) {
@@ -392,6 +409,13 @@ ${actionHtml}`;
 
         socket.on('agent_reminder', (data) => {
             showToast(data.message || 'Lembrete do agente.');
+            loadNotifications();
+        });
+
+        // Client receives feedback when admin confirms/rejects their quote request
+        socket.on('agent_quote_confirmed', (data) => {
+            const msg = data.message || (data.rejected ? 'A equipa analisou o seu pedido.' : 'A equipa confirmou o seu pedido!');
+            showToast(`🤖 ${msg}`);
             loadNotifications();
         });
     }

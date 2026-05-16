@@ -235,6 +235,19 @@ class AgentService {
                     servicos: orcamentoData.servicos,
                     link
                 });
+
+                // If this was triggered by a client request → notify client that we are preparing their quote
+                if (notif.type === 'client_quote_request' && notif.clientEmail) {
+                    const clientUser = await this.db.collection('users').findOne({ email: notif.clientEmail.toLowerCase() });
+                    if (clientUser && this.io) {
+                        this.io.to(`user_${clientUser._id}`).emit('agent_quote_confirmed', {
+                            message: `✅ A equipa FestLift confirmou o seu pedido! Estamos a preparar o orçamento **${orcamentoData.numero}** para o seu elevador em ${notif.liftLocation}. Receberá a proposta em breve.`,
+                            orcamentoNumero: orcamentoData.numero,
+                            liftLocation: notif.liftLocation
+                        });
+                        console.log(`🤖 Agent: notified client ${notif.clientEmail} about orcamento ${orcamentoData.numero}`);
+                    }
+                }
             } catch (err) {
                 console.error('🤖 Agent: failed to create draft orcamento:', err.message);
                 response = `✅ Confirmado! Vou preparar o orçamento para **${notif.clientName}**.\n` +
@@ -242,6 +255,17 @@ class AgentService {
             }
         } else if (action === 'no') {
             response = `❌ Entendido. Guardei na memória: sem orçamento para ${notif.clientName}${reason ? ' — motivo: ' + reason : ''}.`;
+            // Notify client if this was their request
+            if (notif.type === 'client_quote_request' && notif.clientEmail) {
+                const clientUser = await this.db.collection('users').findOne({ email: notif.clientEmail.toLowerCase() });
+                if (clientUser && this.io) {
+                    this.io.to(`user_${clientUser._id}`).emit('agent_quote_confirmed', {
+                        message: `ℹ️ A equipa FestLift analisou o seu pedido para ${notif.liftLocation}. ${reason ? `Nota: ${reason}` : 'Entraremos em contacto brevemente para mais informações.'}`,
+                        liftLocation: notif.liftLocation,
+                        rejected: true
+                    });
+                }
+            }
         } else {
             const dateStr = remindAt ? remindAt.toLocaleDateString('pt-PT') : 'em 3 meses';
             response = `⏳ Adiado. Lembrarei em ${dateStr}${reason ? ' — ' + reason : ''}.`;
@@ -254,6 +278,205 @@ class AgentService {
             status: action === 'yes' ? 'confirmed' : action === 'no' ? 'rejected' : 'postponed',
             orcamento: orcamentoData || null
         };
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // CLIENT DECISION — client responds to their alert (yes/no)
+    // ─────────────────────────────────────────────────────────────────────────
+
+    /**
+     * Client says "Sim" (yes) or "Não" (no) to a quote/action request.
+     * action: 'yes' | 'no'
+     * When 'yes' → creates a 'client_quote_request' notification for admins.
+     */
+    async handleClientDecision(notificationId, action, message, clientUser, ObjectId) {
+        if (!this.db) throw new Error('DB not ready');
+        const { ObjectId: ObjId } = require('mongodb');
+        const id = typeof notificationId === 'string' ? new ObjId(notificationId) : notificationId;
+
+        const notif = await this.db.collection('agent_notifications').findOne({ _id: id });
+        if (!notif) throw new Error('Notification not found');
+
+        // Verify the notification belongs to this client
+        if (notif.clientEmail && notif.clientEmail !== clientUser.email) {
+            throw new Error('Unauthorized');
+        }
+
+        const now = new Date();
+        const status = action === 'yes' ? 'client_confirmed' : 'client_rejected';
+
+        await this.db.collection('agent_notifications').updateOne(
+            { _id: id },
+            {
+                $set: {
+                    status,
+                    clientDecision: action,
+                    clientDecisionMessage: message || '',
+                    clientDecidedAt: now,
+                    updatedAt: now
+                }
+            }
+        );
+
+        if (action === 'yes') {
+            // Create admin-facing notification: "client wants a quote"
+            const adminNotifMsg = `🙋 **${notif.clientName || clientUser.email}** pediu orçamento para o elevador em **${notif.liftLocation}**.\n\n`
+                + `📋 Problemas detectados:\n${notif.findings || notif.agentMessage}\n\n`
+                + `${message ? `💬 Mensagem do cliente: "${message}"\n\n` : ''}`
+                + `Criamos o orçamento?`;
+
+            const adminNotif = {
+                type: 'client_quote_request',
+                status: 'pending',
+                liftLocation: notif.liftLocation,
+                liftMunicipal: notif.liftMunicipal || '',
+                clientName: notif.clientName || '',
+                clientEmail: notif.clientEmail || clientUser.email,
+                clientUserId: clientUser.id || clientUser._id,
+                clientMessage: message || '',
+                findings: notif.findings || '',
+                agentMessage: adminNotifMsg,
+                relatedReports: notif.relatedReports || [],
+                relatedClientNotifId: id,
+                decision: null, decidedBy: null, decidedAt: null, remindAt: null,
+                createdAt: now, updatedAt: now
+            };
+
+            const result = await this.db.collection('agent_notifications').insertOne(adminNotif);
+
+            // Push to all admins/dispatchers via WebSocket
+            this._pushToAdmins('agent_new_notification', {
+                notificationId: result.insertedId,
+                message: adminNotifMsg,
+                liftLocation: notif.liftLocation,
+                clientName: notif.clientName || clientUser.email,
+                type: 'client_quote_request',
+                urgent: true
+            });
+
+            console.log(`🤖 Agent: client ${clientUser.email} confirmed quote for ${notif.liftLocation} → admin notif ${result.insertedId}`);
+
+            return {
+                success: true,
+                response: `✅ Perfeito! Enviei o seu pedido de orçamento para a equipa FestLift.\n\nSeremos contactados brevemente para confirmar os detalhes e enviar-lhe a proposta. 🎉`,
+                adminNotifId: result.insertedId
+            };
+        } else {
+            console.log(`🤖 Agent: client ${clientUser.email} declined quote for ${notif.liftLocation}`);
+            return {
+                success: true,
+                response: `👍 Entendido! Guardei a sua resposta. Se mudar de ideia, pode sempre contactar-nos.`
+            };
+        }
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // PROACTIVE SCAN — detect problems in client's lifts automatically
+    // ─────────────────────────────────────────────────────────────────────────
+
+    /**
+     * Scan all lifts belonging to a client and return a proactive alert
+     * if there are open violations, overdue inspections, or pending requests.
+     * Called when client opens their assistant.
+     */
+    async scanClientLiftsForProblems(clientEmail, clientUserId) {
+        if (!this.db) return null;
+        try {
+            const { ObjectId: ObjId } = require('mongodb');
+
+            // 1. Find client's lifts
+            let clientObjId = null;
+            try { clientObjId = new ObjId(clientUserId.toString()); } catch (_) {}
+            const liftOrConds = clientObjId
+                ? [{ client: clientUserId.toString() }, { client: clientObjId }, { clientEmail: clientEmail.toLowerCase() }]
+                : [{ clientEmail: clientEmail.toLowerCase() }];
+            const lifts = await this.db.collection('lifts').find({ $or: liftOrConds }).toArray();
+
+            if (lifts.length === 0) return null;
+
+            const today = new Date();
+            const problems = [];
+
+            for (const lift of lifts) {
+                const address = (typeof lift.address === 'object')
+                    ? `${lift.address?.street || ''}, ${lift.address?.city || ''}`.trim().replace(/^,\s*|,\s*$/, '')
+                    : (lift.address || lift.location || lift.municipalNumber || lift._id);
+
+                // A) Overdue or expiring inspection
+                if (lift.nextInspectionDate) {
+                    const daysLeft = Math.ceil((new Date(lift.nextInspectionDate) - today) / 86400000);
+                    if (daysLeft < 0) {
+                        problems.push({ liftId: lift._id, address, type: 'inspection_overdue', severity: 'high', daysLeft: Math.abs(daysLeft), msg: `Inspeção **vencida há ${Math.abs(daysLeft)} dias** — ${address}` });
+                    } else if (daysLeft <= 30) {
+                        problems.push({ liftId: lift._id, address, type: 'inspection_expiring', severity: 'medium', daysLeft, msg: `Inspeção expira em **${daysLeft} dias** — ${address}` });
+                    }
+                }
+
+                // B) Recent inspection violations
+                const recentInspection = await this.db.collection('inspections')
+                    .find({ liftId: lift._id.toString() })
+                    .sort({ createdAt: -1 }).limit(1).toArray();
+
+                if (recentInspection.length > 0) {
+                    const insp = recentInspection[0];
+                    const nokItems = this._extractNokItems(insp.checklist || {});
+                    if (nokItems.length > 0) {
+                        problems.push({ liftId: lift._id, address, type: 'violations', severity: nokItems.length >= 3 ? 'high' : 'medium', count: nokItems.length, inspectionNum: insp.numero, msg: `**${nokItems.length} problema(s)** detectado(s) na última inspeção — ${address} (Rel. ${insp.numero})` });
+                    }
+                }
+
+                // C) Open service requests
+                const openRequests = await this.db.collection('requests').countDocuments({ liftId: lift._id.toString(), status: { $in: ['pending', 'in_progress', 'assigned'] } });
+                if (openRequests > 0) {
+                    problems.push({ liftId: lift._id, address, type: 'open_requests', severity: 'low', count: openRequests, msg: `**${openRequests} pedido(s) em aberto** — ${address}` });
+                }
+            }
+
+            if (problems.length === 0) return null;
+
+            // Build or find existing client notification for these problems
+            // Check if we already have a pending client_reminder for any of these lifts
+            const liftIds = lifts.map(l => l._id.toString());
+            const existing = await this.db.collection('agent_notifications').findOne({
+                clientEmail: clientEmail.toLowerCase(),
+                type: { $in: ['client_reminder', 'client_proactive'] },
+                status: { $in: ['pending', 'client_confirmed'] },
+                createdAt: { $gte: new Date(today.getTime() - 7 * 86400000) } // within last 7 days
+            });
+
+            // Sort by severity
+            const sorted = problems.sort((a, b) => (a.severity === 'high' ? 0 : a.severity === 'medium' ? 1 : 2) - (b.severity === 'high' ? 0 : b.severity === 'medium' ? 1 : 2));
+            const highCount = sorted.filter(p => p.severity === 'high').length;
+
+            const summary = `🔍 **Detetei ${problems.length} situação(ões) nos seus elevadores:**\n\n`
+                + sorted.map((p, i) => `${i + 1}. ${p.msg}`).join('\n')
+                + `\n\n${highCount > 0 ? '⚠️ Existem situações **urgentes** que requerem atenção.\n\n' : ''}`
+                + `Pretende que enviemos um pedido de **orçamento** para resolução?\n_(Responda "Sim" ou "Não")_`;
+
+            // Create a proactive notification if none exists yet
+            let notifId = existing?._id;
+            if (!existing) {
+                const liftProblemText = sorted.map(p => p.msg.replace(/\*\*/g, '')).join('; ');
+                const inserted = await this.db.collection('agent_notifications').insertOne({
+                    type: 'client_proactive',
+                    status: 'pending',
+                    liftLocation: sorted[0].address,
+                    clientEmail: clientEmail.toLowerCase(),
+                    findings: liftProblemText,
+                    agentMessage: summary,
+                    relatedLifts: liftIds,
+                    problems: sorted,
+                    decision: null, clientDecision: null, decidedBy: null, decidedAt: null,
+                    createdAt: today, updatedAt: today
+                });
+                notifId = inserted.insertedId;
+            }
+
+            return { summary, notifId: notifId?.toString(), problems: sorted.length, hasExisting: !!existing };
+        } catch (err) {
+            console.error('🤖 scanClientLiftsForProblems error:', err.message);
+            return null;
+        }
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -573,18 +796,23 @@ class AgentService {
         if (!this.db) return [];
 
         if (userRole === 'client') {
-            // Clients only see their own lift notifications
+            // Clients see their own pending alerts (all types addressed to them)
+            const email = (clientEmail || '').toLowerCase();
             return await this.db.collection('agent_notifications')
-                .find({ clientEmail, status: { $in: ['pending', 'postponed'] }, type: { $in: ['quote_request', 'client_reminder'] } })
+                .find({
+                    clientEmail: email,
+                    status: { $in: ['pending', 'postponed'] },
+                    type: { $in: ['quote_request', 'client_reminder', 'client_proactive', 'expiry_reminder'] }
+                })
                 .sort({ createdAt: -1 })
-                .limit(5)
+                .limit(10)
                 .toArray();
         }
 
-        // Admins and dispatchers see all pending
+        // Admins and dispatchers see all pending — client_quote_request first (urgent)
         return await this.db.collection('agent_notifications')
             .find({ status: { $in: ['pending', 'postponed'] } })
-            .sort({ createdAt: -1 })
+            .sort({ type: -1, createdAt: -1 }) // client_quote_request sorts high (alphabetically after others)
             .limit(20)
             .toArray();
     }
