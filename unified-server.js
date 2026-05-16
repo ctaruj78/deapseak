@@ -9,6 +9,7 @@ require('dotenv').config();
 
 const express = require('express');
 const path = require('path');
+const logger = require('./backend/utils/logger');
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
@@ -20,6 +21,28 @@ const https = require('https');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const mongoSanitize = require('express-mongo-sanitize'); // 🔐 NoSQL injection protection
+
+// ═══════════════════════════════════════════════════════════
+// 🔐 VALIDATE ENVIRONMENT VARIABLES (fail fast on startup)
+// ═══════════════════════════════════════════════════════════
+(function validateEnv() {
+    const REQUIRED = ['MONGODB_URI', 'JWT_SECRET'];
+    const WARN_IF_MISSING = ['GEMINI_API_KEY', 'SMTP_HOST', 'SMTP_USER', 'SMTP_PASS'];
+
+    const missing = REQUIRED.filter(k => !process.env[k]);
+    if (missing.length > 0) {
+        console.error(`❌ [ENV] Змінні середовища ОБОВЯЗКОВІ і відсутні: ${missing.join(', ')}`);
+        console.error('❌ [ENV] Сервер не може стартувати без цих змінних. Перевірте .env файл.');
+        process.exit(1);
+    }
+
+    const warned = WARN_IF_MISSING.filter(k => !process.env[k]);
+    if (warned.length > 0) {
+        console.warn(`⚠️  [ENV] Необовязкові змінні відсутні (функції можуть не працювати): ${warned.join(', ')}`);
+    }
+
+    console.log('✅ [ENV] Всі обовязкові змінні середовища присутні');
+})();
 
 // 🤖 Google Gemini AI
 const { GoogleGenerativeAI } = require('@google/generative-ai');
@@ -292,6 +315,7 @@ app.use(cors({
 app.use(express.json({ limit: '2mb' }));  // 🔐 Reduced from 10mb to limit DoS
 app.use(express.urlencoded({ extended: true, limit: '2mb' }));
 app.use(mongoSanitize()); // 🔐 Strip $ and . from user input (NoSQL injection protection)
+app.use(logger.requestMiddleware); // 📋 Structured HTTP request logging (Winston)
 
 // General rate limit для всіх API запитів
 app.use('/api/', generalLimiter);
@@ -305,7 +329,13 @@ let mongoClient;
 // Async функція для підключення до MongoDB
 async function connectMongo() {
     try {
-        mongoClient = await MongoClient.connect(MONGODB_URI);
+        mongoClient = await MongoClient.connect(MONGODB_URI, {
+            maxPoolSize: 20,          // макс. 20 паралельних з'єднань (default: 5)
+            minPoolSize: 2,           // мінімум 2 завжди готові
+            maxIdleTimeMS: 60000,     // закрити idle з'єднання через 60 с
+            serverSelectionTimeoutMS: 5000,  // помилка якщо MongoDB недоступна 5 с
+            connectTimeoutMS: 10000,  // таймаут першого підключення
+        });
         db = mongoClient.db(DB_NAME);
         console.log('✅ MongoDB connected:', MONGODB_URI, 'DB:', DB_NAME);
 
@@ -1835,7 +1865,10 @@ app.get('/api/lifts', authenticateToken, async (req, res) => {
         // Sanitize: ensure search is a plain string (prevent NoSQL injection via $regex object)
         const rawSearch = req.query.search;
         const searchTerm = (typeof rawSearch === 'string' ? rawSearch : '').trim();
-        const limitNum = parseInt(req.query.limit) || 0;
+        // 📄 Pagination: ?page=1&limit=50 (default: all if no page specified)
+        const pageNum  = Math.max(1, parseInt(req.query.page)  || 1);
+        const limitNum = Math.min(500, Math.max(0, parseInt(req.query.limit) || 0));
+        const skipNum  = limitNum > 0 ? (pageNum - 1) * limitNum : 0;
         if (searchTerm) {
             const re = new RegExp(searchTerm, 'i');
             const searchFilter = { $or: [
@@ -1854,11 +1887,14 @@ app.get('/api/lifts', authenticateToken, async (req, res) => {
             }
         }
 
-        let findCursor = db.collection('lifts').find(query);
-        if (limitNum > 0) findCursor = findCursor.limit(limitNum);
+        const totalCount = await db.collection('lifts').countDocuments(query);
+        let findCursor = db.collection('lifts').find(query).sort({ createdAt: -1 });
+        if (limitNum > 0) {
+            findCursor = findCursor.skip(skipNum).limit(limitNum);
+        }
         const lifts = await findCursor.toArray();
         
-        console.log(`✅ Знайдено ліфтів: ${lifts.length} (search: "${searchTerm}")`);
+        console.log(`✅ Знайдено ліфтів: ${lifts.length}/${totalCount} (search: "${searchTerm}", page: ${pageNum})`);
         
         // 🔄 Підтягуємо дані клієнтів для кожного ліфта
         const liftsWithClients = await Promise.all(lifts.map(async (lift) => {
@@ -1905,7 +1941,15 @@ app.get('/api/lifts', authenticateToken, async (req, res) => {
         
         res.json({
             success: true,
-            data: liftsWithClients
+            data: liftsWithClients,
+            pagination: limitNum > 0 ? {
+                total: totalCount,
+                page: pageNum,
+                limit: limitNum,
+                pages: Math.ceil(totalCount / limitNum),
+                hasNext: pageNum * limitNum < totalCount,
+                hasPrev: pageNum > 1,
+            } : { total: totalCount },
         });
     } catch (error) {
         console.error('❌ Erro ao obter elevadores:', error);
@@ -5203,7 +5247,15 @@ app.get('/api/requests', authenticateToken, async (req, res) => {
             query.liftId = { $in: liftIds };
         }
 
-        const requests = await db.collection('requests').find(query).toArray();
+        // 📄 Pagination: ?page=1&limit=50
+        const reqPageNum  = Math.max(1, parseInt(req.query.page) || 1);
+        const reqLimitNum = Math.min(500, Math.max(0, parseInt(req.query.limit) || 0));
+        const reqSkipNum  = reqLimitNum > 0 ? (reqPageNum - 1) * reqLimitNum : 0;
+        const reqTotal    = await db.collection('requests').countDocuments(query);
+
+        let reqCursor = db.collection('requests').find(query).sort({ createdAt: -1 });
+        if (reqLimitNum > 0) reqCursor = reqCursor.skip(reqSkipNum).limit(reqLimitNum);
+        const requests = await reqCursor.toArray();
 
         // Збагачуємо кожну заявку даними клієнта і техніка
         const enriched = await Promise.all(requests.map(async (r) => {
@@ -5286,7 +5338,15 @@ app.get('/api/requests', authenticateToken, async (req, res) => {
 
         res.json({
             success: true,
-            data: enriched
+            data: enriched,
+            pagination: reqLimitNum > 0 ? {
+                total: reqTotal,
+                page: reqPageNum,
+                limit: reqLimitNum,
+                pages: Math.ceil(reqTotal / reqLimitNum),
+                hasNext: reqPageNum * reqLimitNum < reqTotal,
+                hasPrev: reqPageNum > 1,
+            } : { total: reqTotal },
         });
     } catch (error) {
         console.error('❌ Erro ao obter pedidos:', error);

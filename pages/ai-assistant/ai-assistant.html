@@ -126,6 +126,18 @@
             display: block;
         }
         
+        /* Streaming cursor */
+        .streaming-cursor {
+            display: inline-block;
+            animation: blink 0.7s step-start infinite;
+            color: #28a745;
+            font-weight: bold;
+        }
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+        
         .typing-dot {
             display: inline-block;
             width: 8px;
@@ -928,7 +940,7 @@
         }
 
         // Chat functions
-        function sendChatMessage() {
+        async function sendChatMessage() {
             const input = document.getElementById('chatInput');
             const message = input.value.trim();
             if (!message) return;
@@ -938,61 +950,106 @@
             
             // Show typing indicator
             document.getElementById('typingIndicator').classList.add('active');
-            
-            // Send to API
-            fetch(`${API_URL}/api/ai/chat`, {
-                method: 'POST',
-                headers: getAuthHeaders(),
-                body: JSON.stringify({ message })
-            })
-            .then(res => {
-                // Verificação de erro de autorização
-                if (res.status === 401) {
-                    console.error('❌ JWT Token expired or invalid');
+
+            // ── Streaming via POST /api/ai/chat/stream ──────────────────
+            let fullText = '';
+            let streamBubble = null;
+            let streamTextEl = null;
+
+            function createStreamBubble() {
+                const container = document.getElementById('chatMessages');
+                const typingIndicator = container.querySelector('.typing-indicator').parentElement;
+                const now = new Date();
+                const timeStr = now.toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' });
+                const msgDiv = document.createElement('div');
+                msgDiv.className = 'direct-chat-msg';
+                msgDiv.innerHTML = `
+                    <div class="direct-chat-infos clearfix">
+                        <span class="direct-chat-name float-left">Assistente de IA</span>
+                        <span class="direct-chat-timestamp float-right">${timeStr}</span>
+                    </div>
+                    <img class="direct-chat-img" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40'%3E%3Ccircle cx='20' cy='20' r='20' fill='%2328a745'/%3E%3Ctext x='20' y='28' font-size='24' text-anchor='middle' fill='white'%3E🤖%3C/text%3E%3C/svg%3E" alt="AI">
+                    <div class="direct-chat-text" id="stream-bubble-text">▌</div>
+                `;
+                container.insertBefore(msgDiv, typingIndicator);
+                container.scrollTop = container.scrollHeight;
+                return { bubble: msgDiv, textEl: msgDiv.querySelector('#stream-bubble-text') };
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/api/ai/chat/stream`, {
+                    method: 'POST',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({ message })
+                });
+
+                if (response.status === 401) {
                     document.getElementById('typingIndicator').classList.remove('active');
-                    
-                    // Mostrar mensagem com opção de re-autenticação
-                    const errorMsg = '⚠️ Sessão expirada. Por favor, inicie sessão novamente.';
-                    addChatMessage(errorMsg, false);
-                    
-                    // Limpar tokens
-                    localStorage.removeItem('token');
-                    localStorage.removeItem('lm_token');
-                    localStorage.removeItem('deapseak_token');
-                    sessionStorage.removeItem('token');
-                    
-                    // Redirecionar para login após 2 segundos
-                    setTimeout(() => {
-                        if (confirm('Sessão expirada. Ir para a página de início de sessão?')) {
-                            window.location.replace('/pages/auth/login.html');
-                        }
-                    }, 2000);
-                    
-                    throw new Error('Unauthorized - JWT expired');
+                    addChatMessage('⚠️ Sessão expirada. Por favor, inicie sessão novamente.', false);
+                    localStorage.removeItem('token'); localStorage.removeItem('lm_token'); localStorage.removeItem('deapseak_token');
+                    setTimeout(() => { if (confirm('Sessão expirada. Ir para a página de início de sessão?')) window.location.replace('/pages/auth/login.html'); }, 2000);
+                    return;
                 }
-                return res.json();
-            })
-            .then(data => {
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+
                 document.getElementById('typingIndicator').classList.remove('active');
-                console.log('Chat response:', data);
-                if (data.success) {
-                    // API returns data.data.response, not data.response
-                    const response = data.data?.response || data.response || data.message;
-                    addChatMessage(response, false);
+                const { bubble, textEl } = createStreamBubble();
+                streamBubble = bubble;
+                streamTextEl = textEl;
+
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let buffer = '';
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+
+                    buffer += decoder.decode(value, { stream: true });
+                    const lines = buffer.split('\n');
+                    buffer = lines.pop(); // Keep incomplete line in buffer
+
+                    for (const line of lines) {
+                        if (!line.startsWith('data: ')) continue;
+                        try {
+                            const payload = JSON.parse(line.slice(6));
+                            if (payload.error) {
+                                streamTextEl.innerHTML = `❌ Erro: ${payload.error}`;
+                                return;
+                            }
+                            if (payload.chunk) {
+                                fullText += payload.chunk;
+                                streamTextEl.innerHTML = renderMarkdown(fullText) + '<span class="streaming-cursor">▌</span>';
+                                document.getElementById('chatMessages').scrollTop = document.getElementById('chatMessages').scrollHeight;
+                            }
+                            if (payload.done) {
+                                // Remove cursor, finalize
+                                streamTextEl.innerHTML = renderMarkdown(fullText);
+                                lastResponse = fullText;
+                                const speakBtn = document.getElementById('speakBtn');
+                                if (speakBtn) speakBtn.style.display = 'inline-block';
+                            }
+                        } catch (_) {}
+                    }
+                }
+
+                // Fallback: if stream ended but text still has cursor
+                if (streamTextEl && fullText) {
+                    streamTextEl.innerHTML = renderMarkdown(fullText);
+                }
+
+            } catch (err) {
+                console.error('Chat stream error:', err);
+                document.getElementById('typingIndicator').classList.remove('active');
+                if (streamTextEl) {
+                    streamTextEl.innerHTML = '❌ Erro de ligação com o servidor';
                 } else {
-                    const errorMsg = data.error || data.message || 'Algo correu mal';
-                    addChatMessage('❌ Erro: ' + errorMsg, false);
-                }
-            })
-            .catch(err => {
-                console.error('Chat error:', err);
-                document.getElementById('typingIndicator').classList.remove('active');
-                
-                // Não mostrar mensagem repetida se já foi mostrada a de token expirado
-                if (!err.message.includes('Unauthorized')) {
                     addChatMessage('❌ Erro de ligação com o servidor', false);
                 }
-            });
+            }
         }
 
         // ── Markdown renderer ────────────────────────────────────────────

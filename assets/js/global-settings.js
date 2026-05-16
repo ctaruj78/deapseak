@@ -132,6 +132,14 @@
         applyLanguage: applyLanguage,
         getSettings: getStoredSettings
     };
+
+    // 📡 Завантажуємо api-helper.js (centralized fetch wrapper + error toasts)
+    (function injectApiHelper() {
+        if (window.apiFetch) return; // Already loaded
+        var s = document.createElement('script');
+        s.src = '/assets/js/api-helper.js';
+        document.head.appendChild(s);
+    }());
     
     // 🔍 Завантажуємо діагностичний модуль (тільки в dev режимі)
     if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.hostname.includes('codespaces')) {
