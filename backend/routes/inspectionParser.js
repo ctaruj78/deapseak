@@ -14,64 +14,21 @@ const fs = require('fs');
 const { authenticate } = require('../middleware/auth');
 const { authorizeRoles } = require('../middleware/roleAuth');
 const Lift = require('../models/Lift');
-const { parseBureauVeritasPDF } = require('../../services/pdf-parser-bureau-veritas');
-const { parsePDF: parsePDFEnhanced } = require('../../services/pdf-parser-enhanced');
+const { parseReport: parseUnifiedReport } = require('../../services/pdf-parser-unified');
 const pdfParse = require('pdf-parse');
 
 /**
- * Universal inspection PDF parser.
- * Routes between Bureau-Veritas specialized parser and the AI-assistant enhanced parser.
- * Falls back to the enhanced parser when the BV parser fails or the document is unrecognised.
+ * Universal inspection PDF parser — делегує до pdf-parser-unified.
+ * Єдина точка входу: автоматично обирає між BV, Enhanced та Gemini structured.
  */
 async function parseUniversal(filePath) {
-    let bvResult = null;
-
-    // ── Step 1: peek at first-page text to decide which parser to try first ──
-    try {
-        const buf = require('fs').readFileSync(filePath);
-        const peek = await pdfParse(buf, { max: 1 });
-        const txt = peek.text || '';
-
-        const isBV = txt.includes('BUREAU VERITAS') || /(?:NB|DT)\d{4}-\d{4}/.test(txt);
-        if (isBV) {
-            console.log('📋 Detected Bureau Veritas report — using BV parser');
-            bvResult = await parseBureauVeritasPDF(filePath);
-            if (bvResult && bvResult.success) {
-                bvResult._parserUsed = 'bureau_veritas';
-                return bvResult;
-            }
-            console.warn('⚠️ BV parser failed, falling back to enhanced parser');
-        }
-    } catch (peekErr) {
-        console.warn('⚠️ Peek failed:', peekErr.message);
+    const result = await parseUnifiedReport(filePath);
+    if (result && result.success) {
+        result._parserUsed = result.detectedFormat || 'unified';
     }
-
-    // ── Step 2: try enhanced (AI-grade) parser ────────────────────────────────
-    try {
-        const enhanced = await parsePDFEnhanced(filePath);
-        if (enhanced && enhanced.success) {
-            enhanced._parserUsed = 'enhanced';
-            return enhanced;
-        }
-        console.warn('⚠️ Enhanced parser also failed');
-    } catch (enhErr) {
-        console.warn('⚠️ Enhanced parser threw:', enhErr.message);
-    }
-
-    // ── Step 3: last-resort — try BV parser anyway (handles APCER, GATECI etc) ─
-    if (!bvResult) {
-        try {
-            bvResult = await parseBureauVeritasPDF(filePath);
-            if (bvResult) {
-                bvResult._parserUsed = 'bureau_veritas_fallback';
-                return bvResult;
-            }
-        } catch (_) {}
-    }
-
-    // Nothing worked
-    return { success: false, error: 'All parsers failed to extract text from this PDF.' };
+    return result;
 }
+
 
 /**
  * Normalise parsed result so the rest of the route can use a single field layout

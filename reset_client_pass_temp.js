@@ -1,5 +1,5 @@
 const { MongoClient } = require('mongodb');
-const bcrypt = require('bcryptjs');
+const bcrypt = require('bcrypt');
 const client = new MongoClient('mongodb://localhost:27017');
 client.connect().then(async () => {
   const db = client.db('deapseak');

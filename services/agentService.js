@@ -19,8 +19,8 @@ class AgentService {
         this.genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
         this.db = null;
         this.io = null;
-        // Try gemini-3-flash-preview first, fall back if not available
-        this.model = 'gemini-3-flash-preview';
+        // Use gemini-2.5-flash
+        this.model = 'gemini-2.5-flash';
     }
 
     /**

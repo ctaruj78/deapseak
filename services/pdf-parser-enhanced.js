@@ -12,7 +12,7 @@
 
 const fs = require('fs');
 const pdfParse = require('pdf-parse');
-const { isLikelyScanned, ocrPDF } = require('./pdf-ocr-gemini');
+const { isLikelyScanned, ocrPDF, extractStructuredWithGemini } = require('./pdf-ocr-gemini');
 
 // ПОВНА БАЗА ДАНИХ АРТИКУЛІВ - Decreto-Lei n.º 320/2002
 const regulationArticlesComplete = require('./regulation-articles-complete');
@@ -1064,10 +1064,11 @@ function getViolationsStats(violations) {
     };
     
     violations.forEach(v => {
-        if (!stats.byArticle[v.article]) {
-            stats.byArticle[v.article] = 0;
+        const key = v.article || 'unknown';
+        if (!stats.byArticle[key]) {
+            stats.byArticle[key] = 0;
         }
-        stats.byArticle[v.article]++;
+        stats.byArticle[key]++;
     });
     
     return stats;
@@ -1154,9 +1155,39 @@ async function parsePDF(filePath) {
         const reportType = reportTypeInfo.type;   // backward-compat string
         const inspectionBody = reportTypeInfo.inspectionBody;
         const inspectionTypePT = reportTypeInfo.inspectionTypePT;
-        const metadata = extractMetadata(text);   // метадані — з повного тексту
-        const violations = extractViolations(cleanText);
+        let metadata = extractMetadata(text);   // метадані — з повного тексту
+        let violations = extractViolations(cleanText);
         const conclusion = extractConclusion(text);
+
+        // 🤖 GEMINI STRUCTURED EXTRACTION — покращене розпізнавання поверх regex
+        const apiKey = process.env.GEMINI_API_KEY;
+        const geminiStructured = await extractStructuredWithGemini(text, apiKey);
+        if (geminiStructured) {
+            // Перезаписуємо метадані які Gemini знайшов, якщо regex пропустив
+            if (geminiStructured.metadata) {
+                const gm = geminiStructured.metadata;
+                if (!metadata.reportNumber && gm.reportNumber) metadata.reportNumber = gm.reportNumber;
+                if (!metadata.date && gm.date) metadata.date = gm.date;
+                if (!metadata.liftId && gm.liftId) metadata.liftId = gm.liftId;
+                if (!metadata.location && gm.location) metadata.location = gm.location;
+                if (!metadata.inspector && gm.inspector) metadata.inspector = gm.inspector;
+                if (!metadata.company && gm.company) metadata.company = gm.company;
+            }
+            // Якщо Gemini знайшов більше порушень — використовуємо його список
+            if (geminiStructured.violations && geminiStructured.violations.length > violations.length) {
+                console.log(`🤖 Gemini found ${geminiStructured.violations.length} violations vs regex ${violations.length} — using Gemini data`);
+                violations = geminiStructured.violations.map(v => ({
+                    classification: v.classification || 'C3',
+                    article: v.article || null,
+                    description: v.description || '',
+                    subClause: v.subClause || null,
+                    source: 'gemini'
+                }));
+            } else {
+                console.log(`📊 Regex found ${violations.length} violations, Gemini found ${geminiStructured.violations?.length || 0} — using regex (more complete)`);
+            }
+        }
+
         const stats = getViolationsStats(violations);
         
         console.log(`\n📊 FINAL STATS:`);

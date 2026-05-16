@@ -12,7 +12,44 @@ const fsSync = require('fs');
 const fs = require('fs').promises;
 const path = require('path');
 const os = require('os');
+const crypto = require('crypto');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
+
+// ─── GEMINI RESPONSE CACHE ──────────────────────────────────────────
+// Кеш по SHA-256 хешу вмісту файлу. TTL 24 год. Макс 200 записів.
+const _geminiCache = new Map(); // key: sha256hex → { result, expiresAt }
+const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 години
+const CACHE_MAX_SIZE = 200;
+
+function _cacheGet(key) {
+    const entry = _geminiCache.get(key);
+    if (!entry) return null;
+    if (Date.now() > entry.expiresAt) { _geminiCache.delete(key); return null; }
+    return entry.result;
+}
+
+function _cacheSet(key, result) {
+    // Видаляємо найстаріші записи якщо перевищено ліміт
+    if (_geminiCache.size >= CACHE_MAX_SIZE) {
+        const oldest = _geminiCache.keys().next().value;
+        _geminiCache.delete(oldest);
+    }
+    _geminiCache.set(key, { result, expiresAt: Date.now() + CACHE_TTL_MS });
+}
+
+function _fileHash(filePath) {
+    try {
+        const data = fsSync.readFileSync(filePath);
+        return crypto.createHash('sha256').update(data).digest('hex');
+    } catch {
+        return null;
+    }
+}
+
+function _textHash(text) {
+    return crypto.createHash('sha256').update(text).digest('hex');
+}
+// ────────────────────────────────────────────────────────────────────
 
 /**
  * Перевіряє чи PDF є скановим (мало тексту для text-based, багато для scanned)
@@ -40,9 +77,9 @@ async function pdfToImages(pdfPath, maxPages = 10) {
         console.log(`🖼️ Converting PDF to images: ${pdfPath}`);
         console.log(`   tmpDir: ${tmpDir}`);
         
-        // pdftoppm: -r 300 (high resolution for OCR accuracy), -l maxPages, -png
+        // pdftoppm: -r 400 (high resolution for OCR accuracy), -l maxPages, -png
         const result = spawnSync('pdftoppm', [
-            '-r', '300',
+            '-r', '400',
             '-l', String(maxPages),
             '-png',
             pdfPath,
@@ -99,7 +136,7 @@ async function pdfToImages(pdfPath, maxPages = 10) {
  */
 async function extractTextWithGemini(images, apiKey) {
     const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: 'gemini-3-flash-preview' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
     
     console.log(`🤖 Sending ${images.length} page(s) to Gemini Vision for OCR...`);
     
@@ -110,23 +147,25 @@ async function extractTextWithGemini(images, apiKey) {
         }
     }));
     
-    const prompt = `You are a professional OCR engine specialised in Portuguese elevator inspection reports (Relatório de Inspeção de Elevadores).
+    const prompt = `You are an expert OCR engine specialized in Portuguese elevator inspection reports (Relatório de Inspeção de Elevadores / Relatório de Inspecção de Ascensores).
 
-Your task: extract ALL visible text from this image with maximum accuracy.
+Extract ALL visible text from this document image with maximum fidelity.
 
-CRITICAL rules:
-1. Preserve EXACT spelling, including Portuguese accented characters: ã, â, á, à, ç, é, ê, í, ó, ô, ú, ü
-2. Keep ALL numbers, reference codes and article identifiers exactly: Art.º, Artigo, Decreto-Lei, Portaria, DL, Port.
-3. Extract all violation severity codes PRECISELY: C1, C2, C3 (case-sensitive, never skip)
-4. Preserve tabular and columnar layout using whitespace or pipe separators
-5. Keep dates in original format (DD/MM/YYYY, DD-MM-YYYY)
-6. Preserve header/footer content including page numbers, stamp text, signature lines
-7. Keep all UPPERCASE text uppercased, lowercase lowercased
-8. Do NOT summarise, translate, interpret, or omit any part of the text
-9. Do NOT add markdown formatting (* _ # etc.) — plain text only
-10. If a section is illegible or blank write: [ilegível]
+CRITICAL RULES:
+1. PORTUGUESE CHARACTERS: Preserve exactly — ã â á à ç é ê í ó ô ú ü Ã Â Á À Ç É Ê Í Ó Ô Ú
+2. VIOLATION CODES: Extract C1, C2, C3 exactly as written (case-sensitive, never omit)
+3. LEGAL REFERENCES: Keep exact format — Decreto-Lei n.º 320/2002, Art.º 4.º, Portaria n.º 123/2004, DL, Port., Artigo
+4. NUMBERS & CODES: Reproduce exactly — report numbers, lift IDs, dates (DD/MM/YYYY), NIF, certificate numbers
+5. TABLE STRUCTURE: Preserve using spaces/pipes — do NOT collapse columns
+6. SIGNATURES & STAMPS: Extract all text from stamps, seals, watermarks if readable
+7. HEADERS/FOOTERS: Include page numbers, company names, document titles
+8. CASE SENSITIVITY: UPPERCASE stays UPPERCASE, lowercase stays lowercase
+9. ILLEGIBLE TEXT: Write [ilegível] — never guess
+10. NO FORMATTING: Plain text only — no markdown (* _ # ** — [[ ]])
+11. NO OMISSIONS: Never summarize, skip or paraphrase any section
+12. SUB-CLAUSES: If violations appear as sub-items under C1/C2/C3, preserve the hierarchy with indentation
 
-Output ONLY the raw extracted text, nothing else.`;
+Output ONLY the raw extracted text. No preamble, no explanation.`;
     
     const result = await model.generateContent([prompt, ...imageParts]);
     const response = await result.response;
@@ -155,7 +194,17 @@ async function ocrPDF(pdfPath, apiKey, maxPages = 10) {
                 error: 'GEMINI_API_KEY not configured'
             };
         }
-        
+
+        // Перевіряємо кеш по хешу файлу
+        const fileHash = _fileHash(pdfPath);
+        const cacheKey = fileHash ? `ocr:${fileHash}` : null;
+        if (cacheKey) {
+            const cached = _cacheGet(cacheKey);
+            if (cached) {
+                console.log(`⚡ OCR cache HIT: ${pdfPath}`);
+                return { ...cached, fromCache: true };
+            }
+        }
         // Конвертуємо в зображення
         const images = await pdfToImages(pdfPath, maxPages);
         
@@ -171,12 +220,17 @@ async function ocrPDF(pdfPath, apiKey, maxPages = 10) {
         // Витягуємо текст через Gemini Vision
         const text = await extractTextWithGemini(images, apiKey);
         
-        return {
+        const ocrResult = {
             success: true,
             text: text,
             method: 'gemini_vision_ocr',
             pagesProcessed: images.length
         };
+
+        // Зберігаємо в кеш
+        if (cacheKey) _cacheSet(cacheKey, ocrResult);
+
+        return ocrResult;
         
     } catch (error) {
         console.error('❌ OCR error:', error.message);
@@ -189,9 +243,105 @@ async function ocrPDF(pdfPath, apiKey, maxPages = 10) {
     }
 }
 
+/**
+ * GEMINI STRUCTURED PARSER
+ * Використовує Gemini для витягування структурованих даних з тексту документа.
+ * Працює як для OCR-текстів, так і для текстових PDF.
+ * Значно точніше за regex для складних форматів.
+ *
+ * @param {string} text - Повний текст документа (OCR або txt PDF)
+ * @param {string} apiKey - Gemini API key
+ * @returns {Object|null} - Структурований об'єкт або null при помилці
+ */
+async function extractStructuredWithGemini(text, apiKey) {
+    if (!apiKey || !text || text.length < 100) return null;
+
+    // Кеш по хешу тексту (перші 14000 символів — те що йде в промпт)
+    const textHash = _textHash(text.substring(0, 14000));
+    const cacheKey = `structured:${textHash}`;
+    const cached = _cacheGet(cacheKey);
+    if (cached) {
+        console.log('⚡ Gemini structured cache HIT');
+        return cached;
+    }
+
+    try {
+        const genAI = new GoogleGenerativeAI(apiKey);
+        const model = genAI.getGenerativeModel({
+            model: 'gemini-2.5-flash',
+            generationConfig: {
+                temperature: 0.1,        // Майже детерміністично
+                topP: 0.95,
+                maxOutputTokens: 8192,
+            }
+        });
+
+        const prompt = `You are an expert parser for Portuguese elevator inspection reports (Relatório de Inspeção / Inspecção de Elevador / Ascensor).
+
+Analyze the following document text and extract ALL information into a JSON object.
+
+RULES:
+1. Extract EVERY violation/clause (C1, C2, C3) — never skip any
+2. For each violation extract: classification (C1/C2/C3), article reference, full description text
+3. Preserve Portuguese accents and special characters exactly
+4. If a field is not found, use null (not empty string)
+5. Return ONLY valid JSON — no markdown, no explanation, no code blocks
+6. For violations with sub-items, list each sub-item as a separate violation entry
+
+JSON STRUCTURE (return exactly this format):
+{
+  "metadata": {
+    "reportNumber": "string or null",
+    "date": "DD/MM/YYYY or null",
+    "liftId": "string or null",
+    "location": "full address string or null",
+    "inspector": "full name or null",
+    "company": "inspection company name or null",
+    "approved": true/false/null,
+    "reportType": "Relatório de Inspecção / Relatório de Inspeção / Certificado or null"
+  },
+  "violations": [
+    {
+      "classification": "C1" or "C2" or "C3",
+      "article": "Art.º X.º / Artigo X / DL 320/2002 Art. X or null",
+      "description": "full violation description text in Portuguese",
+      "subClause": "sub-clause identifier or null"
+    }
+  ],
+  "conclusion": "full conclusion text or null",
+  "passed": true/false/null
+}
+
+DOCUMENT TEXT:
+---
+${text.substring(0, 14000)}
+---
+
+Return ONLY the JSON object:`;
+
+        console.log('🤖 Gemini structured extraction starting...');
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        let raw = response.text().trim();
+
+        // Видаляємо markdown-обгортку якщо Gemini все-таки її додав
+        raw = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```\s*$/i, '').trim();
+
+        const parsed = JSON.parse(raw);
+        console.log(`✅ Gemini structured extraction: ${parsed.violations?.length || 0} violations found`);
+        _cacheSet(cacheKey, parsed);
+        return parsed;
+
+    } catch (err) {
+        console.warn('⚠️ Gemini structured extraction failed:', err.message);
+        return null;
+    }
+}
+
 module.exports = {
     isLikelyScanned,
     ocrPDF,
     pdfToImages,
-    extractTextWithGemini
+    extractTextWithGemini,
+    extractStructuredWithGemini
 };

@@ -308,6 +308,41 @@ async function connectMongo() {
         mongoClient = await MongoClient.connect(MONGODB_URI);
         db = mongoClient.db(DB_NAME);
         console.log('✅ MongoDB connected:', MONGODB_URI, 'DB:', DB_NAME);
+
+        // 📊 Ensure performance indexes
+        try {
+            await Promise.all([
+                // lifts: фільтр по статусу + сортування
+                db.collection('lifts').createIndex({ status: 1, createdAt: -1 }, { background: true }),
+                // lifts: пошук по клієнту
+                db.collection('lifts').createIndex({ 'client.email': 1, status: 1 }, { background: true }),
+                db.collection('lifts').createIndex({ clientId: 1, status: 1 }, { background: true }),
+                db.collection('lifts').createIndex({ municipalNumber: 1 }, { background: true, sparse: true }),
+                // requests: статус + дата (найчастіший запит)
+                db.collection('requests').createIndex({ status: 1, createdAt: -1 }, { background: true }),
+                db.collection('requests').createIndex({ clientEmail: 1, status: 1 }, { background: true }),
+                db.collection('requests').createIndex({ liftId: 1, status: 1 }, { background: true }),
+                // inspections: по ліфту + дата
+                db.collection('inspections').createIndex({ liftId: 1, createdAt: -1 }, { background: true }),
+                db.collection('inspections').createIndex({ clientEmail: 1, createdAt: -1 }, { background: true }),
+                db.collection('inspections').createIndex({ status: 1, createdAt: -1 }, { background: true }),
+                // orcamentos: клієнт + статус
+                db.collection('orcamentos').createIndex({ 'cliente.email': 1, status: 1 }, { background: true }),
+                db.collection('orcamentos').createIndex({ status: 1, createdAt: -1 }, { background: true }),
+                // agent_notifications: невирішені
+                db.collection('agent_notifications').createIndex({ status: 1, createdAt: -1 }, { background: true }),
+                db.collection('agent_notifications').createIndex({ liftId: 1, status: 1 }, { background: true }),
+                // users: пошук по email (часто)
+                db.collection('users').createIndex({ email: 1 }, { background: true, unique: true, sparse: true }),
+                db.collection('users').createIndex({ role: 1, status: 1 }, { background: true }),
+                // qr_scans
+                db.collection('qr_scans').createIndex({ liftId: 1 }, { background: true, sparse: true }),
+            ]);
+            console.log('📊 MongoDB indexes ensured');
+        } catch (idxErr) {
+            console.warn('⚠️ Index creation warning (non-fatal):', idxErr.message);
+        }
+
         return db;
     } catch (err) {
         console.error('❌ MongoDB connection error:', err);
@@ -1314,45 +1349,16 @@ const upload = multer({
     }
 });
 
-// PDF Parser Service - ПОКРАЩЕНА ВЕРСІЯ (з автоматичним визначенням типу)
-const pdfParserEnhanced = require('./services/pdf-parser-enhanced');
+// PDF Parser Service - UNIFIED (єдина точка входу для всіх форматів)
+const pdfParserUnified = require('./services/pdf-parser-unified');
+const pdfParserEnhanced = require('./services/pdf-parser-enhanced'); // залишаємо для прямого доступу
 const { parseBureauVeritasPDF } = require('./services/pdf-parser-bureau-veritas');
 const agentService = require('./services/agentService');  // 🤖 AI Agent
 const pdfParse = require('pdf-parse');
 
-// Universal PDF Parser - автоматично визначає тип звіту
+// Universal PDF Parser — тепер делегує до pdf-parser-unified
 async function parseInspectionReport(filePath) {
-    try {
-        // Читаємо першу сторінку для визначення типу
-        const buffer = await fs.readFile(filePath);
-        const partialPDF = await pdfParse(buffer, { max: 1 });
-        const text = partialPDF.text;
-        
-        // O parser BV suporta todos os formatos de entidades portuguesas;
-        // routeamos Bureau Veritas, GATECI, APCER, CERTIEL e NOMINARE para ele.
-        const isBV      = text.includes('BUREAU VERITAS') || /(?:NB|DT)\d{4}-\d{4}/.test(text);
-        const isKnownPT = /\b(?:GATECI|APCER|CERTIEL|NOMINARE)\b/i.test(text);
-
-        if (isBV || isKnownPT) {
-            console.log('📋 Detected known PT inspection entity — using BV/universal parser');
-            return await parseBureauVeritasPDF(filePath);
-        } else {
-            console.log('📋 Using: Generic enhanced parser');
-            const enhanced = await pdfParserEnhanced.parsePDF(filePath);
-            // Se a data não foi extraída, tenta o parser BV como último recurso
-            const hasDate = enhanced && enhanced.metadata && enhanced.metadata.date;
-            if (!hasDate) {
-                console.log('⚠️ Enhanced parser found no date — falling back to BV parser');
-                const bvResult = await parseBureauVeritasPDF(filePath).catch(() => null);
-                if (bvResult && bvResult.success) return bvResult;
-            }
-            return enhanced;
-        }
-    } catch (error) {
-        console.error('❌ Error in universal parser:', error);
-        // Fallback to enhanced parser
-        return await pdfParserEnhanced.parsePDF(filePath);
-    }
+    return pdfParserUnified.parseReport(filePath);
 }
 
 // Cleanup helper
@@ -4689,7 +4695,7 @@ app.get('/api/ai/health', authenticateToken, async (req, res) => {
             success: true,
             status,
             provider,
-            model: isOllama ? OLLAMA_MODEL : (process.env.GOOGLE_AI_MODEL || 'gemini-3-flash-preview'),
+            model: isOllama ? OLLAMA_MODEL : (process.env.GOOGLE_AI_MODEL || 'gemini-2.5-flash'),
             configured,
             features: {
                 chat: configured,
@@ -4749,7 +4755,6 @@ app.post('/api/users', authenticateToken, async (req, res) => {
         }
 
         // Хешування пароля
-        const bcrypt = require('bcryptjs');
         const hashedPassword = await bcrypt.hash(password, 10);
 
         // Генеруємо username з email (до @)
@@ -4843,7 +4848,6 @@ app.put('/api/users/:id', authenticateToken, async (req, res) => {
 
         // Якщо є новий пароль - хешуємо
         if (password) {
-            const bcrypt = require('bcryptjs');
             updateData.password = await bcrypt.hash(password, 10);
         }
 
@@ -5015,7 +5019,6 @@ app.post('/api/users/:id/reset-password', authenticateToken, async (req, res) =>
             Math.random().toString(36).slice(2, 6).toUpperCase() +
             Math.floor(1000 + Math.random() * 9000) +
             ['!', '@', '#', '$'][Math.floor(Math.random() * 4)];
-        const bcrypt = require('bcryptjs');
         const hashedPassword = await bcrypt.hash(rawPassword, 10);
 
         await db.collection('users').updateOne(
@@ -7849,7 +7852,7 @@ async function callGeminiAI(message, role, username, regulationsContext = null, 
         const systemPrompt = getSystemPromptForRole(role, username);
 
         const model = genAI.getGenerativeModel({
-            model: "gemini-3-flash-preview",
+            model: "gemini-2.5-flash",
             systemInstruction: systemPrompt
         });
         
@@ -7932,7 +7935,7 @@ async function _callGuestAI(prompt) {
         return callOllamaRaw([{ role: 'user', content: prompt }]);
     }
 
-    const models = ['gemini-3-flash-preview', 'gemini-2.5-flash', 'gemini-1.5-flash'];
+    const models = ['gemini-2.5-flash', 'gemini-1.5-flash'];
     let lastErr;
     for (const modelName of models) {
         try {
@@ -8216,9 +8219,59 @@ app.post('/api/ai/chat', authenticateToken, aiLimiter, async (req, res) => {
     }
 });
 
-// ═══════════════════════════════════════════════════════════
-// 🔧 OLD KEYWORD-BASED RESPONSES ARCHIVED BELOW
-// ═══════════════════════════════════════════════════════════
+// 🌊 SSE STREAMING: POST /api/ai/chat/stream
+// Відповідь приходить чанками через Server-Sent Events — без затримки
+app.post('/api/ai/chat/stream', authenticateToken, aiLimiter, async (req, res) => {
+    const { message, context } = req.body;
+    if (!message) return res.status(400).json({ success: false, message: 'Message is required' });
+
+    const username = req.user.email || req.user.username;
+    const role = req.user.role || 'client';
+
+    // SSE headers
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+    res.setHeader('X-Accel-Buffering', 'no'); // Вимикаємо nginx buffering
+    res.flushHeaders();
+
+    const sendChunk = (chunk) => res.write(`data: ${JSON.stringify({ chunk })}\n\n`);
+    const sendDone  = (meta)  => { res.write(`data: ${JSON.stringify({ done: true, ...meta })}\n\n`); res.end(); };
+    const sendError = (msg)   => { res.write(`data: ${JSON.stringify({ error: msg })}\n\n`); res.end(); };
+
+    try {
+        if (!process.env.GEMINI_API_KEY) return sendError('GEMINI_API_KEY not configured');
+
+        const systemPrompt = getSystemPromptForRole(role, username);
+        const model = genAI.getGenerativeModel({
+            model: 'gemini-2.5-flash',
+            systemInstruction: systemPrompt
+        });
+
+        const reportText = context?.reportText || null;
+        const contextualPrompt = buildAIUserPrompt(message, null, reportText, 50000, null);
+
+        const streamResult = await model.generateContentStream(contextualPrompt);
+
+        let fullText = '';
+        for await (const chunk of streamResult.stream) {
+            const chunkText = chunk.text();
+            if (chunkText) {
+                fullText += chunkText;
+                sendChunk(chunkText);
+            }
+        }
+
+        sendDone({ powered_by: 'Google Gemini 2.5 Flash (stream)', timestamp: new Date().toISOString() });
+        console.log(`✅ Gemini stream complete: ${fullText.length} chars for ${username}`);
+
+    } catch (err) {
+        console.error('❌ AI stream error:', err.message);
+        sendError('Erro ao processar mensagem em stream');
+    }
+});
+
+
 // This code was replaced with Gemini AI integration above
 // Kept as reference for regulation keywords and topics
 /*
@@ -11095,10 +11148,17 @@ const io = socketIo(server, {
 });
 
 // WebSocket обробка
+io.engine.on('connection_error', (err) => {
+    console.error('❌ Socket.IO engine error:', err.code, err.message);
+});
+
 io.on('connection', (socket) => {
     console.log('👤 WebSocket клієнт підключився:', socket.id);
-    
-    // Аутентифікація через JWT
+
+    // Глобальний handler помилок сокету — запобігає падінню сервера
+    socket.on('error', (err) => {
+        console.error(`❌ Socket error [${socket.id}]:`, err.message);
+    });
     socket.on('authenticate', (token) => {
         try {
             const decoded = jwt.verify(token, JWT_SECRET); // Використовуємо той самий JWT_SECRET що і в authenticateToken

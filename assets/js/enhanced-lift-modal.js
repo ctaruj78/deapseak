@@ -476,6 +476,7 @@ class EnhancedLiftModal {
     validateBasicFields(data) {
         console.log('🔍 Validating enhanced lift form fields...');
         const isEdit = !!this.currentLiftId;
+        const needsMunicipalNumber = data.liftSubtype !== 'home' && data.liftSubtype !== 'platform';
 
         // В режимі редагування гарантуємо, що поле муніципального номера не порожнє
         // (eLiftUpdateRows може перебудувати DOM і тимчасово очистити значення)
