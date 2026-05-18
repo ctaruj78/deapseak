@@ -1867,7 +1867,7 @@ app.get('/api/lifts', authenticateToken, async (req, res) => {
         const searchTerm = (typeof rawSearch === 'string' ? rawSearch : '').trim();
         // 📄 Pagination: ?page=1&limit=50 (default: all if no page specified)
         const pageNum  = Math.max(1, parseInt(req.query.page)  || 1);
-        const limitNum = Math.min(500, Math.max(0, parseInt(req.query.limit) || 0));
+        const limitNum = Math.min(10000, Math.max(0, parseInt(req.query.limit) || 0));
         const skipNum  = limitNum > 0 ? (pageNum - 1) * limitNum : 0;
         if (searchTerm) {
             const re = new RegExp(searchTerm, 'i');
@@ -1888,7 +1888,9 @@ app.get('/api/lifts', authenticateToken, async (req, res) => {
         }
 
         const totalCount = await db.collection('lifts').countDocuments(query);
-        let findCursor = db.collection('lifts').find(query).sort({ createdAt: -1 });
+        const sortField = (typeof req.query.sortBy === 'string' && req.query.sortBy) || 'createdAt';
+        const sortDir = req.query.sortOrder === 'desc' ? -1 : 1;
+        let findCursor = db.collection('lifts').find(query).sort({ [sortField]: sortDir });
         if (limitNum > 0) {
             findCursor = findCursor.skip(skipNum).limit(limitNum);
         }
