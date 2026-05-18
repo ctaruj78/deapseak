@@ -108,7 +108,7 @@ exports.createLift = async (req, res, next) => {
 
 exports.getAllLifts = async (req, res, next) => {
     try {
-        const { status, client, technician, search, needsMaintenance, page = 1, limit = 20, sortBy = 'createdAt', sortOrder = 'desc' } = req.query;
+        const { status, client, technician, search, needsMaintenance, page = 1, limit = 20, sortBy = 'createdAt', sortOrder = 'asc' } = req.query;
         const query = {};
 
         // 🔐 Фільтрація по ролі - клієнт бачить тільки свої ліфти

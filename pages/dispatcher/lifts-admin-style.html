@@ -4046,7 +4046,7 @@ Equipa FestLift</textarea>
         console.log('🔄 A carregar elevadores da API...');
         
         try {
-            const result = await apiCall('/api/lifts');
+            const result = await apiCall('/api/lifts?limit=5000&sortBy=createdAt&sortOrder=asc');
             
             if (result.success && result.data) {
                 // API v2 devolve: { success: true, data: { lifts: [...] } }
