@@ -616,9 +616,10 @@
                     const itemId = $(this).data('item');
                     const status = $(this).find('.checklist-status').val();
                     const comment = $(this).find('.checklist-comment').val();
-                    // Include the human-readable label so the PDF can display it correctly
                     const label = $(this).find('.item-label').text().trim();
-                    checklist[itemId] = { status, comment, label };
+                    const norm = $(this).find('.item-norm').text().trim();
+                    const section = $(this).closest('.inspection-section').find('.section-header strong').first().text().trim();
+                    checklist[itemId] = { status, comment, label, norm, section };
                 });
                 return checklist;
             },
@@ -708,6 +709,9 @@
                 if (btn) btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> A gerar...';
 
                 try {
+                    const vt = $('#visitType').val() || 'maintenance';
+                    const dt = $('#driveType').val() || 'traction';
+                    const drt = $('#doorType').val() || 'automatic';
                     const reportData = {
                         inspectionNumber: $('#inspectionNumber').val(),
                         inspectionDate: $('#inspectionDate').val(),
@@ -717,13 +721,19 @@
                         liftSerial: $('#liftSerial').val() || '',
                         clientName: $('#clientName').val() || '',
                         clientEmail: $('#clientEmail').val(),
-                        visitType: $('#visitType').val() || 'maintenance',
-                        driveType: $('#driveType').val() || 'traction',
-                        doorType: $('#doorType').val() || 'automatic',
+                        visitType: vt,
+                        driveType: dt,
+                        doorType: drt,
                         checklist: this.getChecklistData(),
                         generalComments: $('#generalComments').val(),
                         recommendations: $('#recommendations').val()
                     };
+                    // Attach human-readable meta so the PDF can show the legend
+                    if (typeof INSPECTION_TEMPLATES !== 'undefined') {
+                        reportData.visitTypeMeta = INSPECTION_TEMPLATES.VISIT_META[vt] || null;
+                        reportData.driveTypeMeta = INSPECTION_TEMPLATES.NORMS_META[dt] || null;
+                        reportData.doorTypeMeta  = INSPECTION_TEMPLATES.DOOR_META[drt]  || null;
+                    }
 
                     const response = await fetch('/api/inspections/download-pdf', {
                         method: 'POST',
@@ -799,6 +809,15 @@
                         recommendations: $('#recommendations').val(),
                         recipientEmail: email
                     };
+                    // Attach human-readable meta so the PDF shows the legend
+                    if (typeof INSPECTION_TEMPLATES !== 'undefined') {
+                        const vt2  = reportData.visitType;
+                        const dt2  = reportData.driveType;
+                        const drt2 = reportData.doorType;
+                        reportData.visitTypeMeta = INSPECTION_TEMPLATES.VISIT_META[vt2] || null;
+                        reportData.driveTypeMeta = INSPECTION_TEMPLATES.NORMS_META[dt2] || null;
+                        reportData.doorTypeMeta  = INSPECTION_TEMPLATES.DOOR_META[drt2]  || null;
+                    }
                     
                     // Enviar para o servidor
                     const response = await fetch('/api/inspections/send-report', {

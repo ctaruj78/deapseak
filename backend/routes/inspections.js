@@ -149,6 +149,8 @@ function buildReportPDF(data) {
         const {
             inspectionNumber, inspectionDate, inspector,
             liftLocation, liftModel, clientEmail,
+            visitType, driveType, doorType,
+            visitTypeMeta, driveTypeMeta, doorTypeMeta,
             checklist, generalComments, recommendations
         } = data;
 
@@ -196,45 +198,127 @@ function buildReportPDF(data) {
         });
         y += 10;
 
-        // ── Checklist ──────────────────────────────────────────────────────
-        if (checklist && Object.keys(checklist).length > 0) {
-            doc.fontSize(12).font('Helvetica-Bold').fillColor(BLUE)
-               .text('Resultados da Verificação', 40, y);
+        // ── Legenda da visita (tipo de visita, accionamento, portas, normas) ──
+        const hasVmeta = visitTypeMeta && visitTypeMeta.label;
+        const hasDmeta = driveTypeMeta && driveTypeMeta.label;
+        const hasRmeta = doorTypeMeta  && doorTypeMeta.label;
+        if (hasVmeta || hasDmeta || hasRmeta) {
+            if (y > 680) { doc.addPage(); y = 50; }
+            // Legend header
+            doc.rect(40, y, 515, 18).fill('#e8edf7');
+            doc.rect(40, y, 515, 18).stroke('#ccd4e8');
+            doc.fontSize(9).font('Helvetica-Bold').fillColor(BLUE)
+               .text('CONFIGURAÇÃO DA VISITA E NORMAS APLICÁVEIS', 50, y + 4, { width: 505 });
             y += 18;
 
-            // Cabeçalho da tabela
-            doc.rect(40, y, 515, 18).fill(BLUE);
-            doc.fontSize(9).font('Helvetica-Bold').fillColor('#ffffff');
-            doc.text('Item', 50, y + 4, { width: 300 });
-            doc.text('Estado', 360, y + 4, { width: 60, align: 'center' });
-            doc.text('Observações', 425, y + 4, { width: 120 });
-            doc.fillColor(TEXT);
-            y += 18;
+            const legendRows = [];
+            if (hasVmeta) {
+                const vNorm = visitTypeMeta.norm || '';
+                legendRows.push(['Tipo de Visita:', visitTypeMeta.label + (vNorm ? `  —  ${vNorm}` : '')]);
+            }
+            if (hasDmeta) {
+                const norms = (driveTypeMeta.norms || []).join(' | ');
+                legendRows.push(['Tipo de Accionamento:', driveTypeMeta.label + (norms ? `  —  ${norms}` : '')]);
+            }
+            if (hasRmeta) {
+                const dNorm = doorTypeMeta.norm || '';
+                legendRows.push(['Tipo de Porta:', doorTypeMeta.label + (dNorm ? `  —  ${dNorm}` : '')]);
+            }
 
-            let rowAlt = false;
-            Object.entries(checklist).forEach(([key, val]) => {
-                if (!val || !val.status) return;
-                if (y > 730) { doc.addPage(); y = 50; }
-
-                const itemName = key.replace(/-/g, ' ').replace(/_/g, ' ');
-                const statusMap = { ok: { icon: '✓', color: '#28a745' }, warning: { icon: '⚠', color: '#e67e00' }, error: { icon: '✗', color: '#dc3545' }, na: { icon: 'N/A', color: '#888888' } };
-                const s = statusMap[val.status] || { icon: '—', color: '#888' };
-
-                const rowH = 18;
-                if (rowAlt) doc.rect(40, y, 515, rowH).fill('#f9f9f9');
-                doc.rect(40, y, 515, rowH).stroke('#e0e0e0');
-
-                doc.fontSize(8).font('Helvetica').fillColor(TEXT)
-                   .text(itemName.charAt(0).toUpperCase() + itemName.slice(1), 50, y + 4, { width: 300, lineBreak: false });
-                doc.fillColor(s.color).font('Helvetica-Bold')
-                   .text(s.icon, 360, y + 4, { width: 60, align: 'center', lineBreak: false });
-                doc.fillColor('#555555').font('Helvetica')
-                   .text(val.comment || '', 425, y + 4, { width: 120, lineBreak: false });
-
-                y += rowH;
-                rowAlt = !rowAlt;
+            legendRows.forEach(([lbl, val], idx) => {
+                if (idx % 2 === 0) doc.rect(40, y, 515, 18).fill('#f5f8ff');
+                doc.rect(40, y, 515, 18).stroke('#dde3ec');
+                doc.fontSize(8).font('Helvetica-Bold').fillColor(BLUE)
+                   .text(lbl, 50, y + 4, { width: 130, lineBreak: false });
+                doc.font('Helvetica').fillColor('#333333')
+                   .text(val, 185, y + 4, { width: 365, lineBreak: false });
+                y += 18;
             });
             y += 10;
+        }
+
+        // ── Checklist ──────────────────────────────────────────────────────
+        if (checklist && Object.keys(checklist).length > 0) {
+            const entries = Object.entries(checklist).filter(([, v]) => v && v.status);
+            if (entries.length > 0) {
+                if (y > 680) { doc.addPage(); y = 50; }
+                doc.fontSize(12).font('Helvetica-Bold').fillColor(BLUE)
+                   .text('Resultados da Verificação', 40, y);
+                y += 18;
+
+                // Group items by section
+                const sections = [];
+                const sectionMap = {};
+                entries.forEach(([key, val]) => {
+                    const sectionName = val.section || '';
+                    if (!sectionMap[sectionName]) {
+                        sectionMap[sectionName] = [];
+                        sections.push(sectionName);
+                    }
+                    sectionMap[sectionName].push([key, val]);
+                });
+
+                sections.forEach(sectionName => {
+                    const items = sectionMap[sectionName];
+                    // Section header (only if we have a name)
+                    if (sectionName) {
+                        if (y > 720) { doc.addPage(); y = 50; }
+                        doc.rect(40, y, 515, 16).fill('#dce4f5');
+                        doc.rect(40, y, 515, 16).stroke('#b0c0e0');
+                        doc.fontSize(8).font('Helvetica-Bold').fillColor(BLUE)
+                           .text(sectionName, 50, y + 3, { width: 505, lineBreak: false });
+                        y += 16;
+                    }
+
+                    // Column header row
+                    doc.rect(40, y, 515, 16).fill(BLUE);
+                    doc.fontSize(8).font('Helvetica-Bold').fillColor('#ffffff');
+                    doc.text('Item', 50, y + 3, { width: 225, lineBreak: false });
+                    doc.text('Norma', 280, y + 3, { width: 120, lineBreak: false });
+                    doc.text('Estado', 405, y + 3, { width: 50, align: 'center', lineBreak: false });
+                    doc.text('Observações', 460, y + 3, { width: 90, lineBreak: false });
+                    doc.fillColor(TEXT);
+                    y += 16;
+
+                    let rowAlt = false;
+                    items.forEach(([key, val]) => {
+                        const itemLabel = val.label || (key.replace(/-/g, ' ').replace(/_/g, ' '));
+                        const itemNorm  = val.norm  || '';
+                        const statusMap = {
+                            ok:      { icon: '✓', color: '#28a745' },
+                            yes:     { icon: '✓ Sim', color: '#28a745' },
+                            warning: { icon: '⚠', color: '#e67e00' },
+                            error:   { icon: '✗', color: '#dc3545' },
+                            no:      { icon: '✗ Não', color: '#dc3545' },
+                            na:      { icon: 'N/A', color: '#888888' },
+                        };
+                        const s = statusMap[val.status] || { icon: '—', color: '#888' };
+
+                        // Estimate row height (label may wrap)
+                        const labelLines = Math.ceil(itemLabel.length / 35) || 1;
+                        const normLines  = Math.ceil(itemNorm.length / 22) || 1;
+                        const rowH = Math.max(labelLines, normLines) * 10 + 6;
+
+                        if (y + rowH > 740) { doc.addPage(); y = 50; }
+
+                        if (rowAlt) doc.rect(40, y, 515, rowH).fill('#f9f9f9');
+                        doc.rect(40, y, 515, rowH).stroke('#e0e0e0');
+
+                        doc.fontSize(8).font('Helvetica').fillColor(TEXT)
+                           .text(itemLabel, 50, y + 3, { width: 225 });
+                        doc.fontSize(7).font('Helvetica').fillColor('#666666')
+                           .text(itemNorm, 280, y + 3, { width: 120 });
+                        doc.fontSize(8).fillColor(s.color).font('Helvetica-Bold')
+                           .text(s.icon, 405, y + 3, { width: 50, align: 'center', lineBreak: false });
+                        doc.fillColor('#555555').font('Helvetica')
+                           .text(val.comment || '', 460, y + 3, { width: 90 });
+
+                        y = Math.max(doc.y, y + rowH);
+                        rowAlt = !rowAlt;
+                    });
+                    y += 6;
+                });
+            }
         }
 
         // ── Observações ────────────────────────────────────────────────────
@@ -300,6 +384,12 @@ router.post('/send-report', auth, async (req, res) => {
             liftModel,
             clientEmail,
             liftSerial,   // mantido por compatibilidade retroactiva
+            visitType,
+            driveType,
+            doorType,
+            visitTypeMeta,
+            driveTypeMeta,
+            doorTypeMeta,
             checklist,
             generalComments,
             recommendations,
@@ -319,6 +409,8 @@ router.post('/send-report', auth, async (req, res) => {
             inspectionNumber, inspectionDate, inspector,
             liftLocation, liftModel,
             clientEmail: clientEmail || liftSerial || recipientEmail,
+            visitType, driveType, doorType,
+            visitTypeMeta, driveTypeMeta, doorTypeMeta,
             checklist, generalComments, recommendations
         });
 
