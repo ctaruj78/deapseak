@@ -30,7 +30,7 @@ class SettingsManager {
     // Дефолтні налаштування
     getDefaultSettings() {
         return {
-            language: 'uk',
+            language: 'pt',
             theme: 'light',
             notifications: {
                 email: true,
@@ -290,7 +290,7 @@ class SettingsManager {
 
     // Отримати поточну мову
     getLanguage() {
-        return this.settings.language || 'uk';
+        return this.settings.language || 'pt';
     }
 
     // Отримати поточну тему

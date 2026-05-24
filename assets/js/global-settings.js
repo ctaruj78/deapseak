@@ -89,7 +89,7 @@
         if (!settings) {
             console.log('📦 No stored settings found, using defaults (LIGHT theme)');
             applyTheme('light');
-            applyLanguage('uk');
+            applyLanguage('pt');
             return;
         }
         

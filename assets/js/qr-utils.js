@@ -26,7 +26,7 @@ const qrUtils = (function() {
             const response = await fetch(url, {
                 method: 'GET',
                 headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                    'Authorization': `Bearer ${sessionStorage.getItem('liftmanager_jwt') || localStorage.getItem('liftmanager_jwt')}`,
                     'Content-Type': 'application/json'
                 }
             });
@@ -48,7 +48,7 @@ const qrUtils = (function() {
             const response = await fetch(`${apiBaseUrl}/codes/${id}`, {
                 method: 'GET',
                 headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                    'Authorization': `Bearer ${sessionStorage.getItem('liftmanager_jwt') || localStorage.getItem('liftmanager_jwt')}`,
                     'Content-Type': 'application/json'
                 }
             });
@@ -70,7 +70,7 @@ const qrUtils = (function() {
             const response = await fetch(`${apiBaseUrl}/codes`, {
                 method: 'POST',
                 headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                    'Authorization': `Bearer ${sessionStorage.getItem('liftmanager_jwt') || localStorage.getItem('liftmanager_jwt')}`,
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(qrCodeData)
@@ -93,7 +93,7 @@ const qrUtils = (function() {
             const response = await fetch(`${apiBaseUrl}/codes/${id}`, {
                 method: 'DELETE',
                 headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                    'Authorization': `Bearer ${sessionStorage.getItem('liftmanager_jwt') || localStorage.getItem('liftmanager_jwt')}`,
                     'Content-Type': 'application/json'
                 }
             });
@@ -115,7 +115,7 @@ const qrUtils = (function() {
             const response = await fetch(`${apiBaseUrl}/bulk-create-lift-codes`, {
                 method: 'POST',
                 headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                    'Authorization': `Bearer ${sessionStorage.getItem('liftmanager_jwt') || localStorage.getItem('liftmanager_jwt')}`,
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(options)
@@ -137,7 +137,7 @@ const qrUtils = (function() {
      */
     async function scanQRCode(qrData, scannedBy = null, deviceInfo = null) {
         try {
-            const userData = JSON.parse(localStorage.getItem('user') || '{}');
+            const userData = JSON.parse(localStorage.getItem('liftmanager_user') || '{}');
             
             const response = await fetch(`${apiBaseUrl}/scan`, {
                 method: 'POST',
@@ -170,7 +170,7 @@ const qrUtils = (function() {
             const response = await fetch(`${apiBaseUrl}/stats`, {
                 method: 'GET',
                 headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                    'Authorization': `Bearer ${sessionStorage.getItem('liftmanager_jwt') || localStorage.getItem('liftmanager_jwt')}`,
                     'Content-Type': 'application/json'
                 }
             });
@@ -191,7 +191,7 @@ const qrUtils = (function() {
      */
     async function getQRScans(filters = {}, page = 1, limit = 20) {
         try {
-            let url = `${apiBaseUrl}/scans?page=${page}&limit=${limit}`;
+            let url = `${apiBaseUrl}/history?page=${page}&limit=${limit}`;
             
             // Додавання фільтрів до URL
             if (filters.qrCodeId) url += `&qrCodeId=${filters.qrCodeId}`;
@@ -204,7 +204,7 @@ const qrUtils = (function() {
             const response = await fetch(url, {
                 method: 'GET',
                 headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                    'Authorization': `Bearer ${sessionStorage.getItem('liftmanager_jwt') || localStorage.getItem('liftmanager_jwt')}`,
                     'Content-Type': 'application/json'
                 }
             });

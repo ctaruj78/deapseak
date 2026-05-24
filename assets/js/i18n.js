@@ -8,7 +8,7 @@ class I18n {
     constructor() {
         this.currentLanguage = this.getStoredLanguage() || this.detectLanguage();
         this.translations = {};
-        this.fallbackLanguage = 'uk';
+        this.fallbackLanguage = 'pt';
         this.supportedLanguages = ['uk', 'en', 'pt'];
         this.loadTranslations();
     }
@@ -18,16 +18,18 @@ class I18n {
         try {
             const browserLang = navigator.language || navigator.userLanguage || 'pt-PT';
             const langCode = browserLang.split('-')[0];
-            return this.supportedLanguages.includes(langCode) ? langCode : 'uk';
+            return this.supportedLanguages.includes(langCode) ? langCode : 'pt';
         } catch (error) {
             console.warn('Error detecting language:', error);
-            return 'uk';
+            return 'pt';
         }
     }
 
     // Отримання збереженої мови
     getStoredLanguage() {
-        return localStorage.getItem('app_language');
+        const lang = localStorage.getItem('app_language');
+        if (lang === 'uk') { localStorage.setItem('app_language', 'pt'); return 'pt'; }
+        return lang;
     }
 
     // Збереження мови

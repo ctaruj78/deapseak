@@ -1096,7 +1096,7 @@ document.addEventListener("DOMContentLoaded", function() {
         try {
             // Obter ID do utilizador actual
             const user = AuthManager.getCurrentUser();
-            if (!username) return;
+            if (!user) return; const username = user.username;
             
             // Obter data de hoje
             const today = new Date();
