@@ -522,10 +522,15 @@ document.addEventListener("DOMContentLoaded", function() {
     const html5QrcodeScanner = new Html5QrcodeScanner(
         "qr-reader", 
         { 
-            fps: 10, 
-            qrbox: 250,
+            fps: 25,
+            qrbox: { width: 300, height: 300 },
             aspectRatio: 1.0,
-            showTorchButtonIfSupported: true
+            showTorchButtonIfSupported: true,
+            videoConstraints: {
+                facingMode: { ideal: "environment" },
+                width: { min: 640, ideal: 1920, max: 1920 },
+                height: { min: 480, ideal: 1080, max: 1080 }
+            }
         }
     );
     
@@ -596,10 +601,15 @@ document.addEventListener("DOMContentLoaded", function() {
                 scanner = new Html5Qrcode("qr-reader");
             }
             
-            // Configuração para o leitor
+            // Configuração para o leitor — alta resolução para melhor leitura
             const config = {
-                fps: 10,
-                qrbox: 250
+                fps: 25,
+                qrbox: { width: 300, height: 300 },
+                videoConstraints: {
+                    facingMode: { ideal: "environment" },
+                    width: { min: 640, ideal: 1920, max: 1920 },
+                    height: { min: 480, ideal: 1080, max: 1080 }
+                }
             };
             
             await scanner.start(
