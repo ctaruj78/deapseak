@@ -792,47 +792,54 @@ document.addEventListener("DOMContentLoaded", function() {
                 switch(result.data.type) {
                     case 'lift':
                         const lift = result.data.lift;
+                        // Format address from object
+                        const liftAddr = lift.address && typeof lift.address === 'object'
+                            ? [lift.address.street, lift.address.city, lift.address.postalCode].filter(Boolean).join(', ')
+                            : (lift.address || lift.location || '—');
+                        // Drive/Door type labels
+                        const driveLabels = { traction: 'Elétrico c/ Casa das Máquinas', traction_mrl: 'Elétrico MRL', hydraulic: 'Hidráulico', dl513: 'DL 513/70 (antigo)', goods: 'Monta-cargas', platform: 'Plataforma' };
+                        const doorLabels  = { automatic: 'Automáticas', swing: 'Batentes', gate: 'Portões/Guilhotina', mixed: 'Misto' };
+                        const nextInsp = lift.nextInspectionDate ? new Date(lift.nextInspectionDate).toLocaleDateString('pt-PT') : null;
+                        const nextMaint = lift.nextMaintenanceDate ? new Date(lift.nextMaintenanceDate).toLocaleDateString('pt-PT') : null;
                         resultHtml += `
-                            <h5><i class="fas fa-building"></i> Dados do elevador</h5>
-                            <table class="table table-bordered">
+                            <h5><i class="fas fa-building text-primary"></i> Ascensor identificado</h5>
+                            <table class="table table-bordered table-sm">
                                 <tr>
-                                    <th style="width: 30%">ID do Elevador</th>
-                                    <td>${lift._id || 'Não especificado'}</td>
+                                    <th style="width: 40%" class="bg-light">N.º Municipal</th>
+                                    <td><strong>${lift.municipalNumber || '—'}</strong></td>
                                 </tr>
                                 <tr>
-                                    <th>Endereço</th>
-                                    <td>${lift.address || 'Não especificado'}</td>
+                                    <th class="bg-light">Morada</th>
+                                    <td>${liftAddr}</td>
                                 </tr>
                                 <tr>
-                                    <th>Modelo</th>
-                                    <td>${lift.model || 'Não especificado'}</td>
+                                    <th class="bg-light">Fabricante / Modelo</th>
+                                    <td>${[lift.manufacturer, lift.model].filter(Boolean).join(' ') || '—'}</td>
                                 </tr>
                                 <tr>
-                                    <th>Tipo</th>
-                                    <td>${lift.type || 'Não especificado'}</td>
+                                    <th class="bg-light">Accionamento</th>
+                                    <td>${driveLabels[lift.driveType] || lift.driveType || '—'}</td>
                                 </tr>
                                 <tr>
-                                    <th>Estado</th>
+                                    <th class="bg-light">Portas</th>
+                                    <td>${doorLabels[lift.doorType] || lift.doorType || '—'}</td>
+                                </tr>
+                                <tr>
+                                    <th class="bg-light">Estado</th>
                                     <td>
                                         <span class="badge badge-${lift.status === 'active' ? 'success' : lift.status === 'maintenance' ? 'warning' : 'danger'}">
-                                            ${lift.status === 'active' ? 'Activo' : lift.status === 'maintenance' ? 'Em manutenção' : 'Avariado'}
+                                            ${lift.status === 'active' ? '✓ Activo' : lift.status === 'maintenance' ? '⚠ Em manutenção' : '✗ Avariado'}
                                         </span>
                                     </td>
                                 </tr>
-                                <tr>
-                                    <th>Última manutenção</th>
-                                    <td>${lift.lastMaintenance ? new Date(lift.lastMaintenance).toLocaleDateString('pt-PT') : 'Não realizada'}</td>
-                                </tr>
-                                <tr>
-                                    <th>Próxima manutenção</th>
-                                    <td>${lift.nextMaintenance ? new Date(lift.nextMaintenance).toLocaleDateString('pt-PT') : 'Não planeada'}</td>
-                                </tr>
+                                ${nextInsp ? `<tr><th class="bg-light">Próx. Inspeção</th><td>${nextInsp}</td></tr>` : ''}
+                                ${nextMaint ? `<tr><th class="bg-light">Próx. Manutenção</th><td>${nextMaint}</td></tr>` : ''}
                             </table>
                             <div class="mt-3">
-                                <h6><i class="fas fa-tools"></i> Acções rápidas:</h6>
+                                <h6><i class="fas fa-tools"></i> Iniciar intervenção:</h6>
                                 <div class="btn-group-vertical w-100" role="group">
                                     <a href="manutencao.html?liftId=${lift._id}&type=maintenance" class="btn btn-success btn-lg mb-2">
-                                        <i class="fas fa-calendar-check"></i> Iniciar manutenção planeada
+                                        <i class="fas fa-calendar-check"></i> Manutenção planeada
                                     </a>
                                     <a href="manutencao.html?liftId=${lift._id}&type=repair" class="btn btn-warning btn-lg mb-2">
                                         <i class="fas fa-wrench"></i> Registar reparação
@@ -840,8 +847,8 @@ document.addEventListener("DOMContentLoaded", function() {
                                     <a href="manutencao.html?liftId=${lift._id}&type=emergency" class="btn btn-danger btn-lg mb-2">
                                         <i class="fas fa-exclamation-triangle"></i> Chamada de emergência
                                     </a>
-                                    <a href="../../pages/tech/lift-details.html?id=${lift._id}" class="btn btn-info">
-                                        <i class="fas fa-info-circle"></i> Informação detalhada do elevador
+                                    <a href="../../pages/tech/lift-details.html?id=${lift._id}" class="btn btn-outline-info btn-sm mt-1">
+                                        <i class="fas fa-info-circle"></i> Ver ficha completa
                                     </a>
                                 </div>
                             </div>
