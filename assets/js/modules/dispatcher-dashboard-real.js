@@ -22,12 +22,16 @@ class DispatcherDashboardReal {
         console.log('🚀 DispatcherDashboardReal: Ініціалізація з реальними даними...');
         
         this.API_BASE = window.location.origin;
-        this.token = localStorage.getItem('token');
+        // Перевіряємо sessionStorage спочатку (пріоритет), потім localStorage
+        this.token = sessionStorage.getItem('liftmanager_jwt') ||
+                     localStorage.getItem('liftmanager_jwt') ||
+                     localStorage.getItem('token') ||
+                     localStorage.getItem('authToken') ||
+                     localStorage.getItem('lm_token');
         
         if (!this.token) {
-            console.error('❌ Token не знайдено! Перенаправлення на логін...');
-            window.location.href = '/pages/auth/login.html';
-            return;
+            console.error('❌ Token не знайдено — auth.js обробить редірект');
+            return; // Не редіректимо — auth.js вже це робить
         }
         
         // Дані кешовані в пам'яті

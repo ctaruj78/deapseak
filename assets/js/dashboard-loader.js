@@ -13,11 +13,10 @@ class DashboardLoader {
     init() {
         console.log('📊 DashboardLoader ініціалізовано');
         
-        // Перевірка авторизації
+        // Перевірка авторизації (auth.js вже зробив основну перевірку)
         if (!this.checkAuth()) {
-            console.warn('⚠️ Немає авторизації, перенаправлення на логін');
-            window.location.href = '/login.html';
-            return;
+            console.warn('⚠️ DashboardLoader: немає токена, пропускаємо завантаження');
+            return; // Не редіректимо — auth.js вже це зробить
         }
 
         // A carregar даних при ініціалізації
@@ -32,8 +31,9 @@ class DashboardLoader {
     }
 
     checkAuth() {
-        // Підтримка різних систем зберігання токенів
-        const token = localStorage.getItem('liftmanager_jwt') || 
+        // Підтримка різних систем зберігання токенів (sessionStorage має пріоритет)
+        const token = sessionStorage.getItem('liftmanager_jwt') ||
+                      localStorage.getItem('liftmanager_jwt') || 
                       localStorage.getItem('token') ||
                       localStorage.getItem('lm_token');
         
@@ -66,13 +66,11 @@ class DashboardLoader {
                 const isExpired = payload.exp * 1000 < Date.now();
                 
                 if (isExpired) {
-                    console.warn('⚠️ JWT токен застарів');
-                    localStorage.removeItem('liftmanager_jwt');
-                    localStorage.removeItem('token');
+                    console.warn('⚠️ JWT токен застарів — дозволяємо auth.js обробити');
                     return false;
                 }
 
-                console.log('✅ JWT токен валідний:', payload.username || payload.id);
+                console.log('✅ JWT токен валідний:', payload.username || payload.email || payload.id);
                 return true;
             } catch (error) {
                 console.error('❌ Невалідний JWT токен:', error);
@@ -129,8 +127,9 @@ class DashboardLoader {
     }
 
     async fetchAPI(endpoint) {
-        // Підтримка різних систем токенів
-        const token = localStorage.getItem('liftmanager_jwt') || 
+        // Підтримка різних систем токенів (sessionStorage має пріоритет)
+        const token = sessionStorage.getItem('liftmanager_jwt') ||
+                      localStorage.getItem('liftmanager_jwt') || 
                       localStorage.getItem('token') ||
                       localStorage.getItem('lm_token');
         
@@ -149,12 +148,8 @@ class DashboardLoader {
         });
 
         if (response.status === 401 || response.status === 403) {
-            console.error('❌ Токен недійсний, перенаправлення на логін');
-            localStorage.removeItem('liftmanager_jwt');
-            localStorage.removeItem('token');
-            localStorage.removeItem('lm_session');
-            window.location.href = '/login.html';
-            throw new Error('Unauthorized');
+            console.warn('⚠️ DashboardLoader API повернув', response.status, '— auth.js обробить редірект');
+            throw new Error('Unauthorized'); // Не видаляємо токени і не редіректимо тут
         }
 
         if (!response.ok) {

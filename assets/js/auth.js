@@ -397,8 +397,10 @@ if (typeof window !== 'undefined') {
                         return;
                     }
                     // Clear if page requires a specific role and stored user's role doesn't match
+                    // Normalize: 'tech' and 'technician' are the same
+                    const normalizeRole = r => (r === 'technician' ? 'tech' : r);
                     const requiredRole = document.body && document.body.dataset && document.body.dataset.requiredRole;
-                    if (requiredRole && u.role && requiredRole !== u.role) {
+                    if (requiredRole && u.role && normalizeRole(requiredRole) !== normalizeRole(u.role)) {
                         sessionStorage.removeItem('liftmanager_user');
                         localStorage.removeItem('liftmanager_user');
                         localStorage.removeItem('currentUser');
