@@ -681,7 +681,8 @@
   .text-danger { color:#dc3545; } .text-muted { color:#888; }
   @media print { @page { size: A4; margin: 15mm; } }
 </style>
-</head><body>${reportEl.innerHTML}</body></html>`);
+</head><body>${reportEl.innerHTML}<script src="../../assets/js/monitor.js"></script>
+</body></html>`);
                 pdoc.close();
 
                 printFrame.onload = () => {
@@ -979,5 +980,6 @@
             loadInspectionHistory();
         });
     </script>
+<script src="../../assets/js/monitor.js"></script>
 </body>
 </html>

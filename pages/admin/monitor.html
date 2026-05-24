@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Monitor em tempo real | FestLift</title>
+  <link rel="stylesheet" href="../../plugins/fontawesome-free/css/all.min.css">
+  <link rel="stylesheet" href="../../plugins/adminlte/adminlte.min.css">
+  <style>
+    body { background: #1a1a2e; color: #e0e0e0; font-family: 'Courier New', monospace; }
+    .log-container { height: calc(100vh - 180px); overflow-y: auto; background: #0d0d1a; border-radius: 8px; padding: 10px; }
+    .log-entry { padding: 4px 8px; border-left: 3px solid #444; margin-bottom: 3px; font-size: 12px; border-radius: 2px; white-space: pre-wrap; word-break: break-all; }
+    .log-entry.error     { border-color: #e74c3c; background: rgba(231,76,60,0.1); color: #ff6b6b; }
+    .log-entry.api-error { border-color: #e67e22; background: rgba(230,126,34,0.1); color: #ffa94d; }
+    .log-entry.warn      { border-color: #f1c40f; background: rgba(241,196,15,0.08); color: #ffd43b; }
+    .log-entry.nav       { border-color: #3498db; background: rgba(52,152,219,0.08); color: #74c0fc; }
+    .log-entry.action    { border-color: #2ecc71; background: rgba(46,204,113,0.08); color: #69db7c; }
+    .log-entry.info      { border-color: #555; color: #aaa; }
+    .badge-type { display: inline-block; padding: 1px 6px; border-radius: 3px; font-size: 10px; font-weight: bold; margin-right: 6px; }
+    .ts { color: #666; margin-right: 8px; font-size: 11px; }
+    .user-badge { background: #2d3748; padding: 1px 5px; border-radius: 3px; color: #a0aec0; font-size: 10px; margin-right: 6px; }
+    .url-badge { color: #4a5568; font-size: 10px; margin-right: 6px; }
+    .stats-bar { display: flex; gap: 12px; padding: 8px 16px; background: #111; border-radius: 6px; margin-bottom: 10px; flex-wrap: wrap; }
+    .stat { text-align: center; }
+    .stat .num { font-size: 22px; font-weight: bold; }
+    .stat .lbl { font-size: 10px; color: #666; }
+    .stat.errors .num { color: #e74c3c; }
+    .stat.warns .num  { color: #f1c40f; }
+    .stat.navs .num   { color: #3498db; }
+    .stat.all .num    { color: #e0e0e0; }
+    .filter-btn { border: 1px solid #444; background: #1a1a2e; color: #aaa; padding: 4px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; }
+    .filter-btn.active { background: #2d3748; color: #fff; border-color: #666; }
+    .live-dot { width: 8px; height: 8px; border-radius: 50%; background: #2ecc71; display: inline-block; animation: pulse 1.5s infinite; margin-right: 6px; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+    .paused .live-dot { background: #e74c3c; animation: none; }
+  </style>
+</head>
+<body class="hold-transition" data-required-role="admin">
+
+<div class="wrapper" style="min-height:100vh; padding: 16px;">
+  <div class="d-flex align-items-center justify-content-between mb-3">
+    <div>
+      <span class="live-dot" id="liveDot"></span>
+      <strong style="font-size:18px;">Monitor em tempo real</strong>
+      <span style="color:#666; margin-left:10px; font-size:12px;">FestLift CRM — todos os dispositivos</span>
+    </div>
+    <div class="d-flex gap-2" style="gap:8px;">
+      <button class="filter-btn active" onclick="setFilter(null, this)">Todos</button>
+      <button class="filter-btn" onclick="setFilter('error', this)" style="color:#ff6b6b;">Erros</button>
+      <button class="filter-btn" onclick="setFilter('api-error', this)" style="color:#ffa94d;">API</button>
+      <button class="filter-btn" onclick="setFilter('warn', this)" style="color:#ffd43b;">Warn</button>
+      <button class="filter-btn" onclick="setFilter('nav', this)" style="color:#74c0fc;">Nav</button>
+      <button class="filter-btn" onclick="setFilter('action', this)" style="color:#69db7c;">Ação</button>
+      <button class="filter-btn" onclick="togglePause()" id="pauseBtn">⏸ Pausar</button>
+      <button class="filter-btn" onclick="clearLogs()" style="color:#e74c3c;">🗑 Limpar</button>
+      <a href="dashboard.html" class="filter-btn" style="text-decoration:none;">← Painel</a>
+    </div>
+  </div>
+
+  <div class="stats-bar" id="statsBar">
+    <div class="stat all"><div class="num" id="statAll">0</div><div class="lbl">Total</div></div>
+    <div class="stat errors"><div class="num" id="statError">0</div><div class="lbl">Erros</div></div>
+    <div class="stat" style=""><div class="num" id="statApiError" style="color:#ffa94d;">0</div><div class="lbl">API Erros</div></div>
+    <div class="stat warns"><div class="num" id="statWarn">0</div><div class="lbl">Avisos</div></div>
+    <div class="stat navs"><div class="num" id="statNav">0</div><div class="lbl">Navegação</div></div>
+    <div class="stat" style=""><div class="num" id="statAction" style="color:#69db7c;">0</div><div class="lbl">Ações</div></div>
+    <div class="stat" style="margin-left:auto;"><div class="num" id="statUsers" style="color:#a78bfa;">0</div><div class="lbl">Utilizadores</div></div>
+    <div class="stat" style=""><div class="num" id="statDevices" style="color:#34d399;">0</div><div class="lbl">Dispositivos</div></div>
+  </div>
+
+  <div class="log-container" id="logContainer">
+    <div style="color:#444; text-align:center; padding:40px;">A aguardar logs...</div>
+  </div>
+</div>
+
+<script src="../../plugins/jquery/jquery.min.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+  let logs = [];
+  let currentFilter = null;
+  let paused = false;
+  let autoScroll = true;
+
+  const token = sessionStorage.getItem('liftmanager_jwt') || localStorage.getItem('liftmanager_jwt');
+
+  // Verifica admin
+  if (!token) { location.replace('/pages/auth/login.html'); }
+
+  // ── Carregar logs existentes ────────────────────────────────
+  async function loadLogs() {
+    const resp = await fetch('/api/monitor/logs?limit=200', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    const data = await resp.json();
+    if (data.success) {
+      logs = data.data.reverse(); // mais antigos primeiro
+      renderAll();
+    }
+  }
+
+  // ── WebSocket — tempo real ──────────────────────────────────
+  const socket = io({ auth: { token } });
+
+  socket.on('connect', () => {
+    document.getElementById('liveDot').style.background = '#2ecc71';
+  });
+
+  socket.on('disconnect', () => {
+    document.getElementById('liveDot').style.background = '#e74c3c';
+  });
+
+  socket.on('monitor:log', (entry) => {
+    logs.push(entry);
+    if (logs.length > 500) logs.shift();
+    updateStats();
+    if (!paused) {
+      const el = buildEntry(entry);
+      if (!currentFilter || entry.type === currentFilter) {
+        const container = document.getElementById('logContainer');
+        if (container.querySelector('.text-center')) container.innerHTML = '';
+        container.appendChild(el);
+        if (autoScroll) container.scrollTop = container.scrollHeight;
+      }
+    }
+  });
+
+  // ── Render ──────────────────────────────────────────────────
+  function buildEntry(e) {
+    const div = document.createElement('div');
+    div.className = 'log-entry ' + (e.type || 'info');
+
+    const time = new Date(e.ts || e.receivedAt).toLocaleTimeString('pt-PT');
+    const typeLabels = {
+      error: '❌ ERROR', 'api-error': '🔴 API', warn: '⚠️ WARN',
+      nav: '📄 NAV', action: '🖱 ACTION', info: 'ℹ INFO'
+    };
+    const lbl = typeLabels[e.type] || e.type;
+
+    let extra = '';
+    if (e.data) {
+      try { extra = ' → ' + JSON.stringify(e.data).slice(0, 200); } catch(x){}
+    }
+
+    div.innerHTML =
+      `<span class="ts">${time}</span>` +
+      `<span class="badge-type">${lbl}</span>` +
+      (e.user ? `<span class="user-badge">👤 ${e.user}</span>` : '') +
+      `<span class="url-badge">${(e.url||'').split('?')[0]}</span>` +
+      `<span>${e.message || ''}${extra}</span>`;
+    return div;
+  }
+
+  function renderAll() {
+    const container = document.getElementById('logContainer');
+    container.innerHTML = '';
+    const toShow = currentFilter ? logs.filter(l => l.type === currentFilter) : logs;
+    if (!toShow.length) {
+      container.innerHTML = '<div style="color:#444; text-align:center; padding:40px;">Sem logs</div>';
+    } else {
+      toShow.forEach(e => container.appendChild(buildEntry(e)));
+    }
+    container.scrollTop = container.scrollHeight;
+    updateStats();
+  }
+
+  function updateStats() {
+    const count = t => logs.filter(l => l.type === t).length;
+    document.getElementById('statAll').textContent = logs.length;
+    document.getElementById('statError').textContent = count('error');
+    document.getElementById('statApiError').textContent = count('api-error');
+    document.getElementById('statWarn').textContent = count('warn');
+    document.getElementById('statNav').textContent = count('nav');
+    document.getElementById('statAction').textContent = count('action');
+    const users = new Set(logs.filter(l=>l.user).map(l=>l.user)).size;
+    const devices = new Set(logs.map(l=>l.ip)).size;
+    document.getElementById('statUsers').textContent = users;
+    document.getElementById('statDevices').textContent = devices;
+  }
+
+  function setFilter(type, btn) {
+    currentFilter = type;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderAll();
+  }
+
+  function togglePause() {
+    paused = !paused;
+    const btn = document.getElementById('pauseBtn');
+    btn.textContent = paused ? '▶ Continuar' : '⏸ Pausar';
+    document.querySelector('.wrapper').classList.toggle('paused', paused);
+    if (!paused) renderAll();
+  }
+
+  async function clearLogs() {
+    if (!confirm('Limpar todos os logs?')) return;
+    await fetch('/api/monitor/logs', {
+      method: 'DELETE',
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    logs = [];
+    renderAll();
+  }
+
+  // Auto-scroll detection
+  document.getElementById('logContainer').addEventListener('scroll', function() {
+    const c = this;
+    autoScroll = c.scrollHeight - c.scrollTop - c.clientHeight < 50;
+  });
+
+  // Init
+  loadLogs();
+</script>
+<script src="../../assets/js/monitor.js"></script>
+</body>
+</html>

@@ -838,6 +838,63 @@ app.post('/api/qr/scan', authenticateToken, async (req, res) => {
     }
 });
 
+// ═══════════════════════════════════════════════════════════════
+// 📡 REAL-TIME MONITOR — логи з браузера (помилки, навігація, дії)
+// ═══════════════════════════════════════════════════════════════
+const monitorLogs = []; // in-memory buffer: останні 500 записів
+const MONITOR_MAX = 500;
+
+// POST /api/monitor/log — клієнт → сервер (без auth, щоби ловити навіть помилки авторизації)
+app.post('/api/monitor/log', async (req, res) => {
+    try {
+        const { type, message, url, user, data, ts } = req.body;
+        const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+        const entry = {
+            ts: ts || new Date().toISOString(),
+            receivedAt: new Date().toISOString(),
+            type: type || 'info',      // error | warn | info | nav | action | api
+            message: String(message || '').slice(0, 1000),
+            url: url || '',
+            user: user || null,
+            data: data || null,
+            ip,
+            ua: req.headers['user-agent'] || ''
+        };
+        monitorLogs.unshift(entry);
+        if (monitorLogs.length > MONITOR_MAX) monitorLogs.pop();
+
+        // Зберігаємо критичні помилки в MongoDB
+        if (db && (type === 'error' || type === 'api-error')) {
+            db.collection('monitor_logs').insertOne(entry).catch(() => {});
+        }
+
+        // Відправляємо в реальному часі через WebSocket адмінам
+        if (global.io) {
+            global.io.to('admin').emit('monitor:log', entry);
+        }
+
+        res.json({ ok: true });
+    } catch (e) {
+        res.json({ ok: false });
+    }
+});
+
+// GET /api/monitor/logs — адмін бачить всі логи
+app.get('/api/monitor/logs', authenticateToken, (req, res) => {
+    if (req.user.role !== 'admin') return res.status(403).json({ success: false });
+    const limit = parseInt(req.query.limit) || 100;
+    const type  = req.query.type;
+    let logs = type ? monitorLogs.filter(l => l.type === type) : monitorLogs;
+    res.json({ success: true, data: logs.slice(0, limit), total: logs.length });
+});
+
+// DELETE /api/monitor/logs — очистити буфер
+app.delete('/api/monitor/logs', authenticateToken, (req, res) => {
+    if (req.user.role !== 'admin') return res.status(403).json({ success: false });
+    monitorLogs.length = 0;
+    res.json({ success: true, message: 'Logs limpos' });
+});
+
 // GET QR statistics
 app.get('/api/qr/stats', authenticateToken, async (req, res) => {
     try {
@@ -11241,6 +11298,7 @@ const io = socketIo(server, {
         methods: ["GET", "POST"]
     }
 });
+global.io = io; // для monitor endpoint
 
 // WebSocket обробка
 io.engine.on('connection_error', (err) => {
