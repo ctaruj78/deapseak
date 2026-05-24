@@ -139,13 +139,22 @@ const qrUtils = (function() {
         try {
             const userData = JSON.parse(localStorage.getItem('liftmanager_user') || '{}');
             
+            // Extrair liftId se o qrData for uma URL
+            let extractedLiftId = null;
+            try {
+                const url = new URL(qrData);
+                extractedLiftId = url.searchParams.get('liftId');
+            } catch(e) { /* não é URL */ }
+
             const response = await fetch(`${apiBaseUrl}/scan`, {
                 method: 'POST',
                 headers: {
+                    'Authorization': `Bearer ${sessionStorage.getItem('liftmanager_jwt') || localStorage.getItem('liftmanager_jwt')}`,
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    qrData,
+                    qrCode: qrData,
+                    liftId: extractedLiftId,
                     scannedBy: scannedBy || userData.username || 'anonymous',
                     deviceInfo: deviceInfo || {
                         userAgent: navigator.userAgent,

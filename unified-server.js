@@ -785,7 +785,15 @@ app.post('/api/qr/scan', authenticateToken, async (req, res) => {
             return res.status(503).json({ success: false, message: 'Base de dados indisponível' });
         }
         
-        const { qrCode, liftId, action } = req.body;
+        let { qrCode, liftId, action } = req.body;
+
+        // Se qrCode for uma URL, extrair liftId automaticamente
+        if (!liftId && qrCode) {
+            try {
+                const url = new URL(qrCode);
+                liftId = url.searchParams.get('liftId') || liftId;
+            } catch(e) { /* não é URL */ }
+        }
         
         const scan = {
             qrCode,
@@ -797,8 +805,33 @@ app.post('/api/qr/scan', authenticateToken, async (req, res) => {
         };
         
         await db.collection('qr_scans').insertOne(scan);
-        
-        res.json({ success: true, message: 'QR code digitalizado', data: scan });
+
+        // Buscar dados do elevador para retornar ao cliente
+        let liftData = null;
+        if (liftId) {
+            try {
+                const { ObjectId } = require('mongodb');
+                liftData = await db.collection('lifts').findOne({ _id: new ObjectId(liftId) });
+            } catch(e) {
+                // liftId pode não ser um ObjectId válido
+                liftData = await db.collection('lifts').findOne({ municipalNumber: liftId });
+            }
+        }
+
+        if (liftData) {
+            res.json({
+                success: true,
+                valid: true,
+                message: 'QR code digitalizado',
+                data: {
+                    type: 'lift',
+                    lift: liftData
+                },
+                scan
+            });
+        } else {
+            res.json({ success: true, valid: false, message: 'QR code registado mas elevador não encontrado', data: scan });
+        }
     } catch (error) {
         console.error('❌ Помилка запису QR скану:', error);
         res.status(500).json({ success: false, message: 'Erro do servidor' });

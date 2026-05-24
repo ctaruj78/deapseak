@@ -5849,17 +5849,11 @@ Email de contacto: info@festlift.pt`;
             const container = document.getElementById('qrcode-container');
             container.innerHTML = '<div id="qrcode"></div>';
             
-            // 📌 Виutilizовуexisteмо QR-code збережений в БД (LIFT-{municipalNumber})
-            const storedQR = lift.qrCode || null;
-            const qrText = typeof storedQR === 'object' && storedQR?.code
-                ? storedQR.code  // { code: 'LIFT-xxx', ... }
-                : (typeof storedQR === 'string' && storedQR
-                    ? storedQR   // 'LIFT-xxx'
-                    : (municipalNumber
-                        ? `LIFT-${municipalNumber.toUpperCase().replace(/\s+/g, '-')}`
-                        : `LIFT-${(lift._id || lift.id || '').slice(-6).toUpperCase()}`));
+            // 📌 QR code = URL direto para a página do elevador (abre no browser do telemóvel)
+            const liftDbId = lift._id || lift.id || '';
+            const qrText = `${window.location.origin}/pages/tech/manutencao.html?liftId=${liftDbId}`;
             
-            console.log('📄 QR Text (unified):', qrText);
+            console.log('📄 QR Text (URL):', qrText);
             
             // Створюexisteмо QR-code desde existeдиним formatoом
             new QRCode(document.getElementById('qrcode'), {
