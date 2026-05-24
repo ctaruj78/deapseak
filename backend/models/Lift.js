@@ -5,8 +5,7 @@ const liftSchema = new mongoose.Schema({
         type: String,
         required: [true, 'Municipal number required'],
         unique: true,
-        trim: true,
-        index: true
+        trim: true
     },
     address: {
         street: { type: String, required: true },

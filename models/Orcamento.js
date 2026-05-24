@@ -5,8 +5,7 @@ const orcamentoSchema = new mongoose.Schema({
     numero: {
         type: String,
         required: true,
-        unique: true,
-        index: true
+        unique: true
     },
     
     // Дата створення орçаменту
@@ -174,8 +173,8 @@ const orcamentoSchema = new mongoose.Schema({
     timestamps: true // createdAt, updatedAt автоматично
 });
 
-// Індекси для швидкого пошуку
-orcamentoSchema.index({ numero: 1 });
+// Índices para pesquisa rápida
+// orcamentoSchema.index({ numero: 1 }); // já criado pelo unique:true
 orcamentoSchema.index({ 'cliente.email': 1 });
 orcamentoSchema.index({ status: 1 });
 orcamentoSchema.index({ data: -1 });

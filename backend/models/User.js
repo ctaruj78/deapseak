@@ -239,8 +239,7 @@ userSchema.methods.toJSON = function() {
 };
 
 // Індекси
-userSchema.index({ email: 1 });
-userSchema.index({ username: 1 });
+// Nota: email e username já têm índices criados pelo unique:true na definição do schema
 userSchema.index({ role: 1 });
 
 const User = mongoose.model('User', userSchema);

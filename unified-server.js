@@ -347,7 +347,7 @@ async function connectMongo() {
                 // lifts: пошук по клієнту
                 db.collection('lifts').createIndex({ 'client.email': 1, status: 1 }, { background: true }),
                 db.collection('lifts').createIndex({ clientId: 1, status: 1 }, { background: true }),
-                db.collection('lifts').createIndex({ municipalNumber: 1 }, { background: true, sparse: true }),
+                // municipalNumber: índice já criado pelo unique:true no Mongoose model
                 // requests: статус + дата (найчастіший запит)
                 db.collection('requests').createIndex({ status: 1, createdAt: -1 }, { background: true }),
                 db.collection('requests').createIndex({ clientEmail: 1, status: 1 }, { background: true }),
@@ -362,8 +362,7 @@ async function connectMongo() {
                 // agent_notifications: невирішені
                 db.collection('agent_notifications').createIndex({ status: 1, createdAt: -1 }, { background: true }),
                 db.collection('agent_notifications').createIndex({ liftId: 1, status: 1 }, { background: true }),
-                // users: пошук по email (часто)
-                db.collection('users').createIndex({ email: 1 }, { background: true, unique: true, sparse: true }),
+                // users: email índice já criado pelo unique:true no Mongoose model
                 db.collection('users').createIndex({ role: 1, status: 1 }, { background: true }),
                 // qr_scans
                 db.collection('qr_scans').createIndex({ liftId: 1 }, { background: true, sparse: true }),
