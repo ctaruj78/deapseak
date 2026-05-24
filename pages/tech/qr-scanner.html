@@ -1140,10 +1140,10 @@ document.addEventListener("DOMContentLoaded", function() {
             
             // Actualizar estatísticas na página
             document.getElementById('scans-today').textContent = 
-                todayScans.success ? todayScans.pagination.total : 0;
+                todayScans.success ? (todayScans.pagination ? todayScans.pagination.total : (todayScans.data || []).length) : 0;
                 
             document.getElementById('scans-week').textContent = 
-                weekScans.success ? weekScans.pagination.total : 0;
+                weekScans.success ? (weekScans.pagination ? weekScans.pagination.total : (weekScans.data || []).length) : 0;
                 
             // Obter quantidade de tarefas criadas com base em leituras
             // É apenas um stub de exemplo
