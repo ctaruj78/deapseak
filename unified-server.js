@@ -11296,6 +11296,11 @@ app.get('*', (req, res, next) => {
     if (req.path.startsWith('/api/')) {
         return res.status(404).json({ success: false, message: 'API endpoint not found' });
     }
+    // Ficheiros de upload não existentes — devolver 404 em vez de index.html
+    // (evita que o iframe mostre a homepage quando o PDF não existe)
+    if (req.path.startsWith('/uploads/')) {
+        return res.status(404).send('File not found');
+    }
     // Інакше - віддаємо index.html для SPA роутингу
     res.sendFile(path.join(__dirname, 'index.html'));
 });

@@ -6604,29 +6604,37 @@ Email de contacto: info@festlift.pt`;
             </div>` : '';
         const footer = `<small class="text-muted"><i class="fas fa-clock mr-1"></i> ${report.createdAt ? new Date(report.createdAt).toLocaleString('pt-PT') : date}</small>`;
 
-        let detailsHtml;
-        if (fileUrl) {
-            // Show the PDF embedded in an iframe + meta info below it
-            detailsHtml = `
-            <div>
-                <div class="d-flex align-items-center bg-${statusClass} text-white px-3 py-2 rounded-top">
-                    <i class="fas ${typeIcon} mr-2"></i>
-                    <strong>${type}</strong>
-                    <span class="badge badge-light text-${statusClass} ml-2">${statusBadge}</span>
-                    <a href="${fileUrl}" target="_blank" class="btn btn-sm btn-light ml-auto" title="Abrir em nova aba">
-                        <i class="fas fa-external-link-alt"></i> Nova aba
-                    </a>
-                    <a href="${fileUrl}" download class="btn btn-sm btn-light ml-1" title="Descarregar PDF">
-                        <i class="fas fa-download"></i>
-                    </a>
-                </div>
-                <iframe src="${fileUrl}" style="width:100%;height:62vh;border:1px solid #dee2e6;border-top:none;" title="Relatório PDF"></iframe>
-                <div class="p-3 border border-top-0 rounded-bottom">
-                    ${metaRow}${notesRow}
-                    <div class="mt-2">${footer}</div>
-                </div>
-            </div>`;
-        } else {
+        // Verificar se o ficheiro PDF realmente existe antes de mostrar iframe
+        async function buildAndShowReportDetails(fileUrl, statusClass, typeIcon, type, statusBadge, metaRow, notesRow, footer) {
+            let pdfExists = false;
+            if (fileUrl) {
+                try {
+                    const headResp = await fetch(fileUrl, { method: 'HEAD' });
+                    pdfExists = headResp.ok && (headResp.headers.get('content-type') || '').includes('pdf');
+                } catch(e) { pdfExists = false; }
+            }
+            let detailsHtml;
+            if (pdfExists) {
+                detailsHtml = `
+                <div>
+                    <div class="d-flex align-items-center bg-${statusClass} text-white px-3 py-2 rounded-top">
+                        <i class="fas ${typeIcon} mr-2"></i>
+                        <strong>${type}</strong>
+                        <span class="badge badge-light text-${statusClass} ml-2">${statusBadge}</span>
+                        <a href="${fileUrl}" target="_blank" class="btn btn-sm btn-light ml-auto" title="Abrir em nova aba">
+                            <i class="fas fa-external-link-alt"></i> Nova aba
+                        </a>
+                        <a href="${fileUrl}" download class="btn btn-sm btn-light ml-1" title="Descarregar PDF">
+                            <i class="fas fa-download"></i>
+                        </a>
+                    </div>
+                    <iframe src="${fileUrl}" style="width:100%;height:62vh;border:1px solid #dee2e6;border-top:none;" title="Relatório PDF"></iframe>
+                    <div class="p-3 border border-top-0 rounded-bottom">
+                        ${metaRow}${notesRow}
+                        <div class="mt-2">${footer}</div>
+                    </div>
+                </div>`;
+            } else {
             detailsHtml = `
             <div class="card border-0">
                 <div class="card-header bg-${statusClass} text-white py-2">
@@ -6645,9 +6653,10 @@ Email de contacto: info@festlift.pt`;
                 </div>
                 <div class="card-footer text-muted py-1">${footer}</div>
             </div>`;
+            }
+            document.getElementById('report-details-content').innerHTML = detailsHtml;
         }
-        
-        document.getElementById('report-details-content').innerHTML = detailsHtml;
+        buildAndShowReportDetails(fileUrl, statusClass, typeIcon, type, statusBadge, metaRow, notesRow, footer);
         
         // Store report for actions
         window.currentReportForPrint = report;
