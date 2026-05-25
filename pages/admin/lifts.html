@@ -1543,8 +1543,8 @@
                                                     <select id="enhancedDriveType" name="driveType" class="form-control">
                                                         <option value="">— Selecione —</option>
                                                         <option value="hydraulic">Hidráulico</option>
-                                                        <option value="traction_mrl">Por cabo (MRL)</option>
-                                                        <option value="traction">Por cabo (com casa das máquinas)</option>
+                                                        <option value="traction_mrl">Por cabo — MRL (sem casa das máquinas)</option>
+                                                        <option value="traction">Por cabo — com casa das máquinas</option>
                                                         <option value="dl513">Por cabo — DL 513/70 (instalação antiga)</option>
                                                         <option value="platform">Por parafuso / Plataforma</option>
                                                     </select>
@@ -1555,10 +1555,10 @@
                                                     <label>Tipo de portas</label>
                                                     <select id="enhancedDoorType" name="doorType" class="form-control">
                                                         <option value="">— Selecione —</option>
-                                                        <option value="automatic">Automáticas (2 folhas)</option>
-                                                        <option value="automatic">Automáticas (4 folhas / telescópicas)</option>
-                                                        <option value="swing">Semiautomáticas / Batentes</option>
-                                                        <option value="gate">Manuais (grades)</option>
+                                                        <option value="automatic">Automáticas (operador)</option>
+                                                        <option value="mixed">Misto — Batentes (patamar) + Automáticas (cabine)</option>
+                                                        <option value="swing">Batentes / Semiautomáticas</option>
+                                                        <option value="gate">Portões / Guilhotina</option>
                                                     </select>
                                                 </div>
                                             </div>
@@ -5101,15 +5101,21 @@ Email de contacto: info@festlift.pt`;
                 
                 // Tipo de accionamento e portas
                 const driveLabels = {
-                    traction: 'Por cabo (com casa das máquinas)',
-                    traction_mrl: 'Por cabo (MRL)',
+                    traction: 'Por cabo — com casa das máquinas',
+                    traction_mrl: 'Por cabo — MRL (sem casa das máquinas)',
                     dl513: 'Por cabo — DL 513/70 (instalação antiga)',
                     hydraulic: 'Hidráulico',
                     goods: 'Monta-cargas',
                     platform: 'Plataforma Elevatória',
                 };
                 $('#detail-drive-type').text(driveLabels[lift.driveType] || lift.driveType || 'Não especificado');
-                $('#detail-door-type').text(lift.doorType || 'Não especificado');
+                const doorLabels = {
+                    automatic: 'Automáticas (operador)',
+                    mixed: 'Misto — Batentes (patamar) + Automáticas (cabine)',
+                    swing: 'Batentes / Semiautomáticas',
+                    gate: 'Portões / Guilhotina',
+                };
+                $('#detail-door-type').text(doorLabels[lift.doorType] || lift.doorType || 'Não especificado');
                 
                 // Роки
                 $('#detail-manufacture-year').text(lift.manufactureYear || 'Não especificado');
