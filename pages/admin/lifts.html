@@ -7361,43 +7361,44 @@ Email de contacto: info@festlift.pt`;
                         return;
                     }
                     
-                    // Формуexisteмо CSV
-                    const headers = ['ID', 'Nome', 'Endereço', 'Fabricante', 'Modelo', 'Cidade', 'Estado', 'Data de criação'];
-                    const csvRows = [headers.join(',')];
-                    
+                    // ✅ CSV melhorado — colunas úteis
+                    const typeLabels = { passenger: 'Passageiro', cargo: 'Carga', car: 'Automóvel', escalator: 'Escada Rolante', platform: 'Plataforma' };
+                    const statusLabels = { operational: 'Operacional', maintenance: 'Manutenção', inactive: 'Inativo', inspection_required: 'Inspeção Necessária', 'out-of-service': 'Fora de Serviço' };
+
+                    const headers = ['Nº Municipal', 'Tipo', 'Fabricante', 'Modelo', 'Endereço', 'Município', 'Estado', 'Cliente', 'Última Inspeção', 'Próxima Inspeção', 'Nº Contrato', 'Data de Criação'];
+                    const csvRows = [headers.join(';')];
+
                     lifts.forEach(lift => {
-                        // Правильне витягування endereçoи
                         let addressStr = '';
                         if (lift.address) {
                             if (typeof lift.address === 'string') {
                                 addressStr = lift.address;
-                            } else if (lift.address.street) {
-                                addressStr = lift.address.street;
-                            } else if (lift.address.full) {
-                                addressStr = lift.address.full;
+                            } else {
+                                const parts = [lift.address.street, lift.address.city, lift.postalCode || lift.address.zipCode].filter(Boolean);
+                                addressStr = parts.join(', ');
                             }
                         }
-                        
-                        // Правильне витягування місe
-                        let cityStr = '';
-                        if (lift.address && lift.address.city) {
-                            cityStr = lift.address.city;
-                        } else if (lift.city) {
-                            cityStr = lift.city;
-                        }
-                        
+                        const municipioStr = lift.municipality || (lift.address && lift.address.city) || '';
+                        const lastInsp = lift.lastInspectionDate ? new Date(lift.lastInspectionDate).toLocaleDateString('pt-PT') : '';
+                        const nextInsp = lift.nextInspectionDate ? new Date(lift.nextInspectionDate).toLocaleDateString('pt-PT') : '';
+
                         const row = [
-                            lift._id || '',
-                            `"${lift.name || lift.municipalNumber || ''}"`,
-                            `"${addressStr}"`,
+                            `"${lift.municipalNumber || lift.name || ''}"`,
+                            `"${typeLabels[lift.type] || lift.type || ''}"`,
                             `"${lift.manufacturer || ''}"`,
                             `"${lift.model || ''}"`,
-                            `"${cityStr}"`,
-                            lift.status || 'operational',
-                            lift.createdAt ? new Date(lift.createdAt).toLocaleDateString('pt-PT') : ''
+                            `"${addressStr}"`,
+                            `"${municipioStr}"`,
+                            `"${statusLabels[lift.status] || lift.status || 'Operacional'}"`,
+                            `"${lift.clientName || ''}"`,
+                            `"${lastInsp}"`,
+                            `"${nextInsp}"`,
+                            `"${lift.contractNumber || ''}"`,
+                            `"${lift.createdAt ? new Date(lift.createdAt).toLocaleDateString('pt-PT') : ''}"`,
                         ];
-                        csvRows.push(row.join(','));
+                        csvRows.push(row.join(';'));
                     });
+
                     
                     // Створюexisteмо Blob e заванeжуexisteмо ficheiro
                     const csvContent = csvRows.join('\n');
@@ -7432,8 +7433,115 @@ Email de contacto: info@festlift.pt`;
         if (exportPDFBtn) {
             exportPDFBtn.addEventListener('click', function() {
                 console.log('📄 Exportar PDF...');
-                alert('A exportação PDF estará disponível na próxima versão.\n\nPor enquanto, utilize a exportação CSV.');
-                // TODO: Adicionar jsPDF бібліотеку e реалізувати експорт PDF
+                // ✅ PDF export via jsPDF + autoTable
+                (async function exportPDF() {
+                    const btn = exportPDFBtn;
+                    btn.disabled = true;
+                    btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> A gerar PDF...';
+                    try {
+                        // Carregar jsPDF dinamicamente se necessário
+                        if (typeof window.jspdf === 'undefined') {
+                            await new Promise((resolve, reject) => {
+                                const s = document.createElement('script');
+                                s.src = '/node_modules/jspdf/dist/jspdf.umd.min.js';
+                                s.onload = resolve;
+                                s.onerror = () => reject(new Error('Erro ao carregar jsPDF'));
+                                document.head.appendChild(s);
+                            });
+                        }
+                        if (typeof window.jspdf !== 'undefined' && typeof window.jspdf.jsPDF.prototype.autoTable === 'undefined') {
+                            await new Promise((resolve, reject) => {
+                                const s = document.createElement('script');
+                                s.src = '/node_modules/jspdf-autotable/dist/jspdf.plugin.autotable.min.js';
+                                s.onload = resolve;
+                                s.onerror = () => reject(new Error('Erro ao carregar AutoTable'));
+                                document.head.appendChild(s);
+                            });
+                        }
+
+                        let lifts = window.allLiftsData;
+                        if (!lifts || lifts.length === 0) {
+                            lifts = await window.loadLiftsFromAPI();
+                        }
+                        if (!lifts || lifts.length === 0) {
+                            alert('Sem dados para exportar');
+                            return;
+                        }
+
+                        const { jsPDF } = window.jspdf;
+                        const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+
+                        // Cabeçalho
+                        doc.setFontSize(16);
+                        doc.setFont('helvetica', 'bold');
+                        doc.text('FestLift — Gestão de Elevadores', 14, 14);
+                        doc.setFontSize(9);
+                        doc.setFont('helvetica', 'normal');
+                        const hoje = new Date().toLocaleDateString('pt-PT');
+                        doc.text(`Exportado em: ${hoje}   ·   Total: ${lifts.length} elevadores`, 14, 21);
+
+                        const typeLabels = { passenger: 'Passageiro', cargo: 'Carga', car: 'Automovel', escalator: 'Escada Rolante', platform: 'Plataforma' };
+                        const statusLabels = { operational: 'Operacional', maintenance: 'Manutencao', inactive: 'Inativo', inspection_required: 'Insp. Necessaria', 'out-of-service': 'Fora Servico' };
+
+                        const tableData = lifts.map(lift => {
+                            let addr = '-';
+                            if (lift.address) {
+                                if (typeof lift.address === 'string') addr = lift.address;
+                                else addr = [lift.address.street, lift.address.city].filter(Boolean).join(', ') || '-';
+                            }
+                            const municipio = lift.municipality || (lift.address && lift.address.city) || '-';
+                            const lastInsp = lift.lastInspectionDate ? new Date(lift.lastInspectionDate).toLocaleDateString('pt-PT') : '-';
+                            const nextInsp = lift.nextInspectionDate ? new Date(lift.nextInspectionDate).toLocaleDateString('pt-PT') : '-';
+                            return [
+                                lift.municipalNumber || lift.name || '-',
+                                typeLabels[lift.type] || lift.type || '-',
+                                lift.manufacturer || '-',
+                                lift.model || '-',
+                                addr,
+                                municipio,
+                                statusLabels[lift.status] || lift.status || '-',
+                                lift.clientName || '-',
+                                lastInsp,
+                                nextInsp,
+                            ];
+                        });
+
+                        doc.autoTable({
+                            head: [['N\u00ba Municipal', 'Tipo', 'Fabricante', 'Modelo', 'Endere\u00e7o', 'Munic\u00edpio', 'Estado', 'Cliente', '\u00dalt. Inspe\u00e7\u00e3o', 'Pr\u00f3x. Inspe\u00e7\u00e3o']],
+                            body: tableData,
+                            startY: 26,
+                            styles: { fontSize: 7.5, cellPadding: 2, overflow: 'linebreak' },
+                            headStyles: { fillColor: [40, 167, 69], textColor: 255, fontStyle: 'bold', fontSize: 8 },
+                            alternateRowStyles: { fillColor: [245, 252, 245] },
+                            columnStyles: {
+                                0: { cellWidth: 25 }, 1: { cellWidth: 20 },
+                                2: { cellWidth: 22 }, 3: { cellWidth: 22 },
+                                4: { cellWidth: 55 }, 5: { cellWidth: 22 },
+                                6: { cellWidth: 22 }, 7: { cellWidth: 28 },
+                                8: { cellWidth: 20 }, 9: { cellWidth: 20 },
+                            },
+                            didDrawPage: function(data) {
+                                const W = doc.internal.pageSize.width;
+                                const H = doc.internal.pageSize.height;
+                                doc.setFontSize(8);
+                                doc.setTextColor(150);
+                                doc.text(`Pagina ${data.pageNumber}`, W - 22, H - 6);
+                                doc.setTextColor(0);
+                            }
+                        });
+
+                        doc.save(`gestao_elevadores_${new Date().toISOString().slice(0, 10)}.pdf`);
+                        if (typeof toastr !== 'undefined') toastr.success('PDF exportado com sucesso!');
+
+                    } catch (err) {
+                        console.error('Erro ao gerar PDF:', err);
+                        if (typeof toastr !== 'undefined') toastr.error('Erro ao gerar PDF: ' + err.message);
+                        else alert('Erro ao gerar PDF: ' + err.message);
+                    } finally {
+                        btn.disabled = false;
+                        btn.innerHTML = '<i class="fas fa-file-pdf mr-1"></i> Exportar PDF';
+                    }
+                })();
             });
             console.log('✅ Processador PDF adicionado');
         } else {

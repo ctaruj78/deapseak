@@ -11,25 +11,15 @@ const path = require('path');
 const fs = require('fs');
 const multer = require('multer');
 const fsPromises = require('fs').promises;
+const sharp = require('sharp');
 
-// Multer para fotos de orçamentos
-const orcamentoFotoStorage = multer.diskStorage({
-    destination: async (req, file, cb) => {
-        const dir = path.join(__dirname, '../../uploads/orcamentos', req.params.id);
-        await fsPromises.mkdir(dir, { recursive: true });
-        cb(null, dir);
-    },
-    filename: (req, file, cb) => {
-        const suffix = Date.now() + '-' + Math.round(Math.random() * 1e6);
-        cb(null, suffix + path.extname(file.originalname));
-    }
-});
+// Multer para fotos de orçamentos — usa memoryStorage para converter para WebP
 const uploadOrcFoto = multer({
-    storage: orcamentoFotoStorage,
-    limits: { fileSize: 10 * 1024 * 1024 },
+    storage: multer.memoryStorage(),
+    limits: { fileSize: 15 * 1024 * 1024 }, // 15MB original; WebP será muito menor
     fileFilter: (req, file, cb) => {
-        if (/^image\/(jpeg|png|webp|gif)$/.test(file.mimetype)) cb(null, true);
-        else cb(new Error('Apenas imagens JPG, PNG, WEBP, GIF são aceites'));
+        if (/^image\/(jpeg|png|webp|gif|heic|heif)$/.test(file.mimetype)) cb(null, true);
+        else cb(new Error('Apenas imagens JPG, PNG, WEBP, GIF, HEIC são aceites'));
     }
 });
 
@@ -1353,7 +1343,22 @@ router.post('/:id/fotos', authenticate, authorizeRoles('admin', 'dispatcher'), u
         if (!orcamento) return res.status(404).json({ success: false, message: 'Orçamento não encontrado' });
         if (!req.files || req.files.length === 0) return res.status(400).json({ success: false, message: 'Nenhum ficheiro enviado' });
 
-        const novos = req.files.map(f => `/uploads/orcamentos/${req.params.id}/${f.filename}`);
+        // Converter cada foto para WebP com sharp (qualidade 82, máx 1920px)
+        const dir = path.join(__dirname, '../../uploads/orcamentos', req.params.id);
+        await fsPromises.mkdir(dir, { recursive: true });
+
+        const novos = [];
+        for (const f of req.files) {
+            const suffix = Date.now() + '-' + Math.round(Math.random() * 1e6);
+            const filename = suffix + '.webp';
+            const destPath = path.join(dir, filename);
+            await sharp(f.buffer)
+                .resize({ width: 1920, height: 1920, fit: 'inside', withoutEnlargement: true })
+                .webp({ quality: 82 })
+                .toFile(destPath);
+            novos.push(`/uploads/orcamentos/${req.params.id}/${filename}`);
+        }
+
         orcamento.fotos = [...(orcamento.fotos || []), ...novos];
         await orcamento.save();
 
