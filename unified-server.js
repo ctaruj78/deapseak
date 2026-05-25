@@ -758,6 +758,20 @@ app.delete('/api/qr/codes/:id', authenticateToken, async (req, res) => {
 });
 
 // GET QR scan history
+// DELETE single scan record
+app.delete('/api/qr/history/:id', authenticateToken, async (req, res) => {
+    try {
+        if (!db) return res.status(503).json({ success: false, message: 'Base de dados indisponível' });
+        const { ObjectId } = require('mongodb');
+        const result = await db.collection('qr_scans').deleteOne({ _id: new ObjectId(req.params.id) });
+        if (result.deletedCount === 0) return res.status(404).json({ success: false, message: 'Leitura não encontrada' });
+        res.json({ success: true, message: 'Leitura apagada' });
+    } catch (error) {
+        console.error('❌ Erro ao apagar scan:', error);
+        res.status(500).json({ success: false, message: 'Erro do servidor' });
+    }
+});
+
 app.get('/api/qr/history', authenticateToken, async (req, res) => {
     try {
         if (!db) {

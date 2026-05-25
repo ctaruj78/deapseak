@@ -58,9 +58,9 @@ const scanHistory = (function() {
         const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
         const monthAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
 
-        const todayScans = scansData.filter(s => new Date(s.timestamp) >= today).length;
-        const weekScans = scansData.filter(s => new Date(s.timestamp) >= weekAgo).length;
-        const monthScans = scansData.filter(s => new Date(s.timestamp) >= monthAgo).length;
+        const todayScans = scansData.filter(s => new Date(s.scannedAt || s.timestamp || s.createdAt) >= today).length;
+        const weekScans = scansData.filter(s => new Date(s.scannedAt || s.timestamp || s.createdAt) >= weekAgo).length;
+        const monthScans = scansData.filter(s => new Date(s.scannedAt || s.timestamp || s.createdAt) >= monthAgo).length;
 
         $('#totalScans').text(scansData.length.toLocaleString());
         $('#todayScans').text(todayScans);
@@ -78,23 +78,32 @@ const scanHistory = (function() {
         tbody.empty();
 
         filteredScans.forEach((scan, index) => {
-            const date = new Date(scan.timestamp);
-            const statusClass = scan.status === 'success' ? 'success' : 
-                              scan.status === 'warning' ? 'warning' : 'danger';
-            const statusIcon = scan.status === 'success' ? 'check-circle' : 
-                             scan.status === 'warning' ? 'exclamation-triangle' : 'times-circle';
+            // API returns scannedAt, localStorage may use timestamp
+            const date = new Date(scan.scannedAt || scan.timestamp || scan.createdAt);
+            const dateStr = isNaN(date) ? '—' : date.toLocaleDateString('pt-PT') + ' ' + date.toLocaleTimeString('pt-PT');
+            const scanId = scan._id || scan.id || index;
+
+            // Tipo: action field
+            const tipoLabel = scan.action === 'maintenance' ? 'Manutenção' :
+                              scan.action === 'repair' ? 'Reparação' :
+                              scan.action === 'emergency' ? 'Emergência' :
+                              scan.action === 'scan' ? 'Leitura' : (scan.action || 'Leitura');
 
             const row = `
                 <tr>
-                    <td>${index + 1}</td>
-                    <td>${date.toLocaleDateString('pt-PT')} ${date.toLocaleTimeString('pt-PT')}</td>
-                    <td>${scan.liftId || scan.qrCode || 'N/A'}</td>
-                    <td>${scan.location || 'Desconhecido'}</td>
-                    <td>${scan.user || 'Система'}</td>
-                    <td><span class="badge badge-${statusClass}"><i class="fas fa-${statusIcon}"></i> ${scan.status}</span></td>
+                    <td>${scan.liftId || scan.qrCode || '—'}</td>
+                    <td>${tipoLabel}</td>
+                    <td>${scan.username || scan.user || 'Sistema'}</td>
+                    <td>${dateStr}</td>
+                    <td><span class="badge badge-success"><i class="fas fa-check-circle"></i> OK</span></td>
+                    <td>${scan.device || '—'}</td>
+                    <td>${scan.location || '—'}</td>
                     <td>
-                        <button class="btn btn-sm btn-info" onclick="scanHistory.viewDetails('${scan.id || index}')">
+                        <button class="btn btn-sm btn-info mr-1" onclick="scanHistory.viewDetails('${scanId}')" title="Ver detalhes">
                             <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="btn btn-sm btn-danger" onclick="scanHistory.deleteScan('${scanId}')" title="Apagar">
+                            <i class="fas fa-trash"></i>
                         </button>
                     </td>
                 </tr>
@@ -106,9 +115,10 @@ const scanHistory = (function() {
         scansTable = $('#scansTable').DataTable({
             responsive: true,
             language: {
-                url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/uk.json'
+                url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/pt_PT.json'
             },
-            order: [[1, 'desc']]
+            order: [[3, 'desc']],
+            columnDefs: [{ orderable: false, targets: 7 }]
         });
     }
 
@@ -145,6 +155,42 @@ const scanHistory = (function() {
         // Fit bounds to show all markers
         const bounds = L.latLngBounds(scansWithCoords.map(s => [s.latitude, s.longitude]));
         map.fitBounds(bounds, { padding: [50, 50] });
+    }
+
+    // Delete single scan
+    async function deleteScan(scanId) {
+        const confirm = await Swal.fire({
+            icon: 'warning',
+            title: 'Apagar leitura?',
+            text: 'Esta ação não pode ser revertida.',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            confirmButtonText: 'Apagar',
+            cancelButtonText: 'Cancelar'
+        });
+        if (!confirm.isConfirmed) return;
+
+        try {
+            const token = sessionStorage.getItem('liftmanager_jwt') || localStorage.getItem('liftmanager_jwt');
+            const res = await fetch(`/api/qr/history/${scanId}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await res.json();
+            if (data.success) {
+                // Remove from local array
+                scansData = scansData.filter(s => (s._id || s.id) != scanId);
+                filteredScans = filteredScans.filter(s => (s._id || s.id) != scanId);
+                updateStatistics();
+                renderScans();
+                Swal.fire({ icon: 'success', title: 'Apagado', timer: 1500, showConfirmButton: false });
+            } else {
+                Swal.fire({ icon: 'error', title: 'Erro', text: data.message || 'Não foi possível apagar.' });
+            }
+        } catch (err) {
+            console.error('Erro ao apagar leitura:', err);
+            Swal.fire({ icon: 'error', title: 'Erro', text: 'Falha de ligação ao servidor.' });
+        }
     }
 
     // Search and filter
@@ -314,7 +360,8 @@ const scanHistory = (function() {
         resetFilters: resetFilters,
         exportToExcel: exportToExcel,
         clearHistory: clearHistory,
-        viewDetails: viewDetails
+        viewDetails: viewDetails,
+        deleteScan: deleteScan
     };
 })();
 
