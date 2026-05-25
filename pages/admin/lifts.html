@@ -5354,6 +5354,14 @@ Email de contacto: info@festlift.pt`;
                             .replace(/\[C3\]/g, '🟡 A corrigir')                // C3
                             .replace(/\[D\]/g,  'ℹ️ Nota')                     // D
                             .replace(/\bViolações:\b/g, 'Não conformidades:')   // label mais claro
+                            .replace(/\bПорушення:\b/ig, 'Não conformidades:') // ucraniano legado BD
+                            .replace(/\bПорушень:\b/ig, 'Não conformidades:')      // variante ucraniana
+                            .replace(/Cláusulas C1:/g, '🔴 Risco elevado:')
+                            .replace(/Cláusulas C2:/g, '🟠 Intervenção necessária:')
+                            .replace(/Cláusulas C3:/g, '🟡 A corrigir:')
+                            .replace(/\bConclusão:\s*failed\b/g, 'Conclusão: ❌ Reprovado')
+                            .replace(/\bConclusão:\s*passed\b/g, 'Conclusão: ✅ Aprovado')
+                            .replace(/\bConclusão:\s*conditional\b/g, 'Conclusão: ⚠️ Reinspecção')
                             .replace(/\u25a1\s*/g, '')           // □ checkbox vazio
                             .replace(/\u2612\s*/g, '❌ ')          // ☒ = não conforme
                             .replace(/\u2611\s*/g, '✅ ')          // ☑ = conforme
@@ -6320,7 +6328,27 @@ Email de contacto: info@festlift.pt`;
                 const type = _typeLabels[_typeKey] || _typeKey;
                 const notes = report.notes || report.comments || report.findings || '';
                 const status = report.status || '';
-                const inspector = report.inspector || report.inspectorName || 'Desconhecido';
+                // Sanitizar nome do inspector (evitar texto lixo do PDF)
+                function cleanCardText(s) {
+                    if (!s) return '';
+                    return s
+                        .replace(/\[\?\]\s*/g, '')
+                        .replace(/\[C1\]/g, '🔴 Risco elevado').replace(/\[C2\]/g, '🟠 Intervenção necessária').replace(/\[C3\]/g, '🟡 A corrigir')
+                        .replace(/\bViolações:\b/g, 'Não conformidades:').replace(/\bПорушення:\b/ig, 'Não conformidades:')
+                        .replace(/Cláusulas C1:/g, '🔴 Risco elevado:').replace(/Cláusulas C2:/g, '🟠 Intervenção necessária:').replace(/Cláusulas C3:/g, '🟡 A corrigir:')
+                        .replace(/\bConclusão:\s*failed\b/g, 'Conclusão: Reprovado').replace(/\bConclusão:\s*passed\b/g, 'Conclusão: Aprovado')
+                        .replace(/ {2,}/g, ' ').trim();
+                }
+                function sanitizeInspector(name) {
+                    if (!name) return 'Não identificado';
+                    // Detectar texto lixo do PDF: strings muito longas em maiúsculas sem padrão de nome
+                    const junkPatterns = /CLÁUSULAS|CUMPRIMENTO OBRIGATÓRIO|ASCENSOR|DECRETO.LEI|REGULAMENTO/i;
+                    if (junkPatterns.test(name) || (name.length > 55 && name === name.toUpperCase())) {
+                        return 'Não identificado';
+                    }
+                    return name.length > 50 ? name.substring(0, 48) + '…' : name;
+                }
+                const inspector = sanitizeInspector(report.inspector || report.inspectorName || '');
                 const fileUrl = report.reportFile || report.fileUrl || report.file || null;
                 const nextInspDate = report.nextInspectionDate ? new Date(report.nextInspectionDate).toLocaleDateString('pt-PT') : null;
                 const reportLiftId = document.getElementById('liftDetailsModal')?.dataset?.liftId || '';
@@ -6346,7 +6374,7 @@ Email de contacto: info@festlift.pt`;
                                 </h6>
                                 <p class="mb-1"><small><strong>Data:</strong> ${date}${nextInspDate ? ' &nbsp;→&nbsp; <strong>Seguinte: ' + nextInspDate + '</strong>' : ''}</small></p>
                                 <p class="mb-1"><small><strong>Inspector:</strong> ${inspector}</small></p>
-                                ${notes ? '<p class="mb-1"><small class="text-muted">' + notes.substring(0, 120) + (notes.length > 120 ? '…' : '') + '</small></p>' : ''}
+                                ${notes ? '<p class="mb-1"><small class="text-muted">' + cleanCardText(notes).substring(0, 130) + (cleanCardText(notes).length > 130 ? '…' : '') + '</small></p>' : ''}
                             </div>
                             <div class="btn-group-vertical ml-2">
                                 <button class="btn btn-sm btn-outline-secondary mb-1" onclick='editInspectionReport("${reportLiftId}", ${reportOrigIndex})' title="Editar relatório">
@@ -6529,7 +6557,23 @@ Email de contacto: info@festlift.pt`;
         const type = typeLabels[typeRaw] || typeRaw || 'Não especificado';
         const notes = report.comments || report.findings || report.notes || '';
         const status = report.status || 'completed';
-        const inspector = report.inspectorName || report.inspector || '';
+        function cleanCardText(s) {
+                    if (!s) return '';
+                    return s
+                        .replace(/\[\?\]\s*/g, '')
+                        .replace(/\[C1\]/g, '🔴 Risco elevado').replace(/\[C2\]/g, '🟠 Intervenção necessária').replace(/\[C3\]/g, '🟡 A corrigir')
+                        .replace(/\bViolações:\b/g, 'Não conformidades:').replace(/\bПорушення:\b/ig, 'Não conformidades:')
+                        .replace(/Cláusulas C1:/g, '🔴 Risco elevado:').replace(/Cláusulas C2:/g, '🟠 Intervenção necessária:').replace(/Cláusulas C3:/g, '🟡 A corrigir:')
+                        .replace(/\bConclusão:\s*failed\b/g, 'Conclusão: Reprovado').replace(/\bConclusão:\s*passed\b/g, 'Conclusão: Aprovado')
+                        .replace(/ {2,}/g, ' ').trim();
+                }
+                function sanitizeInspector(name) {
+                    if (!name) return 'Não identificado';
+                    const junkPatterns = /CLÁUSULAS|CUMPRIMENTO OBRIGATÓRIO|ASCENSOR|DECRETO.LEI|REGULAMENTO/i;
+                    if (junkPatterns.test(name) || (name.length > 55 && name === name.toUpperCase())) return 'Não identificado';
+                    return name.length > 50 ? name.substring(0, 48) + '…' : name;
+                }
+                const inspector = sanitizeInspector(report.inspectorName || report.inspector || '');
         
         let statusBadge = '', statusClass = '';
         if (status === 'passed' || status === 'completed') {

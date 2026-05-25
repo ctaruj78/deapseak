@@ -5559,6 +5559,14 @@ Equipa FestLift</textarea>
                             .replace(/\[C3\]/g, '🟡 A corrigir')                // C3
                             .replace(/\[D\]/g,  'ℹ️ Nota')                     // D
                             .replace(/\bViolações:\b/g, 'Não conformidades:')   // label mais claro
+                            .replace(/\bПорушення:\b/ig, 'Não conformidades:') // ucraniano legado BD
+                            .replace(/\bПорушень:\b/ig, 'Não conformidades:')      // variante ucraniana
+                            .replace(/Cláusulas C1:/g, '🔴 Risco elevado:')
+                            .replace(/Cláusulas C2:/g, '🟠 Intervenção necessária:')
+                            .replace(/Cláusulas C3:/g, '🟡 A corrigir:')
+                            .replace(/\bConclusão:\s*failed\b/g, 'Conclusão: ❌ Reprovado')
+                            .replace(/\bConclusão:\s*passed\b/g, 'Conclusão: ✅ Aprovado')
+                            .replace(/\bConclusão:\s*conditional\b/g, 'Conclusão: ⚠️ Reinspecção')
                             .replace(/\u25a1\s*/g, '')           // □ checkbox vazio
                             .replace(/\u2612\s*/g, '❌ ')          // ☒ = não conforme
                             .replace(/\u2611\s*/g, '✅ ')          // ☑ = conforme
@@ -6554,7 +6562,23 @@ Equipa FestLift</textarea>
                 const type = report.inspectionType || report.type || _rtToType[report.reportType] || report.reportType || 'Não especificado';
                 const notes = report.comments || report.findings || report.notes || '';
                 const status = report.status || 'completed';
-                const inspector = report.inspectorName || report.inspector || '';
+                function cleanCardText(s) {
+                    if (!s) return '';
+                    return s
+                        .replace(/\[\?\]\s*/g, '')
+                        .replace(/\[C1\]/g, '🔴 Risco elevado').replace(/\[C2\]/g, '🟠 Intervenção necessária').replace(/\[C3\]/g, '🟡 A corrigir')
+                        .replace(/\bViolações:\b/g, 'Não conformidades:').replace(/\bПорушення:\b/ig, 'Não conformidades:')
+                        .replace(/Cláusulas C1:/g, '🔴 Risco elevado:').replace(/Cláusulas C2:/g, '🟠 Intervenção necessária:').replace(/Cláusulas C3:/g, '🟡 A corrigir:')
+                        .replace(/\bConclusão:\s*failed\b/g, 'Conclusão: Reprovado').replace(/\bConclusão:\s*passed\b/g, 'Conclusão: Aprovado')
+                        .replace(/ {2,}/g, ' ').trim();
+                }
+                function sanitizeInspector(name) {
+                    if (!name) return 'Não identificado';
+                    const junkPatterns = /CLÁUSULAS|CUMPRIMENTO OBRIGATÓRIO|ASCENSOR|DECRETO.LEI|REGULAMENTO/i;
+                    if (junkPatterns.test(name) || (name.length > 55 && name === name.toUpperCase())) return 'Não identificado';
+                    return name.length > 50 ? name.substring(0, 48) + '…' : name;
+                }
+                const inspector = sanitizeInspector(report.inspectorName || report.inspector || '');
                 const fileUrl = report.fileUrl || report.reportFile || report.file || null;
 
                 // Deнаходимо реальний індекс в БД (оригінальний, до ordenação)
@@ -6580,7 +6604,7 @@ Equipa FestLift</textarea>
                                 </h6>
                                 <p class="mb-0"><small><strong>Data:</strong> ${date}</small></p>
                                 ${inspector ? `<p class="mb-0"><small><strong>Inspector:</strong> ${inspector}</small></p>` : ''}
-                                ${notes ? `<p class="mb-0"><small class="text-muted">${notes}</small></p>` : ''}
+                                ${notes ? `<p class="mb-0"><small class="text-muted">${cleanCardText(notes).substring(0, 130)}${cleanCardText(notes).length > 130 ? "…" : ""}</small></p>` : ''}
                             </div>
                             <div class="btn-group-vertical ml-2" style="min-width:100px;">
                                 <button class="btn btn-sm btn-outline-primary mb-1" onclick='viewReportDetails(${JSON.stringify(report).replace(/'/g, "&apos;")}, ${realIndex})' title="Ver detalhes">
