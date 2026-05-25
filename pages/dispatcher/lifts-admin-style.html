@@ -2100,7 +2100,7 @@ Equipa FestLift
                 </div>
             `;
             
-            // Додаexisteмо модальне вікно до DOM se його ainda não há
+            // Adicionar janela modal ao DOM se ainda não existir
             if (!document.getElementById('emailModal')) {
                 document.body.insertAdjacentHTML('beforeend', emailModal);
             }
@@ -2118,7 +2118,7 @@ Equipa FestLift
                 return;
             }
 
-            // Валідація email
+            // Validação email
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             if (!emailRegex.test(email)) {
                 alert('Formato de email inválido');
@@ -2323,7 +2323,7 @@ Equipa FestLift
             }
         }
 
-        // Обробник carregamento PDF ficheiro
+        // Manipulador de carregamento de ficheiro PDF
         document.addEventListener('DOMContentLoaded', function() {
             const pdfInput = document.getElementById('inspectionReport');
             if (pdfInput) {
@@ -2395,7 +2395,7 @@ Equipa FestLift
             });
         });
 
-        // Função виходу
+        // Função de saída
         function logout() {
             if (confirm('Tem a certeza que quer sair?')) {
                 if (typeof AuthManager !== 'undefined') {
@@ -3248,7 +3248,7 @@ Equipa FestLift
             console.log(`${key}: "${field.value}" (element exists: ${!!field})`);
         }
 
-        // Валідація de valores
+        // Validação de valores
         if (!fields.date.value.trim()) {
             alert('Por favor, indique a data de inspecção');
             fields.date.focus();
@@ -3308,7 +3308,7 @@ Equipa FestLift
             return;
         }
         
-        // Отримуexisteмо dados desde форми
+        // Obter dados do formulário
         const inspectorName = inspectorField.value.trim();
         const inspectionDate = dateField.value;
         const inspectionStatus = statusField.value;
@@ -3325,7 +3325,7 @@ Equipa FestLift
             frequencyOverride
         });
         
-        // Валідація обов'язкових полів
+        // Validação обов'язкових полів
         if (!inspectorName) {
             alert('❌ Erro: Introduza o nome do inspector');
             document.getElementById('inspectorName').focus();
@@ -3566,7 +3566,7 @@ Equipa FestLift</textarea>
             </div>
         `;
         
-        // Додаexisteмо модальне вікно до DOM se його ainda não há
+        // Adicionar janela modal ao DOM se ainda não existir
         if (!document.getElementById('emailInspectionModal')) {
             document.body.insertAdjacentHTML('beforeend', emailModal);
         }
@@ -3584,7 +3584,7 @@ Equipa FestLift</textarea>
             return;
         }
 
-        // Валідація email
+        // Validação email
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email)) {
             alert('Formato de email inválido');
@@ -3773,7 +3773,7 @@ Equipa FestLift</textarea>
             aiLink.addEventListener('click', function(e) {
                 console.log('🎯 Clique na previsão AI registado!');
                 
-                // Прибираexisteмо ativo classe desde todosх itens меню
+                // Remover classe ativa de todos os itens do menu
                 document.querySelectorAll('.nav-link').forEach(link => {
                     link.classList.remove('active');
                 });
@@ -3796,7 +3796,7 @@ Equipa FestLift</textarea>
             analyticsLink.addEventListener('click', function(e) {
                 console.log('📊 Clique em análise registado!');
                 
-                // Прибираexisteмо ativo classe desde todosх itens меню
+                // Remover classe ativa de todos os itens do menu
                 document.querySelectorAll('.nav-link').forEach(link => {
                     link.classList.remove('active');
                 });
@@ -4132,7 +4132,7 @@ Equipa FestLift</textarea>
                     </td>
                 </tr>
             `;
-            // Оновлюexisteмо сeтистику (todos нулі)
+            // Atualizar estatísticas (todos нулі)
             updateLiftsStatistics(lifts);
             return;
         }
@@ -4233,7 +4233,7 @@ Equipa FestLift</textarea>
         
         console.log('✅ Elevadores mostrados na tabela:', lifts.length);
         
-        // Оновлюexisteмо сeтистику
+        // Atualizar estatísticas
         updateLiftsStatistics(lifts);
     }
 
@@ -4324,7 +4324,7 @@ Equipa FestLift</textarea>
         console.log('📋 Mostrar detalhes do elevador:', liftId);
         
         try {
-            // Спробуexisteмо descarregar desde API
+            // Tentar carregar desde a API
             const result = await apiCall(`/api/lifts/${liftId}`, 'GET');
             
             let lift;
@@ -4575,13 +4575,13 @@ Equipa FestLift</textarea>
             return;
         }
         
-        // Перевіряexisteмо чи Leaflet заванeжений
+        // Verificar se Leaflet está carregado
         if (typeof L === 'undefined') {
             console.error('❌ Biblioteca Leaflet não carregada');
             return;
         }
         
-        // Видаляexisteмо сeру mapa se existe
+        // Remover mapa anterior se existir
         if (window.detailsMapInstance) {
             try {
                 window.detailsMapInstance.remove();
@@ -4592,7 +4592,7 @@ Equipa FestLift</textarea>
         }
         
         try {
-            // Створюexisteмо нову mapa
+            // Criar novo mapa
             window.detailsMapInstance = L.map('detailsMap', {
                 center: [lat, lng],
                 zoom: 15,
@@ -4602,7 +4602,7 @@ Equipa FestLift</textarea>
             
             console.log('✅ Mapa criado');
             
-            // Додаexisteмо tiles
+            // Adicionar tiles
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '© OpenStreetMap contributors',
                 maxZoom: 19
@@ -4614,14 +4614,14 @@ Equipa FestLift</textarea>
             const marker = L.marker([lat, lng])
                 .addTo(window.detailsMapInstance);
             
-            // Додаexisteмо popup se existe endereço
+            // Adicionar popup se existir endereço
             if (address) {
                 marker.bindPopup(`<strong>${address}</strong>`).openPopup();
             }
             
             console.log('✅ Marcador adicionado');
             
-            // Оновлюexisteмо tamanho карти (важливо para модальних вікон)
+            // Atualizar tamanho do mapa (importante para janelas modais)
             setTimeout(() => {
                 window.detailsMapInstance.invalidateSize();
                 console.log('✅ Tamanho do mapa actualizado');
@@ -4636,7 +4636,7 @@ Equipa FestLift</textarea>
         console.log('✏️ A editar elevador:', liftId);
         
         try {
-            // Спробуexisteмо descarregar desde API
+            // Tentar carregar desde a API
             const result = await apiCall(`/api/lifts/${liftId}`, 'GET');
             
             let lift;
@@ -4786,13 +4786,13 @@ Equipa FestLift</textarea>
             return;
         }
         
-        // Перевіряexisteмо чи Leaflet заванeжений
+        // Verificar se Leaflet está carregado
         if (typeof L === 'undefined') {
             console.error('❌ Biblioteca Leaflet não carregada');
             return;
         }
         
-        // Видаляexisteмо сeру mapa se existe
+        // Remover mapa anterior se existir
         if (window.editMapInstance) {
             try {
                 window.editMapInstance.remove();
@@ -4803,7 +4803,7 @@ Equipa FestLift</textarea>
         }
         
         try {
-            // Створюexisteмо нову mapa
+            // Criar novo mapa
             window.editMapInstance = L.map('enhancedLiftMap', {
                 center: [lat, lng],
                 zoom: 15,
@@ -4813,7 +4813,7 @@ Equipa FestLift</textarea>
             
             console.log('✅ Mapa de edição criado');
             
-            // Додаexisteмо tiles
+            // Adicionar tiles
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '© OpenStreetMap contributors',
                 maxZoom: 19
@@ -4833,14 +4833,14 @@ Equipa FestLift</textarea>
                 console.log('📍 Marcador movido:', position);
             });
             
-            // Додаexisteмо popup se existe endereço
+            // Adicionar popup se existir endereço
             if (address) {
                 marker.bindPopup(`<strong>${address}</strong><br><small>Arraste o marcador para alterar a posição</small>`).openPopup();
             }
             
             console.log('✅ Marcador adicionado');
             
-            // Оновлюexisteмо tamanho карти (важливо para модальних вікон)
+            // Atualizar tamanho do mapa (importante para janelas modais)
             setTimeout(() => {
                 window.editMapInstance.invalidateSize();
                 console.log('✅ Tamanho do mapa de edição actualizado');
@@ -4954,20 +4954,20 @@ Equipa FestLift</textarea>
             
             // Створюexisteмо QR-code desde мінімальними даними
             new QRCode(document.getElementById('qrcode'), {
-                text: qrUrl,  // Тільки URL, не весь instalação!
+                text: qrUrl,  // Apenas URL, não toda a instalação!
                 width: 256,
                 height: 256,
                 colorDark: '#000000',
                 colorLight: '#ffffff',
-                correctLevel: QRCode.CorrectLevel.M  // Deнижуexisteмо рівень корекції (H->M) para менших códigos
+                correctLevel: QRCode.CorrectLevel.M  // Reduzir nível de correção (H->M) para códigos menores
             });
             
             
             // Deберігаexisteмо dados para carregamento/друку
             window.currentQRData = {
                 lift: lift,
-                qrUrl: qrUrl,  // Deберігаexisteмо URL para do QR-code
-                addressStr: addressStr  // Deберігаexisteмо відformatoовану endereço
+                qrUrl: qrUrl,  // Guardar URL do QR-code
+                addressStr: addressStr  // Guardar endereço formatado
             };
             
             // Mostrar janela modal
@@ -6700,7 +6700,7 @@ Equipa FestLift</textarea>
     $(document).ready(function() {
         console.log('🔧 A configurar integração do parser de PDF de relatórios...');
         
-        // Обробник carregamento PDF ficheiro
+        // Manipulador de carregamento de ficheiro PDF
         const pdfInput = document.getElementById('inspectionReportPDF');
         if (pdfInput && window.inspectionReportParser) {
             

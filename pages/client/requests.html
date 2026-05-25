@@ -10,7 +10,7 @@
     <link rel="stylesheet" href="../../plugins/fontawesome/css/all.min.css">
     <link rel="stylesheet" href="../../plugins/toastr/css/toastr.min.css">
     
-    <!-- Додаткові стилі -->
+    <!-- Estilos adicionais -->
     <style>
         .request-card {
             transition: all 0.3s ease;
@@ -249,7 +249,7 @@
 <body class="hold-transition sidebar-mini layout-fixed" data-required-role="client">
     <div class="wrapper">
 
-        <!-- Навігаційна painel -->
+        <!-- Painel de navegação -->
         <nav class="main-header navbar navbar-expand navbar-white navbar-light">
             <ul class="navbar-nav">
                 <li class="nav-item">
@@ -268,7 +268,7 @@
                 </li>
             </ul>
 
-            <!-- Permissões horaтина навігації -->
+            <!-- Permissões de navegação -->
             <ul class="navbar-nav ml-auto">
                 <li class="nav-item">
                     <a class="nav-link notification-bell" href="/pages/client/notifications.html" title="Notificações">
@@ -284,11 +284,11 @@
             </ul>
         </nav>
 
-        <!-- Бічна painel -->
+        <!-- Painel lateral -->
         <!-- ═══════════════════════════════════════════════════════════ -->
-<!-- ЕТАЛОННИЙ SIDEBAR ДЛЯ КЛІЄНТСЬКИХ СManutençãoРІНОК -->
+<!-- SIDEBAR PADRÃO PARA PÁGINAS DO CLIENTE -->
 <!-- Versão: 2.0 Portugal (2026-01-13) -->
-<!-- ⚠️ НЕ РЕДАГУЙТЕ ОКРЕМО! Виutilizовуйте цей ficheiro як еeлон -->
+<!-- ⚠️ NÃO EDITE SEPARADAMENTE! Use este ficheiro como modelo -->
 <!-- ═══════════════════════════════════════════════════════════ -->
 
 <aside class="main-sidebar sidebar-dark-primary elevation-4">
@@ -321,7 +321,7 @@
                     </a>
                 </li>
                 
-                <!-- 3. AI Previsãoування -->
+                <!-- 3. Previsão AI -->
                 <li class="nav-item">
                     <a href="/pages/client/ai-predictions.html" class="nav-link" id="nav-ai-predictions">
                         <i class="nav-icon fas fa-brain"></i>
@@ -420,13 +420,13 @@
     </div>
 </aside>
 
-<!-- Скрипт para підсвічування активного itemу -->
+<!-- Script para destacar item ativo -->
 <script>
 (function() {
-    // Визнаouти поточну a página
+    // Determinar a página atual
     const currentPage = window.location.pathname.split('/').pop().replace('.html', '');
     
-    // Мапінг de páginas на ID навігації
+    // Mapeamento de páginas para ID de navegação
     const pageMap = {
         'dashboard': 'nav-dashboard',
         'my-lifts': 'nav-my-lifts',
@@ -441,7 +441,7 @@
         'support': 'nav-support',
         'profile': 'nav-profile',    };
     
-    // Підсвітити ativo item
+    // Destacar item ativo
     const activeNav = pageMap[currentPage];
     if (activeNav) {
         const navLink = document.getElementById(activeNav);
@@ -450,7 +450,7 @@
         }
     }
     
-    // Descarregar ліouльники desde API
+    // Carregar contadores desde a API
     loadClientCounts();
     
     function loadClientCounts() {
@@ -485,7 +485,7 @@
         })
         .catch(err => console.warn('Failed to load requests count:', err));
         
-        // Quantidade рахунків
+        // Quantidade de faturas
         fetch('/api/invoices?status=unpaid', {
             headers: { 'Authorization': `Bearer ${token}` }
         })
@@ -502,7 +502,7 @@
         })
         .catch(err => {
             console.warn('Failed to load invoices count:', err);
-            // Ocultar ліouльник se ендпоінт не existe
+            // Ocultar contador se o endpoint não existir
             const badge = document.getElementById('invoicesCount');
             if (badge) badge.style.display = 'none';
         });
@@ -525,12 +525,12 @@
         .catch(err => console.warn('Failed to load notifications count:', err));
     }
     
-    // Оновлювати ліouльники кожні 30 segundos
+    // Atualizar contadores a cada 30 segundos
     setInterval(loadClientCounts, 30000);
 })();
 </script>
 
-<!-- Стилі para badge purple -->
+<!-- Estilos para badge roxo -->
 <style>
 .badge-purple {
     background: linear-gradient(135deg, #6f42c1, #8e44ad);
@@ -591,7 +591,7 @@
                         </div>
                     </div>
 
-                    <!-- Filtroи -->
+                    <!-- Filtros -->
                     <div class="row mt-4">
                         <div class="col-12">
                             <div class="card request-card">
@@ -823,7 +823,7 @@
         </footer>
     </div>
 
-    <!-- Janela modal створення нової pedidos -->
+    <!-- Modal de criação de novo pedido -->
     <div class="modal fade" id="newRequestModal" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
@@ -919,7 +919,7 @@
         </div>
     </div>
 
-    <!-- Janela modal visualizaçãoу pedidos -->
+    <!-- Modal de visualização de pedido -->
     <div class="modal fade" id="viewRequestModal" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
@@ -955,7 +955,7 @@
     <script>
         let currentRequestId = null;
         let serviceIntegration;
-        // Масив вибраних foto (File objects)
+        // Array de fotos selecionadas (File objects)
         let selectedPhotoFiles = [];
 
         function initPhotoUpload() {
@@ -975,7 +975,7 @@
                         toastr.warning(`Ficheiro "${file.name}" excede 5MB e não será adicionado`);
                         return;
                     }
-                    // Уникнути дублікатів
+                    // Evitar duplicados
                     if (selectedPhotoFiles.some(f => f.name === file.name && f.size === file.size)) return;
                     selectedPhotoFiles.push(file);
                     added++;
@@ -1037,7 +1037,7 @@
             }
         }
 
-        // Gestor de pedidos para de clientes (виutilizовуexiste уніфіковану sistema)
+        // Gestor de pedidos para clientes (виutilizовуexiste уніфіковану sistema)
         class ClientRequestsManager {
             constructor() {
                 this.integration = serviceIntegration;
@@ -1049,7 +1049,7 @@
                        { id: 'client_001', firstName: 'Cliente', lastName: 'Demo', role: 'client' };
             }
             
-            // Descarregar e відобразити pedidos
+            // Carregar e mostrar pedidos
             async loadRequests() {
                 try {
                     const res = await AuthManager.fetchWithAuth('/api/requests');
@@ -1078,7 +1078,7 @@
 
             async submitNewRequest() {
                 try {
-                    // Отримуexisteмо dados desde форми
+                    // Obter dados do formulário
                     const type = document.getElementById('requestType').value;
                     const liftId = document.getElementById('requestLift').value;
                     const priority = document.getElementById('requestPriority').value;
@@ -1086,18 +1086,18 @@
                     const description = document.getElementById('requestDescription').value;
                     const urgent = document.getElementById('urgentRequest').checked;
 
-                    // Валідація
+                    // Validação
                     if (!type || !liftId || !title || !description) {
                         toastr.error('Por favor, preencha todos os campos obrigatórios');
                         return;
                     }
 
-                    // Отримуexisteмо endereço selecionadosго do elevador desde select'а
+                    // Obter endereço selecionado do elevador no select
                     const liftSelect = document.getElementById('requestLift');
                     const selectedOption = liftSelect.options[liftSelect.selectedIndex];
                     const liftAddress = selectedOption ? selectedOption.dataset.address : '';
 
-                    // Формуexisteмо dados pedidos
+                    // Formar dados do pedido
                     const requestData = {
                         type: type,
                         liftId: liftId,
@@ -1107,7 +1107,7 @@
                         liftAddress: liftAddress
                     };
 
-                    // Прикріплюexisteмо foto як base64 se existe
+                    // Anexar fotos como base64 se existirem
                     if (selectedPhotoFiles.length > 0) {
                         const toBase64 = file => new Promise((resolve, reject) => {
                             const r = new FileReader();
@@ -1425,7 +1425,7 @@
         }
 
         $(document).ready(function() {
-            // Ініціалізація AdminLTE
+            // Inicialização do AdminLTE
             $('[data-widget="pushmenu"]').PushMenu();
             
             // Escuro assunto
@@ -1449,10 +1449,10 @@
             if (userData.firstName) {
             }
 
-            // Ініціалізація foto
+            // Inicialização foto
             initPhotoUpload();
 
-            // Ініціалізація систем
+            // Inicialização систем
             serviceIntegration = new ServiceRequestsIntegration();
             window.clientRequestsManager = new ClientRequestsManager();
             window.requestsManager = window.clientRequestsManager;

@@ -702,7 +702,7 @@
         let map = null;
         let markerCluster = null;
         let currentView = 'list'; // 'list' ou 'map'
-        let userRole = 'dispatcher'; // Deа замовчуванням
+        let userRole = 'dispatcher'; // Por predefinição
 
         // Obter função do utilizador desde tokenа
         function getUserRole() {
@@ -802,7 +802,7 @@
                 if (!contentType || !contentType.includes('application/json')) {
                     const text = await response.text();
                     console.error('❌ Recebido не JSON:', text.substring(0, 200));
-                    throw new Error('Сервер повернув неправильний formato dados');
+                    throw new Error('Servidor devolveu formato de dados inválido');
                 }
 
                 const data = await response.json();
@@ -895,7 +895,7 @@
                     notifications.push({
                         type: 'danger',
                         icon: 'fas fa-exclamation-triangle',
-                        message: `Inspeção прострочена на ${Math.abs(daysUntil)} dias!`
+                        message: `Inspeção em atraso há ${Math.abs(daysUntil)} dias!`
                     });
                 } else if (daysUntil <= 7) {
                     notifications.push({
@@ -921,7 +921,7 @@
                     notifications.push({
                         type: 'warning',
                         icon: 'fas fa-power-off',
-                        message: `Неativo ${daysInactive} dias`
+                        message: `Inativo ${daysInactive} dias`
                     });
                 }
             }
@@ -1334,7 +1334,7 @@
             if (lift && lift.qrCode) {
                 window.open(lift.qrCode, '_blank');
             } else {
-                showError('QR-code не encontrado');
+                showError('QR-code não encontrado');
             }
         }
 
@@ -1556,7 +1556,7 @@
 
         async function uploadDocument(type) {
             if (!currentDocumentLiftId) {
-                showAlert('Erro: не selecionados elevador', 'danger');
+                showAlert('Erro: nenhum elevador selecionado', 'danger');
                 return;
             }
 
@@ -1572,7 +1572,7 @@
             // Verificação tamanhoу ficheiro (макс 10 MB)
             const maxSize = 10 * 1024 * 1024; // 10 MB
             if (file.size > maxSize) {
-                showAlert('Ficheiro занадто великий. Tamanho máximo: 10 MB', 'danger');
+                showAlert('Ficheiro demasiado grande. Tamanho máximo: 10 MB', 'danger');
                 return;
             }
 
@@ -1581,7 +1581,7 @@
                 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
                 'image/jpeg', 'image/png'];
             if (!allowedTypes.includes(file.type)) {
-                showAlert('Недопустимий tipo ficheiro. Дозволені: PDF, DOC, DOCX, JPG, PNG', 'danger');
+                showAlert('Tipo de ficheiro inválido. Permitidos: PDF, DOC, DOCX, JPG, PNG', 'danger');
                 return;
             }
 
@@ -1600,7 +1600,7 @@
 
                 if (!response.ok) {
                     const error = await response.json();
-                    throw new Error(error.message || 'Erro carregamento documentoа');
+                    throw new Error(error.message || 'Erro ao carregar documento');
                 }
 
                 const result = await response.json();
@@ -1614,7 +1614,7 @@
 
             } catch (error) {
                 console.error('Erro carregamento documentoа:', error);
-                showAlert(error.message || 'Erro carregamento documentoа', 'danger');
+                showAlert(error.message || 'Erro ao carregar documento', 'danger');
             }
         }
 
@@ -1744,15 +1744,15 @@
                 });
 
                 if (!response.ok) {
-                    throw new Error('Erro eliminação documentoа');
+                    throw new Error('Erro ao eliminar documento');
                 }
 
-                showAlert('Документ com sucesso eliminado', 'success');
+                showAlert('Documento eliminado com sucesso', 'success');
                 await loadDocuments(currentDocumentLiftId);
 
             } catch (error) {
                 console.error('Erro eliminação documentoа:', error);
-                showAlert(error.message || 'Erro eliminação documentoа', 'danger');
+                showAlert(error.message || 'Erro ao eliminar documento', 'danger');
             }
         }
 

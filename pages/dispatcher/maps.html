@@ -690,7 +690,7 @@
 
         function populateLiftSelector() {
             const selector = $('#routeToLift');
-            selector.empty(); // Limpar попереdias опції
+            selector.empty(); // Limpar opções anteriores
             selector.append('<option value="">Selecione elevador</option>');
             lifts.forEach(lift => {
                 const displayName = lift.model || lift.name || `Elevador ${lift.id}`;
@@ -803,7 +803,7 @@
                 lineOptions: {
                     styles: [{color: '#007bff', weight: 5, opacity: 0.7}]
                 },
-                createMarker: function() { return null; }, // Не створювати додаткові маркери
+                createMarker: function() { return null; }, // Não criar marcadores adicionais
                 language: 'en', // Utilizamos inglês porque o ucraniano não é suportado
                 fitSelectedRoutes: true,
                 addWaypoints: false

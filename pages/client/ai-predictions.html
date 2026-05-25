@@ -226,9 +226,9 @@
 
     <!-- Sidebar -->
     <!-- ═══════════════════════════════════════════════════════════ -->
-<!-- ЕТАЛОННИЙ SIDEBAR ДЛЯ КЛІЄНТСЬКИХ СManutençãoРІНОК -->
+<!-- SIDEBAR PADRÃO PARA PÁGINAS DO CLIENTE -->
 <!-- Versão: 2.0 Portugal (2026-01-13) -->
-<!-- ⚠️ НЕ РЕДАГУЙТЕ ОКРЕМО! Виutilizовуйте цей ficheiro як еeлон -->
+<!-- ⚠️ NÃO EDITE SEPARADAMENTE! Use este ficheiro como modelo -->
 <!-- ═══════════════════════════════════════════════════════════ -->
 
 <aside class="main-sidebar sidebar-dark-primary elevation-4">
@@ -261,7 +261,7 @@
                     </a>
                 </li>
                 
-                <!-- 3. AI Previsãoування -->
+                <!-- 3. Previsão AI -->
                 <li class="nav-item">
                     <a href="/pages/client/ai-predictions.html" class="nav-link" id="nav-ai-predictions">
                         <i class="nav-icon fas fa-brain"></i>
@@ -360,13 +360,13 @@
     </div>
 </aside>
 
-<!-- Скрипт para підсвічування активного itemу -->
+<!-- Script para destacar item ativo -->
 <script>
 (function() {
-    // Визнаouти поточну a página
+    // Determinar a página atual
     const currentPage = window.location.pathname.split('/').pop().replace('.html', '');
     
-    // Мапінг de páginas на ID навігації
+    // Mapeamento de páginas para ID de navegação
     const pageMap = {
         'dashboard': 'nav-dashboard',
         'my-lifts': 'nav-my-lifts',
@@ -381,7 +381,7 @@
         'support': 'nav-support',
         'profile': 'nav-profile',    };
     
-    // Підсвітити ativo item
+    // Destacar item ativo
     const activeNav = pageMap[currentPage];
     if (activeNav) {
         const navLink = document.getElementById(activeNav);
@@ -390,7 +390,7 @@
         }
     }
     
-    // Descarregar ліouльники desde API
+    // Carregar contadores desde a API
     loadClientCounts();
     
     function loadClientCounts() {
@@ -425,7 +425,7 @@
         })
         .catch(err => console.warn('Failed to load requests count:', err));
         
-        // Quantidade рахунків
+        // Quantidade de faturas
         fetch('/api/invoices?status=unpaid', {
             headers: { 'Authorization': `Bearer ${token}` }
         })
@@ -457,12 +457,12 @@
         .catch(err => console.warn('Failed to load notifications count:', err));
     }
     
-    // Оновлювати ліouльники кожні 30 segundos
+    // Atualizar contadores a cada 30 segundos
     setInterval(loadClientCounts, 30000);
 })();
 </script>
 
-<!-- Стилі para badge purple -->
+<!-- Estilos para badge roxo -->
 <style>
 .badge-purple {
     background: linear-gradient(135deg, #6f42c1, #8e44ad);
@@ -539,7 +539,7 @@
                     </div>
                 </div>
 
-                <!-- Filtroи -->
+                <!-- Filtros -->
                 <div class="row mb-3">
                     <div class="col-md-12">
                         <div class="card">
@@ -628,7 +628,7 @@
 let predictiveSystem;
 let clientLifts = [];
 
-// Ініціалізація
+// Inicialização
 $(document).ready(async function() {
     console.log('🧠 A carregar AI прогнозування para cliente...');
     

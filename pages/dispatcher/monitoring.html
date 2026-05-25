@@ -392,7 +392,7 @@
             <!-- Main content -->
             <section class="content">
                 <div class="container-fluid">
-                    <!-- Estatísticas в реальному horaі -->
+                    <!-- Estatísticas em tempo real -->
                     <div class="row">
                         <div class="col-lg-2 col-md-4 col-6">
                             <div class="metric-card">
@@ -432,7 +432,7 @@
                         </div>
                     </div>
 
-                    <!-- Мапа e основний monitorização -->
+                    <!-- Mapa e monitorização principal -->
                     <div class="row mt-4">
                         <div class="col-lg-8">
                             <!-- Mapa de técnicos -->
@@ -440,7 +440,7 @@
                                 <div class="card-header">
                                     <h3 class="card-title">
                                         <i class="fas fa-map-marker-alt mr-2"></i>
-                                        Мапа розeшування de técnicos
+                                        Mapa de localização de técnicos
                                     </h3>
                                     <div class="card-tools">
                                         <button class="btn btn-sm btn-outline-primary" onclick="monitoringManager.centerMap()">
@@ -467,7 +467,7 @@
                                 <div class="card-header">
                                     <h3 class="card-title">
                                         <i class="fas fa-tasks mr-2"></i>
-                                        Ativos tarefas в реальному horaі
+                                        Tarefas ativas em tempo real
                                     </h3>
                                     <div class="card-tools">
                                         <span class="badge badge-success" id="activeTasksCount">0 ativos</span>
@@ -475,7 +475,7 @@
                                 </div>
                                 <div class="card-body p-0">
                                     <div id="activeTasksContainer">
-                                        <!-- Ativos tarefas serão заванeжені aqui -->
+                                        <!-- As tarefas ativas serão carregadas aqui -->
                                     </div>
                                 </div>
                             </div>
@@ -502,7 +502,7 @@
                                 </div>
                                 <div class="card-body p-0">
                                     <div id="techStatusContainer" style="max-height: 400px; overflow-y: auto;">
-                                        <!-- Estadoи de técnicos serão заванeжені aqui -->
+                                        <!-- Os estados dos técnicos serão carregados aqui -->
                                     </div>
                                 </div>
                             </div>
@@ -522,14 +522,14 @@
                                 </div>
                                 <div class="card-body p-0">
                                     <div id="alertsContainer" style="max-height: 300px; overflow-y: auto;">
-                                        <!-- Notificações serão заванeжені aqui -->
+                                        <!-- As notificações serão carregadas aqui -->
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Додаткові ferramentas -->
+                    <!-- Ferramentas adicionais -->
                     <div class="row mt-4">
                         <div class="col-12">
                             <div class="card">
@@ -567,14 +567,14 @@
                         </div>
                     </div>
 
-                    <!-- Gráficoи e análise -->
+                    <!-- Gráficos e análise -->
                     <div class="row mt-4">
                         <div class="col-md-6">
                             <div class="card">
                                 <div class="card-header">
                                     <h3 class="card-title">
                                         <i class="fas fa-chart-line mr-2"></i>
-                                        Наванeження do sistema
+                                        Carga do sistema
                                     </h3>
                                 </div>
                                 <div class="card-body">
@@ -623,7 +623,7 @@
         </footer>
     </div>
 
-    <!-- Janela modal дetc do técnico -->
+    <!-- Modal de detalhes do técnico -->
     <div class="modal fade" id="techDetailsModal" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
@@ -634,7 +634,7 @@
                     </button>
                 </div>
                 <div class="modal-body" id="techDetailsContent">
-                    <!-- Conteúdo дetc do técnico -->
+                    <!-- Conteúdo de detalhes do técnico -->
                 </div>
             </div>
         </div>

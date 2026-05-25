@@ -827,14 +827,14 @@
                     
                     // Іконка банку (будівля desde колонами)
                     doc.setFillColor(0, 102, 204);
-                    doc.rect(24, bankY + 7, 8, 6, 'F'); // Base будівлі
+                    doc.rect(24, bankY + 7, 8, 6, 'F'); // Base do edifício
                     doc.setFillColor(255, 255, 255);
-                    doc.rect(25.5, bankY + 8, 1, 4, 'F'); // Колона 1
-                    doc.rect(27, bankY + 8, 1, 4, 'F'); // Колона 2
-                    doc.rect(28.5, bankY + 8, 1, 4, 'F'); // Колона 3
-                    doc.rect(30, bankY + 8, 1, 4, 'F'); // Колона 4
+                    doc.rect(25.5, bankY + 8, 1, 4, 'F'); // Coluna 1
+                    doc.rect(27, bankY + 8, 1, 4, 'F'); // Coluna 2
+                    doc.rect(28.5, bankY + 8, 1, 4, 'F'); // Coluna 3
+                    doc.rect(30, bankY + 8, 1, 4, 'F'); // Coluna 4
                     doc.setFillColor(0, 102, 204);
-                    doc.rect(24, bankY + 6.5, 8, 0.8, 'F'); // Дах
+                    doc.rect(24, bankY + 6.5, 8, 0.8, 'F'); // Telhado
                     
                     doc.setFontSize(10);
                     doc.setFont(undefined, 'bold');
@@ -898,7 +898,7 @@
                 const clientEmail = prompt('Insira o email do cliente:', $('#clientEmail').val());
                 if (!clientEmail) return;
 
-                // Валідація email
+                // Validação email
                 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
                 if (!emailRegex.test(clientEmail)) {
                     alert('Email inválido');
@@ -1275,7 +1275,7 @@
                             const nextNum = json.nextNumber || json.numero || json.data?.nextNumber;
                             if (nextNum) $('#invoiceNumber').val(nextNum);
                         }
-                    } catch(e) { /* ігноруexisteмо */ }
+                    } catch(e) { /* ignorar */ }
 
                     // Hojeшня data
                     const today = new Date().toISOString().split('T')[0];
@@ -1511,7 +1511,7 @@
                 });
                 
                 if (!response.ok) {
-                    throw new Error('Орçаменто не encontrado');
+                    throw new Error('Orçamento não encontrado');
                 }
                 
                 const result = await response.json();
@@ -1599,7 +1599,7 @@
 
                 // Guardar ID para можливості atualização e відправки email
                 window.currentOrcamentoId = id;
-                window.lastSavedOrcamentoId = id; // Adicionar para email функції
+                window.lastSavedOrcamentoId = id; // Adicionar para funções de email
                 
             } catch (error) {
                 console.error('❌ Erro ao carregar orçamento:', error);

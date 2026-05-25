@@ -1413,7 +1413,7 @@ class PredictiveMaintenanceDashboard {
             
             const isCurrentMonth = currentDate.getMonth() === currentMonth;
             const isToday = currentDate.toDateString() === today.toDateString();
-            const hasMaintenanceEvent = Math.random() > 0.8; // 20% шанс trabalhos Manutenção
+            const hasMaintenanceEvent = Math.random() > 0.8; // 20% de probabilidade de trabalhos de manutenção
 
             let dayClass = 'p-2 text-center border';
             if (!isCurrentMonth) dayClass += ' text-muted';

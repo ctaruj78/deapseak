@@ -398,7 +398,7 @@
                             <div class="chart-container">
                                 <h5 class="card-title mb-3">
                                     <i class="fas fa-chart-pie mr-2"></i>
-                                    Розподіл по prioridadeах
+                                    Distribuição por prioridades
                                 </h5>
                                 <canvas id="priorityChart" height="250"></canvas>
                             </div>
@@ -420,7 +420,7 @@
                             <div class="chart-container">
                                 <h5 class="card-title mb-3">
                                     <i class="fas fa-calendar mr-2"></i>
-                                    A carregar по do diaх
+                                    A carregar por dias
                                 </h5>
                                 <canvas id="workloadChart" height="250"></canvas>
                             </div>
@@ -461,7 +461,7 @@
                                                 </tr>
                                             </thead>
                                             <tbody id="statsTable">
-                                                <!-- Dados serão заванeжені aqui -->
+                                                <!-- Os dados serão carregados aqui -->
                                             </tbody>
                                         </table>
                                     </div>
@@ -477,7 +477,7 @@
                                 <div class="card-header">
                                     <h3 class="card-title">
                                         <i class="fas fa-file-alt mr-2"></i>
-                                        Disponíveis tipoи de relatórios
+                                        Tipos de relatórios disponíveis
                                     </h3>
                                 </div>
                                 <div class="card-body">
@@ -536,19 +536,19 @@
                         </div>
                     </div>
 
-                    <!-- Atéрівняльний аналjunto -->
+                    <!-- Análise comparativa -->
                     <div class="row mt-4">
                         <div class="col-md-6">
                             <div class="card">
                                 <div class="card-header">
                                     <h3 class="card-title">
                                         <i class="fas fa-balance-scale mr-2"></i>
-                                        Atéрівняльний análise
+                                        Análise comparativa
                                     </h3>
                                 </div>
                                 <div class="card-body">
                                     <div id="comparisonAnalysis">
-                                        <!-- Atéрівняльний аналjunto será заванeжений aqui -->
+                                        <!-- Análise comparativa será заванeжений aqui -->
                                     </div>
                                 </div>
                             </div>
@@ -558,12 +558,12 @@
                                 <div class="card-header">
                                     <h3 class="card-title">
                                         <i class="fas fa-bullseye mr-2"></i>
-                                        Indicadorи KPI
+                                        Indicadores KPI
                                     </h3>
                                 </div>
                                 <div class="card-body">
                                     <div id="kpiMetrics">
-                                        <!-- KPI indicadores serão заванeжені aqui -->
+                                        <!-- Os indicadores KPI serão carregados aqui -->
                                     </div>
                                 </div>
                             </div>
@@ -583,7 +583,7 @@
         </footer>
     </div>
 
-    <!-- Janela modal налаштувань relatório -->
+    <!-- Modal de configurações de relatório -->
     <div class="modal fade" id="reportSettingsModal" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-lg" role="document">
             <div class="modal-content">
@@ -686,7 +686,7 @@
                 );
             }, 30000);
 
-            // Переchaveення власного períodoу
+            // Alternância do período personalizado
             $('#periodSelect').change(function() {
                 const isCustom = $(this).val() === 'custom';
                 $('#customPeriod').toggle(isCustom);
