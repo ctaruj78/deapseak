@@ -6137,40 +6137,48 @@ Equipa FestLift</textarea>
                         return;
                     }
                     
-                    // ✅ CSV melhorado — colunas úteis
+                    // ✅ CSV melhorado — colunas úteis, sem quebra no Excel
                     const typeLabels = { passenger: 'Passageiro', cargo: 'Carga', car: 'Automóvel', escalator: 'Escada Rolante', platform: 'Plataforma' };
                     const statusLabels = { operational: 'Operacional', maintenance: 'Manutenção', inactive: 'Inativo', inspection_required: 'Inspeção Necessária', 'out-of-service': 'Fora de Serviço' };
 
+                    // Escapa aspas duplas dentro dos campos e converte para string
+                    const esc = v => String(v == null ? '' : v).replace(/"/g, '""');
+
                     const headers = ['Nº Municipal', 'Tipo', 'Fabricante', 'Modelo', 'Endereço', 'Município', 'Estado', 'Cliente', 'Última Inspeção', 'Próxima Inspeção', 'Nº Contrato', 'Data de Criação'];
-                    const csvRows = [headers.join(';')];
+                    // sep=; → Excel Windows detecta automaticamente o separador
+                    const csvRows = ['sep=;', headers.join(';')];
 
                     lifts.forEach(lift => {
+                        // Endereço: só street e city, separados por ' | ' (sem vírgulas para não quebrar colunas)
                         let addressStr = '';
                         if (lift.address) {
                             if (typeof lift.address === 'string') {
                                 addressStr = lift.address;
                             } else {
-                                const parts = [lift.address.street, lift.address.city, lift.postalCode || lift.address.zipCode].filter(Boolean);
-                                addressStr = parts.join(', ');
+                                const parts = [lift.address.street, lift.address.city]
+                                    .filter(v => v && typeof v === 'string' && v.trim());
+                                addressStr = parts.join(' | ');
                             }
                         }
-                        const municipioStr = lift.municipality || (lift.address && lift.address.city) || '';
+                        const municipioStr = typeof lift.municipality === 'string' ? lift.municipality
+                            : (lift.address && typeof lift.address.city === 'string' ? lift.address.city : '');
                         const lastInsp = lift.lastInspectionDate ? new Date(lift.lastInspectionDate).toLocaleDateString('pt-PT') : '';
                         const nextInsp = lift.nextInspectionDate ? new Date(lift.nextInspectionDate).toLocaleDateString('pt-PT') : '';
+                        const createdAt = lift.createdAt ? new Date(lift.createdAt).toLocaleDateString('pt-PT') : '';
 
                         const row = [
-                            `"${lift.municipalNumber || lift.name || ''}"`,
-                            `"${typeLabels[lift.type] || lift.type || ''}"`,
-                            `"${lift.manufacturer || ''}"`,
-                            `"${lift.model || ''}"`,
-                            `"${addressStr}"`,
-                            `"${municipioStr}"`,
-                            `"${statusLabels[lift.status] || lift.status || 'Operacional'}"`,
-                            `"${lift.clientName || ''}"`,
-                            `"${lastInsp}"`,
-                            `"${nextInsp}"`,
-                            `"${lift.contractNumber || ''}"`,
-                            `"${lift.createdAt ? new Date(lift.createdAt).toLocaleDateString('pt-PT') : ''}"`,
+                            `"${esc(lift.municipalNumber || lift.name)}"`,
+                            `"${esc(typeLabels[lift.type] || lift.type)}"`,
+                            `"${esc(lift.manufacturer)}"`,
+                            `"${esc(lift.model)}"`,
+                            `"${esc(addressStr)}"`,
+                            `"${esc(municipioStr)}"`,
+                            `"${esc(statusLabels[lift.status] || lift.status || 'Operacional')}"`,
+                            `"${esc(lift.clientName)}"`,
+                            `"${esc(lastInsp)}"`,
+                            `"${esc(nextInsp)}"`,
+                            `"${esc(lift.contractNumber)}"`,
+                            `"${esc(createdAt)}"`,
                         ];
                         csvRows.push(row.join(';'));
                     });
