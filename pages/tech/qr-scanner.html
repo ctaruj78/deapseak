@@ -518,22 +518,6 @@ document.addEventListener("DOMContentLoaded", function() {
         }
     }
 
-    // HTML5 QR Code Scanner
-    const html5QrcodeScanner = new Html5QrcodeScanner(
-        "qr-reader", 
-        { 
-            fps: 25,
-            qrbox: { width: 300, height: 300 },
-            aspectRatio: 1.0,
-            showTorchButtonIfSupported: true,
-            videoConstraints: {
-                facingMode: { ideal: "environment" },
-                width: { min: 640, ideal: 1920, max: 1920 },
-                height: { min: 480, ideal: 1080, max: 1080 }
-            }
-        }
-    );
-    
     // Variáveis para trabalhar com câmara
     let cameraList = [];
     let selectedCamera = null;
@@ -585,17 +569,6 @@ document.addEventListener("DOMContentLoaded", function() {
     async function startCamera() {
         if (isScanning) return;
         
-        const cameraId = document.getElementById('camera-select').value;
-        if (!cameraId) {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Câmara não seleccionada',
-                text: 'Selecione uma câmara da lista.',
-                confirmButtonText: 'Entendido'
-            });
-            return;
-        }
-        
         try {
             if (!scanner) {
                 scanner = new Html5Qrcode("qr-reader");
@@ -604,7 +577,7 @@ document.addEventListener("DOMContentLoaded", function() {
             // Configuração para o leitor — alta resolução para melhor leitura
             const config = {
                 fps: 25,
-                qrbox: { width: 300, height: 300 },
+                qrbox: { width: 280, height: 280 },
                 videoConstraints: {
                     facingMode: { ideal: "environment" },
                     width: { min: 640, ideal: 1920, max: 1920 },
@@ -612,8 +585,14 @@ document.addEventListener("DOMContentLoaded", function() {
                 }
             };
             
+            // Usar câmara seleccionada no dropdown se disponível, senão facingMode
+            const cameraId = document.getElementById('camera-select').value;
+            const cameraConstraint = cameraId 
+                ? cameraId 
+                : { facingMode: { ideal: "environment" } };
+            
             await scanner.start(
-                cameraId, 
+                cameraConstraint, 
                 config, 
                 onScanSuccess, 
                 onScanFailure
@@ -624,12 +603,28 @@ document.addEventListener("DOMContentLoaded", function() {
             document.getElementById('stop-camera').disabled = false;
         } catch (error) {
             console.error('Erro ao iniciar câmara:', error);
-            Swal.fire({
-                icon: 'error',
-                title: 'Erro ao iniciar câmara',
-                text: error.message || 'Não foi possível iniciar a leitura.',
-                confirmButtonText: 'Entendido'
-            });
+            // Tentar com facingMode puro como fallback
+            try {
+                if (scanner) { try { await scanner.stop(); } catch(_) {} }
+                scanner = new Html5Qrcode("qr-reader");
+                await scanner.start(
+                    { facingMode: "environment" },
+                    { fps: 15, qrbox: { width: 250, height: 250 } },
+                    onScanSuccess, 
+                    onScanFailure
+                );
+                isScanning = true;
+                document.getElementById('start-camera').disabled = true;
+                document.getElementById('stop-camera').disabled = false;
+            } catch (err2) {
+                console.error('Fallback câmara falhou:', err2);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Erro ao iniciar câmara',
+                    text: err2.message || 'Não foi possível iniciar a leitura. Verifique as permissões de câmara.',
+                    confirmButtonText: 'Entendido'
+                });
+            }
         }
     }
     
