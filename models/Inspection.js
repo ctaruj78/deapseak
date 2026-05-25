@@ -51,6 +51,35 @@ const inspectionSchema = new mongoose.Schema({
         default: null
     },
 
+    // Número municipal do elevador
+    liftMunicipalNumber: {
+        type: String,
+        trim: true,
+        default: ''
+    },
+
+    // Nome do cliente
+    clientName: {
+        type: String,
+        trim: true,
+        default: ''
+    },
+
+    // Tipo de visita (maintenance, quarterly, annual, pre_inspection, repair, emergency)
+    visitType: {
+        type: String,
+        enum: ['maintenance', 'quarterly', 'annual', 'pre_inspection', 'repair', 'emergency', ''],
+        default: 'maintenance'
+    },
+
+    // Tipo de accionamento e portas (contexto da visita)
+    driveType: { type: String, trim: true, default: '' },
+    doorType:  { type: String, trim: true, default: '' },
+
+    // Validade da licença extraída do certificado (para visitas IT/anual)
+    licenseDate:   { type: Date, default: null },
+    licenseExpiry: { type: Date, default: null },
+
     // Checklist de inspecção: { "item-id": { status, comment } }
     checklist: {
         type: mongoose.Schema.Types.Mixed,

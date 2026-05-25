@@ -4,6 +4,32 @@ const { authenticate: auth } = require('../middleware/auth');
 const nodemailer = require('nodemailer');
 const PDFDocument = require('pdfkit');
 const Inspection = require('../../models/Inspection');
+const Lift = require('../../models/Lift');
+
+// ─── Helper: sincronizar datas do Lift após guardar inspecção ────────────────
+async function syncLiftFromInspection(inspection) {
+    if (!inspection.liftId) return;
+    try {
+        const update = {};
+        const vt = inspection.visitType || 'maintenance';
+
+        // Qualquer visita de manutenção/revisão atualiza lastMaintenance
+        if (['maintenance', 'quarterly', 'annual', 'pre_inspection', 'repair', 'emergency'].includes(vt)) {
+            update.lastMaintenance = inspection.data;
+        }
+
+        // Visita anual ou periódica pode ter dados de licença/certificado
+        if (inspection.licenseDate)   update.licenseDate   = inspection.licenseDate;
+        if (inspection.licenseExpiry) update.licenseExpiry = inspection.licenseExpiry;
+
+        if (Object.keys(update).length > 0) {
+            await Lift.findByIdAndUpdate(inspection.liftId, { $set: update });
+            console.log(`🔄 Lift ${inspection.liftId} sincronizado: lastMaintenance=${update.lastMaintenance?.toISOString?.() || '—'}`);
+        }
+    } catch (e) {
+        console.warn(`⚠️  syncLiftFromInspection falhou para liftId ${inspection.liftId}:`, e.message);
+    }
+}
 
 // ─── CRUD: Guardar inspecção na base de dados ────────────────────────────────
 
@@ -12,7 +38,10 @@ router.post('/', auth, async (req, res) => {
     try {
         const {
             numero, data, inspector, liftLocation, liftModel,
-            clientEmail, liftId, checklist, generalComments,
+            clientEmail, clientName, liftId, liftMunicipal,
+            visitType, driveType, doorType,
+            licenseDate, licenseExpiry,
+            checklist, generalComments,
             recommendations, status
         } = req.body;
 
@@ -30,7 +59,14 @@ router.post('/', auth, async (req, res) => {
             liftLocation,
             liftModel: liftModel || '',
             clientEmail: clientEmail || '',
+            clientName: clientName || '',
             liftId: liftId || null,
+            liftMunicipalNumber: liftMunicipal || '',
+            visitType: visitType || 'maintenance',
+            driveType: driveType || '',
+            doorType:  doorType  || '',
+            licenseDate:   licenseDate   ? new Date(licenseDate)   : null,
+            licenseExpiry: licenseExpiry ? new Date(licenseExpiry) : null,
             checklist: checklist || {},
             generalComments: generalComments || '',
             recommendations: recommendations || '',
@@ -39,7 +75,10 @@ router.post('/', auth, async (req, res) => {
         });
 
         await inspection.save();
-        console.log(`✅ Inspecção guardada: ${inspection.numero}`);
+        console.log(`✅ Inspecção guardada: ${inspection.numero} (${visitType || 'maintenance'})`);
+
+        // Sincronizar datas no registo do elevador
+        await syncLiftFromInspection(inspection);
 
         res.status(201).json({ success: true, inspection });
     } catch (error) {
@@ -109,7 +148,9 @@ router.get('/:id', auth, async (req, res) => {
 router.put('/:id', auth, async (req, res) => {
     try {
         const allowed = ['status', 'checklist', 'generalComments', 'recommendations',
-                         'inspector', 'liftLocation', 'liftModel', 'clientEmail', 'data'];
+                         'inspector', 'liftLocation', 'liftModel', 'clientEmail', 'data',
+                         'visitType', 'driveType', 'doorType', 'clientName', 'liftMunicipalNumber',
+                         'licenseDate', 'licenseExpiry'];
         const update = {};
         allowed.forEach(f => { if (req.body[f] !== undefined) update[f] = req.body[f]; });
 
@@ -122,10 +163,74 @@ router.put('/:id', auth, async (req, res) => {
         if (!inspection) {
             return res.status(404).json({ success: false, message: 'Inspecção não encontrada' });
         }
+
+        // Sincronizar datas no elevador sempre que o relatório é atualizado
+        await syncLiftFromInspection(inspection);
+
         res.json({ success: true, inspection });
     } catch (error) {
         console.error('❌ Erro ao actualizar inspecção:', error);
         res.status(500).json({ success: false, message: 'Erro ao actualizar inspecção', error: error.message });
+    }
+});
+
+// GET /api/inspections/:id/pdf — gerar PDF de uma inspecção guardada
+router.get('/:id/pdf', auth, async (req, res) => {
+    try {
+        const inspection = await Inspection.findById(req.params.id).lean();
+        if (!inspection) {
+            return res.status(404).json({ success: false, message: 'Inspecção não encontrada' });
+        }
+
+        const VISIT_LABELS = {
+            maintenance:    'Manutenção Mensal (Obrigatória)',
+            quarterly:      'Revisão Trimestral',
+            annual:         'Revisão Anual / Periódica',
+            pre_inspection: 'Preparação para Inspecção OI',
+            repair:         'Reparação',
+            emergency:      'Intervenção de Emergência'
+        };
+        const DRIVE_LABELS = {
+            traction:    'Por cabo — com casa das máquinas',
+            traction_mrl:'Por cabo — MRL (sem casa das máquinas)',
+            hydraulic:   'Hidráulico',
+            dl513:       'Por cabo — DL 513/70 (instalação antiga)',
+            platform:    'Por parafuso / Plataforma'
+        };
+        const DOOR_LABELS = {
+            automatic: 'Automáticas (operador)',
+            mixed:     'Misto — Batentes (patamar) + Automáticas (cabine)',
+            swing:     'Batentes / Semiautomáticas',
+            gate:      'Portões / Guilhotina'
+        };
+
+        const pdfBuffer = await buildReportPDF({
+            inspectionNumber: inspection.numero,
+            inspectionDate:   inspection.data ? new Date(inspection.data).toISOString().split('T')[0] : '',
+            inspector:        inspection.inspector,
+            liftLocation:     inspection.liftLocation,
+            liftModel:        inspection.liftModel || '',
+            clientEmail:      inspection.clientEmail || '',
+            clientName:       inspection.clientName || '',
+            visitType:        inspection.visitType || 'maintenance',
+            driveType:        inspection.driveType || '',
+            doorType:         inspection.doorType  || '',
+            visitTypeMeta:    { label: VISIT_LABELS[inspection.visitType] || inspection.visitType || 'Manutenção' },
+            driveTypeMeta:    { label: DRIVE_LABELS[inspection.driveType] || '' },
+            doorTypeMeta:     { label: DOOR_LABELS[inspection.doorType]  || '' },
+            checklist:        inspection.checklist || {},
+            generalComments:  inspection.generalComments || '',
+            recommendations:  inspection.recommendations || ''
+        });
+
+        const filename = `Relatorio_${inspection.numero.replace(/[\\/]/g, '-')}.pdf`;
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+        res.setHeader('Content-Length', pdfBuffer.length);
+        res.send(pdfBuffer);
+    } catch (error) {
+        console.error('❌ Erro ao gerar PDF da inspecção:', error);
+        res.status(500).json({ success: false, message: 'Erro ao gerar PDF', error: error.message });
     }
 });
 
@@ -142,8 +247,6 @@ router.delete('/:id', auth, async (req, res) => {
         res.status(500).json({ success: false, message: 'Erro ao apagar inspecção', error: error.message });
     }
 });
-
-// ─── Helper: gerar PDF do relatório de manutenção ───────────────────────────
 function buildReportPDF(data) {
     return new Promise((resolve, reject) => {
         const {

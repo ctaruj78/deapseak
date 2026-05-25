@@ -1296,12 +1296,21 @@
                                 <div class="sc">
                                     <div class="sc-h purple"><i class="fas fa-clipboard-check"></i> Inspecções técnicas (IT)</div>
                                     <div class="sc-b">
+                                        <!-- Banner: dados preenchidos automaticamente -->
+                                        <div class="alert alert-info py-2 mb-3 d-flex align-items-center" style="font-size:0.85rem;border-radius:6px;">
+                                            <i class="fas fa-magic mr-2" style="font-size:1rem;"></i>
+                                            <span>Os campos de data são preenchidos <strong>automaticamente</strong> quando o técnico guarda um relatório de manutenção no sistema.</span>
+                                        </div>
+
                                         <div class="row">
                                             <div class="col-md-4">
                                                 <div class="form-group">
-                                                    <label for="lastMaintenance">Última manutenção</label>
+                                                    <label for="lastMaintenance">
+                                                        Última manutenção
+                                                        <span id="dispLastMaintBadge" class="badge badge-success ml-1" style="display:none;font-size:0.7rem;">auto</span>
+                                                    </label>
                                                     <input type="date" id="lastMaintenance" name="lastMaintenance" class="form-control">
-                                                    <small class="text-muted">Data da última inspecção técnica</small>
+                                                    <small class="text-muted">Preenchido quando o técnico guarda relatório</small>
                                                 </div>
                                             </div>
                                             <div class="col-md-4">
@@ -1326,17 +1335,40 @@
                                         <div class="row">
                                             <div class="col-md-6">
                                                 <div class="form-group">
-                                                    <label>Data da licença / certificado</label>
+                                                    <label>
+                                                        Data da licença / certificado (OI)
+                                                        <span id="dispLicenseDateBadge" class="badge badge-success ml-1" style="display:none;font-size:0.7rem;">auto</span>
+                                                    </label>
                                                     <input type="date" name="licenseDate" class="form-control">
+                                                    <small class="text-muted">Preenchido via importação do relatório OI</small>
                                                 </div>
                                             </div>
                                             <div class="col-md-6">
                                                 <div class="form-group">
-                                                    <label>Validade da licença</label>
+                                                    <label>
+                                                        Validade da licença
+                                                        <span id="dispLicenseExpiryBadge" class="badge badge-success ml-1" style="display:none;font-size:0.7rem;">auto</span>
+                                                    </label>
                                                     <input type="date" name="licenseExpiry" class="form-control">
+                                                    <small class="text-muted">Calculado a partir do relatório de inspecção periódica</small>
                                                 </div>
                                             </div>
                                         </div>
+
+                                        <!-- Últimos relatórios de manutenção (carregados dinamicamente) -->
+                                        <div id="dispLastReportPanel" style="display:none;margin-top:8px;">
+                                            <div class="sc" style="margin-bottom:0;border:1px solid #c8e6c9;border-radius:8px;">
+                                                <div class="sc-h green" style="border-radius:6px 6px 0 0;padding:8px 14px;font-size:0.8rem;">
+                                                    <i class="fas fa-history mr-1"></i> Últimos relatórios de manutenção deste elevador
+                                                </div>
+                                                <div class="sc-b" style="padding:10px 14px;">
+                                                    <div id="dispLastReportsList">
+                                                        <div class="text-center text-muted py-2"><i class="fas fa-spinner fa-spin mr-1"></i> A carregar...</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
                                     </div>
                                 </div>
 
@@ -1417,6 +1449,61 @@
             var isLast = (idx === eLiftTabNavIds.length - 1);
             if (next) next.classList.toggle('d-none', isLast);
             if (save) save.classList.toggle('d-none', !isLast);
+        };
+
+        // ── Carregar relatórios de manutenção para o painel do Serviço ───────
+        window.loadDispatcherLiftReports = async function(liftId) {
+            const container = document.getElementById('dispLastReportsList');
+            if (!container) return;
+            const VISIT_LABELS = {
+                maintenance:'Manutenção mensal', quarterly:'Revisão trimestral',
+                annual:'Revisão anual', pre_inspection:'Preparação OI',
+                repair:'Reparação', emergency:'Emergência'
+            };
+            const STATUS_BADGE = { rascunho:'secondary', finalizado:'success', enviado:'info', arquivado:'dark' };
+            container.innerHTML = '<div class="text-center text-muted py-2"><i class="fas fa-spinner fa-spin mr-1"></i> A carregar...</div>';
+            try {
+                const token = localStorage.getItem('liftmanager_jwt') || localStorage.getItem('authToken') || '';
+                const r = await fetch(`/api/inspections?liftId=${liftId}&limit=5`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const json = await r.json();
+                const list = json.inspections || [];
+                if (!list.length) {
+                    container.innerHTML = '<p class="text-muted small mb-0"><i class="fas fa-info-circle mr-1"></i>Nenhum relatório guardado para este elevador.</p>';
+                    return;
+                }
+                let html = '<div class="list-group list-group-flush">';
+                list.forEach(ins => {
+                    const dateStr = ins.data ? new Date(ins.data).toLocaleDateString('pt-PT') : '—';
+                    const type    = VISIT_LABELS[ins.visitType] || ins.visitType || 'Manutenção';
+                    const badge   = STATUS_BADGE[ins.status] || 'secondary';
+                    const statusLabel = {rascunho:'Rascunho',finalizado:'Finalizado',enviado:'Enviado',arquivado:'Arquivado'}[ins.status] || ins.status;
+                    html += `<div class="list-group-item px-0 py-2" style="border-left:none;border-right:none;">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <strong style="font-size:0.82rem;">${ins.numero}</strong>
+                                <span class="text-muted ml-2" style="font-size:0.8rem;">${dateStr}</span><br>
+                                <span class="badge badge-light border" style="font-size:0.72rem;">${type}</span>
+                                <span class="badge badge-${badge} ml-1" style="font-size:0.72rem;">${statusLabel}</span>
+                                <span class="text-muted ml-1" style="font-size:0.75rem;">— ${ins.inspector || '—'}</span>
+                            </div>
+                            <a href="/api/inspections/${ins._id}/pdf" target="_blank"
+                               class="btn btn-xs btn-outline-danger ml-2 flex-shrink-0" title="Descarregar PDF"
+                               style="font-size:0.72rem;padding:2px 8px;"
+                               onclick="(function(el){const tk=localStorage.getItem('liftmanager_jwt')||localStorage.getItem('authToken')||'';fetch(el.href,{headers:{'Authorization':'Bearer '+tk}}).then(r=>r.blob()).then(b=>{let a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='${ins.numero}.pdf';a.click();});return false;})(this);">
+                                <i class="fas fa-file-pdf"></i> PDF
+                            </a>
+                        </div>
+                    </div>`;
+                });
+                html += '</div>';
+                if (json.total > 5) html += `<p class="text-muted small mt-1 mb-0 text-right">5 de ${json.total} relatórios</p>`;
+                container.innerHTML = html;
+            } catch (e) {
+                container.innerHTML = '<p class="text-warning small mb-0"><i class="fas fa-exclamation-triangle mr-1"></i>Erro ao carregar relatórios.</p>';
+                console.warn('loadDispatcherLiftReports:', e);
+            }
         };
 
         window.eLiftNextTab = function() {
@@ -5817,8 +5904,10 @@ Equipa FestLift</textarea>
             // Manutenção — apenas a data da última visita do técnico
             if (lift.lastMaintenance) {
                 $('#lastMaintenance').val(new Date(lift.lastMaintenance).toISOString().split('T')[0]);
+                $('#dispLastMaintBadge').show();
             } else {
                 $('#lastMaintenance').val('');
+                $('#dispLastMaintBadge').hide();
             }
             // Próxima manutenção: calculada dinamicamente = última + 1 mês (não armazenada)
             if (lift.lastMaintenance) {
@@ -5828,8 +5917,20 @@ Equipa FestLift</textarea>
             } else {
                 $('#nextMaintenance').val('');
             }
-            
-            console.log('✅ Formulário preenchido com dados');
+
+            // Licença / certificado
+            $('[name="licenseDate"]').val(lift.licenseDate ? new Date(lift.licenseDate).toISOString().split('T')[0] : '');
+            $('[name="licenseExpiry"]').val(lift.licenseExpiry ? new Date(lift.licenseExpiry).toISOString().split('T')[0] : '');
+            if (lift.licenseDate)   $('#dispLicenseDateBadge').show();   else $('#dispLicenseDateBadge').hide();
+            if (lift.licenseExpiry) $('#dispLicenseExpiryBadge').show(); else $('#dispLicenseExpiryBadge').hide();
+
+            // Carregar últimos relatórios de manutenção para este elevador
+            if (lift._id) {
+                $('#dispLastReportPanel').show();
+                loadDispatcherLiftReports(lift._id);
+            } else {
+                $('#dispLastReportPanel').hide();
+            }
             
             // Deберігаexisteмо elevador глобально para Tab 4 (inspectionHistory) e PDF модалки
             window._currentEditingLift = lift;
