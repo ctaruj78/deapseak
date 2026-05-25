@@ -498,6 +498,7 @@ document.addEventListener("DOMContentLoaded", function() {
     
     // Verificação de autorização
     if (!AuthManager.isAuthenticated()) {
+        sessionStorage.setItem('redirect_after_login', window.location.href);
         window.location.replace('/pages/auth/login.html');
         return;
     }

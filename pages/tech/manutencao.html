@@ -1061,7 +1061,18 @@
                 return;
             }
 
-            const html = INSPECTION_TEMPLATES.renderChecklist(driveType, doorType, visitType);
+            let html = '';
+            try {
+                if (typeof INSPECTION_TEMPLATES === 'undefined') {
+                    throw new Error('INSPECTION_TEMPLATES não carregado');
+                }
+                html = INSPECTION_TEMPLATES.renderChecklist(driveType, doorType, visitType);
+            } catch(e) {
+                console.error('Erro ao gerar checklist:', e);
+                $('#checklistPlaceholder').html('<div class="alert alert-danger"><i class="fas fa-exclamation-circle"></i> Erro ao carregar checklist: ' + e.message + '<br><button class="btn btn-sm btn-warning mt-2" onclick="location.reload()">Recarregar página</button></div>').show();
+                $('#inspectionChecklist').hide();
+                return;
+            }
             $('#inspectionChecklist').html(html).show();
             $('#checklistPlaceholder').hide();
 
@@ -1176,8 +1187,10 @@
             try {
                 const token = sessionStorage.getItem('liftmanager_jwt') ||
                               localStorage.getItem('liftmanager_jwt') ||
-                              localStorage.getItem('authToken');
-                if (!token) throw new Error('Token não encontrado');
+                              localStorage.getItem('authToken') ||
+                              localStorage.getItem('token') ||
+                              sessionStorage.getItem('token');
+                if (!token) throw new Error('Token não encontrado — faça login primeiro');
 
                 const res = await fetch(`/api/lifts/${liftId}`, {
                     headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }
@@ -1238,7 +1251,19 @@
             } catch (err) {
                 console.error('❌ Erro ao carregar ascensor:', err);
                 $('#liftDataLoading').hide();
-                if (visitType) { $('#visitType').val(visitType); refreshChecklist(); }
+                // Mostrar aviso amigável sem bloquear a página
+                const errMsg = err.message || 'Erro de ligação';
+                const loadingDiv = document.getElementById('liftDataLoading');
+                if (document.getElementById('liftDataInfo')) {
+                    document.getElementById('liftDataInfo').innerHTML = 
+                        `<div class="alert alert-warning mb-0"><i class="fas fa-exclamation-triangle mr-2"></i>
+                        <strong>Dados do ascensor não carregados:</strong> ${errMsg}.
+                        O checklist ficará disponível com as opções selecionadas nos filtros acima.</div>`;
+                    document.getElementById('liftDataInfo').style.display = 'block';
+                }
+                // Sempre mostrar o checklist com os valores padrão dos selects
+                if (visitType) $('#visitType').val(visitType);
+                refreshChecklist();
             }
         }
         
@@ -1287,7 +1312,8 @@
             },
 
             generateInspectionNumber() {
-                const token = localStorage.getItem('liftmanager_jwt') ||
+                const token = sessionStorage.getItem('liftmanager_jwt') ||
+                              localStorage.getItem('liftmanager_jwt') ||
                               localStorage.getItem('authToken') ||
                               localStorage.getItem('token');
                 $.ajax({
