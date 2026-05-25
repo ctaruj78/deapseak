@@ -1080,7 +1080,12 @@ function getViolationsStats(violations) {
  *   згадки C1/C2/C3 у пояснювальному тексті (не реальні порушення).
  */
 function preprocessReportText(text) {
-    // Видаляємо загальні роз'яснювальні/юридичні блоки в кінці звіту різних форматів
+    // Limpar caracteres não decodificados pelo pdf-parse ([?] = placeholder para fontes especiais OI)
+    text = text
+        .replace(/\[\?\]/g, '')      // remover placeholder pdf-parse
+        .replace(/ {2,}/g, ' ');     // colapsar espaços duplos resultantes
+
+    // Vidалаємо загальні роз'яснювальні/юридичні блоки в кінці звіту різних форматів
     const stopPatterns = [
         // Стандартні португальські блоки
         /OBRIGA[CÇ][OÕ]ES\s+DO\s+PROPRIET[AÁ]RIO/i,

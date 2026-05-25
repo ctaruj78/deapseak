@@ -5344,7 +5344,24 @@ Email de contacto: info@festlift.pt`;
                 $('#detail-inspection-type').text(_lrTypeRaw ? (_adminInspTypeLabels[_lrTypeRaw] || _lrTypeRaw) : 'Não especificado');
                 $('#detail-inspection-status').text(lastReport ? lastReport.status || 'Não especificado' : 'Não especificado');
                 (function(){
-                    const _cm = lastReport ? lastReport.notes || lastReport.comments || null : null;
+                    // cleanInspText: remove [?] de relatórios OI — traduz classificações C1/C2/C3 para português
+                    function cleanInspText(s) {
+                        if (!s) return s;
+                        return s
+                            .replace(/\[\?\]\s*/g, '')                      // [?] = classificação desconhecida
+                            .replace(/\[C1\]/g, '🔴 Risco elevado')             // C1
+                            .replace(/\[C2\]/g, '🟠 Intervenção necessária')   // C2
+                            .replace(/\[C3\]/g, '🟡 A corrigir')                // C3
+                            .replace(/\[D\]/g,  'ℹ️ Nota')                     // D
+                            .replace(/\bViolações:\b/g, 'Não conformidades:')   // label mais claro
+                            .replace(/\u25a1\s*/g, '')           // □ checkbox vazio
+                            .replace(/\u2612\s*/g, '❌ ')          // ☒ = não conforme
+                            .replace(/\u2611\s*/g, '✅ ')          // ☑ = conforme
+                            .replace(/ {2,}/g, ' ')              // espaços múltiplos
+                            .trim();
+                    }
+                    const _rawCm = lastReport ? lastReport.notes || lastReport.comments || null : null;
+                    const _cm = cleanInspText(_rawCm);
                     const _el = $('#detail-inspection-comments');
                     if (!_cm || _cm === '—') { _el.text('Não especificado'); return; }
                     if (_cm.length <= 120) { _el.text(_cm); return; }

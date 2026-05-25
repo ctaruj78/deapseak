@@ -1144,7 +1144,10 @@ async function parseBureauVeritasPDF(filePath) {
         
         const dataBuffer = fs.readFileSync(filePath);
         const data = await pdfParse(dataBuffer);
-        const text = data.text;
+        // [?] representa caracteres não decodificados pelo pdf-parse (fontes spec. OI)
+        const text = data.text
+            .replace(/\[\?\]/g, '')       // remover placeholder pdf-parse
+            .replace(/ {2,}/g, ' ');       // colapsar espaços duplos resultantes
         
         console.log('📊 Pages:', data.numpages);
         console.log('📊 Text length:', text.length, 'chars');

@@ -473,8 +473,14 @@ router.post('/:id/confirm-inspection-from-pdf', authenticate, authorizeRoles('ad
         // Build violation notes summary
         let violationNotes = notes || '';
         if (violations && violations.length) {
+            const clsLabel = { C1: '🔴 Risco elevado', C2: '🟠 Intervenção necessária', C3: '🟡 A corrigir', D: 'ℹ️ Nota' };
             violationNotes = (notes ? notes + '\n\n' : '') +
-                'Violações:\n' + violations.map(v => `• [${v.classification || v.severity || v.type || '?'}] ${v.description || v.text || v}`).join('\n');
+                'Não conformidades:\n' + violations.map(v => {
+                    const cls = v.classification || v.severity || v.type || '';
+                    const badge = clsLabel[cls] || (cls ? `[${cls}]` : '');
+                    const desc = v.description || v.text || (typeof v === 'string' ? v : '');
+                    return badge ? `• ${badge} — ${desc}` : `• ${desc}`;
+                }).join('\n');
         }
 
         // Normalize reportType to valid enum values
