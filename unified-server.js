@@ -8020,19 +8020,42 @@ async function callGeminiAI(message, role, username, regulationsContext = null, 
 
         const systemPrompt = getSystemPromptForRole(role, username);
 
-        const model = genAI.getGenerativeModel({
-            model: "gemini-2.5-flash",
-            systemInstruction: systemPrompt
-        });
-        
         const contextualPrompt = buildAIUserPrompt(message, regulationsContext, reportTextContext, 50000, dbContext);
-        
-        const result = await model.generateContent(contextualPrompt);
-        const response = await result.response;
-        const text = response.text();
-        
-        console.log('✅ Gemini AI response generated:', text.substring(0, 100) + '...');
-        return text;
+        const geminiModels = ['gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-flash-latest', 'gemini-flash-lite-latest'];
+        let lastErr;
+        for (const modelName of geminiModels) {
+            try {
+                const model = genAI.getGenerativeModel({ model: modelName, systemInstruction: systemPrompt });
+                const result = await model.generateContent(contextualPrompt);
+                const text = result.response.text();
+                console.log(`✅ Gemini AI response generated (${modelName}):`, text.substring(0, 100) + '...');
+                return text;
+            } catch (err) {
+                lastErr = err;
+                const isTransient = err.message.includes('503') || err.message.includes('429') ||
+                    err.message.includes('overloaded') || err.message.includes('high demand') ||
+                    err.message.includes('404') || err.message.includes('not found') ||
+                    err.message.includes('not supported');
+                if (!isTransient) throw err;
+                console.warn(`⚠️ Model ${modelName} unavailable, trying next...`);
+            }
+        }
+        // All Gemini models failed — try DeepSeek as final fallback
+        if (process.env.DEEPSEEK_API_KEY) {
+            try {
+                console.log('🔄 Gemini AI: falling back to DeepSeek...');
+                const systemPrompt = getSystemPromptForRole(role, username);
+                const dsText = await _callDeepSeekAI([
+                    { role: 'system', content: systemPrompt },
+                    { role: 'user', content: contextualPrompt }
+                ]);
+                console.log('✅ DeepSeek AI response OK');
+                return dsText;
+            } catch (dsErr) {
+                console.warn('⚠️ DeepSeek fallback failed:', dsErr.message);
+            }
+        }
+        throw lastErr;
         
     } catch (error) {
         console.error('❌ Gemini AI error:', error.message);
@@ -8096,6 +8119,26 @@ function _getGuestUsage(ip) {
     return entry;
 }
 
+// Helper: call DeepSeek API (OpenAI-compatible)
+async function _callDeepSeekAI(messages) {
+    if (!process.env.DEEPSEEK_API_KEY) throw new Error('DEEPSEEK_API_KEY not configured');
+    const resp = await fetch('https://api.deepseek.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${process.env.DEEPSEEK_API_KEY}`,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ model: 'deepseek-chat', messages, max_tokens: 1500 }),
+        signal: AbortSignal.timeout(30000)
+    });
+    if (!resp.ok) {
+        const errText = await resp.text();
+        throw new Error(`DeepSeek API error ${resp.status}: ${errText.substring(0, 200)}`);
+    }
+    const data = await resp.json();
+    return data.choices[0].message.content;
+}
+
 // Helper: call Gemini/Ollama in guest mode
 async function _callGuestAI(prompt) {
     const useOllama = AI_PROVIDER === 'ollama' || (AI_PROVIDER === 'auto' && await isOllamaAvailable());
@@ -8104,17 +8147,43 @@ async function _callGuestAI(prompt) {
         return callOllamaRaw([{ role: 'user', content: prompt }]);
     }
 
-    const models = ['gemini-2.5-flash', 'gemini-1.5-flash'];
+    const models = ['gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-flash-latest', 'gemini-flash-lite-latest'];
     let lastErr;
-    for (const modelName of models) {
+    for (let i = 0; i < models.length; i++) {
+        const modelName = models[i];
+        // Retry primary model once with delay if overloaded
+        const maxAttempts = (i === 0) ? 2 : 1;
+        for (let attempt = 0; attempt < maxAttempts; attempt++) {
+            try {
+                const m = genAI.getGenerativeModel({ model: modelName });
+                const result = await m.generateContent(prompt);
+                return result.response.text();
+            } catch (err) {
+                lastErr = err;
+                const isOverloaded = err.message.includes('503') || err.message.includes('overloaded') || err.message.includes('high demand');
+                const isTransient = isOverloaded || err.message.includes('429') ||
+                    err.message.includes('404') || err.message.includes('not found') ||
+                    err.message.includes('not supported');
+                if (!isTransient) throw err;
+                if (isOverloaded && attempt < maxAttempts - 1) {
+                    console.warn(`⚠️ Model ${modelName} overloaded, retrying in 2s...`);
+                    await new Promise(r => setTimeout(r, 2000));
+                } else {
+                    console.warn(`⚠️ Model ${modelName} unavailable, trying next...`);
+                    break;
+                }
+            }
+        }
+    }
+    // All Gemini models failed — try DeepSeek as final fallback
+    if (process.env.DEEPSEEK_API_KEY) {
         try {
-            const m = genAI.getGenerativeModel({ model: modelName });
-            const result = await m.generateContent(prompt);
-            return result.response.text();
-        } catch (err) {
-            lastErr = err;
-            if (!err.message.includes('503') && !err.message.includes('429') && !err.message.includes('overloaded') && !err.message.includes('high demand')) throw err;
-            console.warn(`⚠️ Model ${modelName} unavailable, trying next...`);
+            console.log('🔄 Guest AI: falling back to DeepSeek...');
+            const dsText = await _callDeepSeekAI([{ role: 'user', content: prompt }]);
+            console.log('✅ DeepSeek guest response OK');
+            return dsText;
+        } catch (dsErr) {
+            console.warn('⚠️ DeepSeek guest fallback failed:', dsErr.message);
         }
     }
     throw lastErr;
@@ -8412,15 +8481,50 @@ app.post('/api/ai/chat/stream', authenticateToken, aiLimiter, async (req, res) =
         if (!process.env.GEMINI_API_KEY) return sendError('GEMINI_API_KEY not configured');
 
         const systemPrompt = getSystemPromptForRole(role, username);
-        const model = genAI.getGenerativeModel({
-            model: 'gemini-2.5-flash',
-            systemInstruction: systemPrompt
-        });
-
         const reportText = context?.reportText || null;
         const contextualPrompt = buildAIUserPrompt(message, null, reportText, 50000, null);
 
-        const streamResult = await model.generateContentStream(contextualPrompt);
+        const streamModels = ['gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-flash-latest', 'gemini-flash-lite-latest'];
+        let streamResult = null;
+        let usedModel = streamModels[0];
+        for (const modelName of streamModels) {
+            try {
+                const model = genAI.getGenerativeModel({ model: modelName, systemInstruction: systemPrompt });
+                streamResult = await model.generateContentStream(contextualPrompt);
+                usedModel = modelName;
+                break;
+            } catch (err) {
+                const isTransient = err.message.includes('503') || err.message.includes('429') ||
+                    err.message.includes('overloaded') || err.message.includes('high demand') ||
+                    err.message.includes('404') || err.message.includes('not found') ||
+                    err.message.includes('not supported');
+                if (!isTransient) {
+                    return sendError('Erro ao iniciar stream de IA');
+                }
+                // transient error — continue loop; if last model, streamResult stays null
+                console.warn(`⚠️ Stream model ${modelName} unavailable, trying next...`);
+            }
+        }
+
+        // If all Gemini models failed transiently, try DeepSeek (non-streaming fallback)
+        if (!streamResult) {
+            if (process.env.DEEPSEEK_API_KEY) {
+                try {
+                    console.log('🔄 Stream: falling back to DeepSeek...');
+                    const dsText = await _callDeepSeekAI([
+                        { role: 'system', content: systemPrompt },
+                        { role: 'user', content: contextualPrompt }
+                    ]);
+                    sendChunk(dsText);
+                    sendDone({ powered_by: 'DeepSeek Chat (fallback)', timestamp: new Date().toISOString() });
+                    console.log(`✅ DeepSeek stream fallback OK: ${dsText.length} chars`);
+                    return;
+                } catch (dsErr) {
+                    console.warn('⚠️ DeepSeek stream fallback failed:', dsErr.message);
+                }
+            }
+            return sendError('Erro ao iniciar stream de IA');
+        }
 
         let fullText = '';
         for await (const chunk of streamResult.stream) {
@@ -8431,7 +8535,7 @@ app.post('/api/ai/chat/stream', authenticateToken, aiLimiter, async (req, res) =
             }
         }
 
-        sendDone({ powered_by: 'Google Gemini 2.5 Flash (stream)', timestamp: new Date().toISOString() });
+        sendDone({ powered_by: `Google Gemini ${usedModel} (stream)`, timestamp: new Date().toISOString() });
         console.log(`✅ Gemini stream complete: ${fullText.length} chars for ${username}`);
 
     } catch (err) {

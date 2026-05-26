@@ -367,3 +367,6 @@
         right: -12px;
     }
 }
+
+/* Hide agent widget behind modal backdrop when modal is open */
+body.modal-open #agent-widget { z-index: 1030 !important; }

@@ -27,8 +27,7 @@
             display: flex;
             flex-direction: column;
             height: 560px;
-        }
-        .chat-header {
+        }        .chat-header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: #fff;
             padding: 14px 20px;
@@ -142,6 +141,32 @@
         }
         .tip-card { background: #fff; border-radius: 8px; padding: 16px; box-shadow: 0 2px 8px rgba(0,0,0,.07); margin-bottom: 12px; display: flex; gap: 14px; align-items: flex-start; }
         .tip-card i { font-size: 1.4rem; margin-top: 2px; }
+
+        /* Mobile responsive */
+        @media (max-width: 768px) {
+            .ai-hero { padding: 24px 0 18px; }
+            .ai-hero h1 { font-size: 1.5rem; }
+            .chat-wrapper {
+                margin: 10px auto;
+                height: calc(100vh - 220px);
+                min-height: 360px;
+                border-radius: 8px;
+            }
+            .suggestions { padding: 8px 12px 0; gap: 6px; }
+            .suggestion-btn { font-size: .78rem; padding: 4px 10px; }
+            .chat-input-area { padding: 10px 12px; gap: 8px; }
+            .chat-messages { padding: 14px; gap: 10px; }
+            .msg-bubble { font-size: .9rem; padding: 8px 12px; }
+            .sidebar-tips { padding: 0 10px; }
+            .tip-card { padding: 12px; gap: 10px; }
+        }
+
+        @media (max-width: 480px) {
+            .ai-hero h1 { font-size: 1.25rem; }
+            .chat-wrapper { height: calc(100vh - 200px); min-height: 320px; }
+            .msg { max-width: 95%; }
+            .chat-input-area textarea { font-size: .85rem; }
+        }
     </style>
 </head>
 <body class="hold-transition layout-top-nav">

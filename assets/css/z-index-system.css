@@ -52,3 +52,11 @@
 /* Підказки */
 .tooltip               { z-index: var(--z-tooltip) !important; }
 .popover               { z-index: var(--z-popover) !important; }
+
+/* AI floating widget — below modals when modal is open */
+body.modal-open .ai-assistant-btn,
+body.modal-open .ai-chat-container,
+body.modal-open .ai-notification { z-index: var(--z-fixed) !important; }
+
+/* Ensure modal backdrop covers AI widget */
+.modal-backdrop        { z-index: calc(var(--z-modal) - 10) !important; }

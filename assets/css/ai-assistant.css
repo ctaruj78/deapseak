@@ -366,8 +366,9 @@
     .ai-chat-container {
         width: 90%;
         right: 5%;
-        bottom: 80px;
+        bottom: 70px;
         height: 60vh;
+        max-height: calc(100vh - 90px);
     }
     
     .ai-assistant-btn {
@@ -375,5 +376,12 @@
         right: 10px;
         width: 50px;
         height: 50px;
+        font-size: 16px;
     }
+}
+
+/* Hide AI floating widget when a Bootstrap modal is open */
+body.modal-open .ai-assistant-btn,
+body.modal-open .ai-chat-container {
+    z-index: 1030;
 }
