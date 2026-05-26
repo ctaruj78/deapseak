@@ -1763,6 +1763,7 @@
                     <div class="row">
                         <div class="col-12">
                             <h6>Relatório de inspecção</h6>
+                            <div id="inspectionStatusBanner" class="mb-2"></div>
                             <table class="table table-sm">
                                 <tr>
                                     <td><strong>Data de inspecção:</strong></td>
@@ -1908,69 +1909,6 @@
                 <div class="modal-footer" style="flex-shrink: 0; border-top: 1px solid #dee2e6;">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
                     <button type="button" class="btn btn-primary" id="edit-lift-from-details">Editar</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal de pedido de inspecção -->
-    <div class="modal fade" id="inspectionRequestModal" tabindex="-1" role="dialog" aria-hidden="true">
-        <div class="modal-dialog modal-lg" role="document">
-            <div class="modal-content">
-                <div class="modal-header bg-warning">
-                    <h5 class="modal-title"><i class="fas fa-clipboard-check mr-2"></i>Inspecção do elevador</h5>
-                    <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
-                </div>
-                <div class="modal-body">
-                    <div class="alert alert-light border mb-3 py-2">
-                        <strong>Elevador:</strong> <span id="inspReqModal_liftRef"></span> &nbsp;|&nbsp;
-                        <strong>Endereço:</strong> <span id="inspReqModal_address"></span><br>
-                        <strong>Validade do certificado:</strong> <span id="inspReqModal_expiry" class="text-danger font-weight-bold"></span>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6 border-right">
-                            <h6 class="text-primary"><i class="fas fa-user mr-1"></i> Notificar o cliente</h6>
-                            <p class="text-muted small">O cliente deve saber que o prazo de inspecção está a terminar e que a FestLift tratará disso.</p>
-                            <div class="form-group">
-                                <label class="small font-weight-bold">Email do cliente</label>
-                                <input type="email" id="inspReqModal_clientEmail" class="form-control form-control-sm" placeholder="email@client.com">
-                            </div>
-                            <div class="form-group">
-                                <label class="small font-weight-bold">Assunto</label>
-                                <input type="text" id="inspReqModal_clientSubject" class="form-control form-control-sm">
-                            </div>
-                            <div class="form-group">
-                                <label class="small font-weight-bold">Texto da carta</label>
-                                <textarea id="inspReqModal_clientBody" class="form-control form-control-sm" rows="7" style="font-size:12px;"></textarea>
-                            </div>
-                            <button type="button" id="btnSendToClient" class="btn btn-primary btn-sm w-100">
-                                <i class="fas fa-paper-plane mr-1"></i> Enviar ao cliente
-                            </button>
-                        </div>
-                        <div class="col-md-6">
-                            <h6 class="text-warning"><i class="fas fa-building mr-1"></i> Pedido a <span id="inspReqModal_munName">Câmara Municipal</span></h6>
-                            <p class="text-muted small">Carta oficial a solicitar a marcação de data de inspecção.</p>
-                            <div class="form-group">
-                                <label class="small font-weight-bold">Email do município</label>
-                                <input type="email" id="inspReqModal_munEmail" class="form-control form-control-sm" placeholder="email@camara.pt">
-                            </div>
-                            <div class="form-group">
-                                <label class="small font-weight-bold">Assunto</label>
-                                <input type="text" id="inspReqModal_munSubject" class="form-control form-control-sm">
-                            </div>
-                            <div class="form-group">
-                                <label class="small font-weight-bold">Texto da carta</label>
-                                <textarea id="inspReqModal_munBody" class="form-control form-control-sm" rows="7" style="font-size:12px;"></textarea>
-                            </div>
-                            <button type="button" id="btnSendToMun" class="btn btn-warning btn-sm w-100">
-                                <i class="fas fa-building mr-1"></i> Pedido ao município
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <small class="text-muted flex-grow-1"><i class="fas fa-info-circle mr-1"></i>Se o Brevo não estiver configurado — abrirá o seu cliente de email (mailto)</small>
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
                 </div>
             </div>
         </div>
@@ -5562,6 +5500,35 @@ Equipa FestLift</textarea>
                 const _lrType = lastReport ? (lastReport.inspectionType || lastReport.type || lastReport.reportType || '') : '';
                 $('#detail-inspection-type').text(lastReport ? (inspTypeLabels[_lrType] || _lrType || 'Não especificado') : 'Não especificado');
                 $('#detail-inspection-status').text(lastReport ? (inspStatusLabels[lastReport.status] || lastReport.status || 'Não especificado') : 'Não especificado');
+                // ── Banner de estado de inspecção ──────────────────────────
+                (function() {
+                    const _banner = document.getElementById('inspectionStatusBanner');
+                    if (!_banner) return;
+                    const _now = new Date();
+                    const _nextD = lift.nextInspectionDate ? new Date(lift.nextInspectionDate) : null;
+                    const _lastSt = lastReport ? (lastReport.status || '') : '';
+                    if (!lastReport) {
+                        _banner.innerHTML = '<div class="alert alert-secondary py-2 mb-0"><i class="fas fa-info-circle mr-1"></i> Sem inspecção registada</div>';
+                    } else if (_lastSt === 'failed') {
+                        _banner.innerHTML = '<div class="alert alert-danger py-2 mb-0"><i class="fas fa-times-circle mr-1"></i> <strong>Inspecção reprovada</strong> — necessita nova inspecção</div>';
+                    } else if (_lastSt === 'conditional') {
+                        _banner.innerHTML = '<div class="alert alert-warning py-2 mb-0"><i class="fas fa-exclamation-triangle mr-1"></i> <strong>Inspecção condicional (C2)</strong> — reinspecção necessária</div>';
+                    } else if (_nextD && _nextD < _now) {
+                        const _dOver = Math.ceil((_now - _nextD) / 86400000);
+                        _banner.innerHTML = '<div class="alert alert-danger py-2 mb-0"><i class="fas fa-clock mr-1"></i> <strong>Prazo expirado</strong> há ' + _dOver + ' dia(s) — venceu em ' + _nextD.toLocaleDateString('pt-PT') + '</div>';
+                    } else if (_nextD) {
+                        const _dLeft = Math.ceil((_nextD - _now) / 86400000);
+                        if (_dLeft <= 60) {
+                            _banner.innerHTML = '<div class="alert alert-warning py-2 mb-0"><i class="fas fa-clock mr-1"></i> A expirar em <strong>' + _dLeft + ' dia(s)</strong> — válido até ' + _nextD.toLocaleDateString('pt-PT') + '</div>';
+                        } else {
+                            _banner.innerHTML = '<div class="alert alert-success py-2 mb-0"><i class="fas fa-check-circle mr-1"></i> <strong>Inspecção válida</strong> até ' + _nextD.toLocaleDateString('pt-PT') + ' (' + _dLeft + ' dias)</div>';
+                        }
+                    } else if (_lastSt === 'passed') {
+                        _banner.innerHTML = '<div class="alert alert-success py-2 mb-0"><i class="fas fa-check-circle mr-1"></i> <strong>Aprovado</strong> — data de validade não especificada</div>';
+                    } else {
+                        _banner.innerHTML = '<div class="alert alert-secondary py-2 mb-0"><i class="fas fa-info-circle mr-1"></i> Data de validade não especificada</div>';
+                    }
+                })();
                 (function(){
                     // cleanInspText: remove [?] de relatórios importados com fontes não decodificadas
                     function cleanInspText(s) {
@@ -5633,7 +5600,7 @@ Equipa FestLift</textarea>
                     const inspAlert = document.getElementById('inspectionReminderAlert');
                     if (!inspBlock) return;
                     inspBlock.style.display = 'none';
-                    const licExpiry = lift.licenseExpiry || lift.certExpiry || null;
+                    const licExpiry = lift.licenseExpiry || lift.certExpiry || lift.nextInspectionDate || null;
                     const now = new Date();
                     if (licExpiry) {
                         const expiryDate = new Date(licExpiry);
@@ -8714,7 +8681,7 @@ Equipa FestLift</textarea>
         const liftId = window._currentInspectionLiftId;
         const lift = window._currentInspectionLift;
         if (!liftId || !lift) { alert('Dados do elevador não carregados'); return; }
-        const licExpiry = lift.licenseExpiry || lift.certExpiry || null;
+        const licExpiry = lift.licenseExpiry || lift.certExpiry || lift.nextInspectionDate || null;
         const expiryStr = licExpiry ? new Date(licExpiry).toLocaleDateString('pt-PT') : 'não especificado';
         const address = (function() {
             if (!lift.address) return 'N/D';
@@ -8752,7 +8719,12 @@ Equipa FestLift</textarea>
     Endereço: ${address}
     Certificado atual válido até: ${expiryStr}
 
-    Solicitamos que indiquem a data e hora disponíveis para a realização da inspeção.
+    Dados do proprietário/cliente (para envio de factura):
+    Nome: ${clientName}
+    Email: ${clientEmail || 'não especificado'}
+    Telefone: ${lift.clientPhone || lift.phone || lift.contactPhone || 'não especificado'}
+
+    Solicitamos que indiquem a data e hora disponíveis para a realização da inspeção e que, após agendamento, enviem a factura directamente ao proprietário para o email indicado acima.
 
     Com os melhores cumprimentos,
     FestLift

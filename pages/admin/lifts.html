@@ -2175,6 +2175,7 @@
                     <div class="row">
                         <div class="col-12">
                             <h6>Relatório de inspecção</h6>
+                            <div id="inspectionStatusBanner" class="mb-2"></div>
                             <table class="table table-sm">
                                 <tr>
                                     <td><strong>Data de inspecção:</strong></td>
@@ -3684,7 +3685,7 @@ Equipa FestLift
         const lift = window._currentInspectionLift;
         if (!liftId || !lift) { alert('Dados do elevador não carregados'); return; }
 
-        const licExpiry = lift.licenseExpiry || lift.certExpiry || null;
+        const licExpiry = lift.licenseExpiry || lift.certExpiry || lift.nextInspectionDate || null;
         const expiryStr = licExpiry ? new Date(licExpiry).toLocaleDateString('pt-PT') : 'não especificado';
 
         const address = (() => {
@@ -3724,7 +3725,12 @@ Marca/Modelo: ${lift.manufacturer || ''} ${lift.model || ''}
 Endereço: ${address}
 Certificado atual válido até: ${expiryStr}
 
-Solicitamos que indiquem a data e hora disponíveis para a realização da inspeção.
+Dados do proprietário/cliente (para envio de factura):
+Nome: ${clientName}
+Email: ${clientEmail || 'não especificado'}
+Telefone: ${lift.clientPhone || lift.phone || lift.contactPhone || 'não especificado'}
+
+Solicitamos que indiquem a data e hora disponíveis para a realização da inspeção e que, após agendamento, enviem a factura directamente ao proprietário para o email indicado acima.
 
 Com os melhores cumprimentos,
 FestLift
@@ -5339,7 +5345,7 @@ Email de contacto: info@festlift.pt`;
 
                 // Certificado / licença
                 const licDate = lift.licenseDate || lift.certDate || null;
-                const licExpiry = lift.licenseExpiry || lift.certExpiry || null;
+                const licExpiry = lift.licenseExpiry || lift.certExpiry || lift.nextInspectionDate || null;
                 $('#detail-license-date').text(licDate ? new Date(licDate).toLocaleDateString('pt-PT') : 'Não especificado');
                 $('#detail-license-expiry').text(licExpiry ? new Date(licExpiry).toLocaleDateString('pt-PT') : 'Não especificado');
 
@@ -5383,6 +5389,35 @@ Email de contacto: info@festlift.pt`;
                 const _lrTypeRaw = lastReport ? (lastReport.inspectionType || lastReport.type || _adminRtMap[lastReport.reportType] || lastReport.reportType || '') : '';
                 $('#detail-inspection-type').text(_lrTypeRaw ? (_adminInspTypeLabels[_lrTypeRaw] || _lrTypeRaw) : 'Não especificado');
                 $('#detail-inspection-status').text(lastReport ? lastReport.status || 'Não especificado' : 'Não especificado');
+                // ── Banner de estado de inspecção ──────────────────────────
+                (function() {
+                    const _banner = document.getElementById('inspectionStatusBanner');
+                    if (!_banner) return;
+                    const _now = new Date();
+                    const _nextD = lift.nextInspectionDate ? new Date(lift.nextInspectionDate) : null;
+                    const _lastSt = lastReport ? (lastReport.status || '') : '';
+                    if (!lastReport) {
+                        _banner.innerHTML = '<div class="alert alert-secondary py-2 mb-0"><i class="fas fa-info-circle mr-1"></i> Sem inspecção registada</div>';
+                    } else if (_lastSt === 'failed') {
+                        _banner.innerHTML = '<div class="alert alert-danger py-2 mb-0"><i class="fas fa-times-circle mr-1"></i> <strong>Inspecção reprovada</strong> — necessita nova inspecção</div>';
+                    } else if (_lastSt === 'conditional') {
+                        _banner.innerHTML = '<div class="alert alert-warning py-2 mb-0"><i class="fas fa-exclamation-triangle mr-1"></i> <strong>Inspecção condicional (C2)</strong> — reinspecção necessária</div>';
+                    } else if (_nextD && _nextD < _now) {
+                        const _dOver = Math.ceil((_now - _nextD) / 86400000);
+                        _banner.innerHTML = '<div class="alert alert-danger py-2 mb-0"><i class="fas fa-clock mr-1"></i> <strong>Prazo expirado</strong> há ' + _dOver + ' dia(s) — venceu em ' + _nextD.toLocaleDateString('pt-PT') + '</div>';
+                    } else if (_nextD) {
+                        const _dLeft = Math.ceil((_nextD - _now) / 86400000);
+                        if (_dLeft <= 60) {
+                            _banner.innerHTML = '<div class="alert alert-warning py-2 mb-0"><i class="fas fa-clock mr-1"></i> A expirar em <strong>' + _dLeft + ' dia(s)</strong> — válido até ' + _nextD.toLocaleDateString('pt-PT') + '</div>';
+                        } else {
+                            _banner.innerHTML = '<div class="alert alert-success py-2 mb-0"><i class="fas fa-check-circle mr-1"></i> <strong>Inspecção válida</strong> até ' + _nextD.toLocaleDateString('pt-PT') + ' (' + _dLeft + ' dias)</div>';
+                        }
+                    } else if (_lastSt === 'passed') {
+                        _banner.innerHTML = '<div class="alert alert-success py-2 mb-0"><i class="fas fa-check-circle mr-1"></i> <strong>Aprovado</strong> — data de validade não especificada</div>';
+                    } else {
+                        _banner.innerHTML = '<div class="alert alert-secondary py-2 mb-0"><i class="fas fa-info-circle mr-1"></i> Data de validade não especificada</div>';
+                    }
+                })();
                 (function(){
                     // cleanInspText: remove [?] de relatórios OI — traduz classificações C1/C2/C3 para português
                     function cleanInspText(s) {
