@@ -6458,6 +6458,23 @@ Equipa FestLift</textarea>
             
             // Deастосовуexisteмо filtros
             filterReports();
+
+            // Belt-and-suspenders: also trigger requestInspectionBlock from history
+            const _latestRep = allReports[0];
+            if (_latestRep && (_latestRep.status === 'failed' || _latestRep.status === 'conditional')) {
+                const _inspBlock2 = document.getElementById('requestInspectionBlock');
+                const _inspAlert2 = document.getElementById('inspectionReminderAlert');
+                if (_inspBlock2 && _inspAlert2 && _inspBlock2.style.display === 'none') {
+                    if (_latestRep.status === 'failed') {
+                        _inspAlert2.className = 'alert alert-danger py-2 mb-2';
+                        _inspAlert2.innerHTML = '<i class="fas fa-times-circle mr-1"></i> <strong>Inspecção reprovada.</strong> É necessário agendar reinspecção e notificar cliente/câmara.';
+                    } else {
+                        _inspAlert2.className = 'alert alert-warning py-2 mb-2';
+                        _inspAlert2.innerHTML = '<i class="fas fa-exclamation-triangle mr-1"></i> <strong>Inspecção condicional (C2).</strong> É necessário agendar reinspecção.';
+                    }
+                    _inspBlock2.style.display = 'block';
+                }
+            }
         } catch (error) {
             console.error('❌ Erro ao carregar relatórios:', error);
             container.innerHTML = `
