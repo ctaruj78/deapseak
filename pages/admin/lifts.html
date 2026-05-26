@@ -4919,6 +4919,12 @@ Email de contacto: info@festlift.pt`;
                     ${lift.nextInspectionDate && new Date(lift.nextInspectionDate) < new Date()
                         ? '<br><span class="badge badge-danger mt-1" style="font-size:.65rem;cursor:default" title="Inspecção vencida desde ' + new Date(lift.nextInspectionDate).toLocaleDateString('pt-PT') + '">&#9888; Insp. vencida</span>'
                         : ''}
+                    ${(function() {
+                        const _st = lift.inspectionStatus;
+                        if (_st === 'failed') return '<br><span class="badge badge-danger mt-1" style="font-size:.65rem;cursor:default" title="Inspecção reprovada — reinspecção necessária">&#10060; Reinspecção</span>';
+                        if (_st === 'conditional') return '<br><span class="badge badge-warning mt-1" style="font-size:.65rem;cursor:default" title="Inspecção condicional C2 — reinspecção necessária">&#9888; Reinsp. C2</span>';
+                        return '';
+                    })()}
                 </td>
                 <td>
                     ${lift.lastMaintenance ? new Date(lift.lastMaintenance).toLocaleDateString('pt-PT') : 'Não especificado'}
@@ -5375,6 +5381,21 @@ Email de contacto: info@festlift.pt`;
                         // Certificado válido por > 60 dias: botão permanece oculto
                     }
                     // Sem data de certificado: botão permanece oculto (não forçar inspeção)
+                    // Também mostrar para inspecções reprovadas ou condicionais
+                    if (inspBlock.style.display === 'none') {
+                        window._currentInspectionLiftId = liftId;
+                        window._currentInspectionLift = lift;
+                        const _liftSt = lift.inspectionStatus || '';
+                        if (_liftSt === 'failed') {
+                            inspAlert.className = 'alert alert-danger py-2 mb-2';
+                            inspAlert.innerHTML = '<i class="fas fa-exclamation-circle mr-1"></i> <strong>Inspecção reprovada.</strong> É necessário agendar reinspecção e notificar cliente/câmara.';
+                            inspBlock.style.display = 'block';
+                        } else if (_liftSt === 'conditional') {
+                            inspAlert.className = 'alert alert-warning py-2 mb-2';
+                            inspAlert.innerHTML = '<i class="fas fa-exclamation-triangle mr-1"></i> <strong>Inspecção condicional (C2).</strong> É necessário agendar reinspecção.';
+                            inspBlock.style.display = 'block';
+                        }
+                    }
                 }
                 
                 // Relatório inspeções (показуexisteмо найсвіжіший desde історії)
