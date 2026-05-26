@@ -231,6 +231,21 @@
         .table-responsive::-webkit-scrollbar-thumb:hover {
             background: #78909c;
         }
+        /* Vertical page scrollbar — тонкий щоб не перекривати таблицю */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #b0bec5;
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #78909c;
+        }
         
         /* Modo compacto da tabela */
         #lifts-table-body tr {
