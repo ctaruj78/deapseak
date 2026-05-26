@@ -610,7 +610,8 @@
     </script>
     
     <!-- 🌍 Sistema multilingue -->
-    <script src="../../assets/js/i18n.js"></script>
+    <script src="../../assets/js/i18n.js?v=20241117"></script>
+    <script src="../../assets/js/init-i18n.js?v=20241117"></script>
     
     <!-- Security Manager -->
     <script src="../../assets/js/auth.js" onload="console.log('✅ AuthManager loaded')" onerror="console.error('❌ Erro ao carregar AuthManager')"></script>
@@ -676,37 +677,40 @@
                     console.warn('⚠️ Public API failed, trying direct endpoints...', publicError);
                 }
 
-                // Attempt 2: Direct load from DB via separate endpoints
-                const [usersRes, liftsRes, requestsRes] = await Promise.all([
-                    fetch('/api/users').catch(() => null),
-                    fetch('/api/lifts').catch(() => null),
-                    fetch('/api/requests').catch(() => null)
-                ]);
+                // Attempt 2: Direct load from DB via separate endpoints (with token)
+                if (token) {
+                    const authHeaders = { 'Authorization': `Bearer ${token}` };
+                    const [usersRes, liftsRes, requestsRes] = await Promise.all([
+                        fetch('/api/users', { headers: authHeaders }).catch(() => null),
+                        fetch('/api/lifts', { headers: authHeaders }).catch(() => null),
+                        fetch('/api/requests', { headers: authHeaders }).catch(() => null)
+                    ]);
 
-                let totalUsers = 0, totalLifts = 0, activeRequests = 0;
+                    let totalUsers = 0, totalLifts = 0, activeRequests = 0;
 
-                if (usersRes && usersRes.ok) {
-                    const usersData = await usersRes.json();
-                    totalUsers = Array.isArray(usersData) ? usersData.length : (usersData.data?.length || 0);
-                }
+                    if (usersRes && usersRes.ok) {
+                        const usersData = await usersRes.json();
+                        totalUsers = Array.isArray(usersData) ? usersData.length : (usersData.data?.length || 0);
+                    }
 
-                if (liftsRes && liftsRes.ok) {
-                    const liftsData = await liftsRes.json();
-                    totalLifts = Array.isArray(liftsData) ? liftsData.length : (liftsData.data?.length || 0);
-                }
+                    if (liftsRes && liftsRes.ok) {
+                        const liftsData = await liftsRes.json();
+                        totalLifts = Array.isArray(liftsData) ? liftsData.length : (liftsData.data?.length || 0);
+                    }
 
-                if (requestsRes && requestsRes.ok) {
-                    const requestsData = await requestsRes.json();
-                    const requests = Array.isArray(requestsData) ? requestsData : (requestsData.data || []);
-                    activeRequests = requests.filter(r => r.status !== 'completed' && r.status !== 'cancelled').length;
-                }
+                    if (requestsRes && requestsRes.ok) {
+                        const requestsData = await requestsRes.json();
+                        const requests = Array.isArray(requestsData) ? requestsData : (requestsData.data || []);
+                        activeRequests = requests.filter(r => r.status !== 'completed' && r.status !== 'cancelled').length;
+                    }
 
-                $('#totalUsers').text(totalUsers);
-                $('#totalLifts').text(totalLifts);
-                $('#activeRequests').text(activeRequests);
-                $('#totalRevenue').text('0');
-                
-                console.log('✅ Dashboard loaded from direct DB:', { totalUsers, totalLifts, activeRequests });
+                    $('#totalUsers').text(totalUsers);
+                    $('#totalLifts').text(totalLifts);
+                    $('#activeRequests').text(activeRequests);
+                    $('#totalRevenue').text('0');
+
+                    console.log('✅ Dashboard loaded from direct DB:', { totalUsers, totalLifts, activeRequests });
+                } // end if (token)
 
             } catch (error) {
                 console.error('❌ Error loading dashboard:', error);

@@ -125,6 +125,10 @@ function loadSidebarWithInit(sidebarPath = 'includes/sidebar.html') {
             // Initialize treeview after sidebar is loaded
             setTimeout(function() {
                 initSidebarTreeview();
+                // Apply translations to the newly injected sidebar HTML
+                if (window.i18n && typeof window.i18n.updatePageContent === 'function') {
+                    window.i18n.updatePageContent();
+                }
                 revealPage();
                 resolve();
             }, 100);

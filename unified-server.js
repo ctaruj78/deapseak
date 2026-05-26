@@ -1419,7 +1419,7 @@ function authenticateToken(req, res, next) {
                 message: 'Token inválido ou expirado'
             });
         }
-        console.log('✅ Token valid, user:', user.username);
+        console.log('✅ Token valid, user:', user.email || user.id);
         req.user = user;
         next();
     });
@@ -3339,17 +3339,18 @@ app.post('/api/lifts/:id/inspection-report', authenticateToken, upload.single('p
         };
         
         // Розрахунок наступної дати інспекції
-        // C1 (crítico) = failed → +90 днів для виправлення
-        // C2 (moderado) = conditional → +180 днів для виправлення
-        // C3 або без клауз (passou) = +2 роки
+        // C1/C2 (failed/conditional) → +30 днів (Decreto-Lei nº 320/2002)
+        // C3 (passed with clauses) → +90 днів
+        // Passed clean → +2 роки
         const calcNextInspection = () => {
             const d = new Date(reportData.date);
-            if (reportData.status === 'failed') {
-                d.setDate(d.getDate() + 90);    // C1: 90 days to fix
-            } else if (reportData.status === 'conditional') {
-                d.setDate(d.getDate() + 180);   // C2: 180 days for reinspection
+            const c3Cnt = parseInt(req.body.c3Count) || 0;
+            if (reportData.status === 'failed' || reportData.status === 'conditional') {
+                d.setDate(d.getDate() + 30);    // C1/C2: 30 days
+            } else if (c3Cnt > 0) {
+                d.setDate(d.getDate() + 90);    // C3: 90 days
             } else {
-                d.setMonth(d.getMonth() + 24);  // C3/passed: 2 years
+                d.setMonth(d.getMonth() + 24);  // Passed clean: 2 years
             }
             return d.toISOString();
         };
@@ -3425,11 +3426,18 @@ app.post('/api/lifts/:id/confirm-inspection-from-pdf', authenticateToken, async 
             : new Date().toISOString();
 
         // Build next inspection date
+        // C1/C2 (failed/conditional) → +30 days (Decreto-Lei nº 320/2002)
+        // C3 → +90 days; Passed clean → +2 years
         const calcNext = () => {
             const d = new Date(inspectionDateISO);
-            if (resolvedStatus === 'failed') d.setDate(d.getDate() + 90);           // C1: 90 days
-            else if (resolvedStatus === 'conditional') d.setDate(d.getDate() + 180); // C2: 180 days
-            else d.setFullYear(d.getFullYear() + 2);                                 // C3/passed: 2 years
+            const c3Cnt = Array.isArray(violations) ? violations.filter(v => v.type === 'C3').length : 0;
+            if (resolvedStatus === 'failed' || resolvedStatus === 'conditional') {
+                d.setDate(d.getDate() + 30);    // C1/C2: 30 days
+            } else if (c3Cnt > 0) {
+                d.setDate(d.getDate() + 90);    // C3: 90 days
+            } else {
+                d.setFullYear(d.getFullYear() + 2); // Passed clean: 2 years
+            }
             return d.toISOString();
         };
 
@@ -11564,12 +11572,22 @@ app.post('/api/agent/client-decide', authenticateToken, async (req, res) => {
 });
 // ─────────────────────────────────────────────────────────────────────────────
 
-server.listen(PORT, '0.0.0.0', () => {
-    console.log(`🚀 Unified сервер запущено на http://0.0.0.0:${PORT}`);
-    console.log(`📁 Статичні файли: ${__dirname}`);
-    console.log(`🔐 API endpoints: /api/*`);
-    console.log(`💬 WebSocket server: ws://0.0.0.0:${PORT}`);
-});
+// Wait for MongoDB to be ready before accepting HTTP traffic.
+// This prevents the "Cannot read properties of undefined (reading 'collection')"
+// errors that occur when a request arrives before db is initialised after restart.
+connectMongoPromise
+    .then(() => {
+        server.listen(PORT, '0.0.0.0', () => {
+            console.log(`🚀 Unified сервер запущено на http://0.0.0.0:${PORT}`);
+            console.log(`📁 Статичні файли: ${__dirname}`);
+            console.log(`🔐 API endpoints: /api/*`);
+            console.log(`💬 WebSocket server: ws://0.0.0.0:${PORT}`);
+        });
+    })
+    .catch(err => {
+        console.error('❌ Não é possível iniciar o servidor: falha na ligação ao MongoDB:', err.message);
+        process.exit(1);
+    });
 
 // ⏰ Cron diário — marcar orçamentos expirados automaticamente
 async function atualizarOrcamentosExpirados() {

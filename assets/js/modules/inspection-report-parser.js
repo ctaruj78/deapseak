@@ -524,11 +524,8 @@ class InspectionReportParser {
                 }
                 if (!isNaN(baseDate.getTime())) {
                     const next = new Date(baseDate);
-                    if (info.inspectionResult === 'failed') {
-                        next.setDate(next.getDate() + 180); // 180 days for failed
-                    } else {
-                        next.setFullYear(next.getFullYear() + 2); // 2 years for approved/unknown
-                    }
+                    // Placeholder: will be overridden in parseInspectionReport with clause info
+                    next.setFullYear(next.getFullYear() + 2); // default 2 years
                     info.nextInspectionDate = next.toLocaleDateString('pt-PT');
                     info.nextInspectionDateCalculated = true; // flag that it was calculated, not extracted
                 }
@@ -559,6 +556,30 @@ class InspectionReportParser {
 
             // 4. Визначаємо результат інспекції
             const result = this.determineInspectionResult(text, clauses);
+
+            // Recalculate nextInspectionDate based on clause types (C2=30d, C3=90d)
+            if (liftInfo.inspectionDate && liftInfo.nextInspectionDateCalculated) {
+                try {
+                    const hasC1 = clauses.some(c => c.type === 'C1');
+                    const hasC2 = clauses.some(c => c.type === 'C2');
+                    const hasC3 = clauses.some(c => c.type === 'C3');
+                    const dp = liftInfo.inspectionDate.replace(/-/g, '/').split('/');
+                    const base = dp[0].length === 4
+                        ? new Date(+dp[0], +dp[1] - 1, +dp[2])
+                        : new Date(+dp[2], +dp[1] - 1, +dp[0]);
+                    if (!isNaN(base.getTime())) {
+                        const next = new Date(base);
+                        if (hasC1 || hasC2) {
+                            next.setDate(next.getDate() + 30);   // C1/C2: 30 days
+                        } else if (hasC3) {
+                            next.setDate(next.getDate() + 90);   // C3: 90 days
+                        } else {
+                            next.setFullYear(next.getFullYear() + 2); // Approved: 2 years
+                        }
+                        liftInfo.nextInspectionDate = next.toLocaleDateString('pt-PT');
+                    }
+                } catch (e) { /* ignore */ }
+            }
 
             const parsedData = {
                 fileName: file.name,
@@ -638,8 +659,8 @@ class InspectionReportParser {
             status: status,
             statusText: statusText,
             hasImmobilization: hasC1,
-            requiresReinspection: hasC2 && !hasC2Star,
-            reinspectionDeadline: hasC2 && !hasC2Star ? '30 dias' : null
+            requiresReinspection: (hasC2 && !hasC2Star) || clauses.some(c => c.type === 'C3'),
+            reinspectionDeadline: (hasC1 || (hasC2 && !hasC2Star)) ? '30 dias' : clauses.some(c => c.type === 'C3') ? '90 dias' : null
         };
     }
 

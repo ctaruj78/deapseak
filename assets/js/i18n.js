@@ -77,6 +77,7 @@ class I18n {
                 info: 'Інформація',
                 
                 // Навігація
+                admin: 'Адміністратор',
                 dashboard: 'Дашборд',
                 lifts: 'Elevadores',
                 requests: 'Pedidoи',
@@ -84,6 +85,30 @@ class I18n {
                 analytics: 'Análise',
                 settings: 'Definições',
                 profile: 'Профіль',
+                // QR
+                qr_system: 'QR Система',
+                qr_management: 'Управління QR',
+                qr_analytics: 'Аналітика QR',
+                qr_history: 'Історія QR',
+                // Ліфти
+                lift_management: 'Управління ліфтами',
+                service_requests: 'Заявки на обслуговування',
+                lift_map: 'Карта ліфтів',
+                // Документи
+                documents: 'Документи',
+                invoices: 'Створити пропозицію',
+                orcamentos_list: 'Список пропозицій',
+                email_tmpl: 'Шаблони Email',
+                inspections: 'Інспекції',
+                report_templates: 'Шаблони звітів',
+                // Аналітика
+                unified_analytics: 'Unified Analytics',
+                ai_prediction: 'Predictive Maintenance',
+                reports: 'Звіти',
+                // AI та підтримка
+                ai_assistant: 'Асистент ШІ',
+                support: 'Підтримка',
+                tech_support: 'Технічна підтримка',
                 
                 // Definições
                 general_settings: 'Загальні налаштування',
@@ -157,6 +182,7 @@ class I18n {
                 info: 'Information',
                 
                 // Navigation
+                admin: 'Administrator',
                 dashboard: 'Dashboard',
                 lifts: 'Lifts',
                 requests: 'Requests',
@@ -164,6 +190,30 @@ class I18n {
                 analytics: 'Analytics',
                 settings: 'Settings',
                 profile: 'Profile',
+                // QR
+                qr_system: 'QR System',
+                qr_management: 'QR Management',
+                qr_analytics: 'QR Analytics',
+                qr_history: 'QR History',
+                // Lifts
+                lift_management: 'Lift Management',
+                service_requests: 'Service Requests',
+                lift_map: 'Lift Map',
+                // Documents
+                documents: 'Documents',
+                invoices: 'Create Quote',
+                orcamentos_list: 'Quotes List',
+                email_tmpl: 'Email Templates',
+                inspections: 'Inspections',
+                report_templates: 'Report Templates',
+                // Analytics
+                unified_analytics: 'Unified Analytics',
+                ai_prediction: 'Predictive Maintenance',
+                reports: 'Reports',
+                // AI & Support
+                ai_assistant: 'AI Assistant',
+                support: 'Support',
+                tech_support: 'Technical Support',
                 
                 // Settings
                 general_settings: 'General Settings',
@@ -237,6 +287,7 @@ class I18n {
                 info: 'Informação',
                 
                 // Navegação
+                admin: 'Administrador',
                 dashboard: 'Painel',
                 lifts: 'Elevadores',
                 requests: 'Solicitações',
@@ -244,6 +295,30 @@ class I18n {
                 analytics: 'Análises',
                 settings: 'Configurações',
                 profile: 'Perfil',
+                // QR
+                qr_system: 'Sistema QR',
+                qr_management: 'Gestão de QR-codes',
+                qr_analytics: 'Análise de QR-codes',
+                qr_history: 'Histórico de leituras',
+                // Elevadores
+                lift_management: 'Gestão de elevadores',
+                service_requests: 'Pedidos de manutenção',
+                lift_map: 'Mapa de elevadores',
+                // Documentos
+                documents: 'Documentos',
+                invoices: 'Criar Orçamento',
+                orcamentos_list: 'Lista de Orçamentos',
+                email_tmpl: 'Modelos de Email',
+                inspections: 'Inspeções',
+                report_templates: 'Modelos de relatórios',
+                // Análise
+                unified_analytics: 'Unified Analytics',
+                ai_prediction: 'Predictive Maintenance',
+                reports: 'Relatórios',
+                // AI e Suporte
+                ai_assistant: 'Assistente de IA',
+                support: 'Suporte',
+                tech_support: 'Suporte técnico',
                 
                 // Configurações
                 general_settings: 'Configurações Gerais',
