@@ -5354,8 +5354,8 @@ Email de contacto: info@festlift.pt`;
                             .replace(/\[C3\]/g, '🟡 A corrigir')                // C3
                             .replace(/\[D\]/g,  'ℹ️ Nota')                     // D
                             .replace(/\bViolações:\b/g, 'Não conformidades:')   // label mais claro
-                            .replace(/\bПорушення:\b/ig, 'Não conformidades:') // ucraniano legado BD
-                            .replace(/\bПорушень:\b/ig, 'Não conformidades:')      // variante ucraniana
+                            .replace(/Порушення:/ig, 'Não conformidades:') // ucraniano legado BD
+                            .replace(/Порушень:/ig, 'Não conformidades:')      // variante ucraniana
                             .replace(/Cláusulas C1:/g, '🔴 Risco elevado:')
                             .replace(/Cláusulas C2:/g, '🟠 Intervenção necessária:')
                             .replace(/Cláusulas C3:/g, '🟡 A corrigir:')
@@ -6334,7 +6334,7 @@ Email de contacto: info@festlift.pt`;
                     return s
                         .replace(/\[\?\]\s*/g, '')
                         .replace(/\[C1\]/g, '🔴 Risco elevado').replace(/\[C2\]/g, '🟠 Intervenção necessária').replace(/\[C3\]/g, '🟡 A corrigir')
-                        .replace(/\bViolações:\b/g, 'Não conformidades:').replace(/\bПорушення:\b/ig, 'Não conformidades:')
+                        .replace(/\bViolações:\b/g, 'Não conformidades:').replace(/Порушення:/ig, 'Não conformidades:')
                         .replace(/Cláusulas C1:/g, '🔴 Risco elevado:').replace(/Cláusulas C2:/g, '🟠 Intervenção necessária:').replace(/Cláusulas C3:/g, '🟡 A corrigir:')
                         .replace(/\bConclusão:\s*failed\b/g, 'Conclusão: Reprovado').replace(/\bConclusão:\s*passed\b/g, 'Conclusão: Aprovado')
                         .replace(/ {2,}/g, ' ').trim();
@@ -6562,7 +6562,7 @@ Email de contacto: info@festlift.pt`;
                     return s
                         .replace(/\[\?\]\s*/g, '')
                         .replace(/\[C1\]/g, '🔴 Risco elevado').replace(/\[C2\]/g, '🟠 Intervenção necessária').replace(/\[C3\]/g, '🟡 A corrigir')
-                        .replace(/\bViolações:\b/g, 'Não conformidades:').replace(/\bПорушення:\b/ig, 'Não conformidades:')
+                        .replace(/\bViolações:\b/g, 'Não conformidades:').replace(/Порушення:/ig, 'Não conformidades:')
                         .replace(/Cláusulas C1:/g, '🔴 Risco elevado:').replace(/Cláusulas C2:/g, '🟠 Intervenção necessária:').replace(/Cláusulas C3:/g, '🟡 A corrigir:')
                         .replace(/\bConclusão:\s*failed\b/g, 'Conclusão: Reprovado').replace(/\bConclusão:\s*passed\b/g, 'Conclusão: Aprovado')
                         .replace(/ {2,}/g, ' ').trim();
