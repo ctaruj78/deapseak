@@ -217,6 +217,20 @@
         #liftsTable {
             min-width: 1200px;
         }
+        /* Scrollbar fino para table-responsive — evita faixa branca larga */
+        .table-responsive::-webkit-scrollbar {
+            height: 5px;
+        }
+        .table-responsive::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .table-responsive::-webkit-scrollbar-thumb {
+            background: #b0bec5;
+            border-radius: 3px;
+        }
+        .table-responsive::-webkit-scrollbar-thumb:hover {
+            background: #78909c;
+        }
         
         /* Modo compacto da tabela */
         #lifts-table-body tr {
