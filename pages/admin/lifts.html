@@ -4923,6 +4923,7 @@ Email de contacto: info@festlift.pt`;
                         const _st = lift.inspectionStatus;
                         if (_st === 'failed') return '<br><span class="badge badge-danger mt-1" style="font-size:.65rem;cursor:default" title="Inspecção reprovada — reinspecção necessária">&#10060; Reinspecção</span>';
                         if (_st === 'conditional') return '<br><span class="badge badge-warning mt-1" style="font-size:.65rem;cursor:default" title="Inspecção condicional C2 — reinspecção necessária">&#9888; Reinsp. C2</span>';
+                        if (lift.nextInspectionDate && new Date(lift.nextInspectionDate) < new Date()) return '<br><span class="badge badge-danger mt-1" style="font-size:.65rem;cursor:default" title="Inspecção vencida desde ' + new Date(lift.nextInspectionDate).toLocaleDateString('pt-PT') + '">&#9888; Insp. vencida</span>';
                         return '';
                     })()}
                 </td>

@@ -3363,7 +3363,7 @@ app.post('/api/lifts/:id/inspection-report', authenticateToken, upload.single('p
                     nextInspectionDate: (req.body.nextInspectionDate && req.body.nextInspectionDate !== 'undefined')
                         ? (() => { const d = new Date(req.body.nextInspectionDate); return isNaN(d) ? calcNextInspection() : d.toISOString(); })()
                         : calcNextInspection(),
-                    inspectionStatus: reportData.status === 'passed' ? 'active' : 'needs_attention',
+                    inspectionStatus: resolvedStatus,
                     // ✅ Якщо інспекція пройдена → сертифікат діє 2 роки
                     ...(reportData.status === 'passed' ? {
                         licenseDate: reportData.date,
