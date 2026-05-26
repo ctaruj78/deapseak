@@ -3196,8 +3196,9 @@ app.post('/api/lifts/parse-inspection-pdf', authenticateToken, (req, res, next) 
             if (!dateISO) return '';
             const d = new Date(dateISO);
             if (isNaN(d)) return '';
-            if (status === 'failed') d.setDate(d.getDate() + 90);
-            else d.setFullYear(d.getFullYear() + 2); // C2/C3/conditional → 2 years
+            if (status === 'failed') d.setDate(d.getDate() + 90);          // C1: 90 days
+            else if (status === 'conditional') d.setDate(d.getDate() + 180); // C2: 180 days
+            else d.setFullYear(d.getFullYear() + 2);                         // C3/passed: 2 years
             return d.toISOString().substring(0, 10);
         })();
 
@@ -3344,9 +3345,11 @@ app.post('/api/lifts/:id/inspection-report', authenticateToken, upload.single('p
         const calcNextInspection = () => {
             const d = new Date(reportData.date);
             if (reportData.status === 'failed') {
-                d.setDate(d.getDate() + 90);   // C1: 90 днів для усунення
+                d.setDate(d.getDate() + 90);    // C1: 90 days to fix
+            } else if (reportData.status === 'conditional') {
+                d.setDate(d.getDate() + 180);   // C2: 180 days for reinspection
             } else {
-                d.setMonth(d.getMonth() + 24); // C2/C3/passed: 2 роки до наступної
+                d.setMonth(d.getMonth() + 24);  // C3/passed: 2 years
             }
             return d.toISOString();
         };
@@ -3424,8 +3427,9 @@ app.post('/api/lifts/:id/confirm-inspection-from-pdf', authenticateToken, async 
         // Build next inspection date
         const calcNext = () => {
             const d = new Date(inspectionDateISO);
-            if (resolvedStatus === 'failed') d.setDate(d.getDate() + 90);
-            else d.setFullYear(d.getFullYear() + 2); // C2/C3/conditional → 2 years
+            if (resolvedStatus === 'failed') d.setDate(d.getDate() + 90);           // C1: 90 days
+            else if (resolvedStatus === 'conditional') d.setDate(d.getDate() + 180); // C2: 180 days
+            else d.setFullYear(d.getFullYear() + 2);                                 // C3/passed: 2 years
             return d.toISOString();
         };
 

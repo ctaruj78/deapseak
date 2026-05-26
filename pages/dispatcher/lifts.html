@@ -1389,6 +1389,9 @@
                                         <div id="step4InspectionInfo" class="mb-2">
                                             <p class="text-muted small mb-0"><i class="fas fa-info-circle mr-1"></i>Guarde o elevador para ver e adicionar relatórios de inspecções</p>
                                         </div>
+                                        <button type="button" class="btn btn-outline-info btn-sm mt-2" id="addInspectionReportBtn">
+                                            <i class="fas fa-file-upload mr-1"></i> Adicionar relatório de inspecção
+                                        </button>
                                         <button type="button" class="btn btn-outline-primary btn-sm mt-2" id="btnOpenPdfParserFromTab4">
                                             <i class="fas fa-file-pdf mr-1"></i> Descarregar relatório PDF
                                         </button>
@@ -5249,14 +5252,25 @@ Equipa FestLift</textarea>
                     <span class="badge ${statusClass} text-white px-2 py-1">
                         ${statusText}
                     </span>
+                    ${lift.nextInspectionDate && new Date(lift.nextInspectionDate) < new Date()
+                        ? '<br><span class="badge badge-danger mt-1" style="font-size:.65rem;cursor:default" title="Inspecção vencida desde ' + new Date(lift.nextInspectionDate).toLocaleDateString('pt-PT') + '">&#9888; Insp. vencida</span>'
+                        : ''}
                 </td>
                 <td>
-                    ${lift.lastInspectionDate ? new Date(lift.lastInspectionDate).toLocaleDateString('pt-PT') : 
-                      lift.lastMaintenance ? new Date(lift.lastMaintenance).toLocaleDateString('pt-PT') : 'Não especificado'}
+                    ${lift.lastMaintenance ? new Date(lift.lastMaintenance).toLocaleDateString('pt-PT') : 'Não especificado'}
                 </td>
                 <td>
-                    ${lift.nextInspectionDate ? new Date(lift.nextInspectionDate).toLocaleDateString('pt-PT') : 
-                      lift.nextMaintenance ? new Date(lift.nextMaintenance).toLocaleDateString('pt-PT') : 'Não especificado'}
+                    ${(() => {
+                        const lm = lift.lastMaintenance;
+                        if (!lm) return 'Não especificado';
+                        const d = new Date(lm);
+                        d.setMonth(d.getMonth() + 1);
+                        const isOverdue = d < new Date();
+                        const dateStr = d.toLocaleDateString('pt-PT');
+                        return isOverdue
+                            ? '<span class="text-danger font-weight-bold" title="Manutenção em atraso">&#9888; ' + dateStr + '</span>'
+                            : dateStr;
+                    })()}
                 </td>
                 <td>
                     <div class="btn-group btn-group-sm" role="group">
@@ -9019,9 +9033,9 @@ Equipa FestLift</textarea>
             if (!dateVal) return;
             var d = new Date(dateVal);
             var status = $(this).val();
-            if (status === 'passed') d.setMonth(d.getMonth() + 24);
-            else if (status === 'failed') d.setMonth(d.getMonth() + 6);
-            else d.setMonth(d.getMonth() + 12);
+            if (status === 'passed')            d.setMonth(d.getMonth() + 24); // C3/passed: 2 years
+            else if (status === 'conditional')  d.setDate(d.getDate() + 180);  // C2: 180 days
+            else                                d.setDate(d.getDate() + 90);   // C1 failed: 90 days
             $('#pdfParserValidUntil').val(d.toISOString().substring(0, 10));
         });
 

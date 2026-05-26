@@ -465,3 +465,28 @@ if (typeof module !== 'undefined' && module.exports) {
 if (typeof window !== 'undefined') {
     window.auth = AuthManager;
 }
+
+// ═══════════════════════════════════════════════════════════
+// FIX: Override window.logout after all inline scripts run.
+// Many pages define their own logout() that only removes 3 keys,
+// leaving liftmanager_jwt in storage → login page shows "already
+// logged in" on next visit (the "blink" / double-attempt bug).
+// DOMContentLoaded fires AFTER all synchronous inline <script> tags,
+// so this reliably replaces any broken page-level logout() with the
+// proper AuthManager.logout() that clears all 12+ auth keys.
+// ═══════════════════════════════════════════════════════════
+if (typeof window !== 'undefined') {
+    const _overrideLogout = function () {
+        window.logout = function () {
+            if (!confirm('Tem a certeza que quer sair do sistema?')) return;
+            AuthManager.logout();
+        };
+    };
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', _overrideLogout, { once: true });
+    } else {
+        // DOM already ready (script loaded late) — override immediately
+        _overrideLogout();
+    }
+}
