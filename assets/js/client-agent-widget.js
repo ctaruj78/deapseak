@@ -75,6 +75,47 @@
         return card;
     }
 
+    // ── Build clauses detail block ───────────────────────────────────────────
+    function renderClausesBlock(problemsList) {
+        if (!problemsList || !Array.isArray(problemsList)) return '';
+
+        const violations = problemsList.filter(p => p.type === 'violations' && p.nokItems && p.nokItems.length > 0);
+        const overdue = problemsList.filter(p => p.type === 'inspection_overdue');
+        const expiring = problemsList.filter(p => p.type === 'inspection_expiring');
+
+        let html = '';
+
+        if (violations.length > 0) {
+            html += `<div class="mt-3 p-2" style="background:#fff8e1;border-left:3px solid #f39c12;border-radius:4px;">
+                <strong><i class="fas fa-clipboard-list mr-1"></i>Cláusulas com problemas detectados:</strong>
+                <ul class="mb-0 mt-1" style="font-size:13px;">`;
+            violations.forEach(v => {
+                html += `<li class="text-muted mb-1"><em>${v.address}</em> (Rel. ${v.inspectionNum || '—'})</li>`;
+                (v.nokItems || []).forEach(item => {
+                    html += `<li style="list-style:disc;margin-left:16px;"><span class="badge badge-warning mr-1">NOK</span> <code>${item.item}</code>${item.comment ? ' — ' + item.comment : ''}</li>`;
+                });
+            });
+            html += `</ul></div>`;
+        }
+
+        if (overdue.length > 0 || expiring.length > 0) {
+            const items = [...overdue, ...expiring];
+            html += `<div class="mt-2 p-2" style="background:#fdecea;border-left:3px solid #e74c3c;border-radius:4px;font-size:13px;">
+                <strong><i class="fas fa-exclamation-triangle mr-1 text-danger"></i>Inspeções em atraso / a vencer:</strong>
+                <ul class="mb-0 mt-1">`;
+            items.forEach(p => {
+                const days = p.daysLeft;
+                const label = p.type === 'inspection_overdue'
+                    ? `Vencida há <strong>${days} dias</strong>`
+                    : `Vence em <strong>${days} dias</strong>`;
+                html += `<li>${label} — ${p.address}</li>`;
+            });
+            html += `</ul><p class="mb-0 mt-1 text-muted" style="font-size:12px;">O orçamento incluirá a realização da inspeção periódica obrigatória.</p></div>`;
+        }
+
+        return html;
+    }
+
     // ── Render alert content ─────────────────────────────────────────────────
     function renderAlert(scan) {
         const body = document.getElementById('agent-body');
@@ -90,10 +131,13 @@
         const notifId = scan.notifId;
         if (badge) { badge.textContent = `${scan.problems} alerta(s)`; badge.className = 'badge badge-danger'; }
 
+        const clausesHtml = renderClausesBlock(scan.problemsList);
+
         body.innerHTML = `
             <div id="agent-alert-content">
                 <div class="mb-3" style="line-height:1.7">${md(scan.summary)}</div>
-                <div id="agent-action-buttons" class="d-flex gap-2 flex-wrap" style="gap:8px;">
+                ${clausesHtml}
+                <div id="agent-action-buttons" class="d-flex gap-2 flex-wrap" style="gap:8px;margin-top:12px;">
                     <button class="btn btn-success btn-sm" onclick="clientAgentDecide('${notifId}','yes')">
                         <i class="fas fa-thumbs-up mr-1"></i>Sim, quero orçamento
                     </button>

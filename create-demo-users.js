@@ -85,6 +85,16 @@ async function createDemoUsers() {
         client = await MongoClient.connect(MONGODB_URI);
         const db = client.db(DB_NAME);
         
+        // 🛡️ ЗАХИСТ: не видаляти якщо є реальні клієнти (не тільки demo акаунти)
+        const realClientCount = await db.collection('users').countDocuments({
+            email: { $nin: ['info@festlift.pt', 'dispatcher@festlift.pt', 'tech1@festlift.pt', 'tech2@festlift.pt', 'client@festlift.pt'] }
+        });
+        if (realClientCount > 0) {
+            console.error(`❌ НЕБЕЗПЕЧНО: В БД є ${realClientCount} реальних користувачів! Запуск заборонено.`);
+            console.error('   Цей скрипт видаляє ВСІХ користувачів. Якщо ви впевнені — видаліть перевірку вручну.');
+            process.exit(1);
+        }
+
         console.log('🗑️  Очищення старої колекції users...');
         await db.collection('users').deleteMany({});
         

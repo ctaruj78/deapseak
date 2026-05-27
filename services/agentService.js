@@ -421,7 +421,7 @@ class AgentService {
                     const insp = recentInspection[0];
                     const nokItems = this._extractNokItems(insp.checklist || {});
                     if (nokItems.length > 0) {
-                        problems.push({ liftId: lift._id, address, type: 'violations', severity: nokItems.length >= 3 ? 'high' : 'medium', count: nokItems.length, inspectionNum: insp.numero, msg: `**${nokItems.length} problema(s)** detectado(s) na última inspeção — ${address} (Rel. ${insp.numero})` });
+                        problems.push({ liftId: lift._id, address, type: 'violations', severity: nokItems.length >= 3 ? 'high' : 'medium', count: nokItems.length, nokItems, inspectionNum: insp.numero, msg: `**${nokItems.length} problema(s)** detectado(s) na última inspeção — ${address} (Rel. ${insp.numero})` });
                     }
                 }
 
@@ -472,7 +472,7 @@ class AgentService {
                 notifId = inserted.insertedId;
             }
 
-            return { summary, notifId: notifId?.toString(), problems: sorted.length, hasExisting: !!existing };
+            return { summary, notifId: notifId?.toString(), problems: sorted.length, problemsList: sorted, hasExisting: !!existing };
         } catch (err) {
             console.error('🤖 scanClientLiftsForProblems error:', err.message);
             return null;

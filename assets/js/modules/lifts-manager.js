@@ -213,11 +213,11 @@ class LiftsManager {
                         </div>
                         <div class="p-3">
                             ${lift.municipalNumber ? `<p><strong><i class="fas fa-hashtag mr-2"></i>N.º Municipal:</strong> <span class="badge badge-dark">${lift.municipalNumber}</span></p>` : ''}
-                            <p><strong><i class="fas fa-map-marker-alt mr-2"></i>Localização:</strong> ${location}</p>
+                            <p><strong><i class="fas fa-map-marker-alt mr-2"></i>Morada:</strong> ${location}</p>
                             <p><strong><i class="fas fa-tag mr-2"></i>Tipo:</strong> ${typeText}</p>
-                            <p><strong><i class="fas fa-wrench mr-2"></i>Última manutenção:</strong> ${this.formatDate(lift.lastInspectionDate || lift.lastMaintenance)}</p>
-                            <p><strong><i class="fas fa-calendar-alt mr-2"></i>Próxima manutenção:</strong> ${this.formatDate(lift.nextInspectionDate || lift.nextMaintenance)}</p>
-                            ${lift.capacity ? `<p><strong><i class="fas fa-users mr-2"></i>Capacidade:</strong> ${lift.capacity} ${lift.type === 'passenger' ? 'pessoas' : 'kg'}</p>` : ''}
+                            <p><strong><i class="fas fa-calendar-check mr-2"></i>Última inspeção:</strong> ${this.formatDate(lift.lastInspectionDate || lift.lastMaintenance)}</p>
+                            <p><strong><i class="fas fa-calendar-alt mr-2"></i>Próxima inspeção:</strong> ${this.formatDate(lift.nextInspectionDate || lift.nextMaintenance)}</p>
+                            ${lift.capacity ? `<p><strong><i class="fas fa-weight-hanging mr-2"></i>Capacidade:</strong> ${lift.type === 'passenger' ? Math.floor(lift.capacity / 75) + ' pessoas / ' : ''}${lift.capacity} kg</p>` : ''}
                         </div>
                     </div>
                     <div class="card-footer">
@@ -279,34 +279,33 @@ class LiftsManager {
     }
 
     formatLocation(lift) {
-        // Якщо location - рядок, повертаємо його
+        // Prioritize address object — has full street data
+        if (lift.address && typeof lift.address === 'object') {
+            const parts = [];
+            if (lift.address.street) parts.push(lift.address.street);
+            if (lift.address.zipCode) parts.push(lift.address.zipCode);
+            if (lift.address.city) parts.push(lift.address.city);
+            if (parts.length > 0) return parts.join(', ');
+        }
+
+        // String address
+        if (typeof lift.address === 'string' && lift.address) {
+            return lift.address;
+        }
+
+        // Fall back to location string
         if (typeof lift.location === 'string' && lift.location) {
             return lift.location;
         }
-        
-        // Якщо location - об'єкт, форматуємо його
+
+        // Location object (GeoJSON — usually only city)
         if (lift.location && typeof lift.location === 'object') {
             const parts = [];
             if (lift.location.street) parts.push(lift.location.street);
             if (lift.location.city) parts.push(lift.location.city);
-            if (lift.location.postalCode) parts.push(lift.location.postalCode);
             if (parts.length > 0) return parts.join(', ');
         }
-        
-        // Перевіряємо address як альтернативу
-        if (lift.address) {
-            if (typeof lift.address === 'string') {
-                return lift.address;
-            }
-            if (typeof lift.address === 'object') {
-                const parts = [];
-                if (lift.address.street) parts.push(lift.address.street);
-                if (lift.address.city) parts.push(lift.address.city);
-                if (lift.address.postalCode) parts.push(lift.address.postalCode);
-                if (parts.length > 0) return parts.join(', ');
-            }
-        }
-        
+
         return 'Endereço não especificado';
     }
 

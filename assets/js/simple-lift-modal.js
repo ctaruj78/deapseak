@@ -452,7 +452,7 @@ class SimpleLiftModal {
                                 <div class="col-md-6">
                                     <h6>Технічна інформація</h6>
                                     <p><strong>Tipo:</strong> ${lift.type || 'Não especificado'}</p>
-                                    <p><strong>Capacidade:</strong> ${lift.capacity || 'Não especificado'} pessoas</p>
+                                    <p><strong>Capacidade:</strong> ${lift.capacity ? `${Math.floor(lift.capacity / 75)} pessoas / ${lift.capacity} kg` : 'Não especificado'}</p>
                                     <p><strong>Velocidade:</strong> ${lift.speed || 'Não especificado'} m/s</p>
                                     <p><strong>Остання інспекція:</strong> ${lift.lastInspection || 'Não especificado'}</p>
                                     <p><strong>Наступна інспекція:</strong> ${lift.nextInspection || 'Não especificado'}</p>
