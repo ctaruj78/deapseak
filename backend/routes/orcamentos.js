@@ -847,352 +847,149 @@ router.post('/:id/enviar', authenticate, authorizeRoles('admin', 'dispatcher'), 
         
         console.log(`📧 Enviando orçamento ${orcamento.numero} para ${emailDestino}`);
         
-        // ✅ Usar Brevo API (замість SMTP)
-        const brevoKey = process.env.BREVO_API_KEY || '';
-        const brevoKeyValid = brevoKey && !brevoKey.includes('YOUR-API-KEY') && brevoKey.startsWith('xkeysib-');
-        if (!brevoKeyValid) {
-            console.warn('⚠️ BREVO_API_KEY não configurado ou é um placeholder');
-            
-            // Modo desenvolvimento - apenas logging
-            orcamento.status = 'enviado';
-            orcamento.dataEnvio = new Date();
-            orcamento.emailsEnviados.push({
-                para: emailDestino,
-                assunto: `Orçamento ${orcamento.numero} - FestLift - Elevadores e Serviços, Lda.`,
-                data: new Date(),
-                sucesso: false,
-                erro: 'BREVO_API_KEY não configurado'
+        // ✅ Enviar via SMTP (Brevo SMTP relay)
+        const nodemailer = require('nodemailer');
+        const transporter = nodemailer.createTransport({
+            host: process.env.SMTP_HOST || 'smtp-relay.brevo.com',
+            port: parseInt(process.env.SMTP_PORT) || 587,
+            secure: false,
+            auth: {
+                user: process.env.SMTP_USER,
+                pass: process.env.SMTP_PASS
+            }
+        });
+
+        // Parse EMAIL_FROM para sender correto
+        let senderName = 'FestLift - Elevadores e Serviços, Lda.';
+        let senderEmail = 'info@festlift.pt';
+        if (process.env.EMAIL_FROM) {
+            const fromMatch = process.env.EMAIL_FROM.match(/^(.+?)\s*<(.+?)>$/);
+            if (fromMatch) {
+                senderName = fromMatch[1].trim();
+                senderEmail = fromMatch[2].trim();
+            } else {
+                senderEmail = process.env.EMAIL_FROM;
+            }
+        }
+        const smtpFrom = process.env.SMTP_FROM || process.env.EMAIL_FROM || process.env.SMTP_USER;
+        const smtpFromEmail = (smtpFrom || '').match(/<([^>]+)>/)?.[1] || smtpFrom;
+        const adminBcc = process.env.EMAIL_BCC || smtpFromEmail || null;
+
+        const validadeDate = new Date(orcamento.validadeAte);
+        const validadeFormatted = validadeDate.toLocaleDateString('pt-PT', {
+            day: '2-digit', month: '2-digit', year: 'numeric'
+        });
+
+        // Nota: corpo simples — detalhes completos constam APENAS no PDF em anexo.
+        // Evita duplicação no Apple Mail / macOS Mail.
+        const emailHTML = `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #ddd; border-radius: 8px; overflow: hidden;">
+                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 28px 30px; text-align: center;">
+                    <h1 style="margin: 0; font-size: 22px; letter-spacing: 1px;">FestLift</h1>
+                    <p style="margin: 6px 0 0 0; font-size: 13px; opacity: 0.9;">Elevadores e Serviços, Lda.</p>
+                </div>
+                <div style="padding: 32px 30px;">
+                    <p style="margin: 0 0 16px 0; font-size: 15px; color: #333;">
+                        Caro(a) <strong>${orcamento.cliente.nome}</strong>,
+                    </p>
+                    <p style="margin: 0 0 16px 0; font-size: 15px; color: #333; line-height: 1.6;">
+                        Enviamos em anexo o <strong>Orçamento ${orcamento.numero}</strong>,
+                        no valor de <strong style="color: #667eea;">€${orcamento.total.toFixed(2)}</strong> (IVA incluído),
+                        válido até <strong>${validadeFormatted}</strong>.
+                    </p>
+                    <p style="margin: 0 0 24px 0; font-size: 15px; color: #333; line-height: 1.6;">
+                        Para qualquer questão ou esclarecimento, estamos inteiramente ao dispor.
+                    </p>
+                    <div style="background: #f0f4ff; border-left: 4px solid #667eea; padding: 14px 18px; border-radius: 0 6px 6px 0; margin-bottom: 24px;">
+                        <p style="margin: 0; font-size: 13px; color: #555;">
+                            📎 O orçamento detalhado encontra-se no ficheiro PDF em anexo.
+                        </p>
+                    </div>
+                    ${orcamento.fotos && orcamento.fotos.length > 0 ? `
+                    <div style="margin-bottom: 24px;">
+                        <p style="font-size: 13px; color: #555; margin-bottom: 10px;"><strong>📷 Documentação fotográfica:</strong></p>
+                        <div style="display:flex; flex-wrap:wrap; gap:8px;">
+                            ${orcamento.fotos.map(fotoPath => {
+                                const absUrl = req.protocol + '://' + req.get('host') + (fotoPath.startsWith('/') ? fotoPath : '/' + fotoPath);
+                                return `<img src="${absUrl}" style="width:160px;height:120px;object-fit:cover;border-radius:6px;border:1px solid #ddd;" alt="Foto">`;
+                            }).join('')}
+                        </div>
+                    </div>` : ''}
+                    <p style="margin: 0; font-size: 15px; color: #333;">
+                        Com os melhores cumprimentos,<br>
+                        <strong>FestLift - Elevadores e Serviços, Lda.</strong>
+                    </p>
+                </div>
+                <div style="background: #f8f9fa; padding: 18px 30px; text-align: center; border-top: 1px solid #e0e0e0;">
+                    <p style="margin: 0; font-size: 12px; color: #888;">
+                        info@festlift.pt &nbsp;|&nbsp; +351 214 190 863<br>
+                        <small>Este email foi gerado automaticamente — por favor não responda diretamente.</small>
+                    </p>
+                </div>
+            </div>
+        `;
+
+        console.log('📄 Gerando PDF do orçamento...');
+        const pdfBuffer = await gerarPDFOrcamento(orcamento);
+        console.log(`✅ PDF gerado: ${pdfBuffer.length} bytes`);
+
+        try {
+            await transporter.sendMail({
+                from: smtpFrom,
+                to: emailDestino,
+                bcc: adminBcc && adminBcc.toLowerCase() !== emailDestino.toLowerCase() ? adminBcc : undefined,
+                subject: `Orçamento ${orcamento.numero} - FestLift - Elevadores e Serviços, Lda.`,
+                html: emailHTML,
+                attachments: [{
+                    filename: `Orcamento_${orcamento.numero}.pdf`,
+                    content: pdfBuffer
+                }]
             });
-            await orcamento.save();
-            
+
+            console.log(`✅ Orçamento ${orcamento.numero} enviado via SMTP para ${emailDestino}`);
+
+            await Orcamento.updateOne(
+                { _id: orcamento._id },
+                {
+                    $set: { status: 'enviado', dataEnvio: new Date() },
+                    $push: {
+                        emailsEnviados: {
+                            para: emailDestino,
+                            assunto: `Orçamento ${orcamento.numero} - FestLift - Elevadores e Serviços, Lda.`,
+                            data: new Date(),
+                            sucesso: true
+                        }
+                    }
+                }
+            );
+
             return res.json({
                 success: true,
-                message: 'Orçamento marcado como enviado (modo desenvolvimento)',
-                data: orcamento,
-                warning: 'Email não foi enviado - API não configurada'
-            });
-        }
-        
-        try {
-            // Gerar token de acesso público para o orçamento
-            const viewToken = generatePublicAccessToken(orcamento._id);
-            const publicPdfUrl = buildPublicPdfUrl(req, orcamento._id, viewToken);
-            
-            console.log(`🔐 Token gerado para ID ${orcamento._id}: ${viewToken}`);
-            
-            // Usar Brevo API v3
-            const brevo = require('@getbrevo/brevo');
-            const apiInstance = new brevo.TransactionalEmailsApi();
-            
-            // Configurar API Key
-            apiInstance.setApiKey(
-                brevo.TransactionalEmailsApiApiKeys.apiKey,
-                process.env.BREVO_API_KEY
-            );
-            
-            // Parse EMAIL_FROM для правильного sender
-            let senderName = 'FestLift - Elevadores e Serviços, Lda.';
-            let senderEmail = 'info@festlift.pt';
-            
-            if (process.env.EMAIL_FROM) {
-                const fromMatch = process.env.EMAIL_FROM.match(/^(.+?)\s*<(.+?)>$/);
-                if (fromMatch) {
-                    senderName = fromMatch[1].trim();
-                    senderEmail = fromMatch[2].trim();
-                } else {
-                    senderEmail = process.env.EMAIL_FROM;
-                }
-            }
-
-            const validadeDate = new Date(orcamento.validadeAte);
-            const validadeFormatted = validadeDate.toLocaleDateString('pt-PT', { 
-                day: '2-digit', 
-                month: '2-digit', 
-                year: 'numeric' 
-            });
-
-            // Nota: O corpo do email é intencionalmente simples (carta de apresentação).
-            // Os detalhes completos do orçamento constam APENAS no PDF em anexo.
-            // Isto evita que clientes com Apple Mail / macOS vejam o conteúdo duplicado
-            // (o macOS Mail renderiza o HTML inline e mostra também o PDF em anexo,
-            //  dando a impressão de dois documentos idênticos).
-            const mailOptions = {
-                from: process.env.EMAIL_FROM || process.env.SMTP_USER,
-                to: orcamento.cliente.email,
-                subject: `Orçamento ${orcamento.numero} - FestLift - Elevadores e Serviços, Lda.`,
-                text: `Caro(a) ${orcamento.cliente.nome},\n\nEm anexo encontra o Orçamento ${orcamento.numero} no valor de €${orcamento.total.toFixed(2)} (IVA incluído), válido até ${validadeFormatted}.\n\nPara qualquer esclarecimento estamos ao dispor.\n\nCom os melhores cumprimentos,\nFestLift - Elevadores e Serviços, Lda.\ninfo@festlift.pt | +351 214 190 863`,
-                html: `
-                    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #ddd; border-radius: 8px; overflow: hidden;">
-                        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 28px 30px; text-align: center;">
-                            <h1 style="margin: 0; font-size: 22px; letter-spacing: 1px;">FestLift</h1>
-                            <p style="margin: 6px 0 0 0; font-size: 13px; opacity: 0.9;">Elevadores e Serviços, Lda.</p>
-                        </div>
-
-                        <div style="padding: 32px 30px;">
-                            <p style="margin: 0 0 16px 0; font-size: 15px; color: #333;">
-                                Caro(a) <strong>${orcamento.cliente.nome}</strong>,
-                            </p>
-                            <p style="margin: 0 0 16px 0; font-size: 15px; color: #333; line-height: 1.6;">
-                                Enviamos em anexo o <strong>Orçamento ${orcamento.numero}</strong>,
-                                no valor de <strong style="color: #667eea;">€${orcamento.total.toFixed(2)}</strong> (IVA incluído),
-                                válido até <strong>${validadeFormatted}</strong>.
-                            </p>
-                            <p style="margin: 0 0 24px 0; font-size: 15px; color: #333; line-height: 1.6;">
-                                Para qualquer questão ou esclarecimento, estamos inteiramente ao dispor.
-                            </p>
-
-                            <div style="background: #f0f4ff; border-left: 4px solid #667eea; padding: 14px 18px; border-radius: 0 6px 6px 0; margin-bottom: 24px;">
-                                <p style="margin: 0; font-size: 13px; color: #555;">
-                                    📎 O orçamento detalhado encontra-se no ficheiro PDF em anexo.
-                                </p>
-                            </div>
-
-                            ${orcamento.fotos && orcamento.fotos.length > 0 ? `
-                            <div style="margin-bottom: 24px;">
-                                <p style="font-size: 13px; color: #555; margin-bottom: 10px;"><strong>📷 Documentação fotográfica:</strong></p>
-                                <div style="display:flex; flex-wrap:wrap; gap:8px;">
-                                    ${orcamento.fotos.map(fotoPath => {
-                                        const absUrl = `${req.protocol}://${req.get('host')}${fotoPath.startsWith('/') ? fotoPath : '/' + fotoPath}`;
-                                        return `<img src="${absUrl}" style="width:160px;height:120px;object-fit:cover;border-radius:6px;border:1px solid #ddd;" alt="Foto">`;
-                                    }).join('')}
-                                </div>
-                            </div>` : ''}
-
-                            <p style="margin: 0; font-size: 15px; color: #333;">
-                                Com os melhores cumprimentos,<br>
-                                <strong>FestLift - Elevadores e Serviços, Lda.</strong>
-                            </p>
-                        </div>
-
-                        <div style="background: #f8f9fa; padding: 18px 30px; text-align: center; border-top: 1px solid #e0e0e0;">
-                            <p style="margin: 0; font-size: 12px; color: #888;">
-                                info@festlift.pt &nbsp;|&nbsp; +351 214 190 863<br>
-                                <small>Este email foi gerado automaticamente — por favor não responda diretamente.</small>
-                            </p>
-                        </div>
-                    </div>
-                `
-            };
-
-            console.log('📄 Gerando PDF do orçamento...');
-            const pdfBuffer = await gerarPDFOrcamento(orcamento);
-            console.log(`✅ PDF gerado: ${pdfBuffer.length} bytes`);
-
-            // Відправити через Brevo API
-            const sendSmtpEmail = new brevo.SendSmtpEmail();
-            sendSmtpEmail.sender = { 
-                name: senderName, 
-                email: senderEmail 
-            };
-            sendSmtpEmail.to = [{ 
-                email: emailDestino, // Використати emailDestino замість orcamento.cliente.email
-                name: orcamento.cliente.nome
-            }];
-            // BCC на адресу відправника (info@festlift.pt) щоб отримувати копію кожного листа
-            const adminBcc = process.env.EMAIL_BCC || senderEmail;
-            if (adminBcc && adminBcc.toLowerCase() !== emailDestino.toLowerCase()) {
-                sendSmtpEmail.bcc = [{ email: adminBcc, name: senderName }];
-            }
-            sendSmtpEmail.subject = mailOptions.subject;
-            sendSmtpEmail.htmlContent = mailOptions.html;
-            
-            // Додати PDF як вкладення
-            sendSmtpEmail.attachment = [{
-                name: `Orcamento_${orcamento.numero}.pdf`,
-                content: pdfBuffer.toString('base64')
-            }];
-            
-            console.log('📧 Відправка через Brevo API:');
-            console.log('   From:', JSON.stringify(sendSmtpEmail.sender));
-            console.log('   To:', JSON.stringify(sendSmtpEmail.to));
-            if (sendSmtpEmail.bcc) console.log('   BCC:', JSON.stringify(sendSmtpEmail.bcc));
-            console.log('   Subject:', sendSmtpEmail.subject);
-            console.log('   Attachment:', `Orcamento_${orcamento.numero}.pdf (${pdfBuffer.length} bytes)`);
-
-            const result = await apiInstance.sendTransacEmail(sendSmtpEmail);
-            
-            console.log(`✅ Orçamento ${orcamento.numero} enviado via Brevo API para ${emailDestino}`);
-            console.log('   Message ID:', result.messageId);
-            
-            // Atualizar status do orçamento (usando updateOne щоб уникнути валідації)
-            await Orcamento.updateOne(
-                { _id: orcamento._id },
-                {
-                    $set: {
-                        status: 'enviado',
-                        dataEnvio: new Date()
-                    },
-                    $push: {
-                        emailsEnviados: {
-                            para: emailDestino,
-                            assunto: `Orçamento ${orcamento.numero} - FestLift - Elevadores e Serviços, Lda.`,
-                            data: new Date(),
-                            sucesso: true,
-                            messageId: result.messageId
-                        }
-                    }
-                }
-            );
-            
-            res.json({
-                success: true,
-                message: 'Orçamento enviado com sucesso via Brevo API',
+                message: 'Orçamento enviado com sucesso via SMTP',
                 data: orcamento
             });
-        } catch (apiError) {
-            const brevoMsg = apiError.response?.body?.message || apiError.response?.text || apiError.message;
-            const brevoCode = apiError.response?.body?.code || String(apiError.status || '');
-            console.error(`❌ Erro Brevo API [${brevoCode}]: ${brevoMsg}`);
-            if (apiError.status === 401 || brevoCode === 'unauthorized') {
-                console.error('   ➡️ API key inválida — tentando SMTP como fallback...');
-                
-                // Fallback: tentar enviar via nodemailer SMTP
-                try {
-                    const nodemailer = require('nodemailer');
-                    const transporter = nodemailer.createTransport({
-                        host: process.env.SMTP_HOST || 'smtp-relay.brevo.com',
-                        port: parseInt(process.env.SMTP_PORT) || 587,
-                        secure: false,
-                        auth: {
-                            user: process.env.SMTP_USER,
-                            pass: process.env.SMTP_PASS
-                        }
-                    });
-                    
-                    const pdfBuffer = await gerarPDFOrcamento(orcamento);
-                    console.log(`📄 PDF gerado para SMTP: ${pdfBuffer.length} bytes`);
-                    const validadeDate = new Date(orcamento.validadeAte);
-                    const validadeFormatted = validadeDate.toLocaleDateString('pt-PT', { 
-                        day: '2-digit', month: '2-digit', year: 'numeric' 
-                    });
-                    
-                    // Corpo simples — detalhes completos constam APENAS no PDF em anexo.
-                    // Evita duplicação no Apple Mail / macOS Mail.
-                    const emailHTML = `
-                        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #ddd; border-radius: 8px; overflow: hidden;">
-                            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 28px 30px; text-align: center;">
-                                <h1 style="margin: 0; font-size: 22px; letter-spacing: 1px;">FestLift</h1>
-                                <p style="margin: 6px 0 0 0; font-size: 13px; opacity: 0.9;">Elevadores e Serviços, Lda.</p>
-                            </div>
+        } catch (smtpError) {
+            console.error('❌ Erro SMTP:', smtpError.message);
 
-                            <div style="padding: 32px 30px;">
-                                <p style="margin: 0 0 16px 0; font-size: 15px; color: #333;">
-                                    Caro(a) <strong>${orcamento.cliente.nome}</strong>,
-                                </p>
-                                <p style="margin: 0 0 16px 0; font-size: 15px; color: #333; line-height: 1.6;">
-                                    Enviamos em anexo o <strong>Orçamento ${orcamento.numero}</strong>,
-                                    no valor de <strong style="color: #667eea;">€${orcamento.total.toFixed(2)}</strong> (IVA incluído),
-                                    válido até <strong>${validadeFormatted}</strong>.
-                                </p>
-                                <p style="margin: 0 0 24px 0; font-size: 15px; color: #333; line-height: 1.6;">
-                                    Para qualquer questão ou esclarecimento, estamos inteiramente ao dispor.
-                                </p>
-
-                                <div style="background: #f0f4ff; border-left: 4px solid #667eea; padding: 14px 18px; border-radius: 0 6px 6px 0; margin-bottom: 24px;">
-                                    <p style="margin: 0; font-size: 13px; color: #555;">
-                                        📎 O orçamento detalhado encontra-se no ficheiro PDF em anexo.
-                                    </p>
-                                </div>
-
-                                <p style="margin: 0; font-size: 15px; color: #333;">
-                                    Com os melhores cumprimentos,<br>
-                                    <strong>FestLift - Elevadores e Serviços, Lda.</strong>
-                                </p>
-                            </div>
-
-                            <div style="background: #f8f9fa; padding: 18px 30px; text-align: center; border-top: 1px solid #e0e0e0;">
-                                <p style="margin: 0; font-size: 12px; color: #888;">
-                                    info@festlift.pt &nbsp;|&nbsp; +351 214 190 863<br>
-                                    <small>Este email foi gerado automaticamente — por favor não responda diretamente.</small>
-                                </p>
-                            </div>
-                        </div>
-                    `;
-                    
-                    const smtpFrom = process.env.SMTP_FROM || process.env.SMTP_USER;
-                    const smtpFromEmail = (smtpFrom || '').match(/<([^>]+)>/)?.[1] || smtpFrom;
-                    const smtpBcc = process.env.EMAIL_BCC || smtpFromEmail || null;
-                    await transporter.sendMail({
-                        from: smtpFrom,
-                        to: emailDestino,
-                        bcc: smtpBcc && smtpBcc.toLowerCase() !== emailDestino.toLowerCase() ? smtpBcc : undefined,
-                        subject: `Orçamento ${orcamento.numero} - FestLift - Elevadores e Serviços, Lda.`,
-                        html: emailHTML,
-                        attachments: [{
-                            filename: `Orcamento_${orcamento.numero}.pdf`,
-                            content: pdfBuffer
-                        }]
-                    });
-                    
-                    console.log(`✅ Email enviado via SMTP fallback com PDF anexado (${pdfBuffer.length} bytes)`);
-                    await Orcamento.updateOne(
-                        { _id: orcamento._id },
-                        {
-                            $set: { status: 'enviado', dataEnvio: new Date() },
-                            $push: {
-                                emailsEnviados: {
-                                    para: emailDestino,
-                                    assunto: `Orçamento ${orcamento.numero} - FestLift`,
-                                    data: new Date(),
-                                    sucesso: true
-                                }
-                            }
-                        }
-                    );
-                    
-                    return res.json({
-                        success: true,
-                        message: 'Orçamento enviado com sucesso via SMTP',
-                        data: orcamento
-                    });
-                } catch (smtpError) {
-                    console.error('❌ SMTP fallback também falhou:', smtpError.message);
-                    // Se SMTP também falhou, marcar como enviado em dev mode
-                    await Orcamento.updateOne(
-                        { _id: orcamento._id },
-                        {
-                            $set: { status: 'enviado', dataEnvio: new Date() },
-                            $push: {
-                                emailsEnviados: {
-                                    para: emailDestino,
-                                    assunto: `Orçamento ${orcamento.numero} - FestLift`,
-                                    data: new Date(),
-                                    sucesso: false,
-                                    erro: `API (401) e SMTP falharam: ${smtpError.message}`
-                                }
-                            }
-                        }
-                    );
-                    return res.json({
-                        success: true,
-                        message: 'Orçamento marcado como enviado (modo desenvolvimento)',
-                        data: orcamento,
-                        warning: `API e SMTP falharam. Configure credenciais válidas.`
-                    });
-                }
-            }
-            console.error('   Detalhes completos:', apiError.response?.body || apiError.message);
-            
-            // Salvar log de erro (usando updateOne щоб уникнути валідації)
             await Orcamento.updateOne(
                 { _id: orcamento._id },
                 {
                     $push: {
                         emailsEnviados: {
                             para: emailDestino,
-                            assunto: `Orçamento ${orcamento.numero} - FestLift - Elevadores e Serviços, Lda.`,
+                            assunto: `Orçamento ${orcamento.numero} - FestLift`,
                             data: new Date(),
                             sucesso: false,
-                            erro: apiError.message
+                            erro: smtpError.message
                         }
                     }
                 }
             );
-            
+
             return res.status(500).json({
                 success: false,
-                message: `Erro ao enviar email: ${apiError.message}`,
-                error: apiError.response?.body || apiError.message
+                message: `Erro ao enviar email via SMTP: ${smtpError.message}`,
+                error: smtpError.message
             });
         }
     } catch (error) {

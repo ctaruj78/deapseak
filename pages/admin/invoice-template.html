@@ -1221,7 +1221,7 @@
                                  localStorage.getItem('jwt_token') ||
                                  localStorage.getItem('token') || 
                                  localStorage.getItem('lm_token');
-                    const validToken = token && token !== 'null' && token !== 'undefined' && token.trim() !== '';
+                    const validToken = (token && token !== 'null' && token !== 'undefined' && token.trim() !== '') ? token : null;
                     
                     console.log('🔑 Sending email with token:', validToken ? 'EXISTS' : 'NOT FOUND');
                     console.log('🔑 Token keys in localStorage:', Object.keys(localStorage).filter(k => k.includes('token') || k.includes('jwt')));
@@ -1420,7 +1420,7 @@
                              localStorage.getItem('lm_token');
                 
                 // Rejeitar tokens inválidos ("null", "undefined", strings vazias)
-                const validToken = token && token !== 'null' && token !== 'undefined' && token.trim() !== '';
+                const validToken = (token && token !== 'null' && token !== 'undefined' && token.trim() !== '') ? token : null;
                 
                 console.log('🔑 Token encontrado:', validToken ? 'SIM' : 'NÃO');
                 
