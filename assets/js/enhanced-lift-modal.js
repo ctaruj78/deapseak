@@ -9,6 +9,7 @@ class EnhancedLiftModal {
         this.editAddress = {}; // Зберігає city/country при редагуванні (не відображаються в полях)
         this.editMunicipalNumber = ''; // Зберігає municipalNumber при редагуванні (DOM може бути перебудований)
         this.coordsManuallyEdited = false; // true тільки коли користувач або geocode явно встановив координати
+        this.locationRequested = false; // true тільки коли користувач явно натиснув кнопку геолокації
         this.init();
     }
 
@@ -35,6 +36,7 @@ class EnhancedLiftModal {
         
         // Кнопка поточної локації
         $(document).off('click', '#enhancedBtnCurrentLocation').on('click', '#enhancedBtnCurrentLocation', () => {
+            this.locationRequested = true;
             this.getCurrentLocation();
         });
         
@@ -246,11 +248,15 @@ class EnhancedLiftModal {
                 const { latitude, longitude } = position.coords;
                 this.setCoordinates(latitude, longitude);
                 this.showMessage('Coordenadas obtidas com sucesso!', 'success');
+                this.locationRequested = false;
                 btn.html(originalHtml).prop('disabled', false);
             },
             (error) => {
                 console.error('Enhanced geolocation error:', error);
-                this.showMessage('Não foi possível obter coordenadas: ' + error.message, 'error');
+                if (this.locationRequested) {
+                    this.showMessage('Não foi possível obter coordenadas: ' + error.message, 'error');
+                }
+                this.locationRequested = false;
                 btn.html(originalHtml).prop('disabled', false);
             },
             { timeout: 10000, enableHighAccuracy: true }
