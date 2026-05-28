@@ -714,6 +714,7 @@ class EnhancedLiftModal {
                 manufacturer: liftData.brand,
                 model: liftData.model,
                 type: liftData.type || 'passenger',
+                liftSubtype: liftData.liftSubtype || 'public',
                 capacity: liftData.capacity,
                 speed: liftData.speed,
                 floors: liftData.floorsCount || 5,
