@@ -8,6 +8,7 @@ class EnhancedLiftModal {
         this.detectedCountry = null; // Для автоматичної детекції країни за поштовим кодом
         this.editAddress = {}; // Зберігає city/country при редагуванні (не відображаються в полях)
         this.editMunicipalNumber = ''; // Зберігає municipalNumber при редагуванні (DOM може бути перебудований)
+        this.originalLiftSubtype = 'public';
         this.coordsManuallyEdited = false; // true тільки коли користувач або geocode явно встановив координати
         this.locationRequested = false; // true тільки коли користувач явно натиснув кнопку геолокації
         this.init();
@@ -402,25 +403,35 @@ class EnhancedLiftModal {
     }
 
     collectFormData() {
+        const selectedSubtype = $('#enhancedLiftSubtype').val() || 'public';
         // Збираємо дані з полів з префіксом enhanced
         const data = {
             id: $('#enhancedLiftId').val() || 'lift_' + Date.now(),
             municipalNumber: (() => {
-                // В режимі редагування першим пріоритетом — збережений номер (DOM перебудовується eLiftUpdateRows)
-                if (this.currentLiftId && this.editMunicipalNumber) return this.editMunicipalNumber;
                 // Try static field
-                const v = $('#enhancedMunicipalNumber').val();
+                const v = ($('#enhancedMunicipalNumber').val() || '').trim();
+                if (selectedSubtype !== 'public') {
+                    // При конвертації старого public ліфта в home/platform залишаємо поле порожнім,
+                    // щоб backend згенерував внутрішній номер автоматично.
+                    if (this.currentLiftId && this.originalLiftSubtype === 'public') {
+                        return '';
+                    }
+                    if (v) return v;
+                    return this.editMunicipalNumber || '';
+                }
+                // В режимі редагування public-пріоритетом лишається збережений номер
+                if (this.currentLiftId && this.editMunicipalNumber) return this.editMunicipalNumber;
                 if (v) return v;
                 // Try dynamic container (new tab design)
                 const dyn = document.querySelector('#eLiftRowsContainer input[data-elift-idx="1"]');
-                if (dyn && dyn.value) return dyn.value;
+                if (dyn && dyn.value) return dyn.value.trim();
                 return '';
             })(),
             serialNumber: $('#enhancedSerialNumber').val() || '',
             brand: $('#enhancedLiftBrand').val() || '',
             model: $('#enhancedLiftModel').val() || '',
             type: $('#enhancedLiftType').val() || 'passenger',
-            liftSubtype: $('#enhancedLiftSubtype').val() || 'public',
+            liftSubtype: selectedSubtype,
             capacity: parseInt($('#enhancedLiftCapacity').val()) || 8,
             speed: parseFloat($('#enhancedLiftSpeed').val()) || 1.0,
             installationYear: parseInt($('#enhancedInstallationYear').val()) || new Date().getFullYear(),
@@ -486,7 +497,7 @@ class EnhancedLiftModal {
 
         // В режимі редагування гарантуємо, що поле муніципального номера не порожнє
         // (eLiftUpdateRows може перебудувати DOM і тимчасово очистити значення)
-        if (isEdit && this.editMunicipalNumber) {
+        if (isEdit && this.editMunicipalNumber && needsMunicipalNumber) {
             const munField = $('#enhancedMunicipalNumber');
             console.log('🔧 Edit mode: ensuring municipalNumber field =', this.editMunicipalNumber);
             munField.val(this.editMunicipalNumber);
@@ -501,7 +512,7 @@ class EnhancedLiftModal {
             
             // Обов'язкові поля (тільки ті що позначені * в новому дизайні)
             // В режимі редагування муніципальний номер вже є в editMunicipalNumber — не перевіряємо DOM
-            if (isEdit && this.editMunicipalNumber) {
+            if (isEdit && this.editMunicipalNumber && needsMunicipalNumber) {
                 // Позначаємо поле як валідне без перевірки (значення відомо з editMunicipalNumber)
                 $('#enhancedMunicipalNumber').removeClass('is-invalid').addClass('is-valid');
             } else if (needsMunicipalNumber) {
@@ -939,6 +950,7 @@ class EnhancedLiftModal {
         this.currentCoords = null;
         this.editAddress = {};
         this.editMunicipalNumber = '';
+        this.originalLiftSubtype = 'public';
         this.coordsManuallyEdited = false;
         // Reset subtype selector to public
         if (typeof window.selectLiftSubtype === 'function') window.selectLiftSubtype('public');
@@ -958,6 +970,7 @@ class EnhancedLiftModal {
         // Встановлюємо currentLiftId перед заповненням форми
         this.currentLiftId = liftData.id || liftData._id;
         this.editMunicipalNumber = liftData.municipalNumber || '';
+        this.originalLiftSubtype = liftData.liftSubtype || (liftData.municipalNumber ? 'public' : 'home');
         // Встановлюємо editAddress з даних ліфта (city/country потрібні при збереженні)
         const _addrObj = liftData.address || {};
         this.editAddress = {
@@ -977,7 +990,7 @@ class EnhancedLiftModal {
         $('#enhancedMunicipalNumber').val(liftData.municipalNumber || '');
         // В режимі редагування муніципальний номер — незмінний унікальний ключ реєстру
         const munInput = document.getElementById('enhancedMunicipalNumber');
-        if (munInput) {
+        if (munInput && this.originalLiftSubtype === 'public') {
             munInput.readOnly = true;
             munInput.style.backgroundColor = '#f5f5f5';
             munInput.style.cursor = 'not-allowed';
@@ -991,10 +1004,12 @@ class EnhancedLiftModal {
             const el = document.getElementById('enhancedMunicipalNumber');
             if (el) {
                 if (_munNum) el.value = _munNum;
-                el.readOnly = true;
-                el.style.backgroundColor = '#f5f5f5';
-                el.style.cursor = 'not-allowed';
-                el.title = 'Número municipal не можна змінити після реєстрації ліфта';
+                if (this.originalLiftSubtype === 'public') {
+                    el.readOnly = true;
+                    el.style.backgroundColor = '#f5f5f5';
+                    el.style.cursor = 'not-allowed';
+                    el.title = 'Número municipal не можна змінити після реєстрації ліфта';
+                }
             }
         };
         $('#enhancedLiftModal').one('shown.bs.modal', _restoreMun);

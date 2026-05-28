@@ -759,7 +759,7 @@
                                 </div>
                                 <div class="info-content">
                                     <div class="info-label">Data de registo</div>
-                                    <div class="info-value">15 de janeiro de 2023</div>
+                                    <div class="info-value" id="profileRegisteredAt">-</div>
                                 </div>
                             </div>
                             <div class="info-item">
@@ -768,7 +768,7 @@
                                 </div>
                                 <div class="info-content">
                                     <div class="info-label">Último entrada</div>
-                                    <div class="info-value">hoje, 14:30</div>
+                                    <div class="info-value" id="profileLastLogin">-</div>
                                 </div>
                             </div>
                             <div class="info-item">
@@ -777,7 +777,7 @@
                                 </div>
                                 <div class="info-content">
                                     <div class="info-label">Cidade</div>
-                                    <div class="info-value">Lisboa, Portugal</div>
+                                    <div class="info-value" id="profileCity">-</div>
                                 </div>
                             </div>
                         </div>
@@ -859,7 +859,7 @@
                                 </div>
                                 <div class="info-content">
                                     <div class="info-label">Versão do sistema</div>
-                                    <div class="info-value">FestLift v2.1.4</div>
+                                    <div class="info-value" id="systemVersionValue">-</div>
                                 </div>
                             </div>
                             <div class="info-item">
@@ -868,7 +868,7 @@
                                 </div>
                                 <div class="info-content">
                                     <div class="info-label">Base de dados</div>
-                                    <div class="info-value">PostgreSQL 14.2</div>
+                                    <div class="info-value" id="databaseValue">-</div>
                                 </div>
                             </div>
                             <div class="info-item">
@@ -877,7 +877,7 @@
                                 </div>
                                 <div class="info-content">
                                     <div class="info-label">Utilização de disco</div>
-                                    <div class="info-value">2.3 GB / 10 GB (23%)</div>
+                                    <div class="info-value" id="diskUsageValue">-</div>
                                 </div>
                             </div>
                             <div class="info-item">
@@ -886,7 +886,7 @@
                                 </div>
                                 <div class="info-content">
                                     <div class="info-label">Memória RAM</div>
-                                    <div class="info-value">4 GB / 8 GB (50%)</div>
+                                    <div class="info-value" id="memoryUsageValue">-</div>
                                 </div>
                             </div>
                         </div>
@@ -912,14 +912,10 @@
                             </div>
                             
                             <h5 class="mt-4">Cópias de segurança recentes</h5>
-                            <div class="list-group">
+                            <div class="list-group" id="recentBackupsList">
                                 <div class="list-group-item d-flex justify-content-between align-items-center">
-                                    Cópia de segurança completa
-                                    <small class="text-muted">hoje, 02:00</small>
-                                </div>
-                                <div class="list-group-item d-flex justify-content-between align-items-center">
-                                    Cópia incremental
-                                    <small class="text-muted">ontem, 02:00</small>
+                                    A carregar...
+                                    <small class="text-muted"><i class="fas fa-spinner fa-spin"></i></small>
                                 </div>
                             </div>
                         </div>
@@ -935,26 +931,11 @@
                         </div>
                         <div class="col-md-4">
                             <h5>Recentes ações</h5>
-                            <div class="timeline">
+                            <div class="timeline" id="recentActivityTimeline">
                                 <div class="timeline-item">
-                                    <div class="timeline-date">hoje, 14:30</div>
-                                    <div>Criado novo do utilizador</div>
-                                    <small class="text-muted">Utilizador: operator@example.com</small>
-                                </div>
-                                <div class="timeline-item">
-                                    <div class="timeline-date">hoje, 12:15</div>
-                                    <div>Atualizado configurações do sistema</div>
-                                    <small class="text-muted">Alterado: fuso horário</small>
-                                </div>
-                                <div class="timeline-item">
-                                    <div class="timeline-date">ontem, 16:45</div>
-                                    <div>Exportados relatório</div>
-                                    <small class="text-muted">Tipo: relatório mensal</small>
-                                </div>
-                                <div class="timeline-item">
-                                    <div class="timeline-date">ontem, 09:20</div>
-                                    <div>QR-code criado</div>
-                                    <small class="text-muted">Elevador: Edifício nº15, apto. 23</small>
+                                    <div class="timeline-date">A carregar...</div>
+                                    <div>Eventos recentes</div>
+                                    <small class="text-muted"><i class="fas fa-spinner fa-spin"></i></small>
                                 </div>
                             </div>
                         </div>
@@ -1068,15 +1049,15 @@
 <script src="/assets/js/modules/ai-assistant.js"></script>
     
     <script>
-        // Initialize activity chart
+        // Initialize activity chart (real data loaded later)
         const ctx = document.getElementById('activityChart').getContext('2d');
         const activityChart = new Chart(ctx, {
             type: 'line',
             data: {
                 labels: ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'],
                 datasets: [{
-                    label: 'Atividade de utilizadores',
-                    data: [65, 59, 80, 81, 56, 55, 40],
+                    label: 'Pedidos criados',
+                    data: [0, 0, 0, 0, 0, 0, 0],
                     borderColor: '#667eea',
                     backgroundColor: 'rgba(102, 126, 234, 0.1)',
                     tension: 0.4
@@ -1127,14 +1108,45 @@
             
             // 🔥 LIGADO À API /api/users/me
             await loadAdminProfile();
+            await loadAdminSystemOverview();
+            await loadRealActivity();
         });
+
+        function authToken() {
+            return localStorage.getItem('liftmanager_jwt') ||
+                   sessionStorage.getItem('liftmanager_jwt') ||
+                   localStorage.getItem('token') ||
+                   localStorage.getItem('jwt_token');
+        }
+
+        function formatBytes(bytes) {
+            const b = Number(bytes) || 0;
+            if (b <= 0) return '0 B';
+            const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+            let val = b;
+            let idx = 0;
+            while (val >= 1024 && idx < units.length - 1) {
+                val /= 1024;
+                idx++;
+            }
+            const fixed = val >= 10 || idx === 0 ? 0 : 1;
+            return `${val.toFixed(fixed)} ${units[idx]}`;
+        }
+
+        function formatUptime(seconds) {
+            const s = Math.max(0, Number(seconds) || 0);
+            const d = Math.floor(s / 86400);
+            const h = Math.floor((s % 86400) / 3600);
+            const m = Math.floor((s % 3600) / 60);
+            if (d > 0) return `${d}d ${h}h`;
+            if (h > 0) return `${h}h ${m}m`;
+            return `${m}m`;
+        }
         
         // A carregar perfil do administrador desde API
         async function loadAdminProfile() {
             try {
-                const token = localStorage.getItem('token') || 
-                             localStorage.getItem('liftmanager_jwt') ||
-                             localStorage.getItem('jwt_token');
+                const token = authToken();
                 
                 if (!token) {
                     console.warn('⚠️ No token, using localStorage fallback');
@@ -1151,20 +1163,20 @@
                     
                     console.log('✅ Admin profile loaded:', userData);
                     
-                    // Atualizamos o UI
-                    if (userData.firstName) {
-                        $('#adminName').text(`${userData.firstName} ${userData.lastName || ''}`);
-                        $('.user-panel .info a').text(`${userData.firstName} ${userData.lastName || ''}`);
-                    }
-                    if (userData.email) {
-                        $('#adminEmail').text(userData.email);
-                    }
-                    if (userData.phone) {
-                        $('#adminPhone').text(userData.phone);
-                    }
-                    if (userData.role) {
-                        $('#adminRole').text(userData.role);
-                    }
+                    const fullName = [userData.firstName, userData.lastName].filter(Boolean).join(' ').trim() || userData.username || 'Administrador';
+                    $('#adminName').text(fullName);
+                    $('.user-panel .info a').text(fullName);
+
+                    $('#firstName').val(userData.firstName || '');
+                    $('#lastName').val(userData.lastName || '');
+                    $('#email').val(userData.email || '');
+                    $('#phone').val(userData.phone || '');
+
+                    const regAt = userData.createdAt ? new Date(userData.createdAt) : null;
+                    const lastLogin = userData.lastLogin ? new Date(userData.lastLogin) : null;
+                    document.getElementById('profileRegisteredAt').textContent = regAt ? regAt.toLocaleDateString('pt-PT') : '-';
+                    document.getElementById('profileLastLogin').textContent = lastLogin ? lastLogin.toLocaleString('pt-PT') : '-';
+                    document.getElementById('profileCity').textContent = (userData.city || userData.location || userData.country) || '-';
                     
                     // Guardamos em localStorage
                     localStorage.setItem('userData', JSON.stringify(userData));
@@ -1173,6 +1185,123 @@
                 }
             } catch (error) {
                 console.error('❌ Error loading profile:', error);
+            }
+        }
+
+        async function loadAdminSystemOverview() {
+            try {
+                const token = authToken();
+                if (!token) return;
+
+                const response = await fetch('/api/admin/system-overview', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+
+                const result = await response.json();
+                const data = result.data || {};
+                const counts = data.counts || {};
+                const system = data.system || {};
+                const backups = Array.isArray(data.backups) ? data.backups : [];
+
+                document.getElementById('totalUsers').textContent = counts.totalUsers ?? 0;
+                document.getElementById('activeLifts').textContent = counts.activeLifts ?? 0;
+                document.getElementById('qrCodes').textContent = counts.qrCodes ?? 0;
+                document.getElementById('systemUptime').textContent = formatUptime(system.uptimeSeconds || 0);
+
+                document.getElementById('systemVersionValue').textContent = `FestLift v${system.appVersion || '-'}`;
+                document.getElementById('databaseValue').textContent = `${system.dbEngine || 'DB'} ${system.dbVersion || ''}`.trim();
+
+                if (system.disk && system.disk.totalBytes) {
+                    document.getElementById('diskUsageValue').textContent =
+                        `${formatBytes(system.disk.usedBytes)} / ${formatBytes(system.disk.totalBytes)} (${system.disk.usagePercent || 0}%)`;
+                } else {
+                    document.getElementById('diskUsageValue').textContent = 'N/A';
+                }
+
+                if (system.memory && system.memory.totalBytes) {
+                    document.getElementById('memoryUsageValue').textContent =
+                        `${formatBytes(system.memory.usedBytes)} / ${formatBytes(system.memory.totalBytes)} (${system.memory.usagePercent || 0}%)`;
+                } else {
+                    document.getElementById('memoryUsageValue').textContent = 'N/A';
+                }
+
+                const list = document.getElementById('recentBackupsList');
+                if (!list) return;
+
+                if (!backups.length) {
+                    list.innerHTML = '<div class="list-group-item d-flex justify-content-between align-items-center">Sem cópias recentes<small class="text-muted">-</small></div>';
+                    return;
+                }
+
+                list.innerHTML = backups.map(b => {
+                    const when = b.modifiedAt ? new Date(b.modifiedAt).toLocaleString('pt-PT') : '-';
+                    return `<div class="list-group-item d-flex justify-content-between align-items-center">${b.name || 'backup'}<small class="text-muted">${when}</small></div>`;
+                }).join('');
+            } catch (error) {
+                console.error('❌ Error loading system overview:', error);
+            }
+        }
+
+        async function loadRealActivity() {
+            try {
+                const token = authToken();
+                if (!token) return;
+
+                const response = await fetch('/api/requests?limit=200', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+                const result = await response.json();
+                const payload = result.data || result;
+                const requests = Array.isArray(payload) ? payload : (Array.isArray(payload.requests) ? payload.requests : []);
+
+                const now = new Date();
+                const labels = [];
+                const counts = [];
+                const weekDays = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
+                for (let i = 6; i >= 0; i--) {
+                    const d = new Date(now);
+                    d.setDate(now.getDate() - i);
+                    labels.push(weekDays[d.getDay()]);
+
+                    const dayStart = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+                    const dayEnd = dayStart + 24 * 60 * 60 * 1000;
+                    const c = requests.filter(r => {
+                        const t = new Date(r.createdAt || r.date || r.updatedAt || 0).getTime();
+                        return t >= dayStart && t < dayEnd;
+                    }).length;
+                    counts.push(c);
+                }
+
+                activityChart.data.labels = labels;
+                activityChart.data.datasets[0].data = counts;
+                activityChart.update();
+
+                const timeline = document.getElementById('recentActivityTimeline');
+                if (!timeline) return;
+
+                const recent = [...requests]
+                    .sort((a, b) => new Date(b.createdAt || b.updatedAt || 0) - new Date(a.createdAt || a.updatedAt || 0))
+                    .slice(0, 6);
+
+                if (!recent.length) {
+                    timeline.innerHTML = '<div class="timeline-item"><div class="timeline-date">-</div><div>Sem atividade recente</div><small class="text-muted">Não há pedidos recentes</small></div>';
+                    return;
+                }
+
+                timeline.innerHTML = recent.map(r => {
+                    const when = new Date(r.createdAt || r.updatedAt || Date.now()).toLocaleString('pt-PT');
+                    const ref = r.number || r.requestNumber || r._id || 'pedido';
+                    const status = r.status || 'novo';
+                    return `<div class="timeline-item"><div class="timeline-date">${when}</div><div>Pedido ${ref}</div><small class="text-muted">Estado: ${status}</small></div>`;
+                }).join('');
+            } catch (error) {
+                console.error('❌ Error loading real activity:', error);
             }
         }
     </script>

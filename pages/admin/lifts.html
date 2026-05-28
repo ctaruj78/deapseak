@@ -1895,7 +1895,37 @@
             // Make municipal number required/optional
             var inp = document.getElementById('enhancedMunicipalNumber') ||
                       document.querySelector('#eLiftRowsContainer input[data-elift-idx="1"]');
-            if (inp) inp.required = isPublic;
+            if (inp) {
+                inp.required = isPublic;
+                var modalState = window.enhancedLiftModal;
+                var isEdit = !!(modalState && modalState.currentLiftId);
+                var originalSubtype = modalState && modalState.originalLiftSubtype ? modalState.originalLiftSubtype : 'public';
+                var originalMunicipalNumber = modalState && modalState.editMunicipalNumber ? modalState.editMunicipalNumber : '';
+
+                if (isPublic) {
+                    if (isEdit && originalMunicipalNumber) {
+                        inp.value = originalMunicipalNumber;
+                        inp.readOnly = true;
+                        inp.style.backgroundColor = '#f5f5f5';
+                        inp.style.cursor = 'not-allowed';
+                        inp.title = 'O número municipal não pode ser alterado após o registo do elevador';
+                    } else {
+                        inp.readOnly = false;
+                        inp.style.backgroundColor = '';
+                        inp.style.cursor = '';
+                        inp.title = '';
+                    }
+                } else {
+                    if (isEdit && originalSubtype === 'public' && inp.value === originalMunicipalNumber) {
+                        inp.value = '';
+                    }
+                    inp.readOnly = false;
+                    inp.style.backgroundColor = '';
+                    inp.style.cursor = '';
+                    inp.title = 'ID interno será gerado automaticamente ao guardar';
+                    inp.classList.remove('is-invalid', 'is-valid');
+                }
+            }
         };
 
         window.eLiftUpdateRows = function(count) {

@@ -17,10 +17,14 @@ const { MongoClient } = require('mongodb');
 const mongoose = require('mongoose');
 const multer = require('multer');
 const fs = require('fs').promises;
+const os = require('os');
 const https = require('https');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
+const { exec } = require('child_process');
+const { promisify } = require('util');
 const mongoSanitize = require('express-mongo-sanitize'); // 🔐 NoSQL injection protection
+const execAsync = promisify(exec);
 
 // ═══════════════════════════════════════════════════════════
 // 🔐 VALIDATE ENVIRONMENT VARIABLES (fail fast on startup)
@@ -428,6 +432,111 @@ app.get('/api/health', async (req, res) => {
             mongodb: 'error',
             error: error.message
         });
+    }
+});
+
+// Real system metrics for admin profile page
+app.get('/api/admin/system-overview', authenticateToken, async (req, res) => {
+    try {
+        if (req.user.role !== 'admin' && req.user.role !== 'dispatcher') {
+            return res.status(403).json({ success: false, message: 'Sem permissões' });
+        }
+
+        if (!db) {
+            return res.status(503).json({ success: false, message: 'Base de dados indisponível' });
+        }
+
+        const [usersCount, activeLifts, qrCodesCount] = await Promise.all([
+            db.collection('users').countDocuments(),
+            db.collection('lifts').countDocuments({ status: { $in: ['active', 'operational'] } }),
+            db.collection('lifts').countDocuments()
+        ]);
+
+        let dbVersion = 'N/A';
+        try {
+            const buildInfo = await db.admin().command({ buildInfo: 1 });
+            dbVersion = buildInfo.version || 'N/A';
+        } catch (_) {}
+
+        const uptimeSeconds = Math.floor(process.uptime());
+
+        let disk = null;
+        try {
+            const { stdout } = await execAsync('df -k /');
+            const lines = stdout.trim().split('\n');
+            if (lines.length >= 2) {
+                const cols = lines[1].trim().split(/\s+/);
+                const totalKb = Number(cols[1]) || 0;
+                const usedKb = Number(cols[2]) || 0;
+                const pctRaw = cols[4] || '0%';
+                disk = {
+                    totalBytes: totalKb * 1024,
+                    usedBytes: usedKb * 1024,
+                    usagePercent: Number(String(pctRaw).replace('%', '')) || 0
+                };
+            }
+        } catch (_) {}
+
+        const totalMem = os.totalmem();
+        const freeMem = os.freemem();
+        const usedMem = Math.max(0, totalMem - freeMem);
+        const memory = {
+            totalBytes: totalMem,
+            usedBytes: usedMem,
+            usagePercent: totalMem > 0 ? Math.round((usedMem / totalMem) * 100) : 0
+        };
+
+        const backupRoots = [
+            path.join(__dirname, 'backups'),
+            path.join(__dirname, 'backup')
+        ];
+        const recentBackups = [];
+
+        for (const root of backupRoots) {
+            let entries = [];
+            try {
+                entries = await fs.readdir(root, { withFileTypes: true });
+            } catch (_) {
+                continue;
+            }
+            for (const ent of entries) {
+                if (!ent.isFile()) continue;
+                const fullPath = path.join(root, ent.name);
+                try {
+                    const st = await fs.stat(fullPath);
+                    recentBackups.push({
+                        name: ent.name,
+                        sizeBytes: st.size,
+                        modifiedAt: st.mtime
+                    });
+                } catch (_) {}
+            }
+        }
+
+        recentBackups.sort((a, b) => new Date(b.modifiedAt) - new Date(a.modifiedAt));
+
+        res.json({
+            success: true,
+            data: {
+                counts: {
+                    totalUsers: usersCount,
+                    activeLifts,
+                    qrCodes: qrCodesCount
+                },
+                system: {
+                    appVersion: '2.1.0',
+                    dbEngine: 'MongoDB',
+                    dbVersion,
+                    uptimeSeconds,
+                    disk,
+                    memory
+                },
+                backups: recentBackups.slice(0, 5)
+            }
+        });
+    } catch (error) {
+        console.error('❌ Erro em /api/admin/system-overview:', error);
+        res.status(500).json({ success: false, message: 'Erro do servidor' });
     }
 });
 
@@ -2738,6 +2847,28 @@ app.put('/api/lifts/:id', authenticateToken, async (req, res) => {
             contactPerson: req.body.contactPerson,
             address: req.body.address
         });
+
+        const updateValidationErrors = [];
+        const liftSubtype = req.body.liftSubtype || lift.liftSubtype || 'public';
+        const municipalNumber = (req.body.municipalNumber || '').trim();
+
+        if (liftSubtype === 'public') {
+            if (!municipalNumber) {
+                updateValidationErrors.push('Муніципальний номер обов\'язковий');
+            }
+        } else if (!municipalNumber) {
+            const prefix = liftSubtype === 'home' ? 'HOME' : 'PLAT';
+            req.body.municipalNumber = `${prefix}-${Date.now().toString(36).toUpperCase()}`;
+            console.log(`🏠 Auto-generated internal ID on update for ${liftSubtype}: ${req.body.municipalNumber}`);
+        }
+
+        if (updateValidationErrors.length > 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'Erro de validação',
+                errors: updateValidationErrors
+            });
+        }
         
         // 🌍 ГЕОКОДУВАННЯ: якщо адреса змінилась, перераховуємо координати
         let updateData = {

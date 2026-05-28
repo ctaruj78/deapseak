@@ -16,7 +16,7 @@ class SettingsPage {
             console.log('✅ Settings page initialized');
         } catch (error) {
             console.error('❌ Failed to initialize settings page:', error);
-            this.showError('Не вдалося завантажити налаштування');
+            this.showError('Não foi possível carregar as definições');
         }
     }
 
@@ -47,10 +47,10 @@ class SettingsPage {
 
     renderGeneralSettings() {
         const currentLang = (this.settings && this.settings.language)
-            || localStorage.getItem('app_language') || 'uk';
+            || localStorage.getItem('app_language') || 'pt';
 
         const languages = [
-            { code: 'uk', flag: '🇺🇦', name: 'Українська' },
+            { code: 'uk', flag: '🇺🇦', name: 'Ucraniano' },
             { code: 'en', flag: '🇬🇧', name: 'English' },
             { code: 'pt', flag: '🇵🇹', name: 'Português' }
         ];
@@ -59,24 +59,24 @@ class SettingsPage {
             <div class="col-md-6">
                 <div class="card card-primary">
                     <div class="card-header">
-                        <h3 class="card-title"><i class="fas fa-globe"></i> Загальні налаштування</h3>
+                        <h3 class="card-title"><i class="fas fa-globe"></i> Definições gerais</h3>
                     </div>
                     <div class="card-body">
                         <div class="form-group">
-                            <label><i class="fas fa-language mr-1"></i> Мова інтерфейсу</label>
+                            <label><i class="fas fa-language mr-1"></i> Idioma da interface</label>
                             <select class="form-control" id="language-select">
                                 ${languages.map(lang =>
                                     '<option value="' + lang.code + '"' + (currentLang === lang.code ? ' selected' : '') + '>' +
                                     lang.flag + ' ' + lang.name + '</option>'
                                 ).join('')}
                             </select>
-                            <small class="form-text text-muted">Переклад додано частково. Повноцінний переклад буде додано пізніше.</small>
+                            <small class="form-text text-muted">A tradução está disponível parcialmente. A versão completa será adicionada em breve.</small>
                         </div>
                         <div class="form-group">
-                            <label><i class="fas fa-sun mr-1"></i> Тема</label>
+                            <label><i class="fas fa-sun mr-1"></i> Tema</label>
                             <div class="alert alert-light border mb-0 py-2">
                                 <i class="fas fa-check-circle text-success mr-1"></i>
-                                <strong>Світла тема</strong> &mdash; єдина доступна тема
+                                <strong>Tema claro</strong> &mdash; único tema disponível
                             </div>
                         </div>
                     </div>
@@ -103,24 +103,24 @@ class SettingsPage {
                         <div class="custom-control custom-switch mb-3">
                             <input type="checkbox" class="custom-control-input" id="notif-push"
                                 ${notif.push !== false ? 'checked' : ''}>
-                            <label class="custom-control-label" for="notif-push">Push сповіщення</label>
+                            <label class="custom-control-label" for="notif-push">Notificações push</label>
                         </div>
                         <hr>
-                        <h6 class="text-muted">Tipoи сповіщень:</h6>
+                        <h6 class="text-muted">Tipos de notificações:</h6>
                         <div class="custom-control custom-switch mb-2">
                             <input type="checkbox" class="custom-control-input" id="notif-new-request"
                                 ${notif.newRequest !== false ? 'checked' : ''}>
-                            <label class="custom-control-label" for="notif-new-request">Novo запит</label>
+                            <label class="custom-control-label" for="notif-new-request">Novo pedido</label>
                         </div>
                         <div class="custom-control custom-switch mb-2">
                             <input type="checkbox" class="custom-control-input" id="notif-status-change"
                                 ${notif.statusChange !== false ? 'checked' : ''}>
-                            <label class="custom-control-label" for="notif-status-change">Зміна статусу</label>
+                            <label class="custom-control-label" for="notif-status-change">Alteração de estado</label>
                         </div>
                         <div class="custom-control custom-switch mb-2">
                             <input type="checkbox" class="custom-control-input" id="notif-assignment"
                                 ${notif.assignment !== false ? 'checked' : ''}>
-                            <label class="custom-control-label" for="notif-assignment">Призначення</label>
+                            <label class="custom-control-label" for="notif-assignment">Atribuição</label>
                         </div>
                     </div>
                 </div>
@@ -134,16 +134,16 @@ class SettingsPage {
             <div class="col-md-6">
                 <div class="card card-warning">
                     <div class="card-header">
-                        <h3 class="card-title"><i class="fas fa-server"></i> Системні налаштування</h3>
+                        <h3 class="card-title"><i class="fas fa-server"></i> Definições do sistema</h3>
                     </div>
                     <div class="card-body">
                         <div class="form-group">
-                            <label for="sessionTimeout">Таймаут сесії (хвилини)</label>
+                            <label for="sessionTimeout">Tempo limite de sessão (minutos)</label>
                             <input type="number" class="form-control" id="sessionTimeout"
                                 value="${s.sessionTimeout || 60}" min="5" max="480">
                         </div>
                         <div class="form-group">
-                            <label for="apiRateLimit">Ліміт API запитів (за хвилину)</label>
+                            <label for="apiRateLimit">Limite de pedidos API (por minuto)</label>
                             <input type="number" class="form-control" id="apiRateLimit"
                                 value="${s.apiRateLimit || 100}" min="10" max="1000">
                         </div>
@@ -151,7 +151,7 @@ class SettingsPage {
                             <input type="checkbox" class="custom-control-input" id="maintenanceMode"
                                 ${s.maintenanceMode ? 'checked' : ''}>
                             <label class="custom-control-label" for="maintenanceMode">
-                                Режим обслуговування
+                                Modo de manutenção
                             </label>
                         </div>
                     </div>
