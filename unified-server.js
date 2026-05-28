@@ -1667,6 +1667,8 @@ app.post('/api/pdf/upload', authenticateToken, upload.single('pdfReport'), async
                     metadata: result.metadata || {},
                     violations: violations,
                     stats: stats,
+                    certType: result.certType || result.analysis?.certType || null,
+                    validUntil: result.validUntil || result.analysis?.validUntil || null,
                     conclusion: result.conclusion || {
                         approved: result.passed || false,
                         text: result.passed ? 'Aprovado' : 'Reprovado'

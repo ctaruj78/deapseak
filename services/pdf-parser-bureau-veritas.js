@@ -531,6 +531,21 @@ function extractViolations(text) {
         withC2Star: text.match(/Aprovad[oa]\s+com\s+cl[áa]usulas\s+C2\*/i),
         withImmobilization: text.match(/Reprovad[oa]\s+com\s+Imobiliza[çc][ãa]o/i)
     };
+
+    // Inferência contextual para relatórios CML sem marcador explícito C1/C2/C3 na tabela.
+    // Ex.: "CLÁUSULAS(S) CUJO CUMPRIMENTO DEVERÁ SER IMEDIATO ... PRORROGADO ATÉ 180 DIAS" = C2.
+    let contextualClass = null;
+    const normalizedSearchContext = text
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '');
+    if (/cumprimento\s+devera\s+ser\s+imediato/.test(normalizedSearchContext) && /prorrogado\s+ate\s+180\s+dias/.test(normalizedSearchContext)) {
+        contextualClass = 'C2';
+    } else if (/imobilizacao\s+imediata|reprovad[oa]\s+com\s+imobilizacao/.test(normalizedSearchContext)) {
+        contextualClass = 'C1';
+    } else if (/aprovad[oa][\s\S]{0,120}clausulas\s+c3/.test(normalizedSearchContext)) {
+        contextualClass = 'C3';
+    }
     
     console.log('  Status checks:', statusChecks);
     
@@ -681,6 +696,100 @@ function extractViolations(text) {
     }
     
     console.log(`  📊 Format 3 (CML) found: ${count} violations`);
+
+    // Formato 3B: CML compactado/OCR com "ArtigoDescrição" seguido de artigo em linha separada.
+    // Exemplo real:
+    //   ArtigoDescrição
+    //   5.5
+    //   O meio de comunicação...
+    //   16.º-2
+    //   Com o contrapeso...
+    const format3b = /(?:^|\n)(?:ART\.?\s*)?(\d+(?:(?:[\.,]\d+){0,8}|(?:\.?[º°](?:[-–]\d+)?)))\.?\s*\n([A-ZÀ-Ú][\s\S]{20,600}?)(?=\n(?:ART\.?\s*)?\d+(?:(?:[\.,]\d+){0,8}|(?:\.?[º°](?:[-–]\d+)?))\.?\s*\n|\nNOTAS?:|Lisboa,|Porto,|O\s+DIRETOR|www\.|Página|$)/gim;
+    let count3b = 0;
+    console.log('  🔍 Searching for violations with Format 3B (CML compact article+description)...');
+
+    while ((match = format3b.exec(searchText)) !== null) {
+        let article = match[1]
+            .trim()
+            .replace(/[º°]/g, '')
+            .replace(/,/g, '.')
+            .replace(/\.+/g, '.')
+            .replace(/\.$/, '');
+
+        let description = match[2].trim().replace(/\s+/g, ' ');
+        if (description.length > 450) description = description.substring(0, 450).trim();
+        if (isExplanationText(description)) continue;
+
+        const cls = contextualClass || 'C2';
+        const key = `${cls}-${article}-${description.substring(0, 80)}`;
+        if (!seen.has(key)) {
+            seen.add(key);
+            violations.push(createViolation(cls, article, description));
+            count3b++;
+            console.log(`  ✅ Added CML 3B violation: ${cls} Art.${article}`);
+        }
+    }
+    console.log(`  📊 Format 3B found: ${count3b} violations`);
+
+    // Formato 3C: parser por linhas para tabela CML "ArtigoDescrição"
+    // Cobre listas longas/multipágina onde OCR quebra colunas e pontuação.
+    let count3c = 0;
+    console.log('  🔍 Searching for violations with Format 3C (line-based CML table parser)...');
+    const lines = searchText.split(/\r?\n/);
+    const tableStart = lines.findIndex(l => /Artigo\s*Descri/i.test(l));
+    if (tableStart !== -1) {
+        const isArticleLine = (line) => {
+            const s = String(line || '').trim();
+            if (!s) return false;
+            if (/^(NOTAS?:|LOCAL:|Validade\s+da\s+Inspe)/i.test(s)) return false;
+            return /^(?:ART\.?\s*)?\d+(?:(?:[.,]\d+){0,8}|(?:\.?[º°](?:[-–]\d+)?))(?:\s*e)?\.?$/i.test(s);
+        };
+
+        const normalizeArticle = (line) => {
+            return String(line || '')
+                .replace(/^ART\.?\s*/i, '')
+                .replace(/[º°]/g, '')
+                .replace(/\s*e\s*$/i, '')
+                .replace(/,/g, '.')
+                .replace(/\s+/g, '')
+                .replace(/\.+/g, '.')
+                .replace(/[.-]$/, '')
+                .trim();
+        };
+
+        for (let i = tableStart + 1; i < lines.length; i++) {
+            if (!isArticleLine(lines[i])) continue;
+
+            const article = normalizeArticle(lines[i]);
+            if (!article) continue;
+
+            const descParts = [];
+            for (let j = i + 1; j < lines.length; j++) {
+                const raw = String(lines[j] || '');
+                const tline = raw.trim();
+                if (!tline) continue;
+                if (isArticleLine(tline)) break;
+                if (/^(NOTAS?:|Lisboa,|Porto,|O\s+DIRETOR|www\.|Página\s+\d+)/i.test(tline)) break;
+                if (/^Artigo\s*Descri/i.test(tline)) break;
+                descParts.push(tline);
+            }
+
+            let description = descParts.join(' ').replace(/\s+/g, ' ').trim();
+            if (description.length < 20) continue;
+            if (description.length > 700) description = description.substring(0, 700).trim();
+            if (isExplanationText(description)) continue;
+
+            const cls = contextualClass || 'C2';
+            const key = `${cls}-${article}-${description.substring(0, 120)}`;
+            if (!seen.has(key)) {
+                seen.add(key);
+                violations.push(createViolation(cls, article, description));
+                count3c++;
+                console.log(`  ✅ Added CML 3C violation: ${cls} Art.${article}`);
+            }
+        }
+    }
+    console.log(`  📊 Format 3C found: ${count3c} violations`);
     
     // Формат 4: APCER та інші - "Artigo XX.º - опис" або "Cláusula C2 - Artigo XX"
     const format4 = /(?:Cl[áa]usula\s+)?([C][123])\s*[-:]\s*Art(?:igo|[ºo°.]?)\s*([\d\s\.º°]+?)\s+[-–—]\s*(.+?)(?=Cl[áa]usula|Art(?:igo|[ºo°.])|$)/gis;
@@ -855,11 +964,12 @@ function extractViolations(text) {
             if (!textHit || !textHit.article) continue;
 
             // Verifica se já não foi encontrado por outro formato
-            const key = `${textHit.classification}-${textHit.article}-${sentence.substring(0, 30)}`;
+            const inferredClass = contextualClass || textHit.classification;
+            const key = `${inferredClass}-${textHit.article}-${sentence.substring(0, 30)}`;
             if (seen.has(key)) continue;
 
             seen.add(key);
-            violations.push(createViolation(textHit.classification, textHit.article, sentence));
+            violations.push(createViolation(inferredClass, textHit.article, sentence));
             count7++;
             console.log(`  ✅ Format 7 keyword match: Art.${textHit.article} — "${sentence.substring(0, 60)}"`);
         }

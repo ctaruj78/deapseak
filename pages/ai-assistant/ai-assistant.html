@@ -1556,6 +1556,26 @@
             
             const metadata = result.metadata || {};
             const stats = result.stats || { total: 0, critical: 0, medium: 0, low: 0 };
+            const certType = result.certType || null;
+            const validUntil = result.validUntil || null;
+
+            function certTypeLabel(value) {
+                const map = {
+                    cert_2_years: 'Certificado de 2 anos',
+                    reinspection: 'Reinspeção obrigatória',
+                    immobilization: 'Imobilização imediata'
+                };
+                return map[value] || 'Não especificado';
+            }
+
+            function formatPtDate(value) {
+                if (!value) return null;
+                const d = new Date(value);
+                if (Number.isNaN(d.getTime())) return null;
+                return d.toLocaleDateString('pt-PT');
+            }
+
+            const validUntilDisplay = formatPtDate(validUntil);
             
             // Warning for scanned documents (OCR)
             const ocrWarning = ocrUsed ? `
@@ -1580,6 +1600,18 @@
                         </div>
                     </div>
                 </div>
+
+                ${certType || validUntilDisplay ? `
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fas fa-certificate"></i> Situação do certificado</h3>
+                    </div>
+                    <div class="card-body">
+                        <p class="mb-2"><strong>Tipo:</strong> ${certTypeLabel(certType)}</p>
+                        ${validUntilDisplay ? `<p class="mb-0"><strong>Válido até:</strong> ${validUntilDisplay}</p>` : '<p class="mb-0 text-muted">Data de validade não disponível</p>'}
+                    </div>
+                </div>
+                ` : ''}
                 
                 <div class="row">
                     <div class="col-md-4">

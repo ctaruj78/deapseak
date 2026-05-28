@@ -186,9 +186,12 @@ function calcValidUntil(inspDate, passed, c1Count, c2Count) {
 /**
  * Determine certificate type label from clause counts and pass status.
  */
-function determineCertType(passed, c1Count, c2Count, c3Count) {
-    if (c1Count > 0) return 'immobilization';   // C1 → imobilização imediata
-    return 'cert_2_years';                       // C2/C3/clean → certificado de 2 anos
+function determineCertType(passed, c1Count, c2Count, c3Count, hasExplicitImmobilization = false) {
+    if (c1Count > 0) return 'immobilization';
+    if (c2Count > 0) return 'reinspection';
+    if (hasExplicitImmobilization) return 'immobilization';
+    if (!passed) return 'reinspection';
+    return 'cert_2_years';
 }
 
 /**
@@ -315,7 +318,8 @@ router.post('/parse-inspection-pdf', authenticate, authorizeRoles('admin', 'disp
             const c1Count = stats.critical || 0;
             const c2Count = stats.medium   || 0;
             const c3Count = stats.low      || 0;
-            const certType = determineCertType(passed, c1Count, c2Count, c3Count);
+            const hasExplicitImmobilization = /Reprovad[oa]\s+com\s+Imobiliza[cç][aã]o|Imobiliza[cç][aã]o\s+imediata/i.test(parsed.rawText || '');
+            const certType = determineCertType(passed, c1Count, c2Count, c3Count, hasExplicitImmobilization);
 
             // ── Build unified dates from normalised metadata ───────────────
             let inspectionDate = parseDate(meta.date);
