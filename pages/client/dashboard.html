@@ -353,6 +353,13 @@
                         <p>Histórico</p>
                     </a>
                 </li>
+
+                <li class="nav-item">
+                    <a href="/pages/client/reports.html" class="nav-link" id="nav-reports">
+                        <i class="nav-icon fas fa-chart-line"></i>
+                        <p>Relatórios</p>
+                    </a>
+                </li>
                 
                 <!-- 7. Documentação -->
                 <li class="nav-item">
@@ -554,12 +561,12 @@
                                         <small class="opacity-75">Atualizado: <span id="lastUpdateTime"></span></small>
                                     </div>
                                     <div class="col-md-4 text-right">
-                                        <div class="weather-widget d-inline-block text-left">
-                                            <i class="fas fa-cloud-sun fa-2x"></i>
+                                        <div class="weather-widget d-inline-block text-left" title="" id="weatherWidget">
+                                            <i class="fas fa-circle-notch fa-spin fa-2x" id="weatherIcon"></i>
                                             <div class="d-inline-block ml-2">
-                                                <span class="weather-temp">+22°C</span>
+                                                <span class="weather-temp" id="weatherTemp">—°C</span>
                                                 <br>
-                                                <small class="weather-desc">Nublado</small>
+                                                <small class="weather-desc" id="weatherDesc">A carregar...</small>
                                             </div>
                                         </div>
                                     </div>
@@ -877,6 +884,9 @@
 
             // Inicialização dos dados do cliente desde a API
             initializeClientDashboard();
+
+            // Carregar widget de meteorologia
+            loadWeather();
 
             // client-dashboard.js створюexiste window.clientDashboard сам através de DOMContentLoaded
             if (typeof ClientDashboard === 'undefined') {
@@ -1270,6 +1280,73 @@
                 }
             }
             
+            /**
+             * Widget de meteorologia real via Open-Meteo (sem chave de API)
+             */
+            function loadWeather() {
+                // WMO weather code → { icon FA, descrição PT }
+                const WMO_CODES = {
+                    0:  { icon: 'fas fa-sun',              desc: 'Céu limpo' },
+                    1:  { icon: 'fas fa-cloud-sun',        desc: 'Maioritariamente limpo' },
+                    2:  { icon: 'fas fa-cloud-sun',        desc: 'Parcialmente nublado' },
+                    3:  { icon: 'fas fa-cloud',            desc: 'Nublado' },
+                    45: { icon: 'fas fa-smog',             desc: 'Nevoeiro' },
+                    48: { icon: 'fas fa-smog',             desc: 'Nevoeiro com geada' },
+                    51: { icon: 'fas fa-cloud-drizzle',    desc: 'Chuvisco leve' },
+                    53: { icon: 'fas fa-cloud-drizzle',    desc: 'Chuvisco' },
+                    55: { icon: 'fas fa-cloud-drizzle',    desc: 'Chuvisco intenso' },
+                    61: { icon: 'fas fa-cloud-rain',       desc: 'Chuva leve' },
+                    63: { icon: 'fas fa-cloud-rain',       desc: 'Chuva' },
+                    65: { icon: 'fas fa-cloud-showers-heavy', desc: 'Chuva intensa' },
+                    71: { icon: 'fas fa-snowflake',        desc: 'Nevada leve' },
+                    73: { icon: 'fas fa-snowflake',        desc: 'Nevada' },
+                    75: { icon: 'fas fa-snowflake',        desc: 'Nevada intensa' },
+                    80: { icon: 'fas fa-cloud-rain',       desc: 'Aguaceiros leves' },
+                    81: { icon: 'fas fa-cloud-showers-heavy', desc: 'Aguaceiros' },
+                    82: { icon: 'fas fa-cloud-showers-heavy', desc: 'Aguaceiros fortes' },
+                    95: { icon: 'fas fa-bolt',             desc: 'Trovoada' },
+                    96: { icon: 'fas fa-bolt',             desc: 'Trovoada com granizo' },
+                    99: { icon: 'fas fa-bolt',             desc: 'Trovoada forte' }
+                };
+
+                function applyWeather(lat, lon) {
+                    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weathercode&timezone=auto&forecast_days=1`;
+                    fetch(url)
+                        .then(r => r.json())
+                        .then(data => {
+                            const temp  = Math.round(data.current.temperature_2m);
+                            const code  = data.current.weathercode;
+                            const info  = WMO_CODES[code] || { icon: 'fas fa-cloud', desc: 'Desconhecido' };
+                            const sign  = temp > 0 ? '+' : '';
+                            const el    = document.getElementById('weatherIcon');
+                            if (el) {
+                                el.className = info.icon + ' fa-2x';
+                            }
+                            const tempEl = document.getElementById('weatherTemp');
+                            if (tempEl) tempEl.textContent = sign + temp + '°C';
+                            const descEl = document.getElementById('weatherDesc');
+                            if (descEl) descEl.textContent = info.desc;
+                            const widget = document.getElementById('weatherWidget');
+                            if (widget) widget.title = `${lat.toFixed(2)}, ${lon.toFixed(2)}`;
+                        })
+                        .catch(() => {
+                            const descEl = document.getElementById('weatherDesc');
+                            if (descEl) descEl.textContent = 'Indisponível';
+                            const el = document.getElementById('weatherIcon');
+                            if (el) el.className = 'fas fa-exclamation-triangle fa-2x';
+                        });
+                }
+
+                if (navigator.geolocation) {
+                    navigator.geolocation.getCurrentPosition(
+                        pos => applyWeather(pos.coords.latitude, pos.coords.longitude),
+                        ()  => applyWeather(38.7169, -9.1395)   // fallback: Lisboa
+                    );
+                } else {
+                    applyWeather(38.7169, -9.1395);             // fallback: Lisboa
+                }
+            }
+
             /**
              * Apresentação de notificações
              */

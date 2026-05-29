@@ -11,13 +11,13 @@ const scanHistory = (function() {
     // Load scans from localStorage/API
     async function loadScans() {
         try {
-            console.log('📊 A carregar історії сканувань...');
+            console.log('📊 A carregar histórico de leituras...');
 
             // Try localStorage first
             const localScans = JSON.parse(localStorage.getItem('qr_scan_history') || '[]');
             
             if (localScans.length > 0) {
-                console.log(`✅ Завантажено з localStorage: ${localScans.length} сканувань`);
+                console.log(`✅ Carregado do localStorage: ${localScans.length} leituras`);
                 scansData = localScans;
             } else {
                 // Try API
@@ -34,7 +34,7 @@ const scanHistory = (function() {
                     if (response.ok) {
                         const data = await response.json();
                         scansData = data.data || data.scans || [];
-                        console.log(`✅ Завантажено з API: ${scansData.length} сканувань`);
+                        console.log(`✅ Carregado da API: ${scansData.length} leituras`);
                     }
                 }
             }
@@ -45,7 +45,7 @@ const scanHistory = (function() {
             initializeMap();
 
         } catch (error) {
-            console.error('❌ Erro завантаження історії:', error);
+            console.error('❌ Erro ao carregar histórico:', error);
             scansData = [];
             filteredScans = [];
         }
@@ -131,7 +131,7 @@ const scanHistory = (function() {
         const scansWithCoords = scansData.filter(s => s.latitude && s.longitude);
         
         if (scansWithCoords.length === 0) {
-            $('#scanMap').html('<div class="text-center p-4"><i class="fas fa-map-marker-alt fa-3x text-muted mb-3"></i><p>Sem dados про локацію сканувань</p></div>');
+            $('#scanMap').html('<div class="text-center p-4"><i class="fas fa-map-marker-alt fa-3x text-muted mb-3"></i><p>Sem dados de localização de leituras</p></div>');
             return;
         }
 
@@ -248,28 +248,48 @@ const scanHistory = (function() {
             '№': i + 1,
             'Data': new Date(scan.timestamp).toLocaleString('pt-PT'),
             'Elevador': scan.liftId || 'N/A',
-            'Локація': scan.location || 'Desconhecido',
-            'Utilizador': scan.user || 'Система',
+            'Localização': scan.location || 'Desconhecido',
+            'Utilizador': scan.user || 'Sistema',
             'Estado': scan.status
         }));
 
         const worksheet = XLSX.utils.json_to_sheet(data);
         const workbook = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(workbook, worksheet, 'Історія сканувань');
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'Histórico de leituras');
         XLSX.writeFile(workbook, `scan-history-${new Date().toISOString().split('T')[0]}.xlsx`);
     }
 
     // Clear history
-    function clearHistory() {
+    async function clearHistory() {
         if (!confirm('Tem a certeza que pretende limpar todo o histórico de digitalizações?')) return;
 
-        localStorage.removeItem('qr_scan_history');
-        scansData = [];
-        filteredScans = [];
-        updateStatistics();
-        renderScans();
-        
-        showNotification('Історію сканувань очищено', 'success');
+        try {
+            const token = localStorage.getItem('liftmanager_jwt') ||
+                          sessionStorage.getItem('liftmanager_jwt') ||
+                          localStorage.getItem('token');
+
+            const res = await fetch('/api/qr/history', {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await res.json().catch(() => ({}));
+
+            if (!res.ok || !data.success) {
+                throw new Error(data.message || 'Não foi possível limpar o histórico no servidor.');
+            }
+
+            localStorage.removeItem('qr_scan_history');
+            scansData = [];
+            filteredScans = [];
+            updateStatistics();
+            renderScans();
+            initializeMap();
+
+            showNotification('Histórico de leituras limpo', 'success');
+        } catch (err) {
+            console.error('Erro ao limpar histórico:', err);
+            showNotification(err.message || 'Falha ao limpar histórico', 'error');
+        }
     }
 
     // View scan details
@@ -281,18 +301,18 @@ const scanHistory = (function() {
             <div class="scan-details">
                 <div class="row">
                     <div class="col-md-6">
-                        <p><strong>Data і час:</strong> ${new Date(scan.timestamp).toLocaleString('pt-PT')}</p>
+                        <p><strong>Data e hora:</strong> ${new Date(scan.timestamp).toLocaleString('pt-PT')}</p>
                         <p><strong>Elevador ID:</strong> ${scan.liftId || 'N/A'}</p>
-                        <p><strong>QR-код:</strong> ${scan.qrCode || 'N/A'}</p>
+                        <p><strong>Código QR:</strong> ${scan.qrCode || 'N/A'}</p>
                     </div>
                     <div class="col-md-6">
-                        <p><strong>Локація:</strong> ${scan.location || 'Desconhecido'}</p>
-                        <p><strong>Utilizador:</strong> ${scan.user || 'Система'}</p>
+                        <p><strong>Localização:</strong> ${scan.location || 'Desconhecido'}</p>
+                        <p><strong>Utilizador:</strong> ${scan.user || 'Sistema'}</p>
                         <p><strong>Estado:</strong> <span class="badge badge-${scan.status === 'success' ? 'success' : 'danger'}">${scan.status}</span></p>
                     </div>
                 </div>
-                ${scan.notes ? `<hr><p><strong>Примітки:</strong> ${scan.notes}</p>` : ''}
-                ${scan.latitude && scan.longitude ? `<hr><p><strong>Координати:</strong> ${scan.latitude}, ${scan.longitude}</p>` : ''}
+                ${scan.notes ? `<hr><p><strong>Notas:</strong> ${scan.notes}</p>` : ''}
+                ${scan.latitude && scan.longitude ? `<hr><p><strong>Coordenadas:</strong> ${scan.latitude}, ${scan.longitude}</p>` : ''}
             </div>
         `;
 
@@ -316,12 +336,12 @@ const scanHistory = (function() {
 
     // Initialize the module
     function init() {
-        console.log('🚀 Ініціалізація модуля історії сканувань...');
+        console.log('🚀 Inicialização do módulo de histórico de leituras...');
         loadScans();
 
         // Setup event listeners
         $('#searchBtn').on('click', searchScans);
-        $('#searchInput').on('input', debounce(searchScans, 300)); // Автопошук при введенні
+        $('#searchInput').on('input', debounce(searchScans, 300)); // Pesquisa automática ao digitar
         $('#searchInput').on('keypress', function(e) {
             if (e.which === 13) { // Enter
                 e.preventDefault();
@@ -344,7 +364,7 @@ const scanHistory = (function() {
         }
     }
 
-    // Debounce функція для затримки пошуку
+    // Função debounce para atrasar a pesquisa
     function debounce(func, wait) {
         let timeout;
         return function(...args) {

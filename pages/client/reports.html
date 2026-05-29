@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cliente - Relatórios</title>
+    <script src="../../assets/js/auth.js"></script>
+
+    <!-- AdminLTE CSS -->
+    <link rel="stylesheet" href="../../plugins/adminlte/adminlte.min.css">
+    <link rel="stylesheet" href="../../plugins/fontawesome/css/all.min.css">
+
+    <style>
+        /* ── Cards ───────────────────────────────────────────────── */
+        .report-generate-card,
+        .report-result-card {
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-bottom: 25px;
+            border: none;
+            transition: all 0.3s ease;
+        }
+
+        /* ── Stat cards ──────────────────────────────────────────── */
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            height: 100%;
+        }
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        .stat-icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+            display: block;
+        }
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            line-height: 1;
+        }
+        .stat-label {
+            font-size: 0.8rem;
+            color: #6c757d;
+            margin-top: 4px;
+        }
+
+        /* ── Status badges ───────────────────────────────────────── */
+        .badge-status {
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+        .badge-completed  { background: linear-gradient(135deg,#28a745,#20c997); color:#fff; }
+        .badge-inprogress { background: linear-gradient(135deg,#17a2b8,#6f42c1); color:#fff; }
+        .badge-pending    { background: linear-gradient(135deg,#ffc107,#fd7e14); color:#212529; }
+        .badge-cancelled  { background: linear-gradient(135deg,#dc3545,#e83e8c); color:#fff; }
+        .badge-default    { background: #e9ecef; color:#495057; }
+
+        /* ── Table ───────────────────────────────────────────────── */
+        .table-reports thead th {
+            background: #f8f9fa;
+            font-weight: 600;
+            border-top: none;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .table-reports tbody tr { transition: background 0.15s ease; }
+        .table-reports tbody tr:hover { background: #f0f4ff; }
+
+        /* ── Filter section ──────────────────────────────────────── */
+        .filter-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+        }
+
+        /* ── Export buttons ──────────────────────────────────────── */
+        .export-btn {
+            transition: all 0.3s ease;
+            border-radius: 8px;
+        }
+        .export-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        /* ── Notification bell ───────────────────────────────────── */
+        .notification-bell { position: relative; }
+        .notification-badge {
+            position: absolute;
+            top: 4px; right: 2px;
+            background: #dc3545;
+            color: white;
+            font-size: 9px;
+            width: 16px; height: 16px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+        }
+
+        /* ── Empty state ─────────────────────────────────────────── */
+        .empty-state { padding: 60px 20px; text-align: center; color: #6c757d; }
+        .empty-state i { font-size: 4rem; margin-bottom: 20px; opacity: 0.3; display:block; }
+
+        /* ── Page header banner ──────────────────────────────────── */
+        .page-header-banner {
+            background: linear-gradient(135deg, #1a73e8 0%, #6a11cb 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 25px 30px;
+            margin-bottom: 25px;
+            box-shadow: 0 8px 25px rgba(26,115,232,0.3);
+        }
+        .page-header-banner h1 { font-size: 1.6rem; font-weight: 700; margin: 0; color: white; }
+        .page-header-banner p  { margin: 5px 0 0; opacity: 0.85; font-size: 0.95rem; }
+    </style>
+</head>
+<body class="hold-transition sidebar-mini layout-fixed" data-required-role="client">
+<div class="wrapper">
+
+    <!-- ══════════════════════ TOP NAVBAR ══════════════════════════ -->
+    <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+        <ul class="navbar-nav">
+            <li class="nav-item">
+                <a class="nav-link" data-widget="pushmenu" href="#" role="button">
+                    <i class="fas fa-bars"></i>
+                </a>
+            </li>
+            <li class="nav-item d-none d-sm-inline-block">
+                <a href="/pages/client/dashboard.html" class="nav-link">Início</a>
+            </li>
+            <li class="nav-item d-none d-sm-inline-block">
+                <a href="/pages/client/reports.html" class="nav-link active">Relatórios</a>
+            </li>
+        </ul>
+
+        <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+                <a class="nav-link notification-bell" href="/pages/client/notifications.html" title="Notificações">
+                    <i class="fas fa-bell"></i>
+                    <span class="notification-badge" id="notificationCount">0</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#" onclick="logout()" title="Sair">
+                    <i class="fas fa-sign-out-alt"></i>
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <!-- SIDEBAR PADRÃO PARA PÁGINAS DO CLIENTE                      -->
+    <!-- ═══════════════════════════════════════════════════════════ -->
+    <aside class="main-sidebar sidebar-dark-primary elevation-4">
+        <a href="/pages/client/dashboard.html" class="brand-link">
+            <span class="elevation-3" style="display:inline-flex;align-items:center;justify-content:center;width:33px;height:33px;border-radius:50%;background:linear-gradient(135deg,#28a745,#20c997);color:#fff;font-size:17px;margin-right:8px;opacity:.9;flex-shrink:0;">
+                <i class="fas fa-user-tie"></i>
+            </span>
+            <span class="brand-text font-weight-light" style="line-height:1.4;">
+                FestLift <small style="opacity:.7;font-size:11px;">Painel Cliente</small><br>
+                <small id="clientName" style="opacity:.85;font-size:11px;color:#aed6b1;font-weight:400;">—</small>
+            </span>
+        </a>
+
+        <div class="sidebar">
+            <nav class="mt-2">
+                <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+                    <li class="nav-item">
+                        <a href="/pages/client/dashboard.html" class="nav-link" id="nav-dashboard">
+                            <i class="nav-icon fas fa-tachometer-alt"></i>
+                            <p>Dashboard</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/pages/client/my-lifts.html" class="nav-link" id="nav-my-lifts">
+                            <i class="nav-icon fas fa-elevator"></i>
+                            <p>Os meus elevadores</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/pages/client/requests.html" class="nav-link" id="nav-requests">
+                            <i class="nav-icon fas fa-tasks"></i>
+                            <p>Pedidos</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/pages/client/orcamentos.html" class="nav-link" id="nav-orcamentos">
+                            <i class="nav-icon fas fa-file-invoice-dollar"></i>
+                            <p>Orçamentos</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/pages/client/invoices.html" class="nav-link" id="nav-invoices">
+                            <i class="nav-icon fas fa-file-invoice"></i>
+                            <p>Faturas</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/pages/client/history.html" class="nav-link" id="nav-history">
+                            <i class="nav-icon fas fa-history"></i>
+                            <p>Histórico</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/pages/client/reports.html" class="nav-link active" id="nav-reports">
+                            <i class="nav-icon fas fa-chart-line"></i>
+                            <p>Relatórios</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/pages/client/notifications.html" class="nav-link" id="nav-notifications">
+                            <i class="nav-icon fas fa-bell"></i>
+                            <p>Notificações</p>
+                            <span class="badge badge-danger right" id="notificationsBadge">0</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/pages/client/tickets.html" class="nav-link" id="nav-tickets">
+                            <i class="nav-icon fas fa-ticket-alt"></i>
+                            <p>Tickets</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/pages/client/support.html" class="nav-link" id="nav-support">
+                            <i class="nav-icon fas fa-headset"></i>
+                            <p>Suporte</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/pages/client/ai-predictions.html" class="nav-link" id="nav-ai">
+                            <i class="nav-icon fas fa-robot"></i>
+                            <p>IA Preditiva</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/pages/client/profile.html" class="nav-link" id="nav-profile">
+                            <i class="nav-icon fas fa-user"></i>
+                            <p>Perfil</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/pages/client/settings.html" class="nav-link" id="nav-settings">
+                            <i class="nav-icon fas fa-cog"></i>
+                            <p>Definições</p>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </aside>
+
+    <!-- ══════════════════════ CONTENT ════════════════════════════ -->
+    <div class="content-wrapper">
+
+        <!-- Content header + breadcrumb -->
+        <section class="content-header">
+            <div class="container-fluid">
+                <div class="row mb-2">
+                    <div class="col-sm-6">
+                        <h1><i class="fas fa-chart-line mr-2 text-primary"></i>Relatórios</h1>
+                    </div>
+                    <div class="col-sm-6">
+                        <ol class="breadcrumb float-sm-right">
+                            <li class="breadcrumb-item">
+                                <a href="/pages/client/dashboard.html">Início</a>
+                            </li>
+                            <li class="breadcrumb-item active">Relatórios</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="content">
+            <div class="container-fluid">
+
+                <!-- Page header banner -->
+                <div class="page-header-banner">
+                    <div class="d-flex align-items-center justify-content-between flex-wrap">
+                        <div>
+                            <h1><i class="fas fa-chart-line mr-2"></i>Relatórios</h1>
+                            <p>Gere e exporte relatórios detalhados sobre os seus elevadores</p>
+                        </div>
+                        <i class="fas fa-file-alt" style="font-size:4rem;opacity:0.2;"></i>
+                    </div>
+                </div>
+
+                <!-- ── Generate form card ──────────────────────────────── -->
+                <div class="card report-generate-card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <i class="fas fa-sliders-h mr-2"></i>Parâmetros do relatório
+                        </h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="filter-section">
+                            <div class="row align-items-end">
+                                <div class="col-md-3 col-sm-6 mb-3 mb-md-0">
+                                    <label class="font-weight-600">
+                                        <i class="fas fa-list-alt mr-1 text-muted"></i>Tipo de relatório
+                                    </label>
+                                    <select id="reportType" class="form-control">
+                                        <option value="activity">Atividade geral</option>
+                                        <option value="maintenance">Manutenção</option>
+                                        <option value="inspection">Inspeção</option>
+                                        <option value="breakdown">Avarias</option>
+                                        <option value="pending">Pendentes</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3 col-sm-6 mb-3 mb-md-0">
+                                    <label class="font-weight-600">
+                                        <i class="fas fa-calendar-alt mr-1 text-muted"></i>Data início
+                                    </label>
+                                    <input type="date" id="startDate" class="form-control">
+                                </div>
+                                <div class="col-md-3 col-sm-6 mb-3 mb-md-0">
+                                    <label class="font-weight-600">
+                                        <i class="fas fa-calendar-check mr-1 text-muted"></i>Data fim
+                                    </label>
+                                    <input type="date" id="endDate" class="form-control">
+                                </div>
+                                <div class="col-md-3 col-sm-6">
+                                    <button id="generateBtn" class="btn btn-primary btn-block" style="border-radius:8px;padding:10px;" onclick="generateReport()">
+                                        <i class="fas fa-cogs mr-2"></i>Gerar relatório
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ── Result card (hidden until generated) ───────────── -->
+                <div id="resultCard" class="card report-result-card" style="display:none;">
+                    <div class="card-header d-flex justify-content-between align-items-center flex-wrap">
+                        <h3 class="card-title mb-0" id="resultTitle">
+                            <i class="fas fa-file-alt mr-2"></i>Resultado
+                        </h3>
+                        <div class="mt-1 mt-sm-0">
+                            <button class="btn btn-danger btn-sm export-btn mr-1" onclick="downloadReport('pdf')">
+                                <i class="fas fa-file-pdf mr-1"></i>PDF
+                            </button>
+                            <button class="btn btn-success btn-sm export-btn" onclick="downloadReport('excel')">
+                                <i class="fas fa-file-csv mr-1"></i>CSV / Excel
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="card-body">
+                        <!-- Stat cards row -->
+                        <div class="row mb-4" id="statsRow"></div>
+
+                        <!-- Items table -->
+                        <div class="table-responsive">
+                            <table class="table table-hover table-bordered table-reports">
+                                <thead>
+                                    <tr>
+                                        <th style="width:40px;">#</th>
+                                        <th>Título / Descrição</th>
+                                        <th>Elevador</th>
+                                        <th>Técnico</th>
+                                        <th style="width:140px;">Estado</th>
+                                        <th style="width:110px;">Data</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="itemsBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+    </div>
+
+    <!-- ══════════════════════ FOOTER ═════════════════════════════ -->
+    <footer class="main-footer">
+        <strong>Copyright &copy; 2026 <a href="https://festlift.pt">FestLift</a>.</strong>
+        <div class="float-right d-none d-sm-inline-block">
+            <b>Painel Cliente</b>
+        </div>
+    </footer>
+</div>
+
+<!-- Scripts -->
+<script src="../../plugins/jquery/jquery.min.js"></script>
+<script src="../../plugins/bootstrap/bootstrap.bundle.min.js"></script>
+<script src="../../plugins/adminlte/adminlte.min.js"></script>
+
+<script>
+    let currentReport = null;
+
+    // ── Auth helpers ─────────────────────────────────────────────
+    function getToken() {
+        return localStorage.getItem('authToken')
+            || localStorage.getItem('liftmanager_jwt')
+            || localStorage.getItem('token')
+            || '';
+    }
+
+    function logout() {
+        if (confirm('Tem a certeza que quer sair do sistema?')) {
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('userData');
+            window.location.replace('/pages/auth/login.html');
+        }
+    }
+
+    // ── Date helpers ─────────────────────────────────────────────
+    function setDefaultDates() {
+        const end = new Date();
+        const start = new Date();
+        start.setDate(end.getDate() - 30);
+        document.getElementById('startDate').value = start.toISOString().slice(0, 10);
+        document.getElementById('endDate').value   = end.toISOString().slice(0, 10);
+    }
+
+    // ── Notifications badge ───────────────────────────────────────
+    function loadNotificationCount() {
+        fetch('/api/notifications?unread=true', {
+            headers: { 'Authorization': 'Bearer ' + getToken() }
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            var count = Array.isArray(data) ? data.length : (data.total || 0);
+            ['notificationCount', 'notificationsBadge'].forEach(function(id) {
+                var el = document.getElementById(id);
+                if (el) el.textContent = count > 99 ? '99+' : count;
+            });
+        })
+        .catch(function() {});
+    }
+
+    // ── Generate report ───────────────────────────────────────────
+    async function generateReport() {
+        var btn       = document.getElementById('generateBtn');
+        var type      = document.getElementById('reportType').value;
+        var startDate = document.getElementById('startDate').value;
+        var endDate   = document.getElementById('endDate').value;
+
+        if (!startDate || !endDate) {
+            alert('Indique as datas de início e fim.');
+            return;
+        }
+        if (startDate > endDate) {
+            alert('A data de início não pode ser posterior à data de fim.');
+            return;
+        }
+
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>A gerar...';
+
+        try {
+            var res = await fetch('/api/reports/generate', {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + getToken(),
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ type: type, startDate: startDate, endDate: endDate })
+            });
+            var data = await res.json();
+            if (!res.ok) throw new Error(data.message || 'Erro ao gerar relatório');
+            currentReport = data;
+            renderResult(data);
+        } catch (e) {
+            alert(e.message || 'Erro ao gerar relatório');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-cogs mr-2"></i>Gerar relatório';
+        }
+    }
+
+    // ── Status badge ─────────────────────────────────────────────
+    function statusBadge(status) {
+        var map = {
+            'completed':   ['badge-completed',  'Concluído'],
+            'done':        ['badge-completed',  'Concluído'],
+            'in-progress': ['badge-inprogress', 'Em progresso'],
+            'inprogress':  ['badge-inprogress', 'Em progresso'],
+            'pending':     ['badge-pending',    'Pendente'],
+            'cancelled':   ['badge-cancelled',  'Cancelado'],
+            'canceled':    ['badge-cancelled',  'Cancelado']
+        };
+        var key = (status || '').toLowerCase().replace(/\s+/g, '');
+        var info = map[key] || ['badge-default', status || '—'];
+        return '<span class="badge-status ' + info[0] + '">' + info[1] + '</span>';
+    }
+
+    // ── Render result ─────────────────────────────────────────────
+    function renderResult(data) {
+        document.getElementById('resultTitle').innerHTML =
+            '<i class="fas fa-file-alt mr-2"></i>Relatório &middot; '
+            + data.type + ' &middot; ' + data.startDate + ' &rarr; ' + data.endDate;
+
+        var s = data.stats || {};
+        var statDefs = [
+            { icon: 'fas fa-layer-group text-primary',  label: 'Total',        value: s.total      || 0 },
+            { icon: 'fas fa-check-circle text-success', label: 'Concluídos',   value: s.completed  || 0 },
+            { icon: 'fas fa-spinner text-info',         label: 'Em progresso', value: s.inProgress || 0 },
+            { icon: 'fas fa-clock text-warning',        label: 'Pendentes',    value: s.pending    || 0 },
+            { icon: 'fas fa-times-circle text-danger',  label: 'Cancelados',   value: s.cancelled  || 0 }
+        ];
+        document.getElementById('statsRow').innerHTML = statDefs.map(function(d) {
+            return '<div class="col-md col-6 mb-3">'
+                + '<div class="stat-card">'
+                + '<i class="' + d.icon + ' stat-icon"></i>'
+                + '<div class="stat-number">' + d.value + '</div>'
+                + '<div class="stat-label">' + d.label + '</div>'
+                + '</div></div>';
+        }).join('');
+
+        var items = Array.isArray(data.items) ? data.items : [];
+        if (!items.length) {
+            document.getElementById('itemsBody').innerHTML =
+                '<tr><td colspan="6">'
+                + '<div class="empty-state">'
+                + '<i class="fas fa-inbox"></i>'
+                + '<p>Sem registos para o período selecionado.</p>'
+                + '</div></td></tr>';
+        } else {
+            document.getElementById('itemsBody').innerHTML = items.map(function(item, idx) {
+                var d = item.createdAt
+                    ? new Date(item.createdAt).toLocaleDateString('pt-PT')
+                    : '—';
+                return '<tr>'
+                    + '<td class="text-muted">' + (idx + 1) + '</td>'
+                    + '<td><strong>' + (item.title || '—') + '</strong></td>'
+                    + '<td>' + (item.lift || '—') + '</td>'
+                    + '<td>' + (item.technician || '—') + '</td>'
+                    + '<td>' + statusBadge(item.status) + '</td>'
+                    + '<td class="text-nowrap">' + d + '</td>'
+                    + '</tr>';
+            }).join('');
+        }
+
+        var card = document.getElementById('resultCard');
+        card.style.display = 'block';
+        card.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // ── Download ─────────────────────────────────────────────────
+    async function downloadReport(kind) {
+        if (!currentReport || !currentReport.id) {
+            alert('Gere primeiro um relatório.');
+            return;
+        }
+        try {
+            var endpoint = kind === 'pdf'
+                ? '/api/reports/' + currentReport.id + '/pdf'
+                : '/api/reports/' + currentReport.id + '/excel';
+
+            var res = await fetch(endpoint, {
+                headers: { 'Authorization': 'Bearer ' + getToken() }
+            });
+
+            if (!res.ok) {
+                var err = await res.json().catch(function() { return {}; });
+                throw new Error(err.message || 'Erro ao descarregar ficheiro');
+            }
+
+            var blob = await res.blob();
+            var url  = URL.createObjectURL(blob);
+            var a    = document.createElement('a');
+            a.href     = url;
+            a.download = kind === 'pdf'
+                ? 'relatorio_' + currentReport.id + '.pdf'
+                : 'relatorio_' + currentReport.id + '.csv';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        } catch (e) {
+            alert(e.message || 'Erro ao descarregar ficheiro');
+        }
+    }
+
+    // ── Init ─────────────────────────────────────────────────────
+    document.addEventListener('DOMContentLoaded', function() {
+        setDefaultDates();
+        loadNotificationCount();
+
+        try {
+            var user = JSON.parse(localStorage.getItem('userData') || '{}');
+            if (user.name || user.nome) {
+                document.getElementById('clientName').textContent = user.name || user.nome;
+            }
+        } catch (_) {}
+    });
+</script>
+
+<script src="../../assets/js/monitor.js"></script>
+</body>
+</html>

@@ -682,94 +682,98 @@ class HistoryManager {
     }
 
     exportToPDF() {
-        this.showNotification('Підготовка PDF-звіту...', 'info');
-        
-        setTimeout(() => {
-            const filteredEvents = this.getFilteredEvents();
-            if (filteredEvents.length === 0) {
-                this.showNotification('Sem dados для експорту', 'warning');
-                return;
-            }
-            
-            this.showNotification('PDF-звіт com sucesso сформовано', 'success');
-            
-            // Створення простих даних для PDF (імітація)
-            let pdfContent = `
-                ЗВІТ ПРО ІСManutençãoРІЮ ОБСЛУГОВУВАННЯ
-                ================================
-                
-                Período: ${this.getPeriodText()}
-                Tipo подій: ${this.getEventTypeText()}
-                Elevador: ${this.getLiftText()}
-                
-                Загальна статистика:
-                - Всього подій: ${filteredEvents.length}
-                - Технічних обслуговувань: ${filteredEvents.filter(e => e.type === 'maintenance').length}
-                - Agoедній час реакції: ${this.calculateAverageDuration(filteredEvents)} min
-                - Agoедня оцінка: ${this.calculateAverageRating(filteredEvents).toFixed(1)}
-                - Загальні витрати: ₴${this.calculateTotalCost(filteredEvents).toLocaleString()}
-                
-                Детальний перелік:
-                ${filteredEvents.map(event => `
-                ${this.formatDate(event.date)} - ${event.description}
-                Elevador: ${event.lift}, Técnico: ${event.technician}
-                Custo: €${(event.cost ?? 0).toLocaleString('pt-PT', { minimumFractionDigits: 2 })}, Оцінка: ${event.rating}/5
-                `).join('\n')}
-                
-                ================================
-                Згенеровано: ${new Date().toLocaleString('pt-PT')}
-            `;
-            
-            // A carregar текстового файлу (імітація PDF)
-            const blob = new Blob([pdfContent], { type: 'text/plain' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `історія_обслуговування_${new Date().toISOString().split('T')[0]}.txt`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        }, 2000);
+        this.exportServerReport('pdf');
     }
 
     exportToExcel() {
-        this.showNotification('Підготовка Excel-звіту...', 'info');
-        
-        setTimeout(() => {
-            const filteredEvents = this.getFilteredEvents();
-            if (filteredEvents.length === 0) {
-                this.showNotification('Sem dados для експорту', 'warning');
+        this.exportServerReport('excel');
+    }
+
+    async exportServerReport(format = 'excel') {
+        try {
+            this.showNotification(`A gerar relatório ${format.toUpperCase()}...`, 'info');
+
+            const report = await this.generateBackendReport();
+            if (!report || !report.id) {
+                this.showNotification('Erro ao gerar relatório no servidor', 'error');
                 return;
             }
-            
-            this.showNotification('Excel-звіт com sucesso сформовано', 'success');
-            
-            // Створення CSV (імітація Excel)
-            let csvContent = 'Data,Tipo,Descrição,Elevador,Técnico,Duração (хв),Custo (грн),Оцінка\n';
-            
-            filteredEvents.forEach(event => {
-                csvContent += `"${this.formatDate(event.date)}",`;
-                csvContent += `"${this.getEventTypeText(event.type)}",`;
-                csvContent += `"${event.description}",`;
-                csvContent += `"${event.lift}",`;
-                csvContent += `"${event.technician}",`;
-                csvContent += `"${event.duration}",`;
-                csvContent += `"${event.cost}",`;
-                csvContent += `"${event.rating}"\n`;
+
+            const token = localStorage.getItem('authToken') || localStorage.getItem('liftmanager_jwt') || localStorage.getItem('token');
+            const endpoint = format === 'pdf' ? `/api/reports/${report.id}/pdf` : `/api/reports/${report.id}/excel`;
+            const response = await fetch(endpoint, {
+                headers: token ? { 'Authorization': `Bearer ${token}` } : {}
             });
-            
-            // A carregar CSV файлу
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+
+            if (!response.ok) {
+                const error = await response.json().catch(() => ({}));
+                throw new Error(error.message || 'Falha ao exportar relatório');
+            }
+
+            const blob = await response.blob();
+            const ext = format === 'pdf' ? 'pdf' : 'csv';
+            const fileName = `relatorio_cliente_${new Date().toISOString().split('T')[0]}.${ext}`;
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `історія_обслуговування_${new Date().toISOString().split('T')[0]}.csv`;
+            a.download = fileName;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
-        }, 2000);
+
+            this.showNotification(`Relatório ${format.toUpperCase()} gerado com sucesso`, 'success');
+        } catch (error) {
+            console.error('Erro ao exportar relatório:', error);
+            this.showNotification(error.message || 'Erro ao exportar relatório', 'error');
+        }
+    }
+
+    async generateBackendReport() {
+        const token = localStorage.getItem('authToken') || localStorage.getItem('liftmanager_jwt') || localStorage.getItem('token');
+        if (!token) {
+            throw new Error('Sessão expirada. Faça login novamente.');
+        }
+
+        const now = new Date();
+        let start = new Date();
+
+        if (this.filters.period === 'all') {
+            start.setFullYear(now.getFullYear() - 5);
+        } else {
+            const days = parseInt(this.filters.period || '30', 10);
+            start.setDate(now.getDate() - (isNaN(days) ? 30 : days));
+        }
+
+        const eventType = String(this.filters.eventType || 'all').toLowerCase();
+        const reportTypeMap = {
+            maintenance: 'maintenance',
+            inspection: 'inspection',
+            emergency: 'breakdown',
+            repair: 'breakdown'
+        };
+
+        const body = {
+            type: reportTypeMap[eventType] || 'activity',
+            startDate: start.toISOString().slice(0, 10),
+            endDate: now.toISOString().slice(0, 10)
+        };
+
+        const response = await fetch('/api/reports/generate', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(body)
+        });
+
+        if (!response.ok) {
+            const error = await response.json().catch(() => ({}));
+            throw new Error(error.message || 'Erro ao gerar relatório');
+        }
+
+        return await response.json();
     }
 
     printHistory() {

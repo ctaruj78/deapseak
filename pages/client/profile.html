@@ -481,6 +481,13 @@
                         <p>Histórico</p>
                     </a>
                 </li>
+
+                <li class="nav-item">
+                    <a href="/pages/client/reports.html" class="nav-link" id="nav-reports">
+                        <i class="nav-icon fas fa-chart-line"></i>
+                        <p>Relatórios</p>
+                    </a>
+                </li>
                 
                 <!-- 7. Documentação -->
                 <li class="nav-item">
@@ -1099,6 +1106,14 @@
             $('#editAddress').val(userData.address || '');
             $('#editCity').val(userData.city || '');
             $('#editZip').val(userData.zip || userData.zipCode || '');
+
+            // Avatar — mostrar foto guardada no servidor
+            if (userData.avatar) {
+                const avatarEl = document.getElementById('profileAvatar');
+                if (avatarEl) avatarEl.innerHTML = `<img src="${userData.avatar}" alt="Avatar" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" onerror="this.parentElement.innerHTML='<i class=&quot;fas fa-user&quot;></i>'">`;
+                $('#userAvatar').attr('src', userData.avatar);
+                $('#settingsAvatarPreview').attr('src', userData.avatar);
+            }
         }
 
         $(document).ready(function() {
@@ -1179,13 +1194,31 @@
                     }
                 }
                 
-                handleAvatarUpload(file) {
-                    if (file) {
-                        const reader = new FileReader();
-                        reader.onload = function(e) {
-                            $('#userAvatar').attr('src', e.target.result);
-                        };
-                        reader.readAsDataURL(file);
+                async handleAvatarUpload(file) {
+                    if (!file) return;
+                    // Pré-visualização imediata
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        $('#userAvatar').attr('src', e.target.result);
+                        const avatarEl = document.getElementById('profileAvatar');
+                        if (avatarEl) avatarEl.innerHTML = `<img src="${e.target.result}" alt="Avatar" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+                    };
+                    reader.readAsDataURL(file);
+                    // Upload para o servidor
+                    const formData = new FormData();
+                    formData.append('avatar', file);
+                    const token = localStorage.getItem('liftmanager_jwt') || sessionStorage.getItem('liftmanager_jwt') || localStorage.getItem('authToken') || '';
+                    try {
+                        const res = await fetch('/api/users/avatar', { method: 'POST', headers: { 'Authorization': `Bearer ${token}` }, body: formData });
+                        const data = await res.json();
+                        if (res.ok) {
+                            showSettingsToast('Avatar atualizado com sucesso!', 'success');
+                            localStorage.setItem('client_avatar', data.avatarUrl || '');
+                        } else {
+                            showSettingsToast(data.message || 'Erro ao carregar avatar', 'error');
+                        }
+                    } catch (err) {
+                        showSettingsToast('Avatar guardado localmente (offline)', 'info');
                     }
                 }
             }

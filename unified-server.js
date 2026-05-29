@@ -900,6 +900,24 @@ app.delete('/api/qr/codes/:id', authenticateToken, async (req, res) => {
 });
 
 // GET QR scan history
+// DELETE all scan records
+app.delete('/api/qr/history', authenticateToken, async (req, res) => {
+    try {
+        if (!db) return res.status(503).json({ success: false, message: 'Base de dados indisponível' });
+
+        const result = await db.collection('qr_scans').deleteMany({});
+
+        res.json({
+            success: true,
+            message: 'Histórico de leituras limpo',
+            deletedCount: result.deletedCount || 0
+        });
+    } catch (error) {
+        console.error('❌ Erro ao limpar histórico de scans:', error);
+        res.status(500).json({ success: false, message: 'Erro do servidor' });
+    }
+});
+
 // DELETE single scan record
 app.delete('/api/qr/history/:id', authenticateToken, async (req, res) => {
     try {
@@ -1725,6 +1743,135 @@ app.put('/api/users/me', authenticateToken, async (req, res) => {
     } catch (error) {
         console.error('❌ Erro ao atualizar perfil:', error);
         res.status(500).json({ success: false, message: 'Erro ao atualizar perfil' });
+    }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 🔑  POST /api/users/change-password
+// ─────────────────────────────────────────────────────────────────────────────
+app.post('/api/users/change-password', authenticateToken, async (req, res) => {
+    try {
+        const { ObjectId } = require('mongodb');
+        const { currentPassword, newPassword } = req.body;
+        if (!currentPassword || !newPassword)
+            return res.status(400).json({ success: false, message: 'Preencha a palavra-passe atual e a nova.' });
+        if (newPassword.length < 6)
+            return res.status(400).json({ success: false, message: 'A nova palavra-passe deve ter pelo menos 6 caracteres.' });
+
+        const userId = new ObjectId(req.user.id);
+        const user = await db.collection('users').findOne({ _id: userId });
+        if (!user) return res.status(404).json({ success: false, message: 'Utilizador não encontrado.' });
+
+        const match = await bcrypt.compare(currentPassword, user.password || '');
+        if (!match)
+            return res.status(401).json({ success: false, message: 'Palavra-passe atual incorreta.' });
+
+        const hashed = await bcrypt.hash(newPassword, 10);
+        await db.collection('users').updateOne({ _id: userId }, { $set: { password: hashed, updatedAt: new Date() } });
+        console.log('✅ Palavra-passe alterada:', req.user.email);
+        res.json({ success: true, message: 'Palavra-passe alterada com sucesso.' });
+    } catch (err) {
+        console.error('❌ change-password error:', err);
+        res.status(500).json({ success: false, message: 'Erro ao alterar palavra-passe.' });
+    }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 🖼  POST /api/users/avatar  — upload de foto de perfil
+// ─────────────────────────────────────────────────────────────────────────────
+const avatarStorage = multer.diskStorage({
+    destination: async (_req, _file, cb) => {
+        const dir = path.join(__dirname, 'uploads', 'avatars');
+        await fs.mkdir(dir, { recursive: true });
+        cb(null, dir);
+    },
+    filename: (req, file, cb) => {
+        const ext = path.extname(file.originalname).toLowerCase() || '.jpg';
+        cb(null, `avatar-${req.user.id}-${Date.now()}${ext}`);
+    }
+});
+const uploadAvatar = multer({
+    storage: avatarStorage,
+    limits: { fileSize: 5 * 1024 * 1024 },
+    fileFilter: (_req, file, cb) => {
+        if (['image/jpeg', 'image/png', 'image/webp'].includes(file.mimetype)) cb(null, true);
+        else cb(new Error('Formato não suportado. Use JPEG, PNG ou WebP.'));
+    }
+});
+
+app.post('/api/users/avatar', authenticateToken, uploadAvatar.single('avatar'), async (req, res) => {
+    try {
+        const { ObjectId } = require('mongodb');
+        if (!req.file) return res.status(400).json({ success: false, message: 'Ficheiro não enviado.' });
+        const avatarUrl = `/uploads/avatars/${req.file.filename}`;
+        await db.collection('users').updateOne(
+            { _id: new ObjectId(req.user.id) },
+            { $set: { avatar: avatarUrl, updatedAt: new Date() } }
+        );
+        console.log('✅ Avatar atualizado:', req.user.email, avatarUrl);
+        res.json({ success: true, avatarUrl });
+    } catch (err) {
+        console.error('❌ avatar upload error:', err);
+        res.status(500).json({ success: false, message: 'Erro ao guardar avatar.' });
+    }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 🎫  /api/support/tickets  — tickets de suporte ao cliente
+// ─────────────────────────────────────────────────────────────────────────────
+app.get('/api/support/tickets', authenticateToken, async (req, res) => {
+    try {
+        const query = req.user.role === 'client' ? { userId: req.user.id } : {};
+        const tickets = await db.collection('support_tickets')
+            .find(query).sort({ createdAt: -1 }).limit(100).toArray();
+        res.json({ success: true, data: tickets });
+    } catch (err) {
+        console.error('❌ get tickets error:', err);
+        res.status(500).json({ success: false, message: 'Erro ao carregar tickets.' });
+    }
+});
+
+app.post('/api/support/tickets', authenticateToken, async (req, res) => {
+    try {
+        const { category, priority, subject, description } = req.body;
+        if (!subject) return res.status(400).json({ success: false, message: 'Assunto obrigatório.' });
+        const ticket = {
+            userId:      req.user.id,
+            userEmail:   req.user.email,
+            category:    category || 'general',
+            priority:    priority || 'medium',
+            subject,
+            description: description || '',
+            status:      'open',
+            createdAt:   new Date(),
+            updatedAt:   new Date()
+        };
+        const result = await db.collection('support_tickets').insertOne(ticket);
+        console.log('✅ Ticket criado:', result.insertedId, 'por', req.user.email);
+        res.status(201).json({ success: true, data: { ...ticket, _id: result.insertedId } });
+    } catch (err) {
+        console.error('❌ create ticket error:', err);
+        res.status(500).json({ success: false, message: 'Erro ao criar ticket.' });
+    }
+});
+
+app.post('/api/support/tickets/:id/close', authenticateToken, async (req, res) => {
+    try {
+        const { ObjectId } = require('mongodb');
+        const ticketId = new ObjectId(req.params.id);
+        const query = req.user.role === 'client'
+            ? { _id: ticketId, userId: req.user.id }
+            : { _id: ticketId };
+        const result = await db.collection('support_tickets').updateOne(
+            query,
+            { $set: { status: 'closed', closedAt: new Date(), updatedAt: new Date() } }
+        );
+        if (result.matchedCount === 0)
+            return res.status(404).json({ success: false, message: 'Ticket não encontrado.' });
+        res.json({ success: true, message: 'Ticket fechado.' });
+    } catch (err) {
+        console.error('❌ close ticket error:', err);
+        res.status(500).json({ success: false, message: 'Erro ao fechar ticket.' });
     }
 });
 
@@ -9818,7 +9965,30 @@ const { errorHandler } = require('./backend/middleware/errorHandler');
 // 📄 INVOICES API - Рахунки (заглушка до реалізації)
 // ═══════════════════════════════════════════════════════════
 app.get('/api/invoices', authenticateToken, async (req, res) => {
-    res.json({ success: true, data: [] });
+    try {
+        const { ObjectId } = require('mongodb');
+        const query = {};
+        if (req.user.role === 'client') {
+            // scope to client's lifts
+            const clientLifts = await db.collection('lifts').find(
+                { $or: [{ clientEmail: req.user.email }, { client: req.user.id }, { clientId: req.user.id }] },
+                { projection: { _id: 1 } }
+            ).toArray();
+            const liftIds = clientLifts.map(l => l._id.toString());
+            query.$or = [
+                { userId: req.user.id },
+                { userEmail: req.user.email },
+                { liftId: { $in: liftIds } }
+            ];
+        }
+        if (req.query.status) query.status = req.query.status;
+        const invoices = await db.collection('invoices')
+            .find(query).sort({ createdAt: -1 }).limit(100).toArray();
+        res.json({ success: true, data: invoices });
+    } catch (err) {
+        console.error('❌ invoices error:', err);
+        res.status(500).json({ success: false, data: [], message: 'Erro ao carregar faturas.' });
+    }
 });
 
 // ═══════════════════════════════════════════════════════════
@@ -11649,10 +11819,102 @@ app.get('/api/regulations/last-check', authenticateToken, async (req, res) => {
 // In-memory store for generated reports (session-scoped)
 const generatedReportsStore = new Map();
 
+function getReportOwnerKey(user) {
+    const userId = user?.id || user?.userId || user?._id || user?.email || 'unknown';
+    const role = user?.role || 'unknown';
+    return `${role}:${String(userId)}`;
+}
+
+function canAccessReport(user, report) {
+    if (!report) return false;
+    const role = user?.role;
+    if (role === 'admin' || role === 'dispatcher') return true;
+    return report.ownerKey === getReportOwnerKey(user);
+}
+
+function normalizeReportStatus(value) {
+    const status = String(value || '').toLowerCase();
+    if (!status) return 'new';
+    if (['completed', 'done', 'fechado', 'closed', 'concluido'].includes(status)) return 'completed';
+    if (['in_progress', 'in-progress', 'em_progresso', 'ongoing'].includes(status)) return 'in_progress';
+    if (['assigned', 'atribuido', 'atribuída'].includes(status)) return 'assigned';
+    if (['cancelled', 'canceled', 'cancelado'].includes(status)) return 'cancelled';
+    if (['rascunho', 'draft', 'novo', 'new', 'aberto', 'open', 'pendente', 'pending'].includes(status)) return 'new';
+    return status;
+}
+
+function applyReportTypeFilter(items, type) {
+    const reportType = String(type || '').toLowerCase();
+    if (!reportType || reportType === 'activity' || reportType === 'monthly' || reportType === 'client' || reportType === 'technician') {
+        return items;
+    }
+
+    if (reportType === 'pending') {
+        return items.filter(item => ['new', 'assigned', 'in_progress'].includes(item.status));
+    }
+
+    if (reportType === 'breakdown') {
+        return items.filter(item => ['emergency', 'breakdown', 'repair'].includes(String(item.type || '').toLowerCase()));
+    }
+
+    if (reportType === 'inspection') {
+        return items.filter(item => {
+            if (item.source === 'inspection') return true;
+            return String(item.type || '').toLowerCase() === 'inspection';
+        });
+    }
+
+    if (reportType === 'maintenance') {
+        return items.filter(item => {
+            const t = String(item.type || '').toLowerCase();
+            const visitType = String(item.visitType || '').toLowerCase();
+            if (t === 'maintenance') return true;
+            if (item.source === 'inspection' && ['maintenance', 'quarterly', 'annual'].includes(visitType)) return true;
+            return false;
+        });
+    }
+
+    return items;
+}
+
+function toCsv(rows) {
+    return rows.map(row => row.map(cell => `"${String(cell ?? '').replace(/"/g, '""')}"`).join(',')).join('\n');
+}
+
+function formatLiftLabel(lift, fallback = '—') {
+    if (!lift) return fallback;
+    const model = lift.model || lift.name || lift.serialNumber || '';
+
+    let address = '';
+    if (typeof lift.address === 'string') {
+        address = lift.address;
+    } else if (lift.address && typeof lift.address === 'object') {
+        address = lift.address.full || lift.address.street || '';
+        if (!address && (lift.address.street || lift.address.number)) {
+            address = [lift.address.street, lift.address.number].filter(Boolean).join(' ');
+        }
+    }
+    if (!address) {
+        address = lift.location || lift.building || lift.municipality || '';
+    }
+
+    const text = [model, address].filter(Boolean).join(' - ').trim();
+    return text || fallback;
+}
+
 // GET /api/reports - список згенерованих звітів
 app.get('/api/reports', authenticateToken, async (req, res) => {
     try {
         const list = Array.from(generatedReportsStore.values())
+            .filter(report => canAccessReport(req.user, report))
+            .map(report => ({
+                id: report.id,
+                type: report.type,
+                startDate: report.startDate,
+                endDate: report.endDate,
+                createdAt: report.createdAt,
+                stats: report.stats
+            }))
             .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
             .slice(0, 50);
         res.json({ reports: list, total: list.length });
@@ -11664,7 +11926,8 @@ app.get('/api/reports', authenticateToken, async (req, res) => {
 // POST /api/reports/generate - генерація звіту
 app.post('/api/reports/generate', authenticateToken, async (req, res) => {
     try {
-        const { type = 'maintenance', startDate, endDate, technicianId, status } = req.body;
+        const { ObjectId } = require('mongodb');
+        const { type = 'maintenance', startDate, endDate, technicianId, status, liftId } = req.body;
 
         if (!startDate || !endDate) {
             return res.status(400).json({ message: 'Indique startDate e endDate' });
@@ -11678,19 +11941,105 @@ app.post('/api/reports/generate', authenticateToken, async (req, res) => {
             return res.status(400).json({ message: 'Formato de data inválido' });
         }
 
-        const query = {
-            createdAt: { $gte: start, $lte: end }
-        };
-        if (status) query.status = status;
-        if (technicianId) {
-            try { query.assignedTo = new ObjectId(technicianId); } catch (e) { /* ignore invalid id */ }
+        const userRole = req.user?.role || '';
+        const userId = req.user?.id || req.user?.userId || req.user?._id;
+        const userEmail = String(req.user?.email || '').toLowerCase();
+
+        let clientLiftIds = [];
+        if (userRole === 'client') {
+            const liftClientConditions = [];
+            if (userId) {
+                liftClientConditions.push({ client: String(userId) });
+                liftClientConditions.push({ clientId: String(userId) });
+                liftClientConditions.push({ 'client._id': String(userId) });
+                if (ObjectId.isValid(String(userId))) {
+                    const oid = new ObjectId(String(userId));
+                    liftClientConditions.push({ client: oid });
+                    liftClientConditions.push({ clientId: oid });
+                    liftClientConditions.push({ 'client._id': oid });
+                }
+            }
+            if (userEmail) {
+                liftClientConditions.push({ clientEmail: userEmail });
+                liftClientConditions.push({ 'client.email': userEmail });
+            }
+
+            if (liftClientConditions.length > 0) {
+                const clientLifts = await db.collection('lifts').find({ $or: liftClientConditions }, { projection: { _id: 1 } }).toArray();
+                clientLiftIds = clientLifts.map(l => l._id.toString());
+            }
         }
 
-        const requests = await db.collection('requests').find(query).toArray();
+        const requestsQuery = {
+            createdAt: { $gte: start, $lte: end }
+        };
+        if (status) requestsQuery.status = status;
+        if (technicianId) {
+            try { requestsQuery.assignedTo = new ObjectId(technicianId); } catch (e) { requestsQuery.assignedTo = technicianId; }
+        }
+        if (liftId) {
+            requestsQuery.$or = [{ liftId: liftId }, { lift: liftId }];
+        }
+
+        if (userRole === 'client') {
+            const clientScope = [];
+            if (userId) {
+                clientScope.push({ client: String(userId) });
+                clientScope.push({ clientId: String(userId) });
+                if (ObjectId.isValid(String(userId))) {
+                    const oid = new ObjectId(String(userId));
+                    clientScope.push({ client: oid });
+                    clientScope.push({ clientId: oid });
+                }
+            }
+            if (userEmail) {
+                clientScope.push({ clientEmail: userEmail });
+                clientScope.push({ 'client.email': userEmail });
+            }
+            if (clientLiftIds.length > 0) {
+                clientScope.push({ liftId: { $in: clientLiftIds } });
+            }
+            if (clientScope.length > 0) {
+                requestsQuery.$and = requestsQuery.$and || [];
+                requestsQuery.$and.push({ $or: clientScope });
+            }
+        }
+
+        const inspectionsQuery = {
+            $or: [
+                { createdAt: { $gte: start, $lte: end } },
+                { data: { $gte: startDate, $lte: endDate } }
+            ]
+        };
+        if (status) inspectionsQuery.status = status;
+        if (technicianId) inspectionsQuery.inspector = technicianId;
+        if (liftId) inspectionsQuery.liftId = liftId;
+
+        if (userRole === 'client') {
+            const clientInsScope = [];
+            if (userEmail) clientInsScope.push({ clientEmail: userEmail });
+            if (clientLiftIds.length > 0) clientInsScope.push({ liftId: { $in: clientLiftIds } });
+            if (clientInsScope.length > 0) {
+                inspectionsQuery.$and = inspectionsQuery.$and || [];
+                inspectionsQuery.$and.push({ $or: clientInsScope });
+            }
+        }
+
+        const [requests, inspections] = await Promise.all([
+            db.collection('requests').find(requestsQuery).toArray(),
+            db.collection('inspections').find(inspectionsQuery).toArray()
+        ]);
 
         // Підтягуємо дані ліфтів та технікiв
-        const liftIds = [...new Set(requests.map(r => r.liftId || r.lift).filter(Boolean))];
-        const techIds = [...new Set(requests.map(r => r.assignedTo).filter(Boolean))];
+        const liftIds = [...new Set([
+            ...requests.map(r => r.liftId || r.lift),
+            ...inspections.map(i => i.liftId || i.lift)
+        ].filter(Boolean).map(v => String(v)))];
+
+        const techIds = [...new Set([
+            ...requests.map(r => r.assignedTo || r.technicianId),
+            ...inspections.map(i => i.technicianId)
+        ].filter(Boolean).map(v => String(v)))];
 
         const [lifts, techs] = await Promise.all([
             liftIds.length ? db.collection('lifts').find({ _id: { $in: liftIds.map(id => { try { return new ObjectId(id); } catch(e){ return id; } }) } }).toArray() : [],
@@ -11700,32 +12049,80 @@ app.post('/api/reports/generate', authenticateToken, async (req, res) => {
         const liftsMap = Object.fromEntries(lifts.map(l => [l._id.toString(), l]));
         const techsMap = Object.fromEntries(techs.map(u => [u._id.toString(), u]));
 
-        const items = requests.map(r => {
+        const requestItems = requests.map(r => {
             const lift = liftsMap[(r.liftId || r.lift || '').toString()];
-            const tech = techsMap[(r.assignedTo || '').toString()];
+            const tech = techsMap[(r.assignedTo || r.technicianId || '').toString()];
             return {
-                id: r._id,
+                id: String(r._id),
+                source: 'request',
                 title: r.title || r.type || '—',
-                lift: lift ? `${lift.model || ''} - ${lift.address || lift.serialNumber || ''}`.trim() : '—',
-                technician: tech ? (tech.name || tech.username) : '—',
-                status: r.status || '—',
+                type: (r.type || 'maintenance').toLowerCase(),
+                visitType: null,
+                lift: formatLiftLabel(lift),
+                technician: tech ? (tech.name || tech.username || `${tech.firstName || ''} ${tech.lastName || ''}`.trim()) : (r.technicianName || '—'),
+                status: normalizeReportStatus(r.status),
                 priority: r.priority || '—',
                 createdAt: r.createdAt,
                 completedAt: r.completedAt || null,
             };
         });
 
+        const inspectionItems = inspections.map(i => {
+            const lift = liftsMap[(i.liftId || i.lift || '').toString()];
+            const tech = techsMap[(i.technicianId || '').toString()];
+            const createdAt = i.createdAt || (i.data ? new Date(`${i.data}T00:00:00.000Z`) : null);
+            return {
+                id: String(i._id),
+                source: 'inspection',
+                title: i.numero ? `Inspeção ${i.numero}` : 'Inspeção',
+                type: 'inspection',
+                visitType: i.visitType || null,
+                lift: formatLiftLabel(lift, i.liftId || '—'),
+                technician: i.inspector || (tech ? (tech.name || tech.username || `${tech.firstName || ''} ${tech.lastName || ''}`.trim()) : '—'),
+                status: normalizeReportStatus(i.status),
+                priority: 'medium',
+                createdAt,
+                completedAt: i.completedAt || null,
+            };
+        });
+
+        let items = [...requestItems, ...inspectionItems];
+        items = applyReportTypeFilter(items, type);
+        items.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+
         const stats = {
             total: items.length,
             completed: items.filter(r => r.status === 'completed').length,
             inProgress: items.filter(r => r.status === 'in_progress').length,
             pending: items.filter(r => ['new', 'assigned'].includes(r.status)).length,
+            cancelled: items.filter(r => r.status === 'cancelled').length,
         };
 
         const reportId = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
-        const report = { id: reportId, type, startDate, endDate, createdAt: new Date().toISOString(), stats, items };
+        const ownerKey = getReportOwnerKey(req.user);
+        const report = {
+            id: reportId,
+            type,
+            startDate,
+            endDate,
+            createdAt: new Date().toISOString(),
+            ownerKey,
+            ownerRole: userRole,
+            ownerEmail: userEmail,
+            stats,
+            items
+        };
 
-        generatedReportsStore.set(reportId, { id: reportId, type, startDate, endDate, createdAt: report.createdAt, stats });
+        generatedReportsStore.set(reportId, report);
+
+        // Зберігаємо пам'ять: тримаємо останні 200 звітів
+        if (generatedReportsStore.size > 200) {
+            const sortedIds = Array.from(generatedReportsStore.values())
+                .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt))
+                .slice(0, generatedReportsStore.size - 200)
+                .map(r => r.id);
+            sortedIds.forEach(id => generatedReportsStore.delete(id));
+        }
 
         res.json(report);
     } catch (error) {
@@ -11734,18 +12131,82 @@ app.post('/api/reports/generate', authenticateToken, async (req, res) => {
     }
 });
 
-// GET /api/reports/:id/pdf - заглушка PDF
+// GET /api/reports/:id/pdf - export PDF
 app.get('/api/reports/:id/pdf', authenticateToken, (req, res) => {
     const report = generatedReportsStore.get(req.params.id);
     if (!report) return res.status(404).json({ message: 'Relatório não encontrado' });
-    res.json({ message: 'PDF export не реалізовано', report });
+    if (!canAccessReport(req.user, report)) {
+        return res.status(403).json({ message: 'Acesso negado' });
+    }
+
+    const PDFDocument = require('pdfkit');
+    const fileName = `Relatorio_${report.type}_${report.id}.pdf`;
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+
+    const doc = new PDFDocument({ margin: 40, size: 'A4' });
+    doc.pipe(res);
+
+    doc.fontSize(18).text('Relatório FestLift', { align: 'center' });
+    doc.moveDown(0.5);
+    doc.fontSize(11).text(`Tipo: ${report.type}`);
+    doc.text(`Período: ${report.startDate} até ${report.endDate}`);
+    doc.text(`Gerado em: ${new Date(report.createdAt).toLocaleString('pt-PT')}`);
+    doc.moveDown(0.5);
+    doc.text(`Total: ${report.stats.total} | Concluídos: ${report.stats.completed} | Em progresso: ${report.stats.inProgress} | Pendentes: ${report.stats.pending} | Cancelados: ${report.stats.cancelled || 0}`);
+    doc.moveDown(1);
+
+    doc.fontSize(12).text('Itens', { underline: true });
+    doc.moveDown(0.3);
+
+    const maxItems = Math.min(report.items?.length || 0, 120);
+    for (let i = 0; i < maxItems; i++) {
+        const it = report.items[i];
+        const line = `${i + 1}. ${it.title || '—'} | ${it.lift || '—'} | ${it.technician || '—'} | ${it.status || '—'} | ${it.createdAt ? new Date(it.createdAt).toLocaleDateString('pt-PT') : '—'}`;
+        doc.fontSize(9).text(line, { width: 520 });
+    }
+
+    if ((report.items?.length || 0) > maxItems) {
+        doc.moveDown(0.5);
+        doc.fontSize(9).text(`... e mais ${(report.items.length - maxItems)} itens`);
+    }
+
+    doc.end();
 });
 
-// GET /api/reports/:id/excel - заглушка Excel
+// GET /api/reports/:id/excel - export CSV (Excel-compatible)
 app.get('/api/reports/:id/excel', authenticateToken, (req, res) => {
     const report = generatedReportsStore.get(req.params.id);
     if (!report) return res.status(404).json({ message: 'Relatório não encontrado' });
-    res.json({ message: 'Excel export не реалізовано', report });
+    if (!canAccessReport(req.user, report)) {
+        return res.status(403).json({ message: 'Acesso negado' });
+    }
+
+    const rows = [
+        ['#', 'Título', 'Origem', 'Tipo', 'Visita', 'Elevador', 'Técnico', 'Estado', 'Prioridade', 'Criado em', 'Concluído em']
+    ];
+
+    (report.items || []).forEach((it, idx) => {
+        rows.push([
+            idx + 1,
+            it.title || '',
+            it.source || '',
+            it.type || '',
+            it.visitType || '',
+            it.lift || '',
+            it.technician || '',
+            it.status || '',
+            it.priority || '',
+            it.createdAt ? new Date(it.createdAt).toLocaleDateString('pt-PT') : '',
+            it.completedAt ? new Date(it.completedAt).toLocaleDateString('pt-PT') : ''
+        ]);
+    });
+
+    const csv = '\uFEFF' + toCsv(rows);
+    const fileName = `Relatorio_${report.type}_${report.id}.csv`;
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+    return res.send(csv);
 });
 
 // ═══════════════════════════════════════════════════════════

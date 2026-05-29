@@ -387,6 +387,13 @@
                         <p>Histórico</p>
                     </a>
                 </li>
+
+                <li class="nav-item">
+                    <a href="/pages/client/reports.html" class="nav-link" id="nav-reports">
+                        <i class="nav-icon fas fa-chart-line"></i>
+                        <p>Relatórios</p>
+                    </a>
+                </li>
                 
                 <!-- 7. Documentação -->
                 <li class="nav-item">
@@ -973,9 +980,26 @@
                 $('#ticketModal').modal('hide');
             }
             
-            submitTicket() {
-                alert('Ticket enviado com sucesso!');
-                $('#ticketModal').modal('hide');
+            async submitTicket() {
+                const category    = document.getElementById('ticketCategory')?.value || 'general';
+                const priority    = document.getElementById('ticketPriority')?.value || 'medium';
+                const subject     = document.getElementById('ticketSubject')?.value?.trim();
+                const description = document.getElementById('ticketDescription')?.value?.trim() || '';
+                if (!subject) { alert('Preencha o assunto do ticket.'); return; }
+                const token = localStorage.getItem('authToken') || localStorage.getItem('liftmanager_jwt') || localStorage.getItem('token') || '';
+                try {
+                    const res = await fetch('/api/support/tickets', {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ category, priority, subject, description })
+                    });
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.message || 'Erro ao criar ticket');
+                    alert(`Ticket criado com sucesso! ID: ${data.data?._id}`);
+                    $('#ticketModal').modal('hide');
+                } catch (e) {
+                    alert(e.message || 'Erro ao enviar ticket');
+                }
             }
             
             searchKnowledgeBase() {
