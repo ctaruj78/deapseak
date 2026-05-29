@@ -93,7 +93,7 @@ const INSPECTION_TEMPLATES = (() => {
     item('lub-portao',    'Lubrificação das guias e mecanismo do portão',       'Manual fabricante'),
   ];
 
-  // --- Cabina sem portas / patim móvel (instalações antigas) ---
+  // --- Cabina sem portas / patim móvel (legacy PT / modernização parcial) ---
   const DOORS_PATIM_MOVEL = [
     item('patim-estado',      'Patim / soleira móvel — fixação, curso e retorno',            'Portaria 121/2005 Art. 8.º', true),
     item('patim-sensores',    'Dispositivo elétrico nas extremidades do patim móvel',         'Portaria 121/2005 Art. 8.º', true),
@@ -177,6 +177,10 @@ const INSPECTION_TEMPLATES = (() => {
     item('livro-rev',     'Livro de revisões / registo de manutenção atualizado','DL 320/2002 Art. 12.º', true),
     item('cert-valid',    'Certificado de conformidade válido (OI)',           'DL 320/2002 Art. 14.º', true),
     item('placa-ident',   'Placa de identificação do ascensor visível',       'EN 81-20 § 5.4.8'),
+  ];
+
+  const PATIM_MOVEL_DOCUMENTATION = [
+    item('doc-patim-legacy', 'Dossier técnico da modernização / manutenção do patim móvel e STOP de cabina disponível', 'Registo técnico EMIE / solução legacy PT', true),
   ];
 
   // --- Itens extras para revisão trimestral ---
@@ -556,7 +560,7 @@ const INSPECTION_TEMPLATES = (() => {
 
       dl513Sections.push({
         id: 'documentacao', title: 'Documentação',
-        icon: 'file-alt', color: 'info', items: DL513_DOCUMENTATION,
+        icon: 'file-alt', color: 'info', items: doorType === 'patim_movel' ? [...DL513_DOCUMENTATION, ...PATIM_MOVEL_DOCUMENTATION] : DL513_DOCUMENTATION,
       });
 
       return dl513Sections;
@@ -719,7 +723,7 @@ const INSPECTION_TEMPLATES = (() => {
       title: 'Documentação',
       icon: 'file-alt',
       color: 'info',
-      items: DOCUMENTATION,
+      items: doorType === 'patim_movel' ? [...DOCUMENTATION, ...PATIM_MOVEL_DOCUMENTATION] : DOCUMENTATION,
     });
 
     return sections;
@@ -787,6 +791,7 @@ const INSPECTION_TEMPLATES = (() => {
       label: 'Cabina sem Portas / Patim Móvel',
       icon:  'arrows-alt-h',
       norm:  'DL 513/70 / DR 13/80 / Portaria 121/2005 Art. 8.º',
+      note:  'Exceção legacy PT: pode manter patim móvel + STOP em modernização parcial, desde que a solução esteja documentada e mantida em segurança.',
     },
     mixed: {
       label: 'Misto — Batentes (patamar) + Automática (cabina)',

@@ -361,8 +361,8 @@
                                         <div class="row">
                                             <div class="col-md-4">
                                                 <div class="form-group">
-                                                    <label for="inspectionNumber">Nº da Manutenção</label>
-                                                    <input type="text" class="form-control" id="inspectionNumber" placeholder="MANU-2026-001" required>
+                                                    <label for="inspectionNumber">Nº do Relatório</label>
+                                                    <input type="text" class="form-control" id="inspectionNumber" placeholder="MANU-2026-05-001" required>
                                                 </div>
                                                 <div class="form-group">
                                                     <label for="inspectionDate">Data</label>
@@ -924,7 +924,7 @@
                                     <div id="inspectionReport">
                                         <!-- Report header -->
                                         <div class="text-center mb-4">
-                                            <h2>RELATÓRIO DE MANUTENÇÃO MENSAL</h2>
+                                            <h2 id="reportTitle">RELATÓRIO DE MANUTENÇÃO</h2>
                                             <p><strong>FestLift - Elevadores e Serviços, Lda.</strong></p>
                                             <p><small>☎ +351 214 190 863 | +351 926 380 243/244 | info@festlift.pt</small></p>
                                         </div>
@@ -933,8 +933,8 @@
                                         <div class="row mb-4">
                                             <div class="col-md-6">
                                                 <table class="table table-sm">
-                                                    <tr><td><strong>Nº da Manutenção:</strong></td><td id="reportInspectionNumber">MANU-2025-001</td></tr>
-                                                    <tr><td><strong>Data da Manutenção:</strong></td><td id="reportInspectionDate"></td></tr>
+                                                    <tr><td><strong>Nº do Relatório:</strong></td><td id="reportInspectionNumber">MANU-2025-05-001</td></tr>
+                                                    <tr><td><strong>Data da Visita:</strong></td><td id="reportInspectionDate"></td></tr>
                                                     <tr><td><strong>Técnico Responsável:</strong></td><td id="reportInspector"></td></tr>
                                                 </table>
                                             </div>
@@ -949,7 +949,7 @@
 
                                         <!-- Checklist results -->
                                         <div class="mb-4">
-                                            <h4>Resultados da Manutenção</h4>
+                                            <h4>Resultados da Verificação</h4>
                                             <div id="reportChecklist">
                                                 <!-- Dynamic content will be inserted here -->
                                             </div>
@@ -1102,13 +1102,17 @@
             if (!dm) return;
             const normsHtml = dm.norms.map(n =>
                 `<span class="badge badge-secondary mr-1">${n}</span>`).join('');
+            const doorNoteHtml = door && door.note
+                ? `<div class="mt-2 text-warning"><i class="fas fa-exclamation-triangle mr-1"></i><small>${door.note}</small></div>`
+                : '';
             $('#normBannerContent').html(`
                 <div class="d-flex flex-wrap align-items-center gap-2">
                     <div class="mr-3"><i class="fas fa-cog text-secondary mr-1"></i><strong>${dm.label}</strong></div>
                     <div class="mr-3"><i class="fas fa-door-open text-info mr-1"></i><strong>${door.label}</strong> <small class="text-muted">(${door.norm})</small></div>
                     <div class="mr-3"><span class="badge badge-${vm.color}"><i class="fas fa-${vm.icon} mr-1"></i>${vm.label}</span></div>
                     <div>Normas: ${normsHtml}</div>
-                </div>`);
+                </div>
+                ${doorNoteHtml}`);
             $('#normBanner').show();
         }
 
@@ -1160,6 +1164,8 @@
         }
 
         function updateReportPreview() {
+            const visitMeta = getReportMetaByVisitType($('#visitType').val());
+            $('#reportTitle').text(visitMeta.title);
             $('#reportInspectionNumber').text($('#inspectionNumber').val());
             $('#reportInspectionDate').text($('#inspectionDate').val());
             $('#reportInspector').text($('#inspector').val());
@@ -1177,6 +1183,18 @@
                    localStorage.getItem('authToken') ||
                    localStorage.getItem('token') ||
                    sessionStorage.getItem('token');
+        }
+
+        function getReportMetaByVisitType(visitType) {
+            const map = {
+                maintenance: { prefix: 'MANU', title: 'RELATÓRIO DE MANUTENÇÃO' },
+                quarterly: { prefix: 'MANU', title: 'RELATÓRIO DE REVISÃO TRIMESTRAL' },
+                annual: { prefix: 'INSP', title: 'RELATÓRIO DE REVISÃO ANUAL' },
+                pre_inspection: { prefix: 'INSP', title: 'RELATÓRIO DE PREPARAÇÃO OI' },
+                repair: { prefix: 'REP', title: 'RELATÓRIO DE REPARAÇÃO' },
+                emergency: { prefix: 'EMG', title: 'RELATÓRIO DE INTERVENÇÃO DE EMERGÊNCIA' }
+            };
+            return map[visitType] || { prefix: 'INSP', title: 'RELATÓRIO TÉCNICO' };
         }
 
         /* ================================================================
@@ -1305,6 +1323,11 @@
                     refreshChecklist();
                 });
 
+                $('#visitType').on('change', () => {
+                    this.generateInspectionNumber();
+                    updateReportPreview();
+                });
+
                 // Form field changes → update preview
                 $('#inspectionForm input, #inspectionForm textarea').on('input change', function() {
                     updateReportPreview();
@@ -1321,28 +1344,33 @@
             },
 
             generateInspectionNumber() {
-                const token = sessionStorage.getItem('liftmanager_jwt') ||
-                              localStorage.getItem('liftmanager_jwt') ||
-                              localStorage.getItem('authToken') ||
-                              localStorage.getItem('token');
+                const token = getAuthToken();
+                const visitType = $('#visitType').val() || 'maintenance';
                 $.ajax({
-                    url: '/api/inspections/next-number',
+                    url: `/api/inspections/next-number?visitType=${encodeURIComponent(visitType)}`,
                     method: 'GET',
                     headers: token ? { 'Authorization': `Bearer ${token}` } : {},
                     success: (data) => {
                         if (data.success && data.numero) {
                             $('#inspectionNumber').val(data.numero);
+                            $('#reportInspectionNumber').text(data.numero);
                         } else {
                             // fallback local sequencial por mês
                             const year = new Date().getFullYear();
                             const month = String(new Date().getMonth() + 1).padStart(2, '0');
-                            $('#inspectionNumber').val(`INSP-${year}-${month}-001`);
+                            const prefix = getReportMetaByVisitType(visitType).prefix;
+                            const number = `${prefix}-${year}-${month}-001`;
+                            $('#inspectionNumber').val(number);
+                            $('#reportInspectionNumber').text(number);
                         }
                     },
                     error: () => {
                         const year = new Date().getFullYear();
                         const month = String(new Date().getMonth() + 1).padStart(2, '0');
-                        $('#inspectionNumber').val(`INSP-${year}-${month}-001`);
+                        const prefix = getReportMetaByVisitType(visitType).prefix;
+                        const number = `${prefix}-${year}-${month}-001`;
+                        $('#inspectionNumber').val(number);
+                        $('#reportInspectionNumber').text(number);
                     }
                 });
             },

@@ -1333,6 +1333,20 @@ app.get('/api/inspections', authenticateToken, async (req, res) => {
     }
 });
 
+function getInspectionVisitMeta(visitType) {
+    const normalized = String(visitType || 'maintenance').toLowerCase();
+    const map = {
+        maintenance: { prefix: 'MANU', title: 'Relatório de Manutenção' },
+        quarterly: { prefix: 'MANU', title: 'Relatório de Revisão Trimestral' },
+        annual: { prefix: 'INSP', title: 'Relatório de Revisão Anual' },
+        pre_inspection: { prefix: 'INSP', title: 'Relatório de Preparação OI' },
+        repair: { prefix: 'REP', title: 'Relatório de Reparação' },
+        emergency: { prefix: 'EMG', title: 'Relatório de Intervenção de Emergência' }
+    };
+
+    return map[normalized] || { prefix: 'INSP', title: 'Relatório Técnico' };
+}
+
 // GET next sequential inspection number
 app.get('/api/inspections/next-number', authenticateToken, async (req, res) => {
     try {
@@ -1342,7 +1356,9 @@ app.get('/api/inspections/next-number', authenticateToken, async (req, res) => {
         const now = new Date();
         const yyyy = now.getFullYear();
         const mm = String(now.getMonth() + 1).padStart(2, '0');
-        const prefix = `INSP-${yyyy}-${mm}-`;
+        const visitType = req.query.visitType || 'maintenance';
+        const { prefix: prefixCode } = getInspectionVisitMeta(visitType);
+        const prefix = `${prefixCode}-${yyyy}-${mm}-`;
 
         const last = await db.collection('inspections')
             .find({ numero: { $regex: `^${prefix}` } })
@@ -1399,8 +1415,7 @@ app.post('/api/inspections', authenticateToken, async (req, res) => {
             const yyyy = now.getFullYear();
             const mm = String(now.getMonth() + 1).padStart(2, '0');
             const visitType = req.body.visitType || req.body.type;
-            const prefixCode = visitType === 'repair' ? 'REP' :
-                               visitType === 'emergency' ? 'EMG' : 'INSP';
+            const { prefix: prefixCode } = getInspectionVisitMeta(visitType);
             const prefix = `${prefixCode}-${yyyy}-${mm}-`;
             const last = await db.collection('inspections')
                 .find({ numero: { $regex: `^${prefix}` } })
@@ -10920,6 +10935,7 @@ async function gerarPDFRelatorio(data) {
     const PDFDocument = require('pdfkit');
     const { inspectionNumber, inspectionDate, inspector, liftLocation, liftModel, liftSerial,
             visitType, driveType, doorType, checklist, generalComments, recommendations } = data;
+    const visitMeta = getInspectionVisitMeta(visitType);
 
     return new Promise((resolve, reject) => {
         try {
@@ -10956,7 +10972,7 @@ async function gerarPDFRelatorio(data) {
                 repair: 'RELATÓRIO DE REPARAÇÃO',
                 emergency: 'RELATÓRIO DE INTERVENÇÃO DE EMERGÊNCIA',
             };
-            const title = visitLabels[visitType] || 'RELATÓRIO DE MANUTENÇÃO';
+                const title = visitLabels[visitType] || String(visitMeta.title || 'Relatório Técnico').toUpperCase();
             doc.fontSize(15).font('Helvetica-Bold').fillColor('#1a3a6b')
                .text(title, { align: 'center' });
             doc.moveDown(0.8);
@@ -11158,13 +11174,15 @@ app.post('/api/inspections/send-report', authenticateToken, async (req, res) => 
             inspector,
             liftLocation,
             clientName,
-            recipientEmail
+            recipientEmail,
+            visitType
         } = req.body;
+        const visitMeta = getInspectionVisitMeta(visitType);
 
         if (!recipientEmail || !inspectionNumber) {
             return res.status(400).json({
                 success: false,
-                message: 'Email e número da manutenção são obrigatórios'
+                message: 'Email e número do relatório são obrigatórios'
             });
         }
 
@@ -11194,9 +11212,9 @@ app.post('/api/inspections/send-report', authenticateToken, async (req, res) => 
         const mailOptions = {
             from: process.env.EMAIL_FROM || 'FestLift <info@festlift.pt>',
             to: recipientEmail,
-            subject: `Relatório de Manutenção ${inspectionNumber} — FestLift`,
+            subject: `${visitMeta.title} ${inspectionNumber} — FestLift`,
             // Texto simples (fallback)
-            text: `Exmo(a). Sr(a.)${clientName ? ' ' + clientName : ''},\n\nEm anexo encontra o Relatório de Manutenção ${inspectionNumber} relativo ao ascensor em ${liftLocation || '—'}, realizado em ${dataFormatted} pelo técnico ${inspector || '—'}.\n\nPara qualquer esclarecimento estamos ao dispor.\n\nCom os melhores cumprimentos,\nFestLift — Elevadores e Serviços, Lda.\ninfo@festlift.pt | +351 214 190 863`,
+            text: `Exmo(a). Sr(a.)${clientName ? ' ' + clientName : ''},\n\nEm anexo encontra o ${visitMeta.title} ${inspectionNumber} relativo ao ascensor em ${liftLocation || '—'}, realizado em ${dataFormatted} pelo técnico ${inspector || '—'}.\n\nPara qualquer esclarecimento estamos ao dispor.\n\nCom os melhores cumprimentos,\nFestLift — Elevadores e Serviços, Lda.\ninfo@festlift.pt | +351 214 190 863`,
             // HTML: carta de apresentação simples, sem checklist inline
             html: `
                 <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;border:1px solid #dde0e8;border-radius:10px;overflow:hidden;">
@@ -11209,7 +11227,7 @@ app.post('/api/inspections/send-report', authenticateToken, async (req, res) => 
                             Exmo(a). Sr(a.)${clientName ? ' <strong>' + clientName + '</strong>' : ''},
                         </p>
                         <p style="font-size:15px;color:#333;line-height:1.65;margin:0 0 16px;">
-                            Em anexo encontra o <strong>Relatório de Manutenção ${inspectionNumber}</strong>
+                            Em anexo encontra o <strong>${visitMeta.title} ${inspectionNumber}</strong>
                             relativo ao ascensor em <strong>${liftLocation || '—'}</strong>,
                             realizado em <strong>${dataFormatted}</strong>
                             pelo técnico <strong>${inspector || '—'}</strong>.

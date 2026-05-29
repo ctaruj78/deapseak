@@ -172,8 +172,8 @@
                                         <div class="row">
                                             <div class="col-md-6">
                                                 <div class="form-group">
-                                                    <label for="inspectionNumber">Nº da Manutenção</label>
-                                                    <input type="text" class="form-control" id="inspectionNumber" placeholder="MANU-2025-001" required>
+                                                    <label for="inspectionNumber">Nº do Relatório</label>
+                                                    <input type="text" class="form-control" id="inspectionNumber" placeholder="MANU-2025-05-001" required>
                                                 </div>
                                                 <div class="form-group">
                                                     <label for="inspectionDate">Data da Manutenção</label>
@@ -273,7 +273,7 @@
                                     <div id="inspectionReport">
                                         <!-- Report header -->
                                         <div class="text-center mb-4">
-                                            <h2>RELATÓRIO DE MANUTENÇÃO MENSAL</h2>
+                                            <h2 id="reportTitle">RELATÓRIO DE MANUTENÇÃO</h2>
                                             <p><strong>FestLift - Elevadores e Serviços, Lda.</strong></p>
                                             <p><small>☎ +351 214 190 863 | +351 926 380 243/244 | info@festlift.pt</small></p>
                                         </div>
@@ -282,8 +282,8 @@
                                         <div class="row mb-4">
                                             <div class="col-md-6">
                                                 <table class="table table-sm">
-                                                    <tr><td><strong>Nº da Manutenção:</strong></td><td id="reportInspectionNumber">MANU-2025-001</td></tr>
-                                                    <tr><td><strong>Data da Manutenção:</strong></td><td id="reportInspectionDate"></td></tr>
+                                                    <tr><td><strong>Nº do Relatório:</strong></td><td id="reportInspectionNumber">MANU-2025-05-001</td></tr>
+                                                    <tr><td><strong>Data da Visita:</strong></td><td id="reportInspectionDate"></td></tr>
                                                     <tr><td><strong>Técnico Responsável:</strong></td><td id="reportInspector"></td></tr>
                                                 </table>
                                             </div>
@@ -298,7 +298,7 @@
 
                                         <!-- Checklist results -->
                                         <div class="mb-4">
-                                            <h4>Resultados da Manutenção</h4>
+                                            <h4>Resultados da Verificação</h4>
                                             <div id="reportChecklist">
                                                 <!-- Dynamic content will be inserted here -->
                                             </div>
@@ -447,13 +447,26 @@
                 });
             },
 
+            function getReportMetaByVisitType(visitType) {
+                const map = {
+                    maintenance: { prefix: 'MANU', title: 'RELATÓRIO DE MANUTENÇÃO' },
+                    quarterly: { prefix: 'MANU', title: 'RELATÓRIO DE REVISÃO TRIMESTRAL' },
+                    annual: { prefix: 'INSP', title: 'RELATÓRIO DE REVISÃO ANUAL' },
+                    pre_inspection: { prefix: 'INSP', title: 'RELATÓRIO DE PREPARAÇÃO OI' },
+                    repair: { prefix: 'REP', title: 'RELATÓRIO DE REPARAÇÃO' },
+                    emergency: { prefix: 'EMG', title: 'RELATÓRIO DE INTERVENÇÃO DE EMERGÊNCIA' }
+                };
+                return map[visitType] || { prefix: 'INSP', title: 'RELATÓRIO TÉCNICO' };
+            }
+
             async generateInspectionNumber() {
                 try {
                     const token = localStorage.getItem('liftmanager_jwt') ||
                                   localStorage.getItem('jwt_token') ||
                                   localStorage.getItem('token') ||
                                   localStorage.getItem('lm_token');
-                    const res = await fetch('/api/inspections/next-number', {
+                    const visitType = $('#visitType').val() || 'maintenance';
+                    const res = await fetch(`/api/inspections/next-number?visitType=${encodeURIComponent(visitType)}`, {
                         headers: { 'Authorization': `Bearer ${token}` }
                     });
                     if (res.ok) {
@@ -469,12 +482,13 @@
                 const year = new Date().getFullYear();
                 const month = String(new Date().getMonth() + 1).padStart(2, '0');
                 const seq = String(Date.now()).slice(-5);
-                const number = `INSP-${year}-${month}-${seq}`;
+                const number = `${getReportMetaByVisitType($('#visitType').val() || 'maintenance').prefix}-${year}-${month}-${seq}`;
                 $('#inspectionNumber').val(number);
                 $('#reportInspectionNumber').text(number);
             },
 
             updateReportPreview() {
+                $('#reportTitle').text(getReportMetaByVisitType($('#visitType').val()).title);
                 // Update basic info
                 $('#reportInspectionNumber').text($('#inspectionNumber').val());
                 $('#reportInspectionDate').text($('#inspectionDate').val());
