@@ -329,10 +329,31 @@ const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017';
 const DB_NAME = 'deapseak';
 let db;
 let mongoClient;
+let mongoReconnectTimer = null;
+
+function scheduleMongoReconnect() {
+    if (mongoReconnectTimer) {
+        return;
+    }
+
+    mongoReconnectTimer = setTimeout(async () => {
+        mongoReconnectTimer = null;
+        try {
+            await connectMongo();
+        } catch (error) {
+            console.error('❌ MongoDB reconnect failed:', error.message);
+            scheduleMongoReconnect();
+        }
+    }, 5000);
+}
 
 // Async функція для підключення до MongoDB
 async function connectMongo() {
     try {
+        if (db && mongoClient) {
+            return db;
+        }
+
         mongoClient = await MongoClient.connect(MONGODB_URI, {
             maxPoolSize: 20,          // макс. 20 паралельних з'єднань (default: 5)
             minPoolSize: 2,           // мінімум 2 завжди готові
@@ -341,6 +362,15 @@ async function connectMongo() {
             connectTimeoutMS: 10000,  // таймаут першого підключення
         });
         db = mongoClient.db(DB_NAME);
+        mongoClient.on('close', () => {
+            console.error('❌ MongoDB connection closed');
+            db = null;
+            mongoClient = null;
+            scheduleMongoReconnect();
+        });
+        mongoClient.on('error', (error) => {
+            console.error('❌ MongoDB client error:', error.message);
+        });
         console.log('✅ MongoDB connected:', MONGODB_URI, 'DB:', DB_NAME);
 
         // 📊 Ensure performance indexes
@@ -378,7 +408,10 @@ async function connectMongo() {
 
         return db;
     } catch (err) {
+        db = null;
+        mongoClient = null;
         console.error('❌ MongoDB connection error:', err);
+        scheduleMongoReconnect();
         throw err;
     }
 }
@@ -884,18 +917,163 @@ app.delete('/api/qr/history/:id', authenticateToken, async (req, res) => {
 app.get('/api/qr/history', authenticateToken, async (req, res) => {
     try {
         if (!db) {
+            await connectMongo();
+        }
+
+        if (!db) {
             return res.status(503).json({ success: false, message: 'Base de dados indisponível' });
         }
-        
-        const history = await db.collection('qr_scans')
-            .find({})
-            .sort({ scannedAt: -1 })
-            .limit(100)
-            .toArray();
-        
-        res.json({ success: true, data: history || [] });
+
+        const {
+            qrCodeId,
+            referenceType,
+            referenceId,
+            scannedBy,
+            fromDate,
+            toDate,
+            page = 1,
+            limit = 20
+        } = req.query;
+
+        const query = {};
+
+        if (qrCodeId) {
+            query.qrCodeId = qrCodeId;
+        }
+
+        if (referenceType) {
+            query.referenceType = referenceType;
+        }
+
+        if (referenceId) {
+            query.referenceId = referenceId;
+        }
+
+        if (scannedBy) {
+            query.$or = [
+                { scannedBy },
+                { username: scannedBy }
+            ];
+        }
+
+        if (fromDate || toDate) {
+            query.scannedAt = {};
+            if (fromDate) {
+                query.scannedAt.$gte = new Date(fromDate);
+            }
+            if (toDate) {
+                query.scannedAt.$lte = new Date(toDate);
+            }
+        }
+
+        const pageNumber = Math.max(parseInt(page, 10) || 1, 1);
+        const limitNumber = Math.min(Math.max(parseInt(limit, 10) || 20, 1), 1000);
+        const skip = (pageNumber - 1) * limitNumber;
+
+        const [history, total] = await Promise.all([
+            db.collection('qr_scans')
+                .find(query)
+                .sort({ scannedAt: -1 })
+                .skip(skip)
+                .limit(limitNumber)
+                .toArray(),
+            db.collection('qr_scans').countDocuments(query)
+        ]);
+
+        res.json({
+            success: true,
+            data: history || [],
+            pagination: {
+                page: pageNumber,
+                limit: limitNumber,
+                total,
+                pages: Math.ceil(total / limitNumber)
+            }
+        });
     } catch (error) {
         console.error('❌ Помилка отримання історії QR:', error);
+        res.status(500).json({ success: false, message: 'Erro do servidor' });
+    }
+});
+
+app.get('/api/qr/scans', authenticateToken, async (req, res) => {
+    try {
+        if (!db) {
+            await connectMongo();
+        }
+
+        if (!db) {
+            return res.status(503).json({ success: false, message: 'Base de dados indisponível' });
+        }
+
+        const {
+            qrCodeId,
+            referenceType,
+            referenceId,
+            scannedBy,
+            fromDate,
+            toDate,
+            page = 1,
+            limit = 20
+        } = req.query;
+
+        const query = {};
+
+        if (qrCodeId) {
+            query.qrCodeId = qrCodeId;
+        }
+
+        if (referenceType) {
+            query.referenceType = referenceType;
+        }
+
+        if (referenceId) {
+            query.referenceId = referenceId;
+        }
+
+        if (scannedBy) {
+            query.$or = [
+                { scannedBy },
+                { username: scannedBy }
+            ];
+        }
+
+        if (fromDate || toDate) {
+            query.scannedAt = {};
+            if (fromDate) {
+                query.scannedAt.$gte = new Date(fromDate);
+            }
+            if (toDate) {
+                query.scannedAt.$lte = new Date(toDate);
+            }
+        }
+
+        const pageNumber = Math.max(parseInt(page, 10) || 1, 1);
+        const limitNumber = Math.min(Math.max(parseInt(limit, 10) || 20, 1), 1000);
+        const skip = (pageNumber - 1) * limitNumber;
+
+        const [history, total] = await Promise.all([
+            db.collection('qr_scans')
+                .find(query)
+                .sort({ scannedAt: -1 })
+                .skip(skip)
+                .limit(limitNumber)
+                .toArray(),
+            db.collection('qr_scans').countDocuments(query)
+        ]);
+
+        res.json({
+            success: true,
+            data: history || [],
+            pagination: {
+                page: pageNumber,
+                limit: limitNumber,
+                total,
+                pages: Math.ceil(total / limitNumber)
+            }
+        });
+    } catch (error) {
+        console.error('❌ Помилка отримання QR scans:', error);
         res.status(500).json({ success: false, message: 'Erro do servidor' });
     }
 });
@@ -904,41 +1082,72 @@ app.get('/api/qr/history', authenticateToken, async (req, res) => {
 app.post('/api/qr/scan', authenticateToken, async (req, res) => {
     try {
         if (!db) {
+            await connectMongo();
+        }
+
+        if (!db) {
             return res.status(503).json({ success: false, message: 'Base de dados indisponível' });
         }
-        
+
+        const { ObjectId } = require('mongodb');
         let { qrCode, liftId, action } = req.body;
+
+        if (!qrCode && req.body.qrData) {
+            qrCode = req.body.qrData;
+        }
 
         // Se qrCode for uma URL, extrair liftId automaticamente
         if (!liftId && qrCode) {
             try {
                 const url = new URL(qrCode);
-                liftId = url.searchParams.get('liftId') || liftId;
+                liftId = url.searchParams.get('liftId') || url.searchParams.get('id') || liftId;
             } catch(e) { /* não é URL */ }
         }
-        
+
+        const actorName = req.body.scannedBy || req.user.username || req.user.email || req.user.id;
+
         const scan = {
             qrCode,
             liftId,
             action: action || 'scan',
             userId: req.user.id,
-            username: req.user.username,
+            username: req.user.username || actorName,
+            scannedBy: actorName,
             scannedAt: new Date()
         };
-        
-        await db.collection('qr_scans').insertOne(scan);
 
         // Buscar dados do elevador para retornar ao cliente
         let liftData = null;
         if (liftId) {
             try {
-                const { ObjectId } = require('mongodb');
                 liftData = await db.collection('lifts').findOne({ _id: new ObjectId(liftId) });
             } catch(e) {
                 // liftId pode não ser um ObjectId válido
                 liftData = await db.collection('lifts').findOne({ municipalNumber: liftId });
             }
         }
+
+        if (!liftData && qrCode) {
+            const normalizedCode = String(qrCode).trim();
+            const normalizedMunicipal = normalizedCode.replace(/^LIFT-/i, '').replace(/-/g, '/');
+
+            liftData = await db.collection('lifts').findOne({
+                $or: [
+                    { 'qrCode.code': normalizedCode },
+                    { qrCode: normalizedCode },
+                    { municipalNumber: normalizedMunicipal },
+                    { municipalNumber: normalizedCode }
+                ]
+            });
+        }
+
+        if (liftData) {
+            scan.liftId = liftData._id.toString();
+            scan.referenceType = 'lift';
+            scan.referenceId = liftData._id.toString();
+        }
+
+        await db.collection('qr_scans').insertOne(scan);
 
         if (liftData) {
             res.json({
@@ -947,12 +1156,13 @@ app.post('/api/qr/scan', authenticateToken, async (req, res) => {
                 message: 'QR code digitalizado',
                 data: {
                     type: 'lift',
+                    liftId: liftData._id.toString(),
                     lift: liftData
                 },
                 scan
             });
         } else {
-            res.json({ success: true, valid: false, message: 'QR code registado mas elevador não encontrado', data: scan });
+            res.json({ success: true, valid: false, message: 'QR code registado mas elevador não encontrado na base de dados', data: scan });
         }
     } catch (error) {
         console.error('❌ Помилка запису QR скану:', error);
@@ -1209,6 +1419,7 @@ app.post('/api/inspections', authenticateToken, async (req, res) => {
             numero,
             data: req.body.data || req.body.inspectionDate || req.body.scheduledDate || now,
             inspector: req.body.inspector || req.body.technicianName || '',
+            liftId: req.body.liftId || null,
             liftLocation: req.body.liftLocation || req.body.liftAddress || req.body.address || '',
             liftMunicipal: req.body.liftMunicipal || '',
             liftModel: req.body.liftModel || '',
@@ -2719,19 +2930,34 @@ app.get('/api/lifts/:id', authenticateToken, async (req, res) => {
         }
         
         if (req.user.role === 'technician') {
-            // Перевіряємо чи є у техніка активний запит на цей ліфт
-            const techId = req.user.id || req.user.userId;
-            const hasAccess = await db.collection('requests').findOne({
-                liftId: liftId.toString(),
-                technician: techId,
-                status: { $in: ['pending', 'in_progress', 'assigned'] }
-            });
-            
-            if (!hasAccess) {
-                console.warn(`⚠️ Технік ${req.user.username} намагається отримати ліфт ${liftId} без завдання`);
+            // Технік має доступ або через активне завдання, або через нещодавній успішний QR scan цього ліфта.
+            const techId = (req.user.id || req.user.userId || '').toString();
+            const techActor = req.user.username || req.user.email || techId;
+            const recentScanSince = new Date(Date.now() - 12 * 60 * 60 * 1000);
+
+            const [activeTaskAccess, recentQrAccess] = await Promise.all([
+                db.collection('requests').findOne({
+                    liftId: liftId.toString(),
+                    technician: techId,
+                    status: { $in: ['pending', 'in_progress', 'assigned'] }
+                }),
+                db.collection('qr_scans').findOne({
+                    liftId: liftId.toString(),
+                    referenceType: 'lift',
+                    scannedAt: { $gte: recentScanSince },
+                    $or: [
+                        { userId: techId },
+                        { username: techActor },
+                        { scannedBy: techActor }
+                    ]
+                })
+            ]);
+
+            if (!activeTaskAccess && !recentQrAccess) {
+                console.warn(`⚠️ Технік ${req.user.username || req.user.email || techId} намагається отримати ліфт ${liftId} без завдання або QR scan`);
                 return res.status(403).json({
                     success: false,
-                    message: 'Sem tarefa ativa para este elevador'
+                    message: 'Sem tarefa ativa ou leitura QR recente para este elevador'
                 });
             }
         }

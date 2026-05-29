@@ -46,8 +46,16 @@ export default function QRScannerScreen({ navigation }) {
     try {
       // Відправляємо QR дані на сервер
       const response = await scanQRCode(data);
-      const scanResult = response.data?.data;
+      const responseData = response.data;
 
+      // Ліфт знайдено у відповіді сканування — використовуємо напряму
+      if (responseData?.valid && responseData?.data?.lift) {
+        setLiftInfo(responseData.data.lift);
+        return;
+      }
+
+      // Fallback: якщо відповідь містить liftId — окремий запит
+      const scanResult = responseData?.data;
       if (scanResult?.liftId) {
         // Отримуємо деталі ліфта
         const liftRes = await getLiftById(scanResult.liftId);

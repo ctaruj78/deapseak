@@ -794,7 +794,7 @@ document.addEventListener("DOMContentLoaded", function() {
                             : (lift.address || lift.location || '—');
                         // Drive/Door type labels
                         const driveLabels = { traction: 'Elétrico c/ Casa das Máquinas', traction_mrl: 'Elétrico MRL', hydraulic: 'Hidráulico', dl513: 'DL 513/70 (antigo)', goods: 'Monta-cargas', platform: 'Plataforma' };
-                        const doorLabels  = { automatic: 'Automáticas', swing: 'Batentes', gate: 'Portões/Guilhotina', mixed: 'Misto' };
+                        const doorLabels  = { automatic: 'Automáticas', swing: 'Batentes', gate: 'Portões/Guilhotina', mixed: 'Misto', patim_movel: 'Cabina sem portas / Patim móvel' };
                         const nextInsp = lift.nextInspectionDate ? new Date(lift.nextInspectionDate).toLocaleDateString('pt-PT') : null;
                         const nextMaint = lift.nextMaintenanceDate ? new Date(lift.nextMaintenanceDate).toLocaleDateString('pt-PT') : null;
                         resultHtml += `

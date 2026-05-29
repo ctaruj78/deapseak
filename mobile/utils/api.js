@@ -94,7 +94,7 @@ export const getTaskById = (id) =>
 
 // ─── QR ───────────────────────────────────────────────────────────────
 export const scanQRCode = (qrData) =>
-  api.post('/api/qr/scan', { qrData });
+  api.post('/api/qr/scan', { qrCode: qrData });
 
 export const getQRCodes = () =>
   api.get('/api/qr/codes');

@@ -345,6 +345,7 @@
                                                         <option value="automatic">🔄 Automáticas (operador)</option>
                                                         <option value="swing">🚪 Batentes / Semi-automáticas</option>
                                                         <option value="mixed">🚪🔄 Misto — Batentes (patamar) + Automática (cabina)</option>
+                                                        <option value="patim_movel">↔️ Cabina sem portas / Patim móvel</option>
                                                         <option value="gate">🔲 Portões de Rede / Guilhotina</option>
                                                     </select>
                                                 </div>
@@ -1170,6 +1171,14 @@
             updateChecklistReport();
         }
 
+        function getAuthToken() {
+            return sessionStorage.getItem('liftmanager_jwt') ||
+                   localStorage.getItem('liftmanager_jwt') ||
+                   localStorage.getItem('authToken') ||
+                   localStorage.getItem('token') ||
+                   sessionStorage.getItem('token');
+        }
+
         /* ================================================================
            QR / URL: carrega dados do ascensor automaticamente
            ================================================================ */
@@ -1373,6 +1382,7 @@
                     numero: numero,
                     data: $('#inspectionDate').val(),
                     inspector: inspector,
+                    liftId: window.currentLiftId || null,
                     liftLocation: liftLocation,
                     liftMunicipal: $('#liftMunicipal').val(),
                     liftModel: $('#liftModel').val(),
@@ -1388,7 +1398,10 @@
 
                 // Guardar na base de dados
                 try {
-                    const token = localStorage.getItem('liftmanager_jwt') || localStorage.getItem('authToken');
+                    const token = getAuthToken();
+                    if (!token) {
+                        throw new Error('Token não encontrado');
+                    }
                     const response = await fetch('/api/inspections', {
                         method: 'POST',
                         headers: {
@@ -1399,7 +1412,7 @@
                     });
                     const result = await response.json();
 
-                    if (result.success) {
+                    if (response.ok && result.success) {
                         // Actualizar número se foi gerado automaticamente
                         if (result.inspection.numero && !numero) {
                             $('#inspectionNumber').val(result.inspection.numero);
@@ -1411,7 +1424,7 @@
 
                         alert(`✅ Manutenção ${result.inspection.numero} guardada com sucesso na base de dados!`);
                     } else {
-                        throw new Error(result.message || 'Erro desconhecido');
+                        throw new Error(result.message || `Erro ${response.status}`);
                     }
                 } catch (error) {
                     console.error('❌ Erro ao guardar na BD, usando localStorage:', error);
@@ -1509,6 +1522,7 @@
                         inspectionNumber: $('#inspectionNumber').val(),
                         inspectionDate: $('#inspectionDate').val(),
                         inspector: $('#inspector').val(),
+                        liftId: window.currentLiftId || null,
                         liftLocation: $('#liftLocation').val(),
                         liftModel: $('#liftModel').val(),
                         liftSerial: $('#liftSerial').val() || '',
@@ -1602,13 +1616,23 @@
                         recommendations: $('#recommendations').val(),
                         recipientEmail: email
                     };
+
+                    if (typeof INSPECTION_TEMPLATES !== 'undefined') {
+                        reportData.visitTypeMeta = INSPECTION_TEMPLATES.VISIT_META[reportData.visitType] || null;
+                        reportData.driveTypeMeta = INSPECTION_TEMPLATES.NORMS_META[reportData.driveType] || null;
+                        reportData.doorTypeMeta = INSPECTION_TEMPLATES.DOOR_META[reportData.doorType] || null;
+                    }
                     
                     // Відправляexisteмо на servidor
+                    const token = getAuthToken();
+                    if (!token) {
+                        throw new Error('Token não encontrado');
+                    }
                     const response = await fetch('/api/inspections/send-report', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${localStorage.getItem('liftmanager_jwt') || localStorage.getItem('authToken')}`
+                            'Authorization': `Bearer ${token}`
                         },
                         body: JSON.stringify(reportData)
                     });

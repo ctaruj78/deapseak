@@ -3,7 +3,7 @@
  * Gera checklists dinâmicos por tipo de ascensor, tipo de porta e modalidade de visita.
  *
  * driveType:  traction | traction_mrl | hydraulic | goods | platform
- * doorType:   automatic | swing | gate
+ * doorType:   automatic | swing | mixed | gate | patim_movel
  * visitType:  maintenance | quarterly | annual | pre_inspection | emergency | repair
  */
 
@@ -79,6 +79,7 @@ const INSPECTION_TEMPLATES = (() => {
     item('vedacao-portas','Vedação das folhas de porta (juntas / batentes)',    'EN 81-1 § 7.1'),
     item('dobradicas',    'Dobradiças das portas de patamar (desgaste/folga)',  'EN 81-1 § 7.7.1'),
     item('fecho-cabina',  'Fecho manual da porta de cabina — operação segura', 'EN 81-1 § 8.7'),
+    item('stop-cabina',   'Botão STOP vermelho acessível na cabina',           'DR 13/80 Art. 93.º', true),
     item('lub-fechaduras','Lubrificação das fechaduras e dobradiças',          'Manual fabricante'),
   ];
 
@@ -87,8 +88,19 @@ const INSPECTION_TEMPLATES = (() => {
     item('estado-rede',   'Estado geral do portão de rede (deformações, corrosão)', 'DL 348/93 atualizado', true),
     item('fecho-auto-porte','Fecho automático ao início do movimento',           'EN 81-1 § 8.7',      true),
     item('contatos-porta','Contactos elétricos do portão',                      'EN 81-1 § 14.1.2',  true),
+    item('stop-cabina',   'Botão STOP vermelho acessível na cabina',            'DR 13/80 Art. 93.º', true),
     item('guias-porte',   'Guias do portão — estado e folga',                   'EN 81-1 § 8.7.2'),
     item('lub-portao',    'Lubrificação das guias e mecanismo do portão',       'Manual fabricante'),
+  ];
+
+  // --- Cabina sem portas / patim móvel (instalações antigas) ---
+  const DOORS_PATIM_MOVEL = [
+    item('patim-estado',      'Patim / soleira móvel — fixação, curso e retorno',            'Portaria 121/2005 Art. 8.º', true),
+    item('patim-sensores',    'Dispositivo elétrico nas extremidades do patim móvel',         'Portaria 121/2005 Art. 8.º', true),
+    item('stop-sem-portas',   'Botão STOP vermelho acessível na cabina sem portas',           'DR 13/80 Art. 93.º',         true),
+    item('alarme-sem-portas', 'Alarme sonoro funcional com bateria de emergência',            'DR 13/80 Art. 94.º',         true),
+    item('avisos-sem-portas', 'Avisos e instruções legíveis na cabina',                       'DR 13/80 Art. 95.º'),
+    item('mov-manual',        'Instruções para o movimento manual da cabina conformes',       'DR 13/80 Art. 105.º',        true),
   ];
 
   // --- Mecânica elétrica de tração ---
@@ -232,6 +244,7 @@ const INSPECTION_TEMPLATES = (() => {
     item('portao-513',     'Portão de rede / guilhotina — estado geral, deformações e corrosão', 'DL 513/70 Art. 27.º', true),
     item('fecho-portao-513','Mecanismo de fecho automático ao arranque — funcionamento',  'DL 513/70 Art. 28.º',   true),
     item('ct-portao-513',  'Contactos elétricos do portão de cabina e de cada patamar',  'DL 513/70 Art. 88.º',   true),
+    item('stop-portao-513','Botão STOP vermelho acessível na cabina',                      'DR 13/80 Art. 93.º',    true),
     item('engate-pat-513', 'Fechos de engate dos patamares — mecanismo e desgaste',      'DL 513/70 Art. 30.º',   true),
     item('guias-portao-513','Guias do portão — estado e folga lateral',                  'DL 513/70 Art. 27.º'),
     item('mola-portao-513','Mola de retorno do portão — tensão e funcionamento',         'DL 513/70 Art. 28.º'),
@@ -246,7 +259,18 @@ const INSPECTION_TEMPLATES = (() => {
     item('mola-bat-513',   'Molas de retorno — tensão e funcionamento',                   'DL 513/70 Art. 24.º'),
     item('dobr-bat-513',   'Dobradiças — desgaste e folga',                               'DL 513/70 Art. 24.º'),
     item('fecho-cab-513',  'Fecho da porta de cabina — operação manual segura',           'DL 513/70 Art. 26.º',   true),
+    item('stop-bat-513',   'Botão STOP vermelho acessível na cabina',                     'DR 13/80 Art. 93.º',    true),
     item('lub-bat-513',    'Lubrificação de fechos e dobradiças',                         'Manual fabricante'),
+  ];
+
+  // --- DL 513/70 — Cabina sem portas / patim móvel ---
+  const DL513_DOORS_PATIM_MOVEL = [
+    item('patim-513',         'Patim / soleira móvel — curso, fixação e retorno mecânico',   'DL 513/70 Art. 34.º',   true),
+    item('patim-elec-513',    'Dispositivo elétrico do patim móvel nas extremidades',         'Portaria 121/2005 Art. 8.º', true),
+    item('stop-513',          'Botão STOP vermelho acima dos restantes comandos',              'DR 13/80 Art. 93.º',    true),
+    item('alarme-513-portas', 'Alarme da cabina com acumulador de emergência',                'DR 13/80 Art. 94.º',    true),
+    item('avisos-513',        'Avisos / instruções visíveis e indeléveis na cabina',          'DR 13/80 Art. 95.º'),
+    item('mov-manual-513',    'Instruções para movimento manual da cabina disponíveis',       'DR 13/80 Art. 105.º',   true),
   ];
 
   // --- DL 513/70 — Vão e fosso ---
@@ -465,6 +489,10 @@ const INSPECTION_TEMPLATES = (() => {
           dl513DoorItems = DOORS_AUTOMATIC;
           dl513DoorTitle = 'Portas Automáticas (Modernização — DL 513/70)';
           dl513DoorIcon  = 'sync-alt';
+        } else if (doorType === 'patim_movel') {
+          dl513DoorItems = DL513_DOORS_PATIM_MOVEL;
+          dl513DoorTitle = 'Cabina sem Portas / Patim Móvel (DL 513/70)';
+          dl513DoorIcon  = 'arrows-alt-h';
         } else if (doorType === 'swing') {
           dl513DoorItems = DL513_DOORS_SWING;
           dl513DoorTitle = 'Portas Batentes (DL 513/70)';
@@ -575,6 +603,8 @@ const INSPECTION_TEMPLATES = (() => {
       let doorItems;
       if (doorType === 'swing') {
         doorItems = DOORS_SWING;
+      } else if (doorType === 'patim_movel') {
+        doorItems = DOORS_PATIM_MOVEL;
       } else if (doorType === 'gate') {
         doorItems = DOORS_GATE;
       } else {
@@ -583,9 +613,11 @@ const INSPECTION_TEMPLATES = (() => {
       sections.push({
         id: 'portas',
         title: doorType === 'gate' ? 'Portões de Rede / Guilhotina'
+             : doorType === 'patim_movel' ? 'Cabina sem Portas / Patim Móvel'
              : doorType === 'swing' ? 'Portas Batentes'
              : 'Portas Automáticas',
         icon: doorType === 'gate' ? 'grip-lines-vertical'
+            : doorType === 'patim_movel' ? 'arrows-alt-h'
             : doorType === 'swing' ? 'door-open'
             : 'border-all',
         color: 'primary',
@@ -750,6 +782,11 @@ const INSPECTION_TEMPLATES = (() => {
       label: 'Portões de Rede / Guilhotina',
       icon:  'grip-lines-vertical',
       norm:  'EN 81-1 § 8.7 (instalações antigas)',
+    },
+    patim_movel: {
+      label: 'Cabina sem Portas / Patim Móvel',
+      icon:  'arrows-alt-h',
+      norm:  'DL 513/70 / DR 13/80 / Portaria 121/2005 Art. 8.º',
     },
     mixed: {
       label: 'Misto — Batentes (patamar) + Automática (cabina)',
