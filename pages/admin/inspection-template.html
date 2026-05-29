@@ -858,6 +858,66 @@
         };
 
         // ── Dynamic checklist functions ────────────────────────────────────────
+        function renderFallbackMaintenanceChecklist() {
+            const fallbackItems = [
+                { id: 'para-quedas', label: 'Limitador de velocidade e para-quedas', norm: 'EN 81-20 § 5.6', critical: true },
+                { id: 'contatos-porta', label: 'Contactos elétricos das portas', norm: 'EN 81-20 § 5.3.9.1', critical: true },
+                { id: 'fechaduras-pat', label: 'Fechaduras de patamar', norm: 'EN 81-20 § 5.3.8', critical: true },
+                { id: 'alarme', label: 'Sistema de alarme de emergência', norm: 'EN 81-28', critical: true },
+                { id: 'emergencia-luz', label: 'Iluminação de emergência', norm: 'EN 81-20 § 5.4.11.2', critical: true },
+                { id: 'motor', label: 'Motor e grupo de tração', norm: 'EN 81-20 § 5.9.2', critical: false },
+                { id: 'guias', label: 'Guias e alinhamento', norm: 'EN 81-20 § 5.7.1', critical: false },
+                { id: 'quadro-elec', label: 'Quadro elétrico e proteções', norm: 'EN 81-20 § 5.10', critical: false },
+                { id: 'livro-rev', label: 'Livro de revisões atualizado', norm: 'DL 320/2002 Art. 12.º', critical: true },
+                { id: 'cert-valid', label: 'Certificado / inspeção periódica válida', norm: 'DL 320/2002 Art. 14.º', critical: true }
+            ];
+
+            let html = `
+                <div class="inspection-section mb-4" data-section="fallback-maintenance">
+                    <div class="section-header d-flex align-items-center py-2 px-3 mb-2" style="background:#f8f9fa;border-left:4px solid #007bff;border-radius:4px;">
+                        <i class="fas fa-tools text-primary mr-2"></i>
+                        <strong>Checklist de Manutenção (Fallback Admin)</strong>
+                        <span class="ml-auto badge badge-secondary">${fallbackItems.length} itens</span>
+                    </div>
+                    <div class="alert alert-warning py-2 mb-3">
+                        <i class="fas fa-exclamation-triangle mr-1"></i>
+                        Modo de contingência ativo: checklist base carregado para permitir envio urgente de relatório.
+                    </div>
+                    <div class="section-items">`;
+
+            fallbackItems.forEach((it) => {
+                const critClass = it.critical ? 'border-left border-danger' : '';
+                const critBadge = it.critical ? '<span class="badge badge-danger ml-1" title="Item crítico">CRIT</span>' : '';
+                html += `
+                    <div class="checklist-item row align-items-center mx-0 py-2 border-bottom ${critClass}" data-item="${it.id}" data-binary="0">
+                        <div class="col-12 col-md-5 d-flex align-items-center">
+                            ${critBadge}
+                            <span class="item-label ml-1">${it.label}</span>
+                        </div>
+                        <div class="col-12 col-md-3 mt-1 mt-md-0">
+                            <small class="text-muted item-norm"><i class="fas fa-book fa-xs mr-1"></i>${it.norm}</small>
+                        </div>
+                        <div class="col-12 col-md-4 mt-1 mt-md-0 d-flex align-items-center">
+                            <select class="form-control form-control-sm checklist-status mr-2" style="min-width:100px;">
+                                <option value="">— Estado —</option>
+                                <option value="ok">✓ Conforme</option>
+                                <option value="warning">⚠ Atenção</option>
+                                <option value="error">✗ Não conforme</option>
+                                <option value="na">N/A</option>
+                            </select>
+                            <input type="text" class="form-control form-control-sm checklist-comment" placeholder="Observação…">
+                        </div>
+                    </div>`;
+            });
+
+            html += `
+                    </div>
+                </div>`;
+
+            $('#inspectionChecklist').html(html);
+            $('#checklistTitle').html('<i class="fas fa-tasks text-primary mr-1"></i> Lista de Verificação Normativa');
+        }
+
         function refreshChecklist() {
             const driveType = $('#driveType').val() || 'traction';
             const doorType  = $('#doorType').val()  || 'automatic';
@@ -867,10 +927,17 @@
 
             if (typeof INSPECTION_TEMPLATES !== 'undefined') {
                 const html = INSPECTION_TEMPLATES.renderChecklist(driveType, doorType, visitType);
-                $('#inspectionChecklist').html(html);
-                updateChecklistStats();
-                inspectionManager.updateReportPreview();
+                if (html && html.trim().length > 0) {
+                    $('#inspectionChecklist').html(html);
+                } else {
+                    renderFallbackMaintenanceChecklist();
+                }
+            } else {
+                renderFallbackMaintenanceChecklist();
             }
+
+            updateChecklistStats();
+            inspectionManager.updateReportPreview();
         }
 
         function updateNormBanner(driveType, doorType, visitType) {
