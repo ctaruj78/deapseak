@@ -1,6 +1,6 @@
 /**
  * Scan History Module for LiftMaster Pro
- * Handles scan history functionality with real data from localStorage/API
+ * Handles scan history functionality with real data from API
  */
 
 const scanHistory = (function() {
@@ -8,36 +8,38 @@ const scanHistory = (function() {
     let filteredScans = [];
     let scansTable;
 
-    // Load scans from localStorage/API
+    // Load scans from API
     async function loadScans() {
         try {
             console.log('📊 A carregar histórico de leituras...');
 
-            // Try localStorage first
-            const localScans = JSON.parse(localStorage.getItem('qr_scan_history') || '[]');
-            
-            if (localScans.length > 0) {
-                console.log(`✅ Carregado do localStorage: ${localScans.length} leituras`);
-                scansData = localScans;
-            } else {
-                // Try API
-                const token = localStorage.getItem('liftmanager_jwt') ||
-                              sessionStorage.getItem('liftmanager_jwt') ||
-                              localStorage.getItem('token');
-                if (token) {
-                    const response = await fetch('/api/qr/history', {
-                        headers: {
-                            'Authorization': `Bearer ${token}`
-                        }
-                    });
-                    
-                    if (response.ok) {
-                        const data = await response.json();
-                        scansData = data.data || data.scans || [];
-                        console.log(`✅ Carregado da API: ${scansData.length} leituras`);
-                    }
-                }
+            const token = sessionStorage.getItem('liftmanager_jwt') ||
+                          localStorage.getItem('liftmanager_jwt') ||
+                          localStorage.getItem('authToken') ||
+                          localStorage.getItem('token');
+
+            if (!token) {
+                scansData = [];
+                filteredScans = [];
+                updateStatistics();
+                renderScans();
+                initializeMap();
+                return;
             }
+
+            const response = await fetch('/api/qr/history?limit=500', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (!response.ok) {
+                throw new Error(`API error ${response.status}`);
+            }
+
+            const data = await response.json();
+            scansData = data.data || data.scans || [];
+            console.log(`✅ Carregado da API: ${scansData.length} leituras`);
 
             filteredScans = [...scansData];
             updateStatistics();
@@ -278,7 +280,6 @@ const scanHistory = (function() {
                 throw new Error(data.message || 'Não foi possível limpar o histórico no servidor.');
             }
 
-            localStorage.removeItem('qr_scan_history');
             scansData = [];
             filteredScans = [];
             updateStatistics();

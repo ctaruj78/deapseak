@@ -21,9 +21,20 @@ class InvoiceManager {
     async loadInvoices() {
         try {
             // Спроба отримати дані з API
+            const token = sessionStorage.getItem('liftmanager_jwt') ||
+                          localStorage.getItem('liftmanager_jwt') ||
+                          localStorage.getItem('authToken') ||
+                          localStorage.getItem('token') || '';
+
+            if (!token) {
+                this.invoices = [];
+                this.applyFilters();
+                return;
+            }
+
             const response = await fetch('/api/invoices', {
                 headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    'Authorization': `Bearer ${token}`
                 }
             });
             
@@ -31,18 +42,12 @@ class InvoiceManager {
                 const json = await response.json();
                 const raw = json.data ?? json.invoices ?? json;
                 this.invoices = Array.isArray(raw) ? raw : [];
-                localStorage.setItem('invoices', JSON.stringify(this.invoices));
             } else {
                 throw new Error('API недоступне');
             }
         } catch (error) {
-            console.warn('Використання локальних даних:', error);
-            this.invoices = JSON.parse(localStorage.getItem('invoices')) || [];
-            
-            if (this.invoices.length === 0) {
-                this.invoices = this.createSampleInvoices();
-                localStorage.setItem('invoices', JSON.stringify(this.invoices));
-            }
+            console.warn('Erro ao carregar faturas via API:', error);
+            this.invoices = [];
         }
 
         this.applyFilters();

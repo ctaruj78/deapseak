@@ -20,7 +20,15 @@ class HistoryManager {
     async loadHistory() {
         try {
             // Спроба отримати дані з API
-            const token = localStorage.getItem('authToken') || localStorage.getItem('liftmanager_jwt') || localStorage.getItem('token');
+            const token = sessionStorage.getItem('liftmanager_jwt') || localStorage.getItem('liftmanager_jwt') || localStorage.getItem('authToken') || localStorage.getItem('token');
+
+            if (!token) {
+                this.events = [];
+                this.setupCharts();
+                this.applyFilters();
+                return;
+            }
+
             const response = await fetch('/api/maintenance-history', {
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -31,18 +39,12 @@ class HistoryManager {
                 const raw = await response.json();
                 // Підтримка як масиву, так і {success, data} формату
                 this.events = Array.isArray(raw) ? raw : (raw.data || []);
-                localStorage.setItem('maintenanceHistory', JSON.stringify(this.events));
             } else {
                 throw new Error('API indisponível');
             }
         } catch (error) {
-            console.warn('Використання локальних даних:', error);
-            this.events = JSON.parse(localStorage.getItem('maintenanceHistory')) || [];
-            
-            if (this.events.length === 0) {
-                this.events = this.createSampleEvents();
-                localStorage.setItem('maintenanceHistory', JSON.stringify(this.events));
-            }
+            console.warn('Erro ao carregar histórico da API:', error);
+            this.events = [];
         }
 
         this.setupCharts();

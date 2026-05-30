@@ -768,6 +768,51 @@
 
     <script>
         $(document).ready(function() {
+            function getToken() {
+                return sessionStorage.getItem('liftmanager_jwt') ||
+                       localStorage.getItem('liftmanager_jwt') ||
+                       localStorage.getItem('authToken') ||
+                       localStorage.getItem('token') ||
+                       '';
+            }
+
+            async function downloadReportFile(reportId, format) {
+                const token = getToken();
+                if (!token) {
+                    alert('Sessão expirada. Faça login novamente.');
+                    return;
+                }
+
+                const endpoint = format === 'pdf'
+                    ? `/api/reports/${reportId}/pdf`
+                    : `/api/reports/${reportId}/excel`;
+
+                try {
+                    const res = await fetch(endpoint, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+
+                    if (!res.ok) {
+                        const err = await res.json().catch(() => ({}));
+                        throw new Error(err.message || 'Erro ao exportar ficheiro');
+                    }
+
+                    const blob = await res.blob();
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = format === 'pdf'
+                        ? `relatorio_${reportId}.pdf`
+                        : `relatorio_${reportId}.csv`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                } catch (e) {
+                    alert(e.message || 'Erro ao exportar ficheiro');
+                }
+            }
+
             // Inicialização навігаційного менеджера (instalação, не classe)
             if (typeof NavigationManager !== 'undefined') {
                 window.navigationManager = NavigationManager;
@@ -817,7 +862,13 @@
                 const $btn = $(this);
                 $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-1"></i> Geração...');
 
-                const token = localStorage.getItem('liftmanager_jwt') || localStorage.getItem('authToken') || localStorage.getItem('token');
+                const token = getToken();
+                if (!token) {
+                    alert('Sessão expirada. Faça login novamente.');
+                    $btn.prop('disabled', false).html('<i class="fas fa-file-alt mr-1"></i> Criar relatório');
+                    return;
+                }
+
                 $.ajax({
                     url: '/api/reports/generate',
                     method: 'POST',
@@ -850,17 +901,25 @@
             // Exportar PDF
             $('#btn-export-pdf').on('click', function() {
                 const reportId = $(this).data('report-id');
-                if (reportId) window.open('/api/reports/' + reportId + '/pdf', '_blank');
+                if (!reportId) {
+                    alert('Gere primeiro um relatório');
+                    return;
+                }
+                downloadReportFile(reportId, 'pdf');
             });
 
             // Exportar para Excel
             $('#btn-export-excel').on('click', function() {
                 const reportId = $(this).data('report-id');
-                if (reportId) window.open('/api/reports/' + reportId + '/excel', '_blank');
+                if (!reportId) {
+                    alert('Gere primeiro um relatório');
+                    return;
+                }
+                downloadReportFile(reportId, 'excel');
             });
 
             // A carregar lista de técnicos
-            const token = localStorage.getItem('liftmanager_jwt') || localStorage.getItem('authToken') || localStorage.getItem('token');
+            const token = getToken();
             if (token) {
                 $.ajax({
                     url: '/api/users?role=technician',
@@ -868,7 +927,11 @@
                     success: function(data) {
                         const users = Array.isArray(data) ? data : (data.users || []);
                         users.forEach(function(u) {
-                            $('#technicianFilter').append('<option value="' + u._id + '">' + u.name + '</option>');
+                            const id = u._id || u.id || '';
+                            const name = u.name || [u.firstName, u.lastName].filter(Boolean).join(' ') || u.username || 'Técnico';
+                            if (id) {
+                                $('#technicianFilter').append('<option value="' + id + '">' + name + '</option>');
+                            }
                         });
                     }
                 });

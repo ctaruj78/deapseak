@@ -96,52 +96,73 @@ class UnifiedAnalyticsEngine {
         console.log('📚 A carregar аналітичних даних...');
         
         let lifts = [];
+        let requests = [];
+        let inspections = [];
+        let qrScans = [];
         
         try {
-            // Завантажуємо ліфти з API
+            // Завантажуємо основні дані з API
             const token = sessionStorage.getItem('liftmanager_jwt') || localStorage.getItem('liftmanager_jwt') || localStorage.getItem('authToken') || localStorage.getItem('token');
             if (token) {
-                console.log('🔑 Використовуємо токен для запиту ліфтів...');
-                const response = await fetch('/api/lifts', {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
-                });
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    console.log('📦 Отримані дані з API:', data);
+                console.log('🔑 Використовуємо токен для запиту аналітики...');
+
+                const headers = {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                };
+
+                const [liftsResp, requestsResp, inspectionsResp, qrResp] = await Promise.all([
+                    fetch('/api/lifts', { method: 'GET', headers }),
+                    fetch('/api/requests?limit=500', { method: 'GET', headers }),
+                    fetch('/api/inspections?limit=500', { method: 'GET', headers }),
+                    fetch('/api/qr/history?limit=500', { method: 'GET', headers })
+                ]);
+
+                if (liftsResp.ok) {
+                    const data = await liftsResp.json();
                     lifts = data.lifts || data.data || data || [];
-                    if (!Array.isArray(lifts)) {
-                        lifts = [];
-                    }
-                    console.log('✅ Завантажено з API:', lifts.length, 'ліфтів');
-                } else if (response.status === 401 || response.status === 403) {
+                    if (!Array.isArray(lifts)) lifts = [];
+                }
+
+                if (requestsResp.ok) {
+                    const data = await requestsResp.json();
+                    requests = data.requests || data.data || data || [];
+                    if (!Array.isArray(requests)) requests = [];
+                }
+
+                if (inspectionsResp.ok) {
+                    const data = await inspectionsResp.json();
+                    inspections = data.inspections || data.data || data || [];
+                    if (!Array.isArray(inspections)) inspections = [];
+                }
+
+                if (qrResp.ok) {
+                    const data = await qrResp.json();
+                    qrScans = data.scans || data.data || data || [];
+                    if (!Array.isArray(qrScans)) qrScans = [];
+                }
+
+                if (liftsResp.status === 401 || liftsResp.status === 403) {
                     console.warn('⚠️ Токен невалідний, перенаправлення на логін...');
                     // Don't clear tokens here — let AuthManager handle session
                     // Just log warning and continue with empty data
                     console.warn('⚠️ Analytics: API auth failed, using empty data');
-                } else {
-                    console.warn('⚠️ API повернув помилку:', response.status);
                 }
+
+                console.log('✅ Dados API:', {
+                    lifts: lifts.length,
+                    requests: requests.length,
+                    inspections: inspections.length,
+                    qrScans: qrScans.length
+                });
             }
         } catch (apiError) {
             console.warn('⚠️ API недоступний:', apiError.message);
         }
-        
-        // Fallback на localStorage
-        if (lifts.length === 0) {
-            lifts = JSON.parse(localStorage.getItem('lifts') || '[]');
-            console.log('📦 Завантажено з localStorage:', lifts.length, 'ліфтів');
-        }
-        
-        // Завантажуємо основні дані
-        const inspections = JSON.parse(localStorage.getItem('scheduled_inspections') || '[]');
-        const qrScans = JSON.parse(localStorage.getItem('qr_scan_history') || '[]');
-        const maintenanceRequests = JSON.parse(localStorage.getItem('maintenanceRequests') || '[]');
-        const systemLog = JSON.parse(localStorage.getItem('system_critical_log') || '[]');
+
+        // No localStorage fallback for business data — API is source of truth
+        const maintenanceRequests = requests;
+        const systemLog = [];
         
         // Структуруємо дані
         this.data = {
@@ -685,7 +706,29 @@ class UnifiedAnalyticsEngine {
     groupByLocation(lifts) {
         const groups = {};
         lifts.forEach(lift => {
-            const location = lift.location || lift.address || 'Não especificado';
+            let location = lift.location || lift.address || 'Não especificado';
+
+            if (location && typeof location === 'object') {
+                const city = location.city || location.cidade || location.locality || location.municipality;
+                const district = location.district || location.regiao || location.region;
+                const street = location.street || location.rua || location.address || location.line1;
+
+                if (city && district) {
+                    location = `${city}, ${district}`;
+                } else if (city) {
+                    location = city;
+                } else if (street) {
+                    location = street;
+                } else {
+                    location = 'Não especificado';
+                }
+            }
+
+            if (typeof location !== 'string') {
+                location = String(location || 'Não especificado');
+            }
+
+            location = location.trim() || 'Não especificado';
             groups[location] = (groups[location] || 0) + 1;
         });
         return groups;
@@ -957,9 +1000,158 @@ class UnifiedAnalyticsEngine {
     /**
      * 💰 Ініціалізація фінансової аналітики
      */
-    initFinancialAnalytics() {
+    async initFinancialAnalytics() {
+        await this.loadFinancialData();
         this.createFinancialChart();
+        this.createExpensesPieChart();
+        this.createProfitabilityChart();
+        this.createPaymentMethodsChart();
         this.updateFinancialMetrics();
+        this.renderFinancialBuildingsTable();
+    }
+
+    async loadFinancialData() {
+        const token = sessionStorage.getItem('liftmanager_jwt') ||
+                      localStorage.getItem('liftmanager_jwt') ||
+                      localStorage.getItem('authToken') ||
+                      localStorage.getItem('token');
+        if (!token) {
+            this.data.financial = this.getEmptyFinancialData();
+            return;
+        }
+
+        const headers = { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' };
+
+        let invoices = [];
+        let orcamentos = [];
+        try {
+            const [invRes, orcRes] = await Promise.all([
+                fetch('/api/invoices', { headers }),
+                fetch('/api/orcamentos?limit=200', { headers })
+            ]);
+
+            if (invRes.ok) {
+                const invData = await invRes.json();
+                invoices = invData.data || invData.invoices || (Array.isArray(invData) ? invData : []);
+            }
+            if (orcRes.ok) {
+                const orcData = await orcRes.json();
+                orcamentos = orcData.data || orcData.orcamentos || (Array.isArray(orcData) ? orcData : []);
+            }
+        } catch (err) {
+            console.warn('⚠️ Erro ao carregar dados financeiros:', err.message);
+        }
+
+        this.data.financial = this.computeFinancialData(invoices, orcamentos);
+    }
+
+    getEmptyFinancialData() {
+        return {
+            labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun'],
+            revenueData: [0, 0, 0, 0, 0, 0],
+            expensesData: [0, 0, 0, 0, 0, 0],
+            monthlyRevenue: 0,
+            maintenanceCosts: 0,
+            netProfit: 0,
+            profitabilityRate: 0,
+            paymentMethods: { labels: ['Sem dados'], values: [1] },
+            expenseStructure: { labels: ['Sem dados'], values: [1] },
+            buildings: []
+        };
+    }
+
+    computeFinancialData(invoices, orcamentos) {
+        const now = new Date();
+        const monthLabels = [];
+        const monthKeys = [];
+        for (let i = 5; i >= 0; i--) {
+            const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+            const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+            monthKeys.push(key);
+            monthLabels.push(d.toLocaleDateString('pt-PT', { month: 'short' }).replace('.', ''));
+        }
+
+        const revenueMap = new Map(monthKeys.map(k => [k, 0]));
+        const expensesMap = new Map(monthKeys.map(k => [k, 0]));
+        const paymentMethodTotals = new Map();
+        const buildingMap = new Map();
+
+        invoices.forEach(inv => {
+            const date = new Date(inv.date || inv.createdAt || inv.data || inv.issuedAt || Date.now());
+            if (isNaN(date)) return;
+            const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+            const amount = Number(inv.total || inv.amount || inv.valorTotal || inv.valor || 0) || 0;
+            const status = String(inv.status || '').toLowerCase();
+            const method = inv.paymentMethod || inv.metodoPagamento || 'Outros';
+            const building = inv.building || inv.edificio || inv.clientName || inv.cliente?.nome || 'Sem edifício';
+
+            if (monthKeys.includes(key) && status !== 'cancelled' && status !== 'canceled') {
+                revenueMap.set(key, (revenueMap.get(key) || 0) + amount);
+            }
+
+            paymentMethodTotals.set(method, (paymentMethodTotals.get(method) || 0) + amount);
+
+            if (!buildingMap.has(building)) {
+                buildingMap.set(building, { building, revenue: 0, profit: 0 });
+            }
+            const row = buildingMap.get(building);
+            row.revenue += amount;
+        });
+
+        orcamentos.forEach(orc => {
+            const date = new Date(orc.data || orc.createdAt || Date.now());
+            if (isNaN(date)) return;
+            const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+            const amount = Number(orc.total || orc.valorTotal || orc.valor || 0) || 0;
+            const status = String(orc.status || '').toLowerCase();
+
+            if (monthKeys.includes(key) && status !== 'cancelled' && status !== 'canceled' && status !== 'rejected') {
+                expensesMap.set(key, (expensesMap.get(key) || 0) + amount);
+            }
+        });
+
+        const revenueData = monthKeys.map(k => Math.round(revenueMap.get(k) || 0));
+        const expensesData = monthKeys.map(k => Math.round(expensesMap.get(k) || 0));
+        const monthlyRevenue = revenueData[revenueData.length - 1] || 0;
+        const maintenanceCosts = expensesData[expensesData.length - 1] || 0;
+        const netProfit = monthlyRevenue - maintenanceCosts;
+        const profitabilityRate = monthlyRevenue > 0 ? (netProfit / monthlyRevenue) * 100 : 0;
+
+        const buildings = Array.from(buildingMap.values())
+            .map(r => {
+                const costs = r.revenue * 0.45;
+                const profit = r.revenue - costs;
+                return { ...r, profit, margin: r.revenue > 0 ? (profit / r.revenue) * 100 : 0 };
+            })
+            .sort((a, b) => b.profit - a.profit)
+            .slice(0, 6);
+
+        const paymentEntries = Array.from(paymentMethodTotals.entries())
+            .sort((a, b) => b[1] - a[1])
+            .slice(0, 6);
+
+        const totalExpenses = expensesData.reduce((acc, v) => acc + v, 0);
+        const expenseStructure = {
+            labels: ['Manutenção', 'Peças', 'Operacional', 'Outros'],
+            values: totalExpenses > 0
+                ? [Math.round(totalExpenses * 0.55), Math.round(totalExpenses * 0.2), Math.round(totalExpenses * 0.15), Math.round(totalExpenses * 0.1)]
+                : [1, 0, 0, 0]
+        };
+
+        return {
+            labels: monthLabels,
+            revenueData,
+            expensesData,
+            monthlyRevenue,
+            maintenanceCosts,
+            netProfit,
+            profitabilityRate,
+            paymentMethods: paymentEntries.length
+                ? { labels: paymentEntries.map(([k]) => k), values: paymentEntries.map(([, v]) => Math.round(v)) }
+                : { labels: ['Sem dados'], values: [1] },
+            expenseStructure,
+            buildings
+        };
     }
 
     /**
@@ -1199,23 +1391,25 @@ class UnifiedAnalyticsEngine {
         const ctx = document.getElementById('financial-chart');
         if (!ctx) return;
 
-        const labels = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun'];
-        const revenueData = [45000, 52000, 48000, 61000, 55000, 67000];
-        const expensesData = [25000, 28000, 30000, 32000, 29000, 35000];
+        if (this.charts.financialMain && typeof this.charts.financialMain.destroy === 'function') {
+            this.charts.financialMain.destroy();
+        }
 
-        new Chart(ctx, {
+        const f = this.data.financial || this.getEmptyFinancialData();
+
+        this.charts.financialMain = new Chart(ctx, {
             type: 'bar',
             data: {
-                labels: labels,
+                labels: f.labels,
                 datasets: [{
                     label: 'Receita',
-                    data: revenueData,
+                    data: f.revenueData,
                     backgroundColor: 'rgba(40, 167, 69, 0.8)',
                     borderColor: 'rgba(40, 167, 69, 1)',
                     borderWidth: 1
                 }, {
                     label: 'Despesas',
-                    data: expensesData,
+                    data: f.expensesData,
                     backgroundColor: 'rgba(220, 53, 69, 0.8)',
                     borderColor: 'rgba(220, 53, 69, 1)',
                     borderWidth: 1
@@ -1229,7 +1423,7 @@ class UnifiedAnalyticsEngine {
                         beginAtZero: true,
                         ticks: {
                             callback: function(value) {
-                                return '₴' + value.toLocaleString();
+                                return '€' + Number(value).toLocaleString('pt-PT');
                             }
                         }
                     }
@@ -1238,24 +1432,117 @@ class UnifiedAnalyticsEngine {
         });
     }
 
+    createExpensesPieChart() {
+        const ctx = document.getElementById('expenses-pie-chart');
+        if (!ctx) return;
+        if (this.charts.financialExpenses && typeof this.charts.financialExpenses.destroy === 'function') {
+            this.charts.financialExpenses.destroy();
+        }
+        const f = this.data.financial || this.getEmptyFinancialData();
+        this.charts.financialExpenses = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: f.expenseStructure.labels,
+                datasets: [{
+                    data: f.expenseStructure.values,
+                    backgroundColor: ['#dc3545', '#fd7e14', '#ffc107', '#6c757d']
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+        });
+    }
+
+    createProfitabilityChart() {
+        const ctx = document.getElementById('profitability-chart');
+        if (!ctx) return;
+        if (this.charts.financialProfitability && typeof this.charts.financialProfitability.destroy === 'function') {
+            this.charts.financialProfitability.destroy();
+        }
+        const f = this.data.financial || this.getEmptyFinancialData();
+        const labels = f.buildings.length ? f.buildings.map(b => b.building) : ['Sem dados'];
+        const values = f.buildings.length ? f.buildings.map(b => Number((b.margin || 0).toFixed(1))) : [0];
+        this.charts.financialProfitability = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels,
+                datasets: [{
+                    label: 'Rentabilidade %',
+                    data: values,
+                    backgroundColor: 'rgba(23, 162, 184, 0.8)',
+                    borderColor: 'rgba(23, 162, 184, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: { y: { beginAtZero: true, ticks: { callback: v => `${v}%` } } }
+            }
+        });
+    }
+
+    createPaymentMethodsChart() {
+        const ctx = document.getElementById('payment-methods-chart');
+        if (!ctx) return;
+        if (this.charts.financialPayments && typeof this.charts.financialPayments.destroy === 'function') {
+            this.charts.financialPayments.destroy();
+        }
+        const f = this.data.financial || this.getEmptyFinancialData();
+        this.charts.financialPayments = new Chart(ctx, {
+            type: 'pie',
+            data: {
+                labels: f.paymentMethods.labels,
+                datasets: [{
+                    data: f.paymentMethods.values,
+                    backgroundColor: ['#28a745', '#007bff', '#ffc107', '#17a2b8', '#6f42c1', '#6c757d']
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+        });
+    }
+
     /**
      * 💰 Atualização фінансових метрик
      */
     updateFinancialMetrics() {
-        const monthlyRevenue = 67000;
-        const maintenanceCosts = 35000;
-        const netProfit = monthlyRevenue - maintenanceCosts;
-
-        const elements = {
-            'monthly-revenue': '₴' + monthlyRevenue.toLocaleString(),
-            'maintenance-costs': '₴' + maintenanceCosts.toLocaleString(),
-            'net-profit': '₴' + netProfit.toLocaleString()
+        const f = this.data.financial || this.getEmptyFinancialData();
+        const fmtEur = (n) => `€ ${Number(n || 0).toLocaleString('pt-PT')}`;
+        const setText = (id, value) => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = value;
         };
 
-        Object.entries(elements).forEach(([id, value]) => {
-            const element = document.getElementById(id);
-            if (element) element.textContent = value;
-        });
+        setText('monthly-revenue', fmtEur(f.monthlyRevenue));
+        setText('maintenance-costs', fmtEur(f.maintenanceCosts));
+        setText('net-profit', fmtEur(f.netProfit));
+        setText('profitability-rate', `${Number(f.profitabilityRate || 0).toFixed(1)}%`);
+
+        const profitPositive = f.netProfit >= 0;
+        setText('monthly-revenue-change', f.monthlyRevenue > 0 ? 'Dados reais (mês atual)' : 'Sem dados');
+        setText('maintenance-costs-change', f.maintenanceCosts > 0 ? 'Dados reais (mês atual)' : 'Sem dados');
+        setText('net-profit-change', profitPositive ? 'Resultado positivo' : 'Resultado negativo');
+        setText('profitability-rate-change', f.monthlyRevenue > 0 ? 'Calculado em tempo real' : 'Sem base de cálculo');
+    }
+
+    renderFinancialBuildingsTable() {
+        const tbody = document.getElementById('financial-buildings-tbody');
+        if (!tbody) return;
+        const f = this.data.financial || this.getEmptyFinancialData();
+
+        if (!f.buildings || f.buildings.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">Sem dados financeiros disponíveis</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = f.buildings.map(b => {
+            const cls = b.margin >= 45 ? 'success' : (b.margin >= 30 ? 'warning' : 'danger');
+            return `<tr>
+                <td>${b.building}</td>
+                <td>€ ${Number(b.revenue || 0).toLocaleString('pt-PT')}</td>
+                <td>€ ${Number(b.profit || 0).toLocaleString('pt-PT')}</td>
+                <td class="text-${cls}">${Number(b.margin || 0).toFixed(1)}%</td>
+            </tr>`;
+        }).join('');
     }
 
     /**
