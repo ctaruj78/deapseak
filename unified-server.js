@@ -12276,7 +12276,7 @@ app.use((req, res, next) => {
 
 // Restrição de documentação interna: clientes só podem aceder ao manual público.
 app.use('/docs', (req, res, next) => {
-    const publicDocs = new Set(['/user-manual.pdf']);
+    const publicDocs = new Set(['/user-manual.pdf', '/user-manual-short.webm']);
     if (publicDocs.has(req.path)) {
         return next();
     }

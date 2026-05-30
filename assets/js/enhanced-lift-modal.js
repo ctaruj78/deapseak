@@ -255,7 +255,22 @@ class EnhancedLiftModal {
             (error) => {
                 console.error('Enhanced geolocation error:', error);
                 if (this.locationRequested) {
-                    this.showMessage('Não foi possível obter coordenadas: ' + error.message, 'error');
+                    const hasAddress = !!$('#enhancedLiftAddress').val().trim();
+
+                    if (error && error.code === error.PERMISSION_DENIED) {
+                        if (hasAddress) {
+                            this.showMessage('Permissão de localização negada. A usar pesquisa por morada.', 'warning');
+                            this.geocodeAddress();
+                        } else {
+                            this.showMessage('Permissão de localização negada. Use pesquisa por morada ou clique no mapa.', 'warning');
+                        }
+                    } else if (error && error.code === error.TIMEOUT) {
+                        this.showMessage('Tempo esgotado ao obter localização. Tente novamente ou use pesquisa por morada.', 'warning');
+                    } else if (error && error.code === error.POSITION_UNAVAILABLE) {
+                        this.showMessage('Localização indisponível no momento. Use pesquisa por morada ou clique no mapa.', 'warning');
+                    } else {
+                        this.showMessage('Não foi possível obter coordenadas agora. Use pesquisa por morada ou clique no mapa.', 'warning');
+                    }
                 }
                 this.locationRequested = false;
                 btn.html(originalHtml).prop('disabled', false);
@@ -264,7 +279,7 @@ class EnhancedLiftModal {
         );
     }
 
-    geocodeAddress() {
+    async geocodeAddress() {
         const address = $('#enhancedLiftAddress').val().trim();
         const postcode = $('#enhancedLiftPostcode').val().trim();
 
@@ -277,37 +292,67 @@ class EnhancedLiftModal {
         const originalHtml = btn.html();
         btn.html('<i class="fas fa-spinner fa-spin"></i>').prop('disabled', true);
 
-        const q = postcode ? `${address}, ${postcode}, Portugal` : `${address}, Portugal`;
-        console.log('🔍 Geocoding via proxy:', q);
+        const baseAddress = address
+            .replace(/\s*,\s*/g, ', ')
+            .replace(/\s{2,}/g, ' ')
+            .trim();
+        const addressNoDoorMarker = baseAddress
+            .replace(/\bn[º°o]\s*/gi, ' ')
+            .replace(/\s{2,}/g, ' ')
+            .trim();
+        const addressWithoutCommaBeforeCity = baseAddress
+            .replace(/,(\S)/g, ', $1')
+            .trim();
 
-        fetch(`/api/geocode?q=${encodeURIComponent(q)}`)
-            .then(r => r.json())
-            .then(data => {
-                btn.html(originalHtml).prop('disabled', false);
-                if (!data.success) {
-                    this.showMessage('Endereço não encontrado. Verifique o nome da rua e o código postal.', 'warning');
-                    return;
+        const queryVariants = [];
+        const addQuery = (q) => {
+            const normalized = q.replace(/\s{2,}/g, ' ').trim();
+            if (normalized && !queryVariants.includes(normalized)) {
+                queryVariants.push(normalized);
+            }
+        };
+
+        addQuery(postcode ? `${baseAddress}, ${postcode}, Portugal` : `${baseAddress}, Portugal`);
+        addQuery(postcode ? `${addressWithoutCommaBeforeCity}, ${postcode}, Portugal` : `${addressWithoutCommaBeforeCity}, Portugal`);
+        addQuery(postcode ? `${addressNoDoorMarker}, ${postcode}, Portugal` : `${addressNoDoorMarker}, Portugal`);
+        addQuery(`${baseAddress}, Portugal`);
+
+        let data = null;
+        for (const q of queryVariants) {
+            console.log('🔍 Geocoding via proxy:', q);
+            try {
+                const response = await fetch(`/api/geocode?q=${encodeURIComponent(q)}`);
+                const current = await response.json();
+                if (current && current.success) {
+                    data = current;
+                    break;
                 }
-                const results = data.results || [{ lat: data.lat, lng: data.lng, display: data.display, city: data.city, postcode: data.postcode }];
-                // Якщо є кілька результатів з різних міст — показати вибір
-                const cities = [...new Set(results.map(r => r.city).filter(Boolean))];
-                if (results.length > 1 && !postcode && cities.length > 1) {
-                    this._showGeocodeChoiceModal(results, address);
-                } else {
-                    const r = results[0];
-                    this.setCoordinates(r.lat, r.lng);
-                    if (r.postcode && !$('#enhancedLiftPostcode').val().trim()) {
-                        $('#enhancedLiftPostcode').val(r.postcode);
-                    }
-                    const cityLabel = r.city || r.display.split(',')[0];
-                    this.showMessage(`Coordenadas definidas: ${cityLabel}`, 'success');
-                }
-            })
-            .catch(error => {
-                console.error('Enhanced geocoding error:', error);
-                btn.html(originalHtml).prop('disabled', false);
-                this.showMessage('Erro геокодування. Перевірте з\'єднання.', 'error');
-            });
+            } catch (err) {
+                console.warn('Geocode attempt failed:', q, err?.message || err);
+            }
+        }
+
+        btn.html(originalHtml).prop('disabled', false);
+
+        if (!data || !data.success) {
+            this.showMessage('Endereço não encontrado. Tente o formato "Rua ..., Cidade" e confirme o código postal.', 'warning');
+            return;
+        }
+
+        const results = data.results || [{ lat: data.lat, lng: data.lng, display: data.display, city: data.city, postcode: data.postcode }];
+        // Якщо є кілька результатів з різних міст — показати вибір
+        const cities = [...new Set(results.map(r => r.city).filter(Boolean))];
+        if (results.length > 1 && !postcode && cities.length > 1) {
+            this._showGeocodeChoiceModal(results, address);
+        } else {
+            const r = results[0];
+            this.setCoordinates(r.lat, r.lng);
+            if (r.postcode && !$('#enhancedLiftPostcode').val().trim()) {
+                $('#enhancedLiftPostcode').val(r.postcode);
+            }
+            const cityLabel = r.city || r.display.split(',')[0];
+            this.showMessage(`Coordenadas definidas: ${cityLabel}`, 'success');
+        }
     }
 
     _showGeocodeChoiceModal(results, address) {

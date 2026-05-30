@@ -1,231 +1,172 @@
-# 📚 ІНСТРУКЦІЯ КОРИСТУВАЧА - DeapSeaK CRM System
+# Manual do Utilizador (Cliente) - FestLift
 
-## 🎯 ОГЛЯД СИСТЕМИ
+## Objetivo
+Este manual explica, passo a passo, como usar o painel do cliente no FestLift para gerir elevadores, pedidos de assistencia, orcamentos e comunicacao com suporte.
 
-**DeapSeaK** - це комплексна система управління ліфтами з інтегрованими модулями для:
-- 📋 Управління заявками на обслуговування
-- 📊 Моніторинг стану ліфтів в реальному часі
-- 💬 Комунікація між користувачами
-- 🔍 QR-система для швидкого доступу
+## Video curto (35 segundos)
+- Link direto: https://crm.festlift.pt/docs/user-manual-short.webm
+- Ficheiro local no projeto: docs/user-manual-short.webm
 
----
+## Acesso
+1. Abra a pagina de login.
+2. Introduza email e palavra-passe.
+3. Depois de entrar, sera redirecionado para o Dashboard do cliente.
 
-## 🚀 ШВИДКИЙ СТАРТ
+Se se esquecer da palavra-passe, use a opcao de recuperacao ou contacte suporte.
 
-### 1. Вхід у систему
-1. Відкрийте `/login.html`
-2. Введіть свої облікові дані
-3. Система автоматично перенаправить вас до CRM
+## Estrutura do Painel
+No menu lateral, o cliente encontra os modulos principais:
+- Dashboard
+- Os meus elevadores
+- Previsoes AI
+- Pedidos
+- Orcamentos
+- Faturas
+- Historico
+- Relatorios
+- Documentacao
+- Notificacoes
+- Suporte
+- Perfil
 
-### 2. Головний дашборд
-- **URL**: `/pages/crm-integrated.html`
-- **Функції**: Загальний огляд, статистика, швидкі дії
-- **Віджети**: Останні заявки, стан системи, повідомлення
+## Dashboard
+No Dashboard, o cliente ve:
+- Estado geral dos elevadores
+- Contadores de pedidos ativos
+- Acoes rapidas
+- Eventos e notificacoes recentes
 
----
+Acoes recomendadas:
+- Verificar alertas no topo da pagina
+- Confirmar se existe alguma manutencao pendente
+- Abrir um novo pedido quando necessario
 
-## 📋 МОДУЛЬ УПРАВЛІННЯ ЗАЯВКАМИ
+## Os meus elevadores
+Nesta pagina pode:
+- Ver lista dos elevadores associados a sua conta
+- Filtrar por estado e tipo
+- Abrir detalhes de cada elevador
+- Ver localizacao no mapa
+- Consultar documentos relacionados
 
-### Основні функції:
-- ✅ Створення нових заявок
-- 📝 Редагування існуючих заявок
-- 🔍 Пошук та фільтрація
-- 📱 QR-інтеграція
-- 📊 Статистика та звіти
+Sugestao: use os filtros antes de abrir tickets, para confirmar qual elevador precisa de assistencia.
 
-### Як використовувати:
+## Pedidos
+Modulo principal para abrir e acompanhar pedidos de assistencia.
 
-#### Створення заявки:
-1. Натисніть **"Нова заявка"** на дашборді або в модулі
-2. Заповніть форму:
-   - **Тип заявки**: Обслуговування, Ремонт, Встановлення, Перевірка
-   - **Пріоритет**: Низький, Середній, Високий, Терміново
-   - **Локація**: Адреса та деталі розташування
-   - **Опис**: Детальний опис проблеми
-3. Натисніть **"Створити заявку"**
+### Criar novo pedido
+1. Clique em Criar novo pedido.
+2. Selecione o elevador.
+3. Escolha tipo e prioridade.
+4. Escreva titulo e descricao clara do problema.
+5. Anexe fotografias (se necessario).
+6. Submeta o pedido.
 
-#### Управління заявками:
-- **Фільтрація**: За статусом, пріоритетом, датою
-- **Пошук**: По назві, опису, локації
-- **Статуси**: Очікує → Виконується → Завершено/Скасовано
-- **QR-сканування**: Швидкий доступ до заявки через QR-код
+### Acompanhar pedido
+- Ver estado: Novo, Atribuido, Em curso, Concluido, Cancelado
+- Abrir detalhes do pedido
+- Cancelar pedido (quando permitido)
+- Avaliar tecnico apos conclusao
 
-#### Ролі та дозволи:
-- **Клієнт**: Створення заявок, перегляд своїх заявок
-- **Технік**: Отримання призначених заявок, оновлення статусу
-- **Диспетчер**: Призначення заявок техніків, управління пріоритетами
-- **Адміністратор**: Повний доступ до всіх функцій
+### Avaliar tecnico
+Quando o pedido estiver Concluido:
+1. Clique no botao de avaliacao (estrela).
+2. Escolha classificacao de 1 a 5.
+3. Adicione comentario opcional.
+4. Envie a avaliacao.
 
----
+## Orcamentos
+Aqui pode:
+- Ver orcamentos recebidos
+- Rever valor e descricao dos servicos
+- Aceitar ou rejeitar
+- Consultar historico de decisoes
 
-## 📊 МОДУЛЬ МОНІТОРИНГУ СИСТЕМИ
+## Faturas
+Nesta area pode:
+- Ver lista de faturas
+- Filtrar por estado
+- Abrir detalhe
+- Exportar ou imprimir quando disponivel
 
-### Основні функції:
-- 📈 Real-time дашборд
-- 🚨 Система алертів
-- 📋 Стан всіх ліфтів
-- 📊 Графіки та метрики
-- 📄 Звітність
+## Historico
+Permite analisar manutencoes e intervencoes passadas:
+- Filtrar por periodo, tipo de evento e elevador
+- Ver cronologia de eventos
+- Consultar estatisticas e custos
+- Exportar relatorio
 
-### Як використовувати:
+## Relatorios
+O cliente pode gerar relatorios operacionais para:
+- Acompanhamento interno
+- Auditoria
+- Revisao de desempenho
 
-#### Перегляд стану системи:
-1. Перейдіть до **"Моніторинг системи"**
-2. Переглядайте:
-   - **Активні ліфти**: Кількість працюючих одиниць
-   - **На обслуговуванні**: Ліфти в режимі технічного обслуговування
-   - **Помилки**: Ліфти з активними проблемами
-   - **Алерти**: Сповіщення про важливі події
+## Documentacao
+Secao para conteudo de utilizacao do cliente.
+Inclui:
+- Manual do utilizador
+- Guias funcionais do painel
+- Video curto de utilizacao: `docs/user-manual-short.webm`
 
-#### Робота з алертами:
-- **Перегляд**: Список активних сповіщень
-- **Підтвердження**: Позначити алерт як опрацьований
-- **Пріоритизація**: Сортування за важливістю
-- **Історія**: Архів попередніх алертів
+Nota: documentacao tecnica interna nao e visivel para clientes.
 
-#### Аналітика:
-- **Графіки продуктивності**: CPU, пам'ять, навантаження
-- **Статистика роботи**: Час роботи, кількість викликів
-- **Тренди**: Аналіз показників за період
+## Notificacoes
+Mostra avisos de sistema e atualizacoes de pedidos.
+Boas praticas:
+- Verificar notificacoes diariamente
+- Marcar como lidas apos revisar
+- Abrir pedido diretamente pela notificacao quando aplicavel
 
----
+## Suporte
+Use esta secao para:
+- Abrir ticket de suporte
+- Ver respostas da equipa
+- Acompanhar estado da resolucao
 
-## 💬 МОДУЛЬ КОМУНІКАЦІЇ (ЧАТ)
+Quando abrir ticket, inclua:
+- Numero do elevador
+- Descricao objetiva
+- Hora aproximada do problema
+- Imagens, quando possivel
 
-### Основні функції:
-- 📱 Приватні повідомлення
-- 👥 Групові канали
-- 📎 Прикріплення файлів
-- 🔍 Пошук по повідомленням
-- 🔔 Сповіщення
+## Perfil e Seguranca
+No Perfil pode:
+- Atualizar nome e contacto
+- Alterar palavra-passe
+- Confirmar dados de conta
 
-### Як використовувати:
+Recomendacoes:
+- Use palavra-passe forte
+- Nao partilhe credenciais
+- Termine sessao ao usar computador partilhado
 
-#### Приватні повідомлення:
-1. У списку **"Контакти"** оберіть користувача
-2. Введіть повідомлення в поле внизу
-3. Натисніть **Enter** або кнопку відправки
+## Erros Comuns e Solucoes
+### Nao consigo entrar
+- Verifique email/palavra-passe
+- Confirme se Caps Lock esta ativo
+- Tente recuperar a palavra-passe
 
-#### Групові канали:
-- **#Загальний**: Для всіх користувачів
-- **#Технічна підтримка**: Для технічних питань
-- **#Диспетчери**: Приватний канал для диспетчерів
+### O pedido nao aparece
+- Atualize a pagina
+- Verifique filtros ativos
+- Confirme se o envio foi concluido
 
-#### Функції чату:
-- **Статус онлайн**: Зелений індикатор - користувач онлайн
-- **Непрочитані**: Червоні бейджі з кількістю нових повідомлень
-- **Пошук**: Знайти повідомлення по ключовим словам
-- **Історія**: Переглянути попередні повідомлення
+### O PDF nao abre
+- Atualize a pagina com limpeza de cache
+- Tente abrir noutra aba
+- Contacte suporte se o erro persistir
 
----
+## Contactos
+- Email: info@festlift.pt
+- Telefone: +351 214 190 863
 
-## 🔍 QR-СИСТЕМА
-
-### Основні функції:
-- 📷 Сканування QR-кодів
-- 🖨️ Генерація QR-кодів
-- 🔗 Прив'язка до заявок
-- 📱 Мобільна оптимізація
-
-### Як використовувати:
-
-#### Сканування:
-1. Натисніть кнопку **QR** або **"Сканувати QR"**
-2. Дозвольте доступ до камери
-3. Наведіть камеру на QR-код
-4. Система автоматично перенаправить до пов'язаної заявки
-
-#### Генерація:
-- QR-коди автоматично створюються для кожної заявки
-- Доступні в деталях заявки для друку або надсилання
-
----
-
-## ⚙️ НАЛАШТУВАННЯ ТА КОНФІГУРАЦІЯ
-
-### Профіль користувача:
-- Оновлення особистої інформації
-- Зміна паролю
-- Налаштування сповіщень
-
-### Системні налаштування (тільки для адміністраторів):
-- Управління користувачами
-- Конфігурація ролей
-- Налаштування системи моніторингу
-
----
-
-## 🛠️ ТЕХНІЧНІ ВИМОГИ
-
-### Мінімальні вимоги:
-- **Браузер**: Chrome 90+, Firefox 88+, Safari 14+, Edge 90+
-- **Інтернет**: Стабільне підключення для real-time функцій
-- **Дозволи**: Камера (для QR-сканування), Сповіщення
-
-### Рекомендовані налаштування:
-- Дозволити сповіщення для системи
-- Включити JavaScript
-- Оновлювати браузер до останньої версії
-
----
-
-## 🔧 УСУНЕННЯ НЕСПРАВНОСТЕЙ
-
-### Поширені проблеми:
-
-#### Не завантажуються дані:
-1. Перевірте підключення до інтернету
-2. Оновіть сторінку (F5)
-3. Перевірте статус API сервера
-
-#### Не працює QR-сканер:
-1. Дозвольте доступ до камери
-2. Перевірте освітлення
-3. Очистіть об'єктив камери
-
-#### Не приходять повідомлення:
-1. Перевірте налаштування сповіщень
-2. Переконайтеся, що ви онлайн
-3. Оновіть сторінку чату
-
-### Контакти підтримки:
-- **Email**: info@festlift.pt
-- **Телефон**: +380-XX-XXX-XXXX
-- **Внутрішній чат**: Канал #Технічна підтримка
-
----
-
-## 📊 ДОДАТКОВІ МОЖЛИВОСТІ
-
-### Звітність:
-- Експорт даних заявок у CSV/Excel
-- Графіки продуктивності
-- Аналітика використання системи
-
-### Мобільна версія:
-- Адаптивний дизайн
-- Сенсорне управління
-- Оптимізація для мобільних пристроїв
-
-### Інтеграції:
-- API для сторонніх систем
-- Webhook'и для автоматизації
-- Експорт/імпорт даних
-
----
-
-## 🚀 ПОРАДИ ДЛЯ ЕФЕКТИВНОЇ РОБОТИ
-
-1. **Використовуйте фільтри** для швидкого пошуку заявок
-2. **Налаштуйте сповіщення** для важливих подій
-3. **Регулярно перевіряйте дашборд** для загального огляду
-4. **Використовуйте QR-коди** для швидкого доступу
-5. **Активно користуйтесь чатом** для координації роботи
-
----
-
-**Версія документації**: 2.0.0  
-**Дата оновлення**: 2024  
-**Розробник**: DeapSeaK Team
-
-💡 **Потрібна допомога?** Зверніться до технічної підтримки або скористайтеся внутрішнім чатом системи.
+## Resumo Rapido
+Fluxo recomendado para cliente:
+1. Ver Dashboard
+2. Confirmar estado dos elevadores
+3. Criar pedido quando necessario
+4. Acompanhar execucao
+5. Avaliar tecnico ao concluir
+6. Consultar orcamentos/faturas
+7. Usar suporte para duvidas
