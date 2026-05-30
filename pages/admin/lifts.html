@@ -4925,6 +4925,45 @@ Email de contacto: info@festlift.pt`;
                 ? brandLabels[lift.manufacturer]
                 : (lift.manufacturer || '');
             const modelCell = [brandDisplay, lift.model].filter(Boolean).join(' ') || '-';
+            const _latestRowReport = Array.isArray(lift.inspectionHistory) && lift.inspectionHistory.length
+                ? lift.inspectionHistory
+                    .slice()
+                    .sort((a, b) => new Date(b.inspectionDate || b.date || 0) - new Date(a.inspectionDate || a.date || 0))[0]
+                : null;
+            const _effectiveExpiryDate = (() => {
+                const explicit =
+                    lift.nextInspectionDate ||
+                    lift.licenseExpiry ||
+                    lift.certExpiry ||
+                    (_latestRowReport ? (_latestRowReport.validUntil || _latestRowReport.nextInspectionDate) : null) ||
+                    null;
+                if (explicit) {
+                    const d = new Date(explicit);
+                    if (!isNaN(d)) return d;
+                }
+                const baseDate =
+                    lift.lastInspectionDate ||
+                    lift.licenseDate ||
+                    lift.certDate ||
+                    (_latestRowReport ? (_latestRowReport.inspectionDate || _latestRowReport.date) : null) ||
+                    null;
+                const hasLegacyNoStatus = !lift.inspectionStatus && !(_latestRowReport && _latestRowReport.status);
+                const statusPassed =
+                    lift.inspectionStatus === 'passed' ||
+                    (_latestRowReport && _latestRowReport.status === 'passed') ||
+                    hasLegacyNoStatus;
+                if (statusPassed && baseDate) {
+                    const d = new Date(baseDate);
+                    if (!isNaN(d)) {
+                        d.setFullYear(d.getFullYear() + 2);
+                        return d;
+                    }
+                }
+                return null;
+            })();
+            const _overdueInspectionBadge = (_effectiveExpiryDate && _effectiveExpiryDate < new Date())
+                ? '<br><span class="badge badge-danger mt-1" style="font-size:.65rem;cursor:default" title="Inspecção vencida desde ' + _effectiveExpiryDate.toLocaleDateString('pt-PT') + '">&#9888; Insp. vencida</span>'
+                : '';
 
             const row = document.createElement('tr');
             if (hasSiblings) row.classList.add('same-address-lift');
@@ -4947,14 +4986,11 @@ Email de contacto: info@festlift.pt`;
                     <span class="badge ${statusClass} text-white px-2 py-1">
                         ${statusText}
                     </span>
-                    ${lift.nextInspectionDate && new Date(lift.nextInspectionDate) < new Date()
-                        ? '<br><span class="badge badge-danger mt-1" style="font-size:.65rem;cursor:default" title="Inspecção vencida desde ' + new Date(lift.nextInspectionDate).toLocaleDateString('pt-PT') + '">&#9888; Insp. vencida</span>'
-                        : ''}
+                    ${_overdueInspectionBadge}
                     ${(function() {
                         const _st = lift.inspectionStatus;
                         if (_st === 'failed') return '<br><span class="badge badge-danger mt-1" style="font-size:.65rem;cursor:default" title="Inspecção reprovada — reinspecção necessária">&#10060; Reinspecção</span>';
                         if (_st === 'conditional') return '<br><span class="badge badge-warning mt-1" style="font-size:.65rem;cursor:default" title="Inspecção condicional C2 — reinspecção necessária">&#9888; Reinsp. C2</span>';
-                        if (lift.nextInspectionDate && new Date(lift.nextInspectionDate) < new Date()) return '<br><span class="badge badge-danger mt-1" style="font-size:.65rem;cursor:default" title="Inspecção vencida desde ' + new Date(lift.nextInspectionDate).toLocaleDateString('pt-PT') + '">&#9888; Insp. vencida</span>';
                         return '';
                     })()}
                 </td>
@@ -5370,6 +5406,8 @@ Email de contacto: info@festlift.pt`;
                 const _sortedHist = (lift.inspectionHistory || []).slice().sort((a, b) =>
                     new Date(b.date || b.inspectionDate || 0) - new Date(a.date || a.inspectionDate || 0));
                 const _lastHistEntry = _sortedHist[0] || null;
+                const lastReport = _lastHistEntry;
+                const _lrDateAdmin = lastReport ? (lastReport.date || lastReport.inspectionDate) : null;
                 // Última MANUTENÇÃO = visita mensal do técnico (campo lastMaintenance)
                 // NÃO usar lastInspectionDate aqui — isso é inspecção formal (6 em 6 meses)
                 const _derivedLast = lift.lastMaintenance || null;
@@ -5383,8 +5421,20 @@ Email de contacto: info@festlift.pt`;
                 );
 
                 // Certificado / licença
-                const licDate = lift.licenseDate || lift.certDate || null;
-                const licExpiry = lift.licenseExpiry || lift.certExpiry || null;
+                const licDate = lift.licenseDate || lift.certDate || lift.lastInspectionDate || _lrDateAdmin || null;
+                const licExpiry = (() => {
+                    const explicit = lift.licenseExpiry || lift.certExpiry || lift.nextInspectionDate || (lastReport ? (lastReport.validUntil || lastReport.nextInspectionDate) : null);
+                    if (explicit) return explicit;
+                    const statusPassed = (lift.inspectionStatus === 'passed') || (lastReport && lastReport.status === 'passed');
+                    if (statusPassed && licDate) {
+                        const d = new Date(licDate);
+                        if (!isNaN(d)) {
+                            d.setFullYear(d.getFullYear() + 2);
+                            return d.toISOString();
+                        }
+                    }
+                    return null;
+                })();
                 $('#detail-license-date').text(licDate ? new Date(licDate).toLocaleDateString('pt-PT') : 'Não especificado');
                 $('#detail-license-expiry').text(licExpiry ? new Date(licExpiry).toLocaleDateString('pt-PT') : 'Não especificado');
 
@@ -5394,7 +5444,19 @@ Email de contacto: info@festlift.pt`;
                 const inspAlert = document.getElementById('inspectionReminderAlert');
                 if (inspBlock) {
                     inspBlock.style.display = 'none';
-                    const expiryDate = licExpiry ? new Date(licExpiry) : null;
+                    const expiryDate = (() => {
+                        if (licExpiry) return new Date(licExpiry);
+                        // Fallback: passed inspection certificate is valid for 2 years
+                        // when no explicit license/cert expiry is stored.
+                        if (lift.inspectionStatus === 'passed' && _lrDateAdmin) {
+                            const d = new Date(_lrDateAdmin);
+                            if (!isNaN(d)) {
+                                d.setFullYear(d.getFullYear() + 2);
+                                return d;
+                            }
+                        }
+                        return null;
+                    })();
                     const now = new Date();
                     if (expiryDate) {
                         window._currentInspectionLiftId = liftId;
@@ -5419,24 +5481,30 @@ Email de contacto: info@festlift.pt`;
                         window._currentInspectionLiftId = liftId;
                         window._currentInspectionLift = lift;
                         const _liftSt = lift.inspectionStatus || '';
+                        const _nextReinsp = lift.nextInspectionDate ? new Date(lift.nextInspectionDate) : null;
+                        const _hasOverdueReinsp = _nextReinsp && !isNaN(_nextReinsp) && _nextReinsp < now;
                         if (_liftSt === 'failed') {
                             inspAlert.className = 'alert alert-danger py-2 mb-2';
                             inspAlert.innerHTML = '<i class="fas fa-exclamation-circle mr-1"></i> <strong>Inspecção reprovada.</strong> É necessário agendar reinspecção e notificar cliente/câmara.';
                             inspBlock.style.display = 'block';
                         } else if (_liftSt === 'conditional') {
-                            inspAlert.className = 'alert alert-warning py-2 mb-2';
-                            inspAlert.innerHTML = '<i class="fas fa-exclamation-triangle mr-1"></i> <strong>Inspecção condicional (C2).</strong> É necessário agendar reinspecção.';
+                            if (_hasOverdueReinsp) {
+                                const _daysOver = Math.ceil((now - _nextReinsp) / 86400000);
+                                inspAlert.className = 'alert alert-danger py-2 mb-2';
+                                inspAlert.innerHTML = '<i class="fas fa-exclamation-circle mr-1"></i> <strong>Reinspecção em atraso (C2).</strong> Prazo expirado há ' + _daysOver + ' dia(s) (' + _nextReinsp.toLocaleDateString('pt-PT') + ').';
+                            } else {
+                                inspAlert.className = 'alert alert-warning py-2 mb-2';
+                                inspAlert.innerHTML = '<i class="fas fa-exclamation-triangle mr-1"></i> <strong>Inspecção condicional (C2).</strong> É necessário agendar reinspecção.';
+                            }
                             inspBlock.style.display = 'block';
                         }
                     }
                 }
                 
                 // Relatório inspeções (показуexisteмо найсвіжіший desde історії)
-                const lastReport = _lastHistEntry;
                 const _adminRtMap = { annual: 'inspection', certification: 'inspection', routine: 'maintenance', emergency: 'emergency' };
                 const _adminInspTypeLabels = { inspection: 'Inspecção', maintenance: 'Manutenção técnica', repair: 'Reparação', emergency: 'Emergência', annual: 'Inspeção', routine: 'Manutenção', certification: 'Certificação' };
-                
-                const _lrDateAdmin = lastReport ? (lastReport.date || lastReport.inspectionDate) : null;
+
                 $('#detail-inspection-date').text(
                     _lrDateAdmin ? new Date(_lrDateAdmin).toLocaleDateString('pt-PT') : 'Não especificado'
                 );
@@ -5450,21 +5518,41 @@ Email de contacto: info@festlift.pt`;
                     const _now = new Date();
                     const _nextD = lift.nextInspectionDate ? new Date(lift.nextInspectionDate) : null;
                     const _lastSt = lastReport ? (lastReport.status || '') : '';
+                    const _passedFallbackExpiry = (() => {
+                        if (_nextD && !isNaN(_nextD)) return _nextD;
+                        if (licExpiry) {
+                            const d = new Date(licExpiry);
+                            if (!isNaN(d)) return d;
+                        }
+                        if (_lastSt === 'passed' && _lrDateAdmin) {
+                            const d = new Date(_lrDateAdmin);
+                            if (!isNaN(d)) {
+                                d.setFullYear(d.getFullYear() + 2);
+                                return d;
+                            }
+                        }
+                        return null;
+                    })();
                     if (!lastReport) {
                         _banner.innerHTML = '<div class="alert alert-secondary py-2 mb-0"><i class="fas fa-info-circle mr-1"></i> Sem inspecção registada</div>';
                     } else if (_lastSt === 'failed') {
                         _banner.innerHTML = '<div class="alert alert-danger py-2 mb-0"><i class="fas fa-times-circle mr-1"></i> <strong>Inspecção reprovada</strong> — necessita nova inspecção</div>';
                     } else if (_lastSt === 'conditional') {
-                        _banner.innerHTML = '<div class="alert alert-warning py-2 mb-0"><i class="fas fa-exclamation-triangle mr-1"></i> <strong>Inspecção condicional (C2)</strong> — reinspecção necessária</div>';
-                    } else if (_nextD && _nextD < _now) {
-                        const _dOver = Math.ceil((_now - _nextD) / 86400000);
-                        _banner.innerHTML = '<div class="alert alert-danger py-2 mb-0"><i class="fas fa-clock mr-1"></i> <strong>Prazo expirado</strong> há ' + _dOver + ' dia(s) — venceu em ' + _nextD.toLocaleDateString('pt-PT') + '</div>';
-                    } else if (_nextD) {
-                        const _dLeft = Math.ceil((_nextD - _now) / 86400000);
-                        if (_dLeft <= 60) {
-                            _banner.innerHTML = '<div class="alert alert-warning py-2 mb-0"><i class="fas fa-clock mr-1"></i> A expirar em <strong>' + _dLeft + ' dia(s)</strong> — válido até ' + _nextD.toLocaleDateString('pt-PT') + '</div>';
+                        if (_nextD && _nextD < _now) {
+                            const _dOver = Math.ceil((_now - _nextD) / 86400000);
+                            _banner.innerHTML = '<div class="alert alert-danger py-2 mb-0"><i class="fas fa-exclamation-circle mr-1"></i> <strong>Reinspecção em atraso (C2)</strong> há ' + _dOver + ' dia(s) — venceu em ' + _nextD.toLocaleDateString('pt-PT') + '</div>';
                         } else {
-                            _banner.innerHTML = '<div class="alert alert-success py-2 mb-0"><i class="fas fa-check-circle mr-1"></i> <strong>Inspecção válida</strong> até ' + _nextD.toLocaleDateString('pt-PT') + ' (' + _dLeft + ' dias)</div>';
+                            _banner.innerHTML = '<div class="alert alert-warning py-2 mb-0"><i class="fas fa-exclamation-triangle mr-1"></i> <strong>Inspecção condicional (C2)</strong> — reinspecção necessária</div>';
+                        }
+                    } else if (_passedFallbackExpiry && _passedFallbackExpiry < _now) {
+                        const _dOver = Math.ceil((_now - _passedFallbackExpiry) / 86400000);
+                        _banner.innerHTML = '<div class="alert alert-danger py-2 mb-0"><i class="fas fa-clock mr-1"></i> <strong>Prazo expirado</strong> há ' + _dOver + ' dia(s) — venceu em ' + _passedFallbackExpiry.toLocaleDateString('pt-PT') + '</div>';
+                    } else if (_passedFallbackExpiry) {
+                        const _dLeft = Math.ceil((_passedFallbackExpiry - _now) / 86400000);
+                        if (_dLeft <= 60) {
+                            _banner.innerHTML = '<div class="alert alert-warning py-2 mb-0"><i class="fas fa-clock mr-1"></i> A expirar em <strong>' + _dLeft + ' dia(s)</strong> — válido até ' + _passedFallbackExpiry.toLocaleDateString('pt-PT') + '</div>';
+                        } else {
+                            _banner.innerHTML = '<div class="alert alert-success py-2 mb-0"><i class="fas fa-check-circle mr-1"></i> <strong>Inspecção válida</strong> até ' + _passedFallbackExpiry.toLocaleDateString('pt-PT') + ' (' + _dLeft + ' dias)</div>';
                         }
                     } else if (_lastSt === 'passed') {
                         _banner.innerHTML = '<div class="alert alert-success py-2 mb-0"><i class="fas fa-check-circle mr-1"></i> <strong>Aprovado</strong> — data de validade não especificada</div>';
@@ -6363,12 +6451,21 @@ Email de contacto: info@festlift.pt`;
                 const _inspBlock2 = document.getElementById('requestInspectionBlock');
                 const _inspAlert2 = document.getElementById('inspectionReminderAlert');
                 if (_inspBlock2 && _inspAlert2 && _inspBlock2.style.display === 'none') {
+                    const _now2 = new Date();
+                    const _next2 = lift.nextInspectionDate ? new Date(lift.nextInspectionDate) : null;
+                    const _over2 = _next2 && !isNaN(_next2) && _next2 < _now2;
                     if (_latestRep.status === 'failed') {
                         _inspAlert2.className = 'alert alert-danger py-2 mb-2';
                         _inspAlert2.innerHTML = '<i class="fas fa-times-circle mr-1"></i> <strong>Inspecção reprovada.</strong> É necessário agendar reinspecção e notificar cliente/câmara.';
                     } else {
-                        _inspAlert2.className = 'alert alert-warning py-2 mb-2';
-                        _inspAlert2.innerHTML = '<i class="fas fa-exclamation-triangle mr-1"></i> <strong>Inspecção condicional (C2).</strong> É necessário agendar reinspecção.';
+                        if (_over2) {
+                            const _d2 = Math.ceil((_now2 - _next2) / 86400000);
+                            _inspAlert2.className = 'alert alert-danger py-2 mb-2';
+                            _inspAlert2.innerHTML = '<i class="fas fa-exclamation-circle mr-1"></i> <strong>Reinspecção em atraso (C2).</strong> Prazo expirado há ' + _d2 + ' dia(s) (' + _next2.toLocaleDateString('pt-PT') + ').';
+                        } else {
+                            _inspAlert2.className = 'alert alert-warning py-2 mb-2';
+                            _inspAlert2.innerHTML = '<i class="fas fa-exclamation-triangle mr-1"></i> <strong>Inspecção condicional (C2).</strong> É necessário agendar reinspecção.';
+                        }
                     }
                     _inspBlock2.style.display = 'block';
                 }
@@ -8658,6 +8755,17 @@ Email de contacto: info@festlift.pt`;
 
                 _pdfParsed = data;
 
+                // Hard reset extracted fields to avoid leaking values from previous parsed file
+                $('#pdfParserDate').val('');
+                $('#pdfParserValidUntil').val('');
+                $('#pdfParserInspector').val('');
+                $('#pdfParserAddress').val('');
+                $('#pdfParserPostal').val('');
+                $('#pdfParserStatus').val('passed');
+                $('#pdfParserReportType').val('annual');
+                $('#pdfParserNotes').val('');
+                $('#pdfParserDate').removeClass('is-invalid');
+
                 // ── Populate lift select ─────────────────────────────────────
                 var sel = $('#pdfParserLiftSelect').empty();
                 // Remove any previous ambiguity warning
@@ -8911,6 +9019,8 @@ Email de contacto: info@festlift.pt`;
                         localStorage.getItem('liftmanager_jwt');
 
             try {
+                var controller = new AbortController();
+                var timeoutId = setTimeout(function() { controller.abort(); }, 45000);
                 var body = {
                     inspector: $('#pdfParserInspector').val() || ed.company || 'Bureau Veritas',
                     notes: $('#pdfParserNotes').val(),
@@ -8931,8 +9041,10 @@ Email de contacto: info@festlift.pt`;
                         'Content-Type': 'application/json',
                         'Authorization': 'Bearer ' + token
                     },
+                    signal: controller.signal,
                     body: JSON.stringify(body)
                 });
+                clearTimeout(timeoutId);
                 var result = await resp.json();
 
                 if (!result.success) throw new Error(result.message || 'Erro ao guardar');
@@ -8952,10 +9064,16 @@ Email de contacto: info@festlift.pt`;
                 }
 
                 _pdfParsed = null;
+                window.currentParsedInspectionData = null;
 
             } catch (err) {
+                if (err && err.name === 'AbortError') {
+                    alert('Tempo esgotado ao guardar. Tente novamente.');
+                } else {
+                    alert('Erro: ' + err.message);
+                }
+            } finally {
                 $btn.prop('disabled', false).html('<i class="fas fa-check mr-1"></i> Sim, guardar');
-                alert('Erro: ' + err.message);
             }
         });
 
@@ -8969,7 +9087,37 @@ Email de contacto: info@festlift.pt`;
             $('#pdfParserResults').hide();
             $('#pdfParserFooterStep1').show();
             $('#pdfParserFooterConfirm').hide();
+            $('#pdfParserConfirmBtn').prop('disabled', false).html('<i class="fas fa-check mr-1"></i> Sim, guardar');
+
+            // Full reset of parsed/edited fields and dynamic blocks
+            $('#pdfParserDate').val('').removeClass('is-invalid');
+            $('#pdfParserValidUntil').val('');
+            $('#pdfParserInspector').val('');
+            $('#pdfParserAddress').val('');
+            $('#pdfParserPostal').val('');
+            $('#pdfParserStatus').val('passed');
+            $('#pdfParserReportType').val('annual');
+            $('#pdfParserNotes').val('');
+            $('#pdfParserLiftSelect').empty();
+            $('#pdfParserSummaryView').show();
+            $('#pdfParserEditForm').hide();
+            $('#pdfParserToggleEdit').html('<i class="fas fa-pen mr-1"></i> Editar');
+            $('#pdfParserVerifyBanner').removeClass('alert-danger').addClass('alert-warning').html('<i class="fas fa-robot mr-1"></i><strong>Dados extraídos automaticamente — verifique e confirme:</strong> <span class="ml-2 badge" id="pdfParserCertBadge" style="font-size:.85rem;"></span>');
+            $('#pdfParserViolationsList').empty();
+            $('#pdfParserViolationsCount').text('0');
+            $('#pdfParserViolationsBlock').hide();
+            $('#pdfAutoLiftFound').hide();
+            $('#pdfAutoLiftNotFound').hide();
+            $('#pdfLiftSelectRow').show();
+            $('#pdfParserAmbiguousWarn').remove();
+
             _pdfParsed = null;
+            window.currentParsedInspectionData = null;
+        });
+
+        $(document).on('hidden.bs.modal', '#pdfParserModal', function() {
+            _pdfParsed = null;
+            window.currentParsedInspectionData = null;
         });
     })();
     // ── /PDF Inspection Parser Modal logic ───────────────────────────────────

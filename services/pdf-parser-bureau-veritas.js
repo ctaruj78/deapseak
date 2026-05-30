@@ -371,20 +371,49 @@ function extractMetadata(text) {
         metadata.liftId = metadata.installationNumber;
         console.log('  ✅ Installation No (cert):', metadata.installationNumber);
     }
+    // Helper: converte mês PT por extenso para número
+    const ptMonthToNumber = (raw) => {
+        const key = String(raw || '')
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .trim();
+        const map = {
+            janeiro: '01', fevereiro: '02', marco: '03', abril: '04', maio: '05', junho: '06',
+            julho: '07', agosto: '08', setembro: '09', outubro: '10', novembro: '11', dezembro: '12'
+        };
+        return map[key] || null;
+    };
+
     // 4c. Validade / Próxima inspecção (valid until) — multiple formats
     const validUntilPatterns = [
         /Validade\s*[:\s]+(\d{4}[\/\-]\d{2}[\/\-]\d{2})/i,              // YYYY/MM/DD or YYYY-MM-DD
         /Validade\s*[:\s]+(\d{2}[\/\-]\d{2}[\/\-]\d{4})/i,              // DD/MM/YYYY or DD-MM-YYYY
         /V[aá]lid[ao]\s+at[eé]\s*[:\s]+(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4})/i,
+        /[Vv][áa]lid[ao]\s+at[eé]\s+(\d{1,2})\s+([A-ZÀ-Úa-zà-ú]+)\s+(\d{4})/i, // 06 MAIO 2024
         /Pr[oó]xima\s+Inspe[çc][çc]?[ãa]o\s*[:\s]{1,30}(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4})/i,
         /Pr[oó]xima\s+Inspe[çc][çc]?[ãa]o\s*[:\s]{1,30}(\d{4}[\/\-]\d{2}[\/\-]\d{2})/i,
         /Data\s+da\s+pr[oó]xima\s+inspe[çc][çc]?[ãa]o\s*[:\s]{1,30}(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4})/i,
+        /nova\s+inspe[çc][ãa]o\s+peri[oó]dica\s+ser\s+requerida\s+em\s+([A-ZÀ-Úa-zà-ú]+)\s+(\d{4})/i, // MARÇO 2024
         /Prazo\s*(?:de\s+validade)?\s*[:\s]+(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4})/i,
     ];
     for (const vp of validUntilPatterns) {
         const vm = text.match(vp);
         if (vm) {
-            metadata.validUntil = vm[1];
+            if (vm[1] && vm[2] && vm[3]) {
+                // Pattern: dd MONTH yyyy
+                const day = String(vm[1]).padStart(2, '0');
+                const month = ptMonthToNumber(vm[2]);
+                const year = vm[3];
+                metadata.validUntil = month ? `${day}/${month}/${year}` : `${day} ${vm[2]} ${year}`;
+            } else if (vm[1] && vm[2] && !vm[3]) {
+                // Pattern: MONTH yyyy -> assume first day of that month
+                const month = ptMonthToNumber(vm[1]);
+                const year = vm[2];
+                metadata.validUntil = month ? `01/${month}/${year}` : `${vm[1]} ${year}`;
+            } else {
+                metadata.validUntil = vm[1];
+            }
             console.log('  ✅ Valid Until:', metadata.validUntil);
             break;
         }
@@ -523,6 +552,15 @@ function extractViolations(text) {
         text.match(/NÃO\s+CONFORMIDADES/i);
     
     console.log('  Has violations section:', !!hasViolationsSection);
+
+    // Guard rail: periodic certificates without a violations section should not be
+    // force-classified as C2/C3 from legend/explanatory text.
+    const isPeriodicCertificate = /CERTIFICADO\s+DE\s+INSPEC[ÇC][AÃ]O\s+PERI[ÓO]DICA/i.test(text);
+    const hasExplicitFailedMarkers = /Reprovad[oa]|Imobiliza[çc][ãa]o|Reinspec[çc][ãa]o\s*\(C2\)/i.test(text);
+    if (isPeriodicCertificate && !hasViolationsSection && !hasExplicitFailedMarkers) {
+        console.log('  ✅ Periodic certificate without violations section: forcing empty violations list');
+        return violations;
+    }
     
     // Перевірка статусу
     const statusChecks = {

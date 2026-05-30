@@ -3708,10 +3708,19 @@ app.post('/api/lifts/parse-inspection-pdf', authenticateToken, (req, res, next) 
         const violations = parsed.violations || [];
         const hasC1 = violations.some(v => (v.classification || v.type) === 'C1');
         const hasC2 = violations.some(v => ['C2','C2*'].includes(v.classification || v.type));
+        const parsedText = String(parsed.rawText || '');
+        const isPeriodicCertificate = /CERTIFICADO\s+DE\s+INSPEC[ÇC][AÃ]O\s+PERI[ÓO]DICA/i.test(parsedText);
+        const explicitApprovedCertificate = /Nestas\s+circunst[âa]ncias\s+[ée]\s+autorizada\s+a\s+sua\s+manuten[çc][ãa]o\s+em\s+explora[çc][ãa]o/i.test(parsedText) || /Elevador\s+Aprovad[oa]/i.test(parsedText);
+        const explicitFailedCertificate = /Reprovad[oa]|Imobiliza[çc][ãa]o/i.test(parsedText);
 
         let status = 'passed';
         if (hasC1) status = 'failed';
         else if (hasC2) status = 'conditional';
+
+        // Guard rail for periodic certificates: explicit approval must win over noisy inferred C2.
+        if (isPeriodicCertificate && explicitApprovedCertificate && !explicitFailedCertificate) {
+            status = 'passed';
+        }
 
         // Map certType from status
         const certType = status === 'passed' ? 'cert_2_years' : (hasC1 ? 'immobilization' : 'reinspection');
@@ -3725,11 +3734,28 @@ app.post('/api/lifts/parse-inspection-pdf', authenticateToken, (req, res, next) 
         function toISO(str) {
             if (!str) return '';
             const s = String(str).trim();
+            const months = {
+                janeiro: '01', fevereiro: '02', marco: '03', abril: '04', maio: '05', junho: '06',
+                julho: '07', agosto: '08', setembro: '09', outubro: '10', novembro: '11', dezembro: '12'
+            };
+            const normalized = s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
             // YYYY-MM-DD or YYYY/MM/DD
             if (/^\d{4}[-\/]\d{2}[-\/]\d{2}$/.test(s)) return s.replace(/\//g, '-');
             // DD/MM/YYYY or DD-MM-YYYY
             const m = s.match(/^(\d{2})[-\/](\d{2})[-\/](\d{4})$/);
             if (m) return `${m[3]}-${m[2]}-${m[1]}`;
+            // DD MONTH YYYY (e.g., 06 MAIO 2024)
+            const m2 = normalized.match(/^(\d{1,2})\s+([a-zçãõáéíóúâêô]+)\s+(\d{4})$/i);
+            if (m2) {
+                const month = months[m2[2]];
+                if (month) return `${m2[3]}-${month}-${String(m2[1]).padStart(2, '0')}`;
+            }
+            // MONTH YYYY (e.g., MARCO 2024) -> first day of month
+            const m3 = normalized.match(/^([a-zçãõáéíóúâêô]+)\s+(\d{4})$/i);
+            if (m3) {
+                const month = months[m3[1]];
+                if (month) return `${m3[2]}-${month}-01`;
+            }
             return s.substring(0, 10);
         }
 
