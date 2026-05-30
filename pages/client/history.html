@@ -468,7 +468,7 @@
         .catch(err => console.warn('Failed to load requests count:', err));
         
         // Quantidade de faturas
-        fetch('/api/invoices?status=unpaid', {
+        fetch('/api/orcamentos', {
             headers: { 'Authorization': `Bearer ${token}` }
         })
         .then(res => res.json())
@@ -636,7 +636,7 @@
                         </div>
                     </div>
 
-                    <!-- Таймлайн -->
+                    <!-- Timeline -->
                     <div class="row mt-4">
                         <div class="col-12">
                             <div class="card history-card">
@@ -648,7 +648,7 @@
                                 </div>
                                 <div class="card-body">
                                     <div class="timeline" id="timeline">
-                                        <!-- Atéдії serão заванeжені aqui -->
+                                        <!-- Eventos serao carregados aqui -->
                                     </div>
                                 </div>
                             </div>
@@ -779,7 +779,7 @@
             if (userData.firstName) {
             }
 
-            // Inicialização менеджера історії
+            // Inicializacao do gestor de historico
             window.historyManager = new HistoryManager();
         });
     </script>

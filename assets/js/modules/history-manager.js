@@ -1,4 +1,4 @@
-// history-manager.js - РОЗШИРЕНА ВЕРСІЯ ДЛЯ ADMINLTE
+// history-manager.js - Client history manager for AdminLTE
 class HistoryManager {
     constructor() {
         this.events = [];
@@ -19,7 +19,7 @@ class HistoryManager {
 
     async loadHistory() {
         try {
-            // Спроба отримати дані з API
+            // Try to load data from API
             const token = sessionStorage.getItem('liftmanager_jwt') || localStorage.getItem('liftmanager_jwt') || localStorage.getItem('authToken') || localStorage.getItem('token');
 
             if (!token) {
@@ -37,7 +37,7 @@ class HistoryManager {
             
             if (response.ok) {
                 const raw = await response.json();
-                // Підтримка як масиву, так і {success, data} формату
+                // Support both array and {success, data} payloads
                 this.events = Array.isArray(raw) ? raw : (raw.data || []);
             } else {
                 throw new Error('API indisponível');
@@ -53,9 +53,9 @@ class HistoryManager {
 
     createSampleEvents() {
         const lifts = JSON.parse(localStorage.getItem('lifts')) || [
-            { id: 'lift1', model: 'Otis Gen2', location: 'вул. Центральна, 12' },
-            { id: 'lift2', model: 'Schindler 3300', location: 'пр. Перемоги, 45' },
-            { id: 'lift3', model: 'KONE MonoSpace', location: 'ул. Шевченка, 78' }
+            { id: 'lift1', model: 'Otis Gen2', location: 'Rua Central, 12' },
+            { id: 'lift2', model: 'Schindler 3300', location: 'Av. da Vitoria, 45' },
+            { id: 'lift3', model: 'KONE MonoSpace', location: 'Rua Shevchenko, 78' }
         ];
 
         return [
@@ -65,14 +65,14 @@ class HistoryManager {
                 date: '2024-01-15T10:00:00',
                 liftId: 'lift1',
                 lift: 'Otis Gen2',
-                location: 'вул. Центральна, 12',
-                technician: 'Іван Петренко',
+                location: 'Rua Central, 12',
+                technician: 'Joao Pereira',
                 status: 'completed',
                 description: 'Manutenção técnica planeada',
                 duration: 120,
                 cost: 2500,
                 rating: 5,
-                details: 'Заміна мастильних матеріалів, перевірка системи безпеки, регулювання дверей'
+                details: 'Substituicao de lubrificantes, verificacao do sistema de seguranca e ajuste das portas'
             },
             {
                 id: 'event2',
@@ -80,14 +80,14 @@ class HistoryManager {
                 date: '2024-01-10T14:30:00',
                 liftId: 'lift2',
                 lift: 'Schindler 3300',
-                location: 'пр. Перемоги, 45',
-                technician: 'Марія Коваленко',
+                location: 'Av. da Vitoria, 45',
+                technician: 'Maria Silva',
                 status: 'completed',
-                description: 'Reparação de emergência дверей',
+                description: 'Reparacao de emergencia das portas',
                 duration: 180,
                 cost: 4500,
                 rating: 4,
-                details: 'Reparação механізму дверей, заміна датчиків безпеки, калібрування системи'
+                details: 'Reparacao do mecanismo das portas, substituicao dos sensores de seguranca e calibracao do sistema'
             },
             {
                 id: 'event3',
@@ -95,14 +95,14 @@ class HistoryManager {
                 date: '2023-12-20T09:15:00',
                 liftId: 'lift3',
                 lift: 'KONE MonoSpace',
-                location: 'ул. Шевченка, 78',
-                technician: 'Петро Сидоренко',
+                location: 'Rua Shevchenko, 78',
+                technician: 'Pedro Santos',
                 status: 'completed',
-                description: 'Щорічна інспекція',
+                description: 'Inspecao anual',
                 duration: 90,
                 cost: 1800,
                 rating: 5,
-                details: 'Повна перевірка всіх систем, тестування безпеки, перевірка документації'
+                details: 'Verificacao completa de todos os sistemas, testes de seguranca e validacao da documentacao'
             },
             {
                 id: 'event4',
@@ -110,14 +110,14 @@ class HistoryManager {
                 date: '2023-12-10T11:45:00',
                 liftId: 'lift1',
                 lift: 'Otis Gen2',
-                location: 'вул. Центральна, 12',
-                technician: 'Олексій Іваненко',
+                location: 'Rua Central, 12',
+                technician: 'Alexandre Costa',
                 status: 'completed',
-                description: 'Reparação системи керування',
+                description: 'Reparacao do sistema de controlo',
                 duration: 150,
                 cost: 3200,
                 rating: 4,
-                details: 'Заміна блоку керування, програмування системи, тестування функцій'
+                details: 'Substituicao da unidade de controlo, programacao do sistema e testes funcionais'
             },
             {
                 id: 'event5',
@@ -125,14 +125,14 @@ class HistoryManager {
                 date: '2023-11-25T08:30:00',
                 liftId: 'lift2',
                 lift: 'Schindler 3300',
-                location: 'пр. Перемоги, 45',
-                technician: 'Agoгій Мельник',
+                location: 'Av. da Vitoria, 45',
+                technician: 'Sergio Melo',
                 status: 'completed',
-                description: 'Manutenção planeada після сезону',
+                description: 'Manutencao planeada apos a epoca',
                 duration: 135,
                 cost: 2800,
                 rating: 5,
-                details: 'Чистка механізмів, заміна фільтрів, огляд електроніки'
+                details: 'Limpeza de mecanismos, substituicao de filtros e inspecao da eletronica'
             },
             {
                 id: 'event6',
@@ -140,14 +140,14 @@ class HistoryManager {
                 date: '2023-11-15T13:20:00',
                 liftId: 'lift3',
                 lift: 'KONE MonoSpace',
-                location: 'ул. Шевченка, 78',
-                technician: 'Анна Шевченко',
+                location: 'Rua Shevchenko, 78',
+                technician: 'Ana Teixeira',
                 status: 'completed',
-                description: 'Перевірка після ремонту',
+                description: 'Verificacao apos reparacao',
                 duration: 75,
                 cost: 1500,
                 rating: 4,
-                details: 'Контрольна перевірка якості робіт, тестування безпеки'
+                details: 'Verificacao de qualidade dos trabalhos e testes de seguranca'
             }
         ];
     }
@@ -168,7 +168,7 @@ class HistoryManager {
             this.applyFilters();
         });
 
-        // Pesquisa за текстом
+        // Text search
         $('#searchInput').on('input', (e) => {
             this.applyFilters();
         });
@@ -177,7 +177,7 @@ class HistoryManager {
     applyFilters() {
         let filteredEvents = [...this.events];
 
-        // Filtroація за періодом
+        // Filter by period
         if (this.filters.period !== 'all') {
             const days = parseInt(this.filters.period);
             const cutoffDate = new Date();
@@ -188,21 +188,21 @@ class HistoryManager {
             );
         }
 
-        // Filtroація за типом події
+        // Filter by event type
         if (this.filters.eventType !== 'all') {
             filteredEvents = filteredEvents.filter(event => 
                 event.type === this.filters.eventType
             );
         }
 
-        // Filtroація за ліфтом
+        // Filter by lift
         if (this.filters.lift !== 'all') {
             filteredEvents = filteredEvents.filter(event => 
                 event.liftId === this.filters.lift
             );
         }
 
-        // Pesquisa за текстом
+        // Text search
         const searchTerm = ($('#searchInput').val() || '').toLowerCase();
         if (searchTerm) {
             filteredEvents = filteredEvents.filter(event =>
@@ -212,7 +212,7 @@ class HistoryManager {
             );
         }
 
-        // Сортування за датою (новіші першими)
+        // Sort by date (newest first)
         filteredEvents.sort((a, b) => new Date(b.date) - new Date(a.date));
 
         this.renderTimeline(filteredEvents);
@@ -238,10 +238,10 @@ class HistoryManager {
             timeline.html(`
                 <div class="text-center py-5">
                     <i class="fas fa-search fa-3x text-muted mb-3"></i>
-                    <h4>Подій не знайдено</h4>
-                    <p>Спробуйте змінити параметри фільтрів</p>
+                    <h4>Nenhum evento encontrado</h4>
+                    <p>Tente alterar os parametros dos filtros</p>
                     <button class="btn btn-primary mt-3" onclick="historyManager.resetFilters()">
-                        <i class="fas fa-sync"></i> Repor фільтри
+                        <i class="fas fa-sync"></i> Repor filtros
                     </button>
                 </div>
             `);
@@ -268,11 +268,11 @@ class HistoryManager {
                     <div class="timeline-details">
                         <h4>${event.description}</h4>
                         <p><strong><i class="fas fa-elevator"></i> Elevador:</strong> ${event.lift}</p>
-                        <p><strong><i class="fas fa-map-marker-alt"></i> Локація:</strong> ${event.location}</p>
+                        <p><strong><i class="fas fa-map-marker-alt"></i> Localizacao:</strong> ${event.location}</p>
                         <p><strong><i class="fas fa-user-cog"></i> Técnico:</strong> ${event.technician}</p>
                         <p><strong><i class="fas fa-clock"></i> Duração:</strong> ${event.duration} min</p>
                         <p><strong><i class="fas fa-money-bill-wave"></i> Custo:</strong> €${(event.cost ?? 0).toLocaleString('pt-PT', { minimumFractionDigits: 2 })}</p>
-                        <p><strong><i class="fas fa-star"></i> Оцінка:</strong> ${this.getRatingStars(event.rating)}</p>
+                        <p><strong><i class="fas fa-star"></i> Avaliacao:</strong> ${this.getRatingStars(event.rating)}</p>
                         <span class="${statusClass}">${statusText}</span>
                         <div class="mt-3">
                             <button class="btn btn-sm btn-info" onclick="historyManager.showEventDetails('${event.id}')">
@@ -309,9 +309,9 @@ class HistoryManager {
 
     getStatusText(status) {
         const statuses = {
-            'completed': 'Завершено',
+            'completed': 'Concluido',
             'in-progress': 'Em progresso',
-            'pending': 'В очікуванні'
+            'pending': 'Pendente'
         };
         return statuses[status] || status;
     }
@@ -348,13 +348,13 @@ class HistoryManager {
             : '0.0';
         $('#avgRating').text(avgRating);
 
-        // Atualização загальних витрат
+        // Atualizacao dos custos totais
         const totalCost = events.reduce((sum, e) => sum + (e.cost || 0), 0);
-        $('#totalCost').text(`₴${totalCost.toLocaleString()}`);
+        $('#totalCost').text(`€${totalCost.toLocaleString('pt-PT', { minimumFractionDigits: 2 })}`);
     }
 
     setupCharts() {
-        // Знищити будь-які існуючі екземпляри Chart.js на цих canvas через глобальний реєстр
+        // Destroy any existing Chart.js instances on these canvases
         ['eventTypeChart', 'frequencyChart', 'ratingsChart', 'costsChart'].forEach(id => {
             const el = document.getElementById(id);
             if (el) {
@@ -362,7 +362,7 @@ class HistoryManager {
                 if (existing) existing.destroy();
             }
         });
-        // Simож знищити збережені посилання (на випадок розбіжності)
+        // Also destroy saved references if needed
         Object.values(this.charts).forEach(chart => {
             try { if (chart) chart.destroy(); } catch {}
         });
@@ -379,7 +379,7 @@ class HistoryManager {
         return new Chart(ctx, {
             type: 'doughnut',
             data: {
-                labels: ['Технічне обслуговування', 'Reparação', 'Inspeção', 'Аварійне'],
+                labels: ['Manutencao tecnica', 'Reparacao', 'Inspecao', 'Emergencia'],
                 datasets: [{
                     data: this.calculateEventTypeData(this.events),
                     backgroundColor: ['#36a2eb', '#ff6384', '#ffcd56', '#4bc0c0'],
@@ -411,7 +411,7 @@ class HistoryManager {
             data: {
                 labels: this.getLastSixMonths(),
                 datasets: [{
-                    label: 'Кількість подій',
+                    label: 'Numero de eventos',
                     data: this.calculateFrequencyData(this.events),
                     backgroundColor: '#36a2eb',
                     borderWidth: 0,
@@ -438,9 +438,9 @@ class HistoryManager {
         return new Chart(ctx, {
             type: 'radar',
             data: {
-                labels: ['Velocidade', 'Qualidade', 'Професійність', 'Комунікація', 'Загальна оцінка'],
+                labels: ['Velocidade', 'Qualidade', 'Profissionalismo', 'Comunicacao', 'Avaliacao geral'],
                 datasets: [{
-                    label: 'Agoедні оцінки',
+                    label: 'Medias de avaliacao',
                     data: this.calculateRatingsData(this.events),
                     backgroundColor: 'rgba(54, 162, 235, 0.2)',
                     borderColor: 'rgba(54, 162, 235, 1)',
@@ -473,7 +473,7 @@ class HistoryManager {
             data: {
                 labels: this.getLastSixMonths(),
                 datasets: [{
-                    label: 'Витрати на обслуговування',
+                    label: 'Custos de manutencao',
                     data: this.calculateCostsData(this.events),
                     borderColor: '#ff6384',
                     backgroundColor: 'rgba(255, 99, 132, 0.1)',
@@ -523,7 +523,7 @@ class HistoryManager {
     }
 
     getLastSixMonths() {
-        const months = ['Jan', 'Fev', 'Mar', 'Кві', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+        const months = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
         const currentMonth = new Date().getMonth();
         const result = [];
         
@@ -550,7 +550,7 @@ class HistoryManager {
     }
 
     calculateRatingsData(events) {
-        // Розрахунок середніх оцінок по категоріям
+        // Calculate average ratings by category
         return [4.5, 4.8, 4.7, 4.6, 4.7];
     }
 
@@ -580,14 +580,14 @@ class HistoryManager {
                 <div class="row">
                     <div class="col-md-6">
                         <p><strong><i class="fas fa-elevator"></i> Elevador:</strong> ${event.lift}</p>
-                        <p><strong><i class="fas fa-map-marker-alt"></i> Локація:</strong> ${event.location}</p>
+                        <p><strong><i class="fas fa-map-marker-alt"></i> Localizacao:</strong> ${event.location}</p>
                         <p><strong><i class="fas fa-user-cog"></i> Técnico:</strong> ${event.technician}</p>
                         <p><strong><i class="fas fa-calendar-alt"></i> Data:</strong> ${this.formatDate(event.date)}</p>
                     </div>
                     <div class="col-md-6">
-                        <p><strong><i class="fas fa-clock"></i> Duração:</strong> ${event.duration} minилин</p>
+                        <p><strong><i class="fas fa-clock"></i> Duracao:</strong> ${event.duration} min</p>
                         <p><strong><i class="fas fa-money-bill-wave"></i> Custo:</strong> €${(event.cost ?? 0).toLocaleString('pt-PT', { minimumFractionDigits: 2 })}</p>
-                        <p><strong><i class="fas fa-star"></i> Оцінка:</strong> ${this.getRatingStars(event.rating)}</p>
+                        <p><strong><i class="fas fa-star"></i> Avaliacao:</strong> ${this.getRatingStars(event.rating)}</p>
                         <p><strong><i class="fas fa-check-circle"></i> Estado:</strong> 
                             <span class="${this.getStatusClass(event.status)}">${this.getStatusText(event.status)}</span>
                         </p>
@@ -595,7 +595,7 @@ class HistoryManager {
                 </div>
                 ${event.details ? `
                 <div class="mt-4">
-                    <h5><i class="fas fa-list"></i> Detalhes робіт:</h5>
+                    <h5><i class="fas fa-list"></i> Detalhes dos trabalhos:</h5>
                     <div class="bg-light p-3 rounded">
                         <p class="mb-0">${event.details}</p>
                     </div>
@@ -604,13 +604,13 @@ class HistoryManager {
             </div>
         `;
 
-        // Створення модального вікна
+        // Create modal window
         const modal = `
             <div class="modal fade" id="eventDetailsModal" tabindex="-1" role="dialog">
                 <div class="modal-dialog modal-lg" role="document">
                     <div class="modal-content">
                         <div class="modal-header">
-                            <h5 class="modal-title">Detalhes події обслуговування</h5>
+                            <h5 class="modal-title">Detalhes do evento de manutencao</h5>
                             <button type="button" class="close" data-dismiss="modal">
                                 <span>&times;</span>
                             </button>
@@ -621,7 +621,7 @@ class HistoryManager {
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
                             <button type="button" class="btn btn-primary" onclick="historyManager.downloadEventReport('${event.id}')">
-                                <i class="fas fa-download"></i> Descarregar звіт
+                                <i class="fas fa-download"></i> Descarregar relatorio
                             </button>
                         </div>
                     </div>
@@ -629,7 +629,7 @@ class HistoryManager {
             </div>
         `;
 
-        // Додавання модального вікна до DOM
+        // Append modal to DOM
         if ($('#eventDetailsModal').length) {
             $('#eventDetailsModal').remove();
         }
@@ -641,41 +641,41 @@ class HistoryManager {
         const event = this.events.find(e => e.id === eventId);
         if (!event) return;
 
-        this.showNotification(`Підготовка звіту для "${event.description}"...`, 'info');
+        this.showNotification(`A preparar relatorio para "${event.description}"...`, 'info');
         
-        // Імітація завантаження
+        // Simulate generation
         setTimeout(() => {
             this.showNotification('Relatório com sucesso carregado', 'success');
             
-            // Створення простих даних для завантаження
+            // Build plain text report
             const reportData = `
-                ЗВІТ ПРО ОБСЛУГОВУВАННЯ
+                RELATORIO DE MANUTENCAO
                 ========================
                 
-                Подія: ${event.description}
+                Evento: ${event.description}
                 Elevador: ${event.lift}
-                Локація: ${event.location}
+                Localizacao: ${event.location}
                 Técnico: ${event.technician}
                 Data: ${this.formatDate(event.date)}
-                Час: ${this.formatTime(event.date)}
-                Duração: ${event.duration} minилин
+                Hora: ${this.formatTime(event.date)}
+                Duracao: ${event.duration} min
                 Custo: €${(event.cost ?? 0).toLocaleString('pt-PT', { minimumFractionDigits: 2 })}
-                Оцінка: ${event.rating}/5
+                Avaliacao: ${event.rating}/5
                 Estado: ${this.getStatusText(event.status)}
                 
-                Detalhes робіт:
-                ${event.details || 'Немає додаткових деталей'}
+                Detalhes dos trabalhos:
+                ${event.details || 'Sem detalhes adicionais'}
                 
                 ========================
-                Згенеровано: ${new Date().toLocaleString('pt-PT')}
+                Gerado em: ${new Date().toLocaleString('pt-PT')}
             `;
             
-            // Створення файлу для завантаження
+            // Create file and download
             const blob = new Blob([reportData], { type: 'text/plain' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `звіт_${event.id}_${this.formatDate(event.date)}.txt`;
+            a.download = `relatorio_${event.id}_${this.formatDate(event.date)}.txt`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
@@ -779,11 +779,11 @@ class HistoryManager {
     }
 
     printHistory() {
-        this.showNotification('Підготовка до друку...', 'info');
+        this.showNotification('A preparar para impressao...', 'info');
         
         setTimeout(() => {
             window.print();
-            this.showNotification('Сторінка готова до друку', 'success');
+            this.showNotification('Pagina pronta para impressao', 'success');
         }, 1000);
     }
 
@@ -810,32 +810,32 @@ class HistoryManager {
 
     getPeriodText() {
         const periods = {
-            '30': 'Останні 30 днів',
-            '90': 'Останні 3 місяці',
-            '365': 'Останній ano',
-            'all': 'Вся історія'
+            '30': 'Ultimos 30 dias',
+            '90': 'Ultimos 3 meses',
+            '365': 'Ultimo ano',
+            'all': 'Historico completo'
         };
         return periods[this.filters.period] || this.filters.period;
     }
 
     getEventTypeText(type = null) {
         const types = {
-            'all': 'Todos події',
-            'maintenance': 'Технічне обслуговування',
+            'all': 'Todos os eventos',
+            'maintenance': 'Manutencao tecnica',
             'repair': 'Reparação',
             'inspection': 'Inspeção',
-            'emergency': 'Аварійне обслуговування'
+            'emergency': 'Manutencao de emergencia'
         };
         return type ? types[type] || type : types[this.filters.eventType];
     }
 
     getLiftText() {
-        if (this.filters.lift === 'all') return 'Todos ліфти';
+        if (this.filters.lift === 'all') return 'Todos os elevadores';
         
         const lifts = {
-            'lift1': 'Otis Gen2 - вул. Центральна, 12',
-            'lift2': 'Schindler 3300 - пр. Перемоги, 45',
-            'lift3': 'KONE MonoSpace - вул. Шевченка, 78'
+            'lift1': 'Otis Gen2 - Rua Central, 12',
+            'lift2': 'Schindler 3300 - Av. da Vitoria, 45',
+            'lift3': 'KONE MonoSpace - Rua Shevchenko, 78'
         };
         return lifts[this.filters.lift] || this.filters.lift;
     }
@@ -873,7 +873,7 @@ class HistoryManager {
     }
 }
 
-// Ініціалізація
+// Initialization
 $(document).ready(function() {
     window.historyManager = new HistoryManager();
 });

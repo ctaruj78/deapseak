@@ -59,6 +59,23 @@ const requestSchema = new mongoose.Schema({
         text: String,
         createdAt: { type: Date, default: Date.now }
     }],
+    feedback: {
+        rating: {
+            type: Number,
+            min: 1,
+            max: 5
+        },
+        comment: {
+            type: String,
+            trim: true,
+            maxlength: 1000
+        },
+        submittedBy: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'User'
+        },
+        submittedAt: Date
+    },
     statusHistory: [{
         status: String,
         changedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },

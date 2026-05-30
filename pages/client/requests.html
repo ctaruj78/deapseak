@@ -484,16 +484,17 @@
         })
         .then(res => res.json())
         .then(data => {
-            if (data.data && Array.isArray(data.data)) {
-                const active = data.data.filter(r => r.status !== 'completed' && r.status !== 'cancelled').length;
-                const badge = document.getElementById('requestsCount');
-                if (badge) badge.textContent = active;
-            }
+            const requests = Array.isArray(data.data)
+                ? data.data
+                : ((data.data && Array.isArray(data.data.requests)) ? data.data.requests : []);
+            const active = requests.filter(r => r.status !== 'completed' && r.status !== 'cancelled').length;
+            const badge = document.getElementById('requestsCount');
+            if (badge) badge.textContent = active;
         })
         .catch(err => console.warn('Failed to load requests count:', err));
         
-        // Quantidade de faturas
-        fetch('/api/invoices?status=unpaid', {
+        // Quantidade de orçamentos
+        fetch('/api/orcamentos', {
             headers: { 'Authorization': `Bearer ${token}` }
         })
         .then(res => {
@@ -508,7 +509,7 @@
             }
         })
         .catch(err => {
-            console.warn('Failed to load invoices count:', err);
+            console.warn('Failed to load orcamentos count:', err);
             // Ocultar contador se o endpoint não existir
             const badge = document.getElementById('invoicesCount');
             if (badge) badge.style.display = 'none';
@@ -1151,7 +1152,7 @@
             
             // Cancelar o pedido através de API
             async cancelRequest(requestId) {
-                const request = this.requests.find(r =>
+                const request = (this._cachedRequests || []).find(r =>
                     r.id === requestId || r._id === requestId ||
                     (r._id && r._id.toString && r._id.toString() === requestId)
                 );
@@ -1193,7 +1194,7 @@
                     // Convert MongoDB ObjectId to string
                     const requestId = window.safeId ? window.safeId(request) : ((request._id && request._id.toString) ? request._id.toString() : (request._id || request.id || ''));
                     if (!requestId) {
-                        console.error('❌ Pedido беdesde ID:', request);
+                        console.error('❌ Pedido sem ID:', request);
                         return;
                     }
                     
@@ -1245,11 +1246,15 @@
                                     <i class="fas fa-times"></i>
                                 </button>
                             ` : ''}
-                            ${statusNorm === 'completed' ? `
-                                <button class="btn btn-sm btn-warning btn-icon" onclick="clientRequestsManager.rateTechnician('${requestId}')" title="Avaliar">
+                            ${statusNorm === 'completed' ? (request.feedback && request.feedback.rating ? `
+                                <button class="btn btn-sm btn-success btn-icon" title="Avaliado: ${request.feedback.rating}/5" disabled>
+                                    <i class="fas fa-check"></i>
+                                </button>
+                            ` : `
+                                <button class="btn btn-sm btn-warning btn-icon" onclick="clientRequestsManager.rateTechnician('${requestId}')" title="Avaliar técnico">
                                     <i class="fas fa-star"></i>
                                 </button>
-                            ` : ''}
+                            `) : ''}
                         </td>
                     `;
                     tbody.appendChild(row);
@@ -1317,8 +1322,57 @@
             }
             
             rateTechnician(requestId) {
-                // Логіка para avaliações do técnico
-                toastr.info('Função de avaliação do técnico disponível em breve');
+                Swal.fire({
+                    title: 'Avaliar técnico',
+                    html: `
+                        <div class="text-left">
+                            <label for="feedbackRating">Classificação</label>
+                            <select id="feedbackRating" class="swal2-input" style="margin:8px 0;">
+                                <option value="5">5 - Excelente</option>
+                                <option value="4">4 - Muito bom</option>
+                                <option value="3">3 - Bom</option>
+                                <option value="2">2 - Regular</option>
+                                <option value="1">1 - Fraco</option>
+                            </select>
+                            <label for="feedbackComment">Comentário (opcional)</label>
+                            <textarea id="feedbackComment" class="swal2-textarea" placeholder="Descreva a sua experiência"></textarea>
+                        </div>
+                    `,
+                    showCancelButton: true,
+                    confirmButtonText: 'Enviar avaliação',
+                    cancelButtonText: 'Cancelar',
+                    preConfirm: async () => {
+                        const rating = Number(document.getElementById('feedbackRating')?.value || '0');
+                        const comment = (document.getElementById('feedbackComment')?.value || '').trim();
+
+                        if (rating < 1 || rating > 5) {
+                            Swal.showValidationMessage('Selecione uma classificação de 1 a 5');
+                            return false;
+                        }
+
+                        try {
+                            const res = await AuthManager.fetchWithAuth(`/api/requests/${requestId}/feedback`, {
+                                method: 'POST',
+                                body: JSON.stringify({ rating, comment })
+                            });
+                            const response = res ? await res.json() : null;
+
+                            if (!response || !response.success) {
+                                throw new Error((response && response.message) || 'Não foi possível enviar a avaliação');
+                            }
+
+                            return true;
+                        } catch (err) {
+                            Swal.showValidationMessage(err.message || 'Erro ao enviar avaliação');
+                            return false;
+                        }
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        toastr.success('Avaliação enviada com sucesso');
+                        this.loadRequests();
+                    }
+                });
             }
 
             createMaintenanceRequest() {
@@ -1499,20 +1553,10 @@
             });
         });
 
-        document.addEventListener('DOMContentLoaded', function() {
-                    // Кнопка para відкриття фідбеку
-                    const feedbackBtn = document.createElement('button');
-                    feedbackBtn.className = 'btn btn-success mb-2';
-                    feedbackBtn.innerHTML = '<i class="fas fa-star"></i> Avaliar técnico';
-                    feedbackBtn.onclick = () => window.feedbackRequest.render('.content-wrapper');
-                    document.querySelector('.content-wrapper')?.prepend(feedbackBtn);
-        });
     </script>
             
     <script src="/assets/js/table-drag-scroll.js"></script>
     <script src="../../plugins/sweetalert2/js/sweetalert2.min.js"></script>
+    <script src="../../assets/js/monitor.js"></script>
 </body>
 </html>
-    <script src="/assets/js/table-drag-scroll.js"></script>
-<script src="../../assets/js/monitor.js"></script>
-</body> -->

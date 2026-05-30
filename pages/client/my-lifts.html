@@ -194,14 +194,14 @@
         link.href = manifestURL;
         document.head.appendChild(link);
       } catch (e) {
-        console.warn('[PWA] Não foi possível створити inline manifest:', e);
+                console.warn('[PWA] Nao foi possivel criar manifest inline:', e);
       }
     })();
 
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', function() {
         navigator.serviceWorker.register('/pages/client/service-worker-client.js').then(function(registration) {
-          console.log('ServiceWorker (client) зареexisteстровано:', registration);
+                    console.log('ServiceWorker (client) registado:', registration);
         }, function(err) {
           console.log('ServiceWorker erro:', err);
         });
@@ -431,21 +431,22 @@
         // aqui не чіпаexisteмо #liftsCount para уникнути конфлікту
         
         // Quantidade de pedidos
-        fetch('/api/requests?status=pending,in_progress', {
+        fetch('/api/requests', {
             headers: { 'Authorization': `Bearer ${token}` }
         })
         .then(res => res.json())
         .then(data => {
-            if (data.data && Array.isArray(data.data)) {
-                const count = data.data.length;
-                const badge = document.getElementById('requestsCount');
-                if (badge) badge.textContent = count;
-            }
+            const requests = Array.isArray(data.data)
+                ? data.data
+                : ((data.data && Array.isArray(data.data.requests)) ? data.data.requests : []);
+            const active = requests.filter(r => ['new', 'pending', 'assigned', 'in_progress'].includes(r.status)).length;
+            const badge = document.getElementById('requestsCount');
+            if (badge) badge.textContent = active;
         })
         .catch(err => console.warn('Failed to load requests count:', err));
         
-        // Quantidade de faturas
-        fetch('/api/invoices?status=unpaid', {
+        // Quantidade de orçamentos
+        fetch('/api/orcamentos', {
             headers: { 'Authorization': `Bearer ${token}` }
         })
         .then(res => res.json())
@@ -456,7 +457,7 @@
                 if (badge) badge.textContent = count;
             }
         })
-        .catch(err => console.warn('Failed to load invoices count:', err));
+        .catch(err => console.warn('Failed to load orcamentos count:', err));
         
         // Quantidade de notificações
         fetch('/api/notifications?unread=true', {
@@ -678,8 +679,7 @@
                       <div class="card-body">
                         <ul>
                           <li><a href="../../docs/user-manual.pdf" target="_blank"><i class="fas fa-file-pdf text-danger mr-2"></i>Manual do utilizador (PDF)</a></li>
-                          <li><a href="../../docs/technical-guide.md" target="_blank"><i class="fas fa-book text-info mr-2"></i>Guia técnico</a></li>
-                          <li><a href="../../docs/api-documentation.md" target="_blank"><i class="fas fa-code text-success mr-2"></i>Documentação API</a></li>
+                                                    <li><a href="/pages/client/documentation.html"><i class="fas fa-book-open text-info mr-2"></i>Base de conhecimento para cliente</a></li>
                 
                 <!-- Tickets -->
                 
@@ -736,9 +736,6 @@
 
     <!-- Lifts Manager JS -->
     <script src="../../assets/js/modules/lifts-manager.js?v=20260527a"></script>
-    <script src="../../assets/js/modules/push-notifications-client.js?v=1768338689"></script>
-    <script src="../../assets/js/modules/messenger-client.js?v=1773221574"></script>
-    <script src="../../assets/js/modules/voice-assistant-client.js?v=1768338689"></script>
     <script src="../../assets/js/modules/language-switcher.js?v=1773221574"></script>
 
     <script>
@@ -876,7 +873,7 @@
                         return;
                     }
 
-                    const response = await fetch('/api/users/me', {
+                    const response = await fetch('/api/auth/me', {
                         headers: {
                             'Authorization': `Bearer ${token}`,
                             'Content-Type': 'application/json'
@@ -921,51 +918,6 @@
               }
             }, 1500);
 
-            // Inicialização push-нотифікацій (se disponível)
-            if (window.pushNotificationsClient) {
-                if (typeof window.pushNotificationsClient.init === 'function') {
-                    window.pushNotificationsClient.init();
-                }
-                const pushBtn = document.createElement('button');
-                pushBtn.className = 'btn btn-danger mb-2 ml-2';
-                pushBtn.innerHTML = '<i class="fas fa-bell"></i> Testar notificação push';
-                pushBtn.onclick = () => {
-                    if (window.pushNotificationsClient && typeof window.pushNotificationsClient.notifyNewRequest === 'function') {
-                        window.pushNotificationsClient.notifyNewRequest({id: 101});
-                    }
-                };
-                document.querySelector('.content-wrapper')?.prepend(pushBtn);
-            }
-
-            // Кнопка para відкриття чату (se disponível)
-            if (window.messengerClient) {
-                const chatBtn = document.createElement('button');
-                chatBtn.className = 'btn btn-info mb-2 ml-2';
-                chatBtn.innerHTML = '<i class="fas fa-comments"></i> Abrir chat';
-                chatBtn.onclick = () => {
-                    if (window.messengerClient && typeof window.messengerClient.render === 'function') {
-                        window.messengerClient.render('.content-wrapper');
-                    }
-                };
-                document.querySelector('.content-wrapper')?.prepend(chatBtn);
-            }
-
-            // Voice Assistant Client (se disponível)
-            if (window.voiceAssistantClient) {
-                if (typeof window.voiceAssistantClient.init === 'function') {
-                    window.voiceAssistantClient.init();
-                }
-                const voiceBtn = document.createElement('button');
-                voiceBtn.className = 'btn btn-warning mb-2 ml-2';
-                voiceBtn.innerHTML = '<i class="fas fa-microphone"></i> Assistente de voz';
-                voiceBtn.onclick = () => {
-                    if (window.voiceAssistantClient && typeof window.voiceAssistantClient.start === 'function') {
-                        window.voiceAssistantClient.start();
-                    }
-                };
-                document.querySelector('.content-wrapper')?.prepend(voiceBtn);
-            }
-
             // Language Switcher
             setTimeout(() => {
               if (window.languageSwitcher && typeof window.languageSwitcher.render === 'function') {
@@ -977,5 +929,3 @@
 </body>
 
 </html>
-<script src="../../assets/js/monitor.js"></script>
-</body> -->

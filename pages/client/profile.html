@@ -619,7 +619,7 @@
         .catch(err => console.warn('Failed to load requests count:', err));
         
         // Quantidade de faturas
-        fetch('/api/invoices?status=unpaid', {
+        fetch('/api/orcamentos', {
             headers: { 'Authorization': `Bearer ${token}` }
         })
         .then(res => res.json())
@@ -1036,7 +1036,7 @@
                     return;
                 }
 
-                const response = await fetch('/api/users/me', {
+                const response = await fetch('/api/auth/me', {
                     headers: { 
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
@@ -1175,7 +1175,7 @@
                         zip:       $('#editZip').val().trim()
                     };
                     try {
-                        const res = await fetch('/api/users/me', {
+                        const res = await fetch('/api/auth/me', {
                             method: 'PUT',
                             headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
                             body: JSON.stringify(body)
@@ -1263,7 +1263,7 @@
                 const btn = $('#profileChangePwdBtn').prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-2"></i>A guardar...');
                 try {
                     const token = localStorage.getItem('liftmanager_jwt') || sessionStorage.getItem('liftmanager_jwt') || localStorage.getItem('token');
-                    const res = await fetch('/api/users/change-password', { method: 'POST', headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ currentPassword: current, newPassword: newPwd }) });
+                    const res = await fetch('/api/auth/change-password', { method: 'POST', headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ currentPassword: current, newPassword: newPwd }) });
                     if (res.ok) {
                         showSettingsToast('Palauma-passe alterada com sucesso', 'success');
                         $('#profileChangePasswordForm')[0].reset();

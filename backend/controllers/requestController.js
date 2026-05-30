@@ -681,6 +681,57 @@ exports.cancelRequest = async (req, res, next) => {
 };
 
 /**
+ * Оцінка виконаної роботи техніка клієнтом
+ */
+exports.submitFeedback = async (req, res, next) => {
+    try {
+        const { rating, comment } = req.body;
+
+        const request = await Request.findById(req.params.id)
+            .populate('client', 'firstName lastName email')
+            .populate('assignedTo', 'firstName lastName email');
+
+        if (!request) {
+            throw new AppError('Pedido não encontrado', 404);
+        }
+
+        if (req.user.role !== 'client') {
+            throw new AppError('Apenas clientes podem enviar avaliação', 403);
+        }
+
+        if (!request.client || request.client._id.toString() !== req.user.id) {
+            throw new AppError('Acesso negado', 403);
+        }
+
+        if (request.status !== 'completed') {
+            throw new AppError('Só é possível avaliar pedidos concluídos', 400);
+        }
+
+        const numericRating = Number(rating);
+        if (!Number.isFinite(numericRating) || numericRating < 1 || numericRating > 5) {
+            throw new AppError('A classificação deve ser um número entre 1 e 5', 400);
+        }
+
+        request.feedback = {
+            rating: numericRating,
+            comment: (comment || '').trim(),
+            submittedBy: req.user.id,
+            submittedAt: new Date()
+        };
+
+        await request.save();
+
+        res.json({
+            success: true,
+            message: 'Avaliação enviada com sucesso',
+            data: { request }
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+/**
  * Видалення запиту (тільки admin)
  */
 exports.deleteRequest = async (req, res, next) => {

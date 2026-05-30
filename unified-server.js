@@ -12273,6 +12273,16 @@ app.use((req, res, next) => {
     }
     next();
 });
+
+// Restrição de documentação interna: clientes só podem aceder ao manual público.
+app.use('/docs', (req, res, next) => {
+    const publicDocs = new Set(['/user-manual.pdf']);
+    if (publicDocs.has(req.path)) {
+        return next();
+    }
+    return res.status(403).send('Acesso negado');
+});
+
 app.use(express.static(path.join(__dirname), {
     index: ['index.html'],
     extensions: ['html'],

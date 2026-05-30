@@ -12,32 +12,19 @@ class ClientDashboard {
     }
 
     loadUserData() {
-        // A carregar даних користувача з localStorage або API
+        // Carrega dados do utilizador a partir do localStorage
         const userData = localStorage.getItem('userData');
         if (userData) {
             this.currentUser = JSON.parse(userData);
             this.updateUserUI();
         } else {
-            // Якщо даних немає, завантажуємо з API (імітація)
             this.fetchUserData();
         }
     }
 
     fetchUserData() {
-        // Імітація запиту до API
-        setTimeout(() => {
-            this.currentUser = {
-                id: 1,
-                firstName: 'Олександр',
-                lastName: 'Петренко',
-                email: 'client@example.com',
-                phone: '+351912345678',
-                company: 'ManutençãoВ "Українські будівлі"'
-            };
-            
-            localStorage.setItem('userData', JSON.stringify(this.currentUser));
-            this.updateUserUI();
-        }, 500);
+        // O perfil é carregado a partir de dashboard.html via API autenticada.
+        this.currentUser = null;
     }
 
     updateUserUI() {
@@ -96,7 +83,7 @@ class ClientDashboard {
         container.empty();
 
         if (!requests || requests.length === 0) {
-            container.html('<tr><td colspan="4" class="text-center text-muted py-3">Немає активностей</td></tr>');
+            container.html('<tr><td colspan="4" class="text-center text-muted py-3">Sem atividade recente</td></tr>');
             return;
         }
 
@@ -120,7 +107,7 @@ class ClientDashboard {
 
             container.append(`
                 <tr>
-                    <td>${req.title || 'Pedido на обслуговування'}<br><small class="text-muted">${liftAddr}</small></td>
+                    <td>${req.title || 'Pedido de assistência'}<br><small class="text-muted">${liftAddr}</small></td>
                     <td><span class="badge ${s.cls}">${s.text}</span></td>
                     <td>${timeStr}<br><small>${dateStr}</small></td>
                     <td>
@@ -149,7 +136,7 @@ class ClientDashboard {
         container.empty();
 
         if (!lifts || lifts.length === 0) {
-            container.html('<div class="text-center text-muted py-3">Немає ліфтів</div>');
+            container.html('<div class="text-center text-muted py-3">Sem elevadores</div>');
             $('#maintenanceCount').text('0');
             return;
         }
@@ -168,7 +155,7 @@ class ClientDashboard {
         $('#maintenanceCount').text(upcoming.length);
 
         if (upcoming.length === 0) {
-            container.html('<div class="text-center text-muted py-3">Немає запланованих оглядів</div>');
+            container.html('<div class="text-center text-muted py-3">Sem inspeções planeadas</div>');
             return;
         }
 
@@ -177,15 +164,15 @@ class ClientDashboard {
             let priorityLabel = '';
             if (daysLeft < 0) {
                 priority = 'urgent';
-                priorityLabel = `<span class="badge badge-danger ml-1">Прострочено (${Math.abs(daysLeft)} дн.)</span>`;
+                priorityLabel = `<span class="badge badge-danger ml-1">Atrasado (${Math.abs(daysLeft)} dias)</span>`;
             } else if (daysLeft <= 30) {
                 priority = 'urgent';
-                priorityLabel = `<span class="badge badge-danger ml-1">Junез ${daysLeft} дн.</span>`;
+                priorityLabel = `<span class="badge badge-danger ml-1">Em ${daysLeft} dias</span>`;
             } else if (daysLeft <= 60) {
                 priority = 'soon';
-                priorityLabel = `<span class="badge badge-warning ml-1">Junез ${daysLeft} дн.</span>`;
+                priorityLabel = `<span class="badge badge-warning ml-1">Em ${daysLeft} dias</span>`;
             } else {
-                priorityLabel = `<span class="badge badge-success ml-1">Junез ${daysLeft} дн.</span>`;
+                priorityLabel = `<span class="badge badge-success ml-1">Em ${daysLeft} dias</span>`;
             }
 
             const addr = lift.address ? `${lift.address.street || ''}, ${lift.address.city || ''}`.trim().replace(/^,|,$/, '').trim() : (lift.municipalNumber || '—');
@@ -255,7 +242,7 @@ class ClientDashboard {
         this.liftsChart = new Chart(ctx, {
             type: 'doughnut',
             data: {
-                labels: ['Працюють', 'Manutenção', 'Reparação', 'Не працюють'],
+                labels: ['Operacionais', 'Em manutenção', 'Em reparação', 'Parados'],
                 datasets: [{
                     data: [operational, maintenance, repair, outOfService],
                     backgroundColor: [
@@ -304,7 +291,7 @@ class ClientDashboard {
         $(document).on('click', '#markAllRead', () => {
             $('#notificationsList .alert').alert('close');
             $('#alertsCount').text('0');
-            this.showNotification('Todos сповіщення позначено як прочитані', 'success');
+            this.showNotification('Todas as notificações foram marcadas como lidas', 'success');
         });
     }
 

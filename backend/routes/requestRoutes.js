@@ -77,6 +77,9 @@ router.post('/:id/complete',
 // POST /api/requests/:id/cancel - Скасування запиту
 router.post('/:id/cancel', authenticate, requestController.cancelRequest);
 
+// POST /api/requests/:id/feedback - Оцінка виконаної роботи техніка (client)
+router.post('/:id/feedback', authenticate, requestController.submitFeedback);
+
 // DELETE /api/requests/:id - Видалення запиту (тільки admin)
 router.delete('/:id', 
     authenticate, 

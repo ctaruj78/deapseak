@@ -433,7 +433,7 @@
         .catch(err => console.warn('Failed to load requests count:', err));
         
         // Quantidade de faturas
-        fetch('/api/invoices?status=unpaid', {
+        fetch('/api/orcamentos', {
             headers: { 'Authorization': `Bearer ${token}` }
         })
         .then(res => res.json())
@@ -637,7 +637,7 @@ let clientLifts = [];
 
 // Inicialização
 $(document).ready(async function() {
-    console.log('🧠 A carregar AI прогнозування para cliente...');
+    console.log('🧠 A carregar previsoes de IA para o cliente...');
     
     // Deаванeжуexisteмо dados do utilizador
     loadUserInfo();
@@ -688,7 +688,7 @@ async function loadClientLifts() {
             const allLifts = data.data?.lifts || data.data || data.lifts || [];
             
             console.log('📊 Total de elevadores desde API:', allLifts.length);
-            console.log('📋 Приклад do elevador:', allLifts[0]);
+            console.log('📋 Exemplo de elevador:', allLifts[0]);
             
             // Filtroуexisteмо apenas elevadores цього cliente
             clientLifts = allLifts.filter(lift => {
@@ -698,7 +698,7 @@ async function loadClientLifts() {
             });
             
             console.log(`✅ Elevadores do cliente (após filtroації):`, clientLifts.length);
-            console.log('📋 Dados clienteських de elevadores:', clientLifts);
+            console.log('📋 Dados dos elevadores do cliente:', clientLifts);
         } else {
             console.error('❌ Erro ao carregar de elevadores:', response.status);
             // Fallback на localStorage

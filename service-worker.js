@@ -15,8 +15,6 @@ const urlsToCache = [
   '/assets/css/main.css',
   '/data/lifts.json',
   '/data/sample-data.json',
-  '/docs/technical-guide.md',
-  '/docs/api-documentation.md',
   '/docs/user-manual.pdf'
 ];
 

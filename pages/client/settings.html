@@ -240,7 +240,7 @@
         .catch(err => console.warn('Failed to load requests count:', err));
         
         // Quantidade de faturas por pagar
-        fetch('/api/invoices?status=unpaid', {
+        fetch('/api/orcamentos', {
             headers: { 'Authorization': `Bearer ${token}` }
         })
         .then(res => res.json())
@@ -512,7 +512,7 @@
 
         try {
             const token = getToken();
-            const res = await fetch('/api/users/change-password', {
+            const res = await fetch('/api/auth/change-password', {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,

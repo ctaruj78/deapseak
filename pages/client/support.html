@@ -515,7 +515,7 @@
         .catch(err => console.warn('Failed to load requests count:', err));
         
         // Quantidade de faturas
-        fetch('/api/invoices?status=unpaid', {
+        fetch('/api/orcamentos', {
             headers: { 'Authorization': `Bearer ${token}` }
         })
         .then(res => res.json())

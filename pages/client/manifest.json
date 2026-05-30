@@ -5,7 +5,7 @@
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#3a86ff",
-  "description": "Клієнтська панель для управління ліфтами, заявками, документацією.",
+  "description": "Painel de cliente para gestao de elevadores, pedidos e documentacao.",
   "icons": [
     {
       "src": "/assets/img/icons/pwa-icon-192.png",

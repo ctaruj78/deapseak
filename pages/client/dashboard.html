@@ -467,21 +467,22 @@
         .catch(err => console.warn('Failed to load lifts count:', err));
         
         // Quantidade de pedidos
-        fetch('/api/requests?status=pending,in_progress', {
+        fetch('/api/requests', {
             headers: { 'Authorization': `Bearer ${token}` }
         })
         .then(res => res.json())
         .then(data => {
-            if (data.data && Array.isArray(data.data)) {
-                const count = data.data.length;
-                const badge = document.getElementById('requestsCount');
-                if (badge) badge.textContent = count;
-            }
+            const requests = Array.isArray(data.data)
+                ? data.data
+                : ((data.data && Array.isArray(data.data.requests)) ? data.data.requests : []);
+            const active = requests.filter(r => ['new', 'pending', 'assigned', 'in_progress'].includes(r.status)).length;
+            const badge = document.getElementById('requestsCount');
+            if (badge) badge.textContent = active;
         })
         .catch(err => console.warn('Failed to load requests count:', err));
         
-        // Quantidade de faturas
-        fetch('/api/invoices?status=unpaid', {
+        // Quantidade de orçamentos
+        fetch('/api/orcamentos', {
             headers: { 'Authorization': `Bearer ${token}` }
         })
         .then(res => res.json())
@@ -492,7 +493,7 @@
                 if (badge) badge.textContent = count;
             }
         })
-        .catch(err => console.warn('Failed to load invoices count:', err));
+        .catch(err => console.warn('Failed to load orcamentos count:', err));
         
         // Quantidade de notificações
         fetch('/api/notifications?unread=true', {
@@ -927,10 +928,10 @@
                     // Inicialização do WebSocket
                     initClientWebSocket(userData);
                     
-                    console.log('✅ Clienteська painel inicializado');
+                    console.log('✅ Painel de cliente inicializado');
 
                 } catch (error) {
-                    console.error('❌ Erro ініціалізації do painel cliente:', error);
+                    console.error('❌ Erro de inicializacao do painel de cliente:', error);
                     
                     // Fallback para dados locais
                     const fallbackUser = JSON.parse(localStorage.getItem('currentUser')) || { 
@@ -946,7 +947,7 @@
              */
             async function loadClientProfile() {
                 try {
-                    const res = await AuthManager.fetchWithAuth('/api/users/profile');
+                    const res = await AuthManager.fetchWithAuth('/api/auth/profile');
                     const data = res ? await res.json() : null;
                     
                     if (data && data.success && data.data) {
@@ -961,7 +962,7 @@
                     
                     throw new Error('Erro ao carregar o perfil');
                 } catch (error) {
-                    console.warn('API indisponível, виutilizовуexisteмо локальні dados');
+                    console.warn('API indisponivel, a usar dados locais');
                     // Only use cached data if email matches JWT (avoid showing wrong user)
                     try {
                         const jwtUser = AuthManager.getCurrentUser();
@@ -1117,7 +1118,7 @@
                 const container = $('#recentRequestsContainer');
                 
                 if (!container.length) {
-                    console.log('Контейнер para de pedidos не encontrado');
+                    console.log('Container de pedidos nao encontrado');
                     return;
                 }
 
@@ -1223,7 +1224,7 @@
                     });
                     
                     window.clientWebSocket.on('lift_availability', function(data) {
-                        console.log('[Client Dashboard] Atualização disponívelсті de elevadores:', data);
+                        console.log('[Client Dashboard] Atualizacao de disponibilidade de elevadores:', data);
                         updateLiftStatus(data);
                     });
                     
@@ -1246,7 +1247,7 @@
                     window.clientWebSocket.connect();
                     
                 } catch (error) {
-                    console.error('[Client Dashboard] Erro ініціалізації WebSocket:', error);
+                    console.error('[Client Dashboard] Erro de inicializacao do WebSocket:', error);
                 }
             }
             

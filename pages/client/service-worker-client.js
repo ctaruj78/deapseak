@@ -1,8 +1,8 @@
 // service-worker-client.js
-// Service Worker для PWA клієнтської панелі
+// Service Worker para PWA do painel de cliente
 
 const CACHE_NAME = 'liftmaster-client-cache-v4';
-// Кешуємо тільки статичні активи — HTML і JS завжди завантажуються з мережі
+// Cache apenas de ativos estaticos; HTML e JS devem vir sempre da rede
 const urlsToCache = [
   '/assets/css/main.css',
   '/assets/img/icons/pwa-icon-192.png',
@@ -10,12 +10,12 @@ const urlsToCache = [
 ];
 
 self.addEventListener('install', event => {
-  // Кешуємо кожен ресурс окремо, щоб один failure не вбив весь install
+  // Faz cache por recurso para evitar falha total no install
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => {
       return Promise.allSettled(
         urlsToCache.map(url =>
-          cache.add(url).catch(err => console.warn('[SW] Не вдалося закешувати:', url, err))
+          cache.add(url).catch(err => console.warn('[SW] Nao foi possivel fazer cache:', url, err))
         )
       );
     })
@@ -26,12 +26,12 @@ self.addEventListener('install', event => {
 self.addEventListener('fetch', event => {
   const { request } = event;
 
-  // Обробляємо лише GET-запити з того самого origin, щоб уникнути CORS-проблем
+  // Processa apenas pedidos GET do mesmo origin para evitar problemas de CORS
   if (request.method !== 'GET') return;
   if (!request.url.startsWith(self.location.origin)) return;
 
-  // ⚡ API-запити ЗАВЖДИ йдуть через мережу (not cached)
-  // Кешування API відповідей викликає баги (застарілі дані про ліфти, заявки і т.д.)
+  // API requests passam sempre pela rede (not cached)
+  // Cache de respostas de API causa dados desatualizados
   const url = new URL(request.url);
   if (url.pathname.startsWith('/api/')) {
     event.respondWith(fetch(request));
@@ -40,7 +40,7 @@ self.addEventListener('fetch', event => {
 
   event.respondWith(
     caches.match(request).then(cached => {
-      // HTML-сторінки та JS-модулі — завжди беремо з мережі (щоб не показувати стару версію)
+      // Paginas HTML e modulos JS devem vir sempre da rede
       const isHtml = url.pathname.endsWith('.html') || url.pathname === '/';
       const isJs = url.pathname.endsWith('.js');
       if (isHtml || isJs) {
@@ -50,7 +50,7 @@ self.addEventListener('fetch', event => {
       if (cached) return cached;
 
       return fetch(request).then(response => {
-        // Кешуємо лише успішні відповіді того самого origin (але не API)
+        // Faz cache apenas de respostas bem sucedidas do mesmo origin
         if (
           response.ok &&
           response.type === 'basic' &&
@@ -61,8 +61,8 @@ self.addEventListener('fetch', event => {
         }
         return response;
       }).catch(err => {
-        console.warn('[SW] Fetch помилка, відповідь з кешу або порожня:', request.url, err);
-        // Для HTML-навігації — повернути закешовану головну сторінку
+        console.warn('[SW] Erro de fetch, resposta de cache ou vazia:', request.url, err);
+        // Para navegacao HTML, tenta devolver a pagina principal em cache
         if (request.headers.get('accept') && request.headers.get('accept').includes('text/html')) {
           return caches.match('/pages/client/my-lifts.html') || Response.error();
         }
