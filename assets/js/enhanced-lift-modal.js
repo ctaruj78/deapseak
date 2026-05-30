@@ -923,6 +923,9 @@ class EnhancedLiftModal {
 
                 // Оновлюємо таблицю
                 setTimeout(() => {
+                    if (typeof window.setLiftsPageMode === 'function') {
+                        window.setLiftsPageMode(isEdit ? 'keep' : 'last');
+                    }
                     this.refreshTable();
                 }, 500);
             } else {

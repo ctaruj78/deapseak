@@ -4783,6 +4783,12 @@ Email de contacto: info@festlift.pt`;
     let _liftsCurrentFilteredList = [];
     let _liftsCurrentPage = 1;
     let _liftsPageSize = 20;
+    let _liftsPendingPageMode = null; // one-shot: 'reset' | 'keep' | 'last'
+
+    // Permite ao fluxo de criação/edição controlar a página após refresh.
+    window.setLiftsPageMode = function(mode) {
+        _liftsPendingPageMode = mode;
+    };
 
     // Normaliza a chave de endereço para agrupar correctamente elevadores do mesmo edifício
     // mesmo quando a rua está escrita com pequenas diferenças (vírgulas, espaços, etc.)
@@ -4800,10 +4806,21 @@ Email de contacto: info@festlift.pt`;
     }
 
     // Função apresentação de elevadores в da tabela
-    // Guarda a lista filtrada e reinicia para a página 1, depois delega para _renderCurrentLiftsPage()
-    function displayLiftsInTable(lifts) {
+    // pageMode: 'reset' (default), 'keep' (manter página), 'last' (ir para última)
+    function displayLiftsInTable(lifts, options) {
         _liftsCurrentFilteredList = lifts || [];
-        _liftsCurrentPage = 1;
+        const pageMode = (options && options.pageMode) || _liftsPendingPageMode || 'reset';
+        _liftsPendingPageMode = null;
+
+        if (pageMode === 'keep') {
+            _liftsCurrentPage = Math.max(1, _liftsCurrentPage || 1);
+        } else if (pageMode === 'last') {
+            const _pages = _computeLiftsPages(_liftsCurrentFilteredList, _liftsPageSize);
+            _liftsCurrentPage = Math.max(1, _pages.length);
+        } else {
+            _liftsCurrentPage = 1;
+        }
+
         _renderCurrentLiftsPage();
     }
 
