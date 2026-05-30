@@ -457,8 +457,10 @@ router.post('/:id/resposta', authenticate, async (req, res) => {
     }
 });
 
-// GET /api/orcamentos - Список всіх орçаментів
-router.get('/', authenticate, authorizeRoles('admin', 'dispatcher'), async (req, res) => {
+// GET /api/orcamentos - Lista de orçamentos
+// admin/dispatcher: todos (com filtros)
+// client: apenas os seus (compatível com páginas legadas que chamam /api/orcamentos)
+router.get('/', authenticate, authorizeRoles('admin', 'dispatcher', 'client'), async (req, res) => {
     try {
         // Auto-expirar todos os orçamentos vencidos antes de listar
         await autoExpirarOrcamentos();
@@ -467,6 +469,11 @@ router.get('/', authenticate, authorizeRoles('admin', 'dispatcher'), async (req,
         
         const query = {};
         
+        // Clientes só podem ver os próprios orçamentos
+        if (req.user.role === 'client' && req.user.email) {
+            query['cliente.email'] = req.user.email.toLowerCase();
+        }
+
         // Фільтр по статусу
         if (status) {
             query.status = status;
@@ -490,9 +497,16 @@ router.get('/', authenticate, authorizeRoles('admin', 'dispatcher'), async (req,
         
         const skip = (page - 1) * limit;
         
-        const orcamentos = await Orcamento.find(query)
+        const orcamentosQuery = Orcamento.find(query)
             .populate('criadoPor', 'name email')
-            .sort({ data: -1 })
+            .sort({ data: -1 });
+
+        // Для клієнта не повертаємо службові поля
+        if (req.user.role === 'client') {
+            orcamentosQuery.select('-emailsEnviados -pdfPath');
+        }
+
+        const orcamentos = await orcamentosQuery
             .skip(skip)
             .limit(parseInt(limit));
         

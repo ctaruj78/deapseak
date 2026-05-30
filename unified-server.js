@@ -581,6 +581,46 @@ app.get('/api/geocode', async (req, res) => {
     const q = (req.query.q || '').trim();
     if (!q) return res.status(400).json({ success: false, message: 'Parâmetro q é obrigatório' });
 
+    const mapNominatim = (rows) => (rows || []).map(r => ({
+        lat: parseFloat(r.lat),
+        lng: parseFloat(r.lon),
+        display: r.display_name,
+        city: r.address?.city || r.address?.town || r.address?.village || r.address?.municipality || r.address?.suburb || r.address?.quarter || '',
+        postcode: r.address?.postcode || '',
+        type: r.type || r.class || ''
+    }));
+
+    const pickBestByPostcode = (rows, fullPostcode, prefix4) => {
+        if (!rows || rows.length === 0) return null;
+        if (!fullPostcode && !prefix4) return rows[0];
+        const normalize = (v) => String(v || '').replace(/\s+/g, '').toLowerCase();
+        const fullN = normalize(fullPostcode);
+        const prefN = normalize(prefix4);
+
+        let best = null;
+        let score = -1;
+        rows.forEach(r => {
+            const pc = normalize(r.address?.postcode || '');
+            let s = 0;
+            if (fullN && pc === fullN) s = 3;
+            else if (fullN && pc.startsWith(fullN)) s = 2;
+            else if (prefN && pc.startsWith(prefN)) s = 1;
+            if (s > score) {
+                score = s;
+                best = r;
+            }
+        });
+        return best || rows[0];
+    };
+
+    const extractPostal = (str) => {
+        const m = (str || '').match(/\b(\d{4})-?(\d{3})\b/);
+        return m ? `${m[1]}-${m[2]}` : '';
+    };
+
+    const postalFull = extractPostal(q);
+    const postalPrefix = postalFull ? postalFull.slice(0, 4) : '';
+
     // 1. Try Google Maps first (best accuracy for Portugal)
     const goog = await geocodeWithGoogle(q);
     if (goog) {
@@ -607,28 +647,100 @@ app.get('/api/geocode', async (req, res) => {
         });
         if (!response.ok) throw new Error(`Nominatim HTTP ${response.status}`);
         const data = await response.json();
-        if (!data || data.length === 0) {
-            return res.json({ success: false, message: 'Endereço não encontrado' });
+        if (data && data.length > 0) {
+            const best = pickBestByPostcode(data, postalFull, postalPrefix);
+            const results = mapNominatim(data);
+            return res.json({
+                success: true,
+                lat: parseFloat(best.lat),
+                lng: parseFloat(best.lon),
+                display: best.display_name,
+                city: best.address?.city || best.address?.town || best.address?.village || best.address?.municipality || best.address?.suburb || best.address?.quarter || '',
+                postcode: best.address?.postcode || '',
+                source: 'nominatim',
+                results
+            });
         }
-        const best = data[0];
-        const results = data.map(r => ({
-            lat: parseFloat(r.lat),
-            lng: parseFloat(r.lon),
-            display: r.display_name,
-            city: r.address?.city || r.address?.town || r.address?.village || r.address?.municipality || r.address?.suburb || r.address?.quarter || '',
-            postcode: r.address?.postcode || '',
-            type: r.type || r.class || ''
-        }));
-        return res.json({
-            success: true,
-            lat: parseFloat(best.lat),
-            lng: parseFloat(best.lon),
-            display: best.display_name,
-            city: best.address?.city || best.address?.town || best.address?.village || best.address?.municipality || best.address?.suburb || best.address?.quarter || '',
-            postcode: best.address?.postcode || '',
-            source: 'nominatim',
-            results
-        });
+
+        // 3. Nominatim structured fallback by postal code (when available)
+        if (postalFull || postalPrefix) {
+            const byPostcode = postalFull || postalPrefix;
+            const urlPostal = `https://nominatim.openstreetmap.org/search?postalcode=${encodeURIComponent(byPostcode)}&country=Portugal&format=json&limit=5&addressdetails=1`;
+            const r2 = await fetch(urlPostal, {
+                headers: {
+                    'User-Agent': 'FestLift-LiftManagement/2.0 (info@festlift.pt)',
+                    'Accept-Language': 'pt,en'
+                }
+            });
+            if (r2.ok) {
+                const d2 = await r2.json();
+                if (d2 && d2.length > 0) {
+                    const best = pickBestByPostcode(d2, postalFull, postalPrefix);
+                    const results = mapNominatim(d2);
+                    return res.json({
+                        success: true,
+                        lat: parseFloat(best.lat),
+                        lng: parseFloat(best.lon),
+                        display: best.display_name,
+                        city: best.address?.city || best.address?.town || best.address?.village || best.address?.municipality || best.address?.suburb || best.address?.quarter || '',
+                        postcode: best.address?.postcode || byPostcode,
+                        source: 'nominatim-postal',
+                        results
+                    });
+                }
+            }
+        }
+
+        // 4. Municipality centroid fallback by postcode prefix or city name in query
+        if (postalPrefix || q) {
+            try {
+                const municipalitiesData = await loadMunicipalitiesWithOverrides();
+                const allMunicipalities = municipalitiesData.municipalities || [];
+
+                let municipality = null;
+                if (postalPrefix) {
+                    municipality = allMunicipalities.find(m =>
+                        Array.isArray(m.postal_codes) && m.postal_codes.some(code => String(code).startsWith(postalPrefix))
+                    );
+                }
+
+                if (!municipality) {
+                    const qNormalized = q.toLowerCase();
+                    municipality = allMunicipalities.find(m => {
+                        const n = (m.name || '').toLowerCase();
+                        return n && (qNormalized.includes(n) || n.includes(qNormalized));
+                    });
+                }
+
+                if (municipality && municipality.latitude && municipality.longitude) {
+                    const reason = postalPrefix
+                        ? `código postal ${postalPrefix}`
+                        : `nome do município`;
+                    const display = `Centro de ${municipality.name} (estimativa por ${reason})`;
+                    return res.json({
+                        success: true,
+                        lat: parseFloat(municipality.latitude),
+                        lng: parseFloat(municipality.longitude),
+                        display,
+                        city: municipality.name,
+                        postcode: postalFull || postalPrefix,
+                        source: 'municipality-fallback',
+                        results: [{
+                            lat: parseFloat(municipality.latitude),
+                            lng: parseFloat(municipality.longitude),
+                            display,
+                            city: municipality.name,
+                            postcode: postalFull || postalPrefix,
+                            type: 'municipality-center'
+                        }]
+                    });
+                }
+            } catch (e) {
+                console.warn('⚠️ Municipality geocode fallback failed:', e.message);
+            }
+        }
+
+        return res.json({ success: false, message: 'Endereço não encontrado' });
     } catch (err) {
         console.error('❌ /api/geocode error:', err.message);
         return res.status(502).json({ success: false, message: 'Erro de geocodificação: ' + err.message });
@@ -2705,11 +2817,8 @@ app.post('/api/lifts', authenticateToken, async (req, res) => {
         if (postalCodeToCheck) {
             console.log('🏛️ Визначення муніципалітету за поштовим кодом:', postalCodeToCheck);
             try {
-                // Завантажуємо базу муніципалітетів
-                const fs = require('fs').promises;
-                const municipalitiesData = JSON.parse(
-                    await fs.readFile('./data/municipalities-lisboa-120km.json', 'utf8')
-                );
+                // Завантажуємо муніципалітети з урахуванням DB override
+                const municipalitiesData = await loadMunicipalitiesWithOverrides();
                 
                 // Шукаємо відповідний муніципалітет (перші 4 цифри коду)
                 const municipality = municipalitiesData.municipalities.find(m => 
@@ -4753,13 +4862,63 @@ app.delete('/api/lifts/:liftId/documents/:docId', authenticateToken, async (req,
 // 🏛️ MUNICIPALITY API ENDPOINTS
 // ========================================
 
+async function loadMunicipalitiesBaseData() {
+    const fs = require('fs').promises;
+    return JSON.parse(
+        await fs.readFile('./data/municipalities-lisboa-120km.json', 'utf8')
+    );
+}
+
+function mergeMunicipalityOverride(baseMunicipality, override) {
+    if (!override) return baseMunicipality;
+    return {
+        ...baseMunicipality,
+        ...override,
+        lift_department: {
+            ...(baseMunicipality.lift_department || {}),
+            ...(override.lift_department || {})
+        }
+    };
+}
+
+async function loadMunicipalitiesWithOverrides() {
+    const municipalitiesData = await loadMunicipalitiesBaseData();
+    const base = municipalitiesData.municipalities || [];
+
+    if (!db) {
+        return {
+            ...municipalitiesData,
+            municipalities: base
+        };
+    }
+
+    const overrides = await db.collection('municipality_overrides').find({}).toArray();
+    const byId = {};
+    overrides.forEach(o => {
+        const key = (o.id || '').toString();
+        if (key) byId[key] = o;
+    });
+
+    const merged = base.map(m => {
+        const override = byId[(m.id || '').toString()];
+        if (!override) return m;
+        const cleanedOverride = { ...override };
+        delete cleanedOverride._id;
+        delete cleanedOverride.updatedAt;
+        delete cleanedOverride.updatedBy;
+        return mergeMunicipalityOverride(m, cleanedOverride);
+    });
+
+    return {
+        ...municipalitiesData,
+        municipalities: merged
+    };
+}
+
 // GET /api/municipalities - отримання всіх муніципалітетів
 app.get('/api/municipalities', authenticateToken, async (req, res) => {
     try {
-        const fs = require('fs').promises;
-        const municipalitiesData = JSON.parse(
-            await fs.readFile('./data/municipalities-lisboa-120km.json', 'utf8')
-        );
+        const municipalitiesData = await loadMunicipalitiesWithOverrides();
         
         res.json({
             success: true,
@@ -4790,10 +4949,7 @@ app.post('/api/municipalities/detect', authenticateToken, async (req, res) => {
             });
         }
         
-        const fs = require('fs').promises;
-        const municipalitiesData = JSON.parse(
-            await fs.readFile('./data/municipalities-lisboa-120km.json', 'utf8')
-        );
+        const municipalitiesData = await loadMunicipalitiesWithOverrides();
         
         let detectedCode = postalCode;
         
@@ -4847,6 +5003,92 @@ app.post('/api/municipalities/detect', authenticateToken, async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'Erro ao detectar município'
+        });
+    }
+});
+
+// PUT /api/municipalities/:id - оновлення контактів муніципалітету
+app.put('/api/municipalities/:id', authenticateToken, async (req, res) => {
+    try {
+        if (req.user.role !== 'admin' && req.user.role !== 'dispatcher') {
+            return res.status(403).json({
+                success: false,
+                message: 'Sem permissões para editar municípios'
+            });
+        }
+
+        if (!db) {
+            return res.status(503).json({
+                success: false,
+                message: 'Base de dados indisponível'
+            });
+        }
+
+        const municipalityId = req.params.id;
+        const baseData = await loadMunicipalitiesBaseData();
+        const baseMunicipality = (baseData.municipalities || []).find(m => (m.id || '').toString() === municipalityId);
+        if (!baseMunicipality) {
+            return res.status(404).json({
+                success: false,
+                message: 'Município não encontrado'
+            });
+        }
+
+        const body = req.body || {};
+        const email = (body.email || '').toString().trim();
+        const phone = (body.phone || '').toString().trim();
+        const website = (body.website || '').toString().trim();
+        const deptEmail = (body.lift_department?.email || '').toString().trim();
+        const deptName = (body.lift_department?.department_name || '').toString().trim();
+        const subjectPrefix = (body.lift_department?.subject_prefix || '').toString().trim();
+
+        const patch = {
+            id: municipalityId,
+            email: email || baseMunicipality.email || '',
+            phone: phone || baseMunicipality.phone || '',
+            website: website || baseMunicipality.website || '',
+            lift_department: {
+                email: deptEmail || baseMunicipality.lift_department?.email || email || baseMunicipality.email || '',
+                department_name: deptName || baseMunicipality.lift_department?.department_name || 'Serviço de Elevadores',
+                subject_prefix: subjectPrefix || baseMunicipality.lift_department?.subject_prefix || '[ELEVADORES]'
+            },
+            updatedAt: new Date(),
+            updatedBy: {
+                id: req.user.id || req.user.userId || null,
+                username: req.user.username || null,
+                role: req.user.role || null
+            }
+        };
+
+        await db.collection('municipality_overrides').updateOne(
+            { id: municipalityId },
+            { $set: patch },
+            { upsert: true }
+        );
+
+        // Синхронізуємо snapshot у ліфтах для консистентності в старих екранах
+        await db.collection('lifts').updateMany(
+            { 'municipality.id': municipalityId },
+            {
+                $set: {
+                    'municipality.email': patch.email,
+                    'municipality.phone': patch.phone,
+                    'municipality.website': patch.website
+                }
+            }
+        );
+
+        const merged = mergeMunicipalityOverride(baseMunicipality, patch);
+        res.json({
+            success: true,
+            message: 'Município atualizado com sucesso',
+            data: merged
+        });
+    } catch (error) {
+        console.error('❌ Erro ao atualizar município:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Erro ao atualizar município'
         });
     }
 });

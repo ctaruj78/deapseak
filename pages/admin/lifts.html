@@ -5659,34 +5659,57 @@ Email de contacto: info@festlift.pt`;
                     orcBtn.href = `/pages/admin/invoice-template.html?${params.toString()}`;
                 }
                 
-                // Mostrar janela modal
-                $('#liftDetailsModal').modal('show');
-                
                 // ── Mapa de detalhes ─────────────────────────────────────
-                // Se não há coordenadas na BD, tentar geocodificar o endereço em tempo real
+                // Sempre tentamos geocodificar o endereço para validar/ajustar
+                // coordenadas antigas guardadas na BD.
                 let _mapLat = latitude;
                 let _mapLng = longitude;
+                const _mapCity4geo = lift.address?.city !== lift.address?.street ? lift.address?.city : '';
+                const _mapPostcode4geo =
+                    lift.address?.zipCode ||
+                    lift.address?.postalCode ||
+                    lift.postalCode ||
+                    lift.zipCode ||
+                    '';
+                const _geoQuery = [
+                    lift.address?.street,
+                    _mapPostcode4geo,
+                    _mapCity4geo,
+                    'Portugal'
+                ].filter(Boolean).join(', ');
 
-                if (!hasValidCoords) {
-                    const _mapCity4geo = lift.address?.city !== lift.address?.street ? lift.address?.city : '';
-                    const _geoQuery = [
-                        lift.address?.street,
-                        lift.address?.zipCode,
-                        _mapCity4geo,
-                        'Portugal'
-                    ].filter(Boolean).join(', ');
-                    if (_geoQuery.trim()) {
-                        try {
-                            const _geoR = await apiCall(`/api/geocode?q=${encodeURIComponent(_geoQuery)}`);
-                            const _gd = _geoR.success && _geoR.data;
-                            if (_gd && _gd.lat && _gd.lng) {
-                                _mapLat = _gd.lat;
-                                _mapLng = _gd.lng;
-                                console.log(`✅ Geocodificado para mapa de detalhes: ${_geoQuery} → [${_mapLng}, ${_mapLat}]`);
+                // Distância Haversine em km para detectar pontos da BD muito afastados.
+                const _distanceKm = (lat1, lon1, lat2, lon2) => {
+                    const toRad = d => d * Math.PI / 180;
+                    const R = 6371;
+                    const dLat = toRad(lat2 - lat1);
+                    const dLon = toRad(lon2 - lon1);
+                    const a = Math.sin(dLat / 2) ** 2 +
+                        Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
+                    return 2 * R * Math.asin(Math.sqrt(a));
+                };
+
+                if (_geoQuery.trim()) {
+                    try {
+                        const _geoR = await apiCall(`/api/geocode?q=${encodeURIComponent(_geoQuery)}`);
+                        const _gd = _geoR.success && _geoR.data;
+                        if (_gd && _gd.lat && _gd.lng) {
+                            const _gLat = parseFloat(_gd.lat);
+                            const _gLng = parseFloat(_gd.lng);
+                            if (!isNaN(_gLat) && !isNaN(_gLng)) {
+                                const _dbLooksValid = hasValidCoords && !isNaN(_mapLat) && !isNaN(_mapLng);
+                                const _deltaKm = _dbLooksValid ? _distanceKm(_mapLat, _mapLng, _gLat, _gLng) : Infinity;
+
+                                // Usa geocoded se não havia coords válidas ou se BD diverge > 0.8 km.
+                                if (!_dbLooksValid || _deltaKm > 0.8) {
+                                    _mapLat = _gLat;
+                                    _mapLng = _gLng;
+                                    console.log(`✅ Mapa de detalhes ajustado por geocode (${_deltaKm === Infinity ? 'sem coords BD' : _deltaKm.toFixed(2) + ' km de diferença'}): ${_geoQuery} → [${_mapLng}, ${_mapLat}]`);
+                                }
                             }
-                        } catch (_ge) {
-                            console.warn('⚠️ Geocodificação para mapa de detalhes falhou:', _ge.message);
                         }
+                    } catch (_ge) {
+                        console.warn('⚠️ Geocodificação para mapa de detalhes falhou:', _ge.message);
                     }
                 }
 
@@ -5699,29 +5722,35 @@ Email de contacto: info@festlift.pt`;
                         lng: _mapLng,
                         fromDB: hasValidCoords
                     });
-                    
-                    // Видаляємо попередні обробники
-                    $('#liftDetailsModal').off('shown.bs.modal');
-                    
-                    // Додаємо новий обробник після відкриття модалу
-                    $('#liftDetailsModal').one('shown.bs.modal', function() {
+
+                    const _initDetailsMapSafe = () => {
                         console.log('🗺️ Janela modal aberta, a inicializar mapa...');
-                        
                         if (typeof L === 'undefined') {
                             console.error('❌ Leaflet não carregado');
                             return;
                         }
-                        
                         setTimeout(() => {
                             const _mapCity = lift.address?.city !== lift.address?.street ? lift.address?.city : '';
-                            const _mapAddrStr = lift.address?.street 
+                            const _mapAddrStr = lift.address?.street
                                 ? (_mapCity ? `${lift.address.street}, ${_mapCity}` : lift.address.street)
                                 : (typeof lift.address === 'string' ? lift.address : '');
                             initDetailsMap(_mapLat, _mapLng, _mapAddrStr + (!hasValidCoords ? ' (geocodificado)' : ''));
                         }, 200);
-                    });
+                    };
+                    
+                    // Обробник тільки для карти деталей (не чіпаємо інші shown-хендлери).
+                    $('#liftDetailsModal').off('shown.bs.modal.detailsmap');
+                    $('#liftDetailsModal').one('shown.bs.modal.detailsmap', _initDetailsMapSafe);
                 } else {
                     console.warn('⚠️ Sem coordenadas para mostrar o mapa — endereço também não geocodificável');
+                }
+
+                // Mostrar janela modal apenas após configurar handlers da карта.
+                $('#liftDetailsModal').modal('show');
+
+                // Fallback: se modal já estiver aberto (re-uso), dispara init imediatamente.
+                if (canShowMap && $('#liftDetailsModal').hasClass('show')) {
+                    $('#liftDetailsModal').trigger('shown.bs.modal.detailsmap');
                 }
             }
         } catch (error) {
@@ -8067,9 +8096,32 @@ Email de contacto: info@festlift.pt`;
             $('#mun-address').text(addressStr);
             $('#mun-postal-code').text(postalCode || 'Não especificado');
             
-            // Всeновлюexisteмо дату поchatку de manutenção (hoje predefinido)
-            const today = new Date().toISOString().split('T')[0];
-            $('#service-start-date').val(today);
+            // Data de início de serviço: priorizar início de contrato; fallback para hoje.
+            const _toIsoDate = (v) => {
+                if (!v) return '';
+                if (typeof v === 'string') {
+                    const s = v.trim();
+                    // Já está em formato ISO date
+                    if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+                    const d = new Date(s);
+                    if (!isNaN(d)) return d.toISOString().split('T')[0];
+                    // Formato PT: dd/mm/yyyy
+                    const m = s.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+                    if (m) return `${m[3]}-${m[2]}-${m[1]}`;
+                    return '';
+                }
+                const d = new Date(v);
+                return isNaN(d) ? '' : d.toISOString().split('T')[0];
+            };
+
+            const contractStartDate =
+                _toIsoDate(lift.contractStart) ||
+                _toIsoDate(lift.maintenanceContract?.contractStart) ||
+                _toIsoDate(lift.maintenanceContract?.startDate) ||
+                _toIsoDate(lift.contract?.startDate) ||
+                '';
+            const fallbackDate = new Date().toISOString().split('T')[0];
+            $('#service-start-date').val(contractStartDate || fallbackDate);
             
             // Mostrar janela modal
             $('#municipalityModal').modal('show');
@@ -8298,6 +8350,13 @@ Email de contacto: info@festlift.pt`;
                     .replace(/{{serviceStartDate}}/g, formatDate(serviceStartDate))
                     .replace(/{{currentDate}}/g, formatDate(new Date().toISOString().split('T')[0]))
                     .replace(/{{notes}}/g, notes || 'Sem notas adicionais');
+
+                // Browser preview não resolve imagens CID (usadas no envio real por email).
+                // Fazemos fallback para um ficheiro local apenas na pré-visualização.
+                const previewLogoUrl = `${window.location.origin}/assets/img/festlift-logo.png`;
+                htmlContent = htmlContent
+                    .replace(/src=["']cid:festlift-logo["']/gi, `src="${previewLogoUrl}"`)
+                    .replace(/cid:festlift-logo/gi, previewLogoUrl);
                 
                 // Відкриваexisteмо нове вікно desde попереdiasм visualizaçãoом
                 const previewWindow = window.open('', '_blank', 'width=800,height=600,scrollbars=yes');

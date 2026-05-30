@@ -8197,6 +8197,13 @@ Equipa FestLift</textarea>
                     .replace(/{{serviceStartDate}}/g, formatDate(serviceStartDate))
                     .replace(/{{currentDate}}/g, formatDate(new Date().toISOString().split('T')[0]))
                     .replace(/{{notes}}/g, notes || 'Sem notas adicionais');
+
+                // Browser preview não resolve imagens CID (usadas no envio real por email).
+                // Fazemos fallback para um ficheiro local apenas na pré-visualização.
+                const previewLogoUrl = `${window.location.origin}/assets/img/festlift-logo.png`;
+                htmlContent = htmlContent
+                    .replace(/src=["']cid:festlift-logo["']/gi, `src="${previewLogoUrl}"`)
+                    .replace(/cid:festlift-logo/gi, previewLogoUrl);
                 
                 // Відкриваexisteмо нове вікно desde попереdiasм visualizaçãoом
                 const previewWindow = window.open('', '_blank', 'width=800,height=600,scrollbars=yes');

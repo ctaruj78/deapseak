@@ -1394,11 +1394,12 @@
                                                             <th>Enviado email</th>
                                                             <th>Distância do centro</th>
                                                             <th>Contacto</th>
+                                                            <th>Ações</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody id="top-municipalities-tbody">
                                                         <tr>
-                                                            <td colspan="7" class="text-center">
+                                                            <td colspan="8" class="text-center">
                                                                 <i class="fas fa-spinner fa-spin"></i> A carregar...
                                                             </td>
                                                         </tr>
@@ -1414,6 +1415,53 @@
                 </div>
             </div>
         </section>
+    </div>
+
+    <div class="modal fade" id="editMunicipalityModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-info text-white">
+                    <h5 class="modal-title"><i class="fas fa-city mr-1"></i> Editar Município</h5>
+                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="editMunicipalityId">
+                    <div class="form-group">
+                        <label>Município</label>
+                        <input type="text" id="editMunicipalityName" class="form-control" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label>Email principal</label>
+                        <input type="email" id="editMunicipalityEmail" class="form-control" placeholder="geral@cm-...">
+                    </div>
+                    <div class="form-group">
+                        <label>Telefone</label>
+                        <input type="text" id="editMunicipalityPhone" class="form-control" placeholder="+351 ...">
+                    </div>
+                    <div class="form-group">
+                        <label>Website</label>
+                        <input type="url" id="editMunicipalityWebsite" class="form-control" placeholder="https://...">
+                    </div>
+                    <hr>
+                    <div class="form-group">
+                        <label>Email departamento elevadores</label>
+                        <input type="email" id="editMunicipalityLiftEmail" class="form-control" placeholder="elevadores@...">
+                    </div>
+                    <div class="form-group">
+                        <label>Nome do departamento</label>
+                        <input type="text" id="editMunicipalityLiftDept" class="form-control" placeholder="Serviço de Elevadores">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="saveMunicipalityBtn">
+                        <i class="fas fa-save mr-1"></i> Guardar alterações
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Footer -->
@@ -1656,6 +1704,8 @@ setTimeout(() => {
 // Municipalities Analytics Data Loader
 (function() {
     'use strict';
+    let municipalitiesById = {};
+    let municipalitiesByName = {};
     
     // Carregar dados ao mudar de separador
     document.addEventListener('DOMContentLoaded', function() {
@@ -1689,7 +1739,7 @@ setTimeout(() => {
     // Carregar estatísticas gerais
     async function loadMunicipalitiesStats() {
         try {
-            const token = localStorage.getItem('token');
+            const token = localStorage.getItem('liftmanager_jwt') || localStorage.getItem('authToken') || localStorage.getItem('token');
             
             // Obter todos os elevadores
             const liftsResponse = await fetch('/api/lifts', {
@@ -1839,7 +1889,13 @@ setTimeout(() => {
             
             // Mapa de municípios (dados actuais do JSON)
             const municipalityMap = {};
-            municipalities.forEach(m => { municipalityMap[m.name] = m; });
+            municipalitiesById = {};
+            municipalitiesByName = {};
+            municipalities.forEach(m => {
+                municipalityMap[m.name] = m;
+                if (m.id) municipalitiesById[m.id] = m;
+                municipalitiesByName[m.name] = m;
+            });
             
             // Calcular elevadores por município
             const municipalityStats = {};
@@ -1850,6 +1906,7 @@ setTimeout(() => {
                     const current = municipalityMap[name] || {};
                     if (!municipalityStats[name]) {
                         municipalityStats[name] = {
+                            id: current.id || lift.municipality.id || '',
                             name: name,
                             distrito: current.distrito || lift.municipality.distrito || 'N/A',
                             distance: current.distance_km || lift.municipality.distance_km || 0,
@@ -1874,7 +1931,7 @@ setTimeout(() => {
             if (topMunicipalities.length === 0) {
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="7" class="text-center text-muted">
+                        <td colspan="8" class="text-center text-muted">
                             <i class="fas fa-info-circle"></i> Sem dados
                         </td>
                     </tr>
@@ -1893,6 +1950,11 @@ setTimeout(() => {
                                 ${mun.phone}<br>
                                 <a href="mailto:${mun.email}">${mun.email}</a>
                             </small>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary" onclick="openMunicipalityEditModal('${mun.id || ''}','${(mun.name || '').replace(/'/g, "\\'")}')" ${mun.id ? '' : 'disabled'} title="Editar contactos do município">
+                                <i class="fas fa-edit"></i>
+                            </button>
                         </td>
                     </tr>
                 `).join('');
@@ -1980,6 +2042,85 @@ setTimeout(() => {
     window.viewEmailDetails = function(messageId) {
         alert(`Detalhes do email:\nMessage ID: ${messageId}\n\nFunção em desenvolvimento...`);
     };
+
+    window.openMunicipalityEditModal = function(municipalityId, municipalityName) {
+        const m = (municipalityId && municipalitiesById[municipalityId]) || municipalitiesByName[municipalityName] || null;
+        if (!m) {
+            showError('Município não encontrado');
+            return;
+        }
+
+        document.getElementById('editMunicipalityId').value = m.id || municipalityId || '';
+        document.getElementById('editMunicipalityName').value = m.name || municipalityName || '';
+        document.getElementById('editMunicipalityEmail').value = m.email || '';
+        document.getElementById('editMunicipalityPhone').value = m.phone || '';
+        document.getElementById('editMunicipalityWebsite').value = m.website || '';
+        document.getElementById('editMunicipalityLiftEmail').value = (m.lift_department && m.lift_department.email) || '';
+        document.getElementById('editMunicipalityLiftDept').value = (m.lift_department && m.lift_department.department_name) || '';
+        $('#editMunicipalityModal').modal('show');
+    };
+
+    async function saveMunicipalityChanges() {
+        try {
+            const municipalityId = document.getElementById('editMunicipalityId').value;
+            if (!municipalityId) {
+                showError('ID de município inválido');
+                return;
+            }
+
+            const token = localStorage.getItem('token');
+            const payload = {
+                email: document.getElementById('editMunicipalityEmail').value.trim(),
+                phone: document.getElementById('editMunicipalityPhone').value.trim(),
+                website: document.getElementById('editMunicipalityWebsite').value.trim(),
+                lift_department: {
+                    email: document.getElementById('editMunicipalityLiftEmail').value.trim(),
+                    department_name: document.getElementById('editMunicipalityLiftDept').value.trim()
+                }
+            };
+
+            const btn = document.getElementById('saveMunicipalityBtn');
+            const old = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> A guardar...';
+
+            const response = await fetch(`/api/municipalities/${encodeURIComponent(municipalityId)}`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            });
+
+            const result = await response.json().catch(() => ({}));
+            btn.disabled = false;
+            btn.innerHTML = old;
+
+            if (!response.ok || result.success === false) {
+                throw new Error(result.message || `HTTP ${response.status}`);
+            }
+
+            $('#editMunicipalityModal').modal('hide');
+            if (typeof toastr !== 'undefined') toastr.success('Município atualizado com sucesso');
+            await loadTopMunicipalities();
+        } catch (error) {
+            console.error('❌ Erro ao guardar município:', error);
+            showError('Erro ao guardar município: ' + error.message);
+            const btn = document.getElementById('saveMunicipalityBtn');
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-save mr-1"></i> Guardar alterações';
+            }
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const saveBtn = document.getElementById('saveMunicipalityBtn');
+        if (saveBtn) {
+            saveBtn.addEventListener('click', saveMunicipalityChanges);
+        }
+    });
 
     // ═══════════════════════════════════════════
     // Reports Tab — dynamic data loading

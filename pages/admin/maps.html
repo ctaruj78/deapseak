@@ -1205,7 +1205,26 @@
                     `/api/lifts/regeocode-all?force=${force}`,
                     { method: 'POST' }
                 );
-                const result = await resp.json();
+
+                if (!resp) {
+                    throw new Error('Sessão inválida ou expirada');
+                }
+
+                const contentType = (resp.headers.get('content-type') || '').toLowerCase();
+                let result = null;
+
+                if (contentType.includes('application/json')) {
+                    result = await resp.json();
+                } else {
+                    const text = await resp.text();
+                    const preview = (text || '').replace(/\s+/g, ' ').trim().slice(0, 120);
+                    throw new Error(`Resposta inválida do servidor (HTTP ${resp.status})${preview ? `: ${preview}` : ''}`);
+                }
+
+                if (!resp.ok) {
+                    throw new Error(result?.message || `Erro HTTP ${resp.status}`);
+                }
+
                 if (result.success) {
                     alert(`✅ Geocodificação concluído!\nCorrigidos: ${result.fixed}\nErros: ${result.failed}\nTotal processados: ${result.total}`);
                     await refreshMap();
