@@ -1198,11 +1198,11 @@
             );
             const force = confirmed; // OK = force=true (todos), Cancel = apenas os sem coordenadas
             
-            btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> A corrigir...');
+            btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> A iniciar...');
             
             try {
                 const resp = await AuthManager.fetchWithAuth(
-                    `/api/lifts/regeocode-all?force=${force}`,
+                    `/api/lifts/regeocode-all?force=${force}&async=true`,
                     { method: 'POST' }
                 );
 
@@ -1225,17 +1225,52 @@
                     throw new Error(result?.message || `Erro HTTP ${resp.status}`);
                 }
 
-                if (result.success) {
-                    alert(`✅ Geocodificação concluído!\nCorrigidos: ${result.fixed}\nErros: ${result.failed}\nTotal processados: ${result.total}`);
-                    await refreshMap();
-                } else {
-                    alert('❌ Erro: ' + (result.message || 'Erro desconhecido'));
+                if (!result.success || !result.jobId) {
+                    throw new Error(result?.message || 'Não foi possível iniciar geocodificação');
                 }
+
+                await pollRegeocodeJob(result.jobId, btn);
             } catch (e) {
                 alert('❌ Erro de pedido: ' + e.message);
             } finally {
                 btn.prop('disabled', false).html('<i class="fas fa-map-marked-alt"></i> Corrigir coordenadas (Re-geocode)');
             }
+        }
+
+        async function pollRegeocodeJob(jobId, btn) {
+            const startedAt = Date.now();
+            const maxWaitMs = 15 * 60 * 1000; // 15 min
+
+            while (Date.now() - startedAt < maxWaitMs) {
+                const resp = await AuthManager.fetchWithAuth(`/api/lifts/regeocode-all/${encodeURIComponent(jobId)}`);
+                if (!resp) {
+                    throw new Error('Sessão inválida ou expirada durante monitorização');
+                }
+
+                const data = await resp.json();
+                if (!resp.ok || !data.success || !data.data) {
+                    throw new Error(data?.message || `Erro ao monitorizar tarefa (HTTP ${resp.status})`);
+                }
+
+                const job = data.data;
+                const total = Number(job.total || 0);
+                const processed = Number(job.processed || 0);
+                btn.html(`<i class="fas fa-spinner fa-spin"></i> ${processed}/${total || '?'}...`);
+
+                if (job.status === 'done') {
+                    alert(`✅ Geocodificação concluída!\nCorrigidos: ${job.fixed}\nErros: ${job.failed}\nTotal processados: ${job.total}`);
+                    await refreshMap();
+                    return;
+                }
+
+                if (job.status === 'failed') {
+                    throw new Error(job.error || job.message || 'Falha na geocodificação');
+                }
+
+                await new Promise(resolve => setTimeout(resolve, 2000));
+            }
+
+            throw new Error('Tempo de espera excedido ao monitorizar geocodificação');
         }
 
         function filterLifts() {

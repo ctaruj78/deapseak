@@ -2316,14 +2316,14 @@ app.get('/api/en-standards', authenticateToken, async (req, res) => {
 
 // Захищені маршрути
 
-// POST /api/lifts/regeocode-all - виправляє координати ліфтів з нульовими або відсутніми координатами
-// Також переробляє ВСІХ, якщо ?force=true (для виправлення вже збережених неправильних координат)
-app.post('/api/lifts/regeocode-all', authenticateToken, requireRole('admin'), async (req, res) => {
+const regeocodeJobs = new Map();
+
+async function runRegeocodeJob(jobId, force) {
+    const job = regeocodeJobs.get(jobId);
+    if (!job) return;
+
     try {
-        const force = req.query.force === 'true';
         const liftsCollection = db.collection('lifts');
-        
-        // Знаходимо ліфти для повторного геокодування
         const filter = force ? {} : {
             $or: [
                 { 'location.coordinates': { $exists: false } },
@@ -2331,48 +2331,130 @@ app.post('/api/lifts/regeocode-all', authenticateToken, requireRole('admin'), as
                 { location: { $exists: false } }
             ]
         };
-        
+
         const lifts = await liftsCollection.find(filter).toArray();
-        console.log(`🌍 Regeocode: знайдено ${lifts.length} ліфтів (force=${force})`);
-        
-        let fixed = 0;
-        let failed = 0;
-        const results = [];
-        
+        job.total = lifts.length;
+        job.message = `Encontrados ${lifts.length} elevadores para geocodificação`;
+        console.log(`🌍 Regeocode job ${jobId}: encontrado ${lifts.length} (force=${force})`);
+
         for (const lift of lifts) {
             if (!lift.address) {
-                failed++;
-                results.push({ id: lift._id, status: 'skip', reason: 'no address' });
+                job.failed += 1;
+                job.processed += 1;
+                if (job.results.length < 100) {
+                    job.results.push({ id: lift._id, status: 'skip', reason: 'no address' });
+                }
                 continue;
             }
-            
-            // Rate-limiting is handled inside nominatimRequest (1.1s per call)
-            
+
             const geocoded = await geocodeAddress(lift.address);
             if (geocoded) {
                 await liftsCollection.updateOne(
                     { _id: lift._id },
                     { $set: { location: geocoded, updatedAt: new Date() } }
                 );
-                fixed++;
-                results.push({ id: lift._id, status: 'fixed', coords: geocoded.coordinates, city: geocoded.city });
-                console.log(`✅ Regeocode: ліфт ${lift._id} → ${geocoded.coordinates}`);
+                job.fixed += 1;
+                if (job.results.length < 100) {
+                    job.results.push({ id: lift._id, status: 'fixed', coords: geocoded.coordinates, city: geocoded.city });
+                }
             } else {
-                failed++;
-                results.push({ id: lift._id, status: 'failed', address: lift.address });
-                console.warn(`⚠️ Regeocode: не вдалося геокодувати ліфт ${lift._id}`);
+                job.failed += 1;
+                if (job.results.length < 100) {
+                    job.results.push({ id: lift._id, status: 'failed', address: lift.address });
+                }
             }
+
+            job.processed += 1;
+            job.updatedAt = new Date().toISOString();
         }
-        
-        res.json({
+
+        job.status = 'done';
+        job.updatedAt = new Date().toISOString();
+        job.finishedAt = new Date().toISOString();
+        job.message = `Geocodificação concluída: corrigidos ${job.fixed}, erros ${job.failed}`;
+        console.log(`✅ Regeocode job ${jobId} завершено: fixed=${job.fixed}, failed=${job.failed}`);
+    } catch (error) {
+        job.status = 'failed';
+        job.updatedAt = new Date().toISOString();
+        job.finishedAt = new Date().toISOString();
+        job.message = 'Erro de geocodificação em massa: ' + error.message;
+        job.error = error.message;
+        console.error(`❌ Regeocode job ${jobId} error:`, error);
+    }
+}
+
+// POST /api/lifts/regeocode-all - запускає асинхронну масову геокодування
+app.post('/api/lifts/regeocode-all', authenticateToken, requireRole('admin'), async (req, res) => {
+    try {
+        const force = req.query.force === 'true';
+        const jobId = `rg_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+        const now = new Date().toISOString();
+
+        const job = {
+            id: jobId,
+            status: 'running',
+            force,
+            total: 0,
+            processed: 0,
+            fixed: 0,
+            failed: 0,
+            results: [],
+            message: 'Geocodificação iniciada',
+            startedAt: now,
+            updatedAt: now,
+            finishedAt: null,
+            requestedBy: req.user?.email || req.user?.id || 'unknown'
+        };
+
+        regeocodeJobs.set(jobId, job);
+
+        // Retenção простих job-ів у пам'яті
+        if (regeocodeJobs.size > 20) {
+            const oldest = [...regeocodeJobs.keys()][0];
+            regeocodeJobs.delete(oldest);
+        }
+
+        runRegeocodeJob(jobId, force).catch((error) => {
+            console.error(`❌ Regeocode async launch error for ${jobId}:`, error);
+        });
+
+        res.status(202).json({
             success: true,
-            message: `Geocodificação concluída: corrigidos ${fixed}, erros ${failed}`,
-            total: lifts.length, fixed, failed, results
+            async: true,
+            jobId,
+            message: `Geocodificação iniciada em background (force=${force})`
         });
     } catch (error) {
-        console.error('❌ Regeocode error:', error);
-        res.status(500).json({ success: false, message: 'Erro de geocodificação em massa: ' + error.message });
+        console.error('❌ Regeocode start error:', error);
+        res.status(500).json({ success: false, message: 'Erro ao iniciar geocodificação: ' + error.message });
     }
+});
+
+// GET /api/lifts/regeocode-all/:jobId - статус асинхронної геокодування
+app.get('/api/lifts/regeocode-all/:jobId', authenticateToken, requireRole('admin'), async (req, res) => {
+    const job = regeocodeJobs.get(req.params.jobId);
+    if (!job) {
+        return res.status(404).json({ success: false, message: 'Job не знайдено' });
+    }
+
+    return res.json({
+        success: true,
+        data: {
+            id: job.id,
+            status: job.status,
+            force: job.force,
+            total: job.total,
+            processed: job.processed,
+            fixed: job.fixed,
+            failed: job.failed,
+            message: job.message,
+            startedAt: job.startedAt,
+            updatedAt: job.updatedAt,
+            finishedAt: job.finishedAt,
+            results: job.results,
+            error: job.error || null
+        }
+    });
 });
 
 // GET /api/lifts/stats - статистика ліфтів (МАЄ БУТИ ПЕРЕД /api/lifts/:id!)
