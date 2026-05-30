@@ -2485,26 +2485,47 @@ app.get('/api/lifts', authenticateToken, async (req, res) => {
         
         console.log(`✅ Знайдено ліфтів: ${lifts.length}/${totalCount} (search: "${searchTerm}", page: ${pageNum})`);
         
-        // 🔄 Підтягуємо дані клієнтів для кожного ліфта
-        const liftsWithClients = await Promise.all(lifts.map(async (lift) => {
-            let client = null;
-
-            // 1. Спробуємо знайти по ID
+        // 🔄 Оптимізований запит: 1 запит до БД замість 84+
+        // Зберімо всі ID и емпасли для булк-запиту
+        const clientIds = [];
+        const clientEmails = [];
+        lifts.forEach(lift => {
             if (lift.client) {
                 try {
-                    client = await db.collection('users').findOne({
-                        _id: new ObjectId(lift.client.toString())
-                    });
-                } catch (err) {
-                    // некоректний ObjectId — не критично
-                }
+                    clientIds.push(new ObjectId(lift.client.toString()));
+                } catch (err) {}
             }
-
-            // 2. Якщо по ID не знайшли — шукаємо по clientEmail (fallback для "осиротілих" ліфтів)
+            if (lift.clientEmail) {
+                clientEmails.push(lift.clientEmail.toLowerCase());
+            }
+        });
+        
+        // Два булк-запита замість 84+ індивідуальних
+        const clientsByIdMap = new Map();
+        const clientsByEmailMap = new Map();
+        
+        if (clientIds.length > 0) {
+            const byId = await db.collection('users').find({ _id: { $in: clientIds } }).toArray();
+            byId.forEach(c => clientsByIdMap.set(c._id.toString(), c));
+        }
+        
+        if (clientEmails.length > 0) {
+            const byEmail = await db.collection('users').find({ email: { $in: clientEmails } }).toArray();
+            byEmail.forEach(c => clientsByEmailMap.set(c.email.toLowerCase(), c));
+        }
+        
+        // Маппуємо результати назад до ліфтів
+        const liftsWithClients = lifts.map(lift => {
+            let client = null;
+            
+            // 1. Спробуємо знайти по ID (щоб уникнути повторного оновлення)
+            if (lift.client) {
+                client = clientsByIdMap.get(lift.client.toString());
+            }
+            
+            // 2. Fallback по email
             if (!client && lift.clientEmail) {
-                client = await db.collection('users').findOne({
-                    email: lift.clientEmail.toLowerCase()
-                });
+                client = clientsByEmailMap.get(lift.clientEmail.toLowerCase());
                 // Якщо знайшли по email — оновлюємо поле client в БД щоб виправити зв'язок
                 if (client) {
                     db.collection('lifts').updateOne(
@@ -2514,7 +2535,7 @@ app.get('/api/lifts', authenticateToken, async (req, res) => {
                     console.log(`🔗 Зв'язок ліфта ${lift._id} з клієнтом ${client.email} відновлено по email`);
                 }
             }
-
+            
             return {
                 ...lift,
                 client: client ? {
@@ -2526,7 +2547,7 @@ app.get('/api/lifts', authenticateToken, async (req, res) => {
                     phone: client.phone
                 } : null
             };
-        }));
+        });
         
         res.json({
             success: true,
@@ -5895,84 +5916,110 @@ app.get('/api/requests', authenticateToken, async (req, res) => {
         if (reqLimitNum > 0) reqCursor = reqCursor.skip(reqSkipNum).limit(reqLimitNum);
         const requests = await reqCursor.toArray();
 
-        // Збагачуємо кожну заявку даними клієнта і техніка
-        const enriched = await Promise.all(requests.map(async (r) => {
-            const { ObjectId } = require('mongodb');
-            // Клієнт: спочатку спробуємо з поля client/clientId, потім з ліфта
+        // Збагачуємо кожну заявку даними клієнта і техніка - ОПТИМІЗОВАНО
+        // Замість N+1 запитів, робимо булк-запити один раз
+        const { ObjectId } = require('mongodb');
+        
+        // Зберімо всі ID для булк-запиту
+        const userIds = new Set();
+        const liftIds = new Set();
+        const emails = new Set();
+        
+        requests.forEach(r => {
+            // Клієнти
+            const rawClient = r.client || r.clientId;
+            if (rawClient && typeof rawClient === 'string') {
+                try { userIds.add(new ObjectId(rawClient)); } catch (_) {}
+            }
+            // Техніки
+            const rawTech = r.assignedTo || r.technician || r.technicianId;
+            if (rawTech && typeof rawTech === 'string') {
+                try { userIds.add(new ObjectId(rawTech)); } catch (_) {}
+            }
+            // Ліфти (для fallback клієнта)
+            if (r.liftId && typeof r.liftId === 'string') {
+                try { liftIds.add(new ObjectId(r.liftId)); } catch (_) {}
+            }
+        });
+        
+        // Три булк-запита замість сотень
+        const usersMap = new Map();
+        const liftsMap = new Map();
+        
+        if (userIds.size > 0) {
+            const users = await db.collection('users').find({ _id: { $in: Array.from(userIds) } }, { projection: { password: 0 } }).toArray();
+            users.forEach(u => usersMap.set(u._id.toString(), u));
+        }
+        
+        if (liftIds.size > 0) {
+            const lifts = await db.collection('lifts').find(
+                { _id: { $in: Array.from(liftIds) } },
+                { projection: { client: 1, clientName: 1, clientEmail: 1, clientPhone: 1 } }
+            ).toArray();
+            lifts.forEach(l => liftsMap.set(l._id.toString(), l));
+        }
+        
+        // Маппуємо результати
+        const enriched = requests.map(r => {
+            // Клієнт
             let clientObj = null;
             const rawClient = r.client || r.clientId;
-            if (rawClient) {
+            if (rawClient && typeof rawClient === 'string') {
                 try {
-                    const cId = (typeof rawClient === 'string') ? new ObjectId(rawClient) : rawClient;
-                    const u = await db.collection('users').findOne(
-                        { _id: cId },
-                        { projection: { password: 0 } }
-                    );
-                    if (u) clientObj = { _id: u._id, firstName: u.firstName, lastName: u.lastName, email: u.email, phone: u.phone };
+                    clientObj = usersMap.get(new ObjectId(rawClient).toString());
+                    if (clientObj) {
+                        clientObj = { _id: clientObj._id, firstName: clientObj.firstName, lastName: clientObj.lastName, email: clientObj.email, phone: clientObj.phone };
+                    }
                 } catch (_) {}
             }
-            // Якщо client не знайдено — беремо дані з ліфта (старий формат заявок)
-            if (!clientObj && r.liftId) {
+            
+            // Fallback: шукаємо клієнта через ліфт
+            if (!clientObj && r.liftId && typeof r.liftId === 'string') {
                 try {
-                    const lId = (typeof r.liftId === 'string') ? new ObjectId(r.liftId) : r.liftId;
-                    const liftDoc = await db.collection('lifts').findOne(
-                        { _id: lId },
-                        { projection: { client: 1, clientName: 1, clientEmail: 1, clientPhone: 1 } }
-                    );
+                    const liftDoc = liftsMap.get(new ObjectId(r.liftId).toString());
                     if (liftDoc) {
                         // Спробуємо знайти User по client ref
-                        if (liftDoc.client) {
+                        if (liftDoc.client && typeof liftDoc.client === 'string') {
                             try {
-                                const lcId = (typeof liftDoc.client === 'string') ? new ObjectId(liftDoc.client) : liftDoc.client;
-                                const u = await db.collection('users').findOne({ _id: lcId }, { projection: { password: 0 } });
-                                if (u) clientObj = { _id: u._id, firstName: u.firstName, lastName: u.lastName, email: u.email, phone: u.phone };
+                                const u = usersMap.get(new ObjectId(liftDoc.client).toString());
+                                if (u) {
+                                    clientObj = { _id: u._id, firstName: u.firstName, lastName: u.lastName, email: u.email, phone: u.phone };
+                                }
                             } catch (_) {}
                         }
-                        // Fallback: email/name прямо в ліфті
+                        // Fallback: data прямо в ліфті
                         if (!clientObj && (liftDoc.clientEmail || liftDoc.clientName)) {
-                            // Спробуємо знайти User по email
-                            if (liftDoc.clientEmail) {
-                                const u = await db.collection('users').findOne(
-                                    { email: liftDoc.clientEmail.toLowerCase() },
-                                    { projection: { password: 0 } }
-                                );
-                                if (u) clientObj = { _id: u._id, firstName: u.firstName, lastName: u.lastName, email: u.email, phone: u.phone };
-                            }
-                            if (!clientObj) {
-                                clientObj = {
-                                    firstName: liftDoc.clientName || '',
-                                    lastName: '',
-                                    email: liftDoc.clientEmail || '',
-                                    phone: liftDoc.clientPhone || ''
-                                };
-                            }
+                            clientObj = {
+                                firstName: liftDoc.clientName || '',
+                                lastName: '',
+                                email: liftDoc.clientEmail || '',
+                                phone: liftDoc.clientPhone || ''
+                            };
                         }
                     }
                 } catch (_) {}
             }
+            
             // Технік
             let techObj = null;
             const rawTech = r.assignedTo || r.technician || r.technicianId;
-            if (rawTech) {
+            if (rawTech && typeof rawTech === 'string') {
                 try {
-                    const tId = (typeof rawTech === 'string') ? new ObjectId(rawTech) : rawTech;
-                    const t = await db.collection('users').findOne(
-                        { _id: tId },
-                        { projection: { password: 0 } }
-                    );
+                    const t = usersMap.get(new ObjectId(rawTech).toString());
                     if (t) techObj = { _id: t._id, firstName: t.firstName, lastName: t.lastName, email: t.email };
                 } catch (_) {}
             }
-            // Якщо технік не знайдений, але є technicianName — повертаємо як об'єкт
+            // Fallback: technicianName
             if (!techObj && r.technicianName) {
                 techObj = { firstName: r.technicianName, lastName: '', email: '' };
             }
+            
             return {
                 ...r,
                 client: clientObj || r.client || null,
                 assignedTo: techObj || r.assignedTo || null
             };
-        }));
+        });
 
         res.json({
             success: true,
