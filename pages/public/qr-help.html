@@ -13,8 +13,36 @@
             color: #fff;
             padding: 24px 0;
         }
+        .hero-top {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 16px;
+        }
         .hero h1 { font-size: 1.5rem; margin: 0; font-weight: 700; }
         .hero p { margin: 6px 0 0; opacity: 0.92; }
+        .lang-switcher {
+            display: inline-flex;
+            gap: 6px;
+            background: rgba(255,255,255,.16);
+            padding: 4px;
+            border-radius: 999px;
+            flex-shrink: 0;
+        }
+        .lang-btn {
+            border: 0;
+            border-radius: 999px;
+            padding: 6px 10px;
+            font-size: .82rem;
+            font-weight: 700;
+            background: transparent;
+            color: #fff;
+            cursor: pointer;
+        }
+        .lang-btn.active {
+            background: #fff;
+            color: #0f5ba7;
+        }
         .card-elev {
             border-radius: 12px;
             box-shadow: 0 8px 20px rgba(0,0,0,.08);
@@ -44,13 +72,30 @@
             color: #6c757d;
             font-size: .85rem;
         }
+        @media (max-width: 576px) {
+            .hero-top {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .lang-switcher {
+                align-self: flex-start;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="hero">
         <div class="container">
-            <h1><i class="fas fa-qrcode mr-2"></i>Ajuda via QR do Elevador</h1>
-            <p>Identificação rápida do equipamento e envio de alerta para a equipa FestLift.</p>
+            <div class="hero-top">
+                <div>
+                    <h1 id="pageTitle"><i class="fas fa-qrcode mr-2"></i>Ajuda via QR do Elevador</h1>
+                    <p id="pageSubtitle">Identificação rápida do equipamento e envio de alerta para a equipa FestLift.</p>
+                </div>
+                <div class="lang-switcher" aria-label="Language switcher">
+                    <button type="button" class="lang-btn active" data-lang="pt">PT</button>
+                    <button type="button" class="lang-btn" data-lang="en">EN</button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -60,55 +105,55 @@
                 <div class="card card-elev">
                     <div class="card-body">
                         <div id="loadingBox" class="text-center py-3">
-                            <i class="fas fa-spinner fa-spin mr-2"></i>A carregar dados do elevador...
+                            <i class="fas fa-spinner fa-spin mr-2"></i><span id="loadingText">A carregar dados do elevador...</span>
                         </div>
 
                         <div id="errorBox" class="alert alert-danger" style="display:none"></div>
 
                         <div id="mainBox" style="display:none">
                             <div class="lift-meta mb-3">
-                                <div><strong>N.º Municipal:</strong> <span id="liftMunicipal">-</span></div>
-                                <div><strong>Morada:</strong> <span id="liftAddress">-</span></div>
+                                <div><strong id="municipalLabel">N.º Municipal:</strong> <span id="liftMunicipal">-</span></div>
+                                <div><strong id="addressLabel">Morada:</strong> <span id="liftAddress">-</span></div>
                             </div>
 
-                            <div class="alert alert-info mb-3">
+                            <div class="alert alert-info mb-3" id="infoBanner">
                                 <i class="fas fa-info-circle mr-1"></i>
                                 Esta página não mostra histórico técnico. Para segurança, visitantes sem conta apenas podem abrir alerta.
                             </div>
 
                             <form id="publicAlertForm" novalidate>
                                 <div class="form-group">
-                                    <label for="issueType">O que se passa?</label>
+                                    <label for="issueType" id="issueTypeLabel">O que se passa?</label>
                                     <select id="issueType" class="form-control" required>
-                                        <option value="">Selecione uma opção</option>
-                                        <option value="stuck">Estamos presos na cabina</option>
-                                        <option value="malfunction">Elevador avariado / não responde</option>
-                                        <option value="other">Outro problema</option>
+                                        <option value="" id="issueTypePlaceholder">Selecione uma opção</option>
+                                        <option value="stuck" id="issueTypeStuck">Estamos presos na cabina</option>
+                                        <option value="malfunction" id="issueTypeMalfunction">Elevador avariado / não responde</option>
+                                        <option value="other" id="issueTypeOther">Outro problema</option>
                                     </select>
                                 </div>
 
                                 <div id="urgentBox" class="urgent-box mb-3">
                                     <i class="fas fa-exclamation-triangle mr-1"></i>
-                                    Emergência identificada. Envie o alerta e aguarde contacto imediato da assistência.
+                                    <span id="urgentText">Emergência identificada. Envie o alerta e aguarde contacto imediato da assistência.</span>
                                 </div>
 
                                 <div class="form-group">
-                                    <label for="issueDetails">Descreva brevemente</label>
+                                    <label for="issueDetails" id="issueDetailsLabel">Descreva brevemente</label>
                                     <textarea id="issueDetails" class="form-control" rows="4" maxlength="1000" required placeholder="Ex.: A cabina parou entre pisos e as portas não abrem."></textarea>
                                 </div>
 
                                 <div class="form-group">
-                                    <label for="contactName">Nome (opcional)</label>
+                                    <label for="contactName" id="contactNameLabel">Nome (opcional)</label>
                                     <input id="contactName" type="text" class="form-control" maxlength="120" placeholder="Nome de contacto">
                                 </div>
 
                                 <div class="form-row">
                                     <div class="form-group col-md-6">
-                                        <label for="contactPhone">Telefone</label>
+                                        <label for="contactPhone" id="contactPhoneLabel">Telefone</label>
                                         <input id="contactPhone" type="tel" class="form-control" required maxlength="40" placeholder="+351 ...">
                                     </div>
                                     <div class="form-group col-md-6">
-                                        <label for="contactEmail">Email</label>
+                                        <label for="contactEmail" id="contactEmailLabel">Email</label>
                                         <input id="contactEmail" type="email" class="form-control" required maxlength="180" placeholder="nome@email.com">
                                     </div>
                                 </div>
@@ -117,13 +162,13 @@
                                 <input type="text" id="website" name="website" tabindex="-1" autocomplete="off" style="position:absolute;left:-10000px;top:auto;width:1px;height:1px;overflow:hidden;">
 
                                 <button id="submitBtn" type="submit" class="btn btn-danger btn-block">
-                                    <i class="fas fa-paper-plane mr-1"></i>Enviar alerta
+                                    <i class="fas fa-paper-plane mr-1"></i><span id="submitBtnText">Enviar alerta</span>
                                 </button>
                             </form>
 
                             <div id="resultBox" class="alert alert-success mt-3" style="display:none"></div>
 
-                            <p class="muted-note mt-3 mb-0">
+                            <p class="muted-note mt-3 mb-0" id="privacyNote">
                                 Ao enviar, os dados são usados apenas para contacto e gestão do pedido de assistência.
                             </p>
                         </div>
@@ -131,7 +176,7 @@
                 </div>
 
                 <div class="footer-mini">
-                    FestLift suporte: <a id="supportPhoneLink" href="#">+351 961 777 666</a> | <a id="supportEmailLink" href="#">suporte@festlift.pt</a>
+                    <span id="supportLabel">FestLift suporte:</span> <a id="supportPhoneLink" href="#">+351 961 777 666</a> | <a id="supportEmailLink" href="#">suporte@festlift.pt</a>
                 </div>
             </div>
         </div>
@@ -139,6 +184,133 @@
 
     <script>
         let currentLiftId = null;
+        let currentLang = 'pt';
+
+        const translations = {
+            pt: {
+                title: 'Ajuda QR | FestLift',
+                pageTitle: 'Ajuda via QR do Elevador',
+                pageSubtitle: 'Identificação rápida do equipamento e envio de alerta para a equipa FestLift.',
+                loading: 'A carregar dados do elevador...',
+                municipalLabel: 'N.º Municipal:',
+                addressLabel: 'Morada:',
+                infoBanner: 'Esta página não mostra histórico técnico. Para segurança, visitantes sem conta apenas podem abrir alerta.',
+                issueTypeLabel: 'O que se passa?',
+                issueTypePlaceholder: 'Selecione uma opção',
+                issueTypeStuck: 'Estamos presos na cabina',
+                issueTypeMalfunction: 'Elevador avariado / não responde',
+                issueTypeOther: 'Outro problema',
+                urgentText: 'Emergência identificada. Envie o alerta e aguarde contacto imediato da assistência.',
+                issueDetailsLabel: 'Descreva brevemente',
+                issueDetailsPlaceholder: 'Ex.: A cabina parou entre pisos e as portas não abrem.',
+                contactNameLabel: 'Nome (opcional)',
+                contactNamePlaceholder: 'Nome de contacto',
+                contactPhoneLabel: 'Telefone',
+                contactPhonePlaceholder: '+351 ...',
+                contactEmailLabel: 'Email',
+                contactEmailPlaceholder: 'nome@email.com',
+                submit: 'Enviar alerta',
+                sending: 'A enviar...',
+                privacyNote: 'Ao enviar, os dados são usados apenas para contacto e gestão do pedido de assistência.',
+                supportLabel: 'FestLift suporte:',
+                errorInvalidQr: 'Link QR inválido: não foi possível identificar o elevador.',
+                errorLiftNotFound: 'Elevador não encontrado',
+                errorLoadLift: 'Erro ao carregar os dados do elevador.',
+                fillRequired: 'Preencha os campos obrigatórios antes de enviar.',
+                alertSendFailed: 'Não foi possível enviar o alerta.',
+                alertSendError: 'Erro ao enviar alerta.',
+                alertSuccessFallback: 'Alerta enviado com sucesso.',
+                requestNumberPrefix: 'Pedido:',
+                issueLabelStuck: 'Pessoa presa na cabina',
+                issueLabelMalfunction: 'Elevador avariado',
+                issueLabelOther: 'Outro problema'
+            },
+            en: {
+                title: 'QR Help | FestLift',
+                pageTitle: 'Elevator QR Help',
+                pageSubtitle: 'Quick equipment identification and alert submission to the FestLift team.',
+                loading: 'Loading elevator data...',
+                municipalLabel: 'Municipal Number:',
+                addressLabel: 'Address:',
+                infoBanner: 'This page does not show technical history. For safety, visitors without an account can only open an alert.',
+                issueTypeLabel: 'What is happening?',
+                issueTypePlaceholder: 'Select an option',
+                issueTypeStuck: 'We are stuck in the cabin',
+                issueTypeMalfunction: 'Elevator malfunction / not responding',
+                issueTypeOther: 'Other problem',
+                urgentText: 'Emergency identified. Send the alert and wait for immediate assistance contact.',
+                issueDetailsLabel: 'Describe the issue briefly',
+                issueDetailsPlaceholder: 'Example: The cabin stopped between floors and the doors will not open.',
+                contactNameLabel: 'Name (optional)',
+                contactNamePlaceholder: 'Contact name',
+                contactPhoneLabel: 'Phone',
+                contactPhonePlaceholder: '+44 ...',
+                contactEmailLabel: 'Email',
+                contactEmailPlaceholder: 'name@email.com',
+                submit: 'Send alert',
+                sending: 'Sending...',
+                privacyNote: 'When submitted, your data is used only for contact and assistance request handling.',
+                supportLabel: 'FestLift support:',
+                errorInvalidQr: 'Invalid QR link: the elevator could not be identified.',
+                errorLiftNotFound: 'Elevator not found',
+                errorLoadLift: 'Error loading elevator data.',
+                fillRequired: 'Please fill in the required fields before sending.',
+                alertSendFailed: 'Could not send the alert.',
+                alertSendError: 'Error sending alert.',
+                alertSuccessFallback: 'Alert sent successfully.',
+                requestNumberPrefix: 'Request:',
+                issueLabelStuck: 'Person trapped in the cabin',
+                issueLabelMalfunction: 'Elevator malfunction',
+                issueLabelOther: 'Other problem'
+            }
+        };
+
+        function t(key) {
+            return (translations[currentLang] && translations[currentLang][key]) || translations.pt[key] || key;
+        }
+
+        function applyLanguage(lang) {
+            currentLang = translations[lang] ? lang : 'pt';
+            localStorage.setItem('publicQrHelpLang', currentLang);
+
+            document.documentElement.lang = currentLang;
+            document.title = t('title');
+            document.getElementById('pageTitle').innerHTML = `<i class="fas fa-qrcode mr-2"></i>${t('pageTitle')}`;
+            document.getElementById('pageSubtitle').textContent = t('pageSubtitle');
+            document.getElementById('loadingText').textContent = t('loading');
+            document.getElementById('municipalLabel').textContent = t('municipalLabel');
+            document.getElementById('addressLabel').textContent = t('addressLabel');
+            document.getElementById('infoBanner').innerHTML = `<i class="fas fa-info-circle mr-1"></i>${t('infoBanner')}`;
+            document.getElementById('issueTypeLabel').textContent = t('issueTypeLabel');
+            document.getElementById('issueTypePlaceholder').textContent = t('issueTypePlaceholder');
+            document.getElementById('issueTypeStuck').textContent = t('issueTypeStuck');
+            document.getElementById('issueTypeMalfunction').textContent = t('issueTypeMalfunction');
+            document.getElementById('issueTypeOther').textContent = t('issueTypeOther');
+            document.getElementById('urgentText').textContent = t('urgentText');
+            document.getElementById('issueDetailsLabel').textContent = t('issueDetailsLabel');
+            document.getElementById('issueDetails').placeholder = t('issueDetailsPlaceholder');
+            document.getElementById('contactNameLabel').textContent = t('contactNameLabel');
+            document.getElementById('contactName').placeholder = t('contactNamePlaceholder');
+            document.getElementById('contactPhoneLabel').textContent = t('contactPhoneLabel');
+            document.getElementById('contactPhone').placeholder = t('contactPhonePlaceholder');
+            document.getElementById('contactEmailLabel').textContent = t('contactEmailLabel');
+            document.getElementById('contactEmail').placeholder = t('contactEmailPlaceholder');
+            document.getElementById('submitBtnText').textContent = t('submit');
+            document.getElementById('privacyNote').textContent = t('privacyNote');
+            document.getElementById('supportLabel').textContent = t('supportLabel');
+
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.lang === currentLang);
+            });
+        }
+
+        function chooseInitialLanguage() {
+            const saved = localStorage.getItem('publicQrHelpLang');
+            if (saved && translations[saved]) return saved;
+
+            const browserLang = (navigator.language || navigator.userLanguage || 'pt').toLowerCase();
+            return browserLang.startsWith('en') ? 'en' : 'pt';
+        }
 
         function setError(message) {
             const err = document.getElementById('errorBox');
@@ -156,7 +328,7 @@
             const params = new URLSearchParams(window.location.search);
             const liftId = params.get('liftId');
             if (!liftId) {
-                setError('Link QR inválido: não foi possível identificar o elevador.');
+                setError(t('errorInvalidQr'));
                 return;
             }
 
@@ -166,7 +338,7 @@
                 const res = await fetch(`/api/qr/public/lift/${encodeURIComponent(liftId)}`);
                 const data = await res.json();
                 if (!res.ok || !data.success || !data.data || !data.data.lift) {
-                    throw new Error(data.message || 'Elevador não encontrado');
+                    throw new Error(data.message || t('errorLiftNotFound'));
                 }
 
                 document.getElementById('liftMunicipal').textContent = data.data.lift.municipalNumber || '-';
@@ -186,7 +358,7 @@
                 document.getElementById('loadingBox').style.display = 'none';
                 document.getElementById('mainBox').style.display = 'block';
             } catch (error) {
-                setError(error.message || 'Erro ao carregar os dados do elevador.');
+                setError(error.message || t('errorLoadLift'));
             }
         }
 
@@ -203,14 +375,14 @@
             const website = document.getElementById('website').value;
 
             if (!issueType || !issueDetails || !phone || !email) {
-                alert('Preencha os campos obrigatórios antes de enviar.');
+                alert(t('fillRequired'));
                 return;
             }
 
             const btn = document.getElementById('submitBtn');
             const original = btn.innerHTML;
             btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>A enviar...';
+            btn.innerHTML = `<i class="fas fa-spinner fa-spin mr-1"></i>${t('sending')}`;
 
             try {
                 const res = await fetch('/api/qr/public/alert', {
@@ -230,25 +402,29 @@
 
                 const data = await res.json();
                 if (!res.ok || !data.success) {
-                    throw new Error(data.message || 'Não foi possível enviar o alerta.');
+                    throw new Error(data.message || t('alertSendFailed'));
                 }
 
                 const box = document.getElementById('resultBox');
-                const reqNum = data.data && data.data.requestNumber ? ` Pedido: ${data.data.requestNumber}.` : '';
-                box.textContent = (data.message || 'Alerta enviado com sucesso.') + reqNum;
+                const reqNum = data.data && data.data.requestNumber ? ` ${t('requestNumberPrefix')} ${data.data.requestNumber}.` : '';
+                box.textContent = (data.message || t('alertSuccessFallback')) + reqNum;
                 box.style.display = 'block';
                 document.getElementById('publicAlertForm').reset();
                 updateUrgencyUI();
             } catch (error) {
-                alert(error.message || 'Erro ao enviar alerta.');
+                alert(error.message || t('alertSendError'));
             } finally {
                 btn.disabled = false;
                 btn.innerHTML = original;
             }
         }
 
+        document.querySelectorAll('.lang-btn').forEach(btn => {
+            btn.addEventListener('click', () => applyLanguage(btn.dataset.lang));
+        });
         document.getElementById('issueType').addEventListener('change', updateUrgencyUI);
         document.getElementById('publicAlertForm').addEventListener('submit', sendPublicAlert);
+        applyLanguage(chooseInitialLanguage());
         loadLiftInfo();
     </script>
 </body>
