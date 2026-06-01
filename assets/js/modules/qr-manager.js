@@ -6,6 +6,20 @@
 const qrManager = (function() {
     'use strict';
 
+    function buildPublicQrUrl(liftId) {
+        return `${window.location.origin}/pages/public/qr-help.html?liftId=${encodeURIComponent(liftId)}`;
+    }
+
+    function getQrPayload(qr) {
+        if (qr && qr.id) {
+            return buildPublicQrUrl(qr.id);
+        }
+        if (qr && typeof qr.code === 'string' && /^https?:\/\//i.test(qr.code)) {
+            return qr.code;
+        }
+        return '';
+    }
+
     // State
     let currentQRs = [];
     let currentPage = 1;
@@ -100,6 +114,7 @@ const qrManager = (function() {
                     code: lift.qrCode
                         ? (typeof lift.qrCode === 'object' ? lift.qrCode.code : lift.qrCode)
                         : `LIFT-${lift.municipalNumber || lift._id.slice(-6).toUpperCase()}`,
+                    qrPayload: buildPublicQrUrl(lift._id),
                     name: addressText,
                     type: 'lift',
                     liftType: lift.type || 'passenger',
@@ -254,7 +269,7 @@ const qrManager = (function() {
                 if (el && typeof QRCode !== 'undefined') {
                     el.innerHTML = '';
                     new QRCode(el, {
-                        text: qr.code,
+                        text: getQrPayload(qr),
                         width: 64,
                         height: 64,
                         colorDark: '#000000',
@@ -337,7 +352,7 @@ const qrManager = (function() {
                 if (el && typeof QRCode !== 'undefined') {
                     el.innerHTML = '';
                     new QRCode(el, {
-                        text: qr.code,
+                        text: getQrPayload(qr),
                         width: 110,
                         height: 110,
                         colorDark: '#000000',
@@ -481,7 +496,7 @@ const qrManager = (function() {
         // Generate QR Code - qrcodejs@1.0.0 API
         $('#qrCodeCanvas').empty();
         new QRCode(document.getElementById('qrCodeCanvas'), {
-            text: qr.code,
+            text: getQrPayload(qr),
             width: 256,
             height: 256,
             colorDark: '#000000',
@@ -702,7 +717,7 @@ const qrManager = (function() {
         `).join('');
 
         const qrInits = qrs.map(qr => `
-            try { new QRCode(document.getElementById('p-${qr.id}'), { text: '${qr.code.replace(/'/g, "\\'")}', width: 140, height: 140, correctLevel: QRCode.CorrectLevel.M }); } catch(e) {}
+            try { new QRCode(document.getElementById('p-${qr.id}'), { text: '${getQrPayload(qr).replace(/'/g, "\\'")}', width: 140, height: 140, correctLevel: QRCode.CorrectLevel.M }); } catch(e) {}
         `).join('\n');
 
         return `<!DOCTYPE html><html><head>
@@ -808,7 +823,7 @@ const qrManager = (function() {
         }
 
         const qrObj = new QRCode(div, {
-            text: qr.code,
+            text: getQrPayload(qr),
             width: 256,
             height: 256,
             colorDark: '#000000',

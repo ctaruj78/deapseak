@@ -6161,17 +6161,11 @@ Equipa FestLift</textarea>
             const container = document.getElementById('qrcode-container');
             container.innerHTML = '<div id="qrcode"></div>';
             
-            // 📌 Єдиний formato do QR-code — збігаexisteться desde administradorом e QR системою
-            const storedQR = lift.qrCode || null;
-            const qrText = typeof storedQR === 'object' && storedQR?.code
-                ? storedQR.code
-                : (typeof storedQR === 'string' && storedQR
-                    ? storedQR
-                    : (municipalNumber
-                        ? `LIFT-${municipalNumber.toUpperCase().replace(/\s+/g, '-')}`
-                        : `LIFT-${(lift._id || lift.id || '').slice(-6).toUpperCase()}`));
-            
-            console.log('📄 QR Text (unified):', qrText);
+            // 📌 QR code = URL público com dados mínimos e formulário de alerta
+            const liftDbId = lift._id || lift.id || '';
+            const qrText = `${window.location.origin}/pages/public/qr-help.html?liftId=${liftDbId}`;
+
+            console.log('📄 QR Text (public help):', qrText);
             
             // Створюexisteмо QR-code — однакові parâmetros як в administrador панелі
             new QRCode(document.getElementById('qrcode'), {

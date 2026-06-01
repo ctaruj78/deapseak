@@ -854,6 +854,224 @@ app.patch('/api/notifications/:id/read', authenticateToken, async (req, res) => 
 // 📊 QR CODE HISTORY
 // ═══════════════════════════════════════════════════════════
 
+const _publicQrAlertUsage = new Map(); // ip -> { count, resetAt }
+const _PUBLIC_QR_ALERT_LIMIT = 5;
+
+function _getPublicQrAlertUsage(ip) {
+    const entry = _publicQrAlertUsage.get(ip);
+    const now = Date.now();
+    if (!entry || entry.resetAt < now) {
+        return { count: 0, resetAt: now + 60 * 60 * 1000 }; // 1 hora
+    }
+    return entry;
+}
+
+function _formatLiftAddress(lift) {
+    if (!lift) return 'Endereço não disponível';
+    const a = lift.address;
+    if (typeof a === 'object' && a) {
+        return [a.street, a.city, a.zipCode].filter(Boolean).join(', ') || 'Endereço não disponível';
+    }
+    if (typeof a === 'string' && a.trim()) return a.trim();
+    return lift.location || 'Endereço não disponível';
+}
+
+// GET /api/qr/public/lift/:liftId - dados mínimos para visitantes (sem autenticação)
+app.get('/api/qr/public/lift/:liftId', async (req, res) => {
+    try {
+        if (!db) await connectMongo();
+        if (!db) {
+            return res.status(503).json({ success: false, message: 'Base de dados indisponível' });
+        }
+
+        const { ObjectId } = require('mongodb');
+        const { liftId } = req.params;
+        if (!ObjectId.isValid(liftId)) {
+            return res.status(400).json({ success: false, message: 'ID de elevador inválido' });
+        }
+
+        const lift = await db.collection('lifts').findOne(
+            { _id: new ObjectId(liftId) },
+            { projection: { municipalNumber: 1, address: 1, location: 1, status: 1 } }
+        );
+
+        if (!lift) {
+            return res.status(404).json({ success: false, message: 'Elevador não encontrado' });
+        }
+
+        const safeLift = {
+            id: lift._id.toString(),
+            municipalNumber: lift.municipalNumber || 'Sem número',
+            address: _formatLiftAddress(lift),
+            status: lift.status || 'unknown'
+        };
+
+        return res.json({
+            success: true,
+            data: {
+                lift: safeLift,
+                emergencyContacts: {
+                    phone: process.env.PUBLIC_SUPPORT_PHONE || '+351 961 777 666',
+                    email: process.env.PUBLIC_SUPPORT_EMAIL || 'suporte@festlift.pt'
+                }
+            }
+        });
+    } catch (error) {
+        console.error('❌ Erro no QR público (dados elevador):', error.message);
+        return res.status(500).json({ success: false, message: 'Erro do servidor' });
+    }
+});
+
+// POST /api/qr/public/alert - abertura de alerta por visitante (sem autenticação)
+app.post('/api/qr/public/alert', async (req, res) => {
+    try {
+        if (!db) await connectMongo();
+        if (!db) {
+            return res.status(503).json({ success: false, message: 'Base de dados indisponível' });
+        }
+
+        const ip = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket.remoteAddress || 'unknown';
+
+        // Honeypot field anti-bot: responder sucesso silencioso sem criar alerta
+        if (req.body && typeof req.body.website === 'string' && req.body.website.trim()) {
+            return res.json({ success: true, message: 'Pedido recebido. Obrigado.' });
+        }
+
+        const usage = _getPublicQrAlertUsage(ip);
+        if (usage.count >= _PUBLIC_QR_ALERT_LIMIT) {
+            return res.status(429).json({
+                success: false,
+                message: 'Limite temporário de alertas atingido. Tente novamente dentro de alguns minutos.'
+            });
+        }
+
+        const { ObjectId } = require('mongodb');
+        const {
+            liftId,
+            issueType,
+            issueDetails,
+            name,
+            phone,
+            email,
+            isTrapped
+        } = req.body || {};
+
+        if (!liftId || !ObjectId.isValid(liftId)) {
+            return res.status(400).json({ success: false, message: 'Elevador inválido' });
+        }
+
+        const normalizedIssueType = String(issueType || '').trim().toLowerCase();
+        const allowedIssueTypes = new Set(['stuck', 'malfunction', 'other']);
+        if (!allowedIssueTypes.has(normalizedIssueType)) {
+            return res.status(400).json({ success: false, message: 'Tipo de situação inválido' });
+        }
+
+        const trimmedPhone = String(phone || '').trim();
+        const trimmedEmail = String(email || '').trim().toLowerCase();
+        const trimmedName = String(name || '').trim();
+        const trimmedDetails = String(issueDetails || '').trim();
+
+        if (trimmedPhone.length < 6) {
+            return res.status(400).json({ success: false, message: 'Telefone inválido' });
+        }
+
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(trimmedEmail)) {
+            return res.status(400).json({ success: false, message: 'Email inválido' });
+        }
+
+        if (trimmedDetails.length < 5) {
+            return res.status(400).json({ success: false, message: 'Descreva brevemente a situação' });
+        }
+
+        const lift = await db.collection('lifts').findOne(
+            { _id: new ObjectId(liftId) },
+            { projection: { _id: 1, municipalNumber: 1, address: 1, location: 1, client: 1 } }
+        );
+
+        if (!lift) {
+            return res.status(404).json({ success: false, message: 'Elevador não encontrado' });
+        }
+
+        const nowIso = new Date().toISOString();
+        const reqCount = await db.collection('requests').countDocuments();
+        const reqYear = new Date().getFullYear();
+        const requestNumber = `REQ-${reqYear}-${String(reqCount + 1).padStart(4, '0')}`;
+
+        const issueLabelMap = {
+            stuck: 'Pessoa presa na cabina',
+            malfunction: 'Elevador avariado',
+            other: 'Outro problema'
+        };
+        const issueLabel = issueLabelMap[normalizedIssueType] || 'Outro problema';
+
+        const newRequest = {
+            requestNumber,
+            title: `Alerta QR público — ${issueLabel}`,
+            description:
+                `Origem: QR público (visitante)\n` +
+                `Situação: ${issueLabel}\n` +
+                `Pessoa presa: ${isTrapped ? 'Sim' : 'Não'}\n` +
+                `Contacto: ${trimmedName || 'N/D'} | ${trimmedPhone} | ${trimmedEmail}\n` +
+                `Detalhes: ${trimmedDetails}`,
+            type: isTrapped ? 'emergency' : 'maintenance',
+            priority: isTrapped ? 'high' : 'medium',
+            status: 'pending',
+            source: 'public_qr',
+            publicAlert: true,
+            liftId: lift._id.toString(),
+            liftMunicipalNumber: lift.municipalNumber || '',
+            liftAddress: _formatLiftAddress(lift),
+            liftClient: lift.client || 'Cliente desconhecido',
+            reporter: {
+                name: trimmedName || null,
+                phone: trimmedPhone,
+                email: trimmedEmail,
+                ip
+            },
+            createdAt: nowIso,
+            createdBy: 'public-qr',
+            updatedAt: nowIso
+        };
+
+        const insertResult = await db.collection('requests').insertOne(newRequest);
+
+        usage.count += 1;
+        _publicQrAlertUsage.set(ip, usage);
+
+        await db.collection('notifications').insertOne({
+            type: 'public_qr_alert',
+            title: 'Novo alerta QR público',
+            message: `${issueLabel} — Elevador ${lift.municipalNumber || lift._id.toString()}`,
+            requestId: insertResult.insertedId.toString(),
+            liftId: lift._id.toString(),
+            read: false,
+            createdAt: new Date()
+        });
+
+        if (global.io) {
+            global.io.to('admin').emit('public:qr-alert', {
+                requestId: insertResult.insertedId.toString(),
+                liftId: lift._id.toString(),
+                issueType: normalizedIssueType,
+                isTrapped: !!isTrapped
+            });
+        }
+
+        return res.json({
+            success: true,
+            message: 'Alerta enviado com sucesso. A nossa equipa irá contactar o mais rapidamente possível.',
+            data: {
+                requestId: insertResult.insertedId.toString(),
+                requestNumber
+            }
+        });
+    } catch (error) {
+        console.error('❌ Erro no alerta QR público:', error.message);
+        return res.status(500).json({ success: false, message: 'Erro do servidor' });
+    }
+});
+
 // GET all QR codes with filtering and pagination
 app.get('/api/qr/codes', authenticateToken, async (req, res) => {
     try {
@@ -9186,6 +9404,8 @@ app.post('/api/ai/guest-chat', async (req, res) => {
             return res.status(400).json({ success: false, message: 'Mensagem inválida.' });
         }
 
+        console.log(`[AI Guest Chat] ip=${ip} q="${message.substring(0, 200).replace(/\s+/g, ' ')}"`);
+
         usage.chat += 1;
         _guestAiUsage.set(ip, usage);
 
@@ -9197,13 +9417,34 @@ app.post('/api/ai/guest-chat', async (req, res) => {
         }
 
         const prompt = `És o assistente de IA da FestLift, especialista em elevadores em Portugal.
-Conheces as normas portuguesas: DL 295/98, NP EN 81, IPAC, regulamentos de inspeção.
-Responde sempre em Português Europeu (pt-PT), de forma clara e útil. Máximo 200 palavras por resposta.
-Nota: Este utilizador é um visitante (modo demonstração) — podes responder a perguntas gerais sobre elevadores, manutenção, normas e como o sistema FestLift funciona.
+
+    Base legal/normativa de referência (usar conforme o tema da pergunta):
+    - Decreto-Lei 320/2002 (manutenção, inspeções periódicas, livro de manutenção, responsabilidades)
+    - Decreto-Lei 58/2017 (ascensores novos / diretiva 2014/33/UE)
+    - Decreto-Lei 295/98 e Decreto 513/70 (contexto histórico e instalações mais antigas)
+    - Lei 65/2013 (regime EMIE/EIIE) e regras IPAC aplicáveis
+    - Normas NP EN 81 (incluindo 81-20, 81-50, 81-70, 81-72, 81-73, 81-77, 81-80)
+    - NP EN 13015 (programas e registos de manutenção)
+
+    Regras de resposta:
+    - Responde sempre em Português Europeu (pt-PT), de forma clara e útil.
+    - Máximo 220 palavras por resposta.
+    - Quando aplicável, cita diploma/norma e artigo/cláusula.
+    - Se o tema for livro de manutenção, explica primeiro DL 320/2002 (artigos sobre manutenção e registos) e pode complementar com NP EN 13015.
+    - Se houver dúvida jurídica específica, recomenda validação formal junto da DGEG/EIIE.
+    - NÃO afirmar que visitantes sem login têm acesso ao histórico completo do elevador.
+    - Para QR sem autenticação, informar apenas: identificação básica do elevador + formulário de alerta (telefone e email obrigatórios).
+
+    Nota: Este utilizador é visitante (modo demonstração) — podes responder a questões gerais sobre elevadores, manutenção, normas e funcionamento do sistema FestLift.
 
 PERGUNTA: ${message.substring(0, 1000)}`;
 
         const text = await _callGuestAI(prompt);
+        const normMatches = (text.match(/DL\s*\d+\/\d+|Decreto-?Lei\s*n[.ºo]*\s*\d+\/\d+|NP\s*EN\s*81(?:-\d+)?|EN\s*81(?:-\d+)?|NP\s*EN\s*13015|IPAC|DGEG/gi) || [])
+            .map(v => v.replace(/\s+/g, ' ').trim())
+            .filter((v, i, arr) => arr.indexOf(v) === i)
+            .slice(0, 8);
+        console.log(`[AI Guest Chat] ip=${ip} norms=${normMatches.join(', ') || 'none'} a="${text.substring(0, 220).replace(/\s+/g, ' ')}"`);
         res.json({ success: true, data: {
             response: text,
             usedChat: usage.chat, remainingChat: Math.max(0, _GUEST_CHAT_LIMIT - usage.chat)

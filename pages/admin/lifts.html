@@ -6230,9 +6230,9 @@ Email de contacto: info@festlift.pt`;
             const container = document.getElementById('qrcode-container');
             container.innerHTML = '<div id="qrcode"></div>';
             
-            // 📌 QR code = URL direto para a página do elevador (abre no browser do telemóvel)
+            // 📌 QR code = URL público com dados mínimos e formulário de alerta
             const liftDbId = lift._id || lift.id || '';
-            const qrText = `${window.location.origin}/pages/tech/manutencao.html?liftId=${liftDbId}`;
+            const qrText = `${window.location.origin}/pages/public/qr-help.html?liftId=${liftDbId}`;
             
             console.log('📄 QR Text (URL):', qrText);
             

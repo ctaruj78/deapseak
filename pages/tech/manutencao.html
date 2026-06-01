@@ -4,6 +4,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Técnico - Manutenção Mensal</title>
+    <script>
+        (function () {
+            const params = new URLSearchParams(window.location.search);
+            const liftId = params.get('liftId');
+            if (!liftId) return;
+
+            const token = sessionStorage.getItem('liftmanager_jwt') ||
+                localStorage.getItem('liftmanager_jwt') ||
+                localStorage.getItem('authToken') ||
+                localStorage.getItem('token') ||
+                sessionStorage.getItem('token');
+
+            if (!token) {
+                const target = `/pages/public/qr-help.html?liftId=${encodeURIComponent(liftId)}`;
+                window.location.replace(target);
+            }
+        })();
+    </script>
     <script src="../../assets/js/auth.js"></script>
 
     

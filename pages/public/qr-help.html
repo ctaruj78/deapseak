@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ajuda QR | FestLift</title>
+    <link rel="stylesheet" href="../../plugins/adminlte/adminlte.min.css">
+    <link rel="stylesheet" href="../../plugins/fontawesome/css/all.min.css">
+    <style>
+        body { background: #f4f6f9; }
+        .hero {
+            background: linear-gradient(135deg, #0f5ba7 0%, #0077b6 100%);
+            color: #fff;
+            padding: 24px 0;
+        }
+        .hero h1 { font-size: 1.5rem; margin: 0; font-weight: 700; }
+        .hero p { margin: 6px 0 0; opacity: 0.92; }
+        .card-elev {
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0,0,0,.08);
+            border: 0;
+        }
+        .lift-meta {
+            background: #eef6ff;
+            border: 1px solid #cfe7ff;
+            border-radius: 10px;
+            padding: 12px;
+        }
+        .urgent-box {
+            border: 1px solid #f6c4c4;
+            background: #fff5f5;
+            color: #8d1f1f;
+            border-radius: 10px;
+            padding: 10px 12px;
+            display: none;
+        }
+        .muted-note {
+            font-size: .9rem;
+            color: #6c757d;
+        }
+        .footer-mini {
+            text-align: center;
+            padding: 12px;
+            color: #6c757d;
+            font-size: .85rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <div class="container">
+            <h1><i class="fas fa-qrcode mr-2"></i>Ajuda via QR do Elevador</h1>
+            <p>Identificação rápida do equipamento e envio de alerta para a equipa FestLift.</p>
+        </div>
+    </div>
+
+    <div class="container py-3 py-md-4">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card card-elev">
+                    <div class="card-body">
+                        <div id="loadingBox" class="text-center py-3">
+                            <i class="fas fa-spinner fa-spin mr-2"></i>A carregar dados do elevador...
+                        </div>
+
+                        <div id="errorBox" class="alert alert-danger" style="display:none"></div>
+
+                        <div id="mainBox" style="display:none">
+                            <div class="lift-meta mb-3">
+                                <div><strong>N.º Municipal:</strong> <span id="liftMunicipal">-</span></div>
+                                <div><strong>Morada:</strong> <span id="liftAddress">-</span></div>
+                            </div>
+
+                            <div class="alert alert-info mb-3">
+                                <i class="fas fa-info-circle mr-1"></i>
+                                Esta página não mostra histórico técnico. Para segurança, visitantes sem conta apenas podem abrir alerta.
+                            </div>
+
+                            <form id="publicAlertForm" novalidate>
+                                <div class="form-group">
+                                    <label for="issueType">O que se passa?</label>
+                                    <select id="issueType" class="form-control" required>
+                                        <option value="">Selecione uma opção</option>
+                                        <option value="stuck">Estamos presos na cabina</option>
+                                        <option value="malfunction">Elevador avariado / não responde</option>
+                                        <option value="other">Outro problema</option>
+                                    </select>
+                                </div>
+
+                                <div id="urgentBox" class="urgent-box mb-3">
+                                    <i class="fas fa-exclamation-triangle mr-1"></i>
+                                    Emergência identificada. Envie o alerta e aguarde contacto imediato da assistência.
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="issueDetails">Descreva brevemente</label>
+                                    <textarea id="issueDetails" class="form-control" rows="4" maxlength="1000" required placeholder="Ex.: A cabina parou entre pisos e as portas não abrem."></textarea>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="contactName">Nome (opcional)</label>
+                                    <input id="contactName" type="text" class="form-control" maxlength="120" placeholder="Nome de contacto">
+                                </div>
+
+                                <div class="form-row">
+                                    <div class="form-group col-md-6">
+                                        <label for="contactPhone">Telefone</label>
+                                        <input id="contactPhone" type="tel" class="form-control" required maxlength="40" placeholder="+351 ...">
+                                    </div>
+                                    <div class="form-group col-md-6">
+                                        <label for="contactEmail">Email</label>
+                                        <input id="contactEmail" type="email" class="form-control" required maxlength="180" placeholder="nome@email.com">
+                                    </div>
+                                </div>
+
+                                <!-- Honeypot anti-bot -->
+                                <input type="text" id="website" name="website" tabindex="-1" autocomplete="off" style="position:absolute;left:-10000px;top:auto;width:1px;height:1px;overflow:hidden;">
+
+                                <button id="submitBtn" type="submit" class="btn btn-danger btn-block">
+                                    <i class="fas fa-paper-plane mr-1"></i>Enviar alerta
+                                </button>
+                            </form>
+
+                            <div id="resultBox" class="alert alert-success mt-3" style="display:none"></div>
+
+                            <p class="muted-note mt-3 mb-0">
+                                Ao enviar, os dados são usados apenas para contacto e gestão do pedido de assistência.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="footer-mini">
+                    FestLift suporte: <a id="supportPhoneLink" href="#">+351 961 777 666</a> | <a id="supportEmailLink" href="#">suporte@festlift.pt</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentLiftId = null;
+
+        function setError(message) {
+            const err = document.getElementById('errorBox');
+            err.textContent = message;
+            err.style.display = 'block';
+            document.getElementById('loadingBox').style.display = 'none';
+        }
+
+        function updateUrgencyUI() {
+            const issueType = document.getElementById('issueType').value;
+            document.getElementById('urgentBox').style.display = issueType === 'stuck' ? 'block' : 'none';
+        }
+
+        async function loadLiftInfo() {
+            const params = new URLSearchParams(window.location.search);
+            const liftId = params.get('liftId');
+            if (!liftId) {
+                setError('Link QR inválido: não foi possível identificar o elevador.');
+                return;
+            }
+
+            currentLiftId = liftId;
+
+            try {
+                const res = await fetch(`/api/qr/public/lift/${encodeURIComponent(liftId)}`);
+                const data = await res.json();
+                if (!res.ok || !data.success || !data.data || !data.data.lift) {
+                    throw new Error(data.message || 'Elevador não encontrado');
+                }
+
+                document.getElementById('liftMunicipal').textContent = data.data.lift.municipalNumber || '-';
+                document.getElementById('liftAddress').textContent = data.data.lift.address || '-';
+
+                const phone = data.data.emergencyContacts && data.data.emergencyContacts.phone ? data.data.emergencyContacts.phone : '+351 961 777 666';
+                const email = data.data.emergencyContacts && data.data.emergencyContacts.email ? data.data.emergencyContacts.email : 'suporte@festlift.pt';
+
+                const phoneLink = document.getElementById('supportPhoneLink');
+                phoneLink.textContent = phone;
+                phoneLink.href = `tel:${phone.replace(/\s+/g, '')}`;
+
+                const emailLink = document.getElementById('supportEmailLink');
+                emailLink.textContent = email;
+                emailLink.href = `mailto:${email}`;
+
+                document.getElementById('loadingBox').style.display = 'none';
+                document.getElementById('mainBox').style.display = 'block';
+            } catch (error) {
+                setError(error.message || 'Erro ao carregar os dados do elevador.');
+            }
+        }
+
+        async function sendPublicAlert(event) {
+            event.preventDefault();
+
+            if (!currentLiftId) return;
+
+            const issueType = document.getElementById('issueType').value.trim();
+            const issueDetails = document.getElementById('issueDetails').value.trim();
+            const name = document.getElementById('contactName').value.trim();
+            const phone = document.getElementById('contactPhone').value.trim();
+            const email = document.getElementById('contactEmail').value.trim();
+            const website = document.getElementById('website').value;
+
+            if (!issueType || !issueDetails || !phone || !email) {
+                alert('Preencha os campos obrigatórios antes de enviar.');
+                return;
+            }
+
+            const btn = document.getElementById('submitBtn');
+            const original = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>A enviar...';
+
+            try {
+                const res = await fetch('/api/qr/public/alert', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        liftId: currentLiftId,
+                        issueType,
+                        issueDetails,
+                        name,
+                        phone,
+                        email,
+                        website,
+                        isTrapped: issueType === 'stuck'
+                    })
+                });
+
+                const data = await res.json();
+                if (!res.ok || !data.success) {
+                    throw new Error(data.message || 'Não foi possível enviar o alerta.');
+                }
+
+                const box = document.getElementById('resultBox');
+                const reqNum = data.data && data.data.requestNumber ? ` Pedido: ${data.data.requestNumber}.` : '';
+                box.textContent = (data.message || 'Alerta enviado com sucesso.') + reqNum;
+                box.style.display = 'block';
+                document.getElementById('publicAlertForm').reset();
+                updateUrgencyUI();
+            } catch (error) {
+                alert(error.message || 'Erro ao enviar alerta.');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = original;
+            }
+        }
+
+        document.getElementById('issueType').addEventListener('change', updateUrgencyUI);
+        document.getElementById('publicAlertForm').addEventListener('submit', sendPublicAlert);
+        loadLiftInfo();
+    </script>
+</body>
+</html>
