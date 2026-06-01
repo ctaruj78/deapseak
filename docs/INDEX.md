@@ -70,6 +70,7 @@
 | [user-manual.md](user-manual.md) | Manual do utilizador |
 | [USER-MANAGEMENT-SECURITY.md](USER-MANAGEMENT-SECURITY.md) | Segurança e gestão de utilizadores |
 | [REGULATIONS-EXPANSION-PLAN.md](REGULATIONS-EXPANSION-PLAN.md) | Plano de expansão de regulamentos |
+| [IMPLEMENTATION-TODO.md](IMPLEMENTATION-TODO.md) | Plano de implementação e prioridades técnicas |
 
 ---
 
