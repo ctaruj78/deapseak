@@ -314,8 +314,22 @@ function extractMetadata(text) {
     // 👤 ІНСПЕКТОР - покращені варіанти (пропускаємо якщо вже знайдено з GATECI)
     if (!metadata.inspector) {
     console.log('\n👤 Searching for inspector name...');
+    const inspectorText = text.replace(/([a-zà-ú])([A-ZÀ-Ú])/g, '$1 $2');
+
+    // IEP-style signature block often appears as:
+    // "Rafael FernandesJoão Emilio\nO InspetorResponsável Técnico"
+    // We always prefer the first name (O Inspetor) over Responsible Technician.
+    const iepSignatureMatch = inspectorText.match(
+        /([A-ZÀ-Ú][a-zà-ú]+\s+[A-ZÀ-Ú][a-zà-ú]+)\s+[A-ZÀ-Ú][a-zà-ú]+\s+[A-ZÀ-Ú][a-zà-ú]+\s+O\s+Inspetor\s*Respons[áa]vel\s*T[ée]cnico/i
+    );
+    if (iepSignatureMatch && iepSignatureMatch[1]) {
+        metadata.inspector = iepSignatureMatch[1].trim();
+        console.log(`  ✅ IEP signature inspector: ${metadata.inspector}`);
+    }
+
     // Фрази з висновку, що хоч і збігаються з патернами, але НЕ є іменами
     const inspectorRejectWords = /^(Nestas?|Estas?|Assim|Perante|Deste|Desta|Nessa|Neste|Tendo|Dado|Face|Atendendo|Considerando|Em\s+virtude|Em\s+face|Nos\s+termos|Pelo\s+exposto|Pelo\s+que|Em\s+cumprimento|De\s+acordo|Na\s+sequ[eê]ncia)/i;
+    const locationRejectWords = /^(Cust[oó]ias|Lisboa|Porto|Arroios|Sintra|Oeiras|Cascais)$/i;
     const inspectorPatterns = [
         // 1. TÉCNICO: Ім'я
         /T[ÉE]CNICO\s*(?:RESPONSÁVEL)?\s*:?\s*([A-ZÀ-Ú][a-zà-ú]+(?:\s+[A-ZÀ-Ú][a-zà-ú]+){1,4})/i,
@@ -349,9 +363,9 @@ function extractMetadata(text) {
         /t[ée]cnico\s+(?:certificado\s+)?n[ºo.]\s*\d+\s*:?\s*([A-ZÀ-Ú][a-zà-ú]+(?:\s+[A-ZÀ-Ú][a-zà-ú]+){1,4})/i
     ];
     
-    for (let i = 0; i < inspectorPatterns.length; i++) {
+    for (let i = 0; i < inspectorPatterns.length && !metadata.inspector; i++) {
         const pattern = inspectorPatterns[i];
-        const match = text.match(pattern);
+        const match = inspectorText.match(pattern);
         if (match) {
             let name = match[1].trim();
             // Очищаємо від зайвого
@@ -366,7 +380,7 @@ function extractMetadata(text) {
             }
             // Перевірка: ім'я має бути 5-60 символів, не включати цифри, мінімум 2 слова
             const wordCount = name.split(/\s+/).length;
-            if (name.length >= 5 && name.length <= 60 && !/\d/.test(name) && wordCount >= 2) {
+            if (name.length >= 5 && name.length <= 60 && !/\d/.test(name) && wordCount >= 2 && !locationRejectWords.test(name)) {
                 metadata.inspector = name;
                 console.log(`  ✅ Method ${i + 1} success: ${name}`);
                 break;

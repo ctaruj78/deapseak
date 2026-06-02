@@ -456,7 +456,19 @@ function extractMetadata(text) {
     
     // 8. ІНСПЕКТОР — кілька форматів для BV/CML/GATECI/CERTIEL/APCER
     // Фрази висновку, які НЕ є іменами (GATECI/CERTIEL висновки)
+    const inspectorText = text.replace(/([a-zà-ú])([A-ZÀ-Ú])/g, '$1 $2');
+
+    // IEP-style signature block. Prefer the first signer (Inspector) over Responsible Technician.
+    const iepSignatureMatch = inspectorText.match(
+        /([A-ZÀ-Ú][a-zà-ú]+\s+[A-ZÀ-Ú][a-zà-ú]+)\s+[A-ZÀ-Ú][a-zà-ú]+\s+[A-ZÀ-Ú][a-zà-ú]+\s+O\s+Inspetor\s*Respons[áa]vel\s*T[eé]cnico/i
+    );
+    if (iepSignatureMatch && iepSignatureMatch[1]) {
+        metadata.inspector = iepSignatureMatch[1].trim();
+        console.log('  ✅ Inspector (IEP signature):', metadata.inspector);
+    }
+
     const bvInspectorRejectWords = /^(Nestas?|Estas?|Assim|Perante|Deste|Desta|Nessa|Neste|Tendo|Dado|Face|Atendendo|Considerando|Em\s+virtude|Em\s+face|Nos\s+termos|Pelo\s+exposto|Pelo\s+que|Em\s+cumprimento|De\s+acordo|Na\s+sequ[eê]ncia|n[ao]\s|em\s|d[aeo]\s)/i;
+    const locationRejectWords = /^(Cust[oó]ias|Lisboa|Porto|Arroios|Sintra|Oeiras|Cascais)$/i;
     const inspectorPatterns = [
         // Prefixed label forms (пріоритет — з двокрапкою або тире)
         /Inspe[ct]or\s+Respons[áa]vel\s*[:\-]\s*([A-ZÀ-Úa-záéíóúàâêôãõç][^\n,]{4,60})/i,
@@ -473,13 +485,14 @@ function extractMetadata(text) {
         /Entidade[^:\n]*[:\-]\s*([A-ZÀ-Ú][^\n]{4,60})/i
     ];
     for (const pattern of inspectorPatterns) {
-        const match = text.match(pattern);
+        if (metadata.inspector) break;
+        const match = inspectorText.match(pattern);
         if (match) {
             const candidate = match[1].trim().replace(/\s+/g, ' ').replace(/[;,.]+$/, '');
             // Reject conclusion phrases ("Nestas circunstâncias", "Assim,", etc.) and prepositions
             const notAName = /^(n[ao]\s|em\s|d[aeo]\s|para\s|pel[ao]s?\s|ao\s|à\s|os\s|as\s|um[a]?\s|este[s]?\s|esta\s|estas\s|não\s|que\s|sendo\s|por\s|com\s|após\s|antes\s|foram\s|situad|localiz|aquand|durante\s|moment)/i;
             if (candidate.length >= 4 && !/^\d/.test(candidate) && !/Data/i.test(candidate) &&
-                !notAName.test(candidate) && !bvInspectorRejectWords.test(candidate)) {
+                !notAName.test(candidate) && !bvInspectorRejectWords.test(candidate) && !locationRejectWords.test(candidate)) {
                 metadata.inspector = candidate.substring(0, 80);
                 console.log('  ✅ Inspector:', metadata.inspector);
                 break;

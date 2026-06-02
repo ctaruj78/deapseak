@@ -82,6 +82,26 @@ function parseDate(str) {
     if (!str) return null;
     const raw = String(str).trim();
 
+    const makeDate = (year, month, day) => {
+        if (!year || !month || !day) return null;
+        const y = Number(year);
+        const m = Number(month);
+        const d = Number(day);
+        if (!Number.isInteger(y) || !Number.isInteger(m) || !Number.isInteger(d)) return null;
+        if (m < 1 || m > 12 || d < 1 || d > 31) return null;
+        const dt = new Date(y, m - 1, d);
+        // Guard against overflow (e.g. 31/02)
+        if (dt.getFullYear() !== y || dt.getMonth() !== (m - 1) || dt.getDate() !== d) return null;
+        return dt;
+    };
+
+    const normalizeYear = (yearStr) => {
+        const y = Number(yearStr);
+        if (!Number.isInteger(y)) return null;
+        if (yearStr.length === 2) return y >= 70 ? 1900 + y : 2000 + y;
+        return y;
+    };
+
     const monthMap = {
         janeiro: 1, fevereiro: 2, marco: 3, março: 3, abril: 4, maio: 5, junho: 6,
         julho: 7, agosto: 8, setembro: 9, outubro: 10, novembro: 11, dezembro: 12
@@ -92,13 +112,13 @@ function parseDate(str) {
         .replace(/[;,]+$/, '')
         .trim();
 
-    // DD/MM/YYYY ou DD-MM-YYYY ou DD.MM.YYYY
-    let match = clean.match(/^(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{4})$/);
+    // DD/MM/YYYY ou DD-MM-YYYY ou DD.MM.YYYY (2-digit year supported)
+    let match = clean.match(/^(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{2}|\d{4})$/);
     if (match) {
         const day = parseInt(match[1], 10);
         const month = parseInt(match[2], 10);
-        const year = parseInt(match[3], 10);
-        return new Date(year, month - 1, day);
+        const year = normalizeYear(match[3]);
+        return makeDate(year, month, day);
     }
 
     // YYYY/MM/DD ou YYYY-MM-DD
@@ -107,24 +127,34 @@ function parseDate(str) {
         const year = parseInt(match[1], 10);
         const month = parseInt(match[2], 10);
         const day = parseInt(match[3], 10);
-        return new Date(year, month - 1, day);
+        return makeDate(year, month, day);
     }
 
-    // 30 de Junho de 2025
-    match = clean
+    // 30 de Junho de 2025 / 30 Junho 2025
+    const normalized = clean
         .toLowerCase()
         .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .match(/^(\d{1,2})\s+de\s+([a-z]+)\s+de\s+(\d{4})$/);
+        .replace(/[\u0300-\u036f]/g, '');
+
+    match = normalized.match(/^(\d{1,2})\s+(?:de\s+)?([a-z]+)\s+(?:de\s+)?(\d{2}|\d{4})$/);
     if (match) {
         const day = parseInt(match[1], 10);
         const month = monthMap[match[2]];
-        const year = parseInt(match[3], 10);
-        if (month) return new Date(year, month - 1, day);
+        const year = normalizeYear(match[3]);
+        if (month) return makeDate(year, month, day);
     }
 
     const d = new Date(clean);
     return isNaN(d) ? null : d;
+}
+
+function parseDateFromLabel(text = '', labelRegex) {
+    if (!text || !labelRegex) return null;
+    const match = String(text).match(labelRegex);
+    if (!match || !match[1]) return null;
+    const candidate = String(match[1]).split('|')[0].replace(/\s{2,}/g, ' ').trim();
+    const parsed = parseDate(candidate);
+    return parsed ? { raw: candidate, date: parsed } : null;
 }
 
 function extractInspectionDateFromRawText(text = '') {
@@ -160,6 +190,23 @@ function extractInspectionDateFromRawText(text = '') {
     return null;
 }
 
+function extractNextInspectionDateFromRawText(text = '') {
+    const labelCandidates = [
+        /Requerer\s+Inspe[çc][aã]o\s+Peri[oó]dica\s+at[eé]\s*[:\-]?\s*([^\n]{4,60})/i,
+        /Inspe[çc][aã]o\s+Peri[oó]dica\s+at[eé]\s*[:\-]?\s*([^\n]{4,60})/i,
+        /Prazo\s+de\s+validade\s*[:\-]?\s*([^\n]{4,60})/i,
+        /Validade\s+da\s+Inspe[çc][aã]o\s*[:\-]?\s*([^\n]{4,60})/i,
+        /Validade\s*[:\-]?\s*([^\n]{4,60})/i
+    ];
+
+    for (const pattern of labelCandidates) {
+        const found = parseDateFromLabel(text, pattern);
+        if (found?.date) return found;
+    }
+
+    return null;
+}
+
 /**
  * Calculate validUntil based on inspection result and clause types.
  *
@@ -172,14 +219,74 @@ function extractInspectionDateFromRawText(text = '') {
 function calcValidUntil(inspDate, passed, c1Count, c2Count) {
     if (!inspDate) return null;
     const d = new Date(inspDate);
+
     if (c1Count > 0) {
         // C1 = immobilisation — urgent fix + reinspect within 1 month
-        d.setMonth(d.getMonth() + 1);
-    } else {
-        // C2/C3/clean → 2-year certificate
-        // (Owner must address C2 items within 30 days, but inspection cycle is 2 years)
+        d.setDate(d.getDate() + 30);
+    } else if (c2Count > 0 && passed !== true) {
+        // C2 with failed/conditional result — short-term reinspection
+        d.setDate(d.getDate() + 30);
+    } else if (passed === true) {
+        // Passed certificate duration
         d.setMonth(d.getMonth() + 24);
+    } else {
+        // Fallback when status is unclear
+        d.setDate(d.getDate() + 180);
     }
+
+    return d;
+}
+
+function buildParserInsights({ certType, c1Count = 0, c2Count = 0, c3Count = 0, passed, inspectionDate, validUntil }) {
+    const riskLevel = c1Count > 0 ? 'high' : c2Count > 0 ? 'medium' : 'low';
+    const recommendations = [];
+
+    if (c1Count > 0) {
+        recommendations.push('Imobilizar o equipamento até correção das cláusulas C1.');
+        recommendations.push('Agendar reinspeção imediata após reparação.');
+    } else if (c2Count > 0) {
+        recommendations.push('Executar correções C2 em prazo curto e marcar reinspeção.');
+    } else if (c3Count > 0) {
+        recommendations.push('Planear correções C3 antes da próxima inspeção periódica.');
+    } else if (passed === true) {
+        recommendations.push('Sem não conformidades críticas: manter plano preventivo.');
+    }
+
+    if (inspectionDate && validUntil) {
+        recommendations.push('Definir lembrete automático para a próxima inspeção.');
+    }
+
+    return {
+        riskLevel,
+        certType,
+        recommendations: recommendations.slice(0, 4)
+    };
+}
+
+function normalizeCertType(value, status = 'conditional') {
+    const input = String(value || '').toLowerCase().trim();
+    if (input === 'cert_2_years' || input === 'reinspection' || input === 'immobilization' || input === 'conditional') {
+        return input;
+    }
+    if (status === 'passed') return 'cert_2_years';
+    if (status === 'failed') return 'immobilization';
+    return 'conditional';
+}
+
+function calcNextInspectionByCertType(baseDate, certType, status = 'conditional') {
+    if (!baseDate) return null;
+    const d = new Date(baseDate);
+
+    if (certType === 'cert_2_years' || status === 'passed') {
+        d.setMonth(d.getMonth() + 24);
+    } else if (certType === 'reinspection') {
+        d.setDate(d.getDate() + 30);
+    } else if (certType === 'immobilization') {
+        d.setDate(d.getDate() + 30);
+    } else {
+        d.setDate(d.getDate() + 180);
+    }
+
     return d;
 }
 
@@ -322,13 +429,38 @@ router.post('/parse-inspection-pdf', authenticate, authorizeRoles('admin', 'disp
             const certType = determineCertType(passed, c1Count, c2Count, c3Count, hasExplicitImmobilization);
 
             // ── Build unified dates from normalised metadata ───────────────
-            let inspectionDate = parseDate(meta.date);
-            if (!inspectionDate) {
-                inspectionDate = extractInspectionDateFromRawText(parsed.rawText || '');
+            let inspectionDateSource = null;
+            let inspectionDateRaw = null;
+
+            const metaDate = parseDate(meta.date);
+            if (metaDate) {
+                inspectionDateSource = 'metadata.date';
+                inspectionDateRaw = meta.date;
             }
-            // Prefer validUntil from PDF metadata (e.g. BV "Validade:2024/11/11") over calculated value
-            const validUntil = (meta.validUntil ? parseDate(meta.validUntil) : null)
+
+            const labeledInspection = parseDateFromLabel(parsed.rawText || '', /Data\s+da\s+Inspe[çc][aã]o\s*[:\-]?\s*([^\n]{4,60})/i);
+            if (!inspectionDateSource && labeledInspection?.date) {
+                inspectionDateSource = 'raw.label.inspection_date';
+                inspectionDateRaw = labeledInspection.raw;
+            }
+
+            const fallbackInspection = !inspectionDateSource ? extractInspectionDateFromRawText(parsed.rawText || '') : null;
+            if (!inspectionDateSource && fallbackInspection) {
+                inspectionDateSource = 'raw.generic';
+                inspectionDateRaw = fallbackInspection.toISOString().substring(0, 10);
+            }
+
+            const inspectionDate = metaDate || labeledInspection?.date || fallbackInspection || null;
+
+            const metaValidUntil = meta.validUntil ? parseDate(meta.validUntil) : null;
+            const rawNextInspection = extractNextInspectionDateFromRawText(parsed.rawText || '');
+            const validUntil = metaValidUntil
+                || rawNextInspection?.date
                 || calcValidUntil(inspectionDate, passed, c1Count, c2Count);
+
+            const validUntilSource = metaValidUntil
+                ? 'metadata.validUntil'
+                : (rawNextInspection?.date ? 'raw.label.next_inspection' : 'calculated');
 
             // ── Extract address details from location string ──────────────
             const locationStr = meta.location || '';
@@ -350,6 +482,8 @@ router.post('/parse-inspection-pdf', authenticate, authorizeRoles('admin', 'disp
                 installationNumber: meta.installationNumber || null,
                 date:               inspectionDate ? inspectionDate.toISOString() : null,
                 dateFormatted:      meta.date || (inspectionDate ? inspectionDate.toISOString().substring(0, 10) : null),
+                dateRaw:            inspectionDateRaw,
+                dateSource:         inspectionDateSource,
                 location:           locationStr || null,
                 address:            street     || locationStr || null,
                 postalCode:         postalCode,
@@ -367,12 +501,15 @@ router.post('/parse-inspection-pdf', authenticate, authorizeRoles('admin', 'disp
                 c3Count,
                 conclusion:         concl?.status || (concl?.approved === true ? 'passed' : concl?.approved === false ? 'failed' : null),
                 validUntil:         validUntil ? validUntil.toISOString() : null,
+                validUntilSource:   validUntilSource,
+                nextInspectionRaw:  rawNextInspection?.raw || null,
                 violations:         viols.slice(0, 50),
                 stats:              stats || { total: 0, critical: 0, medium: 0, low: 0 },
                 pageCount:          parsed.pageCount || null,
                 savedFileUrl:       savedFileUrl,
                 parserUsed:         parsed._parserUsed || 'unknown',
-                partial:            !parsed.success   // flag for frontend to hint user to review
+                partial:            !parsed.success,   // flag for frontend to hint user to review
+                insights:           buildParserInsights({ certType, c1Count, c2Count, c3Count, passed, inspectionDate, validUntil })
             };
 
             // ── Search for matching lifts ─────────────────────────────────
@@ -468,7 +605,12 @@ router.post('/:id/confirm-inspection-from-pdf', authenticate, authorizeRoles('ad
             savedFileUrl,  // path saved during parse step
             lastInspectionDate,
             nextInspectionDate,
-            violations
+            violations,
+            certType,
+            validUntil,
+            reportNumber,
+            processNumber,
+            company
         } = req.body;
 
         const lift = await Lift.findById(req.params.id);
@@ -496,9 +638,14 @@ router.post('/:id/confirm-inspection-from-pdf', authenticate, authorizeRoles('ad
         const report = {
             date: lastInspectionDate ? new Date(lastInspectionDate) : new Date(),
             inspector: inspector || 'Bureau Veritas',
+            company: company || null,
             notes: violationNotes,
+            reportNumber: reportNumber || null,
+            processNumber: processNumber || null,
+            certType: normalizeCertType(certType, status),
+            validUntil: validUntil ? new Date(validUntil) : null,
             reportType: normalizedReportType,
-            inspectionType: ({ annual: 'inspection', certification: 'inspection', routine: 'maintenance', emergency: 'emergency' })[normalizedReportType] || 'inspection',
+            inspectionType: ({ annual: 'inspection', certification: 'inspection', routine: 'inspection', emergency: 'emergency' })[normalizedReportType] || 'inspection',
             status: status || 'passed',
             reportFile: savedFileUrl || null,
             photos: []
@@ -508,9 +655,10 @@ router.post('/:id/confirm-inspection-from-pdf', authenticate, authorizeRoles('ad
         let nextInspDate;
         if (nextInspectionDate) {
             nextInspDate = new Date(nextInspectionDate);
+        } else if (validUntil) {
+            nextInspDate = new Date(validUntil);
         } else {
-            nextInspDate = new Date(report.date);
-            nextInspDate.setMonth(nextInspDate.getMonth() + (status === 'passed' ? 24 : 6));
+            nextInspDate = calcNextInspectionByCertType(report.date, report.certType, report.status);
         }
 
         // Use $push/$set instead of lift.save() to bypass Mongoose validation

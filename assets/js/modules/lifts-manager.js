@@ -157,7 +157,7 @@ class LiftsManager {
     }
 
     getInspectionAlertInfo(lift) {
-        const targetDateRaw = lift.nextInspectionDate || lift.nextMaintenance;
+        const targetDateRaw = this.getEffectiveNextInspectionDate(lift);
         if (!targetDateRaw) {
             return { hasDate: false, level: 'none', message: '', daysDiff: null };
         }
@@ -181,12 +181,12 @@ class LiftsManager {
             };
         }
 
-        if (daysDiff <= 30) {
+        if (daysDiff <= 60) {
             return {
                 hasDate: true,
                 level: 'warning',
                 daysDiff,
-                message: `Inspeção em ${daysDiff} dias`
+                message: `Requerer próxima inspeção em ${daysDiff} dias`
             };
         }
 
@@ -196,6 +196,73 @@ class LiftsManager {
             daysDiff,
             message: 'Inspeção dentro do prazo'
         };
+    }
+
+    getLatestInspectionRecord(lift) {
+        const records = Array.isArray(lift?.inspectionHistory) ? lift.inspectionHistory : [];
+        if (!records.length) return null;
+
+        const normalizeDate = (record) => {
+            const raw = record?.date || record?.inspectionDate || null;
+            if (!raw) return null;
+            const d = new Date(raw);
+            return Number.isNaN(d.getTime()) ? null : d;
+        };
+
+        let latest = null;
+        let latestTs = 0;
+        records.forEach((r) => {
+            const d = normalizeDate(r);
+            if (!d) return;
+            const ts = d.getTime();
+            if (!latest || ts > latestTs) {
+                latest = r;
+                latestTs = ts;
+            }
+        });
+
+        return latest;
+    }
+
+    getEffectiveLastInspectionDate(lift) {
+        if (lift?.lastInspectionDate) return lift.lastInspectionDate;
+        if (lift?.lastMaintenance) return lift.lastMaintenance;
+
+        const latest = this.getLatestInspectionRecord(lift);
+        return latest?.date || latest?.inspectionDate || null;
+    }
+
+    getEffectiveNextInspectionDate(lift) {
+        if (lift?.nextInspectionDate) return lift.nextInspectionDate;
+        if (lift?.nextMaintenance) return lift.nextMaintenance;
+
+        const latest = this.getLatestInspectionRecord(lift);
+        if (!latest) return null;
+
+        if (latest.validUntil) {
+            const vu = new Date(latest.validUntil);
+            if (!Number.isNaN(vu.getTime())) return latest.validUntil;
+        }
+
+        const baseRaw = latest.date || latest.inspectionDate;
+        const base = baseRaw ? new Date(baseRaw) : null;
+        if (!base || Number.isNaN(base.getTime())) return null;
+
+        const certType = String(latest.certType || '').toLowerCase();
+        const status = String(latest.status || '').toLowerCase();
+        const c1 = Number(latest.c1Count || 0);
+        const c2 = Number(latest.c2Count || 0);
+        const fallback = new Date(base);
+
+        if (certType === 'cert_2_years' || status === 'passed') {
+            fallback.setMonth(fallback.getMonth() + 24);
+        } else if (certType === 'reinspection' || certType === 'immobilization' || c1 > 0 || c2 > 0 || status === 'failed') {
+            fallback.setDate(fallback.getDate() + 30);
+        } else {
+            fallback.setDate(fallback.getDate() + 180);
+        }
+
+        return fallback.toISOString();
     }
 
     buildInspectionAlertHtml(lift, compact = false) {
@@ -293,8 +360,8 @@ class LiftsManager {
                             ${lift.municipalNumber ? `<p><strong><i class="fas fa-hashtag mr-2"></i>N.º Municipal:</strong> <span class="badge badge-dark">${lift.municipalNumber}</span></p>` : ''}
                             <p><strong><i class="fas fa-map-marker-alt mr-2"></i>Morada:</strong> ${location}</p>
                             <p><strong><i class="fas fa-tag mr-2"></i>Tipo:</strong> ${typeText}</p>
-                            <p><strong><i class="fas fa-calendar-check mr-2"></i>Última inspeção:</strong> ${this.formatDate(lift.lastInspectionDate || lift.lastMaintenance)}</p>
-                            <p><strong><i class="fas fa-calendar-alt mr-2"></i>Próxima inspeção:</strong> ${this.formatDate(lift.nextInspectionDate || lift.nextMaintenance)}</p>
+                            <p><strong><i class="fas fa-calendar-check mr-2"></i>Última inspeção:</strong> ${this.formatDate(this.getEffectiveLastInspectionDate(lift))}</p>
+                            <p><strong><i class="fas fa-calendar-alt mr-2"></i>Próxima inspeção:</strong> ${this.formatDate(this.getEffectiveNextInspectionDate(lift))}</p>
                             ${lift.capacity ? `<p><strong><i class="fas fa-weight-hanging mr-2"></i>Capacidade:</strong> ${lift.type === 'passenger' ? Math.floor(lift.capacity / 75) + ' pessoas / ' : ''}${lift.capacity} kg</p>` : ''}
                         </div>
                     </div>
@@ -356,6 +423,15 @@ class LiftsManager {
         return new Date(dateString).toLocaleDateString('pt-PT');
     }
 
+    _escapeHtml(value) {
+        return String(value || '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
     formatLocation(lift) {
         // Prioritize address object — has full street data
         if (lift.address && typeof lift.address === 'object') {
@@ -402,7 +478,7 @@ class LiftsManager {
     }
 
     needsAttention(lift) {
-        const targetDate = lift.nextInspectionDate || lift.nextMaintenance;
+        const targetDate = this.getEffectiveNextInspectionDate(lift);
         if (!targetDate) return false;
         const nextDate = new Date(targetDate);
         if (Number.isNaN(nextDate.getTime())) return false;
@@ -574,8 +650,8 @@ class LiftsManager {
                             <div class="card-body p-2">
                                 ${inspectionAlertHtml}
                                 <table class="table table-sm mb-0">
-                                    <tr><td><strong>Última inspeção periódica:</strong></td><td>${this.formatDate(lift.lastInspectionDate || lift.lastMaintenance)}</td></tr>
-                                    <tr><td><strong>Próxima inspeção periódica:</strong></td><td>${this.formatDate(lift.nextInspectionDate || lift.nextMaintenance)}</td></tr>
+                                    <tr><td><strong>Última inspeção periódica:</strong></td><td>${this.formatDate(this.getEffectiveLastInspectionDate(lift))}</td></tr>
+                                    <tr><td><strong>Próxima inspeção periódica:</strong></td><td>${this.formatDate(this.getEffectiveNextInspectionDate(lift))}</td></tr>
                                 </table>
                             </div>
                         </div>
@@ -1165,34 +1241,96 @@ class LiftsManager {
     async viewOrcamentoQuick(id) {
         try {
             const o = await this._fetchOrcamentoById(id);
+            const statusClass = {
+                enviado: 'badge-warning',
+                aprovado: 'badge-success',
+                rejeitado: 'badge-danger',
+                expirado: 'badge-secondary'
+            };
+            const statusText = {
+                enviado: 'Aguarda resposta',
+                aprovado: 'Aprovado',
+                rejeitado: 'Rejeitado',
+                expirado: 'Expirado'
+            };
+
+            const numero = this._escapeHtml(o.numero || '');
+            const clienteNome = this._escapeHtml(o.cliente?.nome || '—');
+            const clienteEmail = this._escapeHtml(o.cliente?.email || '—');
+            const morada = this._escapeHtml(o.cliente?.morada || '—');
+            const liftAddress = this._escapeHtml(o.liftAddress || o.cliente?.morada || '—');
+            const observacao = this._escapeHtml(o.observacao || '');
+            const notas = this._escapeHtml(o.notas || '');
+            const stClass = statusClass[o.status] || 'badge-secondary';
+            const stText = this._escapeHtml(statusText[o.status] || (o.status || '—'));
+            const aprovadoPor = this._escapeHtml(
+                (o.status === 'aprovado' || o.status === 'rejeitado')
+                    ? (!o.aprovadoPor || o.aprovadoPor === 'cliente' ? 'si próprio(a)' : 'FestLift')
+                    : ''
+            );
+            const numeroForAttr = String(o.numero || '').replace(/'/g, '\\&#39;');
+
             const linhas = (o.servicos || []).map(s => `
                 <tr>
-                    <td>${s.descricao || '—'}</td>
+                    <td>${this._escapeHtml(s.descricao || '—')}</td>
                     <td class="text-center">${s.quantidade || 0}</td>
-                    <td class="text-right">€${Number(s.precoUnitario || 0).toFixed(2)}</td>
-                    <td class="text-right">€${Number(s.total || 0).toFixed(2)}</td>
+                    <td class="text-right" style="white-space:nowrap;">€${Number(s.precoUnitario || 0).toFixed(2)}</td>
+                    <td class="text-right" style="white-space:nowrap;">€${Number(s.total || 0).toFixed(2)}</td>
                 </tr>
             `).join('');
 
             Swal.fire({
-                title: `Orçamento ${o.numero || ''}`,
-                width: '900px',
+                title: `Orçamento ${numero}`,
+                width: '980px',
+                customClass: {
+                    popup: 'text-left'
+                },
                 html: `
-                    <div class="text-left mb-2">
-                        <div><strong>Data:</strong> ${this.formatDate(o.data)}</div>
-                        <div><strong>Status:</strong> ${o.status || '—'}</div>
-                        <div><strong>Morada:</strong> ${o.liftAddress || o.cliente?.morada || '—'}</div>
+                    <div class="row mb-3 text-left">
+                        <div class="col-sm-6 mb-2 mb-sm-0">
+                            <p class="mb-1"><strong>Data:</strong> ${this.formatDate(o.data)}</p>
+                            <p class="mb-1"><strong>Válido até:</strong> ${o.validadeAte ? this.formatDate(o.validadeAte) : 'N/A'}</p>
+                            <p class="mb-1"><strong>Status:</strong> <span class="badge ${stClass}">${stText}</span></p>
+                            ${o.dataResposta ? `<p class="mb-1"><strong>Data de resposta:</strong> ${this.formatDate(o.dataResposta)}</p>` : ''}
+                            ${(o.status === 'aprovado' || o.status === 'rejeitado') ? `<p class="mb-1"><strong>${o.status === 'aprovado' ? 'Aprovado' : 'Rejeitado'} por:</strong> ${aprovadoPor}</p>` : ''}
+                            ${observacao ? `<p class="mb-1"><strong>Observação:</strong> ${observacao}</p>` : ''}
+                            <p class="mb-0"><strong><i class="fas fa-map-marker-alt text-warning mr-1"></i>Elevador:</strong> ${liftAddress}</p>
+                        </div>
+                        <div class="col-sm-6">
+                            <p class="mb-1"><strong>Nome:</strong> ${clienteNome}</p>
+                            <p class="mb-1"><strong>Email:</strong> ${clienteEmail}</p>
+                            <p class="mb-0"><strong>Morada:</strong> ${morada}</p>
+                        </div>
                     </div>
                     <div class="table-responsive">
-                        <table class="table table-sm table-bordered">
-                            <thead><tr><th>Descrição</th><th class="text-center">Qtd</th><th class="text-right">Preço unit.</th><th class="text-right">Total</th></tr></thead>
+                        <table class="table table-sm table-bordered mb-2">
+                            <thead>
+                                <tr>
+                                    <th>Descrição</th>
+                                    <th class="text-center" style="width:72px;">Qtd</th>
+                                    <th class="text-right" style="width:120px;">Preço unit.</th>
+                                    <th class="text-right" style="width:120px;">Total</th>
+                                </tr>
+                            </thead>
                             <tbody>${linhas}</tbody>
                             <tfoot>
-                                <tr><td colspan="3" class="text-right"><strong>Subtotal</strong></td><td class="text-right">€${Number(o.subtotal || 0).toFixed(2)}</td></tr>
-                                <tr><td colspan="3" class="text-right"><strong>IVA</strong></td><td class="text-right">€${Number(o.iva || 0).toFixed(2)}</td></tr>
-                                <tr><td colspan="3" class="text-right"><strong>Total</strong></td><td class="text-right"><strong>€${Number(o.total || 0).toFixed(2)}</strong></td></tr>
+                                <tr><td colspan="3" class="text-right"><strong>Subtotal</strong></td><td class="text-right" style="white-space:nowrap;">€${Number(o.subtotal || 0).toFixed(2)}</td></tr>
+                                <tr><td colspan="3" class="text-right"><strong>IVA (23%)</strong></td><td class="text-right" style="white-space:nowrap;">€${Number(o.iva || 0).toFixed(2)}</td></tr>
+                                <tr class="table-active"><td colspan="3" class="text-right"><strong>TOTAL</strong></td><td class="text-right" style="white-space:nowrap;"><strong>€${Number(o.total || 0).toFixed(2)}</strong></td></tr>
                             </tfoot>
                         </table>
+                    </div>
+                    ${notas ? `<div class="alert alert-light text-left mb-2"><strong>Notas:</strong> ${notas}</div>` : ''}
+                    <div class="text-right">
+                        <button class="btn btn-sm btn-outline-info mr-1" onclick="window.liftsManager.openOrcamentoPdf('${o._id}', '${numeroForAttr}')">
+                            <i class="fas fa-file-pdf"></i> PDF
+                        </button>
+                        <button class="btn btn-sm btn-outline-success mr-1" onclick="window.liftsManager.printOrcamentoPdf('${o._id}', '${numeroForAttr}')">
+                            <i class="fas fa-print"></i> Imprimir
+                        </button>
+                        <button class="btn btn-sm btn-outline-warning" onclick="window.liftsManager.emailOrcamento('${o._id}', '${numeroForAttr}')">
+                            <i class="fas fa-envelope"></i> Email
+                        </button>
                     </div>
                 `,
                 confirmButtonText: 'Fechar'
@@ -1496,64 +1634,78 @@ class LiftsManager {
             });
 
             let historyHtml = '';
+
+            const normalizeHistoryType = (entry) => {
+                const t = String(entry?.type || entry?.inspectionType || entry?.reportType || 'registo').toLowerCase();
+                if (t.includes('annual') || t.includes('inspection')) return 'Inspeção periódica';
+                if (t.includes('routine') || t.includes('maintenance')) return 'Manutenção';
+                if (t.includes('emergency')) return 'Emergência';
+                if (t.includes('repair')) return 'Reparação';
+                if (t.includes('certification')) return 'Certificação';
+                return entry?.type || entry?.inspectionType || entry?.reportType || 'Registo';
+            };
+
+            const normalizeHistoryStatus = (entry) => {
+                const st = String(entry?.status || '').toLowerCase();
+                if (st === 'passed' || st === 'completed') return { cls: 'success', label: 'Concluído' };
+                if (st === 'failed') return { cls: 'danger', label: 'Reprovado' };
+                if (st === 'conditional') return { cls: 'warning', label: 'Condicional' };
+                return { cls: 'secondary', label: entry?.status || 'Sem estado' };
+            };
+
+            const isInspectionEntry = (entry) => {
+                const t = String(entry?.type || entry?.inspectionType || entry?.reportType || '').toLowerCase();
+                return t.includes('inspection') || t.includes('annual') || t.includes('certification');
+            };
+
+            const truncateText = (text, max = 180) => {
+                const clean = this._sanitizeReportText(text || '');
+                if (!clean || clean === '-') return '';
+                return clean.length > max ? `${clean.slice(0, max).trim()}...` : clean;
+            };
+
+            const renderHistoryCards = (entries = []) => {
+                return entries.map(entry => {
+                    const status = normalizeHistoryStatus(entry);
+                    const typeLabel = normalizeHistoryType(entry);
+                    const person = this._sanitizeReportText(entry?.technician || entry?.inspector || '-');
+                    const date = this.formatDate(entry?.date);
+                    const inspectionEntry = isInspectionEntry(entry);
+                    const validUntil = entry?.validUntil ? this.formatDate(entry.validUntil) : '';
+                    const shortDescription = truncateText(entry?.description || entry?.notes || '');
+
+                    return `
+                        <div class="border rounded p-2 mb-2 text-left">
+                            <div class="d-flex justify-content-between align-items-center flex-wrap" style="gap:6px;">
+                                <div>
+                                    <span class="badge badge-info">${typeLabel}</span>
+                                    <span class="ml-2 text-muted small"><i class="far fa-calendar-alt mr-1"></i>${date}</span>
+                                </div>
+                                <span class="badge badge-${status.cls}">${status.label}</span>
+                            </div>
+                            <div class="mt-2 text-muted small"><i class="fas fa-user mr-1"></i>${person || '-'}</div>
+                            ${inspectionEntry
+                                ? `${validUntil ? `<div class="mt-1 text-muted small"><i class="far fa-clock mr-1"></i>Válido até: ${validUntil}</div>` : ''}`
+                                : `${shortDescription ? `<div class="mt-2 small" style="line-height:1.35;">${shortDescription}</div>` : ''}`
+                            }
+                        </div>
+                    `;
+                }).join('');
+            };
             
             if (response.ok) {
                 const history = await response.json();
                 if (history.data && history.data.length > 0) {
-                    historyHtml = `
-                        <div class="table-responsive">
-                            <table class="table table-striped">
-                                <thead>
-                                    <tr>
-                                        <th>Data</th>
-                                        <th>Tipo</th>
-                                        <th>Descrição</th>
-                                        <th>Técnico</th>
-                                        <th>Estado</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    ${history.data.map(entry => `
-                                        <tr>
-                                            <td>${this.formatDate(entry.date)}</td>
-                                            <td><span class="badge badge-info">${entry.type}</span></td>
-                                            <td>${entry.description || '-'}</td>
-                                            <td>${entry.technician || '-'}</td>
-                                            <td><span class="badge badge-${entry.status === 'completed' ? 'success' : 'warning'}">${entry.status}</span></td>
-                                        </tr>
-                                    `).join('')}
-                                </tbody>
-                            </table>
-                        </div>
-                    `;
+                    historyHtml = `<div style="max-height: 60vh; overflow:auto;">${renderHistoryCards(history.data)}</div>`;
                 } else {
                     historyHtml = '<p class="text-center text-muted">Sem histórico de manutenção</p>';
                 }
             } else {
                 // Fallback to lift's maintenance history
                 if (lift.maintenanceHistory && lift.maintenanceHistory.length > 0) {
-                    historyHtml = `
-                        <div class="table-responsive">
-                            <table class="table table-striped">
-                                <thead>
-                                    <tr>
-                                        <th>Data</th>
-                                        <th>Tipo de trabalho</th>
-                                        <th>Técnico</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    ${lift.maintenanceHistory.map(entry => `
-                                        <tr>
-                                            <td>${this.formatDate(entry.date)}</td>
-                                            <td>${entry.type}</td>
-                                            <td>${entry.technician}</td>
-                                        </tr>
-                                    `).join('')}
-                                </tbody>
-                            </table>
-                        </div>
-                    `;
+                    historyHtml = `<div style="max-height: 60vh; overflow:auto;">${renderHistoryCards(lift.maintenanceHistory)}</div>`;
+                } else if (lift.inspectionHistory && lift.inspectionHistory.length > 0) {
+                    historyHtml = `<div style="max-height: 60vh; overflow:auto;">${renderHistoryCards(lift.inspectionHistory)}</div>`;
                 } else {
                     historyHtml = '<p class="text-center text-muted">Sem histórico de manutenção</p>';
                 }

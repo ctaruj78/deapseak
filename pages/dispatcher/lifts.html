@@ -5176,6 +5176,73 @@ Equipa FestLift</textarea>
                 : (lift.manufacturer || '');
             const modelCell = [brandDisplay, lift.model].filter(Boolean).join(' ') || '-';
 
+            const _latestRowReport = Array.isArray(lift.inspectionHistory) && lift.inspectionHistory.length
+                ? lift.inspectionHistory
+                    .slice()
+                    .sort((a, b) => new Date(b.inspectionDate || b.date || 0) - new Date(a.inspectionDate || a.date || 0))[0]
+                : null;
+            const _effectiveExpiryDate = (() => {
+                const explicit =
+                    lift.nextInspectionDate ||
+                    lift.licenseExpiry ||
+                    lift.certExpiry ||
+                    (_latestRowReport ? (_latestRowReport.validUntil || _latestRowReport.nextInspectionDate) : null) ||
+                    null;
+                if (explicit) {
+                    const d = new Date(explicit);
+                    if (!isNaN(d)) return d;
+                }
+                const baseDate =
+                    lift.lastInspectionDate ||
+                    lift.licenseDate ||
+                    lift.certDate ||
+                    (_latestRowReport ? (_latestRowReport.inspectionDate || _latestRowReport.date) : null) ||
+                    null;
+                const hasLegacyNoStatus = !lift.inspectionStatus && !(_latestRowReport && _latestRowReport.status);
+                const statusPassed =
+                    lift.inspectionStatus === 'passed' ||
+                    (_latestRowReport && _latestRowReport.status === 'passed') ||
+                    hasLegacyNoStatus;
+                if (statusPassed && baseDate) {
+                    const d = new Date(baseDate);
+                    if (!isNaN(d)) {
+                        d.setFullYear(d.getFullYear() + 2);
+                        return d;
+                    }
+                }
+                return null;
+            })();
+            const _inspectionStatusResolved = String(lift.inspectionStatus || (_latestRowReport && _latestRowReport.status) || '').toLowerCase();
+            const _isReinspectionFlow = _inspectionStatusResolved === 'failed' || _inspectionStatusResolved === 'conditional';
+            const _overdueInspectionBadge = (!_isReinspectionFlow && _effectiveExpiryDate && _effectiveExpiryDate < new Date())
+                ? '<br><span class="badge badge-danger mt-1" style="font-size:.65rem;cursor:default" title="Inspecção vencida desde ' + _effectiveExpiryDate.toLocaleDateString('pt-PT') + '">&#9888; Insp. vencida</span>'
+                : '';
+            const _nearExpiryInspectionBadge = (() => {
+                if (_isReinspectionFlow || !_effectiveExpiryDate) return '';
+                const _now = new Date();
+                const _daysLeft = Math.ceil((_effectiveExpiryDate - _now) / 86400000);
+                if (_daysLeft > 0 && _daysLeft <= 60) {
+                    return '<br><span class="badge badge-warning mt-1" style="font-size:.65rem;cursor:default" title="Certificado expira em ' + _daysLeft + ' dia(s) (' + _effectiveExpiryDate.toLocaleDateString('pt-PT') + ')">&#9200; Requerer inspeção</span>';
+                }
+                return '';
+            })();
+            const _reinspectionBadge = (() => {
+                if (!_isReinspectionFlow) return '';
+                if (_inspectionStatusResolved === 'failed') {
+                    if (_effectiveExpiryDate && _effectiveExpiryDate < new Date()) {
+                        return '<br><span class="badge badge-danger mt-1" style="font-size:.65rem;cursor:default" title="Reinspecção em atraso desde ' + _effectiveExpiryDate.toLocaleDateString('pt-PT') + '">&#10060; Reinsp. em atraso</span>';
+                    }
+                    return '<br><span class="badge badge-danger mt-1" style="font-size:.65rem;cursor:default" title="Inspecção reprovada — reinspecção necessária">&#10060; Reinspecção</span>';
+                }
+                if (_inspectionStatusResolved === 'conditional') {
+                    if (_effectiveExpiryDate && _effectiveExpiryDate < new Date()) {
+                        return '<br><span class="badge badge-danger mt-1" style="font-size:.65rem;cursor:default" title="Reinspecção C2 em atraso desde ' + _effectiveExpiryDate.toLocaleDateString('pt-PT') + '">&#9888; Reinsp. C2 atraso</span>';
+                    }
+                    return '<br><span class="badge badge-warning mt-1" style="font-size:.65rem;cursor:default" title="Inspecção condicional C2 — reinspecção necessária">&#9888; Reinsp. C2</span>';
+                }
+                return '';
+            })();
+
             row.innerHTML = `
                 <td><strong>${lift.municipalNumber || 'Indefinido'}</strong></td>
                 <td><span class="lift-model-cell" title="${modelCell}">${modelCell}</span></td>
@@ -5191,13 +5258,9 @@ Equipa FestLift</textarea>
                     <span class="badge ${statusClass} text-white px-2 py-1">
                         ${statusText}
                     </span>
-                    ${(function() {
-                        const _st = lift.inspectionStatus;
-                        if (_st === 'failed') return '<br><span class="badge badge-danger mt-1" style="font-size:.65rem;cursor:default" title="Inspecção reprovada — reinspecção necessária">&#10060; Reinspecção</span>';
-                        if (_st === 'conditional') return '<br><span class="badge badge-warning mt-1" style="font-size:.65rem;cursor:default" title="Inspecção condicional C2 — reinspecção necessária">&#9888; Reinsp. C2</span>';
-                        if (lift.nextInspectionDate && new Date(lift.nextInspectionDate) < new Date()) return '<br><span class="badge badge-danger mt-1" style="font-size:.65rem;cursor:default" title="Inspecção vencida desde ' + new Date(lift.nextInspectionDate).toLocaleDateString('pt-PT') + '">&#9888; Insp. vencida</span>';
-                        return '';
-                    })()}
+                    ${_overdueInspectionBadge}
+                    ${_nearExpiryInspectionBadge}
+                    ${_reinspectionBadge}
                 </td>
                 <td>
                     ${lift.lastMaintenance ? new Date(lift.lastMaintenance).toLocaleDateString('pt-PT') : 'Não especificado'}
@@ -5605,7 +5668,7 @@ Equipa FestLift</textarea>
                     const inspAlert = document.getElementById('inspectionReminderAlert');
                     if (!inspBlock) return;
                     inspBlock.style.display = 'none';
-                    const licExpiry = lift.licenseExpiry || lift.certExpiry || lift.nextInspectionDate || null;
+                    const licExpiry = lift.licenseExpiry || lift.certExpiry || lift.nextInspectionDate || (lastReport ? (lastReport.validUntil || lastReport.nextInspectionDate) : null) || null;
                     const now = new Date();
                     if (licExpiry) {
                         const expiryDate = new Date(licExpiry);
@@ -5618,7 +5681,7 @@ Equipa FestLift</textarea>
                             inspBlock.style.display = 'block';
                         } else if (msToExpiry <= twoMonthsMs) {
                             inspAlert.className = 'alert alert-warning py-2 mb-2';
-                            inspAlert.innerHTML = '<i class="fas fa-clock mr-1"></i> Até ao fim do certificado <strong>' + daysToExpiry + ' dias</strong> (' + expiryDate.toLocaleDateString('pt-PT') + '). Hora de agendar inspecção.';
+                            inspAlert.innerHTML = '<i class="fas fa-clock mr-1"></i> Até ao fim do certificado <strong>' + daysToExpiry + ' dias</strong> (' + expiryDate.toLocaleDateString('pt-PT') + '). Requerer próxima inspeção.';
                             inspBlock.style.display = 'block';
                         }
                         // Certificado válido por > 60 dias: botão permanece oculto
@@ -8988,6 +9051,10 @@ Equipa FestLift</textarea>
                 if (ed.c1Count > 0) notesParts.push('C1×' + ed.c1Count);
                 if (ed.c2Count > 0) notesParts.push('C2×' + ed.c2Count);
                 if (ed.c3Count > 0) notesParts.push('C3×' + ed.c3Count);
+                if (ed.insights && ed.insights.riskLevel) notesParts.push('Risco: ' + ed.insights.riskLevel);
+                if (ed.insights && Array.isArray(ed.insights.recommendations) && ed.insights.recommendations.length) {
+                    notesParts.push('Ação: ' + ed.insights.recommendations[0]);
+                }
                 $('#pdfParserNotes').val(notesParts.join(' | '));
 
                 // ── Partial-parse warning ───────────────────────────────────
@@ -9040,9 +9107,9 @@ Equipa FestLift</textarea>
             if (!dateVal) return;
             var d = new Date(dateVal);
             var status = $(this).val();
-            if (status === 'passed')            d.setMonth(d.getMonth() + 24); // C3/passed: 2 years
-            else if (status === 'conditional')  d.setDate(d.getDate() + 180);  // C2: 180 days
-            else                                d.setDate(d.getDate() + 90);   // C1 failed: 90 days
+            if (status === 'passed')            d.setMonth(d.getMonth() + 24); // certificado de 2 anos
+            else if (status === 'failed')       d.setDate(d.getDate() + 30);   // imobilização / reinspeção urgente
+            else                                d.setDate(d.getDate() + 30);   // condicional (C2) -> curto prazo
             $('#pdfParserValidUntil').val(d.toISOString().substring(0, 10));
         });
 
@@ -9060,15 +9127,22 @@ Equipa FestLift</textarea>
                         localStorage.getItem('liftmanager_jwt');
 
             try {
+                var selectedStatus = $('#pdfParserStatus').val() || 'passed';
+                var normalizedCertType = ed.certType || (selectedStatus === 'passed' ? 'cert_2_years' : (selectedStatus === 'failed' ? 'immobilization' : 'reinspection'));
                 var body = {
-                    inspector: $('#pdfParserInspector').val() || 'Bureau Veritas',
+                    inspector: $('#pdfParserInspector').val() || ed.company || 'Bureau Veritas',
                     notes: $('#pdfParserNotes').val(),
                     reportType: $('#pdfParserReportType').val() || 'annual',
-                    status: $('#pdfParserStatus').val() || 'passed',
+                    status: selectedStatus,
                     savedFileUrl: ed.savedFileUrl || null,
                     lastInspectionDate: $('#pdfParserDate').val(),
                     nextInspectionDate: $('#pdfParserValidUntil').val(),
-                    violations: ed.violations || []
+                    violations: ed.violations || [],
+                    certType: normalizedCertType,
+                    validUntil: $('#pdfParserValidUntil').val() || ed.validUntil || null,
+                    reportNumber: ed.reportNumber || null,
+                    processNumber: ed.processNumber || null,
+                    company: ed.company || null
                 };
 
                 var resp = await fetch('/api/lifts/' + liftId + '/confirm-inspection-from-pdf', {

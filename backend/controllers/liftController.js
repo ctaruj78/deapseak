@@ -497,7 +497,7 @@ exports.addInspectionReport = async (req, res, next) => {
         if (nextInspectionDate) {
             lift.nextInspectionDate = new Date(nextInspectionDate);
         } else if (status === 'passed') {
-            lift.calculateNextMaintenance(6);
+            lift.nextInspectionDate = lift.calculateNextMaintenance(6);
         } else if (status === 'failed') {
             // Failed → re-inspect in 6 months
             const nd = new Date(reportDate);

@@ -73,9 +73,14 @@ const liftSchema = new mongoose.Schema({
     inspectionHistory: [{
         date: { type: Date, default: Date.now },
         inspector: String,
+        company: String,
         notes: String,
         photos: [String],
         reportFile: String, // ficheiro PDF do relatório
+        reportNumber: String,
+        processNumber: String,
+        certType: { type: String, enum: ['cert_2_years', 'reinspection', 'immobilization', 'conditional'] },
+        validUntil: Date,
         reportType: { type: String, enum: ['routine', 'emergency', 'annual', 'certification'], default: 'routine' },
         inspectionType: { type: String, enum: ['inspection', 'maintenance', 'repair', 'emergency'] },
         status: { type: String, enum: ['passed', 'failed', 'conditional', 'completed'], default: 'passed' }

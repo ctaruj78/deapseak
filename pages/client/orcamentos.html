@@ -434,6 +434,12 @@
                             <button class="btn btn-secondary btn-sm" onclick="downloadPDF('${o._id}', '${o.numero}'); event.stopPropagation();" title="Download PDF">
                                 <i class="fas fa-file-pdf"></i> PDF
                             </button>
+                            <button class="btn btn-outline-success btn-sm" onclick="printPDF('${o._id}', '${o.numero}'); event.stopPropagation();" title="Imprimir">
+                                <i class="fas fa-print"></i>
+                            </button>
+                            <button class="btn btn-outline-warning btn-sm" onclick="emailOrcamento('${o._id}', '${o.numero}'); event.stopPropagation();" title="Enviar por email">
+                                <i class="fas fa-envelope"></i>
+                            </button>
                         </div>
                         <div>${actionBtns}</div>
                     </div>
@@ -491,6 +497,12 @@
                 <button class="btn btn-outline-secondary" onclick="downloadPDF('${o._id}', '${o.numero}')">
                     <i class="fas fa-file-pdf"></i> Download PDF
                 </button>
+                <button class="btn btn-outline-success" onclick="printPDF('${o._id}', '${o.numero}')">
+                    <i class="fas fa-print"></i> Imprimir
+                </button>
+                <button class="btn btn-outline-warning" onclick="emailOrcamento('${o._id}', '${o.numero}')">
+                    <i class="fas fa-envelope"></i> Enviar por Email
+                </button>
                 <button class="btn btn-success" onclick="abrirResposta('${o._id}', 'aprovado')">
                     <i class="fas fa-check"></i> Aprovar orçamento
                 </button>
@@ -502,6 +514,12 @@
                 <button class="btn btn-secondary" data-dismiss="modal">Fechar</button>
                 <button class="btn btn-outline-secondary" onclick="downloadPDF('${o._id}', '${o.numero}')">
                     <i class="fas fa-file-pdf"></i> Download PDF
+                </button>
+                <button class="btn btn-outline-success" onclick="printPDF('${o._id}', '${o.numero}')">
+                    <i class="fas fa-print"></i> Imprimir
+                </button>
+                <button class="btn btn-outline-warning" onclick="emailOrcamento('${o._id}', '${o.numero}')">
+                    <i class="fas fa-envelope"></i> Enviar por Email
                 </button>`;
         }
 
@@ -590,6 +608,44 @@
             URL.revokeObjectURL(url);
         } catch (err) {
             alert('Erro ao descarregar PDF: ' + err.message);
+        }
+    }
+
+    async function printPDF(id, numero) {
+        try {
+            const res = await fetch(`${API_BASE_URL}/api/orcamentos/${id}/pdf`, {
+                headers: { 'Authorization': `Bearer ${getToken()}` }
+            });
+            if (!res.ok) throw new Error('Erro ao abrir PDF para impressão');
+
+            const blob = await res.blob();
+            const url = URL.createObjectURL(blob);
+            const win = window.open(url, '_blank');
+            if (win) {
+                win.addEventListener('load', () => { try { win.print(); } catch (_) {} });
+            }
+            setTimeout(() => URL.revokeObjectURL(url), 20000);
+        } catch (err) {
+            alert('Erro ao imprimir PDF: ' + err.message);
+        }
+    }
+
+    async function emailOrcamento(id, numero) {
+        try {
+            const o = orcamentosData.find(x => x._id === id);
+            const to = o?.cliente?.email || '';
+            const subject = encodeURIComponent(`Orçamento ${numero || ''} - FestLift`);
+            const body = encodeURIComponent(
+                `Olá,\n\n` +
+                `Segue referência do orçamento ${numero || ''}.\n` +
+                `Data: ${o?.data ? new Date(o.data).toLocaleDateString('pt-PT') : '—'}\n` +
+                `Total: €${Number(o?.total || 0).toFixed(2)}\n\n` +
+                `Pode consultar e descarregar o PDF no portal FestLift em "Orçamentos".\n\n` +
+                `Cumprimentos.`
+            );
+            window.location.href = `mailto:${encodeURIComponent(to)}?subject=${subject}&body=${body}`;
+        } catch (err) {
+            alert('Erro ao preparar email: ' + err.message);
         }
     }
 
