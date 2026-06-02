@@ -6584,8 +6584,8 @@ Equipa FestLift</textarea>
                     report.comments || '',
                     report.findings || '',
                     report.notes || '',
-                    report.inspectorName || '',
-                    report.inspector || ''
+                    report.inspector || '',
+                    report.inspectorName || ''
                 ].join(' ').toLowerCase();
                 
                 if (!searchableText.includes(searchFilter)) {
@@ -6644,9 +6644,14 @@ Equipa FestLift</textarea>
                     if (!name) return 'Não identificado';
                     const junkPatterns = /CLÁUSULAS|CUMPRIMENTO OBRIGATÓRIO|ASCENSOR|DECRETO.LEI|REGULAMENTO/i;
                     if (junkPatterns.test(name) || (name.length > 55 && name === name.toUpperCase())) return 'Não identificado';
-                    return name.length > 50 ? name.substring(0, 48) + '…' : name;
+                    const normalized = String(name)
+                        .replace(/\b(T[eé]cnico|Inspector)\s*:?\s*/gi, '')
+                        .replace(/\bCust[oó]ias\b/gi, 'Custódias')
+                        .replace(/\s+/g, ' ')
+                        .trim();
+                    return normalized.length > 50 ? normalized.substring(0, 48) + '…' : normalized;
                 }
-                const inspector = sanitizeInspector(report.inspectorName || report.inspector || '');
+                const inspector = sanitizeInspector(report.inspector || report.inspectorName || '');
                 const fileUrl = report.fileUrl || report.reportFile || report.file || null;
 
                 // Deнаходимо реальний індекс в БД (оригінальний, до ordenação)
@@ -6954,7 +6959,7 @@ Equipa FestLift</textarea>
         const type = typeLabels[typeRaw] || typeRaw || 'Não especificado';
         const notes = report.comments || report.findings || report.notes || '';
         const status = report.status || 'completed';
-        const inspector = report.inspectorName || report.inspector || '';
+        const inspector = report.inspector || report.inspectorName || '';
 
         let statusBadge = '', statusClass = '';
         if (status === 'passed' || status === 'completed') {
@@ -7111,7 +7116,7 @@ Equipa FestLift</textarea>
         const type = typeLabels2[typeRaw2] || typeRaw2 || 'Não especificado';
         const notes = report.comments || report.findings || report.notes || '';
         const status = report.status || 'completed';
-        const inspector = report.inspectorName || report.inspector || '';
+        const inspector = report.inspector || report.inspectorName || '';
         
         // Estado
         let statusText = '';
