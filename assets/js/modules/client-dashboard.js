@@ -55,7 +55,7 @@ class ClientDashboard {
     updateWithRealData(lifts, requests, notifications) {
         this.renderActivities(requests || []);
         this.renderMaintenanceSchedule(lifts || []);
-        this.renderNotifications(notifications || []);
+        this.renderNotifications(notifications || [], lifts || []);
         this.updateChart(lifts || []);
     }
 
@@ -130,6 +130,100 @@ class ClientDashboard {
         }
     }
 
+    getLatestInspectionRecord(lift) {
+        if (window.InspectionSourceUtils) {
+            return window.InspectionSourceUtils.getLatestInspectionRecord(lift);
+        }
+        const records = Array.isArray(lift?.inspectionHistory) ? lift.inspectionHistory : [];
+        if (!records.length) return null;
+
+        return records
+            .slice()
+            .sort((a, b) => new Date(b.date || b.inspectionDate || 0) - new Date(a.date || a.inspectionDate || 0))[0] || null;
+    }
+
+    getEffectiveNextInspectionDate(lift) {
+        if (window.InspectionSourceUtils) {
+            return window.InspectionSourceUtils.getEffectiveNextInspectionDate(lift);
+        }
+        const direct = lift?.nextInspectionDate || lift?.licenseExpiry || lift?.certExpiry || null;
+        if (direct) {
+            const d = new Date(direct);
+            if (!Number.isNaN(d.getTime())) return d;
+        }
+
+        const latest = this.getLatestInspectionRecord(lift);
+        if (!latest) return null;
+
+        const fromReport = latest.validUntil || latest.nextInspectionDate || null;
+        if (fromReport) {
+            const d = new Date(fromReport);
+            if (!Number.isNaN(d.getTime())) return d;
+        }
+
+        const baseRaw = latest.date || latest.inspectionDate || lift.lastInspectionDate || lift.licenseDate || null;
+        const base = baseRaw ? new Date(baseRaw) : null;
+        if (!base || Number.isNaN(base.getTime())) return null;
+
+        const certType = String(latest.certType || '').toLowerCase();
+        const status = String(latest.status || lift.inspectionStatus || '').toLowerCase();
+        const c1 = Number(latest.c1Count || 0);
+        const c2 = Number(latest.c2Count || 0);
+        const fallback = new Date(base);
+
+        if (certType === 'cert_2_years' || status === 'passed') {
+            fallback.setFullYear(fallback.getFullYear() + 2);
+        } else if (certType === 'reinspection' || certType === 'immobilization' || c1 > 0 || c2 > 0 || status === 'failed' || status === 'conditional') {
+            fallback.setDate(fallback.getDate() + 30);
+        } else {
+            fallback.setDate(fallback.getDate() + 180);
+        }
+
+        return fallback;
+    }
+
+    getInspectionSourceLabel(lift) {
+        if (window.InspectionSourceUtils) {
+            return window.InspectionSourceUtils.formatSourceLabel(lift, 'short');
+        }
+        return 'dados estimados';
+    }
+
+    buildInspectionAlertsFromLifts(lifts) {
+        const now = new Date();
+        const alerts = [];
+
+        (lifts || []).forEach((lift) => {
+            const nextDate = this.getEffectiveNextInspectionDate(lift);
+            if (!nextDate || Number.isNaN(nextDate.getTime())) return;
+
+            const daysLeft = Math.ceil((nextDate - now) / 86400000);
+            if (daysLeft > 60) return;
+
+            const address = lift?.address?.street || lift?.municipalNumber || 'Elevador';
+            const ref = lift?.municipalNumber ? ` (${lift.municipalNumber})` : '';
+            const datePt = nextDate.toLocaleDateString('pt-PT');
+            const overdue = daysLeft < 0;
+            const title = overdue ? 'Inspeção periódica em atraso' : 'Requerimento de inspeção próximo';
+            const sourceLabel = this.getInspectionSourceLabel(lift);
+            const message = overdue
+                ? `${address}${ref}: inspeção periódica em atraso há ${Math.abs(daysLeft)} dia(s) (prazo: ${datePt}, fonte: ${sourceLabel}).`
+                : `${address}${ref}: requerer próxima inspeção em ${daysLeft} dia(s) (prazo: ${datePt}, fonte: ${sourceLabel}).`;
+
+            alerts.push({
+                synthetic: true,
+                read: false,
+                createdAt: now.toISOString(),
+                title,
+                message,
+                severity: overdue ? 'danger' : 'warning',
+                sortDays: daysLeft
+            });
+        });
+
+        return alerts.sort((a, b) => a.sortDays - b.sortDays).slice(0, 5);
+    }
+
     // ─── Графік обслуговування — з реальних nextInspectionDate ліфтів ───
     renderMaintenanceSchedule(lifts) {
         const container = $('#maintenanceSchedule');
@@ -143,19 +237,20 @@ class ClientDashboard {
 
         const now = new Date();
         const upcoming = lifts
-            .filter(l => l.nextInspectionDate)
             .map(l => {
-                const d = new Date(l.nextInspectionDate);
+                const d = this.getEffectiveNextInspectionDate(l);
+                if (!d || Number.isNaN(d.getTime())) return null;
                 const daysLeft = Math.ceil((d - now) / 86400000);
                 return { lift: l, date: d, daysLeft };
             })
+            .filter(Boolean)
             .sort((a, b) => a.date - b.date)
             .slice(0, 5);
 
         $('#maintenanceCount').text(upcoming.length);
 
         if (upcoming.length === 0) {
-            container.html('<div class="text-center text-muted py-3">Sem inspeções planeadas</div>');
+            container.html('<div class="text-center text-muted py-3">Sem inspeções periódicas planeadas</div>');
             return;
         }
 
@@ -184,7 +279,7 @@ class ClientDashboard {
                         <div>
                             <h5 class="mb-1">${addr} ${priorityLabel}</h5>
                             <p class="mb-1 text-muted">№ ${lift.municipalNumber || '—'}</p>
-                            <small><i class="fas fa-calendar-alt mr-1"></i>Planeado: ${dateStr}</small>
+                            <small><i class="fas fa-calendar-alt mr-1"></i>Data da inspeção: ${dateStr}</small>
                         </div>
                         <div>
                             <a href="../client/my-lifts.html" class="btn btn-light btn-sm">
@@ -198,20 +293,25 @@ class ClientDashboard {
     }
 
     // ─── Notificações — з реального API ───
-    renderNotifications(notifications) {
+    renderNotifications(notifications, lifts = []) {
         const container = $('#notificationsList');
         container.empty();
 
-        const unread = (notifications || []).filter(n => !n.read).length;
+        const syntheticAlerts = this.buildInspectionAlertsFromLifts(lifts);
+        const combined = [...syntheticAlerts, ...(notifications || [])].slice(0, 8);
+
+        const unread = combined.filter(n => !n.read).length;
         $('#alertsCount').text(unread);
 
-        if (!notifications || notifications.length === 0) {
+        if (!combined.length) {
             container.html('<div class="text-center text-muted py-3">Sem notificações</div>');
             return;
         }
 
-        notifications.slice(0, 5).forEach(n => {
-            const alertClass = n.read ? 'alert-secondary' : 'alert-warning';
+        combined.slice(0, 5).forEach(n => {
+            const alertClass = n.synthetic
+                ? (n.severity === 'danger' ? 'alert-danger' : 'alert-warning')
+                : (n.read ? 'alert-secondary' : 'alert-warning');
             const dt = n.createdAt ? new Date(n.createdAt).toLocaleString('pt-PT') : '';
             container.append(`
                 <div class="alert ${alertClass} alert-dismissible">

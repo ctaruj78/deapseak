@@ -2664,6 +2664,7 @@
     <script src="../../assets/js/voice-control.js"></script>
     <script src="../../assets/js/ar-helper.js"></script>
     <script src="../../assets/js/common.js"></script>
+    <script src="../../assets/js/inspection-source-utils.js?v=20260602a"></script>
     <script src="../../assets/js/lift-utils.js"></script>
     <script src="../../assets/js/lifts.js?v=20260401j"></script>
     <script src="../../assets/js/simple-lift-modal.js?v=20241206"></script>
@@ -5176,53 +5177,34 @@ Equipa FestLift</textarea>
                 : (lift.manufacturer || '');
             const modelCell = [brandDisplay, lift.model].filter(Boolean).join(' ') || '-';
 
-            const _latestRowReport = Array.isArray(lift.inspectionHistory) && lift.inspectionHistory.length
-                ? lift.inspectionHistory
-                    .slice()
-                    .sort((a, b) => new Date(b.inspectionDate || b.date || 0) - new Date(a.inspectionDate || a.date || 0))[0]
-                : null;
-            const _effectiveExpiryDate = (() => {
-                const explicit =
-                    lift.nextInspectionDate ||
-                    lift.licenseExpiry ||
-                    lift.certExpiry ||
-                    (_latestRowReport ? (_latestRowReport.validUntil || _latestRowReport.nextInspectionDate) : null) ||
-                    null;
-                if (explicit) {
-                    const d = new Date(explicit);
-                    if (!isNaN(d)) return d;
-                }
-                const baseDate =
-                    lift.lastInspectionDate ||
-                    lift.licenseDate ||
-                    lift.certDate ||
-                    (_latestRowReport ? (_latestRowReport.inspectionDate || _latestRowReport.date) : null) ||
-                    null;
-                const hasLegacyNoStatus = !lift.inspectionStatus && !(_latestRowReport && _latestRowReport.status);
-                const statusPassed =
-                    lift.inspectionStatus === 'passed' ||
-                    (_latestRowReport && _latestRowReport.status === 'passed') ||
-                    hasLegacyNoStatus;
-                if (statusPassed && baseDate) {
-                    const d = new Date(baseDate);
-                    if (!isNaN(d)) {
-                        d.setFullYear(d.getFullYear() + 2);
-                        return d;
-                    }
-                }
-                return null;
-            })();
+            const _latestRowReport = (window.InspectionSourceUtils && window.InspectionSourceUtils.getLatestInspectionRecord)
+                ? window.InspectionSourceUtils.getLatestInspectionRecord(lift)
+                : (Array.isArray(lift.inspectionHistory) && lift.inspectionHistory.length
+                    ? lift.inspectionHistory
+                        .slice()
+                        .sort((a, b) => new Date(b.inspectionDate || b.date || 0) - new Date(a.inspectionDate || a.date || 0))[0]
+                    : null);
+            const _effectiveExpiryInfo = (window.InspectionSourceUtils && window.InspectionSourceUtils.getEffectiveExpiryInfo)
+                ? window.InspectionSourceUtils.getEffectiveExpiryInfo(lift)
+                : { date: null, source: 'none' };
+            const _effectiveExpiryDate = _effectiveExpiryInfo.date;
+            const _sourceTooltip = (window.InspectionSourceUtils && window.InspectionSourceUtils.formatSourceLabel)
+                ? window.InspectionSourceUtils.formatSourceLabel(lift, 'tooltip')
+                : 'Fonte: sem fonte definida';
+            const _expirySourceBadge = (_effectiveExpiryDate && _effectiveExpiryInfo.source === 'manual' && !_latestRowReport)
+                ? '<br><span class="badge badge-secondary mt-1" style="font-size:.6rem;cursor:default" title="' + _sourceTooltip + '">Fonte: certificado manual</span>'
+                : '';
             const _inspectionStatusResolved = String(lift.inspectionStatus || (_latestRowReport && _latestRowReport.status) || '').toLowerCase();
             const _isReinspectionFlow = _inspectionStatusResolved === 'failed' || _inspectionStatusResolved === 'conditional';
             const _overdueInspectionBadge = (!_isReinspectionFlow && _effectiveExpiryDate && _effectiveExpiryDate < new Date())
-                ? '<br><span class="badge badge-danger mt-1" style="font-size:.65rem;cursor:default" title="Inspecção vencida desde ' + _effectiveExpiryDate.toLocaleDateString('pt-PT') + '">&#9888; Insp. vencida</span>'
+                ? '<br><span class="badge badge-danger mt-1" style="font-size:.65rem;cursor:default" title="Inspecção vencida desde ' + _effectiveExpiryDate.toLocaleDateString('pt-PT') + ' (' + _sourceTooltip + ')">&#9888; Insp. vencida</span>'
                 : '';
             const _nearExpiryInspectionBadge = (() => {
                 if (_isReinspectionFlow || !_effectiveExpiryDate) return '';
                 const _now = new Date();
                 const _daysLeft = Math.ceil((_effectiveExpiryDate - _now) / 86400000);
                 if (_daysLeft > 0 && _daysLeft <= 60) {
-                    return '<br><span class="badge badge-warning mt-1" style="font-size:.65rem;cursor:default" title="Certificado expira em ' + _daysLeft + ' dia(s) (' + _effectiveExpiryDate.toLocaleDateString('pt-PT') + ')">&#9200; Requerer inspeção</span>';
+                    return '<br><span class="badge badge-warning mt-1" style="font-size:.65rem;cursor:default" title="Certificado expira em ' + _daysLeft + ' dia(s) (' + _effectiveExpiryDate.toLocaleDateString('pt-PT') + ') (' + _sourceTooltip + ')">&#9200; Requerer inspeção</span>';
                 }
                 return '';
             })();
@@ -5230,13 +5212,13 @@ Equipa FestLift</textarea>
                 if (!_isReinspectionFlow) return '';
                 if (_inspectionStatusResolved === 'failed') {
                     if (_effectiveExpiryDate && _effectiveExpiryDate < new Date()) {
-                        return '<br><span class="badge badge-danger mt-1" style="font-size:.65rem;cursor:default" title="Reinspecção em atraso desde ' + _effectiveExpiryDate.toLocaleDateString('pt-PT') + '">&#10060; Reinsp. em atraso</span>';
+                        return '<br><span class="badge badge-danger mt-1" style="font-size:.65rem;cursor:default" title="Reinspecção em atraso desde ' + _effectiveExpiryDate.toLocaleDateString('pt-PT') + ' (' + _sourceTooltip + ')">&#10060; Reinsp. em atraso</span>';
                     }
                     return '<br><span class="badge badge-danger mt-1" style="font-size:.65rem;cursor:default" title="Inspecção reprovada — reinspecção necessária">&#10060; Reinspecção</span>';
                 }
                 if (_inspectionStatusResolved === 'conditional') {
                     if (_effectiveExpiryDate && _effectiveExpiryDate < new Date()) {
-                        return '<br><span class="badge badge-danger mt-1" style="font-size:.65rem;cursor:default" title="Reinspecção C2 em atraso desde ' + _effectiveExpiryDate.toLocaleDateString('pt-PT') + '">&#9888; Reinsp. C2 atraso</span>';
+                        return '<br><span class="badge badge-danger mt-1" style="font-size:.65rem;cursor:default" title="Reinspecção C2 em atraso desde ' + _effectiveExpiryDate.toLocaleDateString('pt-PT') + ' (' + _sourceTooltip + ')">&#9888; Reinsp. em atraso</span>';
                     }
                     return '<br><span class="badge badge-warning mt-1" style="font-size:.65rem;cursor:default" title="Inspecção condicional C2 — reinspecção necessária">&#9888; Reinsp. C2</span>';
                 }
@@ -5261,6 +5243,7 @@ Equipa FestLift</textarea>
                     ${_overdueInspectionBadge}
                     ${_nearExpiryInspectionBadge}
                     ${_reinspectionBadge}
+                    ${_expirySourceBadge}
                 </td>
                 <td>
                     ${lift.lastMaintenance ? new Date(lift.lastMaintenance).toLocaleDateString('pt-PT') : 'Não especificado'}
@@ -5558,6 +5541,12 @@ Equipa FestLift</textarea>
                 
                 // Relatório inspeções (показуexisteмо recentesй relatório desde історії)
                 const lastReport = _lastHistEntry;
+                const _sourceLabel = (window.InspectionSourceUtils && window.InspectionSourceUtils.formatSourceLabel)
+                    ? window.InspectionSourceUtils.formatSourceLabel(lift, 'long')
+                    : 'Sem fonte definida';
+                const _sourceTooltip = (window.InspectionSourceUtils && window.InspectionSourceUtils.formatSourceLabel)
+                    ? window.InspectionSourceUtils.formatSourceLabel(lift, 'tooltip')
+                    : 'Fonte: sem fonte definida';
                 
                 const inspTypeLabels = { inspection: 'Inspecção', maintenance: 'Manutenção técnica', repair: 'Reparação', emergency: 'Chamada de emergência', annual: 'Inspecção', routine: 'Manutenção', certification: 'Certificação' };
                 const inspStatusLabels = { completed: 'Concluído', passed: 'Aprovado', failed: 'Reprovado', conditional: 'Condicional' };
@@ -5565,6 +5554,7 @@ Equipa FestLift</textarea>
                 $('#detail-inspection-date').text(
                     lastReport && (lastReport.date || lastReport.inspectionDate) ? new Date(lastReport.date || lastReport.inspectionDate).toLocaleDateString('pt-PT') : 'Não especificado'
                 );
+                $('#detail-inspection-date').attr('title', _sourceTooltip);
                 const _lrType = lastReport ? (lastReport.inspectionType || lastReport.type || lastReport.reportType || '') : '';
                 $('#detail-inspection-type').text(lastReport ? (inspTypeLabels[_lrType] || _lrType || 'Não especificado') : 'Não especificado');
                 $('#detail-inspection-status').text(lastReport ? (inspStatusLabels[lastReport.status] || lastReport.status || 'Não especificado') : 'Não especificado');
@@ -5573,23 +5563,26 @@ Equipa FestLift</textarea>
                     const _banner = document.getElementById('inspectionStatusBanner');
                     if (!_banner) return;
                     const _now = new Date();
-                    const _nextD = lift.nextInspectionDate ? new Date(lift.nextInspectionDate) : null;
+                    const _expiryInfo = (window.InspectionSourceUtils && window.InspectionSourceUtils.getEffectiveExpiryInfo)
+                        ? window.InspectionSourceUtils.getEffectiveExpiryInfo(lift)
+                        : { date: null };
+                    const _nextD = _expiryInfo.date ? new Date(_expiryInfo.date) : null;
                     const _lastSt = lastReport ? (lastReport.status || '') : '';
                     if (!lastReport) {
-                        _banner.innerHTML = '<div class="alert alert-secondary py-2 mb-0"><i class="fas fa-info-circle mr-1"></i> Sem inspecção registada</div>';
+                        _banner.innerHTML = '<div class="alert alert-secondary py-2 mb-0"><i class="fas fa-info-circle mr-1"></i> Sem inspecção registada <small class="text-muted ml-1">(fonte: ' + _sourceLabel + ')</small></div>';
                     } else if (_lastSt === 'failed') {
                         _banner.innerHTML = '<div class="alert alert-danger py-2 mb-0"><i class="fas fa-times-circle mr-1"></i> <strong>Inspecção reprovada</strong> — necessita nova inspecção</div>';
                     } else if (_lastSt === 'conditional') {
                         _banner.innerHTML = '<div class="alert alert-warning py-2 mb-0"><i class="fas fa-exclamation-triangle mr-1"></i> <strong>Inspecção condicional (C2)</strong> — reinspecção necessária</div>';
                     } else if (_nextD && _nextD < _now) {
                         const _dOver = Math.ceil((_now - _nextD) / 86400000);
-                        _banner.innerHTML = '<div class="alert alert-danger py-2 mb-0"><i class="fas fa-clock mr-1"></i> <strong>Prazo expirado</strong> há ' + _dOver + ' dia(s) — venceu em ' + _nextD.toLocaleDateString('pt-PT') + '</div>';
+                        _banner.innerHTML = '<div class="alert alert-danger py-2 mb-0"><i class="fas fa-clock mr-1"></i> <strong>Prazo expirado</strong> há ' + _dOver + ' dia(s) — venceu em ' + _nextD.toLocaleDateString('pt-PT') + ' <small class="text-muted ml-1">(fonte: ' + _sourceLabel + ')</small></div>';
                     } else if (_nextD) {
                         const _dLeft = Math.ceil((_nextD - _now) / 86400000);
                         if (_dLeft <= 60) {
-                            _banner.innerHTML = '<div class="alert alert-warning py-2 mb-0"><i class="fas fa-clock mr-1"></i> A expirar em <strong>' + _dLeft + ' dia(s)</strong> — válido até ' + _nextD.toLocaleDateString('pt-PT') + '</div>';
+                            _banner.innerHTML = '<div class="alert alert-warning py-2 mb-0"><i class="fas fa-clock mr-1"></i> A expirar em <strong>' + _dLeft + ' dia(s)</strong> — válido até ' + _nextD.toLocaleDateString('pt-PT') + ' <small class="text-muted ml-1">(fonte: ' + _sourceLabel + ')</small></div>';
                         } else {
-                            _banner.innerHTML = '<div class="alert alert-success py-2 mb-0"><i class="fas fa-check-circle mr-1"></i> <strong>Inspecção válida</strong> até ' + _nextD.toLocaleDateString('pt-PT') + ' (' + _dLeft + ' dias)</div>';
+                            _banner.innerHTML = '<div class="alert alert-success py-2 mb-0"><i class="fas fa-check-circle mr-1"></i> <strong>Inspecção válida</strong> até ' + _nextD.toLocaleDateString('pt-PT') + ' (' + _dLeft + ' dias) <small class="text-muted ml-1">(fonte: ' + _sourceLabel + ')</small></div>';
                         }
                     } else if (_lastSt === 'passed') {
                         _banner.innerHTML = '<div class="alert alert-success py-2 mb-0"><i class="fas fa-check-circle mr-1"></i> <strong>Aprovado</strong> — data de validade não especificada</div>';
@@ -5668,7 +5661,10 @@ Equipa FestLift</textarea>
                     const inspAlert = document.getElementById('inspectionReminderAlert');
                     if (!inspBlock) return;
                     inspBlock.style.display = 'none';
-                    const licExpiry = lift.licenseExpiry || lift.certExpiry || lift.nextInspectionDate || (lastReport ? (lastReport.validUntil || lastReport.nextInspectionDate) : null) || null;
+                    const _effExpiryInfo = (window.InspectionSourceUtils && window.InspectionSourceUtils.getEffectiveExpiryInfo)
+                        ? window.InspectionSourceUtils.getEffectiveExpiryInfo(lift)
+                        : { date: null };
+                    const licExpiry = _effExpiryInfo.date || null;
                     const now = new Date();
                     if (licExpiry) {
                         const expiryDate = new Date(licExpiry);

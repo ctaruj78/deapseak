@@ -349,6 +349,9 @@
                             <i class="fas fa-file-alt mr-2"></i>Resultado
                         </h3>
                         <div class="mt-1 mt-sm-0">
+                            <button class="btn btn-outline-danger btn-sm export-btn mr-1" onclick="deleteCurrentReport()">
+                                <i class="fas fa-trash-alt mr-1"></i>Apagar
+                            </button>
                             <button class="btn btn-danger btn-sm export-btn mr-1" onclick="downloadReport('pdf')">
                                 <i class="fas fa-file-pdf mr-1"></i>PDF
                             </button>
@@ -404,17 +407,22 @@
 
     // ── Auth helpers ─────────────────────────────────────────────
     function getToken() {
-        return localStorage.getItem('authToken')
+        return sessionStorage.getItem('liftmanager_jwt')
             || localStorage.getItem('liftmanager_jwt')
-            || localStorage.getItem('token')
+            || (typeof AuthManager !== 'undefined' ? (AuthManager.getAuthToken() || '') : '')
             || '';
     }
 
     function logout() {
         if (confirm('Tem a certeza que quer sair do sistema?')) {
-            localStorage.removeItem('authToken');
-            localStorage.removeItem('userData');
-            window.location.replace('/pages/auth/login.html');
+            if (typeof AuthManager !== 'undefined') {
+                AuthManager.logout();
+            } else {
+                localStorage.removeItem('liftmanager_jwt');
+                sessionStorage.removeItem('liftmanager_jwt');
+                localStorage.removeItem('userData');
+                window.location.replace('/pages/auth/login.html');
+            }
         }
     }
 
@@ -584,6 +592,31 @@
             URL.revokeObjectURL(url);
         } catch (e) {
             alert(e.message || 'Erro ao descarregar ficheiro');
+        }
+    }
+
+    async function deleteCurrentReport() {
+        if (!currentReport || !currentReport.id) {
+            alert('Não existe relatório para apagar.');
+            return;
+        }
+
+        if (!confirm('Apagar este relatório gerado?')) return;
+
+        try {
+            var res = await fetch('/api/reports/' + currentReport.id, {
+                method: 'DELETE',
+                headers: { 'Authorization': 'Bearer ' + getToken() }
+            });
+
+            var data = await res.json().catch(function() { return {}; });
+            if (!res.ok) throw new Error(data.message || ('Erro ao apagar relatório (HTTP ' + res.status + ')'));
+
+            currentReport = null;
+            document.getElementById('resultCard').style.display = 'none';
+            alert('Relatório apagado com sucesso.');
+        } catch (e) {
+            alert(e.message || 'Erro ao apagar relatório');
         }
     }
 

@@ -199,70 +199,44 @@ class LiftsManager {
     }
 
     getLatestInspectionRecord(lift) {
+        if (window.InspectionSourceUtils) {
+            return window.InspectionSourceUtils.getLatestInspectionRecord(lift);
+        }
         const records = Array.isArray(lift?.inspectionHistory) ? lift.inspectionHistory : [];
         if (!records.length) return null;
-
-        const normalizeDate = (record) => {
-            const raw = record?.date || record?.inspectionDate || null;
-            if (!raw) return null;
-            const d = new Date(raw);
-            return Number.isNaN(d.getTime()) ? null : d;
-        };
-
-        let latest = null;
-        let latestTs = 0;
-        records.forEach((r) => {
-            const d = normalizeDate(r);
-            if (!d) return;
-            const ts = d.getTime();
-            if (!latest || ts > latestTs) {
-                latest = r;
-                latestTs = ts;
-            }
-        });
-
-        return latest;
+        return records
+            .slice()
+            .sort((a, b) => new Date(b.date || b.inspectionDate || 0) - new Date(a.date || a.inspectionDate || 0))[0] || null;
     }
 
     getEffectiveLastInspectionDate(lift) {
+        if (window.InspectionSourceUtils) {
+            return window.InspectionSourceUtils.getEffectiveLastInspectionDate(lift);
+        }
         if (lift?.lastInspectionDate) return lift.lastInspectionDate;
+        if (lift?.licenseDate) return lift.licenseDate;
+        if (lift?.certDate) return lift.certDate;
         if (lift?.lastMaintenance) return lift.lastMaintenance;
-
         const latest = this.getLatestInspectionRecord(lift);
         return latest?.date || latest?.inspectionDate || null;
     }
 
     getEffectiveNextInspectionDate(lift) {
+        if (window.InspectionSourceUtils) {
+            return window.InspectionSourceUtils.getEffectiveNextInspectionDate(lift);
+        }
         if (lift?.nextInspectionDate) return lift.nextInspectionDate;
+        if (lift?.licenseExpiry) return lift.licenseExpiry;
+        if (lift?.certExpiry) return lift.certExpiry;
         if (lift?.nextMaintenance) return lift.nextMaintenance;
+        return null;
+    }
 
-        const latest = this.getLatestInspectionRecord(lift);
-        if (!latest) return null;
-
-        if (latest.validUntil) {
-            const vu = new Date(latest.validUntil);
-            if (!Number.isNaN(vu.getTime())) return latest.validUntil;
+    getInspectionDataSourceLabel(lift) {
+        if (window.InspectionSourceUtils) {
+            return window.InspectionSourceUtils.formatSourceLabel(lift, 'long');
         }
-
-        const baseRaw = latest.date || latest.inspectionDate;
-        const base = baseRaw ? new Date(baseRaw) : null;
-        if (!base || Number.isNaN(base.getTime())) return null;
-
-        const certType = String(latest.certType || '').toLowerCase();
-        const status = String(latest.status || '').toLowerCase();
-        const c1 = Number(latest.c1Count || 0);
-        const c2 = Number(latest.c2Count || 0);
-        const fallback = new Date(base);
-
-        if (certType === 'cert_2_years' || status === 'passed') {
-            fallback.setMonth(fallback.getMonth() + 24);
-        } else if (certType === 'reinspection' || certType === 'immobilization' || c1 > 0 || c2 > 0 || status === 'failed') {
-            fallback.setDate(fallback.getDate() + 30);
-        } else {
-            fallback.setDate(fallback.getDate() + 180);
-        }
-
-        return fallback.toISOString();
+        return 'Sem fonte de validade';
     }
 
     buildInspectionAlertHtml(lift, compact = false) {
@@ -652,6 +626,7 @@ class LiftsManager {
                                 <table class="table table-sm mb-0">
                                     <tr><td><strong>Última inspeção periódica:</strong></td><td>${this.formatDate(this.getEffectiveLastInspectionDate(lift))}</td></tr>
                                     <tr><td><strong>Próxima inspeção periódica:</strong></td><td>${this.formatDate(this.getEffectiveNextInspectionDate(lift))}</td></tr>
+                                    <tr><td><strong>Fonte dos dados:</strong></td><td>${this.getInspectionDataSourceLabel(lift)}</td></tr>
                                 </table>
                             </div>
                         </div>

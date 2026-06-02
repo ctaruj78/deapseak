@@ -7,18 +7,38 @@ const { Request, Lift, User } = require('../models');
 // In-memory store for generated reports (production should use DB/file storage)
 const generatedReports = new Map();
 
+function resolveUserId(user) {
+    return String(user?._id || user?.id || user?.userId || '');
+}
+
+function canAccessReport(req, report) {
+    if (!report) return false;
+    const role = String(req.user?.role || '').toLowerCase();
+    if (role === 'admin' || role === 'dispatcher') return true;
+    const ownerId = String(report.createdBy || '');
+    return ownerId && ownerId === resolveUserId(req.user);
+}
+
 // GET /api/reports - список останніх згенерованих звітів
-router.get('/', authenticate, authorizeRoles('admin', 'dispatcher'), (req, res) => {
-    const list = Array.from(generatedReports.values())
+router.get('/', authenticate, authorizeRoles('admin', 'dispatcher', 'client'), (req, res) => {
+    const role = String(req.user?.role || '').toLowerCase();
+    let list = Array.from(generatedReports.values());
+    if (role === 'client') {
+        const ownerId = resolveUserId(req.user);
+        list = list.filter((r) => String(r.createdBy || '') === ownerId);
+    }
+
+    list = list
         .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
         .slice(0, 50);
     res.json({ reports: list, total: list.length });
 });
 
 // POST /api/reports/generate - генерація звіту за параметрами
-router.post('/generate', authenticate, authorizeRoles('admin', 'dispatcher'), async (req, res) => {
+router.post('/generate', authenticate, authorizeRoles('admin', 'dispatcher', 'client'), async (req, res) => {
     try {
         const { type = 'maintenance', startDate, endDate, technicianId, status } = req.body;
+        const role = String(req.user?.role || '').toLowerCase();
 
         if (!startDate || !endDate) {
             return res.status(400).json({ message: 'Indique startDate e endDate' });
@@ -37,7 +57,8 @@ router.post('/generate', authenticate, authorizeRoles('admin', 'dispatcher'), as
             createdAt: { $gte: start, $lte: end }
         };
         if (status) query.status = status;
-        if (technicianId) query.assignedTo = technicianId;
+        if (technicianId && role !== 'client') query.assignedTo = technicianId;
+        if (role === 'client') query.client = resolveUserId(req.user);
 
         const requests = await Request.find(query)
             .populate('lift', 'serialNumber address model')
@@ -74,12 +95,21 @@ router.post('/generate', authenticate, authorizeRoles('admin', 'dispatcher'), as
             startDate,
             endDate,
             createdAt: new Date().toISOString(),
-            createdBy: req.user._id,
+            createdBy: resolveUserId(req.user),
             stats,
             items,
         };
 
-        generatedReports.set(reportId, { id: reportId, type, startDate, endDate, createdAt: report.createdAt, stats });
+        generatedReports.set(reportId, {
+            id: reportId,
+            type,
+            startDate,
+            endDate,
+            createdAt: report.createdAt,
+            stats,
+            createdBy: resolveUserId(req.user),
+            createdByRole: role
+        });
 
         res.json(report);
     } catch (err) {
@@ -92,6 +122,7 @@ router.post('/generate', authenticate, authorizeRoles('admin', 'dispatcher'), as
 router.get('/:id/pdf', authenticate, (req, res) => {
     const report = generatedReports.get(req.params.id);
     if (!report) return res.status(404).json({ message: 'Relatório não encontrado' });
+    if (!canAccessReport(req, report)) return res.status(403).json({ message: 'Sem permissão para este relatório' });
     res.json({ message: 'Exportação PDF não implementada', report });
 });
 
@@ -99,7 +130,18 @@ router.get('/:id/pdf', authenticate, (req, res) => {
 router.get('/:id/excel', authenticate, (req, res) => {
     const report = generatedReports.get(req.params.id);
     if (!report) return res.status(404).json({ message: 'Relatório não encontrado' });
+    if (!canAccessReport(req, report)) return res.status(403).json({ message: 'Sem permissão para este relatório' });
     res.json({ message: 'Excel export не реалізовано', report });
+});
+
+// DELETE /api/reports/:id - apagar relatório gerado
+router.delete('/:id', authenticate, authorizeRoles('admin', 'dispatcher', 'client'), (req, res) => {
+    const report = generatedReports.get(req.params.id);
+    if (!report) return res.status(404).json({ message: 'Relatório não encontrado' });
+    if (!canAccessReport(req, report)) return res.status(403).json({ message: 'Sem permissão para apagar este relatório' });
+
+    generatedReports.delete(req.params.id);
+    res.json({ success: true, message: 'Relatório removido' });
 });
 
 module.exports = router;

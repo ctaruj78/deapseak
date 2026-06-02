@@ -2916,6 +2916,7 @@
     <script src="../../assets/js/voice-control.js"></script>
     <script src="../../assets/js/ar-helper.js"></script>
     <script src="../../assets/js/common.js"></script>
+    <script src="../../assets/js/inspection-source-utils.js?v=20260602a"></script>
     <script src="../../assets/js/lift-utils.js"></script>
     <script src="../../assets/js/lifts.js?v=20260401j"></script>
     <script src="../../assets/js/simple-lift-modal.js?v=20241206"></script>
@@ -4942,53 +4943,34 @@ Email de contacto: info@festlift.pt`;
                 ? brandLabels[lift.manufacturer]
                 : (lift.manufacturer || '');
             const modelCell = [brandDisplay, lift.model].filter(Boolean).join(' ') || '-';
-            const _latestRowReport = Array.isArray(lift.inspectionHistory) && lift.inspectionHistory.length
-                ? lift.inspectionHistory
-                    .slice()
-                    .sort((a, b) => new Date(b.inspectionDate || b.date || 0) - new Date(a.inspectionDate || a.date || 0))[0]
-                : null;
-            const _effectiveExpiryDate = (() => {
-                const explicit =
-                    lift.nextInspectionDate ||
-                    lift.licenseExpiry ||
-                    lift.certExpiry ||
-                    (_latestRowReport ? (_latestRowReport.validUntil || _latestRowReport.nextInspectionDate) : null) ||
-                    null;
-                if (explicit) {
-                    const d = new Date(explicit);
-                    if (!isNaN(d)) return d;
-                }
-                const baseDate =
-                    lift.lastInspectionDate ||
-                    lift.licenseDate ||
-                    lift.certDate ||
-                    (_latestRowReport ? (_latestRowReport.inspectionDate || _latestRowReport.date) : null) ||
-                    null;
-                const hasLegacyNoStatus = !lift.inspectionStatus && !(_latestRowReport && _latestRowReport.status);
-                const statusPassed =
-                    lift.inspectionStatus === 'passed' ||
-                    (_latestRowReport && _latestRowReport.status === 'passed') ||
-                    hasLegacyNoStatus;
-                if (statusPassed && baseDate) {
-                    const d = new Date(baseDate);
-                    if (!isNaN(d)) {
-                        d.setFullYear(d.getFullYear() + 2);
-                        return d;
-                    }
-                }
-                return null;
-            })();
+            const _latestRowReport = (window.InspectionSourceUtils && window.InspectionSourceUtils.getLatestInspectionRecord)
+                ? window.InspectionSourceUtils.getLatestInspectionRecord(lift)
+                : (Array.isArray(lift.inspectionHistory) && lift.inspectionHistory.length
+                    ? lift.inspectionHistory
+                        .slice()
+                        .sort((a, b) => new Date(b.inspectionDate || b.date || 0) - new Date(a.inspectionDate || a.date || 0))[0]
+                    : null);
+            const _effectiveExpiryInfo = (window.InspectionSourceUtils && window.InspectionSourceUtils.getEffectiveExpiryInfo)
+                ? window.InspectionSourceUtils.getEffectiveExpiryInfo(lift)
+                : { date: null, source: 'none' };
+            const _effectiveExpiryDate = _effectiveExpiryInfo.date;
+            const _sourceTooltip = (window.InspectionSourceUtils && window.InspectionSourceUtils.formatSourceLabel)
+                ? window.InspectionSourceUtils.formatSourceLabel(lift, 'tooltip')
+                : 'Fonte: sem fonte definida';
+            const _expirySourceBadge = (_effectiveExpiryDate && _effectiveExpiryInfo.source === 'manual' && !_latestRowReport)
+                ? '<br><span class="badge badge-secondary mt-1" style="font-size:.6rem;cursor:default" title="' + _sourceTooltip + '">Fonte: certificado manual</span>'
+                : '';
             const _inspectionStatusResolved = String(lift.inspectionStatus || (_latestRowReport && _latestRowReport.status) || '').toLowerCase();
             const _isReinspectionFlow = _inspectionStatusResolved === 'failed' || _inspectionStatusResolved === 'conditional';
             const _overdueInspectionBadge = (!_isReinspectionFlow && _effectiveExpiryDate && _effectiveExpiryDate < new Date())
-                ? '<br><span class="badge badge-danger mt-1" style="font-size:.65rem;cursor:default" title="Inspecção vencida desde ' + _effectiveExpiryDate.toLocaleDateString('pt-PT') + '">&#9888; Insp. vencida</span>'
+                ? '<br><span class="badge badge-danger mt-1" style="font-size:.65rem;cursor:default" title="Inspecção vencida desde ' + _effectiveExpiryDate.toLocaleDateString('pt-PT') + ' (' + _sourceTooltip + ')">&#9888; Insp. vencida</span>'
                 : '';
             const _nearExpiryInspectionBadge = (() => {
                 if (_isReinspectionFlow || !_effectiveExpiryDate) return '';
                 const _now = new Date();
                 const _daysLeft = Math.ceil((_effectiveExpiryDate - _now) / 86400000);
                 if (_daysLeft > 0 && _daysLeft <= 60) {
-                    return '<br><span class="badge badge-warning mt-1" style="font-size:.65rem;cursor:default" title="Certificado expira em ' + _daysLeft + ' dia(s) (' + _effectiveExpiryDate.toLocaleDateString('pt-PT') + ')">&#9200; Requerer inspeção</span>';
+                    return '<br><span class="badge badge-warning mt-1" style="font-size:.65rem;cursor:default" title="Certificado expira em ' + _daysLeft + ' dia(s) (' + _effectiveExpiryDate.toLocaleDateString('pt-PT') + ') (' + _sourceTooltip + ')">&#9200; Requerer inspeção</span>';
                 }
                 return '';
             })();
@@ -4996,13 +4978,13 @@ Email de contacto: info@festlift.pt`;
                 if (!_isReinspectionFlow) return '';
                 if (_inspectionStatusResolved === 'failed') {
                     if (_effectiveExpiryDate && _effectiveExpiryDate < new Date()) {
-                        return '<br><span class="badge badge-danger mt-1" style="font-size:.65rem;cursor:default" title="Reinspecção em atraso desde ' + _effectiveExpiryDate.toLocaleDateString('pt-PT') + '">&#10060; Reinsp. em atraso</span>';
+                        return '<br><span class="badge badge-danger mt-1" style="font-size:.65rem;cursor:default" title="Reinspecção em atraso desde ' + _effectiveExpiryDate.toLocaleDateString('pt-PT') + ' (' + _sourceTooltip + ')">&#10060; Reinsp. em atraso</span>';
                     }
                     return '<br><span class="badge badge-danger mt-1" style="font-size:.65rem;cursor:default" title="Inspecção reprovada — reinspecção necessária">&#10060; Reinspecção</span>';
                 }
                 if (_inspectionStatusResolved === 'conditional') {
                     if (_effectiveExpiryDate && _effectiveExpiryDate < new Date()) {
-                        return '<br><span class="badge badge-danger mt-1" style="font-size:.65rem;cursor:default" title="Reinspecção C2 em atraso desde ' + _effectiveExpiryDate.toLocaleDateString('pt-PT') + '">&#9888; Reinsp. C2 atraso</span>';
+                        return '<br><span class="badge badge-danger mt-1" style="font-size:.65rem;cursor:default" title="Reinspecção C2 em atraso desde ' + _effectiveExpiryDate.toLocaleDateString('pt-PT') + ' (' + _sourceTooltip + ')">&#9888; Reinsp. em atraso</span>';
                     }
                     return '<br><span class="badge badge-warning mt-1" style="font-size:.65rem;cursor:default" title="Inspecção condicional C2 — reinspecção necessária">&#9888; Reinsp. C2</span>';
                 }
@@ -5033,6 +5015,7 @@ Email de contacto: info@festlift.pt`;
                     ${_overdueInspectionBadge}
                     ${_nearExpiryInspectionBadge}
                     ${_reinspectionBadge}
+                    ${_expirySourceBadge}
                 </td>
                 <td>
                     ${lift.lastMaintenance ? new Date(lift.lastMaintenance).toLocaleDateString('pt-PT') : 'Não especificado'}
@@ -5461,22 +5444,24 @@ Email de contacto: info@festlift.pt`;
                 );
 
                 // Certificado / licença
-                const licDate = lift.licenseDate || lift.certDate || lift.lastInspectionDate || _lrDateAdmin || null;
-                const licExpiry = (() => {
-                    const explicit = lift.licenseExpiry || lift.certExpiry || lift.nextInspectionDate || (lastReport ? (lastReport.validUntil || lastReport.nextInspectionDate) : null);
-                    if (explicit) return explicit;
-                    const statusPassed = (lift.inspectionStatus === 'passed') || (lastReport && lastReport.status === 'passed');
-                    if (statusPassed && licDate) {
-                        const d = new Date(licDate);
-                        if (!isNaN(d)) {
-                            d.setFullYear(d.getFullYear() + 2);
-                            return d.toISOString();
-                        }
-                    }
-                    return null;
-                })();
+                const _effLast = (window.InspectionSourceUtils && window.InspectionSourceUtils.getEffectiveLastInspectionDate)
+                    ? window.InspectionSourceUtils.getEffectiveLastInspectionDate(lift)
+                    : null;
+                const _effExpiryInfo = (window.InspectionSourceUtils && window.InspectionSourceUtils.getEffectiveExpiryInfo)
+                    ? window.InspectionSourceUtils.getEffectiveExpiryInfo(lift)
+                    : { date: null, source: 'none' };
+                const licDate = _effLast || lift.licenseDate || lift.certDate || lift.lastInspectionDate || _lrDateAdmin || null;
+                const licExpiry = _effExpiryInfo.date || null;
                 $('#detail-license-date').text(licDate ? new Date(licDate).toLocaleDateString('pt-PT') : 'Não especificado');
                 $('#detail-license-expiry').text(licExpiry ? new Date(licExpiry).toLocaleDateString('pt-PT') : 'Não especificado');
+                const _sourceLabel = (window.InspectionSourceUtils && window.InspectionSourceUtils.formatSourceLabel)
+                    ? window.InspectionSourceUtils.formatSourceLabel(lift, 'long')
+                    : 'Sem fonte definida';
+                const _sourceTooltip = (window.InspectionSourceUtils && window.InspectionSourceUtils.formatSourceLabel)
+                    ? window.InspectionSourceUtils.formatSourceLabel(lift, 'tooltip')
+                    : 'Fonte: sem fonte definida';
+                $('#detail-license-date').attr('title', _sourceTooltip);
+                $('#detail-license-expiry').attr('title', _sourceTooltip);
 
                 // Логіка кнопки "Solicitar inspecção":
                 // Certificado açõesсний 2 anos. Нагадування — за 2 місяці до закінчення.
@@ -5548,6 +5533,7 @@ Email de contacto: info@festlift.pt`;
                 $('#detail-inspection-date').text(
                     _lrDateAdmin ? new Date(_lrDateAdmin).toLocaleDateString('pt-PT') : 'Não especificado'
                 );
+                $('#detail-inspection-date').attr('title', _sourceTooltip);
                 const _lrTypeRaw = lastReport ? (lastReport.inspectionType || lastReport.type || _adminRtMap[lastReport.reportType] || lastReport.reportType || '') : '';
                 $('#detail-inspection-type').text(_lrTypeRaw ? (_adminInspTypeLabels[_lrTypeRaw] || _lrTypeRaw) : 'Não especificado');
                 $('#detail-inspection-status').text(lastReport ? lastReport.status || 'Não especificado' : 'Não especificado');
@@ -5574,7 +5560,7 @@ Email de contacto: info@festlift.pt`;
                         return null;
                     })();
                     if (!lastReport) {
-                        _banner.innerHTML = '<div class="alert alert-secondary py-2 mb-0"><i class="fas fa-info-circle mr-1"></i> Sem inspecção registada</div>';
+                        _banner.innerHTML = '<div class="alert alert-secondary py-2 mb-0"><i class="fas fa-info-circle mr-1"></i> Sem inspecção registada <small class="text-muted ml-1">(fonte: ' + _sourceLabel + ')</small></div>';
                     } else if (_lastSt === 'failed') {
                         _banner.innerHTML = '<div class="alert alert-danger py-2 mb-0"><i class="fas fa-times-circle mr-1"></i> <strong>Inspecção reprovada</strong> — necessita nova inspecção</div>';
                     } else if (_lastSt === 'conditional') {
@@ -5586,13 +5572,13 @@ Email de contacto: info@festlift.pt`;
                         }
                     } else if (_passedFallbackExpiry && _passedFallbackExpiry < _now) {
                         const _dOver = Math.ceil((_now - _passedFallbackExpiry) / 86400000);
-                        _banner.innerHTML = '<div class="alert alert-danger py-2 mb-0"><i class="fas fa-clock mr-1"></i> <strong>Prazo expirado</strong> há ' + _dOver + ' dia(s) — venceu em ' + _passedFallbackExpiry.toLocaleDateString('pt-PT') + '</div>';
+                            _banner.innerHTML = '<div class="alert alert-danger py-2 mb-0"><i class="fas fa-clock mr-1"></i> <strong>Prazo expirado</strong> há ' + _dOver + ' dia(s) — venceu em ' + _passedFallbackExpiry.toLocaleDateString('pt-PT') + ' <small class="text-muted ml-1">(fonte: ' + _sourceLabel + ')</small></div>';
                     } else if (_passedFallbackExpiry) {
                         const _dLeft = Math.ceil((_passedFallbackExpiry - _now) / 86400000);
                         if (_dLeft <= 60) {
-                            _banner.innerHTML = '<div class="alert alert-warning py-2 mb-0"><i class="fas fa-clock mr-1"></i> A expirar em <strong>' + _dLeft + ' dia(s)</strong> — válido até ' + _passedFallbackExpiry.toLocaleDateString('pt-PT') + '</div>';
+                            _banner.innerHTML = '<div class="alert alert-warning py-2 mb-0"><i class="fas fa-clock mr-1"></i> A expirar em <strong>' + _dLeft + ' dia(s)</strong> — válido até ' + _passedFallbackExpiry.toLocaleDateString('pt-PT') + ' <small class="text-muted ml-1">(fonte: ' + _sourceLabel + ')</small></div>';
                         } else {
-                            _banner.innerHTML = '<div class="alert alert-success py-2 mb-0"><i class="fas fa-check-circle mr-1"></i> <strong>Inspecção válida</strong> até ' + _passedFallbackExpiry.toLocaleDateString('pt-PT') + ' (' + _dLeft + ' dias)</div>';
+                            _banner.innerHTML = '<div class="alert alert-success py-2 mb-0"><i class="fas fa-check-circle mr-1"></i> <strong>Inspecção válida</strong> até ' + _passedFallbackExpiry.toLocaleDateString('pt-PT') + ' (' + _dLeft + ' dias) <small class="text-muted ml-1">(fonte: ' + _sourceLabel + ')</small></div>';
                         }
                     } else if (_lastSt === 'passed') {
                         _banner.innerHTML = '<div class="alert alert-success py-2 mb-0"><i class="fas fa-check-circle mr-1"></i> <strong>Aprovado</strong> — data de validade não especificada</div>';

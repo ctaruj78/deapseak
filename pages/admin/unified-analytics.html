@@ -1706,6 +1706,15 @@ setTimeout(() => {
     'use strict';
     let municipalitiesById = {};
     let municipalitiesByName = {};
+
+    function normalizeMunicipalityName(name) {
+        return String(name || '').trim().toLowerCase();
+    }
+
+    function resolveMunicipalityId(m) {
+        if (!m || typeof m !== 'object') return '';
+        return m.id || m._id || '';
+    }
     
     // Carregar dados ao mudar de separador
     document.addEventListener('DOMContentLoaded', function() {
@@ -1892,9 +1901,11 @@ setTimeout(() => {
             municipalitiesById = {};
             municipalitiesByName = {};
             municipalities.forEach(m => {
-                municipalityMap[m.name] = m;
-                if (m.id) municipalitiesById[m.id] = m;
-                municipalitiesByName[m.name] = m;
+                const nameKey = normalizeMunicipalityName(m.name);
+                const resolvedId = resolveMunicipalityId(m);
+                municipalityMap[nameKey] = m;
+                if (resolvedId) municipalitiesById[resolvedId] = m;
+                municipalitiesByName[nameKey] = m;
             });
             
             // Calcular elevadores por município
@@ -1903,10 +1914,10 @@ setTimeout(() => {
             lifts.forEach(lift => {
                 if (lift.municipality && lift.municipality.name) {
                     const name = lift.municipality.name;
-                    const current = municipalityMap[name] || {};
+                    const current = municipalityMap[normalizeMunicipalityName(name)] || {};
                     if (!municipalityStats[name]) {
                         municipalityStats[name] = {
-                            id: current.id || lift.municipality.id || '',
+                            id: resolveMunicipalityId(current) || resolveMunicipalityId(lift.municipality) || '',
                             name: name,
                             distrito: current.distrito || lift.municipality.distrito || 'N/A',
                             distance: current.distance_km || lift.municipality.distance_km || 0,
@@ -1952,7 +1963,7 @@ setTimeout(() => {
                             </small>
                         </td>
                         <td>
-                            <button class="btn btn-sm btn-outline-primary" onclick="openMunicipalityEditModal('${mun.id || ''}','${(mun.name || '').replace(/'/g, "\\'")}')" ${mun.id ? '' : 'disabled'} title="Editar contactos do município">
+                            <button class="btn btn-sm btn-outline-primary" onclick="openMunicipalityEditModal('${encodeURIComponent(mun.id || '')}','${encodeURIComponent(mun.name || '')}')" title="Editar contactos do município">
                                 <i class="fas fa-edit"></i>
                             </button>
                         </td>
@@ -2044,14 +2055,16 @@ setTimeout(() => {
     };
 
     window.openMunicipalityEditModal = function(municipalityId, municipalityName) {
-        const m = (municipalityId && municipalitiesById[municipalityId]) || municipalitiesByName[municipalityName] || null;
+        const decodedId = decodeURIComponent(municipalityId || '');
+        const decodedName = decodeURIComponent(municipalityName || '');
+        const m = municipalitiesByName[normalizeMunicipalityName(decodedName)] || (decodedId && municipalitiesById[decodedId]) || null;
         if (!m) {
             showError('Município não encontrado');
             return;
         }
 
-        document.getElementById('editMunicipalityId').value = m.id || municipalityId || '';
-        document.getElementById('editMunicipalityName').value = m.name || municipalityName || '';
+        document.getElementById('editMunicipalityId').value = resolveMunicipalityId(m) || decodedId || '';
+        document.getElementById('editMunicipalityName').value = m.name || decodedName || '';
         document.getElementById('editMunicipalityEmail').value = m.email || '';
         document.getElementById('editMunicipalityPhone').value = m.phone || '';
         document.getElementById('editMunicipalityWebsite').value = m.website || '';

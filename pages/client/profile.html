@@ -761,7 +761,7 @@
                                                         </div>
                                                         <div class="info-content">
                                                             <div class="info-label">Nome completo</div>
-                                                            <div class="info-value" id="infoFullName">Cliente Exemplo</div>
+                                                            <div class="info-value" id="infoFullName">—</div>
                                                         </div>
                                                     </div>
                                                     <div class="info-item">
@@ -779,7 +779,7 @@
                                                         </div>
                                                         <div class="info-content">
                                                             <div class="info-label">Telefone</div>
-                                                            <div class="info-value" id="infoPhone">+351 912 000 000</div>
+                                                            <div class="info-value" id="infoPhone">—</div>
                                                         </div>
                                                     </div>
                                                     <div class="info-item">
@@ -788,7 +788,7 @@
                                                         </div>
                                                         <div class="info-content">
                                                             <div class="info-label">Empresa</div>
-                                                            <div class="info-value" id="infoCompany">Empresa Exemplo</div>
+                                                            <div class="info-value" id="infoCompany">—</div>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -800,7 +800,7 @@
                                                         </div>
                                                         <div class="info-content">
                                                             <div class="info-label">Morada</div>
-                                                            <div class="info-value" id="infoAddress">Lisboa, Rua Exemplo, 123</div>
+                                                            <div class="info-value" id="infoAddress">—</div>
                                                         </div>
                                                     </div>
                                                     <div class="info-item">
@@ -809,7 +809,7 @@
                                                         </div>
                                                         <div class="info-content">
                                                             <div class="info-label">Cidade</div>
-                                                            <div class="info-value" id="infoCity">Lisboa</div>
+                                                            <div class="info-value" id="infoCity">—</div>
                                                         </div>
                                                     </div>
                                                     <div class="info-item">
@@ -818,7 +818,7 @@
                                                         </div>
                                                         <div class="info-content">
                                                             <div class="info-label">Distrito</div>
-                                                            <div class="info-value" id="infoRegion">Distrito de Lisboa</div>
+                                                            <div class="info-value" id="infoRegion">—</div>
                                                         </div>
                                                     </div>
                                                     <div class="info-item">
@@ -827,7 +827,7 @@
                                                         </div>
                                                         <div class="info-content">
                                                             <div class="info-label">Código postal</div>
-                                                            <div class="info-value" id="infoZip">01001</div>
+                                                            <div class="info-value" id="infoZip">—</div>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -984,13 +984,21 @@
     <script src="../../plugins/bootstrap/bootstrap.bundle.min.js"></script>
     <script src="../../plugins/adminlte/adminlte.min.js"></script>
 
-<!-- 👤 Carregador de perfil da API -->
-<script src="../../assets/js/profile-loader.js"></script>
-
-<!-- 👤 Carregador de perfil do cliente (específico) -->
-<script src="../../assets/js/client-profile-loader.js"></script>
-
     <script>
+        function getClientToken() {
+            return sessionStorage.getItem('liftmanager_jwt')
+                || localStorage.getItem('liftmanager_jwt')
+                || (typeof AuthManager !== 'undefined' ? (AuthManager.getAuthToken() || '') : '')
+                || '';
+        }
+
+        function extractUserPayload(raw) {
+            if (!raw || typeof raw !== 'object') return null;
+            if (raw.data && raw.data.user && typeof raw.data.user === 'object') return raw.data.user;
+            if (raw.user && typeof raw.user === 'object') return raw.user;
+            return raw;
+        }
+
         function logout() {
             if (confirm('Tem a certeza que quer sair do sistema?')) {
                 if (typeof AuthManager !== 'undefined') {
@@ -1029,7 +1037,7 @@
 
         async function loadUserProfile() {
             try {
-                const token = sessionStorage.getItem('liftmanager_jwt') || localStorage.getItem('liftmanager_jwt') || localStorage.getItem('token');
+                const token = getClientToken();
                 if (!token) {
                     console.error('❌ No token, redirecting to login');
                     window.location.href = '/pages/auth/login.html';
@@ -1044,7 +1052,20 @@
                 });
 
                 if (response.ok) {
-                    const userData = await response.json();
+                    const apiData = await response.json();
+                    const userData = extractUserPayload(apiData);
+                    if (!userData || typeof userData !== 'object') {
+                        throw new Error('Payload de perfil inválido');
+                    }
+                    if (String(userData.role || '').toLowerCase() !== 'client') {
+                        console.warn('⚠️ Non-client profile data on client page, redirecting by role');
+                        if (typeof AuthManager !== 'undefined') {
+                            AuthManager.checkAuthOnPageLoad();
+                        } else {
+                            window.location.href = '/pages/auth/login.html';
+                        }
+                        return;
+                    }
                     console.log('✅ User profile loaded from API');
                     
                     // Deберігаexisteмо в localStorage para кешування
@@ -1059,12 +1080,22 @@
                     }
                 } else {
                     console.warn('⚠️ API /api/users/me failed, using localStorage fallback');
-                    const userData = JSON.parse(localStorage.getItem('userData')) || {};
+                    const cachedRaw = JSON.parse(localStorage.getItem('userData')) || {};
+                    const userData = extractUserPayload(cachedRaw) || {};
+                    if (String(userData.role || '').toLowerCase() !== 'client') {
+                        window.location.href = '/pages/auth/login.html';
+                        return;
+                    }
                     fillProfileUI(userData);
                 }
             } catch (error) {
                 console.error('❌ Error loading user profile:', error);
-                const userData = JSON.parse(localStorage.getItem('userData')) || {};
+                const cachedRaw = JSON.parse(localStorage.getItem('userData')) || {};
+                const userData = extractUserPayload(cachedRaw) || {};
+                if (String(userData.role || '').toLowerCase() !== 'client') {
+                    window.location.href = '/pages/auth/login.html';
+                    return;
+                }
                 fillProfileUI(userData);
             }
         }
@@ -1164,7 +1195,7 @@
                 }
                 
                 async saveProfile() {
-                    const token = sessionStorage.getItem('liftmanager_jwt') || localStorage.getItem('liftmanager_jwt') || localStorage.getItem('token');
+                    const token = getClientToken();
                     const body = {
                         firstName: $('#editFirstName').val().trim(),
                         lastName:  $('#editLastName').val().trim(),
@@ -1181,7 +1212,8 @@
                             body: JSON.stringify(body)
                         });
                         if (res.ok) {
-                            const updated = await res.json();
+                            const updatedRaw = await res.json();
+                            const updated = extractUserPayload(updatedRaw) || {};
                             localStorage.setItem('userData', JSON.stringify(updated));
                             fillProfileUI(updated);
                             $('#editProfileModal').modal('hide');
@@ -1207,7 +1239,7 @@
                     // Upload para o servidor
                     const formData = new FormData();
                     formData.append('avatar', file);
-                    const token = localStorage.getItem('liftmanager_jwt') || sessionStorage.getItem('liftmanager_jwt') || localStorage.getItem('authToken') || '';
+                    const token = getClientToken();
                     try {
                         const res = await fetch('/api/users/avatar', { method: 'POST', headers: { 'Authorization': `Bearer ${token}` }, body: formData });
                         const data = await res.json();
@@ -1245,7 +1277,7 @@
                 const formData = new FormData();
                 formData.append('avatar', file);
                 try {
-                    const token = localStorage.getItem('liftmanager_jwt') || sessionStorage.getItem('liftmanager_jwt') || localStorage.getItem('token');
+                    const token = getClientToken();
                     const res = await fetch('/api/users/avatar', { method: 'POST', headers: { 'Authorization': `Bearer ${token}` }, body: formData });
                     if (res.ok) { showSettingsToast('Avatar atualizado', 'success'); }
                     else { showSettingsToast('Não foi possível carregar o avatar', 'error'); }
@@ -1262,7 +1294,7 @@
                 if (newPwd !== confirm) { showSettingsToast('As palavras-passe não coincidem', 'error'); return; }
                 const btn = $('#profileChangePwdBtn').prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-2"></i>A guardar...');
                 try {
-                    const token = localStorage.getItem('liftmanager_jwt') || sessionStorage.getItem('liftmanager_jwt') || localStorage.getItem('token');
+                    const token = getClientToken();
                     const res = await fetch('/api/auth/change-password', { method: 'POST', headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ currentPassword: current, newPassword: newPwd }) });
                     if (res.ok) {
                         showSettingsToast('Palauma-passe alterada com sucesso', 'success');
