@@ -629,11 +629,113 @@
 <script src="../../plugins/bootstrap/bootstrap.bundle.min.js"></script>
 <script src="../../plugins/adminlte/adminlte.min.js"></script>
 <script src="../../plugins/chart.js/chart.umd.min.js"></script>
-<script src="../../assets/js/predictive-maintenance.js"></script>
+<script src="../../assets/js/predictive-maintenance.js?v=20260602c"></script>
 
 <script>
 let predictiveSystem;
 let clientLifts = [];
+
+function getClientToken() {
+    if (typeof AuthManager !== 'undefined' && AuthManager.getAuthToken) {
+        const token = AuthManager.getAuthToken();
+        if (token) return token;
+    }
+
+    return (
+        sessionStorage.getItem('liftmanager_jwt') ||
+        localStorage.getItem('liftmanager_jwt') ||
+        localStorage.getItem('authToken') ||
+        localStorage.getItem('token') ||
+        ''
+    );
+}
+
+function getStoredUser() {
+    try {
+        const sessionUser = JSON.parse(sessionStorage.getItem('user') || 'null');
+        if (sessionUser && typeof sessionUser === 'object') {
+            return sessionUser.data?.user || sessionUser.user || sessionUser;
+        }
+    } catch (_) {}
+
+    try {
+        const localUser = JSON.parse(localStorage.getItem('user') || 'null');
+        if (localUser && typeof localUser === 'object') {
+            return localUser.data?.user || localUser.user || localUser;
+        }
+    } catch (_) {}
+
+    return {};
+}
+
+function normalizeId(value) {
+    if (!value) return '';
+    if (typeof value === 'string') return value;
+    if (typeof value === 'object') {
+        if (value.$oid) return String(value.$oid);
+        if (value._id) return normalizeId(value._id);
+        if (typeof value.toString === 'function') {
+            const out = value.toString();
+            if (out && out !== '[object Object]') return out;
+        }
+    }
+    return String(value);
+}
+
+function isSameId(a, b) {
+    const aa = normalizeId(a);
+    const bb = normalizeId(b);
+    return Boolean(aa) && Boolean(bb) && aa === bb;
+}
+
+async function waitForPredictiveInitialization(timeoutMs = 15000) {
+    const start = Date.now();
+    while (Date.now() - start < timeoutMs) {
+        if (
+            predictiveSystem &&
+            predictiveSystem.isInitialized &&
+            predictiveSystem.maintenanceData instanceof Map
+        ) {
+            return true;
+        }
+        await new Promise(resolve => setTimeout(resolve, 250));
+    }
+    return false;
+}
+
+function getPredictionForLift(lift) {
+    if (!predictiveSystem || !predictiveSystem.maintenanceData) return null;
+
+    const liftId = normalizeId((window.safeId ? window.safeId(lift) : null) || lift?._id || lift?.id);
+    if (!liftId) return null;
+
+    let prediction = predictiveSystem.maintenanceData.get(liftId);
+    if (prediction) return prediction;
+
+    for (const [key, value] of predictiveSystem.maintenanceData.entries()) {
+        if (isSameId(key, liftId) || isSameId(value?.liftId, liftId)) {
+            return value;
+        }
+    }
+
+    if (typeof predictiveSystem.analyzeElevatorCondition === 'function') {
+        try {
+            predictiveSystem.analyzeElevatorCondition(lift);
+            prediction = predictiveSystem.maintenanceData.get(liftId);
+            if (prediction) return prediction;
+
+            for (const [key, value] of predictiveSystem.maintenanceData.entries()) {
+                if (isSameId(key, liftId) || isSameId(value?.liftId, liftId)) {
+                    return value;
+                }
+            }
+        } catch (error) {
+            console.warn('⚠️ Falha ao analisar elevador para previsão:', liftId, error);
+        }
+    }
+
+    return null;
+}
 
 // Inicialização
 $(document).ready(async function() {
@@ -644,9 +746,9 @@ $(document).ready(async function() {
     
     // Ініціалізуexisteмо sistema прогнозування
     predictiveSystem = new PredictiveMaintenanceSystem();
-    
-    // À espera deмо a carregar dados
-    await new Promise(resolve => setTimeout(resolve, 2000));
+
+    // Esperar inicialização real (em vez de timeout fixo)
+    await waitForPredictiveInitialization();
     
     // Deаванeжуexisteмо elevadores cliente
     await loadClientLifts();
@@ -661,7 +763,7 @@ $(document).ready(async function() {
 
 // A carregar інформації do utilizador
 function loadUserInfo() {
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    const user = getStoredUser();
     if (user.firstName && user.lastName) {
         $('#userName').text(`${user.firstName} ${user.lastName}`);
     }
@@ -670,12 +772,10 @@ function loadUserInfo() {
 // A carregar de elevadores cliente
 async function loadClientLifts() {
     try {
-        const user = JSON.parse(localStorage.getItem('user') || '{}');
+        const user = getStoredUser();
         console.log('👤 Atual utilizador:', user);
-        
-        const token = (typeof AuthManager !== 'undefined' && AuthManager.getAuthToken)
-            ? AuthManager.getAuthToken()
-            : (sessionStorage.getItem('liftmanager_jwt') || localStorage.getItem('liftmanager_jwt') || localStorage.getItem('authToken') || localStorage.getItem('token'));
+
+        const token = getClientToken();
         const response = await fetch('/api/lifts', {
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -689,13 +789,10 @@ async function loadClientLifts() {
             
             console.log('📊 Total de elevadores desde API:', allLifts.length);
             console.log('📋 Exemplo de elevador:', allLifts[0]);
-            
-            // Filtroуexisteмо apenas elevadores цього cliente
-            clientLifts = allLifts.filter(lift => {
-                const liftClient = lift.client?._id || lift.client;
-                const userId = user._id || user.id;
-                return liftClient === userId || String(liftClient) === String(userId);
-            });
+
+            // This page is client-only and /api/lifts is already scoped by backend auth.
+            // Never re-filter here, because stale local user role/id can incorrectly drop all lifts.
+            clientLifts = allLifts;
             
             console.log(`✅ Elevadores do cliente (após filtroації):`, clientLifts.length);
             console.log('📋 Dados dos elevadores do cliente:', clientLifts);
@@ -725,9 +822,8 @@ function displayPredictions() {
     let predictions = [];
     
     clientLifts.forEach(lift => {
-        const liftId = lift._id || lift.id;
-        const predictionData = predictiveSystem.maintenanceData.get(liftId);
-        
+        const predictionData = getPredictionForLift(lift);
+
         if (predictionData) {
             predictions.push({
                 lift: lift,
@@ -1024,7 +1120,11 @@ function getRiskLabel(risk) {
 }
 
 function refreshPredictions() {
-    location.reload();
+    loadClientLifts().then(() => {
+        displayPredictions();
+    }).catch(() => {
+        location.reload();
+    });
 }
 
 function viewLiftDetails(liftId) {

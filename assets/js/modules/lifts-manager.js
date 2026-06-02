@@ -741,7 +741,7 @@ class LiftsManager {
                 : 'Data desconhecida';
             const status = report.status || 'completed';
             const notes = this._sanitizeReportText(report.comments || report.findings || report.notes || '');
-            const inspector = this._sanitizeReportText(report.inspectorName || report.inspector || '');
+            const inspector = this._pickReportPersonName(report);
             const fileUrl = report.fileUrl || report.reportFile || report.file || null;
 
             const statusBadge = (status === 'passed' || status === 'completed')
@@ -867,7 +867,7 @@ class LiftsManager {
             ? new Date(report.inspectionDate || report.date).toLocaleDateString('pt-PT', { year: 'numeric', month: 'long', day: 'numeric' })
             : 'Data desconhecida';
         const notes = this._sanitizeReportText(report.comments || report.findings || report.notes || '');
-        const inspector = this._sanitizeReportText(report.inspectorName || report.inspector || '');
+        const inspector = this._pickReportPersonName(report);
         const fileUrl = report.fileUrl || report.reportFile || report.file || null;
         const status = report.status || 'completed';
         const statusBadge = (status === 'passed' || status === 'completed')
@@ -1022,7 +1022,7 @@ class LiftsManager {
             <h2>Relatório: ${typeLabel}</h2>
             <table>
                 <tr><td><b>Data:</b></td><td>${date}</td></tr>
-                <tr><td><b>Inspetor:</b></td><td>${report.inspectorName || 'Não especificado'}</td></tr>
+                <tr><td><b>Inspetor:</b></td><td>${this._pickReportPersonName(report) || 'Não especificado'}</td></tr>
                 <tr><td><b>Estado:</b></td><td>${report.status || 'completed'}</td></tr>
                 <tr><td><b>Comentários:</b></td><td>${notes || '—'}</td></tr>
             </table>
@@ -1043,6 +1043,49 @@ class LiftsManager {
             .replace(/\s+-\s+-\s+/g, ' - ')
             .replace(/\s{2,}/g, ' ')
             .trim();
+    }
+
+    _formatPersonName(value) {
+        const clean = this._sanitizeReportText(value || '');
+        if (!clean) return '';
+
+        let text = clean.replace(/\s+/g, ' ').trim();
+
+        // Fix glued role + name values like "TécnicoCustóias".
+        text = text
+            .replace(/\b(T[eé]cnico|Inspector)([A-ZÁÀÂÃÉÊÍÓÔÕÚÇ])/g, '$1 $2')
+            .replace(/\b(T[eé]cnico|Inspector)\s*:\s*/g, '$1 ')
+            .replace(/^\s*(T[eé]cnico|Inspector)\s+/i, '')
+            .trim();
+
+        // Normalize common typo from legacy imports.
+        text = text.replace(/\bCust[oó]ias\b/gi, 'Custódias');
+
+        return text;
+    }
+
+    _pickReportPersonName(report) {
+        const candidates = [
+            report?.inspectorName,
+            report?.technicianName,
+            report?.inspector,
+            report?.technician,
+            report?.technician?.name,
+            `${report?.technician?.firstName || ''} ${report?.technician?.lastName || ''}`,
+            report?.assignedTo?.name,
+            `${report?.assignedTo?.firstName || ''} ${report?.assignedTo?.lastName || ''}`
+        ];
+
+        const names = candidates
+            .map(candidate => this._formatPersonName(candidate))
+            .filter(Boolean)
+            .filter(name => name.toLowerCase() !== 'unknown');
+
+        if (!names.length) return '';
+
+        // Prefer full names when available (e.g., "Rafael Fernandes" over "Custódias").
+        const fullName = names.find(name => name.split(' ').filter(Boolean).length >= 2);
+        return fullName || names[0];
     }
 
     _normalizeText(value) {
@@ -1639,11 +1682,33 @@ class LiftsManager {
                 return clean.length > max ? `${clean.slice(0, max).trim()}...` : clean;
             };
 
+            const formatHistoryPerson = (entry) => {
+                const raw = this._sanitizeReportText(entry?.technician || entry?.inspector || '-');
+                if (!raw || raw === '-') return '-';
+
+                let text = raw.replace(/\s+/g, ' ').trim();
+
+                // Fix glued labels like "TécnicoCustóias" or "InspectorJoão".
+                text = text
+                    .replace(/\b(T[eé]cnico|Inspector)([A-ZÁÀÂÃÉÊÍÓÔÕÚÇ])/g, '$1 $2')
+                    .replace(/\b(T[eé]cnico|Inspector)\s*:\s*/g, '$1 ')
+                    .trim();
+
+                // Keep only the name and remove generic role prefixes.
+                text = text.replace(/^\s*(T[eé]cnico|Inspector)\s+/i, '').trim();
+
+                // Normalize common typo seen in imported legacy inspection names.
+                text = text.replace(/\bCust[oó]ias\b/gi, 'Custódias');
+
+                return text || '-';
+            };
+
             const renderHistoryCards = (entries = []) => {
                 return entries.map(entry => {
                     const status = normalizeHistoryStatus(entry);
                     const typeLabel = normalizeHistoryType(entry);
-                    const person = this._sanitizeReportText(entry?.technician || entry?.inspector || '-');
+                    const person = formatHistoryPerson(entry);
+                    const personRole = isInspectionEntry(entry) ? 'Inspector' : 'Técnico';
                     const date = this.formatDate(entry?.date);
                     const inspectionEntry = isInspectionEntry(entry);
                     const validUntil = entry?.validUntil ? this.formatDate(entry.validUntil) : '';
@@ -1658,7 +1723,7 @@ class LiftsManager {
                                 </div>
                                 <span class="badge badge-${status.cls}">${status.label}</span>
                             </div>
-                            <div class="mt-2 text-muted small"><i class="fas fa-user mr-1"></i>${person || '-'}</div>
+                            <div class="mt-2 text-muted small"><i class="fas fa-user mr-1"></i><strong>${personRole}:</strong> ${person || '-'}</div>
                             ${inspectionEntry
                                 ? `${validUntil ? `<div class="mt-1 text-muted small"><i class="far fa-clock mr-1"></i>Válido até: ${validUntil}</div>` : ''}`
                                 : `${shortDescription ? `<div class="mt-2 small" style="line-height:1.35;">${shortDescription}</div>` : ''}`
@@ -1686,8 +1751,12 @@ class LiftsManager {
                 }
             }
 
+            const liftLabel = lift.municipalNumber
+                ? `${lift.municipalNumber} — ${lift.model || lift.name || 'Elevador'}`
+                : (lift.model || lift.name || 'Elevador');
+
             Swal.fire({
-                title: `Histórico: ${lift.model || lift.name || 'Elevador'}`,
+                title: `Histórico: ${liftLabel}`,
                 html: historyHtml,
                 width: '800px',
                 confirmButtonText: 'Fechar'

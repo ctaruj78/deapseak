@@ -3587,12 +3587,27 @@ app.get('/api/lifts/:id/history', authenticateToken, async (req, res) => {
             }
         }
 
+        const pickBestTechnicianName = (...candidates) => {
+            for (const candidate of candidates) {
+                const value = String(candidate || '').replace(/\s+/g, ' ').trim();
+                if (!value) continue;
+                if (value.toLowerCase() === 'unknown') continue;
+                return value;
+            }
+            return '';
+        };
+
         // Збираємо inspectionHistory з самого ліфта
         const inspections = (lift.inspectionHistory || []).map(entry => ({
             date: entry.date,
             type: entry.reportType || 'inspection',
             description: entry.notes || '',
-            technician: entry.inspector || '',
+            technician: pickBestTechnicianName(
+                entry.inspectorName,
+                entry.inspector,
+                entry.technicianName,
+                entry.technician
+            ),
             status: entry.status === 'passed' ? 'completed' : (entry.status === 'failed' ? 'failed' : 'conditional')
         }));
 
@@ -3606,7 +3621,15 @@ app.get('/api/lifts/:id/history', authenticateToken, async (req, res) => {
             date: req.completedAt || req.updatedAt || req.createdAt,
             type: req.type || req.requestType || 'maintenance',
             description: req.description || req.title || '',
-            technician: req.technicianName || '',
+            technician: pickBestTechnicianName(
+                req.technicianName,
+                req.technician?.name,
+                `${req.technician?.firstName || ''} ${req.technician?.lastName || ''}`,
+                req.assignedTo?.name,
+                `${req.assignedTo?.firstName || ''} ${req.assignedTo?.lastName || ''}`,
+                req.updatedByName,
+                req.updatedBy
+            ),
             status: 'completed'
         }));
 
@@ -7918,6 +7941,15 @@ You help with lift inspections, maintenance, regulations, and technical support.
 
 IMPORTANT: Respond ONLY in Portuguese (pt-PT). Do not use Ukrainian or any other language.
 
+POLÍTICA COMERCIAL E REPUTACIONAL (OBRIGATÓRIA):
+• Nunca difames, acuses ou descredibilizes marcas, fabricantes, concorrentes ou entidades específicas.
+• Evita linguagem categórica como "X faz sempre", "X prende o cliente", "X é ilegal".
+• Usa formulações condicionais e neutras: "em alguns casos", "pode ocorrer", "depende do contrato/solução técnica".
+• Não apresentes percentagens de poupança, desempenho ou risco sem fonte verificável e contexto.
+• Se o utilizador pedir comparação de marcas, responde com critérios técnicos e contratuais objetivos (interoperabilidade, SLA, peças, diagnóstico, custo total), sem juízos de valor.
+• Não dês aconselhamento jurídico definitivo; para temas legais, indica validação formal junto de DGEG/EIIE ou assessor jurídico.
+• Em matérias sensíveis, inclui uma nota breve: "Informação geral, sujeita a validação técnica e legal do caso concreto".
+
 Current user: ${username}
 Role: ${role}
 
@@ -9430,10 +9462,14 @@ app.post('/api/ai/guest-chat', async (req, res) => {
     - Responde sempre em Português Europeu (pt-PT), de forma clara e útil.
     - Máximo 220 palavras por resposta.
     - Quando aplicável, cita diploma/norma e artigo/cláusula.
+    - Mantém neutralidade comercial e reputacional: não difamar marcas/concorrentes e não fazer acusações categóricas.
+    - Evita promessas de poupança (%) sem fonte verificável; usa linguagem condicional ("pode", "em alguns casos").
+    - Em comparações, foca critérios técnicos objetivos (interoperabilidade, SLA, peças, diagnóstico, custo total).
     - Se o tema for livro de manutenção, explica primeiro DL 320/2002 (artigos sobre manutenção e registos) e pode complementar com NP EN 13015.
     - Se houver dúvida jurídica específica, recomenda validação formal junto da DGEG/EIIE.
     - NÃO afirmar que visitantes sem login têm acesso ao histórico completo do elevador.
     - Para QR sem autenticação, informar apenas: identificação básica do elevador + formulário de alerta (telefone e email obrigatórios).
+    - Em temas sensíveis, acrescenta: "Informação geral, sujeita a validação técnica e legal do caso concreto".
 
     Nota: Este utilizador é visitante (modo demonstração) — podes responder a questões gerais sobre elevadores, manutenção, normas e funcionamento do sistema FestLift.
 

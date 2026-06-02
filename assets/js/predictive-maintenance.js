@@ -546,10 +546,10 @@ class PredictiveMaintenanceSystem {
                     component: component,
                     action: 'immediate_inspection',
                     priority: 'critical',
-                    description: `⚠️ Негайна перевірка ${component} - високий ризик відмови`,
-                    reason: `Стан компонента: ${(data.condition * 100).toFixed(0)}%`,
+                    description: `⚠️ Verificação imediata de ${component} - risco elevado de falha`,
+                    reason: `Estado do componente: ${(data.condition * 100).toFixed(0)}%`,
                     estimatedCost: this.estimateMaintenanceCost(component, 'urgent'),
-                    timeframe: '1-3 дні'
+                    timeframe: '1-3 dias'
                 });
             } else if (data.riskLevel === 'medium') {
                 recommendations.push({
@@ -557,10 +557,10 @@ class PredictiveMaintenanceSystem {
                     component: component,
                     action: 'scheduled_maintenance',
                     priority: 'medium',
-                    description: `🔧 Manutenção planeada для ${component} - середній ризик`,
-                    reason: `Стан компонента: ${(data.condition * 100).toFixed(0)}%`,
+                    description: `🔧 Manutenção planeada para ${component} - risco moderado`,
+                    reason: `Estado do componente: ${(data.condition * 100).toFixed(0)}%`,
                     estimatedCost: this.estimateMaintenanceCost(component, 'preventive'),
-                    timeframe: '1-2 тижні'
+                    timeframe: '1-2 semanas'
                 });
             }
         });
@@ -578,10 +578,10 @@ class PredictiveMaintenanceSystem {
                 component: 'system',
                 action: 'full_assessment',
                 priority: 'medium',
-                description: '📊 Повна оцінка системи - ліфт старше 15 років',
-                reason: `Вік ліфта: ${condition.age.toFixed(1)} років`,
+                description: '📊 Avaliação completa do sistema - elevador com mais de 15 anos',
+                reason: `Idade do elevador: ${condition.age.toFixed(1)} anos`,
                 estimatedCost: 5000,
-                timeframe: '1 місяць'
+                timeframe: '1 mês'
             });
         }
         
@@ -595,10 +595,10 @@ class PredictiveMaintenanceSystem {
                 component: 'system',
                 action: 'overdue_inspection',
                 priority: 'critical',
-                description: '⏰ ПРОСТРОЧЕНА інспекція - більше року без перевірки',
-                reason: `Остання інспекція: ${Math.floor(daysSinceInspection)} днів atrás`,
+                description: '⏰ Inspeção em atraso - mais de um ano sem verificação',
+                reason: `Última inspeção: há ${Math.floor(daysSinceInspection)} dias`,
                 estimatedCost: 3000,
-                timeframe: 'НЕГАЙНО'
+                timeframe: 'IMEDIATO'
             });
         } else if (daysSinceInspection > 180) {
             recommendations.push({
@@ -606,10 +606,10 @@ class PredictiveMaintenanceSystem {
                 component: 'system',
                 action: 'upcoming_inspection',
                 priority: 'high',
-                description: '📅 Час планової інспекції - пройшло більше 6 місяців',
-                reason: `Остання інспекція: ${Math.floor(daysSinceInspection)} днів atrás`,
+                description: '📅 Momento de inspeção programada - passaram mais de 6 meses',
+                reason: `Última inspeção: há ${Math.floor(daysSinceInspection)} dias`,
                 estimatedCost: 2500,
-                timeframe: '1-2 тижні'
+                timeframe: '1-2 semanas'
             });
         }
         
@@ -620,10 +620,10 @@ class PredictiveMaintenanceSystem {
                 component: 'system',
                 action: 'risk_mitigation',
                 priority: 'critical',
-                description: '🚨 КРИТИЧНИЙ РИЗИК - необхідна комплексна перевірка',
-                reason: `Рівень ризику: ${(condition.failureRisk * 100).toFixed(0)}%`,
+                description: '🚨 RISCO CRÍTICO - necessária verificação completa',
+                reason: `Nível de risco: ${(condition.failureRisk * 100).toFixed(0)}%`,
                 estimatedCost: 8000,
-                timeframe: 'НЕГАЙНО'
+                timeframe: 'IMEDIATO'
             });
         }
         
@@ -662,10 +662,10 @@ class PredictiveMaintenanceSystem {
                     component: type,
                     action: 'root_cause_analysis',
                     priority: 'high',
-                    description: `🔬 Провести детальний аналіз - ${type} повторюється ${count} разів`,
-                    reason: `Виявлено повторювану проблему`,
+                    description: `🔬 Executar análise detalhada - ${type} repete-se ${count} vezes`,
+                    reason: 'Detetado problema recorrente',
                     estimatedCost: 4000,
-                    timeframe: '1 тиждень'
+                    timeframe: '1 semana'
                 });
             }
         });
@@ -681,10 +681,10 @@ class PredictiveMaintenanceSystem {
                 component: 'system',
                 action: 'preventive_overhaul',
                 priority: 'critical',
-                description: `⚡ Необхідний капітальний ремонт - ${emergencyCount} avariйних втручань за 2 anos`,
-                reason: `Занадто часті avariйні ситуації`,
+                description: `⚡ Necessária intervenção profunda - ${emergencyCount} ocorrências de avaria em 2 anos`,
+                reason: 'Frequência de avarias demasiado elevada',
                 estimatedCost: 25000,
-                timeframe: '1 місяць'
+                timeframe: '1 mês'
             });
         } else if (emergencyCount >= 2) {
             recommendations.push({
@@ -692,10 +692,10 @@ class PredictiveMaintenanceSystem {
                 component: 'system',
                 action: 'comprehensive_check',
                 priority: 'high',
-                description: `🔍 Комплексна діагностика - виявлено ${emergencyCount} avariї`,
-                reason: `Підвищена частота avariйних ситуацій`,
+                description: `🔍 Diagnóstico completo - detetadas ${emergencyCount} avarias`,
+                reason: 'Aumento da frequência de avarias',
                 estimatedCost: 6000,
-                timeframe: '2 тижні'
+                timeframe: '2 semanas'
             });
         }
         
@@ -711,10 +711,10 @@ class PredictiveMaintenanceSystem {
                     component: 'system',
                     action: 'maintenance_program',
                     priority: 'high',
-                    description: '📈 Впровадити посилену програму Manutenção - тренд погіршення стану',
-                    reason: `Частота проблем збільшилась на ${((recentPeriod.length / olderPeriod.length - 1) * 100).toFixed(0)}%`,
+                    description: '📈 Implementar programa de manutenção reforçada - tendência de degradação',
+                    reason: `A frequência de problemas aumentou ${((recentPeriod.length / olderPeriod.length - 1) * 100).toFixed(0)}%`,
                     estimatedCost: 12000,
-                    timeframe: '1 місяць'
+                    timeframe: '1 mês'
                 });
             }
         }
@@ -731,10 +731,10 @@ class PredictiveMaintenanceSystem {
                     component: 'system',
                     action: 'follow_up_inspection',
                     priority: 'critical',
-                    description: `🔴 Контрольна перевірка після критичної інспекції ${Math.floor(daysSince)} днів atrás`,
-                    reason: `Критична проблема потребує моніторингу`,
+                    description: `🔴 Verificação de seguimento após inspeção crítica (há ${Math.floor(daysSince)} dias)`,
+                    reason: 'Problema crítico requer monitorização',
                     estimatedCost: 3500,
-                    timeframe: '3-5 днів'
+                    timeframe: '3-5 dias'
                 });
             }
         }
