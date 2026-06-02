@@ -534,7 +534,7 @@
                 <!-- Definições (окремо внизу) -->
                 <li class="nav-header">DEFINIÇÕES</li>
                 <li class="nav-item">
-                    <a href="/pages/client/profile.html#settings" class="nav-link" id="nav-settings" onclick="setTimeout(()=>{ var t=document.getElementById('settings-tab'); if(t) t.click(); },100)">
+                    <a href="/pages/client/profile.html#settings" class="nav-link" id="nav-settings" onclick="setTimeout(()=>{ var t=document.getElementById('security-tab'); if(t) t.click(); },100)">
                         <i class="nav-icon fas fa-cog"></i>
                         <p>Definições</p>
                     </a>
@@ -581,6 +581,14 @@
         if (navLink) {
             navLink.classList.add('active');
         }
+    }
+
+    // Se abriu perfil com hash de definições, destacar item "Definições"
+    if (currentPage === 'profile' && (window.location.hash === '#settings' || window.location.hash === '#security')) {
+        const profileNav = document.getElementById('nav-profile');
+        const settingsNav = document.getElementById('nav-settings');
+        if (profileNav) profileNav.classList.remove('active');
+        if (settingsNav) settingsNav.classList.add('active');
     }
     
     // Carregar contadores desde a API
@@ -1332,9 +1340,9 @@
                 setTimeout(() => t.fadeOut(400, () => t.remove()), 3000);
             }
 
-            // Abrir вкладку Definições за hash
-            if (window.location.hash === '#settings') {
-                $('#settings-tab').tab('show');
+            // Abrir separador de Segurança via hash (compatível com #settings legado)
+            if (window.location.hash === '#settings' || window.location.hash === '#security') {
+                $('#security-tab').tab('show');
             }
         });
 
