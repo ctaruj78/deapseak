@@ -23,21 +23,119 @@ const uploadOrcFoto = multer({
     }
 });
 
+function normalizeText(value = '') {
+    return String(value || '')
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9/\s-]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+}
+
+function normalizeMunicipal(value = '') {
+    return String(value || '').replace(/\s+/g, '').toLowerCase();
+}
+
+function extractMunicipalCandidates(text = '') {
+    const matches = String(text || '').match(/\b\d{3,6}\/\d{2,6}\b/g) || [];
+    return [...new Set(matches.map(normalizeMunicipal))];
+}
+
+function liftAddressToString(lift) {
+    const addr = lift?.address || {};
+    if (typeof addr === 'string') return addr;
+    return [addr.street, addr.zipCode, addr.city].filter(Boolean).join(', ');
+}
+
+function scoreLiftForOrcamento(orcamento, lift) {
+    let score = 0;
+
+    const liftMunicipal = normalizeMunicipal(lift.municipalNumber || '');
+    const textPool = [
+        orcamento?.cliente?.morada,
+        orcamento?.liftAddress,
+        orcamento?.notas,
+        ...(Array.isArray(orcamento?.servicos) ? orcamento.servicos.map(s => s?.descricao) : [])
+    ].filter(Boolean).join(' | ');
+
+    const municipalCandidates = extractMunicipalCandidates(textPool);
+    if (liftMunicipal && municipalCandidates.includes(liftMunicipal)) {
+        score += 120;
+    }
+
+    const liftStreet = normalizeText(lift?.address?.street || '');
+    const cliAddress = normalizeText(orcamento?.cliente?.morada || '');
+    const liftAddress = normalizeText(orcamento?.liftAddress || '');
+    if (liftStreet && cliAddress && (cliAddress.includes(liftStreet) || liftStreet.includes(cliAddress))) {
+        score += 70;
+    }
+    if (liftStreet && liftAddress && (liftAddress.includes(liftStreet) || liftStreet.includes(liftAddress))) {
+        score += 85;
+    }
+
+    const liftZip = normalizeText(lift?.address?.zipCode || '');
+    if (liftZip && (cliAddress.includes(liftZip) || liftAddress.includes(liftZip))) {
+        score += 20;
+    }
+
+    return score;
+}
+
+async function detectarLiftPorOrcamento(orcamento) {
+    try {
+        const db = mongoose.connection.db;
+        const email = (orcamento?.cliente?.email || '').toLowerCase();
+
+        let lifts = [];
+        if (email) {
+            lifts = await db.collection('lifts').find({ clientEmail: email }).toArray();
+        }
+        if (!lifts.length) {
+            lifts = await db.collection('lifts').find({}).toArray();
+        }
+
+        if (!lifts.length) return null;
+
+        const scored = lifts
+            .map(lift => ({
+                lift,
+                score: scoreLiftForOrcamento(orcamento, lift)
+            }))
+            .sort((a, b) => b.score - a.score);
+
+        const best = scored[0];
+        const second = scored[1];
+        if (!best || best.score < 80) return null;
+        if (second && best.score - second.score < 20) return null;
+
+        return {
+            liftId: best.lift._id,
+            liftAddress: liftAddressToString(best.lift),
+            municipalNumber: best.lift.municipalNumber || null
+        };
+    } catch (e) {
+        console.warn('⚠️ detectarLiftPorOrcamento error:', e.message);
+        return null;
+    }
+}
+
 // Tentar encontrar lift pela morada do cliente
 async function detectarLiftPorMorada(morada) {
     if (!morada) return null;
     try {
         const db = mongoose.connection.db;
-        const moradaNorm = morada.toLowerCase().trim();
+        const moradaNorm = normalizeText(morada);
         const lifts = await db.collection('lifts').find({}).toArray();
         for (const lift of lifts) {
-            const addr = lift.address || {};
-            const parts = [addr.street, addr.zipCode, addr.city].filter(Boolean);
-            const addrStr = (typeof addr === 'string' ? addr : parts.join(', ')).toLowerCase();
-            if (addrStr && moradaNorm.includes(addrStr.split(',')[0].trim()) || addrStr.includes(moradaNorm.split(',')[0].trim())) {
+            const addrStr = normalizeText(liftAddressToString(lift));
+            const street = normalizeText(lift?.address?.street || '');
+            if (!addrStr) continue;
+
+            if ((street && moradaNorm.includes(street)) || addrStr.includes(moradaNorm) || moradaNorm.includes(addrStr)) {
                 return {
                     liftId: lift._id,
-                    liftAddress: typeof addr === 'string' ? addr : parts.join(', ')
+                    liftAddress: liftAddressToString(lift)
                 };
             }
         }
@@ -406,6 +504,26 @@ router.get('/my', authenticate, authorizeRoles('client'), async (req, res) => {
         })
             .sort({ data: -1 })
             .select('-emailsEnviados -pdfPath');
+
+        // Re-vinculação automática para registos antigos sem liftId
+        for (const orcamento of orcamentos) {
+            if (orcamento.liftId) continue;
+
+            const detected = await detectarLiftPorOrcamento(orcamento);
+            if (!detected) continue;
+
+            orcamento.liftId = detected.liftId;
+            orcamento.liftAddress = detected.liftAddress || orcamento.liftAddress || null;
+
+            const existingLifts = Array.isArray(orcamento.lifts) ? orcamento.lifts : [];
+            const hasDetected = existingLifts.some(item => String(item?.liftId || item) === String(detected.liftId));
+            if (!hasDetected) {
+                orcamento.lifts = [...existingLifts, detected.liftId];
+            }
+
+            await orcamento.save();
+            console.log(`🔧 Auto-link orçamento ${orcamento.numero} → elevador ${detected.municipalNumber || detected.liftId}`);
+        }
 
         res.json({ success: true, data: orcamentos });
     } catch (error) {

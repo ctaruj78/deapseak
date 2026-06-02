@@ -70,6 +70,30 @@
             padding: 60px 20px;
             color: #6c757d;
         }
+
+        .ai-knowledge-banner {
+            border-left: 4px solid #17a2b8;
+            background: linear-gradient(90deg, #e8f8ff 0%, #f5fbff 100%);
+        }
+
+        .article-item {
+            background: #ffffff;
+            border: 1px solid #e6e9ef;
+            border-radius: 6px;
+            padding: 10px;
+            margin-bottom: 8px;
+        }
+
+        .article-title {
+            font-weight: 700;
+            color: #2d3a4a;
+        }
+
+        .section-subtitle {
+            font-weight: 700;
+            margin: 16px 0 8px;
+            color: #1f2d3d;
+        }
     </style>
 </head>
 <body class="hold-transition sidebar-mini" data-required-role="client">
@@ -395,6 +419,10 @@
                 <!-- Search Bar -->
                 <div class="row mb-3">
                     <div class="col-md-12">
+                        <div class="alert ai-knowledge-banner mb-3">
+                            <h5 class="mb-1"><i class="fas fa-magic"></i> Assistente AI com base legal completa</h5>
+                            <p class="mb-0">O Assistente AI está preparado para responder artigo por artigo e ponto por ponto de cada norma disponível nesta base. Basta perguntar exatamente o que precisa saber.</p>
+                        </div>
                         <div class="card">
                             <div class="card-body">
                                 <div class="input-group">
@@ -500,14 +528,16 @@
 <script src="../../plugins/bootstrap/bootstrap.bundle.min.js"></script>
 <script src="../../plugins/adminlte/adminlte.min.js"></script>
 <script src="../../assets/js/auth.js"></script>
-<script src="../../assets/js/modules/regulations-ai-integration.js"></script>
+<script src="../../assets/js/modules/regulations-ai-integration.js?v=20260602b"></script>
 
 <script>
 let regulationsAI;
 let allRegulations = [];
 let currentCategory = 'all';
+let localRegulations = [];
+let localRegulationsByKey = new Map();
 
-$(document).ready(function() {
+$(document).ready(async function() {
     // Inicialização
     regulationsAI = new RegulationsAI();
     
@@ -515,6 +545,9 @@ $(document).ready(function() {
     const userData = JSON.parse(localStorage.getItem('userData')) || {};
     if (userData.firstName) {
     }
+
+    // Carrega base local completa para enriquecer detalhes de cada lei
+    await loadLocalRegulationsDataset();
     
     // Descarregar todos documentoи
     loadAllRegulations();
@@ -533,7 +566,7 @@ async function loadAllRegulations() {
         const data = await res.json();
         
         if (data.success) {
-            allRegulations = data.data;
+            allRegulations = (data.data || []).map(reg => enrichWithLocalRegulation(reg));
             displayRegulations(allRegulations);
         } else {
             showError('Erro ao carregar documentação');
@@ -542,6 +575,86 @@ async function loadAllRegulations() {
         console.error('Erro:', error);
         showError('Erro de conexão');
     }
+}
+
+async function loadLocalRegulationsDataset() {
+    try {
+        const res = await fetch('/data/portugal-lift-regulations.json');
+        if (!res.ok) return;
+        const dataset = await res.json();
+        localRegulations = Array.isArray(dataset.regulations) ? dataset.regulations : [];
+        localRegulationsByKey = new Map();
+        localRegulations.forEach(reg => {
+            buildRegulationKeys(reg).forEach(k => localRegulationsByKey.set(k, reg));
+        });
+    } catch (error) {
+        console.warn('Base local de regulamentos não disponível:', error);
+    }
+}
+
+function normalizeRegulationKey(value) {
+    return String(value || '')
+        .toLowerCase()
+        .replace(/\s+/g, '')
+        .replace(/[\n\r\t]/g, '')
+        .replace(/[^a-z0-9]/g, '');
+}
+
+function buildRegulationKeys(reg) {
+    const raw = [
+        reg?.id,
+        reg?.code,
+        reg?.number,
+        reg?.title,
+        reg?.titleUA,
+        reg?.subtitle
+    ].filter(Boolean);
+
+    const keys = new Set();
+    raw.forEach(v => {
+        const k = normalizeRegulationKey(v);
+        if (k) keys.add(k);
+    });
+    return keys;
+}
+
+function findLocalRegulation(regOrCode) {
+    const directKey = normalizeRegulationKey(regOrCode);
+    if (directKey && localRegulationsByKey.has(directKey)) {
+        return localRegulationsByKey.get(directKey);
+    }
+
+    if (typeof regOrCode === 'object' && regOrCode) {
+        for (const key of buildRegulationKeys(regOrCode)) {
+            if (localRegulationsByKey.has(key)) return localRegulationsByKey.get(key);
+        }
+    }
+
+    return null;
+}
+
+function enrichWithLocalRegulation(reg) {
+    const local = findLocalRegulation(reg);
+    if (!local) return reg;
+
+    const apiPoints = reg.inspection_points || reg.requirements || [];
+    const localPoints = local.inspection_points || local.requirements || [];
+    const apiArticles = extractAllArticles(reg);
+    const localArticles = extractAllArticles(local);
+
+    return {
+        ...local,
+        ...reg,
+        inspection_points: localPoints.length >= apiPoints.length ? localPoints : apiPoints,
+        requirements: localPoints.length >= apiPoints.length ? localPoints : apiPoints,
+        articles: localArticles.length >= apiArticles.length ? localArticles : apiArticles,
+        chapters: (local.chapters && local.chapters.length) ? local.chapters : reg.chapters,
+        penalties: local.penalties || reg.penalties,
+        source: reg.source || local.source,
+        summary: (reg.summary || reg.summaryUA || '').length >= (local.summary || '').length
+            ? (reg.summary || reg.summaryUA)
+            : (local.summary || reg.summary || reg.summaryUA)
+    };
 }
 
 function displayRegulations(regulations) {
@@ -592,6 +705,53 @@ function displayRegulations(regulations) {
     });
 }
 
+function regulationSearchBlob(reg) {
+    const points = (reg.inspection_points || reg.requirements || [])
+        .map(p => [p.article, p.requirement, p.description, p.client_explanation, p.penalty, p.urgency].filter(Boolean).join(' '))
+        .join(' ');
+    const articles = extractAllArticles(reg)
+        .map(a => [a.number, a.title, a.text, a.classification].filter(Boolean).join(' '))
+        .join(' ');
+
+    return [
+        reg.id,
+        reg.number,
+        reg.code,
+        reg.title,
+        reg.titleUA,
+        reg.subtitle,
+        reg.summary,
+        reg.summaryUA,
+        points,
+        articles,
+        Array.isArray(reg.scope) ? reg.scope.join(' ') : ''
+    ].filter(Boolean).join(' ').toLowerCase();
+}
+
+function searchLocalRegulations(query, max = 50) {
+    const q = String(query || '').toLowerCase().trim();
+    if (!q) return [];
+    const terms = q.split(/\s+/).filter(Boolean);
+
+    const scored = localRegulations
+        .map(reg => {
+            const blob = regulationSearchBlob(reg);
+            let score = 0;
+            terms.forEach(term => {
+                if (blob.includes(term)) score += term.length > 4 ? 3 : 1;
+            });
+            if (blob.includes(q)) score += 5;
+            return { reg, score };
+        })
+        .filter(item => item.score > 0)
+        .sort((a, b) => b.score - a.score)
+        .slice(0, max)
+        .map(item => item.reg)
+        .map(reg => enrichWithLocalRegulation(reg));
+
+    return scored;
+}
+
 async function showRegulationDetail(code) {
     if (!code || code === 'undefined') {
         alert('Erro: identificador do documento inválido');
@@ -604,7 +764,7 @@ async function showRegulationDetail(code) {
         return;
     }
     
-    const reg = result.data;
+    const reg = enrichWithLocalRegulation(result.data);
     const identifier = reg.number || reg.code || reg.id || code;
     const title = reg.titleUA || reg.title || identifier;
     const summary = reg.summaryUA || reg.summary || '';
@@ -613,6 +773,14 @@ async function showRegulationDetail(code) {
     
     const issueDate = reg.date || reg.issueDate;
     const points = reg.inspection_points || reg.requirements || [];
+    const articles = extractAllArticles(reg);
+    const penalties = formatPenalties(reg.penalties);
+    const sourceText = formatSource(reg.source);
+    const scopeTags = Array.isArray(reg.scope) ? reg.scope : [];
+    const pointsToShow = points.slice(0, 20);
+    const hasMorePoints = points.length > pointsToShow.length;
+    const articlesToShow = articles.slice(0, 15);
+    const hasMoreArticles = articles.length > articlesToShow.length;
 
     let body = `
         <div class="regulation-detail">
@@ -620,19 +788,57 @@ async function showRegulationDetail(code) {
             
             ${issueDate ? `<p><small class="text-muted">📅 Emissão: ${new Date(issueDate).toLocaleDateString('pt-PT')}</small></p>` : ''}
             ${reg.status ? `<p><small class="text-muted">📌 Status: ${reg.status}</small></p>` : ''}
+            ${scopeTags.length ? `<p><small><strong>Âmbito:</strong> ${scopeTags.map(s => `<span class="badge badge-light mr-1">${s}</span>`).join('')}</small></p>` : ''}
             
             ${points.length > 0 ? `
-                <h5 class="mt-3"><i class="fas fa-clipboard-list"></i> Pontos de inspeção:</h5>
-                ${points.map(pt => `
+                <h5 class="section-subtitle"><i class="fas fa-clipboard-list"></i> Pontos de inspeção (${points.length})</h5>
+                ${pointsToShow.map((pt, idx) => {
+                    const article = pt.article || pt.requirement || pt.point || `Ponto ${idx + 1}`;
+                    const description = pt.client_explanation || pt.description || pt.text || '';
+                    const urgency = pt.urgency || pt.severity || null;
+                    const deadline = pt.deadline || null;
+                    const penalty = pt.penalty || null;
+                    const commonViolations = Array.isArray(pt.common_violations)
+                        ? pt.common_violations.filter(Boolean)
+                        : [];
+                    return `
                     <div class="requirement-item">
-                        <strong>${pt.requirement || pt.description || ''}</strong>
-                        ${pt.client_explanation ? `<br><small class="text-muted">${pt.client_explanation}</small>` : ''}
-                        ${pt.severity ? `<br><small>Severidade: <span class="badge badge-${pt.severity === 'mandatory' ? 'danger' : 'warning'}">${pt.severity}</span></small>` : ''}
+                        <strong>${article}</strong>
+                        ${description ? `<br><small class="text-muted">${description}</small>` : ''}
+                        ${urgency ? `<br><small>Classe: <span class="badge badge-${urgency === 'C1' || urgency === 'mandatory' ? 'danger' : 'warning'}">${urgency}</span></small>` : ''}
+                        ${deadline ? `<br><small>Prazo: ${deadline}</small>` : ''}
+                        ${penalty ? `<br><small>Coima/impacto: ${penalty}</small>` : ''}
+                        ${commonViolations.length ? `<br><small>Exemplos: ${commonViolations.join('; ')}</small>` : ''}
                     </div>
-                `).join('')}
+                `;
+                }).join('')}
+                ${hasMorePoints ? `<div class="alert alert-light mt-2 mb-0"><small>Foram mostrados os primeiros ${pointsToShow.length} de ${points.length} pontos. Para itens específicos, use "Perguntar ao AI".</small></div>` : ''}
+            ` : ''}
+
+            ${articles.length > 0 ? `
+                <h5 class="section-subtitle"><i class="fas fa-book-open"></i> Artigos e requisitos legais (${articles.length})</h5>
+                ${articlesToShow.map(a => {
+                    const articleNumber = a.article || a.number || '—';
+                    const articleTitle = a.title || 'Requisito legal';
+                    const articleText = a.text || a.description || '';
+                    const classif = a.classification || '';
+                    return `
+                        <div class="article-item">
+                            <div class="article-title">Art. ${articleNumber} - ${articleTitle}</div>
+                            ${classif ? `<small class="text-muted">Classificação: ${classif}</small><br>` : ''}
+                            <small>${articleText}</small>
+                        </div>
+                    `;
+                }).join('')}
+                ${hasMoreArticles ? `<div class="alert alert-light mt-2 mb-0"><small>Foram mostrados os primeiros ${articlesToShow.length} de ${articles.length} artigos relevantes. Pergunte ao AI por artigo específico para detalhe completo.</small></div>` : ''}
+            ` : ''}
+
+            ${penalties ? `
+                <h5 class="section-subtitle"><i class="fas fa-exclamation-circle"></i> Sanções e coimas</h5>
+                <div class="requirement-item">${penalties}</div>
             ` : ''}
             
-            ${reg.source ? `<p class="mt-3"><small class="text-muted">📎 Fonte: ${reg.source}</small></p>` : ''}
+            ${sourceText ? `<p class="mt-3"><small class="text-muted">📎 Fonte: ${sourceText}</small></p>` : ''}
         </div>
     `;
     
@@ -653,10 +859,16 @@ async function searchRegulations() {
         const data = await res.json();
         
         if (data.success) {
-            displayRegulations(data.data);
+            let enriched = (data.data || []).map(reg => enrichWithLocalRegulation(reg));
+            if (!enriched.length) {
+                enriched = searchLocalRegulations(query, 80);
+            }
+            displayRegulations(enriched);
         }
     } catch (error) {
         console.error('Erro na pesquisa:', error);
+        const fallbackLocal = searchLocalRegulations(query, 80);
+        displayRegulations(fallbackLocal);
     }
 }
 
@@ -680,14 +892,24 @@ async function askAI() {
     const result = await regulationsAI.askAI(question);
     
     if (result.success && result.regulations) {
-        displayRegulations(result.regulations);
+        let enriched = (result.regulations || []).map(reg => enrichWithLocalRegulation(reg));
+        if (!enriched.length) {
+            enriched = searchLocalRegulations(question, 80);
+        }
+        displayRegulations(enriched);
+
+        const aiSummary = enriched.length > 0
+            ? `Foram encontrados ${enriched.length} documento(s) legais relevantes para "${question}".`
+            : `Não encontrei documentos legais para "${question}". Tente por lei/artigo, por exemplo: "DL 320/2002 artigo 8", "Decreto 513/70 art. 14", "inspeção periódica".`;
         
         // Mostrar resposta AI
         const aiAnswer = `
             <div class="col-md-12 mb-3">
                 <div class="alert alert-info">
                     <h5><i class="fas fa-magic"></i> Resposta do AI:</h5>
-                    <p style="white-space: pre-line;">${result.answer}</p>
+                    <p style="white-space: pre-line;">${aiSummary}</p>
+                    <hr>
+                    <small><strong>Dica:</strong> Pode perguntar ao AI por lei, artigo, prazo, coima, classe C1/C2/C3 ou procedimento. Ex.: "DL 320/2002 artigo 8", "qual é a periodicidade de inspeção?", "coima por falta de contrato EMA".</small>
                 </div>
             </div>
         `;
@@ -788,6 +1010,57 @@ function getTypeName(type) {
         'inspection-guide':      'Guia de Inspeção'
     };
     return names[type] || type || '—';
+}
+
+function extractAllArticles(reg) {
+    if (!reg) return [];
+    const direct = Array.isArray(reg.articles) ? reg.articles : [];
+    const chapterArticles = Array.isArray(reg.chapters)
+        ? reg.chapters.flatMap(ch => Array.isArray(ch.articles) ? ch.articles : [])
+        : [];
+
+    const merged = [...direct, ...chapterArticles];
+    const unique = [];
+    const seen = new Set();
+
+    merged.forEach(a => {
+        const key = `${a?.number || a?.article || ''}-${(a?.title || '').trim()}`;
+        if (!seen.has(key)) {
+            seen.add(key);
+            unique.push(a);
+        }
+    });
+
+    return unique;
+}
+
+function formatPenalties(penalties) {
+    if (!penalties) return '';
+    if (typeof penalties === 'string') return penalties;
+    if (Array.isArray(penalties)) {
+        return penalties.filter(Boolean).map(item => `<div>• ${item}</div>`).join('');
+    }
+    if (typeof penalties === 'object') {
+        const rows = Object.entries(penalties).filter(([, value]) => Boolean(value));
+        return rows.map(([key, value]) => `<div><strong>${key}:</strong> ${value}</div>`).join('');
+    }
+    return '';
+}
+
+function formatSource(source) {
+    if (!source) return '';
+    if (typeof source === 'string') return source;
+    if (typeof source === 'object') {
+        const chunks = [];
+        if (source.file) chunks.push(source.file);
+        if (source.url) chunks.push(source.url);
+        if (source.sections_count) chunks.push(`secções: ${source.sections_count}`);
+        if (source.critical_articles) chunks.push(`artigos críticos: ${source.critical_articles}`);
+        if (source.chapters_count) chunks.push(`capítulos: ${source.chapters_count}`);
+        if (source.critical_requirements) chunks.push(`requisitos críticos: ${source.critical_requirements}`);
+        return chunks.join(' | ');
+    }
+    return String(source);
 }
 
 function showError(message) {

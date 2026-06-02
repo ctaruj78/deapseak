@@ -5,7 +5,7 @@ class LiftsManager {
         this.filters = {
             status: 'all',
             type: 'all',
-            sort: 'name'
+            sort: 'createdAsc'
         };
         this.currentLift = null;
         this.init();
@@ -118,23 +118,99 @@ class LiftsManager {
     resetFilters() {
         $('#statusFilter').val('all');
         $('#typeFilter').val('all');
-        $('#sortFilter').val('name');
+        $('#sortFilter').val('createdAsc');
         $('#searchInput').val('');
-        this.filters = { status: 'all', type: 'all', sort: 'name' };
+        this.filters = { status: 'all', type: 'all', sort: 'createdAsc' };
         this.applyFilters();
     }
 
     sortLifts(lifts) {
         return lifts.sort((a, b) => {
             switch (this.filters.sort) {
+                case 'createdAsc': return this.getLiftCreatedAt(a) - this.getLiftCreatedAt(b);
+                case 'createdDesc': return this.getLiftCreatedAt(b) - this.getLiftCreatedAt(a);
                 case 'name': return (a.model || '').localeCompare(b.model || '');
                 case 'status': return (a.status || '').localeCompare(b.status || '');
                 case 'location': return this.formatLocation(a).localeCompare(this.formatLocation(b));
                 case 'maintenance': 
                     return new Date(a.nextMaintenance || a.nextInspectionDate || 0) - new Date(b.nextMaintenance || b.nextInspectionDate || 0);
-                default: return (a.model || '').localeCompare(b.model || '');
+                default: return this.getLiftCreatedAt(a) - this.getLiftCreatedAt(b);
             }
         });
+    }
+
+    getLiftCreatedAt(lift) {
+        const explicitDate = lift.createdAt || lift.created_at || lift.addedAt || lift.dateCreated;
+        if (explicitDate) {
+            const parsed = new Date(explicitDate).getTime();
+            if (!Number.isNaN(parsed) && parsed > 0) return parsed;
+        }
+
+        // Mongo ObjectId keeps creation timestamp in first 8 hex chars.
+        const objectId = String(lift._id || lift.id || '').trim();
+        if (/^[a-f\d]{24}$/i.test(objectId)) {
+            const seconds = parseInt(objectId.substring(0, 8), 16);
+            if (!Number.isNaN(seconds)) return seconds * 1000;
+        }
+
+        return Number.MAX_SAFE_INTEGER;
+    }
+
+    getInspectionAlertInfo(lift) {
+        const targetDateRaw = lift.nextInspectionDate || lift.nextMaintenance;
+        if (!targetDateRaw) {
+            return { hasDate: false, level: 'none', message: '', daysDiff: null };
+        }
+
+        const targetDate = new Date(targetDateRaw);
+        if (Number.isNaN(targetDate.getTime())) {
+            return { hasDate: false, level: 'none', message: '', daysDiff: null };
+        }
+
+        const now = new Date();
+        now.setHours(0, 0, 0, 0);
+        targetDate.setHours(0, 0, 0, 0);
+        const daysDiff = Math.ceil((targetDate - now) / (1000 * 60 * 60 * 24));
+
+        if (daysDiff < 0) {
+            return {
+                hasDate: true,
+                level: 'danger',
+                daysDiff,
+                message: `Inspeção vencida há ${Math.abs(daysDiff)} dias`
+            };
+        }
+
+        if (daysDiff <= 30) {
+            return {
+                hasDate: true,
+                level: 'warning',
+                daysDiff,
+                message: `Inspeção em ${daysDiff} dias`
+            };
+        }
+
+        return {
+            hasDate: true,
+            level: 'ok',
+            daysDiff,
+            message: 'Inspeção dentro do prazo'
+        };
+    }
+
+    buildInspectionAlertHtml(lift, compact = false) {
+        const info = this.getInspectionAlertInfo(lift);
+        if (!info.hasDate || info.level === 'ok') return '';
+
+        const icon = info.level === 'danger' ? 'fa-exclamation-triangle' : 'fa-clock';
+        const cls = info.level === 'danger' ? 'alert-danger' : 'alert-warning';
+        const extraClass = compact ? 'py-2 px-2 mb-2' : 'mb-2';
+
+        return `
+            <div class="alert ${cls} ${extraClass}">
+                <i class="fas ${icon} mr-1"></i>${info.message}
+            </div>
+        `;
     }
 
     renderLifts(lifts) {
@@ -189,6 +265,7 @@ class LiftsManager {
         const statusClass = this.getStatusBadgeClass(lift.status);
         const statusText = this.getStatusText(lift.status);
         const typeText = this.getTypeText(lift.type);
+        const inspectionAlertHtml = this.buildInspectionAlertHtml(lift, true);
         
         // Безпечне отримання адреси
         const location = this.formatLocation(lift);
@@ -212,6 +289,7 @@ class LiftsManager {
                             </div>
                         </div>
                         <div class="p-3">
+                            ${inspectionAlertHtml}
                             ${lift.municipalNumber ? `<p><strong><i class="fas fa-hashtag mr-2"></i>N.º Municipal:</strong> <span class="badge badge-dark">${lift.municipalNumber}</span></p>` : ''}
                             <p><strong><i class="fas fa-map-marker-alt mr-2"></i>Morada:</strong> ${location}</p>
                             <p><strong><i class="fas fa-tag mr-2"></i>Tipo:</strong> ${typeText}</p>
@@ -324,9 +402,13 @@ class LiftsManager {
     }
 
     needsAttention(lift) {
-        if (!lift.nextMaintenance) return false;
-        const nextDate = new Date(lift.nextMaintenance);
+        const targetDate = lift.nextInspectionDate || lift.nextMaintenance;
+        if (!targetDate) return false;
+        const nextDate = new Date(targetDate);
+        if (Number.isNaN(nextDate.getTime())) return false;
         const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        nextDate.setHours(0, 0, 0, 0);
         const daysDiff = Math.ceil((nextDate - today) / (1000 * 60 * 60 * 24));
         return daysDiff <= 7;
     }
@@ -370,6 +452,7 @@ class LiftsManager {
 
             // Ініціалізуємо карту якщо є координати
             this._initClientMap(lift);
+            this._loadLiftOrcamentos(lift);
 
         } catch (error) {
             console.error('❌ Erro завантаження деталей ліфта:', error);
@@ -378,6 +461,7 @@ class LiftsManager {
             if (lift) {
                 this.currentLift = lift;
                 $('#liftDetailsContent').html(this.createLiftDetails(lift));
+                this._loadLiftOrcamentos(lift);
             } else {
                 $('#liftDetailsContent').html(`<div class="alert alert-danger"><i class="fas fa-exclamation-circle"></i> Erro ao carregar dados</div>`);
             }
@@ -413,6 +497,7 @@ class LiftsManager {
     createLiftDetails(lift) {
         const liftId = lift._id || lift.id || '';
         const address = lift.address || {};
+        const inspectionAlertHtml = this.buildInspectionAlertHtml(lift, false);
         const addressStr = address.street
             ? (address.city && address.city !== address.street ? `${address.street}, ${address.city}` : address.street)
             : (typeof lift.address === 'string' ? lift.address : 'Não especificado');
@@ -484,12 +569,13 @@ class LiftsManager {
                         </div>
                         <div class="card mb-3">
                             <div class="card-header bg-warning py-2">
-                                <h6 class="mb-0"><i class="fas fa-calendar-check"></i> Manutenção</h6>
+                                <h6 class="mb-0"><i class="fas fa-calendar-check"></i> Inspeção periódica</h6>
                             </div>
                             <div class="card-body p-2">
+                                ${inspectionAlertHtml}
                                 <table class="table table-sm mb-0">
-                                    <tr><td><strong>Última manutenção:</strong></td><td>${this.formatDate(lift.lastInspectionDate || lift.lastMaintenance)}</td></tr>
-                                    <tr><td><strong>Próxima manutenção:</strong></td><td>${this.formatDate(lift.nextInspectionDate || lift.nextMaintenance)}</td></tr>
+                                    <tr><td><strong>Última inspeção periódica:</strong></td><td>${this.formatDate(lift.lastInspectionDate || lift.lastMaintenance)}</td></tr>
+                                    <tr><td><strong>Próxima inspeção periódica:</strong></td><td>${this.formatDate(lift.nextInspectionDate || lift.nextMaintenance)}</td></tr>
                                 </table>
                             </div>
                         </div>
@@ -515,6 +601,16 @@ class LiftsManager {
                     </div>
                     <div class="card-body p-2">
                         ${contractHtml}
+                    </div>
+                </div>
+
+                <!-- Orçamentos relacionados -->
+                <div class="card mb-3">
+                    <div class="card-header bg-dark text-white py-2 d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0"><i class="fas fa-file-invoice-dollar"></i> Orçamentos relacionados ao elevador</h6>
+                    </div>
+                    <div class="card-body p-2" id="liftOrcamentosList">
+                        <div class="text-muted"><i class="fas fa-spinner fa-spin mr-1"></i>A carregar orçamentos...</div>
                     </div>
                 </div>
 
@@ -593,8 +689,8 @@ class LiftsManager {
                 ? new Date(report.inspectionDate || report.date).toLocaleDateString('pt-PT', { year: 'numeric', month: '2-digit', day: '2-digit' })
                 : 'Data desconhecida';
             const status = report.status || 'completed';
-            const notes = report.comments || report.findings || report.notes || '';
-            const inspector = report.inspectorName || report.inspector || '';
+            const notes = this._sanitizeReportText(report.comments || report.findings || report.notes || '');
+            const inspector = this._sanitizeReportText(report.inspectorName || report.inspector || '');
             const fileUrl = report.fileUrl || report.reportFile || report.file || null;
 
             const statusBadge = (status === 'passed' || status === 'completed')
@@ -719,8 +815,8 @@ class LiftsManager {
         const date = (report.inspectionDate || report.date)
             ? new Date(report.inspectionDate || report.date).toLocaleDateString('pt-PT', { year: 'numeric', month: 'long', day: 'numeric' })
             : 'Data desconhecida';
-        const notes = report.comments || report.findings || report.notes || '';
-        const inspector = report.inspectorName || report.inspector || '';
+        const notes = this._sanitizeReportText(report.comments || report.findings || report.notes || '');
+        const inspector = this._sanitizeReportText(report.inspectorName || report.inspector || '');
         const fileUrl = report.fileUrl || report.reportFile || report.file || null;
         const status = report.status || 'completed';
         const statusBadge = (status === 'passed' || status === 'completed')
@@ -866,7 +962,7 @@ class LiftsManager {
         const date = (report.inspectionDate || report.date)
             ? new Date(report.inspectionDate || report.date).toLocaleDateString('pt-PT')
             : 'Data desconhecida';
-        const notes = report.comments || report.findings || report.notes || '';
+        const notes = this._sanitizeReportText(report.comments || report.findings || report.notes || '');
 
         const win = window.open('', '_blank');
         win.document.write(`<html><head><title>Relatório: ${typeLabel}</title>
@@ -882,6 +978,289 @@ class LiftsManager {
             <script>window.print();<\/script>
             </body></html>`);
         win.document.close();
+    }
+
+    _sanitizeReportText(text) {
+        if (!text) return '';
+        return String(text)
+            .replace(/\[\?\]/g, '')
+            .replace(/\(\?\)/g, '')
+            .replace(/\s*-\s*\[\?\]\s*/g, ' ')
+            .replace(/Порушення/gi, 'Violações')
+            .replace(/[А-Яа-яЁёІіЇїЄєҐґ]+/g, ' ')
+            .replace(/\s+\uFFFD\s+/g, ' ')
+            .replace(/\s+-\s+-\s+/g, ' - ')
+            .replace(/\s{2,}/g, ' ')
+            .trim();
+    }
+
+    _normalizeText(value) {
+        return String(value || '')
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .replace(/[^a-z0-9/\s-]/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim();
+    }
+
+    _normalizeMunicipal(value) {
+        return String(value || '').replace(/\s+/g, '').toLowerCase();
+    }
+
+    _extractOrcamentoLiftIds(orcamento) {
+        const ids = new Set();
+        if (orcamento?.liftId) {
+            const v = typeof orcamento.liftId === 'object' ? (orcamento.liftId.$oid || orcamento.liftId._id || orcamento.liftId.toString?.()) : orcamento.liftId;
+            if (v) ids.add(String(v));
+        }
+
+        if (Array.isArray(orcamento?.lifts)) {
+            orcamento.lifts.forEach(item => {
+                if (!item) return;
+                if (typeof item === 'string') {
+                    ids.add(item);
+                    return;
+                }
+                if (typeof item === 'object') {
+                    const raw = item.liftId || item._id || item.id || item.$oid;
+                    if (raw) ids.add(String(raw));
+                }
+            });
+        }
+
+        return ids;
+    }
+
+    _isOrcamentoRelatedToLift(orcamento, lift) {
+        const liftId = String(lift?._id || lift?.id || '');
+        const linkedIds = this._extractOrcamentoLiftIds(orcamento);
+        if (liftId && linkedIds.has(liftId)) return true;
+
+        const municipal = this._normalizeMunicipal(lift?.municipalNumber || '');
+        const rawText = [
+            orcamento?.liftAddress,
+            orcamento?.cliente?.morada,
+            orcamento?.notas,
+            ...(Array.isArray(orcamento?.servicos) ? orcamento.servicos.map(s => s?.descricao) : [])
+        ].filter(Boolean).join(' | ');
+        const normalizedRawText = this._normalizeMunicipal(rawText);
+        if (municipal && normalizedRawText.includes(municipal)) return true;
+
+        const liftStreet = this._normalizeText(lift?.address?.street || this.formatLocation(lift));
+        const orcAddress = this._normalizeText(orcamento?.liftAddress || orcamento?.cliente?.morada || '');
+        if (liftStreet && orcAddress && (orcAddress.includes(liftStreet) || liftStreet.includes(orcAddress))) {
+            const matchingLifts = (this.lifts || []).filter(candidate => {
+                const candidateStreet = this._normalizeText(candidate?.address?.street || this.formatLocation(candidate));
+                return candidateStreet && (orcAddress.includes(candidateStreet) || candidateStreet.includes(orcAddress));
+            });
+
+            if (matchingLifts.length === 1) {
+                const onlyLiftId = String(matchingLifts[0]?._id || matchingLifts[0]?.id || '');
+                return onlyLiftId && onlyLiftId === liftId;
+            }
+
+            return false;
+        }
+
+        return false;
+    }
+
+    async _loadLiftOrcamentos(lift) {
+        const container = document.getElementById('liftOrcamentosList');
+        if (!container) return;
+
+        try {
+            const token = (typeof AuthManager !== 'undefined' && AuthManager.getAuthToken)
+                ? AuthManager.getAuthToken()
+                : (sessionStorage.getItem('liftmanager_jwt') || localStorage.getItem('liftmanager_jwt') || localStorage.getItem('token'));
+
+            const res = await fetch('/api/orcamentos/my', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (!res.ok) {
+                container.innerHTML = '<div class="alert alert-warning mb-0"><i class="fas fa-exclamation-triangle"></i> Não foi possível carregar orçamentos.</div>';
+                return;
+            }
+
+            const payload = await res.json();
+            const all = Array.isArray(payload?.data) ? payload.data : [];
+            const related = all
+                .filter(o => this._isOrcamentoRelatedToLift(o, lift))
+                .sort((a, b) => new Date(b.data || 0) - new Date(a.data || 0));
+
+            if (related.length === 0) {
+                container.innerHTML = '<div class="alert alert-light mb-0"><i class="fas fa-info-circle"></i> Sem orçamentos vinculados a este elevador.</div>';
+                return;
+            }
+
+            const statusClass = {
+                enviado: 'badge-warning',
+                aprovado: 'badge-success',
+                rejeitado: 'badge-danger',
+                expirado: 'badge-secondary'
+            };
+            const statusText = {
+                enviado: 'Aguarda resposta',
+                aprovado: 'Aprovado',
+                rejeitado: 'Rejeitado',
+                expirado: 'Expirado'
+            };
+
+            container.innerHTML = related.map(o => {
+                const data = this.formatDate(o.data);
+                const total = Number(o.total || 0).toFixed(2);
+                const stClass = statusClass[o.status] || 'badge-secondary';
+                const stText = statusText[o.status] || (o.status || '—');
+                return `
+                    <div class="border rounded p-2 mb-2">
+                        <div class="d-flex justify-content-between align-items-center flex-wrap" style="gap:8px;">
+                            <div>
+                                <strong>${o.numero || 'Orçamento'}</strong>
+                                <span class="badge ${stClass} ml-1">${stText}</span>
+                                <div class="text-muted small">Data: ${data} · Total: €${total}</div>
+                                ${o.liftAddress ? `<div class="text-muted small"><i class="fas fa-map-marker-alt mr-1"></i>${o.liftAddress}</div>` : ''}
+                            </div>
+                            <div class="btn-group btn-group-sm" role="group" aria-label="Ações do orçamento">
+                                <button class="btn btn-outline-primary" onclick="window.liftsManager.viewOrcamentoQuick('${o._id}')" title="Ver detalhe">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="btn btn-outline-info" onclick="window.liftsManager.openOrcamentoPdf('${o._id}', '${(o.numero || '').replace(/'/g, '\\&#39;')}')" title="PDF">
+                                    <i class="fas fa-file-pdf"></i>
+                                </button>
+                                <button class="btn btn-outline-success" onclick="window.liftsManager.printOrcamentoPdf('${o._id}', '${(o.numero || '').replace(/'/g, '\\&#39;')}')" title="Imprimir">
+                                    <i class="fas fa-print"></i>
+                                </button>
+                                <button class="btn btn-outline-warning" onclick="window.liftsManager.emailOrcamento('${o._id}', '${(o.numero || '').replace(/'/g, '\\&#39;')}')" title="Email">
+                                    <i class="fas fa-envelope"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        } catch (error) {
+            console.warn('Erro ao carregar orçamentos relacionados:', error);
+            container.innerHTML = '<div class="alert alert-warning mb-0"><i class="fas fa-exclamation-triangle"></i> Erro ao carregar orçamentos relacionados.</div>';
+        }
+    }
+
+    _getToken() {
+        return (typeof AuthManager !== 'undefined' && AuthManager.getAuthToken)
+            ? AuthManager.getAuthToken()
+            : (sessionStorage.getItem('liftmanager_jwt') || localStorage.getItem('liftmanager_jwt') || localStorage.getItem('token'));
+    }
+
+    async _fetchOrcamentoById(id) {
+        const token = this._getToken();
+        const res = await fetch(`/api/orcamentos/${id}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (!res.ok) throw new Error('Não foi possível carregar o orçamento');
+        const json = await res.json();
+        return json.data;
+    }
+
+    async viewOrcamentoQuick(id) {
+        try {
+            const o = await this._fetchOrcamentoById(id);
+            const linhas = (o.servicos || []).map(s => `
+                <tr>
+                    <td>${s.descricao || '—'}</td>
+                    <td class="text-center">${s.quantidade || 0}</td>
+                    <td class="text-right">€${Number(s.precoUnitario || 0).toFixed(2)}</td>
+                    <td class="text-right">€${Number(s.total || 0).toFixed(2)}</td>
+                </tr>
+            `).join('');
+
+            Swal.fire({
+                title: `Orçamento ${o.numero || ''}`,
+                width: '900px',
+                html: `
+                    <div class="text-left mb-2">
+                        <div><strong>Data:</strong> ${this.formatDate(o.data)}</div>
+                        <div><strong>Status:</strong> ${o.status || '—'}</div>
+                        <div><strong>Morada:</strong> ${o.liftAddress || o.cliente?.morada || '—'}</div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-bordered">
+                            <thead><tr><th>Descrição</th><th class="text-center">Qtd</th><th class="text-right">Preço unit.</th><th class="text-right">Total</th></tr></thead>
+                            <tbody>${linhas}</tbody>
+                            <tfoot>
+                                <tr><td colspan="3" class="text-right"><strong>Subtotal</strong></td><td class="text-right">€${Number(o.subtotal || 0).toFixed(2)}</td></tr>
+                                <tr><td colspan="3" class="text-right"><strong>IVA</strong></td><td class="text-right">€${Number(o.iva || 0).toFixed(2)}</td></tr>
+                                <tr><td colspan="3" class="text-right"><strong>Total</strong></td><td class="text-right"><strong>€${Number(o.total || 0).toFixed(2)}</strong></td></tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                `,
+                confirmButtonText: 'Fechar'
+            });
+        } catch (error) {
+            Swal.fire('Erro', error.message, 'error');
+        }
+    }
+
+    async openOrcamentoPdf(id, numero = '') {
+        try {
+            const token = this._getToken();
+            const res = await fetch(`/api/orcamentos/${id}/pdf`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (!res.ok) throw new Error('Não foi possível abrir PDF');
+            const blob = await res.blob();
+            const url = URL.createObjectURL(blob);
+            window.open(url, '_blank');
+            setTimeout(() => URL.revokeObjectURL(url), 15000);
+        } catch (error) {
+            Swal.fire('Erro', error.message, 'error');
+        }
+    }
+
+    async printOrcamentoPdf(id, numero = '') {
+        try {
+            const token = this._getToken();
+            const res = await fetch(`/api/orcamentos/${id}/pdf`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (!res.ok) throw new Error('Não foi possível imprimir o PDF');
+            const blob = await res.blob();
+            const url = URL.createObjectURL(blob);
+            const win = window.open(url, '_blank');
+            if (win) {
+                win.addEventListener('load', () => { try { win.print(); } catch (e) {} });
+            }
+            setTimeout(() => URL.revokeObjectURL(url), 20000);
+        } catch (error) {
+            Swal.fire('Erro', error.message, 'error');
+        }
+    }
+
+    async emailOrcamento(id, numero = '') {
+        const email = prompt(`Enviar resumo do orçamento ${numero || ''} por email:`, '');
+        if (!email) return;
+
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            Swal.fire('Email inválido', 'Introduza um email válido.', 'warning');
+            return;
+        }
+
+        try {
+            const o = await this._fetchOrcamentoById(id);
+            const subject = encodeURIComponent(`Orçamento ${o.numero || numero || ''}`);
+            const body = encodeURIComponent(
+                `Segue resumo do orçamento ${o.numero || ''}.\n` +
+                `Data: ${this.formatDate(o.data)}\n` +
+                `Total: €${Number(o.total || 0).toFixed(2)}\n` +
+                `Morada: ${o.liftAddress || o.cliente?.morada || '—'}\n\n` +
+                `Pode consultar o documento completo no portal FestLift em Orçamentos.`
+            );
+            window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
+        } catch (error) {
+            Swal.fire('Erro', error.message, 'error');
+        }
     }
 
     getMaintenanceStatus(lift) {

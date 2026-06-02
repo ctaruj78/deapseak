@@ -82,8 +82,8 @@ class RegulationsAI {
                         : (Array.isArray(data.data) ? data.data : []);
 
                     const answer = regulations.length > 0
-                        ? `Знайдено ${regulations.length} документ(ів) за запитом "${question}". Виберіть потрібний для перегляду деталей.`
-                        : `За запитом "${question}" документів не знайдено. Спробуйте інші ключові слова.`;
+                        ? `Foram encontrados ${regulations.length} documento(s) legais para "${question}". Selecione um para ver artigos e pontos aplicáveis.`
+                        : `Não encontrei documentos legais para "${question}". Tente termos jurídicos objetivos, por exemplo: "DL 320/2002 artigo 8", "inspeção periódica", "coima contrato EMA".`;
 
                     return { success: true, regulations, answer };
                 }
@@ -99,13 +99,13 @@ class RegulationsAI {
                 const regulations = Array.isArray(fallbackData.data) ? fallbackData.data : [];
 
                 const answer = regulations.length > 0
-                    ? `Знайдено ${regulations.length} документ(ів) за запитом "${question}".`
-                    : `За запитом "${question}" документів не знайдено.`;
+                    ? `Foram encontrados ${regulations.length} documento(s) legais para "${question}".`
+                    : `Não foram encontrados documentos legais para "${question}".`;
 
                 return { success: true, regulations, answer };
             }
 
-            return { success: false, error: 'Помилка з\'єднання з сервером' };
+            return { success: false, error: 'Erro de ligação ao servidor' };
         } catch (err) {
             console.error('[RegulationsAI] askAI error:', err);
             return { success: false, error: err.message };
