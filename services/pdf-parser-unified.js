@@ -13,6 +13,13 @@
  *  2. Gemini Vision OCR  → скановані PDF (< 200 символів)
  *  3. Gemini structured extraction  → поверх regex для складних документів
  *
+ * ВИПРАВЛЕННЯ (v2):
+ *  - isMetadataNoiseClause: відловлює числові рядки, дати, короткі ідентифікатори
+ *    без ключових слів (раніше "Ascensor 2025-06-09" та "6781" проходили фільтр)
+ *  - normalizeClauseText: коректно знімає артикули типу "67º", "67º-5", "93º - 1"
+ *  - cleanViolations: захист від violations де description — це метадані сертифіката
+ *  - isLegendOrBoilerplateClause: додано патерн для "obrigacoes do proprietario" секції
+ *
  * ВИКОРИСТАННЯ:
  *  const { parseReport } = require('./pdf-parser-unified');
  *  const result = await parseReport('/path/to/file.pdf');
@@ -23,17 +30,24 @@ const pdfParse = require('pdf-parse');
 const pdfParserEnhanced = require('./pdf-parser-enhanced');
 const { parseBureauVeritasPDF } = require('./pdf-parser-bureau-veritas');
 
+// ─── НОРМАЛІЗАЦІЯ ТЕКСТУ ─────────────────────────────────────────────────────
+
 function normalizeClauseText(value = '') {
     return String(value)
         .toLowerCase()
         .normalize('NFD')
         .replace(/[\u0300-\u036f]/g, '')
-    .replace(/^\s*c[123]\s*\d+[a-z0-9.\-º°]*\s*/i, ' ')
-    .replace(/^\s*art(?:igo)?\.?\s*\d+[a-z0-9.\-º°]*\s*/i, ' ')
+        // FIX 1: розширений regex для артикулів — покриває "67º", "67º-5", "93º - 1",
+        //        "C3 67º", "art. 67", "artigo 67º-5" на початку рядка
+        .replace(/^\s*(?:c[123]\s+)?\d+[a-zº°]*(?:\s*[-–]\s*\d+[a-z0-9º°]*)?\s+/i, '')
+        .replace(/^\s*c[123]\s*\d+[a-z0-9.\-º°]*\s*/i, '')
+        .replace(/^\s*art(?:igo)?\.?\s*\d+[a-z0-9.\-º°]*(?:\s*[-–]\s*\d+[a-z0-9º°]*)?\s*/i, '')
         .replace(/[^a-z0-9\s]/g, ' ')
         .replace(/\s+/g, ' ')
         .trim();
 }
+
+// ─── ФІЛЬТРИ ЛЕГЕНД ТА BOILERPLATE ───────────────────────────────────────────
 
 function isLegendOrBoilerplateClause(description = '') {
     const d = normalizeClauseText(description);
@@ -43,32 +57,163 @@ function isLegendOrBoilerplateClause(description = '') {
         /foram detetadas clausulas tipo c[123]/,
         /correspondem a situacoes/,
         /nao obrigam a imobilizacao/,
-        /d[oã]o lugar a uma reinspec/, 
+        /d[oa] lugar a uma reinspec/,
         /classificacao das clausulas/,
         /grau de perigosidade/,
         /obrigacoes do proprietario/,
         /prazo maximo de 2 anos/,
         /despacho n\s*17\s*2022/,
         /deficiencias a reparar no prazo/,
-        /em relacao as deficiencias detetadas/
+        /em relacao as deficiencias detetadas/,
+        // FIX 2: секція "OBRIGAÇÕES DO PROPRIETÁRIO" — рядки типу
+        // "Elevador Aprovado", "Elevador Reprovado com imobilização", etc.
+        /^elevador (?:aprovado|reprovado)/,
+        /nao foram detetadas deficiencias/,
+        /empreender as acoes oportunas/,
+        /resolucao deve ser verificada/,
+        /reparacoes ou remodelacoes indicadas/,
+        // Джерела/посилання в кінці документа
+        /^fonte\s*:/,
+        /^despacho n\s*\d+/,
+        /^mod\s*[\.\s]*oi/,
+        /^anotacoes$/,
     ];
 
     return boilerplatePatterns.some((pattern) => pattern.test(d));
 }
+
+// ─── ФІЛЬТР МЕТАДАНИХ ────────────────────────────────────────────────────────
+
+function isMetadataNoiseClause(description = '') {
+    const raw = String(description || '').trim();
+    if (!raw) return true;
+
+    const d = normalizeClauseText(raw);
+    if (!d) return true;
+
+    // FIX 3: Відловлює рядки що є суто числами / датами / кодами
+    // "6781", "2025-06-09", "2745-838", "2027-04-09 2027-06-09"
+    if (/^[\d\s:\/\-.]+$/.test(raw)) return true;
+
+    // Дати у будь-якому форматі
+    if (/^\d{4}[-\/]\d{2}[-\/]\d{2}/.test(raw.trim())) return true;
+    if (/^\d{2}[-\/]\d{2}[-\/]\d{4}/.test(raw.trim())) return true;
+
+    // FIX 4: Рядки що містять "Ascensor/Elevador" + дати — це дані сертифіката,
+    // не порушення. Патерн: слово + номер + дата, або слово + кілька дат
+    const hasInstallWord = /\b(ascensor|elevador|monta.?cargas)\b/i.test(raw);
+    const hasDatePattern = /\b\d{4}[-\/]\d{2}[-\/]\d{2}\b/.test(raw);
+    if (hasInstallWord && hasDatePattern) return true;
+
+    // FIX 5: Рядок виглядає як "Ascensor 6781" або "Elevador 2" — тип + номер
+    if (/^(ascensor|elevador|monta.?cargas)\s+\d+\s*$/i.test(raw)) return true;
+
+    // Відомі поля метаданих на початку
+    const startsAsMetadataField = [
+        /^codigo postal\b/,
+        /^tipo de inspec/,
+        /^tipo de edificio\b/,
+        /^ascensor\b/,
+        /^instalacao\s*n\b/,
+        /^processo\s*n\b/,
+        /^concelho\b/,
+        /^localidade\b/,
+        /^freguesia\b/,
+        /^morada\b/,
+        /^resultado da inspec/,
+        /^entidade inspetora\b/,
+        /^empresa de manutencao\b/,
+        /^proprietario\b/,
+        // FIX 6: додаткові поля з GATECI/CERTIEL
+        /^ref[a]?\s*emie\b/,
+        /^regulamentacao aplicavel\b/,
+        /^validacao\b/,
+        /^emissao\b/,
+        /^validade\b/,
+        /^requer(?:er)?\s+inspec/,
+        /^certificado de inspec/,
+    ].some((rx) => rx.test(d));
+
+    if (startsAsMetadataField) return true;
+
+    // OCR debris: метадані + дати
+    const hasMetadataToken = /\b(codigo|postal|inspecao|ascensor|instalacao|processo|concelho|localidade|freguesia|morada)\b/.test(d);
+    const mostlyDatesOrCodes =
+        /^[\d\s:\/\-.]+$/.test(raw) ||
+        /\b\d{4}[\/-]\d{2}[\/-]\d{2}\b/.test(raw) ||
+        /\b\d{2}[\/-]\d{2}[\/-]\d{4}\b/.test(raw);
+    if (hasMetadataToken && mostlyDatesOrCodes) return true;
+
+    // Короткі фрагменти метаданих
+    const wordCount = d.split(/\s+/).filter(Boolean).length;
+    if (wordCount <= 4 && hasMetadataToken) return true;
+
+    // FIX 7: Violation де article — це числовий ідентифікатор (номер процесу),
+    // а не справжній артикул. "Artigo 6781" — явно не стаття закону.
+    // Перевіряється окремо в cleanViolations нижче.
+
+    return false;
+}
+
+// ─── ДОДАТКОВИЙ ФІЛЬТР НА РІВНІ VIOLATION OBJECT ────────────────────────────
+
+/**
+ * FIX 8: Перевіряє чи є violation об'єкт валідним — article не має бути
+ * числом > 1000 (номер процесу) і description має містити хоч якийсь
+ * технічний зміст (мінімум 5 слів після нормалізації).
+ */
+function isValidViolationObject(v) {
+    if (!v || !v.classification) return false;
+
+    // article типу "6781" — це номер процесу, не артикул закону
+    if (v.article) {
+        const artNum = parseInt(String(v.article).replace(/\D/g, ''), 10);
+        if (!isNaN(artNum) && artNum > 500) return false;
+    }
+
+    const desc = String(v.description || '').trim();
+    const normalized = normalizeClauseText(desc);
+    const wordCount = normalized.split(/\s+/).filter(Boolean).length;
+    const technicalTerms = [
+        'motor', 'cabo', 'porta', 'seguranca', 'freio', 'limitador',
+        'parachoque', 'guardacorpo', 'iluminacao', 'sinalizacao',
+        'funcionamento', 'ruido', 'vibracao', 'desgaste', 'corrosao',
+        'cabina', 'paragem', 'contrapeso', 'folga', 'travamento',
+        'encravamento', 'travagem', 'guias', 'quadro', 'manobra'
+    ];
+    const hasTechnicalTerm = technicalTerms.some((term) => normalized.includes(term));
+
+    // Allow concise but technical clauses (common in GATECI/BV OCR output).
+    if (wordCount < 3 && !hasTechnicalTerm) return false;
+
+    // Опис не має бути суто датами/числами
+    const alphaRatio = (normalized.match(/[a-z]/g) || []).length / (normalized.length || 1);
+    if (alphaRatio < 0.28 && !hasTechnicalTerm) return false;
+
+    // Guard against short generic fragments without technical substance.
+    if (wordCount < 5 && !hasTechnicalTerm && alphaRatio < 0.45) return false;
+
+    return true;
+}
+
+// ─── ОЧИЩЕННЯ VIOLATIONS ─────────────────────────────────────────────────────
 
 function cleanViolations(violations = []) {
     const seen = new Map();
     const cleaned = [];
 
     for (const v of violations) {
-        if (!v || !v.classification) continue;
+        // FIX 9: спочатку перевіряємо весь об'єкт
+        if (!isValidViolationObject(v)) continue;
+
         const description = String(v.description || '').trim();
         if (isLegendOrBoilerplateClause(description)) continue;
+        if (isMetadataNoiseClause(description)) continue;
 
         const normDesc = normalizeClauseText(description);
         if (!normDesc) continue;
 
-        // Cross-parser dedup: same class + semantically same description.
+        // Cross-parser dedup: same class + semantically same description
         const dedupKey = `${v.classification}|${normDesc.slice(0, 160)}`;
         const existingIdx = seen.get(dedupKey);
         if (existingIdx == null) {
@@ -88,6 +233,8 @@ function cleanViolations(violations = []) {
     return cleaned;
 }
 
+// ─── СТАТИСТИКА ──────────────────────────────────────────────────────────────
+
 function getStatsFromViolations(violations = []) {
     return {
         total: violations.length,
@@ -96,6 +243,8 @@ function getStatsFromViolations(violations = []) {
         low: violations.filter((v) => v.classification === 'C3').length
     };
 }
+
+// ─── СТАТУС РЕЗУЛЬТАТУ ───────────────────────────────────────────────────────
 
 function inferResultStatus(text = '') {
     const source = String(text || '');
@@ -120,6 +269,8 @@ function inferResultStatus(text = '') {
     return { status: 'unknown', hasExplicitImmobilization, hasApprovedC2Star };
 }
 
+// ─── ПАРСИНГ ДАТИ ────────────────────────────────────────────────────────────
+
 function parseInspectionDate(rawDate) {
     if (!rawDate) return null;
     const val = String(rawDate).trim();
@@ -133,6 +284,8 @@ function parseInspectionDate(rawDate) {
     const parsed = new Date(val);
     return Number.isNaN(parsed.getTime()) ? null : parsed;
 }
+
+// ─── POST-PROCESSING ──────────────────────────────────────────────────────────
 
 function applyUnifiedPostProcessing(result) {
     if (!result || !result.success) return result;
@@ -150,10 +303,6 @@ function applyUnifiedPostProcessing(result) {
     let passed;
     let certType;
 
-    // Canonical rule-set requested by product:
-    //   C1 -> imobilização
-    //   C2 -> reinspeção (except approved C2*)
-    //   only C3/clean -> certificado 2 anos
     if (hasC1) {
         passed = false;
         certType = 'immobilization';
@@ -162,7 +311,6 @@ function applyUnifiedPostProcessing(result) {
         passed = Boolean(isApprovedC2Star);
         certType = isApprovedC2Star ? 'cert_2_years' : 'reinspection';
     } else {
-        // No C1/C2 clauses detected. Trust explicit failed only as fallback.
         passed = statusInfo.status !== 'failed';
         certType = passed ? 'cert_2_years' : (statusInfo.hasExplicitImmobilization ? 'immobilization' : 'reinspection');
     }
@@ -197,14 +345,17 @@ function applyUnifiedPostProcessing(result) {
 }
 
 // ─── ДЕТЕКТОР ФОРМАТУ ────────────────────────────────────────────────────────
+
 function detectFormat(text) {
     if (!text) return 'generic';
 
     const t = text.toUpperCase();
 
-    // CML Lisboa periodic inspection reports often do not contain explicit
-    // C1/C2/C3 markers per line and are parsed better by the Bureau/CML parser.
-    if (/\bCML\/\d{2,}\/\d{2,}\b/i.test(text) || /www\.cm-lisboa\.pt/i.test(text) || /NOTA\s+DE\s+CL[ÁA]USULAS/i.test(text)) {
+    if (
+        /\bCML\/\d{2,}\/\d{2,}\b/i.test(text) ||
+        /www\.cm-lisboa\.pt/i.test(text) ||
+        /NOTA\s+DE\s+CL[ÁA]USULAS/i.test(text)
+    ) {
         return 'known-pt';
     }
 
@@ -218,12 +369,13 @@ function detectFormat(text) {
         return 'iep';
     }
     if (/\bRINAVE\b/.test(t)) {
-        return 'bureau-veritas'; // RINAVE використовує BV формат
+        return 'bureau-veritas';
     }
     return 'generic';
 }
 
 // ─── ГОЛОВНА ФУНКЦІЯ ─────────────────────────────────────────────────────────
+
 /**
  * Парсить PDF звіт інспекції ліфта.
  * Автоматично визначає формат і повертає структурований об'єкт.
@@ -233,14 +385,13 @@ function detectFormat(text) {
  */
 async function parseReport(filePath) {
     try {
-        // Швидко читаємо першу сторінку для детектування формату
         const buffer = await fs.readFile(filePath);
         let firstPageText = '';
         try {
             const partial = await pdfParse(buffer, { max: 1 });
             firstPageText = partial.text || '';
         } catch {
-            // Скановий PDF — format буде generic, OCR спрацює всередині enhanced
+            // Сканований PDF — OCR спрацює всередині enhanced
         }
 
         const format = detectFormat(firstPageText);
@@ -249,10 +400,8 @@ async function parseReport(filePath) {
         let result = null;
 
         if (format === 'bureau-veritas' || format === 'known-pt') {
-            // BV parser підтримує GATECI, CERTIEL, NOMINARE, APCER, RINAVE
             result = await parseBureauVeritasPDF(filePath);
 
-            // Якщо BV не знайшов дату — fallback на enhanced
             const hasDate = result?.metadata?.date || result?.success === false;
             if (!hasDate) {
                 console.log('⚠️ BV parser found no date — falling back to enhanced parser');
@@ -260,10 +409,8 @@ async function parseReport(filePath) {
                 if (enhanced?.success) result = enhanced;
             }
         } else {
-            // Generic / IEP → enhanced (з Gemini structured extraction)
             result = await pdfParserEnhanced.parsePDF(filePath);
 
-            // Enhanced не знайшов порушень або метаданих — спробуємо BV
             const hasViolations = result?.violations?.length > 0;
             const hasMetadata = result?.metadata?.date || result?.metadata?.reportNumber;
             if (!hasViolations && !hasMetadata && result?.success) {
@@ -281,13 +428,11 @@ async function parseReport(filePath) {
 
         result = applyUnifiedPostProcessing(result);
 
-        // Додаємо поле format для інформації
         if (result.success) result.detectedFormat = format;
         return result;
 
     } catch (error) {
         console.error('❌ Unified parser error:', error.message);
-        // Абсолютний fallback — enhanced parser
         try {
             return await pdfParserEnhanced.parsePDF(filePath);
         } catch (fallbackError) {
@@ -301,6 +446,7 @@ async function parseReport(filePath) {
 }
 
 // ─── CLEANUP ─────────────────────────────────────────────────────────────────
+
 async function cleanupFile(filePath) {
     try {
         await fs.unlink(filePath);
@@ -314,6 +460,5 @@ module.exports = {
     parseReport,
     detectFormat,
     cleanupFile,
-    // Re-export для зворотної сумісності
     parsePDF: parseReport
 };

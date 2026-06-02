@@ -330,10 +330,7 @@ function extractMetadata(text) {
         /Data\s+da\s+Inspe[çc][çc]?[ãa]o\s*[:\s]{1,30}(\d{4}[\/\-]\d{2}[\/\-]\d{2})/i, // YYYY/MM/DD or YYYY-MM-DD
         /Data\s+da\s+Inspe[çc][çc]?[ãa]o\s*[:\s]{1,30}(\d{2}\s+de\s+\w+\s+de\s+\d{4})/i, // 30 de Junho de 2025
         /Inspe[çc][çc]?[ãa]o\s+realizada\s*(?:em|a)?\s*[:\s]{0,10}(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4})/i,
-        /data\s*(?:de\s+emiss[ãa]o|de\s+inspe[çc][ãa]o)?\s*[:\s]+(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4})/i,
-        /(\d{2}\s+de\s+\w+\s+de\s+\d{4})/i, // 30 de Junho de 2025 (anywhere)
-        /(\d{4}[\/\-]\d{2}[\/\-]\d{2})/, // Будь-яка дата YYYY/MM/DD or YYYY-MM-DD
-        /(\d{2}[\/\-]\d{2}[\/\-]\d{4})/ // Будь-яка дата DD/MM/YYYY or DD-MM-YYYY
+        /data\s*(?:de\s+inspe[çc][ãa]o)\s*[:\s]+(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4})/i
     ];
     for (const pattern of datePatterns) {
         const match = text.match(pattern);
@@ -551,6 +548,21 @@ function extractMetadata(text) {
 function extractViolations(text) {
     const violations = [];
     const seen = new Set();
+
+    const cleanViolationDescription = (value) => {
+        return String(value || '')
+            .replace(/[•▪·●]/g, ' ')
+            .replace(/^\?+\s*/g, '')
+            .replace(/^C[123]\s*\d+[º°]?(?:[-–]\d+)?\s*/i, '')
+            .replace(/^\d+\s*(?=[A-ZÀ-Úa-zà-ú])/u, '')
+            .replace(/\s+/g, ' ')
+            .trim();
+    };
+
+    const isMetadataNoise = (description) => {
+        const d = String(description || '').toLowerCase();
+        return /^(c[oó]digo\s+postal|tipo\s+de\s+inspe[cç][aã]o|ascensor\b|processo\s*n\.?|instala[cç][aã]o\s*n\.?|localidade\b|concelho\b|resultado\s+da\s+inspe[cç][aã]o)/i.test(d);
+    };
     
     console.log('\n🔍 [Bureau Veritas] Extracting Violations...');
     
@@ -584,13 +596,21 @@ function extractViolations(text) {
     };
 
     // Inferência contextual para relatórios CML sem marcador explícito C1/C2/C3 na tabela.
-    // Ex.: "CLÁUSULAS(S) CUJO CUMPRIMENTO DEVERÁ SER IMEDIATO ... PRORROGADO ATÉ 180 DIAS" = C2.
+    // IMPORTANT: evaluate only near RESULTADO DA INSPEÇÃO to avoid legend text false-positives.
     let contextualClass = null;
-    const normalizedSearchContext = text
+    const resultIdx = text.search(/RESULTADO\s+DA\s+INSPE/i);
+    const resultBlock = resultIdx >= 0
+        ? text.substring(resultIdx, Math.min(text.length, resultIdx + 1800))
+        : text;
+
+    const normalizedSearchContext = resultBlock
         .toLowerCase()
         .normalize('NFD')
         .replace(/[\u0300-\u036f]/g, '');
-    if (/cumprimento\s+devera\s+ser\s+imediato/.test(normalizedSearchContext) && /prorrogado\s+ate\s+180\s+dias/.test(normalizedSearchContext)) {
+
+    if (statusChecks.approved && !statusChecks.failed) {
+        if (/clausulas\s+c3/.test(normalizedSearchContext)) contextualClass = 'C3';
+    } else if (/cumprimento\s+devera\s+ser\s+imediato/.test(normalizedSearchContext) && /prorrogado\s+ate\s+180\s+dias/.test(normalizedSearchContext)) {
         contextualClass = 'C2';
     } else if (/imobilizacao\s+imediata|reprovad[oa]\s+com\s+imobilizacao/.test(normalizedSearchContext)) {
         contextualClass = 'C1';
@@ -1055,9 +1075,32 @@ function extractViolations(text) {
         }
     }
     
-    console.log(`\n📊 Total violations found: ${violations.length}`);
+    // Final safety pass: clean OCR artifacts, remove metadata rows and deduplicate by meaning.
+    const finalViolations = [];
+    const finalSeen = new Set();
+
+    for (const violation of violations) {
+        if (!violation) continue;
+
+        const cleanedDescription = cleanViolationDescription(violation.description || '');
+        if (!cleanedDescription || cleanedDescription.length < 12) continue;
+        if (isMetadataNoise(cleanedDescription)) continue;
+
+        const cleanedArticle = String(violation.article || '').replace(/\s+/g, '').trim();
+        const dedupKey = `${String(violation.classification || 'C3').toUpperCase()}|${cleanedArticle}|${cleanedDescription.toLowerCase()}`;
+        if (finalSeen.has(dedupKey)) continue;
+
+        finalSeen.add(dedupKey);
+        finalViolations.push({
+            ...violation,
+            article: cleanedArticle,
+            description: cleanedDescription
+        });
+    }
+
+    console.log(`\n📊 Total violations found: ${finalViolations.length}`);
     
-    return violations;
+    return finalViolations;
 }
 
 /**
