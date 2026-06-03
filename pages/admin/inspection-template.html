@@ -449,7 +449,7 @@
                 });
             },
 
-            function getReportMetaByVisitType(visitType) {
+            getReportMetaByVisitType(visitType) {
                 const map = {
                     maintenance: { prefix: 'MANU', title: 'RELATÓRIO DE MANUTENÇÃO' },
                     quarterly: { prefix: 'MANU', title: 'RELATÓRIO DE REVISÃO TRIMESTRAL' },
@@ -459,7 +459,7 @@
                     emergency: { prefix: 'EMG', title: 'RELATÓRIO DE INTERVENÇÃO DE EMERGÊNCIA' }
                 };
                 return map[visitType] || { prefix: 'INSP', title: 'RELATÓRIO TÉCNICO' };
-            }
+            },
 
             async generateInspectionNumber() {
                 try {
@@ -484,13 +484,13 @@
                 const year = new Date().getFullYear();
                 const month = String(new Date().getMonth() + 1).padStart(2, '0');
                 const seq = String(Date.now()).slice(-5);
-                const number = `${getReportMetaByVisitType($('#visitType').val() || 'maintenance').prefix}-${year}-${month}-${seq}`;
+                const number = `${this.getReportMetaByVisitType($('#visitType').val() || 'maintenance').prefix}-${year}-${month}-${seq}`;
                 $('#inspectionNumber').val(number);
                 $('#reportInspectionNumber').text(number);
             },
 
             updateReportPreview() {
-                $('#reportTitle').text(getReportMetaByVisitType($('#visitType').val()).title);
+                $('#reportTitle').text(this.getReportMetaByVisitType($('#visitType').val()).title);
                 // Update basic info
                 $('#reportInspectionNumber').text($('#inspectionNumber').val());
                 $('#reportInspectionDate').text($('#inspectionDate').val());
