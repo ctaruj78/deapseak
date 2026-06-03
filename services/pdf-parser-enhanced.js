@@ -224,11 +224,11 @@ function extractMetadata(text) {
         // GATECI / BV: "Data da Inspecção   DD/MM/YYYY" (old or new Portuguese spelling)
         /Data\s+da\s+Inspe[çc][çc]?[ãa]o[:\s]{1,15}(\d{2}[\/\-]\d{2}[\/\-]\d{4})/i,
         /Data\s+da\s+Inspe[çc][çc]?[ãa]o[:\s]{1,15}(\d{4}[\/\-]\d{2}[\/\-]\d{2})/i,
-        /(?:DATA|Data|Emitido|Realizada)(?:\s+DA\s+INSPE[ÇC][ÇC]?[ÃA]O|\s+em|\s+de)?\s*:?\s*(\d{1,2}[-\/]\d{1,2}[-\/]\d{2,4})/i,
-        /data[:\s]+(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4})/i,
+        /(?:DATA|Data|Emitido|Realizada)(?:\s+DA\s+INSPE[ÇC][ÇC]?[ÃA]O|\s+em|\s+de)?\s*:?\s*((?<!\d)\d{1,2}[-\/]\d{1,2}[-\/]\d{2,4}(?!\d))/i,
+        /data[:\s]+((?<!\d)\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}(?!\d))/i,
         /(\d{1,2}\s+de\s+\w+\s+de\s+\d{4})/i,  // 15 de Junho de 2024
-        /(\d{4}[\/\-]\d{1,2}[\/\-]\d{1,2})/,  // 2024-06-15
-        /em\s+(\d{1,2}[-\/]\d{1,2}[-\/]\d{2,4})/i,
+        /(?<!\d)(\d{4}[\/\-]\d{1,2}[\/\-]\d{1,2})(?!\d)/,  // 2024-06-15
+        /em\s+((?<!\d)\d{1,2}[-\/]\d{1,2}[-\/]\d{2,4}(?!\d))/i,
         /\b(\d{1,2}[-\/]\d{1,2}[-\/]\d{2,4})\b/
     ];
     
@@ -1220,9 +1220,27 @@ async function parsePDF(filePath) {
         const hasMedium  = stats.medium > 0;
         const hasViolations = stats.total > 0;
         
-        // Пріоритет — явний висновок у документі (Aprovado / Reprovado)
-        const docSaysApproved  = /Aprovado|APROVADO/i.test(text);
-        const docSaysReprovado = /Reprovado|REPROVADO/i.test(text);
+        // Пріоритет — явний висновок у блоці RESULTADO (а не в легенді внизу).
+        const resultIdx = text.search(/RESULTADO\s+DA\s+INSPE/i);
+        const rawResultScope = resultIdx >= 0 ? text.substring(resultIdx, Math.min(text.length, resultIdx + 2600)) : text;
+        const cutMarkers = [
+            /Observa[çc][õo]es/i,
+            /Constata[çc][õo]es/i,
+            /CERTIFICADO\s+DE\s+INSPEC/i,
+            /OBRIGA[ÇC][ÕO]ES\s+DO\s+PROPRIET/i,
+            /EM\s+RELA[ÇC][ÃA]O\s+[AÀ]S\s+DEFICI/i
+        ];
+        let resultScope = rawResultScope;
+        for (const marker of cutMarkers) {
+            const idx = rawResultScope.search(marker);
+            if (idx > 80) {
+                resultScope = rawResultScope.substring(0, idx);
+                break;
+            }
+        }
+
+        const docSaysApproved  = /\bAprovad[oa]\b/i.test(resultScope);
+        const docSaysReprovado = /\bReprovad[oa]\b|Imobiliza[çc][ãa]o/i.test(resultScope);
         
         let passed;
         let finalReportType;

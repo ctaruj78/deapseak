@@ -326,11 +326,11 @@ function extractMetadata(text) {
     
     // 2. ДАТА ІНСПЕКЦІЇ - різні формати
     const datePatterns = [
-        /Data\s+da\s+Inspe[çc][çc]?[ãa]o\s*[:\s]{1,30}(\d{2}[\/\-]\d{2}[\/\-]\d{4})/i, // DD/MM/YYYY or DD-MM-YYYY (wide whitespace)
-        /Data\s+da\s+Inspe[çc][çc]?[ãa]o\s*[:\s]{1,30}(\d{4}[\/\-]\d{2}[\/\-]\d{2})/i, // YYYY/MM/DD or YYYY-MM-DD
+        /Data\s+da\s+Inspe[çc][çc]?[ãa]o\s*[:\s]{1,30}((?<!\d)\d{2}[\/\-]\d{2}[\/\-]\d{4}(?!\d))/i, // DD/MM/YYYY or DD-MM-YYYY (wide whitespace)
+        /Data\s+da\s+Inspe[çc][çc]?[ãa]o\s*[:\s]{1,30}((?<!\d)\d{4}[\/\-]\d{2}[\/\-]\d{2}(?!\d))/i, // YYYY/MM/DD or YYYY-MM-DD
         /Data\s+da\s+Inspe[çc][çc]?[ãa]o\s*[:\s]{1,30}(\d{2}\s+de\s+\w+\s+de\s+\d{4})/i, // 30 de Junho de 2025
-        /Inspe[çc][çc]?[ãa]o\s+realizada\s*(?:em|a)?\s*[:\s]{0,10}(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4})/i,
-        /data\s*(?:de\s+inspe[çc][ãa]o)\s*[:\s]+(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4})/i
+        /Inspe[çc][çc]?[ãa]o\s+realizada\s*(?:em|a)?\s*[:\s]{0,10}((?<!\d)\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}(?!\d))/i,
+        /data\s*(?:de\s+inspe[çc][ãa]o)\s*[:\s]+((?<!\d)\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}(?!\d))/i
     ];
     for (const pattern of datePatterns) {
         const match = text.match(pattern);
@@ -340,9 +340,18 @@ function extractMetadata(text) {
             break;
         }
     }
+
+    // Fallback: alguns certificados BV trazem apenas "Emissão: YYYY/MM/DD"
+    if (!metadata.date) {
+        const emissionMatch = text.match(/Emiss[aã]o\s*:?\s*((?<!\d)\d{4}[\/\-]\d{2}[\/\-]\d{2}(?!\d))/i);
+        if (emissionMatch) {
+            metadata.date = emissionMatch[1];
+            console.log('  ✅ Date (from Emissão):', metadata.date);
+        }
+    }
     
     // 3. НОМЕР УСТАНОВКИ (Installation Number)
-    const installationMatch = text.match(/Instala[çc][ãa]o\s+n[ºo.]\s*(\d+[-\/]\d+[-\/\d]*)/i);
+    const installationMatch = text.match(/Instala[çc][ãa]o\s+n[ºo.]\s*([A-Z]{0,4}\d+[A-Z0-9\-\/]*)/i);
     if (installationMatch) {
         metadata.installationNumber = installationMatch[1];
         metadata.liftId = installationMatch[1]; // Використовуємо як ID ліфту
@@ -684,6 +693,77 @@ function extractViolations(text) {
     }
     
     console.log(`  📊 Format 1 found: ${count} violations`);
+
+    // Formato 1B: linhas BV/CML do tipo "C2 5.10.4.2 - descrição" ou
+    // "C2 5.4.10.4 DESCRIÇÃO" (sem "Artº") + continuação em linha seguinte.
+    let count1b = 0;
+    let currentViolation = null;
+    const lines1b = searchText.split(/\r?\n/);
+
+    for (const rawLine of lines1b) {
+        const line = String(rawLine || '').trim();
+        if (!line) continue;
+        if (/^(RESULTADO|CERTIFICADO|Observa[çc][õo]es|Constata[çc][õo]es)/i.test(line)) break;
+        if (/^Tipo\s+Defici/i.test(line)) continue;
+
+        // Nova violação: começa com C1/C2/C3
+        const startMatch = line.match(/^(C[123])\s+(.+)$/i);
+        if (startMatch) {
+            const classification = startMatch[1].toUpperCase();
+            let rest = startMatch[2].trim();
+            let article = '';
+            let description = rest;
+
+            // C2 Artº.64.º 1 - descrição
+            const artLabel = rest.match(/^Art[ºo°]?\.?\s*([\d\s\.º°]+?)\s*[-–—]\s*(.+)$/i);
+            if (artLabel) {
+                article = artLabel[1].trim().replace(/[º°]/g, '.').replace(/\s+/g, '').replace(/\.+/g, '.').replace(/\.$/, '');
+                description = artLabel[2].trim();
+            } else {
+                // C2 5.10.4.2 - descrição
+                const numericWithDash = rest.match(/^([\d]+(?:\.[\d]+){1,8})\s*[-–—]\s*(.+)$/);
+                if (numericWithDash) {
+                    article = numericWithDash[1].trim();
+                    description = numericWithDash[2].trim();
+                } else {
+                    // C2 5.4.10.4 DESCRIÇÃO (sem separador)
+                    const numericNoDash = rest.match(/^([\d]+(?:\.[\d]+){1,8})\s+(.+)$/);
+                    if (numericNoDash) {
+                        article = numericNoDash[1].trim();
+                        description = numericNoDash[2].trim();
+                    }
+                }
+            }
+
+            if (!isExplanationText(description) && !isMetadataNoise(description)) {
+                const key = `${classification}-${article || 'NOART'}-${description.substring(0, 40)}`;
+                if (!seen.has(key)) {
+                    seen.add(key);
+                    currentViolation = createViolation(classification, article, description);
+                    violations.push(currentViolation);
+                    count1b++;
+                    console.log(`  ✅ Added Format 1B violation: ${classification} Art.${article || 'N/A'}`);
+                } else {
+                    currentViolation = null;
+                }
+            } else {
+                currentViolation = null;
+            }
+            continue;
+        }
+
+        // Continuação da descrição na linha seguinte (sem novo Cx)
+        if (currentViolation) {
+            if (/^(C[123])\s+/i.test(line)) {
+                currentViolation = null;
+                continue;
+            }
+            if (line.length >= 6 && !isExplanationText(line) && !isMetadataNoise(line)) {
+                currentViolation.description = `${currentViolation.description} ${line}`.replace(/\s+/g, ' ').trim();
+            }
+        }
+    }
+    console.log(`  📊 Format 1B found: ${count1b} violations`);
     
     // Формат 2: Список маркерів з артикулами (інший формат)
     const format2 = /[•▪○-]\s*([^\n]{10,300}?)(?:Art\.?º?|Artigo)\s*(\d+[a-z]?\.?\d*)\s*\(([C][123])\)/gi;

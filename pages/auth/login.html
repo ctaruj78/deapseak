@@ -220,10 +220,22 @@
             const passwordFromUrl = urlParams.get('password');
             const autoLoginRequested = emailFromUrl && passwordFromUrl;
             
-            // Se pedidoано автоlogin - оouщуexisteмо сeрий token
-            if (autoLoginRequested && typeof AuthManager !== 'undefined') {
-                console.log('🔄 Автоlogin pedidoано - оouщуexisteмо сeрі dados');
-                AuthManager.logout();
+            // Se pedidoано автоlogin - очищаємо auth-дані БЕЗ редіректу,
+            // щоб не було "blink + reset" перед першим submit.
+            if (autoLoginRequested) {
+                console.log('🔄 Автоlogin pedidoано - оouщуexisteмо сeрі dados (silent)');
+                const authKeys = [
+                    'liftmanager_jwt', 'liftmanager_user', 'liftmanager_refresh',
+                    'userData', 'lm_session', 'lm_user', 'token', 'authToken',
+                    'lm_token', 'deapseak_token', 'user', 'currentUser'
+                ];
+                authKeys.forEach((key) => {
+                    try {
+                        localStorage.removeItem(key);
+                        sessionStorage.removeItem(key);
+                    } catch (e) {}
+                });
+                document.cookie = 'auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
             }
             
             if (emailFromUrl) {

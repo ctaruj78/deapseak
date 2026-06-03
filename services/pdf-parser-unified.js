@@ -253,12 +253,38 @@ function inferResultStatus(text = '') {
     }
 
     const resultIdx = source.search(/RESULTADO\s+DA\s+INSPE/i);
-    const scope = resultIdx >= 0 ? source.substring(resultIdx, Math.min(source.length, resultIdx + 1400)) : source;
+    const rawScope = resultIdx >= 0 ? source.substring(resultIdx, Math.min(source.length, resultIdx + 2600)) : source;
+    // Ignore explanatory legends after the actual result block.
+    const cutMarkers = [
+        /Observa[çc][õo]es/i,
+        /Constata[çc][õo]es/i,
+        /CERTIFICADO\s+DE\s+INSPEC/i,
+        /OBRIGA[ÇC][ÕO]ES\s+DO\s+PROPRIET/i,
+        /EM\s+RELA[ÇC][ÃA]O\s+[AÀ]S\s+DEFICI/i
+    ];
+    let scope = rawScope;
+    for (const marker of cutMarkers) {
+        const idx = rawScope.search(marker);
+        if (idx > 80) {
+            scope = rawScope.substring(0, idx);
+            break;
+        }
+    }
 
-    const approved = /Aprovad[oa](?!\s+com\s+Imobiliza)/i.test(scope);
-    const failed = /Reprovad[oa]|Imobiliza[cç][aã]o/i.test(scope);
+    const approved = /\bAprovad[oa]\b(?!\s+com\s+Imobiliza)/i.test(scope);
+    const failed = /\bReprovad[oa]\b|Imobiliza[cç][aã]o/i.test(scope);
     const hasExplicitImmobilization = /Reprovad[oa]\s+com\s+Imobiliza[cç][aã]o|Imobiliza[cç][aã]o\s+imediata/i.test(scope);
     const hasApprovedC2Star = /Aprovad[oa][\s\S]{0,120}C2\*/i.test(scope);
+
+    // If both words appear, trust whichever appears first in RESULTADO block.
+    if (approved && failed) {
+        const firstApproved = scope.search(/\bAprovad[oa]\b/i);
+        const firstFailed = scope.search(/\bReprovad[oa]\b|Imobiliza[cç][aã]o/i);
+        if (firstFailed !== -1 && (firstApproved === -1 || firstFailed < firstApproved)) {
+            return { status: 'failed', hasExplicitImmobilization, hasApprovedC2Star };
+        }
+        return { status: 'approved', hasExplicitImmobilization, hasApprovedC2Star };
+    }
 
     if (failed && !approved) {
         return { status: 'failed', hasExplicitImmobilization, hasApprovedC2Star };

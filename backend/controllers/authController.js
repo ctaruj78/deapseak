@@ -100,6 +100,7 @@ exports.login = async (req, res, next) => {
         const { login, email, password } = req.body;
         const loginValue = login || email; // Використовуємо login ou email
 
+
         if (!loginValue || !password) {
             throw new AppError('Por favor, forneça email/username e palavra-passe', 400);
         }
