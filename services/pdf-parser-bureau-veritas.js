@@ -764,6 +764,85 @@ function extractViolations(text) {
         }
     }
     console.log(`  📊 Format 1B found: ${count1b} violations`);
+
+    // Formato 1C (fallback): OCR às vezes desloca linhas para fora da secção NOTA,
+    // então varremos o texto completo quando o relatório está Reprovado e temos
+    // poucas cláusulas capturadas.
+    if (statusChecks.failed && violations.length < 4) {
+        let count1c = 0;
+        let current = null;
+        const fullLines = String(text || '').split(/\r?\n/);
+
+        for (const rawLine of fullLines) {
+            const line = String(rawLine || '').trim();
+            if (!line || line.length < 8) continue;
+
+            // Ignore obvious legend/explanatory rows.
+            if (/^(Tipo\s+Defici|RESULTADO\s+DA\s+INSPE|OBRIGA[ÇC][ÕO]ES|EM\s+RELA[ÇC][ÃA]O\s+[AÀ]S\s+DEFICI)/i.test(line)) {
+                current = null;
+                continue;
+            }
+
+            // Match lines that begin with C1/C2/C3 or article-like numeric pattern.
+            // Examples:
+            //   C2 5.10.4.2 – O MOTOR ...
+            //   C2 5.4.10.4 INEXISTÊNCIA ...
+            //   C2 DIRETIVA 2014/33/UE ...
+            //   5.10.4.2 O MOTOR ...   (OCR dropped C2 prefix)
+            const m = line.match(/^(?:(C[123])\s+)?(.+)$/i);
+            if (!m) continue;
+
+            const cls = (m[1] || contextualClass || 'C2').toUpperCase();
+            const rest = m[2].trim();
+            let article = '';
+            let description = '';
+
+            const numericWithDash = rest.match(/^([\d]+(?:\.[\d]+){1,8})\s*[-–—]\s*(.+)$/);
+            const numericNoDash = rest.match(/^([\d]+(?:\.[\d]+){1,8})\s+(.{8,})$/);
+            const artLabel = rest.match(/^Art[ºo°]?\.?\s*([\d\s\.º°]+?)\s*[-–—]\s*(.+)$/i);
+            const directive = rest.match(/^(DIRETIVA\s+\d{4}\/\d+\/UE\s*[-–—].+)$/i);
+
+            if (artLabel) {
+                article = artLabel[1].trim().replace(/[º°]/g, '.').replace(/\s+/g, '').replace(/\.+/g, '.').replace(/\.$/, '');
+                description = artLabel[2].trim();
+            } else if (numericWithDash) {
+                article = numericWithDash[1].trim();
+                description = numericWithDash[2].trim();
+            } else if (numericNoDash) {
+                article = numericNoDash[1].trim();
+                description = numericNoDash[2].trim();
+            } else if (directive) {
+                article = '';
+                description = directive[1].trim();
+            }
+
+            // Continuation lines like: "Falta monitorização..."
+            if (!description) {
+                if (current && /^(Falta|Inexist[eê]ncia|N[ãa]o\s+existe|Sem\s+)/i.test(line)) {
+                    current.description = `${current.description} ${line}`.replace(/\s+/g, ' ').trim();
+                }
+                continue;
+            }
+
+            if (isExplanationText(description) || isMetadataNoise(description)) {
+                current = null;
+                continue;
+            }
+
+            const key = `${cls}-${article || 'NOART'}-${description.substring(0, 40)}`;
+            if (!seen.has(key)) {
+                seen.add(key);
+                current = createViolation(cls, article, description);
+                violations.push(current);
+                count1c++;
+                console.log(`  ✅ Added Format 1C violation: ${cls} Art.${article || 'N/A'}`);
+            } else {
+                current = null;
+            }
+        }
+
+        console.log(`  📊 Format 1C (fallback full-text scan) found: ${count1c} violations`);
+    }
     
     // Формат 2: Список маркерів з артикулами (інший формат)
     const format2 = /[•▪○-]\s*([^\n]{10,300}?)(?:Art\.?º?|Artigo)\s*(\d+[a-z]?\.?\d*)\s*\(([C][123])\)/gi;

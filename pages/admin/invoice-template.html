@@ -763,6 +763,58 @@
 
     <script>
         // Invoice management
+        function decodeTokenRole(token) {
+            try {
+                const payload = JSON.parse(atob(String(token).split('.')[1] || ''));
+                const role = String(payload.role || '').toLowerCase();
+                return role === 'tech' ? 'technician' : role;
+            } catch (_) {
+                return null;
+            }
+        }
+
+        function getPageAuthToken(requiredRoles = []) {
+            const allowed = Array.isArray(requiredRoles)
+                ? requiredRoles.map(r => String(r).toLowerCase())
+                : [];
+
+            const normalizeToken = (t) => (t && t !== 'null' && t !== 'undefined' && String(t).trim() !== '') ? String(t) : null;
+
+            const candidates = [
+                // Prioritize current-tab/session keys first.
+                sessionStorage.getItem('liftmanager_jwt'),
+                sessionStorage.getItem('authToken'),
+                sessionStorage.getItem('token'),
+
+                // Then local fallbacks.
+                localStorage.getItem('liftmanager_jwt'),
+                localStorage.getItem('authToken'),
+                localStorage.getItem('token'),
+                localStorage.getItem('jwt_token'),
+                localStorage.getItem('lm_token')
+            ]
+            .map(normalizeToken)
+            .filter(Boolean)
+            .filter((token, idx, arr) => arr.indexOf(token) === idx);
+
+            // Role-aware pick for protected admin/dispatcher actions.
+            if (allowed.length > 0) {
+                const roleMatched = candidates.find((token) => {
+                    const role = decodeTokenRole(token);
+                    return role && allowed.includes(role);
+                });
+                if (roleMatched) return roleMatched;
+            }
+
+            // Last resort: use AuthManager if available.
+            if (typeof AuthManager !== 'undefined' && typeof AuthManager.getAuthToken === 'function') {
+                const t = normalizeToken(AuthManager.getAuthToken());
+                if (t) return t;
+            }
+
+            return candidates[0] || null;
+        }
+
         const invoiceManager = {
             init() {
                 // Set current date
@@ -790,11 +842,7 @@
             async generateInvoiceNumber() {
                 try {
                     // Obter o último número da API
-                    const _authToken = localStorage.getItem('liftmanager_jwt') ||
-                                       localStorage.getItem('jwt_token') ||
-                                       localStorage.getItem('token') ||
-                                       localStorage.getItem('lm_token') ||
-                                       sessionStorage.getItem('liftmanager_jwt');
+                    const _authToken = getPageAuthToken(['admin', 'dispatcher']);
                     const response = await fetch('/api/orcamentos/next-number', {
                         headers: {
                             'Authorization': `Bearer ${_authToken}`
@@ -876,9 +924,13 @@
 
                 // Mostrar elevadores selecionados no preview
                 const selectedLifts = typeof getSelectedLifts === 'function' ? getSelectedLifts() : [];
+                const linkedFromRecord = Array.isArray(window._linkedLiftsFromOrcamento) ? window._linkedLiftsFromOrcamento : [];
+                const liftsForPreview = selectedLifts.length > 0 ? selectedLifts : linkedFromRecord;
                 let liftsHtml = '';
-                if (selectedLifts.length > 0) {
-                    liftsHtml = `<div class="mt-1"><small class="text-primary"><i class="fas fa-elevator"></i> <strong>Elevadores:</strong> ${selectedLifts.map(l => l.label).join(', ')}</small></div>`;
+                if (liftsForPreview.length > 0) {
+                    const labels = liftsForPreview.map(l => l.label || `Elev. #${l.munNum || '—'}`);
+                    const count = liftsForPreview.length;
+                    liftsHtml = `<div class="mt-1"><small class="text-primary"><i class="fas fa-elevator"></i> <strong>Elevadores (${count}):</strong> ${labels.join(', ')}</small></div>`;
                 }
                 const liftsEl = document.getElementById('previewLiftsInfo');
                 if (liftsEl) liftsEl.innerHTML = liftsHtml;
@@ -1003,6 +1055,22 @@
                     }
                     doc.text(`Email: ${clientEmail}`, 20, yPos);
                     yPos += 10;
+
+                    // Elevadores vinculados (selecionados no formulário ou carregados do orçamento)
+                    const selectedLifts = typeof getSelectedLifts === 'function' ? getSelectedLifts() : [];
+                    const linkedFromRecord = Array.isArray(window._linkedLiftsFromOrcamento) ? window._linkedLiftsFromOrcamento : [];
+                    const liftsForPdf = selectedLifts.length > 0 ? selectedLifts : linkedFromRecord;
+                    if (liftsForPdf.length > 0) {
+                        const labels = liftsForPdf.map(l => l.label || `Elev. #${l.munNum || '—'}`);
+                        const liftsLine = labels.join(', ');
+                        doc.setFont(undefined, 'bold');
+                        doc.text(`Elevadores (${liftsForPdf.length}):`, 20, yPos);
+                        yPos += 5;
+                        doc.setFont(undefined, 'normal');
+                        const splitLifts = doc.splitTextToSize(liftsLine, 170);
+                        doc.text(splitLifts, 20, yPos);
+                        yPos += splitLifts.length * 4.5 + 5;
+                    }
                     
                     // ═══════════════════════════════════════════════════════════
                     // TABELA DE SERVIÇOS
@@ -1217,10 +1285,7 @@
                 }
 
                 try {
-                    const token = localStorage.getItem('liftmanager_jwt') || 
-                                 localStorage.getItem('jwt_token') ||
-                                 localStorage.getItem('token') || 
-                                 localStorage.getItem('lm_token');
+                    const token = getPageAuthToken(['admin', 'dispatcher']);
                     const validToken = (token && token !== 'null' && token !== 'undefined' && token.trim() !== '') ? token : null;
                     
                     console.log('🔑 Sending email with token:', validToken ? 'EXISTS' : 'NOT FOUND');
@@ -1292,8 +1357,13 @@
                         console.log('✅ Email enviado com sucesso!');
                     } else {
                         const errorMsg = result.message || result.error || 'Erro desconhecido';
-                        alert(`❌ Erro: ${errorMsg}`);
-                        console.error('❌ Erro ao enviar:', errorMsg);
+                        const tokenRole = decodeTokenRole(validToken) || 'unknown';
+                        if (response.status === 403 && /Acesso negado|Papel necess/i.test(errorMsg)) {
+                            alert(`❌ Erro: ${errorMsg}\n\nRole no token atual: ${tokenRole}\nFaça logout/login como admin ou dispatcher nesta mesma aba.`);
+                        } else {
+                            alert(`❌ Erro: ${errorMsg}`);
+                        }
+                        console.error('❌ Erro ao enviar:', errorMsg, '| role:', tokenRole, '| status:', response.status);
                     }
 
                 } catch (error) {
@@ -1414,10 +1484,7 @@
             console.log('📊 Dados completos:', data);
             
             try {
-                const token = localStorage.getItem('liftmanager_jwt') || 
-                             localStorage.getItem('jwt_token') ||
-                             localStorage.getItem('token') || 
-                             localStorage.getItem('lm_token');
+                const token = getPageAuthToken(['admin', 'dispatcher']);
                 
                 // Rejeitar tokens inválidos ("null", "undefined", strings vazias)
                 const validToken = (token && token !== 'null' && token !== 'undefined' && token.trim() !== '') ? token : null;
@@ -1550,10 +1617,7 @@
             }
             
             // Verificação de autorização para administradorів
-            const token = localStorage.getItem('liftmanager_jwt') || 
-                         localStorage.getItem('jwt_token') ||
-                         localStorage.getItem('token') || 
-                         localStorage.getItem('lm_token');
+            const token = getPageAuthToken(['admin', 'dispatcher']);
             
             if (!token) {
                 alert('Sessão expirada. Faça login novamente.');
@@ -1582,17 +1646,17 @@
 
                     if (pLiftId) {
                         // Descarregar elevador за ID і mostrar painel desde do elevadorми на цій endereço
-                        const tok2 = localStorage.getItem('liftmanager_jwt') || localStorage.getItem('jwt_token') || localStorage.getItem('token') || localStorage.getItem('lm_token');
+                        const tok2 = getPageAuthToken(['admin', 'dispatcher']);
                         fetch(`/api/lifts/${pLiftId}`, { headers: { 'Authorization': `Bearer ${tok2}` } })
                             .then(r => r.json()).then(json => {
                                 const lift = json.data?.lift || json.data || json.lift || json;
                                 if (!lift || !lift._id) return;
                                 const addr = lift.address || {};
                                 const addrStr = pLiftAddress || (typeof addr === 'string' ? addr : [addr.street, addr.zipCode, addr.city].filter(Boolean).join(', '));
-                                // Deаповнити endereço
-                                if (addrStr && !$('#clientAddress').val().trim()) $('#clientAddress').val(addrStr);
-                                if (lift.clientName && !$('#clientName').val().trim()) $('#clientName').val(lift.clientName);
-                                if ((lift.clientEmail || lift.email) && !$('#clientEmail').val().trim()) $('#clientEmail').val(lift.clientEmail || lift.email);
+                                // Sincronizar dados do cliente com o elevador selecionado.
+                                if (addrStr) $('#clientAddress').val(addrStr);
+                                $('#clientName').val(lift.clientName || '');
+                                $('#clientEmail').val(lift.clientEmail || lift.email || '');
                                 // Descarregar todos elevadores за endereço і mostrar painel
                                 const street = (typeof addr === 'object' ? addr.street : addrStr.split(',')[0]) || addrStr;
                                 fetch(`/api/lifts?search=${encodeURIComponent(street)}&limit=50`, { headers: { 'Authorization': `Bearer ${tok2}` } })
@@ -1621,6 +1685,17 @@
         });
 
         function initAddressLiftSearch(token) {
+            function syncClientFromLiftData(data) {
+                const nextAddress = (data && typeof data.address === 'string') ? data.address : '';
+                const nextName = (data && data.clientName) ? data.clientName : '';
+                const nextEmail = (data && (data.clientEmail || data.email)) ? (data.clientEmail || data.email) : '';
+
+                // Sempre manter os dados do cliente em sincronia com a morada/elevador selecionado.
+                $('#clientAddress').val(nextAddress);
+                $('#clientName').val(nextName);
+                $('#clientEmail').val(nextEmail);
+            }
+
             $('#liftAddressSearch').select2({
                 theme: 'bootstrap4',
                 placeholder: '🔍 Digite a morada ou nº municipal...',
@@ -1639,9 +1714,11 @@
                     data: params => ({ search: params.term, limit: 50 }),
                     processResults: function(json) {
                         try {
-                            const lifts = (json && json.data && Array.isArray(json.data))
-                                ? json.data
-                                : (json && Array.isArray(json.lifts) ? json.lifts : []);
+                            const lifts = (json && json.data && Array.isArray(json.data.lifts))
+                                ? json.data.lifts
+                                : (json && json.data && Array.isArray(json.data)
+                                    ? json.data
+                                    : (json && Array.isArray(json.lifts) ? json.lifts : []));
                             if (!lifts.length) return { results: [] };
                             // Agrupar por morada
                             const addressMap = {};
@@ -1679,17 +1756,7 @@
 
             $('#liftAddressSearch').on('select2:select', function(e) {
                 const data = e.params.data;
-                // Sempre preencher morada do cliente ao selecionar
-                if (data.address) {
-                    $('#clientAddress').val(data.address);
-                }
-                // Preenchaer nome e email do cliente se ainda vazio
-                if (data.clientName && !$('#clientName').val().trim()) {
-                    $('#clientName').val(data.clientName);
-                }
-                if (data.clientEmail && !$('#clientEmail').val().trim()) {
-                    $('#clientEmail').val(data.clientEmail);
-                }
+                syncClientFromLiftData(data);
                 invoiceManager.updatePreview();
                 // Mostrar painel de elevadores com checkboxes
                 showLiftsAtAddress(data.lifts || [], data.address);
@@ -1698,6 +1765,11 @@
             $('#liftAddressSearch').on('select2:clear', function() {
                 document.getElementById('liftsAtAddressPanel').style.display = 'none';
                 document.getElementById('liftsCheckboxList').innerHTML = '';
+                // Evitar mistura de dados entre condomínios diferentes.
+                $('#clientAddress').val('');
+                $('#clientName').val('');
+                $('#clientEmail').val('');
+                invoiceManager.updatePreview();
             });
         }
 
@@ -1759,7 +1831,7 @@
             if (!morada) return;
             // Se já existe uma morada seleccionada no Select2, não sobrescrever
             if ($('#liftAddressSearch').val()) return;
-            const token = localStorage.getItem('liftmanager_jwt') || localStorage.getItem('jwt_token') || localStorage.getItem('token') || localStorage.getItem('lm_token');
+            const token = getPageAuthToken(['admin', 'dispatcher']);
             fetch(`/api/lifts?search=${encodeURIComponent(morada.split(',')[0])}&limit=50`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             }).then(r => r.json()).then(json => {
@@ -1773,7 +1845,11 @@
                 const text = addrStr + (lifts.length > 1 ? ` (${lifts.length} elevadores)` : ` (1 elevador)`);
                 const opt = new Option(text, addrStr, true, true);
                 $('#liftAddressSearch').append(opt).trigger('change');
+                $('#clientAddress').val(addrStr);
+                $('#clientName').val(lifts[0].clientName || '');
+                $('#clientEmail').val(lifts[0].clientEmail || lifts[0].email || '');
                 showLiftsAtAddress(lifts, addrStr);
+                invoiceManager.updatePreview();
             }).catch(() => {});
         }
 
@@ -1878,7 +1954,7 @@
         async function deleteFoto(idx) {
             if (!window.currentOrcamentoId) return alert('Guarde o orçamento antes de remover fotos.');
             if (!confirm('Remover esta fotografia?')) return;
-            const token = localStorage.getItem('liftmanager_jwt') || localStorage.getItem('jwt_token') || localStorage.getItem('token') || localStorage.getItem('lm_token');
+            const token = getPageAuthToken(['admin', 'dispatcher']);
             try {
                 const res = await fetch(`/api/orcamentos/${window.currentOrcamentoId}/fotos/${idx}`, {
                     method: 'DELETE',
@@ -1951,10 +2027,8 @@
         // Descarregar орçаменто за ID
         async function loadOrcamento(id, viewMode = false) {
             try {
-                const token = localStorage.getItem('liftmanager_jwt') ||
-                             localStorage.getItem('jwt_token') ||
-                             localStorage.getItem('token') || 
-                             localStorage.getItem('lm_token');
+                const token = getPageAuthToken(['admin', 'dispatcher']);
+                window._linkedLiftsFromOrcamento = [];
                 
                 console.log('🌐 A carregar desde /api/orcamentos/' + id);
                 
@@ -2011,22 +2085,41 @@
                     $('button[onclick*="saveOrcamento"]').hide();
                     $('.card-header').prepend('<span class="badge badge-info">Modo de Visualização</span> ');
                 }
-                
-                // Restaurar прив'язаний elevador у Select2
-                if (orcamento.liftId) {
-                    fetch(`/api/lifts/${orcamento.liftId}`, { headers: { 'Authorization': `Bearer ${token}` } })
-                        .then(r => r.ok ? r.json() : null).then(json => {
-                            if (!json) return;
-                            const lift = json.data?.lift || json.data || json.lift || json;
-                            if (!lift || !lift._id) return;
+
+                // Restaurar elevadores vinculados (single + multi) e mostrar no preview.
+                const linkedIds = [];
+                if (Array.isArray(orcamento.lifts) && orcamento.lifts.length > 0) {
+                    orcamento.lifts.forEach((l) => {
+                        const idVal = (typeof l === 'string') ? l : (l?._id || l?.liftId || l?.id || null);
+                        if (idVal) linkedIds.push(String(idVal));
+                    });
+                }
+                if (orcamento.liftId) linkedIds.push(String(orcamento.liftId));
+
+                const uniqueLinkedIds = [...new Set(linkedIds)];
+                if (uniqueLinkedIds.length > 0) {
+                    try {
+                        const responses = await Promise.all(uniqueLinkedIds.map(async (lid) => {
+                            const r = await fetch(`/api/lifts/${lid}`, { headers: { 'Authorization': `Bearer ${token}` } });
+                            if (!r.ok) return null;
+                            const json = await r.json();
+                            const lift = json.data?.lift || json.data || json.lift || null;
+                            if (!lift || !lift._id) return null;
                             const addr = lift.address || {};
                             const addrStr = typeof addr === 'string' ? addr : [addr.street, addr.zipCode, addr.city].filter(Boolean).join(', ');
-                            const label = lift.municipalNumber ? `#${lift.municipalNumber} — ${addrStr}` : (addrStr || lift._id);
-                            const opt = new Option(label, lift._id, true, true);
-                            $('#liftSelect').append(opt).trigger('change');
-                            document.getElementById('liftMatchHint').innerHTML = `<strong>${label}</strong><br>✅ Orçamento vinculado a este elevador`;
-                            document.getElementById('liftMatchHint').className = 'form-text text-success';
-                        }).catch(() => {});
+                            const munNum = lift.municipalNumber || '—';
+                            return {
+                                id: String(lift._id),
+                                munNum,
+                                label: `Elev. #${munNum}${addrStr ? ` — ${addrStr}` : ''}`
+                            };
+                        }));
+
+                        window._linkedLiftsFromOrcamento = responses.filter(Boolean);
+                        invoiceManager.updatePreview();
+                    } catch (e) {
+                        console.warn('⚠️ Não foi possível carregar elevadores vinculados:', e.message);
+                    }
                 }
 
                 // Guardar ID para можливості atualização e відправки email

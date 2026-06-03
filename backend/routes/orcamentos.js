@@ -1216,48 +1216,66 @@ router.patch('/:id/link-lift', authenticate, authorizeRoles('admin', 'dispatcher
             return res.status(404).json({ success: false, message: 'Orçamento não encontrado' });
         }
 
-        const { liftId } = req.body;
+        const { liftId, liftIds } = req.body;
+        const requestedLiftIds = Array.isArray(liftIds)
+            ? liftIds.filter(Boolean).map(String)
+            : (liftId ? [String(liftId)] : []);
 
-        if (!liftId) {
+        if (!requestedLiftIds.length) {
             // Desvincular
             orcamento.liftId = null;
+            orcamento.lifts = [];
             orcamento.liftAddress = null;
             await orcamento.save();
-            return res.json({ success: true, message: 'Orçamento desvinculado do elevador', liftId: null, liftAddress: null });
+            return res.json({ success: true, message: 'Orçamento desvinculado do elevador', liftId: null, lifts: [], liftAddress: null });
         }
 
-        // Buscar dados do lift
+        // Buscar dados dos lifts
         const db = mongoose.connection.db;
         const { ObjectId } = mongoose.Types;
-        let liftObjectId;
-        try {
-            liftObjectId = new ObjectId(liftId);
-        } catch (e) {
-            return res.status(400).json({ success: false, message: 'liftId inválido' });
+        const objectIds = [];
+        for (const id of requestedLiftIds) {
+            try {
+                objectIds.push(new ObjectId(id));
+            } catch (e) {
+                return res.status(400).json({ success: false, message: `liftId inválido: ${id}` });
+            }
         }
 
-        const lift = await db.collection('lifts').findOne({ _id: liftObjectId });
-        if (!lift) {
+        const lifts = await db.collection('lifts').find({ _id: { $in: objectIds } }).toArray();
+        if (!lifts.length) {
             return res.status(404).json({ success: false, message: 'Elevador não encontrado' });
         }
 
-        const addr = lift.address || {};
+        const byId = new Map(lifts.map(l => [String(l._id), l]));
+        const orderedLifts = requestedLiftIds.map(id => byId.get(String(id))).filter(Boolean);
+        if (!orderedLifts.length) {
+            return res.status(404).json({ success: false, message: 'Elevador não encontrado' });
+        }
+
+        const primaryLift = orderedLifts[0];
+        const addr = primaryLift.address || {};
         const liftAddress = typeof addr === 'string'
             ? addr
             : [addr.street, addr.zipCode, addr.city].filter(Boolean).join(', ');
 
-        orcamento.liftId = liftObjectId;
-        orcamento.liftAddress = liftAddress;
+        // Persist both legacy single-lift field and new multi-lift array.
+        orcamento.liftId = primaryLift._id;
+        orcamento.lifts = orderedLifts.map(l => l._id);
+        orcamento.liftAddress = liftAddress || null;
         await orcamento.save();
 
-        console.log(`🔗 Orçamento ${orcamento.numero} vinculado ao elevador ${lift.municipalNumber || liftId}`);
+        console.log(`🔗 Orçamento ${orcamento.numero} vinculado a ${orderedLifts.length} elevador(es)`);
 
         res.json({
             success: true,
-            message: `Orçamento vinculado ao elevador ${lift.municipalNumber || ''}`,
-            liftId: liftObjectId,
+            message: orderedLifts.length > 1
+                ? `Orçamento vinculado a ${orderedLifts.length} elevadores`
+                : `Orçamento vinculado ao elevador ${primaryLift.municipalNumber || ''}`,
+            liftId: primaryLift._id,
+            lifts: orderedLifts.map(l => l._id),
             liftAddress,
-            municipalNumber: lift.municipalNumber || null
+            municipalNumber: primaryLift.municipalNumber || null
         });
     } catch (error) {
         console.error('Erro ao vincular orçamento a elevador:', error);
