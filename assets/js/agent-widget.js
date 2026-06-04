@@ -18,6 +18,7 @@
     const CFG = Object.assign({
         role: 'admin',
         baseUrl: '',
+        avatarStyle: 'wizard',
         strings: {
             admin:      { title: 'Agente FestLift', subtitle: 'Assistente Administrativo' },
             dispatcher: { title: 'Agente FestLift', subtitle: 'Assistente de Despacho' },
@@ -38,12 +39,20 @@
     function buildWidget() {
         const widget = document.createElement('div');
         widget.id = 'agent-widget';
+        const isMinimalAvatar = CFG.avatarStyle === 'minimal';
+        const isWizardAvatar = CFG.avatarStyle === 'wizard';
+        const triggerClass = isMinimalAvatar ? 'avatar-minimal' : (isWizardAvatar ? 'avatar-wizard' : '');
+        const triggerChar = isMinimalAvatar ? '' : (isWizardAvatar ? '🧙' : '🤖');
+        const headerAvatarClass = isMinimalAvatar
+            ? 'agent-avatar avatar-minimal'
+            : (isWizardAvatar ? 'agent-avatar avatar-wizard' : 'agent-avatar');
+        const headerAvatarChar = isMinimalAvatar ? '' : (isWizardAvatar ? '🧙' : '🤖');
         widget.innerHTML = `
-<button id="agent-trigger" title="${s.title}" data-count="0">🤖</button>
+<button id="agent-trigger" class="${triggerClass}" title="${s.title}" data-count="0">${triggerChar}</button>
 
 <div id="agent-panel" class="hidden">
   <div id="agent-header">
-    <span class="agent-avatar">🤖</span>
+        <span class="${headerAvatarClass}">${headerAvatarChar}</span>
     <div class="agent-title">
       <strong>${s.title}</strong>
       <small>${s.subtitle}</small>

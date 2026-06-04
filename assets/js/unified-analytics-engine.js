@@ -1701,40 +1701,13 @@ class UnifiedAnalyticsEngine {
         const reportsTableBody = document.getElementById('reports-table');
         if (!reportsTableBody) return;
 
-        const reports = [
-            {
-                name: 'Relatório mensal de atividade',
-                lastUpdate: 'há 5 min',
-                status: 'Pronto',
-                statusClass: 'success'
-            },
-            {
-                name: 'Inspeções semanais',
-                lastUpdate: 'há 1 hora', 
-                status: 'A gerar',
-                statusClass: 'warning'
-            },
-            {
-                name: 'Relatório financeiro trimestral',
-                lastUpdate: 'há 2 horas',
-                status: 'Pronto',
-                statusClass: 'success'
-            }
-        ];
-
-        reportsTableBody.innerHTML = reports.map(report => `
+        reportsTableBody.innerHTML = `
             <tr>
-                <td>${report.name}</td>
-                <td>${report.lastUpdate}</td>
-                <td><span class="badge badge-${report.statusClass}">${report.status}</span></td>
-                <td>
-                    <button class="btn btn-sm btn-outline-primary" 
-                            ${report.status !== 'Pronto' ? 'disabled' : ''}>
-                        ${report.status === 'Pronto' ? 'Descarregar' : 'A aguardar'}
-                    </button>
+                <td colspan="4" class="text-center text-muted py-3">
+                    Sem relatórios reais disponíveis no momento
                 </td>
             </tr>
-        `).join('');
+        `;
     }
 
     /**

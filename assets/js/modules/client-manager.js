@@ -23,7 +23,6 @@ class ClientManager {
         return (typeof AuthManager !== 'undefined' && AuthManager.getAuthToken && AuthManager.getAuthToken())
             || localStorage.getItem('liftmanager_jwt')
             || localStorage.getItem('token')
-            || this._getToken()
             || sessionStorage.getItem('liftmanager_jwt')
             || '';
     }
@@ -126,12 +125,22 @@ class ClientManager {
                 this.renderRecentRequests();
                 this.updateStats();
             } else {
-                console.warn('⚠️ API повернув помилку, використовуємо demo дані');
-                this.loadDemoClients();
+                console.warn('⚠️ API повернув помилку, без demo fallback');
+                this.clients = [];
+                this.filteredClients = [];
+                this.requests = [];
+                this.renderClients();
+                this.renderRecentRequests();
+                this.updateStats();
             }
         } catch (error) {
             console.error('❌ Erro завантаження клієнтів:', error);
-            this.loadDemoClients();
+            this.clients = [];
+            this.filteredClients = [];
+            this.requests = [];
+            this.renderClients();
+            this.renderRecentRequests();
+            this.updateStats();
         }
     }
 
@@ -267,12 +276,14 @@ class ClientManager {
                 
                 this.renderRecentRequests();
             } else {
-                console.warn('⚠️ API повернув помилку, використовуємо demo дані');
-                this.loadDemoRequests();
+                console.warn('⚠️ API повернув помилку, без demo fallback');
+                this.requests = [];
+                this.renderRecentRequests();
             }
         } catch (error) {
             console.error('Erro завантаження заявок:', error);
-            this.loadDemoRequests();
+            this.requests = [];
+            this.renderRecentRequests();
         }
     }
 
@@ -534,6 +545,13 @@ class ClientManager {
         const recentRequests = [...this.requests]
             .sort((a, b) => new Date(b._rawDate || 0) - new Date(a._rawDate || 0))
             .slice(0, 5);
+
+        if (recentRequests.length === 0) {
+            const tr = document.createElement('tr');
+            tr.innerHTML = '<td colspan="7" class="text-center text-muted py-3">Sem pedidos reais recentes</td>';
+            tbody.appendChild(tr);
+            return;
+        }
         
         recentRequests.forEach(request => {
             const tr = document.createElement('tr');

@@ -522,25 +522,10 @@
                                 </div>
                                 <div class="card-body">
                                     <ul class="list-unstyled" id="recentActivity">
-                                        <li class="media mb-3">
-                                            <i class="fas fa-user-plus text-primary mr-3 mt-1"></i>
+                                        <li class="media mb-2">
+                                            <i class="fas fa-spinner fa-spin text-muted mr-3 mt-1"></i>
                                             <div class="media-body">
-                                                <h6 class="mt-0 mb-1">Novo utilizador registado</h6>
-                                                <small class="text-muted">há 2 minutos</small>
-                                            </div>
-                                        </li>
-                                        <li class="media mb-3">
-                                            <i class="fas fa-tools text-warning mr-3 mt-1"></i>
-                                            <div class="media-body">
-                                                <h6 class="mt-0 mb-1">Pedido de manutenção concluído</h6>
-                                                <small class="text-muted">há 15 minutos</small>
-                                            </div>
-                                        </li>
-                                        <li class="media mb-3">
-                                            <i class="fas fa-elevator text-success mr-3 mt-1"></i>
-                                            <div class="media-body">
-                                                <h6 class="mt-0 mb-1">Elevador adicionado ao sistema</h6>
-                                                <small class="text-muted">há 1 hora</small>
+                                                <h6 class="mt-0 mb-1">A carregar ações reais...</h6>
                                             </div>
                                         </li>
                                     </ul>
@@ -624,6 +609,121 @@
 
     <script>
         // 🔥 CONNECTED TO REAL API
+        function parseArrayResult(payload) {
+            if (Array.isArray(payload)) return payload;
+            if (Array.isArray(payload?.data)) return payload.data;
+            if (Array.isArray(payload?.users)) return payload.users;
+            if (Array.isArray(payload?.requests)) return payload.requests;
+            return [];
+        }
+
+        function formatRelativeTime(dateValue) {
+            if (!dateValue) return 'sem data';
+            const date = new Date(dateValue);
+            if (Number.isNaN(date.getTime())) return 'sem data';
+
+            const diffSec = Math.max(0, Math.floor((Date.now() - date.getTime()) / 1000));
+            if (diffSec < 60) return 'agora';
+            const min = Math.floor(diffSec / 60);
+            if (min < 60) return `há ${min} minuto${min === 1 ? '' : 's'}`;
+            const hrs = Math.floor(min / 60);
+            if (hrs < 24) return `há ${hrs} hora${hrs === 1 ? '' : 's'}`;
+            const days = Math.floor(hrs / 24);
+            return `há ${days} dia${days === 1 ? '' : 's'}`;
+        }
+
+        function renderRecentActivity(items) {
+            const container = $('#recentActivity');
+            if (!container.length) return;
+
+            if (!items || items.length === 0) {
+                container.html(`
+                    <li class="media mb-2">
+                        <i class="fas fa-info-circle text-muted mr-3 mt-1"></i>
+                        <div class="media-body">
+                            <h6 class="mt-0 mb-1">Sem ações recentes reais</h6>
+                            <small class="text-muted">Nenhum registo recente encontrado na base de dados</small>
+                        </div>
+                    </li>
+                `);
+                return;
+            }
+
+            const html = items.map(item => `
+                <li class="media mb-3">
+                    <i class="${item.icon} ${item.color} mr-3 mt-1"></i>
+                    <div class="media-body">
+                        <h6 class="mt-0 mb-1">${item.title}</h6>
+                        <small class="text-muted">${formatRelativeTime(item.at)}</small>
+                    </div>
+                </li>
+            `).join('');
+
+            container.html(html);
+        }
+
+        async function loadRecentActivity(token) {
+            try {
+                if (!token) {
+                    renderRecentActivity([]);
+                    return;
+                }
+
+                const authHeaders = { 'Authorization': `Bearer ${token}` };
+                const [usersRes, liftsRes, requestsRes] = await Promise.all([
+                    fetch('/api/users', { headers: authHeaders }).catch(() => null),
+                    fetch('/api/lifts', { headers: authHeaders }).catch(() => null),
+                    fetch('/api/requests', { headers: authHeaders }).catch(() => null)
+                ]);
+
+                const usersData = usersRes?.ok ? parseArrayResult(await usersRes.json()) : [];
+                const liftsData = liftsRes?.ok ? parseArrayResult(await liftsRes.json()) : [];
+                const requestsData = requestsRes?.ok ? parseArrayResult(await requestsRes.json()) : [];
+
+                const userEvents = usersData
+                    .filter(u => u?.createdAt)
+                    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+                    .slice(0, 3)
+                    .map(u => ({
+                        at: u.createdAt,
+                        icon: 'fas fa-user-plus',
+                        color: 'text-primary',
+                        title: `Novo utilizador registado: ${u.email || u.username || 'utilizador'}`
+                    }));
+
+                const liftEvents = liftsData
+                    .filter(l => l?.createdAt)
+                    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+                    .slice(0, 3)
+                    .map(l => ({
+                        at: l.createdAt,
+                        icon: 'fas fa-elevator',
+                        color: 'text-success',
+                        title: `Elevador adicionado: ${l.municipalNumber || l.location || l._id}`
+                    }));
+
+                const requestEvents = requestsData
+                    .filter(r => (r?.status === 'completed' || r?.status === 'done') && (r?.updatedAt || r?.completedAt || r?.createdAt))
+                    .sort((a, b) => new Date(b.updatedAt || b.completedAt || b.createdAt) - new Date(a.updatedAt || a.completedAt || a.createdAt))
+                    .slice(0, 3)
+                    .map(r => ({
+                        at: r.updatedAt || r.completedAt || r.createdAt,
+                        icon: 'fas fa-tools',
+                        color: 'text-warning',
+                        title: `Pedido concluído: ${r.title || r.type || r._id}`
+                    }));
+
+                const merged = [...userEvents, ...liftEvents, ...requestEvents]
+                    .sort((a, b) => new Date(b.at) - new Date(a.at))
+                    .slice(0, 6);
+
+                renderRecentActivity(merged);
+            } catch (err) {
+                console.warn('⚠️ Failed to load real recent activity:', err);
+                renderRecentActivity([]);
+            }
+        }
+
         async function loadDashboardData() {
             try {
                 // Searching for token in various places
@@ -740,6 +840,12 @@
 
             // 🆕 Loading data from API
             await loadDashboardData();
+
+            const token = localStorage.getItem('token') || 
+                         localStorage.getItem('liftmanager_jwt') ||
+                         localStorage.getItem('jwt_token') ||
+                         localStorage.getItem('lm_token');
+            await loadRecentActivity(token);
         });
 
         // Logout function

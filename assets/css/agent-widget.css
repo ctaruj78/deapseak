@@ -9,6 +9,9 @@
     right: 24px;
     z-index: 9999;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --agent-brand-blue: #2563eb;
+    --agent-brand-cyan: #22d3ee;
+    --agent-brand-amber: #fbbf24;
 }
 
 /* ─── Trigger bubble ─── */
@@ -27,6 +30,38 @@
     box-shadow: 0 4px 20px rgba(37, 99, 235, 0.45);
     transition: transform 0.2s, box-shadow 0.2s;
     position: relative;
+}
+
+#agent-trigger.avatar-minimal {
+    color: transparent;
+}
+
+#agent-trigger.avatar-minimal::before {
+    content: '';
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, #ffffff 0%, #dbeafe 45%, var(--agent-brand-cyan) 100%);
+    box-shadow: 0 0 14px rgba(34, 211, 238, 0.65);
+}
+
+#agent-trigger.avatar-minimal::after {
+    content: '';
+    position: absolute;
+    inset: 8px;
+    border-radius: 50%;
+    border: 2px solid var(--agent-brand-amber);
+    border-top-color: transparent;
+    box-shadow: inset 0 0 0 1px rgba(34, 211, 238, 0.35);
+    animation: agent-minimal-spin 1.4s linear infinite;
+}
+
+#agent-trigger.avatar-wizard {
+    color: #ffffff;
+    font-size: 24px;
+    background: linear-gradient(150deg, #0f1f3f, #1f3b73);
+    overflow: visible;
+    animation: agent-wizard-float 2.8s ease-in-out infinite;
 }
 
 #agent-trigger:hover {
@@ -95,6 +130,55 @@
 
 #agent-header .agent-avatar {
     font-size: 20px;
+}
+
+#agent-header .agent-avatar.avatar-minimal {
+    width: 22px;
+    height: 22px;
+    font-size: 0;
+    position: relative;
+    display: inline-block;
+}
+
+#agent-header .agent-avatar.avatar-minimal::before {
+    content: '';
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, #ffffff 0%, #dbeafe 50%, var(--agent-brand-cyan) 100%);
+    box-shadow: 0 0 10px rgba(34, 211, 238, 0.6);
+    position: absolute;
+    top: 6px;
+    left: 6px;
+}
+
+#agent-header .agent-avatar.avatar-minimal::after {
+    content: '';
+    position: absolute;
+    inset: 1px;
+    border-radius: 50%;
+    border: 1px solid var(--agent-brand-amber);
+    border-top-color: transparent;
+    box-shadow: inset 0 0 0 1px rgba(34, 211, 238, 0.3);
+    animation: agent-minimal-spin 1.6s linear infinite;
+}
+
+#agent-header .agent-avatar.avatar-wizard {
+    font-size: 18px;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    animation: agent-wizard-float 2.5s ease-in-out infinite;
+}
+
+@keyframes agent-minimal-spin {
+    to { transform: rotate(360deg); }
+}
+
+@keyframes agent-wizard-float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-3px); }
 }
 
 #agent-header .agent-title {

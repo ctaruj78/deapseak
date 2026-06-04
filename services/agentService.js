@@ -13,6 +13,8 @@
 'use strict';
 
 const { GoogleGenerativeAI } = require('@google/generative-ai');
+const fs = require('fs');
+const path = require('path');
 
 class AgentService {
     constructor() {
@@ -22,7 +24,380 @@ class AgentService {
         this.model = process.env.GOOGLE_AI_MODEL || 'gemini-2.5-flash';
         this.ollamaBaseUrl = process.env.OLLAMA_BASE_URL || 'http://127.0.0.1:11434';
         this.ollamaModel = process.env.OLLAMA_MODEL || 'qwen2.5:3b';
+        this.ollamaModelCandidates = String(process.env.OLLAMA_MODEL_CANDIDATES || `${this.ollamaModel},qwen2.5:7b,qwen2.5:3b`)
+            .split(',')
+            .map(s => s.trim())
+            .filter(Boolean);
+        this.ollamaOptions = {
+            temperature: Number(process.env.OLLAMA_TEMPERATURE || 0.2),
+            top_p: Number(process.env.OLLAMA_TOP_P || 0.9),
+            repeat_penalty: Number(process.env.OLLAMA_REPEAT_PENALTY || 1.05),
+            num_ctx: Number(process.env.OLLAMA_NUM_CTX || 8192),
+            num_predict: Number(process.env.OLLAMA_NUM_PREDICT || 512)
+        };
+        this.ollamaModelCache = { value: this.ollamaModel, expiresAt: 0 };
+        this.chatMemoryLimit = Math.max(2, Number(process.env.ASSISTANT_CHAT_MEMORY_TURNS || 6));
+        this.chatMemoryMap = new Map();
+        this.ragMaxSnippets = Math.max(1, Number(process.env.ASSISTANT_RAG_MAX_SNIPPETS || 3));
+        this.ragCacheTtlMs = Math.max(60_000, Number(process.env.ASSISTANT_RAG_CACHE_MS || 10 * 60 * 1000));
+        this.ragSourcePaths = String(process.env.ASSISTANT_RAG_PATHS || 'docs/ai,docs/ops,NEXT_PRIORITY.md')
+            .split(',')
+            .map(s => s.trim())
+            .filter(Boolean);
+        this.ragCache = { snippets: [], expiresAt: 0 };
+        this.clientFocusByUser = new Map();
         this.aiProvider = (process.env.AI_PROVIDER || 'auto').toLowerCase();
+    }
+
+    _toObjectIdMaybe(value) {
+        try {
+            if (!value) return null;
+            const { ObjectId } = require('mongodb');
+            if (value instanceof ObjectId) return value;
+            return new ObjectId(String(value));
+        } catch (_) {
+            return null;
+        }
+    }
+
+    _buildLiftRoleQuery(role, userEmail, userId) {
+        const notDeleted = { deletedAt: { $exists: false } };
+        const email = String(userEmail || '').toLowerCase();
+        const objId = this._toObjectIdMaybe(userId);
+        const idVariants = [String(userId || '')].filter(Boolean);
+        if (objId) idVariants.push(objId);
+
+        if (role === 'client') {
+            const orConds = [
+                ...(email ? [{ clientEmail: email }, { 'client.email': email }] : []),
+                ...idVariants.map(v => ({ client: v })),
+                ...idVariants.map(v => ({ clientId: v }))
+            ];
+            return orConds.length > 0 ? { $and: [notDeleted, { $or: orConds }] } : notDeleted;
+        }
+
+        if (role === 'technician') {
+            const orConds = [
+                ...idVariants.map(v => ({ assignedTechnician: v })),
+                ...idVariants.map(v => ({ assignedTo: v })),
+                ...idVariants.map(v => ({ technicianId: v })),
+                ...idVariants.map(v => ({ technician: v })),
+                ...(email ? [{ technicianEmail: email }, { assignedTechnicianEmail: email }] : [])
+            ];
+            return orConds.length > 0 ? { $and: [notDeleted, { $or: orConds }] } : notDeleted;
+        }
+
+        return notDeleted;
+    }
+
+    _setClientFocus(userId, client) {
+        if (!userId || !client) return;
+        this.clientFocusByUser.set(String(userId), {
+            id: String(client._id),
+            email: String(client.email || '').toLowerCase(),
+            name: [client.firstName, client.lastName].filter(Boolean).join(' ') || client.companyName || client.name || client.username || client.email
+        });
+    }
+
+    _getClientFocus(userId) {
+        if (!userId) return null;
+        return this.clientFocusByUser.get(String(userId)) || null;
+    }
+
+    _looksLikeClientNameQuery(normalizedMsg = '') {
+        const tokens = String(normalizedMsg || '').split(/\s+/).filter(Boolean);
+        if (tokens.length < 2 || tokens.length > 4) return false;
+        const stop = new Set(['lista', 'listar', 'mostra', 'mostrar', 'dados', 'cliente', 'sobre', 'tudo', 'info', 'informacoes', 'informacoes', 'elevadores', 'lifts', 'pedidos', 'resumo']);
+        const alpha = tokens.filter(t => /^[a-z][a-z.-]{1,}$/.test(t) && !stop.has(t));
+        return alpha.length >= 2;
+    }
+
+    async _respondFromFocusedClient(userId, normalizedMsg) {
+        const focus = this._getClientFocus(userId);
+        if (!focus) return null;
+
+        if (/(dados|detalhes|info|informacoes|інфо|дані|data)/.test(normalizedMsg)) {
+            const c = await this.db.collection('users').findOne({ _id: this._toObjectIdMaybe(focus.id) }, { projection: { password: 0, passwordHash: 0 } });
+            if (!c) return '⚠️ Contexto de cliente expirou. Indique novamente o nome do cliente.';
+            const liftsCount = await this.db.collection('lifts').countDocuments({ $or: [{ clientEmail: focus.email }, { client: c._id }, { client: String(c._id) }] });
+            const openReq = await this.db.collection('requests').countDocuments({
+                $or: [{ clientEmail: focus.email }, { clientId: c._id }, { clientId: String(c._id) }],
+                status: { $in: ['open', 'pending', 'assigned', 'in-progress', 'in_progress'] }
+            });
+            return `👤 **${focus.name}**\n📧 ${c.email || '—'}\n📞 ${c.phone || '—'}\n🏢 Elevadores: **${liftsCount}**\n📩 Pedidos ativos: **${openReq}**`;
+        }
+
+        if (/(lifts|elevadores|elevador|ліфти|лифты)/.test(normalizedMsg)) {
+            const lifts = await this.db.collection('lifts')
+                .find({ $or: [{ clientEmail: focus.email }, { client: focus.id }, { client: this._toObjectIdMaybe(focus.id) }] })
+                .sort({ createdAt: -1 })
+                .limit(25)
+                .toArray();
+
+            if (!lifts.length) return `🏢 Não encontrei elevadores para **${focus.name}**.`;
+
+            const rows = lifts.map(l => {
+                const next = l.nextInspectionDate ? new Date(l.nextInspectionDate).toLocaleDateString('pt-PT') : '—';
+                return `- ${l.municipalNumber || l.location || l.name || l._id} | Próx. insp: ${next}`;
+            }).join('\n');
+            return `🏢 **Elevadores de ${focus.name}** (${lifts.length}):\n\n${rows}`;
+        }
+
+        return null;
+    }
+
+    async _findClientByName(role, rawMessage, userId = null) {
+        if (role !== 'admin' && role !== 'dispatcher') {
+            return '⛔ Pesquisa de clientes por nome está disponível apenas para admin/dispatcher.';
+        }
+
+        const text = String(rawMessage || '').trim();
+        const cleaned = text
+            .replace(/tudo sobre|informacoes?|informações?|dados de|detalhes de|sobre|cliente/gi, ' ')
+            .replace(/\s+/g, ' ')
+            .trim();
+
+        if (!cleaned || cleaned.length < 3) {
+            return 'ℹ️ Indique o nome do cliente. Ex.: "tudo sobre Maria Estrela".';
+        }
+
+        const tokens = cleaned
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .split(/\s+/)
+            .filter(t => t.length >= 2)
+            .slice(0, 4);
+
+        const fieldForToken = (token) => {
+            const re = new RegExp(token.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
+            return {
+                $or: [
+                    { firstName: re },
+                    { lastName: re },
+                    { companyName: re },
+                    { name: re },
+                    { username: re },
+                    { email: re }
+                ]
+            };
+        };
+
+        const query = {
+            role: 'client',
+            ...(tokens.length > 0 ? { $and: tokens.map(fieldForToken) } : {})
+        };
+
+        const clients = await this.db.collection('users').find(query, {
+            projection: { password: 0, passwordHash: 0 }
+        }).limit(5).toArray();
+
+        if (!clients.length) {
+            return `❓ Não encontrei cliente com "${cleaned}".`;
+        }
+
+        if (clients.length > 1) {
+            const options = clients.map(c => {
+                const full = [c.firstName, c.lastName].filter(Boolean).join(' ') || c.companyName || c.name || c.username || c.email;
+                return `- ${full} | ${c.email || 'sem email'}`;
+            }).join('\n');
+            return `Encontrei vários clientes parecidos. Especifique um deles:\n${options}`;
+        }
+
+        const target = clients[0];
+        this._setClientFocus(userId, target);
+        const fullName = [target.firstName, target.lastName].filter(Boolean).join(' ') || target.companyName || target.name || target.username || target.email;
+        const idStr = String(target._id);
+
+        const liftQuery = {
+            $or: [
+                { clientEmail: String(target.email || '').toLowerCase() },
+                { client: idStr },
+                { client: target._id }
+            ]
+        };
+
+        const [liftCount, activeReqCount, totalReqCount] = await Promise.all([
+            this.db.collection('lifts').countDocuments(liftQuery),
+            this.db.collection('requests').countDocuments({
+                $or: [{ clientEmail: String(target.email || '').toLowerCase() }, { clientId: idStr }, { clientId: target._id }],
+                status: { $in: ['open', 'pending', 'assigned', 'in-progress', 'in_progress'] }
+            }),
+            this.db.collection('requests').countDocuments({
+                $or: [{ clientEmail: String(target.email || '').toLowerCase() }, { clientId: idStr }, { clientId: target._id }]
+            })
+        ]);
+
+        return `👤 **Cliente encontrado**\n\n` +
+            `Nome: **${fullName}**\n` +
+            `Email: ${target.email || '—'}\n` +
+            `Telefone: ${target.phone || '—'}\n` +
+            `ID: ${idStr}\n` +
+            `🏢 Elevadores: **${liftCount}**\n` +
+            `📩 Pedidos ativos: **${activeReqCount}** (total ${totalReqCount})\n\n` +
+            `Quer ver agora:\n` +
+            `1) dados completos\n` +
+            `2) lista de elevadores\n` +
+            `3) pedidos deste cliente`;
+    }
+
+    _normText(text = '') {
+        return String(text || '')
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .replace(/[^a-z0-9\s]/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim();
+    }
+
+    _tokenize(text = '') {
+        return this._normText(text)
+            .split(' ')
+            .filter(w => w.length >= 4)
+            .slice(0, 64);
+    }
+
+    _rememberChatTurn(userId, userRole, userMessage, assistantReply) {
+        if (!userId) return;
+        const key = String(userId);
+        const current = this.chatMemoryMap.get(key) || [];
+        current.push({
+            at: new Date().toISOString(),
+            role: userRole,
+            user: String(userMessage || '').slice(0, 500),
+            assistant: String(assistantReply || '').slice(0, 900)
+        });
+        if (current.length > this.chatMemoryLimit) {
+            current.splice(0, current.length - this.chatMemoryLimit);
+        }
+        this.chatMemoryMap.set(key, current);
+    }
+
+    _getRecentChatMemory(userId) {
+        if (!userId) return [];
+        return this.chatMemoryMap.get(String(userId)) || [];
+    }
+
+    _collectRagFiles(absPath, out) {
+        try {
+            const stat = fs.statSync(absPath);
+            if (stat.isDirectory()) {
+                const children = fs.readdirSync(absPath);
+                for (const child of children) {
+                    this._collectRagFiles(path.join(absPath, child), out);
+                }
+                return;
+            }
+
+            if (!stat.isFile()) return;
+            const ext = path.extname(absPath).toLowerCase();
+            if (!['.md', '.txt', '.json'].includes(ext)) return;
+            out.push(absPath);
+        } catch (_) {
+            // ignore invalid paths
+        }
+    }
+
+    _loadRagSnippets() {
+        const now = Date.now();
+        if (this.ragCache.expiresAt > now && this.ragCache.snippets.length > 0) {
+            return this.ragCache.snippets;
+        }
+
+        const files = [];
+        for (const rel of this.ragSourcePaths) {
+            this._collectRagFiles(path.resolve(process.cwd(), rel), files);
+        }
+
+        const snippets = [];
+        for (const filePath of files) {
+            try {
+                const raw = fs.readFileSync(filePath, 'utf8');
+                const chunks = raw
+                    .split(/\n\s*\n/g)
+                    .map(s => s.trim())
+                    .filter(s => s.length >= 60);
+
+                for (const chunk of chunks.slice(0, 30)) {
+                    snippets.push({
+                        source: path.relative(process.cwd(), filePath),
+                        text: chunk.slice(0, 1600)
+                    });
+                }
+            } catch (_) {
+                // ignore unreadable files
+            }
+        }
+
+        this.ragCache = {
+            snippets,
+            expiresAt: now + this.ragCacheTtlMs
+        };
+
+        return snippets;
+    }
+
+    async _retrieveKnowledgeSnippets(query, routeHint = 'generic') {
+        try {
+            const qTokens = this._tokenize(query);
+            if (qTokens.length === 0) return [];
+
+            const opsBoost = ['pedido', 'inspecao', 'inspecoes', 'orcamento', 'elevador', 'cliente', 'tecnico', 'dashboard'];
+            const legalBoost = ['decreto', 'lei', 'norma', 'artigo', 'clausula', 'en81', 'conformidade'];
+            const snippets = this._loadRagSnippets();
+
+            const ranked = snippets
+                .map(s => {
+                    const textNorm = this._normText(s.text);
+                    let score = 0;
+                    for (const t of qTokens) {
+                        if (textNorm.includes(t)) score += 2;
+                    }
+                    if (routeHint === 'operations' && opsBoost.some(k => textNorm.includes(k))) score += 3;
+                    if (routeHint === 'legal' && legalBoost.some(k => textNorm.includes(k))) score += 3;
+                    return { ...s, score };
+                })
+                .filter(s => s.score > 0)
+                .sort((a, b) => b.score - a.score)
+                .slice(0, this.ragMaxSnippets);
+
+            return ranked;
+        } catch (_) {
+            return [];
+        }
+    }
+
+    _scoreAssistantReply(userPrompt, replyText) {
+        const reply = String(replyText || '');
+        if (!reply) return 0;
+
+        let score = 50;
+        if (reply.length >= 120 && reply.length <= 2000) score += 12;
+        if (/\n\d+\.|\b1\.\s/.test(reply)) score += 12;
+        if (/dashboard|pedidos|orcamentos|inspecoes|elevadores|clientes|utilizadores|analytics/i.test(reply)) score += 10;
+        if (/nao tenho esse dado no contexto atual|não tenho esse dado no contexto atual|faltam dados/i.test(reply)) score += 8;
+        if (/talvez|provavelmente|acho que/i.test(reply)) score -= 8;
+        if (/demo|simulado|invent/i.test(reply)) score -= 18;
+        if (this._tokenize(userPrompt).some(t => reply.toLowerCase().includes(t))) score += 8;
+
+        return Math.max(0, Math.min(100, Math.round(score)));
+    }
+
+    async _logGenerationQuality(entry) {
+        try {
+            const payload = {
+                ...entry,
+                createdAt: new Date()
+            };
+            if (this.db) {
+                await this.db.collection('agent_quality_logs').insertOne(payload);
+            } else {
+                console.log('🤖 quality-log:', JSON.stringify(payload));
+            }
+        } catch (err) {
+            console.warn('🤖 quality log failed:', err.message);
+        }
     }
 
     /**
@@ -56,34 +431,100 @@ class AgentService {
         }
     }
 
-    async _generateViaOllama(prompt) {
-        const ctrl = new AbortController();
-        const timeoutMs = Number(process.env.OLLAMA_TIMEOUT_MS || 15000);
-        const timer = setTimeout(() => ctrl.abort(), timeoutMs);
-        try {
-            const res = await fetch(`${this.ollamaBaseUrl}/api/generate`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    model: this.ollamaModel,
-                    prompt,
-                    stream: false
-                }),
-                signal: ctrl.signal
-            });
-
-            if (!res.ok) {
-                const body = await res.text();
-                throw new Error(`Ollama HTTP ${res.status}: ${body}`);
-            }
-
-            const json = await res.json();
-            const text = (json && json.response) ? String(json.response).trim() : '';
-            if (!text) throw new Error('Ollama returned empty response');
-            return text;
-        } finally {
-            clearTimeout(timer);
+    async _selectOllamaModel() {
+        const now = Date.now();
+        if (this.ollamaModelCache.expiresAt > now) {
+            return this.ollamaModelCache.value;
         }
+
+        try {
+            const res = await fetch(`${this.ollamaBaseUrl}/api/tags`);
+            if (!res.ok) throw new Error(`tags HTTP ${res.status}`);
+            const payload = await res.json();
+            const available = new Set((payload.models || []).map(m => m.name));
+            const selected = this.ollamaModelCandidates.find(m => available.has(m)) || this.ollamaModel;
+            this.ollamaModelCache = { value: selected, expiresAt: now + 10 * 60 * 1000 };
+            return selected;
+        } catch (_) {
+            return this.ollamaModel;
+        }
+    }
+
+    _buildOllamaSystemInstruction(routeHint = 'generic', meta = {}) {
+        const role = meta.userRole || 'utilizador';
+        const navGuide = [
+            'Navegação da app: Dashboard (KPIs), Pedidos, Orçamentos, Inspeções, Elevadores, Clientes, Utilizadores/Techs, Analytics.',
+            'Regras de verdade: nunca inventar clientes, elevadores, inspeções, datas, ações ou IDs.',
+            'Se faltar dado real, diz explicitamente o que falta e qual ecrã/ação o utilizador deve abrir.',
+            'Quando possível, responder com passos curtos e executáveis dentro da app.'
+        ].join('\n- ');
+
+        const focus = routeHint === 'operations'
+            ? 'Foco operacional: pedidos, inspeções, vencimentos, técnicos, clientes, orçamentos.'
+            : routeHint === 'legal'
+                ? 'Foco legal: enquadramento normativo, sem sair dos factos fornecidos.'
+                : 'Foco geral: ajudar a orientar o utilizador na app com precisão.';
+
+        return [
+            'Tu és o assistente FestLift (pt-PT) para gestão de elevadores em Portugal.',
+            `Perfil do utilizador atual: ${role}.`,
+            focus,
+            'Política de resposta:',
+            '- Objetivo: responder curto, preciso e orientado a ação.',
+            '- Nunca inventes dados.',
+            `- ${navGuide}`
+        ].join('\n');
+    }
+
+    _composeChatPromptForOllama(prompt, routeHint = 'generic', meta = {}) {
+        const systemBlock = this._buildOllamaSystemInstruction(routeHint, meta);
+        const contextBlock = meta.contextSummary ? `\n\nContexto real atual:\n${meta.contextSummary}` : '';
+        return `${systemBlock}${contextBlock}\n\nPedido do utilizador:\n${prompt}\n\nResposta:`;
+    }
+
+    async _generateViaOllama(prompt, routeHint = 'generic', meta = {}) {
+        const timeoutMs = Number(process.env.OLLAMA_TIMEOUT_MS || 15000);
+        const retries = Math.max(0, Number(process.env.OLLAMA_MAX_RETRIES || 1));
+        const model = await this._selectOllamaModel();
+        const finalPrompt = meta.channel === 'chat'
+            ? this._composeChatPromptForOllama(prompt, routeHint, meta)
+            : prompt;
+
+        let lastErr = null;
+        for (let attempt = 0; attempt <= retries; attempt++) {
+            const ctrl = new AbortController();
+            const timer = setTimeout(() => ctrl.abort(), timeoutMs);
+            try {
+                const res = await fetch(`${this.ollamaBaseUrl}/api/generate`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        model,
+                        prompt: finalPrompt,
+                        stream: false,
+                        options: this.ollamaOptions
+                    }),
+                    signal: ctrl.signal
+                });
+
+                if (!res.ok) {
+                    const body = await res.text();
+                    throw new Error(`Ollama HTTP ${res.status}: ${body}`);
+                }
+
+                const json = await res.json();
+                const text = (json && json.response) ? String(json.response).trim() : '';
+                if (!text) throw new Error('Ollama returned empty response');
+                return text;
+            } catch (err) {
+                lastErr = err;
+                if (attempt >= retries) break;
+            } finally {
+                clearTimeout(timer);
+            }
+        }
+
+        throw lastErr || new Error('Ollama generation failed');
     }
 
     _detectTaskType(text = '') {
@@ -104,8 +545,14 @@ class AgentService {
         return 'generic';
     }
 
-    async _generateText(prompt, routeHint = 'generic') {
+    async _generateText(prompt, routeHint = 'generic', meta = {}) {
         const provider = this.aiProvider;
+        const startedAt = Date.now();
+        let selectedProvider = provider;
+        let fallbackUsed = false;
+        let fallbackReason = null;
+        let outputText = '';
+        let errorMessage = null;
 
         const tryGemini = async () => {
             if (!process.env.GEMINI_API_KEY) {
@@ -128,44 +575,87 @@ class AgentService {
             }
         };
 
-        if (provider === 'ollama') {
-            return await this._generateViaOllama(prompt);
-        }
+        try {
+            if (provider === 'ollama') {
+                selectedProvider = 'ollama';
+                outputText = await this._generateViaOllama(prompt, routeHint, meta);
+                return outputText;
+            }
 
-        if (provider === 'gemini') {
-            return await tryGeminiWithFallbackModel();
-        }
+            if (provider === 'gemini') {
+                selectedProvider = 'gemini';
+                outputText = await tryGeminiWithFallbackModel();
+                return outputText;
+            }
 
-        // auto: explicit hybrid routing by task type, then fallback.
-        const taskType = routeHint === 'generic' ? this._detectTaskType(prompt) : routeHint;
+            // auto: explicit hybrid routing by task type, then fallback.
+            const taskType = routeHint === 'generic' ? this._detectTaskType(prompt) : routeHint;
 
-        if (taskType === 'legal') {
+            if (taskType === 'legal') {
+                selectedProvider = 'gemini';
+                try {
+                    outputText = await tryGeminiWithFallbackModel();
+                    return outputText;
+                } catch (gemErr) {
+                    const ollamaReady = await this._isOllamaAvailable();
+                    if (!ollamaReady) throw gemErr;
+                    fallbackUsed = true;
+                    fallbackReason = gemErr.message;
+                    selectedProvider = 'ollama';
+                    console.warn(`🤖 AgentService legal route Gemini->Ollama fallback: ${gemErr.message}`);
+                    outputText = await this._generateViaOllama(prompt, routeHint, meta);
+                    return outputText;
+                }
+            }
+
+            if (taskType === 'operations') {
+                selectedProvider = 'ollama';
+                try {
+                    outputText = await this._generateViaOllama(prompt, routeHint, meta);
+                    return outputText;
+                } catch (ollErr) {
+                    fallbackUsed = true;
+                    fallbackReason = ollErr.message;
+                    selectedProvider = 'gemini';
+                    outputText = await tryGeminiWithFallbackModel();
+                    return outputText;
+                }
+            }
+
+            // generic: Gemini first, then Ollama
+            selectedProvider = 'gemini';
             try {
-                return await tryGeminiWithFallbackModel();
+                outputText = await tryGeminiWithFallbackModel();
+                return outputText;
             } catch (gemErr) {
                 const ollamaReady = await this._isOllamaAvailable();
                 if (!ollamaReady) throw gemErr;
-                console.warn(`🤖 AgentService legal route Gemini->Ollama fallback: ${gemErr.message}`);
-                return await this._generateViaOllama(prompt);
+                fallbackUsed = true;
+                fallbackReason = gemErr.message;
+                selectedProvider = 'ollama';
+                console.warn(`🤖 AgentService Gemini fallback to Ollama: ${gemErr.message}`);
+                outputText = await this._generateViaOllama(prompt, routeHint, meta);
+                return outputText;
             }
-        }
-
-        if (taskType === 'operations') {
-            try {
-                return await this._generateViaOllama(prompt);
-            } catch (ollErr) {
-                return await tryGeminiWithFallbackModel();
+        } catch (err) {
+            errorMessage = err.message;
+            throw err;
+        } finally {
+            if (meta.channel === 'chat') {
+                await this._logGenerationQuality({
+                    userId: meta.userId || null,
+                    role: meta.userRole || 'unknown',
+                    provider: selectedProvider,
+                    routeHint,
+                    fallbackUsed,
+                    fallbackReason,
+                    latencyMs: Date.now() - startedAt,
+                    score: this._scoreAssistantReply(meta.userMessage || prompt, outputText),
+                    promptPreview: String(meta.userMessage || prompt).slice(0, 240),
+                    responsePreview: String(outputText || '').slice(0, 360),
+                    error: errorMessage
+                });
             }
-        }
-
-        // generic: Gemini first, then Ollama
-        try {
-            return await tryGeminiWithFallbackModel();
-        } catch (gemErr) {
-            const ollamaReady = await this._isOllamaAvailable();
-            if (!ollamaReady) throw gemErr;
-            console.warn(`🤖 AgentService Gemini fallback to Ollama: ${gemErr.message}`);
-            return await this._generateViaOllama(prompt);
         }
     }
 
@@ -616,21 +1106,50 @@ class AgentService {
      */
     async chat(userMessage, userId, userRole, clientEmail = null) {
         if (!this.db) throw new Error('DB not ready');
+        const memory = this._getRecentChatMemory(userId);
 
         // ── 1. Try to answer locally (no Gemini needed) ──────────────────────
-        const localAnswer = await this._resolveLocally(userMessage, userRole, clientEmail);
-        if (localAnswer) return localAnswer;
+        const localAnswer = await this._resolveLocally(userMessage, userRole, clientEmail, userId);
+        if (localAnswer) {
+            this._rememberChatTurn(userId, userRole, userMessage, localAnswer);
+            await this._logGenerationQuality({
+                userId,
+                role: userRole,
+                provider: 'local-router',
+                routeHint: 'local',
+                fallbackUsed: false,
+                latencyMs: 0,
+                score: this._scoreAssistantReply(userMessage, localAnswer),
+                promptPreview: String(userMessage || '').slice(0, 240),
+                responsePreview: String(localAnswer || '').slice(0, 360),
+                error: null
+            });
+            return localAnswer;
+        }
 
         // ── 2. Gemini for complex / conversational queries ────────────────────
         try {
-            const context = await this._buildContext(userRole, clientEmail);
-            const systemPrompt = this._buildSystemPrompt(userRole, context);
+            const context = await this._buildContext(userRole, clientEmail, userId);
             const routeHint = this._detectTaskType(userMessage || '');
-            return await this._generateText(`${systemPrompt}\n\nMENSAGEM DO UTILIZADOR: ${userMessage}`, routeHint);
+            const needsRag = /(norma|decreto|lei|artigo|compliance|procedimento|runbook|policy|seguranca|segurança|processo)/i.test(userMessage || '');
+            const ragSnippets = needsRag ? await this._retrieveKnowledgeSnippets(userMessage, routeHint) : [];
+            context.chatMemory = memory;
+            const systemPrompt = this._buildSystemPrompt(userRole, context, ragSnippets);
+            const prompt = `${systemPrompt}\n\nMENSAGEM DO UTILIZADOR: ${userMessage}`;
+            const contextSummary = this._buildCompactContextSummary(userRole, context);
+            const reply = await this._generateText(prompt, routeHint, {
+                channel: 'chat',
+                userRole,
+                contextSummary,
+                userId,
+                userMessage
+            });
+            this._rememberChatTurn(userId, userRole, userMessage, reply);
+            return reply;
         } catch (err) {
             // Rate limit / quota — return helpful local fallback
             if (err.message && (err.message.includes('429') || err.message.includes('quota') || err.message.includes('fetch'))) {
-                return this._rateLimitFallback(userMessage, userRole, clientEmail);
+                return this._rateLimitFallback(userMessage, userRole, clientEmail, userId);
             }
             throw err;
         }
@@ -640,8 +1159,35 @@ class AgentService {
     // LOCAL INTENT ROUTER — answers without consuming Gemini quota
     // ─────────────────────────────────────────────────────────────────────────
 
-    async _resolveLocally(msg, role, clientEmail) {
+    async _resolveLocally(msg, role, userEmail, userId) {
         const m = msg.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+        // ── Follow-up for previously selected client ────────────────────────
+        if (/(dele|dela|його|її|dados|detalhes|lifts|elevadores|ліфти|дані|info)/.test(m)) {
+            const follow = await this._respondFromFocusedClient(userId, m);
+            if (follow) return follow;
+        }
+
+        // ── Lift edit/delete is intentionally blocked in assistant ──────────
+        if (/(eliminar|remover|apagar|delete|editar|alterar|edit)/.test(m) && /(elevador|lift|ліфт)/.test(m)) {
+            if (role === 'admin') {
+                return '⛔ O assistente não pode editar/remover elevadores. Faça apenas no Painel Admin.';
+            }
+            return '⛔ Edição/remoção de elevadores é apenas no Painel Admin (não disponível para dispatcher/assistente).';
+        }
+
+        // ── Fast client lookup by name (admin/dispatcher) ───────────────────
+        if (/(tudo sobre|sobre|dados de|detalhes de|informacoes|informações)/.test(m)) {
+            const direct = await this._findClientByName(role, msg, userId);
+            if (direct && !direct.startsWith('ℹ️')) return direct;
+            if (/cliente|maria|estrela/.test(m) && direct) return direct;
+        }
+
+        // ── Bare client name query (e.g., "Luis Vieira") ──────────────────
+        if ((role === 'admin' || role === 'dispatcher') && this._looksLikeClientNameQuery(m)) {
+            const byName = await this._findClientByName(role, msg, userId);
+            if (byName) return byName;
+        }
 
         // ── Greetings ────────────────────────────────────────────────────────
         if (/^(ola|oi|bom dia|boa tarde|boa noite|hello|hi|hei|привіт)[\s!?.]*$/.test(m.trim())) {
@@ -651,35 +1197,35 @@ class AgentService {
 
         // ── Orçamentos — list ────────────────────────────────────────────────
         if (/(orcamento|orcamentos|orc|quote|kosztor)/.test(m) && /(lista|listar|encontra|mostra|todos|ver|quais|existem|find|show)/.test(m)) {
-            return await this._listOrcamentos(role, clientEmail, m);
+            return await this._listOrcamentos(role, userEmail, m);
         }
 
         // ── Orçamentos — count ───────────────────────────────────────────────
         if (/(orcamento|orcamentos)/.test(m) && /(quantos|numero|total de|count|soma)/.test(m)) {
-            return await this._countOrcamentos(role, clientEmail);
+            return await this._countOrcamentos(role, userEmail);
         }
 
         // ── Orçamentos — status filter ───────────────────────────────────────
         const statusMap = { rascunho: ['rascunho', 'draft', 'rascunhos'], enviado: ['enviado', 'enviados', 'sent'], aprovado: ['aprovado', 'aprovados', 'approved', 'aceite'], rejeitado: ['rejeitado', 'rejected', 'recusado'], expirado: ['expirado', 'expired', 'vencido', 'vencidos'] };
         for (const [status, keywords] of Object.entries(statusMap)) {
             if (keywords.some(k => m.includes(k)) && /(orcamento|orcamentos|orc)/.test(m)) {
-                return await this._listOrcamentos(role, clientEmail, m, status);
+                return await this._listOrcamentos(role, userEmail, m, status);
             }
         }
 
         // ── Inspections — list ───────────────────────────────────────────────
         if (/(inspecao|inspecoes|inspecção|inspection|relatorio|relatorios|report)/.test(m) && /(lista|listar|ver|mostra|ultim|recent|todos)/.test(m)) {
-            return await this._listInspections(role, clientEmail, m);
+            return await this._listInspections(role, userEmail, userId, m);
         }
 
         // ── Notifications / alerts ───────────────────────────────────────────
         if (/(notificacao|notificacoes|alerta|alertas|pendente|pendentes|notification)/.test(m)) {
-            return await this._listNotifications(role, clientEmail);
+            return await this._listNotifications(role, userEmail, userId);
         }
 
         // ── Lifts / elevators ────────────────────────────────────────────────
         if (/(elevador|lift|elevadores|lifts)/.test(m) && /(lista|listar|ver|mostra|quantos|todos)/.test(m)) {
-            return await this._listLifts(role);
+            return await this._listLifts(role, userEmail, userId);
         }
 
         // ── Users / technicians ──────────────────────────────────────────────
@@ -689,7 +1235,7 @@ class AgentService {
 
         // ── Stats / summary ──────────────────────────────────────────────────
         if (/(resumo|estatistica|estatisticas|dashboard|summary|visao geral|estado geral|overview)/.test(m)) {
-            return await this._buildSummary(role, clientEmail);
+            return await this._buildSummary(role, userEmail, userId);
         }
 
         // ── Service catalog ──────────────────────────────────────────────────
@@ -699,13 +1245,13 @@ class AgentService {
 
         // ── Requests / pedidos ───────────────────────────────────────────────
         if (/(pedido|pedidos|solicitacao|request|requests|chamada)/.test(m) && /(lista|listar|ver|todos|aberto|pendente)/.test(m)) {
-            return await this._listRequests(role, clientEmail);
+            return await this._listRequests(role, userEmail, userId);
         }
 
         // ── Inspection violations / clauses ──────────────────────────────────
         if (/(clausula|clausulas|violacao|violacoes|deficiencia|deficiencias|nao conformidade|nao conformidades|c1|c2|c3|artigo|nao conformidade)/.test(m) &&
             /(lista|listar|ver|mostra|quais|existem|encontrou|detectou|relatorio|inspecao|inspecoes)/.test(m)) {
-            return await this._listInspectionViolations(role, clientEmail, m);
+            return await this._listInspectionViolations(role, userEmail, userId, m);
         }
 
         return null; // not handled locally → use Gemini
@@ -746,10 +1292,19 @@ class AgentService {
         return `📊 **Resumo de Orçamentos**\n\nTotal: **${total}** orçamentos | Valor acumulado: **${valorTotal}€**\n\n${lines}`;
     }
 
-    async _listInspections(role, clientEmail, msg = '') {
+    async _listInspections(role, userEmail, userId, msg = '') {
         const query = {};
-        if (role === 'client' && clientEmail) query.clientEmail = clientEmail;
-        if (role === 'technician') { /* show own */ }
+        const email = String(userEmail || '').toLowerCase();
+        if (role === 'client' && email) query.clientEmail = email;
+        if (role === 'technician') {
+            const objId = this._toObjectIdMaybe(userId);
+            const orConds = [
+                ...(email ? [{ inspectorEmail: email }, { technicianEmail: email }] : []),
+                ...(objId ? [{ inspectorId: objId }, { technicianId: objId }] : []),
+                ...(userId ? [{ inspectorId: String(userId) }, { technicianId: String(userId) }] : [])
+            ];
+            if (orConds.length > 0) query.$or = orConds;
+        }
         const list = await this.db.collection('inspections').find(query).sort({ createdAt: -1 }).limit(15).toArray();
         if (list.length === 0) return '🔍 Nenhuma inspeção encontrada.';
 
@@ -763,9 +1318,19 @@ class AgentService {
         return `🔍 **Inspeções recentes** (${list.length}):\n\n${rows}`;
     }
 
-    async _listInspectionViolations(role, clientEmail, msg = '') {
+    async _listInspectionViolations(role, userEmail, userId, msg = '') {
         const query = { 'violations.0': { $exists: true } };
-        if (role === 'client' && clientEmail) query.clientEmail = clientEmail;
+        const email = String(userEmail || '').toLowerCase();
+        if (role === 'client' && email) query.clientEmail = email;
+        if (role === 'technician') {
+            const objId = this._toObjectIdMaybe(userId);
+            const orConds = [
+                ...(email ? [{ inspectorEmail: email }, { technicianEmail: email }] : []),
+                ...(objId ? [{ inspectorId: objId }, { technicianId: objId }] : []),
+                ...(userId ? [{ inspectorId: String(userId) }, { technicianId: String(userId) }] : [])
+            ];
+            if (orConds.length > 0) query.$or = orConds;
+        }
 
         // Filter by classification if mentioned
         let filterClass = null;
@@ -799,10 +1364,22 @@ class AgentService {
         return `${title}:\n\n${lines || 'Nenhuma cláusula encontrada com esse filtro.'}`;
     }
 
-    async _listNotifications(role, clientEmail) {
-        const query = role === 'client' && clientEmail
-            ? { clientEmail, status: { $in: ['pending', 'postponed'] } }
-            : { status: { $in: ['pending', 'postponed'] } };
+    async _listNotifications(role, userEmail, userId) {
+        const email = String(userEmail || '').toLowerCase();
+        const objId = this._toObjectIdMaybe(userId);
+        let query = { status: { $in: ['pending', 'postponed'] } };
+        if (role === 'client' && email) {
+            query = { clientEmail: email, status: { $in: ['pending', 'postponed'] } };
+        } else if (role === 'technician') {
+            const orConds = [
+                ...(email ? [{ technicianEmail: email }] : []),
+                ...(objId ? [{ technicianId: objId }, { targetUserId: objId }] : []),
+                ...(userId ? [{ technicianId: String(userId) }, { targetUserId: String(userId) }] : [])
+            ];
+            if (orConds.length > 0) {
+                query = { status: { $in: ['pending', 'postponed'] }, $or: orConds };
+            }
+        }
         const list = await this.db.collection('agent_notifications').find(query).sort({ createdAt: -1 }).limit(10).toArray();
         if (list.length === 0) return '🔔 Não há alertas ou notificações pendentes.';
         const rows = list.map(n => {
@@ -813,8 +1390,9 @@ class AgentService {
         return `🔔 **Notificações pendentes** (${list.length}):\n\n${rows}`;
     }
 
-    async _listLifts(role) {
-        const list = await this.db.collection('lifts').find({}).sort({ createdAt: -1 }).limit(20).toArray();
+    async _listLifts(role, userEmail, userId) {
+        const query = this._buildLiftRoleQuery(role, userEmail, userId);
+        const list = await this.db.collection('lifts').find(query).sort({ createdAt: -1 }).limit(20).toArray();
         if (list.length === 0) return '🏢 Nenhum elevador registado.';
         const rows = list.map(l => {
             const next = l.nextInspectionDate ? new Date(l.nextInspectionDate).toLocaleDateString('pt-PT') : '—';
@@ -837,9 +1415,19 @@ class AgentService {
         return `👥 **Utilizadores** (${list.length}):\n\n${rows}`;
     }
 
-    async _listRequests(role, clientEmail) {
+    async _listRequests(role, userEmail, userId) {
         const query = {};
-        if (role === 'client' && clientEmail) query.clientEmail = clientEmail;
+        const email = String(userEmail || '').toLowerCase();
+        if (role === 'client' && email) query.clientEmail = email;
+        if (role === 'technician') {
+            const objId = this._toObjectIdMaybe(userId);
+            const orConds = [
+                ...(email ? [{ technicianEmail: email }] : []),
+                ...(objId ? [{ assignedTo: objId }, { technicianId: objId }] : []),
+                ...(userId ? [{ assignedTo: String(userId) }, { technicianId: String(userId) }] : [])
+            ];
+            if (orConds.length > 0) query.$or = orConds;
+        }
         const list = await this.db.collection('requests').find(query).sort({ createdAt: -1 }).limit(15).toArray();
         if (list.length === 0) return '📩 Nenhum pedido encontrado.';
         const rows = list.map(r => {
@@ -850,13 +1438,50 @@ class AgentService {
         return `📩 **Pedidos** (${list.length}):\n\n${rows}`;
     }
 
-    async _buildSummary(role, clientEmail) {
+    async _buildSummary(role, userEmail, userId) {
+        const email = String(userEmail || '').toLowerCase();
+        const objId = this._toObjectIdMaybe(userId);
+        const liftQuery = this._buildLiftRoleQuery(role, userEmail, userId);
+
+        const orcQuery = role === 'client' && email ? { 'cliente.email': email } : {};
+        const inspQuery = role === 'client' && email ? { clientEmail: email } :
+            (role === 'technician'
+                ? { $or: [
+                    ...(email ? [{ inspectorEmail: email }, { technicianEmail: email }] : []),
+                    ...(objId ? [{ inspectorId: objId }, { technicianId: objId }] : []),
+                    ...(userId ? [{ inspectorId: String(userId) }, { technicianId: String(userId) }] : [])
+                ] }
+                : {});
+        const notifQuery = role === 'client' && email
+            ? { status: 'pending', clientEmail: email }
+            : (role === 'technician'
+                ? {
+                    status: 'pending',
+                    $or: [
+                        ...(email ? [{ technicianEmail: email }] : []),
+                        ...(objId ? [{ technicianId: objId }, { targetUserId: objId }] : []),
+                        ...(userId ? [{ technicianId: String(userId) }, { targetUserId: String(userId) }] : [])
+                    ]
+                }
+                : { status: 'pending' });
+        const reqScope = role === 'client' && email
+            ? { clientEmail: email }
+            : (role === 'technician'
+                ? {
+                    $or: [
+                        ...(email ? [{ technicianEmail: email }] : []),
+                        ...(objId ? [{ assignedTo: objId }, { technicianId: objId }] : []),
+                        ...(userId ? [{ assignedTo: String(userId) }, { technicianId: String(userId) }] : [])
+                    ]
+                }
+                : {});
+
         const [orc, insp, notifs, lifts, requests] = await Promise.all([
-            this.db.collection('orcamentos').countDocuments(role === 'client' && clientEmail ? { 'cliente.email': clientEmail } : {}),
-            this.db.collection('inspections').countDocuments(role === 'client' && clientEmail ? { clientEmail } : {}),
-            this.db.collection('agent_notifications').countDocuments({ status: 'pending' }),
-            this.db.collection('lifts').countDocuments({}),
-            this.db.collection('requests').countDocuments({ status: { $in: ['open', 'assigned', 'in-progress'] } }),
+            this.db.collection('orcamentos').countDocuments(orcQuery),
+            this.db.collection('inspections').countDocuments(inspQuery),
+            this.db.collection('agent_notifications').countDocuments(notifQuery),
+            this.db.collection('lifts').countDocuments(liftQuery),
+            this.db.collection('requests').countDocuments({ ...reqScope, status: { $in: ['open', 'assigned', 'in-progress', 'pending', 'in_progress'] } }),
         ]);
         const [orcRascunho, orcEnviado] = await Promise.all([
             this.db.collection('orcamentos').countDocuments({ status: 'rascunho' }),
@@ -900,9 +1525,9 @@ class AgentService {
             `_Estes preços vêm dos orçamentos aprovados/enviados — são referências, o admin define o preço final._`;
     }
 
-    async _rateLimitFallback(msg, role, clientEmail) {
+    async _rateLimitFallback(msg, role, userEmail, userId = null) {
         // When Gemini is rate limited, try to answer locally anyway
-        const local = await this._resolveLocally(msg, role, clientEmail);
+        const local = await this._resolveLocally(msg, role, userEmail, userId);
         if (local) return local;
         return `⚡ **Limite de pedidos Gemini atingido** (plano gratuito: ~15/min).\n\nPosso responder diretamente a:\n• _"lista orçamentos"_ / _"conta orçamentos"_\n• _"lista inspeções"_\n• _"lista elevadores"_\n• _"lista pedidos"_\n• _"resumo geral"_\n• _"catálogo de serviços"_ ← novo!\n• _"notificações pendentes"_\n\nPara questões técnicas complexas, tente novamente em 1 minuto.`;
     }
@@ -1503,7 +2128,7 @@ Responde APENAS com o resumo dos problemas, sem introdução.`;
         }).catch(() => {});
     }
 
-    async _buildContext(userRole, clientEmail) {
+    async _buildContext(userRole, clientEmail, userId = null) {
         const ctx = { role: userRole };
         try {
             if (userRole === 'client' && clientEmail) {
@@ -1517,50 +2142,75 @@ Responde APENAS com o resumo dos problemas, sem introdução.`;
                 ctx.recentInspections = await this.db.collection('inspections')
                     .find({ clientEmail, 'violations.0': { $exists: true } })
                     .sort({ createdAt: -1 }).limit(5).toArray();
+            } else if (userRole === 'technician') {
+                const email = String(clientEmail || '').toLowerCase();
+                const objId = this._toObjectIdMaybe(userId);
+                const techReqQuery = {
+                    $or: [
+                        ...(email ? [{ technicianEmail: email }] : []),
+                        ...(objId ? [{ assignedTo: objId }, { technicianId: objId }] : []),
+                        ...(userId ? [{ assignedTo: String(userId) }, { technicianId: String(userId) }] : [])
+                    ]
+                };
+
+                const techInspQuery = {
+                    $or: [
+                        ...(email ? [{ inspectorEmail: email }, { technicianEmail: email }] : []),
+                        ...(objId ? [{ inspectorId: objId }, { technicianId: objId }] : []),
+                        ...(userId ? [{ inspectorId: String(userId) }, { technicianId: String(userId) }] : [])
+                    ]
+                };
+
+                ctx.pendingNotifications = await this.db.collection('agent_notifications')
+                    .find({ status: { $in: ['pending', 'postponed'] }, $or: [...techReqQuery.$or, ...techInspQuery.$or] })
+                    .sort({ createdAt: -1 }).limit(8).toArray();
+                ctx.recentDecisions = await this.db.collection('agent_decisions')
+                    .find({ decidedBy: userId }).sort({ decidedAt: -1 }).limit(5).toArray();
+                ctx.orcamentos = [];
+                ctx.recentInspections = await this.db.collection('inspections')
+                    .find({ ...techInspQuery, 'violations.0': { $exists: true } })
+                    .sort({ createdAt: -1 }).limit(6).toArray();
             } else {
                 ctx.pendingNotifications = await this.db.collection('agent_notifications')
-                    .find({ status: 'pending' }).sort({ createdAt: -1 }).limit(10).toArray();
+                    .find({ status: 'pending' }).sort({ createdAt: -1 }).limit(6).toArray();
                 ctx.recentDecisions = await this.db.collection('agent_decisions')
-                    .find({}).sort({ decidedAt: -1 }).limit(10).toArray();
+                    .find({}).sort({ decidedAt: -1 }).limit(6).toArray();
                 ctx.orcamentos = await this.db.collection('orcamentos')
-                    .find({}).sort({ createdAt: -1 }).limit(20).toArray();
+                    .find({}).sort({ createdAt: -1 }).limit(8).toArray();
                 ctx.recentInspections = await this.db.collection('inspections')
                     .find({ 'violations.0': { $exists: true } })
-                    .sort({ createdAt: -1 }).limit(8).toArray();
+                    .sort({ createdAt: -1 }).limit(6).toArray();
             }
         } catch (_) {}
         return ctx;
     }
 
-    _buildSystemPrompt(userRole, context) {
-        const pending = (context.pendingNotifications || [])
-            .map(n => `- ${n.liftLocation}: ${n.agentMessage}`)
-            .join('\n') || 'Nenhuma pendente.';
-
-        const decisions = (context.recentDecisions || [])
-            .map(d => `- ${d.liftLocation}: ${d.action} (${d.reason || 'sem motivo'}) em ${d.decidedAt ? new Date(d.decidedAt).toLocaleDateString('pt-PT') : '?'}`)
+    _buildSystemPrompt(userRole, context, ragSnippets = []) {
+        const pending = (context.pendingNotifications || []).length;
+        const recentDecisions = (context.recentDecisions || []).length;
+        const decisions = (context.recentDecisions || []).slice(0, 5)
+            .map(d => `- ${d.liftLocation || '?'}: ${d.action || 'n/a'} (${d.reason || 'sem motivo'})`)
+            .join('\n') || 'Nenhuma.';
+        const recentOrcamentos = (context.orcamentos || []).slice(0, 5)
+            .map(o => `- ${o.numero || o._id}: ${o.status} | ${o.total || 0}€`)
+            .join('\n') || 'Nenhum.';
+        const inspections = (context.recentInspections || []).slice(0, 4)
+            .map(i => {
+                const viols = i.violations || [];
+                const c1 = viols.filter(v => v.classification === 'C1').length;
+                const c2 = viols.filter(v => v.classification === 'C2').length;
+                const c3 = viols.filter(v => v.classification === 'C3').length;
+                return `- ${i.liftLocation || i.clientEmail || '?'} | C1=${c1} C2=${c2} C3=${c3}`;
+            })
             .join('\n') || 'Nenhuma.';
 
-        const orcamentos = (context.orcamentos || [])
-            .map(o => {
-                const data = o.createdAt ? new Date(o.createdAt).toLocaleDateString('pt-PT') : '?';
-                const servicos = (o.servicos || []).map(s => `${s.descricao} (${s.quantidade}x ${s.precoUnitario}€)`).join(', ');
-                return `- ${o.numero || o._id}: ${o.cliente?.nome || '?'} | ${o.status} | ${o.total || 0}€ | ${data}${servicos ? ' | Serviços: ' + servicos : ''}`;
-            })
-            .join('\n') || 'Nenhum orçamento registado.';
+        const memory = (context.chatMemory || []).slice(-3)
+            .map((m, idx) => `${idx + 1}) Utilizador: ${m.user}\n   Assistente: ${m.assistant}`)
+            .join('\n') || 'Sem histórico recente.';
 
-        const inspections = (context.recentInspections || [])
-            .map(i => {
-                const data = i.createdAt ? new Date(i.createdAt).toLocaleDateString('pt-PT') : '?';
-                const viols = i.violations || [];
-                const c1 = viols.filter(v => v.classification === 'C1');
-                const c2 = viols.filter(v => v.classification === 'C2');
-                const c3 = viols.filter(v => v.classification === 'C3');
-                const topC1 = c1.slice(0, 3).map(v => `      ⚠️ C1 Art.${v.article || '?'}: ${(v.description || '').substring(0, 100)}`).join('\n');
-                const status = i.passed === false ? '❌ Reprovado' : i.passed === true ? '✅ Aprovado' : '—';
-                return `  - ${i.liftLocation || i.clientEmail || '?'} (${data}) ${status}: C1=${c1.length} C2=${c2.length} C3=${c3.length}${topC1 ? '\n' + topC1 : ''}`;
-            })
-            .join('\n') || 'Nenhuma inspeção com cláusulas recente.';
+        const rag = (ragSnippets || [])
+            .map((s, idx) => `(${idx + 1}) [${s.source}] ${String(s.text || '').replace(/\s+/g, ' ').slice(0, 320)}...`)
+            .join('\n') || 'Nenhum trecho relevante encontrado.';
 
         const roleDesc = {
             admin: 'administrador do sistema com acesso total',
@@ -1580,10 +2230,21 @@ DECISÕES RECENTES:
 ${decisions}
 
 ORÇAMENTOS (dados reais da base de dados):
-${orcamentos}
+${recentOrcamentos}
 
 INSPEÇÕES COM CLÁUSULAS (dados reais — Decreto-Lei 320/2002):
 ${inspections}
+
+CONTEXTO RESUMIDO:
+- Notificações pendentes: ${pending}
+- Decisões recentes: ${recentDecisions}
+- Módulos principais da app: Dashboard, Pedidos, Orçamentos, Inspeções, Elevadores, Clientes, Utilizadores, Analytics
+
+MEMÓRIA CURTA DA CONVERSA:
+${memory}
+
+RAG (trechos de documentação interna):
+${rag}
 
 REGRAS:
 - Nunca crias orçamentos ou tomas ações sem confirmação explícita
@@ -1591,9 +2252,38 @@ REGRAS:
 - Se o utilizador adia, pergunta quando quer ser lembrado
 - Podes responder a perguntas técnicas sobre elevadores, normas EN 81-20, ISO 10816-3, DL 320/2002
 - Quando o utilizador pergunta sobre cláusulas (C1/C2/C3), refere os artigos do DL 320/2002 e explica o nível de risco
+- Para perguntas de navegação: explica em que módulo da app está a informação (Pedidos/Orçamentos/Inspeções/etc.)
+- Se os dados não estiverem no contexto, diz explicitamente "não tenho esse dado no contexto atual" e pede filtro mínimo
 - Sê conciso e profissional
 - Para clientes: usa linguagem simples, não técnica
 - Quando listares orçamentos, apresenta-os em formato legível com número, cliente, estado e valor`;
+    }
+
+    _buildCompactContextSummary(userRole, context) {
+        const pending = (context.pendingNotifications || []).slice(0, 4)
+            .map(n => `${n.type || 'notif'} | ${n.liftLocation || '?'} | ${n.status || 'pending'}`)
+            .join('\n');
+        const orc = (context.orcamentos || []).slice(0, 4)
+            .map(o => `${o.numero || o._id} | ${o.status || 'sem estado'} | ${o.total || 0}€`)
+            .join('\n');
+        const insp = (context.recentInspections || []).slice(0, 3)
+            .map(i => `${i.numero || i._id} | ${i.liftLocation || i.clientEmail || '?'} | ${i.createdAt ? new Date(i.createdAt).toLocaleDateString('pt-PT') : '?'}`)
+            .join('\n');
+        const mem = (context.chatMemory || []).slice(-2)
+            .map(m => `U: ${m.user}\nA: ${m.assistant}`)
+            .join('\n');
+
+        return [
+            `Role: ${userRole}`,
+            `Notificações pendentes (${(context.pendingNotifications || []).length}):`,
+            pending || 'nenhuma',
+            `Orçamentos recentes (${(context.orcamentos || []).length}):`,
+            orc || 'nenhum',
+            `Inspeções recentes (${(context.recentInspections || []).length}):`,
+            insp || 'nenhuma',
+            'Memória curta:',
+            mem || 'vazia'
+        ].join('\n');
     }
 
     _parseRemindDate(reason) {

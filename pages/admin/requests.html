@@ -1176,8 +1176,8 @@ class ServiceRequestManager {
         try {
             // Verificar disponibilidade de AuthManager
             if (typeof AuthManager === 'undefined' || !AuthManager.isAuthenticated || !AuthManager.isAuthenticated()) {
-                console.warn('⚠️ AuthManager não pronto ou utilizador não autenticado, usando dados demo');
-                this.loadDemoRequests();
+                console.warn('⚠️ AuthManager não pronto ou utilizador não autenticado, sem dados para apresentar');
+                this.requests = [];
                 this.renderRequests();
                 this.updateStatistics();
                 return;
@@ -1282,19 +1282,19 @@ class ServiceRequestManager {
                     
                     console.log('✅ Pedidos carregados da API:', this.requests.length);
                 } else {
-                    console.warn('⚠️ Formato inválido da resposta API, usando dados demo');
-                    this.loadDemoRequests();
+                    console.warn('⚠️ Formato inválido da resposta API, sem dados para apresentar');
+                    this.requests = [];
                 }
             } else {
-                console.warn('⚠️ API indisponível, usando dados demo');
-                this.loadDemoRequests();
+                console.warn('⚠️ API indisponível, sem dados para apresentar');
+                this.requests = [];
             }
             
             this.renderRequests();
             this.updateStatistics();
         } catch (error) {
             console.error('❌ Erro ao carregar pedidos:', error);
-            this.loadDemoRequests();
+            this.requests = [];
             this.renderRequests();
             this.updateStatistics();
         }

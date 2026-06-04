@@ -13044,7 +13044,11 @@ app.post('/api/agent/decide', authenticateToken, async (req, res) => {
 // POST free-text chat with agent
 app.post('/api/agent/chat', authenticateToken, async (req, res) => {
     try {
-        if (!process.env.GEMINI_API_KEY) return res.status(503).json({ success: false, error: 'GEMINI_API_KEY not set' });
+        const provider = String(process.env.AI_PROVIDER || 'auto').toLowerCase();
+        const hasGemini = Boolean(process.env.GEMINI_API_KEY);
+        const hasOllama = Boolean(process.env.OLLAMA_BASE_URL);
+        const canServeChat = hasGemini || provider === 'ollama' || hasOllama;
+        if (!canServeChat) return res.status(503).json({ success: false, error: 'No AI provider configured (set GEMINI_API_KEY or OLLAMA_BASE_URL)' });
         const { message } = req.body;
         if (!message) return res.status(400).json({ success: false, error: 'Missing message' });
         const reply = await agentService.chat(message, req.user.id, req.user.role, req.user.email);

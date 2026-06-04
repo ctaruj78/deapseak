@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Agent Avatar Preview</title>
+  <style>
+    :root {
+      --bg: radial-gradient(circle at 20% 20%, #f3f7ff, #e8eef9 50%, #dde7f7 100%);
+      --panel: #ffffff;
+      --text: #1f2a44;
+      --muted: #6f7a94;
+      --blue: #2563eb;
+      --violet: #7c3aed;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: 'Segoe UI', Tahoma, sans-serif;
+      color: var(--text);
+      background: var(--bg);
+      display: grid;
+      place-items: center;
+      padding: 24px;
+    }
+
+    .preview {
+      width: min(900px, 100%);
+      display: grid;
+      gap: 16px;
+    }
+
+    .meta {
+      background: rgba(255, 255, 255, 0.9);
+      border: 1px solid #dbe4f3;
+      border-radius: 14px;
+      padding: 14px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      backdrop-filter: blur(8px);
+    }
+
+    .meta strong { font-size: 18px; }
+    .meta .small { color: var(--muted); font-size: 13px; }
+
+    .stage {
+      position: relative;
+      border-radius: 18px;
+      border: 1px solid #dbe4f3;
+      background: linear-gradient(165deg, #ffffff, #f5f8ff);
+      min-height: 520px;
+      overflow: hidden;
+      box-shadow: 0 20px 50px rgba(37, 99, 235, 0.12);
+    }
+
+    .hint {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      background: rgba(255, 255, 255, 0.92);
+      border: 1px solid #dbe4f3;
+      border-radius: 10px;
+      padding: 8px 10px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    /* Widget skeleton */
+    .agent-widget {
+      position: absolute;
+      right: 24px;
+      bottom: 24px;
+    }
+
+    .agent-trigger {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      border: none;
+      cursor: default;
+      background: linear-gradient(135deg, var(--blue), var(--violet));
+      color: #fff;
+      font-size: 24px;
+      box-shadow: 0 10px 30px rgba(37, 99, 235, 0.45);
+      display: grid;
+      place-items: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .agent-panel {
+      position: absolute;
+      right: 0;
+      bottom: 74px;
+      width: 320px;
+      background: var(--panel);
+      border-radius: 14px;
+      overflow: hidden;
+      border: 1px solid #dbe4f3;
+      box-shadow: 0 14px 38px rgba(31, 42, 68, 0.2);
+    }
+
+    .agent-header {
+      background: linear-gradient(135deg, var(--blue), var(--violet));
+      color: white;
+      padding: 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .agent-avatar {
+      width: 32px;
+      height: 32px;
+      display: grid;
+      place-items: center;
+      font-size: 20px;
+      position: relative;
+    }
+
+    .agent-title strong {
+      display: block;
+      font-size: 13px;
+    }
+
+    .agent-title small {
+      opacity: 0.85;
+      font-size: 11px;
+    }
+
+    .agent-body {
+      padding: 12px;
+      min-height: 120px;
+      font-size: 13px;
+      color: #304160;
+      background: #f9fbff;
+    }
+
+    .option-tag {
+      position: absolute;
+      left: 16px;
+      bottom: 16px;
+      background: #10254a;
+      color: white;
+      border-radius: 10px;
+      padding: 8px 10px;
+      font-size: 13px;
+      letter-spacing: 0.2px;
+    }
+
+    .opt-name { font-weight: 700; }
+
+    /* Option animations */
+    .opt-1 .avatar-char,
+    .opt-1 .trigger-char {
+      animation: nerd-wiggle 1.8s ease-in-out infinite;
+      display: inline-block;
+      transform-origin: bottom center;
+    }
+
+    @keyframes nerd-wiggle {
+      0%, 100% { transform: rotate(0deg) translateY(0); }
+      25% { transform: rotate(-5deg) translateY(-1px); }
+      75% { transform: rotate(5deg) translateY(-1px); }
+    }
+
+    .opt-2 .avatar-char,
+    .opt-2 .trigger-char {
+      animation: smile-pop 1.6s ease-in-out infinite;
+      display: inline-block;
+    }
+
+    @keyframes smile-pop {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.12); }
+    }
+
+    .opt-2 .agent-trigger::after {
+      content: '💡';
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      font-size: 12px;
+      animation: blink 1.8s infinite;
+    }
+
+    @keyframes blink {
+      0%, 70%, 100% { opacity: 0.35; }
+      40% { opacity: 1; }
+    }
+
+    .opt-3 .avatar-char,
+    .opt-3 .trigger-char {
+      display: inline-block;
+      animation: owl-blink 3s infinite;
+    }
+
+    @keyframes owl-blink {
+      0%, 44%, 48%, 100% { transform: scaleY(1); }
+      46% { transform: scaleY(0.12); }
+    }
+
+    .opt-3 .agent-trigger {
+      box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.45), 0 10px 30px rgba(37, 99, 235, 0.4);
+      animation: owl-glow 2.2s infinite;
+    }
+
+    @keyframes owl-glow {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0), 0 10px 30px rgba(37, 99, 235, 0.4); }
+      50% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0.18), 0 10px 30px rgba(37, 99, 235, 0.45); }
+    }
+
+    .opt-4 .agent-avatar,
+    .opt-4 .agent-trigger {
+      position: relative;
+      color: transparent;
+    }
+
+    .opt-4 .agent-avatar::before,
+    .opt-4 .agent-trigger::before {
+      content: '';
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #fff;
+      box-shadow: 0 0 16px rgba(255,255,255,0.85);
+      display: block;
+      margin: auto;
+    }
+
+    .opt-4 .agent-trigger::after,
+    .opt-4 .agent-avatar::after {
+      content: '';
+      position: absolute;
+      inset: 8px;
+      border-radius: 50%;
+      border: 2px solid rgba(255,255,255,0.75);
+      border-top-color: transparent;
+      animation: spin 1.4s linear infinite;
+    }
+
+    .opt-4 .agent-avatar::after {
+      inset: 2px;
+      border-width: 1px;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .opt-5 .avatar-char,
+    .opt-5 .trigger-char {
+      display: inline-block;
+      animation: dev-breathe 2s ease-in-out infinite;
+    }
+
+    @keyframes dev-breathe {
+      0%, 100% { transform: translateY(0) scale(1); }
+      50% { transform: translateY(-1px) scale(1.08); }
+    }
+
+    .opt-5 .agent-trigger::after {
+      content: '👋';
+      position: absolute;
+      right: 2px;
+      bottom: 0;
+      font-size: 13px;
+      transform-origin: bottom right;
+      animation: wave 1.8s ease-in-out infinite;
+    }
+
+    @keyframes wave {
+      0%, 60%, 100% { transform: rotate(0deg); }
+      20% { transform: rotate(-18deg); }
+      40% { transform: rotate(12deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="preview">
+    <div class="meta">
+      <div>
+        <strong>Preview: 5 avatar options</strong>
+        <div class="small">Автоперемикання кожні 20 секунд. Обери номер, який подобається.</div>
+      </div>
+      <div class="small" id="timerText">Option 1 · 20s</div>
+    </div>
+
+    <div class="stage" id="stage">
+      <div class="hint">Демо віджета в дії (кнопка + header avatar)</div>
+      <div class="option-tag"><span class="opt-name" id="optionName">1. Розумний чувак 🤓</span></div>
+
+      <div class="agent-widget opt-1" id="widget">
+        <button class="agent-trigger"><span class="trigger-char">🤓</span></button>
+        <div class="agent-panel">
+          <div class="agent-header">
+            <span class="agent-avatar"><span class="avatar-char">🤓</span></span>
+            <div class="agent-title">
+              <strong>Agente FestLift</strong>
+              <small>Assistente Administrativo</small>
+            </div>
+          </div>
+          <div class="agent-body">
+            Olá! Este é um preview visual do avatar do assistente. Escolhe o estilo que preferires.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const options = [
+      { cls: 'opt-1', emoji: '🤓', name: '1. Розумний чувак 🤓' },
+      { cls: 'opt-2', emoji: '🙂', name: '2. Смайлик-помічник 🙂💡' },
+      { cls: 'opt-3', emoji: '🦉', name: '3. Сова-аналітик 🦉' },
+      { cls: 'opt-4', emoji: '',   name: '4. Мінімалістичний AI-аватар ◉' },
+      { cls: 'opt-5', emoji: '👨‍💻', name: '5. Дружній тех-бот 👨‍💻' }
+    ];
+
+    const widget = document.getElementById('widget');
+    const optionName = document.getElementById('optionName');
+    const timerText = document.getElementById('timerText');
+    const triggerChar = document.querySelector('.trigger-char');
+    const avatarChar = document.querySelector('.avatar-char');
+
+    let idx = 0;
+    let left = 20;
+
+    function render() {
+      const opt = options[idx];
+      widget.className = `agent-widget ${opt.cls}`;
+      optionName.textContent = opt.name;
+      triggerChar.textContent = opt.emoji;
+      avatarChar.textContent = opt.emoji;
+      left = 20;
+      timerText.textContent = `Option ${idx + 1} · ${left}s`;
+    }
+
+    function tick() {
+      left -= 1;
+      if (left <= 0) {
+        idx = (idx + 1) % options.length;
+        render();
+      } else {
+        timerText.textContent = `Option ${idx + 1} · ${left}s`;
+      }
+    }
+
+    render();
+    setInterval(tick, 1000);
+  </script>
+</body>
+</html>
