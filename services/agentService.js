@@ -15,6 +15,7 @@
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const fs = require('fs');
 const path = require('path');
+const { parseReport } = require('./pdf-parser-unified');
 
 class AgentService {
     constructor() {
@@ -610,8 +611,19 @@ class AgentService {
         try {
             if (provider === 'ollama') {
                 selectedProvider = 'ollama';
-                outputText = await this._generateViaOllama(prompt, routeHint, meta);
-                return outputText;
+                try {
+                    outputText = await this._generateViaOllama(prompt, routeHint, meta);
+                    return outputText;
+                } catch (ollErr) {
+                    // Keep local-first behavior, but avoid hard failure when local model times out.
+                    if (!process.env.GEMINI_API_KEY) throw ollErr;
+                    fallbackUsed = true;
+                    fallbackReason = ollErr.message;
+                    selectedProvider = 'gemini';
+                    console.warn(`🤖 AgentService OLLAMA primary failed, fallback to Gemini: ${ollErr.message}`);
+                    outputText = await tryGeminiWithFallbackModel();
+                    return outputText;
+                }
             }
 
             if (provider === 'gemini') {
@@ -654,19 +666,17 @@ class AgentService {
                 }
             }
 
-            // generic: Gemini first, then Ollama
-            selectedProvider = 'gemini';
+            // generic: Ollama first (local-first), then Gemini fallback.
+            selectedProvider = 'ollama';
             try {
-                outputText = await tryGeminiWithFallbackModel();
-                return outputText;
-            } catch (gemErr) {
-                const ollamaReady = await this._isOllamaAvailable();
-                if (!ollamaReady) throw gemErr;
-                fallbackUsed = true;
-                fallbackReason = gemErr.message;
-                selectedProvider = 'ollama';
-                console.warn(`🤖 AgentService Gemini fallback to Ollama: ${gemErr.message}`);
                 outputText = await this._generateViaOllama(prompt, routeHint, meta);
+                return outputText;
+            } catch (ollErr) {
+                fallbackUsed = true;
+                fallbackReason = ollErr.message;
+                selectedProvider = 'gemini';
+                console.warn(`🤖 AgentService Ollama fallback to Gemini: ${ollErr.message}`);
+                outputText = await tryGeminiWithFallbackModel();
                 return outputText;
             }
         } catch (err) {
@@ -1187,6 +1197,356 @@ class AgentService {
         }
     }
 
+    /**
+     * Analyze uploaded PDF and build a quote draft from detected clauses.
+     * Returns a structured estimate and a ready-to-show assistant reply.
+     */
+    async analyzePdfAndBuildEstimate({ filePath, userRole, task = '', withoutPrices = true }) {
+        if (!this.db) throw new Error('DB not ready');
+        if (!filePath) throw new Error('Missing PDF file path');
+        if (!['admin', 'dispatcher', 'technician'].includes(String(userRole || ''))) {
+            throw new Error('Apenas admin/dispatcher/technician podem gerar orçamento por PDF.');
+        }
+
+        const parsed = await parseReport(filePath);
+        if (!parsed || !parsed.success) {
+            throw new Error(parsed?.error || 'Falha ao analisar PDF');
+        }
+
+        const violations = Array.isArray(parsed.violations) ? parsed.violations : [];
+        const stats = parsed.stats || {
+            total: violations.length,
+            critical: violations.filter(v => v.classification === 'C1').length,
+            medium: violations.filter(v => v.classification === 'C2').length,
+            low: violations.filter(v => v.classification === 'C3').length
+        };
+
+        const location = parsed?.metadata?.address || parsed?.metadata?.liftLocation || parsed?.metadata?.morada || 'Local não identificado';
+
+        const findingsLines = violations.map((v, idx) => {
+            const cls = v.classification || 'C?';
+            const art = v.article ? ` art. ${v.article}` : '';
+            const desc = String(v.description || '').trim() || `Cláusula ${idx + 1}`;
+            return `• ${cls}${art}: ${desc}`;
+        });
+
+        const findingsText = findingsLines.length > 0
+            ? findingsLines.join('\n')
+            : String(parsed.rawText || '').slice(0, 3000) || 'Sem cláusulas identificadas automaticamente';
+
+        let servicos = await this._generateServicos(findingsText, location);
+        if (withoutPrices) {
+            servicos = servicos.map((s) => ({
+                ...s,
+                precoSugerido: Number(s.precoSugerido || s.precoUnitario || 0),
+                precoUnitario: 0,
+                total: 0
+            }));
+        }
+
+        const subtotal = servicos.reduce((sum, s) => sum + Number(s.total || 0), 0);
+        const iva = Math.round(subtotal * 0.23 * 100) / 100;
+        const total = Math.round((subtotal + iva) * 100) / 100;
+
+        const priceQuestions = servicos.map((s, i) => ({
+            index: i + 1,
+            descricao: s.descricao,
+            suggestedPrice: Number(s.precoSugerido || 0),
+            question: `Que preço unitário deseja para o item ${i + 1}: "${s.descricao}"?`
+        }));
+
+        const taskLine = String(task || '').trim();
+        const intro = taskLine
+            ? `📎 Tarefa recebida: ${taskLine}`
+            : '📎 PDF analisado. Preparei um rascunho de orçamento com base nas cláusulas.';
+
+        const estimateLines = servicos.map((s, i) => {
+            const suggested = Number(s.precoSugerido || 0);
+            const suggestedText = suggested > 0 ? ` | sugestão histórica: ${suggested.toFixed(2)}€` : '';
+            return `${i + 1}. ${s.descricao} (qtd ${s.quantidade || 1})${suggestedText}`;
+        }).join('\n');
+
+        const reply = `${intro}\n\n` +
+            `📍 Local: ${location}\n` +
+            `📋 Cláusulas detectadas: ${stats.total} (C1: ${stats.critical}, C2: ${stats.medium}, C3: ${stats.low})\n\n` +
+            `🧾 Rascunho de orçamento (${servicos.length} itens):\n${estimateLines}\n\n` +
+            (withoutPrices
+                ? '💡 Os preços foram deixados em aberto (0€) para preencher manualmente. Se quiser, posso perguntar item a item agora.'
+                : '💡 Usei preços sugeridos onde havia histórico. Pode ajustar cada item antes de enviar.');
+
+        return {
+            success: true,
+            analysis: {
+                detectedFormat: parsed.detectedFormat || 'generic',
+                stats,
+                metadata: parsed.metadata || {},
+                reportType: parsed.reportType || null,
+                validUntil: parsed.validUntil || null
+            },
+            estimate: {
+                servicos,
+                subtotal,
+                iva,
+                total,
+                withoutPrices: Boolean(withoutPrices)
+            },
+            priceQuestions,
+            reply
+        };
+    }
+
+    _normalizeLooseText(value = '') {
+        return String(value || '')
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .replace(/[^a-z0-9\s]/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim();
+    }
+
+    _collectEmailCandidates(metadata = {}) {
+        const directKeys = [
+            'email', 'clientEmail', 'clienteEmail', 'ownerEmail', 'proprietarioEmail'
+        ];
+        const values = [];
+        for (const k of directKeys) {
+            if (metadata[k]) values.push(String(metadata[k]));
+        }
+
+        const blob = JSON.stringify(metadata || {});
+        const found = blob.match(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi) || [];
+        values.push(...found);
+
+        const unique = [...new Set(values.map(v => String(v || '').toLowerCase().trim()).filter(Boolean))];
+        return unique;
+    }
+
+    _collectAddressCandidates(metadata = {}) {
+        const keys = [
+            'address', 'morada', 'liftLocation', 'location', 'local', 'instalacao', 'instalacaoMorada'
+        ];
+        const out = [];
+        for (const k of keys) {
+            if (metadata[k]) out.push(String(metadata[k]));
+        }
+        return [...new Set(out.map(v => v.trim()).filter(v => v.length >= 6))];
+    }
+
+    _collectNameCandidates(metadata = {}) {
+        const keys = [
+            'clientName', 'cliente', 'owner', 'proprietario', 'company', 'companyName', 'name'
+        ];
+        const out = [];
+        for (const k of keys) {
+            if (metadata[k] && typeof metadata[k] !== 'object') out.push(String(metadata[k]));
+        }
+        return [...new Set(out.map(v => v.trim()).filter(v => v.length >= 3))];
+    }
+
+    async _resolveClientAndLiftFromPdfMetadata(metadata = {}) {
+        if (!this.db) return { client: null, lift: null, matchReason: 'db_not_ready' };
+
+        const emails = this._collectEmailCandidates(metadata);
+        const addresses = this._collectAddressCandidates(metadata);
+        const names = this._collectNameCandidates(metadata);
+
+        let client = null;
+        let lift = null;
+        let matchReason = 'none';
+
+        for (const email of emails) {
+            const found = await this.db.collection('users').findOne({ role: 'client', email: email.toLowerCase() });
+            if (found) {
+                client = found;
+                matchReason = 'client_email';
+                break;
+            }
+        }
+
+        if (addresses.length > 0) {
+            const address = addresses[0];
+            const needle = this._normalizeLooseText(address);
+            const token = needle.split(/\s+/).find(t => t.length >= 4) || needle;
+            const re = new RegExp(token.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
+
+            const candidates = await this.db.collection('lifts').find({
+                deletedAt: { $exists: false },
+                $or: [
+                    { location: re },
+                    { address: re },
+                    { clientAddress: re },
+                    { municipalNumber: re }
+                ]
+            }).limit(15).toArray();
+
+            if (candidates.length > 0) {
+                candidates.sort((a, b) => {
+                    const ax = this._normalizeLooseText(a.location || a.address || a.clientAddress || '');
+                    const bx = this._normalizeLooseText(b.location || b.address || b.clientAddress || '');
+                    const aScore = ax.includes(needle) ? 2 : (needle.includes(ax) ? 1 : 0);
+                    const bScore = bx.includes(needle) ? 2 : (needle.includes(bx) ? 1 : 0);
+                    return bScore - aScore;
+                });
+                lift = candidates[0];
+                if (matchReason === 'none') matchReason = 'lift_address';
+            }
+        }
+
+        if (!lift && client) {
+            const userId = String(client._id);
+            lift = await this.db.collection('lifts').findOne({
+                deletedAt: { $exists: false },
+                $or: [
+                    { clientEmail: String(client.email || '').toLowerCase() },
+                    { client: userId },
+                    { client: this._toObjectIdMaybe(userId) },
+                    { clientId: userId },
+                    { clientId: this._toObjectIdMaybe(userId) }
+                ]
+            }, { sort: { updatedAt: -1, createdAt: -1 } });
+            if (lift && matchReason === 'client_email') matchReason = 'client_email+lift';
+        }
+
+        if (!client && lift) {
+            const liftEmail = String(lift.clientEmail || '').toLowerCase().trim();
+            const liftClientId = lift.client || lift.clientId || null;
+            if (liftEmail) {
+                client = await this.db.collection('users').findOne({ role: 'client', email: liftEmail });
+                if (client) matchReason = matchReason === 'none' ? 'lift_client_email' : `${matchReason}+lift_client_email`;
+            }
+            if (!client && liftClientId) {
+                client = await this.db.collection('users').findOne({ _id: this._toObjectIdMaybe(liftClientId), role: 'client' });
+                if (client) matchReason = matchReason === 'none' ? 'lift_client_id' : `${matchReason}+lift_client_id`;
+            }
+        }
+
+        if (!client && names.length > 0) {
+            const raw = names[0].trim();
+            const tokens = this._normalizeLooseText(raw).split(/\s+/).filter(t => t.length >= 2).slice(0, 3);
+            if (tokens.length > 0) {
+                const andParts = tokens.map(token => {
+                    const re = new RegExp(token.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
+                    return {
+                        $or: [
+                            { firstName: re },
+                            { lastName: re },
+                            { companyName: re },
+                            { name: re },
+                            { email: re }
+                        ]
+                    };
+                });
+                client = await this.db.collection('users').findOne({ role: 'client', $and: andParts });
+                if (client) matchReason = matchReason === 'none' ? 'client_name' : `${matchReason}+client_name`;
+            }
+        }
+
+        return { client: client || null, lift: lift || null, matchReason };
+    }
+
+    async savePdfEstimateAsDraft({ estimate, analysis, task = '', user }) {
+        if (!this.db) throw new Error('DB not ready');
+        if (!user || !['admin', 'dispatcher'].includes(String(user.role || ''))) {
+            throw new Error('Apenas admin/dispatcher podem guardar orçamento.');
+        }
+
+        const incoming = Array.isArray(estimate?.servicos) ? estimate.servicos : [];
+        if (incoming.length === 0) throw new Error('Sem serviços para guardar.');
+
+        const servicos = incoming.map((s) => {
+            const quantidade = Math.max(1, parseInt(s.quantidade, 10) || 1);
+            const precoUnitario = Math.max(0, Number(s.precoUnitario || 0));
+            const total = Math.round(quantidade * precoUnitario * 100) / 100;
+            return {
+                descricao: String(s.descricao || 'Serviço por definir').trim(),
+                quantidade,
+                precoUnitario,
+                total
+            };
+        });
+
+        const now = new Date();
+        const validadeAte = new Date(now);
+        validadeAte.setDate(validadeAte.getDate() + 30);
+
+        const ano = now.getFullYear();
+        const mes = String(now.getMonth() + 1).padStart(2, '0');
+        const prefix = `ORC-${ano}-${mes}-`;
+        const last = await this.db.collection('orcamentos')
+            .find({ numero: new RegExp(`^${prefix}`) })
+            .sort({ numero: -1 })
+            .limit(1)
+            .toArray();
+        let seq = 1;
+        if (last.length > 0) {
+            const m = String(last[0].numero || '').match(/ORC-\d{4}-\d{2}-(\d{3})/);
+            if (m) seq = parseInt(m[1], 10) + 1;
+        }
+        const numero = `${prefix}${String(seq).padStart(3, '0')}`;
+
+        const meta = analysis?.metadata || {};
+        const detected = await this._resolveClientAndLiftFromPdfMetadata(meta);
+        const detectedClient = detected.client;
+        const detectedLift = detected.lift;
+
+        const fallbackName = this._collectNameCandidates(meta)[0] || 'Cliente por confirmar';
+        const fallbackAddress = this._collectAddressCandidates(meta)[0] || 'Morada por confirmar';
+        const fallbackEmail = this._collectEmailCandidates(meta)[0] || '';
+
+        const subtotal = Math.round(servicos.reduce((sum, s) => sum + Number(s.total || 0), 0) * 100) / 100;
+        const iva = Math.round(subtotal * 0.23 * 100) / 100;
+        const total = Math.round((subtotal + iva) * 100) / 100;
+
+        const clienteNome = detectedClient
+            ? ([detectedClient.firstName, detectedClient.lastName].filter(Boolean).join(' ') || detectedClient.companyName || detectedClient.name || detectedClient.username || detectedClient.email)
+            : fallbackName;
+
+        const orcamento = {
+            numero,
+            data: now.toISOString(),
+            validadeAte: validadeAte.toISOString(),
+            cliente: {
+                nome: clienteNome,
+                email: detectedClient ? String(detectedClient.email || '') : fallbackEmail,
+                morada: detectedLift?.location || detectedLift?.address || fallbackAddress
+            },
+            servicos,
+            subtotal,
+            iva,
+            total,
+            notas: `Rascunho criado pelo Assistente IA com base em PDF (${now.toLocaleDateString('pt-PT')}).\nTarefa: ${String(task || 'sem descrição')}`,
+            status: 'rascunho',
+            geradoPorAI: true,
+            source: 'assistant_pdf',
+            pdfAnalysis: {
+                stats: analysis?.stats || null,
+                reportType: analysis?.reportType || null,
+                detectedFormat: analysis?.detectedFormat || null,
+                metadata: meta
+            },
+            autoDetection: {
+                clientMatched: Boolean(detectedClient),
+                liftMatched: Boolean(detectedLift),
+                matchReason: detected.matchReason || 'none'
+            },
+            liftId: detectedLift?._id || null,
+            liftAddress: detectedLift?.location || detectedLift?.address || null,
+            lifts: detectedLift?._id ? [detectedLift._id] : [],
+            criadoPor: user.id || null,
+            criadoPorRole: user.role || null,
+            criadoPorName: user.email || 'assistente',
+            createdAt: now.toISOString(),
+            updatedAt: now.toISOString()
+        };
+
+        const insert = await this.db.collection('orcamentos').insertOne(orcamento);
+        return {
+            ...orcamento,
+            _id: insert.insertedId
+        };
+    }
+
     // ─────────────────────────────────────────────────────────────────────────
     // LOCAL INTENT ROUTER — answers without consuming Gemini quota
     // ─────────────────────────────────────────────────────────────────────────
@@ -1558,6 +1918,28 @@ class AgentService {
     }
 
     async _rateLimitFallback(msg, role, userEmail, userId = null) {
+        // First attempt: still answer via local Ollama if available.
+        try {
+            const ollamaReady = await this._isOllamaAvailable();
+            if (ollamaReady) {
+                const context = await this._buildContext(role, userEmail, userId);
+                const routeHint = this._detectTaskType(msg || '');
+                const prompt = `${this._buildSystemPrompt(role, context, [])}\n\nMENSAGEM DO UTILIZADOR: ${msg}`;
+                const localAiReply = await this._generateViaOllama(prompt, routeHint, {
+                    channel: 'chat',
+                    userRole: role,
+                    contextSummary: this._buildCompactContextSummary(role, context),
+                    userId,
+                    userMessage: msg
+                });
+                if (localAiReply && localAiReply.trim().length > 0) {
+                    return localAiReply;
+                }
+            }
+        } catch (err) {
+            console.warn('🤖 rateLimitFallback: Ollama unavailable:', err.message);
+        }
+
         // When Gemini is rate limited, try to answer locally anyway
         const local = await this._resolveLocally(msg, role, userEmail, userId);
         if (local) return local;

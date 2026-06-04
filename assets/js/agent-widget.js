@@ -34,11 +34,15 @@
     let notifications = [];
     let socket = null;
     let activeNotifId = null;  // notification being decided
+    let pdfQuoteFlow = null;
 
     // ─── Build HTML ───────────────────────────────────────────────────────────
     function buildWidget() {
         const widget = document.createElement('div');
         widget.id = 'agent-widget';
+        const attachTitle = role === 'client'
+            ? 'Analisar PDF'
+            : 'Analisar PDF para orçamento';
         const isMinimalAvatar = CFG.avatarStyle === 'minimal';
         const isWizardAvatar = CFG.avatarStyle === 'wizard';
         const triggerClass = isMinimalAvatar ? 'avatar-minimal' : (isWizardAvatar ? 'avatar-wizard' : '');
@@ -72,6 +76,8 @@
     <div id="agent-chat-view">
       <div id="agent-messages"></div>
       <div id="agent-input-area">
+                <input id="agent-pdf-input" type="file" accept="application/pdf" style="display:none;" />
+                                <button id="agent-attach" title="${attachTitle}">📎</button>
         <input id="agent-input" type="text" placeholder="Escreva aqui…" />
         <button id="agent-send">➤</button>
       </div>
@@ -100,6 +106,18 @@
                 'Authorization': `Bearer ${token}`,
                 ...(opts.headers || {})
             }
+        });
+        return res.json();
+    }
+
+    async function apiUploadFetch(path, formData) {
+        const token = getToken();
+        const res = await fetch(CFG.baseUrl + path, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            },
+            body: formData
         });
         return res.json();
     }
@@ -344,6 +362,174 @@ ${actionHtml}`;
     }
 
     // ─── Chat ──────────────────────────────────────────────────────────────────
+    function parseMoneyValue(raw) {
+        const cleaned = String(raw || '')
+            .trim()
+            .replace(/€/g, '')
+            .replace(/\s+/g, '')
+            .replace(/,/g, '.');
+        if (!cleaned) return null;
+        const n = Number(cleaned);
+        if (!Number.isFinite(n) || n < 0) return null;
+        return Math.round(n * 100) / 100;
+    }
+
+    function toEuro(v) {
+        const n = Number(v || 0);
+        return `${n.toFixed(2)}€`;
+    }
+
+    function askNextPriceQuestion() {
+        if (!pdfQuoteFlow) return;
+        const idx = pdfQuoteFlow.index;
+        const items = pdfQuoteFlow.estimate?.servicos || [];
+        if (idx >= items.length) return;
+        const item = items[idx];
+        const suggested = Number(item.precoSugerido || 0);
+        appendMessage(
+            `💰 Item ${idx + 1}/${items.length}: **${item.descricao}** (qtd ${item.quantidade || 1})\n` +
+            (suggested > 0 ? `Sugestão histórica: ${toEuro(suggested)}\n` : '') +
+            `Indique o preço unitário (ex.: 120 ou 120,50).`,
+            'agent'
+        );
+    }
+
+    function renderSaveDraftButton() {
+        if (!pdfQuoteFlow) return;
+        if (!(role === 'admin' || role === 'dispatcher')) {
+            appendMessage('ℹ️ Pré-visualização concluída. Apenas admin/dispatcher podem guardar orçamento em rascunho.', 'agent');
+            return;
+        }
+
+        const btnId = `agent-save-draft-${Date.now()}`;
+        appendMessage(
+            `✅ Preços preenchidos.\n` +
+            `<button id="${btnId}" class="agent-btn yes" style="margin-top:8px;">💾 Guardar como rascunho de orçamento</button>`,
+            'agent'
+        );
+
+        const btn = document.getElementById(btnId);
+        if (btn) {
+            btn.addEventListener('click', async () => {
+                if (!pdfQuoteFlow) return;
+                btn.disabled = true;
+                btn.textContent = 'A guardar...';
+                try {
+                    const res = await apiFetch('/api/agent/pdf-estimate/save-draft', {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            analysis: pdfQuoteFlow.analysis,
+                            estimate: pdfQuoteFlow.estimate,
+                            task: pdfQuoteFlow.task || '',
+                            fileName: pdfQuoteFlow.fileName || ''
+                        })
+                    });
+
+                    if (!res.success || !res.orcamento) {
+                        throw new Error(res.error || 'Falha ao guardar rascunho');
+                    }
+
+                    const numero = res.orcamento.numero;
+                    const link = `/pages/admin/orcamentos-list.html?highlight=${encodeURIComponent(numero)}`;
+                    const m = res.matching || {};
+                    appendMessage(
+                        `📄 Rascunho **${numero}** guardado com sucesso.\n` +
+                        `Autodeteção: cliente ${m.clientMatched ? '✅' : '⚠️'}, elevador ${m.liftMatched ? '✅' : '⚠️'}\n` +
+                        `<a href="${link}" style="display:inline-block;margin-top:8px;padding:6px 14px;background:#2563eb;color:#fff;border-radius:20px;text-decoration:none;font-size:12px;font-weight:600">Abrir rascunho</a>`,
+                        'agent'
+                    );
+                    pdfQuoteFlow = null;
+                } catch (error) {
+                    appendMessage(`⚠️ ${error.message || 'Erro ao guardar rascunho.'}`, 'agent');
+                    btn.disabled = false;
+                    btn.textContent = '💾 Guardar como rascunho de orçamento';
+                }
+            });
+        }
+    }
+
+    function startPdfPricingWizard(pdfResult, fileName, task) {
+        const baseItems = Array.isArray(pdfResult?.estimate?.servicos) ? pdfResult.estimate.servicos : [];
+        if (baseItems.length === 0) return;
+
+        const clonedItems = baseItems.map(item => ({
+            ...item,
+            quantidade: Number(item.quantidade || 1),
+            precoUnitario: Number(item.precoUnitario || 0),
+            total: Number(item.total || 0)
+        }));
+
+        pdfQuoteFlow = {
+            fileName,
+            task,
+            analysis: pdfResult.analysis || {},
+            estimate: {
+                ...(pdfResult.estimate || {}),
+                servicos: clonedItems
+            },
+            index: 0,
+            finished: false
+        };
+
+        appendMessage('🧮 Vamos preencher os preços ponto a ponto no chat. Escreva "cancelar" para sair.', 'agent');
+        askNextPriceQuestion();
+    }
+
+    async function handlePdfPricingStep(userMessage) {
+        if (!pdfQuoteFlow || pdfQuoteFlow.finished) return false;
+
+        const txt = String(userMessage || '').trim().toLowerCase();
+        if (txt === 'cancelar' || txt === 'stop' || txt === 'parar') {
+            pdfQuoteFlow = null;
+            appendMessage('✅ Modo de preços cancelado.', 'agent');
+            return true;
+        }
+
+        const value = parseMoneyValue(userMessage);
+        if (value === null) {
+            appendMessage('⚠️ Valor inválido. Exemplo: 120 ou 120,50.', 'agent');
+            return true;
+        }
+
+        const idx = pdfQuoteFlow.index;
+        const items = pdfQuoteFlow.estimate.servicos || [];
+        if (idx >= items.length) return true;
+
+        const item = items[idx];
+        item.precoUnitario = value;
+        item.total = Math.round((Number(item.quantidade || 1) * value) * 100) / 100;
+
+        pdfQuoteFlow.index += 1;
+
+        if (pdfQuoteFlow.index < items.length) {
+            askNextPriceQuestion();
+            return true;
+        }
+
+        pdfQuoteFlow.finished = true;
+        const subtotal = Math.round(items.reduce((sum, s) => sum + Number(s.total || 0), 0) * 100) / 100;
+        const iva = Math.round(subtotal * 0.23 * 100) / 100;
+        const total = Math.round((subtotal + iva) * 100) / 100;
+        pdfQuoteFlow.estimate.subtotal = subtotal;
+        pdfQuoteFlow.estimate.iva = iva;
+        pdfQuoteFlow.estimate.total = total;
+
+        appendMessage(`📊 Totais: Subtotal ${toEuro(subtotal)} | IVA ${toEuro(iva)} | Total ${toEuro(total)}`, 'agent');
+        renderSaveDraftButton();
+        return true;
+    }
+
+    function summarizeClientPdfAnalysis(res, fileName) {
+        const a = res.analysis || {};
+        const st = a.stats || {};
+        const passed = Boolean(a.passed);
+        const status = passed ? '✅ Aprovado' : '⚠️ Requer atenção';
+        return `📄 PDF analisado: ${fileName}\n` +
+            `Resultado: ${status}\n` +
+            `Cláusulas: total ${st.total || 0} (C1: ${st.critical || 0}, C2: ${st.medium || 0}, C3: ${st.low || 0})\n` +
+            `Posso explicar qualquer cláusula específica se quiser.`;
+    }
+
     async function sendChat() {
         const input = document.getElementById('agent-input');
         const msg = (input.value || '').trim();
@@ -351,6 +537,11 @@ ${actionHtml}`;
 
         input.value = '';
         appendMessage(msg, 'user');
+
+        if (await handlePdfPricingStep(msg)) {
+            return;
+        }
+
         showTyping();
 
         try {
@@ -365,6 +556,55 @@ ${actionHtml}`;
                 appendMessage('⚠️ ' + (res.error || 'Erro ao contactar agente.'), 'agent');
             }
         } catch (e) {
+            hideTyping();
+            appendMessage('⚠️ Sem ligação ao servidor.', 'agent');
+        }
+    }
+
+    async function sendPdfEstimate(file) {
+        if (!file) return;
+        if (file.type !== 'application/pdf') {
+            appendMessage('⚠️ Só ficheiros PDF são suportados para este tipo de análise.', 'agent');
+            return;
+        }
+
+        const input = document.getElementById('agent-input');
+        const task = (input.value || '').trim();
+        input.value = '';
+
+        appendMessage(`📄 ${file.name}${task ? `\nTarefa: ${task}` : ''}`, 'user');
+        showTyping();
+
+        try {
+            const formData = new FormData();
+            formData.append('pdfReport', file);
+
+            let res;
+            if (role === 'client') {
+                res = await apiUploadFetch('/api/pdf/upload', formData);
+            } else {
+                formData.append('withoutPrices', 'true');
+                if (task) formData.append('task', task);
+                res = await apiUploadFetch('/api/agent/pdf-estimate', formData);
+            }
+
+            hideTyping();
+
+            if (res.success) {
+                if (role === 'client') {
+                    appendMessage(summarizeClientPdfAnalysis(res, file.name), 'agent');
+                } else {
+                    appendMessage(res.reply || '✅ PDF analisado e rascunho preparado.', 'agent');
+                    if (role === 'admin' || role === 'dispatcher') {
+                        startPdfPricingWizard(res, file.name, task);
+                    } else {
+                        appendMessage('ℹ️ Pré-análise concluída. A criação de orçamento é feita por admin/dispatcher.', 'agent');
+                    }
+                }
+            } else {
+                appendMessage('⚠️ ' + (res.error || 'Erro ao analisar PDF.'), 'agent');
+            }
+        } catch (_) {
             hideTyping();
             appendMessage('⚠️ Sem ligação ao servidor.', 'agent');
         }
@@ -481,6 +721,8 @@ ${actionHtml}`;
         const closeBtn = document.getElementById('agent-close');
         const sendBtn  = document.getElementById('agent-send');
         const input    = document.getElementById('agent-input');
+        const attachBtn = document.getElementById('agent-attach');
+        const pdfInput = document.getElementById('agent-pdf-input');
 
         trigger.addEventListener('click', () => {
             if (panel.classList.contains('hidden')) { openPanel(); } else { closePanel(); }
@@ -494,6 +736,12 @@ ${actionHtml}`;
 
         sendBtn.addEventListener('click', sendChat);
         input.addEventListener('keydown', (e) => { if (e.key === 'Enter') sendChat(); });
+        attachBtn.addEventListener('click', () => pdfInput.click());
+        pdfInput.addEventListener('change', async (e) => {
+            const file = e.target.files && e.target.files[0];
+            if (file) await sendPdfEstimate(file);
+            e.target.value = '';
+        });
 
         // Show welcome
         showWelcome();

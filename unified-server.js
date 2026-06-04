@@ -2616,6 +2616,56 @@ app.post('/api/pdf/upload', authenticateToken, upload.single('pdfReport'), async
     }
 });
 
+// POST PDF for assistant-driven estimate draft (clauses -> quote items)
+app.post('/api/agent/pdf-estimate', authenticateToken, requireRole('admin', 'dispatcher', 'technician'), upload.single('pdfReport'), async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({
+                success: false,
+                error: 'No PDF file uploaded. Please select a PDF file.'
+            });
+        }
+
+        const task = String(req.body?.task || req.body?.message || '').trim();
+        const withoutPricesRaw = String(req.body?.withoutPrices ?? 'true').toLowerCase();
+        const withoutPrices = !(withoutPricesRaw === 'false' || withoutPricesRaw === '0' || withoutPricesRaw === 'no');
+
+        const result = await agentService.analyzePdfAndBuildEstimate({
+            filePath: req.file.path,
+            userRole: req.user?.role,
+            task,
+            withoutPrices
+        });
+
+        await cleanupFile(req.file.path).catch(() => {});
+        res.json(result);
+    } catch (error) {
+        if (req.file?.path) {
+            await cleanupFile(req.file.path).catch(() => {});
+        }
+        console.error('❌ /api/agent/pdf-estimate error:', error.message);
+        res.status(500).json({ success: false, error: error.message || 'Erro ao gerar orçamento a partir do PDF' });
+    }
+});
+
+// Save priced estimate from assistant chat as draft orçamento (admin/dispatcher only)
+app.post('/api/agent/pdf-estimate/save-draft', authenticateToken, requireRole('admin', 'dispatcher'), async (req, res) => {
+    try {
+        const { analysis, estimate, task, fileName } = req.body || {};
+        const saved = await agentService.savePdfEstimateAsDraft({
+            analysis,
+            estimate,
+            task: String(task || ''),
+            fileName: String(fileName || ''),
+            user: req.user
+        });
+        res.json(saved);
+    } catch (error) {
+        console.error('❌ /api/agent/pdf-estimate/save-draft error:', error.message);
+        res.status(500).json({ success: false, error: error.message || 'Erro ao guardar rascunho' });
+    }
+});
+
 // Portuguese Regulations Search API (public - no auth required)
 app.get('/api/regulations', async (req, res) => {
     try {
