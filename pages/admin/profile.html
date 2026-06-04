@@ -1074,29 +1074,129 @@
             }
         });
 
-        // Avatar upload functionality
-        document.getElementById('avatarInput').addEventListener('change', function(e) {
+        // Avatar upload functionality (real API)
+        document.getElementById('avatarInput').addEventListener('change', async function(e) {
             const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    document.getElementById('profileAvatar').innerHTML = `<img src="${e.target.result}" alt="Avatar" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
-                };
-                reader.readAsDataURL(file);
+            if (!file) return;
+
+            const token = authToken();
+            if (!token) {
+                alert('Sessão inválida. Faça login novamente.');
+                return;
+            }
+
+            try {
+                const formData = new FormData();
+                formData.append('avatar', file);
+
+                const response = await fetch('/api/users/avatar', {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` },
+                    body: formData
+                });
+                const result = await response.json();
+                if (!response.ok || !result.success) {
+                    throw new Error(result.message || 'Falha ao atualizar avatar');
+                }
+
+                const avatarUrl = result.avatarUrl || '';
+                if (avatarUrl) {
+                    document.getElementById('profileAvatar').innerHTML = `<img src="${avatarUrl}?v=${Date.now()}" alt="Avatar" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
+                }
+                alert('Avatar atualizado com sucesso.');
+            } catch (error) {
+                console.error('❌ avatar update error:', error);
+                alert(error.message || 'Erro ao atualizar avatar.');
+            } finally {
+                e.target.value = '';
             }
         });
 
-        // Form submissions
-        document.getElementById('personalForm').addEventListener('submit', function(e) {
+        // Form submissions (real API)
+        document.getElementById('personalForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            // Handle personal info update
-            alert('Informação pessoal atualizada!');
+
+            const token = authToken();
+            if (!token) {
+                alert('Sessão inválida. Faça login novamente.');
+                return;
+            }
+
+            const payload = {
+                firstName: document.getElementById('firstName').value.trim(),
+                lastName: document.getElementById('lastName').value.trim(),
+                phone: document.getElementById('phone').value.trim()
+            };
+
+            try {
+                const response = await fetch('/api/users/me', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+                if (!response.ok) {
+                    throw new Error(result.message || 'Erro ao atualizar perfil');
+                }
+
+                alert('Informação pessoal atualizada com sucesso.');
+                await loadAdminProfile();
+            } catch (error) {
+                console.error('❌ profile update error:', error);
+                alert(error.message || 'Erro ao atualizar perfil.');
+            }
         });
 
-        document.getElementById('passwordForm').addEventListener('submit', function(e) {
+        document.getElementById('passwordForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            // Handle password change
-            alert('Palavra-passe alterado com sucesso!');
+
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+
+            if (!currentPassword || !newPassword) {
+                alert('Preencha a palavra-passe atual e a nova.');
+                return;
+            }
+
+            if (newPassword !== confirmPassword) {
+                alert('A confirmação não coincide com a nova palavra-passe.');
+                return;
+            }
+
+            const token = authToken();
+            if (!token) {
+                alert('Sessão inválida. Faça login novamente.');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/users/change-password', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ currentPassword, newPassword })
+                });
+
+                const result = await response.json();
+                if (!response.ok || !result.success) {
+                    throw new Error(result.message || 'Erro ao alterar palavra-passe');
+                }
+
+                alert('Palavra-passe alterada com sucesso.');
+                document.getElementById('currentPassword').value = '';
+                document.getElementById('newPassword').value = '';
+                document.getElementById('confirmPassword').value = '';
+            } catch (error) {
+                console.error('❌ password change error:', error);
+                alert(error.message || 'Erro ao alterar palavra-passe.');
+            }
         });
 
         // Animate elements on load
@@ -1171,6 +1271,10 @@
                     $('#lastName').val(userData.lastName || '');
                     $('#email').val(userData.email || '');
                     $('#phone').val(userData.phone || '');
+
+                    if (userData.avatar) {
+                        document.getElementById('profileAvatar').innerHTML = `<img src="${userData.avatar}?v=${Date.now()}" alt="Avatar" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
+                    }
 
                     const regAt = userData.createdAt ? new Date(userData.createdAt) : null;
                     const lastLogin = userData.lastLogin ? new Date(userData.lastLogin) : null;

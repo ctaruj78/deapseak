@@ -32,6 +32,7 @@ class SettingsPage {
                 ${this.renderNotificationSettings()}
                 ${isAdmin ? this.renderAdminSystemSettings() : ''}
             </div>
+            ${isAdmin ? `<div class="row mt-3">${this.renderAdminBackupSettings()}</div>` : ''}
             <div class="row mt-4">
                 <div class="col-12">
                     <button class="btn btn-primary btn-lg" id="save-settings">
@@ -160,6 +161,50 @@ class SettingsPage {
         `;
     }
 
+    renderAdminBackupSettings() {
+        return `
+            <div class="col-12">
+                <div class="card card-danger">
+                    <div class="card-header">
+                        <h3 class="card-title"><i class="fas fa-database"></i> Backups reais</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex flex-wrap align-items-center mb-3" style="gap:8px;">
+                            <button class="btn btn-outline-primary" id="create-server-backup">
+                                <i class="fas fa-plus-circle"></i> Criar backup agora
+                            </button>
+                            <button class="btn btn-outline-secondary" id="refresh-backup-list">
+                                <i class="fas fa-sync"></i> Atualizar lista
+                            </button>
+                            <span class="text-muted small" id="backup-status-text">Sem dados carregados</span>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group col-md-6">
+                                <label for="server-backup-select">Backup disponível</label>
+                                <select class="form-control" id="server-backup-select">
+                                    <option value="">A carregar...</option>
+                                </select>
+                            </div>
+                            <div class="form-group col-md-6 d-flex align-items-end" style="gap:8px;">
+                                <button class="btn btn-outline-success" id="download-server-backup">
+                                    <i class="fas fa-download"></i> Transferir
+                                </button>
+                                <button class="btn btn-danger" id="restore-server-backup">
+                                    <i class="fas fa-history"></i> Restaurar backup
+                                </button>
+                            </div>
+                        </div>
+
+                        <small class="text-danger d-block">
+                            Restaurar substitui os dados atuais nas coleções principais. Será criado um backup automático antes da restauração.
+                        </small>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
     attachEventListeners() {
         $('#language-select').on('change', async function() {
             const lang = $(this).val();
@@ -180,7 +225,166 @@ class SettingsPage {
             window._settingsPageInstance.resetSettings();
         });
 
+        if (this.user && this.user.role === 'admin') {
+            $('#create-server-backup').on('click', function() {
+                window._settingsPageInstance.createServerBackup();
+            });
+
+            $('#refresh-backup-list').on('click', function() {
+                window._settingsPageInstance.loadBackupList();
+            });
+
+            $('#download-server-backup').on('click', function() {
+                window._settingsPageInstance.downloadSelectedBackup();
+            });
+
+            $('#restore-server-backup').on('click', function() {
+                window._settingsPageInstance.restoreSelectedBackup();
+            });
+
+            this.loadBackupList();
+        }
+
         window._settingsPageInstance = this;
+    }
+
+    async loadBackupList() {
+        const select = document.getElementById('server-backup-select');
+        const statusEl = document.getElementById('backup-status-text');
+        if (!select || !statusEl) return;
+
+        try {
+            statusEl.textContent = 'A carregar backups...';
+            const token = localStorage.getItem('token');
+            const resp = await fetch('/api/admin/backup/list', {
+                headers: {
+                    ...(token ? { Authorization: `Bearer ${token}` } : {})
+                }
+            });
+            const data = await resp.json();
+            if (!resp.ok || !data.success) {
+                throw new Error(data.message || 'Falha ao carregar backups');
+            }
+
+            const files = Array.isArray(data.files) ? data.files : [];
+            if (files.length === 0) {
+                select.innerHTML = '<option value="">Nenhum backup disponível</option>';
+                statusEl.textContent = 'Nenhum backup encontrado';
+                return;
+            }
+
+            select.innerHTML = files.map(file => {
+                const date = new Date(file.modifiedAt).toLocaleString('pt-PT');
+                const sizeMb = (Number(file.sizeBytes || 0) / (1024 * 1024)).toFixed(2);
+                return `<option value="${file.name}">${file.name} • ${sizeMb} MB • ${date}</option>`;
+            }).join('');
+
+            statusEl.textContent = `Backups: ${files.length}`;
+        } catch (error) {
+            console.error('backup list error:', error);
+            statusEl.textContent = 'Erro ao carregar backups';
+            toastr.error(error.message || 'Erro ao carregar backups');
+        }
+    }
+
+    async createServerBackup() {
+        try {
+            const token = localStorage.getItem('token');
+            const resp = await fetch('/api/admin/backup/create', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(token ? { Authorization: `Bearer ${token}` } : {})
+                },
+                body: JSON.stringify({})
+            });
+            const data = await resp.json();
+            if (!resp.ok || !data.success) {
+                throw new Error(data.message || 'Falha ao criar backup');
+            }
+
+            toastr.success(`Backup criado: ${data.file && data.file.name ? data.file.name : 'ok'}`);
+            await this.loadBackupList();
+        } catch (error) {
+            console.error('backup create error:', error);
+            toastr.error(error.message || 'Erro ao criar backup');
+        }
+    }
+
+    async downloadSelectedBackup() {
+        const select = document.getElementById('server-backup-select');
+        const fileName = select ? select.value : '';
+        if (!fileName) {
+            toastr.warning('Selecione um backup para transferir');
+            return;
+        }
+
+        try {
+            const token = localStorage.getItem('token');
+            const resp = await fetch(`/api/admin/backup/download/${encodeURIComponent(fileName)}`, {
+                headers: {
+                    ...(token ? { Authorization: `Bearer ${token}` } : {})
+                }
+            });
+            if (!resp.ok) {
+                let msg = 'Falha ao transferir backup';
+                try {
+                    const err = await resp.json();
+                    msg = err.message || msg;
+                } catch (_) {}
+                throw new Error(msg);
+            }
+
+            const blob = await resp.blob();
+            const href = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = href;
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(href);
+        } catch (error) {
+            console.error('backup download error:', error);
+            toastr.error(error.message || 'Erro ao transferir backup');
+        }
+    }
+
+    async restoreSelectedBackup() {
+        const select = document.getElementById('server-backup-select');
+        const fileName = select ? select.value : '';
+        if (!fileName) {
+            toastr.warning('Selecione um backup para restaurar');
+            return;
+        }
+
+        const text = prompt('Atenção: esta ação irá substituir dados atuais. Escreva RESTORE para confirmar:');
+        if (text !== 'RESTORE') {
+            toastr.info('Restauração cancelada');
+            return;
+        }
+
+        try {
+            const token = localStorage.getItem('token');
+            const resp = await fetch('/api/admin/backup/restore', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...(token ? { Authorization: `Bearer ${token}` } : {})
+                },
+                body: JSON.stringify({ fileName, confirmText: 'RESTORE' })
+            });
+            const data = await resp.json();
+            if (!resp.ok || !data.success) {
+                throw new Error(data.message || 'Falha ao restaurar backup');
+            }
+
+            toastr.success(`Restore concluído. Safety backup: ${data.safetyBackup || 'criado'}`);
+            await this.loadBackupList();
+        } catch (error) {
+            console.error('backup restore error:', error);
+            toastr.error(error.message || 'Erro ao restaurar backup');
+        }
     }
 
     async saveAllSettings() {

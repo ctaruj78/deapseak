@@ -23,6 +23,8 @@ const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const { exec } = require('child_process');
 const { promisify } = require('util');
+const zlib = require('zlib');
+const { EJSON } = require('bson');
 const mongoSanitize = require('express-mongo-sanitize'); // 🔐 NoSQL injection protection
 const execAsync = promisify(exec);
 
@@ -570,6 +572,205 @@ app.get('/api/admin/system-overview', authenticateToken, async (req, res) => {
     } catch (error) {
         console.error('❌ Erro em /api/admin/system-overview:', error);
         res.status(500).json({ success: false, message: 'Erro do servidor' });
+    }
+});
+
+// Real backup/restore APIs for admin panel
+const BACKUP_STORAGE_DIR = path.join(__dirname, 'backups');
+const BACKUP_COLLECTIONS = [
+    'users',
+    'user_settings',
+    'lifts',
+    'requests',
+    'inspections',
+    'orcamentos',
+    'notifications',
+    'agent_notifications',
+    'agent_decisions',
+    'agent_quality_logs'
+];
+
+function _sanitizeBackupFileName(name) {
+    const cleaned = String(name || '').replace(/[^a-zA-Z0-9._-]/g, '');
+    if (!cleaned || cleaned.includes('..')) return null;
+    if (!cleaned.endsWith('.json.gz')) return null;
+    return cleaned;
+}
+
+async function _buildBackupPayload({ reqUser, reason = 'manual' } = {}) {
+    const existingCollections = await db.listCollections({}, { nameOnly: true }).toArray();
+    const available = new Set(existingCollections.map(c => c.name));
+    const collections = BACKUP_COLLECTIONS.filter(name => available.has(name));
+
+    const data = {};
+    const counts = {};
+    for (const collectionName of collections) {
+        const docs = await db.collection(collectionName).find({}).toArray();
+        data[collectionName] = docs;
+        counts[collectionName] = docs.length;
+    }
+
+    return {
+        meta: {
+            app: 'FestLift',
+            version: '2.1.0',
+            createdAt: new Date().toISOString(),
+            reason,
+            collections,
+            counts,
+            createdBy: reqUser ? {
+                id: reqUser.id || reqUser.userId || null,
+                email: reqUser.email || null,
+                role: reqUser.role || null
+            } : null
+        },
+        data
+    };
+}
+
+async function _writeBackupFile(payload, filePrefix = 'festlift-backup') {
+    await fs.mkdir(BACKUP_STORAGE_DIR, { recursive: true });
+    const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const fileName = `${filePrefix}-${stamp}.json.gz`;
+    const filePath = path.join(BACKUP_STORAGE_DIR, fileName);
+    const body = EJSON.stringify(payload, null, 2);
+    const zipped = zlib.gzipSync(Buffer.from(body, 'utf8'));
+    await fs.writeFile(filePath, zipped);
+    return { fileName, filePath, sizeBytes: zipped.length };
+}
+
+app.get('/api/admin/backup/list', authenticateToken, requireRole('admin'), async (req, res) => {
+    try {
+        await fs.mkdir(BACKUP_STORAGE_DIR, { recursive: true });
+        const entries = await fs.readdir(BACKUP_STORAGE_DIR, { withFileTypes: true });
+        const files = [];
+        for (const ent of entries) {
+            if (!ent.isFile()) continue;
+            if (!ent.name.endsWith('.json.gz')) continue;
+            const fullPath = path.join(BACKUP_STORAGE_DIR, ent.name);
+            try {
+                const st = await fs.stat(fullPath);
+                files.push({
+                    name: ent.name,
+                    sizeBytes: st.size,
+                    modifiedAt: st.mtime.toISOString()
+                });
+            } catch (_) {}
+        }
+        files.sort((a, b) => new Date(b.modifiedAt) - new Date(a.modifiedAt));
+        res.json({ success: true, files });
+    } catch (error) {
+        console.error('❌ backup/list error:', error);
+        res.status(500).json({ success: false, message: 'Erro ao listar backups' });
+    }
+});
+
+app.post('/api/admin/backup/create', authenticateToken, requireRole('admin'), async (req, res) => {
+    try {
+        if (!db) {
+            return res.status(503).json({ success: false, message: 'Base de dados indisponível' });
+        }
+
+        const payload = await _buildBackupPayload({ reqUser: req.user, reason: 'manual' });
+        const result = await _writeBackupFile(payload, 'festlift-backup');
+        console.log(`✅ Backup criado: ${result.fileName} (${result.sizeBytes} bytes)`);
+
+        res.json({
+            success: true,
+            file: {
+                name: result.fileName,
+                sizeBytes: result.sizeBytes,
+                createdAt: payload.meta.createdAt,
+                collections: payload.meta.collections,
+                counts: payload.meta.counts
+            }
+        });
+    } catch (error) {
+        console.error('❌ backup/create error:', error);
+        res.status(500).json({ success: false, message: 'Erro ao criar backup' });
+    }
+});
+
+app.get('/api/admin/backup/download/:fileName', authenticateToken, requireRole('admin'), async (req, res) => {
+    try {
+        const safeName = _sanitizeBackupFileName(req.params.fileName);
+        if (!safeName) {
+            return res.status(400).json({ success: false, message: 'Nome do ficheiro inválido' });
+        }
+
+        const filePath = path.join(BACKUP_STORAGE_DIR, safeName);
+        await fs.access(filePath);
+        res.download(filePath, safeName);
+    } catch (error) {
+        if (error && error.code === 'ENOENT') {
+            return res.status(404).json({ success: false, message: 'Backup não encontrado' });
+        }
+        console.error('❌ backup/download error:', error);
+        res.status(500).json({ success: false, message: 'Erro ao transferir backup' });
+    }
+});
+
+app.post('/api/admin/backup/restore', authenticateToken, requireRole('admin'), async (req, res) => {
+    try {
+        if (!db) {
+            return res.status(503).json({ success: false, message: 'Base de dados indisponível' });
+        }
+
+        const { fileName, confirmText } = req.body || {};
+        if (confirmText !== 'RESTORE') {
+            return res.status(400).json({
+                success: false,
+                message: 'Confirmação obrigatória. Envie confirmText="RESTORE".'
+            });
+        }
+
+        const safeName = _sanitizeBackupFileName(fileName);
+        if (!safeName) {
+            return res.status(400).json({ success: false, message: 'Nome do ficheiro inválido' });
+        }
+
+        const backupPath = path.join(BACKUP_STORAGE_DIR, safeName);
+        await fs.access(backupPath);
+
+        // Safety first: create automatic pre-restore backup.
+        const safetyPayload = await _buildBackupPayload({ reqUser: req.user, reason: `pre-restore:${safeName}` });
+        const safetyFile = await _writeBackupFile(safetyPayload, 'pre-restore-auto');
+
+        const zipped = await fs.readFile(backupPath);
+        const raw = zlib.gunzipSync(zipped).toString('utf8');
+        const parsed = EJSON.parse(raw);
+        const data = parsed?.data;
+
+        if (!data || typeof data !== 'object') {
+            return res.status(400).json({ success: false, message: 'Formato de backup inválido' });
+        }
+
+        const restored = {};
+        for (const collectionName of Object.keys(data)) {
+            if (!BACKUP_COLLECTIONS.includes(collectionName)) continue;
+            const docs = Array.isArray(data[collectionName]) ? data[collectionName] : [];
+
+            const coll = db.collection(collectionName);
+            await coll.deleteMany({});
+            if (docs.length > 0) {
+                await coll.insertMany(docs, { ordered: false });
+            }
+            restored[collectionName] = docs.length;
+        }
+
+        console.log(`✅ Restore concluído a partir de ${safeName}`);
+        res.json({
+            success: true,
+            message: 'Restore concluído com sucesso',
+            restored,
+            safetyBackup: safetyFile.fileName
+        });
+    } catch (error) {
+        if (error && error.code === 'ENOENT') {
+            return res.status(404).json({ success: false, message: 'Backup não encontrado' });
+        }
+        console.error('❌ backup/restore error:', error);
+        res.status(500).json({ success: false, message: 'Erro ao restaurar backup' });
     }
 });
 
@@ -2869,15 +3070,82 @@ app.get('/api/lifts', authenticateToken, async (req, res) => {
         const limitNum = Math.min(10000, Math.max(0, parseInt(req.query.limit) || 0));
         const skipNum  = limitNum > 0 ? (pageNum - 1) * limitNum : 0;
         if (searchTerm) {
-            const re = new RegExp(searchTerm, 'i');
-            const searchFilter = { $or: [
+            const escapedSearch = searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const re = new RegExp(escapedSearch, 'i');
+            const searchTerms = searchTerm
+                .split(/\s+/)
+                .map(t => t.trim())
+                .filter(Boolean)
+                .slice(0, 6);
+            const userFieldsForTerm = (termRegex) => ({
+                $or: [
+                    { firstName: termRegex },
+                    { lastName: termRegex },
+                    { username: termRegex },
+                    { email: termRegex },
+                    { phone: termRegex },
+                    { companyName: termRegex },
+                    { company: termRegex }
+                ]
+            });
+
+            const searchOr = [
                 { municipalNumber: re },
                 { 'address.street': re },
                 { 'address.city': re },
                 { 'address.zipCode': re },
                 { clientName: re },
-                { clientEmail: re }
-            ] };
+                { clientEmail: re },
+                { clientPhone: re }
+            ];
+
+            // Розширений пошук клієнтів: шукаємо в users, потім додаємо умови для lifts.
+            const clientLookupQuery = { role: 'client' };
+            if (searchTerms.length > 1) {
+                clientLookupQuery.$and = searchTerms.map(term => {
+                    const escapedTerm = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                    return userFieldsForTerm(new RegExp(escapedTerm, 'i'));
+                });
+            } else {
+                clientLookupQuery.$or = userFieldsForTerm(re).$or;
+            }
+
+            const matchedClients = await db.collection('users')
+                .find(clientLookupQuery)
+                .project({ _id: 1, email: 1, phone: 1 })
+                .limit(200)
+                .toArray();
+
+            if (matchedClients.length > 0) {
+                const clientIds = [];
+                const clientEmails = [];
+                const clientPhones = [];
+
+                matchedClients.forEach(client => {
+                    const idStr = client?._id?.toString?.();
+                    if (idStr) {
+                        clientIds.push(idStr);
+                        try {
+                            clientIds.push(new ObjectId(idStr));
+                        } catch (err) {}
+                    }
+                    if (client?.email) clientEmails.push(String(client.email).toLowerCase());
+                    if (client?.phone) clientPhones.push(String(client.phone));
+                });
+
+                if (clientIds.length > 0) {
+                    searchOr.push({ client: { $in: clientIds } });
+                    searchOr.push({ 'client._id': { $in: clientIds } });
+                }
+                if (clientEmails.length > 0) {
+                    searchOr.push({ clientEmail: { $in: clientEmails } });
+                }
+                if (clientPhones.length > 0) {
+                    searchOr.push({ clientPhone: { $in: clientPhones } });
+                }
+            }
+
+            const searchFilter = { $or: searchOr };
             // Об'єднуємо з існуючим query (ролевий фільтр)
             if (Object.keys(query).length > 0) {
                 query = { $and: [query, searchFilter] };

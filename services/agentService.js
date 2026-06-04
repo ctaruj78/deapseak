@@ -143,6 +143,38 @@ class AgentService {
             return `🏢 **Elevadores de ${focus.name}** (${lifts.length}):\n\n${rows}`;
         }
 
+        if (/(pedidos|pedido|requests|request|запити|заявки)/.test(normalizedMsg)) {
+            const reqs = await this.db.collection('requests')
+                .find({
+                    $or: [
+                        { clientEmail: focus.email },
+                        { clientId: focus.id },
+                        { clientId: this._toObjectIdMaybe(focus.id) }
+                    ]
+                })
+                .sort({ createdAt: -1 })
+                .limit(20)
+                .toArray();
+
+            if (!reqs.length) return `📩 Não encontrei pedidos para **${focus.name}**.`;
+
+            const rows = reqs.map(r => {
+                const data = r.createdAt ? new Date(r.createdAt).toLocaleDateString('pt-PT') : '?';
+                const st = r.status || 'n/d';
+                const title = r.title || r.description || r.type || 'Pedido';
+                return `- ${r.requestNumber || r._id} | ${st} | ${String(title).slice(0, 60)} | ${data}`;
+            }).join('\n');
+
+            return `📩 **Pedidos de ${focus.name}** (${reqs.length}):\n\n${rows}`;
+        }
+
+        if (/(dele|dela|його|її)/.test(normalizedMsg)) {
+            return `Tenho o contexto de **${focus.name}**. O que quer ver?\n` +
+                `1) dados\n` +
+                `2) elevadores\n` +
+                `3) pedidos`;
+        }
+
         return null;
     }
 
@@ -1163,7 +1195,7 @@ class AgentService {
         const m = msg.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
 
         // ── Follow-up for previously selected client ────────────────────────
-        if (/(dele|dela|його|її|dados|detalhes|lifts|elevadores|ліфти|дані|info)/.test(m)) {
+        if (/(dele|dela|його|її|dados|detalhes|lifts|elevadores|ліфти|дані|info|pedidos|запити|requests)/.test(m)) {
             const follow = await this._respondFromFocusedClient(userId, m);
             if (follow) return follow;
         }

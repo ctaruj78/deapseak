@@ -993,7 +993,7 @@
                                             <div class="form-group">
                                                 <label>Pesquisar:</label>
                                                 <div class="input-group">
-                                                    <input type="text" id="searchInput" class="form-control" placeholder="Pesquisar por modelo, endereço, ID..." aria-label="Pesquisar de elevadores">
+                                                    <input type="text" id="searchInput" class="form-control" placeholder="Pesquisar por cliente, email, telefone, modelo, endereço, ID..." aria-label="Pesquisar de elevadores">
                                                     <div class="input-group-append">
                                                         <button class="btn btn-primary" id="searchBtn" aria-label="Executar pesquisa">
                                                             <i class="fas fa-search"></i>
@@ -7628,12 +7628,80 @@ Email de contacto: info@festlift.pt`;
     // ========================
     document.addEventListener('DOMContentLoaded', function() {
         console.log('📊 A inicializar processadores de exportação...');
+
+        const normalizeSearchText = (value) => String(value || '')
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .replace(/\s+/g, ' ')
+            .trim();
+
+        const collectLiftSearchBlob = (lift) => {
+            const parts = [];
+            const add = (value) => {
+                if (!value && value !== 0) return;
+                const text = String(value).trim();
+                if (text) parts.push(text);
+            };
+
+            add(lift.municipalNumber);
+            add(lift.manufacturer);
+            add(lift.model);
+            add(lift.type);
+            add((lift._id || lift.id || '').toString());
+
+            if (typeof lift.address === 'object' && lift.address) {
+                add(lift.address.street);
+                add(lift.address.city);
+                add(lift.address.zipCode);
+            } else if (typeof lift.address === 'string') {
+                add(lift.address);
+            }
+
+            if (typeof lift.municipality === 'object' && lift.municipality) {
+                add(lift.municipality.name);
+            } else {
+                add(lift.municipality);
+            }
+
+            add(lift.clientName);
+            add(lift.clientEmail);
+            add(lift.clientPhone);
+            add(lift.email);
+            add(lift.phone);
+
+            if (typeof lift.client === 'object' && lift.client) {
+                const c = lift.client;
+                const fullName = [c.firstName, c.lastName].filter(Boolean).join(' ');
+                add(fullName);
+                add(c.name);
+                add(c.fullName);
+                add(c.email);
+                add(c.phone);
+                add(c.mobile);
+                add(c.company);
+                add(c.companyName);
+            } else {
+                add(lift.client);
+            }
+
+            return normalizeSearchText(parts.join(' '));
+        };
+
+        const liftMatchesSearch = (lift, rawQuery) => {
+            const normalizedQuery = normalizeSearchText(rawQuery);
+            if (!normalizedQuery) return true;
+
+            const searchable = collectLiftSearchBlob(lift);
+            const terms = normalizedQuery.split(' ').filter(Boolean);
+            return terms.every(term => searchable.includes(term));
+        };
         
         // ✅ ДОДАНО: Обробник pesquisaу de elevadores
         const searchInput = document.getElementById('searchInput');
         if (searchInput) {
             searchInput.addEventListener('input', function(e) {
-                const query = e.target.value.toLowerCase().trim();
+                const query = e.target.value || '';
                 console.log('🔍 A pesquisar elevadores:', query);
                 
                 if (!window.allLiftsData || window.allLiftsData.length === 0) {
@@ -7648,37 +7716,7 @@ Email de contacto: info@festlift.pt`;
                 }
                 
                 // Filtroуexisteмо elevadores
-                const filtered = window.allLiftsData.filter(lift => {
-                    const municipalNumber = (lift.municipalNumber || '').toLowerCase();
-                    const manufacturer = (lift.manufacturer || '').toLowerCase();
-                    const model = (lift.model || '').toLowerCase();
-                    const type = (lift.type || '').toLowerCase();
-                    const id = ((lift._id || lift.id) || '').toString().toLowerCase();
-                    
-                    // Morada desde instalação
-                    let addressStr = '';
-                    if (typeof lift.address === 'object' && lift.address) {
-                        addressStr = `${lift.address.street || ''} ${lift.address.city || ''}`.toLowerCase();
-                    } else if (typeof lift.address === 'string') {
-                        addressStr = lift.address.toLowerCase();
-                    }
-                    
-                    // Cliente
-                    let clientStr = '';
-                    if (typeof lift.client === 'object' && lift.client) {
-                        clientStr = `${lift.client.firstName || ''} ${lift.client.lastName || ''} ${lift.client.email || ''}`.toLowerCase();
-                    } else if (lift.clientName) {
-                        clientStr = lift.clientName.toLowerCase();
-                    }
-                    
-                    return municipalNumber.includes(query) ||
-                           manufacturer.includes(query) ||
-                           model.includes(query) ||
-                           type.includes(query) ||
-                           id.includes(query) ||
-                           addressStr.includes(query) ||
-                           clientStr.includes(query);
-                });
+                const filtered = window.allLiftsData.filter(lift => liftMatchesSearch(lift, query));
                 
                 console.log(`✅ Elevadores encontrados: ${filtered.length} de ${window.allLiftsData.length}`);
                 displayLiftsInTable(filtered);
@@ -7698,7 +7736,7 @@ Email de contacto: info@festlift.pt`;
                 return;
             }
             
-            const searchQuery = (document.getElementById('searchInput')?.value || '').toLowerCase().trim();
+            const searchQuery = (document.getElementById('searchInput')?.value || '').trim();
             const statusValue = statusFilter?.value || 'all';
             const typeValue = typeFilter?.value || 'all';
             
@@ -7708,35 +7746,7 @@ Email de contacto: info@festlift.pt`;
             
             // Filtro по pesquisaовому pedidoу
             if (searchQuery) {
-                filtered = filtered.filter(lift => {
-                    const municipalNumber = (lift.municipalNumber || '').toLowerCase();
-                    const manufacturer = (lift.manufacturer || '').toLowerCase();
-                    const model = (lift.model || '').toLowerCase();
-                    const type = (lift.type || '').toLowerCase();
-                    const id = ((lift._id || lift.id) || '').toString().toLowerCase();
-                    
-                    let addressStr = '';
-                    if (typeof lift.address === 'object' && lift.address) {
-                        addressStr = `${lift.address.street || ''} ${lift.address.city || ''}`.toLowerCase();
-                    } else if (typeof lift.address === 'string') {
-                        addressStr = lift.address.toLowerCase();
-                    }
-                    
-                    let clientStr = '';
-                    if (typeof lift.client === 'object' && lift.client) {
-                        clientStr = `${lift.client.firstName || ''} ${lift.client.lastName || ''} ${lift.client.email || ''}`.toLowerCase();
-                    } else if (lift.clientName) {
-                        clientStr = lift.clientName.toLowerCase();
-                    }
-                    
-                    return municipalNumber.includes(searchQuery) ||
-                           manufacturer.includes(searchQuery) ||
-                           model.includes(searchQuery) ||
-                           type.includes(searchQuery) ||
-                           id.includes(searchQuery) ||
-                           addressStr.includes(searchQuery) ||
-                           clientStr.includes(searchQuery);
-                });
+                filtered = filtered.filter(lift => liftMatchesSearch(lift, searchQuery));
             }
             
             // Filtro por estado desde підтримкою груп estadoів
