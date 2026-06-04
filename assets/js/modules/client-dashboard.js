@@ -29,8 +29,14 @@ class ClientDashboard {
 
     updateUserUI() {
         if (this.currentUser) {
-            $('#clientName').text(`${this.currentUser.firstName} ${this.currentUser.lastName}`);
-            $('#userName').text(`${this.currentUser.firstName} ${this.currentUser.lastName}`);
+            const fullName = `${this.currentUser.firstName || ''} ${this.currentUser.lastName || ''}`.trim()
+                || this.currentUser.name
+                || this.currentUser.displayName
+                || this.currentUser.username
+                || this.currentUser.email
+                || 'Cliente';
+            $('#clientName').text(fullName);
+            $('#userName').text(fullName);
         }
     }
 

@@ -105,6 +105,89 @@ class AgentService {
         return this.clientFocusByUser.get(String(userId)) || null;
     }
 
+    _toDate(raw) {
+        if (!raw) return null;
+        const date = raw instanceof Date ? new Date(raw.getTime()) : new Date(raw);
+        return Number.isNaN(date.getTime()) ? null : date;
+    }
+
+    _getLatestInspectionRecord(lift) {
+        const records = Array.isArray(lift?.inspectionHistory) ? lift.inspectionHistory : [];
+        if (!records.length) return null;
+
+        let latest = null;
+        let latestTs = -Infinity;
+
+        for (const record of records) {
+            const date = this._toDate(record?.date || record?.inspectionDate);
+            if (!date) continue;
+            const ts = date.getTime();
+            if (!latest || ts > latestTs) {
+                latest = record;
+                latestTs = ts;
+            }
+        }
+
+        return latest;
+    }
+
+    _getEffectiveNextInspectionDate(lift) {
+        const latest = this._getLatestInspectionRecord(lift);
+
+        const explicitCandidates = [
+            lift?.nextInspectionDate,
+            lift?.licenseExpiry,
+            lift?.certExpiry,
+            latest?.validUntil,
+            latest?.nextInspectionDate
+        ];
+
+        for (const candidate of explicitCandidates) {
+            const date = this._toDate(candidate);
+            if (date) return date;
+        }
+
+        const baseDate =
+            this._toDate(latest?.date || latest?.inspectionDate) ||
+            this._toDate(lift?.lastInspectionDate) ||
+            this._toDate(lift?.licenseDate) ||
+            this._toDate(lift?.certDate) ||
+            this._toDate(lift?.lastMaintenance) ||
+            null;
+
+        if (!baseDate) return null;
+
+        const result = new Date(baseDate.getTime());
+        const certType = String(latest?.certType || '').toLowerCase();
+        const status = String(lift?.inspectionStatus || latest?.status || '').toLowerCase();
+        const c1 = Number(latest?.c1Count || 0);
+        const c2 = Number(latest?.c2Count || 0);
+
+        if (certType === 'cert_2_years' || status === 'passed' || (!lift?.inspectionStatus && !latest?.status)) {
+            result.setFullYear(result.getFullYear() + 2);
+        } else if (
+            certType === 'reinspection' ||
+            certType === 'immobilization' ||
+            status === 'failed' ||
+            status === 'conditional' ||
+            c1 > 0 ||
+            c2 > 0
+        ) {
+            result.setDate(result.getDate() + 30);
+        } else {
+            result.setDate(result.getDate() + 180);
+        }
+
+        return result;
+    }
+
+    _getClientLiftAddress(lift) {
+        if (typeof lift?.address === 'object' && lift.address) {
+            return `${lift.address?.street || ''}, ${lift.address?.city || ''}`.trim().replace(/^,\s*|,\s*$/g, '') || lift.location || lift.municipalNumber || String(lift._id || '');
+        }
+        return lift?.address || lift?.location || lift?.municipalNumber || String(lift?._id || '');
+    }
+
     _looksLikeClientNameQuery(normalizedMsg = '') {
         const tokens = String(normalizedMsg || '').split(/\s+/).filter(Boolean);
         if (tokens.length < 2 || tokens.length > 4) return false;
@@ -1057,17 +1140,30 @@ class AgentService {
             const problems = [];
 
             for (const lift of lifts) {
-                const address = (typeof lift.address === 'object')
-                    ? `${lift.address?.street || ''}, ${lift.address?.city || ''}`.trim().replace(/^,\s*|,\s*$/, '')
-                    : (lift.address || lift.location || lift.municipalNumber || lift._id);
+                const address = this._getClientLiftAddress(lift);
 
                 // A) Overdue or expiring inspection
-                if (lift.nextInspectionDate) {
-                    const daysLeft = Math.ceil((new Date(lift.nextInspectionDate) - today) / 86400000);
+                const effectiveNextInspectionDate = this._getEffectiveNextInspectionDate(lift);
+                if (effectiveNextInspectionDate) {
+                    const daysLeft = Math.ceil((effectiveNextInspectionDate - today) / 86400000);
                     if (daysLeft < 0) {
-                        problems.push({ liftId: lift._id, address, type: 'inspection_overdue', severity: 'high', daysLeft: Math.abs(daysLeft), msg: `Inspeção **vencida há ${Math.abs(daysLeft)} dias** — ${address}` });
+                        problems.push({
+                            liftId: lift._id,
+                            address,
+                            type: 'inspection_overdue',
+                            severity: 'high',
+                            daysLeft: Math.abs(daysLeft),
+                            msg: `Inspeção **vencida há ${Math.abs(daysLeft)} dias** — ${address}`
+                        });
                     } else if (daysLeft <= 30) {
-                        problems.push({ liftId: lift._id, address, type: 'inspection_expiring', severity: 'medium', daysLeft, msg: `Inspeção expira em **${daysLeft} dias** — ${address}` });
+                        problems.push({
+                            liftId: lift._id,
+                            address,
+                            type: 'inspection_expiring',
+                            severity: 'medium',
+                            daysLeft,
+                            msg: `Inspeção expira em **${daysLeft} dias** — ${address}`
+                        });
                     }
                 }
 
@@ -1128,6 +1224,22 @@ class AgentService {
                     createdAt: today, updatedAt: today
                 });
                 notifId = inserted.insertedId;
+            } else {
+                const liftProblemText = sorted.map(p => p.msg.replace(/\*\*/g, '')).join('; ');
+                await this.db.collection('agent_notifications').updateOne(
+                    { _id: existing._id },
+                    {
+                        $set: {
+                            liftLocation: sorted[0].address,
+                            clientEmail: clientEmail.toLowerCase(),
+                            findings: liftProblemText,
+                            agentMessage: summary,
+                            relatedLifts: liftIds,
+                            problems: sorted,
+                            updatedAt: today
+                        }
+                    }
+                );
             }
 
             return { summary, notifId: notifId?.toString(), problems: sorted.length, problemsList: sorted, hasExisting: !!existing };

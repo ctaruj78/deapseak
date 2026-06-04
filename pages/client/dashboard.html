@@ -833,10 +833,10 @@
     <script src="../../assets/js/auth.js"></script>
 
     <!-- Client Dashboard JS -->
-    <script src="../../assets/js/inspection-source-utils.js?v=20260602a"></script>
-    <script src="../../assets/js/modules/client-dashboard.js?v=20260602c"></script>
+    <script src="../../assets/js/inspection-source-utils.js?v=20260604a"></script>
+    <script src="../../assets/js/modules/client-dashboard.js?v=20260604a"></script>
     <!-- 🤖 Client AI Agent Widget (proactive lift alerts) -->
-    <script src="../../assets/js/client-agent-widget.js?v=20260527a"></script>
+    <script src="../../assets/js/client-agent-widget.js?v=20260604a"></script>
 
     <script>
         // Função de saída
@@ -948,7 +948,7 @@
              */
             async function loadClientProfile() {
                 try {
-                    const res = await AuthManager.fetchWithAuth('/api/auth/profile');
+                    const res = await AuthManager.fetchWithAuth('/api/users/profile');
                     const data = res ? await res.json() : null;
                     
                     if (data && data.success && data.data) {
@@ -1058,8 +1058,13 @@
             /**
              * Atualização da interface cliente
              */
+            function getDisplayName(userData) {
+                const fullName = `${userData.firstName || ''} ${userData.lastName || ''}`.trim();
+                return fullName || userData.name || userData.displayName || userData.username || userData.email || 'Cliente';
+            }
+
             function updateClientInterface(userData) {
-                const fullName = `${userData.firstName || ''} ${userData.lastName || ''}`.trim() || 'Cliente';
+                const fullName = getDisplayName(userData);
                 
                 $('#clientName').text(fullName);
                 $('#userName').text(fullName);

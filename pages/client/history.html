@@ -52,6 +52,10 @@
         .timeline {
             position: relative;
             padding: 20px 0;
+            max-height: 860px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding-right: 12px;
         }
         
         .timeline::before {
@@ -162,7 +166,13 @@
             border-radius: 12px;
             padding: 20px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            height: 100%;
+            height: auto;
+            min-height: 320px;
+        }
+
+        .chart-container canvas {
+            width: 100% !important;
+            max-height: 250px;
         }
         
         .export-options {
@@ -574,9 +584,6 @@
                                                 <label>Elevador:</label>
                                                 <select id="liftFilter" class="form-control">
                                                     <option value="all">Todos os elevadores</option>
-                                                    <option value="lift1">Otis Gen2 - Rua Central, 12</option>
-                                                    <option value="lift2">Schindler 3300 - Av. da Vitória, 45</option>
-                                                    <option value="lift3">KONE MonoSpace - Rua Shevchenko, 78</option>
                                                 </select>
                                             </div>
                                         </div>

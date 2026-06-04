@@ -118,7 +118,16 @@
                 ...(opts.headers || {})
             }
         });
-        return res.json();
+        const payload = await readResponsePayload(res);
+        if (!res.ok) {
+            return {
+                success: false,
+                status: res.status,
+                error: payload?.error || payload?.message || `HTTP ${res.status}`
+            };
+        }
+
+        return payload || { success: false, error: 'Resposta vazia do servidor.' };
     }
 
     async function apiUploadFetch(path, formData) {
@@ -130,20 +139,16 @@
             },
             body: formData
         });
-        let payload = null;
-        try {
-            payload = await res.json();
-        } catch (_) {
-            payload = null;
-        }
+        const payload = await readResponsePayload(res);
 
-        if (payload && typeof payload === 'object') {
+        if (payload && typeof payload === 'object' && res.ok) {
             return payload;
         }
 
         return {
             success: false,
-            error: `Resposta inválida do servidor (HTTP ${res.status}).`
+            status: res.status,
+            error: payload?.error || payload?.message || `Resposta inválida do servidor (HTTP ${res.status}).`
         };
     }
 
@@ -578,11 +583,14 @@ ${actionHtml}`;
             if (res.success) {
                 appendMessage(res.reply, 'agent');
             } else {
-                appendMessage('⚠️ ' + (res.error || 'Erro ao contactar agente.'), 'agent');
+                const hint = res.status === 503
+                    ? ' O servidor de IA pode estar sem provedor configurado neste momento.'
+                    : '';
+                appendMessage('⚠️ ' + (res.error || 'Erro ao contactar agente.') + hint, 'agent');
             }
         } catch (e) {
             hideTyping();
-            appendMessage('⚠️ Sem ligação ao servidor.', 'agent');
+            appendMessage('⚠️ Não foi possível comunicar com o servidor.', 'agent');
         }
     }
 

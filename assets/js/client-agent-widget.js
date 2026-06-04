@@ -163,7 +163,11 @@
         }
 
         const notifId = scan.notifId;
-        if (badge) { badge.textContent = `${scan.problems} alerta(s)`; badge.className = 'badge badge-danger'; }
+            const problemCount = Array.isArray(scan.problemsList) ? scan.problemsList.length : Number(scan.problems || 0);
+            if (badge) {
+                badge.textContent = `${problemCount} alerta${problemCount === 1 ? '' : 's'}`;
+                badge.className = 'badge badge-danger';
+            }
 
         const clausesHtml = renderClausesBlock(scan.problemsList);
 
@@ -171,7 +175,7 @@
 
         body.innerHTML = `
             <div id="agent-alert-content">
-                <div class="mb-3" style="line-height:1.7">${md(scan.summary)}</div>
+                    <div class="mb-3" style="line-height:1.7">${md(scan.summary || `🔍 **Detetei ${problemCount} situação(ões) nos seus elevadores:**`)}</div>
                 ${clausesHtml}
                 ${requestFlowHtml}
             </div>

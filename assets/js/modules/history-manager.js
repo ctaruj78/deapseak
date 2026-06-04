@@ -2,6 +2,7 @@
 class HistoryManager {
     constructor() {
         this.events = [];
+        this.lifts = [];
         this.filters = {
             period: '30',
             eventType: 'all',
@@ -19,137 +20,141 @@ class HistoryManager {
 
     async loadHistory() {
         try {
-            // Try to load data from API
-            const token = sessionStorage.getItem('liftmanager_jwt') || localStorage.getItem('liftmanager_jwt') || localStorage.getItem('authToken') || localStorage.getItem('token');
+            const liftsResponse = await this.fetchJson('/api/lifts');
+            const lifts = Array.isArray(liftsResponse?.data) ? liftsResponse.data : [];
+            this.lifts = lifts;
 
-            if (!token) {
-                this.events = [];
-                this.setupCharts();
-                this.applyFilters();
-                return;
-            }
+            const requestsResponse = await this.fetchJson('/api/requests?archived=all&limit=200');
+            const requests = Array.isArray(requestsResponse?.data) ? requestsResponse.data : [];
 
-            const response = await fetch('/api/maintenance-history', {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-            
-            if (response.ok) {
-                const raw = await response.json();
-                // Support both array and {success, data} payloads
-                this.events = Array.isArray(raw) ? raw : (raw.data || []);
-            } else {
-                throw new Error('API indisponível');
-            }
+            this.events = [
+                ...this.buildInspectionEventsFromLifts(lifts),
+                ...this.buildRequestEvents(requests)
+            ].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            this.syncLiftFilterOptions();
         } catch (error) {
             console.warn('Erro ao carregar histórico da API:', error);
             this.events = [];
+            this.lifts = [];
         }
 
         this.setupCharts();
         this.applyFilters();
     }
 
-    createSampleEvents() {
-        const lifts = JSON.parse(localStorage.getItem('lifts')) || [
-            { id: 'lift1', model: 'Otis Gen2', location: 'Rua Central, 12' },
-            { id: 'lift2', model: 'Schindler 3300', location: 'Av. da Vitoria, 45' },
-            { id: 'lift3', model: 'KONE MonoSpace', location: 'Rua Shevchenko, 78' }
-        ];
+    async fetchJson(url) {
+        const token = (typeof AuthManager !== 'undefined' && typeof AuthManager.getAuthToken === 'function')
+            ? AuthManager.getAuthToken()
+            : (sessionStorage.getItem('liftmanager_jwt') || localStorage.getItem('liftmanager_jwt') || localStorage.getItem('authToken') || localStorage.getItem('token'));
+        const response = await fetch(url, {
+            headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+        });
+        if (!response.ok) {
+            const error = await response.json().catch(() => ({}));
+            throw new Error(error.message || error.error || `HTTP ${response.status}`);
+        }
+        return await response.json();
+    }
 
-        return [
-            {
-                id: 'event1',
-                type: 'maintenance',
-                date: '2024-01-15T10:00:00',
-                liftId: 'lift1',
-                lift: 'Otis Gen2',
-                location: 'Rua Central, 12',
-                technician: 'Joao Pereira',
-                status: 'completed',
-                description: 'Manutenção técnica planeada',
-                duration: 120,
-                cost: 2500,
-                rating: 5,
-                details: 'Substituicao de lubrificantes, verificacao do sistema de seguranca e ajuste das portas'
-            },
-            {
-                id: 'event2',
-                type: 'emergency',
-                date: '2024-01-10T14:30:00',
-                liftId: 'lift2',
-                lift: 'Schindler 3300',
-                location: 'Av. da Vitoria, 45',
-                technician: 'Maria Silva',
-                status: 'completed',
-                description: 'Reparacao de emergencia das portas',
-                duration: 180,
-                cost: 4500,
-                rating: 4,
-                details: 'Reparacao do mecanismo das portas, substituicao dos sensores de seguranca e calibracao do sistema'
-            },
-            {
-                id: 'event3',
-                type: 'inspection',
-                date: '2023-12-20T09:15:00',
-                liftId: 'lift3',
-                lift: 'KONE MonoSpace',
-                location: 'Rua Shevchenko, 78',
-                technician: 'Pedro Santos',
-                status: 'completed',
-                description: 'Inspecao anual',
-                duration: 90,
-                cost: 1800,
-                rating: 5,
-                details: 'Verificacao completa de todos os sistemas, testes de seguranca e validacao da documentacao'
-            },
-            {
-                id: 'event4',
-                type: 'repair',
-                date: '2023-12-10T11:45:00',
-                liftId: 'lift1',
-                lift: 'Otis Gen2',
-                location: 'Rua Central, 12',
-                technician: 'Alexandre Costa',
-                status: 'completed',
-                description: 'Reparacao do sistema de controlo',
-                duration: 150,
-                cost: 3200,
-                rating: 4,
-                details: 'Substituicao da unidade de controlo, programacao do sistema e testes funcionais'
-            },
-            {
-                id: 'event5',
-                type: 'maintenance',
-                date: '2023-11-25T08:30:00',
-                liftId: 'lift2',
-                lift: 'Schindler 3300',
-                location: 'Av. da Vitoria, 45',
-                technician: 'Sergio Melo',
-                status: 'completed',
-                description: 'Manutencao planeada apos a epoca',
-                duration: 135,
-                cost: 2800,
-                rating: 5,
-                details: 'Limpeza de mecanismos, substituicao de filtros e inspecao da eletronica'
-            },
-            {
-                id: 'event6',
-                type: 'inspection',
-                date: '2023-11-15T13:20:00',
-                liftId: 'lift3',
-                lift: 'KONE MonoSpace',
-                location: 'Rua Shevchenko, 78',
-                technician: 'Ana Teixeira',
-                status: 'completed',
-                description: 'Verificacao apos reparacao',
-                duration: 75,
-                cost: 1500,
-                rating: 4,
-                details: 'Verificacao de qualidade dos trabalhos e testes de seguranca'
-            }
-        ];
+    syncLiftFilterOptions() {
+        const select = $('#liftFilter');
+        if (!select.length) return;
+
+        const current = this.filters.lift || 'all';
+        const options = ['<option value="all">Todos os elevadores</option>'];
+        const seen = new Set();
+
+        this.lifts.forEach(lift => {
+            const value = String(lift._id || lift.municipalNumber || lift.location || lift.address?.street || '').trim();
+            if (!value || seen.has(value)) return;
+            seen.add(value);
+            options.push(`<option value="${value}">${this.getLiftLabel(lift)}</option>`);
+        });
+
+        select.html(options.join(''));
+        select.val(seen.has(current) ? current : 'all');
+        this.filters.lift = select.val() || 'all';
+    }
+
+    getLiftLabel(lift) {
+        const title = lift?.municipalNumber || lift?.location || lift?.name || lift?.address?.street || 'Elevador';
+        const city = lift?.address?.city ? ` - ${lift.address.city}` : '';
+        return `${title}${city}`;
+    }
+
+    buildInspectionEventsFromLifts(lifts) {
+        const events = [];
+
+        lifts.forEach((lift) => {
+            const liftId = String(lift._id || lift.municipalNumber || lift.location || '');
+            const liftLabel = this.getLiftLabel(lift);
+            const address = lift?.address?.street || lift?.location || liftLabel;
+            const inspections = Array.isArray(lift.inspectionHistory) ? lift.inspectionHistory : [];
+
+            inspections.forEach((inspection, index) => {
+                const date = inspection?.date || inspection?.inspectionDate || inspection?.createdAt;
+                if (!date) return;
+
+                const rawNotes = String(inspection.notes || '').trim();
+                const violationsMatch = rawNotes.match(/Cl[áa]usulas C1:\s*(\d+).*Cl[áa]usulas C2:\s*(\d+).*Cl[áa]usulas C3:\s*(\d+)/i);
+                const c1 = violationsMatch ? Number(violationsMatch[1]) : 0;
+                const c2 = violationsMatch ? Number(violationsMatch[2]) : 0;
+                const c3 = violationsMatch ? Number(violationsMatch[3]) : 0;
+                const violationCount = c1 + c2 + c3;
+                const status = String(inspection.status || 'completed').toLowerCase();
+
+                events.push({
+                    id: inspection._id ? String(inspection._id) : `${liftId}-${index}`,
+                    type: 'inspection',
+                    date,
+                    liftId,
+                    lift: liftLabel,
+                    location: address,
+                    technician: inspection.inspector || inspection.technician || '—',
+                    status: status === 'failed' || violationCount > 0 ? 'completed' : 'completed',
+                    description: inspection.reportType ? `Inspeção ${inspection.reportType}` : 'Inspeção periódica',
+                    duration: inspection.duration || null,
+                    cost: inspection.cost || 0,
+                    rating: inspection.rating || 0,
+                    details: rawNotes || 'Relatório de inspeção disponível',
+                    violations: violationCount
+                });
+            });
+        });
+
+        return events;
+    }
+
+    buildRequestEvents(requests) {
+        return (requests || []).map((request) => {
+            const date = request.updatedAt || request.createdAt || new Date().toISOString();
+            const typeMap = {
+                maintenance: 'maintenance',
+                repair: 'repair',
+                inspection: 'inspection',
+                emergency: 'emergency'
+            };
+            const type = typeMap[String(request.type || '').toLowerCase()] || 'maintenance';
+            const liftLabel = request.lift?.municipalNumber || request.lift?.address?.street || request.liftId || 'Elevador';
+            const liftId = String(request.liftId || request.lift?._id || liftLabel);
+
+            return {
+                id: String(request._id || request.requestNumber || `${liftId}-${date}`),
+                type,
+                date,
+                liftId,
+                lift: liftLabel,
+                location: request.lift?.address?.street || '—',
+                technician: request.assignedTo?.firstName ? `${request.assignedTo.firstName} ${request.assignedTo.lastName || ''}`.trim() : '—',
+                status: request.status || 'pending',
+                description: request.title || request.description || 'Pedido de serviço',
+                duration: request.duration || null,
+                cost: request.cost || 0,
+                rating: request.rating || 0,
+                details: request.description || ''
+            };
+        });
     }
 
     setupEventListeners() {
@@ -550,8 +555,11 @@ class HistoryManager {
     }
 
     calculateRatingsData(events) {
-        // Calculate average ratings by category
-        return [4.5, 4.8, 4.7, 4.6, 4.7];
+        const rated = (events || []).filter(e => Number(e.rating || 0) > 0);
+        if (rated.length === 0) return [0, 0, 0, 0, 0];
+
+        const avg = rated.reduce((sum, e) => sum + Number(e.rating || 0), 0) / rated.length;
+        return [avg, avg, avg, avg, avg];
     }
 
     calculateCostsData(events) {
@@ -831,13 +839,9 @@ class HistoryManager {
 
     getLiftText() {
         if (this.filters.lift === 'all') return 'Todos os elevadores';
-        
-        const lifts = {
-            'lift1': 'Otis Gen2 - Rua Central, 12',
-            'lift2': 'Schindler 3300 - Av. da Vitoria, 45',
-            'lift3': 'KONE MonoSpace - Rua Shevchenko, 78'
-        };
-        return lifts[this.filters.lift] || this.filters.lift;
+
+        const lift = this.lifts.find(item => String(item._id || item.municipalNumber || item.location || '') === String(this.filters.lift));
+        return lift ? this.getLiftLabel(lift) : this.filters.lift;
     }
 
     calculateAverageDuration(events) {
@@ -872,8 +876,3 @@ class HistoryManager {
         }
     }
 }
-
-// Initialization
-$(document).ready(function() {
-    window.historyManager = new HistoryManager();
-});
