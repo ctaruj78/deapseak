@@ -1,15 +1,32 @@
-const jwt = require('jsonwebtoken');
-
-const JWT_SECRET = 'deapseak_secret_key_2024';
 const BASE_URL = 'http://localhost:5000';
 
-// Токени для всіх ролей
-const tokens = {
-    admin: jwt.sign({ userId: '1', username: 'admin', role: 'admin', email: 'info@festlift.pt' }, JWT_SECRET, { expiresIn: '1h' }),
-    dispatcher: jwt.sign({ userId: '2', username: 'dispatcher', role: 'dispatcher', email: 'dispatcher@festlift.pt' }, JWT_SECRET, { expiresIn: '1h' }),
-    tech: jwt.sign({ userId: '3', username: 'tech', role: 'tech', email: 'tech1@festlift.pt' }, JWT_SECRET, { expiresIn: '1h' }),
-    client: jwt.sign({ userId: '4', username: 'client', role: 'client', email: 'client@festlift.pt' }, JWT_SECRET, { expiresIn: '1h' })
+const credentials = {
+    admin: { email: 'info@festlift.pt', password: 'admin123' },
+    dispatcher: { email: 'dispatcher@festlift.pt', password: 'dispatcher123' },
+    tech: { email: 'tech1@festlift.pt', password: 'tech123' },
+    client: { email: 'client@festlift.pt', password: 'client123' }
 };
+
+const tokens = {};
+
+async function loginRole(role) {
+    const cred = credentials[role];
+    const response = await fetch(`${BASE_URL}/api/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(cred)
+    });
+
+    if (!response.ok) {
+        const text = await response.text();
+        throw new Error(`Login failed for ${role}: ${response.status} ${text.substring(0, 120)}`);
+    }
+
+    const data = await response.json();
+    const token = data?.token || data?.data?.token;
+    if (!token) throw new Error(`Login succeeded but token missing for ${role}`);
+    tokens[role] = token;
+}
 
 async function testEndpoint(name, path, role, method = 'GET', body = null) {
     const start = Date.now();
@@ -53,6 +70,17 @@ async function testEndpoint(name, path, role, method = 'GET', body = null) {
 async function testAPIEndpoints() {
     console.log('🔍 ЕТАП 2: Тестування API Endpoints\n');
     console.log('📡 Формат: [STATUS] Endpoint [ROLE] - HTTP_CODE (TIME)\n');
+
+    console.log('🔑 Отримання live token для ролей...');
+    for (const role of Object.keys(credentials)) {
+        try {
+            await loginRole(role);
+            console.log(`✅ ${role} token OK`);
+        } catch (err) {
+            console.log(`❌ ${role} token FAIL: ${err.message}`);
+            tokens[role] = '';
+        }
+    }
     
     const results = [];
     
@@ -97,7 +125,7 @@ async function testAPIEndpoints() {
     
     // AI
     console.log('\n🤖 AI Assistant:');
-    results.push(await testEndpoint('AI Health', '/api/ai/health', 'admin'));
+    results.push(await testEndpoint('AI Health', '/api/assistant/health', 'admin'));
     
     // Analytics
     console.log('\n�� Analytics:');

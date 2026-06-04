@@ -1,0 +1,10 @@
+{
+  "assistantEnabled": true,
+  "emailEnabled": false,
+  "maintenanceEnabled": true,
+  "inspectionsEnabled": true,
+  "overdueEnabled": true,
+  "auditLogEnabled": true,
+  "mode": "internal",
+  "rolloutStage": "internal-only"
+}

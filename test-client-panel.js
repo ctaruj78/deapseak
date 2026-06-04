@@ -4,7 +4,7 @@
  */
 
 const API_URL = 'http://localhost:5000';
-const CLIENT_EMAIL = 'client@deapseak.com';
+const CLIENT_EMAIL = 'client@festlift.pt';
 const CLIENT_PASSWORD = 'client123';
 
 async function testClientPanel() {
@@ -27,8 +27,12 @@ async function testClientPanel() {
         }
         
         const loginData = await loginResponse.json();
-        const token = loginData.token;
-        const user = loginData.user;
+        const token = loginData?.token || loginData?.data?.token;
+        const user = loginData?.user || loginData?.data?.user;
+
+        if (!token || !user) {
+            throw new Error(`Login schema mismatch: ${JSON.stringify(loginData).slice(0, 180)}`);
+        }
         
         console.log(`   ✅ Логін успішний`);
         console.log(`   User ID: ${user.userId || user.id || user._id}`);
@@ -49,7 +53,9 @@ async function testClientPanel() {
         }
         
         const liftsData = await liftsResponse.json();
-        const lifts = liftsData.data || liftsData;
+        const lifts = Array.isArray(liftsData)
+            ? liftsData
+            : (Array.isArray(liftsData.data) ? liftsData.data : []);
         
         console.log(`   ✅ API відповіло успішно`);
         console.log(`   Отримано ліфтів: ${lifts.length}\n`);

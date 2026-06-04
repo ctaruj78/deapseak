@@ -19,8 +19,10 @@ class AgentService {
         this.genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
         this.db = null;
         this.io = null;
-        // Use gemini-2.5-flash
-        this.model = 'gemini-2.5-flash';
+        this.model = process.env.GOOGLE_AI_MODEL || 'gemini-2.5-flash';
+        this.ollamaBaseUrl = process.env.OLLAMA_BASE_URL || 'http://127.0.0.1:11434';
+        this.ollamaModel = process.env.OLLAMA_MODEL || 'qwen2.5:3b';
+        this.aiProvider = (process.env.AI_PROVIDER || 'auto').toLowerCase();
     }
 
     /**
@@ -40,6 +42,131 @@ class AgentService {
         this.db = db;
         this._ensureIndexes();
         console.log('🤖 AgentService: DB connected, indexes ensured.');
+    }
+
+    async _isOllamaAvailable() {
+        try {
+            const ctrl = new AbortController();
+            const timer = setTimeout(() => ctrl.abort(), 2000);
+            const res = await fetch(`${this.ollamaBaseUrl}/api/tags`, { signal: ctrl.signal });
+            clearTimeout(timer);
+            return res.ok;
+        } catch (_) {
+            return false;
+        }
+    }
+
+    async _generateViaOllama(prompt) {
+        const ctrl = new AbortController();
+        const timeoutMs = Number(process.env.OLLAMA_TIMEOUT_MS || 15000);
+        const timer = setTimeout(() => ctrl.abort(), timeoutMs);
+        try {
+            const res = await fetch(`${this.ollamaBaseUrl}/api/generate`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    model: this.ollamaModel,
+                    prompt,
+                    stream: false
+                }),
+                signal: ctrl.signal
+            });
+
+            if (!res.ok) {
+                const body = await res.text();
+                throw new Error(`Ollama HTTP ${res.status}: ${body}`);
+            }
+
+            const json = await res.json();
+            const text = (json && json.response) ? String(json.response).trim() : '';
+            if (!text) throw new Error('Ollama returned empty response');
+            return text;
+        } finally {
+            clearTimeout(timer);
+        }
+    }
+
+    _detectTaskType(text = '') {
+        const t = String(text || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+        const legalHints = [
+            'lei', 'decreto', 'decreto-lei', 'dl ', 'artigo', 'art.', 'clausula', 'norma', 'normativo',
+            'en 81', 'en81', 'regulamento', 'conformidade legal', 'compliance legal', 'juridic', 'legal'
+        ];
+
+        const opsHints = [
+            'overdue', 'manutencao', 'inspecao', 'inspecoes', 'pedido', 'tarefas', 'dashboard',
+            'alerta', 'alertas', 'orcamento', 'orcamentos', 'cliente', 'tecnico', 'elevador', 'lifts'
+        ];
+
+        if (legalHints.some(k => t.includes(k))) return 'legal';
+        if (opsHints.some(k => t.includes(k))) return 'operations';
+        return 'generic';
+    }
+
+    async _generateText(prompt, routeHint = 'generic') {
+        const provider = this.aiProvider;
+
+        const tryGemini = async () => {
+            if (!process.env.GEMINI_API_KEY) {
+                throw new Error('GEMINI_API_KEY is not configured');
+            }
+            const model = this.genAI.getGenerativeModel({ model: this.model });
+            const result = await model.generateContent(prompt);
+            return result.response.text().trim();
+        };
+
+        const tryGeminiWithFallbackModel = async () => {
+            try {
+                return await tryGemini();
+            } catch (err) {
+                if (err.message && (err.message.includes('model') || err.message.includes('not found'))) {
+                    this.model = 'gemini-2.5-flash';
+                    return await tryGemini();
+                }
+                throw err;
+            }
+        };
+
+        if (provider === 'ollama') {
+            return await this._generateViaOllama(prompt);
+        }
+
+        if (provider === 'gemini') {
+            return await tryGeminiWithFallbackModel();
+        }
+
+        // auto: explicit hybrid routing by task type, then fallback.
+        const taskType = routeHint === 'generic' ? this._detectTaskType(prompt) : routeHint;
+
+        if (taskType === 'legal') {
+            try {
+                return await tryGeminiWithFallbackModel();
+            } catch (gemErr) {
+                const ollamaReady = await this._isOllamaAvailable();
+                if (!ollamaReady) throw gemErr;
+                console.warn(`🤖 AgentService legal route Gemini->Ollama fallback: ${gemErr.message}`);
+                return await this._generateViaOllama(prompt);
+            }
+        }
+
+        if (taskType === 'operations') {
+            try {
+                return await this._generateViaOllama(prompt);
+            } catch (ollErr) {
+                return await tryGeminiWithFallbackModel();
+            }
+        }
+
+        // generic: Gemini first, then Ollama
+        try {
+            return await tryGeminiWithFallbackModel();
+        } catch (gemErr) {
+            const ollamaReady = await this._isOllamaAvailable();
+            if (!ollamaReady) throw gemErr;
+            console.warn(`🤖 AgentService Gemini fallback to Ollama: ${gemErr.message}`);
+            return await this._generateViaOllama(prompt);
+        }
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -497,19 +624,10 @@ class AgentService {
         // ── 2. Gemini for complex / conversational queries ────────────────────
         try {
             const context = await this._buildContext(userRole, clientEmail);
-            const model = this.genAI.getGenerativeModel({ model: this.model });
             const systemPrompt = this._buildSystemPrompt(userRole, context);
-            const result = await model.generateContent(`${systemPrompt}\n\nMENSAGEM DO UTILIZADOR: ${userMessage}`);
-            return result.response.text();
+            const routeHint = this._detectTaskType(userMessage || '');
+            return await this._generateText(`${systemPrompt}\n\nMENSAGEM DO UTILIZADOR: ${userMessage}`, routeHint);
         } catch (err) {
-            if (err.message && (err.message.includes('model') || err.message.includes('not found'))) {
-                this.model = 'gemini-2.5-flash';
-                const model = this.genAI.getGenerativeModel({ model: this.model });
-                const context = await this._buildContext(userRole, clientEmail);
-                const systemPrompt = this._buildSystemPrompt(userRole, context);
-                const result = await model.generateContent(`${systemPrompt}\n\nMENSAGEM DO UTILIZADOR: ${userMessage}`);
-                return result.response.text();
-            }
             // Rate limit / quota — return helpful local fallback
             if (err.message && (err.message.includes('429') || err.message.includes('quota') || err.message.includes('fetch'))) {
                 return this._rateLimitFallback(userMessage, userRole, clientEmail);
@@ -1199,7 +1317,7 @@ class AgentService {
     }
 
     async _generateServicosViaGemini(findings, liftLocation, catalog) {
-        if (!process.env.GEMINI_API_KEY) {
+        if (!process.env.GEMINI_API_KEY && this.aiProvider === 'gemini') {
             return [{ descricao: `Reparação: ${findings.slice(0, 120)}`, quantidade: 1, precoUnitario: 0, total: 0 }];
         }
 
@@ -1209,7 +1327,6 @@ class AgentService {
         ).join('\n');
 
         try {
-            const model = this.genAI.getGenerativeModel({ model: this.model });
             const prompt = `És um especialista em orçamentos de manutenção de elevadores em Portugal.
 
 PROBLEMAS A RESOLVER:
@@ -1230,8 +1347,7 @@ INSTRUÇÕES:
   {"descricao": "nome do serviço", "quantidade": 1, "precoUnitario": 0, "total": 0}
 ]`;
 
-            const r = await model.generateContent(prompt);
-            const text = r.response.text().trim();
+                        const text = await this._generateText(prompt, 'operations');
             const clean = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
             const parsed = JSON.parse(clean);
 
@@ -1326,18 +1442,14 @@ Observações: ${inspection.generalComments || 'nenhuma'}
         let findings = nokText;
         let agentMessage = '';
 
-        if (process.env.GEMINI_API_KEY) {
-            try {
-                const model = this.genAI.getGenerativeModel({ model: this.model });
-                const prompt = `Analisa este relatório técnico de elevador e resume os problemas encontrados em 2-4 frases concisas em Português de Portugal. Menciona apenas factos do relatório. Não inventes dados.
+        try {
+            const prompt = `Analisa este relatório técnico de elevador e resume os problemas encontrados em 2-4 frases concisas em Português de Portugal. Menciona apenas factos do relatório. Não inventes dados.
 
 ${fullText}
 
 Responde APENAS com o resumo dos problemas, sem introdução.`;
-                const result = await model.generateContent(prompt);
-                findings = result.response.text().trim();
-            } catch (_) { /* use raw text */ }
-        }
+            findings = await this._generateText(prompt, 'operations');
+        } catch (_) { /* use raw text */ }
 
         agentMessage = `🤖 Detetei problemas no relatório **${inspection.numero}**:\n` +
             `📍 **${inspection.liftLocation}** — Cliente: **${inspection.clientName || inspection.clientEmail || 'desconhecido'}**\n\n` +

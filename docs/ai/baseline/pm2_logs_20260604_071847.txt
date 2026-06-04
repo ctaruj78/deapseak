@@ -1,0 +1,245 @@
+[1m[90m[TAILING] Tailing last 120 lines for [deapseak] process (change the value with --lines option)[39m[22m
+[90m/home/andriy/.pm2/logs/deapseak-error.log last 120 lines:[39m
+[31m0|deapseak | [39m    at __node_internal_uvExceptionWithHostPort (node:internal/errors:593:12)
+[31m0|deapseak | [39m    at Server.setupListenHandle [as _listen2] (node:net:1811:16)
+[31m0|deapseak | [39m    at listenInCluster (node:net:1859:12)
+[31m0|deapseak | [39m    at doListen (node:net:2008:7)
+[31m0|deapseak | [39m    at process.processTicksAndRejections (node:internal/process/task_queues:83:21) {
+[31m0|deapseak | [39m  code: 'EADDRINUSE',
+[31m0|deapseak | [39m  errno: -98,
+[31m0|deapseak | [39m  syscall: 'listen',
+[31m0|deapseak | [39m  address: '0.0.0.0',
+[31m0|deapseak | [39m  port: 5000
+[31m0|deapseak | [39m}
+[31m0|deapseak | [39mError: listen EADDRINUSE: address already in use 0.0.0.0:5000
+[31m0|deapseak | [39m    at __node_internal_captureLargerStackTrace (node:internal/errors:496:5)
+[31m0|deapseak | [39m    at __node_internal_uvExceptionWithHostPort (node:internal/errors:593:12)
+[31m0|deapseak | [39m    at Server.setupListenHandle [as _listen2] (node:net:1811:16)
+[31m0|deapseak | [39m    at listenInCluster (node:net:1859:12)
+[31m0|deapseak | [39m    at doListen (node:net:2008:7)
+[31m0|deapseak | [39m    at process.processTicksAndRejections (node:internal/process/task_queues:83:21) {
+[31m0|deapseak | [39m  code: 'EADDRINUSE',
+[31m0|deapseak | [39m  errno: -98,
+[31m0|deapseak | [39m  syscall: 'listen',
+[31m0|deapseak | [39m  address: '0.0.0.0',
+[31m0|deapseak | [39m  port: 5000
+[31m0|deapseak | [39m}
+[31m0|deapseak | [39mError: listen EADDRINUSE: address already in use 0.0.0.0:5000
+[31m0|deapseak | [39m    at __node_internal_captureLargerStackTrace (node:internal/errors:496:5)
+[31m0|deapseak | [39m    at __node_internal_uvExceptionWithHostPort (node:internal/errors:593:12)
+[31m0|deapseak | [39m    at Server.setupListenHandle [as _listen2] (node:net:1811:16)
+[31m0|deapseak | [39m    at listenInCluster (node:net:1859:12)
+[31m0|deapseak | [39m    at doListen (node:net:2008:7)
+[31m0|deapseak | [39m    at process.processTicksAndRejections (node:internal/process/task_queues:83:21) {
+[31m0|deapseak | [39m  code: 'EADDRINUSE',
+[31m0|deapseak | [39m  errno: -98,
+[31m0|deapseak | [39m  syscall: 'listen',
+[31m0|deapseak | [39m  address: '0.0.0.0',
+[31m0|deapseak | [39m  port: 5000
+[31m0|deapseak | [39m}
+[31m0|deapseak | [39mError: listen EADDRINUSE: address already in use 0.0.0.0:5000
+[31m0|deapseak | [39m    at __node_internal_captureLargerStackTrace (node:internal/errors:496:5)
+[31m0|deapseak | [39m    at __node_internal_uvExceptionWithHostPort (node:internal/errors:593:12)
+[31m0|deapseak | [39m    at Server.setupListenHandle [as _listen2] (node:net:1811:16)
+[31m0|deapseak | [39m    at listenInCluster (node:net:1859:12)
+[31m0|deapseak | [39m    at doListen (node:net:2008:7)
+[31m0|deapseak | [39m    at process.processTicksAndRejections (node:internal/process/task_queues:83:21) {
+[31m0|deapseak | [39m  code: 'EADDRINUSE',
+[31m0|deapseak | [39m  errno: -98,
+[31m0|deapseak | [39m  syscall: 'listen',
+[31m0|deapseak | [39m  address: '0.0.0.0',
+[31m0|deapseak | [39m  port: 5000
+[31m0|deapseak | [39m}
+[31m0|deapseak | [39mError: listen EADDRINUSE: address already in use 0.0.0.0:5000
+[31m0|deapseak | [39m    at __node_internal_captureLargerStackTrace (node:internal/errors:496:5)
+[31m0|deapseak | [39m    at __node_internal_uvExceptionWithHostPort (node:internal/errors:593:12)
+[31m0|deapseak | [39m    at Server.setupListenHandle [as _listen2] (node:net:1811:16)
+[31m0|deapseak | [39m    at listenInCluster (node:net:1859:12)
+[31m0|deapseak | [39m    at doListen (node:net:2008:7)
+[31m0|deapseak | [39m    at process.processTicksAndRejections (node:internal/process/task_queues:83:21) {
+[31m0|deapseak | [39m  code: 'EADDRINUSE',
+[31m0|deapseak | [39m  errno: -98,
+[31m0|deapseak | [39m  syscall: 'listen',
+[31m0|deapseak | [39m  address: '0.0.0.0',
+[31m0|deapseak | [39m  port: 5000
+[31m0|deapseak | [39m}
+[31m0|deapseak | [39mError: listen EADDRINUSE: address already in use 0.0.0.0:5000
+[31m0|deapseak | [39m    at __node_internal_captureLargerStackTrace (node:internal/errors:496:5)
+[31m0|deapseak | [39m    at __node_internal_uvExceptionWithHostPort (node:internal/errors:593:12)
+[31m0|deapseak | [39m    at Server.setupListenHandle [as _listen2] (node:net:1811:16)
+[31m0|deapseak | [39m    at listenInCluster (node:net:1859:12)
+[31m0|deapseak | [39m    at doListen (node:net:2008:7)
+[31m0|deapseak | [39m    at process.processTicksAndRejections (node:internal/process/task_queues:83:21) {
+[31m0|deapseak | [39m  code: 'EADDRINUSE',
+[31m0|deapseak | [39m  errno: -98,
+[31m0|deapseak | [39m  syscall: 'listen',
+[31m0|deapseak | [39m  address: '0.0.0.0',
+[31m0|deapseak | [39m  port: 5000
+[31m0|deapseak | [39m}
+[31m0|deapseak | [39mError: listen EADDRINUSE: address already in use 0.0.0.0:5000
+[31m0|deapseak | [39m    at __node_internal_captureLargerStackTrace (node:internal/errors:496:5)
+[31m0|deapseak | [39m    at __node_internal_uvExceptionWithHostPort (node:internal/errors:593:12)
+[31m0|deapseak | [39m    at Server.setupListenHandle [as _listen2] (node:net:1811:16)
+[31m0|deapseak | [39m    at listenInCluster (node:net:1859:12)
+[31m0|deapseak | [39m    at doListen (node:net:2008:7)
+[31m0|deapseak | [39m    at process.processTicksAndRejections (node:internal/process/task_queues:83:21) {
+[31m0|deapseak | [39m  code: 'EADDRINUSE',
+[31m0|deapseak | [39m  errno: -98,
+[31m0|deapseak | [39m  syscall: 'listen',
+[31m0|deapseak | [39m  address: '0.0.0.0',
+[31m0|deapseak | [39m  port: 5000
+[31m0|deapseak | [39m}
+[31m0|deapseak | [39mError: listen EADDRINUSE: address already in use 0.0.0.0:5000
+[31m0|deapseak | [39m    at __node_internal_captureLargerStackTrace (node:internal/errors:496:5)
+[31m0|deapseak | [39m    at __node_internal_uvExceptionWithHostPort (node:internal/errors:593:12)
+[31m0|deapseak | [39m    at Server.setupListenHandle [as _listen2] (node:net:1811:16)
+[31m0|deapseak | [39m    at listenInCluster (node:net:1859:12)
+[31m0|deapseak | [39m    at doListen (node:net:2008:7)
+[31m0|deapseak | [39m    at process.processTicksAndRejections (node:internal/process/task_queues:83:21) {
+[31m0|deapseak | [39m  code: 'EADDRINUSE',
+[31m0|deapseak | [39m  errno: -98,
+[31m0|deapseak | [39m  syscall: 'listen',
+[31m0|deapseak | [39m  address: '0.0.0.0',
+[31m0|deapseak | [39m  port: 5000
+[31m0|deapseak | [39m}
+[31m0|deapseak | [39mError: listen EADDRINUSE: address already in use 0.0.0.0:5000
+[31m0|deapseak | [39m    at __node_internal_captureLargerStackTrace (node:internal/errors:496:5)
+[31m0|deapseak | [39m    at __node_internal_uvExceptionWithHostPort (node:internal/errors:593:12)
+[31m0|deapseak | [39m    at Server.setupListenHandle [as _listen2] (node:net:1811:16)
+[31m0|deapseak | [39m    at listenInCluster (node:net:1859:12)
+[31m0|deapseak | [39m    at doListen (node:net:2008:7)
+[31m0|deapseak | [39m    at process.processTicksAndRejections (node:internal/process/task_queues:83:21) {
+[31m0|deapseak | [39m  code: 'EADDRINUSE',
+[31m0|deapseak | [39m  errno: -98,
+[31m0|deapseak | [39m  syscall: 'listen',
+[31m0|deapseak | [39m  address: '0.0.0.0',
+[31m0|deapseak | [39m  port: 5000
+[31m0|deapseak | [39m}
+[31m0|deapseak | [39m⚠️ Model gemini-2.5-flash unavailable, trying next...
+[31m0|deapseak | [39m⚠️ Model gemini-2.5-flash-lite unavailable, trying next...
+[31m0|deapseak | [39m⚠️ Geocoding: endereço não encontrado: Rua Dr. Mariano Roque Laia nº6, Amadora, 2650-051
+[31m0|deapseak | [39m⚠️ Geocoding: endereço não encontrado: Rua Dr. Mariano Roque Laia nº6, Amadora, 2650-051
+[31m0|deapseak | [39m⚠️ Технік tech1@festlift.pt намагається отримати ліфт 69f5b08af0b9924fcc8a4109 без завдання або QR scan
+
+[90m/home/andriy/.pm2/logs/deapseak-out.log last 120 lines:[39m
+[32m0|deapseak | [39m🔧 Налаштування порту: DEAPSEAK_PORT=undefined, final PORT=5000
+[32m0|deapseak | [39m✅ Backend API routes підключено:
+[32m0|deapseak | [39m   - /api/auth (login, register, profile)
+[32m0|deapseak | [39m   - /api/users (через authRoutes)
+[32m0|deapseak | [39m   - /api/lifts (CRUD ліфтів)
+[32m0|deapseak | [39m   - /api/requests (завдання, інспекції)
+[32m0|deapseak | [39m   - /api/settings (налаштування)
+[32m0|deapseak | [39m   - /api/orcamentos (кошториси)
+[32m0|deapseak | [39m✅ Global error handler підключено
+[32m0|deapseak | [39m🤖 AgentService initialized
+[32m0|deapseak | [39m✅ MongoDB connected: mongodb://localhost:27017/deapseak DB: deapseak
+[32m0|deapseak | [39m✅ Mongoose connected: mongodb://localhost:27017/deapseak
+[32m0|deapseak | [39m📊 MongoDB indexes ensured
+[32m0|deapseak | [39m🤖 AgentService: DB connected, indexes ensured.
+[32m0|deapseak | [39m🚀 Unified сервер запущено на http://0.0.0.0:5000
+[32m0|deapseak | [39m📁 Статичні файли: /home/andriy/deapseak
+[32m0|deapseak | [39m🔐 API endpoints: /api/*
+[32m0|deapseak | [39m💬 WebSocket server: ws://0.0.0.0:5000
+[32m0|deapseak | [39m👤 WebSocket клієнт підключився: -YoI3_NhBRVayJN0AAAB
+[32m0|deapseak | [39m👤 WebSocket клієнт підключився: cmlC3AEguExAI86MAAAD
+[32m0|deapseak | [39m✅ WebSocket автентифіковано: tech1@festlift.pt (technician)
+[32m0|deapseak | [39m🤖 Agent daily check: 2 lifts checked, 0 reminders reactivated.
+[32m0|deapseak | [39m✅ Token valid, user: info@festlift.pt
+[32m0|deapseak | [39m👨‍💼 admin undefined запитує всі ліфти
+[32m0|deapseak | [39m✅ Знайдено ліфтів: 47/47 (search: "ru", page: 1)
+[32m0|deapseak | [39m✅ Token valid, user: tech1@festlift.pt
+[32m0|deapseak | [39m✅ Token valid, user: info@festlift.pt
+[32m0|deapseak | [39m👨‍💼 admin undefined запитує всі ліфти
+[32m0|deapseak | [39m✅ Знайдено ліфтів: 47/47 (search: "ru", page: 1)
+[32m0|deapseak | [39m✅ Token valid, user: tech1@festlift.pt
+[32m0|deapseak | [39m✅ [ENV] Всі обовязкові змінні середовища присутні
+[32m0|deapseak | [39m✅ Email Service initialized — SMTP: smtp-relay.brevo.com:587
+[32m0|deapseak | [39m🔧 Налаштування порту: DEAPSEAK_PORT=undefined, final PORT=5000
+[32m0|deapseak | [39m✅ Backend API routes підключено:
+[32m0|deapseak | [39m   - /api/auth (login, register, profile)
+[32m0|deapseak | [39m   - /api/users (через authRoutes)
+[32m0|deapseak | [39m   - /api/lifts (CRUD ліфтів)
+[32m0|deapseak | [39m   - /api/requests (завдання, інспекції)
+[32m0|deapseak | [39m   - /api/settings (налаштування)
+[32m0|deapseak | [39m   - /api/orcamentos (кошториси)
+[32m0|deapseak | [39m✅ Global error handler підключено
+[32m0|deapseak | [39m🤖 AgentService initialized
+[32m0|deapseak | [39m✅ MongoDB connected: mongodb://localhost:27017/deapseak DB: deapseak
+[32m0|deapseak | [39m✅ Mongoose connected: mongodb://localhost:27017/deapseak
+[32m0|deapseak | [39m📊 MongoDB indexes ensured
+[32m0|deapseak | [39m🤖 AgentService: DB connected, indexes ensured.
+[32m0|deapseak | [39m🚀 Unified сервер запущено на http://0.0.0.0:5000
+[32m0|deapseak | [39m📁 Статичні файли: /home/andriy/deapseak
+[32m0|deapseak | [39m🔐 API endpoints: /api/*
+[32m0|deapseak | [39m💬 WebSocket server: ws://0.0.0.0:5000
+[32m0|deapseak | [39m👤 WebSocket клієнт підключився: Z523iJy0QDUnBjk7AAAB
+[32m0|deapseak | [39m👤 WebSocket клієнт підключився: Izm6jsJP8eFmIJHqAAAD
+[32m0|deapseak | [39m✅ WebSocket автентифіковано: tech1@festlift.pt (technician)
+[32m0|deapseak | [39m🤖 Agent daily check: 2 lifts checked, 0 reminders reactivated.
+[32m0|deapseak | [39m✅ Token valid, user: tech1@festlift.pt
+[32m0|deapseak | [39m✅ Token valid, user: info@festlift.pt
+[32m0|deapseak | [39m✅ [ENV] Всі обовязкові змінні середовища присутні
+[32m0|deapseak | [39m✅ Email Service initialized — SMTP: smtp-relay.brevo.com:587
+[32m0|deapseak | [39m🔧 Налаштування порту: DEAPSEAK_PORT=undefined, final PORT=5000
+[32m0|deapseak | [39m✅ Backend API routes підключено:
+[32m0|deapseak | [39m   - /api/auth (login, register, profile)
+[32m0|deapseak | [39m   - /api/users (через authRoutes)
+[32m0|deapseak | [39m   - /api/lifts (CRUD ліфтів)
+[32m0|deapseak | [39m   - /api/requests (завдання, інспекції)
+[32m0|deapseak | [39m   - /api/settings (налаштування)
+[32m0|deapseak | [39m   - /api/orcamentos (кошториси)
+[32m0|deapseak | [39m✅ Global error handler підключено
+[32m0|deapseak | [39m🤖 AgentService initialized
+[32m0|deapseak | [39m✅ MongoDB connected: mongodb://localhost:27017/deapseak DB: deapseak
+[32m0|deapseak | [39m✅ Mongoose connected: mongodb://localhost:27017/deapseak
+[32m0|deapseak | [39m📊 MongoDB indexes ensured
+[32m0|deapseak | [39m🤖 AgentService: DB connected, indexes ensured.
+[32m0|deapseak | [39m🚀 Unified сервер запущено на http://0.0.0.0:5000
+[32m0|deapseak | [39m📁 Статичні файли: /home/andriy/deapseak
+[32m0|deapseak | [39m🔐 API endpoints: /api/*
+[32m0|deapseak | [39m💬 WebSocket server: ws://0.0.0.0:5000
+[32m0|deapseak | [39m👤 WebSocket клієнт підключився: yfGikmGBANMr6lv1AAAB
+[32m0|deapseak | [39m👤 WebSocket клієнт підключився: Y2OM2PKlizRWWoFdAAAD
+[32m0|deapseak | [39m✅ WebSocket автентифіковано: tech1@festlift.pt (technician)
+[32m0|deapseak | [39m🤖 Agent daily check: 2 lifts checked, 0 reminders reactivated.
+[32m0|deapseak | [39m👋 WebSocket клієнт відключився: Y2OM2PKlizRWWoFdAAAD
+[32m0|deapseak | [39m👋 WebSocket клієнт відключився: yfGikmGBANMr6lv1AAAB
+[32m0|deapseak | [39m✅ Token valid, user: info@festlift.pt
+[32m0|deapseak | [39m👨‍💼 admin undefined запитує всі ліфти
+[32m0|deapseak | [39m✅ Знайдено ліфтів: 47/47 (search: "ru", page: 1)
+[32m0|deapseak | [39m✅ Token valid, user: info@festlift.pt
+[32m0|deapseak | [39m👨‍💼 admin undefined запитує всі ліфти
+[32m0|deapseak | [39m✅ Знайдено ліфтів: 47/47 (search: "ru", page: 1)
+[32m0|deapseak | [39m✅ Token valid, user: info@festlift.pt
+[32m0|deapseak | [39m👨‍💼 admin undefined запитує всі ліфти
+[32m0|deapseak | [39m✅ Знайдено ліфтів: 95/95 (search: "", page: 1)
+[32m0|deapseak | [39m✅ Token valid, user: info@festlift.pt
+[32m0|deapseak | [39m👨‍💼 admin undefined запитує всі ліфти
+[32m0|deapseak | [39m✅ Знайдено ліфтів: 95/95 (search: "", page: 1)
+[32m0|deapseak | [39m✅ Token valid, user: info@festlift.pt
+[32m0|deapseak | [39m👨‍💼 admin undefined запитує всі ліфти
+[32m0|deapseak | [39m✅ Знайдено ліфтів: 95/95 (search: "", page: 1)
+[32m0|deapseak | [39m✅ [ENV] Всі обовязкові змінні середовища присутні
+[32m0|deapseak | [39m✅ Email Service initialized — SMTP: smtp-relay.brevo.com:587
+[32m0|deapseak | [39m🔧 Налаштування порту: DEAPSEAK_PORT=undefined, final PORT=5000
+[32m0|deapseak | [39m✅ Backend API routes підключено:
+[32m0|deapseak | [39m   - /api/auth (login, register, profile)
+[32m0|deapseak | [39m   - /api/users (через authRoutes)
+[32m0|deapseak | [39m   - /api/lifts (CRUD ліфтів)
+[32m0|deapseak | [39m   - /api/requests (завдання, інспекції)
+[32m0|deapseak | [39m   - /api/settings (налаштування)
+[32m0|deapseak | [39m   - /api/orcamentos (кошториси)
+[32m0|deapseak | [39m✅ Global error handler підключено
+[32m0|deapseak | [39m🤖 AgentService initialized
+[32m0|deapseak | [39m✅ MongoDB connected: mongodb://localhost:27017/deapseak DB: deapseak
+[32m0|deapseak | [39m✅ Mongoose connected: mongodb://localhost:27017/deapseak
+[32m0|deapseak | [39m📊 MongoDB indexes ensured
+[32m0|deapseak | [39m🤖 AgentService: DB connected, indexes ensured.
+[32m0|deapseak | [39m🚀 Unified сервер запущено на http://0.0.0.0:5000
+[32m0|deapseak | [39m📁 Статичні файли: /home/andriy/deapseak
+[32m0|deapseak | [39m🔐 API endpoints: /api/*
+[32m0|deapseak | [39m💬 WebSocket server: ws://0.0.0.0:5000
+[32m0|deapseak | [39m🤖 Agent daily check: 2 lifts checked, 0 reminders reactivated.
+[32m0|deapseak | [39m✅ Token valid, user: tech1@festlift.pt
+[32m0|deapseak | [39m✅ Token valid, user: tech1@festlift.pt
+

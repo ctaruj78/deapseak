@@ -10614,6 +10614,10 @@ app.use('/api/requests', requestRoutes);
 const settingsRoutes = require('./backend/routes/settingsRoutes');
 app.use('/api/settings', settingsRoutes);
 
+// 🤖 Assistant Routes (health and controlled integration endpoints)
+const assistantRoutes = require('./backend/routes/assistantRoutes');
+app.use('/api/assistant', assistantRoutes);
+
 // Register User model in root mongoose so .populate('criadoPor') works.
 // backend/models/User.js uses backend/node_modules/mongoose (separate instance).
 if (!mongoose.modelNames().includes('User')) {
@@ -10631,6 +10635,7 @@ console.log('   - /api/lifts (CRUD ліфтів)');
 console.log('   - /api/requests (завдання, інспекції)');
 console.log('   - /api/settings (налаштування)');
 console.log('   - /api/orcamentos (кошториси)');
+console.log('   - /api/assistant (health, staged integration)');
 
 // 🔧 Global Error Handler - ВАЖЛИВО: має бути ПІСЛЯ всіх роутів
 const { errorHandler } = require('./backend/middleware/errorHandler');

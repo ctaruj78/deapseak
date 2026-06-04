@@ -1,0 +1,62 @@
+[1m[7m Describing process with id 0 - name deapseak [27m[22m
+┌───────────────────┬───────────────────────────────────────────┐
+│ status            │ [32m[1monline[22m[39m                                    │
+│ name              │ deapseak                                  │
+│ namespace         │ default                                   │
+│ version           │ 2.1.0                                     │
+│ restarts          │ 10085                                     │
+│ uptime            │ 22h                                       │
+│ script path       │ /home/andriy/deapseak/unified-server.js   │
+│ script args       │ N/A                                       │
+│ error log path    │ /home/andriy/.pm2/logs/deapseak-error.log │
+│ out log path      │ /home/andriy/.pm2/logs/deapseak-out.log   │
+│ pid path          │ /home/andriy/.pm2/pids/deapseak-0.pid     │
+│ interpreter       │ node                                      │
+│ interpreter args  │ N/A                                       │
+│ script id         │ 0                                         │
+│ exec cwd          │ /home/andriy/deapseak                     │
+│ exec mode         │ fork_mode                                 │
+│ node.js version   │ 18.19.1                                   │
+│ node env          │ N/A                                       │
+│ watch & reload    │ ✘                                         │
+│ unstable restarts │ 0                                         │
+│ created at        │ 2026-06-03T08:48:10.848Z                  │
+└───────────────────┴───────────────────────────────────────────┘
+[7m[1m Actions available [22m[27m
+┌────────────────────────┐
+│ km:heapdump            │
+│ km:cpu:profiling:start │
+│ km:cpu:profiling:stop  │
+│ km:heap:sampling:start │
+│ km:heap:sampling:stop  │
+└────────────────────────┘
+[37m[3m Trigger via: pm2 trigger deapseak <action_name>[23m[39m
+[37m[3m[23m[39m
+[7m[1m Code metrics value [22m[27m
+┌────────────────────────┬───────────────────────┐
+│ Heap Size              │ 56.50 MiB             │
+│ Heap Usage             │ 84 %                  │
+│ Used Heap Size         │ 47.46 MiB             │
+│ Active requests        │ 0                     │
+│ Active handles         │ 15                    │
+│ Event Loop Latency     │ 0.29 ms               │
+│ Event Loop Latency p95 │ 1.12 ms               │
+│ HTTP Mean Latency      │ 7 ms                  │
+│ HTTP P95 Latency       │ 30.199999999999974 ms │
+│ HTTP                   │ 0 req/min             │
+└────────────────────────┴───────────────────────┘
+[7m[1m Divergent env variables from local env [22m[27m
+┌───────────────────────┬─────────────────────────────────────────────────────────────────────┐
+│ COPILOT_DEBUG_NONCE   │ 7168d553a1c9c504a82dbf94c9305575                                    │
+│ SSH_CONNECTION        │ 85.241.13.108 59050 192.168.1.184 22                                │
+│ CLAUDE_CODE_SSE_PORT  │ 21406                                                               │
+│ VSCODE_GIT_IPC_HANDLE │ /run/user/1000/vscode-git-9f5be5f122.sock                           │
+│ XDG_SESSION_ID        │ 909                                                                 │
+│ SSH_CLIENT            │ 85.241.13.108 59050 22                                              │
+│ VSCODE_IPC_HOOK_CLI   │ /run/user/1000/vscode-ipc-12c79bf8-f08b-4b6e-a8e6-95e68ddf72dc.sock │
+└───────────────────────┴─────────────────────────────────────────────────────────────────────┘
+
+[37m[3m Add your own code metrics: http://bit.ly/code-metrics[23m[39m
+[37m[3m Use `pm2 logs deapseak [--lines 1000]` to display logs[23m[39m
+[37m[3m Use `pm2 env 0` to display environment variables[23m[39m
+[37m[3m Use `pm2 monit` to monitor CPU and Memory usage[23m[39m deapseak
