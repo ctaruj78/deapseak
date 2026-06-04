@@ -1706,6 +1706,7 @@ setTimeout(() => {
     'use strict';
     let municipalitiesById = {};
     let municipalitiesByName = {};
+    let municipalityStatsCache = [];
 
     function normalizeMunicipalityName(name) {
         return String(name || '').trim().toLowerCase();
@@ -1714,6 +1715,44 @@ setTimeout(() => {
     function resolveMunicipalityId(m) {
         if (!m || typeof m !== 'object') return '';
         return m.id || m._id || '';
+    }
+
+    function getAuthToken() {
+        if (window.AuthManager && typeof window.AuthManager.getAuthToken === 'function') {
+            const token = window.AuthManager.getAuthToken();
+            if (token) return token;
+        }
+        return sessionStorage.getItem('liftmanager_jwt') ||
+               localStorage.getItem('liftmanager_jwt') ||
+               localStorage.getItem('authToken') ||
+               localStorage.getItem('token') ||
+               '';
+    }
+
+    function extractMunicipalityFromLift(lift) {
+        const m = lift && lift.municipality ? lift.municipality : null;
+        const fromObject = m && typeof m === 'object' ? m : null;
+        const fromString = typeof m === 'string' ? m : '';
+        const fromAddressCity = lift?.address?.city || '';
+
+        const name = String(fromObject?.name || fromString || fromAddressCity || '').trim();
+        const distrito = String(fromObject?.distrito || '').trim();
+        const distance = Number(fromObject?.distance_km || 0);
+        const email = String(fromObject?.email || '').trim();
+        const phone = String(fromObject?.phone || '').trim();
+        const notified = Boolean(fromObject?.notified);
+        const notificationHistory = Array.isArray(fromObject?.notification_history) ? fromObject.notification_history : [];
+
+        return {
+            id: resolveMunicipalityId(fromObject),
+            name,
+            distrito,
+            distance,
+            email,
+            phone,
+            notified,
+            notificationHistory
+        };
     }
     
     // Carregar dados ao mudar de separador
@@ -1748,7 +1787,7 @@ setTimeout(() => {
     // Carregar estatísticas gerais
     async function loadMunicipalitiesStats() {
         try {
-            const token = localStorage.getItem('liftmanager_jwt') || localStorage.getItem('authToken') || localStorage.getItem('token');
+            const token = getAuthToken();
             
             // Obter todos os elevadores
             const liftsResponse = await fetch('/api/lifts', {
@@ -1769,12 +1808,12 @@ setTimeout(() => {
             const municipalities = municipalitiesData.data || [];
             
             // Calcular estatísticas
-            const liftsWithMunicipality = lifts.filter(lift => lift.municipality && lift.municipality.name);
+            const liftsWithMunicipality = lifts.filter(lift => extractMunicipalityFromLift(lift).name);
             const totalEmails = liftsWithMunicipality.reduce((sum, lift) => {
-                return sum + (lift.municipality.notification_history?.length || 0);
+                return sum + extractMunicipalityFromLift(lift).notificationHistory.length;
             }, 0);
             const pendingNotifications = liftsWithMunicipality.filter(lift => 
-                lift.municipality && !lift.municipality.notified
+                !extractMunicipalityFromLift(lift).notified
             ).length;
             
             // Actualizar métricas
@@ -1789,7 +1828,9 @@ setTimeout(() => {
             document.getElementById('pending-info').textContent = pendingNotifications > 0 ? 'Necessitam atenção' : 'Tudo enviado';
             
             document.getElementById('lifts-with-municipality').textContent = liftsWithMunicipality.length;
-            const coverage = ((liftsWithMunicipality.length / lifts.length) * 100).toFixed(1);
+            const coverage = lifts.length > 0
+                ? ((liftsWithMunicipality.length / lifts.length) * 100).toFixed(1)
+                : '0.0';
             document.getElementById('municipality-coverage').textContent = `${coverage}% cobertura`;
             document.getElementById('municipality-coverage').className = 'metric-change positive';
             
@@ -1801,7 +1842,7 @@ setTimeout(() => {
     // Carregar histórico de comunicações
     async function loadCommunicationsHistory() {
         try {
-            const token = localStorage.getItem('token');
+            const token = getAuthToken();
             const response = await fetch('/api/lifts', {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -1813,10 +1854,11 @@ setTimeout(() => {
             // Filtrar elevadores com histórico de comunicações
             const communications = [];
             lifts.forEach(lift => {
-                if (lift.municipality && lift.municipality.notification_history) {
-                    lift.municipality.notification_history.forEach(notification => {
+                const municipality = extractMunicipalityFromLift(lift);
+                if (municipality.name && municipality.notificationHistory.length > 0) {
+                    municipality.notificationHistory.forEach(notification => {
                         communications.push({
-                            municipality: lift.municipality.name,
+                            municipality: municipality.name,
                             lift: lift.municipalNumber,
                             type: notification.type || 'municipality-novo-elevador',
                             sentAt: notification.sentAt,
@@ -1878,7 +1920,7 @@ setTimeout(() => {
     // Carregar top municípios
     async function loadTopMunicipalities() {
         try {
-            const token = localStorage.getItem('token');
+            const token = getAuthToken();
             
             // Obter todos os elevadores e municípios
             const [liftsResponse, municipalitiesResponse] = await Promise.all([
@@ -1908,34 +1950,39 @@ setTimeout(() => {
                 municipalitiesByName[nameKey] = m;
             });
             
-            // Calcular elevadores por município
+            // Calcular elevadores por município (inclui fallback para address.city)
             const municipalityStats = {};
             
             lifts.forEach(lift => {
-                if (lift.municipality && lift.municipality.name) {
-                    const name = lift.municipality.name;
-                    const current = municipalityMap[normalizeMunicipalityName(name)] || {};
-                    if (!municipalityStats[name]) {
-                        municipalityStats[name] = {
-                            id: resolveMunicipalityId(current) || resolveMunicipalityId(lift.municipality) || '',
-                            name: name,
-                            distrito: current.distrito || lift.municipality.distrito || 'N/A',
-                            distance: current.distance_km || lift.municipality.distance_km || 0,
-                            email: current.email || lift.municipality.email || 'N/A',
-                            phone: current.phone || lift.municipality.phone || 'N/A',
-                            liftsCount: 0,
-                            emailsSent: lift.municipality.notification_history?.length || 0
-                        };
-                    }
-                    municipalityStats[name].liftsCount++;
-                    municipalityStats[name].emailsSent += (lift.municipality.notification_history?.length || 0);
+                const detected = extractMunicipalityFromLift(lift);
+                if (!detected.name) return;
+
+                const key = normalizeMunicipalityName(detected.name);
+                const current = municipalityMap[key] || {};
+                const displayName = current.name || detected.name;
+
+                if (!municipalityStats[key]) {
+                    municipalityStats[key] = {
+                        id: resolveMunicipalityId(current) || detected.id || '',
+                        name: displayName,
+                        distrito: current.distrito || detected.distrito || 'N/A',
+                        distance: current.distance_km || detected.distance || 0,
+                        email: current.email || detected.email || 'N/A',
+                        phone: current.phone || detected.phone || 'N/A',
+                        liftsCount: 0,
+                        emailsSent: 0
+                    };
                 }
+
+                municipalityStats[key].liftsCount++;
+                municipalityStats[key].emailsSent += detected.notificationHistory.length;
             });
             
             // Ordenar por quantidade de elevadores
             const topMunicipalities = Object.values(municipalityStats)
                 .sort((a, b) => b.liftsCount - a.liftsCount)
                 .slice(0, 10);
+            municipalityStatsCache = topMunicipalities;
             
             // Apresentar tabela
             const tbody = document.getElementById('top-municipalities-tbody');
@@ -1948,7 +1995,9 @@ setTimeout(() => {
                     </tr>
                 `;
             } else {
-                tbody.innerHTML = topMunicipalities.map((mun, index) => `
+                tbody.innerHTML = topMunicipalities.map((mun, index) => {
+                    const canEdit = Boolean(mun.id);
+                    return `
                     <tr>
                         <td><strong>${index + 1}</strong></td>
                         <td><strong>${mun.name}</strong></td>
@@ -1963,12 +2012,13 @@ setTimeout(() => {
                             </small>
                         </td>
                         <td>
-                            <button class="btn btn-sm btn-outline-primary" onclick="openMunicipalityEditModal('${encodeURIComponent(mun.id || '')}','${encodeURIComponent(mun.name || '')}')" title="Editar contactos do município">
+                            <button class="btn btn-sm btn-outline-primary" ${canEdit ? '' : 'disabled'} onclick="openMunicipalityEditModal('${encodeURIComponent(mun.id || '')}','${encodeURIComponent(mun.name || '')}')" title="${canEdit ? 'Editar contactos do município' : 'Município sem ID no cadastro oficial'}">
                                 <i class="fas fa-edit"></i>
                             </button>
                         </td>
                     </tr>
-                `).join('');
+                `;
+                }).join('');
             }
             
         } catch (error) {

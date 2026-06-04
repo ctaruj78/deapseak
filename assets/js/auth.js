@@ -326,9 +326,21 @@ class AuthManager {
         if (bodyRequiredRole) {
             const user = this.getCurrentUser();
             const userRole = user ? user.role : null;
-            // Нормалізуємо роль: 'tech' і 'technician' — одне й те саме
-            const normalize = r => (r === 'technician' ? 'tech' : r);
-            if (userRole && normalize(userRole) !== normalize(bodyRequiredRole)) {
+            const normalize = (r) => {
+                const raw = String(r || '').trim().toLowerCase();
+                if (raw === 'technician') return 'tech';
+                if (raw === 'tecnico' || raw === 'técnico') return 'tech';
+                if (raw === 'administrador') return 'admin';
+                return raw;
+            };
+
+            if (!userRole) {
+                console.warn(`⚠️ Página requer role "${bodyRequiredRole}", але роль користувача не визначена. Редірект на логін.`);
+                this._doLoginRedirect(pathname);
+                return;
+            }
+
+            if (normalize(userRole) !== normalize(bodyRequiredRole)) {
                 console.warn(`⚠️ Função "${userRole}" не має доступу до сторінки для "${bodyRequiredRole}". Редірект...`);
                 // Редіректимо на відповідну панель за роллю
                 const roleRedirects = {

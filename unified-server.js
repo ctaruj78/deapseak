@@ -2441,13 +2441,26 @@ function authenticateToken(req, res, next) {
 // 🔒 Role-gate middleware — використовуйте як requireRole('admin') або requireRole('admin','dispatcher')
 function requireRole(...roles) {
     return (req, res, next) => {
-        if (!req.user || !roles.includes(req.user.role)) {
+        const normalizeRole = (value) => {
+            const raw = String(value || '').trim().toLowerCase();
+            if (raw === 'administrador') return 'admin';
+            if (raw === 'tecnico' || raw === 'técnico' || raw === 'tech') return 'technician';
+            return raw;
+        };
+
+        const userRole = normalizeRole(req.user?.role);
+        const allowedRoles = roles.map(normalizeRole);
+
+        if (!req.user || !allowedRoles.includes(userRole)) {
             console.warn(`⛔ Access denied: ${req.user?.role || 'unknown'} tried ${req.method} ${req.path}`);
             return res.status(403).json({
                 success: false,
                 message: 'Acesso negado. Permissões insuficientes.'
             });
         }
+
+        // Keep downstream checks consistent if token used alias/legacy role name.
+        req.user.role = userRole;
         next();
     };
 }
@@ -3256,13 +3269,9 @@ app.get('/api/lifts', authenticateToken, async (req, res) => {
             // 2. Fallback по email
             if (!client && lift.clientEmail) {
                 client = clientsByEmailMap.get(lift.clientEmail.toLowerCase());
-                // Якщо знайшли по email — оновлюємо поле client в БД щоб виправити зв'язок
+                // GET endpoint must be read-only: no automatic DB mutations here.
                 if (client) {
-                    db.collection('lifts').updateOne(
-                        { _id: lift._id },
-                        { $set: { client: client._id.toString() } }
-                    ).catch(() => {});
-                    console.log(`🔗 Зв'язок ліфта ${lift._id} з клієнтом ${client.email} відновлено по email`);
+                    console.log(`ℹ️ Lift ${lift._id} matched client by email (${client.email}) in response only`);
                 }
             }
             

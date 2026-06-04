@@ -64,7 +64,9 @@ const qrManager = (function() {
         console.log('🔄 A carregar даних з API...');
         
         try {
-            const token = localStorage.getItem('token');
+            const token = (window.AuthManager && typeof window.AuthManager.getAuthToken === 'function')
+                ? window.AuthManager.getAuthToken()
+                : (sessionStorage.getItem('liftmanager_jwt') || localStorage.getItem('liftmanager_jwt') || localStorage.getItem('token'));
             if (!token) {
                 console.warn('⚠️ No auth token found');
                 currentQRs = [];

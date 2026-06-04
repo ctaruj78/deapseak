@@ -93,8 +93,19 @@
 
     // ─── Auth helpers ─────────────────────────────────────────────────────────
     function getToken() {
-        return localStorage.getItem('token') || localStorage.getItem('authToken') ||
-               sessionStorage.getItem('token') || '';
+        if (window.AuthManager && typeof window.AuthManager.getAuthToken === 'function') {
+            const t = window.AuthManager.getAuthToken();
+            if (t) return t;
+        }
+
+        return sessionStorage.getItem('liftmanager_jwt') ||
+               localStorage.getItem('liftmanager_jwt') ||
+               localStorage.getItem('token') ||
+               localStorage.getItem('authToken') ||
+               sessionStorage.getItem('token') ||
+               localStorage.getItem('lm_token') ||
+               localStorage.getItem('deapseak_token') ||
+               '';
     }
 
     async function apiFetch(path, opts = {}) {
@@ -119,7 +130,21 @@
             },
             body: formData
         });
-        return res.json();
+        let payload = null;
+        try {
+            payload = await res.json();
+        } catch (_) {
+            payload = null;
+        }
+
+        if (payload && typeof payload === 'object') {
+            return payload;
+        }
+
+        return {
+            success: false,
+            error: `Resposta inválida do servidor (HTTP ${res.status}).`
+        };
     }
 
     // ─── UI helpers ───────────────────────────────────────────────────────────
@@ -602,7 +627,11 @@ ${actionHtml}`;
                     }
                 }
             } else {
-                appendMessage('⚠️ ' + (res.error || 'Erro ao analisar PDF.'), 'agent');
+                const reason = res?.error || res?.message || 'Erro ao analisar PDF.';
+                const hint = role === 'client'
+                    ? 'Tente outro PDF de relatório técnico (legível) ou peça validação ao suporte.'
+                    : 'Verifique se o PDF é um relatório técnico válido e tente novamente.';
+                appendMessage(`⚠️ ${reason}\n${hint}`, 'agent');
             }
         } catch (_) {
             hideTyping();

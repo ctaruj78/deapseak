@@ -26,7 +26,14 @@
 
     // ── Token helper ─────────────────────────────────────────────────────────
     function getToken() {
-        return localStorage.getItem('token') ||
+        if (window.AuthManager && typeof window.AuthManager.getAuthToken === 'function') {
+            const t = window.AuthManager.getAuthToken();
+            if (t) return t;
+        }
+
+        return sessionStorage.getItem('liftmanager_jwt') ||
+               localStorage.getItem('liftmanager_jwt') ||
+               localStorage.getItem('token') ||
                localStorage.getItem('lm_token') ||
                localStorage.getItem('deapseak_token') ||
                sessionStorage.getItem('token') || '';
@@ -116,6 +123,33 @@
         return html;
     }
 
+    function buildSeparateRequestFlow(notifId) {
+        const params = new URLSearchParams({
+            type: 'orcamento',
+            source: 'inspection-alert',
+            notifId: String(notifId || ''),
+            autoOpen: '1'
+        });
+        const target = `/pages/client/requests.html?${params.toString()}`;
+
+        return `
+            <div class="mt-3 p-2" style="background:#eaf4ff;border-left:3px solid #3498db;border-radius:4px;">
+                <div style="font-size:13px;line-height:1.5;">
+                    <strong><i class="fas fa-info-circle mr-1 text-primary"></i>Próximo passo (separado do alerta)</strong><br>
+                    O alerta serve apenas para monitorização. Se desejar orçamento, abra um pedido na área de Pedidos.
+                </div>
+                <div class="d-flex flex-wrap" style="gap:8px;margin-top:10px;">
+                    <a class="btn btn-primary btn-sm" href="${target}">
+                        <i class="fas fa-file-signature mr-1"></i>Abrir pedido de orçamento
+                    </a>
+                    <a class="btn btn-outline-secondary btn-sm" href="/pages/client/requests.html">
+                        <i class="fas fa-list mr-1"></i>Ver todos os pedidos
+                    </a>
+                </div>
+            </div>
+        `;
+    }
+
     // ── Render alert content ─────────────────────────────────────────────────
     function renderAlert(scan) {
         const body = document.getElementById('agent-body');
@@ -133,31 +167,13 @@
 
         const clausesHtml = renderClausesBlock(scan.problemsList);
 
+        const requestFlowHtml = buildSeparateRequestFlow(notifId);
+
         body.innerHTML = `
             <div id="agent-alert-content">
                 <div class="mb-3" style="line-height:1.7">${md(scan.summary)}</div>
                 ${clausesHtml}
-                <div id="agent-action-buttons" class="d-flex gap-2 flex-wrap" style="gap:8px;margin-top:12px;">
-                    <button class="btn btn-success btn-sm" onclick="clientAgentDecide('${notifId}','yes')">
-                        <i class="fas fa-thumbs-up mr-1"></i>Sim, quero orçamento
-                    </button>
-                    <button class="btn btn-outline-secondary btn-sm" onclick="clientAgentDecide('${notifId}','no')">
-                        <i class="fas fa-times mr-1"></i>Não, por agora não
-                    </button>
-                    <button class="btn btn-outline-info btn-sm ml-auto" onclick="document.getElementById('agent-msg-form').style.display='block'">
-                        <i class="fas fa-comment mr-1"></i>Adicionar mensagem
-                    </button>
-                </div>
-                <div id="agent-msg-form" style="display:none;margin-top:12px;">
-                    <div class="input-group">
-                        <input type="text" id="agent-msg-input" class="form-control form-control-sm" placeholder="Mensagem opcional para a equipa...">
-                        <div class="input-group-append">
-                            <button class="btn btn-sm btn-success" onclick="clientAgentDecide('${notifId}','yes',document.getElementById('agent-msg-input').value)">
-                                <i class="fas fa-paper-plane"></i> Enviar pedido com mensagem
-                            </button>
-                        </div>
-                    </div>
-                </div>
+                ${requestFlowHtml}
             </div>
         `;
     }

@@ -1109,8 +1109,7 @@ class AgentService {
 
             const summary = `🔍 **Detetei ${problems.length} situação(ões) nos seus elevadores:**\n\n`
                 + sorted.map((p, i) => `${i + 1}. ${p.msg}`).join('\n')
-                + `\n\n${highCount > 0 ? '⚠️ Existem situações **urgentes** que requerem atenção.\n\n' : ''}`
-                + `Pretende que enviemos um pedido de **orçamento** para resolução?\n_(Responda "Sim" ou "Não")_`;
+                + `\n\n${highCount > 0 ? '⚠️ Existem situações **urgentes** que requerem atenção.' : 'ℹ️ Reveja os pontos acima e acompanhe os próximos passos no menu de Pedidos.'}`;
 
             // Create a proactive notification if none exists yet
             let notifId = existing?._id;
