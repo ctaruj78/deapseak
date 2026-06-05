@@ -169,6 +169,13 @@ const qrManager = (function() {
         // Print selected button
         $('#printSelectedBtn').on('click', () => printSelected());
 
+        // Add calibration button next to print actions (once)
+        if (!$('#printCalibrationBtn').length && $('#printSelectedBtn').length) {
+            const btn = '<button id="printCalibrationBtn" class="btn btn-outline-secondary ml-2" type="button" title="Calibration 70x50mm"><i class="fas fa-ruler-combined"></i> Calibração 70×50</button>';
+            $('#printSelectedBtn').after(btn);
+            $('#printCalibrationBtn').on('click', () => printCalibration70x50());
+        }
+
         // Search - підтримка input, Enter та кнопки
         $('#searchInput').on('input', debounce(function() {
             console.log('📝 Input event triggered');
@@ -715,33 +722,175 @@ const qrManager = (function() {
                 <div class="qr-address">${qr.name}</div>
                 <div class="qr-city">${qr.location}</div>
                 <div class="qr-status ${qr.status === 'active' ? 'status-active' : 'status-inactive'}">${qr.status === 'active' ? '● Ativo' : '○ Inativo'}</div>
+                <div class="qr-sticker-legend">
+                    <span>PT: Leia para pedir ajuda ou reportar avaria.</span>
+                    <span>EN: Scan to request help or report a malfunction.</span>
+                </div>
             </div>
         `).join('');
 
         const qrInits = qrs.map(qr => `
-            try { new QRCode(document.getElementById('p-${qr.id}'), { text: '${getQrPayload(qr).replace(/'/g, "\\'")}', width: 140, height: 140, correctLevel: QRCode.CorrectLevel.M }); } catch(e) {}
+            try { new QRCode(document.getElementById('p-${qr.id}'), { text: '${getQrPayload(qr).replace(/'/g, "\\'")}', width: 92, height: 92, correctLevel: QRCode.CorrectLevel.M }); } catch(e) {}
         `).join('\n');
 
         return `<!DOCTYPE html><html><head>
         <meta charset="UTF-8">
         <title>${title}</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&display=swap" rel="stylesheet">
         <style>
-            body { font-family: Arial, sans-serif; margin: 0; padding: 15px; }
-            h2 { text-align: center; margin-bottom: 15px; font-size: 16px; }
-            .qr-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-            .qr-item { border: 1px solid #ccc; border-radius: 6px; padding: 12px; text-align: center; page-break-inside: avoid; }
-            .qr-canvas { margin: 0 auto 6px auto; display: inline-block; }
-            .qr-code-text { font-weight: bold; font-size: 11px; color: #0057b8; margin-bottom: 3px; }
-            .qr-address { font-size: 10px; color: #333; margin-bottom: 2px; word-break: break-word; }
-            .qr-city { font-size: 10px; color: #666; margin-bottom: 3px; }
-            .qr-status { font-size: 10px; }
+            :root {
+                --ink: #102033;
+                --muted: #667085;
+                --line: #d5dde8;
+                --accent: #0b66ff;
+                --accent-2: #17b26a;
+            }
+            * { box-sizing: border-box; }
+            body {
+                margin: 0;
+                padding: 14px;
+                background: #eef3f9;
+                color: var(--ink);
+                font-family: 'Montserrat', sans-serif;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            h2 {
+                text-align: center;
+                margin: 0 0 14px;
+                font-size: 16px;
+                font-weight: 800;
+                letter-spacing: 0.02em;
+                color: var(--ink);
+            }
+            h2 small {
+                display: block;
+                margin-top: 4px;
+                font-size: 10px;
+                font-weight: 600;
+                color: var(--muted);
+                letter-spacing: 0.08em;
+                text-transform: uppercase;
+            }
+            .qr-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(70mm, 70mm));
+                justify-content: center;
+                gap: 2.5mm;
+            }
+            .qr-item {
+                position: relative;
+                overflow: hidden;
+                border: 1px solid rgba(16, 32, 51, 0.12);
+                border-radius: 3.2mm;
+                width: 70mm;
+                min-height: 50mm;
+                height: 50mm;
+                padding: 2.8mm 2.5mm 2.2mm;
+                text-align: center;
+                page-break-inside: avoid;
+                background:
+                    radial-gradient(circle at top right, rgba(11, 102, 255, 0.08), transparent 34%),
+                    linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+                box-shadow: 0 10px 24px rgba(16, 32, 51, 0.08);
+            }
+            .qr-item::before {
+                content: '';
+                position: absolute;
+                inset: 0 0 auto 0;
+                height: 1.4mm;
+                background: linear-gradient(90deg, var(--accent), #4b8bff 55%, var(--accent-2));
+            }
+            .qr-canvas {
+                margin: 1.2mm auto 1.4mm;
+                display: inline-block;
+                padding: 1.2mm;
+                border-radius: 2.5mm;
+                background: #ffffff;
+                border: 1px solid rgba(16, 32, 51, 0.08);
+            }
+            .qr-canvas canvas,
+            .qr-canvas img {
+                width: 23mm !important;
+                height: 23mm !important;
+                display: block;
+            }
+            .qr-code-text {
+                font-weight: 800;
+                font-size: 8.5px;
+                color: var(--accent);
+                margin-bottom: 1px;
+                letter-spacing: 0.03em;
+                text-transform: uppercase;
+            }
+            .qr-address {
+                font-size: 7px;
+                color: var(--ink);
+                margin-bottom: 1px;
+                word-break: break-word;
+                font-weight: 600;
+                line-height: 1.2;
+            }
+            .qr-city {
+                font-size: 6.7px;
+                color: var(--muted);
+                margin-bottom: 1px;
+                font-weight: 600;
+                letter-spacing: 0.02em;
+            }
+            .qr-status {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                gap: 4px;
+                min-height: 4.6mm;
+                padding: 0 2.2mm;
+                border-radius: 999px;
+                font-size: 6.5px;
+                font-weight: 800;
+                letter-spacing: 0.03em;
+                text-transform: uppercase;
+                background: rgba(16, 32, 51, 0.04);
+            }
+            .qr-sticker-legend {
+                margin-top: 1.2mm;
+                padding: 1.2mm 0 0;
+                border-top: 1px dashed rgba(16, 32, 51, 0.18);
+                color: var(--ink);
+                font-size: 6.2px;
+                line-height: 1.22;
+                font-weight: 700;
+                text-align: left;
+            }
+            .qr-sticker-legend span {
+                display: block;
+                margin-bottom: 0.5mm;
+            }
             .status-active { color: #28a745; }
             .status-inactive { color: #6c757d; }
-            .print-meta { text-align: center; font-size: 10px; color: #aaa; margin-top: 10px; }
+            .print-meta { text-align: center; font-size: 9px; color: var(--muted); margin-top: 10px; letter-spacing: 0.02em; }
             .no-print { text-align: center; margin-bottom: 12px; }
-            .no-print button { padding: 8px 20px; font-size: 14px; cursor: pointer; background: #007bff; color: white; border: none; border-radius: 4px; }
-            @media print { .no-print { display: none; } h2 small { display: none; } }
-            @page { margin: 15mm; }
+            .no-print button {
+                padding: 9px 18px;
+                font-size: 13px;
+                cursor: pointer;
+                background: linear-gradient(135deg, var(--accent), #4b8bff);
+                color: white;
+                border: none;
+                border-radius: 999px;
+                font-family: 'Montserrat', sans-serif;
+                font-weight: 700;
+                box-shadow: 0 8px 18px rgba(11, 102, 255, 0.22);
+            }
+            @media print {
+                body { background: #fff; padding: 0; }
+                .no-print { display: none; }
+                h2 small { display: none; }
+                .qr-item { box-shadow: none; }
+            }
+            @page { margin: 8mm; }
         </style>
         </head><body>
         <div class="no-print">
@@ -788,6 +937,154 @@ const qrManager = (function() {
         showNotification(`Підготовка ${qrs.length} QR кодів для друку...`, 'info');
         const win = window.open('', '_blank', 'width=900,height=700');
         win.document.write(buildPrintHtml(qrs, 'Вибрані Códigos QR - FestLift'));
+        win.document.close();
+    }
+
+    // Build calibration sheet for 70x50mm sticker printing
+    function buildCalibrationHtml() {
+        return `<!DOCTYPE html><html><head>
+        <meta charset="UTF-8">
+        <title>Calibration 70x50mm - FestLift</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&display=swap" rel="stylesheet">
+        <style>
+            * { box-sizing: border-box; }
+            body {
+                margin: 0;
+                padding: 12mm;
+                font-family: 'Montserrat', sans-serif;
+                color: #102033;
+                background: #fff;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            h1 {
+                margin: 0 0 8px;
+                font-size: 16px;
+                font-weight: 800;
+                text-align: center;
+            }
+            .note {
+                margin: 0 0 10mm;
+                text-align: center;
+                font-size: 11px;
+                color: #475467;
+            }
+            .cal-grid {
+                display: grid;
+                grid-template-columns: repeat(2, 70mm);
+                gap: 4mm;
+                justify-content: center;
+            }
+            .sample {
+                width: 70mm;
+                height: 50mm;
+                border: 0.35mm dashed #0b66ff;
+                border-radius: 2mm;
+                position: relative;
+                padding: 3mm;
+            }
+            .sample .title {
+                font-size: 9px;
+                font-weight: 800;
+                color: #0b66ff;
+                margin-bottom: 2mm;
+            }
+            .sample .meta {
+                font-size: 8px;
+                color: #344054;
+                line-height: 1.35;
+            }
+            .h70 {
+                position: absolute;
+                left: 3mm;
+                right: 3mm;
+                bottom: 3mm;
+                border-top: 0.25mm solid #111827;
+            }
+            .h70::after {
+                content: '70 mm';
+                position: absolute;
+                left: 50%;
+                transform: translateX(-50%);
+                top: -3.5mm;
+                font-size: 7px;
+                background: #fff;
+                padding: 0 1mm;
+            }
+            .v50 {
+                position: absolute;
+                top: 3mm;
+                bottom: 3mm;
+                right: 3mm;
+                border-left: 0.25mm solid #111827;
+            }
+            .v50::after {
+                content: '50 mm';
+                position: absolute;
+                right: -7mm;
+                top: 50%;
+                transform: translateY(-50%) rotate(90deg);
+                font-size: 7px;
+                background: #fff;
+                padding: 0 1mm;
+            }
+            .ruler {
+                margin: 8mm auto 0;
+                width: 100mm;
+                height: 8mm;
+                border-top: 0.3mm solid #111827;
+                position: relative;
+            }
+            .ruler::before {
+                content: 'Reference line: 100 mm';
+                position: absolute;
+                top: -5.5mm;
+                left: 50%;
+                transform: translateX(-50%);
+                font-size: 8px;
+                background: #fff;
+                padding: 0 1mm;
+                color: #111827;
+            }
+            @page { margin: 8mm; }
+        </style>
+        </head><body>
+            <h1>Calibration Sheet 70×50 mm</h1>
+            <p class="note">Print at 100% scale (Actual size). Measure the box edges and the 100 mm reference line.</p>
+            <div class="cal-grid">
+                <div class="sample">
+                    <div class="title">Sticker Frame Test</div>
+                    <div class="meta">Expected: 70.0 mm × 50.0 mm</div>
+                    <div class="meta">Tolerance target: ±0.5 mm</div>
+                    <div class="h70"></div>
+                    <div class="v50"></div>
+                </div>
+                <div class="sample">
+                    <div class="title">Cut Border Preview</div>
+                    <div class="meta">Use this border as cut line.</div>
+                    <div class="meta">If mismatch > 1 mm, adjust printer scale.</div>
+                    <div class="h70"></div>
+                    <div class="v50"></div>
+                </div>
+            </div>
+            <div class="ruler"></div>
+            <script>
+                window.onload = function() {
+                    setTimeout(() => {
+                        window.print();
+                        window.onafterprint = () => window.close();
+                    }, 300);
+                };
+            <\/script>
+        </body></html>`;
+    }
+
+    // Print calibration sheet for 70x50mm labels
+    function printCalibration70x50() {
+        const win = window.open('', '_blank', 'width=900,height=700');
+        win.document.write(buildCalibrationHtml());
         win.document.close();
     }
 
@@ -873,6 +1170,7 @@ const qrManager = (function() {
         filterByStatus: filterByStatus,
         printSelected: printSelected,
         printAll: printAll,
+        printCalibration70x50: printCalibration70x50,
         printSingleById: printSingleById,
         downloadById: downloadById,
         toggleView: toggleView,
