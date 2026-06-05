@@ -1051,6 +1051,25 @@ app.patch('/api/notifications/:id/read', authenticateToken, async (req, res) => 
     }
 });
 
+// Mark all notifications as read
+app.patch('/api/notifications/read-all', authenticateToken, async (req, res) => {
+    try {
+        if (!db) {
+            return res.status(503).json({ success: false, message: 'Base de dados indisponível' });
+        }
+
+        await db.collection('notifications').updateMany(
+            { userId: req.user.id, read: { $ne: true } },
+            { $set: { read: true, readAt: new Date() } }
+        );
+
+        res.json({ success: true, message: 'Todas as notificações marcadas como lidas' });
+    } catch (error) {
+        console.error('❌ Erro ao marcar todas notificações como lidas:', error);
+        res.status(500).json({ success: false, message: 'Erro do servidor' });
+    }
+});
+
 // ═══════════════════════════════════════════════════════════
 // 📊 QR CODE HISTORY
 // ═══════════════════════════════════════════════════════════
@@ -3485,13 +3504,26 @@ app.post('/api/lifts', authenticateToken, async (req, res) => {
             'traction_mrl': 'traction_mrl', 'traction_mrl': 'traction_mrl',
             'traction_mr': 'traction', 'traction': 'traction',
             'screw': 'platform', 'platform': 'platform', 'platform': 'platform',
-            'goods': 'goods', 'freight': 'goods'
+            'goods': 'goods', 'freight': 'goods',
+            'канатний (з машинним залом)': 'traction',
+            'гвинтовий': 'platform',
+            'платформний': 'platform',
+            'вантажний': 'goods'
         };
         const DOOR_MAP_US = {
             'automatic_2panel': 'automatic', 'automatic_4panel': 'automatic',
             'telescopic': 'automatic', 'automatic': 'automatic',
             'semiautomatic': 'swing', 'swing': 'swing', 'swing': 'swing',
-            'manual': 'gate', 'gate': 'gate'
+            'manual': 'gate', 'gate': 'gate',
+            'автоматичні (2-стулкові)': 'automatic',
+            'автоматичні (4-стулкові)': 'automatic',
+            'автоматичні (4-стулкові / телескопічні)': 'automatic',
+            'телескопічні': 'automatic',
+            'напівавтоматичні': 'swing',
+            'напівавтоматичні / розпашні': 'swing',
+            'розпашні': 'swing',
+            'ручні': 'gate',
+            'ручні (ґрати)': 'gate'
         };
         if (liftData.driveType) {
             const norm = DRIVE_MAP_US[liftData.driveType.toLowerCase()];
@@ -4021,9 +4053,11 @@ app.put('/api/lifts/:id', authenticateToken, async (req, res) => {
         const updateValidationErrors = [];
         const liftSubtype = req.body.liftSubtype || lift.liftSubtype || 'public';
         const municipalNumber = (req.body.municipalNumber || '').trim();
+        const existingMunicipalNumber = String(lift.municipalNumber || '').trim();
+        const effectiveMunicipalNumber = municipalNumber || existingMunicipalNumber;
 
         if (liftSubtype === 'public') {
-            if (!municipalNumber) {
+            if (!effectiveMunicipalNumber) {
                 updateValidationErrors.push('Муніципальний номер обов\'язковий');
             }
         } else if (!municipalNumber) {
@@ -4061,13 +4095,26 @@ app.put('/api/lifts/:id', authenticateToken, async (req, res) => {
             'traction_mrl': 'traction_mrl', 'traction_mrl': 'traction_mrl',
             'traction_mr': 'traction', 'traction': 'traction',
             'screw': 'platform', 'platform': 'platform', 'platform': 'platform',
-            'goods': 'goods', 'freight': 'goods'
+            'goods': 'goods', 'freight': 'goods',
+            'канатний (з машинним залом)': 'traction',
+            'гвинтовий': 'platform',
+            'платформний': 'platform',
+            'вантажний': 'goods'
         };
         const DOOR_MAP_PUT = {
             'automatic_2panel': 'automatic', 'automatic_4panel': 'automatic',
             'telescopic': 'automatic', 'automatic': 'automatic',
             'semiautomatic': 'swing', 'swing': 'swing', 'swing': 'swing',
-            'manual': 'gate', 'gate': 'gate'
+            'manual': 'gate', 'gate': 'gate',
+            'автоматичні (2-стулкові)': 'automatic',
+            'автоматичні (4-стулкові)': 'automatic',
+            'автоматичні (4-стулкові / телескопічні)': 'automatic',
+            'телескопічні': 'automatic',
+            'напівавтоматичні': 'swing',
+            'напівавтоматичні / розпашні': 'swing',
+            'розпашні': 'swing',
+            'ручні': 'gate',
+            'ручні (ґрати)': 'gate'
         };
         if (updateData.driveType) {
             const norm = DRIVE_MAP_PUT[updateData.driveType.toLowerCase()];
@@ -4434,7 +4481,7 @@ app.post('/api/lifts/parse-inspection-pdf', authenticateToken, (req, res, next) 
     });
 }, async (req, res) => {
     try {
-        if (req.user.role === 'client') {
+        if (['client', 'technician', 'tech'].includes(req.user.role)) {
             return res.status(403).json({ success: false, message: 'Acesso negado' });
         }
         if (!req.file) {
@@ -6932,8 +6979,11 @@ app.get('/api/requests', authenticateToken, async (req, res) => {
                 techObj = { firstName: r.technicianName, lastName: '', email: '' };
             }
             
+            const normalizedStatus = r.status || r.state || 'new';
+
             return {
                 ...r,
+                status: normalizedStatus,
                 client: clientObj || r.client || null,
                 assignedTo: techObj || r.assignedTo || null
             };
@@ -7075,6 +7125,7 @@ app.get('/api/requests/:id', authenticateToken, async (req, res) => {
 
         const enrichedRequest = {
             ...request,
+            status: request.status || request.state || 'new',
             client: clientObj || request.client || null,
             assignedTo: techObj || request.assignedTo || null
         };
@@ -7124,6 +7175,7 @@ app.post('/api/requests', authenticateToken, async (req, res) => {
         const newRequest = {
             ...req.body,
             requestNumber,
+            status: req.body.status || req.body.state || 'new',
             // Автоматично генеруємо заголовок якщо не вказано
             title: req.body.title || (() => {
                 const typeMap = { maintenance: 'Manutenção técnica', repair: 'Reparação', inspection: 'Inspeção técnica', consultation: 'Consulta', emergency: 'Situação de emergência' };
