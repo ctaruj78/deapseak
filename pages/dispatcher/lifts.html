@@ -257,6 +257,15 @@
             font-size: 0.875rem;
             vertical-align: middle;
         }
+
+        /* Evita deslocamento da tabela por nomes/emails muito longos */
+        #lifts-table-body td:nth-child(5),
+        #lifts-table-body td:nth-child(6) {
+            white-space: normal !important;
+            overflow-wrap: anywhere;
+            word-break: break-word;
+            max-width: 240px;
+        }
         
         #lifts-table-body .btn-group-sm .btn {
             padding: 0.2rem 0.4rem;
