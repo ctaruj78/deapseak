@@ -713,24 +713,32 @@ const qrManager = (function() {
     }
 
     // Build print HTML for an array of QR objects
-    function buildPrintHtml(qrs, title) {
+    function buildPrintHtml(qrs, title, options = {}) {
+        const autoPrint = options.autoPrint === true;
+        const autoClose = options.autoClose === true;
         const qrScriptSrc = document.querySelector('script[src*="qrcode"]')?.src || '/plugins/qrcode/js/qrcode.min.js';
         const items = qrs.map(qr => `
             <div class="qr-item">
-                <div class="qr-canvas" id="p-${qr.id}"></div>
-                <div class="qr-code-text">${qr.code}</div>
-                <div class="qr-address">${qr.name}</div>
-                <div class="qr-city">${qr.location}</div>
-                <div class="qr-status ${qr.status === 'active' ? 'status-active' : 'status-inactive'}">${qr.status === 'active' ? '● Ativo' : '○ Inativo'}</div>
-                <div class="qr-sticker-legend">
-                    <span>PT: Leia para pedir ajuda ou reportar avaria.</span>
-                    <span>EN: Scan to request help or report a malfunction.</span>
+                <div class="qr-safe-content">
+                    <div class="qr-main">
+                        <div class="qr-info">
+                            <div class="qr-code-text">${qr.code}</div>
+                            <div class="qr-address">${qr.name}</div>
+                            <div class="qr-city">${qr.location}</div>
+                            <div class="qr-status ${qr.status === 'active' ? 'status-active' : 'status-inactive'}">${qr.status === 'active' ? '● Ativo' : '○ Inativo'}</div>
+                        </div>
+                        <div class="qr-canvas" id="p-${qr.id}"></div>
+                    </div>
+                    <div class="qr-sticker-legend">
+                        <span>PT: Leia para pedir ajuda ou reportar avaria.</span>
+                        <span>EN: Scan to request help or report fault.</span>
+                    </div>
                 </div>
             </div>
         `).join('');
 
         const qrInits = qrs.map(qr => `
-            try { new QRCode(document.getElementById('p-${qr.id}'), { text: '${getQrPayload(qr).replace(/'/g, "\\'")}', width: 92, height: 92, correctLevel: QRCode.CorrectLevel.M }); } catch(e) {}
+            try { new QRCode(document.getElementById('p-${qr.id}'), { text: '${getQrPayload(qr).replace(/'/g, "\\'")}', width: 128, height: 128, correctLevel: QRCode.CorrectLevel.M }); } catch(e) {}
         `).join('\n');
 
         return `<!DOCTYPE html><html><head>
@@ -788,9 +796,11 @@ const qrManager = (function() {
                 width: 70mm;
                 min-height: 50mm;
                 height: 50mm;
-                padding: 2.8mm 2.5mm 2.2mm;
+                padding: 2.4mm 2.3mm 1.8mm;
                 text-align: center;
                 page-break-inside: avoid;
+                display: flex;
+                flex-direction: column;
                 background:
                     radial-gradient(circle at top right, rgba(11, 102, 255, 0.08), transparent 34%),
                     linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
@@ -803,70 +813,120 @@ const qrManager = (function() {
                 height: 1.4mm;
                 background: linear-gradient(90deg, var(--accent), #4b8bff 55%, var(--accent-2));
             }
+            .qr-safe-content {
+                width: 69mm;
+                height: 49mm;
+                margin: 0.5mm auto;
+                padding: 2.0mm 2.0mm 1.6mm;
+                display: flex;
+                flex-direction: column;
+                overflow: hidden;
+                border-radius: 2.8mm;
+            }
+            .qr-main {
+                display: grid;
+                grid-template-columns: 1fr 27.5mm;
+                gap: 1.8mm;
+                align-items: center;
+                min-height: 0;
+                flex: 1;
+            }
+            .qr-info {
+                min-width: 0;
+                text-align: left;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                gap: 0.7mm;
+            }
             .qr-canvas {
-                margin: 1.2mm auto 1.4mm;
+                margin: 0;
                 display: inline-block;
-                padding: 1.2mm;
-                border-radius: 2.5mm;
+                padding: 1.0mm;
+                border-radius: 2.0mm;
                 background: #ffffff;
                 border: 1px solid rgba(16, 32, 51, 0.08);
+                justify-self: end;
             }
             .qr-canvas canvas,
             .qr-canvas img {
-                width: 23mm !important;
-                height: 23mm !important;
+                width: 25.5mm !important;
+                height: 25.5mm !important;
                 display: block;
             }
             .qr-code-text {
                 font-weight: 800;
-                font-size: 8.5px;
+                font-size: 9.2px;
                 color: var(--accent);
-                margin-bottom: 1px;
+                margin-bottom: 0;
                 letter-spacing: 0.03em;
                 text-transform: uppercase;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
             }
             .qr-address {
-                font-size: 7px;
+                font-size: 6.6px;
                 color: var(--ink);
-                margin-bottom: 1px;
+                margin-bottom: 0;
                 word-break: break-word;
                 font-weight: 600;
-                line-height: 1.2;
+                line-height: 1.15;
+                min-height: 5.8mm;
+                max-height: 5.8mm;
+                display: -webkit-box;
+                -webkit-line-clamp: 2;
+                -webkit-box-orient: vertical;
+                overflow: hidden;
             }
             .qr-city {
-                font-size: 6.7px;
+                font-size: 6.1px;
                 color: var(--muted);
-                margin-bottom: 1px;
+                margin-bottom: 0;
                 font-weight: 600;
                 letter-spacing: 0.02em;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
             }
             .qr-status {
                 display: inline-flex;
                 align-items: center;
-                justify-content: center;
-                gap: 4px;
-                min-height: 4.6mm;
-                padding: 0 2.2mm;
+                justify-content: flex-start;
+                gap: 3px;
+                min-height: 3.3mm;
+                padding: 0 1.2mm;
                 border-radius: 999px;
-                font-size: 6.5px;
+                font-size: 5.8px;
                 font-weight: 800;
                 letter-spacing: 0.03em;
                 text-transform: uppercase;
                 background: rgba(16, 32, 51, 0.04);
+                width: fit-content;
             }
             .qr-sticker-legend {
-                margin-top: 1.2mm;
-                padding: 1.2mm 0 0;
+                margin-top: auto;
+                width: 100%;
+                height: 8.3mm;
+                min-height: 8.3mm;
+                padding: 1.0mm 0 0;
                 border-top: 1px dashed rgba(16, 32, 51, 0.18);
                 color: var(--ink);
                 font-size: 6.2px;
-                line-height: 1.22;
+                line-height: 1.12;
                 font-weight: 700;
                 text-align: left;
+                display: grid;
+                grid-template-rows: 1fr 1fr;
+                row-gap: 0.35mm;
+                align-items: center;
+                flex-shrink: 0;
             }
             .qr-sticker-legend span {
                 display: block;
-                margin-bottom: 0.5mm;
+                white-space: normal;
+                overflow: hidden;
+                text-overflow: ellipsis;
             }
             .status-active { color: #28a745; }
             .status-inactive { color: #6c757d; }
@@ -885,7 +945,7 @@ const qrManager = (function() {
                 box-shadow: 0 8px 18px rgba(11, 102, 255, 0.22);
             }
             @media print {
-                body { background: #fff; padding: 0; }
+                body { background: #fff; padding: 1mm; }
                 .no-print { display: none; }
                 h2 small { display: none; }
                 .qr-item { box-shadow: none; }
@@ -903,7 +963,14 @@ const qrManager = (function() {
         <script>
         window.onload = function() {
             ${qrInits}
-            setTimeout(() => { window.print(); window.onafterprint = () => window.close(); }, 800);
+            if (${autoPrint ? 'true' : 'false'}) {
+                setTimeout(() => {
+                    window.print();
+                    if (${autoClose ? 'true' : 'false'}) {
+                        window.onafterprint = () => window.close();
+                    }
+                }, 800);
+            }
         };
         <\/script>
         </body></html>`;
@@ -1101,7 +1168,7 @@ const qrManager = (function() {
         }
 
         const win = window.open('', '_blank', 'width=500,height=500');
-        win.document.write(buildPrintHtml([qr], `QR ${qr.code} - FestLift`));
+        win.document.write(buildPrintHtml([qr], `QR ${qr.code} - FestLift`, { autoPrint: true, autoClose: true }));
         win.document.close();
     }
 
