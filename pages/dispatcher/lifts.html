@@ -4712,7 +4712,7 @@ Equipa FestLift</textarea>
         const _urlParams = new URLSearchParams(window.location.search);
         const _clientId = _urlParams.get('clientId');
         const _endpoint = _clientId
-            ? `/api/lifts?client=${encodeURIComponent(_clientId)}&limit=5000&sortBy=createdAt&sortOrder=asc`
+            ? `/api/lifts?clientId=${encodeURIComponent(_clientId)}&limit=5000&sortBy=createdAt&sortOrder=asc`
             : '/api/lifts?limit=5000&sortBy=createdAt&sortOrder=asc';
         if (_clientId) showClientFilterBanner(_clientId);
 
