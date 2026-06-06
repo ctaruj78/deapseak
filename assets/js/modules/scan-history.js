@@ -68,6 +68,31 @@ const scanHistory = (function() {
         $('#todayScans').text(todayScans);
         $('#weekScans').text(weekScans);
         $('#monthScans').text(monthScans);
+
+        // ── Detailed stats (real data) ────────────────────────
+        const total = scansData.length;
+        const successCount  = scansData.filter(s => (s.status || '').toLowerCase() === 'success' || (s.status || '') === 'ok').length;
+        const warningCount  = scansData.filter(s => (s.status || '').toLowerCase() === 'warning').length;
+        const errorCount    = scansData.filter(s => (s.status || '').toLowerCase() === 'error' || (s.status || '').toLowerCase() === 'fail').length;
+        // count mobile UA: iOS, Android, Mobile keyword in userAgent
+        const mobileCount   = scansData.filter(s => /android|iphone|ipad|mobile/i.test(s.userAgent || s.device || '')).length;
+
+        const pct = (n) => total > 0 ? Math.round((n / total) * 100) : 0;
+
+        $('#qrStatSuccess').text(successCount.toLocaleString());
+        $('#qrStatWarning').text(warningCount.toLocaleString());
+        $('#qrStatError').text(errorCount.toLocaleString());
+        $('#qrStatMobile').text(mobileCount.toLocaleString());
+
+        $('#qrBarSuccess').css('width', pct(successCount) + '%');
+        $('#qrBarWarning').css('width', pct(warningCount) + '%');
+        $('#qrBarError').css('width',   pct(errorCount)   + '%');
+        $('#qrBarMobile').css('width',  pct(mobileCount)  + '%');
+
+        $('#qrPctSuccess').text(pct(successCount) + '% do total');
+        $('#qrPctWarning').text(pct(warningCount) + '% do total');
+        $('#qrPctError').text(pct(errorCount)     + '% do total');
+        $('#qrPctMobile').text(pct(mobileCount)   + '% do total');
     }
 
     // Render scans table

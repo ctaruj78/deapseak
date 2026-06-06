@@ -183,9 +183,39 @@ async function reverseGeocodeGoogle(lat, lng) {
     }
 }
 
-// ── Nominatim helper: pick best result (prefer city match)
-function pickBestResult(results, cityHint) {
+// ── Haversine distance between two lat/lng points (km) ──
+function haversineKm(lat1, lon1, lat2, lon2) {
+    const R = 6371;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(dLat / 2) ** 2 +
+              Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+              Math.sin(dLon / 2) ** 2;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+// ── Nominatim postal-code anchor (validates geographic area) ──
+async function getPostalAnchor(zipCode) {
+    if (!zipCode) return null;
+    const BASE = 'https://nominatim.openstreetmap.org/search';
+    const url = `${BASE}?postalcode=${encodeURIComponent(zipCode)}&country=Portugal&format=json&limit=1&countrycodes=pt&addressdetails=1`;
+    const rows = await nominatimRequest(url);
+    if (!rows || !rows.length) return null;
+    return { lat: parseFloat(rows[0].lat), lon: parseFloat(rows[0].lon) };
+}
+
+// ── Nominatim helper: pick best result (prefer closest to postal anchor, then city match)
+function pickBestResult(results, cityHint, anchor) {
     if (!results || results.length === 0) return null;
+    // If we have a postal anchor, prefer the result closest to it (max 30 km)
+    if (anchor) {
+        const withDist = results.map(r => ({
+            r,
+            dist: haversineKm(anchor.lat, anchor.lon, parseFloat(r.lat), parseFloat(r.lon))
+        })).filter(x => x.dist <= 30).sort((a, b) => a.dist - b.dist);
+        if (withDist.length) return withDist[0].r;
+    }
+    // Fallback: city name match
     let best = results[0];
     if (cityHint) {
         const cl = cityHint.toLowerCase().trim();
@@ -199,12 +229,13 @@ function pickBestResult(results, cityHint) {
     return best;
 }
 
-// ── Nominatim multi-step fallback ────────────────────────
+// ── Nominatim multi-step fallback (postal-code-anchored) ─
 async function geocodeWithNominatim(address) {
     const BASE = 'https://nominatim.openstreetmap.org/search';
-    const COMMON = 'format=json&limit=3&countrycodes=pt&addressdetails=1';
+    const COMMON = 'format=json&limit=5&countrycodes=pt&addressdetails=1';
     let searchLabel = '';
     let results = null;
+    let anchor = null; // postal-code anchor for geographic validation
 
     if (typeof address === 'string') {
         searchLabel = address;
@@ -212,32 +243,72 @@ async function geocodeWithNominatim(address) {
     } else if (typeof address === 'object' && address !== null) {
         const { street = '', zipCode = '', city = '', country = 'Portugal' } = address;
         searchLabel = [street, zipCode, city].filter(Boolean).join(', ');
+        const cleanStreet = street.replace(/\bnº\b\.?/gi, '').trim();
 
-        if (zipCode && street) {
-            const s1 = [street.replace(/\bnº\b\.?/gi, '').trim(), zipCode, country].filter(Boolean).join(', ');
+        // Step 0: get postal-code anchor FIRST (geographic validation)
+        if (zipCode) {
+            anchor = await getPostalAnchor(zipCode);
+            if (anchor) console.log(`📍 [Nominatim] postal anchor ${zipCode} → [${anchor.lon.toFixed(4)}, ${anchor.lat.toFixed(4)}]`);
+        }
+
+        // Step 1: Structured search — street + postalcode (most accurate)
+        if (zipCode && cleanStreet) {
+            const p = new URLSearchParams({ street: cleanStreet, postalcode: zipCode, country, format: 'json', limit: '5', countrycodes: 'pt', addressdetails: '1' });
+            results = await nominatimRequest(`${BASE}?${p}`);
+        }
+
+        // Step 2: Free-text with postal code
+        if (!results?.length && zipCode && cleanStreet) {
+            const s1 = [cleanStreet, zipCode, country].filter(Boolean).join(', ');
             results = await nominatimRequest(`${BASE}?q=${encodeURIComponent(s1)}&${COMMON}`);
         }
+
+        // Step 3: Free-text with city
         if (!results?.length) {
-            const s2 = [street.replace(/\bnº\b\.?/gi, '').trim(), city, country].filter(Boolean).join(', ');
+            const s2 = [cleanStreet, city, country].filter(Boolean).join(', ');
             results = await nominatimRequest(`${BASE}?q=${encodeURIComponent(s2)}&${COMMON}`);
         }
-        if (!results?.length) {
-            const p = new URLSearchParams({ postalcode: zipCode, country, format: 'json', limit: '3', countrycodes: 'pt', addressdetails: '1' });
+
+        // Step 4: Postal code only (gives the area even without exact street)
+        if (!results?.length && zipCode) {
+            const p = new URLSearchParams({ postalcode: zipCode, country, format: 'json', limit: '5', countrycodes: 'pt', addressdetails: '1' });
             if (city) p.set('city', city);
             results = await nominatimRequest(`${BASE}?${p}`);
         }
+
+        // Step 5: Full free-text
         if (!results?.length) {
             results = await nominatimRequest(`${BASE}?q=${encodeURIComponent(searchLabel)}&${COMMON}`);
         }
     }
 
-    const best = pickBestResult(results, typeof address === 'object' ? address.city : null);
+    const best = pickBestResult(results, typeof address === 'object' ? address.city : null, anchor);
+
+    // If best result is >30 km from postal anchor, fall back to the anchor itself
+    if (best && anchor) {
+        const dist = haversineKm(anchor.lat, anchor.lon, parseFloat(best.lat), parseFloat(best.lon));
+        if (dist > 30) {
+            console.warn(`⚠️ [Nominatim] best result is ${dist.toFixed(1)} km from postal anchor — using anchor instead`);
+            const anchorResult = results?.find(r => {
+                const d = haversineKm(anchor.lat, anchor.lon, parseFloat(r.lat), parseFloat(r.lon));
+                return d <= 30;
+            }) || null;
+            if (anchorResult) {
+                const n2 = anchorResult.address || {};
+                const city2 = n2.city || n2.town || n2.village || n2.municipality || n2.suburb || n2.quarter || n2.county || '';
+                return { lat: parseFloat(anchorResult.lat), lng: parseFloat(anchorResult.lon), lon: parseFloat(anchorResult.lon), city: city2, display: anchorResult.display_name, results: (results || []).map(r => ({ lat: parseFloat(r.lat), lng: parseFloat(r.lon), display: r.display_name, city: (r.address?.city || r.address?.town || r.address?.village || ''), postcode: r.address?.postcode || '', type: r.type || '' })) };
+            }
+            // Use raw anchor coords
+            return { lat: anchor.lat, lng: anchor.lon, lon: anchor.lon, city: '', display: `Postal ${typeof address === 'object' ? address.zipCode : ''}`, results: [] };
+        }
+    }
+
     if (!best) return null;
     const lat = parseFloat(best.lat);
     const lon = parseFloat(best.lon);
     const n = best.address || {};
     const cityName = n.city || n.town || n.village || n.municipality || n.suburb || n.quarter || n.county || '';
-    return { lat, lng: lon, lon, city: cityName, display: best.display_name, results: results.map(r => ({
+    return { lat, lng: lon, lon, city: cityName, display: best.display_name, results: (results || []).map(r => ({
         lat: parseFloat(r.lat), lng: parseFloat(r.lon),
         display: r.display_name,
         city: (r.address?.city || r.address?.town || r.address?.village || ''),
@@ -1132,7 +1203,8 @@ app.get('/api/qr/public/lift/:liftId', async (req, res) => {
                 lift: safeLift,
                 emergencyContacts: {
                     phone: process.env.PUBLIC_SUPPORT_PHONE || '+351 961 777 666',
-                    email: process.env.PUBLIC_SUPPORT_EMAIL || 'suporte@festlift.pt'
+                    email: process.env.PUBLIC_SUPPORT_EMAIL || 'suporte@festlift.pt',
+                    whatsapp: process.env.PUBLIC_SUPPORT_WHATSAPP || process.env.PUBLIC_SUPPORT_PHONE || '+351 961 777 666'
                 }
             }
         });

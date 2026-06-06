@@ -66,6 +66,33 @@
             font-size: .9rem;
             color: #6c757d;
         }
+        .support-actions {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 10px;
+            margin-top: 12px;
+        }
+        .support-action {
+            border: 0;
+            border-radius: 10px;
+            color: #fff;
+            font-weight: 700;
+            padding: 10px 12px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+        .support-action:hover,
+        .support-action:focus {
+            color: #fff;
+            text-decoration: none;
+            opacity: .92;
+        }
+        .wa-action { background: #25D366; }
+        .call-action { background: #0d6efd; }
+        .mail-action { background: #6f42c1; }
         .footer-mini {
             text-align: center;
             padding: 12px;
@@ -79,6 +106,9 @@
             }
             .lang-switcher {
                 align-self: flex-start;
+            }
+            .support-actions {
+                grid-template-columns: 1fr;
             }
         }
     </style>
@@ -119,6 +149,21 @@
                             <div class="alert alert-info mb-3" id="infoBanner">
                                 <i class="fas fa-info-circle mr-1"></i>
                                 Esta página não mostra histórico técnico. Para segurança, visitantes sem conta apenas podem abrir alerta.
+                            </div>
+
+                            <div class="lift-meta mb-3">
+                                <div><strong id="quickSupportTitle">Contacto rápido de suporte</strong></div>
+                                <div class="support-actions">
+                                    <a id="supportWhatsAppBtn" class="support-action wa-action" href="#" target="_blank" rel="noopener noreferrer">
+                                        <i class="fab fa-whatsapp"></i><span id="supportWhatsAppText">WhatsApp</span>
+                                    </a>
+                                    <a id="supportCallBtn" class="support-action call-action" href="#">
+                                        <i class="fas fa-phone-alt"></i><span id="supportCallText">Ligar</span>
+                                    </a>
+                                    <a id="supportEmailBtn" class="support-action mail-action" href="#">
+                                        <i class="fas fa-envelope"></i><span id="supportEmailText">Email</span>
+                                    </a>
+                                </div>
                             </div>
 
                             <form id="publicAlertForm" novalidate>
@@ -196,6 +241,10 @@
                 addressLabel: 'Morada:',
                 infoBanner: 'Esta página não mostra histórico técnico. Para segurança, visitantes sem conta apenas podem abrir alerta.',
                 issueTypeLabel: 'O que se passa?',
+                quickSupportTitle: 'Contacto rápido de suporte',
+                supportWhatsAppText: 'WhatsApp',
+                supportCallText: 'Ligar',
+                supportEmailText: 'Email',
                 issueTypePlaceholder: 'Selecione uma opção',
                 issueTypeStuck: 'Estamos presos na cabina',
                 issueTypeMalfunction: 'Elevador avariado / não responde',
@@ -234,6 +283,10 @@
                 addressLabel: 'Address:',
                 infoBanner: 'This page does not show technical history. For safety, visitors without an account can only open an alert.',
                 issueTypeLabel: 'What is happening?',
+                quickSupportTitle: 'Quick support contact',
+                supportWhatsAppText: 'WhatsApp',
+                supportCallText: 'Call',
+                supportEmailText: 'Email',
                 issueTypePlaceholder: 'Select an option',
                 issueTypeStuck: 'We are stuck in the cabin',
                 issueTypeMalfunction: 'Elevator malfunction / not responding',
@@ -282,6 +335,10 @@
             document.getElementById('addressLabel').textContent = t('addressLabel');
             document.getElementById('infoBanner').innerHTML = `<i class="fas fa-info-circle mr-1"></i>${t('infoBanner')}`;
             document.getElementById('issueTypeLabel').textContent = t('issueTypeLabel');
+            document.getElementById('quickSupportTitle').textContent = t('quickSupportTitle');
+            document.getElementById('supportWhatsAppText').textContent = t('supportWhatsAppText');
+            document.getElementById('supportCallText').textContent = t('supportCallText');
+            document.getElementById('supportEmailText').textContent = t('supportEmailText');
             document.getElementById('issueTypePlaceholder').textContent = t('issueTypePlaceholder');
             document.getElementById('issueTypeStuck').textContent = t('issueTypeStuck');
             document.getElementById('issueTypeMalfunction').textContent = t('issueTypeMalfunction');
@@ -324,6 +381,22 @@
             document.getElementById('urgentBox').style.display = issueType === 'stuck' ? 'block' : 'none';
         }
 
+        function toWhatsAppNumber(raw) {
+            const digits = String(raw || '').replace(/[^\d+]/g, '');
+            if (!digits) return '';
+            if (digits.startsWith('+')) return digits.slice(1);
+            return digits;
+        }
+
+        function buildWhatsAppLink(number, municipal, address) {
+            const waNumber = toWhatsAppNumber(number);
+            if (!waNumber) return '#';
+            const message = currentLang === 'en'
+                ? `Hello FestLift support. I scanned the elevator QR code. Lift: ${municipal || '-'} | Address: ${address || '-'}.`
+                : `Olá suporte FestLift. Li o QR do elevador. Elevador: ${municipal || '-'} | Morada: ${address || '-'}.`;
+            return `https://wa.me/${waNumber}?text=${encodeURIComponent(message)}`;
+        }
+
         async function loadLiftInfo() {
             const params = new URLSearchParams(window.location.search);
             const liftId = params.get('liftId');
@@ -346,14 +419,26 @@
 
                 const phone = data.data.emergencyContacts && data.data.emergencyContacts.phone ? data.data.emergencyContacts.phone : '+351 961 777 666';
                 const email = data.data.emergencyContacts && data.data.emergencyContacts.email ? data.data.emergencyContacts.email : 'suporte@festlift.pt';
+                const whatsapp = data.data.emergencyContacts && data.data.emergencyContacts.whatsapp
+                    ? data.data.emergencyContacts.whatsapp
+                    : phone;
 
                 const phoneLink = document.getElementById('supportPhoneLink');
                 phoneLink.textContent = phone;
                 phoneLink.href = `tel:${phone.replace(/\s+/g, '')}`;
 
+                const callBtn = document.getElementById('supportCallBtn');
+                callBtn.href = `tel:${phone.replace(/\s+/g, '')}`;
+
                 const emailLink = document.getElementById('supportEmailLink');
                 emailLink.textContent = email;
                 emailLink.href = `mailto:${email}`;
+
+                const emailBtn = document.getElementById('supportEmailBtn');
+                emailBtn.href = `mailto:${email}`;
+
+                const whatsappBtn = document.getElementById('supportWhatsAppBtn');
+                whatsappBtn.href = buildWhatsAppLink(whatsapp, data.data.lift.municipalNumber, data.data.lift.address);
 
                 document.getElementById('loadingBox').style.display = 'none';
                 document.getElementById('mainBox').style.display = 'block';

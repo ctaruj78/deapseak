@@ -716,6 +716,7 @@ const qrManager = (function() {
     function buildPrintHtml(qrs, title, options = {}) {
         const autoPrint = options.autoPrint === true;
         const autoClose = options.autoClose === true;
+        const density = options.density === 'balanced' ? 'balanced' : 'max';
         const qrScriptSrc = document.querySelector('script[src*="qrcode"]')?.src || '/plugins/qrcode/js/qrcode.min.js';
         const items = qrs.map(qr => `
             <div class="qr-item">
@@ -725,13 +726,18 @@ const qrManager = (function() {
                             <div class="qr-code-text">${qr.code}</div>
                             <div class="qr-address">${qr.name}</div>
                             <div class="qr-city">${qr.location}</div>
+                            <div class="qr-microcopy">SUPORTE 24/7 • WHATSAPP / EMAIL</div>
                             <div class="qr-status ${qr.status === 'active' ? 'status-active' : 'status-inactive'}">${qr.status === 'active' ? '● Ativo' : '○ Inativo'}</div>
                         </div>
                         <div class="qr-canvas" id="p-${qr.id}"></div>
                     </div>
                     <div class="qr-sticker-legend">
-                        <span>PT: Leia para pedir ajuda ou reportar avaria.</span>
-                        <span>EN: Scan to request help or report fault.</span>
+                        <span>PT: Leia para apoio técnico ou reportar avaria.</span>
+                        <span>EN: Scan for technical support or fault report.</span>
+                        <div class="qr-channel-row">
+                            <span class="qr-channel qr-channel-wa">WhatsApp</span>
+                            <span class="qr-channel qr-channel-mail">Email</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -796,7 +802,7 @@ const qrManager = (function() {
                 width: 70mm;
                 min-height: 50mm;
                 height: 50mm;
-                padding: 2.4mm 2.3mm 1.8mm;
+                padding: 1.2mm 1.2mm 0.9mm;
                 text-align: center;
                 page-break-inside: avoid;
                 display: flex;
@@ -814,10 +820,10 @@ const qrManager = (function() {
                 background: linear-gradient(90deg, var(--accent), #4b8bff 55%, var(--accent-2));
             }
             .qr-safe-content {
-                width: 69mm;
-                height: 49mm;
-                margin: 0.5mm auto;
-                padding: 2.0mm 2.0mm 1.6mm;
+                width: 69.6mm;
+                height: 49.6mm;
+                margin: 0.2mm auto;
+                padding: 1.3mm 1.3mm 1.0mm;
                 display: flex;
                 flex-direction: column;
                 overflow: hidden;
@@ -825,8 +831,8 @@ const qrManager = (function() {
             }
             .qr-main {
                 display: grid;
-                grid-template-columns: 1fr 27.5mm;
-                gap: 1.8mm;
+                grid-template-columns: 1fr 29.2mm;
+                gap: 1.0mm;
                 align-items: center;
                 min-height: 0;
                 flex: 1;
@@ -836,13 +842,13 @@ const qrManager = (function() {
                 text-align: left;
                 display: flex;
                 flex-direction: column;
-                justify-content: center;
-                gap: 0.7mm;
+                justify-content: flex-start;
+                gap: 0.55mm;
             }
             .qr-canvas {
                 margin: 0;
                 display: inline-block;
-                padding: 1.0mm;
+                padding: 0.8mm;
                 border-radius: 2.0mm;
                 background: #ffffff;
                 border: 1px solid rgba(16, 32, 51, 0.08);
@@ -850,13 +856,13 @@ const qrManager = (function() {
             }
             .qr-canvas canvas,
             .qr-canvas img {
-                width: 25.5mm !important;
-                height: 25.5mm !important;
+                width: 27.3mm !important;
+                height: 27.3mm !important;
                 display: block;
             }
             .qr-code-text {
                 font-weight: 800;
-                font-size: 9.2px;
+                font-size: 9.4px;
                 color: var(--accent);
                 margin-bottom: 0;
                 letter-spacing: 0.03em;
@@ -866,24 +872,34 @@ const qrManager = (function() {
                 text-overflow: ellipsis;
             }
             .qr-address {
-                font-size: 6.6px;
+                font-size: 6.7px;
                 color: var(--ink);
                 margin-bottom: 0;
                 word-break: break-word;
                 font-weight: 600;
                 line-height: 1.15;
-                min-height: 5.8mm;
-                max-height: 5.8mm;
+                min-height: 5.2mm;
+                max-height: 5.2mm;
                 display: -webkit-box;
                 -webkit-line-clamp: 2;
                 -webkit-box-orient: vertical;
                 overflow: hidden;
             }
             .qr-city {
-                font-size: 6.1px;
+                font-size: 6px;
                 color: var(--muted);
                 margin-bottom: 0;
                 font-weight: 600;
+                letter-spacing: 0.02em;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+            .qr-microcopy {
+                font-size: 5.2px;
+                line-height: 1.05;
+                font-weight: 800;
+                color: #3a4c64;
                 letter-spacing: 0.02em;
                 white-space: nowrap;
                 overflow: hidden;
@@ -894,10 +910,10 @@ const qrManager = (function() {
                 align-items: center;
                 justify-content: flex-start;
                 gap: 3px;
-                min-height: 3.3mm;
+                min-height: 3.1mm;
                 padding: 0 1.2mm;
                 border-radius: 999px;
-                font-size: 5.8px;
+                font-size: 5.5px;
                 font-weight: 800;
                 letter-spacing: 0.03em;
                 text-transform: uppercase;
@@ -907,19 +923,19 @@ const qrManager = (function() {
             .qr-sticker-legend {
                 margin-top: auto;
                 width: 100%;
-                height: 8.3mm;
-                min-height: 8.3mm;
-                padding: 1.0mm 0 0;
+                height: 9.8mm;
+                min-height: 9.8mm;
+                padding: 0.75mm 0 0;
                 border-top: 1px dashed rgba(16, 32, 51, 0.18);
                 color: var(--ink);
-                font-size: 6.2px;
-                line-height: 1.12;
+                font-size: 5.85px;
+                line-height: 1.06;
                 font-weight: 700;
                 text-align: left;
                 display: grid;
-                grid-template-rows: 1fr 1fr;
-                row-gap: 0.35mm;
-                align-items: center;
+                grid-template-rows: auto auto auto;
+                row-gap: 0.22mm;
+                align-content: start;
                 flex-shrink: 0;
             }
             .qr-sticker-legend span {
@@ -928,10 +944,63 @@ const qrManager = (function() {
                 overflow: hidden;
                 text-overflow: ellipsis;
             }
+            .qr-channel-row {
+                display: flex;
+                gap: 1.1mm;
+                margin-top: 0.25mm;
+            }
+            .qr-channel {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                border-radius: 999px;
+                padding: 0.55mm 1.35mm;
+                font-size: 5.2px;
+                line-height: 1;
+                font-weight: 800;
+                letter-spacing: 0.02em;
+                text-transform: uppercase;
+            }
+            .qr-channel-wa {
+                color: #0a7d43;
+                background: #e9f9ef;
+                border: 1px solid #9be1b8;
+            }
+            .qr-channel-mail {
+                color: #1e4fae;
+                background: #edf4ff;
+                border: 1px solid #a6c7ff;
+            }
             .status-active { color: #28a745; }
             .status-inactive { color: #6c757d; }
             .print-meta { text-align: center; font-size: 9px; color: var(--muted); margin-top: 10px; letter-spacing: 0.02em; }
             .no-print { text-align: center; margin-bottom: 12px; }
+            .print-toolbar {
+                display: inline-flex;
+                align-items: center;
+                gap: 10px;
+                background: #fff;
+                border: 1px solid #d5dde8;
+                border-radius: 999px;
+                padding: 6px 10px 6px 12px;
+                box-shadow: 0 6px 14px rgba(16, 32, 51, 0.08);
+            }
+            .print-toolbar label {
+                margin: 0;
+                font-size: 12px;
+                color: var(--muted);
+                font-weight: 700;
+            }
+            .print-toolbar select {
+                height: 30px;
+                border-radius: 999px;
+                border: 1px solid #c9d4e4;
+                padding: 0 10px;
+                font-size: 12px;
+                font-weight: 700;
+                color: var(--ink);
+                background: #fff;
+            }
             .no-print button {
                 padding: 9px 18px;
                 font-size: 13px;
@@ -944,6 +1013,56 @@ const qrManager = (function() {
                 font-weight: 700;
                 box-shadow: 0 8px 18px rgba(11, 102, 255, 0.22);
             }
+
+            body.density-balanced .qr-item {
+                padding: 2.0mm 1.8mm 1.3mm;
+            }
+            body.density-balanced .qr-safe-content {
+                width: 69mm;
+                height: 49mm;
+                margin: 0.5mm auto;
+                padding: 1.8mm 1.8mm 1.4mm;
+            }
+            body.density-balanced .qr-main {
+                grid-template-columns: 1fr 27.8mm;
+                gap: 1.4mm;
+            }
+            body.density-balanced .qr-canvas canvas,
+            body.density-balanced .qr-canvas img {
+                width: 25.6mm !important;
+                height: 25.6mm !important;
+            }
+            body.density-balanced .qr-sticker-legend {
+                height: 10.6mm;
+                min-height: 10.6mm;
+                font-size: 6px;
+                row-gap: 0.28mm;
+            }
+
+            body.density-max .qr-item {
+                padding: 1.2mm 1.2mm 0.9mm;
+            }
+            body.density-max .qr-safe-content {
+                width: 69.6mm;
+                height: 49.6mm;
+                margin: 0.2mm auto;
+                padding: 1.3mm 1.3mm 1.0mm;
+            }
+            body.density-max .qr-main {
+                grid-template-columns: 1fr 29.2mm;
+                gap: 1.0mm;
+            }
+            body.density-max .qr-canvas canvas,
+            body.density-max .qr-canvas img {
+                width: 27.3mm !important;
+                height: 27.3mm !important;
+            }
+            body.density-max .qr-sticker-legend {
+                height: 9.8mm;
+                min-height: 9.8mm;
+                font-size: 5.85px;
+                row-gap: 0.22mm;
+            }
             @media print {
                 body { background: #fff; padding: 1mm; }
                 .no-print { display: none; }
@@ -952,17 +1071,38 @@ const qrManager = (function() {
             }
             @page { margin: 8mm; }
         </style>
-        </head><body>
+        </head><body class="density-${density}">
         <div class="no-print">
-            <button onclick="window.print()"><i>🖨</i> Imprimir (${qrs.length} QR кодів)</button>
+            <div class="print-toolbar">
+                <label for="densitySelect">Densidade:</label>
+                <select id="densitySelect" onchange="changeDensity(this.value)">
+                    <option value="balanced">Balanced</option>
+                    <option value="max">Max Fill</option>
+                </select>
+                <button onclick="window.print()"><i>🖨</i> Imprimir (${qrs.length} QR кодів)</button>
+            </div>
         </div>
         <h2>QR Коди ліфтів &mdash; FestLift <small style="font-weight:normal;font-size:12px;">${new Date().toLocaleDateString('pt-PT')}</small></h2>
         <div class="qr-grid">${items}</div>
         <div class="print-meta">Роздруковано: ${new Date().toLocaleString('pt-PT')} | FestLift Sistema de Gestão</div>
         <script src="${qrScriptSrc}"><\/script>
         <script>
+        const DENSITY_KEY = 'qrPrintDensityMode';
+        function changeDensity(mode) {
+            document.body.classList.remove('density-balanced', 'density-max');
+            document.body.classList.add(mode === 'balanced' ? 'density-balanced' : 'density-max');
+            try { localStorage.setItem(DENSITY_KEY, mode === 'balanced' ? 'balanced' : 'max'); } catch(e) {}
+        }
+
         window.onload = function() {
             ${qrInits}
+            const savedDensity = (() => {
+                try { return localStorage.getItem(DENSITY_KEY); } catch(e) { return null; }
+            })();
+            const selectedDensity = savedDensity === 'balanced' || savedDensity === 'max' ? savedDensity : '${density}';
+            const densitySelect = document.getElementById('densitySelect');
+            if (densitySelect) densitySelect.value = selectedDensity;
+            changeDensity(selectedDensity);
             if (${autoPrint ? 'true' : 'false'}) {
                 setTimeout(() => {
                     window.print();
@@ -985,7 +1125,8 @@ const qrManager = (function() {
         }
         showNotification(`Підготовка ${data.length} QR кодів для друку...`, 'info');
         const win = window.open('', '_blank', 'width=900,height=700');
-        win.document.write(buildPrintHtml(data, 'Todos Códigos QR - FestLift'));
+        const density = (localStorage.getItem('qrPrintDensityMode') === 'balanced') ? 'balanced' : 'max';
+        win.document.write(buildPrintHtml(data, 'Todos Códigos QR - FestLift', { density }));
         win.document.close();
     }
 
@@ -1003,7 +1144,8 @@ const qrManager = (function() {
         const qrs = currentQRs.filter(qr => selected.includes(qr.id));
         showNotification(`Підготовка ${qrs.length} QR кодів для друку...`, 'info');
         const win = window.open('', '_blank', 'width=900,height=700');
-        win.document.write(buildPrintHtml(qrs, 'Вибрані Códigos QR - FestLift'));
+        const density = (localStorage.getItem('qrPrintDensityMode') === 'balanced') ? 'balanced' : 'max';
+        win.document.write(buildPrintHtml(qrs, 'Вибрані Códigos QR - FestLift', { density }));
         win.document.close();
     }
 
