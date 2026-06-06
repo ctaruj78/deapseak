@@ -32,6 +32,11 @@ server.log
 *.old
 *.bak
 *.backup
+backup/
+backups/
+test-screenshots/
+__pycache__/
+*.pyc
 
 # Temporary
 temp/
