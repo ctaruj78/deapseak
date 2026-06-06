@@ -1,1590 +1,449 @@
 <!DOCTYPE html>
-        function initializeMap() {
-            console.log('🗺️ Ініціалізація мапи...');
-            console.log('📍 Quantidade de elevadores para apresentação:', lifts.length);
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mapa de elevadores - FestLift</title>
 
-            const mapContainer = document.getElementById('liftsMap');
-            if (mapContainer) {
-                mapContainer.innerHTML = '';
-                mapContainer.style.position = 'relative';
-            }
+    <link rel="stylesheet" href="../../plugins/adminlte/adminlte.min.css">
+    <link rel="stylesheet" href="../../plugins/fontawesome/css/all.min.css">
+    <link rel="stylesheet" href="../../plugins/leaflet/leaflet.css" />
 
-            const mapTimeout = setTimeout(() => {
-                if (!map || !map._loaded) {
-                    console.warn('⚠️ Mapa não carregou a tempo');
-                    if (mapContainer) {
-                        mapContainer.innerHTML = '<div class="alert alert-info m-3"><i class="fas fa-map-marked-alt"></i> Mapa temporariamente indisponível. Tente atualizar a página.</div>';
-                    }
-                }
-            }, 5000);
-
-            map = L.map('liftsMap', {
-                preferCanvas: true,
-                fadeAnimation: false,
-                zoomAnimation: false
-            }).setView([38.7223, -9.1393], 11);
-
-            const tileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-                attribution: '© OpenStreetMap contributors',
-                maxZoom: 19,
-                errorTileUrl: 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7',
-                timeout: 5000
-            });
-
-            tileLayer.on('tileerror', function() {
-                console.warn('⚠️ Tile loading error (offline mode)');
-            });
-
-            tileLayer.addTo(map);
-
-            map.on('load', () => {
-                clearTimeout(mapTimeout);
-                console.log('✅ Mapa carregada com sucesso');
-            });
-
-            if (lifts.length === 0) {
-                console.warn('⚠️ Não há elevadores para apresentação na mapa');
-                if (mapContainer) {
-                    const empty = document.createElement('div');
-                    empty.className = 'alert alert-light border shadow-sm';
-                    empty.style.position = 'absolute';
-                    empty.style.top = '18px';
-                    empty.style.left = '18px';
-                    empty.style.zIndex = '999';
-                    empty.innerHTML = '<i class="fas fa-info-circle text-info mr-1"></i> Nenhum elevador com coordenadas válidas disponível no momento.';
-                    mapContainer.appendChild(empty);
-                }
-                return;
-            }
-
-            const bounds = [];
-            lifts.forEach((lift, index) => {
-                console.log(`➕ A adicionar marcador ${index + 1}:`, {
-                    id: lift.id,
-                    lat: lift.lat,
-                    lng: lift.lng,
-                    address: lift.address
-                });
-                addLiftMarker(lift);
-                bounds.push([lift.lat, lift.lng]);
-            });
-
-            console.log('✅ Marcadores adicionados:', markers.length);
-            if (bounds.length > 0) {
-                map.fitBounds(bounds, { padding: [50, 50] });
-                console.log('✅ Mapa centrado automaticamente nos marcadores');
-            }
+    <style>
+        #liftsMap {
+            height: 70vh;
+            width: 100%;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            background: #f8f9fa;
         }
+
+        .map-controls {
+            background: #fff;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .lift-marker {
+            background-color: #007bff;
+            border: 2px solid white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+
+        .lift-popup {
+            min-width: 240px;
+        }
+
+        .lift-status {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .status-active { background-color: #d4edda; color: #155724; }
+        .status-maintenance { background-color: #fff3cd; color: #856404; }
+        .status-error { background-color: #f8d7da; color: #721c24; }
+
+        .stats-card { border-left: 4px solid; }
+        .stats-card.total { border-left-color: #007bff; }
+        .stats-card.active { border-left-color: #28a745; }
+        .stats-card.maintenance { border-left-color: #ffc107; }
         .stats-card.error { border-left-color: #dc3545; }
 
-        /* ═══════════════════════════════════════════════════════════
-         * 🗺️ ROUTING CONTROL - Idadeно desde rotaом (DRAGGABLE)
-         * ═══════════════════════════════════════════════════════════*/
-        
-        /* Janela de rota - arrastável */
-        .leaflet-routing-container {
-            position: absolute !important;
-            top: 10px !important;
-            right: 10px !important;
-            max-width: 350px !important;
-            max-height: 450px !important;
-            overflow-y: auto !important;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3) !important;
-            z-index: 1000 !important;
-            cursor: move !important;
-        }
-
-        /* Стилізація заголовка - zona ativa para arrastar */
-        .leaflet-routing-container h2,
-        .leaflet-routing-container h3 {
-            background: #007bff !important;
-            color: white !important;
-            padding: 10px 40px 10px 15px !important;
-            margin: 0 !important;
-            font-size: 16px !important;
-            border-radius: 8px 8px 0 0 !important;
-            position: relative !important;
-            cursor: move !important;
-            user-select: none !important;
-        }
-
-        /* Ícone de arrastar no cabeçalho */
-        .leaflet-routing-container h2::after,
-        .leaflet-routing-container h3::after {
-            content: '⋮⋮';
+        .map-empty-state {
             position: absolute;
-            left: 5px;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 18px;
-            opacity: 0.7;
-            letter-spacing: -2px;
-        }
-
-        /* Alternativas de rota */
-        .leaflet-routing-alt {
-            padding: 10px !important;
-            border-bottom: 1px solid #eee !important;
-            cursor: default !important;
-        }
-
-        .leaflet-routing-alt:hover {
-            background: #f8f9fa !important;
-        }
-
-        /* Botões de colapso */
-        .leaflet-routing-collapse-btn {
-            color: white !important;
-            background: transparent !important;
-            border: none !important;
-            font-size: 20px !important;
-            cursor: pointer !important;
-        }
-
-        /* Barra de rolagem */
-        .leaflet-routing-container::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        .leaflet-routing-container::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 4px;
-        }
-
-        .leaflet-routing-container::-webkit-scrollbar-thumb {
-            background: #888;
-            border-radius: 4px;
-        }
-
-        .leaflet-routing-container::-webkit-scrollbar-thumb:hover {
-            background: #555;
-        }
-
-        /* Ocultar elementos desnecessários */
-        .leaflet-routing-geocoders {
-            display: none !important;
-        }
-
-        /* Кнопка закриття rotaу */
-        .route-close-btn {
-            transition: all 0.2s ease;
-            cursor: pointer !important;
-        }
-
-        .route-close-btn:hover {
-            background: rgba(255,255,255,0.3) !important;
-            transform: scale(1.1);
-        }
-
-        /* Animação ao arrastar */
-        .leaflet-routing-container.dragging {
-            opacity: 0.8;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.4) !important;
+            top: 18px;
+            left: 18px;
+            z-index: 999;
+            background: rgba(255,255,255,0.95);
+            border: 1px solid #dee2e6;
+            border-radius: 10px;
+            padding: 12px 14px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.12);
+            max-width: 420px;
         }
     </style>
 </head>
 <body class="hold-transition sidebar-mini layout-fixed" data-required-role="admin">
-    <div class="wrapper">
+<div class="wrapper">
+    <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+        <ul class="navbar-nav">
+            <li class="nav-item">
+                <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
+            </li>
+            <li class="nav-item d-none d-sm-inline-block">
+                <a href="admin-dashboard.html" class="nav-link">Início</a>
+            </li>
+        </ul>
+        <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+                <a class="nav-link" href="#" id="refreshMap"><i class="fas fa-sync-alt"></i> Actualizar</a>
+            </li>
+        </ul>
+    </nav>
 
-        <!-- Navbar -->
-        <nav class="main-header navbar navbar-expand navbar-white navbar-light">
-            <ul class="navbar-nav">
-                <li class="nav-item">
-                    <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
-                </li>
-                <li class="nav-item d-none d-sm-inline-block">
-                    <a href="admin-dashboard.html" class="nav-link">Início</a>
-                </li>
-            </ul>
-            <ul class="navbar-nav ml-auto">
-                <li class="nav-item">
-                    <a class="nav-link" href="#" id="refreshMap">
-                        <i class="fas fa-sync-alt"></i> Actualizar
-                    </a>
-                </li>
-            </ul>
-        </nav>
+    <aside class="main-sidebar sidebar-dark-primary elevation-4">
+        <a href="/pages/admin/admin-dashboard.html" class="brand-link">
+            <span class="brand-text font-weight-light">FestLift <small style="opacity:.7;font-size:11px;">Painel Admin</small></span>
+        </a>
+        <div id="sidebar-placeholder"></div>
+    </aside>
 
-        <!-- Main Sidebar Container -->
-        <aside class="main-sidebar sidebar-dark-primary elevation-4">
-    <a href="/pages/admin/admin-dashboard.html" class="brand-link">
-        <span class="elevation-3" style="display:inline-flex;align-items:center;justify-content:center;width:33px;height:33px;border-radius:50%;background:linear-gradient(135deg,#17a2b8,#007bff);color:#fff;font-size:17px;margin-right:8px;opacity:.9;flex-shrink:0;"><i class="fas fa-shield-alt"></i></span>
-        <span class="brand-text font-weight-light" style="line-height:1.4;">FestLift <small style="opacity:.7;font-size:11px;">Painel Admin</small></span>
-    </a>
-
-    <div class="sidebar">
-        <div class="user-panel mt-3 pb-3 mb-3 d-flex">
-            <div class="image">
-                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160' viewBox='0 0 160 160'%3E%3Ccircle cx='80' cy='80' r='80' fill='%23667eea'/%3E%3Ccircle cx='80' cy='62' r='30' fill='white'/%3E%3Cellipse cx='80' cy='135' rx='52' ry='40' fill='white'/%3E%3C/svg%3E" class="img-circle elevation-2" alt="User Image">
-            </div>
-            <div class="info">
-                <a href="/pages/admin/profile.html" class="d-block" id="sidebarFullName">Administrador</a>
-                <small class="text-success">Administrador</small>
+    <div class="content-wrapper">
+        <div class="content-header">
+            <div class="container-fluid">
+                <div class="row mb-2">
+                    <div class="col-sm-6">
+                        <h1 class="m-0">Mapa de elevadores</h1>
+                    </div>
+                    <div class="col-sm-6">
+                        <ol class="breadcrumb float-sm-right">
+                            <li class="breadcrumb-item"><a href="admin-dashboard.html">Início</a></li>
+                            <li class="breadcrumb-item active">Mapa de elevadores</li>
+                        </ol>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <nav class="mt-2">
-            <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+        <section class="content">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-lg-3 col-6">
+                        <div class="small-box bg-info stats-card total">
+                            <div class="inner"><h3 id="totalLifts"><i class="fas fa-spinner fa-spin"></i></h3><p>Total de elevadores</p></div>
+                            <div class="icon"><i class="fas fa-building"></i></div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-6">
+                        <div class="small-box bg-success stats-card active">
+                            <div class="inner"><h3 id="activeLifts"><i class="fas fa-spinner fa-spin"></i></h3><p>Ativos</p></div>
+                            <div class="icon"><i class="fas fa-check-circle"></i></div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-6">
+                        <div class="small-box bg-warning stats-card maintenance">
+                            <div class="inner"><h3 id="maintenanceLifts"><i class="fas fa-spinner fa-spin"></i></h3><p>Em manutenção</p></div>
+                            <div class="icon"><i class="fas fa-tools"></i></div>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-6">
+                        <div class="small-box bg-danger stats-card error">
+                            <div class="inner"><h3 id="errorLifts"><i class="fas fa-spinner fa-spin"></i></h3><p>Com avarias</p></div>
+                            <div class="icon"><i class="fas fa-exclamation-triangle"></i></div>
+                        </div>
+                    </div>
+                </div>
 
-                <!-- Dashboard -->
-                <li class="nav-item">
-                    <a href="/pages/admin/admin-dashboard.html" class="nav-link" id="nav-dashboard">
-                        <i class="nav-icon fas fa-tachometer-alt"></i>
-                        <p>Dashboard</p>
-                    </a>
-                </li>
+                <div class="map-controls">
+                    <div class="row align-items-end">
+                        <div class="col-md-3">
+                            <label for="searchInput">Pesquisar:</label>
+                            <input type="text" class="form-control" id="searchInput" placeholder="Endereço, número, cliente...">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="statusFilter">Filtro por estado:</label>
+                            <select class="form-control" id="statusFilter">
+                                <option value="all">Todos elevadores</option>
+                                <option value="active">Activos</option>
+                                <option value="maintenance">Em manutenção</option>
+                                <option value="inactive">Com avarias</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="routeToLift">Traçar rota para o elevador:</label>
+                            <select id="routeToLift" class="form-control">
+                                <option value="">Selecione elevador</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label>&nbsp;</label>
+                            <button id="btnRoute" class="btn btn-primary btn-block"><i class="fas fa-route"></i> Rota</button>
+                        </div>
+                        <div class="col-md-12 mt-2">
+                            <button id="btnRegeocodeAll" class="btn btn-warning btn-sm"><i class="fas fa-map-marked-alt"></i> Corrigir coordenadas (Re-geocode)</button>
+                            <small class="text-muted ml-2">Use quando os elevadores aparecem no local errado</small>
+                        </div>
+                    </div>
+                </div>
 
-                <!-- QR Sistema -->
-                <li class="nav-item" id="group-qr">
-                    <a href="#" class="nav-link">
-                        <i class="nav-icon fas fa-qrcode"></i>
-                        <p>QR Sistema<i class="right fas fa-angle-left"></i></p>
-                    </a>
-                    <ul class="nav nav-treeview">
-                        <li class="nav-item">
-                            <a href="/pages/admin/qr-management.html" class="nav-link" id="nav-qr-management">
-                                <i class="fas fa-cog nav-icon"></i>
-                                <p>Gestão de QR</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="/pages/admin/qr-analytics.html" class="nav-link" id="nav-qr-analytics">
-                                <i class="fas fa-chart-line nav-icon"></i>
-                                <p>Análise QR</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="/pages/admin/qr-history.html" class="nav-link" id="nav-qr-history">
-                                <i class="fas fa-history nav-icon"></i>
-                                <p>Histórico de leituras</p>
-                            </a>
-                        </li>
-                    </ul>
-                </li>
-
-                <!-- Elevadores -->
-                <li class="nav-item" id="group-lifts">
-                    <a href="#" class="nav-link">
-                        <i class="nav-icon fas fa-elevator"></i>
-                        <p>Elevadores<i class="right fas fa-angle-left"></i></p>
-                    </a>
-                    <ul class="nav nav-treeview">
-                        <li class="nav-item">
-                            <a href="/pages/admin/lifts.html" class="nav-link" id="nav-lifts">
-                                <i class="fas fa-list nav-icon"></i>
-                                <p>Gestão de elevadores</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="/pages/admin/requests.html" class="nav-link" id="nav-requests">
-                                <i class="fas fa-clipboard-list nav-icon"></i>
-                                <p>Pedidos</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="/pages/admin/maps.html" class="nav-link" id="nav-maps">
-                                <i class="fas fa-map-marked-alt nav-icon"></i>
-                                <p>Mapa de elevadores</p>
-                            </a>
-                        </li>
-                    </ul>
-                </li>
-
-                <!-- Utilizadores -->
-                <li class="nav-item">
-                    <a href="/pages/admin/users.html" class="nav-link" id="nav-users">
-                        <i class="nav-icon fas fa-users"></i>
-                        <p>Utilizadores</p>
-                    </a>
-                </li>
-
-                <!-- Documentos -->
-                <li class="nav-item" id="group-docs">
-                    <a href="#" class="nav-link">
-                        <i class="nav-icon fas fa-file-alt"></i>
-                        <p>Documentos<i class="right fas fa-angle-left"></i></p>
-                    </a>
-                    <ul class="nav nav-treeview">
-                        <li class="nav-item">
-                            <a href="/pages/admin/invoice-template.html" class="nav-link" id="nav-invoice-template">
-                                <i class="fas fa-file-invoice nav-icon"></i>
-                                <p>Orçamento (Criar)</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="/pages/admin/orcamentos-list.html" class="nav-link" id="nav-orcamentos-list">
-                                <i class="fas fa-list-alt nav-icon"></i>
-                                <p>Orçamento (Lista)</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="/pages/admin/email-template.html" class="nav-link" id="nav-email-template">
-                                <i class="fas fa-envelope nav-icon"></i>
-                                <p>Modelos de email</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="/pages/admin/inspection-template.html" class="nav-link" id="nav-inspection-template">
-                                <i class="fas fa-clipboard-check nav-icon"></i>
-                                <p>Inspecções</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="/pages/admin/report-template.html" class="nav-link" id="nav-report-template">
-                                <i class="fas fa-file-pdf nav-icon"></i>
-                                <p>Modelos de relatórios</p>
-                            </a>
-                        </li>
-                    </ul>
-                </li>
-
-                <!-- Análise -->
-                <li class="nav-item" id="group-analytics">
-                    <a href="#" class="nav-link">
-                        <i class="nav-icon fas fa-chart-line"></i>
-                        <p>Análise<i class="right fas fa-angle-left"></i></p>
-                    </a>
-                    <ul class="nav nav-treeview">
-                        <li class="nav-item">
-                            <a href="/pages/admin/unified-analytics.html" class="nav-link" id="nav-unified-analytics">
-                                <i class="fas fa-chart-area nav-icon"></i>
-                                <p>Análise global</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="/pages/admin/predictive-maintenance.html" class="nav-link" id="nav-predictive-maintenance">
-                                <i class="fas fa-brain nav-icon"></i>
-                                <p>AI Previsão</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="/pages/admin/reports.html" class="nav-link" id="nav-reports">
-                                <i class="fas fa-chart-bar nav-icon"></i>
-                                <p>Relatórios</p>
-                            </a>
-                        </li>
-                    </ul>
-                </li>
-
-                <!-- AI Assistente -->
-                <li class="nav-item">
-                    <a href="/pages/ai-assistant/ai-assistant.html" class="nav-link" id="nav-ai-assistant">
-                        <i class="nav-icon fas fa-magic"></i>
-                        <p>AI Assistente</p>
-                    </a>
-                </li>
-
-                <!-- Suporte -->
-                <li class="nav-item" id="group-support">
-                    <a href="#" class="nav-link">
-                        <i class="nav-icon fas fa-headset"></i>
-                        <p>Suporte<i class="right fas fa-angle-left"></i></p>
-                    </a>
-                    <ul class="nav nav-treeview">
-                        <li class="nav-item">
-                            <a href="/pages/admin/support.html" class="nav-link" id="nav-support">
-                                <i class="fas fa-life-ring nav-icon"></i>
-                                <p>Suporte técnico</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="/pages/admin/notifications.html" class="nav-link" id="nav-notifications">
-                                <i class="fas fa-bell nav-icon"></i>
-                                <p>Notificações</p>
-                            </a>
-                        </li>
-                    </ul>
-                </li>
-
-                <!-- Definições -->
-                <li class="nav-item">
-                    <a href="/pages/admin/settings.html" class="nav-link" id="nav-settings">
-                        <i class="nav-icon fas fa-cogs"></i>
-                        <p>Definições</p>
-                    </a>
-                </li>
-
-                <!-- Perfil -->
-                <li class="nav-item">
-                    <a href="/pages/admin/profile.html" class="nav-link" id="nav-profile">
-                        <i class="nav-icon fas fa-user-circle"></i>
-                        <p>Perfil</p>
-                    </a>
-                </li>
-
-                <!-- Sair -->
-                <li class="nav-item">
-                    <a href="#" onclick="if(typeof AuthManager!=='undefined'){AuthManager.logout();}else{localStorage.clear();sessionStorage.clear();window.location.replace('/pages/auth/login.html');}" class="nav-link">
-                        <i class="nav-icon fas fa-sign-out-alt text-danger"></i>
-                        <p>Sair</p>
-                    </a>
-                </li>
-
-            </ul>
-        </nav>
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">Mapa interactivo de elevadores</h3>
+                        <div class="card-tools">
+                            <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
+                            <button type="button" class="btn btn-tool" data-card-widget="maximize"><i class="fas fa-expand"></i></button>
+                        </div>
+                    </div>
+                    <div class="card-body position-relative">
+                        <div id="liftsMap"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
     </div>
-</aside>
+</div>
+
+<script src="../../plugins/jquery/jquery.min.js"></script>
+<script src="../../plugins/bootstrap/bootstrap.bundle.min.js"></script>
+<script src="../../plugins/adminlte/adminlte.min.js"></script>
+<script src="../../assets/js/sidebar-init.js"></script>
+<script src="../../assets/js/i18n.js"></script>
+<script src="../../plugins/leaflet/leaflet.js"></script>
+<script src="../../assets/js/auth.js"></script>
+<script src="../../assets/js/config.js"></script>
+
 <script>
-/* Sidebar auto-activate based on current page */
-(function () {
-    var page = window.location.pathname.split('/').pop().replace('.html', '');
-    var map = {
-        'admin-dashboard':        'nav-dashboard',
-        'qr-management':          'nav-qr-management',
-        'qr-analytics':           'nav-qr-analytics',
-        'qr-history':             'nav-qr-history',
-        'qr-batch':               'nav-qr-management',
-        'qr-generator':           'nav-qr-management',
-        'lifts':                  'nav-lifts',
-        'requests':               'nav-requests',
-        'maps':                   'nav-maps',
-        'users':                  'nav-users',
-        'role-manager':           'nav-users',
-        'invoice-template':       'nav-invoice-template',
-        'orcamentos-list':        'nav-orcamentos-list',
-        'email-template':         'nav-email-template',
-        'inspection-template':    'nav-inspection-template',
-        'report-template':        'nav-report-template',
-        'unified-analytics':      'nav-unified-analytics',
-        'analytics':              'nav-unified-analytics',
-        'analytics-dashboard':    'nav-unified-analytics',
-        'predictive-maintenance': 'nav-predictive-maintenance',
-        'reports':                'nav-reports',
-        'ai-assistant':           'nav-ai-assistant',
-        'ai-assistant-full':      'nav-ai-assistant',
-        'ai-diagnostics-full':    'nav-ai-assistant',
-        'support':                'nav-support',
-        'notifications':          'nav-notifications',
-        'settings':               'nav-settings',
-        'profile':                'nav-profile',
-        'audit-log':              'nav-settings',
-        'import-checklists':      'nav-inspection-template'
-    };
-    var groups = {
-        'nav-qr-management':          'group-qr',
-        'nav-qr-analytics':           'group-qr',
-        'nav-qr-history':             'group-qr',
-        'nav-lifts':                  'group-lifts',
-        'nav-requests':               'group-lifts',
-        'nav-maps':                   'group-lifts',
-        'nav-invoice-template':       'group-docs',
-        'nav-orcamentos-list':        'group-docs',
-        'nav-email-template':         'group-docs',
-        'nav-inspection-template':    'group-docs',
-        'nav-report-template':        'group-docs',
-        'nav-unified-analytics':      'group-analytics',
-        'nav-predictive-maintenance': 'group-analytics',
-        'nav-reports':                'group-analytics',
-        'nav-support':                'group-support',
-        'nav-notifications':          'group-support'
-    };
-    var navId = map[page];
-    if (navId) {
-        var el = document.getElementById(navId);
-        if (el) {
-            el.classList.add('active');
-            var groupId = groups[navId];
-            if (groupId) {
-                var grp = document.getElementById(groupId);
-                if (grp) {
-                    grp.classList.add('menu-open');
-                    var parentLink = grp.querySelector('a.nav-link');
-                    if (parentLink) parentLink.classList.add('active');
-                }
-            }
+    let lifts = [];
+    let filteredLifts = [];
+    let map;
+    let markers = [];
+
+    $(document).ready(async function() {
+        loadSidebarWithInit('includes/sidebar.html');
+
+        if (!AuthManager.isAuthenticated()) {
+            window.location.replace('/pages/auth/login.html');
+            return;
         }
-    }
-    /* Load admin name into sidebar */
-    try {
-        var jwt = localStorage.getItem('liftmanager_jwt') || sessionStorage.getItem('liftmanager_jwt');
-        if (jwt) {
-            var payload = JSON.parse(atob(jwt.split('.')[1]));
-            var nameEl = document.getElementById('sidebarFullName');
-            if (nameEl && payload.name) nameEl.textContent = payload.name;
-            var shortEl = document.getElementById('sidebarName');
-            if (shortEl && payload.name) shortEl.textContent = payload.name;
-        }
-    } catch (e) {}
-}());
-</script>
 
-        <!-- Content Wrapper -->
-        <div class="content-wrapper">
-            <!-- Content Header -->
-            <div class="content-header">
-                <div class="container-fluid">
-                    <div class="row mb-2">
-                        <div class="col-sm-6">
-                            <h1 class="m-0">Mapa de elevadores</h1>
-                        </div>
-                        <div class="col-sm-6">
-                            <ol class="breadcrumb float-sm-right">
-                                <li class="breadcrumb-item"><a href="admin-dashboard.html">Início</a></li>
-                                <li class="breadcrumb-item active">Mapa de elevadores</li>
-                            </ol>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        await loadLiftsFromAPI();
+        initializeMap();
+        populateLiftSelector();
+        updateStats();
+        setupEventListeners();
+    });
 
-            <!-- Main content -->
-            <section class="content">
-                <div class="container-fluid">
+    async function loadLiftsFromAPI() {
+        try {
+            const response = await AuthManager.fetchWithAuth('/api/lifts?limit=1000');
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
-                    <!-- Statistics Cards -->
-                    <div class="row">
-                        <div class="col-lg-3 col-6">
-                            <div class="small-box bg-info stats-card total">
-                                <div class="inner">
-                                    <h3 id="totalLifts"><i class="fas fa-spinner fa-spin"></i></h3>
-                                    <p>Total de elevadores</p>
-                                </div>
-                                <div class="icon">
-                                    <i class="fas fa-building"></i>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-lg-3 col-6">
-                            <div class="small-box bg-success stats-card active">
-                                <div class="inner">
-                                    <h3 id="activeLifts"><i class="fas fa-spinner fa-spin"></i></h3>
-                                    <p>Ativos</p>
-                                </div>
-                                <div class="icon">
-                                    <i class="fas fa-check-circle"></i>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-lg-3 col-6">
-                            <div class="small-box bg-warning stats-card maintenance">
-                                <div class="inner">
-                                    <h3 id="maintenanceLifts"><i class="fas fa-spinner fa-spin"></i></h3>
-                                    <p>Em manutenção</p>
-                                </div>
-                                <div class="icon">
-                                    <i class="fas fa-tools"></i>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-lg-3 col-6">
-                            <div class="small-box bg-danger stats-card error">
-                                <div class="inner">
-                                    <h3 id="errorLifts"><i class="fas fa-spinner fa-spin"></i></h3>
-                                    <p>Com avarias</p>
-                                </div>
-                                <div class="icon">
-                                    <i class="fas fa-exclamation-triangle"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+            const data = await response.json();
+            const rawLifts = Array.isArray(data.data) ? data.data : (data.data?.lifts || []);
 
-                    <!-- Map Controls -->
-                    <div class="map-controls">
-                        <div class="row">
-                            <div class="col-md-3">
-                                <label for="searchInput">Pesquisar:</label>
-                                <input type="text" class="form-control" id="searchInput" 
-                                       placeholder="Endereço, número, cliente...">
-                            </div>
-                            <div class="col-md-3">
-                                <label for="statusFilter">Filtro por estado:</label>
-                                <select class="form-control" id="statusFilter">
-                                    <option value="all">Todas elevadores</option>
-                                    <option value="active">Activos</option>
-                                    <option value="maintenance">Em manutenção</option>
-                                    <option value="inactive">Com avarias</option>
-                                </select>
-                            </div>
-                            <div class="col-md-4">
-                                <label for="routeToLift">Traçar rota para o elevador:</label>
-                                <select id="routeToLift" class="form-control">
-                                    <option value="">Selecione elevador</option>
-                                </select>
-                            </div>
-                            <div class="col-md-2">
-                                <label>&nbsp;</label>
-                                <button id="btnRoute" class="btn btn-primary btn-block">
-                                    <i class="fas fa-route"></i> Rota
-                                </button>
-                            </div>
-                            <div class="col-md-12 mt-2">
-                                <button id="btnRegeocodeAll" class="btn btn-warning btn-sm"
-                                        title="Corrigir coordenadas de elevadores que aparecem no local errado">
-                                    <i class="fas fa-map-marked-alt"></i> Corrigir coordenadas (Re-geocode)
-                                </button>
-                                <small class="text-muted ml-2">Use quando os elevadores aparecem no local errado</small>
-                            </div>
-                        </div>
-                    </div>
+            const normalized = await Promise.all(rawLifts.map(async lift => {
+                const coords = lift.location?.coordinates;
+                const hasCoords = Array.isArray(coords) && coords.length === 2 && isFinite(coords[0]) && isFinite(coords[1]) && !(coords[0] === 0 && coords[1] === 0);
 
-                    <!-- Map Container -->
-                    <div class="card">
-                        <div class="card-header">
-                            <h3 class="card-title">Mapa interactivo de elevadores</h3>
-                            <div class="card-tools">
-                                <button type="button" class="btn btn-tool" data-card-widget="collapse">
-                                    <i class="fas fa-minus"></i>
-                                </button>
-                                <button type="button" class="btn btn-tool" data-card-widget="maximize">
-                                    <i class="fas fa-expand"></i>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="card-body">
-                            <div id="liftsMap"></div>
-                        </div>
-                    </div>
+                let lat = hasCoords ? coords[1] : null;
+                let lng = hasCoords ? coords[0] : null;
 
-                </div>
-            </section>
-        </div>
-    </div>
-
-    <!-- Painel edição позиції маркера -->
-    <div id="locationEditBanner" style="display:none; position:fixed; bottom:20px; left:50%; transform:translateX(-50%); z-index:9999;
-         background:#fff; border:2px solid #f39c12; border-radius:8px; padding:10px 18px;
-         box-shadow:0 4px 16px rgba(0,0,0,0.25); align-items:center; gap:12px; flex-wrap:wrap;">
-        <span style="font-weight:600; color:#856404;">
-            <i class="fas fa-map-pin"></i> Clique no mapa para onde mover o elevador: <span id="editLiftName" style="color:#333;"></span>
-        </span>
-        <button class="btn btn-sm btn-success" onclick="saveMarkerLocation()">
-            <i class="fas fa-save"></i> Guardar
-        </button>
-        <button class="btn btn-sm btn-secondary" onclick="cancelLocationEdit()">
-            <i class="fas fa-times"></i> Cancelar
-        </button>
-    </div>
-
-    <!-- Scripts -->
-    <script src="../../plugins/jquery/jquery.min.js"></script>
-    <script src="../../plugins/bootstrap/bootstrap.bundle.min.js"></script>
-        <!-- AdminLTE App -->
-    <script src="../../plugins/adminlte/adminlte.min.js"></script>
-
-    <!-- Sidebar initialization script -->
-    <script src="../../assets/js/sidebar-init.js"></script>
-
-    <!-- Load sidebar dynamically -->
-    <script>
-        $(document).ready(function() {
-            loadSidebarWithInit("includes/sidebar.html");
-        });
-    </script>
-    
-    <!-- 🌍 Sistema multilingue -->
-    <script src="../../assets/js/i18n.js"></script>
-    <!-- Leaflet JS -->
-    <script src="../../plugins/leaflet/leaflet.js"></script>
-    <!-- Leaflet Routing Machine -->
-    <link rel="stylesheet" href="../../plugins/leaflet/leaflet-routing-machine.css" />
-    <script src="../../plugins/leaflet/leaflet-routing-machine.js"></script>
-    <!-- Auth Manager -->
-    <script src="../../assets/js/auth.js"></script>
-    <script src="../../assets/js/config.js"></script>
-
-    <script>
-        let lifts = [];
-        let map;
-        let markers = [];
-        let routingControl = null;
-        let userLocation = null;
-
-        $(document).ready(async function() {
-            // Verificação de autorização
-            if (!AuthManager.isAuthenticated()) {
-                // ✅ Verificar se a página está ativa antes de redirecionar
-                if (document.body && !document.hidden) {
-                    window.location.replace('/pages/auth/login.html');
-                }
-                return;
-            }
-
-            await loadLiftsFromAPI();
-            initializeMap();
-            populateLiftSelector();
-            setupEventListeners();
-            updateStats();
-            getUserLocation();
-        });
-
-        // A carregar de elevadores desde API
-        async function loadLiftsFromAPI() {
-            try {
-                console.log('🔄 A carregar elevadores da API...');
-                const response = await AuthManager.fetchWithAuth('/api/lifts');
-                
-                if (!response.ok) {
-                    throw new Error('Erro carregamento de elevadores');
-                }
-
-                const data = await response.json();
-                console.log('📦 Отримані dados desde API:', data);
-                // API devolve: { success: true, data: { lifts: [...], pagination: {...} } }
-                const rawLifts = data.data?.lifts || (Array.isArray(data.data) ? data.data : []);
-                console.log('✅ Carregado de elevadores:', rawLifts.length);
-                
-                // Геоcódigoexisteмо elevadores desde ausentesми ou нульовими координаeми
-                const geocodePromises = rawLifts.map(async lift => {
-                    const coords = lift.location?.coordinates;
-                    const hasValidCoords = Array.isArray(coords) &&
-                        coords.length === 2 &&
-                        !isNaN(coords[0]) && !isNaN(coords[1]) &&
-                        !(coords[0] === 0 && coords[1] === 0);
-                    
-                    const fullAddress = [
-                        lift.address?.street,
-                        lift.address?.zipCode,
-                        lift.address?.city,
-                        lift.address?.country
-                    ].filter(Boolean).join(', ');
-                    
-                    let lat = hasValidCoords ? coords[1] : null;
-                    let lng = hasValidCoords ? coords[0] : null;
-                    
-                    // Se coordenadas ausentes ou нульові — геоcódigoexisteмо desde endereçoи
-                    if (!hasValidCoords && fullAddress) {
+                if (!hasCoords) {
+                    const fullAddress = [lift.address?.street, lift.address?.zipCode, lift.address?.city, lift.address?.country].filter(Boolean).join(', ');
+                    if (fullAddress && typeof AuthManager.fetchWithAuth === 'function') {
                         try {
-                            console.log(`🔍 Geocodificação "${fullAddress}" (elevador ${lift._id})...`);
-                            const geoResp = await AuthManager.fetchWithAuth(
-                                `/api/geocode?q=${encodeURIComponent(fullAddress)}`
-                            );
+                            const geoResp = await AuthManager.fetchWithAuth(`/api/geocode?q=${encodeURIComponent(fullAddress)}`);
                             if (geoResp.ok) {
                                 const geoData = await geoResp.json();
                                 if (geoData.success && geoData.lat && geoData.lng) {
                                     lat = geoData.lat;
                                     lng = geoData.lng;
-                                    console.log(`✅ Geocodificado: ${fullAddress} → [${lng}, ${lat}]`);
                                 }
                             }
                         } catch (e) {
-                            console.warn(`⚠️ Geocodificação não foi possível para ${fullAddress}:`, e.message);
+                            console.warn('Geocoding failed for', fullAddress, e.message);
                         }
                     }
-                    
-                    // Se geocodificação não foi possível — omitir marcador (não usar Lisboa como fallback falso)
-                    if (lat === null || lng === null) {
-                        console.warn(`⚠️ Elevador ${lift.municipalNumber || lift._id}: sem coordenadas geocodificáveis, marcador omitido`);
-                        return null;
-                    }
-                    
-                    console.log('🔄 Processamento do elevador:', lift._id, [lng, lat]);
-                    
-                    return {
-                        id: lift._id,
-                        model: lift.model || 'Desconhecido',
-                        manufacturer: lift.manufacturer,
-                        address: fullAddress || 'Endereço não especificado',
-                        location: fullAddress || 'Endereço não especificado',
-                        city: lift.address?.city || 'Desconhecido',
-                        country: lift.address?.country || 'Desconhecido',
-                        lat,
-                        lng,
-                        status: mapStatus(lift.status),
-                        lastMaintenance: lift.lastInspectionDate ? new Date(lift.lastInspectionDate).toLocaleDateString('pt-PT') : 'Desconhecido',
-                        municipalNumber: lift.municipalNumber
-                    };
-                });
-                
-                lifts = (await Promise.all(geocodePromises)).filter(Boolean);
-
-                console.log('✅ Оброблено de elevadores para мапи:', lifts.length, '| Omitidos sem coordenadas:', rawLifts.length - lifts.length);
-                console.log('📍 Primeiro elevador:', lifts[0]);
-            } catch (error) {
-                console.error('❌ Erro ao carregar elevadores:', error);
-                lifts = [];
-            }
-        }
-
-        // Мапування estadoів MongoDB до estadoів мапи
-        function mapStatus(mongoStatus) {
-            const statusMap = {
-                'operational': 'active',
-                'maintenance': 'maintenance',
-                'out_of_service': 'error',
-                'inactive': 'error'
-            };
-            return statusMap[mongoStatus] || 'active';
-        }
-
-        // Отримання геоlocalizações do utilizador
-        function getUserLocation() {
-            if (navigator.geolocation) {
-                console.log('🔍 Pedido геоlocalizações...');
-                navigator.geolocation.getCurrentPosition(
-                    (position) => {
-                        userLocation = {
-                            lat: position.coords.latitude,
-                            lng: position.coords.longitude,
-                            accuracy: position.coords.accuracy
-                        };
-                        console.log('📍 Recebido геолокацію do utilizador:');
-                        console.log('  Latitude:', userLocation.lat);
-                        console.log('  Longitude:', userLocation.lng);
-                        console.log('  Precisão:', userLocation.accuracy, 'метрів');
-                        
-                        // Adicionar маркер atualmenteї позиції
-                        L.marker([userLocation.lat, userLocation.lng], {
-                            icon: L.icon({
-                                iconUrl: '../../plugins/leaflet/images/marker-icon-2x.png',
-                                shadowUrl: '../../plugins/leaflet/images/marker-shadow.png',
-                                iconSize: [25, 41],
-                                iconAnchor: [12, 41],
-                                popupAnchor: [1, -34],
-                                shadowSize: [41, 41]
-                            })
-                        })
-                        .addTo(map)
-                        .bindPopup('A sua posição atual')
-                        .openPopup();
-                    },
-                    (error) => {
-                        console.warn('⚠️ Não foi possível отримати геолокацію:', error.message);
-                    }
-                );
-            }
-        }
-
-        function initializeMap() {
-            console.log('🗺️ Ініціалізація мапи...');
-            console.log('📍 Quantidade de elevadores para apresentação:', lifts.length);
-            
-            // ⏱️ Timeout para ініціалізації карти (5 segundos)
-            const mapTimeout = setTimeout(() => {
-                if (!map || !map._loaded) {
-                    console.warn('⚠️ Mapa не заванeжилась за 5 segundos, показую заглушку');
-                    $('#liftsMap').html('<div class="alert alert-info m-3"><i class="fas fa-map-marked-alt"></i> Mapa temporariamente indisponível. Tente atualizar a página.</div>');
                 }
-            }, 5000);
-            
-            // Initialize map centered on Lisboa, Portugal (default)
-            map = L.map('liftsMap', {
-                preferCanvas: true, // Швидше рендеринг
-                fadeAnimation: false, // Desativar анімацію para швидшого carregamento
-                zoomAnimation: false
-            }).setView([38.7223, -9.1393], 11);
 
-            // Add OpenStreetMap tiles desde коротким timeout
-            const tileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-                attribution: '© OpenStreetMap contributors',
-                maxZoom: 19,
-                errorTileUrl: 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7', // 1x1 transparent para erros
-                timeout: 5000 // Швидкий timeout para tiles
-            });
-            
-            tileLayer.on('tileerror', function() {
-                console.warn('⚠️ Tile loading error (offline mode)');
-            });
-            
-            tileLayer.addTo(map);
-            
-            // ✅ Прибираexisteмо timeout após com sucessoго carregamento
-            map.on('load', () => {
-                clearTimeout(mapTimeout);
-                console.log('✅ Mapa com sucesso заванeжена');
-            });
+                return {
+                    id: lift._id || lift.id,
+                    model: lift.model || lift.name || 'Desconhecido',
+                    address: [lift.address?.street, lift.address?.zipCode, lift.address?.city].filter(Boolean).join(', ') || lift.address || 'Endereço não especificado',
+                    location: [lift.address?.street, lift.address?.zipCode, lift.address?.city].filter(Boolean).join(', ') || lift.address || 'Endereço não especificado',
+                    city: lift.address?.city || 'Desconhecido',
+                    country: lift.address?.country || 'Desconhecido',
+                    lat,
+                    lng,
+                    status: mapStatus(lift.status),
+                    lastMaintenance: lift.lastInspectionDate ? new Date(lift.lastInspectionDate).toLocaleDateString('pt-PT') : 'Desconhecido',
+                    municipalNumber: lift.municipalNumber || lift.number || ''
+                };
+            }));
 
-            // Add lift markers
-            if (lifts.length === 0) {
-                console.warn('⚠️ Não há de elevadores para apresentação на мапі');
-            } else {
-                const bounds = [];
-                
-                lifts.forEach((lift, index) => {
-                    console.log(`➕ Додаexisteмо маркер ${index + 1}:`, {
-                        id: lift.id,
-                        lat: lift.lat,
-                        lng: lift.lng,
-                        address: lift.address
-                    });
-                    addLiftMarker(lift);
-                    bounds.push([lift.lat, lift.lng]);
-                });
-                
-                console.log('✅ Todas маркери adicionado:', markers.length);
-                
-                // 🎯 Automático centroуexisteмо mapa на todosх маркерах
-                if (bounds.length > 0) {
-                    map.fitBounds(bounds, { padding: [50, 50] });
-                    console.log('✅ Mapa автоматично centroована на маркерах');
-                }
-            }
+            lifts = normalized.filter(Boolean);
+            filteredLifts = [...lifts];
+        } catch (error) {
+            console.error('Erro ao carregar elevadores:', error);
+            lifts = [];
+            filteredLifts = [];
+        }
+    }
+
+    function mapStatus(status) {
+        const statusMap = {
+            operational: 'active',
+            maintenance: 'maintenance',
+            out_of_service: 'error',
+            inactive: 'error',
+            active: 'active'
+        };
+        return statusMap[status] || 'active';
+    }
+
+    function initializeMap() {
+        const mapContainer = document.getElementById('liftsMap');
+        if (mapContainer) {
+            mapContainer.innerHTML = '';
+            mapContainer.style.position = 'relative';
         }
 
-        function addLiftMarker(lift) {
-            console.log('🎯 addLiftMarker викликано para:', lift.id, 'coordenadas:', lift.lat, lift.lng);
-            
-            const markerColor = getStatusColor(lift.status);
-            const markerHtml = `<div class="lift-marker" style="background-color: ${markerColor}"></div>`;
+        map = L.map('liftsMap', { preferCanvas: true, fadeAnimation: false, zoomAnimation: false }).setView([38.7223, -9.1393], 11);
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+            attribution: '© OpenStreetMap contributors',
+            maxZoom: 19
+        }).addTo(map);
 
-            const customIcon = L.divIcon({
-                html: markerHtml,
+        renderMarkers(filteredLifts);
+        if (!filteredLifts.length && mapContainer) {
+            const empty = document.createElement('div');
+            empty.className = 'map-empty-state';
+            empty.innerHTML = '<i class="fas fa-info-circle text-info mr-1"></i> Nenhum elevador com coordenadas válidas disponível no momento.';
+            mapContainer.appendChild(empty);
+        }
+    }
+
+    function renderMarkers(liftsToRender) {
+        markers.forEach(({ marker }) => map.removeLayer(marker));
+        markers = [];
+
+        const bounds = [];
+        liftsToRender.forEach(lift => {
+            if (lift.lat == null || lift.lng == null) return;
+
+            const icon = L.divIcon({
+                html: `<div class="lift-marker" style="background-color:${getStatusColor(lift.status)}"></div>`,
                 className: 'custom-lift-marker',
                 iconSize: [20, 20],
                 iconAnchor: [10, 10]
             });
 
-            try {
-                const marker = L.marker([lift.lat, lift.lng], { icon: customIcon })
-                    .addTo(map)
-                    .bindPopup(createLiftPopup(lift));
+            const marker = L.marker([lift.lat, lift.lng], { icon }).addTo(map).bindPopup(createLiftPopup(lift));
+            markers.push({ marker, lift });
+            bounds.push([lift.lat, lift.lng]);
+        });
 
-                markers.push({ marker, lift });
-                console.log('✅ Маркер adicionado com sucesso');
-            } catch (error) {
-                console.error('❌ Erro adição маркера:', error);
-            }
+        if (bounds.length > 0) {
+            map.fitBounds(bounds, { padding: [50, 50] });
         }
+    }
 
-        function createLiftPopup(lift) {
-            const statusClass = `status-${lift.status}`;
-            const statusText = getStatusText(lift.status);
-            const displayName = lift.model || lift.name || `Elevador ${lift.id}`;
-            const displayAddress = lift.location || lift.address || 'Endereço não especificado';
-            const lastService = lift.lastMaintenance || lift.lastService || 'Desconhecido';
-
-            return `
-                <div class="lift-popup">
-                    <h6><i class="fas fa-elevator"></i> ${displayName}</h6>
-                    <p><strong>📍 Endereço:</strong><br>${displayAddress}</p>
-                    <p><strong>📊 Estado:</strong> <span class="lift-status ${statusClass}">${statusText}</span></p>
-                    <p><strong>🔧 Última manutenção:</strong> ${lastService}</p>
-                    <div class="text-center mt-2">
-                        <button id="route-btn-${lift.id}" class="btn btn-sm btn-success" onclick="createRouteToLift('${lift.id}')">
-                            <i class="fas fa-route"></i> Traçar rota
-                        </button>
-                        <a href="lifts.html" class="btn btn-sm btn-primary">
-                            <i class="fas fa-info-circle"></i> Detalhes
-                        </a>
-                        <button class="btn btn-sm btn-warning" onclick="enableLocationEdit('${lift.id}')" title="Alterar posição do marcador">
-                            <i class="fas fa-map-marker-alt"></i> Alterar localização
-                        </button>
-                    </div>
+    function createLiftPopup(lift) {
+        const statusClass = `status-${lift.status}`;
+        const statusText = getStatusText(lift.status);
+        return `
+            <div class="lift-popup">
+                <h6><i class="fas fa-elevator"></i> ${lift.model}</h6>
+                <p><strong>📍 Endereço:</strong><br>${lift.location}</p>
+                <p><strong>📊 Estado:</strong> <span class="lift-status ${statusClass}">${statusText}</span></p>
+                <p><strong>🔧 Última manutenção:</strong> ${lift.lastMaintenance}</p>
+                <div class="text-center mt-2">
+                    <button class="btn btn-sm btn-success" onclick="createRouteToLift('${lift.id}')"><i class="fas fa-route"></i> Traçar rota</button>
+                    <a href="lifts.html" class="btn btn-sm btn-primary"><i class="fas fa-info-circle"></i> Detalhes</a>
                 </div>
-            `;
-        }
+            </div>
+        `;
+    }
 
-        // ── Edição позиції маркера (клік по мапі) ───────────────────────
-        let editingLiftId = null;
-        let editingMarkerRef = null;
-        let mapClickHandler = null; // ligação на обробник кліку
+    function getStatusColor(status) {
+        return {
+            active: '#28a745',
+            maintenance: '#ffc107',
+            error: '#dc3545'
+        }[status] || '#007bff';
+    }
 
-        window.enableLocationEdit = function(liftId) {
-            const entry = markers.find(m => m.lift.id === liftId || m.lift.id?.toString() === liftId);
-            if (!entry) { alert('Marcador não encontrado'); return; }
+    function getStatusText(status) {
+        return {
+            active: 'Ativo',
+            maintenance: 'Em manutenção',
+            error: 'Com avaria'
+        }[status] || 'Ativo';
+    }
 
-            if (editingLiftId === liftId) {
-                cancelLocationEdit();
-                return;
-            }
-            if (editingLiftId) cancelLocationEdit();
+    function populateLiftSelector() {
+        const select = document.getElementById('routeToLift');
+        if (!select) return;
+        select.innerHTML = '<option value="">Selecione elevador</option>';
+        filteredLifts.forEach(lift => {
+            const option = document.createElement('option');
+            option.value = lift.id;
+            option.textContent = `${lift.model} — ${lift.location}`;
+            select.appendChild(option);
+        });
+    }
 
-            editingLiftId = liftId;
-            editingMarkerRef = entry.marker;
+    function updateStats() {
+        const total = filteredLifts.length;
+        const active = filteredLifts.filter(lift => lift.status === 'active').length;
+        const maintenance = filteredLifts.filter(lift => lift.status === 'maintenance').length;
+        const error = filteredLifts.filter(lift => lift.status === 'error').length;
+        document.getElementById('totalLifts').textContent = total;
+        document.getElementById('activeLifts').textContent = active;
+        document.getElementById('maintenanceLifts').textContent = maintenance;
+        document.getElementById('errorLifts').textContent = error;
+    }
 
-            // Deакриваexisteмо попап і підсвічуexisteмо маркер
-            entry.marker.closePopup();
-            entry.marker.setOpacity(0.5);
+    function setupEventListeners() {
+        document.getElementById('refreshMap').addEventListener('click', async (e) => {
+            e.preventDefault();
+            await reloadMapData();
+        });
 
-            // Atéказуexisteмо банер
-            const banner = document.getElementById('locationEditBanner');
-            if (banner) {
-                banner.style.display = 'flex';
-                banner.querySelector('#editLiftName').textContent = entry.lift.address || liftId;
-            }
+        document.getElementById('btnRegeocodeAll').addEventListener('click', async () => {
+            await reloadMapData();
+        });
 
-            // Deмінюexisteмо курсор над картою
-            map.getContainer().style.cursor = 'crosshair';
+        document.getElementById('statusFilter').addEventListener('change', applyFilters);
+        document.getElementById('searchInput').addEventListener('input', applyFilters);
+        document.getElementById('btnRoute').addEventListener('click', createRouteFromSelection);
+    }
 
-            // Реexisteструexisteмо обробник кліку по мапі
-            mapClickHandler = function(e) {
-                // Переміщуexisteмо маркер на клікнуту точку
-                editingMarkerRef.setLatLng(e.latlng);
-            };
-            map.on('click', mapClickHandler);
-        };
+    async function reloadMapData() {
+        await loadLiftsFromAPI();
+        initializeMap();
+        populateLiftSelector();
+        updateStats();
+    }
 
-        function cancelLocationEdit() {
-            if (mapClickHandler) {
-                map.off('click', mapClickHandler);
-                mapClickHandler = null;
-            }
-            if (editingMarkerRef) {
-                editingMarkerRef.setOpacity(1);
-            }
-            map.getContainer().style.cursor = '';
-            editingLiftId = null;
-            editingMarkerRef = null;
-            const banner = document.getElementById('locationEditBanner');
-            if (banner) banner.style.display = 'none';
-        }
+    function applyFilters() {
+        const statusFilter = document.getElementById('statusFilter').value;
+        const searchTerm = document.getElementById('searchInput').value.trim().toLowerCase();
 
-        async function saveMarkerLocation() {
-            if (!editingLiftId || !editingMarkerRef) return;
-            const latlng = editingMarkerRef.getLatLng();
-            const liftId = editingLiftId;
+        filteredLifts = lifts.filter(lift => {
+            const statusMatch = statusFilter === 'all' || lift.status === statusFilter;
+            const searchMatch = !searchTerm || [lift.model, lift.address, lift.city, lift.country, lift.municipalNumber].filter(Boolean).join(' ').toLowerCase().includes(searchTerm);
+            return statusMatch && searchMatch;
+        });
 
-            cancelLocationEdit();
-
-            try {
-                const token = (typeof AuthManager !== 'undefined' && AuthManager.getAuthToken
-                    ? AuthManager.getAuthToken()
-                    : null) || localStorage.getItem('authToken') || localStorage.getItem('token') || '';
-                const res = await fetch(`/api/lifts/${liftId}`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                    body: JSON.stringify({
-                        location: {
-                            type: 'Point',
-                            coordinates: [latlng.lng, latlng.lat]
-                        }
-                    })
-                });
-                const data = await res.json();
-                if (data.success !== false) {
-                    toastr.success('Posição do elevador guardada!');
-                    const entry = markers.find(m => m.lift.id === liftId || m.lift.id?.toString() === liftId);
-                    if (entry) { entry.lift.lat = latlng.lat; entry.lift.lng = latlng.lng; }
-                } else {
-                    toastr.error('Erro ao guardar: ' + (data.message || 'desconhecida'));
-                }
-            } catch (err) {
-                toastr.error('Erro de ligação: ' + err.message);
-                lifts = [];
-        let lastRouteCallTimestamp = 0;
-        let processingRoute = false;
-        
-        // Função розблокування кнопки rotaу
-        function unlockRouteButton(liftId) {
-            processingRoute = false;
-            const btn = document.getElementById(`route-btn-${liftId}`);
-            if (btn) {
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-route"></i> Traçar rota';
-            }
-        }
-        
-        // Глобальна функція para кнопки "Traçar rota" в popup
-        window.createRouteToLift = function(liftId) {
-            const now = Date.now();
-            
-            // DeАХИСТ: Блокуexisteмо se минуло menos 1 segundosи desde осeннього виклику
-            if ((now - lastRouteCallTimestamp) < 1000 || processingRoute) {
-                console.log('⏸️ БЛОКУВАННЯ: Atéвторний виклик занадто rapidamente (подвійний клік)');
-                return;
-            }
-            
-            lastRouteCallTimestamp = now;
-            processingRoute = true;
-            
-            // Блокуexisteмо botão
-            const btn = document.getElementById(`route-btn-${liftId}`);
-            if (btn) {
-                btn.disabled = true;
-                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> A construir...';
-            }
-            
-            console.log('🗺️ Прокладання rotaу до do elevador:', liftId);
-            
-            const lift = lifts.find(l => l.id === liftId);
-            if (!lift) {
-                console.error('❌ Elevador não encontrado:', liftId);
-                unlockRouteButton(liftId);
-                return;
-            }
-
-            // Verificar чи existe геоlocalização do utilizador
-            if (!userLocation) {
-                alert('Não foi possível determinar a sua localização actual. Permita o acesso à geolocalização no navegador.');
-                map.setView([lift.lat, lift.lng], 16);
-                unlockRouteButton(liftId);
-                return;
-            }
-
-            // Eliminar попереdiasй rota
-            if (routingControl) {
-                map.removeControl(routingControl);
-            }
-
-            // Atéбудова rotaу
-            console.log('  De (utilizador):', userLocation.lat, userLocation.lng);
-            console.log('  Para (elevador):', lift.lat, lift.lng);
-            
-            routingControl = L.Routing.control({
-                waypoints: [
-                    L.latLng(userLocation.lat, userLocation.lng),
-                    L.latLng(lift.lat, lift.lng)
-                ],
-                routeWhileDragging: false,
-                showAlternatives: false,
-                lineOptions: {
-                    styles: [{color: '#007bff', weight: 5, opacity: 0.7}]
-                },
-                createMarker: function() { return null; },
-                fitSelectedRoutes: true,
-                addWaypoints: false
-            }).on('routesfound', function(e) {
-                const routes = e.routes;
-                const summary = routes[0].summary;
-                console.log('✅ Rota encontrado:', (summary.totalDistance/1000).toFixed(2), 'км');
-                
-                // Розблоковуexisteмо botão após com sucessoї побудови
-                unlockRouteButton(liftId);
-                
-                // Adicionar botão закриття
-                setTimeout(() => {
-                    const container = document.querySelector('.leaflet-routing-container');
-                    if (container && !container.querySelector('.route-close-btn')) {
-                        const closeBtn = document.createElement('button');
-                        closeBtn.className = 'route-close-btn';
-                        closeBtn.innerHTML = '×';
-                        closeBtn.title = 'Fechar rota';
-                        closeBtn.style.cssText = `
-                            position: absolute;
-                            top: 5px;
-                            right: 10px;
-                            background: transparent;
-                            border: none;
-                            font-size: 28px;
-                            font-weight: bold;
-                            color: #fff;
-                            cursor: pointer;
-                            width: 30px;
-                            height: 30px;
-                            line-height: 26px;
-                            text-align: center;
-                            border-radius: 50%;
-                            z-index: 1001;
-                        `;
-                        
-                        closeBtn.addEventListener('click', function() {
-                            if (routingControl) {
-                                map.removeControl(routingControl);
-                                routingControl = null;
-                            }
-                        });
-                        
-                        container.appendChild(closeBtn);
-                    }
-                }, 100);
-            }).addTo(map);
-
-            const displayName = lift.model || lift.name || `Elevador ${lift.id}`;
-            console.log(`🗺️ Rota до: ${displayName}`);
-        };
-
-        function populateLiftSelector() {
-            const selector = $('#routeToLift');
-            selector.empty(); // Limpar попереdias опції
-            selector.append('<option value="">Selecione elevador</option>');
-            lifts.forEach(lift => {
-                const displayName = lift.model || lift.name || `Elevador ${lift.id}`;
-                const displayAddress = lift.location || lift.address || 'Endereço não especificado';
-                selector.append(`<option value="${lift.id}">${displayName} - ${displayAddress}</option>`);
-            });
-        }
-
-        function setupEventListeners() {
-            $('#statusFilter').change(filterLifts);
-            $('#searchInput').on('input', filterLifts);
-            $('#btnRoute').click(showRoute);
-            $('#refreshMap').click(refreshMap);
-            $('#btnRegeocodeAll').click(regeocodeAll);
-        }
-
-        async function regeocodeAll() {
-            const btn = $('#btnRegeocodeAll');
-            const confirmed = confirm(
-                'Isto irá corrigir coordenadas de TODOS os elevadores com coordenadas incorretas ou ausentes.\n\n' +
-                'Clique em OK para re-geocoding completo (pode demorar vários minutos).\n' +
-                'Clique em Cancelar para corrigir apenas os elevadores sem coordenadas.'
-            );
-            const force = confirmed; // OK = force=true (todos), Cancel = apenas os sem coordenadas
-            
-            btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> A iniciar...');
-            
-            try {
-                const resp = await AuthManager.fetchWithAuth(
-                    `/api/lifts/regeocode-all?force=${force}&async=true`,
-                    { method: 'POST' }
-                );
-
-                if (!resp) {
-                    throw new Error('Sessão inválida ou expirada');
-                }
-
-                const contentType = (resp.headers.get('content-type') || '').toLowerCase();
-                let result = null;
-
-                if (contentType.includes('application/json')) {
-                    result = await resp.json();
-                } else {
-                    const text = await resp.text();
-                    const preview = (text || '').replace(/\s+/g, ' ').trim().slice(0, 120);
-                    throw new Error(`Resposta inválida do servidor (HTTP ${resp.status})${preview ? `: ${preview}` : ''}`);
-                }
-
-                if (!resp.ok) {
-                    throw new Error(result?.message || `Erro HTTP ${resp.status}`);
-                }
-
-                if (!result.success || !result.jobId) {
-                    throw new Error(result?.message || 'Não foi possível iniciar geocodificação');
-                }
-
-                await pollRegeocodeJob(result.jobId, btn);
-            } catch (e) {
-                alert('❌ Erro de pedido: ' + e.message);
-            } finally {
-                btn.prop('disabled', false).html('<i class="fas fa-map-marked-alt"></i> Corrigir coordenadas (Re-geocode)');
-            }
-        }
-
-        async function pollRegeocodeJob(jobId, btn) {
-            const startedAt = Date.now();
-            const maxWaitMs = 15 * 60 * 1000; // 15 min
-
-            while (Date.now() - startedAt < maxWaitMs) {
-                const resp = await AuthManager.fetchWithAuth(`/api/lifts/regeocode-all/${encodeURIComponent(jobId)}`);
-                if (!resp) {
-                    throw new Error('Sessão inválida ou expirada durante monitorização');
-                }
-
-                const data = await resp.json();
-                if (!resp.ok || !data.success || !data.data) {
-                    throw new Error(data?.message || `Erro ao monitorizar tarefa (HTTP ${resp.status})`);
-                }
-
-                const job = data.data;
-                const total = Number(job.total || 0);
-                const processed = Number(job.processed || 0);
-                btn.html(`<i class="fas fa-spinner fa-spin"></i> ${processed}/${total || '?'}...`);
-
-                if (job.status === 'done') {
-                    alert(`✅ Geocodificação concluída!\nCorrigidos: ${job.fixed}\nErros: ${job.failed}\nTotal processados: ${job.total}`);
-                    await refreshMap();
-                    return;
-                }
-
-                if (job.status === 'failed') {
-                    throw new Error(job.error || job.message || 'Falha na geocodificação');
-                }
-
-                await new Promise(resolve => setTimeout(resolve, 2000));
-            }
-
-            throw new Error('Tempo de espera excedido ao monitorizar geocodificação');
-        }
-
-        function filterLifts() {
-            const statusFilter = $('#statusFilter').val();
-            const searchQuery = $('#searchInput').val().toLowerCase().trim();
-
-            markers.forEach(({ marker, lift }) => {
-                let statusMatch = statusFilter === 'all' || lift.status === statusFilter;
-                let searchMatch = true;
-                
-                if (searchQuery) {
-                    const searchableText = [
-                        lift.name || '',
-                        lift.model || '',
-                        lift.municipalNumber || '',
-                        lift.location || '',
-                        lift.address || '',
-                        (lift.address && typeof lift.address === 'object') 
-                            ? `${lift.address.street || ''} ${lift.address.city || ''}` 
-                            : '',
-                        lift.manufacturer || '',
-                        lift.client || ''
-                    ].join(' ').toLowerCase();
-                    
-                    searchMatch = searchableText.includes(searchQuery);
-                }
-                
-                if (statusMatch && searchMatch) {
-                    map.addLayer(marker);
-                } else {
-                    map.removeLayer(marker);
-                }
-            });
-            
-            console.log(`🔍 Filtro мапи: estado="${statusFilter}", pesquisa="${searchQuery}"`);
-        }
-
-        function showRoute() {
-            const liftId = $('#routeToLift').val();
-            if (!liftId) {
-                alert('Selecione um elevador para traçar a rota');
-                return;
-            }
-
-            const lift = lifts.find(l => l.id == liftId);
-            if (!lift) return;
-
-            // Verificar чи existe геоlocalização do utilizador
-            if (!userLocation) {
-                alert('Não foi possível determinar a sua localização actual. Permita o acesso à geolocalização no navegador.');
-                map.setView([lift.lat, lift.lng], 16);
-                return;
-            }
-
-            // Eliminar попереdiasй rota
-            if (routingControl) {
-                map.removeControl(routingControl);
-            }
-
-            // Логування координат antes de побудовою rotaу
-            console.log('🗺️ Atéбудова rotaу:');
-            console.log('  De (utilizador):', userLocation.lat, userLocation.lng);
-            console.log('  Para (elevador):', lift.lat, lift.lng);
-            console.log('  Endereço do elevador:', lift.address);
-            
-            // Розfatura прямої відсeні (Haversine formula)
-            const R = 6371e3; // Earth radius in meters
-            const φ1 = userLocation.lat * Math.PI/180;
-            const φ2 = lift.lat * Math.PI/180;
-            const Δφ = (lift.lat - userLocation.lat) * Math.PI/180;
-            const Δλ = (lift.lng - userLocation.lng) * Math.PI/180;
-            const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
-                      Math.cos(φ1) * Math.cos(φ2) *
-                      Math.sin(Δλ/2) * Math.sin(Δλ/2);
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-            const distance = R * c;
-            const distanceKm = (distance/1000).toFixed(2);
-            console.log('  Пряма відсeнь:', distanceKm, 'км');
-            console.log('  Відсeнь у метрах:', distance.toFixed(2), 'м');
-            
-            // Verificação: se відсeнь menos 50 метрів
-            if (distance < 50) {
-                console.warn('⚠️ AVISO: Відсeнь занадто мала!');
-                console.warn('  Можливо coordenadas do elevador збережені incorretamente');
-                console.warn('  Або геоlocalização browser визначила вашу позицію incorretamente');
-                alert(`⚠️ AVISO\n\nDistância ao elevador: ${distance.toFixed(0)} m\n\nÉ muito pouco. Possivelmente:\n• Está perto do elevador\n• Coordenadas do elevador na base de dados incorretos\n• A geolocalização do browser determinou a posição incorretamente\n\nVerifique coordenadas do elevador na secção "Elevadores".`);
-            }
-
-            // Criar rota desde atualmenteї позиції до do elevador
-            routingControl = L.Routing.control({
-                waypoints: [
-                    L.latLng(userLocation.lat, userLocation.lng),
-                    L.latLng(lift.lat, lift.lng)
-                ],
-                routeWhileDragging: false,
-                showAlternatives: false,
-                lineOptions: {
-                    styles: [{color: '#007bff', weight: 5, opacity: 0.7}]
-                },
-                createMarker: function() { return null; }, // Не створювати додаткові маркери
-                language: 'en', // Utilizamos inglês porque o ucraniano não é suportado
-                fitSelectedRoutes: true,
-                addWaypoints: false
-            }).on('routesfound', function(e) {
-                const routes = e.routes;
-                const summary = routes[0].summary;
-                console.log('✅ Rota encontrada:');
-                console.log('  Відсeнь rotaу:', (summary.totalDistance/1000).toFixed(2), 'км');
-                console.log('  Hora у дорозі:', Math.round(summary.totalTime/60), 'хв');
-                
-                // Додаexisteмо botão закриття após того як контейнер criado
-                setTimeout(() => {
-                    const container = document.querySelector('.leaflet-routing-container');
-                    if (container && !container.querySelector('.route-close-btn')) {
-                        const closeBtn = document.createElement('button');
-                        closeBtn.className = 'route-close-btn';
-                        closeBtn.innerHTML = '×';
-                        closeBtn.title = 'Fechar rota';
-                        closeBtn.style.cssText = `
-                            position: absolute;
-                            top: 5px;
-                            right: 10px;
-                            background: transparent;
-                            border: none;
-                            font-size: 28px;
-                            font-weight: bold;
-                            color: #fff;
-                            cursor: pointer;
-                            width: 30px;
-                            height: 30px;
-                            line-height: 26px;
-                            text-align: center;
-                            border-radius: 50%;
-                            z-index: 1001;
-                            transition: all 0.2s ease;
-                        `;
-                        
-                        closeBtn.addEventListener('mouseenter', function() {
-                            this.style.background = 'rgba(255,255,255,0.2)';
-                        });
-                        
-                        closeBtn.addEventListener('mouseleave', function() {
-                            this.style.background = 'transparent';
-                        });
-                        
-                        closeBtn.addEventListener('click', function() {
-                            if (routingControl) {
-                                map.removeControl(routingControl);
-                                routingControl = null;
-                                console.log('🗺️ Rota fechado');
-                            }
-                        });
-                        
-                        container.appendChild(closeBtn);
-                    }
-                    
-                    // ═══════════════════════════════════════════════════════════
-                    // 🖱️ DRAGGABLE - Робимо вікно перетягуваним
-                    // ═══════════════════════════════════════════════════════════
-                    if (!container.dataset.draggableInitialized) {
-                        container.dataset.draggableInitialized = 'true';
-                        
-                        let isDragging = false;
-                        let currentX;
-                        let currentY;
-                        let initialX;
-                        let initialY;
-                        let xOffset = 0;
-                        let yOffset = 0;
-                        
-                        // Deнаходимо título (область para перетягування)
-                        const header = container.querySelector('h2, h3');
-                        
-                        if (header) {
-                            header.addEventListener('mousedown', dragStart);
-                            document.addEventListener('mousemove', drag);
-                            document.addEventListener('mouseup', dragEnd);
-                            
-                            // Touch events para мобільних dispositivos
-                            header.addEventListener('touchstart', dragStart);
-                            document.addEventListener('touchmove', drag);
-                            document.addEventListener('touchend', dragEnd);
-                        }
-                        
-                        function dragStart(e) {
-                            // Ігноруexisteмо клік на кнопці закриття
-                            if (e.target.classList.contains('route-close-btn')) {
-                                return;
-                            }
-                            
-                            if (e.type === 'touchstart') {
-                                initialX = e.touches[0].clientX - xOffset;
-                                initialY = e.touches[0].clientY - yOffset;
-                            } else {
-                                initialX = e.clientX - xOffset;
-                                initialY = e.clientY - yOffset;
-                            }
-                            
-                            if (e.target === header || header.contains(e.target)) {
-                                isDragging = true;
-                                container.classList.add('dragging');
-                            }
-                        }
-                        
-                        function drag(e) {
-                            if (isDragging) {
-                                e.preventDefault();
-                                
-                                if (e.type === 'touchmove') {
-                                    currentX = e.touches[0].clientX - initialX;
-                                    currentY = e.touches[0].clientY - initialY;
-                                } else {
-                                    currentX = e.clientX - initialX;
-                                    currentY = e.clientY - initialY;
-                                }
-                                
-                                xOffset = currentX;
-                                yOffset = currentY;
-                                
-                                setTranslate(currentX, currentY, container);
-                            }
-                        }
-                        
-                        function dragEnd() {
-                            if (isDragging) {
-                                initialX = currentX;
-                                initialY = currentY;
-                                isDragging = false;
-                                container.classList.remove('dragging');
-                            }
-                        }
-                        
-                        function setTranslate(xPos, yPos, el) {
-                            el.style.transform = `translate3d(${xPos}px, ${yPos}px, 0)`;
-                        }
-                        
-                        console.log('🖱️ Idadeно rotaу тепер pode-se перетягувати за título');
-                    }
-                }, 100);
-            }).on('routingerror', function(e) {
-                console.error('❌ Erro побудови rotaу:', e.error);
-                alert('Não foi possível traçar a rota. Possivelmente, o endereço é demasiado longo ou indisponível para trânsito automóvel.');
-            }).addTo(map);
-
-            const displayName = lift.model || lift.name || `Elevador ${lift.id}`;
-            console.log(`🗺️ Rota до: ${displayName} (${lift.location || lift.address})`);
-        }
-
-        async function refreshMap() {
-            console.log('🔄 Atualização мапи...');
-            
-            // Atualizar dados desde API
-            await loadLiftsFromAPI();
-
-            // Limpar існуючі маркери
-            markers.forEach(({ marker }) => {
-                map.removeLayer(marker);
-            });
-            markers = [];
-
-            // Adicionar маркери знову
-            lifts.forEach(lift => {
-                addLiftMarker(lift);
-            });
-
-            // Actualizar селектор rotaів
+        if (map) {
+            initializeMap();
             populateLiftSelector();
-
-            // Actualizar сeтистику
             updateStats();
-
-            // Mostrar індикатор carregamento
-            $('#refreshMap i').addClass('fa-spin');
-            setTimeout(() => {
-                $('#refreshMap i').removeClass('fa-spin');
-                console.log('✅ Мапа оновлена');
-            }, 500);
         }
+    }
 
-        function updateStats() {
-            const total = lifts.length;
-            const active = lifts.filter(l => l.status === 'active').length;
-            const maintenance = lifts.filter(l => l.status === 'maintenance').length;
-            const error = lifts.filter(l => l.status === 'inactive').length;
+    function createRouteFromSelection() {
+        const liftId = document.getElementById('routeToLift').value;
+        if (!liftId) return;
+        const lift = filteredLifts.find(item => String(item.id) === String(liftId));
+        if (!lift || lift.lat == null || lift.lng == null) return;
+        window.open(`https://www.google.com/maps/dir/?api=1&destination=${lift.lat},${lift.lng}`, '_blank');
+    }
 
-            $('#totalLifts').text(total);
-            $('#activeLifts').text(active);
-            $('#maintenanceLifts').text(maintenance);
-            $('#errorLifts').text(error);
-        }
-
-        function getStatusColor(status) {
-            switch (status) {
-                case 'active': return '#28a745';
-                case 'maintenance': return '#ffc107';
-                case 'inactive': return '#dc3545';
-                default: return '#6c757d';
-            }
-        }
-
-        function getStatusText(status) {
-            switch (status) {
-                case 'active': return 'Ativo';
-                case 'maintenance': return 'Em manutenção';
-                case 'inactive': return 'Com falhas';
-                default: return 'Desconhecido';
-            }
-        }
-    </script>
-<script src="../../assets/js/monitor.js"></script>
+    function createRouteToLift(liftId) {
+        const lift = filteredLifts.find(item => String(item.id) === String(liftId));
+        if (!lift || lift.lat == null || lift.lng == null) return;
+        window.open(`https://www.google.com/maps/dir/?api=1&destination=${lift.lat},${lift.lng}`, '_blank');
+    }
+</script>
 </body>
 </html>

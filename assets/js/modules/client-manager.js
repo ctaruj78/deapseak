@@ -49,6 +49,7 @@ class ClientManager {
 
             const result = await response.json();
             const rawClients = Array.isArray(result) ? result : (result.data || []);
+            const liftsCountByClient = await this._loadLiftCountsByClient();
 
             this.clients = rawClients.map(client => ({
                 id: client._id || client.id,
@@ -65,7 +66,7 @@ class ClientManager {
                 rating: client.rating ?? null,
                 totalRequests: client.totalRequests ?? client.requestsCount ?? 0,
                 activeRequests: client.activeRequests ?? 0,
-                liftsCount: client.liftsCount ?? client.lifts?.length ?? 0,
+                liftsCount: this._resolveClientLiftCount(client, liftsCountByClient),
                 avatar: client.avatar || (client.name ? client.name.charAt(0).toUpperCase() : 'C'),
                 notes: client.notes || ''
             }));
@@ -82,6 +83,55 @@ class ClientManager {
             this.renderClientsTable();
             this.updateStats();
         }
+    }
+
+    async _loadLiftCountsByClient() {
+        try {
+            const response = await fetch('/api/lifts?limit=5000', { headers: this._authHeaders() });
+            if (!response.ok) return new Map();
+
+            const payload = await response.json();
+            const lifts = Array.isArray(payload?.data)
+                ? payload.data
+                : (Array.isArray(payload?.data?.lifts) ? payload.data.lifts : []);
+
+            const counts = new Map();
+            const add = (key) => {
+                if (!key) return;
+                const normalized = String(key).trim().toLowerCase();
+                if (!normalized) return;
+                counts.set(normalized, (counts.get(normalized) || 0) + 1);
+            };
+
+            lifts.forEach(lift => {
+                add(lift.client?._id || lift.client || lift.clientId);
+                add(lift.clientEmail || lift.client?.email);
+                add(lift.clientPhone || lift.client?.phone);
+            });
+
+            return counts;
+        } catch (error) {
+            console.warn('Não foi possível carregar contagem de elevadores por cliente:', error);
+            return new Map();
+        }
+    }
+
+    _resolveClientLiftCount(client, countsMap) {
+        const explicit = client.liftsCount ?? client.lifts?.length;
+        if (Number.isFinite(explicit)) return explicit;
+
+        const keys = [
+            client._id,
+            client.id,
+            client.email,
+            client.phone
+        ].filter(Boolean).map(value => String(value).trim().toLowerCase());
+
+        for (const key of keys) {
+            if (countsMap.has(key)) return countsMap.get(key);
+        }
+
+        return 0;
     }
 
     async loadClientRequests() {
