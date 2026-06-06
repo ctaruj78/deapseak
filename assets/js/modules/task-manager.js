@@ -7,73 +7,7 @@ class TaskManager {
             type: 'all',
             priority: 'all'
         };
-        this.currentPage = 1;
-        this.itemsPerPage = 10;
-        this.init();
-    }
-
-    init() {
-        this.loadTasks();
-        this.setupEventListeners();
-        this.updateStats();
-    }
-
-    async loadTasks() {
-        try {
-            // 🔥 ПІДКЛЮЧЕНО ДО РЕАЛЬНОГО API /api/requests
-            const token = localStorage.getItem('authToken') || localStorage.getItem('token') || localStorage.getItem('liftmanager_jwt');
-            
-            const apiUrl = window.location.hostname.includes('app.github.dev') 
-                ? `https://${window.location.hostname.replace('5173-', '3000-')}/api/requests`
-                : '/api/requests';
-            
-            const response = await fetch(apiUrl, {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                }
-            });
-            
-            if (response.ok) {
-                const data = await response.json();
-                // API може повертати {data: [...]} або просто [...]
-                this.tasks = Array.isArray(data) ? data : (data.data || data.requests || []);
-                console.log('✅ Tarefa завантажені з API:', this.tasks.length);
-                localStorage.setItem('tasks', JSON.stringify(this.tasks));
-            } else {
-                console.warn('⚠️ API /api/requests returned non-OK status:', response.status);
-                throw new Error(`API status: ${response.status}`);
-            }
-        } catch (error) {
-            console.error('❌ Erro завантаження завдань з API:', error);
-            // Fallback: спроба завантажити з localStorage
-            this.tasks = JSON.parse(localStorage.getItem('tasks')) || [];
-            
-            if (this.tasks.length === 0) {
-                console.warn('⚠️ Використовуються демо-дані (API indisponível)');
-                this.tasks = this.createSampleTasks();
-                localStorage.setItem('tasks', JSON.stringify(this.tasks));
-            }
-        }
-
-        this.applyFilters();
-    }
-
-    createSampleTasks() {
-        return [
-            {
-                id: 'TASK-2024-001',
-                type: 'repair',
-                title: 'Reparação дверей ліфта',
-                liftId: 'lift1',
-                lift: 'Otis Gen2 - вул. Центральна, 12',
-                priority: 'high',
-                status: 'in-progress',
-                createdDate: '2024-01-10T08:00:00',
-                deadline: '2024-01-15T18:00:00',
-                startedDate: '2024-01-12T09:30:00',
-                category: 'mechanical',
+            return [];
                 estimatedTime: 120,
                 progress: 60,
                 technician: 'Іван Петренко',

@@ -1,69 +1,80 @@
 <!DOCTYPE html>
-<html lang="pt">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mapa de elevadores - FestLift</title>
+        function initializeMap() {
+            console.log('🗺️ Ініціалізація мапи...');
+            console.log('📍 Quantidade de elevadores para apresentação:', lifts.length);
 
-    <!-- AdminLTE CSS -->
-    <link rel="stylesheet" href="../../plugins/adminlte/adminlte.min.css">
-    <link rel="stylesheet" href="../../plugins/fontawesome/css/all.min.css">
-    <!-- Leaflet CSS -->
-    <link rel="stylesheet" href="../../plugins/leaflet/leaflet.css" />
+            const mapContainer = document.getElementById('liftsMap');
+            if (mapContainer) {
+                mapContainer.innerHTML = '';
+                mapContainer.style.position = 'relative';
+            }
 
-    <style>
-        #liftsMap {
-            height: 70vh;
-            width: 100%;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            const mapTimeout = setTimeout(() => {
+                if (!map || !map._loaded) {
+                    console.warn('⚠️ Mapa não carregou a tempo');
+                    if (mapContainer) {
+                        mapContainer.innerHTML = '<div class="alert alert-info m-3"><i class="fas fa-map-marked-alt"></i> Mapa temporariamente indisponível. Tente atualizar a página.</div>';
+                    }
+                }
+            }, 5000);
+
+            map = L.map('liftsMap', {
+                preferCanvas: true,
+                fadeAnimation: false,
+                zoomAnimation: false
+            }).setView([38.7223, -9.1393], 11);
+
+            const tileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+                attribution: '© OpenStreetMap contributors',
+                maxZoom: 19,
+                errorTileUrl: 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7',
+                timeout: 5000
+            });
+
+            tileLayer.on('tileerror', function() {
+                console.warn('⚠️ Tile loading error (offline mode)');
+            });
+
+            tileLayer.addTo(map);
+
+            map.on('load', () => {
+                clearTimeout(mapTimeout);
+                console.log('✅ Mapa carregada com sucesso');
+            });
+
+            if (lifts.length === 0) {
+                console.warn('⚠️ Não há elevadores para apresentação na mapa');
+                if (mapContainer) {
+                    const empty = document.createElement('div');
+                    empty.className = 'alert alert-light border shadow-sm';
+                    empty.style.position = 'absolute';
+                    empty.style.top = '18px';
+                    empty.style.left = '18px';
+                    empty.style.zIndex = '999';
+                    empty.innerHTML = '<i class="fas fa-info-circle text-info mr-1"></i> Nenhum elevador com coordenadas válidas disponível no momento.';
+                    mapContainer.appendChild(empty);
+                }
+                return;
+            }
+
+            const bounds = [];
+            lifts.forEach((lift, index) => {
+                console.log(`➕ A adicionar marcador ${index + 1}:`, {
+                    id: lift.id,
+                    lat: lift.lat,
+                    lng: lift.lng,
+                    address: lift.address
+                });
+                addLiftMarker(lift);
+                bounds.push([lift.lat, lift.lng]);
+            });
+
+            console.log('✅ Marcadores adicionados:', markers.length);
+            if (bounds.length > 0) {
+                map.fitBounds(bounds, { padding: [50, 50] });
+                console.log('✅ Mapa centrado automaticamente nos marcadores');
+            }
         }
-
-        .map-controls {
-            background: #f8f9fa;
-            border: 1px solid #dee2e6;
-            border-radius: 8px;
-            padding: 1rem;
-            margin-bottom: 1rem;
-        }
-
-        .lift-marker {
-            background-color: #007bff;
-            border: 2px solid white;
-            border-radius: 50%;
-            width: 20px;
-            height: 20px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-        }
-
-        .lift-popup {
-            min-width: 250px;
-        }
-
-        .lift-status {
-            display: inline-block;
-            padding: 2px 8px;
-            border-radius: 12px;
-            font-size: 0.8rem;
-            font-weight: bold;
-        }
-
-        .status-active { background-color: #d4edda; color: #155724; }
-        .status-maintenance { background-color: #fff3cd; color: #856404; }
-        .status-error { background-color: #f8d7da; color: #721c24; }
-
-        .stats-card {
-            border-left: 4px solid;
-            transition: transform 0.2s ease;
-        }
-
-        .stats-card:hover {
-            transform: translateY(-2px);
-        }
-
-        .stats-card.total { border-left-color: #007bff; }
-        .stats-card.active { border-left-color: #28a745; }
-        .stats-card.maintenance { border-left-color: #ffc107; }
         .stats-card.error { border-left-color: #dc3545; }
 
         /* ═══════════════════════════════════════════════════════════
@@ -783,10 +794,7 @@
                 console.log('📍 Primeiro elevador:', lifts[0]);
             } catch (error) {
                 console.error('❌ Erro ao carregar elevadores:', error);
-                // Fallback до testeових dados (Lisboa)
-                lifts = [
-                    { id: 'sample_1', model: 'Elevador №1', address: 'Lisboa, Portugal', lat: 38.7223, lng: -9.1393, status: 'active', lastMaintenance: '2024-01-10', location: 'Lisboa, Portugal' }
-                ];
+                lifts = [];
             }
         }
 
@@ -1044,10 +1052,7 @@
                 }
             } catch (err) {
                 toastr.error('Erro de ligação: ' + err.message);
-            }
-        }
-
-        // Deахист від подвійного виклику
+                lifts = [];
         let lastRouteCallTimestamp = 0;
         let processingRoute = false;
         

@@ -28,80 +28,23 @@ class TechnicianManager {
                 this.renderTechnicians();
                 this.updateBadges();
             } else {
-                // Запасний варіант - демо-дані
-                this.loadDemoTechnicians();
+                this.technicians = [];
+                this.filteredTechnicians = [];
+                this.renderTechnicians();
+                this.updateBadges();
             }
         } catch (error) {
             console.error('Erro завантаження техніків:', error);
-            this.loadDemoTechnicians();
+            this.technicians = [];
+            this.filteredTechnicians = [];
+            this.renderTechnicians();
+            this.updateBadges();
         }
     }
 
     // Демо-дані для тестування
     loadDemoTechnicians() {
-        this.technicians = [
-            {
-                id: 1,
-                firstName: "João",
-                lastName: "Silva",
-                email: "j.silva@festlift.pt",
-                phone: "+351912345601",
-                specialty: "electric",
-                status: "online",
-                skills: ["Quadros eléctricos", "Variadores", "PLC", "Segurança"],
-                workload: "medium",
-                currentAssignments: 3,
-                avatar: "../../assets/img/avatars/tech1.png",
-                location: "Lisboa, Av. da Liberdade, 123",
-                notes: "Técnico elétrico certificado"
-            },
-            {
-                id: 2,
-                firstName: "Carlos",
-                lastName: "Ferreira",
-                email: "c.ferreira@festlift.pt",
-                phone: "+351923456702",
-                specialty: "mechanical",
-                status: "busy",
-                skills: ["Guias", "Cabos", "Amortecedores", "Portas"],
-                workload: "high",
-                currentAssignments: 5,
-                avatar: "../../assets/img/avatars/tech2.png",
-                location: "Porto, Rua Santa Catarina, 15",
-                notes: "Especialista em mecânica de elevadores"
-            },
-            {
-                id: 3,
-                firstName: "Rui",
-                lastName: "Santos",
-                email: "r.santos@festlift.pt",
-                phone: "+351934567803",
-                specialty: "hydraulic",
-                status: "online",
-                skills: ["Sistemas hidráulicos", "Pistões", "Válvulas", "Óleo"],
-                workload: "low",
-                currentAssignments: 1,
-                avatar: "../../assets/img/avatars/tech3.png",
-                location: "Setúbal, Praça do Bocage, 10",
-                notes: "Especialista em elevadores hidráulicos"
-            },
-            {
-                id: 4,
-                firstName: "Ana",
-                lastName: "Costa",
-                email: "a.costa@festlift.pt",
-                phone: "+351945678904",
-                specialty: "general",
-                status: "offline",
-                skills: ["Manutenção geral", "Inspeções", "Relatórios", "Certificações"],
-                workload: "medium",
-                currentAssignments: 2,
-                avatar: "../../assets/img/avatars/tech4.png",
-                location: "Braga, Rua do Souto, 30",
-                notes: "Técnica de manutenção e inspeção"
-            }
-        ];
-        
+        this.technicians = [];
         this.filteredTechnicians = [...this.technicians];
         this.renderTechnicians();
         this.updateBadges();

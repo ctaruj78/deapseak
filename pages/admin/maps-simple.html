@@ -79,14 +79,8 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <script>
-        // Load lift data from localStorage or use sample data
-        let lifts = JSON.parse(localStorage.getItem('lifts')) || [
-            { id: 'sample_1', model: 'Elevador №1', address: 'Rua Shevchenko, 10', lat: 50.4501, lng: 30.5234, status: 'active', lastMaintenance: '2024-01-10', location: 'Rua Shevchenko, 10' },
-            { id: 'sample_2', model: 'Elevador №2', address: 'Rua Franka, 25', lat: 50.4542, lng: 30.5167, status: 'active', lastMaintenance: '2024-01-08', location: 'Rua Franka, 25' },
-            { id: 'sample_3', model: 'Elevador №3', address: 'Av. Peremogy, 50', lat: 50.4478, lng: 30.5103, status: 'maintenance', lastMaintenance: '2024-01-12', location: 'Av. Peremogy, 50' },
-            { id: 'sample_4', model: 'Elevador №4', address: 'Rua Lesi Ukrainky, 15', lat: 50.4421, lng: 30.5189, status: 'inactive', lastMaintenance: '2024-01-05', location: 'Rua Lesi Ukrainky, 15' },
-            { id: 'sample_5', model: 'Elevador №5', address: 'Rua Sahaidachnoho, 8', lat: 50.4489, lng: 30.5256, status: 'active', lastMaintenance: '2024-01-09', location: 'Rua Sahaidachnoho, 8' }
-        ];
+        // Load lift data from localStorage only
+        let lifts = JSON.parse(localStorage.getItem('lifts')) || [];
 
         let map;
         let markers = [];

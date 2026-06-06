@@ -66,82 +66,13 @@ class InspectionManager {
             console.error('❌ Erro завантаження інспекцій з API:', error);
             // Fallback: спроба завантажити з localStorage
             this.inspections = JSON.parse(localStorage.getItem('inspections')) || [];
-            
-            if (this.inspections.length === 0) {
-                console.warn('⚠️ Використовуються демо-дані (API indisponível)');
-                this.inspections = this.createSampleInspections();
-                localStorage.setItem('inspections', JSON.stringify(this.inspections));
-            }
         }
 
         this.applyFilters();
     }
 
     createSampleInspections() {
-        return [
-            {
-                id: 'INS-2024-001',
-                type: 'safety',
-                title: 'Щомісячна перевірка безпеки',
-                liftId: 'lift1',
-                lift: 'Otis Gen2 - вул. Центральна, 12',
-                priority: 'high',
-                status: 'completed',
-                scheduledDate: '2024-01-15T10:00:00',
-                completedDate: '2024-01-15T12:30:00',
-                duration: 150,
-                result: 'passed',
-                score: 95,
-                technician: 'Іван Петренко',
-                checklist: [
-                    { item: 'Перевірка гальмівної системи', status: 'completed', result: 'passed', notes: 'Travões в нормі' },
-                    { item: 'Перевірка датчиків безпеки', status: 'completed', result: 'passed', notes: 'Todos датчики працюють' },
-                    { item: 'Перевірка освітлення', status: 'completed', result: 'passed', notes: 'Освітлення в робочому стані' }
-                ],
-                photos: ['safety1.jpg', 'safety2.jpg'],
-                notes: 'Elevador у відмінному технічному стані. Todos системи безпеки працюють належним чином.'
-            },
-            {
-                id: 'INS-2024-002',
-                type: 'technical',
-                title: 'Технічний огляд механізмів',
-                liftId: 'lift2',
-                lift: 'Schindler 3300 - пр. Перемоги, 45',
-                priority: 'medium',
-                status: 'in-progress',
-                scheduledDate: '2024-01-20T09:00:00',
-                technician: 'Марія Коваленко',
-                checklist: [
-                    { item: 'Перевірка тросів', status: 'completed', result: 'passed', notes: 'Троси в хорошому стані' },
-                    { item: 'Перевірка двигуна', status: 'in-progress', result: null, notes: '' },
-                    { item: 'Перевірка системи керування', status: 'pending', result: null, notes: '' }
-                ],
-                progress: 40
-            },
-            {
-                id: 'INS-2024-003',
-                type: 'periodic',
-                title: 'Квартальна перевірка',
-                liftId: 'lift3',
-                lift: 'KONE MonoSpace - вул. Шевченка, 78',
-                priority: 'medium',
-                status: 'planned',
-                scheduledDate: '2024-02-01T14:00:00',
-                technician: 'Петро Сидоренко'
-            },
-            {
-                id: 'INS-2024-004',
-                type: 'emergency',
-                title: 'Аварійна перевірка після скарги',
-                liftId: 'lift1',
-                lift: 'Otis Gen2 - вул. Центральна, 12',
-                priority: 'high',
-                status: 'overdue',
-                scheduledDate: '2024-01-10T11:00:00',
-                technician: 'Іван Петренко',
-                notes: 'Cliente скаржиться на шум під час роботи ліфта'
-            }
-        ];
+        return [];
     }
 
     setupEventListeners() {

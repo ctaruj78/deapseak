@@ -54,76 +54,8 @@ class AssignmentManager {
                 throw new Error('Відсутній токен авторизації');
             }
 
-            const headers = {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-            };
-
-            const queryParams = new URLSearchParams(filters).toString();
-            
-            const [assignmentsRes, techsRes] = await Promise.all([
-                fetch(`${this.apiUrl}/requests?${queryParams}`, { headers }),
-                fetch(`${this.apiUrl}/users?role=tech`, { headers })
-            ]);
-
-            if (assignmentsRes.ok && techsRes.ok) {
-                this.assignments = await assignmentsRes.json();
-                this.technicians = await techsRes.json();
-                
-                // Зберігання для офлайн режиму
-                localStorage.setItem('assignments', JSON.stringify(this.assignments));
-                localStorage.setItem('technicians', JSON.stringify(this.technicians));
-                
-                this.renderAssignments();
-                this.updateStatistics();
-                
-                return { assignments: this.assignments, technicians: this.technicians };
-            } else {
-                throw new Error('Erro завантаження з API');
-            }
-        } catch (error) {
-            console.warn('⚠️ Використання локальних даних:', error.message);
-            this.loadFromLocalStorage();
-        }
-    }
-
-    /**
-     * A carregar з localStorage
-     */
-    loadFromLocalStorage() {
-        this.assignments = JSON.parse(localStorage.getItem('assignments')) || [];
-        this.technicians = JSON.parse(localStorage.getItem('technicians')) || [];
-        
-        if (this.assignments.length === 0) {
-            this.createSampleData();
-        }
-        
-        this.renderAssignments();
-        this.updateStatistics();
-    }
-
-    /**
-     * Створення тестових даних
-     */
-    createSampleData() {
-        this.assignments = [
-            {
-                _id: '1',
-                assignmentNumber: 'REQ-2026-0001',
-                title: 'Reparação do elevador',
-                description: 'Substituição de cabos e verificação do sistema de segurança',
-                status: 'new',
-                priority: 'high',
-                client: {
-                    name: 'Condomínio Jardins do Tejo',
-                    company: 'Condomínio Jardins do Tejo',
-                    phone: '+351211 234 567',
-                    email: 'info@condominiotejo.pt'
-                },
-                location: {
-                    address: 'Rua da Liberdade, 123, Lisboa',
-                    building: 'ЖК "Центральний"',
-                    floor: '15',
+                this.assignments = [];
+                this.technicians = [];
                     liftNumber: 'Elevador N.º1'
                 },
                 qrCode: {
@@ -222,32 +154,7 @@ class AssignmentManager {
                 status: 'new',
                 timestamps: {
                     created: new Date(),
-                    updated: new Date()
-                },
-                metadata: {
-                    source: 'web',
-                    category: assignmentData.category || 'maintenance',
-                    createdBy: this.currentUser._id
-                }
-            };
-
-            const response = await fetch(`${this.apiUrl}/assignments`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(newAssignment)
-            });
-
-            if (response.ok) {
-                const createdAssignment = await response.json();
-                this.assignments.unshift(createdAssignment);
-                this.renderAssignments();
-                this.updateStatistics();
-                
-                // QR інтеграція
-                if (assignmentData.qrCode?.code) {
+                        this.assignments = [];
                     await this.linkQRToAssignment(createdAssignment._id, assignmentData.qrCode.code);
                 }
                 

@@ -20,93 +20,31 @@ class RequestsManager {
 
     async loadRequests() {
         try {
-            // Спроба отримати дані з API
-            const response = await fetch('/api/maintenance-requests', {
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('authToken')}`
-                }
+            const token = sessionStorage.getItem('liftmanager_jwt')
+                || localStorage.getItem('liftmanager_jwt')
+                || localStorage.getItem('authToken')
+                || localStorage.getItem('token')
+                || '';
+
+            const response = await fetch('/api/requests?limit=500', {
+                headers: token ? { 'Authorization': `Bearer ${token}` } : {}
             });
-            
-            if (response.ok) {
-                this.requests = await response.json();
-                localStorage.setItem('maintenanceRequests', JSON.stringify(this.requests));
-            } else {
-                throw new Error('API indisponível');
-            }
+
+            if (!response.ok) throw new Error(`API indisponível (${response.status})`);
+
+            const payload = await response.json();
+            this.requests = Array.isArray(payload)
+                ? payload
+                : (payload.requests || payload.data || []);
+
+            // keep a local cache only as a non-authoritative offline fallback
+            localStorage.setItem('maintenanceRequests', JSON.stringify(this.requests));
         } catch (error) {
-            console.warn('Використання локальних даних:', error);
+            console.warn('Falha a carregar pedidos reais:', error.message);
             this.requests = JSON.parse(localStorage.getItem('maintenanceRequests')) || [];
-            
-            if (this.requests.length === 0) {
-                this.requests = this.createSampleRequests();
-                localStorage.setItem('maintenanceRequests', JSON.stringify(this.requests));
-            }
         }
 
         this.applyFilters();
-    }
-
-    createSampleRequests() {
-        return [
-            {
-                id: '12345',
-                title: 'Manutenção técnica planeada',
-                description: 'Manutenção técnica mensal planeada do elevador. Verificação de todos os sistemas de segurança, lubrificantes e funcionamento das portas.',
-                liftId: 'lift1',
-                priority: 'medium',
-                status: 'completed',
-                type: 'maintenance',
-                createdAt: '2024-01-15T10:00:00Z',
-                updatedAt: '2024-01-16T15:30:00Z',
-                completedAt: '2024-01-16T15:30:00Z',
-                assignedTo: 'tech1',
-                technician: 'Ivan Petrenko',
-                cost: 12500.00,
-                rating: 5,
-                photos: ['photo1.jpg', 'photo2.jpg']
-            },
-            {
-                id: '12346',
-                title: 'Reparação de emergência das portas',
-                description: 'As portas do elevador não fecham corretamente. Problema com os sensores de segurança e mecanismo de bloqueio.',
-                liftId: 'lift2',
-                priority: 'high',
-                status: 'in-progress',
-                type: 'repair',
-                createdAt: '2024-01-16T14:20:00Z',
-                updatedAt: '2024-01-17T09:15:00Z',
-                assignedTo: 'tech2',
-                technician: 'Maria Kovalenko',
-                estimatedCost: 8300.00,
-                photos: ['photo3.jpg']
-            },
-            {
-                id: '12347',
-                title: 'Consulta sobre modernização',
-                description: 'Consulta sobre possível modernização do elevador e atualização do sistema de controlo.',
-                liftId: 'lift3',
-                priority: 'low',
-                status: 'pending',
-                type: 'consultation',
-                createdAt: '2024-01-18T11:30:00Z',
-                updatedAt: '2024-01-18T11:30:00Z',
-                photos: []
-            },
-            {
-                id: '12348',
-                title: 'Inspeção técnica anual',
-                description: 'Inspeção técnica completa do elevador de acordo com o calendário de verificações periódicas.',
-                liftId: 'lift1',
-                priority: 'medium',
-                status: 'in-progress',
-                type: 'inspection',
-                createdAt: '2024-01-20T09:00:00Z',
-                updatedAt: '2024-01-20T09:00:00Z',
-                assignedTo: 'tech3',
-                technician: 'Pedro Sidorenko',
-                estimatedCost: 15600.00
-            }
-        ];
     }
 
     setupEventListeners() {

@@ -659,7 +659,7 @@
                                                 <span class="info-box-icon"><i class="fas fa-tasks"></i></span>
                                                 <div class="info-box-content">
                                                     <span class="info-box-text">Total de tarefas</span>
-                                                    <span class="info-box-number">45</span>
+                                                    <span class="info-box-number" id="result-total">—</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -686,7 +686,7 @@
                                                 <span class="info-box-icon"><i class="fas fa-clock"></i></span>
                                                 <div class="info-box-content">
                                                     <span class="info-box-text">Em espera</span>
-                                                    <span class="info-box-number">2</span>
+                                                    <span class="info-box-number" id="result-waiting">—</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -931,6 +931,8 @@
                             const name = u.name || [u.firstName, u.lastName].filter(Boolean).join(' ') || u.username || 'Técnico';
                             if (id) {
                                 $('#technicianFilter').append('<option value="' + id + '">' + name + '</option>');
+                                $('#result-total').text(data.stats.total || data.items?.length || 0);
+                                $('#result-waiting').text(data.stats.pending || data.stats.waiting || 0);
                             }
                         });
                     }

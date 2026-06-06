@@ -39,11 +39,6 @@ class KnowledgeManager {
         } catch (error) {
             console.warn('Використання локальних даних:', error);
             this.articles = JSON.parse(localStorage.getItem('knowledgeArticles')) || [];
-            
-            if (this.articles.length === 0) {
-                this.articles = this.createSampleArticles();
-                localStorage.setItem('knowledgeArticles', JSON.stringify(this.articles));
-            }
         }
 
         this.filteredArticles = [...this.articles];
@@ -260,44 +255,7 @@ class KnowledgeManager {
         $('#searchInput').on('keypress', (e) => {
             if (e.key === 'Enter') {
                 this.searchArticles();
-            }
-        });
-
-        // Фільтрація за складністю
-        $('.difficulty-filter').on('click', function() {
-            const difficulty = $(this).data('difficulty');
-            knowledgeManager.filterByDifficulty(difficulty);
-        });
-    }
-
-    searchArticles() {
-        const query = $('#searchInput').val().trim().toLowerCase();
-        
-        if (!query) {
-            this.showNotification('Введіть пошуковий запит', 'warning');
-            return;
-        }
-
-        const results = this.articles.filter(article =>
-            article.title.toLowerCase().includes(query) ||
-            article.content.toLowerCase().includes(query) ||
-            article.tags.some(tag => tag.toLowerCase().includes(query)) ||
-            article.author.toLowerCase().includes(query)
-        );
-
-        if (results.length === 0) {
-            this.showNotification('Нічого не знайдено', 'info');
-            return;
-        }
-
-        this.displaySearchResults(results);
-    }
-
-    displaySearchResults(results) {
-        const container = $('#searchResults');
-        container.empty();
-
-        results.forEach(article => {
+                    return [];
             const card = this.createArticleCard(article);
             container.append(card);
         });

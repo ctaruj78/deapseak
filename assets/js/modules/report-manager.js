@@ -63,55 +63,10 @@ class ReportManager {
             customers: savedData.customers || [],
             financials: savedData.financials || []
         };
-        
-        if (this.reportData.assignments.length === 0) {
-            this.createSampleData();
-        }
     }
 
     createSampleData() {
-        // Створення зразкових даних для демонстрації
-        const now = new Date();
-        const assignments = [];
-        
-        // Генерація даних за останні 30 днів
-        for (let i = 0; i < 30; i++) {
-            const date = new Date(now);
-            date.setDate(date.getDate() - i);
-            
-            assignments.push({
-                date: date.toISOString().split('T')[0],
-                total: Math.floor(Math.random() * 20) + 10,
-                completed: Math.floor(Math.random() * 18) + 8,
-                inProgress: Math.floor(Math.random() * 5) + 2,
-                highPriority: Math.floor(Math.random() * 5) + 1,
-                avgTime: Math.floor(Math.random() * 120) + 60,
-                revenue: Math.floor(Math.random() * 5000) + 2000
-            });
-        }
-        
-        this.reportData = {
-            assignments: assignments.reverse(),
-            technicians: [
-                { id: 'TECH-001', name: 'João Silva', completed: 45, efficiency: 92, rating: 4.8 },
-                { id: 'TECH-002', name: 'Carlos Ferreira', completed: 38, efficiency: 88, rating: 4.9 },
-                { id: 'TECH-003', name: 'Rui Santos', completed: 32, efficiency: 85, rating: 4.6 }
-            ],
-            customers: [
-                { rating: 5, count: 45 },
-                { rating: 4, count: 30 },
-                { rating: 3, count: 15 },
-                { rating: 2, count: 7 },
-                { rating: 1, count: 3 }
-            ],
-            financials: {
-                totalRevenue: 125000,
-                totalCost: 85000,
-                profit: 40000,
-                averageTicket: 2500
-            }
-        };
-        
+        this.reportData = { assignments: [], technicians: [], customers: [], financials: [] };
         localStorage.setItem('reportData', JSON.stringify(this.reportData));
     }
 

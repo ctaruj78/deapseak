@@ -202,18 +202,16 @@
             <li class="nav-item dropdown">
                 <a class="nav-link" data-toggle="dropdown" href="#">
                     <i class="fas fa-bell"></i>
-                    <span class="badge badge-warning navbar-badge" id="notificationCount">3</span>
+                    <span class="badge badge-warning navbar-badge" id="notificationCount">0</span>
                 </a>
                 <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
                     <span class="dropdown-header">Novos pedidos</span>
                     <div class="dropdown-divider"></div>
-                    <a href="#" class="dropdown-item">
-                        <i class="fas fa-exclamation-triangle mr-2 text-danger"></i>
-                        Avaria do elevador #L001
-                        <span class="float-right text-muted text-sm">5 min atrás</span>
-                    </a>
+                    <div id="notificationsDropdownItems">
+                        <div class="dropdown-item text-muted">Sem notificações</div>
+                    </div>
                     <div class="dropdown-divider"></div>
-                    <a href="#" class="dropdown-item dropdown-footer">Todas as notificações</a>
+                    <a href="notifications.html" class="dropdown-item dropdown-footer">Todas as notificações</a>
                 </div>
             </li>
             <li class="nav-item">
@@ -1309,140 +1307,6 @@ class ServiceRequestManager {
             'completed': 'inspection'
         };
         return typeMap[status] || 'maintenance';
-    }
-
-    loadDemoRequests() {
-        this.requests = [
-            {
-                id: 'REQ-001',
-                liftId: 'L001',
-                liftAddress: 'Rua da Liberdade, 123, Lisboa',
-                type: 'emergency',
-                priority: 'critical',
-                status: 'new',
-                title: 'Elevador avariado',
-                description: 'Elevador parado entre pisos, há pessoa no interior',
-                technician: null,
-                createdAt: new Date('2025-10-06T10:30:00').toISOString(),
-                scheduledAt: null,
-                completedAt: null,
-                createdBy: 'admin',
-                timeline: [
-                    {
-                        timestamp: new Date('2025-10-06T10:30:00').toISOString(),
-                        action: 'created',
-                        message: 'Pedido criado',
-                        user: 'Administrador'
-                    }
-                ]
-            },
-            {
-                id: 'REQ-002',
-                liftId: 'L005',
-                liftAddress: 'Av. dos Aliados, 45, Porto',
-                type: 'maintenance',
-                priority: 'medium',
-                status: 'assigned',
-                title: 'Manutenção planeada',
-                description: 'Manutenção técnica mensal conforme planeado',
-                technician: 'tech1',
-                createdAt: new Date('2025-10-05T14:00:00').toISOString(),
-                scheduledAt: new Date('2025-10-07T09:00:00').toISOString(),
-                completedAt: null,
-                createdBy: 'admin',
-                timeline: [
-                    {
-                        timestamp: new Date('2025-10-05T14:00:00').toISOString(),
-                        action: 'created',
-                        message: 'Pedido criado',
-                        user: 'Administrador'
-                    },
-                    {
-                        timestamp: new Date('2025-10-05T14:15:00').toISOString(),
-                        action: 'assigned',
-                        message: 'Técnico Petrov I.V. atribuído',
-                        user: 'Despachante'
-                    }
-                ]
-            },
-            {
-                id: 'REQ-003',
-                liftId: 'L012',
-                liftAddress: 'Rua de São Bento, 78, Lisboa',
-                type: 'repair',
-                priority: 'high',
-                status: 'in_progress',
-                title: 'Reparação das portas',
-                description: 'As portas do elevador não fecham completamente, é necessário substituir o sensor',
-                technician: 'tech2',
-                createdAt: new Date('2025-10-04T16:20:00').toISOString(),
-                scheduledAt: new Date('2025-10-06T11:00:00').toISOString(),
-                completedAt: null,
-                createdBy: 'dispatcher',
-                timeline: [
-                    {
-                        timestamp: new Date('2025-10-04T16:20:00').toISOString(),
-                        action: 'created',
-                        message: 'Pedido criado pelo despachante',
-                        user: 'Despachante'
-                    },
-                    {
-                        timestamp: new Date('2025-10-04T16:30:00').toISOString(),
-                        action: 'assigned',
-                        message: 'Técnico Sidorov P.P. atribuído',
-                        user: 'Administrador'
-                    },
-                    {
-                        timestamp: new Date('2025-10-06T11:05:00').toISOString(),
-                        action: 'started',
-                        message: 'Técnico iniciou trabalho',
-                        user: 'Técnico Demo'
-                    }
-                ]
-            },
-            {
-                id: 'REQ-004',
-                liftId: 'L008',
-                liftAddress: 'Av. da República, 22, Setúbal',
-                type: 'inspection',
-                priority: 'medium',
-                status: 'completed',
-                title: 'Inspecção planeada',
-                description: 'Inspecção trimestral de segurança e estado técnico',
-                technician: 'tech3',
-                createdAt: new Date('2025-10-02T09:00:00').toISOString(),
-                scheduledAt: new Date('2025-10-03T10:00:00').toISOString(),
-                completedAt: new Date('2025-10-03T12:30:00').toISOString(),
-                createdBy: 'admin',
-                timeline: [
-                    {
-                        timestamp: new Date('2025-10-02T09:00:00').toISOString(),
-                        action: 'created',
-                        message: 'Pedido criado',
-                        user: 'Administrador'
-                    },
-                    {
-                        timestamp: new Date('2025-10-02T09:15:00').toISOString(),
-                        action: 'assigned',
-                        message: 'Técnico Kozlov A.A. atribuído',
-                        user: 'Administrador'
-                    },
-                    {
-                        timestamp: new Date('2025-10-03T10:00:00').toISOString(),
-                        action: 'started',
-                        message: 'Inspecção iniciada',
-                        user: 'Técnico B'
-                    },
-                    {
-                        timestamp: new Date('2025-10-03T12:30:00').toISOString(),
-                        action: 'completed',
-                        message: 'Inspecção concluída com sucesso',
-                        user: 'Técnico B'
-                    }
-                ]
-            }
-        ];
-        this.saveRequests();
     }
 
     async loadLifts() {
@@ -3270,6 +3134,58 @@ if (typeof toastr !== 'undefined') {
         timeOut: 3000
     };
 }
+
+// Real notifications dropdown for the requests page
+(function loadRealNotificationsDropdown() {
+    const token = sessionStorage.getItem('liftmanager_jwt')
+        || localStorage.getItem('liftmanager_jwt')
+        || localStorage.getItem('authToken')
+        || localStorage.getItem('token')
+        || '';
+
+    fetch('/api/notifications', {
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+    })
+        .then(async (response) => {
+            if (!response.ok) throw new Error(`API ${response.status}`);
+            const payload = await response.json();
+            const items = Array.isArray(payload.notifications) ? payload.notifications : [];
+            const unread = items.filter(n => !n.read).length;
+            const counter = document.getElementById('notificationCount');
+            const container = document.getElementById('notificationsDropdownItems');
+            if (counter) counter.textContent = unread;
+
+            if (!container) return;
+            if (items.length === 0) {
+                container.innerHTML = '<div class="dropdown-item text-muted">Sem notificações</div>';
+                return;
+            }
+
+            const latest = items.slice(0, 5).map(n => {
+                const icon = n.type === 'alert' || n.type === 'critical' ? 'fa-exclamation-triangle text-danger'
+                    : n.type === 'maintenance' ? 'fa-tools text-warning'
+                    : n.type === 'billing' ? 'fa-file-invoice-dollar text-info'
+                    : 'fa-bell text-primary';
+                const title = n.title || 'Notificação';
+                const time = n.timestamp ? new Date(n.timestamp).toLocaleString('pt-PT', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' }) : '';
+                return `
+                    <a href="notifications.html" class="dropdown-item">
+                        <i class="fas ${icon} mr-2"></i>
+                        ${title}
+                        <span class="float-right text-muted text-sm">${time}</span>
+                    </a>
+                `;
+            }).join('<div class="dropdown-divider"></div>');
+
+            container.innerHTML = latest;
+        })
+        .catch(() => {
+            const counter = document.getElementById('notificationCount');
+            const container = document.getElementById('notificationsDropdownItems');
+            if (counter) counter.textContent = '0';
+            if (container) container.innerHTML = '<div class="dropdown-item text-muted">Sem notificações</div>';
+        });
+})();
 </script>
     <script src="/assets/js/table-drag-scroll.js"></script>
     <script src="../../plugins/sweetalert2/js/sweetalert2.min.js"></script>

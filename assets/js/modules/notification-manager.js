@@ -25,109 +25,41 @@ class NotificationManager {
 
     loadNotifications() {
         try {
-            // Спроба завантажити з API
-            const savedNotifications = localStorage.getItem('clientNotifications');
-            if (savedNotifications) {
-                this.notifications = JSON.parse(savedNotifications);
-            } else {
-                // Демо-дані
-                this.loadDemoNotifications();
-            }
-            
-            this.filteredNotifications = [...this.notifications];
+            const token = sessionStorage.getItem('liftmanager_jwt')
+                || localStorage.getItem('liftmanager_jwt')
+                || localStorage.getItem('authToken')
+                || localStorage.getItem('token')
+                || '';
+
+            // Real data only: load from backend notifications collection
+            fetch('/api/notifications', {
+                headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+            })
+                .then(async (response) => {
+                    if (!response.ok) throw new Error(`API indisponível (${response.status})`);
+                    const payload = await response.json();
+                    this.notifications = Array.isArray(payload.notifications)
+                        ? payload.notifications
+                        : (payload.data || []);
+
+                    this.filteredNotifications = [...this.notifications];
+                    this.renderNotifications();
+                    this.updateBadges();
+                })
+                .catch((error) => {
+                    console.error('Erro ao carregar notificações reais:', error);
+                    this.notifications = [];
+                    this.filteredNotifications = [];
+                    this.renderNotifications();
+                    this.updateBadges();
+                });
+        } catch (error) {
+            console.error('Erro a carregar notificações:', error);
+            this.notifications = [];
+            this.filteredNotifications = [];
             this.renderNotifications();
             this.updateBadges();
-            
-        } catch (error) {
-            console.error('Erro завантаження сповіщень:', error);
-            this.loadDemoNotifications();
         }
-    }
-
-    loadDemoNotifications() {
-        const now = new Date();
-        this.notifications = [
-            {
-                id: 1,
-                title: "Manutenção técnica programada",
-                message: "Manutenção técnica do elevador nº3 no seu edifício está agendada. Data: 15.05.2024, 10:00-12:00",
-                type: "maintenance",
-                priority: "high",
-                read: false,
-                timestamp: new Date(now.getTime() - 2 * 60 * 60 * 1000).toISOString(),
-                relatedTo: "lift-3",
-                actionUrl: "my-lifts.html?id=3"
-            },
-            {
-                id: 2,
-                title: "Novo pedido aceite",
-                message: "O seu pedido nº2456 foi aceite. Um técnico será atribuído dentro de 24 horas.",
-                type: "info",
-                priority: "medium",
-                read: true,
-                timestamp: new Date(now.getTime() - 5 * 60 * 60 * 1000).toISOString(),
-                relatedTo: "request-2456",
-                actionUrl: "requests.html?id=2456"
-            },
-            {
-                id: 3,
-                title: "Pagamento de fatura",
-                message: "Nova fatura nº789 disponível para pagamento. Prazo: até 20.05.2024",
-                type: "billing",
-                priority: "high",
-                read: false,
-                timestamp: new Date(now.getTime() - 8 * 60 * 60 * 1000).toISOString(),
-                relatedTo: "invoice-789",
-                actionUrl: "invoices.html?id=789"
-            },
-            {
-                id: 4,
-                title: "Aviso de avaria",
-                message: "O elevador nº1 requer atenção de um técnico. Pedido criado automaticamente.",
-                type: "alert",
-                priority: "critical",
-                read: false,
-                timestamp: new Date(now.getTime() - 12 * 60 * 60 * 1000).toISOString(),
-                relatedTo: "lift-1",
-                actionUrl: "my-lifts.html?id=1"
-            },
-            {
-                id: 5,
-                title: "Atualização do estado do pedido",
-                message: "Pedido nº2456 concluído. Técnico: João Silva. Duração: 2 horas 15 minutos.",
-                type: "update",
-                priority: "low",
-                read: true,
-                timestamp: new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString(),
-                relatedTo: "request-2456",
-                actionUrl: "requests.html?id=2456"
-            },
-            {
-                id: 6,
-                title: "Relatório mensal",
-                message: "O seu relatório mensal do funcionamento dos elevadores está pronto. Total de manutenções: 12, Avarias: 0",
-                type: "info",
-                priority: "low",
-                read: true,
-                timestamp: new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-                relatedTo: "report-may",
-                actionUrl: "reports.html?month=may"
-            },
-            {
-                id: 7,
-                title: "Substituição de peça",
-                message: "O cabo de elevação do elevador nº2 foi substituído. Garantia: 12 meses.",
-                type: "maintenance",
-                priority: "medium",
-                read: false,
-                timestamp: new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-                relatedTo: "lift-2",
-                actionUrl: "my-lifts.html?id=2"
-            }
-        ];
-        
-        this.filteredNotifications = [...this.notifications];
-        this.saveNotifications();
     }
 
     loadSettings() {
@@ -167,7 +99,7 @@ class NotificationManager {
     }
 
     saveNotifications() {
-        localStorage.setItem('clientNotifications', JSON.stringify(this.notifications));
+        // No local demo cache anymore; keep only in-memory state.
     }
 
     renderNotifications() {

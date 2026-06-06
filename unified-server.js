@@ -204,6 +204,16 @@ async function getPostalAnchor(zipCode) {
     return { lat: parseFloat(rows[0].lat), lon: parseFloat(rows[0].lon) };
 }
 
+// ── City-based anchor (fallback when postal code has no Nominatim data) ──
+async function getCityAnchor(city) {
+    if (!city) return null;
+    const BASE = 'https://nominatim.openstreetmap.org/search';
+    const url = `${BASE}?city=${encodeURIComponent(city)}&country=Portugal&format=json&limit=1&countrycodes=pt&addressdetails=1`;
+    const rows = await nominatimRequest(url);
+    if (!rows || !rows.length) return null;
+    return { lat: parseFloat(rows[0].lat), lon: parseFloat(rows[0].lon) };
+}
+
 // ── Nominatim helper: pick best result (prefer closest to postal anchor, then city match)
 function pickBestResult(results, cityHint, anchor) {
     if (!results || results.length === 0) return null;
@@ -250,10 +260,20 @@ async function geocodeWithNominatim(address) {
             anchor = await getPostalAnchor(zipCode);
             if (anchor) console.log(`📍 [Nominatim] postal anchor ${zipCode} → [${anchor.lon.toFixed(4)}, ${anchor.lat.toFixed(4)}]`);
         }
+        // Step 0b: city anchor fallback (more reliable when postal code not in Nominatim)
+        if (!anchor && city) {
+            anchor = await getCityAnchor(city);
+            if (anchor) console.log(`📍 [Nominatim] city anchor "${city}" → [${anchor.lon.toFixed(4)}, ${anchor.lat.toFixed(4)}]`);
+        }
 
         // Step 1: Structured search — street + postalcode (most accurate)
         if (zipCode && cleanStreet) {
             const p = new URLSearchParams({ street: cleanStreet, postalcode: zipCode, country, format: 'json', limit: '5', countrycodes: 'pt', addressdetails: '1' });
+            results = await nominatimRequest(`${BASE}?${p}`);
+        }
+        // Step 1b: Structured search — street + city (when postal yields nothing)
+        if ((!results?.length) && city && cleanStreet) {
+            const p = new URLSearchParams({ street: cleanStreet, city, country, format: 'json', limit: '5', countrycodes: 'pt', addressdetails: '1' });
             results = await nominatimRequest(`${BASE}?${p}`);
         }
 

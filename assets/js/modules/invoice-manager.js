@@ -4,69 +4,7 @@ class InvoiceManager {
         this.invoices = [];
         this.filters = {
             status: 'all',
-            period: 'current',
-            sort: 'date-desc'
-        };
-        this.currentPage = 1;
-        this.itemsPerPage = 10;
-        this.init();
-    }
-
-    init() {
-        this.loadInvoices();
-        this.setupEventListeners();
-        this.updateSummary();
-    }
-
-    async loadInvoices() {
-        try {
-            // Спроба отримати дані з API
-            const token = sessionStorage.getItem('liftmanager_jwt') ||
-                          localStorage.getItem('liftmanager_jwt') ||
-                          localStorage.getItem('authToken') ||
-                          localStorage.getItem('token') || '';
-
-            if (!token) {
-                this.invoices = [];
-                this.applyFilters();
-                return;
-            }
-
-            const response = await fetch('/api/invoices', {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-            
-            if (response.ok) {
-                const json = await response.json();
-                const raw = json.data ?? json.invoices ?? json;
-                this.invoices = Array.isArray(raw) ? raw : [];
-            } else {
-                throw new Error('API недоступне');
-            }
-        } catch (error) {
-            console.warn('Erro ao carregar faturas via API:', error);
-            this.invoices = [];
-        }
-
-        this.applyFilters();
-    }
-
-    createSampleInvoices() {
-        return [
-            {
-                id: 'INV-2024-001',
-                number: 'INV-2024-001',
-                date: '2024-01-15',
-                dueDate: '2024-01-31',
-                clientId: 'client-1',
-                amount: 12500.00,
-                status: 'paid',
-                items: [
-                    { 
-                        description: 'Технічне обслуговування - січень 2024', 
-                        quantity: 1, 
+                return [];
                         price: 12500.00,
                         lift: 'Otis Gen2 - вул. Центральна, 12'
                     }
