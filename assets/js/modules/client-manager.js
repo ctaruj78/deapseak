@@ -408,7 +408,10 @@ class ClientManager {
     viewAllClientLifts(clientId) {
         const client = this.clients.find(c => String(c.id) === String(clientId));
         if (!client) return;
-        window.location.href = `/pages/admin/lifts.html?client=${encodeURIComponent(client.name || '')}`;
+        const params = new URLSearchParams();
+        params.set('clientId', String(client.id));
+        if (client.name) params.set('client', client.name);
+        window.location.href = `/pages/dispatcher/lifts.html?${params.toString()}`;
     }
 
     showRequestDetails(requestId) {
