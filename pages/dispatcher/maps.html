@@ -430,6 +430,11 @@
                         lift._id
                     ].filter(Boolean).join(' '));
                     
+                    const hasValidCoords = Array.isArray(lift.location?.coordinates)
+                        && lift.location.coordinates.length === 2
+                        && Number.isFinite(lift.location.coordinates[0])
+                        && Number.isFinite(lift.location.coordinates[1]);
+
                     return {
                         id: lift._id,
                         model: lift.model || 'Desconhecido',
@@ -439,8 +444,8 @@
                         location: fullAddress || 'Endereço não especificado',
                         city: lift.address?.city || 'Desconhecido',
                         country: lift.address?.country || 'Desconhecido',
-                        lat: lift.location?.coordinates?.[1] || 38.7223, // Lisboa default
-                        lng: lift.location?.coordinates?.[0] || -9.1393, // Lisboa default
+                        lat: hasValidCoords ? lift.location.coordinates[1] : null,
+                        lng: hasValidCoords ? lift.location.coordinates[0] : null,
                         status: mapStatus(lift.status),
                         lastMaintenance: lift.lastInspectionDate ? new Date(lift.lastInspectionDate).toLocaleDateString('pt-PT') : 'Desconhecido',
                         municipalNumber: lift.municipalNumber,
@@ -451,14 +456,14 @@
                     };
                 });
 
+                // Не додаємо маркери без координат (щоб не показувати фальшиві точки)
+                lifts = lifts.filter(lift => lift.lat !== null && lift.lng !== null);
+
                 console.log('✅ Оброблено de elevadores para мапи:', lifts.length);
                 console.log('📍 Primeiro elevador:', lifts[0]);
             } catch (error) {
                 console.error('❌ Erro ao carregar elevadores:', error);
-                // Fallback до testeових dados (Lisboa)
-                lifts = [
-                    { id: 'sample_1', model: 'Elevador №1', address: 'Lisboa, Portugal', lat: 38.7223, lng: -9.1393, status: 'active', lastMaintenance: '2024-01-10', location: 'Lisboa, Portugal' }
-                ];
+                lifts = [];
             }
         }
 
@@ -514,6 +519,11 @@
         function initializeMap() {
             console.log('🗺️ Ініціалізація мапи...');
             console.log('📍 Quantidade de elevadores para apresentação:', lifts.length);
+            const mapContainer = document.getElementById('liftsMap');
+            if (mapContainer) {
+                mapContainer.innerHTML = '';
+                mapContainer.style.position = 'relative';
+            }
             
             // Initialize map centered on Lisboa, Portugal (default)
             map = L.map('liftsMap').setView([38.7223, -9.1393], 11);
@@ -527,6 +537,17 @@
             // Add lift markers
             if (lifts.length === 0) {
                 console.warn('⚠️ Não há de elevadores para apresentação на мапі');
+                if (mapContainer) {
+                    const emptyState = document.createElement('div');
+                    emptyState.className = 'alert alert-light border shadow-sm';
+                    emptyState.style.position = 'absolute';
+                    emptyState.style.top = '18px';
+                    emptyState.style.left = '18px';
+                    emptyState.style.zIndex = '999';
+                    emptyState.style.maxWidth = '420px';
+                    emptyState.innerHTML = '<i class="fas fa-info-circle text-info mr-1"></i> Nenhum elevador com coordenadas válidas disponível no momento.';
+                    mapContainer.appendChild(emptyState);
+                }
             } else {
                 const bounds = [];
                 
