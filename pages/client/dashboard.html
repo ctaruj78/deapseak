@@ -722,6 +722,21 @@
                                                 </button>
                                             </div>
                                         </div>
+                                        <div class="col-12 mb-3">
+                                            <div class="action-button" style="background: linear-gradient(135deg, #1d976c, #93f9b9); color: #11331f;">
+                                                <i class="fas fa-magic action-icon"></i>
+                                                <h5>Assistente do Cliente</h5>
+                                                <p>Resumo, alertas e próximos passos</p>
+                                                <button class="btn btn-light btn-sm mb-2" onclick="location.href='/pages/ai-assistant/ai-assistant.html?role=client&prompt=' + encodeURIComponent('Mostra-me o resumo da minha conta, elevadores e alertas pendentes.')">
+                                                    Abrir assistente
+                                                </button>
+                                                <div class="d-flex flex-wrap justify-content-center gap-2 mt-2">
+                                                    <button class="btn btn-outline-light btn-sm mr-1 mb-1" onclick="location.href='/pages/ai-assistant/ai-assistant.html?role=client&prompt=' + encodeURIComponent('Mostra os meus elevadores e a próxima inspeção de cada um.')">Elevadores</button>
+                                                    <button class="btn btn-outline-light btn-sm mr-1 mb-1" onclick="location.href='/pages/ai-assistant/ai-assistant.html?role=client&prompt=' + encodeURIComponent('Mostra os meus alertas e notificações pendentes.')">Alertas</button>
+                                                    <button class="btn btn-outline-light btn-sm mb-1" onclick="location.href='/pages/ai-assistant/ai-assistant.html?role=client&prompt=' + encodeURIComponent('Ajuda-me a criar um novo pedido simples para o cliente.')">Pedido</button>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

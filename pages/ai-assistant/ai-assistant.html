@@ -372,6 +372,7 @@
                                     <i class="fas fa-star" style="color: #4285f4;"></i>
                                     Powered by <strong style="background: linear-gradient(90deg, #4285f4, #ea4335, #fbbc04, #34a853); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Google Gemini 3 Flash</strong>
                                 </small>
+                                <small id="assistantRoleTitle" class="text-muted d-block mt-1" style="font-size: 0.62em;"></small>
                             </h1>
                         </div>
                         <div class="col-sm-6">
@@ -416,6 +417,15 @@
                             <div class="tab-content" id="custom-tabs-content">
                                 <!-- TAB 1: CHAT -->
                                 <div class="tab-pane fade show active" id="chat" role="tabpanel">
+                                    <div id="assistantRoleBanner" class="alert alert-info d-flex align-items-center justify-content-between flex-wrap mb-3">
+                                        <div>
+                                            <strong><i class="fas fa-sitemap mr-1"></i>Assistente pronto para o seu perfil</strong>
+                                            <div class="small">A mesma inteligência, mas com permissões, atalhos e foco diferentes por papel.</div>
+                                        </div>
+                                        <a id="assistantRoleShortcut" class="btn btn-sm btn-primary mt-2 mt-md-0" href="#chat">
+                                            <i class="fas fa-bolt"></i> Ver atalhos
+                                        </a>
+                                    </div>
                                     <div class="row">
                                         <div class="col-md-9">
                                             <div class="card direct-chat direct-chat-primary">
@@ -502,6 +512,8 @@
                                                             <i class="fas fa-file-alt text-primary"></i> Documentos para inspecção
                                                         </a>
                                                     </div>
+                                                    <hr>
+                                                    <div id="roleQuickActions" class="list-group"></div>
                                                 </div>
                                             </div>
                                         </div>
@@ -940,6 +952,87 @@
         }
 
         // Chat functions
+        const ROLE_ASSISTANT_PRESETS = {
+            client: {
+                label: 'Assistente do Cliente',
+                title: 'Cliente: mais clareza, menos ruído',
+                banner: 'Mostra o que está pendente, o que precisa de confirmação e o que fazer a seguir.',
+                prompt: 'Cliente, preciso de um resumo da minha conta com elevadores, pedidos e inspeções pendentes.',
+                quickActions: [
+                    { label: 'Resumo da minha conta', icon: 'fas fa-id-card', question: 'Faz um resumo da minha conta com elevadores, pedidos e alertas pendentes.' },
+                    { label: 'Meus elevadores', icon: 'fas fa-building', question: 'Mostra os meus elevadores e a próxima inspeção de cada um.' },
+                    { label: 'Alertas pendentes', icon: 'fas fa-bell', question: 'Mostra os meus alertas e notificações pendentes.' },
+                    { label: 'Novo pedido', icon: 'fas fa-plus-circle', question: 'Ajuda-me a criar um novo pedido simples para o cliente.' }
+                ]
+            },
+            dispatcher: {
+                label: 'Assistente do Despacho',
+                title: 'Despacho: triagem e prioridade',
+                banner: 'Foca em triagem, priorização, coordenação com técnicos e comunicação operacional.',
+                prompt: 'Preciso de triagem operacional: pedidos urgentes, técnicos disponíveis e riscos prioritários.',
+                quickActions: [
+                    { label: 'Resumo operacional', icon: 'fas fa-chart-line', question: 'Faz um resumo operacional com pedidos urgentes, inspeções e alertas.' },
+                    { label: 'Priorizar pedidos', icon: 'fas fa-layer-group', question: 'Como devo priorizar os pedidos de hoje por risco e impacto?' },
+                    { label: 'Mensagem ao cliente', icon: 'fas fa-envelope', question: 'Escreve uma mensagem curta para o cliente sobre atraso e próximos passos.' },
+                    { label: 'Coordenação técnica', icon: 'fas fa-users-cog', question: 'Que técnico devo atribuir primeiro aos casos mais críticos?' }
+                ]
+            },
+            technician: {
+                label: 'Assistente do Técnico',
+                title: 'Técnico: diagnóstico e fecho seguro',
+                banner: 'Traz checklists, perguntas de diagnóstico e apoio ao fecho da intervenção.',
+                prompt: 'Preciso de um checklist rápido e perguntas de diagnóstico para uma visita técnica.',
+                quickActions: [
+                    { label: 'Checklist rápida', icon: 'fas fa-clipboard-check', question: 'Gera um checklist rápido para visita técnica de 30 minutos.' },
+                    { label: 'Perguntas de diagnóstico', icon: 'fas fa-question-circle', question: 'Dá 7 perguntas de diagnóstico para fazer no local antes de abrir a ordem.' },
+                    { label: 'Segurança', icon: 'fas fa-shield-alt', question: 'Quais são os pontos de segurança que devo validar antes de intervir?' },
+                    { label: 'Resumo técnico', icon: 'fas fa-wrench', question: 'Resume o histórico técnico relevante do elevador e os próximos passos.' }
+                ]
+            },
+            admin: {
+                label: 'Assistente de Administração',
+                title: 'Admin: visão global e incidentes',
+                banner: 'Consolida métricas, incidentes e riscos para decisão rápida.',
+                prompt: 'Preciso de uma visão global com incidentes, métricas e riscos críticos.',
+                quickActions: [
+                    { label: 'Visão geral', icon: 'fas fa-tachometer-alt', question: 'Mostra-me uma visão geral do sistema com métricas e riscos.' },
+                    { label: 'Incidentes', icon: 'fas fa-exclamation-triangle', question: 'Mostra os incidentes ou anomalias mais críticas agora.' },
+                    { label: 'Orçamentos', icon: 'fas fa-file-invoice-dollar', question: 'Resume os orçamentos por estado e identifica os pendentes.' },
+                    { label: 'Saúde do assistente', icon: 'fas fa-heartbeat', question: 'Como está a saúde e a performance do assistente neste momento?' }
+                ]
+            }
+        };
+
+        function getRoleFromUrl() {
+            const params = new URLSearchParams(window.location.search);
+            const role = (params.get('role') || '').toLowerCase();
+            return ROLE_ASSISTANT_PRESETS[role] ? role : 'admin';
+        }
+
+        function getPromptFromUrl() {
+            const params = new URLSearchParams(window.location.search);
+            return params.get('prompt') || '';
+        }
+
+        function renderRoleQuickActions(role) {
+            const preset = ROLE_ASSISTANT_PRESETS[role] || ROLE_ASSISTANT_PRESETS.admin;
+            const actionsEl = document.getElementById('roleQuickActions');
+            const titleEl = document.getElementById('assistantRoleTitle');
+            const bannerEl = document.getElementById('assistantRoleBanner');
+            const shortcutEl = document.getElementById('assistantRoleShortcut');
+
+            if (titleEl) titleEl.textContent = preset.title;
+            if (bannerEl) bannerEl.querySelector('.small').textContent = preset.banner;
+            if (shortcutEl) shortcutEl.href = `?role=${encodeURIComponent(role)}#chat`;
+
+            if (!actionsEl) return;
+            actionsEl.innerHTML = preset.quickActions.map(action => `
+                <a href="#" class="list-group-item list-group-item-action" onclick="askQuestion(${JSON.stringify(action.question)}); return false;">
+                    <i class="${action.icon} text-primary"></i> ${action.label}
+                </a>
+            `).join('');
+        }
+
         async function sendChatMessage() {
             const input = document.getElementById('chatInput');
             const message = input.value.trim();
@@ -1122,6 +1215,28 @@
             document.getElementById('chatInput').value = question;
             sendChatMessage();
         }
+
+        (function initRoleAssistant() {
+            const role = getRoleFromUrl();
+            const prompt = getPromptFromUrl();
+            renderRoleQuickActions(role);
+            const preset = ROLE_ASSISTANT_PRESETS[role] || ROLE_ASSISTANT_PRESETS.admin;
+            const input = document.getElementById('chatInput');
+            if (input) {
+                if (prompt && !input.value.trim()) {
+                    input.value = prompt;
+                }
+                input.placeholder = `Pergunte ao ${preset.label.toLowerCase()}...`;
+                input.focus();
+            }
+            const welcome = document.querySelector('#chat .direct-chat-text strong');
+            if (welcome) {
+                welcome.textContent = `Olá! Sou o ${preset.label}`;
+            }
+            if (prompt && input) {
+                document.getElementById('chat-tab')?.click();
+            }
+        }());
 
         // Legal functions
         function askLegal(question) {

@@ -110,6 +110,122 @@ class AgentService {
         return this.clientFocusByUser.get(String(userId)) || null;
     }
 
+    _getAssistantRoleProfile(role = 'user') {
+        const profiles = {
+            client: {
+                label: 'Assistente do Cliente',
+                purpose: 'explicar estado, próximos passos e ações simples',
+                capabilities: [
+                    'resumo dos seus elevadores, pedidos e inspeções',
+                    'alertas de inspeção vencida ou a vencer',
+                    'explicação simples de orçamentos e notificações',
+                    'respostas curtas para mensagens e confirmações'
+                ],
+                limits: [
+                    'não expõe dados de outros clientes',
+                    'não executa ações sem confirmação'
+                ],
+                quickActions: [
+                    'meus elevadores',
+                    'meus pedidos',
+                    'próximas inspeções',
+                    'o que tenho pendente',
+                    'resumo da minha conta'
+                ]
+            },
+            dispatcher: {
+                label: 'Assistente do Despacho',
+                purpose: 'priorizar trabalho, coordenar técnicos e preparar comunicação',
+                capabilities: [
+                    'priorização de pedidos e inspeções',
+                    'resumos de orçamentos, alertas e carga operacional',
+                    'mensagens para cliente e equipa interna',
+                    'apoio à distribuição de tarefas'
+                ],
+                limits: [
+                    'não confirma ações finais sem validação humana',
+                    'não altera dados sensíveis diretamente'
+                ],
+                quickActions: [
+                    'pedidos em aberto',
+                    'inspeções recentes',
+                    'alertas pendentes',
+                    'resumo operacional',
+                    'priorizar por risco'
+                ]
+            },
+            technician: {
+                label: 'Assistente do Técnico',
+                purpose: 'ajudar no diagnóstico, checklist e fecho seguro da intervenção',
+                capabilities: [
+                    'checklists de visita técnica',
+                    'perguntas de diagnóstico por tipo de falha',
+                    'histórico do elevador e inspeções ligadas',
+                    'respostas rápidas para anomalias e segurança'
+                ],
+                limits: [
+                    'não substitui inspeção física',
+                    'não autoriza desmontagens ou imobilizações sem validação'
+                ],
+                quickActions: [
+                    'checklist de visita',
+                    'perguntas de diagnóstico',
+                    'últimas inspeções',
+                    'alertas do meu trabalho',
+                    'resumo técnico'
+                ]
+            },
+            admin: {
+                label: 'Assistente de Administração',
+                purpose: 'dar visão global, controlo e decisões com risco/impacto',
+                capabilities: [
+                    'visão geral do sistema e métricas',
+                    'incidentes, tendências e alertas críticos',
+                    'orçamentos, aprovações e catálogo de serviços',
+                    'controlo de permissões e operação'
+                ],
+                limits: [
+                    'mantém confirmação para ações sensíveis',
+                    'não mascara problemas operacionais'
+                ],
+                quickActions: [
+                    'visão geral',
+                    'incidentes críticos',
+                    'orçamentos por estado',
+                    'catálogo de serviços',
+                    'saúde do assistente'
+                ]
+            }
+        };
+
+        return profiles[role] || {
+            label: 'Assistente Base',
+            purpose: 'orientar o utilizador no sistema',
+            capabilities: ['responder perguntas gerais com contexto disponível'],
+            limits: ['respeita as permissões do utilizador'],
+            quickActions: ['ajuda', 'resumo', 'o que posso fazer']
+        };
+    }
+
+    _buildRoleAssistantHelp(role = 'user') {
+        const profile = this._getAssistantRoleProfile(role);
+        const actions = profile.quickActions.map(a => `• ${a}`).join('\n');
+        const capabilities = profile.capabilities.map(a => `• ${a}`).join('\n');
+        return [
+            `🤖 **${profile.label}**`,
+            `Objetivo: ${profile.purpose}.`,
+            '',
+            '**Posso ajudar com:**',
+            capabilities,
+            '',
+            '**Comandos rápidos:**',
+            actions,
+            '',
+            '**Limites:**',
+            ...profile.limits.map(a => `• ${a}`)
+        ].join('\n');
+    }
+
     _toDate(raw) {
         if (!raw) return null;
         const date = raw instanceof Date ? new Date(raw.getTime()) : new Date(raw);
@@ -202,8 +318,8 @@ class AgentService {
     }
 
     _isGenerativeDraftRequest(normalizedMsg = '') {
-        const m = String(normalizedMsg || '');
-        return /(cria|escreve|gera|redige|resume|propoe|prop\w+|template|plano de acao|checklist|perguntas de diagnostico|mensagem para|email curto)/.test(m);
+        const m = this._normText(normalizedMsg || '');
+        return /(cria|escreve|gera|redige|resume|resumo|propoe|template|plano de acao|checklist|perguntas de diagnostico|mensagem para|email curto|obrigacoes|priorizar|diagnostico)/.test(m);
     }
 
     _quickChatFallback(userMessage = '', userRole = 'user') {
@@ -239,6 +355,69 @@ class AgentService {
         }
 
         return `Resposta rapida indisponivel no momento. ${roleHint}`;
+    }
+
+    _quickDraftReply(userMessage = '', userRole = 'user') {
+        const m = this._normText(userMessage || '');
+        const roleHint = userRole === 'client'
+            ? 'Adapte com os dados reais do seu pedido.'
+            : 'Adapte com os dados reais do elevador e do cliente.';
+
+        if (/(email|mensagem|template|resposta)/.test(m)) {
+            return [
+                'Assunto: Inspecao pendente do elevador',
+                '',
+                'Exmo.(a) Cliente,',
+                'Identificamos que a inspecao do elevador se encontra pendente. Solicitamos confirmacao para agendar a regularizacao com prioridade.',
+                'Assim que confirmar, enviamos data e janela de intervencao.',
+                '',
+                `Nota: ${roleHint}`
+            ].join('\n');
+        }
+
+        if (/(plano de acao|priorizar|prioridade|checklist|falha recorrente|anomalia|risco|porta|travao|travão)/.test(m)) {
+            return [
+                'Plano curto (prioridade):',
+                '1) Confirmar risco imediato e, se necessario, isolar o equipamento.',
+                '2) Registar sintomas, frequencia e impacto operacional.',
+                '3) Verificar os componentes criticos associados ao problema.',
+                '4) Definir acao provisoria e correcao definitiva.',
+                '5) Informar o cliente sobre impacto, prioridade e ETA.',
+                '6) Testar e validar a solucao antes de fechar a intervencao.',
+                '',
+                `Nota: ${roleHint}`
+            ].join('\n');
+        }
+
+        if (/(obrigacoes|obrigação|obrigacoes principais|manutencao mensal|manutenção mensal|ascensores|ascensor)/.test(m)) {
+            return [
+                'Obrigações principais (5 pontos):',
+                '1) Fazer inspeção visual e funcional dos componentes principais.',
+                '2) Registar anomalias e ações corretivas em relatório.',
+                '3) Confirmar funcionamento dos dispositivos de segurança.',
+                '4) Executar manutenção preventiva e substituir consumíveis críticos quando necessário.',
+                '5) Comunicar ao cliente o que foi verificado, o que falta e o próximo passo.',
+                '',
+                `Nota: ${roleHint}`
+            ].join('\n');
+        }
+
+        if (/(perguntas|diagnostico|diagnóstico|ordem de intervencao|ordem de intervenção)/.test(m)) {
+            return [
+                'Perguntas de diagnóstico (7):',
+                '1) Quando começou a falha e com que frequência acontece?',
+                '2) O equipamento fica parado ou continua a operar com limitações?',
+                '3) Houve alarmes, ruídos ou mensagens no quadro?',
+                '4) A falha acontece em alguma porta, piso ou horário específico?',
+                '5) Já houve intervenção recente no mesmo componente?',
+                '6) O que o cliente observou antes da avaria?',
+                '7) Existe risco de segurança ou necessidade de imobilização imediata?',
+                '',
+                `Nota: ${roleHint}`
+            ].join('\n');
+        }
+
+        return null;
     }
 
     async _respondFromFocusedClient(userId, normalizedMsg) {
@@ -305,6 +484,10 @@ class AgentService {
         }
 
         return null;
+    }
+
+    _isHelpRequest(normalizedMsg = '') {
+        return /(ajuda|help|o que podes fazer|o que pode fazer|comandos|menu|opcoes|opções|capacidades|ferramentas)/.test(String(normalizedMsg || ''));
     }
 
     async _findClientByName(role, rawMessage, userId = null) {
@@ -632,6 +815,7 @@ class AgentService {
 
     _buildOllamaSystemInstruction(routeHint = 'generic', meta = {}) {
         const role = meta.userRole || 'utilizador';
+        const profile = this._getAssistantRoleProfile(meta.userRole);
         const navGuide = [
             'Navegação da app: Dashboard (KPIs), Pedidos, Orçamentos, Inspeções, Elevadores, Clientes, Utilizadores/Techs, Analytics.',
             'Regras de verdade: nunca inventar clientes, elevadores, inspeções, datas, ações ou IDs.',
@@ -648,6 +832,9 @@ class AgentService {
         return [
             'Tu és o assistente FestLift (pt-PT) para gestão de elevadores em Portugal.',
             `Perfil do utilizador atual: ${role}.`,
+            `Perfil de assistente ativo: ${profile.label}.`,
+            `Objetivo: ${profile.purpose}.`,
+            `Capacidades: ${profile.capabilities.join('; ')}.`,
             focus,
             'Política de resposta:',
             '- Objetivo: responder curto, preciso e orientado a ação.',
@@ -1053,7 +1240,6 @@ class AgentService {
                     servicos: orcamentoData.servicos,
                     link
                 });
-
                 // If this was triggered by a client request → notify client that we are preparing their quote
                 if (notif.type === 'client_quote_request' && notif.clientEmail) {
                     const clientUser = await this.db.collection('users').findOne({ email: notif.clientEmail.toLowerCase() });
@@ -1810,6 +1996,37 @@ class AgentService {
         if (/(dele|dela|його|її|dados|detalhes|lifts|elevadores|ліфти|дані|info|pedidos|запити|requests)/.test(m)) {
             const follow = await this._respondFromFocusedClient(userId, m);
             if (follow) return follow;
+        }
+
+        if (this._isHelpRequest(m)) {
+            return this._buildRoleAssistantHelp(role);
+        }
+
+        if (role === 'client') {
+            if (/(resumo da minha conta|minha conta|visao geral da minha conta|visão geral da minha conta)/.test(m)) {
+                return await this._buildSummary(role, userEmail, userId);
+            }
+            if (/(meus alertas|alertas pendentes|o que tenho pendente|pendencias pendências|pendencias|pendências)/.test(m)) {
+                return await this._listNotifications(role, userEmail, userId);
+            }
+            if (/(meus elevadores|proximas inspecoes|pr[oó]ximas inspec|inspecoes a vencer|inspeções a vencer)/.test(m)) {
+                return await this._listLifts(role, userEmail, userId);
+            }
+            if (/(meus pedidos|pedidos pendentes|pedido aberto|chamadas abertas)/.test(m)) {
+                return await this._listRequests(role, userEmail, userId);
+            }
+        }
+
+        if (role === 'dispatcher') {
+            if (/(resumo operativo|visao geral operacional|visão geral operacional|triagem|priorizar|o que precisa de atenção|o que precisa de atencao)/.test(m)) {
+                return await this._buildSummary(role, userEmail, userId);
+            }
+        }
+
+        if (role === 'technician') {
+            if (/(resumo tecnico|minhas tarefas|o que tenho pendente|turno de hoje|checklist rapido|checklist rápido)/.test(m)) {
+                return await this._buildSummary(role, userEmail, userId);
+            }
         }
 
         // ── Lift edit/delete is intentionally blocked in assistant ──────────
@@ -2852,6 +3069,7 @@ Responde APENAS com o resumo dos problemas, sem introdução.`;
     }
 
     _buildSystemPrompt(userRole, context, ragSnippets = []) {
+        const profile = this._getAssistantRoleProfile(userRole);
         const pending = (context.pendingNotifications || []).length;
         const recentDecisions = (context.recentDecisions || []).length;
         const decisions = (context.recentDecisions || []).slice(0, 5)
@@ -2886,8 +3104,14 @@ Responde APENAS com o resumo dos problemas, sem introdução.`;
         }[userRole] || 'utilizador';
 
         return `És o assistente de IA do FestLift, sistema de gestão de elevadores em Portugal.
-Falas em Português de Portugal (pt-PT). Nunca uses Português do Brasil.
-O utilizador é ${roleDesc}.
+    Falas em Português de Portugal (pt-PT). Nunca uses Português do Brasil.
+    O utilizador é ${roleDesc}.
+    Perfil ativo: ${profile.label}.
+    Objetivo do perfil: ${profile.purpose}.
+    Capacidades do perfil:
+    - ${profile.capabilities.join('\n- ')}
+    Limites do perfil:
+    - ${profile.limits.join('\n- ')}
 
 NOTIFICAÇÕES PENDENTES:
 ${pending}
@@ -2922,10 +3146,12 @@ REGRAS:
 - Se os dados não estiverem no contexto, diz explicitamente "não tenho esse dado no contexto atual" e pede filtro mínimo
 - Sê conciso e profissional
 - Para clientes: usa linguagem simples, não técnica
+- Se o utilizador pedir ajuda, mostra os comandos rápidos do perfil ativo
 - Quando listares orçamentos, apresenta-os em formato legível com número, cliente, estado e valor`;
     }
 
     _buildCompactContextSummary(userRole, context) {
+        const profile = this._getAssistantRoleProfile(userRole);
         const pending = (context.pendingNotifications || []).slice(0, 4)
             .map(n => `${n.type || 'notif'} | ${n.liftLocation || '?'} | ${n.status || 'pending'}`)
             .join('\n');
@@ -2941,6 +3167,8 @@ REGRAS:
 
         return [
             `Role: ${userRole}`,
+            `Profile: ${profile.label}`,
+            `Goal: ${profile.purpose}`,
             `Notificações pendentes (${(context.pendingNotifications || []).length}):`,
             pending || 'nenhuma',
             `Orçamentos recentes (${(context.orcamentos || []).length}):`,

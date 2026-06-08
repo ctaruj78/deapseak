@@ -5,6 +5,17 @@ After full functional testing of the application is completed, implement local O
 Primary Goal
 - Make the assistant the "eyes and brain" of the app for operational workflows.
 
+Recommended Next Feature
+- Proactive Incident Radar: detect repeated runtime errors, failed requests, PM2 restarts, slow AI responses, and suspicious data states, then summarize them for admin review with direct links to logs and affected screens.
+- This should sit between the app and the assistant so the local model can explain issues in context, but only after logs/metrics are collected from the system.
+- Start with read-only detection and daily summaries before any auto-remediation.
+
+Role Model
+- Shared core: one backend assistant service, one memory layer, one data source of truth, one safety policy.
+- Role profiles: client, dispatcher, technician, admin each get a different prompt, capability set, and quick-action menu.
+- Linking rule: all roles see the same operational facts when allowed by permissions, but each role only gets the data needed for its workflow.
+- Orientation rule: client stays simple and proactive, dispatcher stays operational, technician stays diagnostic, admin stays supervisory.
+
 Scope
 - Email drafting/replies
 - Maintenance control
