@@ -939,7 +939,9 @@ class AgentService {
     async _generateText(prompt, routeHint = 'generic', meta = {}) {
         const provider = this.aiProvider;
         const startedAt = Date.now();
+        const detectedTaskType = routeHint === 'generic' ? this._detectTaskType(prompt) : routeHint;
         let selectedProvider = provider;
+        let selectedModel = null;
         let fallbackUsed = false;
         let fallbackReason = null;
         let outputText = '';
@@ -970,10 +972,10 @@ class AgentService {
             if (provider === 'ollama') {
                 selectedProvider = 'ollama';
                 try {
-                    const effectiveRoute = routeHint === 'generic' ? this._detectTaskType(prompt) : routeHint;
-                    const preferredModel = effectiveRoute === 'legal'
+                    const preferredModel = detectedTaskType === 'legal'
                         ? await this._selectOllamaModel()
                         : await this._selectFastOllamaModel();
+                    selectedModel = preferredModel;
                     outputText = await this._generateViaOllama(prompt, routeHint, {
                         ...meta,
                         forceModel: preferredModel
@@ -987,6 +989,7 @@ class AgentService {
                     selectedProvider = 'gemini';
                     console.warn(`🤖 AgentService OLLAMA primary failed, fallback to Gemini: ${ollErr.message}`);
                     outputText = await tryGeminiWithFallbackModel();
+                    selectedModel = this.model;
                     return outputText;
                 }
             }
@@ -994,16 +997,18 @@ class AgentService {
             if (provider === 'gemini') {
                 selectedProvider = 'gemini';
                 outputText = await tryGeminiWithFallbackModel();
+                selectedModel = this.model;
                 return outputText;
             }
 
             // auto: explicit hybrid routing by task type, then fallback.
-            const taskType = routeHint === 'generic' ? this._detectTaskType(prompt) : routeHint;
+            const taskType = detectedTaskType;
 
             if (taskType === 'legal') {
                 selectedProvider = 'gemini';
                 try {
                     outputText = await tryGeminiWithFallbackModel();
+                    selectedModel = this.model;
                     return outputText;
                 } catch (gemErr) {
                     const ollamaReady = await this._isOllamaAvailable();
@@ -1012,7 +1017,12 @@ class AgentService {
                     fallbackReason = gemErr.message;
                     selectedProvider = 'ollama';
                     console.warn(`🤖 AgentService legal route Gemini->Ollama fallback: ${gemErr.message}`);
-                    outputText = await this._generateViaOllama(prompt, routeHint, meta);
+                    const strongModel = await this._selectOllamaModel();
+                    selectedModel = strongModel;
+                    outputText = await this._generateViaOllama(prompt, routeHint, {
+                        ...meta,
+                        forceModel: strongModel
+                    });
                     return outputText;
                 }
             }
@@ -1021,6 +1031,7 @@ class AgentService {
                 selectedProvider = 'ollama';
                 try {
                     const fastModel = await this._selectFastOllamaModel();
+                    selectedModel = fastModel;
                     outputText = await this._generateViaOllama(prompt, routeHint, {
                         ...meta,
                         forceModel: fastModel
@@ -1031,6 +1042,7 @@ class AgentService {
                     fallbackReason = ollErr.message;
                     selectedProvider = 'gemini';
                     outputText = await tryGeminiWithFallbackModel();
+                    selectedModel = this.model;
                     return outputText;
                 }
             }
@@ -1039,6 +1051,7 @@ class AgentService {
             selectedProvider = 'ollama';
             try {
                 const fastModel = await this._selectFastOllamaModel();
+                selectedModel = fastModel;
                 outputText = await this._generateViaOllama(prompt, routeHint, {
                     ...meta,
                     forceModel: fastModel
@@ -1050,6 +1063,7 @@ class AgentService {
                 selectedProvider = 'gemini';
                 console.warn(`🤖 AgentService Ollama fallback to Gemini: ${ollErr.message}`);
                 outputText = await tryGeminiWithFallbackModel();
+                selectedModel = this.model;
                 return outputText;
             }
         } catch (err) {
@@ -1057,14 +1071,18 @@ class AgentService {
             throw err;
         } finally {
             if (meta.channel === 'chat') {
+                const latencyMs = Date.now() - startedAt;
+                console.info(`🤖 chat-route provider=${selectedProvider} model=${selectedModel || 'unknown'} task=${detectedTaskType} fallback=${fallbackUsed ? 'yes' : 'no'} latencyMs=${latencyMs}`);
                 await this._logGenerationQuality({
                     userId: meta.userId || null,
                     role: meta.userRole || 'unknown',
                     provider: selectedProvider,
+                    model: selectedModel || null,
                     routeHint,
+                    detectedTaskType,
                     fallbackUsed,
                     fallbackReason,
-                    latencyMs: Date.now() - startedAt,
+                    latencyMs,
                     score: this._scoreAssistantReply(meta.userMessage || prompt, outputText),
                     promptPreview: String(meta.userMessage || prompt).slice(0, 240),
                     responsePreview: String(outputText || '').slice(0, 360),
