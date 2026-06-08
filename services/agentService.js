@@ -313,8 +313,20 @@ class AgentService {
         const tokens = String(normalizedMsg || '').split(/\s+/).filter(Boolean);
         if (tokens.length < 2 || tokens.length > 4) return false;
         const stop = new Set(['lista', 'listar', 'mostra', 'mostrar', 'dados', 'cliente', 'sobre', 'tudo', 'info', 'informacoes', 'informacoes', 'elevadores', 'lifts', 'pedidos', 'resumo']);
+        const technical = new Set([
+            'motor', 'geared', 'gearless', 'mrl', 'hydraulic', 'hidraulico',
+            'tracao', 'traction', 'porta', 'portas', 'guilhotina', 'patim',
+            'cabina', 'semi', 'automatica', 'automatica', 'en81', 'norma',
+            'inspecao', 'manutencao', 'maintenance', 'elevador', 'lift'
+        ]);
+        if (tokens.some(t => technical.has(t))) return false;
         const alpha = tokens.filter(t => /^[a-z][a-z.-]{1,}$/.test(t) && !stop.has(t));
         return alpha.length >= 2;
+    }
+
+    _isTechnicalTermQuery(normalizedMsg = '') {
+        const m = this._normText(normalizedMsg || '');
+        return /(motor|geared|gearless|mrl|hydraulic|hidraulico|tracao|traction|porta|portas|guilhotina|patim|cabina|semi ?automat|automatica|automatica|en\s*81|norma|manutencao|maintenance|inspecao|inspection|elevador|lift)/.test(m);
     }
 
     _isGenerativeDraftRequest(normalizedMsg = '') {
@@ -958,7 +970,14 @@ class AgentService {
             if (provider === 'ollama') {
                 selectedProvider = 'ollama';
                 try {
-                    outputText = await this._generateViaOllama(prompt, routeHint, meta);
+                    const effectiveRoute = routeHint === 'generic' ? this._detectTaskType(prompt) : routeHint;
+                    const preferredModel = effectiveRoute === 'legal'
+                        ? await this._selectOllamaModel()
+                        : await this._selectFastOllamaModel();
+                    outputText = await this._generateViaOllama(prompt, routeHint, {
+                        ...meta,
+                        forceModel: preferredModel
+                    });
                     return outputText;
                 } catch (ollErr) {
                     // Keep local-first behavior, but avoid hard failure when local model times out.
@@ -1001,7 +1020,11 @@ class AgentService {
             if (taskType === 'operations') {
                 selectedProvider = 'ollama';
                 try {
-                    outputText = await this._generateViaOllama(prompt, routeHint, meta);
+                    const fastModel = await this._selectFastOllamaModel();
+                    outputText = await this._generateViaOllama(prompt, routeHint, {
+                        ...meta,
+                        forceModel: fastModel
+                    });
                     return outputText;
                 } catch (ollErr) {
                     fallbackUsed = true;
@@ -1015,7 +1038,11 @@ class AgentService {
             // generic: Ollama first (local-first), then Gemini fallback.
             selectedProvider = 'ollama';
             try {
-                outputText = await this._generateViaOllama(prompt, routeHint, meta);
+                const fastModel = await this._selectFastOllamaModel();
+                outputText = await this._generateViaOllama(prompt, routeHint, {
+                    ...meta,
+                    forceModel: fastModel
+                });
                 return outputText;
             } catch (ollErr) {
                 fallbackUsed = true;
@@ -1220,13 +1247,15 @@ class AgentService {
 
         let response = '';
         let orcamentoData = null;
+        const clientDisplayName = (notif.clientName || notif.clientEmail || 'cliente identificado').trim();
+        const liftDisplayLocation = (notif.liftLocation || 'local não identificado').trim();
 
         if (action === 'yes') {
             // Generate draft orçamento immediately
             try {
                 orcamentoData = await this._createDraftOrcamento(notif, userId);
                 const link = `/pages/admin/orcamentos-list.html?highlight=${orcamentoData.numero}`;
-                response = `✅ Rascunho **${orcamentoData.numero}** criado para **${notif.clientName}**!\n\n` +
+                response = `✅ Rascunho **${orcamentoData.numero}** criado para **${clientDisplayName}**!\n\n` +
                     `Serviços pré-preenchidos pela IA (${orcamentoData.servicos.length} itens).\n` +
                     `Apenas defina os preços e clique "Enviar ao cliente".\n\n` +
                     `[🔗 Abrir rascunho](${link})`;
@@ -1235,8 +1264,8 @@ class AgentService {
                 this._pushToAdmins('agent_orcamento_ready', {
                     orcamentoId: String(orcamentoData._id),
                     numero: orcamentoData.numero,
-                    clientName: notif.clientName,
-                    liftLocation: notif.liftLocation,
+                    clientName: clientDisplayName,
+                    liftLocation: liftDisplayLocation,
                     servicos: orcamentoData.servicos,
                     link
                 });
@@ -1245,27 +1274,27 @@ class AgentService {
                     const clientUser = await this.db.collection('users').findOne({ email: notif.clientEmail.toLowerCase() });
                     if (clientUser && this.io) {
                         this.io.to(`user_${clientUser._id}`).emit('agent_quote_confirmed', {
-                            message: `✅ A equipa FestLift confirmou o seu pedido! Estamos a preparar o orçamento **${orcamentoData.numero}** para o seu elevador em ${notif.liftLocation}. Receberá a proposta em breve.`,
+                            message: `✅ A equipa FestLift confirmou o seu pedido! Estamos a preparar o orçamento **${orcamentoData.numero}** para o seu elevador em ${liftDisplayLocation}. Receberá a proposta em breve.`,
                             orcamentoNumero: orcamentoData.numero,
-                            liftLocation: notif.liftLocation
+                            liftLocation: liftDisplayLocation
                         });
                         console.log(`🤖 Agent: notified client ${notif.clientEmail} about orcamento ${orcamentoData.numero}`);
                     }
                 }
             } catch (err) {
                 console.error('🤖 Agent: failed to create draft orcamento:', err.message);
-                response = `✅ Confirmado! Vou preparar o orçamento para **${notif.clientName}**.\n` +
+                response = `✅ Confirmado! Vou preparar o orçamento para **${clientDisplayName}**.\n` +
                     `⚠️ Erro ao criar rascunho automático: ${err.message}\nCrie manualmente em Orçamentos.`;
             }
         } else if (action === 'no') {
-            response = `❌ Entendido. Guardei na memória: sem orçamento para ${notif.clientName}${reason ? ' — motivo: ' + reason : ''}.`;
+            response = `❌ Entendido. Guardei na memória: sem orçamento para ${clientDisplayName}${reason ? ' — motivo: ' + reason : ''}.`;
             // Notify client if this was their request
             if (notif.type === 'client_quote_request' && notif.clientEmail) {
                 const clientUser = await this.db.collection('users').findOne({ email: notif.clientEmail.toLowerCase() });
                 if (clientUser && this.io) {
                     this.io.to(`user_${clientUser._id}`).emit('agent_quote_confirmed', {
-                        message: `ℹ️ A equipa FestLift analisou o seu pedido para ${notif.liftLocation}. ${reason ? `Nota: ${reason}` : 'Entraremos em contacto brevemente para mais informações.'}`,
-                        liftLocation: notif.liftLocation,
+                        message: `ℹ️ A equipa FestLift analisou o seu pedido para ${liftDisplayLocation}. ${reason ? `Nota: ${reason}` : 'Entraremos em contacto brevemente para mais informações.'}`,
+                        liftLocation: liftDisplayLocation,
                         rejected: true
                     });
                 }
@@ -2038,14 +2067,14 @@ class AgentService {
         }
 
         // ── Fast client lookup by name (admin/dispatcher) ───────────────────
-        if (/(tudo sobre|sobre|dados de|detalhes de|informacoes|informações)/.test(m)) {
+        if (/(tudo sobre|sobre|dados de|detalhes de|informacoes|informações)/.test(m) && /(cliente|client)/.test(m)) {
             const direct = await this._findClientByName(role, msg, userId);
             if (direct && !direct.startsWith('ℹ️')) return direct;
             if (/cliente|maria|estrela/.test(m) && direct) return direct;
         }
 
         // ── Bare client name query (e.g., "Luis Vieira") ──────────────────
-        if ((role === 'admin' || role === 'dispatcher') && this._looksLikeClientNameQuery(m)) {
+        if ((role === 'admin' || role === 'dispatcher') && !this._isTechnicalTermQuery(m) && this._looksLikeClientNameQuery(m)) {
             const byName = await this._findClientByName(role, msg, userId);
             if (byName) return byName;
         }

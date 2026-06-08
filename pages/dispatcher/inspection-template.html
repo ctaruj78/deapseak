@@ -155,10 +155,10 @@
                                                     <label for="doorType"><i class="fas fa-door-open text-info"></i> Tipo de Porta *</label>
                                                     <select class="form-control" id="doorType" onchange="refreshChecklist()">
                                                         <option value="automatic">🔄 Automáticas (operador)</option>
-                                                        <option value="swing">🚪 Batentes / Semi-automáticas</option>
                                                         <option value="gate">🔲 Portões de Rede / Guilhotina</option>
-                                                        <option value="patim_movel">↔️ Cabina sem portas / Patim móvel</option>
                                                         <option value="mixed">🚪🔄 Misto — Batentes (patamar) + Automática (cabina)</option>
+                                                            <option value="mixed_gate">🚪🔲 Misto — Batentes (patamar) + Portões / Guilhotina (cabina)</option>
+                                                            <option value="mixed_patim">🚪↔️ Misto — Batentes (patamar) + Cabina sem portas / Patim móvel</option>
                                                     </select>
                                                 </div>
                                             </div>
@@ -669,6 +669,45 @@
                 this.updateReportPreview();
             },
 
+            async prefillFromLiftContext() {
+                const params = new URLSearchParams(window.location.search);
+                const liftId = params.get('liftId');
+                if (!liftId) return;
+
+                try {
+                    const token = localStorage.getItem('liftmanager_jwt') || localStorage.getItem('authToken') || localStorage.getItem('token');
+                    const response = await fetch(`/api/lifts/${liftId}`, {
+                        headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+                    });
+                    if (!response.ok) return;
+
+                    const payload = await response.json();
+                    const lift = payload?.data?.lift || payload?.data || payload?.lift || payload;
+                    if (!lift) return;
+
+                    const address = typeof lift.address === 'string'
+                        ? lift.address
+                        : [lift.address?.street, lift.address?.zipCode, lift.address?.city].filter(Boolean).join(', ');
+
+                    if (address && !$('#liftLocation').val()) {
+                        $('#liftLocation').val(address);
+                    }
+
+                    if (lift.clientEmail && !$('#clientEmail').val()) {
+                        $('#clientEmail').val(lift.clientEmail);
+                    }
+
+                    if (lift.doorType && $('#doorType option[value="' + lift.doorType + '"]').length) {
+                        $('#doorType').val(lift.doorType);
+                    }
+
+                    refreshChecklist();
+                    this.updateReportPreview();
+                } catch (error) {
+                    console.warn('Não foi possível preencher dados do elevador:', error.message);
+                }
+            },
+
             printReport() {
                 // Compatibilidade macOS Safari: usar iframe em vez de window.print() directo
                 const reportEl = document.getElementById('inspectionReport');
@@ -991,6 +1030,7 @@
         // Initialize when document is ready
         $(document).ready(function() {
             inspectionManager.init();
+            inspectionManager.prefillFromLiftContext();
             loadInspectionHistory();
         });
     </script>

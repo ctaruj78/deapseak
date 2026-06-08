@@ -130,6 +130,29 @@
         return payload || { success: false, error: 'Resposta vazia do servidor.' };
     }
 
+    async function readResponsePayload(res) {
+        const contentType = res.headers.get('content-type') || '';
+        if (contentType.includes('application/json')) {
+            try {
+                return await res.json();
+            } catch (error) {
+                return null;
+            }
+        }
+
+        try {
+            const text = await res.text();
+            if (!text) return null;
+            try {
+                return JSON.parse(text);
+            } catch (error) {
+                return { message: text };
+            }
+        } catch (error) {
+            return null;
+        }
+    }
+
     async function apiUploadFetch(path, formData) {
         const token = getToken();
         const res = await fetch(CFG.baseUrl + path, {

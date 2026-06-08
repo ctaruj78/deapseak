@@ -438,6 +438,9 @@ const INSPECTION_TEMPLATES = (() => {
   /* Função principal: retorna secções para a combinação pedida          */
   /* ------------------------------------------------------------------ */
   function getSections(driveType, doorType, visitType) {
+    const isMixedAutomatic = doorType === 'mixed' || doorType === 'mixed_auto';
+    const isMixedGate = doorType === 'mixed_gate';
+    const isMixedPatim = doorType === 'mixed_patim';
 
     // ================================================================
     // REPARAÇÃO — checklist focado (NÃO usa o checklist de manutenção)
@@ -477,7 +480,7 @@ const INSPECTION_TEMPLATES = (() => {
       });
 
       // Ascensor DL 513/70 — modernização parcial possível (batentes patamar + automática cabina)
-      if (doorType === 'mixed') {
+      if (isMixedAutomatic) {
         // Caso mais comum: portas de patamar batentes originais + operador automático na cabina
         dl513Sections.push({
           id: 'portas-pat', title: 'Portas de Patamar — Batentes (DL 513/70)',
@@ -486,6 +489,24 @@ const INSPECTION_TEMPLATES = (() => {
         dl513Sections.push({
           id: 'portas-cab', title: 'Porta de Cabina — Automática (Modernização)',
           icon: 'sync-alt', color: 'info', items: DOORS_AUTOMATIC,
+        });
+      } else if (isMixedGate) {
+        dl513Sections.push({
+          id: 'portas-pat', title: 'Portas de Patamar — Batentes (DL 513/70)',
+          icon: 'door-open', color: 'primary', items: DL513_DOORS_SWING,
+        });
+        dl513Sections.push({
+          id: 'portas-cab', title: 'Porta de Cabina — Portões / Guilhotina (DL 513/70)',
+          icon: 'grip-lines-vertical', color: 'info', items: DL513_DOORS_GATE,
+        });
+      } else if (isMixedPatim) {
+        dl513Sections.push({
+          id: 'portas-pat', title: 'Portas de Patamar — Batentes (DL 513/70)',
+          icon: 'door-open', color: 'primary', items: DL513_DOORS_SWING,
+        });
+        dl513Sections.push({
+          id: 'portas-cab', title: 'Cabina sem Portas / Patim Móvel (DL 513/70)',
+          icon: 'arrows-alt-h', color: 'info', items: DL513_DOORS_PATIM_MOVEL,
         });
       } else {
         let dl513DoorItems, dl513DoorTitle, dl513DoorIcon;
@@ -560,7 +581,7 @@ const INSPECTION_TEMPLATES = (() => {
 
       dl513Sections.push({
         id: 'documentacao', title: 'Documentação',
-        icon: 'file-alt', color: 'info', items: doorType === 'patim_movel' ? [...DL513_DOCUMENTATION, ...PATIM_MOVEL_DOCUMENTATION] : DL513_DOCUMENTATION,
+        icon: 'file-alt', color: 'info', items: (doorType === 'patim_movel' || doorType === 'mixed_patim') ? [...DL513_DOCUMENTATION, ...PATIM_MOVEL_DOCUMENTATION] : DL513_DOCUMENTATION,
       });
 
       return dl513Sections;
@@ -587,7 +608,7 @@ const INSPECTION_TEMPLATES = (() => {
     });
 
     // ---- Portas ----
-    if (doorType === 'mixed') {
+    if (isMixedAutomatic) {
       // Modernização parcial: portas de patamar batentes + operador automático na cabina
       sections.push({
         id: 'portas-pat',
@@ -602,6 +623,36 @@ const INSPECTION_TEMPLATES = (() => {
         icon: 'sync-alt',
         color: 'info',
         items: DOORS_AUTOMATIC,
+      });
+    } else if (isMixedGate) {
+      sections.push({
+        id: 'portas-pat',
+        title: 'Portas de Patamar — Batentes',
+        icon: 'door-open',
+        color: 'primary',
+        items: DOORS_SWING,
+      });
+      sections.push({
+        id: 'portas-cab',
+        title: 'Porta de Cabina — Portões / Guilhotina',
+        icon: 'grip-lines-vertical',
+        color: 'info',
+        items: DOORS_GATE,
+      });
+    } else if (isMixedPatim) {
+      sections.push({
+        id: 'portas-pat',
+        title: 'Portas de Patamar — Batentes',
+        icon: 'door-open',
+        color: 'primary',
+        items: DOORS_SWING,
+      });
+      sections.push({
+        id: 'portas-cab',
+        title: 'Cabina sem Portas / Patim Móvel',
+        icon: 'arrows-alt-h',
+        color: 'info',
+        items: DOORS_PATIM_MOVEL,
       });
     } else {
       let doorItems;
@@ -723,7 +774,7 @@ const INSPECTION_TEMPLATES = (() => {
       title: 'Documentação',
       icon: 'file-alt',
       color: 'info',
-      items: doorType === 'patim_movel' ? [...DOCUMENTATION, ...PATIM_MOVEL_DOCUMENTATION] : DOCUMENTATION,
+      items: (doorType === 'patim_movel' || doorType === 'mixed_patim') ? [...DOCUMENTATION, ...PATIM_MOVEL_DOCUMENTATION] : DOCUMENTATION,
     });
 
     return sections;
@@ -797,6 +848,16 @@ const INSPECTION_TEMPLATES = (() => {
       label: 'Misto — Batentes (patamar) + Automática (cabina)',
       icon:  'random',
       norm:  'DL 513/70 / EN 81-20 (modernização parcial)',
+    },
+    mixed_gate: {
+      label: 'Misto — Batentes (patamar) + Portões / Guilhotina (cabina)',
+      icon:  'random',
+      norm:  'DL 513/70 / EN 81-1 (patamar) / Art. 27.º',
+    },
+    mixed_patim: {
+      label: 'Misto — Batentes (patamar) + Cabina sem portas / Patim móvel',
+      icon:  'random',
+      norm:  'DL 513/70 / DR 13/80 / Portaria 121/2005',
     },
   };
 

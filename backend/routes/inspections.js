@@ -200,8 +200,11 @@ router.get('/:id/pdf', auth, async (req, res) => {
         const DOOR_LABELS = {
             automatic: 'Automáticas (operador)',
             mixed:     'Misto — Batentes (patamar) + Automáticas (cabine)',
+            mixed_gate:'Misto — Batentes (patamar) + Portões / Guilhotina (cabine)',
+            mixed_patim:'Misto — Batentes (patamar) + Cabina sem portas / Patim móvel',
             swing:     'Batentes / Semiautomáticas',
-            gate:      'Portões / Guilhotina'
+            gate:      'Portões / Guilhotina',
+            patim_movel:'Cabina sem portas / Patim móvel',
         };
 
         const pdfBuffer = await buildReportPDF({
