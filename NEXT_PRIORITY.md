@@ -16,7 +16,7 @@ Environment
 - Linux server
 - 16 GB RAM
 - No GPU (fanless)
-- Preferred model: qwen2.5:3b
+- Preferred model: gemma4:12b-it-qat (fallback: qwen2.5:7b -> qwen2.5:3b)
 
 Priority Buckets
 

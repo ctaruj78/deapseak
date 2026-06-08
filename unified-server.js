@@ -57,7 +57,7 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
 // 'auto' = автоматично uses Ollama if running, otherwise Gemini
 const AI_PROVIDER = (process.env.AI_PROVIDER || 'auto').toLowerCase();
 const OLLAMA_BASE_URL = process.env.OLLAMA_BASE_URL || 'http://127.0.0.1:11434';
-const OLLAMA_MODEL = process.env.OLLAMA_MODEL || 'gemma3:12b';
+const OLLAMA_MODEL = process.env.OLLAMA_MODEL || 'gemma4:12b-it-qat';
 
 // ─── Ollama auto-detect cache (TTL 5 хв) ────────────────────────────────────
 let _ollamaCache = { available: null, checkedAt: 0 };

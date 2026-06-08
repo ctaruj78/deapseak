@@ -24,8 +24,12 @@ class AgentService {
         this.io = null;
         this.model = process.env.GOOGLE_AI_MODEL || 'gemini-2.5-flash';
         this.ollamaBaseUrl = process.env.OLLAMA_BASE_URL || 'http://127.0.0.1:11434';
-        this.ollamaModel = process.env.OLLAMA_MODEL || 'qwen2.5:3b';
+        this.ollamaModel = process.env.OLLAMA_MODEL || 'gemma4:12b-it-qat';
         this.ollamaModelCandidates = String(process.env.OLLAMA_MODEL_CANDIDATES || `${this.ollamaModel},qwen2.5:7b,qwen2.5:3b`)
+            .split(',')
+            .map(s => s.trim())
+            .filter(Boolean);
+        this.ollamaFastModelCandidates = String(process.env.OLLAMA_CHAT_FAST_MODEL_CANDIDATES || 'qwen2.5:3b,qwen2.5:7b,gemma4:12b-it-qat')
             .split(',')
             .map(s => s.trim())
             .filter(Boolean);
@@ -37,6 +41,7 @@ class AgentService {
             num_predict: Number(process.env.OLLAMA_NUM_PREDICT || 512)
         };
         this.ollamaModelCache = { value: this.ollamaModel, expiresAt: 0 };
+        this.ollamaFastModelCache = { value: this.ollamaFastModelCandidates[0] || this.ollamaModel, expiresAt: 0 };
         this.chatMemoryLimit = Math.max(2, Number(process.env.ASSISTANT_CHAT_MEMORY_TURNS || 6));
         this.chatMemoryMap = new Map();
         this.ragMaxSnippets = Math.max(1, Number(process.env.ASSISTANT_RAG_MAX_SNIPPETS || 3));
@@ -194,6 +199,46 @@ class AgentService {
         const stop = new Set(['lista', 'listar', 'mostra', 'mostrar', 'dados', 'cliente', 'sobre', 'tudo', 'info', 'informacoes', 'informacoes', 'elevadores', 'lifts', 'pedidos', 'resumo']);
         const alpha = tokens.filter(t => /^[a-z][a-z.-]{1,}$/.test(t) && !stop.has(t));
         return alpha.length >= 2;
+    }
+
+    _isGenerativeDraftRequest(normalizedMsg = '') {
+        const m = String(normalizedMsg || '');
+        return /(cria|escreve|gera|redige|resume|propoe|prop\w+|template|plano de acao|checklist|perguntas de diagnostico|mensagem para|email curto)/.test(m);
+    }
+
+    _quickChatFallback(userMessage = '', userRole = 'user') {
+        const m = this._normText(userMessage || '');
+        const roleHint = userRole === 'client'
+            ? 'Abra Pedidos/Orcamentos no seu painel para confirmar dados reais antes de enviar.'
+            : 'Valide no painel os dados reais (cliente/elevador/prazos) antes de executar.';
+
+        if (/(email|mensagem|template|resposta)/.test(m)) {
+            return [
+                'Assunto: Inspecao pendente do elevador',
+                '',
+                'Exmo.(a) Cliente,',
+                'Identificamos que a inspecao do elevador se encontra pendente. Solicitamos confirmacao para agendar regularizacao com prioridade.',
+                'Assim que confirmar, enviamos data e janela de intervencao.',
+                '',
+                `Nota: ${roleHint}`
+            ].join('\n');
+        }
+
+        if (/(plano de acao|porta|anomalia|priorizar|prioridade|checklist)/.test(m)) {
+            return [
+                'Plano curto (prioridade):',
+                '1) Isolar risco de seguranca e confirmar estado operacional.',
+                '2) Recolher sintomas, historico e frequencia da falha.',
+                '3) Validar componentes criticos (porta/travao/limitador conforme o caso).',
+                '4) Definir acao imediata e acao definitiva com prazo.',
+                '5) Comunicar impacto e ETA ao cliente.',
+                '6) Revalidar apos intervencao e fechar com evidencias.',
+                '',
+                `Nota: ${roleHint}`
+            ].join('\n');
+        }
+
+        return `Resposta rapida indisponivel no momento. ${roleHint}`;
     }
 
     async _respondFromFocusedClient(userId, normalizedMsg) {
@@ -566,6 +611,25 @@ class AgentService {
         }
     }
 
+    async _selectFastOllamaModel() {
+        const now = Date.now();
+        if (this.ollamaFastModelCache.expiresAt > now) {
+            return this.ollamaFastModelCache.value;
+        }
+
+        try {
+            const res = await fetch(`${this.ollamaBaseUrl}/api/tags`);
+            if (!res.ok) throw new Error(`tags HTTP ${res.status}`);
+            const payload = await res.json();
+            const available = new Set((payload.models || []).map(m => m.name));
+            const selected = this.ollamaFastModelCandidates.find(m => available.has(m)) || await this._selectOllamaModel();
+            this.ollamaFastModelCache = { value: selected, expiresAt: now + 5 * 60 * 1000 };
+            return selected;
+        } catch (_) {
+            return this.ollamaFastModelCandidates[0] || this.ollamaModel;
+        }
+    }
+
     _buildOllamaSystemInstruction(routeHint = 'generic', meta = {}) {
         const role = meta.userRole || 'utilizador';
         const navGuide = [
@@ -599,12 +663,24 @@ class AgentService {
     }
 
     async _generateViaOllama(prompt, routeHint = 'generic', meta = {}) {
-        const timeoutMs = Number(process.env.OLLAMA_TIMEOUT_MS || 15000);
+        const isChatLike = meta.channel === 'chat' || meta.channel === 'chat-fast';
+        const timeoutMs = Number(meta.timeoutMs || (isChatLike
+            ? Number(process.env.OLLAMA_CHAT_TIMEOUT_MS || process.env.OLLAMA_TIMEOUT_MS || 15000)
+            : Number(process.env.OLLAMA_TIMEOUT_MS || 15000)));
         const retries = Math.max(0, Number(process.env.OLLAMA_MAX_RETRIES || 1));
-        const model = await this._selectOllamaModel();
-        const finalPrompt = meta.channel === 'chat'
+        const model = meta.forceModel || await this._selectOllamaModel();
+        const finalPrompt = isChatLike
             ? this._composeChatPromptForOllama(prompt, routeHint, meta)
             : prompt;
+        const options = { ...this.ollamaOptions };
+        if (isChatLike) {
+            const chatCtx = Number(process.env.OLLAMA_CHAT_NUM_CTX || 3072);
+            const chatPredict = Number(process.env.OLLAMA_CHAT_NUM_PREDICT || 128);
+            const maxCtx = Number(meta.maxNumCtx || chatCtx);
+            const maxPredict = Number(meta.maxNumPredict || chatPredict);
+            options.num_ctx = Math.max(1024, Math.min(Number(options.num_ctx || maxCtx), maxCtx));
+            options.num_predict = Math.max(64, Math.min(Number(options.num_predict || maxPredict), maxPredict));
+        }
 
         let lastErr = null;
         for (let attempt = 0; attempt <= retries; attempt++) {
@@ -618,7 +694,7 @@ class AgentService {
                         model,
                         prompt: finalPrompt,
                         stream: false,
-                        options: this.ollamaOptions
+                        options
                     }),
                     signal: ctrl.signal
                 });
@@ -1261,6 +1337,33 @@ class AgentService {
         if (!this.db) throw new Error('DB not ready');
         const memory = this._getRecentChatMemory(userId);
 
+        if (this._isGenerativeDraftRequest(userMessage || '')) {
+            try {
+                const routeHint = this._detectTaskType(userMessage || '');
+                const routeTimeoutMs = Number(process.env.ASSISTANT_CHAT_ROUTE_TIMEOUT_MS || 18000);
+                const reply = await Promise.race([
+                    this._generateViaOllama(this._buildQuickDraftPrompt(userMessage, userRole), routeHint, {
+                        channel: 'chat',
+                        userRole,
+                        userId,
+                        userMessage,
+                        timeoutMs: Number(process.env.OLLAMA_CHAT_TIMEOUT_MS || 16000),
+                        maxNumCtx: Number(process.env.OLLAMA_CHAT_FAST_NUM_CTX || 1536),
+                        maxNumPredict: Number(process.env.OLLAMA_CHAT_FAST_NUM_PREDICT || 64)
+                    }),
+                    new Promise((_, reject) => {
+                        setTimeout(() => reject(new Error(`CHAT_ROUTE_TIMEOUT_${routeTimeoutMs}`)), routeTimeoutMs);
+                    })
+                ]);
+                this._rememberChatTurn(userId, userRole, userMessage, reply);
+                return reply;
+            } catch (err) {
+                const quick = this._quickChatFallback(userMessage, userRole);
+                this._rememberChatTurn(userId, userRole, userMessage, quick);
+                return quick;
+            }
+        }
+
         // ── 1. Try to answer locally (no Gemini needed) ──────────────────────
         const localAnswer = await this._resolveLocally(userMessage, userRole, clientEmail, userId);
         if (localAnswer) {
@@ -1290,16 +1393,49 @@ class AgentService {
             const systemPrompt = this._buildSystemPrompt(userRole, context, ragSnippets);
             const prompt = `${systemPrompt}\n\nMENSAGEM DO UTILIZADOR: ${userMessage}`;
             const contextSummary = this._buildCompactContextSummary(userRole, context);
-            const reply = await this._generateText(prompt, routeHint, {
-                channel: 'chat',
-                userRole,
-                contextSummary,
-                userId,
-                userMessage
-            });
+            const routeTimeoutMs = Number(process.env.ASSISTANT_CHAT_ROUTE_TIMEOUT_MS || 30000);
+            const reply = await Promise.race([
+                this._generateText(prompt, routeHint, {
+                    channel: 'chat',
+                    userRole,
+                    contextSummary,
+                    userId,
+                    userMessage
+                }),
+                new Promise((_, reject) => {
+                    setTimeout(() => reject(new Error(`CHAT_ROUTE_TIMEOUT_${routeTimeoutMs}`)), routeTimeoutMs);
+                })
+            ]);
             this._rememberChatTurn(userId, userRole, userMessage, reply);
             return reply;
         } catch (err) {
+            const msg = String(err?.message || '');
+            if (/CHAT_ROUTE_TIMEOUT_|aborted|timeout|fetch failed|ECONN|socket hang up/i.test(msg)) {
+                const routeHint = this._detectTaskType(userMessage || '');
+                const fastTimeoutMs = Number(process.env.OLLAMA_CHAT_FAST_TIMEOUT_MS || 9000);
+                const fastPredict = Number(process.env.OLLAMA_CHAT_FAST_NUM_PREDICT || 96);
+                const fastCtx = Number(process.env.OLLAMA_CHAT_FAST_NUM_CTX || 2048);
+                try {
+                    const fastModel = await this._selectFastOllamaModel();
+                    const fastReply = await this._generateViaOllama(userMessage, routeHint, {
+                        channel: 'chat-fast',
+                        userRole,
+                        userId,
+                        userMessage,
+                        forceModel: fastModel,
+                        timeoutMs: fastTimeoutMs,
+                        maxNumCtx: fastCtx,
+                        maxNumPredict: fastPredict
+                    });
+                    this._rememberChatTurn(userId, userRole, userMessage, fastReply);
+                    return fastReply;
+                } catch (_) {
+                    const quick = this._quickChatFallback(userMessage, userRole);
+                    this._rememberChatTurn(userId, userRole, userMessage, quick);
+                    return quick;
+                }
+            }
+
             // Rate limit / quota — return helpful local fallback
             if (err.message && (err.message.includes('429') || err.message.includes('quota') || err.message.includes('fetch'))) {
                 return this._rateLimitFallback(userMessage, userRole, clientEmail, userId);
@@ -1664,6 +1800,11 @@ class AgentService {
 
     async _resolveLocally(msg, role, userEmail, userId) {
         const m = msg.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+        // Drafting/authoring prompts should go through AI generation path.
+        if (this._isGenerativeDraftRequest(m)) {
+            return null;
+        }
 
         // ── Follow-up for previously selected client ────────────────────────
         if (/(dele|dela|його|її|dados|detalhes|lifts|elevadores|ліфти|дані|info|pedidos|запити|requests)/.test(m)) {
@@ -2808,6 +2949,22 @@ REGRAS:
             insp || 'nenhuma',
             'Memória curta:',
             mem || 'vazia'
+        ].join('\n');
+    }
+
+    _buildQuickDraftPrompt(userMessage, userRole = 'user') {
+        const roleHint = userRole === 'client'
+            ? 'Escreve em linguagem simples, curta e clara.'
+            : 'Escreve de forma profissional, curta e acionavel.';
+        return [
+            'És o assistente FestLift em pt-PT.',
+            'Responde curto, útil e sem inventar dados reais.',
+            'Se faltarem dados, usa placeholders genéricos e indica isso de forma breve.',
+            roleHint,
+            '',
+            `Pedido: ${userMessage}`,
+            '',
+            'Resposta:'
         ].join('\n');
     }
 
