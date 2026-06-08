@@ -170,6 +170,8 @@ async function autoExpirarOrcamentos(filterExtra = {}) {
 async function gerarPDFOrcamento(orcamento) {
     return new Promise((resolve, reject) => {
         try {
+            const ORCAMENTO_COLOR = '#1a3a6b';
+            const OBSERVACAO_COLOR = '#000000';
             const doc = new PDFDocument({ margin: 50, size: 'A4' });
             const chunks = [];
             
@@ -230,7 +232,7 @@ async function gerarPDFOrcamento(orcamento) {
             doc.moveDown(2);
             
             // Tabela de Serviços
-            doc.fontSize(12).font('Helvetica-Bold').text('Serviços:', 50, doc.y);
+            doc.fontSize(12).font('Helvetica-Bold').fillColor(ORCAMENTO_COLOR).text('Serviços:', 50, doc.y);
             doc.moveDown(0.5);
             
             // Cabeçalho da tabela
@@ -240,7 +242,7 @@ async function gerarPDFOrcamento(orcamento) {
             const col3 = 380;
             const col4 = 480;
             
-            doc.fontSize(10).font('Helvetica-Bold');
+            doc.fontSize(10).font('Helvetica-Bold').fillColor(ORCAMENTO_COLOR);
             doc.text('Descrição', col1, tableTop);
             doc.text('Qtd', col2, tableTop, { width: 70, align: 'right' });
             doc.text('Preço', col3, tableTop, { width: 90, align: 'right' });
@@ -251,7 +253,7 @@ async function gerarPDFOrcamento(orcamento) {
             
             // Linhas da tabela
             let yPos = tableTop + 25;
-            doc.font('Helvetica').fontSize(10);
+            doc.font('Helvetica').fontSize(10).fillColor(ORCAMENTO_COLOR);
             
             orcamento.servicos.forEach((servico) => {
                 // Calcular altura real do texto de descrição (pode ter múltiplas linhas)
@@ -264,7 +266,7 @@ async function gerarPDFOrcamento(orcamento) {
                     yPos = 50;
                 }
                 
-                doc.font('Helvetica').fontSize(10);
+                doc.font('Helvetica').fontSize(10).fillColor(ORCAMENTO_COLOR);
                 doc.text(descText, col1, yPos, { width: 240, lineBreak: true });
                 doc.text(servico.quantidade.toString(), col2, yPos, { width: 70, align: 'right' });
                 doc.text(`€${servico.precoUnitario.toFixed(2)}`, col3, yPos, { width: 90, align: 'right' });
@@ -278,7 +280,7 @@ async function gerarPDFOrcamento(orcamento) {
             yPos += 15;
             
             // Totais
-            doc.fontSize(11).font('Helvetica-Bold');
+            doc.fontSize(11).font('Helvetica-Bold').fillColor(ORCAMENTO_COLOR);
             doc.text('Subtotal:', col3, yPos, { width: 90, align: 'right' });
             doc.text(`€${orcamento.subtotal.toFixed(2)}`, col4, yPos, { width: 70, align: 'right' });
             
@@ -295,9 +297,9 @@ async function gerarPDFOrcamento(orcamento) {
             yPos += 35; // espaço após a linha TOTAL (fontSize 14 + gap)
             if (orcamento.notas) {
                 if (yPos > 680) { doc.addPage(); yPos = 50; }
-                doc.fontSize(10).font('Helvetica-Bold').text('Notas:', 50, yPos);
+                doc.fontSize(10).font('Helvetica-Bold').fillColor(OBSERVACAO_COLOR).text('Notas:', 50, yPos);
                 yPos += 15;
-                doc.font('Helvetica').fontSize(9).text(orcamento.notas, 50, yPos, { width: 500 });
+                doc.font('Helvetica').fontSize(9).fillColor(OBSERVACAO_COLOR).text(orcamento.notas, 50, yPos, { width: 500 });
                 yPos = doc.y + 15;
             }
 
@@ -1259,9 +1261,21 @@ router.patch('/:id/link-lift', authenticate, authorizeRoles('admin', 'dispatcher
             ? addr
             : [addr.street, addr.zipCode, addr.city].filter(Boolean).join(', ');
 
+        const liftsPayload = orderedLifts.map(lift => {
+            const liftAddr = lift.address || {};
+            return {
+                liftId: lift._id,
+                municipalNumber: lift.municipalNumber || null,
+                address: typeof liftAddr === 'string'
+                    ? liftAddr
+                    : [liftAddr.street, liftAddr.zipCode, liftAddr.city].filter(Boolean).join(', '),
+                clientName: lift.clientName || null
+            };
+        });
+
         // Persist both legacy single-lift field and new multi-lift array.
         orcamento.liftId = primaryLift._id;
-        orcamento.lifts = orderedLifts.map(l => l._id);
+        orcamento.lifts = liftsPayload;
         orcamento.liftAddress = liftAddress || null;
         await orcamento.save();
 
@@ -1273,7 +1287,8 @@ router.patch('/:id/link-lift', authenticate, authorizeRoles('admin', 'dispatcher
                 ? `Orçamento vinculado a ${orderedLifts.length} elevadores`
                 : `Orçamento vinculado ao elevador ${primaryLift.municipalNumber || ''}`,
             liftId: primaryLift._id,
-            lifts: orderedLifts.map(l => l._id),
+            liftIds: orderedLifts.map(l => l._id),
+            lifts: liftsPayload,
             liftAddress,
             municipalNumber: primaryLift.municipalNumber || null
         });

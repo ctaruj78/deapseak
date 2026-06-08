@@ -255,6 +255,7 @@
 
         let _archiveMode = false;
         let _viewMode = 'grid';
+        let _orcamentosCache = [];
         let _currentPage = 1;
         let _lastFiltros = {};
         let pendingStatusAction = null;
@@ -303,6 +304,7 @@
 
                 const result = await response.json();
                 const orcamentos = result.success ? result.data : (result.data || result);
+                _orcamentosCache = orcamentos || [];
                 const pagination = result.pagination || null;
 
                 if (!orcamentos || orcamentos.length === 0) {
@@ -766,62 +768,189 @@
         // ── Vincular Elevador ──────────────────────────────────────────────
         let _vincularOrcamentoId = null;
         let _allLifts = [];
+        let _vincularSearchTimer = null;
+        let _vincularCurrentLiftIds = [];
+        let _vincularSelectedLiftIds = new Set();
 
-        async function abrirModalVincular(orcamentoId, currentLiftId) {
-            _vincularOrcamentoId = orcamentoId;
-            const searchInput = document.getElementById('vincularSearch');
-            const sel = document.getElementById('vincularLiftSelect');
-            sel.innerHTML = '<option value="">— Sem elevador —</option>';
-            searchInput.value = '';
-
-            try {
-                const res = await fetch(`${API_BASE_URL}/api/lifts`, {
-                    headers: { 'Authorization': `Bearer ${getToken()}` }
-                });
-                if (res.ok) {
-                    const json = await res.json();
-                    _allLifts = json.data || json.lifts || [];
-                    _renderLiftOptions(currentLiftId);
-
-                    // Auto-sugerir por endereço se ainda não está selecionado
-                    if (!currentLiftId) {
-                        const moradaCard = document.querySelector(`[data-orc-id="${orcamentoId}"]`)?.dataset?.morada || '';
-                        if (moradaCard) {
-                            searchInput.value = moradaCard.split(',')[0];
-                            _renderLiftOptions(null);
-                        }
-                    }
-                }
-            } catch (e) {
-                console.warn('Erro ao carregar elevadores:', e.message);
-            }
-
-            $('#vincularModal').modal('show');
+        function _getCheckedLiftIds() {
+            return Array.from(_vincularSelectedLiftIds);
         }
 
-        function _renderLiftOptions(selectedId) {
-            const sel = document.getElementById('vincularLiftSelect');
-            const query = (document.getElementById('vincularSearch').value || '').toLowerCase().trim();
-            sel.innerHTML = '<option value="">— Sem elevador —</option>';
-            _allLifts.forEach(lift => {
+        function _normalizeLiftSearchText(value) {
+            return String(value || '')
+                .toLowerCase()
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .replace(/[^a-z0-9\s/-]/g, ' ')
+                .replace(/\s+/g, ' ')
+                .trim();
+        }
+
+        function _buildLiftLabel(lift) {
+            const addr = lift.address || {};
+            const addrStr = typeof addr === 'string'
+                ? addr
+                : [addr.street, addr.zipCode, addr.city].filter(Boolean).join(', ');
+            const mun = lift.municipalNumber ? `Nº ${lift.municipalNumber}` : '';
+            const client = lift.clientName || '';
+            return [mun, addrStr, client].filter(Boolean).join(' ');
+        }
+
+        function _updateSelectedCount() {
+            const el = document.getElementById('vincularSelectedCount');
+            if (!el) return;
+            const count = _vincularSelectedLiftIds.size;
+            el.textContent = count > 0
+                ? `${count} elevador(es) selecionado(s)`
+                : 'Sem seleção (vai desvincular)';
+        }
+
+        function _syncVisibleChecksToSelection() {
+            const visible = document.querySelectorAll('#vincularCheckList input[type=checkbox]');
+            visible.forEach(cb => {
+                const id = String(cb.value);
+                if (cb.checked) _vincularSelectedLiftIds.add(id);
+                else _vincularSelectedLiftIds.delete(id);
+            });
+            _updateSelectedCount();
+        }
+
+        function _onVincularLiftToggle(cb) {
+            const id = String(cb.value);
+            if (cb.checked) _vincularSelectedLiftIds.add(id);
+            else _vincularSelectedLiftIds.delete(id);
+            _updateSelectedCount();
+        }
+
+        function _clearVincularSelection() {
+            _vincularSelectedLiftIds.clear();
+            document.querySelectorAll('#vincularCheckList input[type=checkbox]').forEach(cb => {
+                cb.checked = false;
+            });
+            _updateSelectedCount();
+            return false;
+        }
+
+        function _renderLiftList(lifts, selectedIds) {
+            const container = document.getElementById('vincularCheckList');
+            if (!lifts || lifts.length === 0) {
+                container.innerHTML = '<p class="text-muted small text-center py-2">Nenhum elevador encontrado</p>';
+                _updateSelectedCount();
+                return;
+            }
+            container.innerHTML = lifts.map(lift => {
                 const addr = lift.address || {};
                 const addrStr = typeof addr === 'string'
                     ? addr
                     : [addr.street, addr.zipCode, addr.city].filter(Boolean).join(', ');
-                const mun = lift.municipalNumber ? `Nº ${lift.municipalNumber}` : '';
-                const label = [mun, addrStr].filter(Boolean).join(' — ') || lift._id;
-                if (query && !label.toLowerCase().includes(query)) return;
-                const opt = document.createElement('option');
-                opt.value = lift._id;
-                opt.textContent = label;
-                if (String(lift._id) === String(selectedId)) opt.selected = true;
-                sel.appendChild(opt);
-            });
+                const mun = lift.municipalNumber ? `<strong>Nº ${lift.municipalNumber}</strong> — ` : '';
+                const client = lift.clientName ? ` <small class="text-muted">(${lift.clientName})</small>` : '';
+                const checked = selectedIds.includes(String(lift._id)) ? 'checked' : '';
+                return `<div class="form-check py-1" style="border-bottom:1px solid #f0f0f0;">
+                    <input class="form-check-input" type="checkbox" value="${lift._id}" id="lift_cb_${lift._id}" ${checked}
+                        onchange="_onVincularLiftToggle(this)">
+                    <label class="form-check-label" for="lift_cb_${lift._id}" style="cursor:pointer;font-size:13px;">
+                        ${mun}${addrStr}${client}
+                    </label>
+                </div>`;
+            }).join('');
+            _updateSelectedCount();
+        }
+
+        async function _fetchAndRenderLifts(search, selectedIds) {
+            const container = document.getElementById('vincularCheckList');
+            container.innerHTML = '<p class="text-muted small text-center py-2"><i class="fas fa-spinner fa-spin"></i> A carregar...</p>';
+            try {
+                const params = search ? `?search=${encodeURIComponent(search)}&limit=80` : `?limit=5000`;
+                const res = await fetch(`${API_BASE_URL}/api/lifts${params}`, {
+                    headers: { 'Authorization': `Bearer ${getToken()}` }
+                });
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                const json = await res.json();
+                const lifts = (json && json.data && Array.isArray(json.data.lifts))
+                    ? json.data.lifts
+                    : (json && Array.isArray(json.data)
+                        ? json.data
+                        : (json && Array.isArray(json.lifts) ? json.lifts : []));
+                if (!search) _allLifts = lifts;
+                _renderLiftList(lifts, selectedIds);
+            } catch (e) {
+                container.innerHTML = '<p class="text-danger small text-center py-2">Erro ao carregar elevadores</p>';
+                console.warn('Erro ao carregar elevadores:', e.message);
+            }
+        }
+
+        async function abrirModalVincular(orcamentoId, currentLiftId) {
+            _vincularOrcamentoId = orcamentoId;
+            const orc = _orcamentosCache.find(o => String(o._id) === String(orcamentoId));
+            const moradaHint = orc ? (orc.cliente?.morada || '').split('\n')[0].replace(/'/g, '').trim() : '';
+
+            if (orc?.lifts && Array.isArray(orc.lifts) && orc.lifts.length > 0) {
+                _vincularCurrentLiftIds = orc.lifts
+                    .map(l => {
+                        if (typeof l === 'string') return l;
+                        if (l && l._id) return String(l._id);
+                        if (l && l.liftId) return String(l.liftId);
+                        if (l && l.id) return String(l.id);
+                        return null;
+                    })
+                    .filter(Boolean);
+            } else if (orc?.liftId || currentLiftId) {
+                _vincularCurrentLiftIds = [String(orc?.liftId || currentLiftId)];
+            } else {
+                _vincularCurrentLiftIds = [];
+            }
+            _vincularSelectedLiftIds = new Set(_vincularCurrentLiftIds);
+
+            const searchInput = document.getElementById('vincularSearch');
+            searchInput.value = '';
+
+            await _fetchAndRenderLifts('', _vincularCurrentLiftIds);
+
+            const hintText = _vincularCurrentLiftIds.length === 0 && moradaHint
+                ? moradaHint.split(',')[0].trim()
+                : '';
+            if (hintText) {
+                searchInput.value = hintText;
+                _renderLiftOptions();
+            }
+
+            _updateSelectedCount();
+
+            $('#vincularModal').modal('show');
+        }
+
+        function _renderLiftOptions() {
+            _syncVisibleChecksToSelection();
+            const merged = [...new Set([...Array.from(_vincularSelectedLiftIds), ..._vincularCurrentLiftIds])];
+            clearTimeout(_vincularSearchTimer);
+            const query = (document.getElementById('vincularSearch').value || '').trim();
+            _vincularSearchTimer = setTimeout(() => {
+                if (query.length === 0) {
+                    _renderLiftList(_allLifts, merged);
+                    return;
+                }
+
+                const normalizedQuery = _normalizeLiftSearchText(query);
+                const localMatches = _allLifts.filter(lift => {
+                    const label = _buildLiftLabel(lift);
+                    return _normalizeLiftSearchText(label).includes(normalizedQuery);
+                });
+
+                if (localMatches.length > 0 || query.length < 2) {
+                    _renderLiftList(localMatches, merged);
+                    return;
+                }
+
+                // Keep picker usable even when search text is strict or formatted differently.
+                _renderLiftList(_allLifts, merged);
+            }, 300);
         }
 
         async function confirmarVincular() {
             if (!_vincularOrcamentoId) return;
-            const liftId = document.getElementById('vincularLiftSelect').value;
+            _syncVisibleChecksToSelection();
+            const liftIds = _getCheckedLiftIds();
             try {
                 const res = await fetch(`${API_BASE_URL}/api/orcamentos/${_vincularOrcamentoId}/link-lift`, {
                     method: 'PATCH',
@@ -829,14 +958,11 @@
                         'Authorization': `Bearer ${getToken()}`,
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ liftId: liftId || null })
+                    body: JSON.stringify({ liftIds })
                 });
                 const data = await res.json();
                 if (!data.success) throw new Error(data.message);
-                const msg = liftId
-                    ? `✅ Vinculado: ${data.liftAddress || data.municipalNumber || ''}`
-                    : '✅ Elevador desvinculado.';
-                alert(msg);
+                alert(`✅ ${data.message}`);
                 $('#vincularModal').modal('hide');
                 carregarOrcamentos();
             } catch (err) {
@@ -905,13 +1031,21 @@ $(document).ready(function() {
                     <label><i class="fas fa-search mr-1 text-secondary"></i>Pesquisar por morada ou N.º</label>
                     <input type="text" class="form-control mb-2" id="vincularSearch"
                            placeholder="Digite morada, código postal ou N.º câmara..."
-                           oninput="_renderLiftOptions(null)">
-                    <label for="vincularLiftSelect"><i class="fas fa-elevator mr-1 text-primary"></i>Elevador</label>
-                    <select class="form-control" id="vincularLiftSelect" size="6" style="height:auto;">
-                        <option value="">— Sem elevador —</option>
-                    </select>
-                    <small class="form-text text-muted">
-                        Os elevadores são listados com N.º de Câmara e morada.
+                           oninput="_renderLiftOptions()">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <label class="mb-0"><i class="fas fa-check-square mr-1 text-primary"></i>Selecionar elevadores</label>
+                        <a href="#" class="small text-secondary" onclick="return _clearVincularSelection();">
+                            <i class="fas fa-times-circle mr-1"></i>Limpar seleção
+                        </a>
+                    </div>
+                    <small id="vincularSelectedCount" class="text-primary d-block mb-2">Sem seleção (vai desvincular)</small>
+                    <div id="vincularCheckList" class="border rounded bg-white"
+                         style="max-height:240px;overflow-y:auto;padding:6px 12px;">
+                        <p class="text-muted small text-center py-2">A carregar...</p>
+                    </div>
+                    <small class="form-text text-muted mt-1">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        Pode selecionar vários elevadores. Sem seleção = desvincular.
                     </small>
                 </div>
             </div>
