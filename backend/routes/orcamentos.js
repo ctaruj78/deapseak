@@ -879,13 +879,7 @@ router.put('/:id', authenticate, authorizeRoles('admin', 'dispatcher'), async (r
             });
         }
         
-        // Não permitir editar se já aprovado
-        if (orcamento.status === 'aprovado') {
-            return res.status(400).json({
-                success: false,
-                message: 'Orçamento aprovado não pode ser editado'
-            });
-        }
+        const wasApproved = orcamento.status === 'aprovado';
         
         const { cliente, servicos, subtotal, iva, total, notas, status, numero, data, lifts: bodyLifts, liftAddress: bodyLiftAddress } = req.body;
         
@@ -905,12 +899,22 @@ router.put('/:id', authenticate, authorizeRoles('admin', 'dispatcher'), async (r
             if (bodyLifts.length > 0) orcamento.liftId = bodyLifts[0];
         }
         if (bodyLiftAddress !== undefined) orcamento.liftAddress = bodyLiftAddress || null;
+
+        if (wasApproved) {
+            orcamento.status = 'rascunho';
+            orcamento.dataResposta = null;
+            orcamento.aprovadoPor = null;
+            orcamento.aprovadoPorUser = null;
+            orcamento.observacao = null;
+        }
         
         await orcamento.save();
         
         res.json({
             success: true,
-            message: 'Orçamento atualizado com sucesso',
+            message: wasApproved
+                ? 'Orçamento atualizado e reaberto como rascunho'
+                : 'Orçamento atualizado com sucesso',
             data: orcamento
         });
     } catch (error) {
