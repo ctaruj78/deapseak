@@ -311,8 +311,42 @@
                     </div>
                 </div>
 
+                <!-- Rota Otimizada -->
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <div class="card border-success shadow-sm">
+                            <div class="card-header bg-success text-white d-flex align-items-center justify-content-between py-2">
+                                <h5 class="mb-0"><i class="fas fa-route mr-2"></i>Rota Otimizada do Dia</h5>
+                                <div>
+                                    <button class="btn btn-sm btn-light mr-2" onclick="optimizeRoute()" id="btnOptimizeRoute">
+                                        <i class="fas fa-magic mr-1"></i>Calcular rota
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-light" onclick="askAIRoute()" title="Pedir rota ao assistente AI">
+                                        <i class="fas fa-robot mr-1"></i>Pedir ao AI
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card-body p-0" id="routeCardBody">
+                                <div class="text-center text-muted py-3" id="routeEmptyState">
+                                    <i class="fas fa-map-marked-alt fa-2x mb-2 d-block"></i>
+                                    Clique em <strong>Calcular rota</strong> para obter o percurso otimizado das suas tarefas de hoje.
+                                </div>
+                                <div id="routeResult" style="display:none;">
+                                    <div class="px-3 pt-2 pb-1 border-bottom bg-light d-flex justify-content-between align-items-center">
+                                        <small class="text-muted" id="routeSummary"></small>
+                                        <button class="btn btn-xs btn-outline-secondary btn-sm" onclick="document.getElementById('routeResult').style.display='none'; document.getElementById('routeEmptyState').style.display='block';">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                    <ol class="list-group list-group-flush" id="routeList" style="counter-reset: route-counter;"></ol>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Assistente do técnico -->
-                <div class="row mt-4">
+                <div class="row mt-3">
                     <div class="col-12">
                         <div class="card border-warning shadow-sm">
                             <div class="card-body d-flex flex-column flex-md-row align-items-md-center justify-content-between">
@@ -321,8 +355,8 @@
                                     <p class="mb-0 text-muted">Checklists, diagnóstico rápido e respostas seguras para a intervenção de hoje.</p>
                                 </div>
                                 <div>
-                                    <a class="btn btn-warning mr-2 mb-2 mb-md-0" href="#" onclick="location.href='/pages/ai-assistant/ai-assistant.html?role=technician&prompt=' + encodeURIComponent('Gera um checklist rápido e 7 perguntas de diagnóstico para a visita técnica de hoje.'); return false;">
-                                        <i class="fas fa-rocket mr-1"></i>Abrir assistente técnico
+                                    <a class="btn btn-warning mr-2 mb-2 mb-md-0" href="#" onclick="location.href='/pages/ai-assistant/ai-assistant.html?role=technician&prompt=' + encodeURIComponent('Mostra as minhas tarefas de hoje e a rota otimizada.'); return false;">
+                                        <i class="fas fa-rocket mr-1"></i>Plano do dia
                                     </a>
                                     <a class="btn btn-outline-warning mr-2 mb-2 mb-md-0" href="#" onclick="location.href='/pages/ai-assistant/ai-assistant.html?role=technician&prompt=' + encodeURIComponent('Gera um checklist rápido para uma visita técnica de 30 minutos.'); return false;">Checklist</a>
                                     <a class="btn btn-outline-warning mr-2 mb-2 mb-md-0" href="#" onclick="location.href='/pages/ai-assistant/ai-assistant.html?role=technician&prompt=' + encodeURIComponent('Dá 7 perguntas de diagnóstico para uma falha recorrente de porta.'); return false;">Diagnóstico</a>
@@ -1075,6 +1109,88 @@
             setTimeout(() => {
                 notification.alert('close');
             }, 7000);
+        }
+
+        // ═══════════════════════════════════════════════════
+        // 🗺️ ROUTE OPTIMIZATION
+        // ═══════════════════════════════════════════════════
+        async function optimizeRoute(startLiftId) {
+            const btn = document.getElementById('btnOptimizeRoute');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>A calcular...';
+
+            try {
+                const token = localStorage.getItem('authToken');
+                const url = '/api/technician/route/optimize' + (startLiftId ? `?startLiftId=${startLiftId}` : '');
+                const res = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } });
+                const data = await res.json();
+
+                if (!data.success) throw new Error(data.message || 'Erro');
+
+                const route = data.data.route;
+                if (!route || route.length === 0) {
+                    toastr.info('Sem tarefas ativas para otimizar.');
+                    return;
+                }
+
+                // Render route list
+                const list = document.getElementById('routeList');
+                list.innerHTML = '';
+                const priorityColors = { urgent: 'danger', critical: 'danger', high: 'warning', normal: 'secondary', low: 'light' };
+
+                route.forEach(stop => {
+                    const distText = stop.distanceFromPrevKm !== null
+                        ? `<span class="text-muted ml-2"><i class="fas fa-arrow-right"></i> ${stop.distanceFromPrevKm} km</span>` : '';
+                    const requests = stop.requests.map(r => {
+                        const color = priorityColors[r.priority] || 'secondary';
+                        return `<span class="badge badge-${color} mr-1">${r.type}</span>`;
+                    }).join('');
+                    const mapsUrl = stop.coordinates
+                        ? `https://www.google.com/maps/search/?api=1&query=${stop.coordinates.lat},${stop.coordinates.lng}`
+                        : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(stop.address)}`;
+
+                    const noCoordWarn = !stop.coordinates ? '<i class="fas fa-exclamation-triangle text-warning ml-1" title="Sem coordenadas GPS"></i>' : '';
+
+                    list.innerHTML += `
+                        <li class="list-group-item px-3 py-2">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <strong class="text-success">${stop.order}.</strong>
+                                    <strong>${stop.address}</strong>${noCoordWarn}${distText}
+                                    <div class="mt-1">${requests}</div>
+                                </div>
+                                <div class="ml-2 text-nowrap">
+                                    <a href="${mapsUrl}" target="_blank" class="btn btn-xs btn-outline-primary btn-sm" title="Abrir no Google Maps">
+                                        <i class="fas fa-map-marker-alt"></i>
+                                    </a>
+                                    <button class="btn btn-xs btn-outline-success btn-sm ml-1" onclick="optimizeRoute('${stop.liftId}')" title="Começar daqui">
+                                        <i class="fas fa-play"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </li>`;
+                });
+
+                // Summary
+                const noCoords = data.data.liftsWithoutCoords;
+                let summary = `${route.length} paragens · ${data.data.totalDistance} km total`;
+                if (noCoords > 0) summary += ` · ⚠️ ${noCoords} sem GPS`;
+                document.getElementById('routeSummary').textContent = summary;
+
+                document.getElementById('routeEmptyState').style.display = 'none';
+                document.getElementById('routeResult').style.display = 'block';
+
+            } catch (err) {
+                toastr.error('Erro ao calcular rota: ' + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-magic mr-1"></i>Calcular rota';
+            }
+        }
+
+        function askAIRoute() {
+            const prompt = 'Mostra as minhas tarefas de hoje com a rota otimizada. Começa pelo mais urgente.';
+            location.href = '/pages/ai-assistant/ai-assistant.html?role=technician&prompt=' + encodeURIComponent(prompt);
         }
     </script>
     <script src="/assets/js/table-drag-scroll.js"></script>

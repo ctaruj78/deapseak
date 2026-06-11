@@ -7025,6 +7025,156 @@ app.post('/api/users/:id/reset-password', authenticateToken, async (req, res) =>
     }
 });
 
+// ═══════════════════════════════════════════════════════════
+// 🗺️  ROUTE OPTIMIZATION — nearest-neighbor TSP (Haversine)
+// ═══════════════════════════════════════════════════════════
+
+// Greedy nearest-neighbor algorithm — O(n²), good for <200 lifts
+function optimizeRouteNN(lifts, startIdx) {
+    const n = lifts.length;
+    if (n === 0) return [];
+    const visited = new Array(n).fill(false);
+    const route = [];
+    let current = startIdx >= 0 && startIdx < n ? startIdx : 0;
+    visited[current] = true;
+    route.push(current);
+
+    for (let step = 1; step < n; step++) {
+        let best = -1, bestDist = Infinity;
+        const [cLng, cLat] = lifts[current].location?.coordinates || [0, 0];
+        for (let j = 0; j < n; j++) {
+            if (visited[j]) continue;
+            const [jLng, jLat] = lifts[j].location?.coordinates || [0, 0];
+            if (!jLat && !jLng) continue;
+            const d = haversineKm(cLat, cLng, jLat, jLng);
+            if (d < bestDist) { bestDist = d; best = j; }
+        }
+        if (best === -1) {
+            // remaining lifts have no coords — append them at the end
+            for (let j = 0; j < n; j++) { if (!visited[j]) { visited[j] = true; route.push(j); } }
+            break;
+        }
+        visited[best] = true;
+        route.push(best);
+        current = best;
+    }
+    return route;
+}
+
+// GET /api/technician/route/optimize
+// Query: ?startLiftId=xxx  (optional — defaults to first assigned lift)
+// Returns ordered list of lifts with distances for the calling technician
+app.get('/api/technician/route/optimize', authenticateToken, async (req, res) => {
+    try {
+        if (!db) return res.status(503).json({ success: false, message: 'DB unavailable' });
+        const userId = req.user.id || req.user.userId || req.user._id;
+        const role = req.user.role;
+
+        // Admins/dispatchers can query for any tech; techs only see their own
+        let techId = userId;
+        if ((role === 'admin' || role === 'dispatcher') && req.query.technicianId) {
+            techId = req.query.technicianId;
+        }
+
+        // 1. Get active requests for the technician
+        const techIdStr = String(techId);
+        const activeRequests = await db.collection('requests').find({
+            $or: [{ assignedTo: techIdStr }, { technicianId: techIdStr }],
+            status: { $in: ['pending', 'assigned', 'in_progress', 'scheduled'] }
+        }).toArray();
+
+        if (activeRequests.length === 0) {
+            return res.json({ success: true, data: { route: [], totalDistance: 0, message: 'Sem tarefas ativas' } });
+        }
+
+        // 2. Get unique lift IDs from requests
+        const liftIdSet = new Set(activeRequests.map(r => String(r.liftId)).filter(Boolean));
+        const liftIds = [...liftIdSet];
+        const liftDocs = await db.collection('lifts').find({
+            _id: { $in: liftIds.map(id => { try { return new ObjectId(id); } catch(e) { return id; } }) }
+        }).toArray();
+
+        // 3. Map requests to lifts
+        const liftMap = new Map(liftDocs.map(l => [String(l._id), l]));
+        const liftsWithRequests = liftIds
+            .map(id => liftMap.get(id))
+            .filter(Boolean);
+
+        if (liftsWithRequests.length === 0) {
+            return res.json({ success: true, data: { route: [], totalDistance: 0, message: 'Ліфти не знайдені' } });
+        }
+
+        // 4. Determine start index
+        const startLiftId = req.query.startLiftId;
+        let startIdx = 0;
+        if (startLiftId) {
+            const idx = liftsWithRequests.findIndex(l => String(l._id) === String(startLiftId));
+            if (idx >= 0) startIdx = idx;
+        }
+
+        // 5. Run nearest-neighbor optimization
+        const routeIndices = optimizeRouteNN(liftsWithRequests, startIdx);
+
+        // 6. Build response with distances
+        let totalDistance = 0;
+        const routeWithDistances = routeIndices.map((idx, step) => {
+            const lift = liftsWithRequests[idx];
+            const [lng, lat] = lift.location?.coordinates || [null, null];
+            const hasCoords = lat && lng && !(lat === 0 && lng === 0);
+
+            let distFromPrev = null;
+            if (step > 0 && hasCoords) {
+                const prevLift = liftsWithRequests[routeIndices[step - 1]];
+                const [pLng, pLat] = prevLift.location?.coordinates || [null, null];
+                if (pLat && pLng) {
+                    distFromPrev = Math.round(haversineKm(pLat, pLng, lat, lng) * 10) / 10;
+                    totalDistance += distFromPrev;
+                }
+            }
+
+            // Get requests for this lift
+            const liftRequests = activeRequests.filter(r => String(r.liftId) === String(lift._id));
+            const addr = lift.address
+                ? (typeof lift.address === 'object'
+                    ? [lift.address.street, lift.address.zipCode, lift.address.city].filter(Boolean).join(', ')
+                    : String(lift.address))
+                : (lift.location || 'Sem morada');
+
+            return {
+                order: step + 1,
+                liftId: String(lift._id),
+                municipalNumber: lift.municipalNumber || null,
+                address: addr,
+                city: lift.address?.city || lift.municipality?.name || null,
+                coordinates: hasCoords ? { lat, lng } : null,
+                distanceFromPrevKm: distFromPrev,
+                requests: liftRequests.map(r => ({
+                    id: String(r._id),
+                    type: r.type || r.requestType || 'maintenance',
+                    priority: r.priority || 'normal',
+                    status: r.status,
+                    description: r.description || r.title || ''
+                }))
+            };
+        });
+
+        res.json({
+            success: true,
+            data: {
+                route: routeWithDistances,
+                totalDistance: Math.round(totalDistance * 10) / 10,
+                totalStops: routeWithDistances.length,
+                liftsWithoutCoords: routeWithDistances.filter(s => !s.coordinates).length,
+                optimizedAt: new Date().toISOString()
+            }
+        });
+
+    } catch (err) {
+        console.error('❌ Route optimization error:', err);
+        res.status(500).json({ success: false, message: 'Erro ao otimizar rota' });
+    }
+});
+
 // Заявки на обслуговування
 
 // GET /api/requests/stats - статистика запитів (МАЄ БУТИ ПЕРЕД /api/requests/:id!)
@@ -8713,6 +8863,250 @@ function getDeadline(severity) {
 }
 
 // ═══════════════════════════════════════════════════════════
+// 🧠 SMART AI CONTEXT ENGINE — intent detection + DB fetch
+// ═══════════════════════════════════════════════════════════
+
+function _fmtLift(lift, includeInspection = false) {
+    const addr = typeof lift.address === 'object'
+        ? [lift.address.street, lift.address.zipCode, lift.address.city].filter(Boolean).join(', ')
+        : (lift.address || lift.location || 'Sem morada');
+    let s = `• Elevador ${lift.municipalNumber || lift._id}: ${addr}`;
+    if (lift.status) s += ` | Estado: ${lift.status}`;
+    if (lift.inspectionStatus) s += ` | Inspeção: ${lift.inspectionStatus}`;
+    if (lift.nextInspectionDate) s += ` | Próxima inspeção: ${new Date(lift.nextInspectionDate).toLocaleDateString('pt-PT')}`;
+    return s;
+}
+
+async function buildSmartAIContext(lowerMsg, originalMsg, role, user, db) {
+    const userId = String(user.id || user.userId || user._id || '');
+    const userEmail = user.email || user.username || '';
+    const parts = [];
+
+    // ── Intent flags ──────────────────────────────────────────
+    const wantsMyLifts    = /meus elevadores|os meus|minha lista|minhas instalações|elevadores atribuídos|minha carteira|my lifts/i.test(lowerMsg);
+    const wantsMyTasks    = /minhas tarefas|meu trabalho|pendentes|por fazer|tarefas hoje|trabalho de hoje|pedidos atribuídos|my tasks|meus pedidos/i.test(lowerMsg);
+    const wantsRoute      = /rota|caminho|percurso|itinerário|ordem de visita|otimizar|mais curto|minimizar deslocação|trajeto/i.test(lowerMsg);
+    const wantsUrgent     = /urgent|c1|crítico|crítica|imobilizado|parado|avaria/i.test(lowerMsg);
+    const wantsStats      = /estatística|quantos|total|resumo|overview|visão geral|relatório|quantas inspeções/i.test(lowerMsg);
+    const wantsInspections = /inspeção|inspeções|próxima inspeção|vencida|vencidas|expirada|inspection/i.test(lowerMsg);
+    const wantsClients    = /clientes|meus clientes|client/i.test(lowerMsg) && role !== 'client';
+    const wantsTechs      = /técnicos|técnico disponível|quem está|tecnicians/i.test(lowerMsg) && (role === 'admin' || role === 'dispatcher');
+
+    // Address keyword search (always)
+    const addrMatch = lowerMsg.match(/(?:rua|avenida|av\.?|praça|travessa|beco|calçada|estrada|casal|largo|quinta)\s+[\w\sáàâãéêíóôõúüçÁÀÂÃÉÊÍÓÔÕÚÜÇ\-]+/gi);
+
+    // Municipal number search
+    const munMatch = lowerMsg.match(/\b\d{3,6}\/\d{2,4}\b|\binstalação\s+\d+|\bmunic\w*\s+\d+/i);
+
+    // ── 1. Address lookup (any role) ──────────────────────────
+    if (addrMatch?.length > 0) {
+        const rawTerm = addrMatch[0].trim().split(/\s+/).slice(0, 5).join('\\s+');
+        const liftsFound = await db.collection('lifts').find({
+            $or: [
+                { 'address.street': { $regex: rawTerm, $options: 'i' } },
+                { address: { $regex: rawTerm, $options: 'i' } }
+            ]
+        }).limit(5).toArray();
+
+        if (liftsFound.length > 0) {
+            const block = ['📍 ELEVADORES ENCONTRADOS POR MORADA:'];
+            for (const lift of liftsFound) {
+                block.push(_fmtLift(lift));
+                const insp = await db.collection('inspections').findOne(
+                    { $or: [{ liftId: lift._id.toString() }, { liftId: lift._id }] },
+                    { sort: { createdAt: -1 } }
+                );
+                if (insp) {
+                    const c1 = (insp.clauses||[]).filter(c=>c.type==='C1').length;
+                    const c2 = (insp.clauses||[]).filter(c=>c.type==='C2').length;
+                    block.push(`  Último relatório: ${insp.result||insp.status||'?'} | C1=${c1} C2=${c2}`);
+                }
+            }
+            parts.push(block.join('\n'));
+        }
+    }
+
+    // ── 2. Municipal number lookup ────────────────────────────
+    if (munMatch) {
+        const numStr = munMatch[0].replace(/\s+/g,'');
+        const lift = await db.collection('lifts').findOne({
+            $or: [{ municipalNumber: { $regex: numStr, $options: 'i' } }, { installationNumber: numStr }]
+        });
+        if (lift) {
+            parts.push(`📋 ELEVADOR #${numStr}:\n${_fmtLift(lift)}`);
+        }
+    }
+
+    // ── 3. Role: TECHNICIAN ───────────────────────────────────
+    if (role === 'technician' || role === 'tech') {
+        if (wantsMyLifts || wantsMyTasks || wantsRoute || wantsUrgent) {
+            const techIdStr = userId;
+            const myRequests = await db.collection('requests').find({
+                $or: [{ assignedTo: techIdStr }, { technicianId: techIdStr }],
+                status: { $in: ['pending', 'assigned', 'in_progress', 'scheduled'] }
+            }).limit(30).toArray();
+
+            if (myRequests.length > 0) {
+                const liftIds = [...new Set(myRequests.map(r => String(r.liftId)).filter(Boolean))];
+                const liftDocs = liftIds.length > 0
+                    ? await db.collection('lifts').find({ _id: { $in: liftIds.map(id => { try { return new ObjectId(id); } catch(e){ return id; } }) } }).toArray()
+                    : [];
+                const liftMap = new Map(liftDocs.map(l => [String(l._id), l]));
+
+                const urgentTasks = myRequests.filter(r => r.priority === 'urgent' || r.priority === 'critical');
+                const block = [`🔧 AS MINHAS TAREFAS ATIVAS (${myRequests.length} pedidos, ${liftIds.length} elevadores):`];
+                if (urgentTasks.length > 0) block.push(`⚠️ URGENTES: ${urgentTasks.length}`);
+
+                for (const req of myRequests.slice(0, 15)) {
+                    const lift = liftMap.get(String(req.liftId));
+                    const addr = lift ? (typeof lift.address === 'object'
+                        ? [lift.address.street, lift.address.city].filter(Boolean).join(', ')
+                        : lift.address || 'Sem morada') : 'ليفт não encontrado';
+                    block.push(`  • ${addr} | ${req.type||req.requestType||'manutenção'} | ${req.priority||'normal'} | ${req.status}`);
+                    if (req.description) block.push(`    "${(req.description||'').slice(0,80)}"`);
+                }
+                parts.push(block.join('\n'));
+            } else {
+                parts.push('✅ Sem tarefas ativas atribuídas neste momento.');
+            }
+
+            // Route optimization hint
+            if (wantsRoute && myRequests.length > 1) {
+                const routeResp = await fetch(`http://localhost:${process.env.DEAPSEAK_PORT||5000}/api/technician/route/optimize`, {
+                    headers: { 'Authorization': `Bearer internal`, 'x-internal-call': '1', 'x-tech-id': userId }
+                }).catch(() => null);
+                // Direct calculation instead of HTTP call
+                const liftIds2 = [...new Set(myRequests.map(r => String(r.liftId)).filter(Boolean))];
+                const liftDocs2 = liftIds2.length > 0
+                    ? await db.collection('lifts').find({ _id: { $in: liftIds2.map(id => { try { return new ObjectId(id); } catch(e){ return id; } }) } }).toArray()
+                    : [];
+                const routeIndices = optimizeRouteNN(liftDocs2, 0);
+                if (routeIndices.length > 0) {
+                    const routeBlock = ['🗺️ ROTA OTIMIZADA (menor distância total):'];
+                    let totalDist = 0;
+                    routeIndices.forEach((idx, step) => {
+                        const lift = liftDocs2[idx];
+                        const addr = typeof lift?.address === 'object'
+                            ? [lift.address.street, lift.address.city].filter(Boolean).join(', ')
+                            : (lift?.address || 'Sem morada');
+                        let distStr = '';
+                        if (step > 0) {
+                            const prev = liftDocs2[routeIndices[step-1]];
+                            const [pLng, pLat] = prev?.location?.coordinates || [0,0];
+                            const [cLng, cLat] = lift?.location?.coordinates || [0,0];
+                            if (pLat && cLat) {
+                                const d = haversineKm(pLat, pLng, cLat, cLng);
+                                totalDist += d;
+                                distStr = ` (+${d.toFixed(1)}km)`;
+                            }
+                        }
+                        routeBlock.push(`  ${step+1}. ${addr}${distStr}`);
+                    });
+                    routeBlock.push(`  Total: ~${totalDist.toFixed(1)} km`);
+                    parts.push(routeBlock.join('\n'));
+                }
+            }
+        }
+
+        // Upcoming inspections for tech's lifts
+        if (wantsInspections) {
+            const now = new Date();
+            const in60days = new Date(Date.now() + 60*24*60*60*1000);
+            const upcoming = await db.collection('lifts').find({
+                $or: [{ assignedTechId: userId }, { assignedTechEmail: userEmail }],
+                nextInspectionDate: { $lte: in60days }
+            }).sort({ nextInspectionDate: 1 }).limit(10).toArray();
+            if (upcoming.length > 0) {
+                const block = ['📅 INSPEÇÕES PRÓXIMAS (60 dias):'];
+                upcoming.forEach(l => block.push(_fmtLift(l)));
+                parts.push(block.join('\n'));
+            }
+        }
+    }
+
+    // ── 4. Role: CLIENT ───────────────────────────────────────
+    if (role === 'client') {
+        const clientLifts = await db.collection('lifts').find({
+            $or: [{ clientId: userId }, { 'client.id': userId }, { clientEmail: userEmail }, { 'client.email': userEmail }]
+        }).limit(20).toArray();
+
+        if (clientLifts.length > 0 && (wantsMyLifts || wantsInspections || wantsUrgent || wantsStats)) {
+            const block = [`🏢 OS MEUS ELEVADORES (${clientLifts.length}):`];
+            for (const lift of clientLifts) {
+                block.push(_fmtLift(lift));
+                if (wantsInspections) {
+                    const insp = await db.collection('inspections').findOne(
+                        { $or: [{ liftId: lift._id.toString() }, { liftId: lift._id }] },
+                        { sort: { createdAt: -1 } }
+                    );
+                    if (insp) {
+                        const c1 = (insp.clauses||[]).filter(c=>c.type==='C1').length;
+                        const c2 = (insp.clauses||[]).filter(c=>c.type==='C2').length;
+                        block.push(`  Última inspeção: ${insp.result||insp.status||'?'} | C1=${c1} C2=${c2}`);
+                    }
+                }
+            }
+            parts.push(block.join('\n'));
+        }
+
+        // Client's open requests
+        if (wantsMyTasks) {
+            const openReqs = await db.collection('requests').find({
+                $or: [{ clientId: userId }, { clientEmail: userEmail }],
+                status: { $nin: ['completed', 'cancelled', 'closed'] }
+            }).limit(10).toArray();
+            if (openReqs.length > 0) {
+                const block = [`📋 OS MEUS PEDIDOS ABERTOS (${openReqs.length}):`];
+                openReqs.forEach(r => block.push(`  • ${r.type||r.requestType||'pedido'} | ${r.status} | ${(r.description||'').slice(0,60)}`));
+                parts.push(block.join('\n'));
+            }
+        }
+    }
+
+    // ── 5. Role: DISPATCHER ───────────────────────────────────
+    if (role === 'dispatcher' || role === 'admin') {
+        if (wantsUrgent || wantsStats) {
+            const [urgentReqs, pendingCount, techList] = await Promise.all([
+                db.collection('requests').find({ priority: { $in: ['urgent','critical'] }, status: { $nin: ['completed','cancelled'] } }).limit(10).toArray(),
+                db.collection('requests').countDocuments({ status: 'pending' }),
+                wantsTechs ? db.collection('users').find({ role: { $in: ['technician','tech'] }, status: 'active' }).limit(10).toArray() : Promise.resolve([])
+            ]);
+
+            if (urgentReqs.length > 0) {
+                const block = [`🚨 PEDIDOS URGENTES/CRÍTICOS (${urgentReqs.length}):`];
+                urgentReqs.forEach(r => block.push(`  • ${r.type||'pedido'} | ${r.status} | ${(r.description||'').slice(0,60)}`));
+                parts.push(block.join('\n'));
+            }
+            if (pendingCount > 0) parts.push(`📊 Pedidos pendentes sem atribuição: ${pendingCount}`);
+            if (techList.length > 0) {
+                parts.push(`👷 TÉCNICOS ATIVOS (${techList.length}):\n` + techList.map(t => `  • ${t.firstName||''} ${t.lastName||''} (${t.email})`).join('\n'));
+            }
+        }
+
+        if (wantsStats) {
+            const [totalLifts, totalRequests, overdueInspections] = await Promise.all([
+                db.collection('lifts').countDocuments({}),
+                db.collection('requests').countDocuments({ status: { $nin: ['completed','cancelled'] } }),
+                db.collection('lifts').countDocuments({ nextInspectionDate: { $lt: new Date() } })
+            ]);
+            parts.push(`📊 VISÃO GERAL:\n  Elevadores: ${totalLifts}\n  Pedidos ativos: ${totalRequests}\n  Inspeções vencidas: ${overdueInspections}`);
+        }
+    }
+
+    // ── 6. ADMIN extra ────────────────────────────────────────
+    if (role === 'admin' && wantsStats) {
+        const [userCount, liftCount] = await Promise.all([
+            db.collection('users').countDocuments({}),
+            db.collection('lifts').countDocuments({})
+        ]);
+        parts.push(`🔑 ADMIN STATS: ${userCount} utilizadores | ${liftCount} elevadores`);
+    }
+
+    if (parts.length === 0) return null;
+    return '━━━ DADOS EM TEMPO REAL DA BASE DE DADOS FESTLIFT ━━━\n' + parts.join('\n\n') + '\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━';
+}
+
+// ═══════════════════════════════════════════════════════════
 // 🤖 AI CHAT WITH GOOGLE GEMINI
 // ═══════════════════════════════════════════════════════════
 
@@ -9832,64 +10226,134 @@ Diretiva 2006/42/CE (Diretiva Máquinas) — transposta por DL 103/2008:
 7. Em dúvida técnica complexa, recomenda consultar engenheiro especialista certificado`;
 
     const roleSpecific = {
-        admin: `\n\n👨‍💼 CONTEXTO ADMINISTRADOR FestLift:
-Ajudas o administrador do sistema. Prioridades:
+        admin: `\n\n👨‍💼 PERFIL: ADMINISTRADOR DO SISTEMA FestLift
+Utilizador: ${username}
 
-1. ANÁLISE — interpreta estatísticas, identifica elevadores vencidos, C1 pendentes, técnicos sobrecarregados
-2. CONFORMIDADE — prazos regulatórios: inspeções vencidas, C2 no limite dos 2 anos, EMIE a expirar
-3. UTILIZADORES — melhores práticas para atribuição de papéis, bloqueio de acessos, criação de técnicos
-4. RELATÓRIOS — orienta na geração de PDFs/Excel, KPIs, documentação para câmara municipal
-5. CONFIGURAÇÃO — definições do sistema, email Brevo, integrações, AI provider
+CAPACIDADES COMPLETAS — podes discutir qualquer aspecto do sistema.
 
-Nunca alteres dados diretamente — orienta sempre para a interface admin.
+PRIORIDADES DE RESPOSTA:
+1. ALERTAS CRÍTICOS — se os dados mostram C1 pendentes, inspeções vencidas ou elevadores imobilizados, menciona PRIMEIRO antes de qualquer outra coisa
+2. ANÁLISE INTELIGENTE — quando receberes dados da BD, interpreta-os: identifica padrões, anomalias, riscos sistémicos
+3. AÇÕES CONCRETAS — cada resposta deve terminar com "Próximo passo recomendado: ..."
+4. KPIs E MÉTRICAS — taxa de conformidade, SLA médio, distribuição de técnicos, municípios com maior risco
+5. CONFORMIDADE LEGAL — prazos do DL 320/2002, Despacho 27/2024, comunicações obrigatórias à câmara
+
+ESTILO: executivo, direto, baseado em dados. Usa tabelas quando comparas múltiplos itens.
+NUNCA alteres dados — orienta para a interface. Responde SEMPRE em Português (pt-PT).`,
+
+        dispatcher: `\n\n📋 PERFIL: OPERADOR / DISPATCHER FestLift
+Utilizador: ${username}
+
+MISSÃO: Coordenação eficiente do trabalho diário — atribuições, comunicação, resolução de conflitos.
+
+QUANDO RECEBES DADOS DA BD, age como um chefe de equipa:
+• Pedidos urgentes primeiro — sugere qual técnico atribuir e porquê
+• Elevadores com C1 — imobilização imediata, cliente a avisar HOJE
+• Técnico sobrecarregado? — redistribui a carga sugerindo qual mover
+• SLA prestes a vencer? — agenda intervencão preventiva
+
+FERRAMENTAS DISPONÍVEIS NO SISTEMA:
+• Assignments page — atribuir pedidos a técnicos
+• Route optimizer — otimizar percurso do técnico
+• Orcamentos — criar e enviar orçamentos
+• Email automático — notificar clientes
+
+COMUNICAÇÃO COM CLIENTES (modelos prontos quando pedires):
+- "Confirmação de agendamento de manutenção"
+- "Resultado de inspeção — próximos passos"
+- "Aviso de C1 — elevador temporariamente suspenso"
+- "Orçamento de reparação aprovado"
+
+FORMATO: lista acionável com prioridades 1→2→3. Sê objetivo e específico.
 Responde SEMPRE em Português (pt-PT).`,
 
-        dispatcher: `\n\n📞 CONTEXTO OPERADOR FestLift:
-Ajudas o operador a coordenar trabalho diário. Prioridades:
+        technician: `\n\n🔧 PERFIL: TÉCNICO DE CAMPO FestLift
+Utilizador: ${username}
 
-1. PLANEAMENTO — organiza agenda de inspeções/manutenções por distância, tempo e especialização do técnico
-2. PRIORIZAÇÃO — identifica urgências: C1 pendentes, elevadores imobilizados, SLA prestes a expirar
-3. COMUNICAÇÃO — frases modelo para clientes sobre prazos, atrasos, resultados de inspeção
-4. ORÇAMENTOS — orientação para criar e enviar orçamentos pelo sistema FestLift
-5. CONFLITOS — técnico ausente, dupla marcação, cliente insatisfeito: como resolver
+MISSÃO: Diagnóstico rápido, trabalho seguro, documentação correta.
 
-Formato: objetivo e acionável. Quando envolve priorização, usa lista ordenada 1→2→3.
-Nunca atribuis técnicos diretamente — usa a interface de Assignments.
-Responde SEMPRE em Português (pt-PT).`,
+QUANDO RECEBES DADOS DA BD (tarefas, rota):
+• Apresenta o plano de trabalho do dia com a rota otimizada
+• Destaca SEMPRE as tarefas urgentes/C1 primeiro — são prioridade absoluta
+• Para cada elevador: morada → tipo de intervenção → o que verificar primeiro
 
-        tech: `\n\n🔧 CONTEXTO TÉCNICO FestLift:
-Ajudas o técnico no terreno. Prioridade: SEGURANÇA e DIAGNÓSTICO RÁPIDO.
+DIAGNÓSTICO DE AVARIAS (formato obrigatório):
+  🔍 Sintoma identificado:
+  ⚡ Causas mais prováveis (80/20):
+  📋 Passos de diagnóstico (ordem lógica):
+  🔧 Solução recomendada:
+  ⚠️ Segurança: [sempre incluir se relevante]
 
-FORMATO PARA AVARIAS: Sintoma → Causas prováveis (80/20) → Passos de diagnóstico → Solução
-FORMATO PARA INSPEÇÃO: Artigo → Requisito → Estado → Classificação C1/C2/C3 + justificação
+INSPEÇÃO DL 320/2002 (formato):
+  Componente → Artigo/Norma → Estado observado → Classificação C1/C2/C3 → Justificação
 
-REGRAS DE SEGURANÇA (incluir sempre quando relevante):
-- ⚠️ Desliga o quadro elétrico ANTES de qualquer intervenção nos contactos de portas
-- ⚠️ NÃO remover o para-quedas sem cabine imobilizada e cuneada
-- ⚠️ Elevador com C1 NÃO pode voltar a serviço sem reavaliação da EIIE
+REGRAS DE SEGURANÇA (mencionar SEMPRE quando relevante):
+⚠️ Quadro desligado ANTES de tocar em contactos de portas
+⚠️ Para-quedas só com cabine imobilizada e cuneada
+⚠️ C1 encontrado = elevador IMOBILIZADO imediatamente, cliente avisado, EIIE convocada
+⚠️ Casa de máquinas: nunca sozinho se suspeita de gás/CO
 
-CAPACIDADES: diagnóstico de avarias, classificação C1/C2/C3, cálculos de dimensionamento,
-artigos de EN 81-20/50, DL 320/2002, procedimentos por tipo de elevador (elétrico/hidráulico/MRL).
+PODES CALCULAR: dimensionamento de cabos, carga nominal, fator de segurança, velocidade nominal
+NORMAS DOMINADAS: EN 81-1, EN 81-2, EN 81-20, EN 81-50, EN 81-70, EN 81-80, DL 320/2002, NP EN 13015
 
-Podes usar termos técnicos corretos.
-Responde SEMPRE em Português (pt-PT).`,
+Responde SEMPRE em Português (pt-PT). Usa termos técnicos corretos.`,
 
-        client: `\n\n👤 CONTEXTO CLIENTE FestLift:
-Falas com proprietário ou gestor de edifício. USA SEMPRE linguagem simples — ZERO jargão técnico.
+        tech: `\n\n🔧 PERFIL: TÉCNICO DE CAMPO FestLift
+Utilizador: ${username}
 
-QUANDO ANALISAS UM RELATÓRIO de inspeção, para CADA cláusula C1/C2/C3 apresenta OBRIGATORIAMENTE:
-  a) O que significa em palavras simples (como explicarias a um vizinho)
-  b) O risco CONCRETO para os utilizadores (ex: "a porta pode abrir com o elevador em andamento")
-  c) Prazo: C1=HOJE (imobilização imediata), C2=2 anos (calculas a data), C3=próxima manutenção
-  d) Consequências de NÃO corrigir: multa €2.500-€44.000 + seguro pode não pagar + responsabilidade criminal
+MISSÃO: Diagnóstico rápido, trabalho seguro, documentação correta.
 
-OUTROS TÓPICOS:
-- Custo médio de intervenção vs custo de acidente/multa (números concretos)
-- Como escolher EMIE certificada (verificar registo DGEG)
-- Direitos do proprietário face à empresa de manutenção
+QUANDO RECEBES DADOS DA BD (tarefas, rota):
+• Apresenta o plano de trabalho do dia com a rota otimizada
+• Destaca SEMPRE as tarefas urgentes/C1 primeiro — são prioridade absoluta
+• Para cada elevador: morada → tipo de intervenção → o que verificar primeiro
 
-REGRA ABSOLUTA: NUNCA mostras dados de outros clientes.
-Responde SEMPRE em Português (pt-PT) de forma tranquilizadora mas precisa.`
+DIAGNÓSTICO DE AVARIAS (formato obrigatório):
+  🔍 Sintoma identificado:
+  ⚡ Causas mais prováveis (80/20):
+  📋 Passos de diagnóstico (ordem lógica):
+  🔧 Solução recomendada:
+  ⚠️ Segurança: [sempre incluir se relevante]
+
+INSPEÇÃO DL 320/2002 (formato):
+  Componente → Artigo/Norma → Estado observado → Classificação C1/C2/C3 → Justificação
+
+REGRAS DE SEGURANÇA (mencionar SEMPRE quando relevante):
+⚠️ Quadro desligado ANTES de tocar em contactos de portas
+⚠️ Para-quedas só com cabine imobilizada e cuneada
+⚠️ C1 encontrado = elevador IMOBILIZADO imediatamente, cliente avisado, EIIE convocada
+
+PODES CALCULAR: dimensionamento de cabos, carga nominal, fator de segurança, velocidade nominal
+NORMAS DOMINADAS: EN 81-1, EN 81-2, EN 81-20, EN 81-50, EN 81-70, EN 81-80, DL 320/2002, NP EN 13015
+
+Responde SEMPRE em Português (pt-PT). Usa termos técnicos corretos.`,
+
+        client: `\n\n👤 PERFIL: CLIENTE / PROPRIETÁRIO FestLift
+Utilizador: ${username}
+
+MISSÃO: Explicar a situação dos elevadores de forma clara, sem alarmar desnecessariamente.
+
+LINGUAGEM: ZERO jargão técnico. Fala como se explicasses a um vizinho de confiança.
+
+QUANDO RECEBES DADOS DA BD (elevadores, inspeções):
+• Apresenta o estado de cada elevador de forma compreensível
+• C1? → "O elevador está suspenso por segurança. É necessário chamar a empresa de manutenção HOJE."
+• C2? → "Existe um problema que deve ser corrigido nos próximos 2 anos. Já está a ser tratado?"
+• Aprovado? → "O seu elevador está em conformidade. A próxima inspeção é em [data]."
+
+PARA CADA PROBLEMA (C1/C2/C3), EXPLICA SEMPRE:
+  📌 O que é: [em palavras simples]
+  ⚠️ O risco: [consequência concreta para utilizadores]
+  📅 Prazo: C1=hoje | C2=2 anos a partir da inspeção | C3=próxima manutenção
+  💶 Consequências de ignorar: multa €2.500–€44.000 + seguro pode não cobrir acidentes
+
+OUTROS SERVIÇOS:
+• Pedidos de intervenção — como criar e acompanhar no sistema
+• Orçamentos — como solicitar e avaliar
+• Escolha de EMIE — verificar registo DGEG em dgeg.gov.pt
+
+PRIVACIDADE ABSOLUTA: NUNCA revelas dados de outros clientes.
+Responde SEMPRE em Português (pt-PT) — tom tranquilizador, empático, mas preciso.`
     };
 
     return basePrompt + (roleSpecific[role] || roleSpecific.client);
@@ -10317,57 +10781,11 @@ app.post('/api/ai/chat', authenticateToken, aiLimiter, async (req, res) => {
         const lowerMessage = message.toLowerCase();
         
 
-        // STEP 0: DB LOOKUP — search for lifts and inspections matching the user message
+        // STEP 0: SMART DB CONTEXT — intent detection + role-based data fetch
         let dbContext = null;
         try {
             if (db) {
-                // Extract address keywords from message (Portuguese street types)
-                const addrMatch = lowerMessage.match(/(?:rua|avenida|av\.?|praça|travessa|beco|calçada|estrada|casal|largo|quinta)\s+[\w\s\-]+/gi);
-                if (addrMatch && addrMatch.length > 0) {
-                    // Take first match, use the first 4+ words as search term
-                    const rawTerm = addrMatch[0].trim().split(/\s+/).slice(0, 5).join('\s+');
-                    const liftsFound = await db.collection('lifts').find({
-                        $or: [
-                            { 'address.street': { $regex: rawTerm, $options: 'i' } },
-                            { address: { $regex: rawTerm, $options: 'i' } }
-                        ]
-                    }).limit(3).toArray();
-
-                    if (liftsFound.length > 0) {
-                        dbContext = 'ELEVADORES ENCONTRADOS NA BASE DE DADOS FESTLIFT:\n';
-                        for (const lift of liftsFound) {
-                            const addr = typeof lift.address === 'object'
-                                ? [lift.address.street, lift.address.zipCode, lift.address.city].filter(Boolean).join(', ')
-                                : (lift.address || 'Morada desconhecida');
-                            dbContext += `\nElevador ID: ${lift._id}\n`;
-                            dbContext += `  Morada: ${addr}\n`;
-                            dbContext += `  Estado: ${lift.inspectionStatus || lift.status || 'desconhecido'}\n`;
-                            if (lift.lastInspectionDate) dbContext += `  Última inspeção: ${new Date(lift.lastInspectionDate).toLocaleDateString('pt-PT')}\n`;
-                            if (lift.nextInspectionDate) dbContext += `  Próxima inspeção: ${new Date(lift.nextInspectionDate).toLocaleDateString('pt-PT')}\n`;
-                            if (lift.municipalNumber) dbContext += `  N.º municipal: ${lift.municipalNumber}\n`;
-                            if (lift.installationNumber) dbContext += `  N.º instalação: ${lift.installationNumber}\n`;
-                            // Get last inspection report
-                            const lastInsp = await db.collection('inspections').findOne(
-                                { $or: [{ liftId: lift._id.toString() }, { liftId: lift._id }] },
-                                { sort: { date: -1, inspectionDate: -1, createdAt: -1 } }
-                            );
-                            if (lastInsp) {
-                                const inspDate = lastInsp.inspectionDate || lastInsp.date || lastInsp.createdAt;
-                                dbContext += `  Último relatório: ${inspDate ? new Date(inspDate).toLocaleDateString('pt-PT') : 'data desconhecida'}\n`;
-                                dbContext += `  Resultado: ${lastInsp.result || lastInsp.overallResult || lastInsp.status || 'desconhecido'}\n`;
-                                if (lastInsp.clauses && lastInsp.clauses.length > 0) {
-                                    const c1 = lastInsp.clauses.filter(c => c.type === 'C1').length;
-                                    const c2 = lastInsp.clauses.filter(c => c.type === 'C2').length;
-                                    const c3 = lastInsp.clauses.filter(c => c.type === 'C3').length;
-                                    dbContext += `  Cláusulas: C1=${c1}, C2=${c2}, C3=${c3}\n`;
-                                }
-                            } else {
-                                dbContext += `  Relatórios de inspeção: nenhum registado\n`;
-                            }
-                        }
-                        console.log(`🗄️ DB context built: ${liftsFound.length} lift(s) found`);
-                    }
-                }
+                dbContext = await buildSmartAIContext(lowerMessage, message, role, req.user, db);
             }
         } catch (dbLookupErr) {
             console.warn('⚠️ DB context lookup failed:', dbLookupErr.message);
@@ -10472,7 +10890,13 @@ app.post('/api/ai/chat/stream', authenticateToken, aiLimiter, async (req, res) =
 
         const systemPrompt = getSystemPromptForRole(role, username);
         const reportText = context?.reportText || null;
-        const contextualPrompt = buildAIUserPrompt(message, null, reportText, 50000, null);
+
+        // Smart DB context for streaming too
+        let streamDbContext = null;
+        if (db) {
+            try { streamDbContext = await buildSmartAIContext(message.toLowerCase(), message, role, req.user, db); } catch(_){}
+        }
+        const contextualPrompt = buildAIUserPrompt(message, null, reportText, 50000, streamDbContext);
 
         const streamModels = ['gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-flash-latest', 'gemini-flash-lite-latest'];
         let streamResult = null;
