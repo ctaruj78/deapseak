@@ -570,7 +570,12 @@ function extractViolations(text) {
 
     const isMetadataNoise = (description) => {
         const d = String(description || '').toLowerCase();
-        return /^(c[oó]digo\s+postal|tipo\s+de\s+inspe[cç][aã]o|ascensor\b|processo\s*n\.?|instala[cç][aã]o\s*n\.?|localidade\b|concelho\b|resultado\s+da\s+inspe[cç][aã]o)/i.test(d);
+        // Metadata/legend noise
+        if (/^(c[oó]digo\s+postal|tipo\s+de\s+inspe[cç][aã]o|ascensor\b|processo\s*n\.?|instala[cç][aã]o\s*n\.?|localidade\b|concelho\b|resultado\s+da\s+inspe[cç][aã]o)/i.test(d)) return true;
+        // Past-completed-action notes (e.g. "Foram substituidos os limitadores em 2023")
+        // These are informational observations that past work was done, NOT active violations.
+        if (/\bforam\s+(substitu[ií]dos|instalados|realizados|efetuados|executados|corrigidos|reparados|substituídos)\b/i.test(d)) return true;
+        return false;
     };
     
     console.log('\n🔍 [Bureau Veritas] Extracting Violations...');
@@ -643,14 +648,28 @@ function extractViolations(text) {
             searchText = text.substring(notaSectionStart, resultSectionStart);
             console.log(`  📋 Bureau Veritas format: violations table ${searchText.length} chars`);
         } else {
-            // CML або інший формат: порушення після NOTA до кінця (або до Lisboa/Porto/підпису)
+            // CML/GATECI/IEP format: violations after NOTA up to signature or next lift section
+            // Search for end markers ONLY in the text after notaSectionStart
+            const textAfterNota = text.substring(notaSectionStart);
+
+            const searchAfterNota = (pattern) => {
+                const offset = textAfterNota.search(pattern);
+                return offset > 0 ? notaSectionStart + offset : -1;  // >0 to skip the Nota header itself
+            };
+
+            // Next "Processo:" after the violations section = start of a second lift's cover page
+            const nextProcessoPos = searchAfterNota(/Processo:/);
+
             const endMarkers = [
-                text.search(/Lisboa,\s*\d{2}\s+de\s+\w+\s+de\s+\d{4}/i),
-                text.search(/Porto,\s*\d{2}\s+de\s+\w+\s+de\s+\d{4}/i),
-                text.search(/O\s+DIRETOR\s+T[ÉE]CNICO/i),
-                text.search(/www\.cm-lisboa\.pt/i)
-            ].filter(pos => pos !== -1);
-            
+                searchAfterNota(/Lisboa,\s*\d{1,2}\s+de\s+\w+\s+de\s+\d{4}/i),
+                searchAfterNota(/Porto,\s*\d{1,2}\s+de\s+\w+\s+de\s+\d{4}/i),
+                // Any "City, DD de Mês de YYYY" city-date closing signature
+                searchAfterNota(/[A-ZÁÀÃÂÉÊÍÓÕÔÚ][a-záàãâéêíóõôú]{2,},\s*\d{1,2}\s+de\s+[a-záàãâéêíóõôúA-Z]{3,}\s+de\s+\d{4}/),
+                searchAfterNota(/O\s+DIRETOR\s+T[ÉE]CNICO/i),
+                searchAfterNota(/www\.cm-lisboa\.pt/i),
+                nextProcessoPos  // stop before second lift's section in multi-lift PDFs
+            ].filter(pos => pos > notaSectionStart);
+
             const endPos = endMarkers.length > 0 ? Math.min(...endMarkers) : text.length;
             searchText = text.substring(notaSectionStart, endPos);
             console.log(`  📋 CML/Generic format: violations section ${searchText.length} chars (${notaSectionStart} to ${endPos})`);
@@ -736,9 +755,13 @@ function extractViolations(text) {
             }
 
             if (!isExplanationText(description) && !isMetadataNoise(description)) {
+                // For pipe-format violations (empty article, e.g. "C2 | DL. 513/70 ..."),
+                // skip immediate dedup so the parenthetical note on the next line gets
+                // appended first. cleanViolations() will dedup using the full 160-char key.
+                const isPipeFormat = !article && description.startsWith('| ');
                 const key = `${classification}-${article || 'NOART'}-${description.substring(0, 40)}`;
-                if (!seen.has(key)) {
-                    seen.add(key);
+                if (isPipeFormat || !seen.has(key)) {
+                    if (!isPipeFormat) seen.add(key);
                     currentViolation = createViolation(classification, article, description);
                     violations.push(currentViolation);
                     count1b++;

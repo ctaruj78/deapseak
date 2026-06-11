@@ -297,15 +297,32 @@ function inferResultStatus(text = '') {
 
 // ─── ПАРСИНГ ДАТИ ────────────────────────────────────────────────────────────
 
+const _PT_MONTHS = {
+    janeiro:1, fevereiro:2, março:3, marco:3, abril:4, maio:5, junho:6,
+    julho:7, agosto:8, setembro:9, outubro:10, novembro:11, dezembro:12
+};
+
 function parseInspectionDate(rawDate) {
     if (!rawDate) return null;
     const val = String(rawDate).trim();
 
+    // YYYY-MM-DD or YYYY/MM/DD or YYYY.MM.DD
     const ymd = val.match(/^(\d{4})[\/\-.](\d{1,2})[\/\-.](\d{1,2})$/);
     if (ymd) return new Date(Date.UTC(Number(ymd[1]), Number(ymd[2]) - 1, Number(ymd[3])));
 
+    // DD/MM/YYYY or DD-MM-YYYY or DD.MM.YYYY
     const dmy = val.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})$/);
     if (dmy) return new Date(Date.UTC(Number(dmy[3]), Number(dmy[2]) - 1, Number(dmy[1])));
+
+    // Portuguese: "24 de outubro de 2025" or "24 outubro 2025"
+    const ptNorm = val.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+    const ptMatch = ptNorm.match(/^(\d{1,2})\s+(?:de\s+)?([a-záàãâéêíóõôúç]+)\s+(?:de\s+)?(\d{4})$/);
+    if (ptMatch) {
+        const day = Number(ptMatch[1]);
+        const month = _PT_MONTHS[ptMatch[2]];
+        const year = Number(ptMatch[3]);
+        if (month && day >= 1 && day <= 31) return new Date(Date.UTC(year, month - 1, day));
+    }
 
     const parsed = new Date(val);
     return Number.isNaN(parsed.getTime()) ? null : parsed;
@@ -349,8 +366,9 @@ function applyUnifiedPostProcessing(result) {
             // C1: urgent reinspect within 30 days
             next.setUTCDate(next.getUTCDate() + 30);
         } else if (certType === 'reinspection') {
-            // Plain C2: reinspection required within 6 months (OI typically sets exact date in report)
-            next.setUTCMonth(next.getUTCMonth() + 6);
+            // Plain C2 per DL 320/2002: 30 days to request reinspection
+            // (report usually contains "Requerer Inspeção Periódica até:" which overrides this)
+            next.setUTCDate(next.getUTCDate() + 30);
         } else {
             // cert_2_years: clean cert, C3 only, or C2* with Despacho 17/2022
             next.setUTCMonth(next.getUTCMonth() + 24);

@@ -211,28 +211,31 @@ function extractNextInspectionDateFromRawText(text = '') {
  * Calculate validUntil based on inspection result and clause types.
  *
  * Rules per DL 320/2002 and Despacho 17/2022 (Portuguese elevator regulations):
- *  - C1 clauses (immobilization) → fix + reinspect within 30 days (urgent)
- *  - C2 clauses (reinspection)   → reinspect within 6 months (OI sets deadline in report)
+ *  - C1 clauses (immobilization) → immediate fix, reinspect within 30 days
+ *  - C2 clauses (reinspection)   → 30 days per DL 320/2002 (mainland Portugal)
+ *    NOTE: the PDF often contains "Requerer Inspeção Periódica até: DD de Mês de YYYY"
+ *    which is used first (via extractNextInspectionDateFromRawText); this fallback
+ *    only applies when no explicit deadline is found in the report.
  *  - C2* with Despacho 17/2022   → 2-year certificate (passed=true via isApprovedC2Star)
  *  - C3 only / clean (passed)    → 2-year certificate
- *  - Generic failed / unclear    → +6 months fallback
+ *  - Generic failed / unclear    → +90 days fallback
  */
 function calcValidUntil(inspDate, passed, c1Count, c2Count) {
     if (!inspDate) return null;
     const d = new Date(inspDate);
 
     if (c1Count > 0) {
-        // C1 = immobilisation — urgent fix + reinspect within 1 month
+        // C1 = immobilisation — urgent fix + reinspect within 30 days
         d.setDate(d.getDate() + 30);
     } else if (c2Count > 0 && passed !== true) {
-        // Plain C2 (no Despacho 17/2022 approval) — reinspection required within 6 months
-        d.setMonth(d.getMonth() + 6);
+        // Plain C2 per DL 320/2002 — 30 days to request reinspection
+        d.setDate(d.getDate() + 30);
     } else if (passed === true) {
         // Clean cert, C3 only, or C2* with Despacho 17/2022 — 2-year certificate
         d.setMonth(d.getMonth() + 24);
     } else {
         // Fallback when status is unclear
-        d.setDate(d.getDate() + 180);
+        d.setDate(d.getDate() + 90);
     }
 
     return d;
@@ -282,13 +285,13 @@ function calcNextInspectionByCertType(baseDate, certType, status = 'conditional'
         // Clean cert or C2* (Despacho 17/2022) — 2-year certificate
         d.setMonth(d.getMonth() + 24);
     } else if (certType === 'reinspection') {
-        // Plain C2 — reinspection required within 6 months
-        d.setMonth(d.getMonth() + 6);
+        // Plain C2 per DL 320/2002 — 30 days to request reinspection
+        d.setDate(d.getDate() + 30);
     } else if (certType === 'immobilization') {
         // C1 = immobilization, urgent reinspect within 30 days
         d.setDate(d.getDate() + 30);
     } else {
-        d.setDate(d.getDate() + 180);
+        d.setDate(d.getDate() + 90);
     }
 
     return d;
