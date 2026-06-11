@@ -10413,7 +10413,7 @@ INSTRUÇÕES PARA ANÁLISE DO RELATÓRIO:
     return contextualPrompt;
 }
 
-async function callOllamaRaw(messages) {
+async function callOllamaRaw(messages, timeoutMs = 45000) {
     const response = await fetch(`${OLLAMA_BASE_URL}/api/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -10421,7 +10421,8 @@ async function callOllamaRaw(messages) {
             model: OLLAMA_MODEL,
             messages,
             stream: false
-        })
+        }),
+        signal: AbortSignal.timeout(timeoutMs)
     });
 
     if (!response.ok) {
@@ -10499,37 +10500,38 @@ async function callGeminiAI(message, role, username, regulationsContext = null, 
 }
 
 async function callOllamaAI(message, role, username, regulationsContext = null, reportTextContext = null, dbContext = null) {
-    try {
-        const systemPrompt = getSystemPromptForRole(role, username);
-        const contextualPrompt = buildAIUserPrompt(message, regulationsContext, reportTextContext, 20000, dbContext);
-        const text = await callOllamaRaw([
-            { role: 'system', content: systemPrompt },
-            { role: 'user', content: contextualPrompt }
-        ]);
-
-        console.log('✅ Ollama AI response generated:', text.substring(0, 100) + '...');
-        return text;
-    } catch (error) {
-        console.error('❌ Ollama AI error:', error.message);
-        return '❌ Desculpe, ocorreu um erro ao processar sua pergunta.\n\n' +
-            'Tente novamente ou reformule sua pergunta.';
-    }
+    const systemPrompt = getSystemPromptForRole(role, username);
+    const contextualPrompt = buildAIUserPrompt(message, regulationsContext, reportTextContext, 20000, dbContext);
+    const text = await callOllamaRaw([
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: contextualPrompt }
+    ]);
+    console.log('✅ Ollama AI response generated:', text.substring(0, 100) + '...');
+    return text;
 }
 
 async function callMainAI(message, role, username, regulationsContext = null, reportTextContext = null, dbContext = null) {
-    let useOllama = AI_PROVIDER === 'ollama';
+    let useOllama = AI_PROVIDER === 'ollama' || AI_PROVIDER === 'auto';
 
     if (AI_PROVIDER === 'auto') {
         useOllama = await isOllamaAvailable();
     }
 
     if (useOllama) {
-        const response = await callOllamaAI(message, role, username, regulationsContext, reportTextContext, dbContext);
-        return { response, poweredBy: `Ollama (${OLLAMA_MODEL})` };
+        try {
+            const response = await callOllamaAI(message, role, username, regulationsContext, reportTextContext, dbContext);
+            return { response, poweredBy: `Ollama (${OLLAMA_MODEL})` };
+        } catch (ollamaErr) {
+            // Ollama failed (timeout, model not found, server error) — fall back to Gemini
+            console.warn(`⚠️ Ollama failed (${ollamaErr.message?.slice(0,80)}), falling back to Gemini...`);
+            if (!process.env.GEMINI_API_KEY) {
+                throw new Error(`Ollama indisponível e GEMINI_API_KEY não configurado: ${ollamaErr.message}`);
+            }
+        }
     }
 
     const response = await callGeminiAI(message, role, username, regulationsContext, reportTextContext, dbContext);
-    return { response, poweredBy: 'Google Gemini 3 Flash' };
+    return { response, poweredBy: 'Google Gemini Flash (fallback)' };
 }
 
 // ─── AI GUEST ENDPOINT (без авторизації, IP-ліміт 2 аналізи + 20 чат/добу) ──

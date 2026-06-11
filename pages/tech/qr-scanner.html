@@ -1148,15 +1148,23 @@ document.addEventListener("DOMContentLoaded", function() {
             document.getElementById('scans-week').textContent = 
                 weekScans.success ? (weekScans.pagination ? weekScans.pagination.total : (weekScans.data || []).length) : 0;
                 
-            // Obter quantidade de tarefas criadas com base em leituras
-            // É apenas um stub de exemplo
-            document.getElementById('tasks-from-scans').textContent = 
-                Math.floor(Math.random() * 10);
-                
-            // Obter quantidade de elevadores mantidos via QR
-            // É apenas um stub de exemplo
-            document.getElementById('maintained-lifts').textContent = 
-                Math.floor(Math.random() * 20);
+            // Unique lifts scanned this week (derived from weekScans)
+            const weekScanData = weekScans.success ? (weekScans.data || []) : [];
+            const uniqueLiftIds = new Set(weekScanData.map(s => s.liftId).filter(Boolean));
+            document.getElementById('maintained-lifts').textContent = uniqueLiftIds.size;
+
+            // Tasks assigned to this technician this week
+            try {
+                const weekReqs = await fetchWithAuth(
+                    `/api/requests?assignedTo=${encodeURIComponent(username)}&fromDate=${weekAgo.toISOString()}&limit=1000`
+                );
+                const reqCount = weekReqs.success
+                    ? (weekReqs.pagination ? weekReqs.pagination.total : (weekReqs.data || []).length)
+                    : 0;
+                document.getElementById('tasks-from-scans').textContent = reqCount;
+            } catch (_) {
+                document.getElementById('tasks-from-scans').textContent = 0;
+            }
         } catch (error) {
             console.error('Erro ao carregar estatísticas:', error);
         }

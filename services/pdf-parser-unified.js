@@ -343,9 +343,18 @@ function applyUnifiedPostProcessing(result) {
 
     let validUntil = null;
     const inspectionDate = parseInspectionDate(result.metadata?.date || result.analysis?.metadata?.date);
-    if (inspectionDate && passed) {
+    if (inspectionDate) {
         const next = new Date(inspectionDate);
-        next.setUTCMonth(next.getUTCMonth() + 24);
+        if (certType === 'immobilization') {
+            // C1: urgent reinspect within 30 days
+            next.setUTCDate(next.getUTCDate() + 30);
+        } else if (certType === 'reinspection') {
+            // Plain C2: reinspection required within 6 months (OI typically sets exact date in report)
+            next.setUTCMonth(next.getUTCMonth() + 6);
+        } else {
+            // cert_2_years: clean cert, C3 only, or C2* with Despacho 17/2022
+            next.setUTCMonth(next.getUTCMonth() + 24);
+        }
         validUntil = next.toISOString();
     }
 

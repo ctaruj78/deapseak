@@ -617,36 +617,43 @@ window.acknowledgeAllAlerts = function() {
     toastr.success('Todas alertas confirmado!');
 };
 
-// Exportar gráficoа
-window.exportSchedule = function() {
-    const scheduleData = {
-        month: new Date().getMonth() + 1,
-        year: new Date().getFullYear(),
-        events: [],
-        exportedAt: new Date().toISOString()
-    };
-    
+// Exportar gráfico (dados reais do mês atual)
+window.exportSchedule = async function() {
     const today = new Date();
-    for (let i = 1; i <= 30; i++) {
-        if (Math.random() > 0.8) {
-            scheduleData.events.push({
-                date: `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`,
-                lift: `Elevador-${String(Math.floor(Math.random() * 20) + 1).padStart(3, '0')}`,
-                type: 'maintenance',
-                description: 'Manutenção técnica planeada'
-            });
+    const monthStart = new Date(today.getFullYear(), today.getMonth(), 1).toISOString();
+    const monthEnd   = new Date(today.getFullYear(), today.getMonth() + 1, 0, 23, 59).toISOString();
+
+    let events = [];
+    try {
+        const resp = await fetchWithAuth(`/api/requests?type=maintenance&fromDate=${monthStart}&toDate=${monthEnd}&limit=500`);
+        if (resp.success) {
+            events = (resp.data || []).map(r => ({
+                date: (r.scheduledDate || r.createdAt || '').substring(0, 10),
+                lift: r.liftId || r.liftAddress || 'N/D',
+                technician: r.assignedTo || r.technicianName || null,
+                type: r.type || 'maintenance',
+                description: r.description || 'Manutenção técnica',
+                status: r.status || null
+            }));
         }
-    }
+    } catch (_) {}
+
+    const scheduleData = {
+        month: today.getMonth() + 1,
+        year: today.getFullYear(),
+        events,
+        exportedAt: today.toISOString()
+    };
     
     const blob = new Blob([JSON.stringify(scheduleData, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `maintenance-schedule-${new Date().toISOString().split('T')[0]}.json`;
+    a.download = `maintenance-schedule-${today.toISOString().split('T')[0]}.json`;
     a.click();
     URL.revokeObjectURL(url);
     
-    toastr.success('Gráfico exportado!');
+    toastr.success(`Gráfico exportado (${events.length} eventos)`);
 };
 
 // Confirmar окремий alerta
@@ -1108,19 +1115,29 @@ class PredictiveMaintenanceDashboard {
     }
 
     updateMLInsights() {
-        const insights = [
-            'O sistema detetou risco elevado de falha dos cabos em elevadores com mais de 12 anos',
-            'Prevê-se uma redução de 15% nos custos de manutenção no próximo trimestre',
-            'Recomenda-se implementar manutenção preventiva em 3 elevadores de alto risco'
-        ];
-        
-        const randomInsight = insights[Math.floor(Math.random() * insights.length)];
-        $('#mlInsightText').text(randomInsight);
-        
-        // Оновлюexisteмо точність (симуляція)
-        const accuracy = 82 + Math.floor(Math.random() * 8);
-        $('#mlAccuracy').text(`${accuracy}%`);
-        $('.confidence-fill').css('width', `${accuracy}%`);
+        const stats = JSON.parse(localStorage.getItem('maintenance_statistics') || '{}');
+        const alerts = JSON.parse(localStorage.getItem('maintenance_alerts') || '[]');
+        const activeAlerts = alerts.filter(a => !a.acknowledged);
+        const criticalCount = activeAlerts.filter(a => a.severity === 'high' || a.severity === 'critical').length;
+        const highRisk = stats.highRiskLifts || 0;
+
+        let insight;
+        if (criticalCount > 0) {
+            insight = `${criticalCount} alerta(s) crítico(s) ativo(s) requerem atenção imediata`;
+        } else if (highRisk > 0) {
+            insight = `${highRisk} elevador(es) em risco elevado — recomenda-se manutenção preventiva`;
+        } else if (stats.totalLifts > 0) {
+            insight = `Frota de ${stats.totalLifts} elevadores monitorizada — sem alertas críticos ativos`;
+        } else {
+            insight = 'Execute uma análise completa para gerar previsões do sistema';
+        }
+        $('#mlInsightText').text(insight);
+
+        const withInspection = stats.liftsWithInspection || 0;
+        const total = stats.totalLifts || 1;
+        const accuracy = total > 0 ? Math.round(Math.min(95, 70 + (withInspection / total) * 25)) : 0;
+        $('#mlAccuracy').text(accuracy > 0 ? `${accuracy}%` : 'N/D');
+        $('.confidence-fill').css('width', accuracy > 0 ? `${accuracy}%` : '0%');
     }
 
     setupEventListeners() {
@@ -1348,11 +1365,14 @@ class PredictiveMaintenanceDashboard {
         const days = [];
         const alertCounts = [];
         
+        const allAlerts = JSON.parse(localStorage.getItem('maintenance_alerts') || '[]');
         for (let i = 6; i >= 0; i--) {
             const date = new Date();
             date.setDate(date.getDate() - i);
             days.push(date.toLocaleDateString('pt-PT', { weekday: 'short' }));
-            alertCounts.push(Math.floor(Math.random() * 15) + 5);
+            const dayStr = date.toISOString().substring(0, 10);
+            const count = allAlerts.filter(a => (a.createdAt || a.timestamp || '').startsWith(dayStr)).length;
+            alertCounts.push(count);
         }
 
         new Chart(ctx, {
@@ -1376,7 +1396,7 @@ class PredictiveMaintenanceDashboard {
         });
     }
 
-    createMaintenanceCalendar() {
+    async createMaintenanceCalendar() {
         const container = document.getElementById('maintenanceCalendar');
         if (!container) return;
 
@@ -1407,23 +1427,37 @@ class PredictiveMaintenanceDashboard {
         const startDate = new Date(firstDay);
         startDate.setDate(startDate.getDate() - (firstDay.getDay() + 6) % 7);
 
+        let maintenanceDays = new Set();
+        try {
+            const monthStart = new Date(currentYear, currentMonth, 1).toISOString();
+            const monthEnd   = new Date(currentYear, currentMonth + 1, 0, 23, 59).toISOString();
+            const resp = await fetchWithAuth(`/api/requests?type=maintenance&fromDate=${monthStart}&toDate=${monthEnd}&limit=200`);
+            if (resp.success) {
+                (resp.data || []).forEach(r => {
+                    const d = r.scheduledDate || r.createdAt;
+                    if (d) maintenanceDays.add(d.substring(0, 10));
+                });
+            }
+        } catch (_) {}
+
         for (let i = 0; i < 42; i++) {
             const currentDate = new Date(startDate);
             currentDate.setDate(startDate.getDate() + i);
-            
+
             const isCurrentMonth = currentDate.getMonth() === currentMonth;
             const isToday = currentDate.toDateString() === today.toDateString();
-            const hasMaintenanceEvent = Math.random() > 0.8; // 20% de probabilidade de trabalhos de manutenção
+            const dayKey = currentDate.toISOString().substring(0, 10);
+            const hasMaintenanceEvent = isCurrentMonth && maintenanceDays.has(dayKey);
 
             let dayClass = 'p-2 text-center border';
             if (!isCurrentMonth) dayClass += ' text-muted';
             if (isToday) dayClass += ' bg-primary text-white';
-            if (hasMaintenanceEvent && isCurrentMonth) dayClass += ' bg-warning';
+            if (hasMaintenanceEvent) dayClass += ' bg-warning';
 
             html += `
                 <div class="${dayClass}" style="min-height: 60px; cursor: pointer;">
                     <div>${currentDate.getDate()}</div>
-                    ${hasMaintenanceEvent && isCurrentMonth ? '<small class="text-dark">Manutenção</small>' : ''}
+                    ${hasMaintenanceEvent ? '<small class="text-dark">Manutenção</small>' : ''}
                 </div>
             `;
         }

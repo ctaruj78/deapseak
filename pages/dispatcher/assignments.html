@@ -2132,18 +2132,38 @@
                         return;
                     }
                     
-                    // Numa aplicação real seria usada geolocalização
-                    // Por agora ordenar por disponibilidade
-                    const sortedTechs = techs
-                        .filter(t => t.active)
-                        .slice(0, 3); // Mostrar top 3
-                    
+                    // Fetch pending task counts for each active technician
+                    const activeTechs = techs.filter(t => t.active);
+                    let techTaskCounts = {};
+                    try {
+                        const pendingReqs = await AuthManager.fetchWithAuth('/api/requests?status=pending,in_progress&limit=500');
+                        if (pendingReqs.success) {
+                            (pendingReqs.data || []).forEach(r => {
+                                const tid = r.technicianId || r.assignedTo;
+                                if (tid) techTaskCounts[tid] = (techTaskCounts[tid] || 0) + 1;
+                            });
+                        }
+                    } catch (_) {}
+
+                    // Sort by fewest active tasks (most available first)
+                    const sortedTechs = activeTechs
+                        .slice()
+                        .sort((a, b) => {
+                            const aId = String(a._id || a.id);
+                            const bId = String(b._id || b.id);
+                            return (techTaskCounts[aId] || 0) - (techTaskCounts[bId] || 0);
+                        })
+                        .slice(0, 3);
+
                     container.empty();
-                    
-                    sortedTechs.forEach((tech, index) => {
-                        const distance = ((index + 1) * 1.5).toFixed(1); // Distância demo
-                        const eta = (index + 1) * 15; // Tempo de chegada demo
-                        
+
+                    sortedTechs.forEach((tech) => {
+                        const techId = String(tech._id || tech.id);
+                        const taskCount = techTaskCounts[techId] || 0;
+                        const statusLabel = taskCount === 0
+                            ? '<span class="badge badge-success">Disponível</span>'
+                            : `<span class="badge badge-warning">${taskCount} tarefa(s)</span>`;
+
                         const techCard = `
                             <div class="col-md-4 mb-3">
                                 <div class="card h-100 border-0 shadow-sm tech-card" style="cursor: pointer; transition: all 0.3s;" onmouseover="this.style.transform='translateY(-5px)'" onmouseout="this.style.transform='translateY(0)'">
@@ -2153,26 +2173,21 @@
                                         </div>
                                         <h6 class="font-weight-bold mb-1">${tech.name}</h6>
                                         <small class="text-muted d-block mb-2">${tech.specialty || 'Técnico'}</small>
-                                        
-                                        <div class="d-flex justify-content-around mb-3">
-                                            <div>
-                                                <i class="fas fa-road text-info"></i>
-                                                <small class="d-block">${distance} km</small>
-                                            </div>
-                                            <div>
-                                                <i class="fas fa-clock text-warning"></i>
-                                                <small class="d-block">${eta} min</small>
-                                            </div>
+
+                                        <div class="mb-3">
+                                            <i class="fas fa-tasks text-info"></i>
+                                            <small class="d-block">Tarefas ativas: ${taskCount}</small>
+                                            <div class="mt-1">${statusLabel}</div>
                                         </div>
-                                        
-                                        <button class="btn btn-sm btn-primary btn-block" onclick="assignmentManager.quickAssign('${tech._id || tech.id}'); event.stopPropagation();">
+
+                                        <button class="btn btn-sm btn-primary btn-block" onclick="assignmentManager.quickAssign('${techId}'); event.stopPropagation();">
                                             <i class="fas fa-user-check mr-1"></i>Atribuir
                                         </button>
                                     </div>
                                 </div>
                             </div>
                         `;
-                        
+
                         container.append(techCard);
                     });
                     

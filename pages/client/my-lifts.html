@@ -798,8 +798,14 @@
               }
             } catch (e) { /* fall through */ }
           }
-          // 4. Default: Lisbon with tiny random jitter so stacked unknowns are visible
-          return [38.7223 + (Math.random() - 0.5) * 0.02, -9.1393 + (Math.random() - 0.5) * 0.02];
+          // 4. Default: Lisbon with deterministic jitter based on lift ID
+          // (so the same lift always appears at the same position, not random each load)
+          const seed = String(lift._id || lift.id || lift.municipalNumber || addressStr || '0');
+          let h = 0;
+          for (let i = 0; i < seed.length; i++) { h = ((h << 5) - h + seed.charCodeAt(i)) | 0; }
+          const jLat = ((h & 0xFFFF) / 0xFFFF - 0.5) * 0.04;
+          const jLng = (((h >> 16) & 0xFFFF) / 0xFFFF - 0.5) * 0.04;
+          return [38.7223 + jLat, -9.1393 + jLng];
         }
 
         async function renderLiftsMap(lifts) {
