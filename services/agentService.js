@@ -312,15 +312,27 @@ class AgentService {
     _looksLikeClientNameQuery(normalizedMsg = '') {
         const tokens = String(normalizedMsg || '').split(/\s+/).filter(Boolean);
         if (tokens.length < 2 || tokens.length > 4) return false;
-        const stop = new Set(['lista', 'listar', 'mostra', 'mostrar', 'dados', 'cliente', 'sobre', 'tudo', 'info', 'informacoes', 'informacoes', 'elevadores', 'lifts', 'pedidos', 'resumo']);
+        // Conversational / question words that are NOT client names
+        const stop = new Set([
+            'lista', 'listar', 'mostra', 'mostrar', 'dados', 'cliente', 'sobre',
+            'tudo', 'info', 'informacoes', 'elevadores', 'lifts', 'pedidos', 'resumo',
+            // Portuguese question / pronoun words
+            'como', 'qual', 'quais', 'quem', 'onde', 'quando', 'porque', 'podes',
+            'podes', 'pode', 'tens', 'tem', 'tens', 'voce', 'tu', 'eu', 'nos',
+            'eles', 'elas', 'este', 'essa', 'isso', 'aqui', 'ali',
+            'se', 'me', 'te', 'lhe', 'nos', 'vos', 'lhes',
+            'chamas', 'chama', 'chamo', 'nome', 'chamar', 'dizer', 'diz',
+            'fazer', 'faz', 'fazer', 'ajudar', 'ajuda', 'preciso', 'quero',
+            'sou', 'sao', 'esta', 'estao', 'ser', 'ter', 'haver',
+        ]);
         const technical = new Set([
             'motor', 'geared', 'gearless', 'mrl', 'hydraulic', 'hidraulico',
             'tracao', 'traction', 'porta', 'portas', 'guilhotina', 'patim',
-            'cabina', 'semi', 'automatica', 'automatica', 'en81', 'norma',
+            'cabina', 'semi', 'automatica', 'en81', 'norma',
             'inspecao', 'manutencao', 'maintenance', 'elevador', 'lift'
         ]);
-        if (tokens.some(t => technical.has(t))) return false;
-        const alpha = tokens.filter(t => /^[a-z][a-z.-]{1,}$/.test(t) && !stop.has(t));
+        if (tokens.some(t => stop.has(t) || technical.has(t))) return false;
+        const alpha = tokens.filter(t => /^[a-z][a-z.-]{1,}$/.test(t));
         return alpha.length >= 2;
     }
 
@@ -2488,12 +2500,61 @@ class AgentService {
                 .toArray();
         }
 
-        // Admins and dispatchers see all pending — client_quote_request first (urgent)
-        return await this.db.collection('agent_notifications')
+        // Admins / dispatchers: merge live overdue-lift scan with stored notifications.
+        // Stored notifications first (quote requests, client decisions), then live scan.
+        const stored = await this.db.collection('agent_notifications')
             .find({ status: { $in: ['pending', 'postponed'] } })
-            .sort({ type: -1, createdAt: -1 }) // client_quote_request sorts high (alphabetically after others)
-            .limit(20)
+            .sort({ type: -1, createdAt: -1 })
+            .limit(10)
             .toArray();
+
+        // Live scan: all lifts whose nextInspectionDate is overdue
+        const liveOverdue = await this._scanOverdueLiftsForAdmin();
+
+        // Merge: avoid duplicates (stored already has the same liftId/location)
+        const storedLiftIds = new Set(stored.map(n => String(n.liftId || n.liftLocation || '')));
+        const fresh = liveOverdue.filter(n => !storedLiftIds.has(String(n.liftId || n.liftLocation || '')));
+
+        return [...stored, ...fresh].slice(0, 20);
+    }
+
+    async _scanOverdueLiftsForAdmin() {
+        if (!this.db) return [];
+        try {
+            const today = new Date();
+            const todayISO = today.toISOString();
+            // nextInspectionDate is stored as ISO string — must compare as string
+            const lifts = await this.db.collection('lifts').find({
+                nextInspectionDate: { $lt: todayISO, $ne: null, $exists: true },
+                active: { $ne: false }
+            }).sort({ nextInspectionDate: 1 }).limit(50).toArray();
+
+            return lifts.map(lift => {
+                const addr = (() => {
+                    const a = lift.address || lift.location;
+                    if (!a) return lift.municipalNumber || String(lift._id);
+                    if (typeof a === 'object') return `${a.street || ''}, ${a.city || a.concelho || ''}`.trim().replace(/^,\s*|,\s*$/g, '') || lift.municipalNumber || String(lift._id);
+                    return String(a);
+                })();
+                const daysOverdue = Math.ceil((today - new Date(lift.nextInspectionDate)) / 86400000);
+                return {
+                    _id: lift._id,
+                    liftId: lift._id,
+                    type: 'expiry_reminder',
+                    status: 'pending',
+                    liftLocation: addr,
+                    municipalNumber: lift.municipalNumber,
+                    clientName: lift.clientName || lift.clientEmail || '',
+                    agentMessage: `⚠️ Inspeção **vencida há ${daysOverdue} dias** — ${addr}${lift.clientName ? ` (${lift.clientName})` : ''}`,
+                    daysOverdue,
+                    createdAt: lift.nextInspectionDate,
+                    _live: true,
+                };
+            });
+        } catch (e) {
+            console.error('_scanOverdueLiftsForAdmin error:', e.message);
+            return [];
+        }
     }
 
     /**
@@ -2544,10 +2605,12 @@ class AgentService {
         try {
             const today = new Date();
             const in15days = new Date(today.getTime() + 15 * 24 * 60 * 60 * 1000);
+            // nextInspectionDate stored as ISO string — compare as string
+            const in15daysISO = in15days.toISOString();
 
             // Find lifts whose nextInspectionDate is within 15 days or already past
             const lifts = await this.db.collection('lifts').find({
-                nextInspectionDate: { $lte: in15days },
+                nextInspectionDate: { $lte: in15daysISO, $ne: null, $exists: true },
                 active: { $ne: false }
             }).limit(50).toArray();
 
