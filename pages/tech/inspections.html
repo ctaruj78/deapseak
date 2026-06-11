@@ -811,9 +811,13 @@
         }
 
         $(document).ready(function() {
+            // Clear intervals from previous page loads
+            (window._inspectionsIntervals || []).forEach(id => clearInterval(id));
+            window._inspectionsIntervals = [];
+
             // Inicialização AdminLTE
             $('[data-widget="pushmenu"]').PushMenu();
-            
+
             // Tema escuro
             $('#darkModeToggle').on('click', function() {
                 $('body').toggleClass('dark-mode');
@@ -821,14 +825,14 @@
             });
 
             // Verificação de ligação
-            setInterval(() => {
+            window._inspectionsIntervals.push(setInterval(() => {
                 const online = navigator.onLine;
                 $('#connectionStatus').html(
-                    online ? 
-                    '<i class="fas fa-wifi text-success"></i> Online' : 
+                    online ?
+                    '<i class="fas fa-wifi text-success"></i> Online' :
                     '<i class="fas fa-wifi-slash text-danger"></i> Offline'
                 );
-            }, 30000);
+            }, 30000));
 
             // A carregar dados do técnico
             const userData = JSON.parse(localStorage.getItem('userData')) || {};

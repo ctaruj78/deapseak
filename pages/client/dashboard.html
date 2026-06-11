@@ -514,7 +514,9 @@
     }
     
     // Atualizar contadores a cada 30 segundos
-    setInterval(loadClientCounts, 30000);
+    const _clientCountsInterval = setInterval(loadClientCounts, 30000);
+    window._clientDashboardIntervals = window._clientDashboardIntervals || [];
+    window._clientDashboardIntervals.push(_clientCountsInterval);
 })();
 </script>
 
@@ -896,10 +898,14 @@
             // Inicialização do AdminLTE
             $('[data-widget="pushmenu"]').PushMenu();
             
+            // Clear any intervals from previous page loads
+            (window._clientDashboardIntervals || []).forEach(id => clearInterval(id));
+            window._clientDashboardIntervals = [];
+
             // Atualização da hora
-            setInterval(() => {
+            window._clientDashboardIntervals.push(setInterval(() => {
                 $('#lastUpdateTime').text(new Date().toLocaleTimeString('pt-PT'));
-            }, 1000);
+            }, 1000));
 
             // Escuro assunto
             $('#darkModeToggle').on('click', function() {
@@ -912,14 +918,14 @@
             });
 
             // Verificação de ligação
-            setInterval(() => {
+            window._clientDashboardIntervals.push(setInterval(() => {
                 const online = navigator.onLine;
                 $('#connectionStatus').html(
-                    online ? 
-                    '<i class="fas fa-wifi text-success"></i> Online' : 
+                    online ?
+                    '<i class="fas fa-wifi text-success"></i> Online' :
                     '<i class="fas fa-wifi-slash text-danger"></i> Offline'
                 );
-            }, 30000);
+            }, 30000));
 
             // Inicialização dos dados do cliente desde a API
             initializeClientDashboard();
@@ -1288,7 +1294,13 @@
                     
                     // Ligação
                     window.clientWebSocket.connect();
-                    
+
+                    // Cleanup on page unload
+                    window.addEventListener('beforeunload', () => {
+                        if (window.clientWebSocket?.disconnect) window.clientWebSocket.disconnect();
+                        (window._clientDashboardIntervals || []).forEach(id => clearInterval(id));
+                    }, { once: true });
+
                 } catch (error) {
                     console.error('[Client Dashboard] Erro de inicializacao do WebSocket:', error);
                 }

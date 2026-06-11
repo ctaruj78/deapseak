@@ -742,6 +742,10 @@
 
     <!-- User Management Script -->
     <script>
+        function debounce(fn, ms) {
+            let t; return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); };
+        }
+
         class UserManager {
             constructor() {
                 this.currentPage = 1;
@@ -812,11 +816,11 @@
                     $('#copyPasswordBtn').prop('disabled', $(this).val().length === 0);
                 });
 
+                // Use .off() before .on() to prevent handler stacking on multiple inits
                 // Ao abrir janela modal para novo utilizador - gerar palavra-passe automaticamente
-                $('#userModal').on('show.bs.modal', function(e) {
+                $('#userModal').off('show.bs.modal').on('show.bs.modal', function(e) {
                     const userId = $('#userId').val();
                     if (!userId) {
-                        // Novo utilizador - gerar palavra-passe automaticamente
                         setTimeout(() => {
                             $('#generatePasswordBtn').click();
                         }, 300);
@@ -824,7 +828,7 @@
                 });
 
                 // Ocultar alerta ao fechar janela modal
-                $('#userModal').on('hidden.bs.modal', function() {
+                $('#userModal').off('hidden.bs.modal').on('hidden.bs.modal', function() {
                     $('#generatedPasswordAlert').hide();
                 });
             }
@@ -937,9 +941,9 @@
             }
 
             setupSearch() {
-                $('#searchInput').on('input', (e) => {
+                $('#searchInput').on('input', debounce((e) => {
                     this.searchUsers(e.target.value);
-                });
+                }, 300));
             }
 
             setupFilters() {

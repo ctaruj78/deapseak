@@ -20,6 +20,7 @@ const fs = require('fs').promises;
 const os = require('os');
 const https = require('https');
 const helmet = require('helmet');
+const compression = require('compression');
 const rateLimit = require('express-rate-limit');
 const { exec } = require('child_process');
 const { promisify } = require('util');
@@ -410,6 +411,9 @@ async function geocodeAddress(address) {
 const PORT = parseInt(process.env.DEAPSEAK_PORT || '5000', 10);
 console.log(`🔧 Налаштування порту: DEAPSEAK_PORT=${process.env.DEAPSEAK_PORT}, final PORT=${PORT}`);
 
+// Gzip compression — reduces response size by ~70%
+app.use(compression());
+
 // 🔐 Helmet - HTTP security headers (XSS, clickjacking, sniffing, etc.)
 app.use(helmet({
     contentSecurityPolicy: false, // Вимкнено бо AdminLTE CDN inline-scripts
@@ -550,6 +554,11 @@ async function connectMongo() {
                 db.collection('users').createIndex({ role: 1, status: 1 }, { background: true }),
                 // qr_scans
                 db.collection('qr_scans').createIndex({ liftId: 1 }, { background: true, sparse: true }),
+                // requests: technician lookup (was missing)
+                db.collection('requests').createIndex({ technicianId: 1, status: 1 }, { background: true }),
+                db.collection('requests').createIndex({ assignedTo: 1, status: 1 }, { background: true }),
+                // lifts: municipality lookup
+                db.collection('lifts').createIndex({ 'municipality.id': 1 }, { background: true }),
             ]);
             console.log('📊 MongoDB indexes ensured');
         } catch (idxErr) {
@@ -779,7 +788,9 @@ async function _writeBackupFile(payload, filePrefix = 'festlift-backup') {
     const fileName = `${filePrefix}-${stamp}.json.gz`;
     const filePath = path.join(BACKUP_STORAGE_DIR, fileName);
     const body = EJSON.stringify(payload, null, 2);
-    const zipped = zlib.gzipSync(Buffer.from(body, 'utf8'));
+    const zipped = await new Promise((resolve, reject) =>
+        zlib.gzip(Buffer.from(body, 'utf8'), (err, buf) => err ? reject(err) : resolve(buf))
+    );
     await fs.writeFile(filePath, zipped);
     return { fileName, filePath, sizeBytes: zipped.length };
 }
@@ -1056,9 +1067,8 @@ app.get('/api/geocode', async (req, res) => {
 
                 let municipality = null;
                 if (postalPrefix) {
-                    municipality = allMunicipalities.find(m =>
-                        Array.isArray(m.postal_codes) && m.postal_codes.some(code => String(code).startsWith(postalPrefix))
-                    );
+                    // O(1) via prefix index
+                    municipality = getMunicipalityByPostalPrefix(postalPrefix);
                 }
 
                 if (!municipality) {
@@ -1243,6 +1253,14 @@ app.patch('/api/notifications/read-all', authenticateToken, async (req, res) => 
 
 const _publicQrAlertUsage = new Map(); // ip -> { count, resetAt }
 const _PUBLIC_QR_ALERT_LIMIT = 5;
+
+// Periodic cleanup: remove expired entries every 30 minutes to prevent unbounded growth
+setInterval(() => {
+    const now = Date.now();
+    for (const [ip, entry] of _publicQrAlertUsage) {
+        if (entry.resetAt < now) _publicQrAlertUsage.delete(ip);
+    }
+}, 30 * 60 * 1000);
 
 function _getPublicQrAlertUsage(ip) {
     const entry = _publicQrAlertUsage.get(ip);
@@ -2068,12 +2086,15 @@ app.get('/api/inspections', authenticateToken, async (req, res) => {
         if (!db) {
             return res.status(503).json({ success: false, message: 'Base de dados indisponível' });
         }
-        const limit = parseInt(req.query.limit) || 0;
-        let cursor = db.collection('inspections')
+        const limit = Math.min(10000, Math.max(1, parseInt(req.query.limit) || 200));
+        const page  = Math.max(1, parseInt(req.query.page) || 1);
+        const skip  = (page - 1) * limit;
+        const inspections = await db.collection('inspections')
             .find({})
-            .sort({ createdAt: -1 });
-        if (limit > 0) cursor = cursor.limit(limit);
-        const inspections = await cursor.toArray();
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit)
+            .toArray();
         res.json({ success: true, data: inspections || [] });
     } catch (error) {
         console.error('❌ Помилка отримання інспекцій:', error);
@@ -3327,9 +3348,9 @@ app.get('/api/lifts', authenticateToken, async (req, res) => {
         // Sanitize: ensure search is a plain string (prevent NoSQL injection via $regex object)
         const rawSearch = req.query.search;
         const searchTerm = (typeof rawSearch === 'string' ? rawSearch : '').trim();
-        // 📄 Pagination: ?page=1&limit=50 (default: all if no page specified)
+        // 📄 Pagination: ?page=1&limit=50 (default: 200 for backwards compat, hard cap 10000)
         const pageNum  = Math.max(1, parseInt(req.query.page)  || 1);
-        const limitNum = Math.min(10000, Math.max(0, parseInt(req.query.limit) || 0));
+        const limitNum = Math.min(10000, Math.max(1, parseInt(req.query.limit) || 200));
         const skipNum  = limitNum > 0 ? (pageNum - 1) * limitNum : 0;
         if (searchTerm) {
             const escapedSearch = searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -3643,13 +3664,11 @@ app.post('/api/lifts', authenticateToken, async (req, res) => {
         if (postalCodeToCheck) {
             console.log('🏛️ Визначення муніципалітету за поштовим кодом:', postalCodeToCheck);
             try {
-                // Завантажуємо муніципалітети з урахуванням DB override
-                const municipalitiesData = await loadMunicipalitiesWithOverrides();
-                
-                // Шукаємо відповідний муніципалітет (перші 4 цифри коду)
-                const municipality = municipalitiesData.municipalities.find(m => 
-                    m.postal_codes.some(code => code.startsWith(postalCodeToCheck))
-                );
+                // Завантажуємо муніципалітети з урахуванням DB override (cache)
+                await loadMunicipalitiesWithOverrides();
+
+                // O(1) lookup via prefix index
+                const municipality = getMunicipalityByPostalPrefix(postalCodeToCheck);
                 
                 if (municipality) {
                     municipalityData = {
@@ -5758,7 +5777,38 @@ function mergeMunicipalityOverride(baseMunicipality, override) {
     };
 }
 
+// Cache for municipalities — invalidated on mutation, max 1h TTL as fallback
+let _municipalitiesCache = null;
+let _municipalitiesCacheTime = 0;
+const _MUNICIPALITIES_CACHE_TTL = 60 * 60 * 1000; // 1 hour
+
+// O(1) postal code lookup index: "1234" -> municipality object
+let _postalPrefixIndex = null;
+
+function buildPostalPrefixIndex(municipalities) {
+    const index = new Map();
+    for (const m of municipalities) {
+        if (!Array.isArray(m.postal_codes)) continue;
+        for (const code of m.postal_codes) {
+            const prefix = String(code).slice(0, 4);
+            if (!index.has(prefix)) index.set(prefix, m);
+        }
+    }
+    return index;
+}
+
+function invalidateMunicipalitiesCache() {
+    _municipalitiesCache = null;
+    _municipalitiesCacheTime = 0;
+    _postalPrefixIndex = null;
+}
+
 async function loadMunicipalitiesWithOverrides() {
+    const now = Date.now();
+    if (_municipalitiesCache && (now - _municipalitiesCacheTime) < _MUNICIPALITIES_CACHE_TTL) {
+        return _municipalitiesCache;
+    }
+
     const municipalitiesData = await loadMunicipalitiesBaseData();
     const base = municipalitiesData.municipalities || [];
 
@@ -5795,10 +5845,20 @@ async function loadMunicipalitiesWithOverrides() {
         return mergeMunicipalityOverride(m, cleanedOverride);
     });
 
-    return {
+    const result = {
         ...municipalitiesData,
         municipalities: [...merged, ...manualEntries]
     };
+
+    _municipalitiesCache = result;
+    _municipalitiesCacheTime = now;
+    _postalPrefixIndex = buildPostalPrefixIndex(result.municipalities);
+    return result;
+}
+
+function getMunicipalityByPostalPrefix(prefix) {
+    if (!_postalPrefixIndex) return null;
+    return _postalPrefixIndex.get(String(prefix).slice(0, 4)) || null;
 }
 
 // GET /api/municipalities - отримання всіх муніципалітетів
@@ -5864,10 +5924,8 @@ app.post('/api/municipalities/detect', authenticateToken, async (req, res) => {
             });
         }
         
-        // Шукаємо муніципалітет
-        const municipality = municipalitiesData.municipalities.find(m => 
-            m.postal_codes.some(code => code.startsWith(detectedCode))
-        );
+        // O(1) lookup via prefix index
+        const municipality = getMunicipalityByPostalPrefix(detectedCode);
         
         console.log('🏛️ Municipality found:', municipality ? municipality.name : 'NÃO ENCONTRADO');
         
@@ -5952,6 +6010,7 @@ app.post('/api/municipalities', authenticateToken, async (req, res) => {
         };
 
         await db.collection('municipality_overrides').insertOne(newMunicipality);
+        invalidateMunicipalitiesCache();
 
         res.status(201).json({ success: true, message: `Município "${name}" adicionado com sucesso`, data: newMunicipality });
     } catch (error) {
@@ -6018,6 +6077,7 @@ app.put('/api/municipalities/:id', authenticateToken, async (req, res) => {
             { $set: patch },
             { upsert: true }
         );
+        invalidateMunicipalitiesCache();
 
         // Синхронізуємо snapshot у ліфтах для консистентності в старих екранах
         await db.collection('lifts').updateMany(

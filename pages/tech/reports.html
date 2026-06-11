@@ -860,6 +860,12 @@
 
             // Inicialização менеджера de relatórios
             reportsManager = new ReportsManager();
+
+            // Debounced live search on text input
+            const _debounce = (fn, ms) => { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; };
+            document.getElementById('reportSearch')?.addEventListener('input',
+                _debounce(() => reportsManager.applyFilters(), 300)
+            );
         });
     </script>
     <script src="/assets/js/table-drag-scroll.js"></script>

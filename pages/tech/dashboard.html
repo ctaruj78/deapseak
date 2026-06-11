@@ -1004,7 +1004,12 @@
                 
                 // Підchaveення
                 window.techWebSocket.connect();
-                
+
+                // Cleanup on page unload
+                window.addEventListener('beforeunload', () => {
+                    if (window.techWebSocket?.disconnect) window.techWebSocket.disconnect();
+                }, { once: true });
+
             } catch (error) {
                 console.error('[Tech Dashboard] Erro ініціалізації WebSocket:', error);
             }

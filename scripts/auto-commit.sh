@@ -10,3 +10,8 @@ if ! git diff --quiet HEAD -- ':(exclude)node_modules'; then
 else
     echo "[$(date '+%Y-%m-%d %H:%M')] No changes to commit"
 fi
+
+# Пушимо на GitHub (credentials збережені в ~/.git-credentials)
+git push origin v2_refactor >> /home/andriy/deapseak/logs/auto-commit.log 2>&1 && \
+    echo "[$(date '+%Y-%m-%d %H:%M')] Auto-push done" || \
+    echo "[$(date '+%Y-%m-%d %H:%M')] Auto-push failed"
