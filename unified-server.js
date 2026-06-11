@@ -10420,7 +10420,14 @@ async function callOllamaRaw(messages, timeoutMs = 120000) {
         body: JSON.stringify({
             model: OLLAMA_MODEL,
             messages,
-            stream: false
+            stream: false,
+            options: {
+                num_ctx:          Number(process.env.OLLAMA_NUM_CTX)        || 4096,
+                num_predict:      Number(process.env.OLLAMA_NUM_PREDICT)    || 512,
+                temperature:      Number(process.env.OLLAMA_TEMPERATURE)    || 0.2,
+                top_p:            Number(process.env.OLLAMA_TOP_P)          || 0.9,
+                repeat_penalty:   Number(process.env.OLLAMA_REPEAT_PENALTY) || 1.05,
+            }
         }),
         signal: AbortSignal.timeout(timeoutMs)
     });
@@ -10499,9 +10506,29 @@ async function callGeminiAI(message, role, username, regulationsContext = null, 
     }
 }
 
+// Short system prompt for Ollama — the full 70k-char prompt exceeds its context window.
+function getOllamaSystemPrompt(role) {
+    const roleLabel = { admin: 'administrador', tech: 'técnico', dispatcher: 'despachante', client: 'cliente' }[role] || role;
+    return `És o Assistente FestLift — sistema de gestão de elevadores em Portugal.
+Responde SEMPRE em português (pt-PT), de forma concisa e técnica.
+Papel do utilizador: ${roleLabel}.
+
+Regulamentação essencial:
+- DL 320/2002: inspecções periódicas de elevadores
+- DL 513/70 + Port.949-A/2006: instalação de elevadores
+- DL 740/74 + Port.772/2010: manutenção de elevadores
+- Despacho 17/2022/DG: acordo de modernização (prazo 2 anos para correcções C2*)
+
+Classificação de cláusulas:
+- C1 (Imobilização): risco grave imediato → elevador imobilizado, reinspecção em 30 dias
+- C2 (Reprovação): risco médio → reinspecção em 30 dias (DL 320/2002)
+- C2* (Modernização): risco médio sob acordo Despacho 17/2022 → prazo 2 anos
+- C3 (Observação): risco menor → verificar na próxima inspecção periódica (2 anos)`;
+}
+
 async function callOllamaAI(message, role, username, regulationsContext = null, reportTextContext = null, dbContext = null) {
-    const systemPrompt = getSystemPromptForRole(role, username);
-    const contextualPrompt = buildAIUserPrompt(message, regulationsContext, reportTextContext, 8000, dbContext);
+    const systemPrompt = getOllamaSystemPrompt(role);
+    const contextualPrompt = buildAIUserPrompt(message, regulationsContext, reportTextContext, 3000, dbContext);
     const text = await callOllamaRaw([
         { role: 'system', content: systemPrompt },
         { role: 'user', content: contextualPrompt }
