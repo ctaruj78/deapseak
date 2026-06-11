@@ -339,7 +339,9 @@ function applyUnifiedPostProcessing(result) {
     const stats = getStatsFromViolations(cleanedViolations);
 
     const statusInfo = inferResultStatus(rawText);
-    const c2StarEvidence = statusInfo.hasApprovedC2Star || /C2\*/i.test(rawText) || /Despacho\s+n\.?\s*17\s*\/\s*2022/i.test(rawText);
+    // C2* only when the RESULTADO block explicitly says "Aprovado com cláusulas C2*" —
+    // do NOT trigger on legend text that mentions "C2*" or "Despacho 17/2022" generically.
+    const c2StarEvidence = statusInfo.hasApprovedC2Star;
     const hasC1 = stats.critical > 0;
     const hasC2 = stats.medium > 0;
 
