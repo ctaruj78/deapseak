@@ -213,7 +213,13 @@
         const wrap = document.getElementById('agent-messages');
         const div = document.createElement('div');
         div.className = `agent-msg from-${from}${extra ? ' ' + extra : ''}`;
-        div.innerHTML = content.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>');
+        // Safe rendering: escape content first, then apply only trusted markdown transforms
+        const escaped = String(content)
+            .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+        div.innerHTML = escaped
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+            .replace(/\n/g, '<br>');
         wrap.appendChild(div);
         wrap.scrollTop = wrap.scrollHeight;
         return div;

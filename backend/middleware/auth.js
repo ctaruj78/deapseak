@@ -38,13 +38,13 @@ const authenticate = (req, res, next) => {
     }
 };
 
-// Генерація Access токена (7 днів)
-const generateToken = (payload, expiresIn = '30d') => {
+// Access token: short-lived (8h) — refresh token handles session continuity
+const generateToken = (payload, expiresIn = '8h') => {
     return jwt.sign(payload, JWT_SECRET, { expiresIn });
 };
 
-// Генерація Refresh токена — ОКРЕМИЙ секрет!
-const generateRefreshToken = (payload, expiresIn = '30d') => {
+// Refresh token: longer-lived (14d)
+const generateRefreshToken = (payload, expiresIn = '14d') => {
     return jwt.sign(payload, JWT_REFRESH_SECRET, { expiresIn });
 };
 

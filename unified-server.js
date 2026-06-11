@@ -96,6 +96,45 @@ app.set('trust proxy', 1); // Confiar no proxy (Codespaces / nginx)
 // Primary:  Google Maps Geocoding API (preciso, Portugal-aware)
 // Fallback: OpenStreetMap Nominatim (sem custo, 1 req/s)
 
+// ── Geocode cache (evita chamadas repetidas ao Nominatim) ─
+const _geocodeCache = new Map(); // key → { result, expiresAt }
+const _GEOCACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24h
+function geocodeCacheGet(key) {
+    const entry = _geocodeCache.get(key);
+    if (!entry) return null;
+    if (Date.now() > entry.expiresAt) { _geocodeCache.delete(key); return null; }
+    return entry.result;
+}
+function geocodeCacheSet(key, result) {
+    if (_geocodeCache.size > 2000) {
+        const oldest = _geocodeCache.keys().next().value;
+        _geocodeCache.delete(oldest);
+    }
+    _geocodeCache.set(key, { result, expiresAt: Date.now() + _GEOCACHE_TTL_MS });
+}
+
+// ── Normaliza endereço: extrai cidade embutida no campo street ──
+// Ex: "Rua X, 45,Lisboa" → { street: "Rua X, 45", city: "Lisboa" }
+function normalizeAddressObject(addr) {
+    if (!addr || typeof addr !== 'object') return addr;
+    let { street = '', city = '', zipCode = '', postalCode = '', country = 'Portugal' } = addr;
+    const zip = zipCode || postalCode || '';
+
+    // Se city está vazio mas o street termina com ", CidadeConhecida" — extrair
+    if (!city.trim() && street) {
+        const parts = street.split(',');
+        if (parts.length >= 2) {
+            const lastPart = parts[parts.length - 1].trim();
+            // Considera cidade se tem 3-30 caracteres, sem números isolados, começa por maiúscula
+            if (lastPart.length >= 3 && lastPart.length <= 35 && /^[A-ZÁÉÍÓÚÀÃÕÂÊÔÇ]/.test(lastPart) && !/^\d+$/.test(lastPart)) {
+                city = lastPart;
+                street = parts.slice(0, -1).join(',').trim();
+            }
+        }
+    }
+    return { street, city, zipCode: zip, country };
+}
+
 // ── Nominatim (fallback) ─────────────────────────────────
 let _nominatimLastCall = 0;
 async function nominatimRequest(url) {
@@ -249,8 +288,11 @@ async function geocodeWithNominatim(address) {
 
     if (typeof address === 'string') {
         searchLabel = address;
+        const cached = geocodeCacheGet('nom:' + address);
+        if (cached) return cached;
         results = await nominatimRequest(`${BASE}?q=${encodeURIComponent(address)}&${COMMON}`);
     } else if (typeof address === 'object' && address !== null) {
+        address = normalizeAddressObject(address);
         const { street = '', zipCode = '', city = '', country = 'Portugal' } = address;
         searchLabel = [street, zipCode, city].filter(Boolean).join(', ');
         const cleanStreet = street.replace(/\bnº\b\.?/gi, '').trim();
@@ -328,12 +370,15 @@ async function geocodeWithNominatim(address) {
     const lon = parseFloat(best.lon);
     const n = best.address || {};
     const cityName = n.city || n.town || n.village || n.municipality || n.suburb || n.quarter || n.county || '';
-    return { lat, lng: lon, lon, city: cityName, display: best.display_name, results: (results || []).map(r => ({
+    const nomResult = { lat, lng: lon, lon, city: cityName, display: best.display_name, results: (results || []).map(r => ({
         lat: parseFloat(r.lat), lng: parseFloat(r.lon),
         display: r.display_name,
         city: (r.address?.city || r.address?.town || r.address?.village || ''),
         postcode: r.address?.postcode || '', type: r.type || ''
     })) };
+    const cacheKey = typeof address === 'string' ? address : (address.street || '') + '|' + (address.zipCode || '') + '|' + (address.city || '');
+    geocodeCacheSet('nom:' + cacheKey, nomResult);
+    return nomResult;
 }
 
 // ── Main geocoder: Google → Nominatim fallback ──────────
@@ -390,6 +435,20 @@ const generalLimiter = rateLimit({
     max: 300,            // 300 запитів/хв для загального API
     message: { success: false, message: 'Demasiados pedidos. Aguarde um minuto.' }
 });
+const contactLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 min
+    max: 5,                    // max 5 messages per 15 min per IP
+    message: { success: false, message: 'Demasiadas mensagens enviadas. Tente novamente em 15 minutos.' },
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+const refreshLimiter = rateLimit({
+    windowMs: 5 * 60 * 1000, // 5 min
+    max: 10,                  // max 10 refresh requests per 5 min per IP
+    message: { success: false, message: 'Demasiados pedidos de renovação de sessão. Aguarde 5 minutos.' },
+    standardHeaders: true,
+    legacyHeaders: false,
+});
 
 // Middleware - CORS
 const isProduction = process.env.NODE_ENV === 'production';
@@ -397,14 +456,12 @@ const allowedOrigins = (process.env.ALLOWED_ORIGINS || '').split(',').filter(Boo
 
 app.use(cors({
     origin: function(origin, callback) {
-        if (!origin) return callback(null, true); // Postman/curl
-        if (!isProduction) return callback(null, true); // dev - дозволяємо все
-        // Production: тільки явно дозволені origins або festlift.pt домени
+        if (!origin) return callback(null, true); // Postman/curl/server-to-server
+        if (!isProduction) return callback(null, true); // dev — allow all
+        // Production: only festlift.pt domains or explicitly configured ALLOWED_ORIGINS
         const allowed = allowedOrigins.length > 0
             ? allowedOrigins.some(o => origin.startsWith(o.trim()))
-            : (origin.includes('localhost') || origin.includes('127.0.0.1') ||
-               origin.includes('github.dev') || origin.includes('app.github.dev') ||
-               origin.includes('festlift.pt'));
+            : origin.includes('festlift.pt');
         callback(allowed ? null : new Error('CORS: Origin not allowed'), allowed);
     },
     credentials: true
@@ -562,11 +619,8 @@ app.get('/api/health', async (req, res) => {
 });
 
 // Real system metrics for admin profile page
-app.get('/api/admin/system-overview', authenticateToken, async (req, res) => {
+app.get('/api/admin/system-overview', authenticateToken, requireRole('admin'), async (req, res) => {
     try {
-        if (req.user.role !== 'admin' && req.user.role !== 'dispatcher') {
-            return res.status(403).json({ success: false, message: 'Sem permissões' });
-        }
 
         if (!db) {
             return res.status(503).json({ success: false, message: 'Base de dados indisponível' });
@@ -873,6 +927,10 @@ app.get('/api/geocode', async (req, res) => {
     const q = (req.query.q || '').trim();
     if (!q) return res.status(400).json({ success: false, message: 'Parâmetro q é obrigatório' });
 
+    // Serve from cache if available
+    const cached = geocodeCacheGet('api:' + q);
+    if (cached) return res.json(cached);
+
     const mapNominatim = (rows) => (rows || []).map(r => ({
         lat: parseFloat(r.lat),
         lng: parseFloat(r.lon),
@@ -913,10 +971,12 @@ app.get('/api/geocode', async (req, res) => {
     const postalFull = extractPostal(q);
     const postalPrefix = postalFull ? postalFull.slice(0, 4) : '';
 
+    const _cacheAndReturn = (payload) => { geocodeCacheSet('api:' + q, payload); return res.json(payload); };
+
     // 1. Try Google Maps first (best accuracy for Portugal)
     const goog = await geocodeWithGoogle(q);
     if (goog) {
-        return res.json({
+        return _cacheAndReturn({
             success: true,
             lat: goog.lat,
             lng: goog.lng,
@@ -928,8 +988,13 @@ app.get('/api/geocode', async (req, res) => {
         });
     }
 
-    // 2. Fallback: Nominatim
-    const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=5&countrycodes=pt&addressdetails=1`;
+    // 2. Fallback: Nominatim — enriquece query com cidade extraída do endereço
+    // Tenta detectar cidade embutida na query, ex: "Rua X, 45, Lisboa, 1070-066, Portugal"
+    const _qNorm = normalizeAddressObject({ street: q.replace(/,\s*Portugal$/i, '').trim() });
+    const _enrichedQ = [_qNorm.street, _qNorm.city, postalFull || postalPrefix, 'Portugal'].filter(Boolean).join(', ');
+    const _nomQuery = _enrichedQ !== q ? _enrichedQ : q;
+
+    const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(_nomQuery)}&format=json&limit=5&countrycodes=pt&addressdetails=1`;
     try {
         const response = await fetch(url, {
             headers: {
@@ -942,7 +1007,7 @@ app.get('/api/geocode', async (req, res) => {
         if (data && data.length > 0) {
             const best = pickBestByPostcode(data, postalFull, postalPrefix);
             const results = mapNominatim(data);
-            return res.json({
+            return _cacheAndReturn({
                 success: true,
                 lat: parseFloat(best.lat),
                 lng: parseFloat(best.lon),
@@ -969,7 +1034,7 @@ app.get('/api/geocode', async (req, res) => {
                 if (d2 && d2.length > 0) {
                     const best = pickBestByPostcode(d2, postalFull, postalPrefix);
                     const results = mapNominatim(d2);
-                    return res.json({
+                    return _cacheAndReturn({
                         success: true,
                         lat: parseFloat(best.lat),
                         lng: parseFloat(best.lon),
@@ -1005,11 +1070,9 @@ app.get('/api/geocode', async (req, res) => {
                 }
 
                 if (municipality && municipality.latitude && municipality.longitude) {
-                    const reason = postalPrefix
-                        ? `código postal ${postalPrefix}`
-                        : `nome do município`;
+                    const reason = postalPrefix ? `código postal ${postalPrefix}` : `nome do município`;
                     const display = `Centro de ${municipality.name} (estimativa por ${reason})`;
-                    return res.json({
+                    return _cacheAndReturn({
                         success: true,
                         lat: parseFloat(municipality.latitude),
                         lng: parseFloat(municipality.longitude),
@@ -1114,7 +1177,16 @@ app.delete('/api/notifications/:id', authenticateToken, async (req, res) => {
     try {
         if (!db) return res.status(503).json({ success: false, message: 'Base de dados indisponível' });
         const { ObjectId } = require('mongodb');
-        await db.collection('notifications').deleteOne({ _id: new ObjectId(req.params.id) });
+        const userId = req.user.id || req.user.userId;
+        const isAdmin = req.user.role === 'admin';
+        // Non-admins can only delete their own notifications
+        const query = isAdmin
+            ? { _id: new ObjectId(req.params.id) }
+            : { _id: new ObjectId(req.params.id), userId: String(userId) };
+        const result = await db.collection('notifications').deleteOne(query);
+        if (result.deletedCount === 0) {
+            return res.status(404).json({ success: false, message: 'Notificação não encontrada ou sem permissão' });
+        }
         res.json({ success: true, message: 'Notificação eliminada' });
     } catch (error) {
         console.error('❌ Помилка видалення сповіщення:', error);
@@ -1125,16 +1197,20 @@ app.delete('/api/notifications/:id', authenticateToken, async (req, res) => {
 // Mark notification as read
 app.patch('/api/notifications/:id/read', authenticateToken, async (req, res) => {
     try {
-        if (!db) {
-            return res.status(503).json({ success: false, message: 'Base de dados indisponível' });
-        }
-        
+        if (!db) return res.status(503).json({ success: false, message: 'Base de dados indisponível' });
         const { ObjectId } = require('mongodb');
-        await db.collection('notifications').updateOne(
-            { _id: new ObjectId(req.params.id) },
+        const userId = req.user.id || req.user.userId;
+        const isAdmin = req.user.role === 'admin';
+        const query = isAdmin
+            ? { _id: new ObjectId(req.params.id) }
+            : { _id: new ObjectId(req.params.id), userId: String(userId) };
+        const result = await db.collection('notifications').updateOne(
+            query,
             { $set: { read: true, readAt: new Date() } }
         );
-        
+        if (result.matchedCount === 0) {
+            return res.status(404).json({ success: false, message: 'Notificação não encontrada ou sem permissão' });
+        }
         res.json({ success: true, message: 'Notificação marcada como lida' });
     } catch (error) {
         console.error('❌ Помилка оновлення сповіщення:', error);
@@ -1837,30 +1913,42 @@ const monitorLogs = []; // in-memory buffer: останні 500 записів
 const MONITOR_MAX = 500;
 
 // POST /api/monitor/log — клієнт → сервер (без auth, щоби ловити навіть помилки авторизації)
-app.post('/api/monitor/log', async (req, res) => {
+// Rate limited: max 30 logs/min per IP to prevent spam
+const monitorLimiter = rateLimit({
+    windowMs: 60 * 1000,
+    max: 30,
+    message: { ok: false },
+    standardHeaders: false,
+    legacyHeaders: false,
+});
+const ALLOWED_LOG_TYPES = new Set(['error', 'warn', 'info', 'nav', 'action', 'api', 'api-error']);
+app.post('/api/monitor/log', monitorLimiter, async (req, res) => {
     try {
-        const { type, message, url, user, data, ts } = req.body;
+        const rawType = String(req.body.type || 'info');
+        const type = ALLOWED_LOG_TYPES.has(rawType) ? rawType : 'info';
+        const message = String(req.body.message || '').slice(0, 1000);
+        const url = String(req.body.url || '').slice(0, 500);
+        // Validate user field shape: only allow {id, role} — drop free-form data
+        const rawUser = req.body.user;
+        const user = rawUser && typeof rawUser === 'object'
+            ? { id: String(rawUser.id || '').slice(0, 50), role: String(rawUser.role || '').slice(0, 20) }
+            : null;
+
         const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
         const entry = {
-            ts: ts || new Date().toISOString(),
+            ts: req.body.ts || new Date().toISOString(),
             receivedAt: new Date().toISOString(),
-            type: type || 'info',      // error | warn | info | nav | action | api
-            message: String(message || '').slice(0, 1000),
-            url: url || '',
-            user: user || null,
-            data: data || null,
-            ip,
-            ua: req.headers['user-agent'] || ''
+            type, message, url, user, ip,
+            ua: String(req.headers['user-agent'] || '').slice(0, 200)
         };
         monitorLogs.unshift(entry);
         if (monitorLogs.length > MONITOR_MAX) monitorLogs.pop();
 
-        // Зберігаємо критичні помилки в MongoDB
+        // Only persist critical errors to MongoDB
         if (db && (type === 'error' || type === 'api-error')) {
             db.collection('monitor_logs').insertOne(entry).catch(() => {});
         }
 
-        // Відправляємо в реальному часі через WebSocket адмінам
         if (global.io) {
             global.io.to('admin').emit('monitor:log', entry);
         }
@@ -11234,6 +11322,7 @@ app.get('/api/ai/regulations/:id', authenticateToken, async (req, res) => {
 const authRoutes = require('./backend/routes/authRoutes');
 app.use('/api/auth/login', loginLimiter);    // loginLimiter тільки для login
 app.use('/api/auth/register', loginLimiter); // і register (захист від brute-force)
+app.use('/api/auth/refresh', refreshLimiter); // захист від token-refresh abuse
 app.use('/api/auth', authRoutes);
 app.use('/api/users', authRoutes); // authRoutes містить /users endpoints
 
@@ -11792,119 +11881,57 @@ app.patch('/api/orcamentos/:id/link-lift', authenticateToken, async (req, res) =
 // ═══════════════════════════════════════════════════════════
 
 // POST /api/contact - Публічна форма зворотного зв'язку (без авторизації)
-app.post('/api/contact', async (req, res) => {
+app.post('/api/contact', contactLimiter, async (req, res) => {
     try {
-        const { name, email, phone, message } = req.body;
+        const rawName    = String(req.body.name    || '').trim().slice(0, 120);
+        const rawEmail   = String(req.body.email   || '').trim().slice(0, 254);
+        const rawPhone   = String(req.body.phone   || '').trim().slice(0, 30);
+        const rawMessage = String(req.body.message || '').trim().slice(0, 2000);
 
-        // Валідація обов'язкових полів
-        if (!name || !email || !message) {
-            return res.status(400).json({
-                success: false,
-                message: 'Por favor, preencha todos os campos obrigatórios (nome, email, mensagem)'
-            });
+        if (!rawName || !rawEmail || !rawMessage) {
+            return res.status(400).json({ success: false, message: 'Por favor, preencha todos os campos obrigatórios (nome, email, mensagem)' });
         }
 
-        // Валідація email
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(email)) {
-            return res.status(400).json({
-                success: false,
-                message: 'Formato de email inválido'
-            });
+        // Stricter email validation
+        const emailRegex = /^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/;
+        if (!emailRegex.test(rawEmail)) {
+            return res.status(400).json({ success: false, message: 'Formato de email inválido' });
         }
 
-        console.log('📧 =============== CONTACT FORM SUBMISSION ===============');
-        console.log('👤 Name:', name);
-        console.log('📬 Email:', email);
-        console.log('📞 Phone:', phone || 'Não fornecido');
-        console.log('💬 Message:', message.substring(0, 100) + '...');
+        // Escape HTML in user content before injecting into email template
+        const esc = (s) => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 
-        // Створюємо transporter для Brevo SMTP
-        const nodemailer = require('nodemailer');
-        const transporter = nodemailer.createTransport({
-            host: process.env.SMTP_HOST || 'smtp-relay.brevo.com',
-            port: parseInt(process.env.SMTP_PORT) || 587,
-            secure: false, // TLS
-            auth: {
-                user: process.env.SMTP_USER,
-                pass: process.env.SMTP_PASS
-            }
-        });
-
-        // Email para адміністраторів FestLift
         const adminEmail = process.env.ADMIN_EMAIL || 'info@festlift.pt';
-        
-        const htmlContent = `
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <style>
-        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
-        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-        .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; text-align: center; border-radius: 5px 5px 0 0; }
-        .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 5px 5px; }
-        .info-box { background: white; padding: 15px; margin: 10px 0; border-left: 4px solid #667eea; border-radius: 3px; }
-        .label { font-weight: bold; color: #667eea; }
-        .message-box { background: white; padding: 20px; margin-top: 20px; border-radius: 5px; border: 1px solid #ddd; }
-        .footer { text-align: center; margin-top: 20px; color: #666; font-size: 12px; }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <div class="header">
-            <h2>📨 Nova Mensagem de Contacto</h2>
-            <p>Recebida através do website LiftMaster Pro</p>
-        </div>
-        <div class="content">
-            <div class="info-box">
-                <p><span class="label">👤 Nome:</span> ${name}</p>
-            </div>
-            <div class="info-box">
-                <p><span class="label">📧 Email:</span> <a href="mailto:${email}">${email}</a></p>
-            </div>
-            <div class="info-box">
-                <p><span class="label">📞 Telefone:</span> ${phone || 'Não fornecido'}</p>
-            </div>
-            <div class="message-box">
-                <p class="label">💬 Mensagem:</p>
-                <p>${message.replace(/\n/g, '<br>')}</p>
-            </div>
-            <div class="footer">
-                <p>Este email foi enviado automaticamente através do formulário de contacto do website.</p>
-                <p><strong>FestLift - Elevadores e Serviços, Lda.</strong> | info@festlift.pt | Tel: +351 214 190 863 | Móvel: +351 926 380 243/244</p>
-                <p>Av. do Parque 84B, Rio de Mouro, Lisboa 2635-609 | NIF: 515924741</p>
-            </div>
-        </div>
-    </div>
-</body>
-</html>
-        `;
+        const htmlContent = `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>
+body{font-family:Arial,sans-serif;line-height:1.6;color:#333}
+.container{max-width:600px;margin:0 auto;padding:20px}
+.header{background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:white;padding:20px;text-align:center;border-radius:5px 5px 0 0}
+.content{background:#f9f9f9;padding:30px;border-radius:0 0 5px 5px}
+.info-box{background:white;padding:15px;margin:10px 0;border-left:4px solid #667eea;border-radius:3px}
+.label{font-weight:bold;color:#667eea}
+.message-box{background:white;padding:20px;margin-top:20px;border-radius:5px;border:1px solid #ddd;white-space:pre-wrap}
+.footer{text-align:center;margin-top:20px;color:#666;font-size:12px}
+</style></head><body><div class="container">
+<div class="header"><h2>Nova Mensagem de Contacto</h2><p>Recebida através do website LiftMaster Pro</p></div>
+<div class="content">
+<div class="info-box"><p><span class="label">Nome:</span> ${esc(rawName)}</p></div>
+<div class="info-box"><p><span class="label">Email:</span> <a href="mailto:${esc(rawEmail)}">${esc(rawEmail)}</a></p></div>
+<div class="info-box"><p><span class="label">Telefone:</span> ${esc(rawPhone) || 'Não fornecido'}</p></div>
+<div class="message-box"><p class="label">Mensagem:</p><p>${esc(rawMessage)}</p></div>
+<div class="footer"><p>FestLift — formulário de contacto do website.</p></div>
+</div></div></body></html>`;
 
-        const mailOptions = {
-            from: process.env.SMTP_FROM || '"LiftMaster Pro" <info@festlift.pt>',
+        await emailService.sendEmail({
             to: adminEmail,
-            replyTo: email, // Дозволяє відповісти безпосередньо клієнту
-            subject: `📨 Novo Contacto: ${name}`,
+            replyTo: rawEmail,
+            subject: `Novo Contacto: ${rawName}`,
             html: htmlContent
-        };
-
-        const result = await transporter.sendMail(mailOptions);
-        
-        console.log('✅ Contact form email sent successfully:', result.messageId);
-
-        return res.json({
-            success: true,
-            message: 'Mensagem enviada com sucesso! Entraremos em contacto em breve.'
         });
 
+        return res.json({ success: true, message: 'Mensagem enviada com sucesso! Entraremos em contacto em breve.' });
     } catch (error) {
-        console.error('❌ Contact form email error:', error);
-        return res.status(500).json({
-            success: false,
-            message: 'Erro ao enviar mensagem. Por favor, tente novamente ou contacte-nos diretamente.',
-            error: error.message
-        });
+        console.error('❌ Contact form email error:', error.message);
+        return res.status(500).json({ success: false, message: 'Erro ao enviar mensagem. Por favor, tente novamente ou contacte-nos diretamente.' });
     }
 });
 

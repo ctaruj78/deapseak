@@ -5696,56 +5696,42 @@ Email de contacto: info@festlift.pt`;
                 }
                 
                 // ── Mapa de detalhes ─────────────────────────────────────
-                // Sempre tentamos geocodificar o endereço para validar/ajustar
-                // coordenadas antigas guardadas na BD.
+                // Só geocodificamos se o elevador NÃO tem coordenadas na BD.
+                // Nunca substituímos coordenadas existentes com resultado de geocode.
                 let _mapLat = latitude;
                 let _mapLng = longitude;
-                const _mapCity4geo = lift.address?.city !== lift.address?.street ? lift.address?.city : '';
-                const _mapPostcode4geo =
-                    lift.address?.zipCode ||
-                    lift.address?.postalCode ||
-                    lift.postalCode ||
-                    lift.zipCode ||
-                    '';
-                const _geoQuery = [
-                    lift.address?.street,
-                    _mapPostcode4geo,
-                    _mapCity4geo,
-                    'Portugal'
-                ].filter(Boolean).join(', ');
 
-                // Distância Haversine em km para detectar pontos da BD muito afastados.
-                const _distanceKm = (lat1, lon1, lat2, lon2) => {
-                    const toRad = d => d * Math.PI / 180;
-                    const R = 6371;
-                    const dLat = toRad(lat2 - lat1);
-                    const dLon = toRad(lon2 - lon1);
-                    const a = Math.sin(dLat / 2) ** 2 +
-                        Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
-                    return 2 * R * Math.asin(Math.sqrt(a));
-                };
+                if (!hasValidCoords) {
+                    const _mapCity4geo = lift.address?.city !== lift.address?.street ? (lift.address?.city || '') : '';
+                    const _mapPostcode4geo =
+                        lift.address?.zipCode ||
+                        lift.address?.postalCode ||
+                        lift.postalCode ||
+                        lift.zipCode ||
+                        '';
+                    const _geoQuery = [
+                        lift.address?.street,
+                        _mapPostcode4geo,
+                        _mapCity4geo,
+                        'Portugal'
+                    ].filter(Boolean).join(', ');
 
-                if (_geoQuery.trim()) {
-                    try {
-                        const _geoR = await apiCall(`/api/geocode?q=${encodeURIComponent(_geoQuery)}`);
-                        const _gd = _geoR.success && _geoR.data;
-                        if (_gd && _gd.lat && _gd.lng) {
-                            const _gLat = parseFloat(_gd.lat);
-                            const _gLng = parseFloat(_gd.lng);
-                            if (!isNaN(_gLat) && !isNaN(_gLng)) {
-                                const _dbLooksValid = hasValidCoords && !isNaN(_mapLat) && !isNaN(_mapLng);
-                                const _deltaKm = _dbLooksValid ? _distanceKm(_mapLat, _mapLng, _gLat, _gLng) : Infinity;
-
-                                // Usa geocoded se não havia coords válidas ou se BD diverge > 0.8 km.
-                                if (!_dbLooksValid || _deltaKm > 0.8) {
+                    if (_geoQuery.trim()) {
+                        try {
+                            const _geoR = await apiCall(`/api/geocode?q=${encodeURIComponent(_geoQuery)}`);
+                            const _gd = _geoR.success && _geoR.data;
+                            if (_gd && _gd.lat && _gd.lng) {
+                                const _gLat = parseFloat(_gd.lat);
+                                const _gLng = parseFloat(_gd.lng);
+                                if (!isNaN(_gLat) && !isNaN(_gLng)) {
                                     _mapLat = _gLat;
                                     _mapLng = _gLng;
-                                    console.log(`✅ Mapa de detalhes ajustado por geocode (${_deltaKm === Infinity ? 'sem coords BD' : _deltaKm.toFixed(2) + ' km de diferença'}): ${_geoQuery} → [${_mapLng}, ${_mapLat}]`);
+                                    console.log(`✅ Mapa geocodificado (sem coords BD): ${_geoQuery} → [${_gLng}, ${_gLat}]`);
                                 }
                             }
+                        } catch (_ge) {
+                            console.warn('⚠️ Geocodificação para mapa de detalhes falhou:', _ge.message);
                         }
-                    } catch (_ge) {
-                        console.warn('⚠️ Geocodificação para mapa de detalhes falhou:', _ge.message);
                     }
                 }
 
