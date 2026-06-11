@@ -10413,7 +10413,7 @@ INSTRUÇÕES PARA ANÁLISE DO RELATÓRIO:
     return contextualPrompt;
 }
 
-async function callOllamaRaw(messages, timeoutMs = 45000) {
+async function callOllamaRaw(messages, timeoutMs = 120000) {
     const response = await fetch(`${OLLAMA_BASE_URL}/api/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -10501,7 +10501,7 @@ async function callGeminiAI(message, role, username, regulationsContext = null, 
 
 async function callOllamaAI(message, role, username, regulationsContext = null, reportTextContext = null, dbContext = null) {
     const systemPrompt = getSystemPromptForRole(role, username);
-    const contextualPrompt = buildAIUserPrompt(message, regulationsContext, reportTextContext, 20000, dbContext);
+    const contextualPrompt = buildAIUserPrompt(message, regulationsContext, reportTextContext, 8000, dbContext);
     const text = await callOllamaRaw([
         { role: 'system', content: systemPrompt },
         { role: 'user', content: contextualPrompt }
