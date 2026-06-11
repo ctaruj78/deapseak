@@ -2840,6 +2840,19 @@
                             <div id="municipality-info-error" class="alert alert-danger" style="display: none;">
                                 <i class="fas fa-exclamation-triangle mr-2"></i>
                                 <span id="municipality-error-message">Não foi possível determinar o município</span>
+                                <div class="mt-2">
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" id="btn-select-municipality-manual">
+                                        <i class="fas fa-search mr-1"></i>Selecionar manualmente
+                                    </button>
+                                </div>
+                            </div>
+                            <div id="municipality-manual-select" style="display: none;">
+                                <div class="form-group mb-2">
+                                    <label class="small font-weight-bold">Selecionar município:</label>
+                                    <select id="municipality-manual-dropdown" class="form-control form-control-sm">
+                                        <option value="">— A carregar municípios... —</option>
+                                    </select>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -3807,11 +3820,14 @@ Email de contacto: info@festlift.pt`;
             });
             const data = await res.json();
             if (data.success) { toastr.success(successMsg); return true; }
-        } catch (_) {}
-        // Fallback: mailto
-        window.open(`mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`, '_blank');
-        toastr.info('Cliente de email aberto');
-        return true;
+            // API returned error — show it, do NOT fall back to mailto silently
+            toastr.error('Erro ao enviar email: ' + (data.error || data.message || 'Erro desconhecido'));
+            return false;
+        } catch (err) {
+            console.error('❌ Erro ao enviar email via SMTP:', err);
+            toastr.error('Erro de ligação ao servidor de email: ' + err.message);
+            return false;
+        }
     }
 
     // Кнопки в модалі (ініціалізація одноразово)
@@ -5363,10 +5379,12 @@ Email de contacto: info@festlift.pt`;
                 $('#detail-drive-type').text(driveLabels[lift.driveType] || lift.driveType || 'Não especificado');
                 const doorLabels = {
                     automatic: 'Automáticas (operador)',
-                    mixed: 'Misto — Batentes (patamar) + Automáticas (cabine)',
                     swing: 'Batentes / Semiautomáticas',
-                    patim_movel: 'Cabina sem portas / Patim móvel',
                     gate: 'Portões / Guilhotina',
+                    patim_movel: 'Cabina sem portas / Patim móvel',
+                    mixed: 'Misto — Batentes (patamar) + Automáticas (cabine)',
+                    mixed_gate: 'Misto — Batentes (patamar) + Portões / Guilhotina (cabine)',
+                    mixed_patim: 'Misto — Batentes (patamar) + Cabina sem portas / Patim móvel',
                 };
                 $('#detail-door-type').text(doorLabels[lift.doorType] || lift.doorType || 'Não especificado');
                 
@@ -8483,55 +8501,110 @@ Email de contacto: info@festlift.pt`;
             }
         });
         
+        // Manual municipality select
+        $(document).on('click', '#btn-select-municipality-manual', async function() {
+            const $manual = $('#municipality-manual-select');
+            if ($manual.is(':visible')) { $manual.hide(); return; }
+
+            const $dropdown = $('#municipality-manual-dropdown');
+            if ($dropdown.find('option').length <= 1) {
+                try {
+                    const res = await apiCall('/api/municipalities', 'GET');
+                    const list = (res.data || []).sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+                    $dropdown.empty().append('<option value="">— Selecione um município —</option>');
+                    list.forEach(m => {
+                        $dropdown.append(`<option value="${m.id}">${m.name} (${m.distrito || ''})</option>`);
+                    });
+                } catch (e) {
+                    toastr.error('Erro ao carregar municípios: ' + e.message);
+                    return;
+                }
+            }
+            $manual.show();
+        });
+
+        $(document).on('change', '#municipality-manual-dropdown', async function() {
+            const munId = $(this).val();
+            if (!munId) return;
+            try {
+                const res = await apiCall('/api/municipalities', 'GET');
+                const mun = (res.data || []).find(m => m.id === munId);
+                if (!mun) return;
+
+                currentMunicipalityData = mun;
+                const liftEmail = mun.lift_department?.email || mun.email;
+                const deptName = mun.lift_department?.department_name || 'Câmara Municipal';
+
+                $('#mun-concelho-name').text(mun.name || 'Não especificado');
+                if (mun.lift_department) $('#mun-concelho-name').append(`<br><small class="text-muted">${deptName}</small>`);
+                $('#mun-distrito-name').text(mun.distrito || 'Não especificado');
+                $('#mun-email').text(liftEmail || 'Não especificado');
+                $('#mun-phone').text(mun.phone || 'Não especificado');
+
+                $('#municipality-info-error').hide();
+                $('#municipality-manual-select').hide();
+                $('#municipality-info-loading').hide();
+                $('#municipality-info-content').show();
+            } catch (e) {
+                toastr.error('Erro ao selecionar município: ' + e.message);
+            }
+        });
+
         // Send email button
         $('#btn-send-to-municipality').on('click', async function() {
-            console.log('📤 A enviar relatório ao município...');
-            
-            if (!currentMunicipalityLiftId) {
-                alert('Erro: ID do elevador não definido');
-                return;
-            }
-            
+            if (!currentMunicipalityLiftId) { alert('Erro: ID do elevador não definido'); return; }
+            if (!currentMunicipalityData) { alert('Município não determinado. Por favor selecione um município primeiro.'); return; }
+
             const templateType = $('#email-template-type').val();
+            const apiTemplateType = templateType.replace(/^municipality-/, '');
+            const serviceStartDate = $('#service-start-date').val();
             const notes = $('#municipality-notes').val();
-            
-            // Mostrar indicador de carregamento
+
             const $btn = $(this);
             const originalText = $btn.html();
             $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-1"></i>A enviar...');
-            
+
             try {
-                const serviceStartDate = $('#service-start-date').val();
-                
-                // TODO: Реалізувати відправку através de API endpoint
-                // const result = await apiCall(`/api/lifts/${currentMunicipalityLiftId}/notify-municipality`, 'POST', {
-                //     templateType: templateType,
-                //     serviceStartDate: serviceStartDate,
-                //     notes: notes
-                // });
-                
-                // Atéки що просто показуexisteмо mensagem
-                console.log('📧 Dados para envio:', {
-                    liftId: currentMunicipalityLiftId,
-                    templateType: templateType,
-                    serviceStartDate: serviceStartDate,
-                    notes: notes
-                });
-                
-                setTimeout(() => {
-                    alert('⚠️ Função de envio de email ainda não implementada.\n\nDados prontos para envio:\n' +
-                          `- ID do elevador: ${currentMunicipalityLiftId}\n` +
-                          `- Tipo de relatório: ${templateType}\n` +
-                          `- Data de início: ${serviceStartDate}\n` +
-                          `- Notas: ${notes || 'Nenhuma'}`);
-                    
+                const lift = currentMunicipalityLiftData || {};
+                const address = lift.address
+                    ? (typeof lift.address === 'string' ? lift.address
+                        : [lift.address.street, lift.address.zipCode, lift.address.city].filter(Boolean).join(', '))
+                    : '';
+
+                const municipalityEmail = currentMunicipalityData.lift_department?.email || currentMunicipalityData.email;
+                if (!municipalityEmail) {
+                    toastr.error('Email do município não disponível');
                     $btn.prop('disabled', false).html(originalText);
+                    return;
+                }
+
+                const result = await apiCall('/api/lifts/send-municipality-form', 'POST', {
+                    templateType: apiTemplateType,
+                    municipalityEmail: municipalityEmail,
+                    liftData: {
+                        municipalNumber: lift.municipalNumber || lift.liftMunicipalNumber || 'N/A',
+                        address: address || 'N/A',
+                        brand: lift.manufacturer || lift.brand || 'N/A',
+                        model: lift.model || 'N/A',
+                        installationYear: lift.installYear || lift.installationYear || 'N/A',
+                        capacity: lift.capacity || 'N/A',
+                        municipalityName: currentMunicipalityData.name || 'Câmara Municipal',
+                        serviceStartDate: serviceStartDate || '',
+                        notes: notes || ''
+                    }
+                });
+
+                if (result && (result.success || result.data?.success)) {
+                    toastr.success(`Relatório enviado com sucesso para ${municipalityEmail}`);
                     $('#municipalityModal').modal('hide');
-                }, 500);
-                
+                } else {
+                    const errMsg = result?.message || result?.data?.message || 'Erro ao enviar relatório';
+                    toastr.error(errMsg);
+                    $btn.prop('disabled', false).html(originalText);
+                }
             } catch (error) {
-                console.error('❌ Erro ao enviar relatório:', error);
-                alert('Erro ao enviar relatório: ' + error.message);
+                console.error('❌ Erro ao enviar relatório ao município:', error);
+                toastr.error('Erro ao enviar: ' + error.message);
                 $btn.prop('disabled', false).html(originalText);
             }
         });

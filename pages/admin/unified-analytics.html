@@ -1381,6 +1381,11 @@
                                     <div class="analytics-card">
                                         <div class="card-header">
                                             <h3 class="card-title">🏆 Top-10 municípios por número de elevadores</h3>
+                                            <div class="card-tools">
+                                                <button class="btn btn-sm btn-success" onclick="openAddMunicipalityModal()">
+                                                    <i class="fas fa-plus mr-1"></i>Adicionar município
+                                                </button>
+                                            </div>
                                         </div>
                                         <div class="card-body">
                                             <div class="table-responsive">
@@ -1459,6 +1464,86 @@
                     <button type="button" class="btn btn-primary" id="saveMunicipalityBtn">
                         <i class="fas fa-save mr-1"></i> Guardar alterações
                     </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Municipality Modal -->
+    <div class="modal fade" id="addMunicipalityModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title"><i class="fas fa-plus mr-1"></i> Adicionar Município</h5>
+                    <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-row">
+                        <div class="form-group col-md-8">
+                            <label>Nome do município <span class="text-danger">*</span></label>
+                            <input type="text" id="newMunName" class="form-control" placeholder="Ex: Palmela">
+                        </div>
+                        <div class="form-group col-md-4">
+                            <label>Distrito <span class="text-danger">*</span></label>
+                            <select id="newMunDistrito" class="form-control">
+                                <option value="Lisboa">Lisboa</option>
+                                <option value="Setúbal">Setúbal</option>
+                                <option value="Santarém">Santarém</option>
+                                <option value="Leiria">Leiria</option>
+                                <option value="Outro">Outro</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Email principal <span class="text-danger">*</span></label>
+                        <input type="email" id="newMunEmail" class="form-control" placeholder="geral@cm-...">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-6">
+                            <label>Telefone</label>
+                            <input type="text" id="newMunPhone" class="form-control" placeholder="+351 ...">
+                        </div>
+                        <div class="form-group col-md-6">
+                            <label>Distância ao centro (km)</label>
+                            <input type="number" id="newMunDistance" class="form-control" value="0" min="0">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Códigos postais (separados por vírgula)</label>
+                        <input type="text" id="newMunPostalCodes" class="form-control" placeholder="2950-*, 2951-*, 2952-*">
+                        <small class="form-text text-muted">Formato: XXXX-* para todo o prefixo, ou XXXX-NNN para código específico</small>
+                    </div>
+                    <hr>
+                    <div class="form-group">
+                        <label>Email departamento elevadores</label>
+                        <input type="email" id="newMunLiftEmail" class="form-control" placeholder="elevadores@...">
+                    </div>
+                    <div class="form-group">
+                        <label>Nome do departamento</label>
+                        <input type="text" id="newMunLiftDept" class="form-control" placeholder="Serviço de Elevadores">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-success" id="saveNewMunicipalityBtn" onclick="saveNewMunicipality()">
+                        <i class="fas fa-plus mr-1"></i> Adicionar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Email Details Modal -->
+    <div class="modal fade" id="emailDetailsModal" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-sm" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title"><i class="fas fa-envelope mr-1"></i> Detalhes do Email</h5>
+                    <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+                </div>
+                <div class="modal-body" id="emailDetailsBody"></div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Fechar</button>
                 </div>
             </div>
         </div>
@@ -2101,7 +2186,18 @@ setTimeout(() => {
     
     // Global function for viewing email details
     window.viewEmailDetails = function(messageId) {
-        alert(`Detalhes do email:\nMessage ID: ${messageId}\n\nFunção em desenvolvimento...`);
+        const body = document.getElementById('emailDetailsBody');
+        if (body) {
+            body.innerHTML = messageId
+                ? `<dl class="mb-0">
+                    <dt>Message ID</dt>
+                    <dd class="text-monospace small">${messageId}</dd>
+                    <dt>Estado</dt>
+                    <dd><span class="badge badge-success">Enviado</span></dd>
+                   </dl>`
+                : '<p class="text-muted mb-0">Sem dados disponíveis.</p>';
+        }
+        $('#emailDetailsModal').modal('show');
     };
 
     window.openMunicipalityEditModal = function(municipalityId, municipalityName) {
@@ -2184,6 +2280,58 @@ setTimeout(() => {
             saveBtn.addEventListener('click', saveMunicipalityChanges);
         }
     });
+
+    window.openAddMunicipalityModal = function() {
+        ['newMunName','newMunEmail','newMunPhone','newMunPostalCodes','newMunLiftEmail','newMunLiftDept'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.value = '';
+        });
+        const dist = document.getElementById('newMunDistrito');
+        if (dist) dist.value = 'Lisboa';
+        const dist2 = document.getElementById('newMunDistance');
+        if (dist2) dist2.value = '0';
+        $('#addMunicipalityModal').modal('show');
+    };
+
+    window.saveNewMunicipality = async function() {
+        const name = (document.getElementById('newMunName').value || '').trim();
+        const distrito = (document.getElementById('newMunDistrito').value || '').trim();
+        const email = (document.getElementById('newMunEmail').value || '').trim();
+        if (!name || !distrito || !email) {
+            if (typeof toastr !== 'undefined') toastr.warning('Nome, distrito e email são obrigatórios');
+            return;
+        }
+        const token = localStorage.getItem('token') || localStorage.getItem('liftmanager_jwt') || localStorage.getItem('authToken') || '';
+        const btn = document.getElementById('saveNewMunicipalityBtn');
+        const old = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> A guardar...';
+        try {
+            const res = await fetch('/api/municipalities', {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    name,
+                    distrito,
+                    email,
+                    phone: (document.getElementById('newMunPhone').value || '').trim(),
+                    distance_km: Number(document.getElementById('newMunDistance').value || 0),
+                    postal_codes: (document.getElementById('newMunPostalCodes').value || '').trim(),
+                    lift_department_email: (document.getElementById('newMunLiftEmail').value || '').trim(),
+                    lift_department_name: (document.getElementById('newMunLiftDept').value || '').trim()
+                })
+            });
+            const result = await res.json().catch(() => ({}));
+            btn.disabled = false; btn.innerHTML = old;
+            if (!res.ok || result.success === false) throw new Error(result.message || `HTTP ${res.status}`);
+            $('#addMunicipalityModal').modal('hide');
+            if (typeof toastr !== 'undefined') toastr.success(`Município "${name}" adicionado com sucesso`);
+            await loadTopMunicipalities();
+        } catch (err) {
+            btn.disabled = false; btn.innerHTML = old;
+            if (typeof toastr !== 'undefined') toastr.error('Erro ao adicionar: ' + err.message);
+        }
+    };
 
     // ═══════════════════════════════════════════
     // Reports Tab — dynamic data loading

@@ -528,6 +528,75 @@
         </footer>
     </div>
 
+    <!-- Modal: Criar relatório personalizado -->
+    <div class="modal fade" id="customReportModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-file-alt mr-2"></i>Criar relatório personalizado</h5>
+                    <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Data de início <span class="text-danger">*</span></label>
+                                <input type="date" class="form-control" id="crDateFrom">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Data de fim <span class="text-danger">*</span></label>
+                                <input type="date" class="form-control" id="crDateTo">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Tipo de relatório</label>
+                                <select class="form-control" id="crType">
+                                    <option value="all">Tudo (manutenção + inspeções)</option>
+                                    <option value="maintenance">Manutenção</option>
+                                    <option value="inspection">Inspeções</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Formato de exportação</label>
+                                <select class="form-control" id="crFormat">
+                                    <option value="pdf">PDF</option>
+                                    <option value="excel">Excel</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="crResult" style="display:none;" class="mt-3">
+                        <div class="alert alert-success">
+                            <strong>Relatório gerado com sucesso!</strong>
+                            <div id="crStats" class="mt-2 text-muted small"></div>
+                            <div class="mt-3">
+                                <a id="crDownloadLink" href="#" class="btn btn-success mr-2" target="_blank">
+                                    <i class="fas fa-download mr-1"></i><span id="crDownloadLabel">Descarregar</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="crError" style="display:none;" class="mt-3">
+                        <div class="alert alert-danger" id="crErrorMsg"></div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
+                    <button type="button" class="btn btn-success" id="btnGenerateCustom" onclick="reportsManager.submitCustomReport()">
+                        <i class="fas fa-cog mr-1"></i>Gerar relatório
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Scripts -->
     <script src="../../plugins/jquery/jquery.min.js"></script>
     <script src="../../plugins/bootstrap/bootstrap.bundle.min.js"></script>
@@ -625,11 +694,11 @@
                         <td><span class="badge badge-${report.status === 'completed' ? 'success' : 'warning'}">${this.getStatusLabel(report.status)}</span></td>
                         <td>${report.size}</td>
                         <td>
-                            ${report.status === 'completed' ? 
-                                `<button class="btn btn-sm btn-primary" onclick="reportsManager.downloadReport('${report.type}', ${report.id})">
-                                    <i class="fas fa-download"></i>
-                                </button>` : 
-                                '<span class="text-muted">Pendente</span>'}
+                            ${report.status === 'completed' ? (
+                                report.apiId
+                                    ? `<a href="/api/reports/${report.apiId}/${report.format === 'excel' ? 'excel' : 'pdf'}" class="btn btn-sm btn-primary" target="_blank"><i class="fas fa-download"></i></a>`
+                                    : `<button class="btn btn-sm btn-primary" onclick="reportsManager.downloadReport('${report.type}')"><i class="fas fa-download"></i></button>`
+                            ) : '<span class="text-muted">Pendente</span>'}
                         </td>
                     `;
                     tbody.appendChild(row);
@@ -659,20 +728,106 @@
                 return labels[status] || status;
             }
 
-            downloadReport(type, id = null) {
-                let filename;
-                if (id) {
-                    const report = this.reports.find(r => r.id === id);
-                    filename = report ? report.name : `${type}-report.pdf`;
+            downloadReport(type) {
+                const now = new Date();
+                let startDate, endDate;
+                endDate = now.toISOString().slice(0, 10);
+                if (type === 'daily') {
+                    startDate = endDate;
+                } else if (type === 'weekly') {
+                    const d = new Date(now); d.setDate(d.getDate() - 6);
+                    startDate = d.toISOString().slice(0, 10);
                 } else {
-                    filename = `${type}-report.pdf`;
+                    const d = new Date(now.getFullYear(), now.getMonth(), 1);
+                    startDate = d.toISOString().slice(0, 10);
                 }
-                
-                alert(`A carregar ${filename} iniciadas. Na aplicação real aqui será feito o carregamento real do ficheiro.`);
+                const token = localStorage.getItem('authToken');
+                fetch('/api/reports/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ type: 'all', startDate, endDate })
+                })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.id) {
+                        const link = document.createElement('a');
+                        link.href = `/api/reports/${data.id}/pdf`;
+                        link.setAttribute('download', '');
+                        link.click();
+                    } else {
+                        alert('Erro ao gerar relatório: ' + (data.message || 'Erro desconhecido'));
+                    }
+                })
+                .catch(err => alert('Erro de ligação: ' + err.message));
             }
 
             generateCustomReport() {
-                alert('A função de criação de relatórios personalizados será implementada futuramente.');
+                const now = new Date();
+                const today = now.toISOString().slice(0, 10);
+                const monthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10);
+                document.getElementById('crDateFrom').value = monthStart;
+                document.getElementById('crDateTo').value = today;
+                document.getElementById('crResult').style.display = 'none';
+                document.getElementById('crError').style.display = 'none';
+                document.getElementById('btnGenerateCustom').disabled = false;
+                $('#customReportModal').modal('show');
+            }
+
+            async submitCustomReport() {
+                const startDate = document.getElementById('crDateFrom').value;
+                const endDate = document.getElementById('crDateTo').value;
+                const type = document.getElementById('crType').value;
+                const format = document.getElementById('crFormat').value;
+
+                if (!startDate || !endDate) {
+                    document.getElementById('crError').style.display = 'block';
+                    document.getElementById('crErrorMsg').textContent = 'Indique as datas de início e fim.';
+                    return;
+                }
+                if (startDate > endDate) {
+                    document.getElementById('crError').style.display = 'block';
+                    document.getElementById('crErrorMsg').textContent = 'A data de início não pode ser posterior à data de fim.';
+                    return;
+                }
+
+                document.getElementById('crResult').style.display = 'none';
+                document.getElementById('crError').style.display = 'none';
+                const btn = document.getElementById('btnGenerateCustom');
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>A gerar...';
+
+                try {
+                    const token = localStorage.getItem('authToken');
+                    const resp = await fetch('/api/reports/generate', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                        body: JSON.stringify({ type, startDate, endDate })
+                    });
+                    const data = await resp.json();
+                    if (!resp.ok || !data.id) {
+                        throw new Error(data.message || 'Erro ao gerar relatório');
+                    }
+                    const s = data.stats || {};
+                    document.getElementById('crStats').textContent =
+                        `Total: ${s.total || 0} registos | Concluídos: ${s.completed || 0} | Em curso: ${s.inProgress || 0} | Pendentes: ${s.pending || 0}`;
+                    const ext = format === 'excel' ? 'excel' : 'pdf';
+                    document.getElementById('crDownloadLink').href = `/api/reports/${data.id}/${ext}`;
+                    document.getElementById('crDownloadLabel').textContent = format === 'excel' ? 'Descarregar Excel' : 'Descarregar PDF';
+                    document.getElementById('crResult').style.display = 'block';
+
+                    const typeLabel = { daily: 'Diário', weekly: 'Semanal', monthly: 'Mensal', custom: 'Personalizado', all: 'Completo', maintenance: 'Manutenção', inspection: 'Inspeções' }[type] || type;
+                    const label = `Relatório ${typeLabel} ${startDate} a ${endDate}`;
+                    this.reports.unshift({ id: data.id, date: endDate, type: 'custom', name: label, status: 'completed', size: '—', apiId: data.id, format });
+                    this.filteredReports = [...this.reports];
+                    this.renderReportsTable();
+                    this.updateStats();
+                } catch (err) {
+                    document.getElementById('crError').style.display = 'block';
+                    document.getElementById('crErrorMsg').textContent = err.message;
+                } finally {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-cog mr-1"></i>Gerar relatório';
+                }
             }
 
             saveSettings() {

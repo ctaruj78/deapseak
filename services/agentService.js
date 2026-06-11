@@ -858,7 +858,13 @@ class AgentService {
     _composeChatPromptForOllama(prompt, routeHint = 'generic', meta = {}) {
         const systemBlock = this._buildOllamaSystemInstruction(routeHint, meta);
         const contextBlock = meta.contextSummary ? `\n\nContexto real atual:\n${meta.contextSummary}` : '';
-        return `${systemBlock}${contextBlock}\n\nPedido do utilizador:\n${prompt}\n\nResposta:`;
+        // When channel=chat, `prompt` is the full Gemini-style system prompt (~2000–4000 tokens).
+        // Ollama has a small context window — use only the raw user message to avoid token overflow
+        // and double system-instruction confusion.
+        const userQuery = (meta.channel === 'chat' || meta.channel === 'chat-fast') && meta.userMessage
+            ? meta.userMessage
+            : prompt;
+        return `${systemBlock}${contextBlock}\n\nPedido do utilizador:\n${userQuery}\n\nResposta:`;
     }
 
     async _generateViaOllama(prompt, routeHint = 'generic', meta = {}) {

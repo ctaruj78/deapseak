@@ -5683,9 +5683,18 @@ async function loadMunicipalitiesWithOverrides() {
 
     const overrides = await db.collection('municipality_overrides').find({}).toArray();
     const byId = {};
+    const manualEntries = [];
     overrides.forEach(o => {
         const key = (o.id || '').toString();
-        if (key) byId[key] = o;
+        if (!key) return;
+        if (o.isManual) {
+            // manually added — not in base JSON, include as-is
+            const clean = { ...o };
+            delete clean._id;
+            manualEntries.push(clean);
+        } else {
+            byId[key] = o;
+        }
     });
 
     const merged = base.map(m => {
@@ -5700,7 +5709,7 @@ async function loadMunicipalitiesWithOverrides() {
 
     return {
         ...municipalitiesData,
-        municipalities: merged
+        municipalities: [...merged, ...manualEntries]
     };
 }
 
@@ -5793,6 +5802,73 @@ app.post('/api/municipalities/detect', authenticateToken, async (req, res) => {
             success: false,
             message: 'Erro ao detectar município'
         });
+    }
+});
+
+// POST /api/municipalities - додати новий муніципалітет вручну
+app.post('/api/municipalities', authenticateToken, async (req, res) => {
+    try {
+        if (req.user.role !== 'admin') {
+            return res.status(403).json({ success: false, message: 'Apenas administradores podem adicionar municípios' });
+        }
+        if (!db) return res.status(503).json({ success: false, message: 'Base de dados indisponível' });
+
+        const body = req.body || {};
+        const name = (body.name || '').trim();
+        const distrito = (body.distrito || '').trim();
+        const email = (body.email || '').trim();
+
+        if (!name || !distrito || !email) {
+            return res.status(400).json({ success: false, message: 'Nome, distrito e email são obrigatórios' });
+        }
+
+        // Generate unique ID
+        const slug = name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '').slice(0, 20);
+        const id = `MANUAL-${slug}-${Date.now()}`;
+
+        // Check no duplicate name in base or overrides
+        const baseData = await loadMunicipalitiesBaseData();
+        const existing = (baseData.municipalities || []).find(m => m.name.toLowerCase() === name.toLowerCase());
+        if (existing) {
+            return res.status(409).json({ success: false, message: `Município "${name}" já existe no cadastro (ID: ${existing.id})` });
+        }
+        const existingOverride = await db.collection('municipality_overrides').findOne({ name: { $regex: new RegExp(`^${name}$`, 'i') } });
+        if (existingOverride) {
+            return res.status(409).json({ success: false, message: `Município "${name}" já foi adicionado manualmente` });
+        }
+
+        const postalCodesRaw = body.postal_codes || '';
+        const postalCodes = typeof postalCodesRaw === 'string'
+            ? postalCodesRaw.split(',').map(s => s.trim()).filter(Boolean)
+            : (Array.isArray(postalCodesRaw) ? postalCodesRaw : []);
+
+        const newMunicipality = {
+            id,
+            name,
+            distrito,
+            latitude: Number(body.latitude || 38.7),
+            longitude: Number(body.longitude || -9.1),
+            distance_km: Number(body.distance_km || 0),
+            postal_codes: postalCodes,
+            email,
+            phone: (body.phone || '').trim(),
+            website: (body.website || '').trim(),
+            lift_department: {
+                email: (body.lift_department_email || email).trim(),
+                department_name: (body.lift_department_name || 'Serviço de Elevadores').trim(),
+                subject_prefix: '[ELEVADORES]'
+            },
+            isManual: true,
+            createdAt: new Date(),
+            createdBy: { id: req.user.id || req.user.userId || null, username: req.user.username || null }
+        };
+
+        await db.collection('municipality_overrides').insertOne(newMunicipality);
+
+        res.status(201).json({ success: true, message: `Município "${name}" adicionado com sucesso`, data: newMunicipality });
+    } catch (error) {
+        console.error('❌ Erro ao adicionar município:', error);
+        res.status(500).json({ success: false, message: 'Erro ao adicionar município' });
     }
 });
 
@@ -7820,6 +7896,98 @@ app.post('/api/requests/:id/cancel', authenticateToken, async (req, res) => {
     } catch (error) {
         console.error('❌ Erro ao cancelar заявки:', error);
         res.status(500).json({ success: false, message: 'Erro ao cancelar' });
+    }
+});
+
+// GET /api/requests/:id/export/pdf - exportar PDF de um pedido individual
+app.get('/api/requests/:id/export/pdf', authenticateToken, async (req, res) => {
+    try {
+        const { ObjectId } = require('mongodb');
+        const PDFDocument = require('pdfkit');
+
+        const requestQuery = buildRequestQuery(req.params.id);
+        const request = await db.collection('requests').findOne(requestQuery);
+        if (!request) return res.status(404).json({ message: 'Pedido não encontrado' });
+
+        const role = req.user?.role || '';
+        if (!['admin', 'dispatcher', 'tech'].includes(role)) {
+            const userId = (req.user?.id || req.user?.userId || '').toString();
+            const liftDoc = request.liftId ? await db.collection('lifts').findOne({ _id: request.liftId }) : null;
+            const ownerId = liftDoc ? (liftDoc.client || liftDoc.clientId || '').toString() : '';
+            if (ownerId !== userId) return res.status(403).json({ message: 'Acesso negado' });
+        }
+
+        const [liftDoc, techDoc] = await Promise.all([
+            request.liftId ? db.collection('lifts').findOne({ _id: request.liftId }) : Promise.resolve(null),
+            (request.assignedTo || request.technicianId)
+                ? db.collection('users').findOne({ _id: (() => { try { return new ObjectId(String(request.assignedTo || request.technicianId)); } catch(e){ return null; } })() })
+                : Promise.resolve(null)
+        ]);
+
+        const liftLabel = liftDoc
+            ? [liftDoc.name || liftDoc.address || '', liftDoc.regNumber ? `Reg. ${liftDoc.regNumber}` : ''].filter(Boolean).join(' — ')
+            : (request.liftAddress || request.liftId || '—');
+        const techName = techDoc
+            ? (techDoc.name || techDoc.username || `${techDoc.firstName || ''} ${techDoc.lastName || ''}`.trim() || '—')
+            : (request.technicianName || '—');
+
+        const statusMap = { new: 'Novo', pending: 'Pendente', assigned: 'Atribuído', in_progress: 'Em curso', completed: 'Concluído', cancelled: 'Cancelado' };
+        const priorityMap = { low: 'Baixa', medium: 'Média', high: 'Alta', urgent: 'Urgente' };
+
+        const fileName = `Pedido_${req.params.id}.pdf`;
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+
+        const doc = new PDFDocument({ margin: 40, size: 'A4' });
+        doc.pipe(res);
+
+        doc.fontSize(18).text('FestLift — Pedido de Serviço', { align: 'center' });
+        doc.moveDown(0.3);
+        doc.fontSize(10).fillColor('#666').text(`Exportado em ${new Date().toLocaleString('pt-PT')}`, { align: 'center' });
+        doc.moveDown(0.8);
+        doc.fillColor('#000');
+
+        const field = (label, value) => {
+            doc.fontSize(10).font('Helvetica-Bold').text(`${label}: `, { continued: true }).font('Helvetica').text(String(value || '—'));
+        };
+
+        field('Referência', String(request._id));
+        field('Título', request.title || request.type || '—');
+        field('Tipo', request.type || '—');
+        field('Estado', statusMap[request.status] || request.status || '—');
+        field('Prioridade', priorityMap[request.priority] || request.priority || '—');
+        field('Elevador', liftLabel);
+        field('Técnico', techName);
+        field('Criado em', request.createdAt ? new Date(request.createdAt).toLocaleString('pt-PT') : '—');
+        if (request.scheduledAt) field('Agendado para', new Date(request.scheduledAt).toLocaleString('pt-PT'));
+        if (request.completedAt) field('Concluído em', new Date(request.completedAt).toLocaleString('pt-PT'));
+        if (request.description) {
+            doc.moveDown(0.5);
+            doc.fontSize(10).font('Helvetica-Bold').text('Descrição:');
+            doc.font('Helvetica').fontSize(9).text(request.description, { width: 520 });
+        }
+        if (request.notes) {
+            doc.moveDown(0.5);
+            doc.fontSize(10).font('Helvetica-Bold').text('Notas:');
+            doc.font('Helvetica').fontSize(9).text(request.notes, { width: 520 });
+        }
+        const comments = Array.isArray(request.comments) ? request.comments : [];
+        if (comments.length > 0) {
+            doc.moveDown(0.8);
+            doc.fontSize(11).font('Helvetica-Bold').text('Comentários', { underline: true });
+            doc.moveDown(0.3);
+            comments.forEach((c, i) => {
+                const ts = c.createdAt ? new Date(c.createdAt).toLocaleString('pt-PT') : '';
+                doc.fontSize(9).font('Helvetica-Bold').text(`${i + 1}. ${c.author || '—'}${ts ? ' — ' + ts : ''}`);
+                doc.font('Helvetica').text(c.text || c.content || '', { width: 520 });
+                doc.moveDown(0.2);
+            });
+        }
+
+        doc.end();
+    } catch (error) {
+        console.error('❌ Erro ao exportar PDF do pedido:', error);
+        if (!res.headersSent) res.status(500).json({ message: 'Erro ao gerar PDF', error: error.message });
     }
 });
 
@@ -12753,39 +12921,23 @@ app.post('/api/email/send-inspection-reminder', authenticateToken, async (req, r
             .replace(/>/g, '&gt;')
             .replace(/\n/g, '<br>');
 
-        const nodemailer = require('nodemailer');
-        const transporter = nodemailer.createTransport({
-            host: process.env.SMTP_HOST,
-            port: parseInt(process.env.SMTP_PORT),
-            secure: process.env.SMTP_SECURE === 'true',
-            auth: {
-                user: process.env.SMTP_USER,
-                pass: process.env.SMTP_PASS
-            }
-        });
-
-        const mailOptions = {
-            from: process.env.EMAIL_FROM,
-            to: email,
-            subject: subject || 'Notificação de Inspeção de Elevador',
-            html: `
-                <div style="font-family: Arial, sans-serif; max-width: 640px; margin: 0 auto;">
-                    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 8px 8px 0 0;">
-                        <h2 style="margin: 0;">🏢 FestLift – Inspeção de Elevador</h2>
-                    </div>
-                    <div style="padding: 24px; border: 1px solid #ddd; border-top: none; line-height: 1.6;">
-                        ${messageHtml}
-                    </div>
-                    <div style="background: #f8f9fa; padding: 14px; text-align: center; border: 1px solid #ddd; border-top: none; border-radius: 0 0 8px 8px;">
-                        <p style="margin: 0; color: #666; font-size: 12px;">
-                            FestLift · <a href="https://festlift.pt" style="color:#667eea;">festlift.pt</a> · info@festlift.pt
-                        </p>
-                    </div>
+        const html = `
+            <div style="font-family: Arial, sans-serif; max-width: 640px; margin: 0 auto;">
+                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 8px 8px 0 0;">
+                    <h2 style="margin: 0;">🏢 FestLift – Inspeção de Elevador</h2>
                 </div>
-            `
-        };
+                <div style="padding: 24px; border: 1px solid #ddd; border-top: none; line-height: 1.6;">
+                    ${messageHtml}
+                </div>
+                <div style="background: #f8f9fa; padding: 14px; text-align: center; border: 1px solid #ddd; border-top: none; border-radius: 0 0 8px 8px;">
+                    <p style="margin: 0; color: #666; font-size: 12px;">
+                        FestLift · <a href="https://festlift.pt" style="color:#667eea;">festlift.pt</a> · info@festlift.pt
+                    </p>
+                </div>
+            </div>
+        `;
 
-        await transporter.sendMail(mailOptions);
+        await emailService.sendEmail(email, subject || 'Notificação de Inspeção de Elevador', html);
 
         console.log(`✅ Inspection email sent to ${email} | subject: ${subject}`);
         res.json({ success: true, message: `Email enviado para ${email}` });
