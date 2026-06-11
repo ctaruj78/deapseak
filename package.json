@@ -69,6 +69,7 @@
     "analyze-logs": "bash scripts/analyze-console-logs.sh",
     "audit": "echo '📋 System Audit Report: docs/SYSTEM-AUDIT-REPORT.md'",
     "test": "jest",
+    "test:parsers": "node scripts/test-parsers.js",
     "test:ai:coverage": "node scripts/test-ai-coverage.js",
     "lint": "eslint backend/**/*.js",
     "format": "prettier --write backend/**/*.js frontend/**/*.js"
