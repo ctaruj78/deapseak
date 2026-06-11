@@ -10537,26 +10537,105 @@ async function callOllamaAI(message, role, username, regulationsContext = null, 
     return text;
 }
 
-async function callMainAI(message, role, username, regulationsContext = null, reportTextContext = null, dbContext = null) {
-    let useOllama = AI_PROVIDER === 'ollama' || AI_PROVIDER === 'auto';
+// ── Groq (primary: Llama 3.3 70B at ~500 tok/s, free tier) ──────────────────
+function getGroqSystemPrompt(role, username) {
+    const roleLabel = { admin: 'administrador', tech: 'técnico', dispatcher: 'despachante', client: 'cliente' }[role] || role;
+    return `És o Assistente FestLift — sistema de gestão de elevadores em Portugal.
+Nome do utilizador: ${username || roleLabel}. Papel: ${roleLabel}.
+Responde SEMPRE em português (pt-PT), de forma técnica e profissional.
 
-    if (AI_PROVIDER === 'auto') {
-        useOllama = await isOllamaAvailable();
+REGULAMENTAÇÃO PORTUGUESA DE ELEVADORES:
+- DL 320/2002 (28 dez): inspecções periódicas obrigatórias, periodicidade 2 anos
+- DL 513/70 + Portaria 949-A/2006: instalação e segurança de elevadores
+- DL 740/74 + Portaria 772/2010: conservação e manutenção
+- Despacho 17/2022/DG (8 jun 2022): acordo de modernização — prazo 2 anos para C2*
+
+CLASSIFICAÇÃO DE CLÁUSULAS:
+- C1 (Imobilização imediata): risco grave — elevador parado, reinspecção em 30 dias
+- C2 (Reprovação): risco médio — reinspecção obrigatória em 30 dias
+- C2* (Modernização — Despacho 17/2022): risco médio com acordo de modernização — prazo 2 anos
+- C3 (Observação): risco menor, sem imobilização — verificar na próxima inspecção periódica (2 anos)
+
+SISTEMA FESTLIFT:
+- Gestão de lifts, contratos, inspecções, manutenção preventiva e correctiva
+- Técnicos, despachantes, clientes e administradores têm papéis distintos
+- Relatórios de inspecção processados automaticamente (BV, GATECI, CML, formato geral)
+- QR codes em cada elevador para acesso rápido ao histórico
+
+Responde de forma concisa, objectiva e útil. Usa listas quando adequado.`;
+}
+
+async function callGroqAI(message, role, username, regulationsContext = null, reportTextContext = null, dbContext = null) {
+    const apiKey = process.env.GROQ_API_KEY;
+    if (!apiKey) throw new Error('GROQ_API_KEY não configurado');
+
+    const model = process.env.GROQ_MODEL || 'llama-3.3-70b-versatile';
+    const systemPrompt = getGroqSystemPrompt(role, username);
+    const contextualPrompt = buildAIUserPrompt(message, regulationsContext, reportTextContext, 6000, dbContext);
+
+    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${apiKey}`
+        },
+        body: JSON.stringify({
+            model,
+            messages: [
+                { role: 'system', content: systemPrompt },
+                { role: 'user', content: contextualPrompt }
+            ],
+            temperature: 0.3,
+            max_tokens: 1024,
+        }),
+        signal: AbortSignal.timeout(30000)
+    });
+
+    if (!response.ok) {
+        const err = await response.text();
+        throw new Error(`Groq HTTP ${response.status}: ${err.substring(0, 200)}`);
     }
 
-    if (useOllama) {
+    const data = await response.json();
+    const text = data?.choices?.[0]?.message?.content;
+    if (!text) throw new Error('Groq response missing content');
+
+    console.log(`✅ Groq AI response generated (${model}):`, text.substring(0, 100) + '...');
+    return text;
+}
+
+async function callMainAI(message, role, username, regulationsContext = null, reportTextContext = null, dbContext = null) {
+    // Priority: Groq → Ollama → Gemini
+    // Groq: free, fast (Llama 3.3 70B ~500 tok/s)
+    // Ollama: local fallback (~25s on CPU)
+    // Gemini: last resort
+
+    if (AI_PROVIDER === 'groq' || (AI_PROVIDER === 'auto' && process.env.GROQ_API_KEY)) {
         try {
-            const response = await callOllamaAI(message, role, username, regulationsContext, reportTextContext, dbContext);
-            return { response, poweredBy: `Ollama (${OLLAMA_MODEL})` };
-        } catch (ollamaErr) {
-            // Ollama failed (timeout, model not found, server error) — fall back to Gemini
-            console.warn(`⚠️ Ollama failed (${ollamaErr.message?.slice(0,80)}), falling back to Gemini...`);
-            if (!process.env.GEMINI_API_KEY) {
-                throw new Error(`Ollama indisponível e GEMINI_API_KEY não configurado: ${ollamaErr.message}`);
+            const response = await callGroqAI(message, role, username, regulationsContext, reportTextContext, dbContext);
+            return { response, poweredBy: `Groq (${process.env.GROQ_MODEL || 'llama-3.3-70b-versatile'})` };
+        } catch (groqErr) {
+            console.warn(`⚠️ Groq failed (${groqErr.message?.slice(0, 80)}), falling back to Ollama...`);
+        }
+    }
+
+    if (AI_PROVIDER !== 'gemini') {
+        const useOllama = AI_PROVIDER === 'ollama' || AI_PROVIDER === 'auto'
+            ? await isOllamaAvailable()
+            : false;
+        if (useOllama) {
+            try {
+                const response = await callOllamaAI(message, role, username, regulationsContext, reportTextContext, dbContext);
+                return { response, poweredBy: `Ollama (${OLLAMA_MODEL})` };
+            } catch (ollamaErr) {
+                console.warn(`⚠️ Ollama failed (${ollamaErr.message?.slice(0, 80)}), falling back to Gemini...`);
             }
         }
     }
 
+    if (!process.env.GEMINI_API_KEY) {
+        throw new Error('Todos os provedores AI falharam e GEMINI_API_KEY não está configurado');
+    }
     const response = await callGeminiAI(message, role, username, regulationsContext, reportTextContext, dbContext);
     return { response, poweredBy: 'Google Gemini Flash (fallback)' };
 }
