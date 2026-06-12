@@ -1233,10 +1233,38 @@ class AgentService {
     async handleDecision(notificationId, action, reason, userId, userRole, ObjectId) {
         if (!this.db) throw new Error('DB not ready');
         const { ObjectId: ObjId } = require('mongodb');
-        const id = typeof notificationId === 'string' ? new ObjId(notificationId) : notificationId;
+        const inputId = typeof notificationId === 'string' ? new ObjId(notificationId) : notificationId;
 
-        const notif = await this.db.collection('agent_notifications').findOne({ _id: id });
-        if (!notif) throw new Error('Notification not found');
+        let notif = await this.db.collection('agent_notifications').findOne({ _id: inputId });
+        let id = inputId;
+
+        if (!notif) {
+            // Live overdue notification: notificationId is the lift's _id, not a stored notification.
+            // Materialize it so the decision is persisted and deduplication works.
+            const lift = await this.db.collection('lifts').findOne({ _id: inputId });
+            if (!lift) throw new Error('Notification not found');
+            const a = lift.address || {};
+            const addr = typeof a === 'object'
+                ? `${a.street || ''}, ${a.city || ''}`.trim().replace(/^,\s*|,\s*$/g, '')
+                : String(a);
+            const daysOverdue = lift.nextInspectionDate
+                ? Math.ceil((Date.now() - new Date(lift.nextInspectionDate)) / 86400000)
+                : 0;
+            const newNotif = {
+                type: 'expiry_reminder',
+                status: 'pending',
+                liftId: inputId,
+                liftLocation: addr,
+                municipalNumber: lift.municipalNumber || '',
+                clientName: lift.clientName || lift.clientEmail || '',
+                agentMessage: `⚠️ Inspeção vencida há ${daysOverdue} dias — ${addr}`,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            };
+            const ins = await this.db.collection('agent_notifications').insertOne(newNotif);
+            id = ins.insertedId;
+            notif = { ...newNotif, _id: id };
+        }
 
         const now = new Date();
         let remindAt = null;
@@ -2508,12 +2536,22 @@ class AgentService {
             .limit(10)
             .toArray();
 
+        // Also load recently rejected so they are excluded from the live scan (suppress for 30 days).
+        const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+        const recentlyRejected = await this.db.collection('agent_notifications')
+            .find({ status: 'rejected', decidedAt: { $gte: thirtyDaysAgo } })
+            .project({ liftId: 1, liftLocation: 1 })
+            .toArray();
+
         // Live scan: all lifts whose nextInspectionDate is overdue
         const liveOverdue = await this._scanOverdueLiftsForAdmin();
 
         // Merge: avoid duplicates (stored already has the same liftId/location)
-        const storedLiftIds = new Set(stored.map(n => String(n.liftId || n.liftLocation || '')));
-        const fresh = liveOverdue.filter(n => !storedLiftIds.has(String(n.liftId || n.liftLocation || '')));
+        const handledIds = new Set([
+            ...stored.map(n => String(n.liftId || n.liftLocation || '')),
+            ...recentlyRejected.map(n => String(n.liftId || n.liftLocation || ''))
+        ]);
+        const fresh = liveOverdue.filter(n => !handledIds.has(String(n.liftId || n.liftLocation || '')));
 
         return [...stored, ...fresh].slice(0, 20);
     }
