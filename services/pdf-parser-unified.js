@@ -253,14 +253,18 @@ function inferResultStatus(text = '') {
     }
 
     const resultIdx = source.search(/RESULTADO\s+DA\s+INSPE/i);
-    const rawScope = resultIdx >= 0 ? source.substring(resultIdx, Math.min(source.length, resultIdx + 2600)) : source;
+    // Narrow scope to 800 chars — enough for the actual verdict line, avoids legend sections
+    const rawScope = resultIdx >= 0 ? source.substring(resultIdx, Math.min(source.length, resultIdx + 800)) : source;
     // Ignore explanatory legends after the actual result block.
     const cutMarkers = [
         /Observa[çc][õo]es/i,
         /Constata[çc][õo]es/i,
         /CERTIFICADO\s+DE\s+INSPEC/i,
         /OBRIGA[ÇC][ÕO]ES\s+DO\s+PROPRIET/i,
-        /EM\s+RELA[ÇC][ÃA]O\s+[AÀ]S\s+DEFICI/i
+        /EM\s+RELA[ÇC][ÃA]O\s+[AÀ]S\s+DEFICI/i,
+        /SIGNIFICADO\s+DAS\s+CL[AÁ]USULAS/i,
+        /\bAprovado\s*:/i,           // legend: "Aprovado: elevador que..."
+        /\bReprovado\s+com\s+Imobiliza/i,   // stop before legend entry if not the verdict itself
     ];
     let scope = rawScope;
     for (const marker of cutMarkers) {
@@ -348,11 +352,15 @@ function applyUnifiedPostProcessing(result) {
     let passed;
     let certType;
 
+    // Hard text evidence: "Reprovado (com cláusulas C2...)" or "com cláusulas C2" without C2*
+    const explicitReprovadoC2 = /Reprovad[oa][\s\S]{0,100}C2(?!\*)/i.test(rawText) ||
+                                /com\s+cláusulas?\s+C2(?!\*)/i.test(rawText);
+
     if (hasC1) {
         passed = false;
         certType = 'immobilization';
-    } else if (hasC2) {
-        const isApprovedC2Star = c2StarEvidence && statusInfo.status === 'approved';
+    } else if (hasC2 || explicitReprovadoC2) {
+        const isApprovedC2Star = c2StarEvidence && statusInfo.status === 'approved' && !explicitReprovadoC2;
         passed = Boolean(isApprovedC2Star);
         certType = isApprovedC2Star ? 'cert_2_years' : 'reinspection';
     } else {
