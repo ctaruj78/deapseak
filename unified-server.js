@@ -4709,17 +4709,6 @@ app.post('/api/lifts/parse-inspection-pdf', authenticateToken, (req, res, next) 
             return res.status(422).json({ success: false, message: parsed.error || 'Não foi possível analisar o PDF' });
         }
 
-        // DEBUG: log classification result
-        const _dbgRaw = String(parsed.rawText || '');
-        const _dbgResultIdx = _dbgRaw.search(/RESULTADO\s+DA\s+INSPE/i);
-        console.log('🔍 PDF parse result:', {
-            certType: parsed.certType,
-            passed: parsed.passed,
-            violationsSummary: (parsed.violations || []).map(v => `${v.classification}|${String(v.description||'').slice(0,60)}`),
-            resultadoBlock: _dbgResultIdx >= 0 ? _dbgRaw.slice(_dbgResultIdx, _dbgResultIdx + 400) : '(not found)',
-            last500chars: _dbgRaw.slice(-500)
-        });
-
         // Normalise extracted data
         const violations = parsed.violations || [];
         const parsedText = String(parsed.rawText || '');
