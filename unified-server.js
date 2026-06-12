@@ -5282,9 +5282,9 @@ app.post('/api/lifts/:id/inspection-report/:index/attach-pdf', authenticateToken
 app.post('/api/lifts/send-municipality-form', authenticateToken, async (req, res) => {
     try {
         console.log('📧 Sending municipality form:', req.body);
-        
-        const { templateType, liftData, municipalityEmail } = req.body;
-        
+
+        const { templateType, liftData, municipalityEmail, liftId } = req.body;
+
         // Валідація
         if (!templateType || !liftData || !municipalityEmail) {
             return res.status(400).json({
@@ -5303,6 +5303,36 @@ app.post('/api/lifts/send-municipality-form', authenticateToken, async (req, res
 
         // Відправка через emailService
         const result = await emailService.sendMunicipalityForm(templateType, liftData, municipalityEmail);
+
+        // Зберігаємо лог відправки в нотифікаційну історію ліфта
+        const logEntry = {
+            type: `municipality-${templateType}`,
+            sentAt: new Date().toISOString(),
+            status: 'sent',
+            municipalityEmail,
+            municipalityName: liftData.municipalityName || '',
+            sentBy: req.user.email || req.user.username || 'unknown',
+            messageId: result?.messageId || result?.data?.messageId || null
+        };
+        if (liftId) {
+            const { ObjectId } = require('mongodb');
+            try {
+                await db.collection('lifts').updateOne(
+                    { _id: new ObjectId(liftId) },
+                    { $push: { 'municipality.notificationHistory': logEntry } }
+                );
+            } catch (e) {
+                console.warn('⚠️ Could not save notification log:', e.message);
+            }
+        }
+        // Always log to a dedicated collection for the analytics page
+        await db.collection('municipality_logs').insertOne({
+            ...logEntry,
+            liftId: liftId || null,
+            lift: liftData.municipalNumber || null,
+            municipality: liftData.municipalityName || null,
+            createdAt: new Date()
+        });
 
         res.json({
             success: true,
@@ -6160,6 +6190,22 @@ app.get('/api/municipalities/:id/lifts', authenticateToken, async (req, res) => 
 });
 
 // GET /api/municipalities/stats - статистика по муніципалітетам
+// GET /api/municipalities/communications - лог відправлених повідомлень муніципалітетам
+app.get('/api/municipalities/communications', authenticateToken, async (req, res) => {
+    try {
+        const limit = Math.min(parseInt(req.query.limit) || 50, 200);
+        const logs = await db.collection('municipality_logs')
+            .find({})
+            .sort({ createdAt: -1 })
+            .limit(limit)
+            .toArray();
+        res.json({ success: true, data: logs });
+    } catch (error) {
+        console.error('❌ Erro ao obter comunicações:', error);
+        res.status(500).json({ success: false, message: 'Erro ao obter comunicações' });
+    }
+});
+
 app.get('/api/municipalities/stats', authenticateToken, async (req, res) => {
     try {
         // Агрегуємо статистику по муніципалітетам

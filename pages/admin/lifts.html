@@ -3688,8 +3688,10 @@ Equipa FestLift
         const typeLabels = { inspection: 'Inspecção', maintenance: 'IT', repair: 'Reparação', emergency: 'Avaria', annual: 'Inspeção', routine: 'Manutenção', certification: 'Certificação', technical: 'Técnica', safety: 'Verificação de segurança' };
 
         let html = '<div class="table-responsive"><table class="table table-sm table-bordered table-hover mb-1" style="font-size:0.8rem;">';
-        html += '<thead class="thead-light"><tr><th>Data</th><th>Tipo</th><th>Estado</th><th>Válido até</th></tr></thead><tbody>';
-        for (const r of sorted.slice(0, 5)) {
+        html += '<thead class="thead-light"><tr><th>Data</th><th>Tipo</th><th>Estado</th><th>Válido até</th><th style="width:110px">Ações</th></tr></thead><tbody>';
+        for (let _ri = 0; _ri < sorted.slice(0, 5).length; _ri++) {
+            const r = sorted[_ri];
+            const _origIdx = reports.indexOf(r);
             const d = (r.inspectionDate || r.date)
                 ? new Date(r.inspectionDate || r.date).toLocaleDateString('pt-PT') : '—';
             const type = typeLabels[r.inspectionType || r.type] || r.inspectionType || r.type || '—';
@@ -3699,7 +3701,17 @@ Equipa FestLift
             if (vu) validUntil = new Date(vu).toLocaleDateString('pt-PT');
             else if ((r.inspectionDate || r.date) && r.status === 'passed')
                 validUntil = new Date(new Date(r.inspectionDate || r.date).setFullYear(new Date(r.inspectionDate || r.date).getFullYear() + 2)).toLocaleDateString('pt-PT');
-            html += `<tr><td>${d}</td><td>${type}</td><td>${status}</td><td>${validUntil}</td></tr>`;
+            const _fileUrl = r.reportFile || r.fileUrl || r.file || null;
+            const _rJson = JSON.stringify(r).replace(/'/g, '&apos;');
+            html += `<tr>
+                <td>${d}</td><td>${type}</td><td>${status}</td><td>${validUntil}</td>
+                <td class="text-nowrap">
+                    <button class="btn btn-xs btn-outline-success mr-1" onclick='printReportDirect(${_rJson})' title="Imprimir"><i class="fas fa-print"></i></button>
+                    <button class="btn btn-xs btn-outline-warning mr-1" onclick='emailInspectionReport("${liftId}", ${_origIdx < 0 ? _ri : _origIdx}, ${_rJson})' title="Email"><i class="fas fa-envelope"></i></button>
+                    ${_fileUrl ? `<a href="${_fileUrl}" target="_blank" class="btn btn-xs btn-outline-info mr-1" title="PDF"><i class="fas fa-file-pdf"></i></a>` : ''}
+                    <button class="btn btn-xs btn-outline-danger" onclick='deleteInspectionReport("${liftId}", ${_origIdx < 0 ? _ri : _origIdx})' title="Eliminar"><i class="fas fa-trash"></i></button>
+                </td>
+            </tr>`;
         }
         html += '</tbody></table></div>';
         if (sorted.length > 5) html += `<small class="text-muted">A mostrar 5 de ${sorted.length} relatórios</small>`;
@@ -6538,11 +6550,22 @@ Email de contacto: info@festlift.pt`;
     async function loadInspectionReports(liftId, lift) {
         const container = document.getElementById('inspection-reports-list');
         if (!container) return;
-        
+
         try {
+            // Fresh fetch when lift object not provided or inspectionHistory is missing
+            if (!lift || !Array.isArray(lift.inspectionHistory)) {
+                const _token = typeof AuthManager !== 'undefined' ? AuthManager.getAuthToken() : localStorage.getItem('liftmanager_jwt');
+                const _resp = await fetch(`/api/lifts/${encodeURIComponent(liftId)}`, {
+                    headers: { 'Authorization': 'Bearer ' + _token }
+                });
+                if (_resp.ok) {
+                    const _d = await _resp.json();
+                    lift = (_d.data && _d.data.lift) || _d.data || _d;
+                }
+            }
             // Виutilizовуexisteмо inspectionHistory desde моделі do elevador
             // Deберігаexisteмо оригінальний індекс para API eliminação
-            allReports = (lift.inspectionHistory || []).map((r, i) => ({ ...r, _originalIndex: i }));
+            allReports = (lift && lift.inspectionHistory || []).map((r, i) => ({ ...r, _originalIndex: i }));
             
             if (allReports.length === 0) {
                 container.innerHTML = `
@@ -6887,7 +6910,10 @@ Email de contacto: info@festlift.pt`;
                 alert('Relatório adicionado com sucesso!');
                 $('#addReportModal').modal('hide');
                 $('#addReportForm')[0].reset();
+                // Sync all open views
                 showLiftDetails(liftId);
+                if (typeof loadAdminStep4InspectionInfo === 'function') loadAdminStep4InspectionInfo(liftId);
+                if (typeof loadInspectionReports === 'function') loadInspectionReports(liftId);
                 // Actualizar campos de licença no modal de edição (Tab Serviço)
                 if (result.licenseDate) {
                     $('[name="licenseDate"]').val(result.licenseDate.split('T')[0]);
@@ -7645,6 +7671,8 @@ Email de contacto: info@festlift.pt`;
             if (result && result.success) {
                 alert('Relatório com sucesso eliminado');
                 showLiftDetails(liftId);
+                if (typeof loadAdminStep4InspectionInfo === 'function') loadAdminStep4InspectionInfo(liftId);
+                if (typeof loadInspectionReports === 'function') loadInspectionReports(liftId);
             } else {
                 alert('Erro eliminação: ' + (result?.message || 'Erro desconhecido'));
             }
@@ -8632,6 +8660,7 @@ Email de contacto: info@festlift.pt`;
                 const result = await apiCall('/api/lifts/send-municipality-form', 'POST', {
                     templateType: apiTemplateType,
                     municipalityEmail: municipalityEmail,
+                    liftId: lift._id || lift.id || null,
                     liftData: {
                         municipalNumber: lift.municipalNumber || lift.liftMunicipalNumber || 'N/A',
                         address: address || 'N/A',
@@ -9346,6 +9375,8 @@ Email de contacto: info@festlift.pt`;
                         if (typeof toastr !== 'undefined') toastr.warning('⚠️ ' + result.message);
                         else alert(result.message);
                         $('#pdfParserModal').modal('hide');
+                        // Reload to show the conflicting record so user can see why it's a duplicate
+                        if (typeof loadAdminStep4InspectionInfo === 'function') loadAdminStep4InspectionInfo(liftId);
                         return;
                     }
                     throw new Error(result.message || 'Erro ao guardar');
@@ -9356,13 +9387,15 @@ Email de contacto: info@festlift.pt`;
                 if (typeof toastr !== 'undefined') toastr.success('✅ Relatório de inspecção guardado!');
                 else alert('Relatório de inspecção guardado com sucesso!');
 
-                // Reload inspection data if lift is currently viewed
-                var curId = window.currentLiftId || window._currentInspectionLiftId;
-                if (curId === liftId) {
-                    if (window._currentEditingLift) window._currentEditingLift.inspectionHistory = null;
-                    if (typeof loadStep4InspectionInfo === 'function') loadStep4InspectionInfo(liftId);
-                    if (typeof loadAdminStep4InspectionInfo === 'function') loadAdminStep4InspectionInfo(liftId);
-                    if (typeof loadInspectionReports === 'function') loadInspectionReports(liftId);
+                // Sync all open views after save
+                if (window._currentEditingLift) window._currentEditingLift.inspectionHistory = null;
+                if (typeof loadStep4InspectionInfo === 'function') loadStep4InspectionInfo(liftId);
+                if (typeof loadAdminStep4InspectionInfo === 'function') loadAdminStep4InspectionInfo(liftId);
+                // Refresh Details modal if it's open for the same lift
+                if (typeof loadInspectionReports === 'function') loadInspectionReports(liftId);
+                var _detailsOpenLiftId = document.getElementById('liftDetailsModal') && document.getElementById('liftDetailsModal').dataset.liftId;
+                if (_detailsOpenLiftId === liftId && $('#liftDetailsModal').hasClass('show') && typeof showLiftDetails === 'function') {
+                    showLiftDetails(liftId);
                 }
 
                 _pdfParsed = null;

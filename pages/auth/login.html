@@ -12,6 +12,29 @@
     <link rel="stylesheet" href="/plugins/fontawesome/css/all.min.css">
     <link rel="stylesheet" href="../../assets/css/main.css">
     <link rel="stylesheet" href="../../assets/css/auth.css">
+    <script>
+    // Pre-render auth check — runs before any HTML is painted
+    // If user is already authenticated, redirect immediately (zero flash)
+    (function() {
+        try {
+            if (new URLSearchParams(window.location.search).get('logout') === 'true') return;
+            if (sessionStorage.getItem('redirecting')) return;
+            var token = sessionStorage.getItem('liftmanager_jwt') || localStorage.getItem('liftmanager_jwt');
+            if (!token) return;
+            var parts = token.split('.');
+            if (parts.length !== 3) return;
+            var payload = JSON.parse(atob(parts[1]));
+            if (!payload.exp || payload.exp * 1000 <= Date.now()) return;
+            var userStr = sessionStorage.getItem('liftmanager_user') || localStorage.getItem('liftmanager_user');
+            if (!userStr) return;
+            var user = JSON.parse(userStr);
+            if (!user || !user.role) return;
+            document.documentElement.style.visibility = 'hidden';
+            var routes = { admin: '/pages/admin/admin-dashboard.html', dispatcher: '/pages/dispatcher/dashboard.html', technician: '/pages/tech/dashboard.html', tech: '/pages/tech/dashboard.html', client: '/pages/client/dashboard.html' };
+            window.location.replace(routes[user.role] || '/pages/admin/admin-dashboard.html');
+        } catch(e) {}
+    })();
+    </script>
     <style>
         /* === PRODUCTION LOGIN ANIMATIONS === */
 
@@ -240,9 +263,9 @@
             } else if (typeof AuthManager !== 'undefined' && AuthManager.isAuthenticated()) {
                 const user = AuthManager.getCurrentUser();
                 if (user && user.role) {
-                    // Авторизований — ховаємо форму і перенаправляємо (без мигання)
-                    const _box = document.querySelector('.login-box');
-                    if (_box) _box.style.visibility = 'hidden';
+                    // Авторизований — ховаємо всю сторінку і перенаправляємо миттєво
+                    document.body.style.opacity = '0';
+                    document.body.style.visibility = 'hidden';
                     const roleRoutes = {
                         admin: '/pages/admin/admin-dashboard.html',
                         dispatcher: '/pages/dispatcher/dashboard.html',
@@ -470,7 +493,7 @@
                                 showMessage('Bem-vindo! Por favor altere a sua palavra-passe temporária antes de começar.', 'warning');
                             }
                         } else {
-                            // Плавно ховаємо форму і одразу переходимо (без 500мс затримки)
+                            // Плавно ховаємо форму і переходимо після завершення fade (220ms > 200ms transition)
                             const loginBox = document.querySelector('.login-box');
                             if (loginBox) {
                                 loginBox.style.transition = 'opacity 0.2s ease';
@@ -483,7 +506,7 @@
                                 } else {
                                     redirectUserByRole(user.role);
                                 }
-                            }, 150);
+                            }, 220);
                         }
                         
                     } else {

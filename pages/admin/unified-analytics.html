@@ -1853,16 +1853,25 @@ setTimeout(() => {
     
     async function loadMunicipalitiesAnalytics() {
         try {
-            // Carregar estatísticas gerais
-            await Promise.all([
-                loadMunicipalitiesStats(),
-                loadCommunicationsHistory(),
-                loadTopMunicipalities()
+            const token = getAuthToken();
+            // Single shared fetch — avoids triple /api/lifts download
+            const [liftsResp, munResp] = await Promise.all([
+                fetch('/api/lifts', { headers: { 'Authorization': `Bearer ${token}` } }),
+                fetch('/api/municipalities', { headers: { 'Authorization': `Bearer ${token}` } })
             ]);
-            
+            if (!liftsResp.ok || !munResp.ok) throw new Error('Failed to load base data');
+            const lifts = (await liftsResp.json()).data || [];
+            const municipalities = (await munResp.json()).data || [];
+
+            await Promise.all([
+                loadMunicipalitiesStats(lifts, municipalities),
+                loadCommunicationsHistory(),
+                loadTopMunicipalities(lifts, municipalities)
+            ]);
+
             // Criar gráficos
             createMunicipalitiesCharts();
-            
+
         } catch (error) {
             console.error('❌ Erro ao carregar análise de municípios:', error);
             showError('Erro carregamento dados');
@@ -1870,27 +1879,10 @@ setTimeout(() => {
     }
     
     // Carregar estatísticas gerais
-    async function loadMunicipalitiesStats() {
+    async function loadMunicipalitiesStats(lifts, municipalities) {
         try {
-            const token = getAuthToken();
-            
-            // Obter todos os elevadores
-            const liftsResponse = await fetch('/api/lifts', {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            
-            if (!liftsResponse.ok) throw new Error('Failed to load lifts');
-            const liftsData = await liftsResponse.json();
-            const lifts = liftsData.data || [];
-            
-            // Obter todos os municípios
-            const municipalitiesResponse = await fetch('/api/municipalities', {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            
-            if (!municipalitiesResponse.ok) throw new Error('Failed to load municipalities');
-            const municipalitiesData = await municipalitiesResponse.json();
-            const municipalities = municipalitiesData.data || [];
+            lifts = lifts || [];
+            municipalities = municipalities || [];
             
             // Calcular estatísticas
             const liftsWithMunicipality = lifts.filter(lift => extractMunicipalityFromLift(lift).name);
@@ -1928,34 +1920,20 @@ setTimeout(() => {
     async function loadCommunicationsHistory() {
         try {
             const token = getAuthToken();
-            const response = await fetch('/api/lifts', {
+            const response = await fetch('/api/municipalities/communications', {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
-            
-            if (!response.ok) throw new Error('Failed to load lifts');
+
+            if (!response.ok) throw new Error('Failed to load communications');
             const data = await response.json();
-            const lifts = data.data || [];
-            
-            // Filtrar elevadores com histórico de comunicações
-            const communications = [];
-            lifts.forEach(lift => {
-                const municipality = extractMunicipalityFromLift(lift);
-                if (municipality.name && municipality.notificationHistory.length > 0) {
-                    municipality.notificationHistory.forEach(notification => {
-                        communications.push({
-                            municipality: municipality.name,
-                            lift: lift.municipalNumber,
-                            type: notification.type || 'municipality-novo-elevador',
-                            sentAt: notification.sentAt,
-                            status: notification.status || 'sent',
-                            messageId: notification.messageId
-                        });
-                    });
-                }
-            });
-            
-            // Ordenar por data (mais recentes primeiro)
-            communications.sort((a, b) => new Date(b.sentAt) - new Date(a.sentAt));
+            const communications = (data.data || []).map(log => ({
+                municipality: log.municipality || log.municipalityName || '—',
+                lift: log.lift || log.municipalNumber || '—',
+                type: log.type || 'municipality-form',
+                sentAt: log.sentAt || log.createdAt,
+                status: log.status || 'sent',
+                messageId: log.messageId
+            }));
             
             // Apresentar tabela
             const tbody = document.getElementById('communications-tbody');
@@ -2003,25 +1981,10 @@ setTimeout(() => {
     }
     
     // Carregar top municípios
-    async function loadTopMunicipalities() {
+    async function loadTopMunicipalities(lifts, municipalities) {
         try {
-            const token = getAuthToken();
-            
-            // Obter todos os elevadores e municípios
-            const [liftsResponse, municipalitiesResponse] = await Promise.all([
-                fetch('/api/lifts', { headers: { 'Authorization': `Bearer ${token}` } }),
-                fetch('/api/municipalities', { headers: { 'Authorization': `Bearer ${token}` } })
-            ]);
-            
-            if (!liftsResponse.ok || !municipalitiesResponse.ok) {
-                throw new Error('Failed to load data');
-            }
-            
-            const liftsData = await liftsResponse.json();
-            const municipalitiesData = await municipalitiesResponse.json();
-            
-            const lifts = liftsData.data || [];
-            const municipalities = municipalitiesData.data || [];
+            lifts = lifts || [];
+            municipalities = municipalities || [];
             
             // Mapa de municípios (dados actuais do JSON)
             const municipalityMap = {};
