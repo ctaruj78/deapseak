@@ -4717,10 +4717,13 @@ app.post('/api/lifts/parse-inspection-pdf', authenticateToken, (req, res, next) 
         const isPeriodicCertificate = /CERTIFICADO\s+DE\s+INSPEC[ÇC][AÃ]O\s+PERI[ÓO]DICA/i.test(parsedText);
         const explicitApprovedCertificate = /Nestas\s+circunst[âa]ncias\s+[ée]\s+autorizada\s+a\s+sua\s+manuten[çc][ãa]o\s+em\s+explora[çc][ãa]o/i.test(parsedText) || /Elevador\s+Aprovad[oa]/i.test(parsedText);
         const explicitFailedCertificate = /Reprovad[oa]|Imobiliza[çc][ãa]o/i.test(parsedText);
+        // Explicit "Reprovado (com cláusulas C2...)" even when violations have no C2 tag
+        const explicitReprovadoC2 = /Reprovad[oa][\s\S]{0,120}C2(?!\*)/i.test(parsedText) ||
+                                    /com\s+cláusulas?\s+C2(?!\*)/i.test(parsedText);
 
         let status = 'passed';
         if (hasC1) status = 'failed';
-        else if (hasC2) status = 'conditional';
+        else if (hasC2 || explicitReprovadoC2) status = 'conditional';
 
         // Guard rail for periodic certificates: explicit approval must win over noisy inferred C2.
         if (isPeriodicCertificate && explicitApprovedCertificate && !explicitFailedCertificate) {
@@ -4765,15 +4768,19 @@ app.post('/api/lifts/parse-inspection-pdf', authenticateToken, (req, res, next) 
         }
 
         const dateISO = toISO(rawDate);
-        const nextISO = toISO(rawNext) || (() => {
+        const calcNext = () => {
             if (!dateISO) return '';
             const d = new Date(dateISO);
             if (isNaN(d)) return '';
-            if (status === 'failed') d.setDate(d.getDate() + 90);          // C1: 90 days
-            else if (status === 'conditional') d.setDate(d.getDate() + 180); // C2: 180 days
-            else d.setFullYear(d.getFullYear() + 2);                         // C3/passed: 2 years
+            if (status === 'failed')      d.setDate(d.getDate() + 30);    // C1: 30 days (imobilização)
+            else if (status === 'conditional') d.setDate(d.getDate() + 30); // C2: 30 days (DL 320/2002)
+            else d.setFullYear(d.getFullYear() + 2);                         // passed: 2 years
             return d.toISOString().substring(0, 10);
-        })();
+        };
+        // For C2/C1 the PDF-extracted next date is unreliable (often shows the 2-year cycle) — recalculate
+        const nextISO = (status === 'conditional' || status === 'failed')
+            ? calcNext()
+            : (toISO(rawNext) || calcNext());
 
         const extractedData = {
             date: dateISO,
