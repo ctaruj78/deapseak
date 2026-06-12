@@ -253,8 +253,7 @@ function inferResultStatus(text = '') {
     }
 
     const resultIdx = source.search(/RESULTADO\s+DA\s+INSPE/i);
-    // Narrow scope to 800 chars — enough for the actual verdict line, avoids legend sections
-    const rawScope = resultIdx >= 0 ? source.substring(resultIdx, Math.min(source.length, resultIdx + 800)) : source;
+    const rawScope = resultIdx >= 0 ? source.substring(resultIdx, Math.min(source.length, resultIdx + 2600)) : source;
     // Ignore explanatory legends after the actual result block.
     const cutMarkers = [
         /Observa[çc][õo]es/i,
@@ -263,8 +262,6 @@ function inferResultStatus(text = '') {
         /OBRIGA[ÇC][ÕO]ES\s+DO\s+PROPRIET/i,
         /EM\s+RELA[ÇC][ÃA]O\s+[AÀ]S\s+DEFICI/i,
         /SIGNIFICADO\s+DAS\s+CL[AÁ]USULAS/i,
-        /\bAprovado\s*:/i,           // legend: "Aprovado: elevador que..."
-        /\bReprovado\s+com\s+Imobiliza/i,   // stop before legend entry if not the verdict itself
     ];
     let scope = rawScope;
     for (const marker of cutMarkers) {
@@ -275,15 +272,16 @@ function inferResultStatus(text = '') {
         }
     }
 
-    const approved = /\bAprovad[oa]\b(?!\s+com\s+Imobiliza)/i.test(scope);
-    const failed = /\bReprovad[oa]\b|Imobiliza[cç][aã]o/i.test(scope);
+    // Verdict forms: "Aprovado"/"Reprovado" NOT followed by ":" (that's legend text like "Aprovado: o elevador que...")
+    const approved = /\bAprovad[oa]\b(?!\s*:)(?!\s+com\s+Imobiliza)/i.test(scope);
+    const failed = /\bReprovad[oa]\b(?!\s*:)|Imobiliza[cç][aã]o/i.test(scope);
     const hasExplicitImmobilization = /Reprovad[oa]\s+com\s+Imobiliza[cç][aã]o|Imobiliza[cç][aã]o\s+imediata/i.test(scope);
     const hasApprovedC2Star = /Aprovad[oa][\s\S]{0,120}C2\*/i.test(scope);
 
     // If both words appear, trust whichever appears first in RESULTADO block.
     if (approved && failed) {
-        const firstApproved = scope.search(/\bAprovad[oa]\b/i);
-        const firstFailed = scope.search(/\bReprovad[oa]\b|Imobiliza[cç][aã]o/i);
+        const firstApproved = scope.search(/\bAprovad[oa]\b(?!\s*:)/i);
+        const firstFailed = scope.search(/\bReprovad[oa]\b(?!\s*:)|Imobiliza[cç][aã]o/i);
         if (firstFailed !== -1 && (firstApproved === -1 || firstFailed < firstApproved)) {
             return { status: 'failed', hasExplicitImmobilization, hasApprovedC2Star };
         }
