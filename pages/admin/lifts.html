@@ -18,6 +18,9 @@
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     
+    <!-- Toastr -->
+    <link rel="stylesheet" href="/plugins/toastr/css/toastr.min.css">
+
     <!-- Custom CSS (optimizado, sem !important desnecessários) -->
     <link rel="stylesheet" href="/assets/css/lifts.css?v=20260401j">
     <link rel="stylesheet" href="/assets/css/enhanced-lift-modal.css">
@@ -2425,6 +2428,11 @@
                         <div class="col-md-6 border-right">
                             <h6 class="text-primary"><i class="fas fa-user mr-1"></i> Notificar o cliente</h6>
                             <p class="text-muted small">O cliente deve saber que o prazo da inspecção termina e que a FestLift tratará disso.</p>
+                            <div id="inspReqModal_clientSentBadge" class="mb-2" style="display:none;">
+                                <span class="badge badge-success px-2 py-1" style="font-size:11px;">
+                                    <i class="fas fa-check-circle mr-1"></i> Enviado em <span id="inspReqModal_clientSentDate"></span>
+                                </span>
+                            </div>
                             <div class="form-group">
                                 <label class="small font-weight-bold">Email do cliente</label>
                                 <input type="email" id="inspReqModal_clientEmail" class="form-control form-control-sm" placeholder="email@client.com">
@@ -2446,6 +2454,11 @@
                         <div class="col-md-6">
                             <h6 class="text-warning"><i class="fas fa-building mr-1"></i> Pedido a <span id="inspReqModal_munName">Câmara Municipal</span></h6>
                             <p class="text-muted small">Carta oficial a solicitar agendamento da data de inspecção.</p>
+                            <div id="inspReqModal_munSentBadge" class="mb-2" style="display:none;">
+                                <span class="badge badge-success px-2 py-1" style="font-size:11px;">
+                                    <i class="fas fa-check-circle mr-1"></i> Enviado em <span id="inspReqModal_munSentDate"></span>
+                                </span>
+                            </div>
                             <div class="form-group">
                                 <label class="small font-weight-bold">Email do município</label>
                                 <input type="email" id="inspReqModal_munEmail" class="form-control form-control-sm" placeholder="email@camara.pt">
@@ -2906,6 +2919,7 @@
     <script src="../../plugins/jquery/jquery.min.js"></script>
     <script src="../../plugins/bootstrap/bootstrap.bundle.min.js"></script>
     <script src="../../plugins/adminlte/adminlte.min.js"></script>
+    <script src="/plugins/toastr/js/toastr.min.js"></script>
 
     <!-- Load sidebar with proper initialization -->
     <script src="../../assets/js/sidebar-init.js"></script>
@@ -3800,13 +3814,31 @@ Email de contacto: info@festlift.pt`;
         $('#inspReqModal_munName').text(munName);
         $('#inspReqModal_munSubject').val(munSubject);
         $('#inspReqModal_munBody').val(munBody);
-        // Reset кнопок
+        // Reset кнопок та бейджів
         $('#btnSendToClient').removeClass('btn-success').addClass('btn-primary').html('<i class="fas fa-paper-plane mr-1"></i> Enviar ao cliente');
         $('#btnSendToMun').removeClass('btn-success').addClass('btn-warning').html('<i class="fas fa-building mr-1"></i> Pedido ao município');
+
+        // Показати бейджі якщо вже надсилалося раніше
+        const fmtDate = iso => iso ? new Date(iso).toLocaleDateString('pt-PT', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '';
+        if (lift.clientNotified?.sentAt) {
+            $('#inspReqModal_clientSentDate').text(fmtDate(lift.clientNotified.sentAt));
+            $('#inspReqModal_clientSentBadge').show();
+            $('#btnSendToClient').removeClass('btn-primary btn-success').addClass('btn-outline-primary').html('<i class="fas fa-redo mr-1"></i> Reenviar ao cliente');
+        } else {
+            $('#inspReqModal_clientSentBadge').hide();
+        }
+        if (lift.munRequest?.sentAt) {
+            $('#inspReqModal_munSentDate').text(fmtDate(lift.munRequest.sentAt));
+            $('#inspReqModal_munSentBadge').show();
+            $('#btnSendToMun').removeClass('btn-warning btn-success').addClass('btn-outline-warning').html('<i class="fas fa-redo mr-1"></i> Reenviar ao município');
+        } else {
+            $('#inspReqModal_munSentBadge').hide();
+        }
+
         $('#inspectionRequestModal').modal('show');
     }
 
-    async function _sendInspReqEmail(emailField, subjectField, bodyField, successMsg) {
+    async function _sendInspReqEmail(emailField, subjectField, bodyField, successMsg, type) {
         const email   = $(emailField).val().trim();
         const subject = $(subjectField).val().trim();
         const body    = $(bodyField).val().trim();
@@ -3816,11 +3848,19 @@ Email de contacto: info@festlift.pt`;
             const res = await fetch('/api/email/send-inspection-reminder', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                body: JSON.stringify({ email, subject, message: body, liftId: window._currentInspectionLiftId, type: 'inspection_request' })
+                body: JSON.stringify({ email, subject, message: body, liftId: window._currentInspectionLiftId, type })
             });
             const data = await res.json();
-            if (data.success) { toastr.success(successMsg); return true; }
-            // API returned error — show it, do NOT fall back to mailto silently
+            if (data.success) {
+                toastr.success(successMsg);
+                // Оновити локальний об'єкт ліфта щоб бейдж відображався
+                if (window._currentInspectionLift) {
+                    const now = data.sentAt || new Date().toISOString();
+                    if (type === 'mun_request') window._currentInspectionLift.munRequest = { sentAt: now };
+                    else window._currentInspectionLift.clientNotified = { sentAt: now };
+                }
+                return true;
+            }
             toastr.error('Erro ao enviar email: ' + (data.error || data.message || 'Erro desconhecido'));
             return false;
         } catch (err) {
@@ -3832,12 +3872,22 @@ Email de contacto: info@festlift.pt`;
 
     // Кнопки в модалі (ініціалізація одноразово)
     $(document).on('click', '#btnSendToClient', async function() {
-        const ok = await _sendInspReqEmail('#inspReqModal_clientEmail','#inspReqModal_clientSubject','#inspReqModal_clientBody','Mensagem ao cliente enviada!');
-        if (ok) $(this).removeClass('btn-primary').addClass('btn-success').html('<i class="fas fa-check mr-1"></i> Enviado');
+        const ok = await _sendInspReqEmail('#inspReqModal_clientEmail','#inspReqModal_clientSubject','#inspReqModal_clientBody','Mensagem ao cliente enviada!', 'client_notification');
+        if (ok) {
+            const today = new Date().toLocaleDateString('pt-PT', { day: '2-digit', month: '2-digit', year: 'numeric' });
+            $('#inspReqModal_clientSentDate').text(today);
+            $('#inspReqModal_clientSentBadge').show();
+            $(this).removeClass('btn-primary btn-success').addClass('btn-outline-primary').html('<i class="fas fa-redo mr-1"></i> Reenviar ao cliente');
+        }
     });
     $(document).on('click', '#btnSendToMun', async function() {
-        const ok = await _sendInspReqEmail('#inspReqModal_munEmail','#inspReqModal_munSubject','#inspReqModal_munBody','Pedido ao município enviado!');
-        if (ok) $(this).removeClass('btn-warning').addClass('btn-success').html('<i class="fas fa-check mr-1"></i> Enviado');
+        const ok = await _sendInspReqEmail('#inspReqModal_munEmail','#inspReqModal_munSubject','#inspReqModal_munBody','Pedido ao município enviado!', 'mun_request');
+        if (ok) {
+            const today = new Date().toLocaleDateString('pt-PT', { day: '2-digit', month: '2-digit', year: 'numeric' });
+            $('#inspReqModal_munSentDate').text(today);
+            $('#inspReqModal_munSentBadge').show();
+            $(this).removeClass('btn-warning btn-success').addClass('btn-outline-warning').html('<i class="fas fa-redo mr-1"></i> Reenviar ao município');
+        }
     });
 
     async function sendInspectionEmail(inspection) {
@@ -6838,6 +6888,15 @@ Email de contacto: info@festlift.pt`;
                 $('#addReportModal').modal('hide');
                 $('#addReportForm')[0].reset();
                 showLiftDetails(liftId);
+                // Actualizar campos de licença no modal de edição (Tab Serviço)
+                if (result.licenseDate) {
+                    $('[name="licenseDate"]').val(result.licenseDate.split('T')[0]);
+                    $('#licenseDateBadge').show();
+                }
+                if (result.licenseExpiry) {
+                    $('[name="licenseExpiry"]').val(result.licenseExpiry.split('T')[0]);
+                    $('#licenseExpiryBadge').show();
+                }
             } else {
                 alert('Erro: ' + (result.message || result.error || 'Não foi possível adicionar relatório'));
             }

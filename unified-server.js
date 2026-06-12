@@ -4959,10 +4959,17 @@ app.post('/api/lifts/:id/inspection-report', authenticateToken, upload.single('p
             });
         }
         
+        const updatedLicenseDate   = reportData.status === 'passed' ? reportData.date : null;
+        const updatedLicenseExpiry = reportData.status === 'passed'
+            ? (() => { const d = new Date(reportData.date); d.setFullYear(d.getFullYear() + 2); return d.toISOString(); })()
+            : null;
+
         res.status(201).json({
             success: true,
             message: 'Relatório de inspeção adicionado com sucesso',
-            report: reportData
+            report: reportData,
+            licenseDate: updatedLicenseDate,
+            licenseExpiry: updatedLicenseExpiry
         });
     } catch (error) {
         console.error('❌ Erro ao adicionar relatório:', error);
@@ -5071,7 +5078,9 @@ app.post('/api/lifts/:id/confirm-inspection-from-pdf', authenticateToken, async 
         res.status(201).json({
             success: true,
             message: 'Relatório de inspeção guardado com sucesso',
-            report: reportData
+            report: reportData,
+            licenseDate:   setFields.licenseDate   || null,
+            licenseExpiry: setFields.licenseExpiry || null
         });
     } catch (error) {
         console.error('❌ Erro confirm-inspection-from-pdf:', error);
@@ -13527,39 +13536,101 @@ app.post('/api/email/send-inspection-pdf', authenticateToken, upload.single('pdf
 // POST /api/email/send-inspection-reminder - Відправити нагадування про інспекцію
 app.post('/api/email/send-inspection-reminder', authenticateToken, async (req, res) => {
     try {
-        const { email, subject, message, inspectionDate, liftId } = req.body;
+        const { email, subject, message, liftId, type } = req.body;
 
         if (!email) {
             return res.status(400).json({ success: false, error: 'Email є обов\'язковим' });
         }
 
-        // Перетворюємо plain text у HTML (зберігаємо переноси рядків)
-        const messageHtml = (message || '')
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/\n/g, '<br>');
+        const paragraphs = (message || '')
+            .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+            .split(/\n{2,}/)
+            .map(p => `<p style="margin:0 0 12px 0;">${p.replace(/\n/g, '<br>')}</p>`)
+            .join('');
 
-        const html = `
-            <div style="font-family: Arial, sans-serif; max-width: 640px; margin: 0 auto;">
-                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 8px 8px 0 0;">
-                    <h2 style="margin: 0;">🏢 FestLift – Inspeção de Elevador</h2>
-                </div>
-                <div style="padding: 24px; border: 1px solid #ddd; border-top: none; line-height: 1.6;">
-                    ${messageHtml}
-                </div>
-                <div style="background: #f8f9fa; padding: 14px; text-align: center; border: 1px solid #ddd; border-top: none; border-radius: 0 0 8px 8px;">
-                    <p style="margin: 0; color: #666; font-size: 12px;">
-                        FestLift · <a href="https://festlift.pt" style="color:#667eea;">festlift.pt</a> · info@festlift.pt
-                    </p>
-                </div>
-            </div>
-        `;
+        const isMun = type === 'mun_request';
+        const accentColor = isMun ? '#e67e22' : '#2980b9';
+        const headerLabel = isMun ? 'Pedido de Inspecção de Elevador' : 'Aviso de Inspecção de Elevador';
+
+        const html = `<!DOCTYPE html>
+<html lang="pt"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#f0f2f5;font-family:Arial,Helvetica,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f0f2f5;padding:32px 0;">
+  <tr><td align="center">
+    <table width="600" cellpadding="0" cellspacing="0" border="0" style="background:#ffffff;border-radius:6px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+
+      <!-- Header -->
+      <tr>
+        <td style="background:${accentColor};padding:28px 36px;">
+          <table width="100%" cellpadding="0" cellspacing="0" border="0">
+            <tr>
+              <td>
+                <div style="font-size:22px;font-weight:bold;color:#ffffff;letter-spacing:0.5px;">FestLift</div>
+                <div style="font-size:12px;color:rgba(255,255,255,0.75);margin-top:2px;">Gestão de Elevadores</div>
+              </td>
+              <td align="right">
+                <div style="font-size:13px;color:rgba(255,255,255,0.9);font-weight:600;">${headerLabel}</div>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+
+      <!-- Body -->
+      <tr>
+        <td style="padding:32px 36px;color:#333333;font-size:14px;line-height:1.7;">
+          ${paragraphs}
+        </td>
+      </tr>
+
+      <!-- Divider -->
+      <tr><td style="padding:0 36px;"><hr style="border:none;border-top:1px solid #e8e8e8;margin:0;"></td></tr>
+
+      <!-- Footer -->
+      <tr>
+        <td style="padding:20px 36px;background:#fafafa;">
+          <table width="100%" cellpadding="0" cellspacing="0" border="0">
+            <tr>
+              <td style="font-size:12px;color:#888888;">
+                <strong style="color:#555555;">FestLift, Lda.</strong><br>
+                Gestão e Manutenção de Elevadores<br>
+                <a href="mailto:info@festlift.pt" style="color:${accentColor};text-decoration:none;">info@festlift.pt</a>
+                &nbsp;·&nbsp;
+                <a href="https://festlift.pt" style="color:${accentColor};text-decoration:none;">festlift.pt</a>
+              </td>
+              <td align="right" style="font-size:11px;color:#bbbbbb;vertical-align:bottom;">
+                ${new Date().toLocaleDateString('pt-PT', { day:'2-digit', month:'long', year:'numeric' })}
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+
+    </table>
+  </td></tr>
+</table>
+</body></html>`;
 
         await emailService.sendEmail(email, subject || 'Notificação de Inspeção de Elevador', html);
 
-        console.log(`✅ Inspection email sent to ${email} | subject: ${subject}`);
-        res.json({ success: true, message: `Email enviado para ${email}` });
+        // Registar data de envio no elevador
+        if (liftId) {
+            try {
+                const { ObjectId } = require('mongodb');
+                const sentAt = new Date();
+                const userId = req.user?.id || req.user?._id || null;
+                const trackField = isMun ? 'munRequest' : 'clientNotified';
+                await db.collection('lifts').updateOne(
+                    { _id: new ObjectId(liftId) },
+                    { $set: { [`${trackField}.sentAt`]: sentAt, [`${trackField}.sentBy`]: userId ? new ObjectId(userId) : null } }
+                );
+            } catch (trackErr) {
+                console.warn('⚠️  Could not update lift tracking field:', trackErr.message);
+            }
+        }
+
+        console.log(`✅ Inspection email (${type || 'generic'}) sent to ${email}`);
+        res.json({ success: true, message: `Email enviado para ${email}`, sentAt: new Date().toISOString() });
     } catch (error) {
         console.error('❌ Error sending inspection email:', error.message);
         res.status(500).json({ success: false, error: error.message });

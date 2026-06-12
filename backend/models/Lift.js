@@ -129,6 +129,14 @@ const liftSchema = new mongoose.Schema({
         }
     },
     notes: String,
+    munRequest: {
+        sentAt: Date,
+        sentBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
+    },
+    clientNotified: {
+        sentAt: Date,
+        sentBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
+    },
     deletionRequest: {
         requested: { type: Boolean, default: false },
         requestedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },

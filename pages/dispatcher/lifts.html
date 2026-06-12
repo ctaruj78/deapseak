@@ -27,6 +27,9 @@
     <!-- AdminLTE CSS -->
     <link rel="stylesheet" href="../../plugins/adminlte/adminlte.min.css">
     <link rel="stylesheet" href="../../plugins/fontawesome/css/all.min.css">
+
+    <!-- Toastr -->
+    <link rel="stylesheet" href="/plugins/toastr/css/toastr.min.css">
     
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -1942,6 +1945,11 @@
                         <div class="col-md-6 border-right">
                             <h6 class="text-primary"><i class="fas fa-user mr-1"></i> Notificar o cliente</h6>
                             <p class="text-muted small">O cliente deve saber que o prazo das inspeções está a terminar e que a FestLift tratará do assunto.</p>
+                            <div id="inspReqModal_clientSentBadge" class="mb-2" style="display:none;">
+                                <span class="badge badge-success px-2 py-1" style="font-size:11px;">
+                                    <i class="fas fa-check-circle mr-1"></i> Enviado em <span id="inspReqModal_clientSentDate"></span>
+                                </span>
+                            </div>
                             <div class="form-group">
                                 <label class="small font-weight-bold">Email do cliente</label>
                                 <input type="email" id="inspReqModal_clientEmail" class="form-control form-control-sm" placeholder="email@client.com">
@@ -1961,6 +1969,11 @@
                         <div class="col-md-6">
                             <h6 class="text-warning"><i class="fas fa-building mr-1"></i> Pedido a <span id="inspReqModal_munName">Câmara Municipal</span></h6>
                             <p class="text-muted small">Carta oficial com pedido de atribuição de data de inspeções.</p>
+                            <div id="inspReqModal_munSentBadge" class="mb-2" style="display:none;">
+                                <span class="badge badge-success px-2 py-1" style="font-size:11px;">
+                                    <i class="fas fa-check-circle mr-1"></i> Enviado em <span id="inspReqModal_munSentDate"></span>
+                                </span>
+                            </div>
                             <div class="form-group">
                                 <label class="small font-weight-bold">Email do município</label>
                                 <input type="email" id="inspReqModal_munEmail" class="form-control form-control-sm" placeholder="email@camara.pt">
@@ -2654,6 +2667,7 @@
     <!-- Scripts -->
     <script src="../../plugins/bootstrap/bootstrap.bundle.min.js"></script>
     <script src="../../plugins/adminlte/adminlte.min.js"></script>
+    <script src="/plugins/toastr/js/toastr.min.js"></script>
 
     <!-- Load sidebar with proper initialization -->
     <script src="../../assets/js/sidebar-init.js"></script>
@@ -6947,8 +6961,16 @@ Equipa FestLift</textarea>
                 alert('Relatório adicionado com sucesso!');
                 $('#addReportModal').modal('hide');
                 $('#addReportForm')[0].reset();
-                // Оновлюexisteмо detalhes do elevador
                 showLiftDetails(liftId);
+                // Actualizar campos de licença no modal de edição (Tab Serviço)
+                if (result.licenseDate) {
+                    $('[name="licenseDate"]').val(result.licenseDate.split('T')[0]);
+                    $('#dispLicenseDateBadge').show();
+                }
+                if (result.licenseExpiry) {
+                    $('[name="licenseExpiry"]').val(result.licenseExpiry.split('T')[0]);
+                    $('#dispLicenseExpiryBadge').show();
+                }
             } else {
                 alert('Erro: ' + (result.message || result.error || 'Não foi possível adicionar o relatório'));
             }
@@ -8960,10 +8982,27 @@ Equipa FestLift</textarea>
         $('#inspReqModal_munBody').val(munBody);
         $('#btnSendToClient').removeClass('btn-success').addClass('btn-primary').html('<i class="fas fa-paper-plane mr-1"></i> Enviar ao cliente');
         $('#btnSendToMun').removeClass('btn-success').addClass('btn-warning').html('<i class="fas fa-building mr-1"></i> Pedido ao município');
+
+        const fmtDate = iso => iso ? new Date(iso).toLocaleDateString('pt-PT', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '';
+        if (lift.clientNotified && lift.clientNotified.sentAt) {
+            $('#inspReqModal_clientSentDate').text(fmtDate(lift.clientNotified.sentAt));
+            $('#inspReqModal_clientSentBadge').show();
+            $('#btnSendToClient').removeClass('btn-primary btn-success').addClass('btn-outline-primary').html('<i class="fas fa-redo mr-1"></i> Reenviar ao cliente');
+        } else {
+            $('#inspReqModal_clientSentBadge').hide();
+        }
+        if (lift.munRequest && lift.munRequest.sentAt) {
+            $('#inspReqModal_munSentDate').text(fmtDate(lift.munRequest.sentAt));
+            $('#inspReqModal_munSentBadge').show();
+            $('#btnSendToMun').removeClass('btn-warning btn-success').addClass('btn-outline-warning').html('<i class="fas fa-redo mr-1"></i> Reenviar ao município');
+        } else {
+            $('#inspReqModal_munSentBadge').hide();
+        }
+
         $('#inspectionRequestModal').modal('show');
     }
 
-    async function _sendInspReqEmail(emailField, subjectField, bodyField, successMsg) {
+    async function _sendInspReqEmail(emailField, subjectField, bodyField, successMsg, type) {
         const email   = $(emailField).val().trim();
         const subject = $(subjectField).val().trim();
         const body    = $(bodyField).val().trim();
@@ -8973,15 +9012,19 @@ Equipa FestLift</textarea>
             const res = await fetch('/api/email/send-inspection-reminder', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-                body: JSON.stringify({ email, subject, message: body, liftId: window._currentInspectionLiftId, type: 'inspection_request' })
+                body: JSON.stringify({ email, subject, message: body, liftId: window._currentInspectionLiftId, type })
             });
             const data = await res.json();
             if (data.success) {
                 if (typeof toastr !== 'undefined') toastr.success(successMsg);
                 else alert(successMsg);
+                if (window._currentInspectionLift) {
+                    const now = data.sentAt || new Date().toISOString();
+                    if (type === 'mun_request') window._currentInspectionLift.munRequest = { sentAt: now };
+                    else window._currentInspectionLift.clientNotified = { sentAt: now };
+                }
                 return true;
             }
-            // API returned error — show it, do NOT fall back to mailto silently
             const errMsg = data.error || data.message || 'Erro desconhecido ao enviar email';
             if (typeof toastr !== 'undefined') toastr.error('Erro ao enviar email: ' + errMsg);
             else alert('Erro ao enviar email: ' + errMsg);
@@ -8996,12 +9039,22 @@ Equipa FestLift</textarea>
 
     // Кнопки надсилання в inspectionRequestModal (ініціалізація одноразово)
     $(document).on('click', '#btnSendToClient', async function() {
-        const ok = await _sendInspReqEmail('#inspReqModal_clientEmail','#inspReqModal_clientSubject','#inspReqModal_clientBody','Mensagem enviada ao cliente!');
-        if (ok) $(this).removeClass('btn-primary').addClass('btn-success').html('<i class="fas fa-check mr-1"></i> Enviado');
+        const ok = await _sendInspReqEmail('#inspReqModal_clientEmail','#inspReqModal_clientSubject','#inspReqModal_clientBody','Mensagem enviada ao cliente!', 'client_notification');
+        if (ok) {
+            const today = new Date().toLocaleDateString('pt-PT', { day: '2-digit', month: '2-digit', year: 'numeric' });
+            $('#inspReqModal_clientSentDate').text(today);
+            $('#inspReqModal_clientSentBadge').show();
+            $(this).removeClass('btn-primary btn-success').addClass('btn-outline-primary').html('<i class="fas fa-redo mr-1"></i> Reenviar ao cliente');
+        }
     });
     $(document).on('click', '#btnSendToMun', async function() {
-        const ok = await _sendInspReqEmail('#inspReqModal_munEmail','#inspReqModal_munSubject','#inspReqModal_munBody','Pedido ao município enviado!');
-        if (ok) $(this).removeClass('btn-warning').addClass('btn-success').html('<i class="fas fa-check mr-1"></i> Enviado');
+        const ok = await _sendInspReqEmail('#inspReqModal_munEmail','#inspReqModal_munSubject','#inspReqModal_munBody','Pedido ao município enviado!', 'mun_request');
+        if (ok) {
+            const today = new Date().toLocaleDateString('pt-PT', { day: '2-digit', month: '2-digit', year: 'numeric' });
+            $('#inspReqModal_munSentDate').text(today);
+            $('#inspReqModal_munSentBadge').show();
+            $(this).removeClass('btn-warning btn-success').addClass('btn-outline-warning').html('<i class="fas fa-redo mr-1"></i> Reenviar ao município');
+        }
     });
 
     // ── PDF Inspection Parser Modal logic ────────────────────────────────────
