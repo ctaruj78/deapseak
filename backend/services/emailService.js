@@ -441,14 +441,23 @@ class EmailService {
             let htmlContent = fs.readFileSync(templatePath, 'utf8');
 
             // Замінюємо placeholder'и на реальні дані
+            const serviceDate = liftData.serviceStartDate
+                ? new Date(liftData.serviceStartDate).toLocaleDateString('pt-PT', { day: '2-digit', month: 'long', year: 'numeric' })
+                : (liftData.serviceEndDate ? new Date(liftData.serviceEndDate).toLocaleDateString('pt-PT', { day: '2-digit', month: 'long', year: 'numeric' }) : 'N/A');
             htmlContent = htmlContent
                 .replace(/{{municipalNumber}}/g, liftData.municipalNumber || 'N/A')
                 .replace(/{{address}}/g, liftData.address || 'N/A')
+                .replace(/{{postalCode}}/g, liftData.postalCode || 'N/A')
                 .replace(/{{brand}}/g, liftData.brand || 'N/A')
                 .replace(/{{model}}/g, liftData.model || 'N/A')
                 .replace(/{{year}}/g, liftData.installationYear || 'N/A')
                 .replace(/{{capacity}}/g, liftData.capacity || 'N/A')
                 .replace(/{{municipalityName}}/g, liftData.municipalityName || 'Senhor(a) Presidente')
+                .replace(/{{serviceStartDate}}/g, serviceDate)
+                .replace(/{{clientName}}/g, liftData.clientName || 'N/A')
+                .replace(/{{clientPhone}}/g, liftData.clientPhone || 'N/A')
+                .replace(/{{clientEmail}}/g, liftData.clientEmail || 'N/A')
+                .replace(/{{notes}}/g, liftData.notes || 'Nao especificado')
                 .replace(/{{date}}/g, new Date().toLocaleDateString('pt-PT', { day: '2-digit', month: 'long', year: 'numeric' }));
 
             // Читаємо логотип FestLift

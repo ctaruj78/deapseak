@@ -8425,6 +8425,10 @@ Email de contacto: info@festlift.pt`;
                     address: addressStr,
                     qrCode: lift.qrCode?.code || lift.qrCode || 'Não especificado',
                     postalCode: postalCode,
+                    brand: lift.manufacturer || lift.brand || 'N/A',
+                    model: lift.model || 'N/A',
+                    year: lift.installYear || lift.installationYear || 'N/A',
+                    capacity: lift.capacity || 'N/A',
                     clientName: clientName,
                     clientPhone: clientPhone,
                     clientEmail: clientEmail
@@ -8470,14 +8474,20 @@ Email de contacto: info@festlift.pt`;
                     .replace(/{{municipalityName}}/g, municipalityData.concelho)
                     .replace(/{{municipalNumber}}/g, liftData.municipalNumber)
                     .replace(/{{qrCode}}/g, liftData.qrCode)
+                    .replace(/{{address}}/g, liftData.address)
                     .replace(/{{liftAddress}}/g, liftData.address)
                     .replace(/{{postalCode}}/g, liftData.postalCode)
+                    .replace(/{{brand}}/g, liftData.brand)
+                    .replace(/{{model}}/g, liftData.model)
+                    .replace(/{{year}}/g, liftData.year)
+                    .replace(/{{capacity}}/g, liftData.capacity)
                     .replace(/{{concelho}}/g, municipalityData.concelho)
                     .replace(/{{distrito}}/g, municipalityData.distrito)
                     .replace(/{{clientName}}/g, liftData.clientName)
                     .replace(/{{clientPhone}}/g, liftData.clientPhone)
                     .replace(/{{clientEmail}}/g, liftData.clientEmail)
                     .replace(/{{serviceStartDate}}/g, formatDate(serviceStartDate))
+                    .replace(/{{date}}/g, formatDate(new Date().toISOString().split('T')[0]))
                     .replace(/{{currentDate}}/g, formatDate(new Date().toISOString().split('T')[0]))
                     .replace(/{{notes}}/g, notes || 'Sem notas adicionais');
 
@@ -8657,6 +8667,13 @@ Email de contacto: info@festlift.pt`;
                     return;
                 }
 
+                const postalCode = typeof lift.address === 'object'
+                    ? (lift.address?.zipCode || lift.address?.postalCode || 'N/A')
+                    : 'N/A';
+                const clientName = lift.client?.name || lift.clientName || lift.owner?.name || 'N/A';
+                const clientPhone = lift.client?.phone || lift.clientPhone || lift.owner?.phone || 'N/A';
+                const clientEmail = lift.client?.email || lift.clientEmail || lift.owner?.email || 'N/A';
+
                 const result = await apiCall('/api/lifts/send-municipality-form', 'POST', {
                     templateType: apiTemplateType,
                     municipalityEmail: municipalityEmail,
@@ -8664,13 +8681,17 @@ Email de contacto: info@festlift.pt`;
                     liftData: {
                         municipalNumber: lift.municipalNumber || lift.liftMunicipalNumber || 'N/A',
                         address: address || 'N/A',
+                        postalCode: postalCode,
                         brand: lift.manufacturer || lift.brand || 'N/A',
                         model: lift.model || 'N/A',
                         installationYear: lift.installYear || lift.installationYear || 'N/A',
                         capacity: lift.capacity || 'N/A',
                         municipalityName: currentMunicipalityData.name || 'Câmara Municipal',
                         serviceStartDate: serviceStartDate || '',
-                        notes: notes || ''
+                        notes: notes || '',
+                        clientName: clientName,
+                        clientPhone: clientPhone,
+                        clientEmail: clientEmail
                     }
                 });
 
@@ -9298,9 +9319,9 @@ Email de contacto: info@festlift.pt`;
             if (!dateVal) return;
             var d = new Date(dateVal + 'T00:00:00');
             var status = $(this).val();
-            if (status === 'passed')            d.setMonth(d.getMonth() + 24); // certificado de 2 anos
-            else if (status === 'failed')       d.setDate(d.getDate() + 30);   // imobilização / reinspeção urgente
-            else                                d.setDate(d.getDate() + 30);   // condicional (C2) -> curto prazo
+            if (status === 'passed')       d.setMonth(d.getMonth() + 24);  // certificado de 2 anos
+            else if (status === 'failed')  d.setDate(d.getDate() + 30);    // C1/imobilização: 30 dias
+            else                           d.setDate(d.getDate() + 90);    // C2/condicional: reinspecção 90 dias
             $('#pdfParserValidUntil').val(d.toISOString().substring(0, 10));
         });
 

@@ -84,14 +84,19 @@
         if (certType === 'cert_2_years' || status === 'passed' || hasLegacyNoStatus) {
             out.setFullYear(out.getFullYear() + 2);
         } else if (
-            certType === 'reinspection' ||
             certType === 'immobilization' ||
             status === 'failed' ||
+            (c1 > 0 && c2 === 0)
+        ) {
+            // C1 / imobilização: elevator grounded, re-inspect within 30 days
+            out.setDate(out.getDate() + 30);
+        } else if (
+            certType === 'reinspection' ||
             status === 'conditional' ||
-            c1 > 0 ||
             c2 > 0
         ) {
-            out.setDate(out.getDate() + 30);
+            // C2: certificate valid for 2 years (DL 320/2002); re-inspection within 90 days
+            out.setFullYear(out.getFullYear() + 2);
         } else {
             out.setDate(out.getDate() + 180);
             source = latest ? 'derived_report' : 'estimated';

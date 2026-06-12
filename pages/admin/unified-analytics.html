@@ -1826,7 +1826,8 @@ setTimeout(() => {
         const email = String(fromObject?.email || '').trim();
         const phone = String(fromObject?.phone || '').trim();
         const notified = Boolean(fromObject?.notified);
-        const notificationHistory = Array.isArray(fromObject?.notification_history) ? fromObject.notification_history : [];
+        const notificationHistory = Array.isArray(fromObject?.notificationHistory) ? fromObject.notificationHistory
+            : Array.isArray(fromObject?.notification_history) ? fromObject.notification_history : [];
 
         return {
             id: resolveMunicipalityId(fromObject),

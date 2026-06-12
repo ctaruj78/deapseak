@@ -4760,13 +4760,14 @@ app.post('/api/lifts/parse-inspection-pdf', authenticateToken, (req, res, next) 
             if (!dateISO) return '';
             const d = new Date(dateISO);
             if (isNaN(d)) return '';
-            if (status === 'failed')      d.setDate(d.getDate() + 30);    // C1: 30 days (imobilização)
-            else if (status === 'conditional') d.setDate(d.getDate() + 30); // C2: 30 days (DL 320/2002)
-            else d.setFullYear(d.getFullYear() + 2);                         // passed: 2 years
+            if (status === 'failed')      d.setDate(d.getDate() + 30);     // C1/imobilização: 30 days
+            else if (status === 'conditional') d.setDate(d.getDate() + 90); // C2: re-inspect within 90 days
+            else d.setFullYear(d.getFullYear() + 2);                          // passed: 2 years
             return d.toISOString().substring(0, 10);
         };
-        // For C2/C1 the PDF-extracted next date is unreliable (often shows the 2-year cycle) — recalculate
-        const nextISO = (status === 'conditional' || status === 'failed')
+        // For C1 the PDF-extracted next date is unreliable — recalculate
+        // For C2 use 90-day re-inspection window (not the 2-year cert validity)
+        const nextISO = status === 'failed'
             ? calcNext()
             : (toISO(rawNext) || calcNext());
 
@@ -4906,20 +4907,28 @@ app.post('/api/lifts/:id/inspection-report', authenticateToken, upload.single('p
             reportType: req.body.inspectionType || req.body.reportType || 'routine'
         };
         
-        // Розрахунок наступної дати інспекції
-        // C1/C2 (failed/conditional) → +30 днів (Decreto-Lei nº 320/2002)
-        // C3 (passed with clauses) → +90 днів
-        // Passed clean → +2 роки
+        // Розрахунок наступної дати інспекції (DL 320/2002)
+        // C1/failed → +30 днів (imobilização); C2/conditional → +90 днів (реінспекція);
+        // C3 → +90 днів; Passed → +2 роки
         const calcNextInspection = () => {
             const d = new Date(reportData.date);
             const c3Cnt = parseInt(req.body.c3Count) || 0;
-            if (reportData.status === 'failed' || reportData.status === 'conditional') {
-                d.setDate(d.getDate() + 30);    // C1/C2: 30 days
+            if (reportData.status === 'failed') {
+                d.setDate(d.getDate() + 30);    // C1: 30 days
+            } else if (reportData.status === 'conditional') {
+                d.setDate(d.getDate() + 90);    // C2: 90 days for re-inspection
             } else if (c3Cnt > 0) {
                 d.setDate(d.getDate() + 90);    // C3: 90 days
             } else {
                 d.setMonth(d.getMonth() + 24);  // Passed clean: 2 years
             }
+            return d.toISOString();
+        };
+
+        // Calc licenseExpiry: passed OR conditional (C2) → cert valid 2 years; C1 → clear
+        const calcLicenseExpiry = () => {
+            const d = new Date(reportData.date);
+            d.setFullYear(d.getFullYear() + 2);
             return d.toISOString();
         };
 
@@ -4931,18 +4940,14 @@ app.post('/api/lifts/:id/inspection-report', authenticateToken, upload.single('p
                     ? (() => { const d = new Date(req.body.nextInspectionDate); return isNaN(d) ? calcNextInspection() : d.toISOString(); })()
                     : calcNextInspection(),
                 inspectionStatus: resolvedStatus,
-                ...(reportData.status === 'passed' ? {
+                ...(reportData.status !== 'failed' ? {
                     licenseDate: reportData.date,
-                    licenseExpiry: (() => {
-                        const d = new Date(reportData.date);
-                        d.setFullYear(d.getFullYear() + 2);
-                        return d.toISOString();
-                    })()
+                    licenseExpiry: calcLicenseExpiry()
                 } : {}),
                 updatedAt: new Date().toISOString()
             }
         };
-        if (reportData.status !== 'passed') {
+        if (reportData.status === 'failed') {
             _manualInspUpdate.$unset = { licenseDate: '', licenseExpiry: '' };
         }
         const result = await db.collection('lifts').updateOne(
@@ -4957,8 +4962,8 @@ app.post('/api/lifts/:id/inspection-report', authenticateToken, upload.single('p
             });
         }
         
-        const updatedLicenseDate   = reportData.status === 'passed' ? reportData.date : null;
-        const updatedLicenseExpiry = reportData.status === 'passed'
+        const updatedLicenseDate   = reportData.status !== 'failed' ? reportData.date : null;
+        const updatedLicenseExpiry = reportData.status !== 'failed'
             ? (() => { const d = new Date(reportData.date); d.setFullYear(d.getFullYear() + 2); return d.toISOString(); })()
             : null;
 
@@ -5025,14 +5030,16 @@ app.post('/api/lifts/:id/confirm-inspection-from-pdf', authenticateToken, async 
             }
         }
 
-        // Build next inspection date
-        // C1/C2 (failed/conditional) → +30 days (Decreto-Lei nº 320/2002)
+        // Build next inspection date (DL 320/2002)
+        // C1/failed → +30 days (imobilização); C2/conditional → +90 days (re-inspection);
         // C3 → +90 days; Passed clean → +2 years
         const calcNext = () => {
             const d = new Date(inspectionDateISO);
             const c3Cnt = Array.isArray(violations) ? violations.filter(v => v.type === 'C3').length : 0;
-            if (resolvedStatus === 'failed' || resolvedStatus === 'conditional') {
-                d.setDate(d.getDate() + 30);    // C1/C2: 30 days
+            if (resolvedStatus === 'failed') {
+                d.setDate(d.getDate() + 30);    // C1: 30 days
+            } else if (resolvedStatus === 'conditional') {
+                d.setDate(d.getDate() + 90);    // C2: 90 days for re-inspection
             } else if (c3Cnt > 0) {
                 d.setDate(d.getDate() + 90);    // C3: 90 days
             } else {
@@ -5075,7 +5082,8 @@ app.post('/api/lifts/:id/confirm-inspection-from-pdf', authenticateToken, async 
         if (address) setFields['address.street'] = address;
         if (postalCode) setFields['address.postalCode'] = postalCode;
 
-        if (resolvedStatus === 'passed') {
+        if (resolvedStatus !== 'failed') {
+            // passed OR conditional (C2): certificate valid 2 years (DL 320/2002)
             const expiry = new Date(inspectionDateISO);
             expiry.setFullYear(expiry.getFullYear() + 2);
             setFields.licenseDate = inspectionDateISO;
@@ -5086,7 +5094,8 @@ app.post('/api/lifts/:id/confirm-inspection-from-pdf', authenticateToken, async 
             $push: { inspectionHistory: reportData },
             $set: setFields
         };
-        if (resolvedStatus !== 'passed') {
+        if (resolvedStatus === 'failed') {
+            // C1/imobilização only: remove cert dates
             _pdfInspUpdate.$unset = { licenseDate: '', licenseExpiry: '' };
         }
         const result = await db.collection('lifts').updateOne({ _id: liftId }, _pdfInspUpdate);

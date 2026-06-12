@@ -3,333 +3,182 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Notificação - Novo Elevador Registado</title>
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            line-height: 1.8;
-            color: #2c3e50;
-            max-width: 750px;
-            margin: 0 auto;
-            padding: 0;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-        .email-wrapper {
-            background-color: #ffffff;
-            margin: 40px 20px;
-            border-radius: 16px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-            overflow: hidden;
-        }
-        .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 50px 40px;
-            text-align: center;
-            position: relative;
-            overflow: hidden;
-        }
-        .header::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
-            animation: shimmer 8s infinite linear;
-        }
-        @keyframes shimmer {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        .header-icon {
-            font-size: 64px;
-            margin-bottom: 20px;
-            display: block;
-            animation: float 3s ease-in-out infinite;
-        }
-        @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
-        }
-        .header h1 {
-            margin: 0;
-            font-size: 36px;
-            font-weight: 700;
-            text-shadow: 0 4px 8px rgba(0,0,0,0.2);
-            position: relative;
-            z-index: 1;
-        }
-        .header p {
-            margin: 15px 0 0 0;
-            font-size: 18px;
-            opacity: 0.95;
-            font-weight: 300;
-            position: relative;
-            z-index: 1;
-        }
-        .content {
-            padding: 50px 40px;
-            background: linear-gradient(to bottom, #ffffff 0%, #f8f9fa 100%);
-        }
-        .greeting {
-            font-size: 20px;
-            color: #2c3e50;
-            margin-bottom: 25px;
-            font-weight: 600;
-        }
-        .intro-text {
-            font-size: 16px;
-            line-height: 1.8;
-            color: #555;
-            margin-bottom: 30px;
-        }
-        .info-box {
-            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
-            border-left: 6px solid #667eea;
-            padding: 30px;
-            margin: 30px 0;
-            border-radius: 12px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.08);
-            position: relative;
-            overflow: hidden;
-        }
-        .info-box::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            right: 0;
-            width: 100px;
-            height: 100px;
-            background: radial-gradient(circle, rgba(102, 126, 234, 0.1) 0%, transparent 70%);
-        }
-        .info-box h3 {
-            margin: 0 0 25px 0;
-            color: #667eea;
-            font-size: 22px;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-        }
-        .info-box h3::before {
-            content: attr(data-icon);
-            font-size: 28px;
-            margin-right: 12px;
-        }
-        .info-row {
-            display: flex;
-            padding: 14px 0;
-            border-bottom: 2px solid #e9ecef;
-            transition: background-color 0.3s;
-        }
-        .info-row:hover {
-            background-color: rgba(102, 126, 234, 0.05);
-            border-radius: 6px;
-            padding-left: 10px;
-            margin-left: -10px;
-        }
-        .info-row:last-child {
-            border-bottom: none;
-        }
-        .info-label {
-            font-weight: 700;
-            color: #495057;
-            min-width: 200px;
-            font-size: 15px;
-        }
-        .info-value {
-            color: #212529;
-            font-size: 15px;
-            font-weight: 500;
-        }
-        .highlight-box {
-            background: linear-gradient(135deg, #fff3cd 0%, #fff9e6 100%);
-            border: 3px solid #ffc107;
-            border-radius: 12px;
-            padding: 25px;
-            margin: 30px 0;
-            box-shadow: 0 6px 20px rgba(255, 193, 7, 0.2);
-        }
-        .highlight-box strong {
-            color: #856404;
-            font-size: 18px;
-            display: flex;
-            align-items: center;
-            margin-bottom: 12px;
-        }
-        .highlight-box strong::before {
-            content: '⚖️';
-            font-size: 24px;
-            margin-right: 10px;
-        }
-        .footer {
-            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
-            color: white;
-            padding: 40px;
-            text-align: center;
-        }
-        .company-logo {
-            margin-bottom: 20px;
-            text-align: center;
-        }
-        .company-logo img {
-            max-height: 60px;
-            max-width: 200px;
-            filter: brightness(0) invert(1);
-        }
-        .company-info {
-            line-height: 2;
-            font-size: 15px;
-        }
-        .company-info strong {
-            color: #ecf0f1;
-            font-size: 18px;
-        }
-        .contact-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-            margin: 25px 0;
-        }
-        .contact-item {
-            background-color: rgba(255,255,255,0.1);
-            padding: 12px;
-            border-radius: 8px;
-            font-size: 14px;
-        }
-        .emergency-banner {
-            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
-            color: white;
-            padding: 15px;
-            border-radius: 8px;
-            margin-top: 20px;
-            font-weight: 700;
-            font-size: 16px;
-            box-shadow: 0 4px 12px rgba(231, 76, 60, 0.4);
-        }
-        .disclaimer {
-            margin-top: 25px;
-            padding-top: 20px;
-            border-top: 2px solid rgba(255,255,255,0.2);
-            font-size: 13px;
-            color: #bdc3c7;
-            line-height: 1.6;
-        }
-        @media only screen and (max-width: 600px) {
-            .email-wrapper {
-                margin: 20px 10px;
-            }
-            .content {
-                padding: 30px 20px;
-            }
-            .header {
-                padding: 40px 20px;
-            }
-            .info-row {
-                flex-direction: column;
-            }
-            .info-label {
-                margin-bottom: 8px;
-            }
-            .contact-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
+    <title>Comunicação de Início de Serviço</title>
 </head>
-<body>
-    <div class="email-wrapper">
-        <div class="header">
-            <span class="header-icon">🏛️</span>
-            <h1>Novo Elevador Registado</h1>
-            <p>Comunicação Oficial de Registo de Equipamento</p>
-        </div>
-        
-        <div class="content">
-            <p class="greeting">Exmos. Senhores da Câmara Municipal de {{municipalityName}},</p>
-            
-            <p class="intro-text">Ao abrigo da legislação portuguesa em vigor, nomeadamente o <strong>Decreto-Lei n.º 320/2002</strong> e legislação complementar, vimos por este meio comunicar formalmente o registo de um novo elevador sob responsabilidade da <strong>FestLift - Elevadores e Serviços, Lda.</strong> na área territorial sob vossa jurisdição.</p>
-            
-            <div class="info-box">
-                <h3 data-icon="🛗">Dados do Equipamento</h3>
-                <div class="info-row">
-                    <div class="info-label">Número Municipal:</div>
-                    <div class="info-value">{{municipalNumber}}</div>
-                </div>
-                <div class="info-row">
-                    <div class="info-label">Código QR:</div>
-                    <div class="info-value">{{qrCode}}</div>
-                </div>
-                <div class="info-row">
-                    <div class="info-label">Morada:</div>
-                    <div class="info-value">{{liftAddress}}</div>
-                </div>
-                <div class="info-row">
-                    <div class="info-label">Código Postal:</div>
-                    <div class="info-value">{{postalCode}}</div>
-                </div>
-                <div class="info-row">
-                    <div class="info-label">Data de Início de Serviço:</div>
-                    <div class="info-value">{{serviceStartDate}}</div>
-                </div>
-            </div>
-            
-            <div class="info-box">
-                <h3 data-icon="👤">Dados do Proprietário</h3>
-                <div class="info-row">
-                    <div class="info-label">Nome/Empresa:</div>
-                    <div class="info-value">{{clientName}}</div>
-                </div>
-                <div class="info-row">
-                    <div class="info-label">Contacto:</div>
-                    <div class="info-value">{{clientPhone}}</div>
-                </div>
-                <div class="info-row">
-                    <div class="info-label">Email:</div>
-                    <div class="info-value">{{clientEmail}}</div>
-                </div>
-            </div>
-            
-            <div class="highlight-box">
-                <strong>Enquadramento Legal</strong>
-                <p style="margin: 10px 0 0 0; color: #856404; font-size: 15px; line-height: 1.8;">
-                    Esta comunicação é realizada em conformidade com o <strong>Artigo 8.º do Decreto-Lei n.º 320/2002</strong>, de 28 de dezembro, que estabelece as regras de segurança para elevadores e seus componentes. A FestLift - Elevadores e Serviços, Lda. compromete-se a cumprir rigorosamente toda a legislação aplicável, incluindo inspeções periódicas e manutenção preventiva.
-                </p>
-            </div>
-            
-            <p style="font-size: 16px; line-height: 1.8; color: #555;">O equipamento encontra-se <strong>devidamente certificado</strong> e sob regime de manutenção periódica obrigatória, garantindo a conformidade com todos os requisitos técnicos e de segurança estabelecidos pela legislação portuguesa em vigor.</p>
-            
-            <p style="font-size: 16px; line-height: 1.8; color: #555;">Para qualquer esclarecimento adicional ou solicitação de documentação complementar, a FestLift - Elevadores e Serviços, Lda. encontra-se inteiramente ao vosso dispor através dos contactos indicados no rodapé deste email.</p>
-            
-            <p style="margin-top: 40px; font-size: 17px; font-weight: 600; color: #2c3e50;">Com os melhores cumprimentos,</p>
-            <p style="font-size: 16px; color: #667eea; font-weight: 600;">Equipa FestLift - Elevadores e Serviços, Lda.</p>
-        </div>
-        
-        <div class="footer">
-            <div class="company-logo">
-                <img src="cid:festlift-logo" alt="FestLift - Elevadores e Serviços, Lda." style="max-height: 60px; max-width: 200px; filter: brightness(0) invert(1);">
-            </div>
-            <div class="company-info">
-                <strong>FestLift - Elevadores e Serviços, Lda.</strong><br>
-                Manutenção e Assistência Técnica de Elevadores
-            </div>
-            
-            <div class="contact-grid">
-                <div class="contact-item">📍 Av. do Parque 84B<br>Rio de Mouro, Lisboa<br>2635-609</div>
-                <div class="contact-item">📧 info@festlift.pt<br>🌐 www.festlift.pt<br>🏢 NIF: 515924741</div>
-                <div class="contact-item">📞 Escritório<br>+351 214 190 863</div>
-                <div class="contact-item">📱 Assistência Técnica<br>+351 926 380 243/244</div>
-            </div>
-            
-            <div class="emergency-banner">
-                🚨 Linha de Emergência 24/7: +351 926 380 243
-            </div>
-            
-            <div class="disclaimer">
-                Esta comunicação oficial foi gerada automaticamente pelo sistema de gestão de elevadores da FestLift - Elevadores e Serviços, Lda.. Todas as informações são verificadas e certificadas pela nossa equipa técnica. Para esclarecimentos adicionais, por favor contacte-nos através dos canais indicados acima.
-            </div>
-        </div>
-    </div>
+<body style="margin:0;padding:0;background-color:#f4f4f4;font-family:Arial,Helvetica,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#f4f4f4;">
+    <tr>
+        <td align="center" style="padding:30px 15px;">
+            <table width="650" cellpadding="0" cellspacing="0" border="0" style="max-width:650px;background-color:#ffffff;border:1px solid #e0e0e0;">
+
+                <!-- HEADER -->
+                <tr>
+                    <td bgcolor="#1a3a5c" style="background-color:#1a3a5c;padding:35px 40px;text-align:center;">
+                        <img src="cid:festlift-logo" alt="FestLift" width="160" height="50" style="display:block;margin:0 auto 20px auto;border:0;" />
+                        <p style="margin:0;font-size:13px;color:#8ab4d4;letter-spacing:2px;text-transform:uppercase;font-family:Arial,Helvetica,sans-serif;">Comunicação Oficial</p>
+                        <h1 style="margin:8px 0 0 0;font-size:22px;font-weight:700;color:#ffffff;font-family:Arial,Helvetica,sans-serif;">Comunicação de Início de Serviço</h1>
+                    </td>
+                </tr>
+
+                <!-- DATE BAR -->
+                <tr>
+                    <td bgcolor="#2c5f8a" style="background-color:#2c5f8a;padding:10px 40px;text-align:right;">
+                        <p style="margin:0;font-size:13px;color:#d0e8f5;font-family:Arial,Helvetica,sans-serif;">Lisboa, {{date}}</p>
+                    </td>
+                </tr>
+
+                <!-- BODY -->
+                <tr>
+                    <td style="padding:40px;">
+
+                        <p style="margin:0 0 20px 0;font-size:15px;color:#2c3e50;font-family:Arial,Helvetica,sans-serif;">
+                            <strong>Exmos. Senhores da Câmara Municipal de {{municipalityName}},</strong>
+                        </p>
+
+                        <p style="margin:0 0 20px 0;font-size:14px;line-height:1.8;color:#555555;font-family:Arial,Helvetica,sans-serif;">
+                            Ao abrigo da legislação portuguesa em vigor, nomeadamente o <strong>Decreto-Lei n.º 320/2002</strong> e legislação complementar, vimos por este meio comunicar formalmente o registo de um novo elevador sob responsabilidade da <strong>FestLift - Elevadores e Serviços, Lda.</strong> na área territorial sob vossa jurisdição.
+                        </p>
+
+                        <!-- EQUIPMENT INFO TABLE -->
+                        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:25px;border:2px solid #1a3a5c;border-radius:4px;">
+                            <tr>
+                                <td bgcolor="#1a3a5c" style="background-color:#1a3a5c;padding:12px 20px;">
+                                    <p style="margin:0;font-size:14px;font-weight:700;color:#ffffff;font-family:Arial,Helvetica,sans-serif;">Dados do Equipamento</p>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="padding:0;">
+                                    <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                                        <tr>
+                                            <td width="45%" style="padding:11px 20px;border-bottom:1px solid #e9ecef;font-size:13px;font-weight:700;color:#495057;font-family:Arial,Helvetica,sans-serif;">Número Municipal:</td>
+                                            <td width="55%" style="padding:11px 20px;border-bottom:1px solid #e9ecef;font-size:13px;color:#212529;font-family:Arial,Helvetica,sans-serif;"><strong>{{municipalNumber}}</strong></td>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding:11px 20px;border-bottom:1px solid #e9ecef;font-size:13px;font-weight:700;color:#495057;background-color:#f8f9fa;font-family:Arial,Helvetica,sans-serif;">Morada:</td>
+                                            <td style="padding:11px 20px;border-bottom:1px solid #e9ecef;font-size:13px;color:#212529;background-color:#f8f9fa;font-family:Arial,Helvetica,sans-serif;">{{address}}</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding:11px 20px;border-bottom:1px solid #e9ecef;font-size:13px;font-weight:700;color:#495057;font-family:Arial,Helvetica,sans-serif;">Código Postal:</td>
+                                            <td style="padding:11px 20px;border-bottom:1px solid #e9ecef;font-size:13px;color:#212529;font-family:Arial,Helvetica,sans-serif;">{{postalCode}}</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding:11px 20px;border-bottom:1px solid #e9ecef;font-size:13px;font-weight:700;color:#495057;background-color:#f8f9fa;font-family:Arial,Helvetica,sans-serif;">Marca / Modelo:</td>
+                                            <td style="padding:11px 20px;border-bottom:1px solid #e9ecef;font-size:13px;color:#212529;background-color:#f8f9fa;font-family:Arial,Helvetica,sans-serif;">{{brand}} / {{model}}</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding:11px 20px;border-bottom:1px solid #e9ecef;font-size:13px;font-weight:700;color:#495057;font-family:Arial,Helvetica,sans-serif;">Ano de Instalação:</td>
+                                            <td style="padding:11px 20px;border-bottom:1px solid #e9ecef;font-size:13px;color:#212529;font-family:Arial,Helvetica,sans-serif;">{{year}}</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding:11px 20px;border-bottom:1px solid #e9ecef;font-size:13px;font-weight:700;color:#495057;background-color:#f8f9fa;font-family:Arial,Helvetica,sans-serif;">Capacidade:</td>
+                                            <td style="padding:11px 20px;border-bottom:1px solid #e9ecef;font-size:13px;color:#212529;background-color:#f8f9fa;font-family:Arial,Helvetica,sans-serif;">{{capacity}} kg</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding:11px 20px;font-size:13px;font-weight:700;color:#495057;font-family:Arial,Helvetica,sans-serif;">Data de Início de Serviço:</td>
+                                            <td style="padding:11px 20px;font-size:13px;color:#212529;font-family:Arial,Helvetica,sans-serif;"><strong>{{serviceStartDate}}</strong></td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <!-- OWNER INFO TABLE -->
+                        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:25px;border:2px solid #1a3a5c;">
+                            <tr>
+                                <td bgcolor="#1a3a5c" style="background-color:#1a3a5c;padding:12px 20px;">
+                                    <p style="margin:0;font-size:14px;font-weight:700;color:#ffffff;font-family:Arial,Helvetica,sans-serif;">Dados do Proprietário / Responsável</p>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="padding:0;">
+                                    <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                                        <tr>
+                                            <td width="45%" style="padding:11px 20px;border-bottom:1px solid #e9ecef;font-size:13px;font-weight:700;color:#495057;font-family:Arial,Helvetica,sans-serif;">Nome / Empresa:</td>
+                                            <td width="55%" style="padding:11px 20px;border-bottom:1px solid #e9ecef;font-size:13px;color:#212529;font-family:Arial,Helvetica,sans-serif;">{{clientName}}</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding:11px 20px;border-bottom:1px solid #e9ecef;font-size:13px;font-weight:700;color:#495057;background-color:#f8f9fa;font-family:Arial,Helvetica,sans-serif;">Contacto:</td>
+                                            <td style="padding:11px 20px;border-bottom:1px solid #e9ecef;font-size:13px;color:#212529;background-color:#f8f9fa;font-family:Arial,Helvetica,sans-serif;">{{clientPhone}}</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding:11px 20px;font-size:13px;font-weight:700;color:#495057;font-family:Arial,Helvetica,sans-serif;">Email:</td>
+                                            <td style="padding:11px 20px;font-size:13px;color:#212529;font-family:Arial,Helvetica,sans-serif;">{{clientEmail}}</td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <!-- LEGAL NOTE -->
+                        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:25px;border-left:4px solid #f39c12;background-color:#fffbf0;">
+                            <tr>
+                                <td style="padding:18px 20px;">
+                                    <p style="margin:0 0 8px 0;font-size:13px;font-weight:700;color:#856404;font-family:Arial,Helvetica,sans-serif;">Enquadramento Legal</p>
+                                    <p style="margin:0;font-size:13px;line-height:1.7;color:#856404;font-family:Arial,Helvetica,sans-serif;">
+                                        Esta comunicação é realizada em conformidade com o <strong>Artigo 8.º do Decreto-Lei n.º 320/2002</strong>, de 28 de dezembro. O equipamento encontra-se devidamente certificado e sob regime de manutenção periódica obrigatória.
+                                    </p>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <p style="margin:0 0 10px 0;font-size:14px;line-height:1.8;color:#555555;font-family:Arial,Helvetica,sans-serif;">
+                            Para qualquer esclarecimento adicional ou solicitação de documentação complementar, a FestLift - Elevadores e Serviços, Lda. encontra-se inteiramente ao vosso dispor através dos contactos indicados no rodapé deste email.
+                        </p>
+
+                        <p style="margin:25px 0 5px 0;font-size:15px;font-weight:700;color:#2c3e50;font-family:Arial,Helvetica,sans-serif;">Com os melhores cumprimentos,</p>
+                        <p style="margin:0;font-size:14px;color:#1a3a5c;font-weight:700;font-family:Arial,Helvetica,sans-serif;">Equipa FestLift - Elevadores e Serviços, Lda.</p>
+
+                    </td>
+                </tr>
+
+                <!-- FOOTER -->
+                <tr>
+                    <td bgcolor="#1a3a5c" style="background-color:#1a3a5c;padding:30px 40px;">
+                        <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                            <tr>
+                                <td align="center" style="padding-bottom:20px;border-bottom:1px solid #2c5f8a;">
+                                    <img src="cid:festlift-logo" alt="FestLift - Elevadores e Serviços, Lda." width="140" height="44" style="display:block;margin:0 auto;border:0;" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="padding-top:20px;">
+                                    <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                                        <tr>
+                                            <td width="50%" valign="top" style="padding:0 10px 0 0;font-size:12px;color:#8ab4d4;line-height:1.8;font-family:Arial,Helvetica,sans-serif;">
+                                                <strong style="color:#ffffff;display:block;margin-bottom:4px;">FestLift - Elevadores e Serviços, Lda.</strong>
+                                                Av. do Parque 84B<br>
+                                                Rio de Mouro, Lisboa 2635-609<br>
+                                                NIF: 515924741
+                                            </td>
+                                            <td width="50%" valign="top" style="padding:0 0 0 10px;font-size:12px;color:#8ab4d4;line-height:1.8;font-family:Arial,Helvetica,sans-serif;">
+                                                <strong style="color:#ffffff;display:block;margin-bottom:4px;">Contactos</strong>
+                                                Escritorio: +351 214 190 863<br>
+                                                Assistencia: +351 926 380 243<br>
+                                                info@festlift.pt | www.festlift.pt
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td bgcolor="#c0392b" style="background-color:#c0392b;padding:12px 20px;margin-top:20px;text-align:center;">
+                                    <p style="margin:0;font-size:13px;font-weight:700;color:#ffffff;font-family:Arial,Helvetica,sans-serif;">Linha de Emergencia 24/7: +351 926 380 243</p>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="padding-top:18px;border-top:1px solid #2c5f8a;margin-top:15px;">
+                                    <p style="margin:0;font-size:11px;color:#6a8fa8;line-height:1.6;font-family:Arial,Helvetica,sans-serif;text-align:center;">
+                                        Esta comunicacao oficial foi gerada automaticamente pelo sistema de gestao de elevadores da FestLift - Elevadores e Servicos, Lda. Todas as informacoes sao verificadas e certificadas pela nossa equipa tecnica.
+                                    </p>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+
+            </table>
+        </td>
+    </tr>
+</table>
 </body>
 </html>
