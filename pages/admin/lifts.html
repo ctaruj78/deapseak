@@ -9033,17 +9033,68 @@ Email de contacto: info@festlift.pt`;
                         }
                     }
                 } else {
-                    sel.append('<option value="">— Elevador não encontrado automaticamente —</option>');
+                    // No automatic match — show search-filtered dropdown
+                    var edAddr = (data.extractedData && data.extractedData.address) || '';
+                    var edPostal = (data.extractedData && data.extractedData.postalCode) || '';
+                    var edInst = (data.extractedData && data.extractedData.installationNumber) || '';
+
                     try {
-                        var lResp = await fetch('/api/lifts?limit=200', { headers: { 'Authorization': 'Bearer ' + token } });
+                        var lResp = await fetch('/api/lifts?limit=2000', { headers: { 'Authorization': 'Bearer ' + token } });
                         var lData = await lResp.json();
-                        var lifts = (lData && lData.data && lData.data.lifts) || lData.lifts || lData.data || [];
-                        if (!Array.isArray(lifts)) lifts = [];
-                        lifts.forEach(function(l) {
+                        var allFetched = (lData && lData.data && lData.data.lifts) || lData.lifts || lData.data || [];
+                        if (!Array.isArray(allFetched)) allFetched = [];
+
+                        // Score each lift by similarity to extracted data
+                        var postalPrefix = edPostal ? edPostal.split('-')[0] : '';
+                        var addrWords = edAddr.toLowerCase().replace(/[^a-záàãâéêíóõôúç\d\s]/g, ' ')
+                            .split(/\s+/).filter(w => w.length >= 3);
+
+                        function scoreMatch(l) {
+                            var score = 0;
+                            var lAddr = l.address ? ((l.address.street||'') + ' ' + (l.address.city||'') + ' ' + (l.address.zipCode||'')).toLowerCase() : '';
+                            var lNum = (l.municipalNumber || l.serialNumber || '').toLowerCase();
+                            if (postalPrefix && lAddr.includes(postalPrefix)) score += 40;
+                            addrWords.forEach(function(w) { if (lAddr.includes(w)) score += 5; });
+                            if (edInst && (lNum.includes(edInst.toLowerCase()) || edInst.toLowerCase().includes(lNum))) score += 30;
+                            return score;
+                        }
+
+                        var scored = allFetched.map(function(l) { return { l: l, s: scoreMatch(l) }; })
+                            .filter(function(x) { return x.s > 0; })
+                            .sort(function(a, b) { return b.s - a.s; })
+                            .slice(0, 30);
+
+                        var showList = scored.length ? scored.map(function(x) { return x.l; }) : allFetched.slice(0, 100);
+                        var isFiltered = scored.length > 0;
+
+                        sel.empty();
+                        sel.append('<option value="">— ' + (isFiltered ? 'Selecione o elevador correspondente' : 'Selecione o elevador') + ' —</option>');
+                        showList.forEach(function(l) {
                             var addr = l.address ? (l.address.street + ', ' + (l.address.city||'')) : '';
                             sel.append('<option value="' + l._id + '">' + (l.municipalNumber || l._id) + ' — ' + addr + '</option>');
                         });
+
+                        // Show filter hint
+                        var hint = isFiltered
+                            ? '<div class="small text-muted mt-1"><i class="fas fa-filter mr-1"></i>Mostrando ' + showList.length + ' elevadores próximos de <strong>' + (edPostal || edAddr.split(',')[0]) + '</strong>. <a href="#" id="pdfShowAllLifts">Ver todos</a></div>'
+                            : '<div class="small text-muted mt-1"><i class="fas fa-search mr-1"></i>Pesquise pelo endereço ou número</div>';
+                        $('#pdfLiftSelectRow').find('.pdf-lift-hint').remove();
+                        $('#pdfLiftSelectRow').append('<div class="pdf-lift-hint">' + hint + '</div>');
+
+                        // "Ver todos" link
+                        $(document).off('click.pdfShowAll').on('click.pdfShowAll', '#pdfShowAllLifts', function(e) {
+                            e.preventDefault();
+                            var curVal = sel.val();
+                            sel.empty().append('<option value="">— Selecione o elevador —</option>');
+                            allFetched.forEach(function(l) {
+                                var addr = l.address ? (l.address.street + ', ' + (l.address.city||'')) : '';
+                                sel.append('<option value="' + l._id + '">' + (l.municipalNumber || l._id) + ' — ' + addr + '</option>');
+                            });
+                            if (curVal) sel.val(curVal);
+                            $(this).parent().html('<i class="fas fa-list mr-1"></i>A mostrar todos os ' + allFetched.length + ' elevadores');
+                        });
                     } catch(_) {}
+
                     $('#pdfAutoLiftFound').hide();
                     $('#pdfAutoLiftNotFound').show();
                     $('#pdfLiftSelectRow').show();
