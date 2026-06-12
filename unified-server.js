@@ -4711,27 +4711,15 @@ app.post('/api/lifts/parse-inspection-pdf', authenticateToken, (req, res, next) 
 
         // Normalise extracted data
         const violations = parsed.violations || [];
-        const hasC1 = violations.some(v => (v.classification || v.type) === 'C1');
-        const hasC2 = violations.some(v => ['C2','C2*'].includes(v.classification || v.type));
         const parsedText = String(parsed.rawText || '');
-        const isPeriodicCertificate = /CERTIFICADO\s+DE\s+INSPEC[ÇC][AÃ]O\s+PERI[ÓO]DICA/i.test(parsedText);
-        const explicitApprovedCertificate = /Nestas\s+circunst[âa]ncias\s+[ée]\s+autorizada\s+a\s+sua\s+manuten[çc][ãa]o\s+em\s+explora[çc][ãa]o/i.test(parsedText) || /Elevador\s+Aprovad[oa]/i.test(parsedText);
-        const explicitFailedCertificate = /Reprovad[oa]|Imobiliza[çc][ãa]o/i.test(parsedText);
-        // Explicit "Reprovado (com cláusulas C2...)" even when violations have no C2 tag
-        const explicitReprovadoC2 = /Reprovad[oa][\s\S]{0,120}C2(?!\*)/i.test(parsedText) ||
-                                    /com\s+cláusulas?\s+C2(?!\*)/i.test(parsedText);
 
+        // Trust service classification — applyUnifiedPostProcessing in pdf-parser-unified.js
+        // is the single authoritative source for C1/C2/C3/C2* logic.
+        const certType = parsed.certType || 'reinspection';
         let status = 'passed';
-        if (hasC1) status = 'failed';
-        else if (hasC2 || explicitReprovadoC2) status = 'conditional';
-
-        // Guard rail for periodic certificates: explicit approval must win over noisy inferred C2.
-        if (isPeriodicCertificate && explicitApprovedCertificate && !explicitFailedCertificate) {
-            status = 'passed';
-        }
-
-        // Map certType from status
-        const certType = status === 'passed' ? 'cert_2_years' : (hasC1 ? 'immobilization' : 'reinspection');
+        if (certType === 'immobilization') status = 'failed';
+        else if (certType === 'reinspection') status = 'conditional';
+        // cert_2_years → status stays 'passed'
 
         // Extract dates from metadata
         const meta = parsed.metadata || {};
