@@ -5722,6 +5722,9 @@ app.get('/api/lifts/:id/orcamentos', authenticateToken, async (req, res) => {
 app.get('/api/lifts/:id/documents', authenticateToken, async (req, res) => {
     try {
         const { ObjectId } = require('mongodb');
+        if (!ObjectId.isValid(req.params.id)) {
+            return res.status(400).json({ success: false, message: 'ID de elevador inválido' });
+        }
         const liftId = new ObjectId(req.params.id);
         
         console.log('📄 Запит документів для ліфта:', liftId);

@@ -1733,20 +1733,6 @@
                                     </div>
                                 </div>
 
-                                <div class="sc">
-                                    <div class="sc-h green"><i class="fas fa-clipboard-list"></i> Relatórios de inspecção</div>
-                                    <div class="sc-b">
-                                        <div id="adminStep4InspectionInfo" class="mb-2">
-                                            <p class="text-muted small mb-0"><i class="fas fa-info-circle mr-1"></i>Guarde o elevador para ver os relatórios de inspecção</p>
-                                        </div>
-                                        <button type="button" class="btn btn-outline-info btn-sm mt-2" id="adminAddInspectionReportBtn">
-                                            <i class="fas fa-file-upload mr-1"></i> Adicionar relatório de inspecção
-                                        </button>
-                                    <button type="button" class="btn btn-outline-info btn-sm ml-1" data-toggle="modal" data-target="#pdfParserModal" title="Descarregar relatório PDF inspeções">
-                                        <i class="fas fa-file-pdf mr-1"></i> Relatório PDF
-                                    </button>
-                                    </div>
-                                </div>
 
                             </div><!-- /eLiftPane-svc -->
 
@@ -3645,10 +3631,8 @@ Equipa FestLift
         }
     }
 
-    // ── Relatórios de inspecção у вкладці Serviço (крок 4) - administrador ─────────────────
-    window._adminStep4LastReportDate = null;
-
     async function loadAdminStep4InspectionInfo(liftId) {
+        // Removed — inspection reports are now in the Details modal only
         const container = document.getElementById('adminStep4InspectionInfo');
         if (!container) return;
         if (!liftId) {
@@ -9472,22 +9456,6 @@ Email de contacto: info@festlift.pt`;
             $('#pdfParserReportType').val('annual');
             $('#pdfParserNotes').val('');
             $('#pdfParserLiftSelect').empty();
-            // Pre-select lift if opened from details modal or edit modal
-            (function() {
-                var _preId = (window.enhancedLiftModal && window.enhancedLiftModal.currentLiftId) || null;
-                if (!_preId) return;
-                // Find the lift in allLifts and add as the pre-selected option
-                var _preLift = (window.allLifts || []).find(function(l) { return (l._id || l.id) === _preId; });
-                if (_preLift) {
-                    var _addr = _preLift.address ? ((_preLift.address.street || '') + ', ' + (_preLift.address.city || '')) : '';
-                    var _num = _preLift.municipalNumber || _preLift._id;
-                    $('#pdfParserLiftSelect').append('<option value="' + _preId + '" selected>' + _num + (_addr ? ' — ' + _addr : '') + '</option>');
-                    $('#pdfAutoLiftName').text(_num + (_addr ? ' — ' + _addr : ''));
-                    $('#pdfAutoLiftFound').show();
-                    $('#pdfAutoLiftNotFound').hide();
-                    $('#pdfLiftSelectRow').hide();
-                }
-            })();
             $('#pdfParserSummaryView').show();
             $('#pdfParserEditForm').hide();
             $('#pdfParserToggleEdit').html('<i class="fas fa-pen mr-1"></i> Editar');
@@ -9495,9 +9463,23 @@ Email de contacto: info@festlift.pt`;
             $('#pdfParserViolationsList').empty();
             $('#pdfParserViolationsCount').text('0');
             $('#pdfParserViolationsBlock').hide();
-            $('#pdfAutoLiftFound').hide();
-            $('#pdfAutoLiftNotFound').hide();
-            $('#pdfLiftSelectRow').show();
+            // Pre-select lift if opened from details modal (must run AFTER resets above)
+            (function() {
+                var _preId = (window.enhancedLiftModal && window.enhancedLiftModal.currentLiftId) || null;
+                if (!_preId) return;
+                // Try window.allLifts first, fall back to the lift cached by showLiftDetails()
+                var _preLift = (window.allLifts || []).find(function(l) { return (l._id || l.id) === _preId; })
+                    || (window._currentInspectionLift && (window._currentInspectionLift._id || window._currentInspectionLift.id) === _preId ? window._currentInspectionLift : null);
+                if (_preLift) {
+                    var _addr = _preLift.address ? ((_preLift.address.street || '') + ', ' + (_preLift.address.city || '')) : '';
+                    var _num = _preLift.municipalNumber || _preLift._id;
+                    $('#pdfParserLiftSelect').empty().append('<option value="' + _preId + '" selected>' + _num + (_addr ? ' — ' + _addr : '') + '</option>');
+                    $('#pdfAutoLiftName').text(_num + (_addr ? ' — ' + _addr : ''));
+                    $('#pdfAutoLiftFound').show();
+                    $('#pdfAutoLiftNotFound').hide();
+                    $('#pdfLiftSelectRow').hide();
+                }
+            })();
             $('#pdfParserAmbiguousWarn').remove();
 
             _pdfParsed = null;
