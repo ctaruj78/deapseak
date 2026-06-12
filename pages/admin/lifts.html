@@ -1682,29 +1682,9 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="row">
-                                            <div class="col-md-6">
-                                                <div class="form-group">
-                                                    <label>
-                                                        Data da licença / certificado (OI)
-                                                        <span id="licenseDateBadge" class="badge badge-success ml-1" style="display:none;font-size:0.7rem;">auto</span>
-                                                    </label>
-                                                    <input type="date" name="licenseDate" class="form-control" onchange="(function(v){if(!v)return;var e=document.querySelector('[name=licenseExpiry]');if(e&&!e.value){var d=new Date(v);d.setFullYear(d.getFullYear()+2);e.value=d.toISOString().split('T')[0];document.getElementById('licenseExpiryBadge').style.display='';}})(this.value)">
-                                                    <small class="text-muted">Preenchido via importação do relatório OI</small>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <div class="form-group">
-                                                    <label>
-                                                        Validade da licença
-                                                        <span id="licenseExpiryBadge" class="badge badge-success ml-1" style="display:none;font-size:0.7rem;">auto</span>
-                                                    </label>
-                                                    <input type="date" name="licenseExpiry" class="form-control">
-                                                    <small class="text-muted">Calculado a partir do relatório de inspeção periódica</small>
-                                                </div>
-                                            </div>
-                                        </div>
-
+                                        <!-- Hidden: preserve licenseDate/licenseExpiry set by PDF parser -->
+                                        <input type="hidden" name="licenseDate">
+                                        <input type="hidden" name="licenseExpiry">
                                         <!-- Últimos relatórios de manutenção (carregados dinamicamente) -->
                                         <div id="lastReportPanel" style="display:none;margin-top:8px;">
                                             <div class="sc" style="margin-bottom:0;border:1px solid #c8e6c9;border-radius:8px;">
