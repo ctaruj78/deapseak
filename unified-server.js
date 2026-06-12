@@ -4935,28 +4935,31 @@ app.post('/api/lifts/:id/inspection-report', authenticateToken, upload.single('p
             return d.toISOString();
         };
 
+        const _manualInspUpdate = {
+            $push: { inspectionHistory: reportData },
+            $set: {
+                lastInspectionDate: reportData.date,
+                nextInspectionDate: (req.body.nextInspectionDate && req.body.nextInspectionDate !== 'undefined')
+                    ? (() => { const d = new Date(req.body.nextInspectionDate); return isNaN(d) ? calcNextInspection() : d.toISOString(); })()
+                    : calcNextInspection(),
+                inspectionStatus: resolvedStatus,
+                ...(reportData.status === 'passed' ? {
+                    licenseDate: reportData.date,
+                    licenseExpiry: (() => {
+                        const d = new Date(reportData.date);
+                        d.setFullYear(d.getFullYear() + 2);
+                        return d.toISOString();
+                    })()
+                } : {}),
+                updatedAt: new Date().toISOString()
+            }
+        };
+        if (reportData.status !== 'passed') {
+            _manualInspUpdate.$unset = { licenseDate: '', licenseExpiry: '' };
+        }
         const result = await db.collection('lifts').updateOne(
             { _id: liftId },
-            { 
-                $push: { inspectionHistory: reportData },
-                $set: { 
-                    lastInspectionDate: reportData.date,
-                    nextInspectionDate: (req.body.nextInspectionDate && req.body.nextInspectionDate !== 'undefined')
-                        ? (() => { const d = new Date(req.body.nextInspectionDate); return isNaN(d) ? calcNextInspection() : d.toISOString(); })()
-                        : calcNextInspection(),
-                    inspectionStatus: resolvedStatus,
-                    // ✅ Якщо інспекція пройдена → сертифікат діє 2 роки
-                    ...(reportData.status === 'passed' ? {
-                        licenseDate: reportData.date,
-                        licenseExpiry: (() => {
-                            const d = new Date(reportData.date);
-                            d.setFullYear(d.getFullYear() + 2);
-                            return d.toISOString();
-                        })()
-                    } : {}),
-                    updatedAt: new Date().toISOString()
-                }
-            }
+            _manualInspUpdate
         );
         
         if (result.matchedCount === 0) {
@@ -5069,13 +5072,14 @@ app.post('/api/lifts/:id/confirm-inspection-from-pdf', authenticateToken, async 
             setFields.licenseExpiry = expiry.toISOString();
         }
 
-        const result = await db.collection('lifts').updateOne(
-            { _id: liftId },
-            {
-                $push: { inspectionHistory: reportData },
-                $set: setFields
-            }
-        );
+        const _pdfInspUpdate = {
+            $push: { inspectionHistory: reportData },
+            $set: setFields
+        };
+        if (resolvedStatus !== 'passed') {
+            _pdfInspUpdate.$unset = { licenseDate: '', licenseExpiry: '' };
+        }
+        const result = await db.collection('lifts').updateOne({ _id: liftId }, _pdfInspUpdate);
 
         if (result.matchedCount === 0) {
             return res.status(404).json({ success: false, message: 'Elevador não encontrado' });

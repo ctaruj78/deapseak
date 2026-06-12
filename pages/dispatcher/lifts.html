@@ -6966,10 +6966,16 @@ Equipa FestLift</textarea>
                 if (result.licenseDate) {
                     $('[name="licenseDate"]').val(result.licenseDate.split('T')[0]);
                     $('#dispLicenseDateBadge').show();
+                } else {
+                    $('[name="licenseDate"]').val('');
+                    $('#dispLicenseDateBadge').hide();
                 }
                 if (result.licenseExpiry) {
                     $('[name="licenseExpiry"]').val(result.licenseExpiry.split('T')[0]);
                     $('#dispLicenseExpiryBadge').show();
+                } else {
+                    $('[name="licenseExpiry"]').val('');
+                    $('#dispLicenseExpiryBadge').hide();
                 }
             } else {
                 alert('Erro: ' + (result.message || result.error || 'Não foi possível adicionar o relatório'));

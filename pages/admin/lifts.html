@@ -6892,10 +6892,16 @@ Email de contacto: info@festlift.pt`;
                 if (result.licenseDate) {
                     $('[name="licenseDate"]').val(result.licenseDate.split('T')[0]);
                     $('#licenseDateBadge').show();
+                } else {
+                    $('[name="licenseDate"]').val('');
+                    $('#licenseDateBadge').hide();
                 }
                 if (result.licenseExpiry) {
                     $('[name="licenseExpiry"]').val(result.licenseExpiry.split('T')[0]);
                     $('#licenseExpiryBadge').show();
+                } else {
+                    $('[name="licenseExpiry"]').val('');
+                    $('#licenseExpiryBadge').hide();
                 }
             } else {
                 alert('Erro: ' + (result.message || result.error || 'Não foi possível adicionar relatório'));
