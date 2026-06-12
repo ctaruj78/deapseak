@@ -5015,6 +5015,28 @@ app.post('/api/lifts/:id/confirm-inspection-from-pdf', authenticateToken, async 
             ? new Date(lastInspectionDate).toISOString()
             : new Date().toISOString();
 
+        // Duplicate check: same inspection date (±1 day) + same inspector or company
+        const existingLift = await db.collection('lifts').findOne(
+            { _id: liftId },
+            { projection: { inspectionHistory: 1 } }
+        );
+        if (existingLift?.inspectionHistory?.length) {
+            const incomingDay = inspectionDateISO.slice(0, 10);
+            const incomingInspector = (inspector || '').toLowerCase().trim();
+            const duplicate = existingLift.inspectionHistory.find(r => {
+                const rDay = (r.inspectionDate || r.date || '').slice(0, 10);
+                const rInspector = (r.inspector || '').toLowerCase().trim();
+                return rDay === incomingDay && (!incomingInspector || !rInspector || rInspector === incomingInspector);
+            });
+            if (duplicate) {
+                return res.status(409).json({
+                    success: false,
+                    duplicate: true,
+                    message: `Já existe um relatório para este elevador com data ${incomingDay}. Relatório duplicado não foi guardado.`
+                });
+            }
+        }
+
         // Build next inspection date
         // C1/C2 (failed/conditional) → +30 days (Decreto-Lei nº 320/2002)
         // C3 → +90 days; Passed clean → +2 years

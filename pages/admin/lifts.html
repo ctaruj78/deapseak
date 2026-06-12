@@ -9341,7 +9341,15 @@ Email de contacto: info@festlift.pt`;
                 clearTimeout(timeoutId);
                 var result = await resp.json();
 
-                if (!result.success) throw new Error(result.message || 'Erro ao guardar');
+                if (!result.success) {
+                    if (result.duplicate) {
+                        if (typeof toastr !== 'undefined') toastr.warning('⚠️ ' + result.message);
+                        else alert(result.message);
+                        $('#pdfParserModal').modal('hide');
+                        return;
+                    }
+                    throw new Error(result.message || 'Erro ao guardar');
+                }
 
                 $('#pdfParserModal').modal('hide');
 
