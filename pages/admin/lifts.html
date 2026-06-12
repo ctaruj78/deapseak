@@ -1689,7 +1689,7 @@
                                                         Data da licença / certificado (OI)
                                                         <span id="licenseDateBadge" class="badge badge-success ml-1" style="display:none;font-size:0.7rem;">auto</span>
                                                     </label>
-                                                    <input type="date" name="licenseDate" class="form-control">
+                                                    <input type="date" name="licenseDate" class="form-control" onchange="(function(v){if(!v)return;var e=document.querySelector('[name=licenseExpiry]');if(e&&!e.value){var d=new Date(v);d.setFullYear(d.getFullYear()+2);e.value=d.toISOString().split('T')[0];document.getElementById('licenseExpiryBadge').style.display='';}})(this.value)">
                                                     <small class="text-muted">Preenchido via importação do relatório OI</small>
                                                 </div>
                                             </div>
@@ -2268,9 +2268,16 @@
                         <div class="col-12">
                             <div class="d-flex justify-content-between align-items-center mb-2">
                                 <h6>Relatórios de inspecção</h6>
-                                <button type="button" class="btn btn-sm btn-primary" onclick="showAddReportModal()">
-                                    <i class="fas fa-plus"></i> Adicionar relatório
-                                </button>
+                                <div class="btn-group btn-group-sm">
+                                    <button type="button" class="btn btn-primary" onclick="showAddReportModal()">
+                                        <i class="fas fa-plus"></i> Adicionar
+                                    </button>
+                                    <button type="button" class="btn btn-outline-secondary" id="detailsPdfParserBtn"
+                                            data-toggle="modal" data-target="#pdfParserModal"
+                                            title="Importar relatório PDF">
+                                        <i class="fas fa-file-pdf"></i> PDF
+                                    </button>
+                                </div>
                             </div>
                             
                             <!-- Filtros -->
@@ -5395,6 +5402,15 @@ Email de contacto: info@festlift.pt`;
             if (modal) {
                 // Deберігаexisteмо _id para API викликів
                 modal.dataset.liftId = lift._id || lift.id || liftId;
+                // Wire PDF parser + inspection functions to this lift
+                window.enhancedLiftModal = window.enhancedLiftModal || {};
+                window.enhancedLiftModal.currentLiftId = lift._id || lift.id || liftId;
+                window._currentInspectionLiftId = lift._id || lift.id || liftId;
+                window._currentInspectionLift = lift;
+                window.currentLiftId = lift._id || lift.id || liftId;
+                // Wire "Adicionar relatório" button lift id
+                const _rLiftId = lift._id || lift.id || liftId;
+                document.getElementById('report-lift-id') && (document.getElementById('report-lift-id').value = _rLiftId);
                 
                 // Informação principal
                 $('#detail-municipal-number').text(lift.municipalNumber || 'Não especificado');
@@ -9412,11 +9428,12 @@ Email de contacto: info@festlift.pt`;
                 if (window._currentEditingLift) window._currentEditingLift.inspectionHistory = null;
                 if (typeof loadStep4InspectionInfo === 'function') loadStep4InspectionInfo(liftId);
                 if (typeof loadAdminStep4InspectionInfo === 'function') loadAdminStep4InspectionInfo(liftId);
-                // Refresh Details modal if it's open for the same lift
+                // Always refresh the inspection reports list (details modal)
                 if (typeof loadInspectionReports === 'function') loadInspectionReports(liftId);
-                var _detailsOpenLiftId = document.getElementById('liftDetailsModal') && document.getElementById('liftDetailsModal').dataset.liftId;
-                if (_detailsOpenLiftId === liftId && $('#liftDetailsModal').hasClass('show') && typeof showLiftDetails === 'function') {
-                    showLiftDetails(liftId);
+                // If details modal is open for this lift, fully re-populate it
+                var _detailsLiftId = document.getElementById('liftDetailsModal') && document.getElementById('liftDetailsModal').dataset.liftId;
+                if (_detailsLiftId === liftId && typeof showLiftDetails === 'function') {
+                    setTimeout(() => showLiftDetails(liftId), 400);
                 }
 
                 _pdfParsed = null;
@@ -9455,6 +9472,22 @@ Email de contacto: info@festlift.pt`;
             $('#pdfParserReportType').val('annual');
             $('#pdfParserNotes').val('');
             $('#pdfParserLiftSelect').empty();
+            // Pre-select lift if opened from details modal or edit modal
+            (function() {
+                var _preId = (window.enhancedLiftModal && window.enhancedLiftModal.currentLiftId) || null;
+                if (!_preId) return;
+                // Find the lift in allLifts and add as the pre-selected option
+                var _preLift = (window.allLifts || []).find(function(l) { return (l._id || l.id) === _preId; });
+                if (_preLift) {
+                    var _addr = _preLift.address ? ((_preLift.address.street || '') + ', ' + (_preLift.address.city || '')) : '';
+                    var _num = _preLift.municipalNumber || _preLift._id;
+                    $('#pdfParserLiftSelect').append('<option value="' + _preId + '" selected>' + _num + (_addr ? ' — ' + _addr : '') + '</option>');
+                    $('#pdfAutoLiftName').text(_num + (_addr ? ' — ' + _addr : ''));
+                    $('#pdfAutoLiftFound').show();
+                    $('#pdfAutoLiftNotFound').hide();
+                    $('#pdfLiftSelectRow').hide();
+                }
+            })();
             $('#pdfParserSummaryView').show();
             $('#pdfParserEditForm').hide();
             $('#pdfParserToggleEdit').html('<i class="fas fa-pen mr-1"></i> Editar');
