@@ -848,15 +848,7 @@
             await loadRecentActivity(token);
         });
 
-        // Logout function
-        function logout() {
-            if (confirm('Tem a certeza que quer sair?')) {
-                localStorage.removeItem('lm_session');
-                localStorage.removeItem('liftmanager_jwt');
-                localStorage.removeItem('token');
-                window.location.replace('/pages/auth/login.html');
-            }
-        }
+        // logout() is handled globally by auth.js (AuthManager.logout clears all 12+ auth keys)
     </script>
 
     <!-- 🤖 AI Agent Widget -->

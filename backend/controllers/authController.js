@@ -98,8 +98,12 @@ exports.login = async (req, res, next) => {
     try {
         // Підтримуємо як 'login' (старий формат), так і 'email' (новий формат)
         const { login, email, password } = req.body;
-        const loginValue = login || email; // Використовуємо login ou email
+        const loginValue = login || email;
 
+        // Захист від NoSQL injection — поля мають бути рядками
+        if (typeof loginValue !== 'string' || typeof password !== 'string') {
+            throw new AppError('Por favor, forneça email/username e palavra-passe', 400);
+        }
 
         if (!loginValue || !password) {
             throw new AppError('Por favor, forneça email/username e palavra-passe', 400);

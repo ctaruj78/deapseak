@@ -214,100 +214,51 @@
             window.__loginFormInitialized = true;
             console.log('🔧 Ініціалізація форми loginу...');
             
-            // Автоpreenchimento desde URL параметрів (para rapidamenteго тестування)
+            // Автозаповнення email з URL (тільки email, пароль з URL — небезпечно)
             const urlParams = new URLSearchParams(window.location.search);
             const emailFromUrl = urlParams.get('email');
-            const passwordFromUrl = urlParams.get('password');
-            const autoLoginRequested = emailFromUrl && passwordFromUrl;
-            
-            // Se pedidoано автоlogin - очищаємо auth-дані БЕЗ редіректу,
-            // щоб не було "blink + reset" перед першим submit.
-            if (autoLoginRequested) {
-                console.log('🔄 Автоlogin pedidoано - оouщуexisteмо сeрі dados (silent)');
-                const authKeys = [
-                    'liftmanager_jwt', 'liftmanager_user', 'liftmanager_refresh',
-                    'userData', 'lm_session', 'lm_user', 'token', 'authToken',
-                    'lm_token', 'deapseak_token', 'user', 'currentUser'
-                ];
-                authKeys.forEach((key) => {
-                    try {
-                        localStorage.removeItem(key);
-                        sessionStorage.removeItem(key);
-                    } catch (e) {}
-                });
-                document.cookie = 'auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
-            }
-            
+            const autoLoginRequested = false; // URL auto-login вимкнено з міркувань безпеки
+
             if (emailFromUrl) {
                 document.getElementById('email').value = decodeURIComponent(emailFromUrl);
-                console.log('📧 Email автозаповнено desde URL');
-            }
-            if (passwordFromUrl) {
-                document.getElementById('password').value = decodeURIComponent(passwordFromUrl);
-                console.log('🔑 Password автозаповнено desde URL');
             }
             
-            // Перевіряexisteмо ou utilizador já увійшов através de AuthManager
-            // Додаexisteмо захист від циклу редиректів
+            // Якщо юзер вже авторизований — перенаправляємо одразу (без мигання форми)
+            if (urlParams.get('logout') === 'true') {
+                if (typeof AuthManager !== 'undefined') AuthManager.logout();
+                return;
+            }
+
             const redirecting = sessionStorage.getItem('redirecting');
             if (redirecting) {
-                console.log('⚠️ Deапобігання циклу редиректів - оouщуexisteмо session');
                 sessionStorage.removeItem('redirecting');
-                // Оouщуexisteмо todos dados автентифікації
+                // Захист від циклу: очищаємо токени при поверненні на логін
                 if (typeof AuthManager !== 'undefined') {
                     localStorage.removeItem(AuthManager.TOKEN_KEY);
                     localStorage.removeItem(AuthManager.USER_KEY);
                 }
-            } else if (!autoLoginRequested && typeof AuthManager !== 'undefined' && AuthManager.isAuthenticated()) {
+            } else if (typeof AuthManager !== 'undefined' && AuthManager.isAuthenticated()) {
                 const user = AuthManager.getCurrentUser();
                 if (user && user.role) {
-                    // Перевіряexisteмо ou utilizador хоче sair (se в URL existe параметр logout)
-                    const urlParams = new URLSearchParams(window.location.search);
-                    if (urlParams.get('logout') === 'true') {
-                        console.log('🚪 Utilizador хоче sair, оouщуexisteмо dados...');
-                        AuthManager.logout();
-                        return;
-                    }
-                    
-                    console.log('✅ Utilizador já autorizado:', user.username, '(' + user.role + ')');
-                    
-                    // Atéказуexisteмо mensagem desde можливістю sair
-                    const loginContainer = document.querySelector('.login-container');
-                    if (loginContainer) {
-                        loginContainer.innerHTML = `
-                            <div style="text-align: center; padding: 40px;">
-                                <i class="fas fa-user-check" style="font-size: 64px; color: #28a745; margin-bottom: 20px;"></i>
-                                <h3>Já tem sessão iniciada</h3>
-                                <p>Utilizador: <strong>${user.username}</strong></p>
-                                <p>Função: <strong>${getRoleName(user.role)}</strong></p>
-                                <div style="margin-top: 30px;">
-                                    <button onclick="window.redirectUserByRole('${user.role}')" class="btn btn-primary btn-lg" style="margin: 5px;">
-                                        <i class="fas fa-arrow-right"></i> Continuar para o painel
-                                    </button>
-                                    <button onclick="AuthManager.logout(); location.reload();" class="btn btn-outline-secondary btn-lg" style="margin: 5px;">
-                                        <i class="fas fa-sign-out-alt"></i> Sair e escolher outra função
-                                    </button>
-                                </div>
-                            </div>
-                        `;
-                    }
-                    
-                    return; // Не робимо автоматичний редирект
+                    // Авторизований — ховаємо форму і перенаправляємо (без мигання)
+                    const _box = document.querySelector('.login-box');
+                    if (_box) _box.style.visibility = 'hidden';
+                    const roleRoutes = {
+                        admin: '/pages/admin/admin-dashboard.html',
+                        dispatcher: '/pages/dispatcher/dashboard.html',
+                        technician: '/pages/tech/dashboard.html',
+                        tech: '/pages/tech/dashboard.html',
+                        client: '/pages/client/dashboard.html'
+                    };
+                    const dest = roleRoutes[user.role] || '/pages/admin/admin-dashboard.html';
+                    window.location.replace(dest);
+                    return;
                 }
             }
             
-            // Оouщуexisteмо сeрі dados se existe
+            // Очищаємо застарілі ключі сесії
             localStorage.removeItem('lm_session');
             localStorage.removeItem('lm_user');
-            
-            // Автоматичний submit se existe parâmetros в URL
-            if (autoLoginRequested) {
-                console.log('🚀 Автоматичний entrada através de 500ms...');
-                setTimeout(() => {
-                    console.log('📤 Відправка форми loginу...');
-                    loginForm.requestSubmit();
-                }, 500);
-            }
             
             // Função перенаправлення за ролями (ГЛОБАЛЬНА)
             window.redirectUserByRole = function(role) {
@@ -504,29 +455,27 @@
                         console.log('✅ Token guardado в localStorage + sessionStorage');
                         console.log('✅ userData guardado:', user.role, user.email);
                         
-                        showMessage('Entrada com sucesso! A redirecionar...', 'success');
-                        
-                        // ⚠️ НЕ розблоковуexisteмо botão - utilizador перенаправляexisteться
-                        // Це запобігаexiste повторному кліку під hora перенаправлення
-                        
-                        // Перевіряexisteмо ou existe збережене перенаправлення
+                        // Перевіряємо збережене перенаправлення
                         const redirectUrl = sessionStorage.getItem('redirect_after_login');
-                        
-                        // 🔐 Se обліковий registo tem mustChangePassword — показуexisteмо модал
+
+                        // 🔐 Якщо потрібно змінити пароль — показуємо модал
                         if (user.mustChangePassword) {
-                            // Deберігаexisteмо, де após de alteração перейти
-                            window.__mustChangeRedirectUrl  = redirectUrl;
-                            window.__mustChangeUserRole     = user.role;
+                            window.__mustChangeRedirectUrl = redirectUrl;
+                            window.__mustChangeUserRole    = user.role;
                             const modal = document.getElementById('mustChangePasswordModal');
                             if (modal) {
                                 modal.style.display = 'flex';
                                 document.getElementById('mcpEmail').value = user.email;
-                                // Автозаповнюexisteмо atual palavra-passe — юзер agora mesmo його ввів
                                 document.getElementById('mcpCurrent').value = document.getElementById('password').value;
                                 showMessage('Bem-vindo! Por favor altere a sua palavra-passe temporária antes de começar.', 'warning');
                             }
                         } else {
-                            // Normal entrada — перенаправляexisteмо através de 500мс
+                            // Плавно ховаємо форму і одразу переходимо (без 500мс затримки)
+                            const loginBox = document.querySelector('.login-box');
+                            if (loginBox) {
+                                loginBox.style.transition = 'opacity 0.2s ease';
+                                loginBox.style.opacity = '0';
+                            }
                             setTimeout(() => {
                                 if (redirectUrl) {
                                     sessionStorage.removeItem('redirect_after_login');
@@ -534,7 +483,7 @@
                                 } else {
                                     redirectUserByRole(user.role);
                                 }
-                            }, 500);
+                            }, 150);
                         }
                         
                     } else {

@@ -37,7 +37,8 @@ class AuthManager {
         
         // cookie: 7 днів звичайно, 365 днів якщо remember me
         const cookieAge = rememberMe ? 31536000 : 604800;
-        document.cookie = `auth_token=${token}; path=/; max-age=${cookieAge}`;
+        const secureFlag = window.location.protocol === 'https:' ? '; Secure' : '';
+        document.cookie = `auth_token=${token}; path=/; max-age=${cookieAge}; SameSite=Strict${secureFlag}`;
         
         console.log('✅ Utilizador увійшов в систему:', user);
         console.log('✅ userData збережено для перевірки доступу');
@@ -67,7 +68,8 @@ class AuthManager {
                 if (data.data.refreshToken) {
                     localStorage.setItem(this.REFRESH_KEY, data.data.refreshToken);
                 }
-                document.cookie = `auth_token=${data.data.token}; path=/; max-age=604800`;
+                const _secureFlag = window.location.protocol === 'https:' ? '; Secure' : '';
+                document.cookie = `auth_token=${data.data.token}; path=/; max-age=604800; SameSite=Strict${_secureFlag}`;
                 console.log('✅ Access token автоматично оновлено');
                 return true;
             }
