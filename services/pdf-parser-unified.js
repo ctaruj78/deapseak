@@ -351,8 +351,14 @@ function applyUnifiedPostProcessing(result) {
     let certType;
 
     // Hard text evidence: "Reprovado (com cláusulas C2...)" or "com cláusulas C2" without C2*
-    const explicitReprovadoC2 = /Reprovad[oa][\s\S]{0,100}C2(?!\*)/i.test(rawText) ||
-                                /com\s+cláusulas?\s+C2(?!\*)/i.test(rawText);
+    // IMPORTANT: only check the RESULTADO block, NOT the OBRIGAÇÕES DO PROPRIETÁRIO legend,
+    // which contains "Elevador Reprovado\nSe foram detetadas cláusulas tipo C2..." as boilerplate.
+    const _resultIdx2 = rawText.search(/RESULTADO\s+DA\s+INSPE[CÇ]/i);
+    const _obrigIdx   = rawText.search(/OBRIGA[ÇC][ÕO]ES\s+DO\s+PROPRIET/i);
+    const _scopeEnd   = _obrigIdx > 0 ? _obrigIdx : rawText.length;
+    const _resultScope = _resultIdx2 >= 0 ? rawText.slice(_resultIdx2, _scopeEnd) : rawText.slice(0, _scopeEnd);
+    const explicitReprovadoC2 = /Reprovad[oa][\s\S]{0,100}C2(?!\*)/i.test(_resultScope) ||
+                                /com\s+cláusulas?\s+C2(?!\*)/i.test(_resultScope);
 
     if (hasC1) {
         passed = false;
