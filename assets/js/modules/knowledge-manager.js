@@ -1,10 +1,10 @@
-// knowledge-manager.js - МЕНЕДЖЕР БАЗИ ЗНАНЬ ДЛЯ ТЕХНІКА
+// knowledge-manager.js — Gestor da Base de Conhecimento (técnico)
 class KnowledgeManager {
     constructor() {
         this.articles = [];
         this.filteredArticles = [];
         this.currentFilter = 'all';
-        this.bookmarkedArticles = JSON.parse(localStorage.getItem('bookmarkedArticles')) || [];
+        this.bookmarkedArticles = JSON.parse(localStorage.getItem('kb_bookmarks')) || [];
         this.init();
     }
 
@@ -18,707 +18,284 @@ class KnowledgeManager {
         this.loadUserInfo();
     }
 
+    getToken() {
+        return (window.AuthManager && AuthManager.getToken && AuthManager.getToken())
+            || localStorage.getItem('liftmanager_jwt')
+            || localStorage.getItem('authToken')
+            || '';
+    }
+
     async loadArticles() {
         try {
-            // Спроба отримати дані з API
-            const token = (window.AuthManager && AuthManager.getToken && AuthManager.getToken())
-                || localStorage.getItem('liftmanager_jwt')
-                || localStorage.getItem('authToken');
-            const response = await fetch('/api/knowledge-base', {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
+            const res = await fetch('/api/knowledge-base', {
+                headers: { 'Authorization': `Bearer ${this.getToken()}` }
             });
-            
-            if (response.ok) {
-                this.articles = await response.json();
-                localStorage.setItem('knowledgeArticles', JSON.stringify(this.articles));
-            } else {
-                throw new Error('API недоступне');
-            }
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const json = await res.json();
+            this.articles = Array.isArray(json) ? json : (json.data || []);
+            localStorage.setItem('kb_articles_cache', JSON.stringify(this.articles));
         } catch (error) {
-            console.warn('Використання локальних даних:', error);
-            this.articles = JSON.parse(localStorage.getItem('knowledgeArticles')) || [];
+            console.warn('KB: usando cache local:', error.message);
+            this.articles = JSON.parse(localStorage.getItem('kb_articles_cache')) || [];
         }
-
         this.filteredArticles = [...this.articles];
+        this.renderArticles(this.filteredArticles);
     }
 
-    createSampleArticles() {
-        return [
-            {
-                id: 'KB-001',
-                title: 'Усунення затримки дверей ліфта',
-                category: 'repair',
-                difficulty: 'intermediate',
-                featured: true,
-                views: 1245,
-                rating: 4.8,
-                createdDate: '2024-05-15',
-                updatedDate: '2024-06-10',
-                author: 'Старший технік Іваненко',
-                tags: ['двері', 'регулювання', 'безпека', 'Otis'],
-                content: `
-                    <h2>Усунення затримки дверей ліфта</h2>
-                    
-                    <div class="warning-box">
-                        <strong><i class="fas fa-exclamation-triangle"></i> Увага!</strong>
-                        Перед початком робіт обов'язково відключіть живлення ліфта та встановіть знаки безпеки.
-                    </div>
+    // ─── Rendering ──────────────────────────────────────────────────────────
 
-                    <h3>Необхідні інструменти:</h3>
-                    <ul>
-                        <li>Набір гайкових ключів</li>
-                        <li>Регулювальний ключ</li>
-                        <li>Вимірювальна стрічка</li>
-                        <li>Індикатор напруги</li>
-                        <li>Захисні рукавиці</li>
-                    </ul>
-
-                    <h3>Кроки виконання:</h3>
-
-                    <div class="step">
-                        <span class="step-number">1</span>
-                        <strong>Перевірка датчиків безпеки</strong>
-                        <p>Перевірте роботу фотоелементів та механічних датчиків безпеки.</p>
-                    </div>
-
-                    <div class="step">
-                        <span class="step-number">2</span>
-                        <strong>Регулювання механізму</strong>
-                        <p>Відрегулюйте натяг тросів та положення роликів відповідно до специфікації виробника.</p>
-                    </div>
-
-                    <div class="step">
-                        <span class="step-number">3</span>
-                        <strong>Перевірка налаштувань ПЛК</strong>
-                        <p>Перевірте та скоригуйте налаштування часу закриття дверей у системі керування.</p>
-                    </div>
-
-                    <div class="success-box">
-                        <strong><i class="fas fa-check-circle"></i> Результат:</strong>
-                        Після виконання всіх кроків двері повинні закриватися плавно без затримок.
-                    </div>
-                `,
-                related: ['KB-002', 'KB-005']
-            },
-            {
-                id: 'KB-002',
-                title: 'Профілактичне обслуговування гальмівної системи',
-                category: 'maintenance',
-                difficulty: 'advanced',
-                featured: true,
-                views: 892,
-                rating: 4.9,
-                createdDate: '2024-04-20',
-                updatedDate: '2024-06-05',
-                author: 'Головний інженер Петров',
-                tags: ['гальма', 'безпека', 'профілактика', 'Schindler'],
-                content: `
-                    <h2>Профілактичне обслуговування гальмівної системи</h2>
-
-                    <h3>Періодичність:</h3>
-                    <ul>
-                        <li>Щомісяця: візуальний огляд</li>
-                        <li>Щокварталу: повна перевірка</li>
-                        <li>Щорічно: комплексне обслуговування</li>
-                    </ul>
-
-                    <h3>Контрольний список:</h3>
-                    <div class="code-block">
-                        ✅ Перевірка зносу колодок<br>
-                        ✅ Контроль рівня мастила<br>
-                        ✅ Перевірка роботи соленоїда<br>
-                        ✅ Тестування системи аварійного гальмування<br>
-                        ✅ Калібрування датчиків положення
-                    </div>
-                `,
-                related: ['KB-001', 'KB-003']
-            },
-            {
-                id: 'KB-003',
-                title: 'Діагностика помилок керування ліфтом',
-                category: 'troubleshooting',
-                difficulty: 'advanced',
-                featured: false,
-                views: 1567,
-                rating: 4.7,
-                createdDate: '2024-03-10',
-                updatedDate: '2024-05-20',
-                author: 'Спеціаліст Коваленко',
-                tags: ['діагностика', 'помилки', 'керування', 'KONE'],
-                content: `
-                    <h2>Діагностика помилок керування ліфтом</h2>
-
-                    <h3>Поширені коди помилок:</h3>
-                    <table class="table table-bordered">
-                        <thead>
-                            <tr>
-                                <th>Код</th>
-                                <th>Опис</th>
-                                <th>Рішення</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>E01</td>
-                                <td>Помилка датчика положення</td>
-                                <td>Перевірити датчик, очистити контакти</td>
-                            </tr>
-                            <tr>
-                                <td>E05</td>
-                                <td>Перегрів двигуна</td>
-                                <td>Перевірити охолодження, дати остигнути</td>
-                            </tr>
-                            <tr>
-                                <td>E12</td>
-                                <td>Помилка дверей</td>
-                                <td>Перевірити механізм та датчики</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                `,
-                related: ['KB-002', 'KB-004']
-            },
-            {
-                id: 'KB-004',
-                title: 'Правила безпеки при роботі в шахті ліфта',
-                category: 'safety',
-                difficulty: 'beginner',
-                featured: true,
-                views: 2341,
-                rating: 5.0,
-                createdDate: '2024-02-15',
-                updatedDate: '2024-06-01',
-                author: 'Інспектор з безпеки Сидоренко',
-                tags: ['безпека', 'шахта', 'інструктаж', 'стандарти'],
-                content: `
-                    <h2>Правила безпеки при роботі в шахті ліфта</h2>
-
-                    <div class="danger-box">
-                        <strong><i class="fas fa-skull-crossbones"></i> Заборонено!</strong>
-                        Працювати без захисного обладнання та без належного блокування системи.
-                    </div>
-
-                    <h3>Обов'язкове обладнання:</h3>
-                    <ul>
-                        <li>Каска захисна</li>
-                        <li>Монтажний пояс</li>
-                        <li>Захисні рукавиці</li>
-                        <li>Індикатор напруги</li>
-                        <li>Ліхтарик</li>
-                    </ul>
-
-                    <h3>Процедура безпеки:</h3>
-                    <ol>
-                        <li>Відключити живлення</li>
-                        <li>Встановити знаки безпеки</li>
-                        <li>Перевірити відсутність напруги</li>
-                        <li>Заблокувати системи</li>
-                        <li>Отримати дозвіл на роботу</li>
-                    </ol>
-                `,
-                related: ['KB-005']
-            },
-            {
-                id: 'KB-005',
-                title: 'Заміна тросів підйомного механізму',
-                category: 'repair',
-                difficulty: 'advanced',
-                featured: false,
-                views: 678,
-                rating: 4.6,
-                createdDate: '2024-06-01',
-                updatedDate: '2024-06-15',
-                author: 'Майстер-технік Гончаренко',
-                tags: ['троси', 'заміна', 'механізм', 'Otis'],
-                content: `
-                    <h2>Заміна тросів підйомного механізму</h2>
-
-                    <h3>Необхідні матеріали:</h3>
-                    <ul>
-                        <li>Троси підйомні (специфікація за виробником)</li>
-                        <li>Запасні клини та кріплення</li>
-                        <li>Мастило для тросів</li>
-                        <li>Інструмент для натягу</li>
-                    </ul>
-
-                    <h3>Інструкція з заміни:</h3>
-                    <p>Детальна покрокова інструкція з фотографіями та схемами...</p>
-                `,
-                related: ['KB-001', 'KB-003']
-            }
-        ];
-    }
-
-    setupEventListeners() {
-        $('#searchInput').on('keypress', (e) => {
-            if (e.key === 'Enter') {
-                this.searchArticles();
-                    return [];
-            const card = this.createArticleCard(article);
-            container.append(card);
-        });
-
-        this.showNotification(`Знайдено ${results.length} результатів`, 'success');
-    }
-
-    filterByTopic(topic) {
-        this.currentFilter = topic;
-        
-        if (topic === 'all') {
-            this.filteredArticles = [...this.articles];
-        } else {
-            this.filteredArticles = this.articles.filter(article => 
-                article.category === topic
-            );
+    renderArticles(articles) {
+        const container = document.getElementById('articlesContainer');
+        if (!container) return;
+        if (!articles.length) {
+            container.innerHTML = `<div class="col-12 text-center py-5 text-muted">
+                <i class="fas fa-search fa-3x mb-3"></i><br>Nenhum artigo encontrado.
+            </div>`;
+            return;
         }
-
-        this.renderFilteredArticles();
+        container.innerHTML = articles.map(a => this.articleCard(a)).join('');
     }
 
-    filterByDifficulty(difficulty) {
-        if (difficulty === 'all') {
-            this.filteredArticles = [...this.articles];
-        } else {
-            this.filteredArticles = this.articles.filter(article => 
-                article.difficulty === difficulty
-            );
-        }
+    articleCard(a) {
+        const id = a._id || a.id;
+        const catColors = {
+            manutencao:'success', reparacao:'danger',
+            seguranca:'warning', avarias:'info', regulamentacao:'secondary'
+        };
+        const catLabels = {
+            manutencao:'Manutenção', reparacao:'Reparação',
+            seguranca:'Segurança', avarias:'Avarias', regulamentacao:'Regulamentação'
+        };
+        const diffLabels = { basico:'Básico', intermedio:'Intermédio', avancado:'Avançado' };
+        const color   = catColors[a.category]   || 'secondary';
+        const catLbl  = catLabels[a.category]   || a.category;
+        const diffLbl = diffLabels[a.difficulty] || a.difficulty;
+        const isBookmarked = this.bookmarkedArticles.includes(id);
+        const featBadge = a.featured ? '<span class="badge badge-warning ml-1">Destaque</span>' : '';
+        const tags = (a.tags||[]).slice(0,3).map(t => `<span class="badge badge-light border mr-1">${t}</span>`).join('');
+        const updDate = a.updatedAt ? new Date(a.updatedAt).toLocaleDateString('pt-PT') : '';
 
-        this.renderFilteredArticles();
-    }
-
-    renderFilteredArticles() {
-        const container = $('#searchResults');
-        container.empty();
-
-        if (this.filteredArticles.length === 0) {
-            container.html(`
-                <div class="col-12">
-                    <div class="text-center py-5">
-                        <i class="fas fa-search fa-3x text-muted mb-3"></i>
-                        <h4>Нічого не знайдено</h4>
-                        <p class="text-muted">Спробуйте змінити критерії пошуку</p>
+        return `<div class="col-md-6 col-lg-4 mb-3">
+            <div class="card article-card h-100 border-left-${color}">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <span class="badge badge-${color}">${catLbl}</span>
+                        <button class="btn btn-link btn-sm p-0 text-muted" onclick="knowledgeManager.toggleBookmark('${id}')" title="Favorito">
+                            <i class="${isBookmarked ? 'fas' : 'far'} fa-bookmark ${isBookmarked ? 'text-warning' : ''}"></i>
+                        </button>
+                    </div>
+                    <h6 class="card-title mb-1">${this.escHtml(a.title)}${featBadge}</h6>
+                    <p class="card-text small text-muted mb-2">${this.escHtml((a.summary||'').substring(0,100))}${(a.summary||'').length>100?'…':''}</p>
+                    <div class="mb-2">${tags}</div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted"><i class="fas fa-signal mr-1"></i>${diffLbl} &nbsp; <i class="fas fa-eye mr-1"></i>${a.views||0}</small>
+                        <small class="text-muted">${updDate}</small>
                     </div>
                 </div>
-            `);
-        } else {
-            this.filteredArticles.forEach(article => {
-                const card = this.createArticleCard(article);
-                container.append(card);
-            });
-        }
-
-        $('#searchResultsSection').show();
-        this.showNotification(`Відображено ${this.filteredArticles.length} статей`, 'info');
+                <div class="card-footer bg-transparent py-2">
+                    <button class="btn btn-sm btn-outline-${color} w-100" onclick="knowledgeManager.viewArticle('${id}')">
+                        <i class="fas fa-book-open mr-1"></i>Ler artigo
+                    </button>
+                </div>
+            </div>
+        </div>`;
     }
 
     renderPopularArticles() {
-        const popular = [...this.articles]
-            .sort((a, b) => b.views - a.views)
-            .slice(0, 4);
-
-        const container = $('#popularArticles');
-        container.empty();
-
-        popular.forEach(article => {
-            const card = this.createArticleCard(article);
-            container.append(card);
-        });
+        const container = document.getElementById('popularArticles');
+        if (!container) return;
+        const popular = [...this.articles].sort((a,b) => (b.views||0) - (a.views||0)).slice(0, 5);
+        if (!popular.length) { container.innerHTML = '<li class="list-group-item text-muted small">Nenhum artigo disponível</li>'; return; }
+        container.innerHTML = popular.map(a => {
+            const id = a._id || a.id;
+            return `<li class="list-group-item list-group-item-action py-2 px-3" style="cursor:pointer" onclick="knowledgeManager.viewArticle('${id}')">
+                <div class="d-flex justify-content-between">
+                    <span class="small font-weight-bold">${this.escHtml(a.title.substring(0,50))}${a.title.length>50?'…':''}</span>
+                    <span class="badge badge-light"><i class="fas fa-eye mr-1"></i>${a.views||0}</span>
+                </div>
+            </li>`;
+        }).join('');
     }
 
     renderRecentArticles() {
-        const recent = [...this.articles]
-            .sort((a, b) => new Date(b.updatedDate) - new Date(a.updatedDate))
-            .slice(0, 4);
-
-        const container = $('#recentArticles');
-        container.empty();
-
-        recent.forEach(article => {
-            const card = this.createArticleCard(article);
-            container.append(card);
-        });
+        const container = document.getElementById('recentArticles');
+        if (!container) return;
+        const recent = [...this.articles].sort((a,b) => new Date(b.updatedAt) - new Date(a.updatedAt)).slice(0, 5);
+        if (!recent.length) { container.innerHTML = '<li class="list-group-item text-muted small">Nenhum artigo disponível</li>'; return; }
+        container.innerHTML = recent.map(a => {
+            const id = a._id || a.id;
+            const date = a.updatedAt ? new Date(a.updatedAt).toLocaleDateString('pt-PT') : '';
+            return `<li class="list-group-item list-group-item-action py-2 px-3" style="cursor:pointer" onclick="knowledgeManager.viewArticle('${id}')">
+                <div class="small font-weight-bold">${this.escHtml(a.title.substring(0,50))}${a.title.length>50?'…':''}</div>
+                <div class="text-muted" style="font-size:.72rem">${date}</div>
+            </li>`;
+        }).join('');
     }
 
     renderRecommendedArticles() {
-        // Спрощена рекомендаційна система
-        const recommended = this.articles
-            .filter(article => article.featured)
-            .slice(0, 4);
+        const container = document.getElementById('recommendedArticles');
+        if (!container) return;
+        const featured = this.articles.filter(a => a.featured).slice(0, 4);
+        const list = featured.length ? featured : this.articles.slice(0, 4);
+        if (!list.length) { container.innerHTML = '<p class="text-muted small">Nenhum artigo disponível</p>'; return; }
+        const catColors = { manutencao:'success', reparacao:'danger', seguranca:'warning', avarias:'info', regulamentacao:'secondary' };
+        container.innerHTML = `<div class="row">${list.map(a => {
+            const id = a._id || a.id;
+            const color = catColors[a.category] || 'secondary';
+            return `<div class="col-md-6 mb-2">
+                <div class="card card-outline card-${color} h-100" style="cursor:pointer" onclick="knowledgeManager.viewArticle('${id}')">
+                    <div class="card-body py-2 px-3">
+                        <p class="mb-0 small font-weight-bold">${this.escHtml(a.title.substring(0,60))}${a.title.length>60?'…':''}</p>
+                    </div>
+                </div>
+            </div>`;
+        }).join('')}</div>`;
+    }
 
-        const container = $('#recommendedArticles');
-        container.empty();
+    // ─── Filtros e pesquisa ──────────────────────────────────────────────────
 
-        recommended.forEach(article => {
-            const card = this.createArticleCard(article);
-            container.append(card);
+    filterByTopic(topic) {
+        this.currentFilter = topic;
+        this.filteredArticles = topic === 'all'
+            ? [...this.articles]
+            : this.articles.filter(a => a.category === topic);
+        this.renderArticles(this.filteredArticles);
+        this.updateStatistics();
+    }
+
+    search(query) {
+        if (!query.trim()) {
+            this.filteredArticles = [...this.articles];
+        } else {
+            const q = query.toLowerCase();
+            this.filteredArticles = this.articles.filter(a =>
+                (a.title||'').toLowerCase().includes(q) ||
+                (a.summary||'').toLowerCase().includes(q) ||
+                (a.tags||[]).some(t => t.toLowerCase().includes(q))
+            );
+        }
+        this.renderArticles(this.filteredArticles);
+        this.updateStatistics();
+    }
+
+    // ─── Visualização de artigo ──────────────────────────────────────────────
+
+    async viewArticle(id) {
+        try {
+            const res  = await fetch(`/api/knowledge-base/${id}`, {
+                headers: { 'Authorization': `Bearer ${this.getToken()}` }
+            });
+            const json = await res.json();
+            const article = json.data || json;
+            if (!article || !article.title) throw new Error('Artigo não encontrado');
+
+            window.currentArticleId = id;
+
+            const modalTitle = document.querySelector('#viewArticleModal .modal-title');
+            const modalBody  = document.getElementById('articleContent');
+            if (modalTitle) modalTitle.textContent = article.title;
+            if (modalBody)  modalBody.innerHTML = article.content || '<p class="text-muted">Sem conteúdo.</p>';
+
+            fetch(`/api/knowledge-base/${id}/view`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${this.getToken()}` }
+            }).catch(() => {});
+
+            if (window.$ && $('#viewArticleModal').length) $('#viewArticleModal').modal('show');
+        } catch (err) {
+            console.error('KB viewArticle:', err);
+            alert('Erro ao carregar artigo: ' + err.message);
+        }
+    }
+
+    // ─── Favoritos ───────────────────────────────────────────────────────────
+
+    toggleBookmark(id) {
+        const idx = this.bookmarkedArticles.indexOf(id);
+        if (idx === -1) this.bookmarkedArticles.push(id);
+        else            this.bookmarkedArticles.splice(idx, 1);
+        localStorage.setItem('kb_bookmarks', JSON.stringify(this.bookmarkedArticles));
+        this.renderArticles(this.filteredArticles);
+    }
+
+    // ─── Estatísticas ────────────────────────────────────────────────────────
+
+    updateStatistics() {
+        const total = this.articles.length;
+        const catCounts = {};
+        this.articles.forEach(a => { catCounts[a.category] = (catCounts[a.category]||0) + 1; });
+
+        const el = document.getElementById('totalArticles');
+        if (el) el.textContent = total;
+
+        // Mapeia IDs dos contadores no HTML para categorias do DB
+        const map = {
+            repairCount:       'reparacao',
+            maintenanceCount:  'manutencao',
+            safetyCount:       'seguranca',
+            troubleshootCount: 'avarias'
+        };
+        Object.entries(map).forEach(([elId, cat]) => {
+            const e = document.getElementById(elId);
+            if (e) e.textContent = catCounts[cat] || 0;
         });
     }
 
-    createArticleCard(article) {
-        const difficultyClass = `tag-${article.difficulty}`;
-        const difficultyText = this.getDifficultyText(article.difficulty);
+    // ─── Impressão / Download ─────────────────────────────────────────────────
 
-        return $(`
-            <div class="col-md-6 col-lg-3 mb-4">
-                <div class="card article-card ${article.featured ? 'featured' : ''} h-100">
-                    <div class="card-body d-flex flex-column">
-                        <div class="d-flex justify-content-between align-items-start mb-2">
-                            <span class="${difficultyClass} tag">${difficultyText}</span>
-                            ${article.featured ? '<span class="badge badge-warning"><i class="fas fa-star"></i></span>' : ''}
-                        </div>
-
-                        <h6 class="card-title flex-grow-1">${article.title}</h6>
-
-                        <div class="mb-2">
-                            ${article.tags.slice(0, 3).map(tag =>
-                                `<span class="badge badge-secondary badge-sm mr-1">#${tag}</span>`
-                            ).join('')}
-                        </div>
-
-                        <div class="d-flex justify-content-between align-items-center mt-auto">
-                            <small class="text-muted">
-                                <i class="fas fa-eye"></i> ${article.views || 0}
-                            </small>
-                            <div class="rating-stars">
-                                ${this.renderStars(article.rating)}
-                            </div>
-                        </div>
-
-                        <div class="mt-3">
-                            <button class="btn btn-sm btn-primary btn-block" onclick="knowledgeManager.viewArticle('${article.id}')">
-                                <i class="fas fa-book-open"></i> Читати
-                            </button>
-                        </div>
-                    </div>
-                    <div class="card-footer bg-transparent">
-                        <small class="text-muted">
-                            Оновлено: ${this.formatDate(article.updatedDate)}
-                        </small>
-                    </div>
-                </div>
-            </div>
-        `);
+    printArticle() {
+        const content = document.getElementById('articleContent');
+        if (!content) return;
+        const w = window.open('', '_blank');
+        w.document.write(`<html><head><title>Artigo FestLift</title>
+<style>body{font-family:Arial,sans-serif;max-width:800px;margin:40px auto;padding:0 20px;line-height:1.7}
+table{width:100%;border-collapse:collapse;margin-bottom:1rem}td,th{border:1px solid #ccc;padding:8px}
+.alert-warning{background:#fff3cd;padding:10px;border-left:4px solid #ffc107;margin:10px 0}
+.alert-danger{background:#f8d7da;padding:10px;border-left:4px solid #dc3545;margin:10px 0}
+.alert-info{background:#d1ecf1;padding:10px;border-left:4px solid #17a2b8;margin:10px 0}
+ul,ol{padding-left:1.5rem}</style>
+</head><body>${content.innerHTML}</body></html>`);
+        w.document.close();
+        setTimeout(() => w.print(), 500);
     }
 
-    getDifficultyText(difficulty) {
-        const difficulties = {
-            'beginner': 'Початківець',
-            'intermediate': 'Середній',
-            'advanced': 'Просунутий'
-        };
-        return difficulties[difficulty] || difficulty;
+    downloadArticle() {
+        const title   = document.querySelector('#viewArticleModal .modal-title')?.textContent || 'artigo';
+        const content = document.getElementById('articleContent')?.innerHTML || '';
+        const html    = `<!DOCTYPE html><html lang="pt"><head><meta charset="UTF-8"><title>${title}</title>
+<style>body{font-family:Arial,sans-serif;max-width:800px;margin:40px auto;padding:0 20px;line-height:1.7}
+table{width:100%;border-collapse:collapse}td,th{border:1px solid #ccc;padding:8px}
+.alert-warning{background:#fff3cd;padding:10px;border-left:4px solid #ffc107;margin:10px 0}
+.alert-danger{background:#f8d7da;padding:10px;border-left:4px solid #dc3545;margin:10px 0}
+.alert-info{background:#d1ecf1;padding:10px;border-left:4px solid #17a2b8;margin:10px 0}
+ul,ol{padding-left:1.5rem}</style>
+</head><body>${content}</body></html>`;
+        const blob = new Blob([html], { type: 'text/html' });
+        const url  = URL.createObjectURL(blob);
+        const a    = document.createElement('a');
+        a.href = url;
+        a.download = `${title.replace(/[^a-z0-9]/gi,'_').substring(0,60)}.html`;
+        a.click();
+        URL.revokeObjectURL(url);
     }
 
-    renderStars(rating) {
-        const fullStars = Math.floor(rating);
-        const halfStar = rating % 1 >= 0.5;
-        const emptyStars = 5 - fullStars - (halfStar ? 1 : 0);
-        
-        let stars = '';
-        
-        for (let i = 0; i < fullStars; i++) {
-            stars += '<i class="fas fa-star"></i>';
-        }
-        
-        if (halfStar) {
-            stars += '<i class="fas fa-star-half-alt"></i>';
-        }
-        
-        for (let i = 0; i < emptyStars; i++) {
-            stars += '<i class="far fa-star"></i>';
-        }
-        
-        return stars;
-    }
+    // ─── Utilitários ─────────────────────────────────────────────────────────
 
-    formatDate(dateString) {
-        return new Date(dateString).toLocaleDateString('pt-PT');
-    }
-
-    viewArticle(articleId) {
-        const article = this.articles.find(a => a.id === articleId);
-        if (!article) return;
-
-        currentArticleId = articleId;
-        
-        // Збільшити лічильник переглядів
-        article.views = (article.views || 0) + 1;
-        localStorage.setItem('knowledgeArticles', JSON.stringify(this.articles));
-
-        const modalContent = this.createArticleContent(article);
-        $('#articleContent').html(modalContent);
-        
-        // Оновити стан закладки
-        this.updateBookmarkButton(articleId);
-        
-        $('#viewArticleModal').modal('show');
-    }
-
-    createArticleContent(article) {
-        const difficultyClass = `tag-${article.difficulty}`;
-        const difficultyText = this.getDifficultyText(article.difficulty);
-        
-        return `
-            <div class="article-content">
-                <div class="row">
-                    <div class="col-md-8">
-                        <div class="content-section">
-                            <div class="d-flex justify-content-between align-items-start mb-4">
-                                <div>
-                                    <h2>${article.title}</h2>
-                                    <div class="breadcrumb-custom">
-                                        <span class="text-muted">Категорія: </span>
-                                        <span class="font-weight-bold">${this.getCategoryText(article.category)}</span>
-                                        <span class="mx-2">•</span>
-                                        <span class="${difficultyClass} tag">${difficultyText}</span>
-                                    </div>
-                                </div>
-                                <div class="text-right">
-                                    <div class="rating-stars mb-1">
-                                        ${this.renderStars(article.rating)}
-                                        <small>(${article.rating})</small>
-                                    </div>
-                                    <small class="text-muted">${article.views} переглядів</small>
-                                </div>
-                            </div>
-
-                            <div class="mb-4">
-                                ${article.tags.map(tag => 
-                                    `<span class="badge badge-primary badge-sm mr-1">#${tag}</span>`
-                                ).join('')}
-                            </div>
-
-                            <div class="article-body">
-                                ${article.content}
-                            </div>
-
-                            <div class="mt-4 pt-3 border-top">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div>
-                                        <small class="text-muted">
-                                            Автор: <strong>${article.author}</strong><br>
-                                            Оновлено: ${this.formatDate(article.updatedDate)}
-                                        </small>
-                                    </div>
-                                    <div>
-                                        <button class="btn btn-sm btn-outline-success">
-                                            <i class="fas fa-thumbs-up"></i> Корисно
-                                        </button>
-                                        <button class="btn btn-sm btn-outline-danger">
-                                            <i class="fas fa-thumbs-down"></i> Некорисно
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        ${article.related && article.related.length > 0 ? `
-                            <div class="content-section mt-4">
-                                <h4><i class="fas fa-link"></i> Пов'язані статті</h4>
-                                <div class="row">
-                                    ${article.related.map(relatedId => {
-                                        const relatedArticle = this.articles.find(a => a.id === relatedId);
-                                        return relatedArticle ? `
-                                            <div class="col-md-6 mb-2">
-                                                <div class="card card-sm">
-                                                    <div class="card-body">
-                                                        <h6 class="card-title">${relatedArticle.title}</h6>
-                                                        <button class="btn btn-sm btn-outline-primary" onclick="knowledgeManager.viewArticle('${relatedArticle.id}')">
-                                                            Читати
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        ` : '';
-                                    }).join('')}
-                                </div>
-                            </div>
-                        ` : ''}
-                    </div>
-
-                    <div class="col-md-4">
-                        <div class="toc">
-                            <h5>Зміст</h5>
-                            <div class="toc-item">
-                                <a href="#section1">Вступ</a>
-                            </div>
-                            <div class="toc-item">
-                                <a href="#section2">Інструменти</a>
-                            </div>
-                            <div class="toc-item">
-                                <a href="#section3">Інструкція</a>
-                            </div>
-                            <div class="toc-item">
-                                <a href="#section4">Безпека</a>
-                            </div>
-                        </div>
-
-                        <div class="content-section mt-4">
-                            <h5>Швидкі дії</h5>
-                            <button class="btn btn-outline-primary btn-sm btn-block mb-2">
-                                <i class="fas fa-question-circle"></i> Задати питання
-                            </button>
-                            <button class="btn btn-outline-success btn-sm btn-block mb-2">
-                                <i class="fas fa-download"></i> Завантажити PDF
-                            </button>
-                            <button class="btn btn-outline-info btn-sm btn-block">
-                                <i class="fas fa-share-alt"></i> Поділитися
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
-    }
-
-    getCategoryText(category) {
-        const categories = {
-            'repair': 'Ремонт',
-            'maintenance': 'Обслуговування',
-            'safety': 'Безпека',
-            'troubleshooting': 'Діагностика'
-        };
-        return categories[category] || category;
-    }
-
-    updateBookmarkButton(articleId) {
-        const isBookmarked = this.bookmarkedArticles.includes(articleId);
-        $('#bookmarkBtn').html(
-            isBookmarked ? 
-            '<i class="fas fa-bookmark"></i> В обраному' : 
-            '<i class="far fa-bookmark"></i> В обране'
-        );
-    }
-
-    toggleBookmark(articleId) {
-        const index = this.bookmarkedArticles.indexOf(articleId);
-        
-        if (index === -1) {
-            this.bookmarkedArticles.push(articleId);
-            this.showNotification('Додано в обране', 'success');
-        } else {
-            this.bookmarkedArticles.splice(index, 1);
-            this.showNotification('Видалено з обраного', 'info');
-        }
-        
-        localStorage.setItem('bookmarkedArticles', JSON.stringify(this.bookmarkedArticles));
-        this.updateBookmarkButton(articleId);
-    }
-
-    downloadArticle(articleId) {
-        const article = this.articles.find(a => a.id === articleId);
-        if (!article) return;
-
-        this.showNotification(`Підготовка статті "${article.title}" для завантаження...`, 'info');
-        
-        // Імітація створення PDF
-        setTimeout(() => {
-            const content = `
-                ${article.title}
-                ================================
-                
-                Категорія: ${this.getCategoryText(article.category)}
-                Складність: ${this.getDifficultyText(article.difficulty)}
-                Автор: ${article.author}
-                Дата: ${this.formatDate(article.updatedDate)}
-                
-                ${article.content.replace(/<[^>]*>/g, '')}
-                
-                ================================
-                Завантажено: ${new Date().toLocaleString('pt-PT')}
-            `;
-            
-            const blob = new Blob([content], { type: 'application/pdf' });
-            const url = URL.createObjectURL(blob);
-            
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = `стаття_${article.id}.pdf`;
-            link.click();
-            
-            this.showNotification('Стаття успішно завантажена', 'success');
-        }, 1500);
-    }
-
-    printArticle(articleId) {
-        this.showNotification('Підготовка до друку...', 'info');
-        setTimeout(() => {
-            window.print();
-            this.showNotification('Готово до друку', 'success');
-        }, 1000);
-    }
-
-    showAllArticles() {
-        this.filteredArticles = [...this.articles];
-        this.renderFilteredArticles();
-        this.showNotification('Всі статті відображено', 'info');
-    }
-
-    showFeatured() {
-        this.filteredArticles = this.articles.filter(article => article.featured);
-        this.renderFilteredArticles();
-        this.showNotification('Відображено обрані статті', 'info');
-    }
-
-    showRecent() {
-        this.filteredArticles = this.articles
-            .sort((a, b) => new Date(b.updatedDate) - new Date(a.updatedDate))
-            .slice(0, 10);
-        this.renderFilteredArticles();
-        this.showNotification('Відображено нові статті', 'info');
-    }
-
-    showAllPopular() {
-        this.filteredArticles = this.articles
-            .sort((a, b) => b.views - a.views);
-        this.renderFilteredArticles();
-        this.showNotification('Відображено популярні статті', 'info');
-    }
-
-    showNotification(message, type = 'info') {
-        if (typeof Swal !== 'undefined') {
-            const Toast = Swal.mixin({
-                toast: true,
-                position: 'bottom-end',
-                showConfirmButton: false,
-                timer: 3000,
-                timerProgressBar: true
-            });
-            const iconMap = { success: 'success', error: 'error', warning: 'warning', info: 'info' };
-            Toast.fire({ icon: iconMap[type] || 'info', title: message });
-        } else {
-            alert(message);
-        }
+    escHtml(str) {
+        return (str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     }
 
     loadUserInfo() {
-        try {
-            const currentUser = JSON.parse(localStorage.getItem('currentUser')) || {
-                firstName: 'Користувач'
-            };
-            $('#userName').text(currentUser.firstName);
-        } catch (error) {
-            console.error('Помилка завантаження даних користувача:', error);
+        const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+        const el = document.getElementById('techName');
+        if (el && userData.firstName) el.textContent = `${userData.firstName} ${userData.lastName||''}`.trim();
+    }
+
+    setupEventListeners() {
+        const searchEl = document.getElementById('knowledgeSearch');
+        if (searchEl) {
+            searchEl.addEventListener('input',   (e) => this.search(e.target.value));
+            searchEl.addEventListener('keypress',(e) => { if (e.key === 'Enter') this.search(e.target.value); });
         }
     }
-
-    updateStatistics() {
-        const totalArticles = this.articles.length;
-        const totalViews = this.articles.reduce((sum, article) => sum + (article.views || 0), 0);
-        const totalRating = this.articles.reduce((sum, article) => sum + (article.rating || 0), 0);
-        const avgRating = totalArticles > 0 ? (totalRating / totalArticles).toFixed(1) : 0;
-
-        $('#totalArticles').text(totalArticles);
-        $('#todayViews').text(totalViews);
-        $('#avgRating').text(avgRating);
-        $('#activeUsers').text(Math.floor(Math.random() * 50) + 10); // Імітація активних користувачів
-    }
 }
-
-// Ініціалізація
-$(document).ready(function() {
-    window.knowledgeManager = new KnowledgeManager();
-});

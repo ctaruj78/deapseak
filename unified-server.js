@@ -2073,34 +2073,155 @@ app.get('/api/qr/stats', authenticateToken, async (req, res) => {
 // � KNOWLEDGE BASE
 // ═══════════════════════════════════════════════════════════
 
-// GET /api/knowledge-base - список статей бази знань
+// ═══════════════════════════════════════════════════════════
+// 📚 KNOWLEDGE BASE
+// ═══════════════════════════════════════════════════════════
+
+// GET /api/knowledge-base
 app.get('/api/knowledge-base', authenticateToken, async (req, res) => {
     try {
-        if (!db) {
-            return res.status(503).json({ success: false, message: 'Base de dados indisponível' });
+        if (!db) return res.status(503).json({ success: false, message: 'Base de dados indisponível' });
+        const { category, difficulty, search, featured } = req.query;
+        const filter = { published: true };
+        if (category && category !== 'all') filter.category = category;
+        if (difficulty && difficulty !== 'all') filter.difficulty = difficulty;
+        if (featured === 'true') filter.featured = true;
+        if (search) {
+            const re = new RegExp(search, 'i');
+            filter.$or = [{ title: re }, { summary: re }, { tags: re }];
         }
         const articles = await db.collection('knowledge_base')
-            .find({})
-            .sort({ updatedDate: -1 })
+            .find(filter, { projection: { content: 0 } })
+            .sort({ featured: -1, updatedAt: -1 })
             .toArray();
-        res.json(articles);
+        res.json({ success: true, data: articles });
     } catch (error) {
-        console.error('❌ Помилка отримання бази знань:', error);
+        console.error('❌ knowledge-base GET:', error);
         res.status(500).json({ success: false, message: 'Erro do servidor' });
     }
 });
 
-// POST /api/knowledge-base - додати статтю
+// GET /api/knowledge-base/all (admin — inclui não publicados)
+app.get('/api/knowledge-base/all', authenticateToken, async (req, res) => {
+    try {
+        if (!['admin', 'dispatcher'].includes(req.user.role))
+            return res.status(403).json({ success: false, message: 'Acesso negado' });
+        if (!db) return res.status(503).json({ success: false, message: 'Base de dados indisponível' });
+        const articles = await db.collection('knowledge_base')
+            .find({}, { projection: { content: 0 } })
+            .sort({ updatedAt: -1 })
+            .toArray();
+        res.json({ success: true, data: articles });
+    } catch (error) {
+        console.error('❌ knowledge-base/all GET:', error);
+        res.status(500).json({ success: false, message: 'Erro do servidor' });
+    }
+});
+
+// GET /api/knowledge-base/:id
+app.get('/api/knowledge-base/:id', authenticateToken, async (req, res) => {
+    try {
+        if (!db) return res.status(503).json({ success: false, message: 'Base de dados indisponível' });
+        const { ObjectId } = require('mongodb');
+        const article = await db.collection('knowledge_base').findOne({ _id: new ObjectId(req.params.id) });
+        if (!article) return res.status(404).json({ success: false, message: 'Artigo não encontrado' });
+        res.json({ success: true, data: article });
+    } catch (error) {
+        console.error('❌ knowledge-base/:id GET:', error);
+        res.status(500).json({ success: false, message: 'Erro do servidor' });
+    }
+});
+
+// POST /api/knowledge-base/:id/view — incrementa visualizações
+app.post('/api/knowledge-base/:id/view', authenticateToken, async (req, res) => {
+    try {
+        if (!db) return res.status(503).json({ success: false, message: 'Base de dados indisponível' });
+        const { ObjectId } = require('mongodb');
+        await db.collection('knowledge_base').updateOne(
+            { _id: new ObjectId(req.params.id) },
+            { $inc: { views: 1 } }
+        );
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ success: false });
+    }
+});
+
+// POST /api/knowledge-base — criar artigo (admin/dispatcher)
 app.post('/api/knowledge-base', authenticateToken, async (req, res) => {
     try {
-        if (!db) {
-            return res.status(503).json({ success: false, message: 'Base de dados indisponível' });
-        }
-        const article = { ...req.body, createdAt: new Date(), updatedAt: new Date() };
+        if (!['admin', 'dispatcher'].includes(req.user.role))
+            return res.status(403).json({ success: false, message: 'Acesso negado' });
+        if (!db) return res.status(503).json({ success: false, message: 'Base de dados indisponível' });
+        const { title, category, difficulty, summary, content, tags, featured, published } = req.body;
+        if (!title || !category || !content)
+            return res.status(400).json({ success: false, message: 'Título, categoria e conteúdo são obrigatórios' });
+        const article = {
+            title: title.trim(),
+            category,
+            difficulty: difficulty || 'basico',
+            summary: summary || '',
+            content,
+            tags: Array.isArray(tags) ? tags : (tags || '').split(',').map(t => t.trim()).filter(Boolean),
+            featured: !!featured,
+            published: published !== false,
+            author: req.user.firstName ? `${req.user.firstName} ${req.user.lastName || ''}`.trim() : req.user.username || 'Admin',
+            authorId: req.user.id,
+            views: 0,
+            createdAt: new Date(),
+            updatedAt: new Date()
+        };
         const result = await db.collection('knowledge_base').insertOne(article);
         res.status(201).json({ success: true, id: result.insertedId });
     } catch (error) {
-        console.error('❌ Помилка створення статті:', error);
+        console.error('❌ knowledge-base POST:', error);
+        res.status(500).json({ success: false, message: 'Erro do servidor' });
+    }
+});
+
+// PUT /api/knowledge-base/:id — editar artigo (admin/dispatcher)
+app.put('/api/knowledge-base/:id', authenticateToken, async (req, res) => {
+    try {
+        if (!['admin', 'dispatcher'].includes(req.user.role))
+            return res.status(403).json({ success: false, message: 'Acesso negado' });
+        if (!db) return res.status(503).json({ success: false, message: 'Base de dados indisponível' });
+        const { ObjectId } = require('mongodb');
+        const { title, category, difficulty, summary, content, tags, featured, published } = req.body;
+        const update = {
+            ...(title && { title: title.trim() }),
+            ...(category && { category }),
+            ...(difficulty && { difficulty }),
+            ...(summary !== undefined && { summary }),
+            ...(content && { content }),
+            ...(tags !== undefined && { tags: Array.isArray(tags) ? tags : (tags || '').split(',').map(t => t.trim()).filter(Boolean) }),
+            ...(featured !== undefined && { featured: !!featured }),
+            ...(published !== undefined && { published: !!published }),
+            updatedAt: new Date()
+        };
+        const result = await db.collection('knowledge_base').updateOne(
+            { _id: new ObjectId(req.params.id) },
+            { $set: update }
+        );
+        if (result.matchedCount === 0) return res.status(404).json({ success: false, message: 'Artigo não encontrado' });
+        res.json({ success: true });
+    } catch (error) {
+        console.error('❌ knowledge-base PUT:', error);
+        res.status(500).json({ success: false, message: 'Erro do servidor' });
+    }
+});
+
+// DELETE /api/knowledge-base/:id (admin only)
+app.delete('/api/knowledge-base/:id', authenticateToken, async (req, res) => {
+    try {
+        if (req.user.role !== 'admin')
+            return res.status(403).json({ success: false, message: 'Apenas administradores podem eliminar artigos' });
+        if (!db) return res.status(503).json({ success: false, message: 'Base de dados indisponível' });
+        const { ObjectId } = require('mongodb');
+        const result = await db.collection('knowledge_base').deleteOne({ _id: new ObjectId(req.params.id) });
+        if (result.deletedCount === 0) return res.status(404).json({ success: false, message: 'Artigo não encontrado' });
+        res.json({ success: true });
+    } catch (error) {
+        console.error('❌ knowledge-base DELETE:', error);
         res.status(500).json({ success: false, message: 'Erro do servidor' });
     }
 });
