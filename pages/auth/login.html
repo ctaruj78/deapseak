@@ -247,9 +247,12 @@
                 document.getElementById('email').value = decodeURIComponent(emailFromUrl);
             }
             
-            // Якщо юзер вже авторизований — перенаправляємо одразу (без мигання форми)
+            // Utilizador fez logout — limpar tokens residuais e mostrar formulário
             if (urlParams.get('logout') === 'true') {
-                if (typeof AuthManager !== 'undefined') AuthManager.logout();
+                const _keys = ['liftmanager_jwt','liftmanager_user','liftmanager_refresh',
+                               'userData','token','authToken','user','currentUser','lm_session',
+                               'lm_token','deapseak_token','redirect_after_login','redirecting'];
+                _keys.forEach(k => { localStorage.removeItem(k); sessionStorage.removeItem(k); });
                 return;
             }
 

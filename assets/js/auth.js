@@ -102,12 +102,10 @@ class AuthManager {
         });
         
         document.cookie = 'auth_token=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
-        
-        console.log('👋 Utilizador вийшов з системи');
-        
-        // Очищуємо історію браузера перед редиректом
-        window.history.replaceState(null, '', '/pages/auth/login.html');
-        window.location.replace('/pages/auth/login.html');
+        sessionStorage.removeItem('redirect_after_login');
+        sessionStorage.removeItem('redirecting');
+
+        window.location.href = '/pages/auth/login.html?logout=true';
     }
 
     static isAuthenticated() {
