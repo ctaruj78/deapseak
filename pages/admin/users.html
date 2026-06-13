@@ -993,10 +993,12 @@
                         ? `<a href="/pages/admin/lifts.html?clientId=${userId}" title="Ver elevadores deste cliente"><span class="badge badge-${(user.liftsCount || 0) > 0 ? 'success' : 'secondary'}">${user.liftsCount || 0}</span></a>`
                         : '<span class="text-muted">—</span>';
 
-                    // Acesso / online status
+                    // Acesso / online status — use lastSeen (heartbeat) or fall back to lastLogin
                     const _now = Date.now();
+                    const _lastActive = user.lastSeen || user.lastLogin;
                     const _lastLogin = user.lastLogin ? new Date(user.lastLogin) : null;
-                    const _minsAgo = _lastLogin ? Math.floor((_now - _lastLogin.getTime()) / 60000) : null;
+                    const _lastActiveDate = _lastActive ? new Date(_lastActive) : null;
+                    const _minsAgo = _lastActiveDate ? Math.floor((_now - _lastActiveDate.getTime()) / 60000) : null;
                     const _isOnline = _minsAgo !== null && _minsAgo < 20;
                     let _accessBadge, _lastLoginStr;
                     if (!_lastLogin) {

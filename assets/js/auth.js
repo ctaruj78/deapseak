@@ -503,4 +503,23 @@ if (typeof window !== 'undefined') {
         // DOM already ready (script loaded late) — override immediately
         _overrideLogout();
     }
+
+    // Heartbeat: update lastSeen every 5 minutes so the Users page shows "🟢 Online"
+    const _sendHeartbeat = () => {
+        const token = localStorage.getItem('liftmanager_jwt') || sessionStorage.getItem('liftmanager_jwt');
+        if (!token) return;
+        fetch('/api/auth/heartbeat', {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}` }
+        }).catch(() => {});
+    };
+    const _startHeartbeat = () => {
+        _sendHeartbeat(); // immediate ping on page load
+        setInterval(_sendHeartbeat, 5 * 60 * 1000);
+    };
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', _startHeartbeat, { once: true });
+    } else {
+        _startHeartbeat();
+    }
 }

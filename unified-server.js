@@ -6708,6 +6708,22 @@ app.get('/api/users', authenticateToken, async (req, res) => {
     }
 });
 
+// POST /api/auth/heartbeat — update lastSeen so the users page can show "Online" badge
+app.post('/api/auth/heartbeat', authenticateToken, async (req, res) => {
+    try {
+        const db = getDB();
+        const { ObjectId } = require('mongodb');
+        const userId = req.user.id || req.user.userId;
+        await db.collection('users').updateOne(
+            { _id: new ObjectId(userId) },
+            { $set: { lastSeen: new Date() } }
+        );
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
 // GET /api/auth/status - Перевірка статусу автентифікації
 app.get('/api/auth/status', authenticateToken, (req, res) => {
     res.json({
