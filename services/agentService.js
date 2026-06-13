@@ -954,6 +954,31 @@ class AgentService {
         return 'generic';
     }
 
+    async _generateViaGroq(prompt) {
+        const apiKey = process.env.GROQ_API_KEY;
+        if (!apiKey) throw new Error('GROQ_API_KEY not set');
+        const model = process.env.GROQ_MODEL || 'llama-3.3-70b-versatile';
+        const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
+            body: JSON.stringify({
+                model,
+                messages: [{ role: 'user', content: prompt }],
+                temperature: 0.2,
+                max_tokens: 1024,
+            }),
+            signal: AbortSignal.timeout(30000)
+        });
+        if (!response.ok) {
+            const err = await response.text();
+            throw new Error(`Groq HTTP ${response.status}: ${err.slice(0, 200)}`);
+        }
+        const data = await response.json();
+        const text = data?.choices?.[0]?.message?.content;
+        if (!text) throw new Error('Groq: empty response');
+        return text;
+    }
+
     async _generateText(prompt, routeHint = 'generic', meta = {}) {
         const provider = this.aiProvider;
         const startedAt = Date.now();
@@ -987,6 +1012,21 @@ class AgentService {
         };
 
         try {
+            // Groq: fastest, free tier — always try first regardless of task type
+            if (process.env.GROQ_API_KEY && provider !== 'gemini' && provider !== 'ollama') {
+                try {
+                    outputText = await this._generateViaGroq(prompt);
+                    selectedProvider = 'groq';
+                    selectedModel = process.env.GROQ_MODEL || 'llama-3.3-70b-versatile';
+                    return outputText;
+                } catch (groqErr) {
+                    fallbackUsed = true;
+                    fallbackReason = groqErr.message;
+                    console.warn(`🤖 AgentService Groq failed, falling back: ${groqErr.message}`);
+                    // continue to ollama/gemini below
+                }
+            }
+
             if (provider === 'ollama') {
                 selectedProvider = 'ollama';
                 try {
