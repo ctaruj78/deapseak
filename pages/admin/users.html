@@ -708,6 +708,9 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                        <button type="button" class="btn btn-info" id="sendAccessBtn" style="display:none" onclick="userManager.sendAccessEmail()">
+                            <i class="fas fa-envelope"></i> Enviar acesso por email
+                        </button>
                         <button type="submit" class="btn btn-primary">Guardar</button>
                     </div>
                 </form>
@@ -818,20 +821,10 @@
                     $('#copyPasswordBtn').prop('disabled', $(this).val().length === 0);
                 });
 
-                // Use .off() before .on() to prevent handler stacking on multiple inits
-                // Ao abrir janela modal para novo utilizador - gerar palavra-passe automaticamente
-                $('#userModal').off('show.bs.modal').on('show.bs.modal', function(e) {
-                    const userId = $('#userId').val();
-                    if (!userId) {
-                        setTimeout(() => {
-                            $('#generatePasswordBtn').click();
-                        }, 300);
-                    }
-                });
-
                 // Ocultar alerta ao fechar janela modal
                 $('#userModal').off('hidden.bs.modal').on('hidden.bs.modal', function() {
                     $('#generatedPasswordAlert').hide();
+                    $('#sendAccessBtn').hide();
                 });
             }
 
@@ -916,16 +909,17 @@
             }
 
             setupEventListeners() {
-                // Adicionar utilizador
-                $('#userModal').on('show.bs.modal', (e) => {
+                // Modal open — single handler (edit or add)
+                $('#userModal').off('show.bs.modal').on('show.bs.modal', (e) => {
                     const button = $(e.relatedTarget);
                     const userId = button.data('user-id');
-                    
                     if (userId) {
                         $('#modalTitle').text('Editar utilizador');
+                        $('#sendAccessBtn').show();
                         this.editUser(userId);
                     } else {
                         $('#modalTitle').text('Adicionar utilizador');
+                        $('#sendAccessBtn').hide();
                         this.resetForm();
                     }
                 });
@@ -1233,6 +1227,25 @@
                     $('#copyPasswordBtn').prop('disabled', true);
                     $('#generatedPasswordAlert').hide();
                     $('#togglePasswordBtn i').removeClass('fa-eye-slash').addClass('fa-eye');
+                }
+            }
+
+            async sendAccessEmail() {
+                const userId = $('#userId').val();
+                const email = $('#userEmail').val();
+                if (!userId) return;
+                if (!confirm(`Enviar nova senha temporária por email para ${email}?`)) return;
+                try {
+                    const res = await AuthManager.fetchWithAuth(`/api/auth/users/${userId}/reset-password`, { method: 'POST' });
+                    if (res.success) {
+                        toastr.success(`Acesso enviado para ${email}`);
+                        $('#userModal').modal('hide');
+                        this.loadUsers();
+                    } else {
+                        toastr.error(res.message || 'Erro ao enviar acesso');
+                    }
+                } catch (err) {
+                    toastr.error('Erro de ligação');
                 }
             }
 
