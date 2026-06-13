@@ -166,6 +166,9 @@ function isMetadataNoiseClause(description = '') {
 function isValidViolationObject(v) {
     if (!v || !v.classification) return false;
 
+    // LLM-extracted violations are pre-validated — skip the regex-based article filter
+    if (v._llm) return true;
+
     // article типу "6781" — це номер процесу, не артикул закону
     if (v.article) {
         const artNum = parseInt(String(v.article).replace(/\D/g, ''), 10);
@@ -204,18 +207,25 @@ function cleanViolations(violations = []) {
     const cleaned = [];
 
     for (const v of violations) {
-        // FIX 9: спочатку перевіряємо весь об'єкт
         if (!isValidViolationObject(v)) continue;
 
         const description = String(v.description || '').trim();
-        if (isLegendOrBoilerplateClause(description)) continue;
-        if (isMetadataNoiseClause(description)) continue;
+        // LLM was explicitly prompted to exclude boilerplate — skip regex filters for its output
+        if (!v._llm) {
+            if (isLegendOrBoilerplateClause(description)) continue;
+            if (isMetadataNoiseClause(description)) continue;
+        }
 
         const normDesc = normalizeClauseText(description);
         if (!normDesc) continue;
 
-        // Cross-parser dedup: same class + semantically same description
-        const dedupKey = `${v.classification}|${normDesc.slice(0, 160)}`;
+        // Cross-parser dedup: same class + semantically same description.
+        // For LLM violations use full normDesc so variants of the same article
+        // (e.g. multiple "Art. 6º" entries with different contextual notes)
+        // are not collapsed into one.
+        const dedupKey = v._llm
+            ? `${v.classification}|${normDesc}`
+            : `${v.classification}|${normDesc.slice(0, 160)}`;
         const existingIdx = seen.get(dedupKey);
         if (existingIdx == null) {
             seen.set(dedupKey, cleaned.length);

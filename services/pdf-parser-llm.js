@@ -53,7 +53,7 @@ Required output format:
   "violations": [
     {
       "classification": "C1" | "C2" | "C3",
-      "article": "article number as string, e.g. '45º' or '45.1'",
+      "article": "the article number ONLY (e.g. '25', '25.3', '78º-2') — NOT the decree/law number. If violation cites 'Art. 25 of DL 513/70', article = '25'. If it cites 'DL 320/2002 Art. 8-1', article = '8-1'.",
       "description": "full description text of the violation"
     }
   ]
@@ -63,6 +63,8 @@ Rules:
 - violations must ONLY include actual deficiencies found, NOT legend/explanation text
 - Ignore boilerplate sections like "OBRIGAÇÕES DO PROPRIETÁRIO", "SIGNIFICADO DAS CLÁUSULAS"
 - description must be the actual defect description, minimum 10 characters
+- When a violation has a parenthetical note on the following line (e.g. "( Circuito de Iluminação na Casa das Máquinas )"), append it to the description so each entry is unique
+- Some violations reference a Decreto-Lei instead of an article number (e.g. "C3 | DL. 740/74 e Port.949-A/2006 - ..."). Include these as violations; use the DL reference as the article field (e.g. "DL.740/74")
 - If a section says "não foram detetadas deficiências" → violations: []
 - For result: "immobilized" only if explicit "Imobilização imediata" or C1 present
 - nextInspectionDate: only set if the report explicitly states a date like "Requerer Inspeção até DD/MM/YYYY"
@@ -168,7 +170,8 @@ function parseAndValidateLLMResponse(raw) {
     }).map(v => ({
         classification: v.classification,
         article: String(v.article || '').trim() || '0',
-        description: String(v.description).trim()
+        description: String(v.description).trim(),
+        _llm: true   // bypass artNum>500 filter in isValidViolationObject
     }));
 
     return obj;

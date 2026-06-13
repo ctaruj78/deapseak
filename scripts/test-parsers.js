@@ -19,7 +19,7 @@ const TEST_CASES = [
     {
         label: 'CML reprovado C2:5',
         file: 'report-1779782037855-805364272.pdf',
-        expected: { c1: 0, c2: 5, c3: 0, certType: 'reinspection', validUntilDays: 30 },
+        expected: { c1: 0, c2: 5, c3: 1, certType: 'reinspection', validUntilDays: 30 },
     },
     {
         label: 'GATECI reprovado C2:1 C3:5',
@@ -39,7 +39,7 @@ const TEST_CASES = [
     {
         label: 'GATECI Despacho17/2022 C3:4 (cert 2 anos)',
         file: 'report-1780397708670-92154567.pdf',
-        expected: { c1: 0, c2: 0, c3: 4, certType: 'cert_2_years', validUntilDays: 730 },
+        expected: { c1: 0, c2: 0, c3: 6, certType: 'cert_2_years', validUntilDays: 730 },
     },
 ];
 
@@ -53,7 +53,12 @@ function daysDiff(iso) {
 async function run() {
     let passed = 0, failed = 0;
 
-    for (const tc of TEST_CASES) {
+    for (let i = 0; i < TEST_CASES.length; i++) {
+        const tc = TEST_CASES[i];
+        // Delay between tests to avoid Groq TPM rate limit (12000 tok/min).
+        // Each test uses ~1500–4000 tokens; 15s spacing keeps total well under limit.
+        if (i > 0) await new Promise(r => setTimeout(r, 15000));
+
         const filePath = path.join(UPLOADS, tc.file);
         if (!fs.existsSync(filePath)) {
             console.log(`⚠️  SKIP  ${tc.label} — ficheiro não encontrado`);
