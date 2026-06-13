@@ -7122,8 +7122,7 @@ app.post('/api/users/:id/reset-password', authenticateToken, async (req, res) =>
 
         // Відправляємо email з новим паролем
         try {
-            const html = `<p>Ваш тимчасовий пароль для доступу до FestLift: <strong>${rawPassword}</strong></p><p>Будь ласка, змініть його після першого входу.</p>`;
-            await emailService.sendEmail(user.email, 'FestLift — Новий тимчасовий пароль', html);
+            await emailService.sendWelcomeClientEmail(user, rawPassword);
         } catch (emailErr) {
             console.warn('⚠️ Не вдалося надіслати email з паролем:', emailErr.message);
         }
@@ -12615,7 +12614,7 @@ body{font-family:Arial,sans-serif;line-height:1.6;color:#333}
 .message-box{background:white;padding:20px;margin-top:20px;border-radius:5px;border:1px solid #ddd;white-space:pre-wrap}
 .footer{text-align:center;margin-top:20px;color:#666;font-size:12px}
 </style></head><body><div class="container">
-<div class="header"><h2>Nova Mensagem de Contacto</h2><p>Recebida através do website LiftMaster Pro</p></div>
+<div class="header"><h2>Nova Mensagem de Contacto</h2><p>Recebida através do website FestLift</p></div>
 <div class="content">
 <div class="info-box"><p><span class="label">Nome:</span> ${esc(rawName)}</p></div>
 <div class="info-box"><p><span class="label">Email:</span> <a href="mailto:${esc(rawEmail)}">${esc(rawEmail)}</a></p></div>
@@ -13524,18 +13523,26 @@ app.post('/api/email/send-contract', authenticateToken, upload.single('pdf'), as
             from: process.env.EMAIL_FROM,
             to: email,
             subject: subject || 'Contrato - FestLift',
-            html: `
-                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                    <h2 style="color: #007bff;">📄 Контракт на обслуговування</h2>
-                    <p>${message || 'Prezado(a) cliente! Enviamos-lhe o contrato de manutenção do elevador.'}</p>
-                    ${pdfFile ? '<p><strong>Контракт додано у вкладенні.</strong></p>' : ''}
-                    <hr>
-                    <p style="color: #666; font-size: 12px;">
-                        З повагою,<br>
-                        Команда FestLift
-                    </p>
-                </div>
-            `
+            html: `<!DOCTYPE html><html lang="pt"><head><meta charset="UTF-8"></head>
+<body style="margin:0;padding:0;background:#f0f2f5;font-family:Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f0f2f5;padding:32px 0;"><tr><td align="center">
+<table width="600" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.1);">
+  <tr><td style="background:linear-gradient(135deg,#1a237e,#1565c0);padding:28px 36px;">
+    <div style="font-size:22px;font-weight:bold;color:#fff;">🛗 FestLift</div>
+    <div style="font-size:12px;color:rgba(255,255,255,.75);margin-top:2px;">Gestão de Elevadores</div>
+  </td></tr>
+  <tr><td style="padding:32px 36px;color:#333;font-size:14px;line-height:1.7;">
+    <h2 style="margin-top:0;color:#1a237e;">📄 Contrato de Manutenção</h2>
+    <p>${message || 'Prezado(a) cliente,<br>Enviamos-lhe em anexo o contrato de manutenção do elevador para sua apreciação.'}</p>
+    ${pdfFile ? '<p><strong>O contrato encontra-se em anexo a este email.</strong></p>' : ''}
+    <p style="margin-top:24px;">Para qualquer questão, não hesite em contactar-nos.</p>
+    <p>Com os melhores cumprimentos,<br><strong>FestLift — Elevadores e Serviços, Lda.</strong></p>
+  </td></tr>
+  <tr><td style="padding:20px 36px;background:#fafafa;font-size:12px;color:#888;text-align:center;">
+    info@festlift.pt &nbsp;·&nbsp; +351 214 190 863 &nbsp;·&nbsp; festlift.pt<br>
+    <small>Email gerado automaticamente — por favor não responda diretamente.</small>
+  </td></tr>
+</table></td></tr></table></body></html>`
         };
 
         if (pdfFile) {
@@ -13592,21 +13599,29 @@ app.post('/api/email/send-inspection-pdf', authenticateToken, upload.single('pdf
             from: process.env.EMAIL_FROM,
             to: email,
             subject: subject || 'Relatório de inspeção - FestLift',
-            html: `
-                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                    <h2 style="color: #007bff;">📋 Звіт інспекції ліфта</h2>
-                    <p>${message || 'Prezado(a) cliente! Enviamos-lhe o relatório de inspeção do seu elevador.'}</p>
-                    ${pdfFile ? '<p><strong>Звіт додано у вкладенні.</strong></p>' : ''}
-                    <div style="background: #fff3cd; padding: 15px; border-left: 4px solid #ffc107; margin: 20px 0;">
-                        <p style="margin: 0;"><strong>⚠️ Важливо:</strong> Ознайомтеся зі звітом та зверніть увагу на рекомендації.</p>
-                    </div>
-                    <hr>
-                    <p style="color: #666; font-size: 12px;">
-                        З повагою,<br>
-                        Команда FestLift
-                    </p>
-                </div>
-            `
+            html: `<!DOCTYPE html><html lang="pt"><head><meta charset="UTF-8"></head>
+<body style="margin:0;padding:0;background:#f0f2f5;font-family:Arial,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#f0f2f5;padding:32px 0;"><tr><td align="center">
+<table width="600" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.1);">
+  <tr><td style="background:linear-gradient(135deg,#1a237e,#1565c0);padding:28px 36px;">
+    <div style="font-size:22px;font-weight:bold;color:#fff;">🛗 FestLift</div>
+    <div style="font-size:12px;color:rgba(255,255,255,.75);margin-top:2px;">Gestão de Elevadores</div>
+  </td></tr>
+  <tr><td style="padding:32px 36px;color:#333;font-size:14px;line-height:1.7;">
+    <h2 style="margin-top:0;color:#1a237e;">📋 Relatório de Inspeção do Elevador</h2>
+    <p>${message || 'Prezado(a) cliente,<br>Enviamos-lhe em anexo o relatório de inspeção do seu elevador.'}</p>
+    ${pdfFile ? '<p><strong>O relatório encontra-se em anexo a este email (formato PDF).</strong></p>' : ''}
+    <div style="background:#fff8e1;border-left:4px solid #f9a825;border-radius:6px;padding:14px 18px;margin:20px 0;">
+      <p style="margin:0;">⚠️ <strong>Importante:</strong> Consulte o relatório e tome nota das recomendações indicadas pelo inspector.</p>
+    </div>
+    <p>Para agendar correções ou para qualquer questão, contacte-nos.</p>
+    <p>Com os melhores cumprimentos,<br><strong>FestLift — Elevadores e Serviços, Lda.</strong></p>
+  </td></tr>
+  <tr><td style="padding:20px 36px;background:#fafafa;font-size:12px;color:#888;text-align:center;">
+    info@festlift.pt &nbsp;·&nbsp; +351 214 190 863 &nbsp;·&nbsp; festlift.pt<br>
+    <small>Email gerado automaticamente — por favor não responda diretamente.</small>
+  </td></tr>
+</table></td></tr></table></body></html>`
         };
 
         if (pdfFile) {
