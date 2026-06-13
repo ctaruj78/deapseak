@@ -317,8 +317,14 @@ function getToken() {
 async function apiCall(url, method = 'GET', body = null) {
     const opts = { method, headers: { 'Authorization': `Bearer ${getToken()}`, 'Content-Type': 'application/json' } };
     if (body) opts.body = JSON.stringify(body);
-    const res = await fetch(url, opts);
-    return res.json();
+    try {
+        const res = await fetch(url, opts);
+        const json = await res.json();
+        return json;
+    } catch (e) {
+        console.error('apiCall error:', url, e);
+        return { success: false, message: e.message };
+    }
 }
 
 async function loadArticles() {
@@ -335,10 +341,23 @@ async function loadArticles() {
     if (feat) params.append('featured', 'true');
     url += params.toString();
 
-    const res = await apiCall(url);
-    const articles = res.data || [];
-    renderTable(articles);
-    updateStats(articles);
+    try {
+        const res = await apiCall(url);
+        if (!res.success && res.message) {
+            if (res.message.includes('Token') || res.message.includes('autorização')) {
+                $('#articlesTableBody').html('<tr><td colspan="7" class="text-center py-4 text-warning"><i class="fas fa-lock mr-2"></i>Sessão expirada. <a href="/pages/auth/login.html">Entrar novamente</a></td></tr>');
+                updateStats([]);
+                return;
+            }
+        }
+        const articles = res.data || [];
+        renderTable(articles);
+        updateStats(articles);
+    } catch (e) {
+        console.error('loadArticles error:', e);
+        $('#articlesTableBody').html('<tr><td colspan="7" class="text-center py-4 text-danger"><i class="fas fa-exclamation-triangle mr-2"></i>Erro ao carregar artigos: ' + e.message + '</td></tr>');
+        updateStats([]);
+    }
 }
 
 function renderTable(articles) {

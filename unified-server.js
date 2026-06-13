@@ -2078,7 +2078,7 @@ app.get('/api/qr/stats', authenticateToken, async (req, res) => {
 // ═══════════════════════════════════════════════════════════
 
 // GET /api/knowledge-base
-app.get('/api/knowledge-base', authenticateToken, async (req, res) => {
+app.get('/api/knowledge-base', async (req, res) => {
     try {
         if (!db) return res.status(503).json({ success: false, message: 'Base de dados indisponível' });
         const { category, difficulty, search, featured } = req.query;
