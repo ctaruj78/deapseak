@@ -2576,6 +2576,17 @@ class AgentService {
             .limit(10)
             .toArray();
 
+        // Check global live-scan suppress flag (set by "Limpar tudo").
+        // Suppresses the overdue/no-inspection live scan for 30 days after bulk dismiss.
+        // Stored notifications (from checkInspectionExpiry) still appear so real new events are visible.
+        const agentSettings = await this.db.collection('settings').findOne({ _id: 'agent_settings' });
+        const liveSuppressedUntil = agentSettings?.liveNotificationsSuppressedUntil;
+        const isLiveSuppressed = liveSuppressedUntil && new Date(liveSuppressedUntil) > new Date();
+
+        if (isLiveSuppressed) {
+            return stored.slice(0, 20);
+        }
+
         // Also load recently rejected so they are excluded from the live scan (suppress for 30 days).
         const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
         const recentlyRejected = await this.db.collection('agent_notifications')

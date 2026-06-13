@@ -14484,6 +14484,13 @@ app.post('/api/agent/dismiss-all', authenticateToken, async (req, res) => {
             }));
         if (toInsert.length > 0) await col.insertMany(toInsert);
 
+        // Suppress live-scan (overdue/no-inspection) for 30 days so reloading doesn't re-show them all
+        await db.collection('settings').updateOne(
+            { _id: 'agent_settings' },
+            { $set: { liveNotificationsSuppressedUntil: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) } },
+            { upsert: true }
+        );
+
         res.json({ success: true, dismissed: result.modifiedCount + toInsert.length });
     } catch (err) {
         res.status(500).json({ success: false, error: err.message });
