@@ -61,7 +61,7 @@ Required output format:
 
 Rules:
 - violations must ONLY include actual deficiencies found, NOT legend/explanation text
-- Ignore boilerplate sections like "OBRIGAÇÕES DO PROPRIETÁRIO", "SIGNIFICADO DAS CLÁUSULAS"
+- Ignore boilerplate sections like "OBRIGAÇÕES DO PROPRIETÁRIO", "SIGNIFICADO DAS CLÁUSULAS", "NOTA DE CLÁUSULAS" legend rows, and footnote tables at the bottom explaining what C1/C2/C3 mean
 - description must be the actual defect description, minimum 10 characters
 - When a violation has a parenthetical note on the following line (e.g. "( Circuito de Iluminação na Casa das Máquinas )"), append it to the description so each entry is unique
 - Some violations reference a Decreto-Lei instead of an article number (e.g. "C3 | DL. 740/74 e Port.949-A/2006 - ..."). Include these as violations; use the DL reference as the article field (e.g. "DL.740/74")
@@ -69,6 +69,7 @@ Rules:
 - For result: "immobilized" only if explicit "Imobilização imediata" or C1 present
 - nextInspectionDate: only set if the report explicitly states a date like "Requerer Inspeção até DD/MM/YYYY"
 - Return null for any field not found in the document
+- CRITICAL — classification label: ALWAYS use the explicit label written in the document ("C1 |", "C2 |", "C3 |") as the violation classification. Do NOT infer or override based on the regulation article or decree number. If the document writes "C3 | Despacho nº18/2022" classify as C3, even if you believe that regulation is normally C2 or C2*. The inspector's label in the document is always authoritative.
 
 REPORT TEXT:
 ${truncated}`;

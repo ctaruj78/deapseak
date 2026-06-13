@@ -556,6 +556,8 @@
                                                     <th>Email</th>
                                                     <th>Papel</th>
                                                     <th>Estado</th>
+                                                    <th>Acesso</th>
+                                                    <th>Último login</th>
                                                     <th>Elevadores</th>
                                                     <th>Data de registo</th>
                                                     <th>Ações</th>
@@ -997,6 +999,26 @@
                         ? `<a href="/pages/admin/lifts.html?clientId=${userId}" title="Ver elevadores deste cliente"><span class="badge badge-${(user.liftsCount || 0) > 0 ? 'success' : 'secondary'}">${user.liftsCount || 0}</span></a>`
                         : '<span class="text-muted">—</span>';
 
+                    // Acesso / online status
+                    const _now = Date.now();
+                    const _lastLogin = user.lastLogin ? new Date(user.lastLogin) : null;
+                    const _minsAgo = _lastLogin ? Math.floor((_now - _lastLogin.getTime()) / 60000) : null;
+                    const _isOnline = _minsAgo !== null && _minsAgo < 20;
+                    let _accessBadge, _lastLoginStr;
+                    if (!_lastLogin) {
+                        _accessBadge = '<span class="badge badge-secondary" title="Nunca acedeu ao sistema">📧 Aguarda acesso</span>';
+                        _lastLoginStr = '<span class="text-muted">—</span>';
+                    } else if (_isOnline) {
+                        _accessBadge = '<span class="badge badge-success" title="Online agora">🟢 Online</span>';
+                        _lastLoginStr = `<span class="text-success">${_minsAgo === 0 ? 'agora' : _minsAgo + ' min atrás'}</span>`;
+                    } else if (user.mustChangePassword) {
+                        _accessBadge = '<span class="badge badge-warning" title="Entrou mas não alterou a senha temporária">🔑 Senha temp.</span>';
+                        _lastLoginStr = this.formatDate(_lastLogin);
+                    } else {
+                        _accessBadge = '<span class="badge badge-info" title="Acesso confirmado e senha alterada">✅ Activo</span>';
+                        _lastLoginStr = this.formatDate(_lastLogin);
+                    }
+
                     const row = `
                         <tr>
                             <td>${displayId}</td>
@@ -1004,6 +1026,8 @@
                             <td>${user.email}</td>
                             <td><span class="role-badge role-${user.role}">${this.getRoleLabel(user.role)}</span></td>
                             <td><span class="status-badge status-${user.status || 'active'}">${this.getStatusLabel(user.status || 'active')}</span></td>
+                            <td class="text-center">${_accessBadge}</td>
+                            <td class="text-center" style="white-space:nowrap">${_lastLoginStr}</td>
                             <td class="text-center">${_liftsCountCell}</td>
                             <td>${this.formatDate(user.createdAt)}</td>
                             <td class="action-buttons">

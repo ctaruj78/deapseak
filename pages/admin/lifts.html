@@ -5637,12 +5637,8 @@ Email de contacto: info@festlift.pt`;
                             + '<i class="fas fa-exclamation-triangle mr-1"></i>'
                             + ' <strong>Sem inspecção registada</strong> — elevador sem certificado válido.'
                             + '<div class="mt-2">'
-                            + '<button class="btn btn-dark btn-sm mr-1" onclick="requestLiftInspection()">'
+                            + '<button class="btn btn-dark btn-sm" onclick="requestLiftInspection()">'
                             + '<i class="fas fa-clipboard-check mr-1"></i> Solicitar inspecção</button>'
-                            + '<button class="btn btn-primary btn-sm mr-1" onclick="showAddReportModal()">'
-                            + '<i class="fas fa-plus mr-1"></i> Adicionar relatório</button>'
-                            + '<button class="btn btn-outline-primary btn-sm" data-toggle="modal" data-target="#pdfParserModal">'
-                            + '<i class="fas fa-file-pdf mr-1"></i> Importar PDF</button>'
                             + '</div></div>';
                     } else if (_lastSt === 'failed') {
                         _banner.innerHTML = '<div class="alert alert-danger py-2 mb-0"><i class="fas fa-times-circle mr-1"></i> <strong>Inspecção reprovada</strong> — necessita nova inspecção</div>';
@@ -7938,9 +7934,8 @@ Email de contacto: info@festlift.pt`;
                     // Escapa aspas duplas dentro dos campos e converte para string
                     const esc = v => String(v == null ? '' : v).replace(/"/g, '""');
 
-                    const headers = ['Nº Municipal', 'Tipo', 'Fabricante', 'Modelo', 'Endereço', 'Município', 'Estado', 'Cliente', 'Última Inspeção', 'Próxima Inspeção', 'Nº Contrato', 'Data de Criação'];
-                    // sep=; → Excel Windows detecta automaticamente o separador
-                    const csvRows = ['sep=;', headers.join(';')];
+                    const headers = ['Nr Municipal', 'Tipo', 'Fabricante', 'Modelo', 'Endereco', 'Municipio', 'Estado', 'Cliente', 'Ultima Inspecao', 'Prox. Inspecao', 'Nr Contrato', 'Data de Criacao'];
+                    const csvRows = [headers.join(';')];
 
                     lifts.forEach(lift => {
                         // Endereço: só street e city, separados por ' | ' (sem vírgulas para não quebrar colunas)
@@ -7954,8 +7949,10 @@ Email de contacto: info@festlift.pt`;
                                 addressStr = parts.join(' | ');
                             }
                         }
-                        const municipioStr = typeof lift.municipality === 'string' ? lift.municipality
-                            : (lift.address && typeof lift.address.city === 'string' ? lift.address.city : '');
+                        const municipioStr = lift.municipality && typeof lift.municipality === 'object'
+                            ? (lift.municipality.name || lift.municipality.distrito || '')
+                            : (typeof lift.municipality === 'string' ? lift.municipality
+                            : (lift.address && typeof lift.address.city === 'string' ? lift.address.city : ''));
                         const lastInsp = lift.lastInspectionDate ? new Date(lift.lastInspectionDate).toLocaleDateString('pt-PT') : '';
                         const nextInsp = lift.nextInspectionDate ? new Date(lift.nextInspectionDate).toLocaleDateString('pt-PT') : '';
                         const createdAt = lift.createdAt ? new Date(lift.createdAt).toLocaleDateString('pt-PT') : '';
@@ -7979,8 +7976,10 @@ Email de contacto: info@festlift.pt`;
 
                     
                     // Створюexisteмо Blob e заванeжуexisteмо ficheiro
-                    const csvContent = csvRows.join('\n');
-                    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+                    const csvContent = csvRows.join('\r\n');
+                    const bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
+                    const encoded = new TextEncoder().encode(csvContent);
+                    const blob = new Blob([bom, encoded], { type: 'text/csv;charset=utf-8;' });
                     const link = document.createElement('a');
                     const url = URL.createObjectURL(blob);
                     
@@ -8067,7 +8066,9 @@ Email de contacto: info@festlift.pt`;
                                 if (typeof lift.address === 'string') addr = lift.address;
                                 else addr = [lift.address.street, lift.address.city].filter(Boolean).join(', ') || '-';
                             }
-                            const municipio = lift.municipality || (lift.address && lift.address.city) || '-';
+                            const municipio = (lift.municipality && typeof lift.municipality === 'object')
+                                ? (lift.municipality.name || lift.municipality.distrito || (lift.address && lift.address.city) || '-')
+                                : (lift.municipality || (lift.address && lift.address.city) || '-');
                             const lastInsp = lift.lastInspectionDate ? new Date(lift.lastInspectionDate).toLocaleDateString('pt-PT') : '-';
                             const nextInsp = lift.nextInspectionDate ? new Date(lift.nextInspectionDate).toLocaleDateString('pt-PT') : '-';
                             return [

@@ -14444,12 +14444,47 @@ app.post('/api/agent/decide', authenticateToken, async (req, res) => {
 app.post('/api/agent/dismiss-all', authenticateToken, async (req, res) => {
     try {
         const db = getDB();
-        const AgentNotification = db.collection('agentnotifications');
-        const result = await AgentNotification.updateMany(
+        const col = db.collection('agent_notifications');
+        const now = new Date();
+
+        // 1. Mark stored notifications as rejected
+        const result = await col.updateMany(
             { status: { $in: ['pending', 'postponed'] } },
-            { $set: { status: 'rejected', updatedAt: new Date() } }
+            { $set: { status: 'rejected', decidedAt: now, updatedAt: now } }
         );
-        res.json({ success: true, dismissed: result.modifiedCount });
+
+        // 2. Also insert rejected records for live-scan overdue lifts so they are
+        //    suppressed for 30 days (recentlyRejected logic in getPendingNotifications)
+        const todayISO = now.toISOString();
+        const overdueLifts = await db.collection('lifts').find({
+            $or: [
+                { nextInspectionDate: { $lt: todayISO, $ne: null, $exists: true } },
+                { nextInspectionDate: null },
+                { nextInspectionDate: { $exists: false } }
+            ],
+            active: { $ne: false }
+        }).project({ _id: 1, municipalNumber: 1, address: 1, location: 1 }).limit(100).toArray();
+
+        const alreadyHandled = await col.find(
+            { liftId: { $in: overdueLifts.map(l => l._id) }, status: 'rejected', decidedAt: { $gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) } }
+        ).project({ liftId: 1 }).toArray();
+        const handledSet = new Set(alreadyHandled.map(n => String(n.liftId)));
+
+        const toInsert = overdueLifts
+            .filter(l => !handledSet.has(String(l._id)))
+            .map(l => ({
+                liftId: l._id,
+                liftLocation: l.municipalNumber || String(l._id),
+                type: 'expiry_reminder',
+                status: 'rejected',
+                decidedAt: now,
+                createdAt: now,
+                updatedAt: now,
+                _dismissedByUser: true
+            }));
+        if (toInsert.length > 0) await col.insertMany(toInsert);
+
+        res.json({ success: true, dismissed: result.modifiedCount + toInsert.length });
     } catch (err) {
         res.status(500).json({ success: false, error: err.message });
     }
