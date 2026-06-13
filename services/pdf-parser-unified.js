@@ -29,6 +29,7 @@ const fs = require('fs').promises;
 const pdfParse = require('pdf-parse');
 const pdfParserEnhanced = require('./pdf-parser-enhanced');
 const { parseBureauVeritasPDF } = require('./pdf-parser-bureau-veritas');
+const { extractWithLLM } = require('./pdf-parser-llm');
 
 // ─── НОРМАЛІЗАЦІЯ ТЕКСТУ ─────────────────────────────────────────────────────
 
@@ -453,38 +454,62 @@ function detectFormat(text) {
 async function parseReport(filePath) {
     try {
         const buffer = await fs.readFile(filePath);
-        let firstPageText = '';
+
+        // Extract full text first — used by both LLM and regex parsers
+        let fullText = '';
         try {
-            const partial = await pdfParse(buffer, { max: 1 });
-            firstPageText = partial.text || '';
+            const parsed = await pdfParse(buffer);
+            fullText = parsed.text || '';
         } catch {
-            // Сканований PDF — OCR спрацює всередині enhanced
+            // Scanned PDF — will be handled by enhanced parser's OCR fallback
         }
 
-        const format = detectFormat(firstPageText);
+        const format = detectFormat(fullText);
         console.log(`📋 PDF format detected: ${format} → ${filePath}`);
 
         let result = null;
 
-        if (format === 'bureau-veritas' || format === 'known-pt') {
-            result = await parseBureauVeritasPDF(filePath);
+        // ── STEP 1: LLM extraction (primary, if text is usable) ──────────────
+        if (fullText.length >= 300) {
+            const llmResult = await extractWithLLM(fullText).catch(err => {
+                console.warn('⚠️ LLM extraction threw:', err.message);
+                return null;
+            });
 
-            const hasDate = result?.metadata?.date || result?.success === false;
-            if (!hasDate) {
-                console.log('⚠️ BV parser found no date — falling back to enhanced parser');
-                const enhanced = await pdfParserEnhanced.parsePDF(filePath).catch(() => null);
-                if (enhanced?.success) result = enhanced;
+            if (llmResult?.success) {
+                const hasDate = llmResult.metadata?.date;
+                const hasViolations = (llmResult.violations?.length || 0) > 0;
+                if (hasDate || hasViolations) {
+                    console.log(`✅ Using LLM result (date=${hasDate}, violations=${llmResult.violations?.length || 0})`);
+                    result = llmResult;
+                } else {
+                    console.log('⚠️ LLM returned no date and no violations — falling back to regex');
+                }
             }
-        } else {
-            result = await pdfParserEnhanced.parsePDF(filePath);
+        }
 
-            const hasViolations = result?.violations?.length > 0;
-            const hasMetadata = result?.metadata?.date || result?.metadata?.reportNumber;
-            if (!hasViolations && !hasMetadata && result?.success) {
-                console.log('⚠️ Enhanced found nothing — trying BV parser as last resort');
-                const bv = await parseBureauVeritasPDF(filePath).catch(() => null);
-                if (bv?.success && (bv.violations?.length > 0 || bv.metadata?.date)) {
-                    result = bv;
+        // ── STEP 2: Regex fallback ────────────────────────────────────────────
+        if (!result) {
+            if (format === 'bureau-veritas' || format === 'known-pt') {
+                result = await parseBureauVeritasPDF(filePath);
+
+                const hasDate = result?.metadata?.date || result?.success === false;
+                if (!hasDate) {
+                    console.log('⚠️ BV parser found no date — falling back to enhanced parser');
+                    const enhanced = await pdfParserEnhanced.parsePDF(filePath).catch(() => null);
+                    if (enhanced?.success) result = enhanced;
+                }
+            } else {
+                result = await pdfParserEnhanced.parsePDF(filePath);
+
+                const hasViolations = result?.violations?.length > 0;
+                const hasMetadata = result?.metadata?.date || result?.metadata?.reportNumber;
+                if (!hasViolations && !hasMetadata && result?.success) {
+                    console.log('⚠️ Enhanced found nothing — trying BV parser as last resort');
+                    const bv = await parseBureauVeritasPDF(filePath).catch(() => null);
+                    if (bv?.success && (bv.violations?.length > 0 || bv.metadata?.date)) {
+                        result = bv;
+                    }
                 }
             }
         }
@@ -495,7 +520,7 @@ async function parseReport(filePath) {
 
         result = applyUnifiedPostProcessing(result);
 
-        if (result.success) result.detectedFormat = format;
+        if (result.success) result.detectedFormat = result.detectedFormat || format;
         return result;
 
     } catch (error) {

@@ -2561,19 +2561,33 @@ class AgentService {
         try {
             const today = new Date();
             const todayISO = today.toISOString();
-            // nextInspectionDate is stored as ISO string — must compare as string
-            const lifts = await this.db.collection('lifts').find({
-                nextInspectionDate: { $lt: todayISO, $ne: null, $exists: true },
-                active: { $ne: false }
-            }).sort({ nextInspectionDate: 1 }).limit(50).toArray();
 
-            return lifts.map(lift => {
-                const addr = (() => {
-                    const a = lift.address || lift.location;
-                    if (!a) return lift.municipalNumber || String(lift._id);
-                    if (typeof a === 'object') return `${a.street || ''}, ${a.city || a.concelho || ''}`.trim().replace(/^,\s*|,\s*$/g, '') || lift.municipalNumber || String(lift._id);
-                    return String(a);
-                })();
+            const [overdueLifts, noInspectionLifts] = await Promise.all([
+                // Lifts with a known past inspection date that has expired
+                this.db.collection('lifts').find({
+                    nextInspectionDate: { $lt: todayISO, $ne: null, $exists: true },
+                    active: { $ne: false }
+                }).sort({ nextInspectionDate: 1 }).limit(50).toArray(),
+
+                // Lifts that have never had an inspection recorded
+                this.db.collection('lifts').find({
+                    $or: [
+                        { nextInspectionDate: null },
+                        { nextInspectionDate: { $exists: false } }
+                    ],
+                    active: { $ne: false }
+                }).limit(50).toArray()
+            ]);
+
+            const buildAddr = lift => {
+                const a = lift.address || lift.location;
+                if (!a) return lift.municipalNumber || String(lift._id);
+                if (typeof a === 'object') return `${a.street || ''}, ${a.city || a.concelho || ''}`.trim().replace(/^,\s*|,\s*$/g, '') || lift.municipalNumber || String(lift._id);
+                return String(a);
+            };
+
+            const overdueItems = overdueLifts.map(lift => {
+                const addr = buildAddr(lift);
                 const daysOverdue = Math.ceil((today - new Date(lift.nextInspectionDate)) / 86400000);
                 return {
                     _id: lift._id,
@@ -2589,6 +2603,26 @@ class AgentService {
                     _live: true,
                 };
             });
+
+            const noInspItems = noInspectionLifts.map(lift => {
+                const addr = buildAddr(lift);
+                return {
+                    _id: lift._id,
+                    liftId: lift._id,
+                    type: 'no_inspection',
+                    status: 'pending',
+                    liftLocation: addr,
+                    municipalNumber: lift.municipalNumber,
+                    clientName: lift.clientName || lift.clientEmail || '',
+                    agentMessage: `🔴 Sem inspeção registada — **requerer inspeção inicial** — ${addr}${lift.clientName ? ` (${lift.clientName})` : ''}`,
+                    daysOverdue: null,
+                    createdAt: lift.createdAt || new Date(0),
+                    _live: true,
+                };
+            });
+
+            // Overdue lifts first (sorted by most overdue), then no-inspection lifts
+            return [...overdueItems, ...noInspItems];
         } catch (e) {
             console.error('_scanOverdueLiftsForAdmin error:', e.message);
             return [];

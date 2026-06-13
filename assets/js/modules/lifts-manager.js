@@ -159,12 +159,12 @@ class LiftsManager {
     getInspectionAlertInfo(lift) {
         const targetDateRaw = this.getEffectiveNextInspectionDate(lift);
         if (!targetDateRaw) {
-            return { hasDate: false, level: 'none', message: '', daysDiff: null };
+            return { hasDate: false, level: 'danger', message: 'Sem inspeção registada — requerer inspeção inicial', daysDiff: null };
         }
 
         const targetDate = new Date(targetDateRaw);
         if (Number.isNaN(targetDate.getTime())) {
-            return { hasDate: false, level: 'none', message: '', daysDiff: null };
+            return { hasDate: false, level: 'danger', message: 'Sem inspeção registada — requerer inspeção inicial', daysDiff: null };
         }
 
         const now = new Date();
@@ -241,7 +241,7 @@ class LiftsManager {
 
     buildInspectionAlertHtml(lift, compact = false) {
         const info = this.getInspectionAlertInfo(lift);
-        if (!info.hasDate || info.level === 'ok') return '';
+        if (info.level === 'none' || info.level === 'ok') return '';
 
         const icon = info.level === 'danger' ? 'fa-exclamation-triangle' : 'fa-clock';
         const cls = info.level === 'danger' ? 'alert-danger' : 'alert-warning';
@@ -335,7 +335,7 @@ class LiftsManager {
                             <p><strong><i class="fas fa-map-marker-alt mr-2"></i>Morada:</strong> ${location}</p>
                             <p><strong><i class="fas fa-tag mr-2"></i>Tipo:</strong> ${typeText}</p>
                             <p><strong><i class="fas fa-calendar-check mr-2"></i>Última inspeção:</strong> ${this.formatDate(this.getEffectiveLastInspectionDate(lift))}</p>
-                            <p><strong><i class="fas fa-calendar-alt mr-2"></i>Próxima inspeção:</strong> ${this.formatDate(this.getEffectiveNextInspectionDate(lift))}</p>
+                            <p><strong><i class="fas fa-calendar-alt mr-2"></i>Próxima inspeção:</strong> ${this.getEffectiveNextInspectionDate(lift) ? this.formatDate(this.getEffectiveNextInspectionDate(lift)) : '<span class="badge badge-danger">Sem inspeção registada</span>'}</p>
                             ${lift.capacity ? `<p><strong><i class="fas fa-weight-hanging mr-2"></i>Capacidade:</strong> ${lift.type === 'passenger' ? Math.floor(lift.capacity / 75) + ' pessoas / ' : ''}${lift.capacity} kg</p>` : ''}
                         </div>
                     </div>

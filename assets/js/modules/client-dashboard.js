@@ -200,15 +200,29 @@ class ClientDashboard {
         const alerts = [];
 
         (lifts || []).forEach((lift) => {
-            const nextDate = this.getEffectiveNextInspectionDate(lift);
-            if (!nextDate || Number.isNaN(nextDate.getTime())) return;
-
-            const daysLeft = Math.ceil((nextDate - now) / 86400000);
-            if (daysLeft > 60) return;
-
             const address = lift?.address?.street || lift?.municipalNumber || 'Elevador';
             const ref = lift?.municipalNumber ? ` (${lift.municipalNumber})` : '';
-            const datePt = nextDate.toLocaleDateString('pt-PT');
+
+            const nextDate = this.getEffectiveNextInspectionDate(lift);
+            if (!nextDate || Number.isNaN(new Date(nextDate).getTime())) {
+                // Lift has never had an inspection recorded
+                alerts.push({
+                    synthetic: true,
+                    read: false,
+                    createdAt: now.toISOString(),
+                    title: 'Sem inspeção registada',
+                    message: `${address}${ref}: sem inspeção periódica registada — requerer inspeção inicial.`,
+                    severity: 'danger',
+                    sortDays: -9999
+                });
+                return;
+            }
+
+            const d = new Date(nextDate);
+            const daysLeft = Math.ceil((d - now) / 86400000);
+            if (daysLeft > 60) return;
+
+            const datePt = d.toLocaleDateString('pt-PT');
             const overdue = daysLeft < 0;
             const title = overdue ? 'Inspeção periódica em atraso' : 'Requerimento de inspeção próximo';
             const sourceLabel = this.getInspectionSourceLabel(lift);

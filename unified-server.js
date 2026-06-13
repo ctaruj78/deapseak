@@ -3208,49 +3208,54 @@ app.get('/api/lifts/notifications', authenticateToken, async (req, res) => {
         const sevenDaysFromNow = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
         const sevenDaysAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
         
-        // Ліфти з простроченою інспекцією
-        const overdueInspections = await liftsCollection.countDocuments({
-            nextInspectionDate: { $lt: today }
-        });
-        
-        // Ліфти з інспекцією в найближчі 7 днів
-        const urgentInspections = await liftsCollection.countDocuments({
-            nextInspectionDate: { 
-                $gte: today,
-                $lte: sevenDaysFromNow
-            }
-        });
-        
-        // Ліфти з інспекцією в найближчі 30 днів
-        const upcomingInspections = await liftsCollection.countDocuments({
-            nextInspectionDate: { 
-                $gte: today,
-                $lte: thirtyDaysFromNow
-            }
-        });
-        
-        // Ліфти неактивні > 7 днів
-        const longInactive = await liftsCollection.countDocuments({
-            status: 'inactive',
-            updatedAt: { $lt: sevenDaysAgo }
-        });
-        
-        // Ліфти без контрактів
-        const withoutContracts = await liftsCollection.countDocuments({
-            $or: [
-                { documents: { $exists: false } },
-                { 'documents.type': { $ne: 'contract' } }
-            ]
-        });
-        
-        // Загальна кількість сповіщень
-        const totalNotifications = overdueInspections + urgentInspections + longInactive;
-        
+        const todayISO = today.toISOString();
+
+        const [
+            overdueInspections,
+            noInspectionLifts,
+            urgentInspections,
+            upcomingInspections,
+            longInactive,
+            withoutContracts
+        ] = await Promise.all([
+            // Lifts with a known past inspection date (stored as ISO string)
+            liftsCollection.countDocuments({
+                nextInspectionDate: { $lt: todayISO, $ne: null, $exists: true }
+            }),
+            // Lifts that have never had an inspection recorded
+            liftsCollection.countDocuments({
+                $or: [
+                    { nextInspectionDate: null },
+                    { nextInspectionDate: { $exists: false } }
+                ],
+                active: { $ne: false }
+            }),
+            liftsCollection.countDocuments({
+                nextInspectionDate: { $gte: todayISO, $lte: new Date(today.getTime() + 7 * 86400000).toISOString() }
+            }),
+            liftsCollection.countDocuments({
+                nextInspectionDate: { $gte: todayISO, $lte: new Date(today.getTime() + 30 * 86400000).toISOString() }
+            }),
+            liftsCollection.countDocuments({
+                status: 'inactive',
+                updatedAt: { $lt: sevenDaysAgo }
+            }),
+            liftsCollection.countDocuments({
+                $or: [
+                    { documents: { $exists: false } },
+                    { 'documents.type': { $ne: 'contract' } }
+                ]
+            })
+        ]);
+
+        const totalNotifications = overdueInspections + noInspectionLifts + urgentInspections + longInactive;
+
         res.json({
             success: true,
             data: {
                 total: totalNotifications,
                 overdueInspections,
+                noInspectionLifts,
                 urgentInspections,
                 upcomingInspections,
                 longInactive,
@@ -8962,6 +8967,7 @@ function _fmtLift(lift, includeInspection = false) {
     if (lift.status) s += ` | Estado: ${lift.status}`;
     if (lift.inspectionStatus) s += ` | Inspeção: ${lift.inspectionStatus}`;
     if (lift.nextInspectionDate) s += ` | Próxima inspeção: ${new Date(lift.nextInspectionDate).toLocaleDateString('pt-PT')}`;
+    else s += ' | Próxima inspeção: SEM INSPEÇÃO REGISTADA';
     return s;
 }
 
