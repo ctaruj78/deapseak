@@ -250,6 +250,16 @@
         return String(loc);
     }
 
+    async function dismissAllNotifications() {
+        if (!confirm('Descartar todas as notificações pendentes?')) return;
+        const res = await apiFetch('/api/agent/dismiss-all', { method: 'POST' });
+        if (res.success) {
+            notifications = [];
+            renderNotifications();
+            updateBadge(0);
+        }
+    }
+
     function renderNotifications() {
         const view = document.getElementById('agent-notif-view');
         if (notifications.length === 0) {
@@ -257,7 +267,17 @@
             return;
         }
 
+        // Dismiss-all toolbar
+        const toolbar = document.createElement('div');
+        toolbar.style.cssText = 'display:flex;justify-content:flex-end;padding:6px 8px 2px;';
+        const dismissBtn = document.createElement('button');
+        dismissBtn.textContent = '🗑️ Limpar tudo';
+        dismissBtn.style.cssText = 'background:none;border:1px solid #dc3545;color:#dc3545;border-radius:4px;padding:3px 10px;font-size:12px;cursor:pointer;';
+        dismissBtn.onclick = dismissAllNotifications;
+        toolbar.appendChild(dismissBtn);
+
         view.innerHTML = '';
+        view.appendChild(toolbar);
         notifications.forEach(n => {
             const card = document.createElement('div');
             const isExpiry = n.type === 'expiry_reminder';

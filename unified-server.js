@@ -262,7 +262,7 @@ function pickBestResult(results, cityHint, anchor) {
         const withDist = results.map(r => ({
             r,
             dist: haversineKm(anchor.lat, anchor.lon, parseFloat(r.lat), parseFloat(r.lon))
-        })).filter(x => x.dist <= 30).sort((a, b) => a.dist - b.dist);
+        })).filter(x => x.dist <= 20).sort((a, b) => a.dist - b.dist);
         if (withDist.length) return withDist[0].r;
     }
     // Fallback: city name match
@@ -282,7 +282,8 @@ function pickBestResult(results, cityHint, anchor) {
 // ── Nominatim multi-step fallback (postal-code-anchored) ─
 async function geocodeWithNominatim(address) {
     const BASE = 'https://nominatim.openstreetmap.org/search';
-    const COMMON = 'format=json&limit=5&countrycodes=pt&addressdetails=1';
+    // viewbox biases results toward mainland Portugal; countrycodes=pt restricts to PT
+    const COMMON = 'format=json&limit=5&countrycodes=pt&addressdetails=1&viewbox=-9.6,41.9,-6.1,36.9';
     let searchLabel = '';
     let results = null;
     let anchor = null; // postal-code anchor for geographic validation
@@ -347,14 +348,14 @@ async function geocodeWithNominatim(address) {
 
     const best = pickBestResult(results, typeof address === 'object' ? address.city : null, anchor);
 
-    // If best result is >30 km from postal anchor, fall back to the anchor itself
+    // If best result is >20 km from postal anchor, fall back to the anchor itself
     if (best && anchor) {
         const dist = haversineKm(anchor.lat, anchor.lon, parseFloat(best.lat), parseFloat(best.lon));
-        if (dist > 30) {
+        if (dist > 20) {
             console.warn(`⚠️ [Nominatim] best result is ${dist.toFixed(1)} km from postal anchor — using anchor instead`);
             const anchorResult = results?.find(r => {
                 const d = haversineKm(anchor.lat, anchor.lon, parseFloat(r.lat), parseFloat(r.lon));
-                return d <= 30;
+                return d <= 20;
             }) || null;
             if (anchorResult) {
                 const n2 = anchorResult.address || {};
@@ -14434,6 +14435,21 @@ app.post('/api/agent/decide', authenticateToken, async (req, res) => {
             notificationId, action, reason || '', req.user.id, req.user.role
         );
         res.json(result);
+    } catch (err) {
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+// POST /api/agent/dismiss-all — mark all pending notifications as rejected (bulk dismiss)
+app.post('/api/agent/dismiss-all', authenticateToken, async (req, res) => {
+    try {
+        const db = getDB();
+        const AgentNotification = db.collection('agentnotifications');
+        const result = await AgentNotification.updateMany(
+            { status: { $in: ['pending', 'postponed'] } },
+            { $set: { status: 'rejected', updatedAt: new Date() } }
+        );
+        res.json({ success: true, dismissed: result.modifiedCount });
     } catch (err) {
         res.status(500).json({ success: false, error: err.message });
     }

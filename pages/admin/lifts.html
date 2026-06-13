@@ -5020,6 +5020,9 @@ Email de contacto: info@festlift.pt`;
                 : '';
             const _inspectionStatusResolved = String(lift.inspectionStatus || (_latestRowReport && _latestRowReport.status) || '').toLowerCase();
             const _isReinspectionFlow = _inspectionStatusResolved === 'failed' || _inspectionStatusResolved === 'conditional';
+            const _noInspectionBadge = (!_effectiveExpiryDate && !_isReinspectionFlow && !_latestRowReport)
+                ? '<br><span class="badge badge-danger mt-1" style="font-size:.65rem;cursor:default" title="Sem inspeção registada — requerer inspeção inicial">&#128683; Sem inspeção</span>'
+                : '';
             const _overdueInspectionBadge = (!_isReinspectionFlow && _effectiveExpiryDate && _effectiveExpiryDate < new Date())
                 ? '<br><span class="badge badge-danger mt-1" style="font-size:.65rem;cursor:default" title="Inspecção vencida desde ' + _effectiveExpiryDate.toLocaleDateString('pt-PT') + ' (' + _sourceTooltip + ')">&#9888; Insp. vencida</span>'
                 : '';
@@ -5070,6 +5073,7 @@ Email de contacto: info@festlift.pt`;
                     <span class="badge ${statusClass} text-white px-2 py-1">
                         ${statusText}
                     </span>
+                    ${_noInspectionBadge}
                     ${_overdueInspectionBadge}
                     ${_nearExpiryInspectionBadge}
                     ${_reinspectionBadge}
