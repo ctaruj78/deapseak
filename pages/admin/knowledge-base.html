@@ -67,48 +67,44 @@
 
                 <!-- Estatísticas -->
                 <div class="row mb-3" id="stats-row">
-                    <div class="col-md-2 col-6 mb-2">
+                    <div class="col-md-3 col-6 mb-2">
                         <div class="small-box bg-info">
                             <div class="inner"><h3 id="stat-total">—</h3><p>Total de artigos</p></div>
                             <div class="icon"><i class="fas fa-book"></i></div>
                         </div>
                     </div>
-                    <div class="col-md-2 col-6 mb-2">
+                    <div class="col-md-3 col-6 mb-2">
                         <div class="small-box bg-success">
                             <div class="inner"><h3 id="stat-pub">—</h3><p>Publicados</p></div>
                             <div class="icon"><i class="fas fa-check-circle"></i></div>
                         </div>
                     </div>
-                    <div class="col-md-2 col-6 mb-2">
+                    <div class="col-md-3 col-6 mb-2">
                         <div class="small-box bg-warning">
                             <div class="inner"><h3 id="stat-draft">—</h3><p>Rascunhos</p></div>
                             <div class="icon"><i class="fas fa-pencil-alt"></i></div>
                         </div>
                     </div>
-                    <div class="col-md-2 col-6 mb-2">
+                    <div class="col-md-3 col-6 mb-2">
                         <div class="small-box bg-danger">
                             <div class="inner"><h3 id="stat-feat">—</h3><p>Destacados</p></div>
                             <div class="icon"><i class="fas fa-star"></i></div>
                         </div>
                     </div>
-                    <div class="col-md-4 col-12 mb-2">
-                        <div class="card h-100 mb-0">
-                            <div class="card-body py-2 px-3 d-flex align-items-center">
-                                <div class="input-group">
+                </div>
+
+                <!-- Filtros + Pesquisa -->
+                <div class="card card-outline card-primary mb-3">
+                    <div class="card-body py-2">
+                        <div class="row align-items-center">
+                            <div class="col-md-4 mb-2 mb-md-0">
+                                <div class="input-group input-group-sm">
                                     <input type="text" id="searchInput" class="form-control" placeholder="Pesquisar artigos...">
                                     <div class="input-group-append">
                                         <button class="btn btn-outline-secondary" onclick="loadArticles()"><i class="fas fa-search"></i></button>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Filtros -->
-                <div class="card card-outline card-primary mb-3">
-                    <div class="card-body py-2">
-                        <div class="row align-items-center">
                             <div class="col-auto"><strong class="small">Categoria:</strong></div>
                             <div class="col-auto">
                                 <select id="filterCat" class="form-control form-control-sm" onchange="loadArticles()">
