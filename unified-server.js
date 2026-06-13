@@ -454,6 +454,20 @@ const refreshLimiter = rateLimit({
     standardHeaders: true,
     legacyHeaders: false,
 });
+const forgotPasswordLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 min
+    max: 3,                    // max 3 reset-email sends per 15 min per IP
+    message: { success: false, message: 'Demasiadas tentativas de recuperação de senha. Tente novamente em 15 minutos.' },
+    standardHeaders: true,
+    legacyHeaders: false,
+});
+const geocodeLimiter = rateLimit({
+    windowMs: 60 * 1000, // 1 min
+    max: 30,             // max 30 geocode requests per min per IP (cached hits bypass this anyway)
+    message: { success: false, message: 'Demasiados pedidos de geocodificação. Aguarde um momento.' },
+    standardHeaders: true,
+    legacyHeaders: false,
+});
 
 // Middleware - CORS
 const isProduction = process.env.NODE_ENV === 'production';
@@ -935,7 +949,7 @@ app.post('/api/admin/backup/restore', authenticateToken, requireRole('admin'), a
 // 🌍 GEOCODING PROXY — сервер звертається до Nominatim
 //    (уникає CORS та проблем з User-Agent у браузері)
 // ═══════════════════════════════════════════════════════════
-app.get('/api/geocode', async (req, res) => {
+app.get('/api/geocode', geocodeLimiter, async (req, res) => {
     const q = (req.query.q || '').trim();
     if (!q) return res.status(400).json({ success: false, message: 'Parâmetro q é obrigatório' });
 
@@ -1114,7 +1128,7 @@ app.get('/api/geocode', async (req, res) => {
 });
 
 // ── Reverse geocoding: [lat, lng] → address (Google → Nominatim fallback) ──
-app.get('/api/geocode/reverse', async (req, res) => {
+app.get('/api/geocode/reverse', geocodeLimiter, async (req, res) => {
     const lat = parseFloat(req.query.lat);
     const lng = parseFloat(req.query.lng);
     if (isNaN(lat) || isNaN(lng)) {
@@ -1493,6 +1507,19 @@ app.get('/api/qr/codes', authenticateToken, async (req, res) => {
         const liftFilter = {};
         if (status === 'inactive') liftFilter.status = { $ne: 'operational' };
         else if (status === 'active') liftFilter.status = 'operational';
+
+        // Client sees only their own lifts
+        if (req.user.role === 'client') {
+            const { ObjectId: OID } = require('mongodb');
+            const uid = (req.user.userId || req.user.id || '').toString();
+            let oid = null;
+            try { oid = new OID(uid); } catch (_) {}
+            const clientEmail = (req.user.email || '').toLowerCase();
+            const orConds = oid
+                ? [{ client: uid }, { client: oid }, { clientEmail }]
+                : [{ client: uid }, { clientEmail }];
+            liftFilter.$or = orConds;
+        }
 
         const lifts = await db.collection('lifts').find(liftFilter).toArray();
         const total = lifts.length;
@@ -2507,8 +2534,8 @@ app.post('/api/users/change-password', authenticateToken, async (req, res) => {
         const { currentPassword, newPassword } = req.body;
         if (!currentPassword || !newPassword)
             return res.status(400).json({ success: false, message: 'Preencha a palavra-passe atual e a nova.' });
-        if (newPassword.length < 6)
-            return res.status(400).json({ success: false, message: 'A nova palavra-passe deve ter pelo menos 6 caracteres.' });
+        if (newPassword.length < 8)
+            return res.status(400).json({ success: false, message: 'A nova palavra-passe deve ter pelo menos 8 caracteres.' });
 
         const userId = new ObjectId(req.user.id);
         const user = await db.collection('users').findOne({ _id: userId });
@@ -2538,7 +2565,8 @@ const avatarStorage = multer.diskStorage({
         cb(null, dir);
     },
     filename: (req, file, cb) => {
-        const ext = path.extname(file.originalname).toLowerCase() || '.jpg';
+        const extMap = { 'image/jpeg': '.jpg', 'image/png': '.png', 'image/webp': '.webp' };
+        const ext = extMap[file.mimetype] || '.jpg';
         cb(null, `avatar-${req.user.id}-${Date.now()}${ext}`);
     }
 });
@@ -2705,7 +2733,9 @@ const storage = multer.diskStorage({
     },
     filename: (req, file, cb) => {
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        cb(null, 'report-' + uniqueSuffix + path.extname(file.originalname));
+        const extMap = { 'application/pdf': '.pdf', 'image/jpeg': '.jpg', 'image/jpg': '.jpg', 'image/png': '.png' };
+        const ext = extMap[file.mimetype] || '.bin';
+        cb(null, 'report-' + uniqueSuffix + ext);
     }
 });
 
@@ -4698,7 +4728,7 @@ app.post('/api/lifts/parse-inspection-pdf', authenticateToken, (req, res, next) 
         // ── Save the uploaded file permanently before parsing ──────────────
         const inspPdfDir = path.join(__dirname, 'uploads', 'inspection-pdfs');
         await fs.mkdir(inspPdfDir, { recursive: true });
-        const savedFilename = `insp-${Date.now()}${path.extname(req.file.originalname) || '.pdf'}`;
+        const savedFilename = `insp-${Date.now()}.pdf`;
         const savedPath = path.join(inspPdfDir, savedFilename);
         await fs.rename(req.file.path, savedPath).catch(async () => {
             // rename may fail across filesystems – fall back to copy+delete
@@ -5295,6 +5325,9 @@ app.post('/api/lifts/:id/inspection-report/:index/attach-pdf', authenticateToken
 
 // POST /api/lifts/send-municipality-form - відправка форми до муніципалітету
 app.post('/api/lifts/send-municipality-form', authenticateToken, async (req, res) => {
+    if (!['admin', 'dispatcher'].includes(req.user.role)) {
+        return res.status(403).json({ success: false, message: 'Acesso negado' });
+    }
     try {
         console.log('📧 Sending municipality form:', req.body);
 
@@ -5575,9 +5608,15 @@ const liftDocStorage = multer.diskStorage({
     },
     filename: (req, file, cb) => {
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        const ext = path.extname(file.originalname);
-        const nameWithoutExt = path.basename(file.originalname, ext);
-        cb(null, `${nameWithoutExt}-${uniqueSuffix}${ext}`);
+        const extMap = {
+            'application/pdf': '.pdf',
+            'application/msword': '.doc',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document': '.docx',
+            'image/jpeg': '.jpg',
+            'image/png': '.png'
+        };
+        const ext = extMap[file.mimetype] || '.bin';
+        cb(null, `doc-${uniqueSuffix}${ext}`);
     }
 });
 
@@ -6186,6 +6225,9 @@ app.put('/api/municipalities/:id', authenticateToken, async (req, res) => {
 
 // GET /api/municipalities/:id/lifts - ліфти в конкретному муніципалітеті
 app.get('/api/municipalities/:id/lifts', authenticateToken, async (req, res) => {
+    if (!['admin', 'dispatcher'].includes(req.user.role)) {
+        return res.status(403).json({ success: false, message: 'Acesso negado' });
+    }
     try {
         const municipalityId = req.params.id;
         
@@ -6210,6 +6252,9 @@ app.get('/api/municipalities/:id/lifts', authenticateToken, async (req, res) => 
 // GET /api/municipalities/stats - статистика по муніципалітетам
 // GET /api/municipalities/communications - лог відправлених повідомлень муніципалітетам
 app.get('/api/municipalities/communications', authenticateToken, async (req, res) => {
+    if (!['admin', 'dispatcher'].includes(req.user.role)) {
+        return res.status(403).json({ success: false, message: 'Acesso negado' });
+    }
     try {
         const limit = Math.min(parseInt(req.query.limit) || 50, 200);
         const logs = await db.collection('municipality_logs')
@@ -6225,6 +6270,9 @@ app.get('/api/municipalities/communications', authenticateToken, async (req, res
 });
 
 app.get('/api/municipalities/stats', authenticateToken, async (req, res) => {
+    if (!['admin', 'dispatcher'].includes(req.user.role)) {
+        return res.status(403).json({ success: false, message: 'Acesso negado' });
+    }
     try {
         // Агрегуємо статистику по муніципалітетам
         const stats = await db.collection('lifts').aggregate([
@@ -7400,7 +7448,11 @@ app.get('/api/requests', authenticateToken, async (req, res) => {
                 console.log(`👤 Client ${req.user.username} не має ліфтів`);
                 return res.json({ success: true, data: [] });
             }
-            query.liftId = { $in: liftIds };
+            // Also include requests the client submitted directly (by createdByUserId)
+            query.$or = [
+                { liftId: { $in: liftIds } },
+                { createdByUserId: userId }
+            ];
             console.log(`👤 Client ${req.user.username} запитує заявки для ${liftIds.length} ліфтів`);
         } else {
             // admin / dispatcher — all requests
@@ -7620,12 +7672,25 @@ app.get('/api/requests/:id', authenticateToken, async (req, res) => {
                 return res.status(403).json({ success: false, message: 'Acesso negado' });
             }
         } else if (role === 'client') {
-            const clientLifts = await db.collection('lifts')
-                .find({ client: userId }, { projection: { _id: 1 } })
-                .toArray();
-            const liftIds = clientLifts.map(l => l._id.toString());
-            if (!liftIds.includes(request.liftId)) {
-                return res.status(403).json({ success: false, message: 'Acesso negado' });
+            // Allow if client created this request directly
+            if (request.createdByUserId === userId) {
+                // access granted
+            } else {
+                // Check if the lift belongs to this client
+                const { ObjectId: OID } = require('mongodb');
+                let clientObjId = null;
+                try { clientObjId = new OID(userId); } catch (_) {}
+                const clientEmail = (req.user.email || '').toLowerCase();
+                const liftOrConds = clientObjId
+                    ? [{ client: userId }, { client: clientObjId }, { clientEmail: clientEmail }]
+                    : [{ client: userId }, { clientEmail: clientEmail }];
+                const clientLifts = await db.collection('lifts')
+                    .find({ $or: liftOrConds }, { projection: { _id: 1 } })
+                    .toArray();
+                const liftIds = clientLifts.map(l => l._id.toString());
+                if (!liftIds.includes(request.liftId?.toString())) {
+                    return res.status(403).json({ success: false, message: 'Acesso negado' });
+                }
             }
         }
         // admin / dispatcher: always allowed
@@ -7722,14 +7787,15 @@ app.get('/api/requests/:id', authenticateToken, async (req, res) => {
 app.post('/api/requests', authenticateToken, async (req, res) => {
     try {
         const { ObjectId } = require('mongodb');
-        
+        const userId = (req.user.userId || req.user.id || '').toString();
+
         // Отримуємо інформацію про ліфт, якщо вказано liftId
         let liftData = null;
         if (req.body.liftId) {
             try {
                 const liftId = new ObjectId(req.body.liftId);
                 liftData = await db.collection('lifts').findOne({ _id: liftId });
-                
+
                 if (liftData) {
                     console.log('✅ Знайдено ліфт для заявки:', {
                         id: liftData._id,
@@ -7741,7 +7807,26 @@ app.post('/api/requests', authenticateToken, async (req, res) => {
                 console.warn('⚠️ Помилка отримання даних ліфта:', e.message);
             }
         }
-        
+
+        // IDOR: клієнт може створювати заявки тільки для своїх ліфтів
+        if (req.user.role === 'client') {
+            if (!liftData) {
+                return res.status(404).json({ success: false, message: 'Elevador não encontrado' });
+            }
+            const { ObjectId: OID } = require('mongodb');
+            let clientObjId = null;
+            try { clientObjId = new OID(userId); } catch (_) {}
+            const liftClientId = liftData.client?.toString();
+            const liftClientEmail = (liftData.clientEmail || '').toLowerCase();
+            const userEmail = (req.user.email || '').toLowerCase();
+            const isOwner = liftClientId === userId ||
+                (clientObjId && liftClientId === clientObjId.toString()) ||
+                (liftClientEmail && liftClientEmail === userEmail);
+            if (!isOwner) {
+                return res.status(403).json({ success: false, message: 'Acesso negado' });
+            }
+        }
+
         // Генерація читабельного номеру заявки (REQ-2026-0001)
         const reqCount = await db.collection('requests').countDocuments();
         const reqYear = new Date().getFullYear();
@@ -7767,8 +7852,6 @@ app.post('/api/requests', authenticateToken, async (req, res) => {
             // Якщо знайшли ліфт - збагачуємо дані
             liftAddress: (() => {
                 if (!liftData?.address) return req.body.liftAddress || 'Endereço desconhecido';
-                
-                // Якщо address - об'єкт, формуємо рядок
                 if (typeof liftData.address === 'object') {
                     const parts = [];
                     if (liftData.address.street) parts.push(liftData.address.street);
@@ -7780,19 +7863,33 @@ app.post('/api/requests', authenticateToken, async (req, res) => {
             liftClient: liftData?.client || req.body.liftClient || 'Cliente desconhecido',
             liftMunicipalNumber: liftData?.municipalNumber || req.body.liftMunicipalNumber || '',
             liftLocation: liftData?.location || req.body.liftLocation || null,
+            // createdByUserId дозволяє клієнту бачити свої заявки у GET /api/requests
+            createdByUserId: userId,
             createdAt: new Date().toISOString(),
             createdBy: req.user.username,
             updatedAt: new Date().toISOString()
         };
-        
+
         console.log('📝 Створення заявки з даними:', {
             liftId: newRequest.liftId,
             liftAddress: newRequest.liftAddress,
             liftClient: newRequest.liftClient
         });
-        
+
         const result = await db.collection('requests').insertOne(newRequest);
-        
+
+        // Email admin/dispatcher sobre nova zaявка
+        try {
+            const clientUser = await db.collection('users').findOne(
+                { _id: new ObjectId(userId) },
+                { projection: { firstName: 1, lastName: 1, email: 1 } }
+            );
+            emailService.sendNewRequestInternalNotification(
+                { ...newRequest, _id: result.insertedId, requestNumber },
+                clientUser || { email: req.user.email, firstName: req.user.username }
+            ).catch(err => console.error('Internal notification error:', err));
+        } catch (_) {}
+
         res.json({
             success: true,
             message: 'Pedido criado com sucesso',
@@ -12022,9 +12119,10 @@ app.get('/api/ai/regulations/:id', authenticateToken, async (req, res) => {
 
 // 🔐 Auth Routes (login, register, profile) + User Management
 const authRoutes = require('./backend/routes/authRoutes');
-app.use('/api/auth/login', loginLimiter);    // loginLimiter тільки для login
-app.use('/api/auth/register', loginLimiter); // і register (захист від brute-force)
-app.use('/api/auth/refresh', refreshLimiter); // захист від token-refresh abuse
+app.use('/api/auth/login', loginLimiter);             // захист від brute-force
+app.use('/api/auth/register', loginLimiter);          // захист від brute-force
+app.use('/api/auth/refresh', refreshLimiter);         // захист від token-refresh abuse
+app.use('/api/auth/forgot-password', forgotPasswordLimiter); // захист від email spam
 app.use('/api/auth', authRoutes);
 app.use('/api/users', authRoutes); // authRoutes містить /users endpoints
 
@@ -13652,6 +13750,9 @@ app.post('/api/email/send-inspection-pdf', authenticateToken, upload.single('pdf
 
 // POST /api/email/send-inspection-reminder - Відправити нагадування про інспекцію
 app.post('/api/email/send-inspection-reminder', authenticateToken, async (req, res) => {
+    if (!['admin', 'dispatcher'].includes(req.user.role)) {
+        return res.status(403).json({ success: false, message: 'Acesso negado' });
+    }
     try {
         const { email, subject, message, liftId, type } = req.body;
 
@@ -13728,7 +13829,8 @@ app.post('/api/email/send-inspection-reminder', authenticateToken, async (req, r
 </table>
 </body></html>`;
 
-        await emailService.sendEmail(email, subject || 'Notificação de Inspeção de Elevador', html);
+        const emailInfo = await emailService.sendEmail(email, subject || 'Notificação de Inspeção de Elevador', html);
+        const capturedMessageId = emailInfo?.messageId || null;
 
         // Registar data de envio no elevador
         if (liftId) {
@@ -13755,7 +13857,7 @@ app.post('/api/email/send-inspection-reminder', authenticateToken, async (req, r
                         liftId,
                         municipality: lift?.municipality?.name || '',
                         sentBy: req.user.email || req.user.username || 'unknown',
-                        messageId: null,
+                        messageId: capturedMessageId,
                         createdAt: sentAt
                     });
                 }

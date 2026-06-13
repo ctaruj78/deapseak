@@ -152,14 +152,19 @@ exports.createRequest = async (req, res, next) => {
             { path: 'assignedTo', select: 'firstName lastName email phone' }
         ]);
 
-        // Відправити email клієнту
+        // Email клієнту: підтвердження отримання
         if (request.client && request.client.email) {
-            emailService.sendNewRequestNotification(request, request.client).catch(err => 
-                console.error('Email send failed:', err)
+            emailService.sendNewRequestNotification(request, request.client).catch(err =>
+                console.error('Client email send failed:', err)
             );
         }
 
-        // WebSocket: Повідомити адміна та диспетчера
+        // Email адміну/диспетчеру: внутрішнє сповіщення про новий педіdo
+        emailService.sendNewRequestInternalNotification(request, request.client).catch(err =>
+            console.error('Internal notification send failed:', err)
+        );
+
+        // WebSocket: Повідомити адміна та диспетчера (in-app)
         websocketService.notifyNewRequest(request);
 
         res.status(201).json({
@@ -263,12 +268,17 @@ exports.getRequestById = async (req, res, next) => {
             throw new AppError('Pedido não encontrado', 404);
         }
 
-        // Перевірка доступу (клієнт може бачити тільки свої запити)
-        // Тільки для нового формату де client заповнений
-        if (req.user.role === 'client' && request.client) {
-            if (request.client._id && request.client._id.toString() !== req.user.id) {
-                throw new AppError('Acesso negado', 403);
-            }
+        // Клієнт може бачити тільки свої запити — перевіряємо всі можливі поля
+        if (req.user.role === 'client') {
+            const clientId = request.client?._id?.toString() || request.client?.toString();
+            const liftClientEmail = request.lift?.clientEmail;
+            const liftClientId = request.lift?.client?.toString();
+            const isOwner =
+                clientId === req.user.id ||
+                request.clientEmail === req.user.email ||
+                liftClientEmail === req.user.email ||
+                liftClientId === req.user.id;
+            if (!isOwner) throw new AppError('Acesso negado', 403);
         }
 
         const [enriched] = await enrichOldFormatRequests([request]);

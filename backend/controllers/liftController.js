@@ -152,6 +152,12 @@ exports.getLiftById = async (req, res, next) => {
     try {
         const lift = await Lift.findById(req.params.id).populate('client', 'firstName lastName email phone').populate('technician', 'firstName lastName email phone').populate('requests');
         if (!lift) throw new AppError('Lift not found', 404);
+        if (req.user.role === 'client') {
+            const ownerId = lift.client?._id?.toString() || lift.client?.toString();
+            if (ownerId !== req.user.id && lift.clientEmail !== req.user.email) {
+                throw new AppError('Acesso negado', 403);
+            }
+        }
         res.json({ success: true, data: { lift } });
     } catch (error) {
         next(error);
@@ -162,6 +168,12 @@ exports.getLiftByMunicipalNumber = async (req, res, next) => {
     try {
         const lift = await Lift.findOne({ municipalNumber: req.params.municipalNumber }).populate('client').populate('technician').populate('requests');
         if (!lift) throw new AppError('Lift not found', 404);
+        if (req.user.role === 'client') {
+            const ownerId = lift.client?._id?.toString() || lift.client?.toString();
+            if (ownerId !== req.user.id && lift.clientEmail !== req.user.email) {
+                throw new AppError('Acesso negado', 403);
+            }
+        }
         res.json({ success: true, data: { lift } });
     } catch (error) {
         next(error);

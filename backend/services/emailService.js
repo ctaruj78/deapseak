@@ -81,17 +81,31 @@ class EmailService {
         return await this._sendEmail(to, subject, htmlContent, [], bcc);
     }
 
+    // Escape HTML special characters in user-supplied strings before embedding in email HTML
+    _esc(str) {
+        if (str == null) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
     // Shared branded wrapper — consistent FestLift header/footer for all emails
     _tpl(headerColor, headerLabel, bodyHtml) {
+        const siteUrl = process.env.SITE_URL || 'https://crm.festlift.pt';
+        const logoUrl = `${siteUrl}/assets/img/festlift-logo.png`;
         return `<!DOCTYPE html><html lang="pt"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
 <body style="margin:0;padding:0;background:#f0f2f5;font-family:Arial,Helvetica,sans-serif;">
 <table width="100%" cellpadding="0" cellspacing="0" style="background:#f0f2f5;padding:32px 0;"><tr><td align="center">
 <table width="600" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.1);">
-  <tr><td style="background:${headerColor};padding:28px 36px;">
+  <tr><td style="background:${headerColor};padding:22px 36px;">
     <table width="100%" cellpadding="0" cellspacing="0"><tr>
-      <td><div style="font-size:22px;font-weight:bold;color:#fff;">🛗 FestLift</div>
-          <div style="font-size:12px;color:rgba(255,255,255,.75);margin-top:2px;">Gestão de Elevadores</div></td>
-      <td align="right"><div style="font-size:13px;color:rgba(255,255,255,.9);font-weight:600;">${headerLabel}</div></td>
+      <td valign="middle">
+        <img src="${logoUrl}" alt="FestLift" width="180" height="59" style="display:block;border:0;max-width:180px;" />
+      </td>
+      <td align="right" valign="middle"><div style="font-size:13px;color:rgba(255,255,255,.9);font-weight:600;">${headerLabel}</div></td>
     </tr></table>
   </td></tr>
   <tr><td style="padding:32px 36px;color:#333;font-size:14px;line-height:1.7;">${bodyHtml}</td></tr>
@@ -115,13 +129,13 @@ class EmailService {
     // Novo pedido de servico — notificacao ao cliente
     async sendNewRequestNotification(request, client) {
         try {
-            const name = `${client.firstName || ''} ${client.lastName || ''}`.trim() || 'Cliente';
+            const name = this._esc(`${client.firstName || ''} ${client.lastName || ''}`.trim() || 'Cliente');
             const body = `
                 <p>Caro(a) <strong>${name}</strong>,</p>
                 <p>O seu pedido de servico foi recebido e esta a ser processado pela nossa equipa.</p>
                 <div style="background:#e8f0fe;border-left:4px solid #1565c0;border-radius:6px;padding:18px 22px;margin:20px 0;">
                     <p style="margin:0 0 8px 0;"><strong>Número do pedido:</strong> #${request._id}</p>
-                    <p style="margin:0 0 8px 0;"><strong>Descrição:</strong> ${request.title}</p>
+                    <p style="margin:0 0 8px 0;"><strong>Descrição:</strong> ${this._esc(request.title)}</p>
                     <p style="margin:0 0 8px 0;"><strong>Tipo:</strong> ${this.getRequestTypeText(request.type)}</p>
                     <p style="margin:0 0 8px 0;"><strong>Prioridade:</strong> ${this.getPriorityText(request.priority)}</p>
                     <p style="margin:0 0 8px 0;"><strong>Estado:</strong> ${this.getStatusText(request.status)}</p>
@@ -136,22 +150,57 @@ class EmailService {
         }
     }
 
+    // Notificação interna — admin/dispatcher recebe email quando cliente cria pedido
+    async sendNewRequestInternalNotification(request, client) {
+        try {
+            const adminEmail = process.env.ADMIN_EMAIL || 'info@festlift.pt';
+            const clientName = this._esc(`${client?.firstName || ''} ${client?.lastName || ''}`.trim() || client?.email || 'Cliente');
+            const liftMunNum = request.lift?.municipalNumber || request.liftMunicipalNumber;
+            const liftInfo = liftMunNum
+                ? `Elevador <strong>${this._esc(liftMunNum)}</strong>`
+                : 'Elevador não especificado';
+            const priorityColor = request.priority === 'high' || request.priority === 'urgent' ? '#c62828' : '#f9a825';
+            const clientEmailEsc = this._esc(client?.email || '');
+            const body = `
+                <p>Foi submetido um novo pedido de servico por um cliente.</p>
+                <div style="background:#fff3e0;border-left:4px solid ${priorityColor};border-radius:6px;padding:18px 22px;margin:20px 0;">
+                    <p style="margin:0 0 8px 0;"><strong>Pedido:</strong> #${request._id}</p>
+                    <p style="margin:0 0 8px 0;"><strong>Descrição:</strong> ${this._esc(request.title)}</p>
+                    <p style="margin:0 0 8px 0;"><strong>Tipo:</strong> ${this.getRequestTypeText(request.type)}</p>
+                    <p style="margin:0 0 8px 0;"><strong>Prioridade:</strong> ${this.getPriorityText(request.priority)}</p>
+                    <p style="margin:0 0 8px 0;"><strong>Elevador:</strong> ${liftInfo}</p>
+                    <p style="margin:0;"><strong>Cliente:</strong> ${clientName}${clientEmailEsc ? ` — <a href="mailto:${clientEmailEsc}">${clientEmailEsc}</a>` : ''}</p>
+                </div>
+                <p>Aceda ao painel de gestão para atribuir um técnico e processar o pedido.</p>`;
+            await this._sendEmail(
+                adminEmail,
+                `📋 Novo pedido de serviço #${request._id} — ${clientName}`,
+                this._tpl('#f9a825', 'Novo Pedido de Serviço', body)
+            );
+            console.log(`✅ Internal notification sent to ${adminEmail} for request #${request._id}`);
+        } catch (error) {
+            console.error('❌ Error sending internal notification:', error);
+        }
+    }
+
     // Tecnico atribuido ao pedido — notificacao ao cliente
     async sendTechnicianAssignedNotification(request, technician, client) {
         try {
-            const name = `${client.firstName || ''} ${client.lastName || ''}`.trim() || 'Cliente';
-            const techName = `${technician.firstName || ''} ${technician.lastName || ''}`.trim();
+            const name = this._esc(`${client.firstName || ''} ${client.lastName || ''}`.trim() || 'Cliente');
+            const techName = this._esc(`${technician.firstName || ''} ${technician.lastName || ''}`.trim());
+            const techEmail = this._esc(technician.email || '');
+            const techPhone = this._esc(technician.phone || '');
             const body = `
                 <p>Caro(a) <strong>${name}</strong>,</p>
                 <p>Um tecnico foi atribuido ao seu pedido de servico e entrara em contacto brevemente.</p>
                 <div style="background:#e8f0fe;border-left:4px solid #1565c0;border-radius:6px;padding:18px 22px;margin:20px 0;">
                     <p style="margin:0 0 8px 0;font-weight:bold;color:#1565c0;">Tecnico responsavel:</p>
                     <p style="margin:0 0 6px 0;"><strong>Nome:</strong> ${techName}</p>
-                    ${technician.phone ? `<p style="margin:0 0 6px 0;"><strong>Telefone:</strong> ${technician.phone}</p>` : ''}
-                    <p style="margin:0;"><strong>Email:</strong> ${technician.email}</p>
+                    ${techPhone ? `<p style="margin:0 0 6px 0;"><strong>Telefone:</strong> ${techPhone}</p>` : ''}
+                    <p style="margin:0;"><strong>Email:</strong> ${techEmail}</p>
                 </div>
                 <div style="background:#f8f9fa;border-radius:6px;padding:14px 18px;margin:16px 0;">
-                    <p style="margin:0 0 6px 0;"><strong>Pedido:</strong> #${request._id} — ${request.title}</p>
+                    <p style="margin:0 0 6px 0;"><strong>Pedido:</strong> #${request._id} — ${this._esc(request.title)}</p>
                     <p style="margin:0;"><strong>Estado:</strong> ${this.getStatusText(request.status)}</p>
                 </div>
                 <p style="font-size:12px;color:#888;margin-top:24px;">Este e um email automatico — por favor nao responda diretamente.</p>`;
@@ -167,18 +216,18 @@ class EmailService {
     async sendTechnicianTaskNotification(request, technician) {
         try {
             const siteUrl = process.env.SITE_URL || 'https://crm.festlift.pt';
-            const techName = `${technician.firstName || ''} ${technician.lastName || ''}`.trim() || 'Tecnico';
+            const techName = this._esc(`${technician.firstName || ''} ${technician.lastName || ''}`.trim() || 'Tecnico');
             const body = `
                 <p>Caro(a) <strong>${techName}</strong>,</p>
                 <p>Foi-lhe atribuida uma nova tarefa de servico. Por favor, entre em contacto com o cliente e execute o trabalho o mais brevemente possivel.</p>
                 <div style="background:#fff8e1;border-left:4px solid #f9a825;border-radius:6px;padding:18px 22px;margin:20px 0;">
                     <p style="margin:0 0 8px 0;font-weight:bold;color:#e65100;">Detalhes da tarefa:</p>
                     <p style="margin:0 0 6px 0;"><strong>Número:</strong> #${request._id}</p>
-                    <p style="margin:0 0 6px 0;"><strong>Descrição:</strong> ${request.title}</p>
-                    ${request.description ? `<p style="margin:0 0 6px 0;"><strong>Detalhes:</strong> ${request.description}</p>` : ''}
+                    <p style="margin:0 0 6px 0;"><strong>Descrição:</strong> ${this._esc(request.title)}</p>
+                    ${request.description ? `<p style="margin:0 0 6px 0;"><strong>Detalhes:</strong> ${this._esc(request.description)}</p>` : ''}
                     <p style="margin:0 0 6px 0;"><strong>Tipo:</strong> ${this.getRequestTypeText(request.type)}</p>
                     <p style="margin:0 0 6px 0;"><strong>Prioridade:</strong> ${this.getPriorityText(request.priority)}</p>
-                    <p style="margin:0;"><strong>Elevador:</strong> ${request.liftId || '—'}</p>
+                    <p style="margin:0;"><strong>Elevador:</strong> ${this._esc(request.liftMunicipalNumber || request.liftId || '—')}</p>
                 </div>
                 <a href="${siteUrl}/pages/tech/tasks.html" style="display:inline-block;background:#1565c0;color:#fff;text-decoration:none;padding:13px 28px;border-radius:6px;font-size:14px;font-weight:bold;margin-top:8px;">Ver tarefa →</a>
                 <p style="font-size:12px;color:#888;margin-top:24px;">Este e um email automatico — por favor nao responda diretamente.</p>`;
@@ -192,12 +241,12 @@ class EmailService {
     // Alteracao de estado do pedido — notificacao ao cliente
     async sendStatusChangeNotification(request, client, oldStatus, newStatus) {
         try {
-            const name = `${client.firstName || ''} ${client.lastName || ''}`.trim() || 'Cliente';
+            const name = this._esc(`${client.firstName || ''} ${client.lastName || ''}`.trim() || 'Cliente');
             const body = `
                 <p>Caro(a) <strong>${name}</strong>,</p>
                 <p>O estado do seu pedido de servico foi atualizado.</p>
                 <div style="background:#e8f0fe;border-left:4px solid #1565c0;border-radius:6px;padding:18px 22px;margin:20px 0;">
-                    <p style="margin:0 0 8px 0;"><strong>Pedido:</strong> #${request._id} — ${request.title}</p>
+                    <p style="margin:0 0 8px 0;"><strong>Pedido:</strong> #${request._id} — ${this._esc(request.title)}</p>
                     <p style="margin:0 0 6px 0;"><strong>Estado anterior:</strong> ${this.getStatusText(oldStatus)}</p>
                     <p style="margin:0;"><strong>Novo estado:</strong> <span style="color:#1b5e20;font-weight:bold;">${this.getStatusText(newStatus)}</span></p>
                 </div>
@@ -214,15 +263,15 @@ class EmailService {
     async sendRequestCompletedNotification(request, client) {
         try {
             const siteUrl = process.env.SITE_URL || 'https://crm.festlift.pt';
-            const name = `${client.firstName || ''} ${client.lastName || ''}`.trim() || 'Cliente';
+            const name = this._esc(`${client.firstName || ''} ${client.lastName || ''}`.trim() || 'Cliente');
             const body = `
                 <p>Caro(a) <strong>${name}</strong>,</p>
                 <p>O seu pedido de manutencao do elevador foi concluido com sucesso pela nossa equipa tecnica.</p>
                 <div style="background:#e8f5e9;border-left:4px solid #2e7d32;border-radius:6px;padding:18px 22px;margin:20px 0;">
                     <p style="margin:0 0 8px 0;font-weight:bold;color:#2e7d32;">Trabalho realizado:</p>
-                    <p style="margin:0 0 6px 0;"><strong>Pedido:</strong> #${request._id} — ${request.title}</p>
+                    <p style="margin:0 0 6px 0;"><strong>Pedido:</strong> #${request._id} — ${this._esc(request.title)}</p>
                     <p style="margin:0 0 6px 0;"><strong>Data de conclusao:</strong> ${new Date(request.completedAt || Date.now()).toLocaleString('pt-PT')}</p>
-                    ${request.workDetails ? `<p style="margin:0;"><strong>Detalhes:</strong> ${request.workDetails}</p>` : ''}
+                    ${request.workDetails ? `<p style="margin:0;"><strong>Detalhes:</strong> ${this._esc(request.workDetails)}</p>` : ''}
                 </div>
                 <p>Agradecemos a sua confianca nos servicos FestLift. Para quaisquer questoes, nao hesite em contactar-nos.</p>
                 <a href="${siteUrl}/pages/client/requests.html" style="display:inline-block;background:#2e7d32;color:#fff;text-decoration:none;padding:13px 28px;border-radius:6px;font-size:14px;font-weight:bold;margin-top:8px;">Ver historico →</a>
@@ -237,7 +286,7 @@ class EmailService {
     // Redefinicao de palavra-passe
     async sendPasswordResetEmail(email, resetUrl, firstName) {
         try {
-            const name = firstName || 'utilizador';
+            const name = this._esc(firstName || 'utilizador');
             const body = `
                 <p>Caro(a) <strong>${name}</strong>,</p>
                 <p>Recebemos um pedido de redefinicao de palavra-passe para a sua conta FestLift.</p>
@@ -383,20 +432,11 @@ class EmailService {
                 .replace(/{{notes}}/g, liftData.notes || 'Nao especificado')
                 .replace(/{{date}}/g, new Date().toLocaleDateString('pt-PT', { day: '2-digit', month: 'long', year: 'numeric' }));
 
-            const logoPath = path.join(__dirname, '../../assets/img/festlift-logo.png');
-            const logoContent = fs.readFileSync(logoPath).toString('base64');
-
-            const attachments = [{
-                name: 'festlift-logo.png',
-                content: logoContent,
-                contentId: 'festlift-logo'
-            }];
-
             const subject = templateType === 'inicio-servico'
                 ? `📝 FestLift - Elevadores e Servicos - Comunicacao de Inicio de Servico - Elevador ${liftData.municipalNumber}`
                 : `📝 FestLift - Elevadores e Servicos - Comunicacao de Fim de Servico - Elevador ${liftData.municipalNumber}`;
 
-            await this._sendEmail(municipalityEmail, subject, htmlContent, attachments);
+            await this._sendEmail(municipalityEmail, subject, htmlContent);
 
             console.log(`✅ Municipality form (${templateType}) sent to ${municipalityEmail} for lift ${liftData.municipalNumber}`);
             return { success: true, message: 'Email enviado com sucesso' };

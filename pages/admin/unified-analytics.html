@@ -1325,14 +1325,39 @@
                                             </div>
                                         </div>
                                         <div class="card-body">
+                                            <!-- Filtros -->
+                                            <div class="row mb-3">
+                                                <div class="col-md-4">
+                                                    <div class="input-group input-group-sm">
+                                                        <div class="input-group-prepend">
+                                                            <span class="input-group-text"><i class="fas fa-search"></i></span>
+                                                        </div>
+                                                        <input type="text" id="comm-search" class="form-control" placeholder="Município ou elevador...">
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <select id="comm-type-filter" class="form-control form-control-sm">
+                                                        <option value="">Todos os tipos</option>
+                                                        <option value="mun_request">Pedido de inspecção</option>
+                                                        <option value="municipality-inicio-servico">Início de serviço</option>
+                                                        <option value="municipality-fim-servico">Fim de serviço</option>
+                                                    </select>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <input type="month" id="comm-month-filter" class="form-control form-control-sm" title="Filtrar por mês">
+                                                </div>
+                                                <div class="col-md-2 text-right">
+                                                    <span id="comm-count" class="badge badge-secondary">0 registos</span>
+                                                </div>
+                                            </div>
                                             <div class="table-responsive">
                                                 <table class="table table-hover" id="communications-table">
                                                     <thead>
                                                         <tr>
-                                                            <th>Município</th>
-                                                            <th>Elevador</th>
+                                                            <th style="cursor:pointer" data-sort="municipality">Município <i class="fas fa-sort text-muted"></i></th>
+                                                            <th style="cursor:pointer" data-sort="lift">Elevador <i class="fas fa-sort text-muted"></i></th>
                                                             <th>Tipo de mensagem</th>
-                                                            <th>Data de envio</th>
+                                                            <th style="cursor:pointer" data-sort="sentAt">Data de envio <i class="fas fa-sort text-muted"></i></th>
                                                             <th>Estado</th>
                                                             <th>Ações</th>
                                                         </tr>
@@ -1937,58 +1962,120 @@ setTimeout(() => {
         }
     }
     
+    // Dados carregados — guardados para filtrar no cliente
+    let _allCommunications = [];
+    let _commSortField = 'sentAt';
+    let _commSortDir = -1; // -1 desc, 1 asc
+
+    function _typeLabel(type) {
+        const map = {
+            'mun_request': 'Pedido de inspecção',
+            'municipality-inicio-servico': 'Início de serviço',
+            'municipality-fim-servico': 'Fim de serviço'
+        };
+        return map[type] || type.replace('municipality-', '').replace(/-/g, ' ');
+    }
+
+    function _renderCommunicationsTable(rows) {
+        const tbody = document.getElementById('communications-tbody');
+        const count = document.getElementById('comm-count');
+        if (count) count.textContent = `${rows.length} registo${rows.length !== 1 ? 's' : ''}`;
+        if (rows.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted"><i class="fas fa-inbox"></i> Sem registos para os filtros aplicados</td></tr>`;
+            return;
+        }
+        tbody.innerHTML = rows.map(comm => {
+            const statusClass = comm.status === 'sent' ? 'success' : comm.status === 'failed' ? 'danger' : 'warning';
+            const statusIcon  = comm.status === 'sent' ? 'check' : comm.status === 'failed' ? 'times' : 'clock';
+            const statusLabel = comm.status === 'sent' ? 'Enviado' : comm.status === 'failed' ? 'Erro' : comm.status;
+            return `
+                <tr>
+                    <td><strong>${comm.municipality}</strong></td>
+                    <td>${comm.lift}</td>
+                    <td><span class="badge badge-info">${_typeLabel(comm.type)}</span></td>
+                    <td>${new Date(comm.sentAt).toLocaleString('pt-PT')}</td>
+                    <td><span class="badge badge-${statusClass}"><i class="fas fa-${statusIcon}"></i> ${statusLabel}</span></td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary" onclick="viewEmailDetails(${comm._idx})" title="Ver detalhes">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </td>
+                </tr>`;
+        }).join('');
+    }
+
+    function _applyCommFilters() {
+        const search = (document.getElementById('comm-search')?.value || '').toLowerCase().trim();
+        const typeF  = document.getElementById('comm-type-filter')?.value || '';
+        const monthF = document.getElementById('comm-month-filter')?.value || ''; // "YYYY-MM"
+
+        let rows = _allCommunications.filter(c => {
+            if (search && !c.municipality.toLowerCase().includes(search) && !c.lift.toLowerCase().includes(search)) return false;
+            if (typeF && c.type !== typeF) return false;
+            if (monthF) {
+                const d = new Date(c.sentAt);
+                const ym = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+                if (ym !== monthF) return false;
+            }
+            return true;
+        });
+
+        // Sort
+        rows.sort((a, b) => {
+            let va = a[_commSortField] || '', vb = b[_commSortField] || '';
+            if (_commSortField === 'sentAt') { va = new Date(va); vb = new Date(vb); }
+            return va < vb ? -_commSortDir : va > vb ? _commSortDir : 0;
+        });
+
+        _renderCommunicationsTable(rows);
+    }
+
     // Carregar histórico de comunicações
     async function loadCommunicationsHistory() {
         try {
             const token = getAuthToken();
-            const response = await fetch('/api/municipalities/communications', {
+            const response = await fetch('/api/municipalities/communications?limit=200', {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
             if (!response.ok) throw new Error('Failed to load communications');
             const data = await response.json();
-            const communications = (data.data || []).map(log => ({
+            _allCommunications = (data.data || []).map((log, i) => ({
+                _idx: i,
                 municipality: log.municipality || log.municipalityName || '—',
                 lift: log.lift || log.municipalNumber || '—',
                 type: log.type || 'municipality-form',
                 sentAt: log.sentAt || log.createdAt,
                 status: log.status || 'sent',
-                messageId: log.messageId
+                messageId: log.messageId || null,
+                recipient: log.municipalityEmail || null,
+                sentBy: log.sentBy || null
             }));
-            
-            // Apresentar tabela
-            const tbody = document.getElementById('communications-tbody');
-            if (communications.length === 0) {
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="6" class="text-center text-muted">
-                            <i class="fas fa-inbox"></i> Histórico de comunicações vazio
-                        </td>
-                    </tr>
-                `;
-            } else {
-                tbody.innerHTML = communications.slice(0, 20).map(comm => {
-                    const typeLabel = comm.type.replace('municipality-', '').replace(/-/g, ' ');
-                    const statusClass = comm.status === 'sent' ? 'success' : comm.status === 'failed' ? 'danger' : 'warning';
-                    const statusIcon = comm.status === 'sent' ? 'check' : comm.status === 'failed' ? 'times' : 'clock';
-                    
-                    return `
-                        <tr>
-                            <td><strong>${comm.municipality}</strong></td>
-                            <td>${comm.lift}</td>
-                            <td><span class="badge badge-info">${typeLabel}</span></td>
-                            <td>${new Date(comm.sentAt).toLocaleString('pt-PT')}</td>
-                            <td><span class="badge badge-${statusClass}"><i class="fas fa-${statusIcon}"></i> ${comm.status}</span></td>
-                            <td>
-                                <button class="btn btn-sm btn-outline-primary" onclick="viewEmailDetails('${comm.messageId}')" title="Ver detalhes">
-                                    <i class="fas fa-eye"></i>
-                                </button>
-                            </td>
-                        </tr>
-                    `;
-                }).join('');
-            }
-            
+
+            _applyCommFilters();
+
+            // Wire up filters (once)
+            ['comm-search', 'comm-type-filter', 'comm-month-filter'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el && !el.dataset.wired) {
+                    el.addEventListener('input', _applyCommFilters);
+                    el.dataset.wired = '1';
+                }
+            });
+
+            // Wire up sortable headers (once)
+            document.querySelectorAll('#communications-table thead th[data-sort]').forEach(th => {
+                if (!th.dataset.wired) {
+                    th.addEventListener('click', () => {
+                        const f = th.dataset.sort;
+                        if (_commSortField === f) _commSortDir *= -1;
+                        else { _commSortField = f; _commSortDir = f === 'sentAt' ? -1 : 1; }
+                        _applyCommFilters();
+                    });
+                    th.dataset.wired = '1';
+                }
+            });
+
         } catch (error) {
             console.error('❌ Erro ao carregar histórico:', error);
             document.getElementById('communications-tbody').innerHTML = `
@@ -2169,18 +2256,32 @@ setTimeout(() => {
     }
     
     // Global function for viewing email details
-    window.viewEmailDetails = function(messageId) {
+    window.viewEmailDetails = function(idx) {
         const body = document.getElementById('emailDetailsBody');
-        if (body) {
-            body.innerHTML = messageId
-                ? `<dl class="mb-0">
-                    <dt>Message ID</dt>
-                    <dd class="text-monospace small">${messageId}</dd>
-                    <dt>Estado</dt>
-                    <dd><span class="badge badge-success">Enviado</span></dd>
-                   </dl>`
-                : '<p class="text-muted mb-0">Sem dados disponíveis.</p>';
+        if (!body) return;
+        const comm = _allCommunications[idx];
+        if (!comm) {
+            body.innerHTML = '<p class="text-muted mb-0">Registo não encontrado.</p>';
+            $('#emailDetailsModal').modal('show');
+            return;
         }
+        const dateStr = comm.sentAt ? new Date(comm.sentAt).toLocaleString('pt-PT') : '—';
+        const statusClass = comm.status === 'sent' ? 'success' : 'danger';
+        const statusLabel = comm.status === 'sent' ? 'Enviado' : 'Erro';
+        const msgIdHtml = comm.messageId
+            ? `<dd class="text-monospace small">${comm.messageId}</dd>`
+            : `<dd class="text-muted small"><em>Sem ID disponível</em></dd>`;
+        body.innerHTML = `
+            <dl class="mb-0">
+                <dt>Município</dt><dd>${comm.municipality}</dd>
+                <dt>Elevador (Nº)</dt><dd>${comm.lift}</dd>
+                <dt>Tipo</dt><dd>${_typeLabel(comm.type)}</dd>
+                <dt>Data de envio</dt><dd>${dateStr}</dd>
+                <dt>Estado</dt><dd><span class="badge badge-${statusClass}">${statusLabel}</span></dd>
+                ${comm.recipient ? `<dt>Destinatário</dt><dd>${comm.recipient}</dd>` : ''}
+                ${comm.sentBy ? `<dt>Enviado por</dt><dd>${comm.sentBy}</dd>` : ''}
+                <dt>Message ID</dt>${msgIdHtml}
+            </dl>`;
         $('#emailDetailsModal').modal('show');
     };
 
