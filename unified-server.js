@@ -13737,10 +13737,28 @@ app.post('/api/email/send-inspection-reminder', authenticateToken, async (req, r
                 const sentAt = new Date();
                 const userId = req.user?.id || req.user?._id || null;
                 const trackField = isMun ? 'munRequest' : 'clientNotified';
-                await db.collection('lifts').updateOne(
+                const liftDoc = await db.collection('lifts').findOneAndUpdate(
                     { _id: new ObjectId(liftId) },
-                    { $set: { [`${trackField}.sentAt`]: sentAt, [`${trackField}.sentBy`]: userId ? new ObjectId(userId) : null } }
+                    { $set: { [`${trackField}.sentAt`]: sentAt, [`${trackField}.sentBy`]: userId ? new ObjectId(userId) : null } },
+                    { returnDocument: 'after' }
                 );
+                // Log municipality sends to the dedicated analytics collection
+                if (isMun) {
+                    const lift = liftDoc?.value || liftDoc;
+                    await db.collection('municipality_logs').insertOne({
+                        type: 'mun_request',
+                        sentAt,
+                        status: 'sent',
+                        municipalityEmail: email,
+                        municipalityName: lift?.municipality?.name || '',
+                        lift: lift?.municipalNumber || null,
+                        liftId,
+                        municipality: lift?.municipality?.name || '',
+                        sentBy: req.user.email || req.user.username || 'unknown',
+                        messageId: null,
+                        createdAt: sentAt
+                    });
+                }
             } catch (trackErr) {
                 console.warn('⚠️  Could not update lift tracking field:', trackErr.message);
             }

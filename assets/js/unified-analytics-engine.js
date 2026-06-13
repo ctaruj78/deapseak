@@ -1898,6 +1898,11 @@ class UnifiedAnalyticsEngine {
             case 'reports-analytics':
                 this.initReportsAnalytics();
                 break;
+            case 'municipalities-analytics':
+                if (typeof window.loadMunicipalitiesAnalytics === 'function') {
+                    window.loadMunicipalitiesAnalytics();
+                }
+                break;
         }
     }
 }

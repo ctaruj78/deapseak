@@ -1841,15 +1841,33 @@ setTimeout(() => {
         };
     }
     
-    // Carregar dados ao mudar de separador
+    // Expose globally so the engine can call it via initTabContent
+    window.loadMunicipalitiesAnalytics = loadMunicipalitiesAnalytics;
+
+    // Carregar dados ao mudar de separador (shown.bs.tab fires for clicks AND programmatic activation)
     document.addEventListener('DOMContentLoaded', function() {
         const municipalitiesTab = document.getElementById('municipalities-tab');
-        
+
         if (municipalitiesTab) {
-            municipalitiesTab.addEventListener('click', function() {
-                loadMunicipalitiesAnalytics();
-            });
+            // Bootstrap event – covers click, engine activation, and URL-hash navigation
+            if (typeof $ !== 'undefined') {
+                $(municipalitiesTab).on('shown.bs.tab', function() {
+                    loadMunicipalitiesAnalytics();
+                });
+            } else {
+                municipalitiesTab.addEventListener('click', function() {
+                    loadMunicipalitiesAnalytics();
+                });
+            }
         }
+
+        // Pre-load in background so data is ready the moment the tab is first opened
+        setTimeout(function() {
+            const isActive = municipalitiesTab && municipalitiesTab.classList.contains('active');
+            if (!isActive) {
+                loadMunicipalitiesAnalytics();
+            }
+        }, 2000);
     });
     
     async function loadMunicipalitiesAnalytics() {
@@ -1888,10 +1906,12 @@ setTimeout(() => {
             // Calcular estatísticas
             const liftsWithMunicipality = lifts.filter(lift => extractMunicipalityFromLift(lift).name);
             const totalEmails = liftsWithMunicipality.reduce((sum, lift) => {
-                return sum + extractMunicipalityFromLift(lift).notificationHistory.length;
+                const historyCount = extractMunicipalityFromLift(lift).notificationHistory.length;
+                const munRequestCount = lift.munRequest?.sentAt ? 1 : 0;
+                return sum + historyCount + munRequestCount;
             }, 0);
-            const pendingNotifications = liftsWithMunicipality.filter(lift => 
-                !extractMunicipalityFromLift(lift).notified
+            const pendingNotifications = liftsWithMunicipality.filter(lift =>
+                !extractMunicipalityFromLift(lift).notified && !lift.munRequest?.sentAt
             ).length;
             
             // Actualizar métricas
@@ -2024,7 +2044,7 @@ setTimeout(() => {
                 }
 
                 municipalityStats[key].liftsCount++;
-                municipalityStats[key].emailsSent += detected.notificationHistory.length;
+                municipalityStats[key].emailsSent += detected.notificationHistory.length + (lift.munRequest?.sentAt ? 1 : 0);
             });
             
             // Ordenar por quantidade de elevadores
