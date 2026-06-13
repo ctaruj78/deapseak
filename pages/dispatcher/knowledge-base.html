@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="/assets/img/favicon.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FestLift — Base de Conhecimento</title>
+    <script src="../../assets/js/auth.js"></script>
+    <link rel="stylesheet" href="../../plugins/adminlte/adminlte.min.css">
+    <link rel="stylesheet" href="../../plugins/fontawesome/css/all.min.css">
+    <style>
+        .badge-basico    { background:#28a745; }
+        .badge-intermedio{ background:#ffc107; color:#212529; }
+        .badge-avancado  { background:#dc3545; }
+        .badge-cat { font-size:.75rem; }
+        .article-row:hover { background:#f8f9fa; cursor:pointer; }
+        #articleContent h2,#articleContent h3{ margin-top:1.2rem; }
+        #articleContent table{ width:100%; border-collapse:collapse; margin-bottom:1rem; }
+        #articleContent td,#articleContent th{ border:1px solid #dee2e6; padding:.5rem .75rem; }
+        #articleContent .alert{ border-radius:6px; padding:.75rem 1rem; margin:.75rem 0; }
+        #articleContent .alert-warning{ background:#fff3cd; border-left:4px solid #ffc107; }
+        #articleContent .alert-danger { background:#f8d7da; border-left:4px solid #dc3545; }
+        #articleContent .alert-info   { background:#d1ecf1; border-left:4px solid #17a2b8; }
+        #articleContent ul,#articleContent ol{ padding-left:1.5rem; }
+        .tag-badge { display:inline-block; background:#e9ecef; border-radius:3px; padding:1px 6px; font-size:.72rem; margin:2px; }
+    </style>
+</head>
+<body class="hold-transition sidebar-mini layout-fixed">
+<div class="wrapper">
+
+    <!-- Navbar -->
+    <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+        <ul class="navbar-nav">
+            <li class="nav-item"><a class="nav-link" data-widget="pushmenu" href="#"><i class="fas fa-bars"></i></a></li>
+            <li class="nav-item d-none d-sm-inline-block"><a href="/pages/dispatcher/dashboard.html" class="nav-link">Painel</a></li>
+            <li class="nav-item d-none d-sm-inline-block"><a class="nav-link text-muted">/ Base de Conhecimento</a></li>
+        </ul>
+        <ul class="navbar-nav ml-auto">
+            <li class="nav-item"><a class="nav-link" href="#" onclick="logout()"><i class="fas fa-sign-out-alt text-danger"></i></a></li>
+        </ul>
+    </nav>
+
+    <!-- Sidebar -->
+    <aside class="main-sidebar sidebar-dark-primary elevation-4">
+        <div id="sidebar-container"></div>
+    </aside>
+
+    <!-- Content -->
+    <div class="content-wrapper">
+        <div class="content-header">
+            <div class="container-fluid">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <h1 class="m-0"><i class="fas fa-book-open mr-2 text-primary"></i>Base de Conhecimento</h1>
+                    </div>
+                    <div class="col-auto">
+                        <button class="btn btn-primary" data-toggle="modal" data-target="#articleModal" onclick="openCreate()">
+                            <i class="fas fa-plus mr-1"></i>Novo artigo
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <section class="content">
+            <div class="container-fluid">
+
+                <!-- Estatísticas -->
+                <div class="row mb-3" id="stats-row">
+                    <div class="col-md-3 col-6 mb-2">
+                        <div class="small-box bg-info">
+                            <div class="inner"><h3 id="stat-total">—</h3><p>Total de artigos</p></div>
+                            <div class="icon"><i class="fas fa-book"></i></div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6 mb-2">
+                        <div class="small-box bg-success">
+                            <div class="inner"><h3 id="stat-pub">—</h3><p>Publicados</p></div>
+                            <div class="icon"><i class="fas fa-check-circle"></i></div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6 mb-2">
+                        <div class="small-box bg-warning">
+                            <div class="inner"><h3 id="stat-draft">—</h3><p>Rascunhos</p></div>
+                            <div class="icon"><i class="fas fa-pencil-alt"></i></div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-6 mb-2">
+                        <div class="small-box bg-danger">
+                            <div class="inner"><h3 id="stat-feat">—</h3><p>Destacados</p></div>
+                            <div class="icon"><i class="fas fa-star"></i></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Filtros + Pesquisa -->
+                <div class="card card-outline card-primary mb-3">
+                    <div class="card-body py-2">
+                        <div class="row align-items-center">
+                            <div class="col-md-4 mb-2 mb-md-0">
+                                <div class="input-group input-group-sm">
+                                    <input type="text" id="searchInput" class="form-control" placeholder="Pesquisar artigos...">
+                                    <div class="input-group-append">
+                                        <button class="btn btn-outline-secondary" onclick="loadArticles()"><i class="fas fa-search"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-auto"><strong class="small">Categoria:</strong></div>
+                            <div class="col-auto">
+                                <select id="filterCat" class="form-control form-control-sm" onchange="loadArticles()">
+                                    <option value="">Todas</option>
+                                    <option value="manutencao">Manutenção</option>
+                                    <option value="reparacao">Reparação</option>
+                                    <option value="seguranca">Segurança</option>
+                                    <option value="avarias">Avarias</option>
+                                    <option value="regulamentacao">Regulamentação</option>
+                                </select>
+                            </div>
+                            <div class="col-auto"><strong class="small">Nível:</strong></div>
+                            <div class="col-auto">
+                                <select id="filterDiff" class="form-control form-control-sm" onchange="loadArticles()">
+                                    <option value="">Todos</option>
+                                    <option value="basico">Básico</option>
+                                    <option value="intermedio">Intermédio</option>
+                                    <option value="avancado">Avançado</option>
+                                </select>
+                            </div>
+                            <div class="col-auto">
+                                <div class="custom-control custom-switch">
+                                    <input type="checkbox" class="custom-control-input" id="filterFeat" onchange="loadArticles()">
+                                    <label class="custom-control-label small" for="filterFeat">Só destacados</label>
+                                </div>
+                            </div>
+                            <div class="col-auto ml-auto">
+                                <button class="btn btn-sm btn-outline-secondary" onclick="clearFilters()"><i class="fas fa-times mr-1"></i>Limpar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tabela de artigos -->
+                <div class="card">
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th style="width:40%">Título</th>
+                                        <th>Categoria</th>
+                                        <th>Nível</th>
+                                        <th>Estado</th>
+                                        <th>Visualizações</th>
+                                        <th>Atualizado</th>
+                                        <th style="width:120px">Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="articlesTableBody">
+                                    <tr><td colspan="7" class="text-center py-4"><i class="fas fa-spinner fa-spin mr-2"></i>A carregar...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="card-footer text-muted small" id="tableFooter"></div>
+                </div>
+
+            </div>
+        </section>
+    </div>
+
+    <footer class="main-footer">
+        <strong>FestLift</strong> — Sistema de Gestão de Elevadores v2.1
+    </footer>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     Modal: Criar / Editar artigo
+══════════════════════════════════════════════════════════ -->
+<div class="modal fade" id="articleModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="articleModalTitle"><i class="fas fa-book mr-2"></i>Novo artigo</h5>
+                <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="editArticleId">
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="form-group">
+                            <label>Título <span class="text-danger">*</span></label>
+                            <input type="text" id="fTitle" class="form-control" placeholder="Título do artigo">
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="form-group">
+                            <label>Categoria <span class="text-danger">*</span></label>
+                            <select id="fCategory" class="form-control">
+                                <option value="manutencao">Manutenção</option>
+                                <option value="reparacao">Reparação</option>
+                                <option value="seguranca">Segurança</option>
+                                <option value="avarias">Avarias</option>
+                                <option value="regulamentacao">Regulamentação</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="form-group">
+                            <label>Nível</label>
+                            <select id="fDifficulty" class="form-control">
+                                <option value="basico">Básico</option>
+                                <option value="intermedio">Intermédio</option>
+                                <option value="avancado">Avançado</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Resumo</label>
+                    <input type="text" id="fSummary" class="form-control" placeholder="Breve descrição do artigo (aparece na lista)">
+                </div>
+                <div class="form-group">
+                    <label>Conteúdo (HTML) <span class="text-danger">*</span></label>
+                    <textarea id="fContent" class="form-control" rows="14" style="font-family:monospace;font-size:13px;" placeholder="<h2>Título</h2>&#10;<p>Conteúdo...</p>"></textarea>
+                    <small class="text-muted">Suporta HTML: &lt;h2&gt;, &lt;h3&gt;, &lt;ul&gt;, &lt;table&gt;, &lt;div class=&quot;alert alert-warning&quot;&gt;, etc.</small>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label>Tags (separadas por vírgula)</label>
+                            <input type="text" id="fTags" class="form-control" placeholder="manutenção, portas, segurança">
+                        </div>
+                    </div>
+                    <div class="col-md-3 d-flex align-items-center">
+                        <div class="custom-control custom-switch mt-3">
+                            <input type="checkbox" class="custom-control-input" id="fFeatured">
+                            <label class="custom-control-label" for="fFeatured">Artigo destacado</label>
+                        </div>
+                    </div>
+                    <div class="col-md-3 d-flex align-items-center">
+                        <div class="custom-control custom-switch mt-3">
+                            <input type="checkbox" class="custom-control-input" id="fPublished" checked>
+                            <label class="custom-control-label" for="fPublished">Publicado</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-info" onclick="previewArticle()"><i class="fas fa-eye mr-1"></i>Pré-visualizar</button>
+                <button type="button" class="btn btn-primary" onclick="saveArticle()"><i class="fas fa-save mr-1"></i>Guardar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Pré-visualização -->
+<div class="modal fade" id="previewModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Pré-visualização do artigo</h5>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body" id="previewContent" style="font-size:15px;line-height:1.7;"></div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Leitura de artigo -->
+<div class="modal fade" id="viewModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="viewModalTitle"></h5>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body" id="articleContent" style="font-size:15px;line-height:1.7;"></div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="../../plugins/jquery/jquery.min.js"></script>
+<script src="../../plugins/bootstrap/bootstrap.bundle.min.js"></script>
+<script src="../../plugins/adminlte/adminlte.min.js"></script>
+<script src="/plugins/toastr/js/toastr.min.js"></script>
+<link rel="stylesheet" href="/plugins/toastr/css/toastr.min.css">
+<script src="../../assets/js/sidebar-init.js"></script>
+<script src="../../assets/js/config.js"></script>
+<script src="../../assets/js/auth.js"></script>
+
+<script>
+$(document).ready(function() {
+    loadSidebarWithInit('includes/sidebar.html');
+    loadArticles();
+});
+
+const CAT_LABELS = {
+    manutencao: 'Manutenção', reparacao: 'Reparação',
+    seguranca: 'Segurança', avarias: 'Avarias', regulamentacao: 'Regulamentação'
+};
+const CAT_COLORS = {
+    manutencao: 'success', reparacao: 'danger',
+    seguranca: 'warning', avarias: 'info', regulamentacao: 'secondary'
+};
+const DIFF_LABELS = { basico: 'Básico', intermedio: 'Intermédio', avancado: 'Avançado' };
+
+function getToken() {
+    return localStorage.getItem('authToken') || localStorage.getItem('liftmanager_jwt') || '';
+}
+
+async function apiCall(url, method = 'GET', body = null) {
+    const opts = { method, headers: { 'Authorization': `Bearer ${getToken()}`, 'Content-Type': 'application/json' } };
+    if (body) opts.body = JSON.stringify(body);
+    try {
+        const res = await fetch(url, opts);
+        const json = await res.json();
+        return json;
+    } catch (e) {
+        console.error('apiCall error:', url, e);
+        return { success: false, message: e.message };
+    }
+}
+
+async function loadArticles() {
+    const search = $('#searchInput').val().trim();
+    const cat    = $('#filterCat').val();
+    const diff   = $('#filterDiff').val();
+    const feat   = $('#filterFeat').is(':checked');
+
+    let url = '/api/knowledge-base/all?';
+    const params = new URLSearchParams();
+    if (search) params.append('search', search);
+    if (cat) params.append('category', cat);
+    if (diff) params.append('difficulty', diff);
+    if (feat) params.append('featured', 'true');
+    url += params.toString();
+
+    try {
+        const res = await apiCall(url);
+        if (!res.success && res.message) {
+            if (res.message.includes('Token') || res.message.includes('autorização')) {
+                $('#articlesTableBody').html('<tr><td colspan="7" class="text-center py-4 text-warning"><i class="fas fa-lock mr-2"></i>Sessão expirada. <a href="/pages/auth/login.html">Entrar novamente</a></td></tr>');
+                updateStats([]);
+                return;
+            }
+        }
+        const articles = res.data || [];
+        renderTable(articles);
+        updateStats(articles);
+    } catch (e) {
+        console.error('loadArticles error:', e);
+        $('#articlesTableBody').html('<tr><td colspan="7" class="text-center py-4 text-danger"><i class="fas fa-exclamation-triangle mr-2"></i>Erro ao carregar artigos: ' + e.message + '</td></tr>');
+        updateStats([]);
+    }
+}
+
+function renderTable(articles) {
+    if (!articles.length) {
+        $('#articlesTableBody').html('<tr><td colspan="7" class="text-center py-4 text-muted">Nenhum artigo encontrado</td></tr>');
+        $('#tableFooter').text('');
+        return;
+    }
+    const rows = articles.map(a => {
+        const catColor = CAT_COLORS[a.category] || 'secondary';
+        const catLabel = CAT_LABELS[a.category] || a.category;
+        const diffClass = a.difficulty === 'basico' ? 'badge-basico' : a.difficulty === 'avancado' ? 'badge-avancado' : 'badge-intermedio';
+        const pubBadge = a.published
+            ? '<span class="badge badge-success">Publicado</span>'
+            : '<span class="badge badge-secondary">Rascunho</span>';
+        const featStar = a.featured ? '<i class="fas fa-star text-warning ml-1" title="Destacado"></i>' : '';
+        const updDate = a.updatedAt ? new Date(a.updatedAt).toLocaleDateString('pt-PT') : '—';
+        return `<tr class="article-row">
+            <td onclick="viewArticle('${a._id}')">
+                <strong>${escHtml(a.title)}</strong>${featStar}
+                <div class="small text-muted">${escHtml(a.summary || '').substring(0,80)}${(a.summary||'').length>80?'…':''}</div>
+            </td>
+            <td><span class="badge badge-${catColor} badge-cat">${catLabel}</span></td>
+            <td><span class="badge ${diffClass} text-white">${DIFF_LABELS[a.difficulty]||a.difficulty}</span></td>
+            <td>${pubBadge}</td>
+            <td><i class="fas fa-eye text-muted mr-1"></i>${a.views||0}</td>
+            <td class="small">${updDate}</td>
+            <td>
+                <button class="btn btn-xs btn-outline-primary mr-1" onclick="editArticle('${a._id}')" title="Editar"><i class="fas fa-edit"></i></button>
+                <button class="btn btn-xs btn-outline-danger" onclick="deleteArticle('${a._id}', '${escHtml(a.title).replace(/'/g,"\\'")}')` + `" title="Eliminar"><i class="fas fa-trash"></i></button>
+            </td>
+        </tr>`;
+    });
+    $('#articlesTableBody').html(rows.join(''));
+    $('#tableFooter').text(`${articles.length} artigo${articles.length !== 1 ? 's' : ''} encontrado${articles.length !== 1 ? 's' : ''}`);
+}
+
+function updateStats(articles) {
+    $('#stat-total').text(articles.length);
+    $('#stat-pub').text(articles.filter(a => a.published).length);
+    $('#stat-draft').text(articles.filter(a => !a.published).length);
+    $('#stat-feat').text(articles.filter(a => a.featured).length);
+}
+
+function openCreate() {
+    $('#articleModalTitle').html('<i class="fas fa-plus mr-2"></i>Novo artigo');
+    $('#editArticleId').val('');
+    $('#fTitle,#fSummary,#fContent,#fTags').val('');
+    $('#fCategory').val('manutencao');
+    $('#fDifficulty').val('basico');
+    $('#fFeatured').prop('checked', false);
+    $('#fPublished').prop('checked', true);
+}
+
+async function editArticle(id) {
+    const res = await apiCall(`/api/knowledge-base/${id}`);
+    if (!res.success) { toastr.error('Erro ao carregar artigo'); return; }
+    const a = res.data;
+    $('#articleModalTitle').html('<i class="fas fa-edit mr-2"></i>Editar artigo');
+    $('#editArticleId').val(id);
+    $('#fTitle').val(a.title);
+    $('#fSummary').val(a.summary || '');
+    $('#fContent').val(a.content || '');
+    $('#fTags').val(Array.isArray(a.tags) ? a.tags.join(', ') : (a.tags || ''));
+    $('#fCategory').val(a.category);
+    $('#fDifficulty').val(a.difficulty);
+    $('#fFeatured').prop('checked', !!a.featured);
+    $('#fPublished').prop('checked', a.published !== false);
+    $('#articleModal').modal('show');
+}
+
+async function viewArticle(id) {
+    const res = await apiCall(`/api/knowledge-base/${id}`);
+    if (!res.success) { toastr.error('Erro ao carregar artigo'); return; }
+    const a = res.data;
+    $('#viewModalTitle').text(a.title);
+    $('#articleContent').html(a.content || '<p class="text-muted">Sem conteúdo.</p>');
+    $('#viewModal').modal('show');
+    // incrementar view
+    apiCall(`/api/knowledge-base/${id}/view`, 'POST');
+}
+
+async function saveArticle() {
+    const id = $('#editArticleId').val();
+    const payload = {
+        title: $('#fTitle').val().trim(),
+        category: $('#fCategory').val(),
+        difficulty: $('#fDifficulty').val(),
+        summary: $('#fSummary').val().trim(),
+        content: $('#fContent').val().trim(),
+        tags: $('#fTags').val(),
+        featured: $('#fFeatured').is(':checked'),
+        published: $('#fPublished').is(':checked')
+    };
+    if (!payload.title || !payload.content) {
+        toastr.warning('Título e conteúdo são obrigatórios');
+        return;
+    }
+    const url = id ? `/api/knowledge-base/${id}` : '/api/knowledge-base';
+    const method = id ? 'PUT' : 'POST';
+    const res = await apiCall(url, method, payload);
+    if (res.success) {
+        toastr.success(id ? 'Artigo atualizado' : 'Artigo criado');
+        $('#articleModal').modal('hide');
+        loadArticles();
+    } else {
+        toastr.error(res.message || 'Erro ao guardar');
+    }
+}
+
+function previewArticle() {
+    const content = $('#fContent').val();
+    $('#previewContent').html(content || '<p class="text-muted">Sem conteúdo para pré-visualizar.</p>');
+    $('#previewModal').modal('show');
+}
+
+async function deleteArticle(id, title) {
+    if (!confirm(`Eliminar o artigo "${title}"?\nEsta ação é irreversível.`)) return;
+    const res = await apiCall(`/api/knowledge-base/${id}`, 'DELETE');
+    if (res.success) {
+        toastr.success('Artigo eliminado');
+        loadArticles();
+    } else {
+        toastr.error(res.message || 'Erro ao eliminar');
+    }
+}
+
+function clearFilters() {
+    $('#searchInput').val('');
+    $('#filterCat').val('');
+    $('#filterDiff').val('');
+    $('#filterFeat').prop('checked', false);
+    loadArticles();
+}
+
+function escHtml(str) {
+    return (str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function logout() {
+    if (typeof AuthManager !== 'undefined') AuthManager.logout();
+    else { localStorage.clear(); window.location.replace('/pages/auth/login.html'); }
+}
+
+$('#searchInput').on('keypress', function(e) { if (e.which === 13) loadArticles(); });
+</script>
+</body>
+</html>
