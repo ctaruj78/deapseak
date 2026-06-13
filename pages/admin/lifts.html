@@ -2856,11 +2856,11 @@
 
                     <!-- Service Start Date -->
                     <div class="form-group">
-                        <label for="service-start-date">
+                        <label for="service-start-date" id="service-date-label">
                             <i class="fas fa-calendar mr-1"></i>Data de Início de Serviço
                         </label>
                         <input type="date" id="service-start-date" class="form-control">
-                        <small class="form-text text-muted">
+                        <small class="form-text text-muted" id="service-date-hint">
                             📅 Data em que o elevador começou a ser mantido pela FESTLIFT
                         </small>
                     </div>
@@ -8135,6 +8135,20 @@ Email de contacto: info@festlift.pt`;
     let currentMunicipalityLiftId = null;
     let currentMunicipalityLiftData = null;
     let currentMunicipalityData = null;
+    let currentContractStartDate = '';
+
+    function updateServiceDateField(type) {
+        const today = new Date().toISOString().split('T')[0];
+        if (type === 'municipality-fim-servico') {
+            $('#service-date-label').html('<i class="fas fa-calendar mr-1"></i>Data de Fim de Serviço');
+            $('#service-date-hint').text('📅 Data em que cessou a manutenção pela FESTLIFT (por defeito: hoje)');
+            $('#service-start-date').val(today);
+        } else {
+            $('#service-date-label').html('<i class="fas fa-calendar mr-1"></i>Data de Início de Serviço');
+            $('#service-date-hint').text('📅 Data em que o elevador começou a ser mantido pela FESTLIFT');
+            $('#service-start-date').val(currentContractStartDate || today);
+        }
+    }
     
     async function openMunicipalityModal(liftId) {
         console.log('🏛️ A abrir janela do município para elevador:', liftId);
@@ -8239,14 +8253,13 @@ Email de contacto: info@festlift.pt`;
                 return isNaN(d) ? '' : d.toISOString().split('T')[0];
             };
 
-            const contractStartDate =
+            currentContractStartDate =
                 _toIsoDate(lift.contractStart) ||
                 _toIsoDate(lift.maintenanceContract?.contractStart) ||
                 _toIsoDate(lift.maintenanceContract?.startDate) ||
                 _toIsoDate(lift.contract?.startDate) ||
                 '';
-            const fallbackDate = new Date().toISOString().split('T')[0];
-            $('#service-start-date').val(contractStartDate || fallbackDate);
+            updateServiceDateField($('#email-template-type').val());
             
             // Mostrar janela modal
             $('#municipalityModal').modal('show');
@@ -8350,6 +8363,11 @@ Email de contacto: info@festlift.pt`;
     
     // Обробник кнопки відправки
     $(document).ready(function() {
+        // Mudar label/data consoante o tipo de formulário selecionado
+        $('#email-template-type').on('change', function() {
+            updateServiceDateField($(this).val());
+        });
+
         // Preview email button
         $('#btn-preview-municipality-email').on('click', async function() {
             console.log('👁️ Pré-visualização email...');
