@@ -2119,7 +2119,7 @@ app.get('/api/knowledge-base/all', authenticateToken, async (req, res) => {
 });
 
 // GET /api/knowledge-base/:id
-app.get('/api/knowledge-base/:id', authenticateToken, async (req, res) => {
+app.get('/api/knowledge-base/:id', async (req, res) => {
     try {
         if (!db) return res.status(503).json({ success: false, message: 'Base de dados indisponível' });
         const { ObjectId } = require('mongodb');
@@ -2133,7 +2133,7 @@ app.get('/api/knowledge-base/:id', authenticateToken, async (req, res) => {
 });
 
 // POST /api/knowledge-base/:id/view — incrementa visualizações
-app.post('/api/knowledge-base/:id/view', authenticateToken, async (req, res) => {
+app.post('/api/knowledge-base/:id/view', async (req, res) => {
     try {
         if (!db) return res.status(503).json({ success: false, message: 'Base de dados indisponível' });
         const { ObjectId } = require('mongodb');
