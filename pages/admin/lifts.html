@@ -5633,7 +5633,17 @@ Email de contacto: info@festlift.pt`;
                         return null;
                     })();
                     if (!lastReport) {
-                        _banner.innerHTML = '<div class="alert alert-secondary py-2 mb-0"><i class="fas fa-info-circle mr-1"></i> Sem inspecção registada <small class="text-muted ml-1">(fonte: ' + _sourceLabel + ')</small></div>';
+                        _banner.innerHTML = '<div class="alert alert-warning py-2 mb-2">'
+                            + '<i class="fas fa-exclamation-triangle mr-1"></i>'
+                            + ' <strong>Sem inspecção registada</strong> — elevador sem certificado válido.'
+                            + '<div class="mt-2">'
+                            + '<button class="btn btn-warning btn-sm mr-1" onclick="requestLiftInspection()">'
+                            + '<i class="fas fa-clipboard-check mr-1"></i> Solicitar inspecção</button>'
+                            + '<button class="btn btn-primary btn-sm mr-1" onclick="showAddReportModal()">'
+                            + '<i class="fas fa-plus mr-1"></i> Adicionar relatório</button>'
+                            + '<button class="btn btn-outline-primary btn-sm" data-toggle="modal" data-target="#pdfParserModal">'
+                            + '<i class="fas fa-file-pdf mr-1"></i> Importar PDF</button>'
+                            + '</div></div>';
                     } else if (_lastSt === 'failed') {
                         _banner.innerHTML = '<div class="alert alert-danger py-2 mb-0"><i class="fas fa-times-circle mr-1"></i> <strong>Inspecção reprovada</strong> — necessita nova inspecção</div>';
                     } else if (_lastSt === 'conditional') {

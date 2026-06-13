@@ -623,6 +623,12 @@ class LiftsManager {
                             </div>
                             <div class="card-body p-2">
                                 ${inspectionAlertHtml}
+                                ${!this.getEffectiveNextInspectionDate(lift) ? `
+                                <div class="mb-2">
+                                    <button class="btn btn-warning btn-sm" onclick="window.liftsManager.requestService('${liftId}')">
+                                        <i class="fas fa-clipboard-check mr-1"></i> Solicitar inspeção inicial
+                                    </button>
+                                </div>` : ''}
                                 <table class="table table-sm mb-0">
                                     <tr><td><strong>Última inspeção periódica:</strong></td><td>${this.formatDate(this.getEffectiveLastInspectionDate(lift))}</td></tr>
                                     <tr><td><strong>Próxima inspeção periódica:</strong></td><td>${this.formatDate(this.getEffectiveNextInspectionDate(lift))}</td></tr>
