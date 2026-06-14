@@ -210,6 +210,39 @@
                         </div>
                     </div>
                     <div class="col-md-6">
+                        <!-- Pendentes CSV upload -->
+                        <div class="card card-danger card-outline">
+                            <div class="card-header">
+                                <h3 class="card-title"><i class="fas fa-file-invoice-dollar mr-1"></i> Importar pendentes Moloni (CSV)</h3>
+                            </div>
+                            <div class="card-body">
+                                <p class="text-muted small mb-2">Exporta a <strong>Listagem de Pendentes → Clientes</strong> do Moloni em CSV e importa aqui. Substitui a lista de devedores ativos com dados de hoje.</p>
+                                <div class="drop-zone" id="pendDz">
+                                    <div class="drop-icon"><i class="fas fa-file-invoice-dollar"></i></div>
+                                    <p class="mt-2 mb-1 font-weight-bold">Arraste o CSV aqui</p>
+                                    <p class="text-muted small mb-2">ou clique para selecionar</p>
+                                    <input type="file" id="pendFile" accept=".csv,text/csv" class="d-none">
+                                    <button class="btn btn-outline-danger btn-sm" onclick="document.getElementById('pendFile').click()">
+                                        <i class="fas fa-folder-open mr-1"></i>Selecionar CSV
+                                    </button>
+                                </div>
+                                <div id="pendSelected" class="mt-2 d-none">
+                                    <div class="alert alert-danger mb-2 py-2">
+                                        <i class="fas fa-file-alt mr-1"></i>
+                                        <span id="pendFileName"></span>
+                                        <button class="close py-0" onclick="clearPend()"><span>&times;</span></button>
+                                    </div>
+                                    <button class="btn btn-danger btn-block" id="pendUploadBtn" onclick="uploadPendentes()">
+                                        <i class="fas fa-sync-alt mr-1"></i>Importar devedores de hoje
+                                    </button>
+                                </div>
+                                <div id="pendSpinner" class="text-center mt-3" style="display:none;">
+                                    <i class="fas fa-spinner fa-spin fa-2x text-danger"></i>
+                                    <p class="mt-2 text-muted small">A processar…</p>
+                                </div>
+                                <div id="pendResult" class="mt-3" style="display:none;"></div>
+                            </div>
+                        </div>
                         <div class="card card-secondary card-outline" id="ignoredCard" style="display:none;">
                             <div class="card-header">
                                 <h3 class="card-title"><i class="fas fa-ban mr-1"></i> Clientes pontuais ignorados</h3>
@@ -219,6 +252,28 @@
                             </div>
                             <div class="card-body p-0">
                                 <div id="ignoredList" class="p-3 small text-muted">A carregar…</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Active debtors panel -->
+                <div class="row mt-2">
+                    <div class="col-12">
+                        <div class="card card-danger card-outline" id="debtorsPanelCard">
+                            <div class="card-header">
+                                <h3 class="card-title"><i class="fas fa-exclamation-triangle mr-1 text-danger"></i>Devedores ativos <span class="badge badge-danger ml-1" id="debtorsTotalBadge" style="display:none;"></span></h3>
+                                <div class="card-tools">
+                                    <button class="btn btn-sm btn-danger" id="sendAllAlertsBtn" onclick="sendDebtorAlerts()" style="display:none;">
+                                        <i class="fas fa-paper-plane mr-1"></i>Enviar alertas a todos
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-secondary ml-1" onclick="loadDebtors()">
+                                        <i class="fas fa-sync-alt"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card-body p-0" id="debtorsPanelBody">
+                                <div class="text-center text-muted py-3"><i class="fas fa-spinner fa-spin"></i></div>
                             </div>
                         </div>
                     </div>
@@ -673,8 +728,180 @@ async function unignoreNif(nif, btn) {
     } catch (e) { alert('Erro: ' + e.message); }
 }
 
+// ── Devedores Ativos panel ────────────────────────────────────────────────────
+async function loadDebtors() {
+    const body = document.getElementById('debtorsPanelBody');
+    const badge = document.getElementById('debtorsTotalBadge');
+    const sendBtn = document.getElementById('sendAllAlertsBtn');
+    body.innerHTML = '<div class="text-center text-muted py-3"><i class="fas fa-spinner fa-spin"></i></div>';
+    try {
+        const r = await fetch(API() + '/api/saft/debtors', { headers: HDRS() });
+        const d = await r.json();
+        if (!d.success) throw new Error(d.message);
+
+        if (!d.debtors.length) {
+            body.innerHTML = '<div class="text-center text-success py-3"><i class="fas fa-check-circle mr-1"></i>Sem devedores ativos.</div>';
+            badge.style.display = 'none';
+            sendBtn.style.display = 'none';
+            return;
+        }
+
+        badge.textContent = d.total;
+        badge.style.display = '';
+
+        const withEmail = d.debtors.filter(x => x.clientEmail).length;
+        sendBtn.style.display = withEmail ? '' : 'none';
+        sendBtn.title = withEmail + ' com email • ' + (d.total - withEmail) + ' sem email';
+
+        body.innerHTML = `
+        <table class="table table-sm table-hover mb-0">
+            <thead class="thead-light">
+                <tr>
+                    <th>Cliente</th>
+                    <th>NIF</th>
+                    <th class="text-right">Em dívida</th>
+                    <th class="text-center">Alertas</th>
+                    <th class="text-center">Fonte</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                ${d.debtors.map((deb, idx) => {
+                    const invRows = (deb.invoices || []).map(inv => `
+                        <tr class="table-light">
+                            <td colspan="2" class="pl-4 small text-muted"><i class="fas fa-file-invoice mr-1"></i>${esc(inv.invoiceNo)} — ${esc(inv.invoiceDate || inv.dueDate || '')}</td>
+                            <td class="text-right small">${fmtEur(inv.outstanding ?? inv.total ?? 0)}</td>
+                            <td class="text-center small text-muted">${(inv.daysOverdue > 0 ? inv.daysOverdue + 'd atraso' : (inv.daysOverdue < 0 ? Math.abs(inv.daysOverdue) + 'd prazo' : 'hoje'))}</td>
+                            <td colspan="2"></td>
+                        </tr>`).join('');
+                    return `
+                <tr style="cursor:pointer" onclick="toggleInv(${idx})">
+                    <td><i class="fas fa-chevron-right mr-1 text-muted small" id="ic${idx}"></i>${esc(deb.customerName)}</td>
+                    <td><code>${esc(deb.customerTaxId)}</code></td>
+                    <td class="text-right text-danger font-weight-bold">${fmtEur(deb.totalOutstanding)}</td>
+                    <td class="text-center" onclick="event.stopPropagation()">
+                        ${deb.alertSent
+                            ? '<span class="badge badge-success"><i class="fas fa-check mr-1"></i>Enviado</span>'
+                            : (deb.clientEmail
+                                ? `<button class="btn btn-xs btn-outline-danger" onclick="sendDebtorAlerts(['${esc(deb.customerTaxId)}'], this)"><i class="fas fa-paper-plane mr-1"></i>Enviar</button>`
+                                : '<span class="badge badge-secondary">Sem email</span>')}
+                    </td>
+                    <td class="text-center"><small class="text-muted">${deb.avgDaysOverdue > 0 ? Math.round(deb.avgDaysOverdue) + 'd' : (esc(deb.importFilename || ''))}</small></td>
+                    <td onclick="event.stopPropagation()">
+                        <button class="btn btn-xs btn-outline-secondary" onclick="ignoreNif('${esc(deb.customerTaxId)}', '${esc(deb.customerName)}', this)" title="Ignorar">
+                            <i class="fas fa-ban"></i>
+                        </button>
+                    </td>
+                </tr>
+                <tbody id="inv${idx}" style="display:none">${invRows}</tbody>`;
+                }).join('')}
+            </tbody>
+        </table>`;
+
+    } catch (e) {
+        body.innerHTML = `<div class="text-center text-danger py-3">Erro: ${esc(e.message)}</div>`;
+    }
+}
+
+async function sendDebtorAlerts(nifs, btn) {
+    const all = !nifs;
+    if (!confirm(all
+        ? '⚠️ Enviar email de aviso de pagamento a TODOS os devedores com email?\n\nOs clientes receberão o email imediatamente.'
+        : '⚠️ Enviar email de aviso de pagamento a este devedor?')) return;
+    if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>'; }
+    try {
+        const r = await fetch(API() + '/api/saft/debtors/send', {
+            method: 'POST',
+            headers: { ...HDRS(), 'Content-Type': 'application/json' },
+            body: JSON.stringify(nifs ? { nifs } : {}),
+        });
+        const d = await r.json();
+        if (!d.success) throw new Error(d.message);
+        alert('✅ ' + d.sent + ' alerta(s) enviado(s).' + (d.errors?.length ? '\n\nErros:\n' + d.errors.join('\n') : ''));
+        loadDebtors();
+    } catch (e) {
+        alert('Erro: ' + e.message);
+        if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-paper-plane mr-1"></i>Enviar'; }
+    }
+}
+
+function toggleInv(idx) {
+    const tbody = document.getElementById('inv' + idx);
+    const icon  = document.getElementById('ic'  + idx);
+    if (!tbody) return;
+    const open = tbody.style.display !== 'none';
+    tbody.style.display = open ? 'none' : '';
+    if (icon) icon.className = open
+        ? 'fas fa-chevron-right mr-1 text-muted small'
+        : 'fas fa-chevron-down mr-1 text-primary small';
+}
+
+// ── Pendentes CSV import ──────────────────────────────────────────────────────
+const pendDz = document.getElementById('pendDz');
+pendDz.addEventListener('dragover',  e => { e.preventDefault(); pendDz.classList.add('drag-over'); });
+pendDz.addEventListener('dragleave', () => pendDz.classList.remove('drag-over'));
+pendDz.addEventListener('drop', e => {
+    e.preventDefault(); pendDz.classList.remove('drag-over');
+    const f = e.dataTransfer.files[0]; if (f) setPendFile(f);
+});
+document.getElementById('pendFile').addEventListener('change', e => {
+    if (e.target.files[0]) setPendFile(e.target.files[0]);
+});
+
+let selectedPendFile = null;
+function setPendFile(f) {
+    if (!f.name.toLowerCase().endsWith('.csv')) return alert('Apenas ficheiros .csv são aceites.');
+    selectedPendFile = f;
+    document.getElementById('pendFileName').textContent = f.name + ' (' + (f.size / 1024).toFixed(0) + ' KB)';
+    document.getElementById('pendSelected').classList.remove('d-none');
+    document.getElementById('pendResult').style.display = 'none';
+}
+function clearPend() {
+    selectedPendFile = null;
+    document.getElementById('pendSelected').classList.add('d-none');
+    document.getElementById('pendFile').value = '';
+}
+
+async function uploadPendentes() {
+    if (!selectedPendFile) return;
+    document.getElementById('pendUploadBtn').disabled = true;
+    document.getElementById('pendSpinner').style.display = '';
+    document.getElementById('pendResult').style.display = 'none';
+
+    const fd = new FormData();
+    fd.append('csv', selectedPendFile);
+    try {
+        const r = await fetch(API() + '/api/saft/import-pendentes', {
+            method: 'POST', headers: HDRS_MULTIPART(), body: fd,
+        });
+        const data = await r.json();
+        document.getElementById('pendSpinner').style.display = 'none';
+        document.getElementById('pendUploadBtn').disabled = false;
+
+        if (!data.success) { alert('Erro: ' + data.message); return; }
+
+        const noEmailHtml = data.noEmailList?.length
+            ? `<div class="mt-1"><small class="text-muted">Sem email (${data.noEmailList.length}): ${data.noEmailList.map(n => esc(n)).join(', ')}</small></div>`
+            : '';
+
+        document.getElementById('pendResult').innerHTML = `
+            <div class="alert alert-success py-2 mb-1">
+                <i class="fas fa-check-circle mr-1"></i>
+                <strong>${data.total}</strong> devedores importados.
+                ${data.noEmail ? `<span class="text-muted ml-2">${data.noEmail} sem email.</span>` : ''}
+            </div>${noEmailHtml}`;
+        document.getElementById('pendResult').style.display = '';
+        clearPend();
+        loadDebtors(); // refresh the active debtors panel
+    } catch (e) {
+        document.getElementById('pendSpinner').style.display = 'none';
+        document.getElementById('pendUploadBtn').disabled = false;
+        alert('Erro de rede: ' + e.message);
+    }
+}
+
 // ── init ──────────────────────────────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', loadHistory);
+document.addEventListener('DOMContentLoaded', () => { loadHistory(); loadDebtors(); });
 </script>
 </body>
 </html>

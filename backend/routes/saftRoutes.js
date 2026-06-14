@@ -61,6 +61,16 @@ router.get('/settings/ignored-nifs',        ctrl.getIgnoredNifs);
 router.post('/settings/ignore/:nif',        ctrl.ignoreNif);
 router.delete('/settings/ignore/:nif',      ctrl.unignoreNif);
 
+router.get('/debtors',        ctrl.getAllDebtors);
+router.post('/debtors/send',  ctrl.sendAlerts);
+
+router.post('/import-pendentes', (req, res, next) => {
+    uploadCsv(req, res, (err) => {
+        if (err) return res.status(400).json({ success: false, message: err.message });
+        next();
+    });
+}, ctrl.importPendentes);
+
 router.get('/',             ctrl.listImports);
 router.get('/:id',          ctrl.getImport);
 router.post('/:id/resend',  ctrl.resendAlerts);

@@ -228,7 +228,7 @@ exports.uploadSaft = async (req, res) => {
         const OVERDUE_DAYS = parseInt(process.env.SAFT_OVERDUE_DAYS) || 30;
         // Use SAF-T EndDate as reference — not today — so old SAF-T files don't
         // flag all invoices as overdue just because time has passed since export.
-        const today = period.end || new Date();
+        const today = new Date(); // sempre hoje — faturas antigas não pagas são devedores reais
 
         // Group outstanding invoices by customer
         const debtorMap = {}; // custId → { invoices[], totalOutstanding }
@@ -260,33 +260,56 @@ exports.uploadSaft = async (req, res) => {
             debtorMap[inv.custId].totalOutstanding += outstanding;
         }
 
-        // ── 3. Find client emails — DO NOT auto-send; admin reviews first ────────
+        // ── 3. Build debtors — prefer pendentes (accumulated) over SAF-T monthly ──
         const settings = await SaftSettings.findOne({ key: 'global' }).lean();
         const ignoredNifs = new Set((settings?.ignoredNifs || []).map(n => String(n).trim()));
 
         const debtors = [];
-        const alertsSent = 0; // always 0 on upload — manual send only via /resend
+        const alertsSent = 0;
 
-        for (const [custId, data] of Object.entries(debtorMap)) {
-            const cust = customerMap[custId];
-            if (!cust) continue;
-            if (ignoredNifs.has(cust.nif)) continue; // one-time client, skip
+        // If a pendentes was imported within 90 days, use it — it shows ALL outstanding
+        // invoices accumulated across all months, not just this SAF-T period.
+        const pendentes = settings?.pendentes;
+        const pendDaysOld = pendentes?.importedAt
+            ? daysBetween(pendentes.importedAt, new Date())
+            : 999;
 
-            const lift = await Lift.findOne({ nif: cust.nif }, 'clientEmail clientName').lean();
-            const clientEmail = lift?.clientEmail || null;
-
-            if (!clientEmail) {
-                warnings.push(`Devedor NIF ${cust.nif} (${cust.name}) — sem email em BD`);
+        if (pendentes?.debtors?.length && pendDaysOld <= 90) {
+            // Use pendentes as the authoritative debtor source for this SAF-T record
+            for (const d of pendentes.debtors) {
+                if (ignoredNifs.has(d.customerTaxId)) continue;
+                debtors.push({
+                    customerTaxId:    d.customerTaxId,
+                    customerName:     d.customerName,
+                    clientEmail:      d.clientEmail,
+                    totalOutstanding: d.totalOutstanding,
+                    alertSent:        false,
+                    invoices:         d.invoices,
+                });
             }
+        } else {
+            // Fallback: detect from this SAF-T file only
+            for (const [custId, data] of Object.entries(debtorMap)) {
+                const cust = customerMap[custId];
+                if (!cust || ignoredNifs.has(cust.nif)) continue;
 
-            debtors.push({
-                customerTaxId:    cust.nif,
-                customerName:     cust.name,
-                clientEmail,
-                totalOutstanding: data.totalOutstanding,
-                alertSent:        false,
-                invoices:         data.invoices,
-            });
+                const lift = await Lift.findOne({ nif: cust.nif }, 'clientEmail').lean();
+                const emailMap = settings?.moloniEmailMap;
+                const clientEmail = lift?.clientEmail
+                    || (emailMap instanceof Map ? emailMap.get('nif:' + cust.nif) : null)
+                    || null;
+
+                if (!clientEmail) warnings.push(`Devedor NIF ${cust.nif} (${cust.name}) — sem email em BD`);
+
+                debtors.push({
+                    customerTaxId:    cust.nif,
+                    customerName:     cust.name,
+                    clientEmail,
+                    totalOutstanding: data.totalOutstanding,
+                    alertSent:        false,
+                    invoices:         data.invoices,
+                });
+            }
         }
 
         // ── 4. Save import record ─────────────────────────────────────────────
@@ -391,6 +414,233 @@ exports.resendAlerts = async (req, res) => {
     }
 };
 
+// ── aggregated debtors — pendentes CSV is authoritative if uploaded ───────────
+exports.getAllDebtors = async (req, res) => {
+    try {
+        const settings    = await SaftSettings.findOne({ key: 'global' }).lean();
+        const ignoredNifs = new Set((settings?.ignoredNifs || []).map(n => String(n).trim()));
+
+        // Pendentes CSV (Moloni) is the authoritative real-time source
+        if (settings?.pendentes?.debtors?.length) {
+            const debtors = settings.pendentes.debtors
+                .filter(d => !ignoredNifs.has(d.customerTaxId));
+            return res.json({
+                success: true,
+                source:  'pendentes',
+                importedAt: settings.pendentes.importedAt,
+                filename:   settings.pendentes.filename,
+                debtors,
+                total: debtors.length,
+            });
+        }
+
+        // Fallback: aggregate from SAF-T imports
+        const imports = await SaftImport.find(
+            { 'debtors.0': { $exists: true } },
+            'filename period debtors createdAt'
+        ).sort({ createdAt: -1 }).lean();
+
+        const byNif = {};
+        for (const imp of imports) {
+            for (const d of (imp.debtors || [])) {
+                if (!byNif[d.customerTaxId]) {
+                    byNif[d.customerTaxId] = { ...d, importFilename: imp.filename };
+                }
+            }
+        }
+
+        const debtors = Object.values(byNif).filter(d => !ignoredNifs.has(d.customerTaxId));
+        res.json({ success: true, source: 'saft', debtors, total: debtors.length });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+};
+
+// ── send alerts to specific debtors (by NIF list) ────────────────────────────
+exports.sendAlerts = async (req, res) => {
+    try {
+        const { nifs } = req.body;
+        const settings    = await SaftSettings.findOne({ key: 'global' });
+        const ignoredNifs = new Set((settings?.ignoredNifs || []).map(n => String(n).trim()));
+
+        let candidates = [];
+        if (settings?.pendentes?.debtors?.length) {
+            candidates = settings.pendentes.debtors;
+        } else {
+            const imports = await SaftImport.find({ 'debtors.0': { $exists: true } }, 'debtors').lean();
+            const byNif = {};
+            for (const imp of imports) {
+                for (const d of (imp.debtors || [])) {
+                    if (!byNif[d.customerTaxId]) byNif[d.customerTaxId] = d;
+                }
+            }
+            candidates = Object.values(byNif);
+        }
+
+        const targets = candidates.filter(d =>
+            !ignoredNifs.has(d.customerTaxId) &&
+            d.clientEmail &&
+            (!nifs || nifs.includes(d.customerTaxId))
+        );
+
+        let sent = 0;
+        const errors = [];
+        for (const d of targets) {
+            try {
+                await _sendDebtorAlert(d.clientEmail, d.customerName, d.invoices, d.totalOutstanding);
+                // Mark alertSent in pendentes record
+                if (settings?.pendentes?.debtors) {
+                    const rec = settings.pendentes.debtors.find(x => x.customerTaxId === d.customerTaxId);
+                    if (rec) rec.alertSent = true;
+                }
+                sent++;
+            } catch (e) {
+                errors.push(`${d.customerName}: ${e.message}`);
+            }
+        }
+        if (sent && settings?.pendentes) await settings.save();
+
+        res.json({ success: true, sent, errors });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+};
+
+// ── import Moloni "Pendentes" CSV (outstanding invoices report) ───────────────
+function _parsePendentes(raw) {
+    const cell = (s) => String(s || '').replace(/^"|"$/g, '').trim();
+    const lines = raw.split(/\r?\n/).map(cell);
+    const ptNum = (s) => parseFloat(String(s).replace(/\./g, '').replace(',', '.')) || 0;
+
+    const clients = [];
+    let i = 0;
+
+    // Skip to first separator
+    while (i < lines.length && !lines[i].startsWith('---')) i++;
+
+    while (i < lines.length) {
+        if (!lines[i].startsWith('---')) { i++; continue; }
+        i++; // skip separator
+        while (i < lines.length && !lines[i]) i++; // skip blank lines
+
+        if (i >= lines.length) break;
+
+        // Client name — a single unstructured line (no semicolons for data)
+        const name = lines[i];
+        if (!name || name.startsWith('---')) { i++; continue; }
+        i++;
+
+        let nif = '', code = '', pending = 0, avgDays = 0;
+        const invoices = [];
+        let inTable = false;
+
+        while (i < lines.length && !lines[i].startsWith('---')) {
+            const raw2 = lines[i];
+            const cols = raw2.split(';').map(cell);
+            i++;
+
+            if (cols[0] === 'Contribuinte')  { nif     = cols[1]?.replace(/\D/g, '') || ''; continue; }
+            if (cols[0] === 'Código' || cols[0] === 'Código' || cols[0] === 'C�dig') {
+                code = cols[1] || ''; continue;
+            }
+            if (cols[0] === 'Valor Pendente') { pending = ptNum(cols[1]); continue; }
+            if (cols[0] === 'Média de Atraso' || cols[0].startsWith('M')) {
+                if (cols[2] === 'Dias') avgDays = parseFloat(String(cols[1]).replace(',', '.')) || 0;
+                continue;
+            }
+            // Invoice table header detection
+            if (cols[0] === 'Tipo de Documento') { inTable = true; continue; }
+            if (inTable && (cols[0] === 'Fatura' || cols[0] === 'Nota de Débito' || cols[0] === 'Nota de Débito' || cols[0] === 'ND')) {
+                invoices.push({
+                    invoiceNo:   cols[1] || '',
+                    invoiceDate: cols[2] || '',
+                    dueDate:     cols[3] || '',
+                    total:       ptNum(cols[8]),
+                    outstanding: ptNum(cols[9]),
+                    daysOverdue: parseFloat(String(cols[7]).replace(',', '.')) || 0,
+                });
+            }
+        }
+
+        if (nif && pending > 0) {
+            clients.push({ name, nif, code, pending, avgDays, invoices });
+        }
+    }
+
+    return clients;
+}
+
+exports.importPendentes = async (req, res) => {
+    if (!req.file) return res.status(400).json({ success: false, message: 'Nenhum ficheiro enviado.' });
+    const filePath = req.file.path;
+    try {
+        const raw = fs.readFileSync(filePath, 'utf8').replace(/^﻿/, '');
+        fs.unlinkSync(filePath);
+
+        const parsed = _parsePendentes(raw);
+        if (!parsed.length) {
+            return res.status(400).json({ success: false, message: 'Nenhum devedor encontrado. Verifique o formato do ficheiro.' });
+        }
+
+        const settings    = await SaftSettings.findOne({ key: 'global' }) || new SaftSettings({ key: 'global' });
+        const ignoredNifs = new Set((settings.ignoredNifs || []).map(n => String(n).trim()));
+
+        const debtors = [];
+        const noEmail = [];
+
+        for (const c of parsed) {
+            if (ignoredNifs.has(c.nif)) continue;
+
+            // Find client email: lift DB → Moloni email map (fallback for clients without lifts yet)
+            let lift = null;
+            if (c.code) lift = await Lift.findOne({ moloniCode: c.code }, 'clientEmail').lean();
+            if (!lift)  lift = await Lift.findOne({ nif: c.nif },         'clientEmail').lean();
+
+            const emailMap = settings.moloniEmailMap;
+            const clientEmail = lift?.clientEmail
+                || (c.code && emailMap?.get('code:' + c.code))
+                || (c.nif  && emailMap?.get('nif:'  + c.nif))
+                || null;
+            if (!clientEmail) noEmail.push(c.name);
+
+            debtors.push({
+                customerName:     c.name,
+                customerTaxId:    c.nif,
+                moloniCode:       c.code,
+                totalOutstanding: c.pending,
+                avgDaysOverdue:   c.avgDays,
+                clientEmail,
+                alertSent:        false,
+                invoices:         c.invoices.map(inv => ({
+                    invoiceNo:   inv.invoiceNo,
+                    invoiceDate: inv.invoiceDate,
+                    dueDate:     inv.dueDate,
+                    total:       inv.total,
+                    outstanding: inv.outstanding,
+                    daysOverdue: inv.daysOverdue,
+                })),
+            });
+        }
+
+        settings.pendentes = {
+            importedAt: new Date(),
+            filename:   req.file.originalname,
+            total:      debtors.reduce((s, d) => s + d.totalOutstanding, 0),
+            debtors,
+        };
+        await settings.save();
+
+        res.json({
+            success:  true,
+            total:    debtors.length,
+            noEmail:  noEmail.length,
+            noEmailList: noEmail,
+        });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+};
+
 exports.deleteImport = async (req, res) => {
     try {
         const record = await SaftImport.findById(req.params.id);
@@ -414,15 +664,22 @@ async function _sendDebtorAlert(email, name, invoices, totalOutstanding) {
     const fmt = (n) => Number(n).toFixed(2).replace('.', ',') + ' €';
     const fmtDate = (d) => d ? new Date(d).toLocaleDateString('pt-PT') : '—';
 
-    const rows = invoices.map(inv => `
+    const rows = invoices.map(inv => {
+        // SAF-T format: grossTotal / amountPaid / outstanding
+        // Pendentes format: total / outstanding
+        const total  = inv.grossTotal ?? inv.total ?? 0;
+        const paid   = inv.amountPaid ?? (total - (inv.outstanding ?? 0));
+        const owed   = inv.outstanding ?? Math.max(0, total - paid);
+        return `
         <tr>
           <td style="padding:8px 12px;border-bottom:1px solid #eee;">${esc(inv.invoiceNo)}</td>
-          <td style="padding:8px 12px;border-bottom:1px solid #eee;">${fmtDate(inv.invoiceDate)}</td>
-          <td style="padding:8px 12px;border-bottom:1px solid #eee;text-align:right;">${fmt(inv.grossTotal)}</td>
-          <td style="padding:8px 12px;border-bottom:1px solid #eee;text-align:right;">${fmt(inv.amountPaid)}</td>
-          <td style="padding:8px 12px;border-bottom:1px solid #eee;text-align:right;color:#c62828;font-weight:bold;">${fmt(inv.outstanding)}</td>
-          <td style="padding:8px 12px;border-bottom:1px solid #eee;text-align:center;">${inv.daysOverdue}d</td>
-        </tr>`).join('');
+          <td style="padding:8px 12px;border-bottom:1px solid #eee;">${fmtDate(inv.invoiceDate || inv.dueDate)}</td>
+          <td style="padding:8px 12px;border-bottom:1px solid #eee;text-align:right;">${fmt(total)}</td>
+          <td style="padding:8px 12px;border-bottom:1px solid #eee;text-align:right;">${fmt(paid)}</td>
+          <td style="padding:8px 12px;border-bottom:1px solid #eee;text-align:right;color:#c62828;font-weight:bold;">${fmt(owed)}</td>
+          <td style="padding:8px 12px;border-bottom:1px solid #eee;text-align:center;">${inv.daysOverdue > 0 ? inv.daysOverdue + 'd' : '—'}</td>
+        </tr>`;
+    }).join('');
 
     const bodyHtml = `
         <p>Caro(a) <strong>${esc(name)}</strong>,</p>
@@ -515,7 +772,16 @@ const normaliseHdr = (s) => String(s)
     .replace(/[^a-z0-9]/g, '');
 
 const extractHouseNumCsv = (s) => {
-    const m = String(s).match(/n[.º°]?\s*(\d+)/i) || String(s).match(/(\d+)\s*[A-Za-z-]?\s*$/);
+    const str = String(s);
+    // Standard nº162 / n.162 / n°162
+    let m = str.match(/n[.º°]?\s*(\d+)/i);
+    if (m) return m[1];
+    // Garbled ordinal: when CP1252 CSV is read as UTF-8, º (0xBA) becomes U+FFFD
+    // which is stripped by normalisation — resulting in "n<junk>162" or "n 162"
+    m = str.match(/\bn.{0,2}\s*(\d{2,})/i);
+    if (m) return m[1];
+    // Last resort: trailing number (avoids "Torre 3" stealing when better match existed)
+    m = str.match(/(\d+)\s*[A-Za-z-]?\s*$/);
     return m ? m[1] : null;
 };
 
@@ -553,11 +819,17 @@ exports.importMoloniClients = async (req, res) => {
             return -1;
         };
 
-        const iCode = col('codigo', 'code', 'id');
-        const iNif  = col('contribuinte', 'nif', 'taxid', 'nrcontribuinte');
-        const iAddr = col('morada', 'endereco', 'address', 'rua');
-        const iZip  = col('codigopostal', 'codpostal', 'postal', 'zip', 'cp');
-        const iName = col('nome', 'name', 'empresa', 'companyname');
+        // Moloni CSV may be exported in Windows-1252 encoding; when read as UTF-8,
+        // accented chars become replacement chars (U+FFFD) that get stripped:
+        //   "Código"       → "cdigo"       (o with accent dropped)
+        //   "Código Postal"→ "cdigopostal"
+        // Include both canonical and garbled variants as fallbacks.
+        const iCode  = col('codigo', 'cdigo', 'code', 'id');
+        const iNif   = col('contribuinte', 'nif', 'taxid', 'nrcontribuinte');
+        const iAddr  = col('morada', 'endereco', 'address', 'rua');
+        const iZip   = col('codigopostal', 'cdigopostal', 'codpostal', 'postal', 'zip', 'cp');
+        const iName  = col('nome', 'name', 'empresa', 'companyname');
+        const iEmail = col('email', 'emailcliente', 'emaildaempresa');
 
         if (iNif < 0) return res.status(400).json({ success: false, message: `Coluna NIF/Contribuinte não encontrada. Colunas detectadas: ${headers.join(' | ')}` });
 
@@ -594,10 +866,11 @@ exports.importMoloniClients = async (req, res) => {
             }
             if (!rawNif || rawNif === '0') continue;
 
-            const code = iCode >= 0 ? (cols[iCode] || '').trim() : '';
-            const addr = iAddr >= 0 ? (cols[iAddr] || '').trim() : '';
-            const zip  = iZip  >= 0 ? (cols[iZip]  || '').trim().replace(/\s/g, '') : '';
-            const name = iName >= 0 ? (cols[iName]  || '').trim() : '';
+            const code  = iCode  >= 0 ? (cols[iCode]  || '').trim() : '';
+            const addr  = iAddr  >= 0 ? (cols[iAddr]  || '').trim() : '';
+            const zip   = iZip   >= 0 ? (cols[iZip]   || '').trim().replace(/\s/g, '') : '';
+            const name  = iName  >= 0 ? (cols[iName]  || '').trim() : '';
+            const email = iEmail >= 0 ? (cols[iEmail] || '').trim().toLowerCase() : '';
 
             // If no dedicated address column, extract from company name
             // "Adm. de Condominio Rua Casal da Serra nº19" → "Rua Casal da Serra nº19"
@@ -606,7 +879,7 @@ exports.importMoloniClients = async (req, res) => {
                 return m ? m[1].trim() : name;
             })();
 
-            clients.push({ code, nif: rawNif, address: effectiveAddr, zip, name });
+            clients.push({ code, nif: rawNif, address: effectiveAddr, zip, name, email });
         }
 
         const updated  = [];
@@ -616,12 +889,21 @@ exports.importMoloniClients = async (req, res) => {
         for (const c of clients) {
             let matched = false;
 
+            // Build the update object — always set nif + moloniCode + email from Moloni
+            const buildUpd = (lift) => {
+                const upd = { nif: c.nif };
+                if (c.code)  upd.moloniCode  = c.code;
+                // Only set clientEmail if lift doesn't already have one
+                if (c.email && !lift.clientEmail) upd.clientEmail = c.email;
+                return upd;
+            };
+
             // Primary: already has moloniCode set
             if (c.code) {
-                const lifts = await Lift.find({ moloniCode: c.code }, '_id municipalNumber address nif').lean();
+                const lifts = await Lift.find({ moloniCode: c.code }, '_id municipalNumber address nif clientEmail').lean();
                 for (const lift of lifts) {
                     if (doneIds.has(String(lift._id))) continue;
-                    await Lift.updateOne({ _id: lift._id }, { $set: { nif: c.nif } });
+                    await Lift.updateOne({ _id: lift._id }, { $set: buildUpd(lift) });
                     doneIds.add(String(lift._id));
                     updated.push({ municipalNumber: lift.municipalNumber, street: lift.address?.street, nif: c.nif, matchedBy: 'moloniCode' });
                     matched = true;
@@ -645,14 +927,12 @@ exports.importMoloniClients = async (req, res) => {
                     if (keyword) queryConditions.splice(1, 0, { 'address.street': { $regex: keyword, $options: 'i' } });
                     const lifts = await Lift.find(
                         { $and: queryConditions },
-                        '_id municipalNumber address nif'
+                        '_id municipalNumber address nif clientEmail'
                     ).lean();
 
                     for (const lift of lifts) {
                         if (doneIds.has(String(lift._id))) continue;
-                        const upd = { nif: c.nif };
-                        if (c.code) upd.moloniCode = c.code;
-                        await Lift.updateOne({ _id: lift._id }, { $set: upd });
+                        await Lift.updateOne({ _id: lift._id }, { $set: buildUpd(lift) });
                         doneIds.add(String(lift._id));
                         updated.push({ municipalNumber: lift.municipalNumber, street: lift.address?.street, nif: c.nif, matchedBy: 'address' });
                         matched = true;
@@ -660,7 +940,35 @@ exports.importMoloniClients = async (req, res) => {
                 }
             }
 
+            // Tier 3: match by clientEmail stored on the lift
+            if (!matched && c.email) {
+                const lifts = await Lift.find(
+                    { clientEmail: c.email },
+                    '_id municipalNumber address nif clientEmail'
+                ).lean();
+                for (const lift of lifts) {
+                    if (doneIds.has(String(lift._id))) continue;
+                    await Lift.updateOne({ _id: lift._id }, { $set: buildUpd(lift) });
+                    doneIds.add(String(lift._id));
+                    updated.push({ municipalNumber: lift.municipalNumber, street: lift.address?.street, nif: c.nif, matchedBy: 'email' });
+                    matched = true;
+                }
+            }
+
             if (!matched) notFound.push({ name: c.name, nif: c.nif, address: c.address });
+        }
+
+        // Save email map so importPendentes can find emails even for clients without lifts yet
+        if (clients.some(c => c.email)) {
+            const settings = await SaftSettings.findOne({ key: 'global' }) || new SaftSettings({ key: 'global' });
+            const map = settings.moloniEmailMap || new Map();
+            for (const c of clients) {
+                if (!c.email) continue;
+                if (c.code) map.set('code:' + c.code, c.email);
+                if (c.nif)  map.set('nif:'  + c.nif,  c.email);
+            }
+            settings.moloniEmailMap = map;
+            await settings.save();
         }
 
         res.json({
