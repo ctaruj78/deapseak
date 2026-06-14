@@ -293,7 +293,21 @@ exports.uploadSaft = async (req, res) => {
                 const cust = customerMap[custId];
                 if (!cust || ignoredNifs.has(cust.nif)) continue;
 
-                const lift = await Lift.findOne({ nif: cust.nif }, 'clientEmail').lean();
+                let lift = await Lift.findOne({ nif: cust.nif }, 'clientEmail').lean();
+                // Fallback: match by billing address from SAF-T when NIF not yet linked to lift
+                if (!lift?.clientEmail && cust.postalCode && cust.street) {
+                    const keyword  = cust.street.split(/\s+/).find(w => w.length > 4);
+                    const houseNum = (cust.street.match(/n[.º°]?\s*(\d+)/i) || cust.street.match(/(\d+)\s*[A-Za-z-]?\s*$/))?.[1];
+                    if (keyword && houseNum) {
+                        lift = await Lift.findOne({
+                            $and: [
+                                { 'address.zipCode':  cust.postalCode },
+                                { 'address.street': { $regex: keyword,              $options: 'i' } },
+                                { 'address.street': { $regex: `\\b${houseNum}\\b` } },
+                            ],
+                        }, 'clientEmail').lean();
+                    }
+                }
                 const emailMap = settings?.moloniEmailMap;
                 const clientEmail = lift?.clientEmail
                     || (emailMap instanceof Map ? emailMap.get('nif:' + cust.nif) : null)
@@ -450,6 +464,14 @@ exports.getAllDebtors = async (req, res) => {
         }
 
         const debtors = Object.values(byNif).filter(d => !ignoredNifs.has(d.customerTaxId));
+
+        // Resolve missing emails dynamically (stored as null when NIF wasn't yet on lift)
+        for (const d of debtors) {
+            if (d.clientEmail) continue;
+            const lift = await Lift.findOne({ nif: d.customerTaxId }, 'clientEmail').lean();
+            if (lift?.clientEmail) d.clientEmail = lift.clientEmail;
+        }
+
         res.json({ success: true, source: 'saft', debtors, total: debtors.length });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });
