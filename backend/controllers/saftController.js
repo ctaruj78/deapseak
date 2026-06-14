@@ -438,6 +438,14 @@ exports.getAllDebtors = async (req, res) => {
         if (settings?.pendentes?.debtors?.length) {
             const debtors = settings.pendentes.debtors
                 .filter(d => !ignoredNifs.has(d.customerTaxId));
+
+            // Resolve missing emails from lifts (email may have been null when CSV was imported)
+            for (const d of debtors) {
+                if (d.clientEmail) continue;
+                const lift = await Lift.findOne({ nif: d.customerTaxId }, 'clientEmail').lean();
+                if (lift?.clientEmail) d.clientEmail = lift.clientEmail;
+            }
+
             return res.json({
                 success: true,
                 source:  'pendentes',

@@ -348,6 +348,28 @@
     </div>
 </div>
 
+<!-- Email preview modal -->
+<div class="modal fade" id="emailPreviewModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title"><i class="fas fa-eye mr-1"></i>Pré-visualização do email — <span id="previewDebtorName"></span></h5>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body p-0">
+                <iframe id="emailPreviewFrame" style="width:100%;height:520px;border:none;"></iframe>
+            </div>
+            <div class="modal-footer">
+                <small class="text-muted mr-auto"><i class="fas fa-info-circle mr-1"></i>Este é o email que o cliente irá receber.</small>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
+                <button type="button" class="btn btn-danger" id="previewSendBtn" onclick="confirmAndSendFromPreview()">
+                    <i class="fas fa-paper-plane mr-1"></i>Enviar agora
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script src="../../plugins/jquery/jquery.min.js"></script>
 <script src="../../plugins/bootstrap/bootstrap.bundle.min.js"></script>
 <script src="../../plugins/adminlte/adminlte.min.js"></script>
@@ -746,6 +768,7 @@ async function loadDebtors() {
             return;
         }
 
+        _debtorsCache = d.debtors;
         badge.textContent = d.total;
         badge.style.display = '';
 
@@ -783,7 +806,7 @@ async function loadDebtors() {
                         ${deb.alertSent
                             ? '<span class="badge badge-success"><i class="fas fa-check mr-1"></i>Enviado</span>'
                             : (deb.clientEmail
-                                ? `<button class="btn btn-xs btn-outline-danger" onclick="sendDebtorAlerts(['${esc(deb.customerTaxId)}'], this)"><i class="fas fa-paper-plane mr-1"></i>Enviar</button>`
+                                ? `<button class="btn btn-xs btn-outline-info mr-1" onclick="previewDebtorEmail(${idx})" title="Pré-visualizar email"><i class="fas fa-eye"></i></button><button class="btn btn-xs btn-outline-danger" onclick="sendDebtorAlerts(['${esc(deb.customerTaxId)}'], this)"><i class="fas fa-paper-plane mr-1"></i>Enviar</button>`
                                 : '<span class="badge badge-secondary">Sem email</span>')}
                     </td>
                     <td class="text-center"><small class="text-muted">${deb.avgDaysOverdue > 0 ? Math.round(deb.avgDaysOverdue) + 'd' : (esc(deb.importFilename || ''))}</small></td>
@@ -801,6 +824,72 @@ async function loadDebtors() {
     } catch (e) {
         body.innerHTML = `<div class="text-center text-danger py-3">Erro: ${esc(e.message)}</div>`;
     }
+}
+
+let _debtorsCache = [];
+let _previewNif = null;
+
+function previewDebtorEmail(idx) {
+    const deb = _debtorsCache[idx];
+    if (!deb) return;
+    _previewNif = deb.customerTaxId;
+    document.getElementById('previewDebtorName').textContent = deb.customerName;
+    const html = buildDebtorEmailHtml(deb);
+    const frame = document.getElementById('emailPreviewFrame');
+    frame.srcdoc = html;
+    $('#emailPreviewModal').modal('show');
+}
+
+function confirmAndSendFromPreview() {
+    if (!_previewNif) return;
+    if (!confirm('Confirma o envio do email de aviso de pagamento?\n\nEsta acção é irreversível.')) return;
+    $('#emailPreviewModal').modal('hide');
+    sendDebtorAlerts([_previewNif]);
+}
+
+function buildDebtorEmailHtml(deb) {
+    const esc = s => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    const fmt = n => Number(n||0).toFixed(2).replace('.',',') + ' €';
+    const fmtD = s => s ? new Date(s).toLocaleDateString('pt-PT') : '—';
+    const rows = (deb.invoices || []).map(inv => `
+        <tr>
+          <td style="padding:8px 12px;border-bottom:1px solid #eee;">${esc(inv.invoiceNo)}</td>
+          <td style="padding:8px 12px;border-bottom:1px solid #eee;">${fmtD(inv.invoiceDate)}</td>
+          <td style="padding:8px 12px;border-bottom:1px solid #eee;text-align:right;">${fmt(inv.grossTotal)}</td>
+          <td style="padding:8px 12px;border-bottom:1px solid #eee;text-align:right;">${fmt(inv.amountPaid)}</td>
+          <td style="padding:8px 12px;border-bottom:1px solid #eee;text-align:right;color:#c62828;font-weight:bold;">${fmt(inv.outstanding)}</td>
+          <td style="padding:8px 12px;border-bottom:1px solid #eee;text-align:center;">${inv.daysOverdue||0}d</td>
+        </tr>`).join('');
+    return `<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body style="font-family:Arial,sans-serif;font-size:14px;color:#333;max-width:680px;margin:0 auto;padding:20px;">
+        <div style="background:#c62828;color:#fff;padding:20px 24px;border-radius:8px 8px 0 0;">
+            <h2 style="margin:0;font-size:20px;">⚠️ Aviso de Pagamento</h2>
+            <p style="margin:6px 0 0;opacity:.85;font-size:13px;">FestLift — Manutenção de Elevadores</p>
+        </div>
+        <div style="background:#fff;border:1px solid #ddd;border-top:none;padding:24px;border-radius:0 0 8px 8px;">
+            <p>Caro(a) <strong>${esc(deb.customerName)}</strong>,</p>
+            <p>Verificamos que existem faturas em aberto associadas ao contrato de manutenção de elevadores com a <strong>FestLift</strong>.</p>
+            <div style="background:#fff3cd;border-left:4px solid #f9a825;border-radius:6px;padding:14px 20px;margin:20px 0;">
+                <strong>⚠️ Total em dívida: <span style="color:#c62828;">${fmt(deb.totalOutstanding)}</span></strong>
+            </div>
+            <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;font-size:13px;margin:16px 0;">
+                <thead><tr style="background:#f5f5f5;">
+                    <th style="padding:8px 12px;text-align:left;border-bottom:2px solid #ddd;">Fatura</th>
+                    <th style="padding:8px 12px;text-align:left;border-bottom:2px solid #ddd;">Data</th>
+                    <th style="padding:8px 12px;text-align:right;border-bottom:2px solid #ddd;">Total</th>
+                    <th style="padding:8px 12px;text-align:right;border-bottom:2px solid #ddd;">Pago</th>
+                    <th style="padding:8px 12px;text-align:right;border-bottom:2px solid #ddd;">Em dívida</th>
+                    <th style="padding:8px 12px;text-align:center;border-bottom:2px solid #ddd;">Atraso</th>
+                </tr></thead>
+                <tbody>${rows}</tbody>
+            </table>
+            <p>Solicitamos que regularize a situação o mais brevemente possível.</p>
+            <div style="background:#e8f0fe;border-radius:6px;padding:14px 20px;margin:16px 0;">
+                <strong>FestLift</strong> — <a href="mailto:info@festlift.pt" style="color:#1565c0;">info@festlift.pt</a>
+                &nbsp;·&nbsp; +351 214 190 863
+            </div>
+            <p style="font-size:12px;color:#888;margin-top:24px;">Este é um email automático gerado pelo sistema de gestão FestLift.</p>
+        </div>
+    </body></html>`;
 }
 
 async function sendDebtorAlerts(nifs, btn) {
