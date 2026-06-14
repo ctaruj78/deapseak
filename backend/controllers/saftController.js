@@ -734,6 +734,9 @@ async function _sendDebtorAlert(email, name, invoices, totalOutstanding) {
           </thead>
           <tbody>${rows}</tbody>
         </table>
+        <div style="background:#fff3cd;border-left:4px solid #e65100;border-radius:4px;padding:14px 18px;margin:20px 0;">
+          <strong>⚠️ Nota importante:</strong> De acordo com o contrato de manutenção em vigor, o não pagamento no prazo previsto pode resultar na <strong>suspensão do serviço de manutenção</strong>. Nos termos do DL 320/2002, a responsabilidade pela manutenção e segurança do elevador recai sobre o proprietário/administrador do condomínio. Em caso de incumprimento persistente, a FestLift reserva-se o direito de iniciar procedimentos de cobrança.
+        </div>
         <p>Solicitamos que regularize a situação o mais brevemente possível. Para esclarecimentos sobre pagamentos, entre em contacto connosco:</p>
         <div style="background:#e8f0fe;border-radius:6px;padding:14px 20px;margin:16px 0;">
             <strong>FestLift</strong> — <a href="mailto:info@festlift.pt" style="color:#1565c0;">info@festlift.pt</a>
