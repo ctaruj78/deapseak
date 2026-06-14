@@ -64,6 +64,7 @@ Rules:
 - Ignore boilerplate sections like "OBRIGAÇÕES DO PROPRIETÁRIO", "SIGNIFICADO DAS CLÁUSULAS", "NOTA DE CLÁUSULAS" legend rows, and footnote tables at the bottom explaining what C1/C2/C3 mean
 - description must be the actual defect description, minimum 10 characters
 - When a violation has a parenthetical note on the following line (e.g. "( Circuito de Iluminação na Casa das Máquinas )"), append it to the description so each entry is unique
+- PAGE-BREAK RULE: Multi-page reports repeat the "Notas: C1 – ... C2 – ... C3 – ..." legend block and footer on every page. When a parenthetical line like "( some note )" appears at the START of a page section (right after such a footer block, before any new "C1|/C2|/C3|" line), it is a CONTINUATION NOTE for the LAST violation from the previous page — NOT a new violation. Do NOT count it as a separate entry.
 - Some violations reference a Decreto-Lei instead of an article number (e.g. "C3 | DL. 740/74 e Port.949-A/2006 - ..."). Include these as violations; use the DL reference as the article field (e.g. "DL.740/74")
 - If a section says "não foram detetadas deficiências" → violations: []
 - For result: "immobilized" only if explicit "Imobilização imediata" or C1 present
