@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const iconv = require('iconv-lite');
 const { XMLParser } = require('fast-xml-parser');
 const Lift = require('../models/Lift');
 const SaftImport = require('../models/SaftImport');
@@ -604,8 +605,11 @@ exports.importPendentes = async (req, res) => {
     if (!req.file) return res.status(400).json({ success: false, message: 'Nenhum ficheiro enviado.' });
     const filePath = req.file.path;
     try {
-        const raw = fs.readFileSync(filePath, 'utf8').replace(/^﻿/, '');
+        const buf = fs.readFileSync(filePath);
         fs.unlinkSync(filePath);
+        const raw = (buf[0] === 0xEF && buf[1] === 0xBB && buf[2] === 0xBF)
+            ? buf.slice(3).toString('utf8')
+            : iconv.decode(buf, 'win1252');
 
         const parsed = _parsePendentes(raw);
         if (!parsed.length) {
@@ -819,8 +823,11 @@ exports.importMoloniClients = async (req, res) => {
     if (!req.file) return res.status(400).json({ success: false, message: 'Nenhum ficheiro CSV enviado.' });
     const filePath = req.file.path;
     try {
-        const raw = fs.readFileSync(filePath, 'utf8').replace(/^﻿/, ''); // strip BOM
+        const buf = fs.readFileSync(filePath);
         fs.unlinkSync(filePath);
+        const raw = (buf[0] === 0xEF && buf[1] === 0xBB && buf[2] === 0xBF)
+            ? buf.slice(3).toString('utf8')
+            : iconv.decode(buf, 'win1252');
 
         const lines = raw.split(/\r?\n/).map(l => l.trim()).filter(l => l);
         if (lines.length < 2) return res.status(400).json({ success: false, message: 'CSV vazio ou sem dados.' });
