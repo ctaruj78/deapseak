@@ -967,11 +967,13 @@ exports.importMoloniClients = async (req, res) => {
                     if (keyword) queryConditions.splice(1, 0, { 'address.street': { $regex: keyword, $options: 'i' } });
                     const lifts = await Lift.find(
                         { $and: queryConditions },
-                        '_id municipalNumber address nif clientEmail'
+                        '_id municipalNumber address nif moloniCode clientEmail'
                     ).lean();
 
                     for (const lift of lifts) {
                         if (doneIds.has(String(lift._id))) continue;
+                        // Don't overwrite a lift already bound to a DIFFERENT Moloni client
+                        if (lift.moloniCode && lift.moloniCode !== c.code) continue;
                         await Lift.updateOne({ _id: lift._id }, { $set: buildUpd(lift) });
                         doneIds.add(String(lift._id));
                         updated.push({ municipalNumber: lift.municipalNumber, street: lift.address?.street, nif: c.nif, matchedBy: 'address' });
@@ -980,20 +982,10 @@ exports.importMoloniClients = async (req, res) => {
                 }
             }
 
-            // Tier 3: match by clientEmail stored on the lift
-            if (!matched && c.email) {
-                const lifts = await Lift.find(
-                    { clientEmail: c.email },
-                    '_id municipalNumber address nif clientEmail'
-                ).lean();
-                for (const lift of lifts) {
-                    if (doneIds.has(String(lift._id))) continue;
-                    await Lift.updateOne({ _id: lift._id }, { $set: buildUpd(lift) });
-                    doneIds.add(String(lift._id));
-                    updated.push({ municipalNumber: lift.municipalNumber, street: lift.address?.street, nif: c.nif, matchedBy: 'email' });
-                    matched = true;
-                }
-            }
+            // Email fallback removed: management company email is shared across all buildings
+            // they manage — matching by email sets the company NIF on every building,
+            // which is wrong (each prédio has its own NIF). SAF-T address matching is the
+            // only reliable fallback for per-building NIF assignment.
 
             if (!matched) notFound.push({ name: c.name, nif: c.nif, address: c.address });
         }
