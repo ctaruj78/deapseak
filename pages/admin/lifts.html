@@ -2923,6 +2923,10 @@
     <script>
         $(document).ready(function() {
             loadSidebarWithInit("includes/sidebar.html");
+            if (typeof toastr !== 'undefined') {
+                toastr.options.positionClass = 'toast-bottom-right';
+                toastr.options.timeOut = 3000;
+            }
         });
     </script>
     
@@ -4481,7 +4485,7 @@ Email de contacto: info@festlift.pt`;
             } else {
                 // Один resultado ou existe поштовий код — застосовуexisteмо o primeiro
                 applyGeocodeResult(results[0], address);
-                if (typeof toastr !== 'undefined') {
+                if (!silent && typeof toastr !== 'undefined') {
                     const cityLabel = results[0].city || results[0].display.split(',')[0];
                     toastr.success(`Coordenadas determinadas: ${cityLabel}`, 'Geocodificação');
                 }

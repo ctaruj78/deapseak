@@ -6931,7 +6931,7 @@ app.get('/api/users', authenticateToken, async (req, res) => {
 // POST /api/auth/heartbeat — update lastSeen so the users page can show "Online" badge
 app.post('/api/auth/heartbeat', authenticateToken, async (req, res) => {
     try {
-        const db = getDB();
+        if (!db) return res.status(503).json({ success: false, error: 'DB not ready' });
         const { ObjectId } = require('mongodb');
         const userId = req.user.id || req.user.userId;
         await db.collection('users').updateOne(
@@ -14769,7 +14769,7 @@ app.post('/api/agent/decide', authenticateToken, async (req, res) => {
 // POST /api/agent/dismiss-all — mark all pending notifications as rejected (bulk dismiss)
 app.post('/api/agent/dismiss-all', authenticateToken, async (req, res) => {
     try {
-        const db = getDB();
+        if (!db) return res.status(503).json({ success: false, error: 'DB not ready' });
         const col = db.collection('agent_notifications');
         const now = new Date();
 
