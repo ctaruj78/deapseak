@@ -12277,6 +12277,9 @@ if (!mongoose.modelNames().includes('User')) {
 const orcamentosRoutes = require('./backend/routes/orcamentos');
 app.use('/api/orcamentos', orcamentosRoutes);
 
+const saftRoutes = require('./backend/routes/saftRoutes');
+app.use('/api/saft', saftRoutes);
+
 console.log('✅ Backend API routes підключено:');
 console.log('   - /api/auth (login, register, profile)');
 console.log('   - /api/users (через authRoutes)');

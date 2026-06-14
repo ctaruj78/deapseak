@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="/assets/img/favicon.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SAF-T — FestLift</title>
+    <script src="../../assets/js/auth.js"></script>
+    <link rel="stylesheet" href="../../plugins/adminlte/adminlte.min.css">
+    <link rel="stylesheet" href="../../plugins/fontawesome/css/all.min.css">
+    <style>
+        .drop-zone {
+            border: 2px dashed #adb5bd;
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all .2s;
+            background: #fafbfc;
+        }
+        .drop-zone.drag-over {
+            border-color: #1565c0;
+            background: #e8f0fe;
+        }
+        .drop-zone .drop-icon { font-size: 3rem; color: #adb5bd; }
+        .drop-zone.drag-over .drop-icon { color: #1565c0; }
+        .stat-box {
+            border-radius: 8px;
+            padding: 16px 20px;
+            text-align: center;
+            color: #fff;
+        }
+        .stat-box .num { font-size: 2rem; font-weight: 700; line-height: 1; }
+        .stat-box .lbl { font-size: .8rem; opacity: .9; margin-top: 4px; }
+        .bg-saft-blue   { background: #1565c0; }
+        .bg-saft-green  { background: #2e7d32; }
+        .bg-saft-orange { background: #e65100; }
+        .bg-saft-red    { background: #c62828; }
+        .bg-saft-teal   { background: #00695c; }
+        .import-row td  { vertical-align: middle !important; }
+        #uploadSpinner  { display: none; }
+        .debtor-badge   { font-size: .75rem; }
+    </style>
+</head>
+<body class="hold-transition sidebar-mini layout-fixed" data-required-role="admin">
+<div class="wrapper">
+
+    <!-- Navbar -->
+    <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+        <ul class="navbar-nav">
+            <li class="nav-item"><a class="nav-link" data-widget="pushmenu" href="#"><i class="fas fa-bars"></i></a></li>
+        </ul>
+        <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+                <a class="nav-link" href="#" onclick="if(typeof AuthManager!=='undefined'){AuthManager.logout();}else{localStorage.clear();window.location.replace('/pages/auth/login.html');}">
+                    <i class="fas fa-sign-out-alt"></i>
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Sidebar (include) -->
+    <aside class="main-sidebar sidebar-dark-primary elevation-4">
+        <a href="/pages/admin/admin-dashboard.html" class="brand-link">
+            <img src="/assets/img/logo.png" alt="FestLift" class="brand-image img-circle elevation-3">
+            <span class="brand-text font-weight-light">FestLift</span>
+        </a>
+        <div class="sidebar">
+            <div class="user-panel mt-3 pb-3 mb-3 d-flex">
+                <div class="info"><a href="/pages/admin/profile.html" class="d-block" id="sidebarFullName">Admin</a></div>
+            </div>
+            <div id="sidebarContainer"></div>
+        </div>
+    </aside>
+
+    <!-- Content -->
+    <div class="content-wrapper">
+        <div class="content-header">
+            <div class="container-fluid">
+                <div class="row mb-2">
+                    <div class="col-sm-6">
+                        <h1 class="m-0"><i class="fas fa-file-code text-primary mr-2"></i>SAF-T — Importação Fiscal</h1>
+                    </div>
+                    <div class="col-sm-6">
+                        <ol class="breadcrumb float-sm-right">
+                            <li class="breadcrumb-item"><a href="admin-dashboard.html">Dashboard</a></li>
+                            <li class="breadcrumb-item active">SAF-T</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="content">
+            <div class="container-fluid">
+
+                <!-- Upload card -->
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card card-primary card-outline">
+                            <div class="card-header">
+                                <h3 class="card-title"><i class="fas fa-upload mr-1"></i> Carregar SAF-T mensal</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="drop-zone" id="dropZone">
+                                    <div class="drop-icon"><i class="fas fa-file-code"></i></div>
+                                    <p class="mt-3 mb-1 font-weight-bold">Arraste o ficheiro SAF-T aqui</p>
+                                    <p class="text-muted small mb-3">ou clique para selecionar (.xml, máx. 50 MB)</p>
+                                    <input type="file" id="saftFile" accept=".xml,text/xml,application/xml" class="d-none">
+                                    <button class="btn btn-outline-primary btn-sm" onclick="document.getElementById('saftFile').click()">
+                                        <i class="fas fa-folder-open mr-1"></i>Selecionar ficheiro
+                                    </button>
+                                </div>
+
+                                <div id="selectedFile" class="mt-3 d-none">
+                                    <div class="alert alert-info mb-2 py-2">
+                                        <i class="fas fa-file-alt mr-1"></i>
+                                        <span id="selectedFileName"></span>
+                                        <button class="close py-0" onclick="clearFile()"><span>&times;</span></button>
+                                    </div>
+                                    <button class="btn btn-primary btn-block" id="uploadBtn" onclick="uploadSaft()">
+                                        <i class="fas fa-cog mr-1"></i>Processar SAF-T
+                                    </button>
+                                </div>
+
+                                <div id="uploadSpinner" class="text-center mt-4">
+                                    <i class="fas fa-spinner fa-spin fa-2x text-primary"></i>
+                                    <p class="mt-2 text-muted">A processar ficheiro SAF-T…</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Info card -->
+                        <div class="card card-info card-outline">
+                            <div class="card-header"><h3 class="card-title"><i class="fas fa-info-circle mr-1"></i>O que é processado</h3></div>
+                            <div class="card-body p-0">
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item py-2"><i class="fas fa-check text-success mr-2"></i>Atualiza NIF dos elevadores por código postal</li>
+                                    <li class="list-group-item py-2"><i class="fas fa-check text-success mr-2"></i>Regista faturas e pagamentos do período</li>
+                                    <li class="list-group-item py-2"><i class="fas fa-check text-success mr-2"></i>Deteta faturas em atraso (&gt; 30 dias)</li>
+                                    <li class="list-group-item py-2"><i class="fas fa-list text-info mr-2"></i>Lista devedores detectados <span class="badge badge-warning">sem envio automático</span></li>
+                                    <li class="list-group-item py-2"><i class="fas fa-check text-success mr-2"></i>Guarda histórico de todas as importações</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Last result -->
+                    <div class="col-md-6">
+                        <div class="card" id="resultCard" style="display:none !important;">
+                            <div class="card-header bg-success text-white">
+                                <h3 class="card-title"><i class="fas fa-check-circle mr-1"></i>Resultado da importação</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="row" id="statsRow"></div>
+
+                                <div id="debtorsSection" class="mt-3" style="display:none;">
+                                    <h6 class="font-weight-bold text-danger"><i class="fas fa-exclamation-triangle mr-1"></i>Devedores detectados</h6>
+                                    <div id="debtorsList"></div>
+                                </div>
+
+                                <div id="warningsSection" class="mt-3" style="display:none;">
+                                    <h6 class="font-weight-bold text-warning"><i class="fas fa-exclamation-circle mr-1"></i>Avisos</h6>
+                                    <ul id="warningsList" class="small text-muted pl-3"></ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Import history -->
+                <div class="row mt-2">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3 class="card-title"><i class="fas fa-history mr-1"></i>Histórico de importações</h3>
+                                <div class="card-tools">
+                                    <button class="btn btn-sm btn-outline-secondary" onclick="loadHistory()">
+                                        <i class="fas fa-sync-alt"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="table-responsive">
+                                    <table class="table table-sm table-hover mb-0">
+                                        <thead class="thead-light">
+                                            <tr>
+                                                <th>Data</th>
+                                                <th>Ficheiro</th>
+                                                <th>Período</th>
+                                                <th class="text-center">Clientes</th>
+                                                <th class="text-center">Elevadores</th>
+                                                <th class="text-center">Faturas</th>
+                                                <th class="text-center">Devedores</th>
+                                                <th class="text-center">Alertas</th>
+                                                <th>Por</th>
+                                                <th></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="historyBody">
+                                            <tr><td colspan="10" class="text-center text-muted py-3">A carregar…</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <footer class="main-footer text-sm">
+        <strong>FestLift</strong> &copy; 2025
+    </footer>
+</div>
+
+<!-- Detail modal -->
+<div class="modal fade" id="importModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="fas fa-file-code mr-1"></i>Detalhe da importação</h5>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body" id="importModalBody">
+                <p class="text-center"><i class="fas fa-spinner fa-spin"></i></p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-warning" id="resendBtn" onclick="confirmAndResend()">
+                    <i class="fas fa-paper-plane mr-1"></i>Enviar alertas de pagamento
+                </button>
+                <button class="btn btn-secondary" data-dismiss="modal">Fechar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="../../plugins/jquery/jquery.min.js"></script>
+<script src="../../plugins/bootstrap/bootstrap.bundle.min.js"></script>
+<script src="../../plugins/adminlte/adminlte.min.js"></script>
+<script src="../../assets/js/sidebar-init.js"></script>
+<script>
+const API = () => (typeof AuthManager !== 'undefined' ? AuthManager.getApiUrl('') : 'http://localhost:3001');
+const HDRS = () => (typeof AuthManager !== 'undefined' ? AuthManager.getAuthHeaders() : {});
+// For multipart/form-data — only Authorization, NO Content-Type (browser sets boundary automatically)
+const HDRS_MULTIPART = () => {
+    const h = HDRS();
+    const out = {};
+    if (h['Authorization']) out['Authorization'] = h['Authorization'];
+    if (h['authorization']) out['Authorization'] = h['authorization'];
+    return out;
+};
+
+// ── sidebar ───────────────────────────────────────────────────────────────────
+loadSidebarWithInit("includes/sidebar.html");
+
+// ── drag & drop ───────────────────────────────────────────────────────────────
+const dz = document.getElementById('dropZone');
+dz.addEventListener('dragover',  e => { e.preventDefault(); dz.classList.add('drag-over'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('drag-over'));
+dz.addEventListener('drop', e => {
+    e.preventDefault(); dz.classList.remove('drag-over');
+    const f = e.dataTransfer.files[0];
+    if (f) setFile(f);
+});
+document.getElementById('saftFile').addEventListener('change', e => {
+    if (e.target.files[0]) setFile(e.target.files[0]);
+});
+
+let selectedFile = null;
+function setFile(f) {
+    if (!f.name.toLowerCase().endsWith('.xml')) {
+        return alert('Apenas ficheiros .xml são aceites.');
+    }
+    selectedFile = f;
+    document.getElementById('selectedFileName').textContent = f.name + ' (' + (f.size / 1024).toFixed(0) + ' KB)';
+    document.getElementById('selectedFile').classList.remove('d-none');
+}
+function clearFile() {
+    selectedFile = null;
+    document.getElementById('selectedFile').classList.add('d-none');
+    document.getElementById('saftFile').value = '';
+}
+
+// ── upload ────────────────────────────────────────────────────────────────────
+async function uploadSaft() {
+    if (!selectedFile) return;
+    document.getElementById('uploadBtn').disabled = true;
+    document.getElementById('uploadSpinner').style.display = '';
+
+    const fd = new FormData();
+    fd.append('saft', selectedFile);
+
+    try {
+        const r = await fetch(API() + '/api/saft/upload', {
+            method: 'POST',
+            headers: HDRS_MULTIPART(),
+            body: fd,
+        });
+        const data = await r.json();
+        document.getElementById('uploadSpinner').style.display = 'none';
+        document.getElementById('uploadBtn').disabled = false;
+
+        if (!data.success) {
+            alert('Erro: ' + data.message);
+            return;
+        }
+        showResult(data);
+        clearFile();
+        loadHistory();
+    } catch (e) {
+        document.getElementById('uploadSpinner').style.display = 'none';
+        document.getElementById('uploadBtn').disabled = false;
+        alert('Erro de rede: ' + e.message);
+    }
+}
+
+function showResult(data) {
+    const s = data.stats;
+    document.getElementById('statsRow').innerHTML = `
+        <div class="col-4 col-md-2 mb-2"><div class="stat-box bg-saft-blue"><div class="num">${s.customersFound}</div><div class="lbl">Clientes</div></div></div>
+        <div class="col-4 col-md-2 mb-2"><div class="stat-box bg-saft-green"><div class="num">${s.liftsUpdated}</div><div class="lbl">Elevadores</div></div></div>
+        <div class="col-4 col-md-2 mb-2"><div class="stat-box bg-saft-teal"><div class="num">${s.invoicesTotal}</div><div class="lbl">Faturas</div></div></div>
+        <div class="col-4 col-md-2 mb-2"><div class="stat-box bg-saft-teal"><div class="num">${s.paymentsTotal}</div><div class="lbl">Pagamentos</div></div></div>
+        <div class="col-4 col-md-2 mb-2"><div class="stat-box bg-saft-red"><div class="num">${s.debtorsFound}</div><div class="lbl">Devedores</div></div></div>
+        <div class="col-4 col-md-2 mb-2"><div class="stat-box bg-saft-orange"><div class="num">${s.alertsSent}</div><div class="lbl">Alertas</div></div></div>
+    `;
+
+    if (data.debtors && data.debtors.length) {
+        document.getElementById('debtorsSection').style.display = '';
+        document.getElementById('debtorsList').innerHTML = data.debtors.map(d => `
+            <div class="d-flex justify-content-between align-items-center border-bottom py-1 small">
+                <div>
+                    <span class="font-weight-bold">${esc(d.name)}</span>
+                    <span class="text-muted ml-1">(NIF ${d.nif})</span>
+                    ${d.email ? `<span class="text-muted ml-1">— ${esc(d.email)}</span>` : '<span class="badge badge-warning ml-1">sem email</span>'}
+                </div>
+                <div class="text-right">
+                    <span class="text-danger font-weight-bold">${fmtEur(d.totalOutstanding)}</span>
+                    <span class="badge ${d.alertSent ? 'badge-success' : 'badge-secondary'} ml-1">
+                        ${d.alertSent ? '✉ enviado' : 'sem alerta'}
+                    </span>
+                </div>
+            </div>`).join('');
+    } else {
+        document.getElementById('debtorsSection').style.display = 'none';
+    }
+
+    if (data.warnings && data.warnings.length) {
+        document.getElementById('warningsSection').style.display = '';
+        document.getElementById('warningsList').innerHTML = data.warnings.map(w => `<li>${esc(w)}</li>`).join('');
+    } else {
+        document.getElementById('warningsSection').style.display = 'none';
+    }
+
+    document.getElementById('resultCard').style.removeProperty('display');
+}
+
+// ── history ───────────────────────────────────────────────────────────────────
+async function loadHistory() {
+    try {
+        const r = await fetch(API() + '/api/saft', { headers: HDRS() });
+        const data = await r.json();
+        const tbody = document.getElementById('historyBody');
+        if (!data.imports || !data.imports.length) {
+            tbody.innerHTML = '<tr><td colspan="10" class="text-center text-muted py-3">Sem importações anteriores</td></tr>';
+            return;
+        }
+        tbody.innerHTML = data.imports.map(imp => `
+            <tr class="import-row">
+                <td>${fmtDate(imp.createdAt)}</td>
+                <td class="small text-truncate" style="max-width:160px;" title="${esc(imp.filename)}">${esc(imp.filename)}</td>
+                <td class="small">${imp.period?.start ? fmtDate(imp.period.start) + ' – ' + fmtDate(imp.period.end) : '—'}</td>
+                <td class="text-center">${imp.stats?.customersFound ?? '—'}</td>
+                <td class="text-center">${imp.stats?.liftsUpdated ?? '—'}</td>
+                <td class="text-center">${imp.stats?.invoicesTotal ?? '—'}</td>
+                <td class="text-center"><span class="${(imp.stats?.debtorsFound||0)>0?'text-danger font-weight-bold':''}">${imp.stats?.debtorsFound ?? '—'}</span></td>
+                <td class="text-center">${imp.stats?.alertsSent ?? '—'}</td>
+                <td class="small">${imp.importedBy ? (imp.importedBy.firstName || '') : '—'}</td>
+                <td><button class="btn btn-xs btn-outline-primary" onclick="openImport('${imp._id}')"><i class="fas fa-eye"></i></button></td>
+            </tr>`).join('');
+    } catch (e) {
+        document.getElementById('historyBody').innerHTML = '<tr><td colspan="10" class="text-center text-danger">Erro ao carregar histórico</td></tr>';
+    }
+}
+
+// ── detail modal ──────────────────────────────────────────────────────────────
+let currentImportId = null;
+async function openImport(id) {
+    currentImportId = id;
+    document.getElementById('importModalBody').innerHTML = '<p class="text-center"><i class="fas fa-spinner fa-spin"></i></p>';
+    $('#importModal').modal('show');
+    try {
+        const r = await fetch(API() + '/api/saft/' + id, { headers: HDRS() });
+        const data = await r.json();
+        if (!data.success) { document.getElementById('importModalBody').innerHTML = '<p class="text-danger">Erro ao carregar</p>'; return; }
+        const rec = data.record;
+        const s   = rec.stats;
+
+        const debtorRows = (rec.debtors || []).map(d => `
+            <tr>
+                <td>${esc(d.customerName)}</td>
+                <td>${esc(d.customerTaxId)}</td>
+                <td>${esc(d.clientEmail || '—')}</td>
+                <td class="text-right text-danger font-weight-bold">${fmtEur(d.totalOutstanding)}</td>
+                <td class="text-center">${d.invoices?.length ?? 0}</td>
+                <td class="text-center"><span class="badge ${d.alertSent ? 'badge-success' : 'badge-secondary'}">${d.alertSent ? '✉ enviado' : 'pendente'}</span></td>
+            </tr>`).join('');
+
+        const liftRows = (rec.liftsUpdated || []).map(l => `
+            <tr><td>${esc(l.municipalNumber)}</td><td>${esc(l.street)}</td><td><code>${l.nif}</code></td></tr>`).join('');
+
+        document.getElementById('importModalBody').innerHTML = `
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <p class="mb-1"><strong>Ficheiro:</strong> ${esc(rec.filename)}</p>
+                    <p class="mb-1"><strong>Período:</strong> ${rec.period?.start ? fmtDate(rec.period.start) + ' – ' + fmtDate(rec.period.end) : '—'}</p>
+                    <p class="mb-0"><strong>Importado em:</strong> ${fmtDate(rec.createdAt)}</p>
+                </div>
+                <div class="col-md-6">
+                    <p class="mb-1"><strong>Clientes no SAF-T:</strong> ${s.customersFound}</p>
+                    <p class="mb-1"><strong>Elevadores atualizados:</strong> ${s.liftsUpdated}</p>
+                    <p class="mb-0"><strong>Faturas / Pagamentos:</strong> ${s.invoicesTotal} / ${s.paymentsTotal}</p>
+                </div>
+            </div>
+
+            ${liftRows ? `
+            <h6>Elevadores com NIF atualizado</h6>
+            <div class="table-responsive mb-3">
+                <table class="table table-sm table-bordered">
+                    <thead class="thead-light"><tr><th>Nº Camarário</th><th>Morada</th><th>NIF</th></tr></thead>
+                    <tbody>${liftRows}</tbody>
+                </table>
+            </div>` : ''}
+
+            ${debtorRows ? `
+            <h6 class="text-danger"><i class="fas fa-exclamation-triangle mr-1"></i>Devedores</h6>
+            <div class="table-responsive mb-3">
+                <table class="table table-sm table-bordered">
+                    <thead class="thead-light"><tr><th>Nome</th><th>NIF</th><th>Email</th><th class="text-right">Em dívida</th><th class="text-center">Faturas</th><th class="text-center">Alerta</th></tr></thead>
+                    <tbody>${debtorRows}</tbody>
+                </table>
+            </div>` : '<div class="alert alert-success py-2">Sem devedores nesta importação.</div>'}
+
+            ${rec.warnings?.length ? `
+            <h6 class="text-warning">Avisos</h6>
+            <ul class="small text-muted">${rec.warnings.map(w => `<li>${esc(w)}</li>`).join('')}</ul>` : ''}
+        `;
+        document.getElementById('resendBtn').style.display = (rec.debtors?.length ? '' : 'none');
+    } catch(e) {
+        document.getElementById('importModalBody').innerHTML = '<p class="text-danger">Erro: ' + e.message + '</p>';
+    }
+}
+
+function confirmAndResend() {
+    if (!currentImportId) return;
+    if (!confirm('⚠️ Confirma o envio de emails de aviso de pagamento a todos os devedores desta importação?\n\nEsta ação é irreversível — os clientes receberão o email imediatamente.')) return;
+    resendAlerts();
+}
+
+async function resendAlerts() {
+    if (!currentImportId) return;
+    try {
+        const r = await fetch(API() + '/api/saft/' + currentImportId + '/resend', { method: 'POST', headers: HDRS() });
+        const d = await r.json();
+        alert('Alertas enviados: ' + (d.alertsSent ?? 0));
+        openImport(currentImportId);
+    } catch(e) { alert('Erro: ' + e.message); }
+}
+
+// ── utils ─────────────────────────────────────────────────────────────────────
+function esc(s) {
+    return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function fmtDate(s) {
+    if (!s) return '—';
+    return new Date(s).toLocaleDateString('pt-PT');
+}
+function fmtEur(n) {
+    return Number(n || 0).toFixed(2).replace('.', ',') + ' €';
+}
+
+// ── init ──────────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', loadHistory);
+</script>
+</body>
+</html>

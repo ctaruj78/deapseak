@@ -2150,6 +2150,10 @@
                                     <td><strong>Coordenadas:</strong></td>
                                     <td id="detail-coordinates">-</td>
                                 </tr>
+                                <tr>
+                                    <td><strong>NIF do edifício:</strong></td>
+                                    <td id="detail-nif"><span class="text-muted">—</span></td>
+                                </tr>
                             </table>
                         </div>
                         <div class="col-md-6">
@@ -5054,14 +5058,17 @@ Email de contacto: info@festlift.pt`;
                 : '';
             const _inspectionStatusResolved = String(lift.inspectionStatus || (_latestRowReport && _latestRowReport.status) || '').toLowerCase();
             const _isReinspectionFlow = _inspectionStatusResolved === 'failed' || _inspectionStatusResolved === 'conditional';
-            const _noInspectionBadge = (!_effectiveExpiryDate && !_isReinspectionFlow && !_latestRowReport)
+            // Cargo / platform lifts do not undergo mandatory AT inspections
+            const _noInspectionTypes = ['cargo', 'freight', 'goods', 'platform', 'escalator'];
+            const _needsInspection = !_noInspectionTypes.includes(lift.type) && lift.driveType !== 'goods' && lift.driveType !== 'platform';
+            const _noInspectionBadge = (_needsInspection && !_effectiveExpiryDate && !_isReinspectionFlow && !_latestRowReport)
                 ? '<br><span class="badge badge-danger mt-1" style="font-size:.65rem;cursor:default" title="Sem inspeção registada — requerer inspeção inicial">&#128683; Sem inspeção</span>'
                 : '';
-            const _overdueInspectionBadge = (!_isReinspectionFlow && _effectiveExpiryDate && _effectiveExpiryDate < new Date())
+            const _overdueInspectionBadge = (_needsInspection && !_isReinspectionFlow && _effectiveExpiryDate && _effectiveExpiryDate < new Date())
                 ? '<br><span class="badge badge-danger mt-1" style="font-size:.65rem;cursor:default" title="Inspecção vencida desde ' + _effectiveExpiryDate.toLocaleDateString('pt-PT') + ' (' + _sourceTooltip + ')">&#9888; Insp. vencida</span>'
                 : '';
             const _nearExpiryInspectionBadge = (() => {
-                if (_isReinspectionFlow || !_effectiveExpiryDate) return '';
+                if (!_needsInspection || _isReinspectionFlow || !_effectiveExpiryDate) return '';
                 const _now = new Date();
                 const _daysLeft = Math.ceil((_effectiveExpiryDate - _now) / 86400000);
                 if (_daysLeft > 0 && _daysLeft <= 60) {
@@ -5070,7 +5077,7 @@ Email de contacto: info@festlift.pt`;
                 return '';
             })();
             const _reinspectionBadge = (() => {
-                if (!_isReinspectionFlow) return '';
+                if (!_needsInspection || !_isReinspectionFlow) return '';
                 if (_inspectionStatusResolved === 'failed') {
                     if (_effectiveExpiryDate && _effectiveExpiryDate < new Date()) {
                         return '<br><span class="badge badge-danger mt-1" style="font-size:.65rem;cursor:default" title="Reinspecção em atraso desde ' + _effectiveExpiryDate.toLocaleDateString('pt-PT') + ' (' + _sourceTooltip + ')">&#10060; Reinsp. em atraso</span>';
@@ -5488,6 +5495,11 @@ Email de contacto: info@festlift.pt`;
                 
                 $('#detail-address').text(addressStr);
                 $('#detail-postcode').text(postalCode);
+                if (lift.nif) {
+                    $('#detail-nif').html('<code>' + lift.nif + '</code>');
+                } else {
+                    $('#detail-nif').html('<span class="text-muted">—</span>');
+                }
                 
                 // Coordenadas desde location.coordinates — sem Lisboa como fallback falso
                 const coords = lift.location?.coordinates || [];
@@ -7970,7 +7982,7 @@ Email de contacto: info@festlift.pt`;
                     // Escapa aspas duplas dentro dos campos e converte para string
                     const esc = v => String(v == null ? '' : v).replace(/"/g, '""');
 
-                    const headers = ['Nr Municipal', 'Tipo', 'Fabricante', 'Modelo', 'Endereco', 'Municipio', 'Estado', 'Cliente', 'Ultima Inspecao', 'Prox. Inspecao', 'Nr Contrato', 'Data de Criacao'];
+                    const headers = ['Nr Municipal', 'Tipo', 'Fabricante', 'Modelo', 'Endereco', 'Municipio', 'NIF Edificio', 'Estado', 'Cliente', 'Ultima Inspecao', 'Prox. Inspecao', 'Nr Contrato', 'Data de Criacao'];
                     const csvRows = [headers.join(';')];
 
                     lifts.forEach(lift => {
@@ -8000,6 +8012,7 @@ Email de contacto: info@festlift.pt`;
                             `"${esc(lift.model)}"`,
                             `"${esc(addressStr)}"`,
                             `"${esc(municipioStr)}"`,
+                            `"${esc(lift.nif || '')}"`,
                             `"${esc(statusLabels[lift.status] || lift.status || 'Operacional')}"`,
                             `"${esc(lift.clientName)}"`,
                             `"${esc(lastInsp)}"`,
@@ -8114,6 +8127,7 @@ Email de contacto: info@festlift.pt`;
                                 lift.model || '-',
                                 addr,
                                 municipio,
+                                lift.nif || '-',
                                 statusLabels[lift.status] || lift.status || '-',
                                 lift.clientName || '-',
                                 lastInsp,
@@ -8122,7 +8136,7 @@ Email de contacto: info@festlift.pt`;
                         });
 
                         doc.autoTable({
-                            head: [['N\u00ba Municipal', 'Tipo', 'Fabricante', 'Modelo', 'Endere\u00e7o', 'Munic\u00edpio', 'Estado', 'Cliente', '\u00dalt. Inspe\u00e7\u00e3o', 'Pr\u00f3x. Inspe\u00e7\u00e3o']],
+                            head: [['N\u00ba Municipal', 'Tipo', 'Fabricante', 'Modelo', 'Endere\u00e7o', 'Munic\u00edpio', 'NIF', 'Estado', 'Cliente', '\u00dalt. Inspe\u00e7\u00e3o', 'Pr\u00f3x. Inspe\u00e7\u00e3o']],
                             body: tableData,
                             startY: 26,
                             styles: { fontSize: 7.5, cellPadding: 2, overflow: 'linebreak' },

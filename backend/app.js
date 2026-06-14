@@ -14,6 +14,7 @@ const technicianRoutes = require('./routes/technician');
 const reportsRoutes = require('./routes/reportsRoutes');
 const inspectionsRoutes = require('./routes/inspections');
 const notificationRoutes = require('./routes/notification');
+const saftRoutes = require('./routes/saftRoutes');
 const websocketService = require('./services/websocketService');
 
 const app = express();
@@ -91,6 +92,7 @@ app.use('/api/technicians', technicianRoutes);
 app.use('/api/reports', reportsRoutes);
 app.use('/api/inspections', inspectionsRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/saft', saftRoutes);
 
 app.get('/', (req, res) => {
     res.json({

@@ -5232,14 +5232,16 @@ Equipa FestLift</textarea>
                 : '';
             const _inspectionStatusResolved = String(lift.inspectionStatus || (_latestRowReport && _latestRowReport.status) || '').toLowerCase();
             const _isReinspectionFlow = _inspectionStatusResolved === 'failed' || _inspectionStatusResolved === 'conditional';
-            const _noInspectionBadge = (!_effectiveExpiryDate && !_isReinspectionFlow && !_latestRowReport)
+            const _noInspectionTypes = ['cargo', 'freight', 'goods', 'platform', 'escalator'];
+            const _needsInspection = !_noInspectionTypes.includes(lift.type) && lift.driveType !== 'goods' && lift.driveType !== 'platform';
+            const _noInspectionBadge = (_needsInspection && !_effectiveExpiryDate && !_isReinspectionFlow && !_latestRowReport)
                 ? '<br><span class="badge badge-danger mt-1" style="font-size:.65rem;cursor:default" title="Sem inspeção registada — requerer inspeção inicial">&#128683; Sem inspeção</span>'
                 : '';
-            const _overdueInspectionBadge = (!_isReinspectionFlow && _effectiveExpiryDate && _effectiveExpiryDate < new Date())
+            const _overdueInspectionBadge = (_needsInspection && !_isReinspectionFlow && _effectiveExpiryDate && _effectiveExpiryDate < new Date())
                 ? '<br><span class="badge badge-danger mt-1" style="font-size:.65rem;cursor:default" title="Inspecção vencida desde ' + _effectiveExpiryDate.toLocaleDateString('pt-PT') + ' (' + _sourceTooltip + ')">&#9888; Insp. vencida</span>'
                 : '';
             const _nearExpiryInspectionBadge = (() => {
-                if (_isReinspectionFlow || !_effectiveExpiryDate) return '';
+                if (!_needsInspection || _isReinspectionFlow || !_effectiveExpiryDate) return '';
                 const _now = new Date();
                 const _daysLeft = Math.ceil((_effectiveExpiryDate - _now) / 86400000);
                 if (_daysLeft > 0 && _daysLeft <= 60) {
@@ -5248,7 +5250,7 @@ Equipa FestLift</textarea>
                 return '';
             })();
             const _reinspectionBadge = (() => {
-                if (!_isReinspectionFlow) return '';
+                if (!_needsInspection || !_isReinspectionFlow) return '';
                 if (_inspectionStatusResolved === 'failed') {
                     if (_effectiveExpiryDate && _effectiveExpiryDate < new Date()) {
                         return '<br><span class="badge badge-danger mt-1" style="font-size:.65rem;cursor:default" title="Reinspecção em atraso desde ' + _effectiveExpiryDate.toLocaleDateString('pt-PT') + ' (' + _sourceTooltip + ')">&#10060; Reinsp. em atraso</span>';
