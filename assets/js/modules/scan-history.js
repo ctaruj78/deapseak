@@ -71,11 +71,11 @@ const scanHistory = (function() {
 
         // ── Detailed stats (real data) ────────────────────────
         const total = scansData.length;
-        const successCount  = scansData.filter(s => (s.status || '').toLowerCase() === 'success' || (s.status || '') === 'ok').length;
         const warningCount  = scansData.filter(s => (s.status || '').toLowerCase() === 'warning').length;
-        const errorCount    = scansData.filter(s => (s.status || '').toLowerCase() === 'error' || (s.status || '').toLowerCase() === 'fail').length;
-        // count mobile UA: iOS, Android, Mobile keyword in userAgent
-        const mobileCount   = scansData.filter(s => /android|iphone|ipad|mobile/i.test(s.userAgent || s.device || '')).length;
+        const errorCount    = scansData.filter(s => ['error','fail','failed'].includes((s.status || '').toLowerCase())).length;
+        // no status = saved successfully = count as success
+        const successCount  = scansData.length - warningCount - errorCount;
+        const mobileCount   = scansData.filter(s => /android|iphone|ipad|ios/i.test(s.userAgent || s.device || '')).length;
 
         const pct = (n) => total > 0 ? Math.round((n / total) * 100) : 0;
 
@@ -116,9 +116,13 @@ const scanHistory = (function() {
                               scan.action === 'emergency' ? 'Emergência' :
                               scan.action === 'scan' ? 'Leitura' : (scan.action || 'Leitura');
 
+            const liftLabel = scan._lift
+                ? `${scan._lift.municipalNumber || ''} ${scan._lift.street ? '— ' + scan._lift.street : ''}`.trim()
+                : (scan.liftId || scan.qrCode || '—');
+
             const row = `
                 <tr>
-                    <td>${scan.liftId || scan.qrCode || '—'}</td>
+                    <td>${liftLabel}</td>
                     <td>${tipoLabel}</td>
                     <td>${scan.username || scan.user || 'Sistema'}</td>
                     <td>${dateStr}</td>
@@ -320,25 +324,31 @@ const scanHistory = (function() {
 
     // View scan details
     function viewDetails(scanId) {
-        const scan = scansData.find(s => s.id === scanId) || scansData[scanId];
+        const scan = scansData.find(s => (s._id || s.id) === scanId);
         if (!scan) return;
+
+        const dateStr = new Date(scan.scannedAt || scan.timestamp || scan.createdAt).toLocaleString('pt-PT');
+        const statusBadge = (scan.status || 'ok').toLowerCase() === 'ok' || (scan.status || '').toLowerCase() === 'success'
+            ? '<span class="badge badge-success">OK</span>'
+            : `<span class="badge badge-danger">${scan.status || '—'}</span>`;
 
         const html = `
             <div class="scan-details">
                 <div class="row">
                     <div class="col-md-6">
-                        <p><strong>Data e hora:</strong> ${new Date(scan.timestamp).toLocaleString('pt-PT')}</p>
-                        <p><strong>Elevador ID:</strong> ${scan.liftId || 'N/A'}</p>
-                        <p><strong>Código QR:</strong> ${scan.qrCode || 'N/A'}</p>
+                        <p><strong>Data e hora:</strong> ${dateStr}</p>
+                        <p><strong>Elevador:</strong> ${scan._lift ? `<strong>${scan._lift.municipalNumber || '—'}</strong>${scan._lift.street ? ' — ' + scan._lift.street : ''}` : (scan.liftId || scan.qrCode || '—')}</p>
+                        <p><strong>Tipo:</strong> ${scan.action || 'Leitura'}</p>
                     </div>
                     <div class="col-md-6">
-                        <p><strong>Localização:</strong> ${scan.location || 'Desconhecido'}</p>
-                        <p><strong>Utilizador:</strong> ${scan.user || 'Sistema'}</p>
-                        <p><strong>Estado:</strong> <span class="badge badge-${scan.status === 'success' ? 'success' : 'danger'}">${scan.status}</span></p>
+                        <p><strong>Utilizador:</strong> ${scan.username || scan.user || 'Sistema'}</p>
+                        <p><strong>Dispositivo:</strong> ${scan.device || '—'}</p>
+                        <p><strong>Estado:</strong> ${statusBadge}</p>
                     </div>
                 </div>
+                ${scan.location ? `<hr><p><strong>Localização:</strong> ${scan.location}</p>` : ''}
+                ${scan.latitude && scan.longitude ? `<p><strong>Coordenadas:</strong> ${scan.latitude}, ${scan.longitude}</p>` : ''}
                 ${scan.notes ? `<hr><p><strong>Notas:</strong> ${scan.notes}</p>` : ''}
-                ${scan.latitude && scan.longitude ? `<hr><p><strong>Coordenadas:</strong> ${scan.latitude}, ${scan.longitude}</p>` : ''}
             </div>
         `;
 

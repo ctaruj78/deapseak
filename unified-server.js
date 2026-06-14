@@ -1762,6 +1762,30 @@ app.get('/api/qr/history', authenticateToken, async (req, res) => {
             db.collection('qr_scans').countDocuments(query)
         ]);
 
+        // Enrich each scan with lift address + municipal number
+        const { ObjectId } = require('mongodb');
+        const liftIds = [...new Set(
+            history
+                .map(s => s.liftId || s.referenceId)
+                .filter(id => id && /^[0-9a-f]{24}$/i.test(String(id)))
+        )].map(id => new ObjectId(id));
+        let liftMap = {};
+        if (liftIds.length) {
+            const lifts = await db.collection('lifts')
+                .find({ _id: { $in: liftIds } }, { projection: { municipalNumber: 1, 'address.street': 1 } })
+                .toArray();
+            for (const l of lifts) liftMap[l._id.toString()] = l;
+        }
+        for (const s of history) {
+            const lid = String(s.liftId || s.referenceId || '');
+            if (liftMap[lid]) {
+                s._lift = {
+                    municipalNumber: liftMap[lid].municipalNumber,
+                    street: liftMap[lid].address?.street,
+                };
+            }
+        }
+
         res.json({
             success: true,
             data: history || [],
@@ -1773,7 +1797,7 @@ app.get('/api/qr/history', authenticateToken, async (req, res) => {
             }
         });
     } catch (error) {
-        console.error('❌ Помилка отримання історії QR:', error);
+        console.error('❌ Помилка отримання histórico QR:', error);
         res.status(500).json({ success: false, message: 'Erro do servidor' });
     }
 });
@@ -1888,6 +1912,12 @@ app.post('/api/qr/scan', authenticateToken, async (req, res) => {
 
         const actorName = req.body.scannedBy || req.user.username || req.user.email || req.user.id;
 
+        const ua = req.headers['user-agent'] || '';
+        const isMobile = /android|iphone|ipad|mobile/i.test(ua);
+        const deviceLabel = isMobile
+            ? (/iphone|ipad/i.test(ua) ? 'iOS' : 'Android')
+            : (/windows/i.test(ua) ? 'Windows' : /mac/i.test(ua) ? 'Mac' : /linux/i.test(ua) ? 'Linux' : 'Desktop');
+
         const scan = {
             qrCode,
             liftId,
@@ -1895,7 +1925,13 @@ app.post('/api/qr/scan', authenticateToken, async (req, res) => {
             userId: req.user.id,
             username: req.user.username || actorName,
             scannedBy: actorName,
-            scannedAt: new Date()
+            scannedAt: new Date(),
+            status: 'success',
+            device: deviceLabel,
+            userAgent: ua,
+            latitude: req.body.latitude || null,
+            longitude: req.body.longitude || null,
+            location: req.body.location || null
         };
 
         // Buscar dados do elevador para retornar ao cliente
@@ -6387,6 +6423,21 @@ app.get('/api/municipalities/communications', authenticateToken, async (req, res
     } catch (error) {
         console.error('❌ Erro ao obter comunicações:', error);
         res.status(500).json({ success: false, message: 'Erro ao obter comunicações' });
+    }
+});
+
+app.delete('/api/municipalities/communications/:id', authenticateToken, async (req, res) => {
+    if (!['admin', 'dispatcher'].includes(req.user.role)) {
+        return res.status(403).json({ success: false, message: 'Acesso negado' });
+    }
+    try {
+        const { ObjectId } = require('mongodb');
+        const result = await db.collection('municipality_logs').deleteOne({ _id: new ObjectId(req.params.id) });
+        if (result.deletedCount === 0) return res.status(404).json({ success: false, message: 'Registo não encontrado' });
+        res.json({ success: true });
+    } catch (error) {
+        console.error('❌ Erro ao apagar comunicação:', error);
+        res.status(500).json({ success: false, message: 'Erro ao apagar' });
     }
 });
 

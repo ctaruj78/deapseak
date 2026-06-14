@@ -698,21 +698,14 @@
                                                 <i class="fas fa-server mr-2"></i>
                                                 <div>
                                                     <strong>Servidor</strong><br>
-                                                    <small>Online • 99.9% uptime</small>
+                                                    <small id="sys-server-status">A verificar...</small>
                                                 </div>
                                             </div>
                                             <div class="system-health health-good">
                                                 <i class="fas fa-database mr-2"></i>
                                                 <div>
                                                     <strong>Base de dados</strong><br>
-                                                    <small>Estável • 2ms de resposta</small>
-                                                </div>
-                                            </div>
-                                            <div class="system-health health-warning">
-                                                <i class="fas fa-wifi mr-2"></i>
-                                                <div>
-                                                    <strong>Ligação IoT</strong><br>
-                                                    <small>Estável • 95% dos elevadores online</small>
+                                                    <small id="sys-db-status">A verificar...</small>
                                                 </div>
                                             </div>
                                         </div>
@@ -1997,8 +1990,11 @@ setTimeout(() => {
                     <td>${new Date(comm.sentAt).toLocaleString('pt-PT')}</td>
                     <td><span class="badge badge-${statusClass}"><i class="fas fa-${statusIcon}"></i> ${statusLabel}</span></td>
                     <td>
-                        <button class="btn btn-sm btn-outline-primary" onclick="viewEmailDetails(${comm._idx})" title="Ver detalhes">
+                        <button class="btn btn-sm btn-outline-primary mr-1" onclick="viewEmailDetails(${comm._idx})" title="Ver detalhes">
                             <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="deleteCommLog('${comm._id}')" title="Apagar">
+                            <i class="fas fa-trash"></i>
                         </button>
                     </td>
                 </tr>`;
@@ -2043,6 +2039,7 @@ setTimeout(() => {
             const data = await response.json();
             _allCommunications = (data.data || []).map((log, i) => ({
                 _idx: i,
+                _id: log._id || log.id || '',
                 municipality: log.municipality || log.municipalityName || '—',
                 lift: log.lift || log.municipalNumber || '—',
                 type: log.type || 'municipality-form',
@@ -2284,6 +2281,27 @@ setTimeout(() => {
                 <dt>Message ID</dt>${msgIdHtml}
             </dl>`;
         $('#emailDetailsModal').modal('show');
+    };
+
+    window.deleteCommLog = async function(id) {
+        if (!id) return;
+        if (!confirm('Apagar este registo? Esta ação não pode ser revertida.')) return;
+        try {
+            const token = getAuthToken();
+            const res = await fetch(`/api/municipalities/communications/${id}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await res.json();
+            if (data.success) {
+                _allCommunications = _allCommunications.filter(c => String(c._id) !== String(id));
+                _applyCommFilters();
+            } else {
+                alert(data.message || 'Não foi possível apagar.');
+            }
+        } catch (err) {
+            alert('Falha de ligação ao servidor.');
+        }
     };
 
     window.openMunicipalityEditModal = function(municipalityId, municipalityName) {

@@ -924,7 +924,11 @@ exports.importMoloniClients = async (req, res) => {
 
         const updated  = [];
         const notFound = [];
+        const warnings = []; // condominio clients with no matching lift
         const doneIds  = new Set();
+
+        const isCondominio = (name) =>
+            /condom[ií]n|adm\.?\s*(de\s+)?cond|sociedade civil|habita[çc]/i.test(name);
 
         for (const c of clients) {
             let matched = false;

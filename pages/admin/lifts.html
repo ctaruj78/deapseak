@@ -5496,7 +5496,22 @@ Email de contacto: info@festlift.pt`;
                 $('#detail-address').text(addressStr);
                 $('#detail-postcode').text(postalCode);
                 if (lift.nif) {
-                    $('#detail-nif').html('<code>' + lift.nif + '</code>');
+                    const nifFmt = lift.nif.replace(/(\d{3})(\d{3})(\d{3})/, '$1 $2 $3');
+                    const $nifBadge = $('<span>').css({display:'inline-flex','align-items':'center',gap:'6px'});
+                    const $badge = $('<span>').css({
+                        'font-family':'monospace','font-size':'1rem','font-weight':'600',
+                        'letter-spacing':'.05em',color:'#1a1a2e',background:'#f0f4ff',
+                        border:'1px solid #c5d0f0','border-radius':'6px',padding:'3px 10px'
+                    }).text(nifFmt);
+                    const $btn = $('<button>').attr('title','Copiar NIF').css({
+                        border:'none',background:'none',color:'#6c757d',cursor:'pointer',
+                        padding:'2px 4px','font-size':'.85rem'
+                    }).html('<i class="fas fa-copy"></i>').on('click', function() {
+                        navigator.clipboard.writeText(lift.nif);
+                        $(this).html('<i class="fas fa-check"></i>');
+                        setTimeout(() => $(this).html('<i class="fas fa-copy"></i>'), 1500);
+                    });
+                    $('#detail-nif').empty().append($nifBadge.append($badge, $btn));
                 } else {
                     $('#detail-nif').html('<span class="text-muted">—</span>');
                 }
