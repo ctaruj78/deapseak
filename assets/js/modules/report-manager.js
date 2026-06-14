@@ -85,9 +85,9 @@ class ReportManager {
         $('#totalAssignments').text(metrics.totalAssignments);
         $('#completionRate').text(metrics.completionRate + '%');
         $('#avgTime').text(this.formatTime(metrics.avgTime));
-        $('#slaCompliance').text(metrics.slaCompliance + '%');
+        $('#slaCompliance').text(metrics.slaCompliance !== null ? metrics.slaCompliance + '%' : '—');
         $('#escalations').text(metrics.escalations);
-        $('#customerSatisfaction').text(metrics.customerSatisfaction + '%');
+        $('#customerSatisfaction').text(metrics.customerSatisfaction !== null ? metrics.customerSatisfaction + '%' : '—');
         
         // Atualização трендів
         this.updateTrends();
@@ -103,28 +103,18 @@ class ReportManager {
             totalAssignments: totalAssignments,
             completionRate: totalAssignments > 0 ? Math.round((completedAssignments / totalAssignments) * 100) : 0,
             avgTime: count > 0 ? totalTime / count : 0,
-            slaCompliance: 95,
+            slaCompliance: null,
             escalations: Math.floor(totalAssignments * 0.05),
-            customerSatisfaction: 92
+            customerSatisfaction: null
         };
     }
 
     updateTrends() {
-        // Імітація трендів
-        const trends = {
-            assignments: '+5%',
-            completion: '+2%',
-            time: '-10%',
-            sla: '0%',
-            escalations: '-15%',
-            satisfaction: '+3%'
-        };
-        
-        $('#assignmentsTrend').text(trends.assignments).attr('class', 'trend-indicator trend-up');
-        $('#completionTrend').text(trends.completion).attr('class', 'trend-indicator trend-up');
-        $('#timeTrend').text(trends.time).attr('class', 'trend-indicator trend-down');
-        $('#slaTrend').text(trends.sla).attr('class', 'trend-indicator trend-neutral');
-        $('#escalationsTrend').text(trends.escalations).attr('class', 'trend-indicator trend-down');
+        $('#assignmentsTrend').text('—').attr('class', 'trend-indicator trend-neutral');
+        $('#completionTrend').text('—').attr('class', 'trend-indicator trend-neutral');
+        $('#timeTrend').text('—').attr('class', 'trend-indicator trend-neutral');
+        $('#slaTrend').text('—').attr('class', 'trend-indicator trend-neutral');
+        $('#escalationsTrend').text('—').attr('class', 'trend-indicator trend-neutral');
         $('#satisfactionTrend').text(trends.satisfaction).attr('class', 'trend-indicator trend-up');
     }
 

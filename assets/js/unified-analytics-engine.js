@@ -312,13 +312,12 @@ class UnifiedAnalyticsEngine {
         this.charts.liftsStatus = new Chart(ctx, {
             type: 'doughnut',
             data: {
-                labels: ['Ativos', 'Em manutenção', 'Offline', 'Com erros'],
+                labels: ['Ativos', 'Em manutenção', 'Offline'],
                 datasets: [{
                     data: [
                         this.data.lifts.active,
                         this.data.lifts.maintenance,
-                        this.data.lifts.offline,
-                        Math.floor(Math.random() * 3) // Випадкові помилки для демо
+                        this.data.lifts.offline
                     ],
                     backgroundColor: [
                         this.config.charts.colors.success,
@@ -797,9 +796,6 @@ class UnifiedAnalyticsEngine {
             risk += Math.min(age * 2, 30);
         }
         
-        // Частота Manutenção
-        risk += Math.random() * 40; // Випадковий компонент для демо
-        
         // Tipo de elevador
         if (lift.type === 'freight') risk += 10;
         
@@ -808,62 +804,66 @@ class UnifiedAnalyticsEngine {
 
     generateOverviewData() {
         const labels = [];
-        const liftsActivity = [];
-        const qrActivity = [];
-        const maintenanceActivity = [];
-        
         for (let i = 6; i >= 0; i--) {
             const date = new Date();
             date.setDate(date.getDate() - i);
             labels.push(date.toLocaleDateString('pt-PT', { weekday: 'short' }));
-            
-            // Генеруємо випадкові дані для демо
-            liftsActivity.push(Math.floor(Math.random() * 50) + 30);
-            qrActivity.push(Math.floor(Math.random() * 20) + 10);
-            maintenanceActivity.push(Math.floor(Math.random() * 8) + 2);
         }
-        
-        return { labels, liftsActivity, qrActivity, maintenanceActivity };
+        const zeros = Array(7).fill(0);
+        return { labels, liftsActivity: zeros, qrActivity: zeros, maintenanceActivity: zeros };
+    }
+
+    async loadOverviewDataFromAPI() {
+        try {
+            const token = localStorage.getItem('liftmanager_jwt') || sessionStorage.getItem('liftmanager_jwt') || localStorage.getItem('authToken');
+            if (!token) return;
+            const res = await fetch('/api/qr/history?limit=500', { headers: { 'Authorization': `Bearer ${token}` } });
+            if (!res.ok) return;
+            const { data: scans } = await res.json();
+            if (!scans || !scans.length) return;
+
+            const dayMap = {};
+            for (let i = 6; i >= 0; i--) {
+                const d = new Date(); d.setDate(d.getDate() - i);
+                dayMap[d.toDateString()] = 0;
+            }
+            scans.forEach(s => {
+                const k = new Date(s.scannedAt || s.createdAt || s.timestamp).toDateString();
+                if (k in dayMap) dayMap[k]++;
+            });
+
+            if (this.charts.overview) {
+                this.charts.overview.data.datasets[1].data = Object.values(dayMap);
+                this.charts.overview.update();
+            }
+        } catch (e) { /* silent */ }
     }
 
     generateMaintenanceTimelineData() {
         const labels = [];
-        const planned = [];
-        const emergency = [];
-        
         for (let i = 29; i >= 0; i--) {
             const date = new Date();
             date.setDate(date.getDate() - i);
             labels.push(date.toLocaleDateString('pt-PT', { day: 'numeric', month: 'short' }));
-            
-            planned.push(Math.floor(Math.random() * 5) + 1);
-            emergency.push(Math.floor(Math.random() * 2));
         }
-        
-        return { labels, planned, emergency };
+        const zeros = Array(30).fill(0);
+        return { labels, planned: zeros, emergency: zeros };
     }
 
     generatePredictions() {
         const labels = [];
-        const breakdown = [];
-        const load = [];
-        
         for (let i = 0; i < 7; i++) {
             const date = new Date();
             date.setDate(date.getDate() + i);
             labels.push(date.toLocaleDateString('pt-PT', { weekday: 'short' }));
-            
-            // Генеруємо прогнози
-            breakdown.push(Math.max(0, Math.min(100, Math.random() * 30 + 10)));
-            load.push(Math.max(0, Math.min(100, Math.random() * 40 + 40)));
         }
-        
-        return { labels, breakdown, load };
+        const zeros = Array(7).fill(0);
+        return { labels, breakdown: zeros, load: zeros };
     }
 
     // Розрахунки змін для KPI
     calculateLiftsChange() {
-        return '+2% este mês';
+        return '';
     }
 
     calculateActiveChange() {
@@ -872,7 +872,7 @@ class UnifiedAnalyticsEngine {
     }
 
     calculateScansChange() {
-        return '+15% esta semana';
+        return '';
     }
 
     calculateMaintenanceChange() {
@@ -880,20 +880,15 @@ class UnifiedAnalyticsEngine {
     }
 
     calculateQRActivityDrop() {
-        // Для демо повертаємо випадкове значення
-        return Math.floor(Math.random() * 25);
+        return 0;
     }
 
     calculateSystemUptime() {
-        return 99.9; // Для демо
+        return null;
     }
 
     getSystemPerformance() {
-        return {
-            cpu: Math.floor(Math.random() * 30) + 20,
-            memory: Math.floor(Math.random() * 40) + 30,
-            network: Math.floor(Math.random() * 20) + 5
-        };
+        return { cpu: null, memory: null, network: null };
     }
 
     getSystemAlerts(log) {
@@ -1566,7 +1561,7 @@ class UnifiedAnalyticsEngine {
                 labels: ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'],
                 datasets: [{
                     label: 'Inspeções realizadas',
-                    data: [12, 8, 15, 10, 14, 6, 3],
+                    data: [0, 0, 0, 0, 0, 0, 0],
                     borderColor: 'rgba(0, 123, 255, 1)',
                     backgroundColor: 'rgba(0, 123, 255, 0.1)',
                     tension: 0.4
@@ -1591,7 +1586,7 @@ class UnifiedAnalyticsEngine {
             data: {
                 labels: ['Com sucesso', 'Necessita reparação', 'Crítico'],
                 datasets: [{
-                    data: [75, 20, 5],
+                    data: [0, 0, 0],
                     backgroundColor: [
                         'rgba(40, 167, 69, 0.8)',
                         'rgba(255, 193, 7, 0.8)',
@@ -1630,7 +1625,7 @@ class UnifiedAnalyticsEngine {
                 labels: Array.from({length: 24}, (_, i) => i + ':00'),
                 datasets: [{
                     label: 'Atividade dos utilizadores',
-                    data: [2, 1, 0, 0, 1, 3, 8, 15, 22, 18, 16, 14, 12, 15, 18, 20, 17, 14, 10, 8, 6, 4, 3, 2],
+                    data: Array(24).fill(0),
                     borderColor: 'rgba(108, 117, 125, 1)',
                     backgroundColor: 'rgba(108, 117, 125, 0.2)',
                     tension: 0.4,
@@ -1965,19 +1960,18 @@ function initPredictionChart(attemptCount = 0) {
     const existingChart = Chart.getChart(canvas);
     if (existingChart) existingChart.destroy();
     
-    // Тестові дані для прогнозів
     const predictionData = {
         labels: ['Semana 1', 'Semana 2', 'Semana 3', 'Semana 4'],
         datasets: [{
             label: 'Probabilidade de falha (%)',
-            data: [15, 23, 35, 48],
+            data: [0, 0, 0, 0],
             borderColor: '#ff6b6b',
             backgroundColor: 'rgba(255, 107, 107, 0.1)',
             tension: 0.4,
             fill: true
         }, {
             label: 'Manutenção recomendada (%)' ,
-            data: [25, 40, 60, 85],
+            data: [0, 0, 0, 0],
             borderColor: '#4ecdc4',
             backgroundColor: 'rgba(78, 205, 196, 0.1)',
             tension: 0.4,

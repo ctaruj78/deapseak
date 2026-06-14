@@ -449,17 +449,17 @@ class SmartAnalyticsEngine {
     // Методи для прогнозування (заглушки - в реальному проекті тут буде ML)
     predictInspectionLoad() {
         return {
-            nextMonth: Math.floor(Math.random() * 20) + 10,
-            trend: 'increasing',
-            confidence: 'medium'
+            nextMonth: null,
+            trend: 'unknown',
+            confidence: 'low'
         };
     }
 
     predictMaintenanceNeeds() {
         return {
-            liftsRequiringMaintenance: Math.floor(Math.random() * 10) + 5,
-            estimatedCost: '150000 UAH',
-            priority: 'medium'
+            liftsRequiringMaintenance: null,
+            estimatedCost: null,
+            priority: 'unknown'
         };
     }
 

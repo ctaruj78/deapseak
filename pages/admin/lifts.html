@@ -1153,7 +1153,7 @@
                     </li>
                 </ul>
                 <!-- FORM -->
-                <form id="enhancedLiftForm" novalidate style="display:flex;flex-direction:column;flex:1;min-height:0;overflow:hidden;">
+                <form id="enhancedLiftForm" novalidate autocomplete="off" style="display:flex;flex-direction:column;flex:1;min-height:0;overflow:hidden;">
                     <div class="modal-body">
                         <input type="hidden" id="enhancedLiftId">
                         <div class="tab-content tab-content-wrap" id="eLiftTabContent">
@@ -1236,7 +1236,7 @@
                                                     <label for="enhancedLiftAddress">Endereço completo <span class="req">*</span></label>
                                                     <div class="input-group">
                                                         <input type="text" id="enhancedLiftAddress" name="liftAddress"
-                                                               class="form-control" required
+                                                               class="form-control" required autocomplete="off"
                                                                placeholder="Rua da Liberdade, 15, Lisboa">
                                                         <div class="input-group-append">
                                                             <button type="button" class="btn btn-outline-info" id="enhancedBtnGeocode"
@@ -1255,7 +1255,7 @@
                                                 <div class="form-group">
                                                     <label for="enhancedLiftPostcode">Código postal <span class="req">*</span></label>
                                                     <input type="text" id="enhancedLiftPostcode" name="liftPostcode"
-                                                           class="form-control" required placeholder="1250-096">
+                                                           class="form-control" required autocomplete="off" placeholder="1250-096">
                                                 </div>
                                             </div>
                                             <div class="col-md-2">
@@ -1355,7 +1355,7 @@
                                                             <span class="input-group-text"><i class="fas fa-user"></i></span>
                                                         </div>
                                                         <input type="text" id="enhancedClientName" name="clientName"
-                                                               class="form-control" placeholder="Nome do cliente ou nome do condomínio">
+                                                               class="form-control" autocomplete="off" placeholder="Nome do cliente ou nome do condomínio">
                                                     </div>
                                                 </div>
                                             </div>
@@ -1367,7 +1367,7 @@
                                                             <span class="input-group-text"><i class="fas fa-envelope"></i></span>
                                                         </div>
                                                         <input type="email" id="enhancedClientEmail" name="clientEmail"
-                                                               class="form-control" required placeholder="client@example.com">
+                                                               class="form-control" required autocomplete="off" placeholder="client@example.com">
                                                     </div>
                                                     <small class="text-muted">Para agrupar todos os elevadores do cliente</small>
                                                 </div>
@@ -6045,6 +6045,9 @@ Email de contacto: info@festlift.pt`;
             $('#enhancedLiftCapacity').val(lift.capacity || lift.loadCapacity || '');
             $('#enhancedLiftSpeed').val(lift.speed || '');
             
+            // NIF do edifício
+            $('#enhancedLiftNif').val(lift.nif || '');
+
             // Localização
             const address = lift.address || {};
             $('#enhancedLiftAddress').val(address.street || lift.address || '');

@@ -949,39 +949,7 @@
                                             <h3 class="card-title">📅 Calendário financeiro</h3>
                                         </div>
                                         <div class="card-body">
-                                            <h6>📋 Próximos pagamentos:</h6>
-                                            <div class="timeline">
-                                                <div class="timeline-item">
-                                                    <div class="timeline-date text-primary">07.04</div>
-                                                    <div class="timeline-content">
-                                                        <strong>Centro Comercial Lisboa</strong><br>
-                                                        <small>Contrato mensal — € 25.000</small>
-                                                    </div>
-                                                </div>
-                                                <div class="timeline-item">
-                                                    <div class="timeline-date text-warning">10.04</div>
-                                                    <div class="timeline-content">
-                                                        <strong>Pagamento de peças</strong><br>
-                                                        <small>Compra mensal — € 12.000</small>
-                                                    </div>
-                                                </div>
-                                                <div class="timeline-item">
-                                                    <div class="timeline-date text-success">15.04</div>
-                                                    <div class="timeline-content">
-                                                        <strong>Condomínio Av. Parque</strong><br>
-                                                        <small>Pagamento trimestral — € 45.900</small>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            
-                                            <hr>
-                                            
-                                            <h6>💡 Sugestões financeiras:</h6>
-                                            <div class="alert alert-info small">
-                                                <i class="fas fa-lightbulb"></i>
-                                                Considere aumentar a frequência de manutenção no Centro Comercial Lisboa — 
-                                                pode elevar a rentabilidade para 65%.
-                                            </div>
+                                            <p class="text-muted text-center pt-3"><i class="fas fa-calendar-times fa-2x mb-2 d-block"></i>Sem dados financeiros disponíveis</p>
                                         </div>
                                     </div>
                                 </div>
@@ -2180,58 +2148,104 @@ setTimeout(() => {
         }
     }
     
-    // Criar gráficos
+    // Criar gráficos com dados reais
     function createMunicipalitiesCharts() {
-        // Gráfico de distribuição por distrito
+        // --- Distribuição por distrito: contar lifts reais agrupados por distrito ---
         const distritoCanvas = document.getElementById('municipalities-by-distrito');
         if (distritoCanvas && typeof Chart !== 'undefined') {
-            new Chart(distritoCanvas, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Lisboa', 'Setúbal', 'Santarém', 'Leiria', 'Outros'],
-                    datasets: [{
-                        data: [18, 8, 6, 3, 2],
-                        backgroundColor: ['#007bff', '#28a745', '#ffc107', '#17a2b8', '#6c757d']
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { position: 'bottom' }
-                    }
+            // Usar _allCommunications para tipos de mensagens, lifts agrupados por município
+            // Dados de distrito vêm do municipalityStats calculado em loadTopMunicipalities
+            // Fallback: mostrar sem dados
+            const existing = Chart.getChart(distritoCanvas);
+            if (existing) existing.destroy();
+
+            // Agrupar municípios por distrito usando os dados já carregados em top-municipalities-tbody
+            const rows = document.querySelectorAll('#top-municipalities-tbody tr');
+            const distritoMap = {};
+            rows.forEach(row => {
+                const cells = row.querySelectorAll('td');
+                if (cells.length >= 3) {
+                    const distrito = cells[2]?.textContent?.trim() || 'Outros';
+                    const count = parseInt(cells[3]?.querySelector('.badge')?.textContent) || 0;
+                    distritoMap[distrito] = (distritoMap[distrito] || 0) + count;
                 }
             });
+
+            const sorted = Object.entries(distritoMap).sort((a, b) => b[1] - a[1]);
+            const top4 = sorted.slice(0, 4);
+            const outros = sorted.slice(4).reduce((s, [, v]) => s + v, 0);
+            if (outros > 0) top4.push(['Outros', outros]);
+
+            const colors = ['#007bff', '#28a745', '#ffc107', '#17a2b8', '#6c757d'];
+
+            if (top4.length === 0) {
+                distritoCanvas.parentElement.innerHTML = '<p class="text-center text-muted pt-4">Sem dados de distrito disponíveis</p>';
+            } else {
+                new Chart(distritoCanvas, {
+                    type: 'doughnut',
+                    data: {
+                        labels: top4.map(([d]) => d),
+                        datasets: [{ data: top4.map(([, c]) => c), backgroundColor: colors }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { position: 'bottom' } }
+                    }
+                });
+            }
         }
-        
-        // Gráfico de tipos de mensagens
+
+        // --- Tipos de mensagens: contar por tipo nos logs reais ---
         const typesCanvas = document.getElementById('notification-types-chart');
         if (typesCanvas && typeof Chart !== 'undefined') {
-            new Chart(typesCanvas, {
-                type: 'bar',
-                data: {
-                    labels: ['Novo Elevador', 'Inspeção', 'Manutenção Início', 'Manutenção Fim', 'Relatorio Mensal'],
-                    datasets: [{
-                        label: 'Quantidade de mensagens',
-                        data: [12, 8, 5, 6, 3],
-                        backgroundColor: '#007bff'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: { stepSize: 2 }
-                        }
-                    }
-                }
+            const existing = Chart.getChart(typesCanvas);
+            if (existing) existing.destroy();
+
+            const typeCount = {};
+            _allCommunications.forEach(c => {
+                const label = _typeLabel(c.type);
+                typeCount[label] = (typeCount[label] || 0) + 1;
             });
+
+            const labels = Object.keys(typeCount);
+            const values = Object.values(typeCount);
+
+            if (labels.length === 0) {
+                typesCanvas.parentElement.innerHTML = '<p class="text-center text-muted pt-4">Sem comunicações registadas</p>';
+            } else {
+                new Chart(typesCanvas, {
+                    type: 'bar',
+                    data: {
+                        labels,
+                        datasets: [{
+                            label: 'Mensagens enviadas',
+                            data: values,
+                            backgroundColor: '#007bff'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false } },
+                        scales: { y: { beginAtZero: true, ticks: { stepSize: 1, precision: 0 } } }
+                    }
+                });
+            }
         }
+
+        // --- Estado do sistema: ping real ---
+        const t0 = Date.now();
+        fetch('/api/auth/check', { method: 'GET' }).then(r => {
+            const ms = Date.now() - t0;
+            const serverEl = document.getElementById('sys-server-status');
+            const dbEl = document.getElementById('sys-db-status');
+            if (serverEl) serverEl.textContent = r.ok ? 'Online' : 'Erro de resposta';
+            if (dbEl) dbEl.textContent = r.ok ? `Estável • ${ms}ms de resposta` : 'Indisponível';
+        }).catch(() => {
+            const serverEl = document.getElementById('sys-server-status');
+            if (serverEl) serverEl.textContent = 'Sem resposta';
+        });
     }
     
     // Refresh button handler

@@ -946,13 +946,7 @@ class SmartAnalyticsDashboard {
     }
 
     generateActivityData(type) {
-        // Генеруexisteмо примірні dados за recentes 7 dias
-        const data = [];
-        for (let i = 0; i < 7; i++) {
-            const value = Math.floor(Math.random() * 10) + 1;
-            data.push(value);
-        }
-        return data;
+        return Array(7).fill(0);
     }
 }
 

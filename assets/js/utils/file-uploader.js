@@ -203,7 +203,7 @@ class FileUploader {
         return new Promise((resolve) => {
             setTimeout(() => {
                 resolve({
-                    clean: Math.random() > 0.01, // 99% chance of being clean
+                    clean: true,
                     threats: [],
                     scannedAt: new Date().toISOString()
                 });

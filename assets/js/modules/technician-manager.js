@@ -474,29 +474,7 @@ if (!confirm('Tem a certeza que quer eliminar este técnico?')) return;
 
     // Definições реальних оновлень
     setupRealTimeUpdates() {
-        // Симуляція реальних оновлень статусу техніків
-        setInterval(() => {
-            if (this.technicians.length > 0) {
-                // Випадкове оновлення статусу одного техніка
-                const randomIndex = Math.floor(Math.random() * this.technicians.length);
-                const statuses = ['online', 'busy', 'offline'];
-                const workloads = ['low', 'medium', 'high'];
-                
-                this.technicians[randomIndex].status = statuses[Math.floor(Math.random() * statuses.length)];
-                this.technicians[randomIndex].workload = workloads[Math.floor(Math.random() * workloads.length)];
-                this.technicians[randomIndex].currentAssignments = Math.floor(Math.random() * 6);
-                
-                this.filteredTechnicians = [...this.technicians];
-                this.renderTechnicians();
-                this.updateStats();
-                this.updateBadges();
-                
-                // Atualização часу останнього оновлення
-                const now = new Date();
-                const lastUpdate = document.getElementById('lastUpdate');
-                if (lastUpdate) lastUpdate.textContent = `Atualizado: ${now.toLocaleTimeString()}`;
-            }
-        }, 30000); // Atualização кожні 30 секунд
+        // Sem simulação — statuses são carregados da API
     }
 
     // Показати сповіщення

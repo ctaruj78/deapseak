@@ -190,147 +190,75 @@ class MonitoringManager {
     }
 
     /**
-     * A carregar з localStorage
+     * Carrega dados reais da API
      */
-    loadFromLocalStorage() {
+    async loadFromLocalStorage() {
         try {
-            const saved = JSON.parse(localStorage.getItem('monitoringData'));
-            if (saved) {
-                this.lifts = saved.lifts || [];
-                this.assignments = saved.assignments || [];
-                this.technicians = saved.technicians || [];
-                this.alerts = saved.alerts || [];
-                this.systemMetrics = saved.systemMetrics || {};
-                
-                // Генерація тестових даних якщо відсутні
-                if (this.lifts.length === 0) {
-                    this.generateTestData();
-                }
-                
-                this.updateAllUI();
-            } else {
-                this.generateTestData();
-            }
+            const token = localStorage.getItem('liftmanager_jwt') ||
+                          sessionStorage.getItem('liftmanager_jwt') ||
+                          localStorage.getItem('authToken');
+            if (!token) { this.loadEmpty(); return; }
+
+            const res = await fetch('/api/lifts', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (!res.ok) throw new Error('API error');
+            const json = await res.json();
+            const rawLifts = json.data || json.lifts || [];
+
+            this.lifts = rawLifts.map(l => ({
+                _id: l._id,
+                municipalNumber: l.municipalNumber || '—',
+                model: l.brand || l.model || '—',
+                address: (l.address?.street || '') + (l.address?.number ? ' nº' + l.address.number : ''),
+                status: l.status === 'active' ? 'active' : l.status === 'maintenance' ? 'maintenance' : 'active',
+                floors: l.floors || null,
+                capacity: l.capacity || null,
+                lastMaintenance: l.lastMaintenance || null,
+                nextMaintenance: l.nextMaintenance || null,
+                currentFloor: null,
+                direction: null,
+                doorsOpen: null,
+                overload: null,
+                temperature: null,
+                humidity: null,
+                vibration: null,
+                errorCodes: [],
+                powerConsumption: null
+            }));
+
+            this.alerts = [];
+            this.systemMetrics = {
+                totalLifts: this.lifts.length,
+                activeLifts: this.lifts.filter(l => l.status === 'active').length,
+                maintenanceLifts: this.lifts.filter(l => l.status === 'maintenance').length,
+                errorLifts: 0,
+                averageUptime: null,
+                totalPowerConsumption: null,
+                averageTemperature: null,
+                criticalAlerts: 0,
+                warningAlerts: 0
+            };
+
+            this.updateAllUI();
         } catch (error) {
-            console.error('Erro завантаження з localStorage:', error);
-            this.generateTestData();
+            console.error('Erro ao carregar elevadores:', error);
+            this.loadEmpty();
         }
     }
 
-    /**
-     * Генерація тестових даних для демонстрації
-     */
-    generateTestData() {
-        this.lifts = [
-            {
-                _id: '1',
-                model: 'Otis Gen2',
-                address: 'вул. Хрещатик, 1',
-                status: 'active',
-                floors: 15,
-                capacity: 1000,
-                lastMaintenance: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
-                nextMaintenance: new Date(Date.now() + 60 * 24 * 60 * 60 * 1000),
-                currentFloor: Math.floor(Math.random() * 15) + 1,
-                direction: ['up', 'down', 'idle'][Math.floor(Math.random() * 3)],
-                doorsOpen: Math.random() > 0.7,
-                overload: Math.random() > 0.9,
-                temperature: 22 + Math.random() * 8,
-                humidity: 45 + Math.random() * 20,
-                vibration: Math.random() * 5,
-                errorCodes: [],
-                powerConsumption: 150 + Math.random() * 100
-            },
-            {
-                _id: '2',
-                model: 'Schindler 7000',
-                address: 'вул. Лесі Українки, 5',
-                status: 'maintenance',
-                floors: 20,
-                capacity: 1200,
-                lastMaintenance: new Date(),
-                nextMaintenance: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000),
-                currentFloor: 0,
-                direction: 'idle',
-                doorsOpen: true,
-                overload: false,
-                temperature: 25,
-                humidity: 50,
-                vibration: 8.5,
-                errorCodes: ['E001', 'W005'],
-                powerConsumption: 0
-            },
-            {
-                _id: '3',
-                model: 'Kone EcoDisc',
-                address: 'вул. Басейна, 3',
-                status: 'error',
-                floors: 12,
-                capacity: 800,
-                lastMaintenance: new Date(Date.now() - 45 * 24 * 60 * 60 * 1000),
-                nextMaintenance: new Date(Date.now() - 15 * 24 * 60 * 60 * 1000),
-                currentFloor: 5,
-                direction: 'idle',
-                doorsOpen: false,
-                overload: false,
-                temperature: 28,
-                humidity: 65,
-                vibration: 12.3,
-                errorCodes: ['E003', 'E007'],
-                powerConsumption: 50
-            }
-        ];
-
+    loadEmpty() {
+        this.lifts = [];
+        this.alerts = [];
         this.systemMetrics = {
-            totalLifts: this.lifts.length,
-            activeLifts: this.lifts.filter(l => l.status === 'active').length,
-            maintenanceLifts: this.lifts.filter(l => l.status === 'maintenance').length,
-            errorLifts: this.lifts.filter(l => l.status === 'error').length,
-            averageUptime: 98.5,
-            totalPowerConsumption: this.lifts.reduce((sum, lift) => sum + lift.powerConsumption, 0),
-            averageTemperature: this.lifts.reduce((sum, lift) => sum + lift.temperature, 0) / this.lifts.length,
-            criticalAlerts: Math.floor(Math.random() * 3),
-            warningAlerts: Math.floor(Math.random() * 8) + 2
+            totalLifts: 0, activeLifts: 0, maintenanceLifts: 0, errorLifts: 0,
+            averageUptime: null, totalPowerConsumption: null,
+            averageTemperature: null, criticalAlerts: 0, warningAlerts: 0
         };
-
-        this.alerts = [
-            {
-                _id: '1',
-                type: 'error',
-                title: 'Критична помилка ліфта',
-                description: 'Elevador #3 - помилка E003: несправність двигуна',
-                liftId: '3',
-                severity: 'critical',
-                timestamp: new Date(Date.now() - 15 * 60 * 1000),
-                acknowledged: false,
-                resolvedAt: null
-            },
-            {
-                _id: '2',
-                type: 'warning',
-                title: 'Excesso de vibração',
-                description: 'Elevador #2 - вібрація перевищує норму (8.5)',
-                liftId: '2',
-                severity: 'warning',
-                timestamp: new Date(Date.now() - 45 * 60 * 1000),
-                acknowledged: true,
-                resolvedAt: null
-            },
-            {
-                _id: '3',
-                type: 'info',
-                title: 'Планове обслуговування',
-                description: 'Elevador #1 - наближається дата планового Manutenção',
-                liftId: '1',
-                severity: 'info',
-                timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000),
-                acknowledged: false,
-                resolvedAt: null
-            }
-        ];
-
-        this.saveToLocalStorage();
+        this.updateAllUI();
     }
+
+    generateTestData() { this.loadEmpty(); }
 
     /**
      * Atualização всього інтерфейсу
@@ -761,51 +689,7 @@ class MonitoringManager {
      * Симуляція оновлень в реальному часі
      */
     simulateRealtimeUpdates() {
-        setInterval(() => {
-            if (!this.isInitialized || !Array.isArray(this.lifts)) return;
-            
-            // Atualização даних ліфтів
-            this.lifts.forEach(lift => {
-                if (lift.status === 'active') {
-                    // Симуляція руху ліфта
-                    if (Math.random() > 0.7) {
-                        if (lift.direction === 'up' && lift.currentFloor < lift.floors) {
-                            lift.currentFloor++;
-                        } else if (lift.direction === 'down' && lift.currentFloor > 1) {
-                            lift.currentFloor--;
-                        } else {
-                            lift.direction = ['up', 'down', 'idle'][Math.floor(Math.random() * 3)];
-                        }
-                    }
-                    
-                    // Симуляція відкриття/закриття дверей
-                    if (Math.random() > 0.9) {
-                        lift.doorsOpen = !lift.doorsOpen;
-                    }
-                    
-                    // Невеликі зміни в показниках
-                    lift.temperature += (Math.random() - 0.5) * 0.5;
-                    lift.humidity += (Math.random() - 0.5) * 2;
-                    lift.vibration += (Math.random() - 0.5) * 0.2;
-                    lift.powerConsumption += (Math.random() - 0.5) * 10;
-                    
-                    // Обмеження значень
-                    lift.temperature = Math.max(15, Math.min(35, lift.temperature));
-                    lift.humidity = Math.max(30, Math.min(80, lift.humidity));
-                    lift.vibration = Math.max(0, Math.min(15, lift.vibration));
-                    lift.powerConsumption = Math.max(50, Math.min(300, lift.powerConsumption));
-                }
-            });
-            
-            // Atualização метрик
-            this.updateSystemMetrics();
-            
-            // Atualização інтерфейсу
-            this.updateLiftsGrid();
-            this.updateMetrics();
-            
-            this.lastUpdate = new Date();
-        }, 5000); // Кожні 5 секунд
+        // Sem IoT real — sem simulação de sensores
     }
 
     /**
@@ -1576,9 +1460,9 @@ class MonitoringManager {
             activeLifts,
             totalLifts,
             alertsCount,
-            systemUptime: 99.8,
-            cpuUsage: Math.random() * 100,
-            memoryUsage: Math.random() * 100
+            systemUptime: null,
+            cpuUsage: null,
+            memoryUsage: null
         };
     }
 
