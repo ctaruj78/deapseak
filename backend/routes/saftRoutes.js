@@ -37,6 +37,7 @@ router.post('/upload', (req, res, next) => {
 
 router.get('/',         ctrl.listImports);
 router.get('/:id',      ctrl.getImport);
-router.post('/:id/resend', ctrl.resendAlerts);
+router.post('/:id/resend',  ctrl.resendAlerts);
+router.delete('/:id',       ctrl.deleteImport);
 
 module.exports = router;

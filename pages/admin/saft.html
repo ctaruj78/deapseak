@@ -379,7 +379,10 @@ async function loadHistory() {
                 <td class="text-center"><span class="${(imp.stats?.debtorsFound||0)>0?'text-danger font-weight-bold':''}">${imp.stats?.debtorsFound ?? '—'}</span></td>
                 <td class="text-center">${imp.stats?.alertsSent ?? '—'}</td>
                 <td class="small">${imp.importedBy ? (imp.importedBy.firstName || '') : '—'}</td>
-                <td><button class="btn btn-xs btn-outline-primary" onclick="openImport('${imp._id}')"><i class="fas fa-eye"></i></button></td>
+                <td class="text-nowrap">
+                    <button class="btn btn-xs btn-outline-primary mr-1" onclick="openImport('${imp._id}')"><i class="fas fa-eye"></i></button>
+                    <button class="btn btn-xs btn-outline-danger" onclick="deleteImport('${imp._id}', '${esc(imp.filename)}')"><i class="fas fa-trash"></i></button>
+                </td>
             </tr>`).join('');
     } catch (e) {
         document.getElementById('historyBody').innerHTML = '<tr><td colspan="10" class="text-center text-danger">Erro ao carregar histórico</td></tr>';
@@ -468,6 +471,16 @@ async function resendAlerts() {
         alert('Alertas enviados: ' + (d.alertsSent ?? 0));
         openImport(currentImportId);
     } catch(e) { alert('Erro: ' + e.message); }
+}
+
+async function deleteImport(id, filename) {
+    if (!confirm('Eliminar importação "' + filename + '"?\n\nOs NIFs dos elevadores já actualizados não serão revertidos. Esta acção é irreversível.')) return;
+    try {
+        const r = await fetch(API() + '/api/saft/' + id, { method: 'DELETE', headers: HDRS() });
+        const d = await r.json();
+        if (!d.success) throw new Error(d.message || 'Erro desconhecido');
+        loadHistory();
+    } catch (e) { alert('Erro ao eliminar: ' + e.message); }
 }
 
 // ── utils ─────────────────────────────────────────────────────────────────────

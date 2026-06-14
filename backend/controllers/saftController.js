@@ -350,6 +350,22 @@ exports.resendAlerts = async (req, res) => {
     }
 };
 
+exports.deleteImport = async (req, res) => {
+    try {
+        const record = await SaftImport.findById(req.params.id);
+        if (!record) return res.status(404).json({ success: false, message: 'Import não encontrado' });
+        // remove uploaded XML file if it exists
+        try {
+            const xmlPath = path.join(__dirname, '../../uploads/saft', record.filename);
+            if (fs.existsSync(xmlPath)) fs.unlinkSync(xmlPath);
+        } catch (_) {}
+        await record.deleteOne();
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+};
+
 // ── email template for debtors ────────────────────────────────────────────────
 
 async function _sendDebtorAlert(email, name, invoices, totalOutstanding) {
