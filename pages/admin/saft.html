@@ -135,7 +135,7 @@
                             <div class="card-header"><h3 class="card-title"><i class="fas fa-info-circle mr-1"></i>O que é processado</h3></div>
                             <div class="card-body p-0">
                                 <ul class="list-group list-group-flush">
-                                    <li class="list-group-item py-2"><i class="fas fa-check text-success mr-2"></i>Atualiza NIF dos elevadores por código postal</li>
+                                    <li class="list-group-item py-2"><i class="fas fa-check text-success mr-2"></i>Atualiza NIF dos elevadores por código Moloni ou morada exata</li>
                                     <li class="list-group-item py-2"><i class="fas fa-check text-success mr-2"></i>Regista faturas e pagamentos do período</li>
                                     <li class="list-group-item py-2"><i class="fas fa-check text-success mr-2"></i>Deteta faturas em atraso (&gt; 30 dias)</li>
                                     <li class="list-group-item py-2"><i class="fas fa-list text-info mr-2"></i>Lista devedores detectados <span class="badge badge-warning">sem envio automático</span></li>
@@ -163,6 +163,62 @@
                                     <h6 class="font-weight-bold text-warning"><i class="fas fa-exclamation-circle mr-1"></i>Avisos</h6>
                                     <ul id="warningsList" class="small text-muted pl-3"></ul>
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Moloni clients import -->
+                <div class="row mt-2">
+                    <div class="col-md-6">
+                        <div class="card card-warning card-outline">
+                            <div class="card-header">
+                                <h3 class="card-title"><i class="fas fa-users mr-1"></i> Importar clientes Moloni (CSV)</h3>
+                                <div class="card-tools">
+                                    <button class="btn btn-xs btn-outline-secondary" onclick="loadIgnoredNifs()" title="Ver clientes ignorados">
+                                        <i class="fas fa-ban"></i> Ignorados
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <p class="text-muted small mb-2">Exporta a listagem de clientes do Moloni em CSV e importa aqui. Atualiza o NIF e o código Moloni em todos os elevadores correspondentes.</p>
+                                <div class="drop-zone" id="csvDropZone">
+                                    <div class="drop-icon"><i class="fas fa-file-csv"></i></div>
+                                    <p class="mt-2 mb-1 font-weight-bold">Arraste o CSV aqui</p>
+                                    <p class="text-muted small mb-2">ou clique para selecionar</p>
+                                    <input type="file" id="csvFile" accept=".csv,text/csv" class="d-none">
+                                    <button class="btn btn-outline-warning btn-sm" onclick="document.getElementById('csvFile').click()">
+                                        <i class="fas fa-folder-open mr-1"></i>Selecionar CSV
+                                    </button>
+                                </div>
+                                <div id="csvSelected" class="mt-2 d-none">
+                                    <div class="alert alert-warning mb-2 py-2">
+                                        <i class="fas fa-file-alt mr-1"></i>
+                                        <span id="csvFileName"></span>
+                                        <button class="close py-0" onclick="clearCsv()"><span>&times;</span></button>
+                                    </div>
+                                    <button class="btn btn-warning btn-block" id="csvUploadBtn" onclick="uploadMoloniCsv()">
+                                        <i class="fas fa-sync-alt mr-1"></i>Importar e atualizar NIFs
+                                    </button>
+                                </div>
+                                <div id="csvSpinner" class="text-center mt-3" style="display:none;">
+                                    <i class="fas fa-spinner fa-spin fa-2x text-warning"></i>
+                                    <p class="mt-2 text-muted small">A processar CSV…</p>
+                                </div>
+                                <div id="csvResult" class="mt-3" style="display:none;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card card-secondary card-outline" id="ignoredCard" style="display:none;">
+                            <div class="card-header">
+                                <h3 class="card-title"><i class="fas fa-ban mr-1"></i> Clientes pontuais ignorados</h3>
+                                <div class="card-tools">
+                                    <button class="btn btn-xs btn-outline-secondary" onclick="document.getElementById('ignoredCard').style.display='none'"><i class="fas fa-times"></i></button>
+                                </div>
+                            </div>
+                            <div class="card-body p-0">
+                                <div id="ignoredList" class="p-3 small text-muted">A carregar…</div>
                             </div>
                         </div>
                     </div>
@@ -410,6 +466,12 @@ async function openImport(id) {
                 <td class="text-right text-danger font-weight-bold">${fmtEur(d.totalOutstanding)}</td>
                 <td class="text-center">${d.invoices?.length ?? 0}</td>
                 <td class="text-center"><span class="badge ${d.alertSent ? 'badge-success' : 'badge-secondary'}">${d.alertSent ? '✉ enviado' : 'pendente'}</span></td>
+                <td class="text-center">
+                    <button class="btn btn-xs btn-outline-secondary" title="Não é nosso cliente — ignorar em futuras importações"
+                        onclick="ignoreNif('${esc(d.customerTaxId)}', '${esc(d.customerName)}', this)">
+                        <i class="fas fa-ban"></i>
+                    </button>
+                </td>
             </tr>`).join('');
 
         const liftRows = (rec.liftsUpdated || []).map(l => `
@@ -442,7 +504,7 @@ async function openImport(id) {
             <h6 class="text-danger"><i class="fas fa-exclamation-triangle mr-1"></i>Devedores</h6>
             <div class="table-responsive mb-3">
                 <table class="table table-sm table-bordered">
-                    <thead class="thead-light"><tr><th>Nome</th><th>NIF</th><th>Email</th><th class="text-right">Em dívida</th><th class="text-center">Faturas</th><th class="text-center">Alerta</th></tr></thead>
+                    <thead class="thead-light"><tr><th>Nome</th><th>NIF</th><th>Email</th><th class="text-right">Em dívida</th><th class="text-center">Faturas</th><th class="text-center">Alerta</th><th></th></tr></thead>
                     <tbody>${debtorRows}</tbody>
                 </table>
             </div>` : '<div class="alert alert-success py-2">Sem devedores nesta importação.</div>'}
@@ -493,6 +555,122 @@ function fmtDate(s) {
 }
 function fmtEur(n) {
     return Number(n || 0).toFixed(2).replace('.', ',') + ' €';
+}
+
+// ── Moloni CSV import ─────────────────────────────────────────────────────────
+const csvDz = document.getElementById('csvDropZone');
+csvDz.addEventListener('dragover',  e => { e.preventDefault(); csvDz.classList.add('drag-over'); });
+csvDz.addEventListener('dragleave', () => csvDz.classList.remove('drag-over'));
+csvDz.addEventListener('drop', e => {
+    e.preventDefault(); csvDz.classList.remove('drag-over');
+    const f = e.dataTransfer.files[0];
+    if (f) setCsvFile(f);
+});
+document.getElementById('csvFile').addEventListener('change', e => {
+    if (e.target.files[0]) setCsvFile(e.target.files[0]);
+});
+
+let selectedCsvFile = null;
+function setCsvFile(f) {
+    if (!f.name.toLowerCase().endsWith('.csv')) return alert('Apenas ficheiros .csv são aceites.');
+    selectedCsvFile = f;
+    document.getElementById('csvFileName').textContent = f.name + ' (' + (f.size / 1024).toFixed(0) + ' KB)';
+    document.getElementById('csvSelected').classList.remove('d-none');
+    document.getElementById('csvResult').style.display = 'none';
+}
+function clearCsv() {
+    selectedCsvFile = null;
+    document.getElementById('csvSelected').classList.add('d-none');
+    document.getElementById('csvFile').value = '';
+}
+
+async function uploadMoloniCsv() {
+    if (!selectedCsvFile) return;
+    document.getElementById('csvUploadBtn').disabled = true;
+    document.getElementById('csvSpinner').style.display = '';
+    document.getElementById('csvResult').style.display = 'none';
+
+    const fd = new FormData();
+    fd.append('csv', selectedCsvFile);
+    try {
+        const r = await fetch(API() + '/api/saft/import-moloni', {
+            method: 'POST', headers: HDRS_MULTIPART(), body: fd,
+        });
+        const data = await r.json();
+        document.getElementById('csvSpinner').style.display = 'none';
+        document.getElementById('csvUploadBtn').disabled = false;
+
+        if (!data.success) { alert('Erro: ' + data.message); return; }
+
+        const notFoundHtml = data.notFoundList?.length
+            ? `<div class="mt-2"><small class="text-muted">Sem correspondência (${data.notFoundList.length}):</small>
+               <ul class="small text-muted mb-0">${data.notFoundList.map(c => `<li>${esc(c.name)} — NIF ${c.nif}</li>`).join('')}</ul></div>`
+            : '';
+
+        document.getElementById('csvResult').innerHTML = `
+            <div class="alert alert-success py-2 mb-1">
+                <i class="fas fa-check-circle mr-1"></i>
+                <strong>${data.updated}</strong> elevadores atualizados.
+                ${data.notFound ? `<span class="text-muted ml-2">${data.notFound} clientes sem correspondência.</span>` : ''}
+            </div>${notFoundHtml}`;
+        document.getElementById('csvResult').style.display = '';
+        clearCsv();
+    } catch (e) {
+        document.getElementById('csvSpinner').style.display = 'none';
+        document.getElementById('csvUploadBtn').disabled = false;
+        alert('Erro de rede: ' + e.message);
+    }
+}
+
+// ── ignore / unignore NIF ─────────────────────────────────────────────────────
+async function ignoreNif(nif, name, btn) {
+    if (!confirm(`Marcar NIF ${nif} (${name}) como cliente pontual?\n\nEste NIF será ignorado em futuras importações SAF-T.`)) return;
+    try {
+        const r = await fetch(API() + '/api/saft/settings/ignore/' + encodeURIComponent(nif), {
+            method: 'POST', headers: HDRS(),
+        });
+        const d = await r.json();
+        if (!d.success) throw new Error(d.message);
+        btn.classList.replace('btn-outline-secondary', 'btn-secondary');
+        btn.disabled = true;
+        btn.title = 'Ignorado';
+    } catch (e) { alert('Erro: ' + e.message); }
+}
+
+async function loadIgnoredNifs() {
+    const card = document.getElementById('ignoredCard');
+    card.style.display = '';
+    document.getElementById('ignoredList').innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    try {
+        const r = await fetch(API() + '/api/saft/settings/ignored-nifs', { headers: HDRS() });
+        const d = await r.json();
+        if (!d.ignoredNifs?.length) {
+            document.getElementById('ignoredList').innerHTML = '<span class="text-muted">Nenhum NIF ignorado.</span>';
+            return;
+        }
+        document.getElementById('ignoredList').innerHTML = d.ignoredNifs.map(nif => `
+            <div class="d-flex justify-content-between align-items-center border-bottom py-1">
+                <code>${esc(nif)}</code>
+                <button class="btn btn-xs btn-outline-danger" onclick="unignoreNif('${esc(nif)}', this)" title="Remover da lista de ignorados">
+                    <i class="fas fa-undo"></i> Reativar
+                </button>
+            </div>`).join('');
+    } catch (e) {
+        document.getElementById('ignoredList').innerHTML = '<span class="text-danger">Erro ao carregar</span>';
+    }
+}
+
+async function unignoreNif(nif, btn) {
+    try {
+        const r = await fetch(API() + '/api/saft/settings/ignore/' + encodeURIComponent(nif), {
+            method: 'DELETE', headers: HDRS(),
+        });
+        const d = await r.json();
+        if (!d.success) throw new Error(d.message);
+        btn.closest('.d-flex').remove();
+        const list = document.getElementById('ignoredList');
+        if (!list.children.length) list.innerHTML = '<span class="text-muted">Nenhum NIF ignorado.</span>';
+    } catch (e) { alert('Erro: ' + e.message); }
 }
 
 // ── init ──────────────────────────────────────────────────────────────────────

@@ -7,6 +7,12 @@ const liftSchema = new mongoose.Schema({
         unique: true,
         trim: true
     },
+    moloniCode: {
+        type: String,
+        trim: true,
+        index: true,
+        sparse: true,  // código do cliente no Moloni (ex: "10029") — match direto com SAF-T CustomerID
+    },
     nif: {
         type: String,
         trim: true,

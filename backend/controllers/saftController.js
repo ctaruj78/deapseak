@@ -3,6 +3,7 @@ const path = require('path');
 const { XMLParser } = require('fast-xml-parser');
 const Lift = require('../models/Lift');
 const SaftImport = require('../models/SaftImport');
+const SaftSettings = require('../models/SaftSettings');
 const emailService = require('../services/emailService');
 
 // ── helpers ──────────────────────────────────────────────────────────────────
@@ -78,7 +79,7 @@ exports.uploadSaft = async (req, res) => {
 
         // ── invoices ──────────────────────────────────────────────────────────
         const rawInvoices = toArray(root?.SourceDocuments?.SalesInvoices?.Invoice);
-        const invoiceMap = {}; // invoiceNo → { customerId, grossTotal, date, type, status }
+        const invoiceMap = {}; // invoiceNo → { custId, gross, date, type, status }
         rawInvoices.forEach(inv => {
             const no     = String(inv.InvoiceNo || '').trim();
             const type   = String(inv.InvoiceType || '').trim();   // FT, FR, ND, NC
@@ -104,20 +105,56 @@ exports.uploadSaft = async (req, res) => {
             });
         });
 
-        // ── 1a. Match NIFs → lifts by postal code + street (building NIF) ────────
+        // ── 1a. Match NIFs → lifts by moloniCode (SAF-T CustomerID) ─────────────
+        // Primary: each prédio has its own Moloni client code stored in lift.moloniCode.
+        // Fallback: postal code + street keyword + exact house number (all three required
+        //   to avoid matching multiple buildings on the same street).
         const liftsUpdated = [];
-        const updatedLiftIds = new Set(); // track to avoid double-update
+        const updatedLiftIds = new Set();
+
+        // Extract house number from Portuguese address strings
+        // "Rua Casal da Serra nº19" → "19"  |  "Av. de Brasilia nº 22" → "22"
+        const extractHouseNum = (s) => {
+            const m = String(s).match(/n[.º°]?\s*(\d+)/i) || String(s).match(/(\d+)\s*[A-Za-z-]?\s*$/);
+            return m ? m[1] : null;
+        };
 
         for (const cust of Object.values(customerMap)) {
             if (!cust.nif) continue;
 
-            if (cust.postalCode) {
-                const query = { 'address.zipCode': cust.postalCode };
-                if (cust.street) {
-                    const keyword = cust.street.split(/\s+/).find(w => w.length > 4);
-                    if (keyword) query['address.street'] = { $regex: keyword, $options: 'i' };
+            // Primary: moloniCode = SAF-T CustomerID (exact, per-building match)
+            let foundViaMoloniCode = false;
+            if (cust.id) {
+                const lifts = await Lift.find(
+                    { moloniCode: cust.id },
+                    '_id municipalNumber address nif'
+                ).lean();
+                for (const lift of lifts) {
+                    if (lift.nif === cust.nif || updatedLiftIds.has(String(lift._id))) continue;
+                    await Lift.updateOne({ _id: lift._id }, { $set: { nif: cust.nif } });
+                    updatedLiftIds.add(String(lift._id));
+                    liftsUpdated.push({ liftId: lift._id, municipalNumber: lift.municipalNumber, nif: cust.nif, street: lift.address?.street, matchedBy: 'moloniCode' });
+                    foundViaMoloniCode = true;
                 }
-                const lifts = await Lift.find(query, '_id municipalNumber address nif clientName').lean();
+            }
+            if (foundViaMoloniCode) continue;
+
+            // Fallback: postal code + street keyword + exact house number
+            if (cust.postalCode && cust.street) {
+                const houseNum = extractHouseNum(cust.street);
+                const keyword  = cust.street.split(/\s+/).find(w => w.length > 4);
+                if (!keyword || !houseNum) continue;
+
+                const lifts = await Lift.find(
+                    {
+                        $and: [
+                            { 'address.zipCode':  cust.postalCode },
+                            { 'address.street': { $regex: keyword,                $options: 'i' } },
+                            { 'address.street': { $regex: `\\b${houseNum}\\b` } },
+                        ],
+                    },
+                    '_id municipalNumber address nif'
+                ).lean();
                 for (const lift of lifts) {
                     if (lift.nif === cust.nif || updatedLiftIds.has(String(lift._id))) continue;
                     await Lift.updateOne({ _id: lift._id }, { $set: { nif: cust.nif } });
@@ -224,12 +261,16 @@ exports.uploadSaft = async (req, res) => {
         }
 
         // ── 3. Find client emails — DO NOT auto-send; admin reviews first ────────
+        const settings = await SaftSettings.findOne({ key: 'global' }).lean();
+        const ignoredNifs = new Set((settings?.ignoredNifs || []).map(n => String(n).trim()));
+
         const debtors = [];
         const alertsSent = 0; // always 0 on upload — manual send only via /resend
 
         for (const [custId, data] of Object.entries(debtorMap)) {
             const cust = customerMap[custId];
             if (!cust) continue;
+            if (ignoredNifs.has(cust.nif)) continue; // one-time client, skip
 
             const lift = await Lift.findOne({ nif: cust.nif }, 'clientEmail clientName').lean();
             const clientEmail = lift?.clientEmail || null;
@@ -415,3 +456,223 @@ async function _sendDebtorAlert(email, name, invoices, totalOutstanding) {
         emailService._tpl('#c62828', 'Aviso de Pagamento', bodyHtml)
     );
 }
+
+// ── ignore / unignore NIF (one-time clients) ──────────────────────────────────
+
+exports.ignoreNif = async (req, res) => {
+    const nif = String(req.params.nif || '').trim();
+    if (!nif) return res.status(400).json({ success: false, message: 'NIF inválido' });
+    try {
+        await SaftSettings.findOneAndUpdate(
+            { key: 'global' },
+            { $addToSet: { ignoredNifs: nif } },
+            { upsert: true }
+        );
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+};
+
+exports.unignoreNif = async (req, res) => {
+    const nif = String(req.params.nif || '').trim();
+    try {
+        await SaftSettings.updateOne({ key: 'global' }, { $pull: { ignoredNifs: nif } });
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+};
+
+exports.getIgnoredNifs = async (req, res) => {
+    try {
+        const s = await SaftSettings.findOne({ key: 'global' }).lean();
+        res.json({ success: true, ignoredNifs: s?.ignoredNifs || [] });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+};
+
+// ── import Moloni clients CSV ─────────────────────────────────────────────────
+
+// Split a single CSV line respecting quoted fields
+function splitCsvLine(line, delim) {
+    const result = [];
+    let cur = '', inQ = false;
+    for (let i = 0; i < line.length; i++) {
+        const ch = line[i];
+        if (ch === '"') { inQ = !inQ; continue; }
+        if (!inQ && ch === delim) { result.push(cur); cur = ''; continue; }
+        cur += ch;
+    }
+    result.push(cur);
+    return result;
+}
+
+const normaliseHdr = (s) => String(s)
+    .toLowerCase()
+    .normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-z0-9]/g, '');
+
+const extractHouseNumCsv = (s) => {
+    const m = String(s).match(/n[.º°]?\s*(\d+)/i) || String(s).match(/(\d+)\s*[A-Za-z-]?\s*$/);
+    return m ? m[1] : null;
+};
+
+exports.importMoloniClients = async (req, res) => {
+    if (!req.file) return res.status(400).json({ success: false, message: 'Nenhum ficheiro CSV enviado.' });
+    const filePath = req.file.path;
+    try {
+        const raw = fs.readFileSync(filePath, 'utf8').replace(/^﻿/, ''); // strip BOM
+        fs.unlinkSync(filePath);
+
+        const lines = raw.split(/\r?\n/).map(l => l.trim()).filter(l => l);
+        if (lines.length < 2) return res.status(400).json({ success: false, message: 'CSV vazio ou sem dados.' });
+
+        // Moloni exports have metadata rows before the real header (company name, title, date…).
+        // Find header row: first line with >4 semicolons (or commas) that contains "contribuinte"
+        // or "nif" (case-insensitive, no accent normalisation needed for these words).
+        let headerIdx = 0;
+        for (let i = 0; i < Math.min(25, lines.length); i++) {
+            const lower = lines[i].toLowerCase();
+            const sepCount = (lines[i].match(/;/g) || []).length;
+            if (sepCount > 4 && (lower.includes('contribuinte') || lower.includes('nif'))) {
+                headerIdx = i;
+                break;
+            }
+        }
+
+        const delim = lines[headerIdx].includes(';') ? ';' : ',';
+        const headers = splitCsvLine(lines[headerIdx], delim).map(normaliseHdr);
+
+        const col = (...candidates) => {
+            for (const c of candidates) {
+                const i = headers.findIndex(h => h === c || h.startsWith(c));
+                if (i >= 0) return i;
+            }
+            return -1;
+        };
+
+        const iCode = col('codigo', 'code', 'id');
+        const iNif  = col('contribuinte', 'nif', 'taxid', 'nrcontribuinte');
+        const iAddr = col('morada', 'endereco', 'address', 'rua');
+        const iZip  = col('codigopostal', 'codpostal', 'postal', 'zip', 'cp');
+        const iName = col('nome', 'name', 'empresa', 'companyname');
+
+        if (iNif < 0) return res.status(400).json({ success: false, message: `Coluna NIF/Contribuinte não encontrada. Colunas detectadas: ${headers.join(' | ')}` });
+
+        // DEBUG: return first 3 parsed clients so we can see raw extracted values
+        if (req.query.debug) {
+            const dbg = [];
+            for (let i = headerIdx + 1; i < Math.min(headerIdx + 4, lines.length); i++) {
+                const cols = splitCsvLine(lines[i], delim);
+                dbg.push({
+                    raw: lines[i].substring(0, 120),
+                    code: iCode >= 0 ? cols[iCode] : '?',
+                    nif:  iNif  >= 0 ? cols[iNif]  : '?',
+                    addr: iAddr >= 0 ? cols[iAddr]  : '?',
+                    zip:  iZip  >= 0 ? cols[iZip]   : '?',
+                    name: iName >= 0 ? cols[iName]  : '?',
+                    colCount: cols.length,
+                    iCode, iNif, iAddr, iZip, iName,
+                });
+            }
+            return res.json({ debug: true, headerIdx, delim, headers, samples: dbg });
+        }
+
+        // Temporary diagnostic log
+        console.log('[CSV] headerIdx=%d delim=%s headers=%j', headerIdx, delim, headers);
+        console.log('[CSV] colIdx code=%d nif=%d addr=%d zip=%d name=%d', iCode, iNif, iAddr, iZip, iName);
+
+        const clients = [];
+        for (let i = headerIdx + 1; i < lines.length; i++) {
+            const cols = splitCsvLine(lines[i], delim);
+            const rawNif = (cols[iNif] || '').replace(/\D/g, '').trim();
+            if (i <= headerIdx + 3) {
+                console.log('[CSV] row %d: cols=%d nif=%j addr=%j zip=%j', i, cols.length,
+                    iNif >= 0 ? cols[iNif] : '?', iAddr >= 0 ? cols[iAddr] : '?', iZip >= 0 ? cols[iZip] : '?');
+            }
+            if (!rawNif || rawNif === '0') continue;
+
+            const code = iCode >= 0 ? (cols[iCode] || '').trim() : '';
+            const addr = iAddr >= 0 ? (cols[iAddr] || '').trim() : '';
+            const zip  = iZip  >= 0 ? (cols[iZip]  || '').trim().replace(/\s/g, '') : '';
+            const name = iName >= 0 ? (cols[iName]  || '').trim() : '';
+
+            // If no dedicated address column, extract from company name
+            // "Adm. de Condominio Rua Casal da Serra nº19" → "Rua Casal da Serra nº19"
+            const effectiveAddr = addr || (() => {
+                const m = name.match(/(?:condomi[nô]{1,2}s?\s+|condominium\s+)(.+)/i);
+                return m ? m[1].trim() : name;
+            })();
+
+            clients.push({ code, nif: rawNif, address: effectiveAddr, zip, name });
+        }
+
+        const updated  = [];
+        const notFound = [];
+        const doneIds  = new Set();
+
+        for (const c of clients) {
+            let matched = false;
+
+            // Primary: already has moloniCode set
+            if (c.code) {
+                const lifts = await Lift.find({ moloniCode: c.code }, '_id municipalNumber address nif').lean();
+                for (const lift of lifts) {
+                    if (doneIds.has(String(lift._id))) continue;
+                    await Lift.updateOne({ _id: lift._id }, { $set: { nif: c.nif } });
+                    doneIds.add(String(lift._id));
+                    updated.push({ municipalNumber: lift.municipalNumber, street: lift.address?.street, nif: c.nif, matchedBy: 'moloniCode' });
+                    matched = true;
+                }
+            }
+
+            if (matched) continue;
+
+            // Fallback: zip + street keyword + exact house number
+            if (c.zip && c.address) {
+                const houseNum = extractHouseNumCsv(c.address);
+                // ≥4 chars, not a number token, not "nº" — handles "Tejo" (4 chars)
+                const keyword  = c.address.split(/\s+/).find(w =>
+                    w.length >= 4 && !/^\d/.test(w) && !/^n[º°.]/i.test(w)
+                );
+                if (houseNum) {
+                    const queryConditions = [
+                        { 'address.zipCode':  c.zip },
+                        { 'address.street': { $regex: `\\b${houseNum}\\b` } },
+                    ];
+                    if (keyword) queryConditions.splice(1, 0, { 'address.street': { $regex: keyword, $options: 'i' } });
+                    const lifts = await Lift.find(
+                        { $and: queryConditions },
+                        '_id municipalNumber address nif'
+                    ).lean();
+
+                    for (const lift of lifts) {
+                        if (doneIds.has(String(lift._id))) continue;
+                        const upd = { nif: c.nif };
+                        if (c.code) upd.moloniCode = c.code;
+                        await Lift.updateOne({ _id: lift._id }, { $set: upd });
+                        doneIds.add(String(lift._id));
+                        updated.push({ municipalNumber: lift.municipalNumber, street: lift.address?.street, nif: c.nif, matchedBy: 'address' });
+                        matched = true;
+                    }
+                }
+            }
+
+            if (!matched) notFound.push({ name: c.name, nif: c.nif, address: c.address });
+        }
+
+        res.json({
+            success:     true,
+            updated:     updated.length,
+            notFound:    notFound.length,
+            details:     updated,
+            notFoundList: notFound,
+        });
+
+    } catch (err) {
+        if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+        res.status(500).json({ success: false, message: err.message });
+    }
+};
