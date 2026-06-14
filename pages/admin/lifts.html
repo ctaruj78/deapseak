@@ -1269,10 +1269,29 @@
                                                 </div>
                                             </div>
                                         </div>
+                                        <!-- NIF do edifício -->
+                                        <div class="row">
+                                            <div class="col-md-5">
+                                                <div class="form-group">
+                                                    <label for="enhancedLiftNif">
+                                                        <i class="fas fa-file-invoice text-secondary mr-1"></i>NIF do edifício
+                                                    </label>
+                                                    <input type="text" id="enhancedLiftNif" name="liftNif"
+                                                           class="form-control" placeholder="PT500123456" maxlength="20">
+                                                    <small class="text-muted">NIF fiscal do condomínio/entidade neste endereço</small>
+                                                </div>
+                                            </div>
+                                        </div>
                                         <!-- 🏠 Info sobre elevadores neste endereço -->
                                         <div id="admin-siblings-info" class="alert alert-info py-2 px-3 mb-2" style="display:none;">
                                             <strong><i class="fas fa-layer-group mr-1"></i>Atenção:</strong>
                                             <span id="admin-siblings-text"></span>
+                                            <div class="mt-2 pt-2 border-top border-info">
+                                                <label class="mb-0 font-weight-normal" style="cursor:pointer;">
+                                                    <input type="checkbox" id="applySiblingContract" class="mr-1">
+                                                    Aplicar também <strong>preço, tipo e nº de contrato</strong> aos elevadores vizinhos
+                                                </label>
+                                            </div>
                                         </div>
                                         <!-- Coordenadas -->
                                         <div class="row">
@@ -4752,6 +4771,18 @@ Email de contacto: info@festlift.pt`;
                     if (siblingSpeed && !$('#enhancedLiftSpeed').val()) {
                         $('#enhancedLiftSpeed').val(siblingSpeed);
                     }
+                    // Підтягуємо NIF від сусіднього ліфта (той самий будинок = той самий NIF)
+                    const siblingNif = sibling.nif;
+                    if (siblingNif && !$('#enhancedLiftNif').val()) {
+                        $('#enhancedLiftNif').val(siblingNif);
+                        if (!document.getElementById('admin-siblings-nif-hint')) {
+                            const hint = document.createElement('small');
+                            hint.id = 'admin-siblings-nif-hint';
+                            hint.className = 'text-secondary d-block mt-1';
+                            hint.innerHTML = `<i class="fas fa-file-invoice mr-1"></i>NIF ${siblingNif} obtido do elevador vizinho. Pode alterar manualmente.`;
+                            infoEl.appendChild(hint);
+                        }
+                    }
                 } else {
                     infoEl.style.display = 'none';
                 }
@@ -4762,9 +4793,11 @@ Email de contacto: info@festlift.pt`;
         // і авто-генеруexisteмо número договору при НОВОМУ elevadorі
         $(document).on('show.bs.modal', '#enhancedLiftModal', function() {
             $('#admin-siblings-info').hide();
+            $('#applySiblingContract').prop('checked', false);
             $('#admin-siblings-price-hint').remove();
             $('#admin-siblings-drive-hint').remove();
             $('#admin-siblings-door-hint').remove();
+            $('#admin-siblings-nif-hint').remove();
             // Auto-генеруexisteмо número договору apenas para novo do elevador (editContractNumber vazio)
             const isNew = !$('#enhancedLiftId').val();
             if (isNew && !$('#editContractNumber').val()) {
@@ -5989,6 +6022,8 @@ Email de contacto: info@festlift.pt`;
             const address = lift.address || {};
             $('#enhancedLiftAddress').val(address.street || lift.address || '');
             $('#enhancedLiftPostcode').val(address.zipCode || lift.postalCode || '');
+            // Тригеримо перевірку сусідів щоб показати checkbox при редагуванні
+            setTimeout(() => $('#enhancedLiftAddress').trigger('input'), 600);
             
             // Coordenadas desde location.coordinates — sem Lisboa como fallback falso
             const coords = lift.location?.coordinates || [];

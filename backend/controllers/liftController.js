@@ -62,7 +62,7 @@ const _findOrCreateClient = async (email, clientName, sendEmail = true) => {
 
 exports.createLift = async (req, res, next) => {
     try {
-        const { municipalNumber, address, location, technician, manufacturer, model, capacity, floors, installationDate, lastInspectionDate, nextInspectionDate, qrCode } = req.body;
+        const { municipalNumber, nif, address, location, technician, manufacturer, model, capacity, floors, installationDate, lastInspectionDate, nextInspectionDate, qrCode } = req.body;
         let { client, clientEmail } = req.body;
 
         const existingLift = await Lift.findOne({ municipalNumber });
@@ -98,7 +98,7 @@ exports.createLift = async (req, res, next) => {
             const techUser = await User.findById(technician);
             if (!techUser || techUser.role !== 'technician') throw new AppError('Invalid technician', 400);
         }
-        const lift = await Lift.create({ municipalNumber, address, location, client, clientEmail, technician, manufacturer, model, capacity, floors, installationDate, lastInspectionDate, nextInspectionDate, qrCode });
+        const lift = await Lift.create({ municipalNumber, nif: nif || undefined, address, location, client, clientEmail, technician, manufacturer, model, capacity, floors, installationDate, lastInspectionDate, nextInspectionDate, qrCode });
         await lift.populate(['client', 'technician']);
         res.status(201).json({ success: true, message: 'Lift created', data: { lift }, newClient: newClientInfo });
     } catch (error) {

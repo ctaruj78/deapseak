@@ -486,6 +486,7 @@ class EnhancedLiftModal {
             doorType: $('#enhancedDoorType').val() || '',
             address: $('#enhancedLiftAddress').val() || '',
             postcode: $('#enhancedLiftPostcode').val() || '',
+            nif: ($('#enhancedLiftNif').val() || '').trim().toUpperCase() || null,
             liftsCountAtAddress: parseInt($('#enhancedLiftsCountAtAddress').val()) || 1,
             // Координати: перевіряємо чи поля не порожні перед парсингом
             lat: $('#enhancedLiftLat').val() ? parseFloat($('#enhancedLiftLat').val()) : null,
@@ -801,6 +802,7 @@ class EnhancedLiftModal {
                 contractPrice: liftData.contractPrice || null,
                 contractStart: liftData.contractStart || null,
                 contractAutoRenew: liftData.contractAutoRenew,
+                nif: liftData.nif || null,
             };
             
             // ✅ Додаємо координати ТІЛЬКИ якщо користувач ввів їх вручну
@@ -860,6 +862,45 @@ class EnhancedLiftModal {
             console.log('✅ Lift object:', liftObject);
             
             if (result && result.success && liftObject) {
+                // 📋 Поширення контракту на сусідні ліфти за тією ж адресою
+                if ($('#applySiblingContract').is(':checked')) {
+                    const currentAddress = (apiData.address?.street || '').toLowerCase().trim();
+                    const savedLiftId = (liftObject._id || liftObject.id || liftId || '').toString();
+                    const siblings = (window.allLiftsData || []).filter(l => {
+                        const lid = (l._id || l.id || '').toString();
+                        if (lid === savedLiftId) return false;
+                        const street = (l.address?.street || (typeof l.address === 'string' ? l.address : '')).toLowerCase().trim();
+                        return street === currentAddress && currentAddress !== '';
+                    });
+                    if (siblings.length > 0) {
+                        const siblingUpdate = {
+                            contractPrice: apiData.contractPrice,
+                            contractType: apiData.contractType,
+                            contractNumber: apiData.contractNumber,
+                            contractStart: apiData.contractStart,
+                            contractAutoRenew: apiData.contractAutoRenew,
+                        };
+                        let updated = 0;
+                        for (const sib of siblings) {
+                            const sibId = sib._id || sib.id;
+                            try {
+                                const r = await fetch(AuthManager.getApiUrl(`/api/lifts/${sibId}`), {
+                                    method: 'PUT',
+                                    headers: AuthManager.getAuthHeaders(),
+                                    body: JSON.stringify(siblingUpdate)
+                                });
+                                if (r.ok) updated++;
+                            } catch (e) {
+                                console.error('Sibling update failed:', e);
+                            }
+                        }
+                        if (updated > 0) {
+                            this.showMessage(`✅ Contrato aplicado a ${updated} elevador${updated > 1 ? 'es' : ''} vizinho${updated > 1 ? 's' : ''}!`, 'success');
+                        }
+                    }
+                    $('#applySiblingContract').prop('checked', false);
+                }
+
                 // 👤 Якщо автоматично створено нового клієнта — показати сповіщення
                 const nc = window.__lastNewClient;
                 if (nc && nc.created) {
@@ -1075,6 +1116,7 @@ class EnhancedLiftModal {
         $('#enhancedFloorsCount').val(liftData.floorsCount || liftData.floors || '');
         $('#enhancedLiftAddress').val(liftData.address || '');
         $('#enhancedLiftPostcode').val(liftData.postcode || '');
+        $('#enhancedLiftNif').val(liftData.nif || '');
         $('#enhancedLiftsCountAtAddress').val(liftData.liftsCountAtAddress || 1);
         $('#enhancedLiftLat').val(liftData.lat || '');
         $('#enhancedLiftLng').val(liftData.lng || '');

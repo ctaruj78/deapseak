@@ -7,6 +7,13 @@ const liftSchema = new mongoose.Schema({
         unique: true,
         trim: true
     },
+    nif: {
+        type: String,
+        trim: true,
+        index: true
+        // Не unique: два ліфти в одному будинку мають однаковий NIF
+        // Не required: заповнюємо поступово
+    },
     address: {
         street: { type: String, required: true },
         city: { type: String, required: true },
