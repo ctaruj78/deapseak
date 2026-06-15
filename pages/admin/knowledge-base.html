@@ -318,7 +318,15 @@ async function apiCall(url, method = 'GET', body = null) {
     const opts = { method, headers: { 'Authorization': `Bearer ${getToken()}`, 'Content-Type': 'application/json' } };
     if (body) opts.body = JSON.stringify(body);
     try {
-        const res = await fetch(url, opts);
+        let res = await fetch(url, opts);
+        // Auto-refresh on 401/403 token errors
+        if (res.status === 401 || res.status === 403) {
+            const refreshed = (typeof AuthManager !== 'undefined') && await AuthManager.refreshAccessToken().catch(() => false);
+            if (refreshed) {
+                opts.headers['Authorization'] = `Bearer ${getToken()}`;
+                res = await fetch(url, opts);
+            }
+        }
         const json = await res.json();
         return json;
     } catch (e) {

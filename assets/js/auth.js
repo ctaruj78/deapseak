@@ -62,14 +62,17 @@ class AuthManager {
             }
             const data = await resp.json();
             if (data.success && data.data && data.data.token) {
-                // Зберігаємо нові токени
-                sessionStorage.setItem(this.TOKEN_KEY, data.data.token);
-                localStorage.setItem(this.TOKEN_KEY, data.data.token);
+                const t = data.data.token;
+                // Зберігаємо в усі ключі щоб всі хелпери підхопили новий токен
+                ['liftmanager_jwt', 'authToken', 'token', 'lm_token', 'deapseak_token'].forEach(k => {
+                    localStorage.setItem(k, t);
+                });
+                sessionStorage.setItem(this.TOKEN_KEY, t);
                 if (data.data.refreshToken) {
                     localStorage.setItem(this.REFRESH_KEY, data.data.refreshToken);
                 }
                 const _secureFlag = window.location.protocol === 'https:' ? '; Secure' : '';
-                document.cookie = `auth_token=${data.data.token}; path=/; max-age=604800; SameSite=Strict${_secureFlag}`;
+                document.cookie = `auth_token=${t}; path=/; max-age=604800; SameSite=Strict${_secureFlag}`;
                 console.log('✅ Access token автоматично оновлено');
                 return true;
             }

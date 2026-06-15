@@ -39,8 +39,11 @@ function _showToast(message, type = 'danger', duration = 5000) {
 // ── Token helper ───────────────────────────────────────────────────────────
 function _getToken() {
     return localStorage.getItem('token') ||
+           localStorage.getItem('liftmanager_jwt') ||
+           localStorage.getItem('authToken') ||
            localStorage.getItem('lm_token') ||
            localStorage.getItem('deapseak_token') ||
+           sessionStorage.getItem('liftmanager_jwt') ||
            sessionStorage.getItem('token') || '';
 }
 
@@ -85,8 +88,19 @@ async function apiFetch(url, options = {}) {
         throw networkErr;
     }
 
-    // Session expired
+    // Session expired — try auto-refresh first
     if (response.status === 401) {
+        const refreshed = (typeof AuthManager !== 'undefined') && await AuthManager.refreshAccessToken().catch(() => false);
+        if (refreshed) {
+            // Retry original request with new token
+            const newToken = _getToken();
+            mergedOptions.headers['Authorization'] = `Bearer ${newToken}`;
+            const retryResp = await fetch(url, mergedOptions).catch(() => null);
+            if (retryResp && retryResp.ok) {
+                const contentType = retryResp.headers.get('content-type') || '';
+                return contentType.includes('application/json') ? retryResp.json() : retryResp;
+            }
+        }
         _showToast('Sessão expirada. A redirecionar para o login...', 'warning', 3000);
         _clearTokensAndRedirect();
         throw new Error('Session expired — redirecting to login');
