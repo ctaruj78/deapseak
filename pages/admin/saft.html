@@ -804,12 +804,18 @@ async function loadDebtors() {
                     <td class="text-right text-danger font-weight-bold">${fmtEur(deb.totalOutstanding)}</td>
                     <td class="text-center" onclick="event.stopPropagation()">
                         ${deb.alertSent
-                            ? '<span class="badge badge-success"><i class="fas fa-check mr-1"></i>Enviado</span>'
+                            ? `<span class="badge badge-success" title="Enviado em ${deb.alertSentAt ? new Date(deb.alertSentAt).toLocaleDateString('pt-PT') : ''}"><i class="fas fa-check mr-1"></i>Enviado</span>`
                             : (deb.clientEmail
                                 ? `<button class="btn btn-xs btn-outline-info mr-1" onclick="previewDebtorEmail(${idx})" title="Pré-visualizar email"><i class="fas fa-eye"></i></button><button class="btn btn-xs btn-outline-danger" onclick="sendDebtorAlerts(['${esc(deb.customerTaxId)}'], this)"><i class="fas fa-paper-plane mr-1"></i>Enviar</button>`
                                 : '<span class="badge badge-secondary">Sem email</span>')}
                     </td>
-                    <td class="text-center"><small class="text-muted">${deb.avgDaysOverdue > 0 ? Math.round(deb.avgDaysOverdue) + 'd' : (esc(deb.importFilename || ''))}</small></td>
+                    <td class="text-center"><small class="text-muted">${(() => {
+                        if (deb.alertSentAt) {
+                            const days = Math.floor((Date.now() - new Date(deb.alertSentAt)) / 86400000);
+                            return `<span title="Último aviso enviado há ${days}d">${days}d atrás</span>`;
+                        }
+                        return deb.avgDaysOverdue > 0 ? Math.round(deb.avgDaysOverdue) + 'd' : (esc(deb.importFilename || ''));
+                    })()}</small></td>
                     <td onclick="event.stopPropagation()">
                         <button class="btn btn-xs btn-outline-secondary" onclick="ignoreNif('${esc(deb.customerTaxId)}', '${esc(deb.customerName)}', this)" title="Ignorar">
                             <i class="fas fa-ban"></i>

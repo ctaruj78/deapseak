@@ -5,7 +5,10 @@ const { XMLParser } = require('fast-xml-parser');
 const Lift = require('../models/Lift');
 const SaftImport = require('../models/SaftImport');
 const SaftSettings = require('../models/SaftSettings');
+const DebtorAlertLog = require('../models/DebtorAlertLog');
 const emailService = require('../services/emailService');
+
+const ALERT_COOLDOWN_DAYS = 30;
 
 // ── helpers ──────────────────────────────────────────────────────────────────
 
@@ -410,12 +413,18 @@ exports.resendAlerts = async (req, res) => {
         if (!record) return res.status(404).json({ success: false, message: 'Import não encontrado' });
 
         let sent = 0;
+        const now = new Date();
         for (const d of record.debtors) {
             if (!d.clientEmail) continue;
             try {
                 await _sendDebtorAlert(d.clientEmail, d.customerName, d.invoices, d.totalOutstanding);
                 d.alertSent   = true;
-                d.alertSentAt = new Date();
+                d.alertSentAt = now;
+                await DebtorAlertLog.findOneAndUpdate(
+                    { nif: d.customerTaxId },
+                    { nif: d.customerTaxId, customerName: d.customerName, sentAt: now },
+                    { upsert: true, new: true }
+                );
                 sent++;
             } catch (e) {
                 // continue
@@ -428,6 +437,28 @@ exports.resendAlerts = async (req, res) => {
         res.status(500).json({ success: false, message: err.message });
     }
 };
+
+// ── helper: enrich debtors with persistent alert log (30-day window) ──────────
+async function _enrichWithAlertLog(debtors) {
+    const nifs = debtors.map(d => d.customerTaxId).filter(Boolean);
+    if (!nifs.length) return;
+
+    const logs = await DebtorAlertLog.find({ nif: { $in: nifs } }).lean();
+    const logByNif = {};
+    for (const l of logs) logByNif[l.nif] = l;
+
+    const cutoff = new Date(Date.now() - ALERT_COOLDOWN_DAYS * 24 * 60 * 60 * 1000);
+    for (const d of debtors) {
+        const log = logByNif[d.customerTaxId];
+        if (log && log.sentAt > cutoff) {
+            d.alertSent   = true;
+            d.alertSentAt = log.sentAt;
+        } else {
+            d.alertSent   = false;
+            d.alertSentAt = log?.sentAt || null;
+        }
+    }
+}
 
 // ── aggregated debtors — pendentes CSV is authoritative if uploaded ───────────
 exports.getAllDebtors = async (req, res) => {
@@ -446,6 +477,8 @@ exports.getAllDebtors = async (req, res) => {
                 const lift = await Lift.findOne({ nif: d.customerTaxId }, 'clientEmail').lean();
                 if (lift?.clientEmail) d.clientEmail = lift.clientEmail;
             }
+
+            await _enrichWithAlertLog(debtors);
 
             return res.json({
                 success: true,
@@ -480,6 +513,8 @@ exports.getAllDebtors = async (req, res) => {
             const lift = await Lift.findOne({ nif: d.customerTaxId }, 'clientEmail').lean();
             if (lift?.clientEmail) d.clientEmail = lift.clientEmail;
         }
+
+        await _enrichWithAlertLog(debtors);
 
         res.json({ success: true, source: 'saft', debtors, total: debtors.length });
     } catch (err) {
@@ -516,13 +551,20 @@ exports.sendAlerts = async (req, res) => {
 
         let sent = 0;
         const errors = [];
+        const now = new Date();
         for (const d of targets) {
             try {
                 await _sendDebtorAlert(d.clientEmail, d.customerName, d.invoices, d.totalOutstanding);
-                // Mark alertSent in pendentes record
+                // Persist alert in cross-import log (survives CSV refreshes)
+                await DebtorAlertLog.findOneAndUpdate(
+                    { nif: d.customerTaxId },
+                    { nif: d.customerTaxId, customerName: d.customerName, sentAt: now },
+                    { upsert: true, new: true }
+                );
+                // Also mark in pendentes record for current session display
                 if (settings?.pendentes?.debtors) {
                     const rec = settings.pendentes.debtors.find(x => x.customerTaxId === d.customerTaxId);
-                    if (rec) rec.alertSent = true;
+                    if (rec) { rec.alertSent = true; rec.alertSentAt = now; }
                 }
                 sent++;
             } catch (e) {
