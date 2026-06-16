@@ -60,7 +60,9 @@ function isLikelyScanned(text) {
     if (!text) return true;
     const cleaned = text.replace(/\s+/g, ' ').trim();
     // Якщо менше 200 символів реального тексту — скоріше за все скан
-    return cleaned.length < 200;
+    // Або якщо менше 20 унікальних символів — вірогідно покручений текст (garbled extraction)
+    const uniqueChars = new Set(text.replace(/\s/g, '')).size;
+    return cleaned.length < 200 || uniqueChars < 20;
 }
 
 /**
@@ -256,8 +258,8 @@ async function ocrPDF(pdfPath, apiKey, maxPages = 10) {
 async function extractStructuredWithGemini(text, apiKey) {
     if (!apiKey || !text || text.length < 100) return null;
 
-    // Кеш по хешу тексту (перші 14000 символів — те що йде в промпт)
-    const textHash = _textHash(text.substring(0, 14000));
+    // Кеш по хешу тексту (перші 60000 символів — те що йде в промпт)
+    const textHash = _textHash(text.substring(0, 60000));
     const cacheKey = `structured:${textHash}`;
     const cached = _cacheGet(cacheKey);
     if (cached) {
@@ -314,7 +316,7 @@ JSON STRUCTURE (return exactly this format):
 
 DOCUMENT TEXT:
 ---
-${text.substring(0, 14000)}
+${text.substring(0, 60000)}
 ---
 
 Return ONLY the JSON object:`;

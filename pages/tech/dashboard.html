@@ -462,6 +462,7 @@
     <script src="../../plugins/adminlte/adminlte.min.js"></script>
     <script src="../../assets/js/sidebar-init.js"></script>
     <script src="../../assets/js/auth.js"></script>
+    <script src="../../assets/js/common.js"></script>
 
     <script>
         $(document).ready(function() {
@@ -480,7 +481,7 @@
             }
 
             if (currentUser.role !== 'tech' && currentUser.role !== 'technician') {
-                alert('Acesso proibido. Necessários direitos de técnico.');
+                CommonUtils.showNotification('Acesso proibido. Necessários direitos de técnico.', 'warning');
                 window.location.replace('/pages/auth/login.html');
                 return;
             }
@@ -879,7 +880,7 @@
                 $('#completeTaskModal').modal('hide');
             } catch (error) {
                 console.error('❌ Erro conclusão:', error);
-                alert('Erro ao concluir a tarefa');
+                CommonUtils.showNotification('Erro ao concluir a tarefa', 'error');
             }
         }
 
@@ -917,12 +918,12 @@
                         // Відкриваexisteмо Google Maps desde rotaом від atualmenteї позиції
                         window.open(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`, '_blank');
                     } else {
-                        alert('Coordenadas do elevador não encontradas');
+                        CommonUtils.showNotification('Coordenadas do elevador não encontradas', 'warning');
                     }
                 })
                 .catch(error => {
                     console.error('Erro отримання координат:', error);
-                    alert('Não foi possível obter as coordenadas do elevador');
+                    CommonUtils.showNotification('Não foi possível obter as coordenadas do elevador', 'error');
                 });
         }
 
@@ -939,7 +940,7 @@
 
                 if (response && response.ok) {
                     console.log('✅ Nota adicionada');
-                    alert('Nota adicionada com sucesso');
+                    CommonUtils.showNotification('Nota adicionada com sucesso', 'success');
                 } else {
                     throw new Error('Erro adição notas');
                 }
@@ -957,7 +958,7 @@
                 });
                 localStorage.setItem('task_notes', JSON.stringify(localNotes));
                 
-                alert('Nota guardada localmente');
+                CommonUtils.showNotification('Nota guardada localmente', 'warning');
             }
         }
 
@@ -978,7 +979,7 @@
                 }
             } catch (error) {
                 console.error('❌ Erro atualização estado:', error);
-                alert('Erro ao atualizar o estado da tarefa');
+                CommonUtils.showNotification('Erro ao atualizar o estado da tarefa', 'error');
             }
         }
         

@@ -2395,7 +2395,7 @@
                 
                 // Pesquisar atribuições  
                 searchAssignments: function() {
-                    const query = $('#searchQuery').val();
+                    const query = $('#searchInput').val();
                     console.log('Pesquisar:', query);
                     alert(`Pesquisar por: "${query}"`);
                 },
@@ -3003,6 +3003,24 @@
                 archiveFromModal: async function() {
                     if (window.dispatcherManager) {
                         await window.dispatcherManager.archiveFromModal();
+                    } else {
+                        alert('Erro: gestor não inicializado');
+                    }
+                },
+
+                // Alterar estado desde janela modal
+                changeStatusFromModal: async function(newStatus) {
+                    if (window.dispatcherManager) {
+                        await window.dispatcherManager.changeStatusFromModal(newStatus);
+                    } else {
+                        alert('Erro: gestor não inicializado');
+                    }
+                },
+
+                // Publicar comentário do despachante
+                postDispComment: async function() {
+                    if (window.dispatcherManager) {
+                        await window.dispatcherManager.postDispComment();
                     } else {
                         alert('Erro: gestor não inicializado');
                     }

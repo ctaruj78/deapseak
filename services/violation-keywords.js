@@ -8,9 +8,21 @@
  */
 const violationKeywordsDB = [
     // --- LIMITADOR DE VELOCIDADE ---
+    // Limitador de velocidade - C1 when non-functional/absent (safety device per DL 513/70 Art.67)
     {
-        patterns: [/limitador\s+de\s+velocidade/i],
-        article: '9.9', classification: 'C3',
+        patterns: [/limitador\s+de\s+velocidade.{0,30}(em\s+falta|inoperaci|avari|n[ãa]o\s+func|defeitu|parti|bloquea)/i],
+        article: '67',
+        classification: 'C1',
+        title: 'Limitador de velocidade — inoperacional/em falta',
+        why: 'Limitador não funcional não aciona o para-quedas em sobrevelocidade — queda livre fatal.',
+        solution: 'Imobilizar elevador. Reparar ou substituir o limitador imediatamente.',
+        urgency: 'CRÍTICO'
+    },
+    // Limitador de velocidade - C3 when just maintenance/cosmetic state
+    {
+        patterns: [/limitador\s+de\s+velocidade.{0,30}(oxidado|desgast|suj|estado\s+de\s+conserv|lubrif)/i],
+        article: '9.9',
+        classification: 'C3',
         title: 'Limitador de velocidade — estado de conservação',
         why: 'O limitador oxidado pode não acionar o para-quedas em caso de sobrevelocidade.',
         solution: 'Limpar, lubrificar e verificar calibração. Substituir se necessário.',

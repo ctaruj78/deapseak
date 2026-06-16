@@ -887,24 +887,28 @@ function createViolation(classification, articleNum, description, format) {
     // ── TEXT-BASED ENRICHMENT (sub-cláusulas) ────────────────────────────────
     // Quando usámos o pai como fallback, o título/why são do contexto errado.
     // matchViolationByText identifica o contexto real pelo texto da descrição.
+    // IMPORTANT: never let textMatch overwrite classification — PDF-stated C1/C2/C3 always wins.
+    // Only title, why, solution, urgency are taken from text-match.
     if (usedParentFallback || (!article && !isNota)) {
         const textMatch = matchViolationByText(description);
         if (textMatch) {
+            // Explicitly destructure only enrichment fields — never read textMatch.classification
+            const { title, why, solution, urgency } = textMatch;
             article = article ? {
                 ...article,
-                title: textMatch.title,
-                explanation: textMatch.title,
-                why: textMatch.why,
-                solution: textMatch.solution,
-                urgency: textMatch.urgency
+                title,
+                explanation: title,
+                why,
+                solution,
+                urgency
             } : {
-                title: textMatch.title,
-                explanation: textMatch.title,
-                why: textMatch.why,
-                solution: textMatch.solution,
-                urgency: textMatch.urgency
+                title,
+                explanation: title,
+                why,
+                solution,
+                urgency
             };
-            console.log(`    ✏️  Enriched by text-match: ${textMatch.title.substring(0, 60)}`);
+            console.log(`    ✏️  Enriched by text-match: ${title.substring(0, 60)}`);
         }
     }
     // ── FIM TEXT-BASED ENRICHMENT ────────────────────────────────────────────
@@ -1193,17 +1197,20 @@ async function parsePDF(filePath) {
                 if (!metadata.company && gm.company) metadata.company = gm.company;
             }
             // Якщо Gemini знайшов більше порушень — використовуємо його список
-            if (geminiStructured.violations && geminiStructured.violations.length > violations.length) {
+            // Захист від галюцинацій: не довіряємо якщо Gemini повертає >3× більше ніж regex
+            const MAX_MULTIPLIER = 3;
+            if (geminiStructured.violations && geminiStructured.violations.length > violations.length &&
+                (violations.length === 0 || geminiStructured.violations.length <= violations.length * MAX_MULTIPLIER)) {
                 console.log(`🤖 Gemini found ${geminiStructured.violations.length} violations vs regex ${violations.length} — using Gemini data`);
-                violations = geminiStructured.violations.map(v => ({
-                    classification: v.classification || 'C3',
-                    article: v.article || null,
-                    description: v.description || '',
-                    subClause: v.subClause || null,
-                    source: 'gemini'
-                }));
+                violations = geminiStructured.violations.map(v =>
+                    createViolation(v.classification || 'C3', v.article || '', v.description || '', 'gemini')
+                );
             } else {
-                console.log(`📊 Regex found ${violations.length} violations, Gemini found ${geminiStructured.violations?.length || 0} — using regex (more complete)`);
+                if (geminiStructured.violations && geminiStructured.violations.length > violations.length * MAX_MULTIPLIER) {
+                    console.log(`⚠️ Gemini hallucination guard: ${geminiStructured.violations.length} > ${violations.length} * ${MAX_MULTIPLIER} — keeping regex results`);
+                } else {
+                    console.log(`📊 Regex found ${violations.length} violations, Gemini found ${geminiStructured.violations?.length || 0} — using regex (more complete)`);
+                }
             }
         }
 
@@ -1263,7 +1270,8 @@ async function parsePDF(filePath) {
                 finalReportType = 'failed';
                 finalConclusion.approved = false;
                 console.log(`❌ REPROVADO (stats): C1=${stats.critical}, C2=${stats.medium}`);
-            } else if (stats.low > 0 && stats.low <= 5) {
+            } else if (stats.low > 0) {
+                // C3 violations alone never cause reprovação
                 passed = true;
                 finalReportType = 'approved_with_c3';
                 finalConclusion.approved = true;

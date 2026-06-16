@@ -646,10 +646,7 @@
                                             <div class="form-group">
                                                 <label>Elevador:</label>
                                                 <select id="liftFilter" class="form-control">
-                                                    <option value="all">Todos os elevadores</option>
-                                                    <option value="lift1">Otis Gen2 - Rua Central, 12</option>
-                                                    <option value="lift2">Schindler 3300 - Av. da Vitória, 45</option>
-                                                    <option value="lift3">KONE MonoSpace - Rua Shevchenko, 78</option>
+                                                    <option value="">Todos os elevadores</option>
                                                 </select>
                                             </div>
                                         </div>
@@ -1445,6 +1442,7 @@
             applyFilters() {
                 const status = document.getElementById('statusFilter')?.value;
                 const priority = document.getElementById('priorityFilter')?.value;
+                const liftFilter = document.getElementById('liftFilter')?.value;
                 let filtered = this._cachedRequests || [];
                 if (status && status !== 'all') {
                     filtered = filtered.filter(r => {
@@ -1458,14 +1456,23 @@
                         return p === priority;
                     });
                 }
+                if (liftFilter) {
+                    filtered = filtered.filter(r =>
+                        r.liftId === liftFilter ||
+                        r.lift === liftFilter ||
+                        (r.lift && r.lift._id === liftFilter)
+                    );
+                }
                 this.displayRequests(filtered);
             }
 
             resetFilters() {
                 const filterStatus = document.getElementById('statusFilter');
                 const filterPriority = document.getElementById('priorityFilter');
+                const filterLift = document.getElementById('liftFilter');
                 if (filterStatus) filterStatus.value = 'all';
                 if (filterPriority) filterPriority.value = 'all';
+                if (filterLift) filterLift.value = '';
                 if (this._cachedRequests) this.displayRequests(this._cachedRequests);
             }
 
@@ -1529,6 +1536,30 @@
             
             // Descarregar pedidos
             clientRequestsManager.loadRequests();
+
+            // Popular filtro de elevadores com dados reais
+            (async function() {
+                try {
+                    const res = await AuthManager.fetchWithAuth('/api/lifts');
+                    const data = res ? await res.json() : null;
+                    const lifts = (data && Array.isArray(data.data)) ? data.data : [];
+                    const select = document.getElementById('liftFilter');
+                    if (select && lifts.length > 0) {
+                        lifts.forEach(lift => {
+                            const addr = lift.address
+                                ? [lift.address.street, lift.address.city].filter(Boolean).join(', ')
+                                : '';
+                            const label = (lift.municipalNumber || lift._id) + (addr ? ' — ' + addr : '');
+                            const opt = document.createElement('option');
+                            opt.value = lift._id;
+                            opt.textContent = label;
+                            select.appendChild(opt);
+                        });
+                    }
+                } catch (e) {
+                    console.warn('Erro ao carregar elevadores para filtro:', e);
+                }
+            })();
 
             // A carregar реальних de elevadores у форму нової pedidos
             $('#newRequestModal').on('show.bs.modal', async function() {

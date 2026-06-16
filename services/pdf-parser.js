@@ -638,17 +638,17 @@ function detectArticleByContentLocal(text) {
     const textLower = text.toLowerCase();
     
     const articleDatabase = {
-        '22': ['escada de acesso', 'acesso à casa das máquinas', 'alçapão', 'contrabalançado', 'corrimão', 'pegas'],
-        '74': ['fim de curso', 'dispositivo de segurança', 'contrapeso', 'pára-choques'],
+        '22': ['escada de acesso', 'acesso à casa das máquinas', 'alçapão', 'contrabalançado', 'corrimão', 'pegas', 'porta de patamar', 'bloqueio', 'fechadura', 'sensor de porta'],
+        '71': ['fim de curso', 'contrapeso', 'pára-choques'],
         '85': ['peças salientes', 'máquinas', 'volantes', 'engrenagens', 'correias', 'resguardadas'],
-        '6': ['porta de patamar', 'bloqueio', 'fechadura', 'sensor de porta'],
         '12': ['travão', 'travagem', 'freio', 'sistema de travagem'],
         '35': ['iluminação', 'luz de emergência'],
-        '45': ['pára-quedas', 'paraquedas', 'limitador de velocidade'],
-        '50': ['cabos', 'cabo de tração', 'desgaste', 'fios partidos', 'suspensão'],
+        '65': ['pára-quedas', 'paraquedas'],
+        '67': ['limitador de velocidade'],
+        '109': ['cabos', 'cabo de tração', 'desgaste', 'fios partidos', 'suspensão'],
         '18': ['alarme', 'comunicação', 'telefone de emergência'],
         '25': ['documentação', 'manual', 'certificado', 'livro de registo'],
-        '8': ['ucm', 'unidade de comando', 'quadro elétrico'],
+        '55': ['ucm', 'unidade de comando', 'quadro elétrico'],
         '15': ['sinalização', 'placa', 'identificação', 'carga máxima'],
         '60': ['acessibilidade', 'braille', 'deficientes']
     };
@@ -742,18 +742,23 @@ function extractViolations(text) {
         
         // Витягуємо правильний номер артикулу:
         // "740 74" → це "Decreto-Lei 740/74", беремо останнє "74"
-        // "320 8 1" → це "DL 320/2002 Artigo 8.1", беремо перше "320"
-        const numbers = rawArticle.split(/\s+/).map(n => parseInt(n));
+        // "320 8 1" → це "DL 320/2002 Artigo 8.1", беремо "8.1" (номер декрету ≠ артикул)
+        const numbers = rawArticle.split(/\s+/).map(n => n);
         let articleNum;
-        
+
+        const DECREE_NUMBERS = new Set(['320', '295', '513', '514']);
+
         if (numbers.length === 1) {
-            articleNum = numbers[0].toString(); // "105" → "105"
-        } else if (numbers.length === 2 && numbers[0] === 740) {
+            articleNum = numbers[0] || null; // "105" → "105"
+        } else if (numbers.length === 2 && numbers[0] === '740') {
             // Спеціальний випадок: "740 74" це Decreto-Lei 740/74
-            articleNum = numbers[1].toString(); // → "74"
+            articleNum = numbers[1]; // → "74"
+        } else if (numbers[0] && DECREE_NUMBERS.has(numbers[0])) {
+            // "320 8 1" → номер декрету, артикул це "8.1"
+            articleNum = numbers[1] ? numbers[1] + (numbers[2] ? '.' + numbers[2] : '') : null;
         } else {
-            // Для "320 8 1" та інших - беремо перше число (основний артикул)
-            articleNum = numbers[0].toString(); // "320 8 1" → "320"
+            // Інші — беремо перше число
+            articleNum = numbers[0] || null;
         }
         
         // Очищаємо опис від зайвих символів
@@ -894,7 +899,8 @@ function extractViolations(text) {
             
             // Шукаємо номер статті поруч
             const articleMatch = context.match(/Art\.?º?\s*(\d+[a-z]?\.?\d*)|artigo\s*(\d+)/i);
-            const articleNum = articleMatch ? (articleMatch[1] || articleMatch[2]) : '0';
+            const articleNum = articleMatch ? (articleMatch[1] || articleMatch[2]) : null;
+            if (!articleNum) continue; // skip — no article found, not a real violation
             
             // Витягуємо опис після C1/C2/C3
             const afterClass = text.substring(position);
@@ -1251,17 +1257,12 @@ async function parsePDF(filePath) {
             finalReportType = 'failed';
             finalConclusion.approved = false;
             console.log(`❌ REPROVADO: має C1=${stats.critical} або C2=${stats.medium}`);
-        } else if (stats.low > 0 && stats.low <= 5) {
-            // Тільки C3, не більше 5 - APROVADO з застереженнями
+        } else if (stats.low > 0) {
+            // Тільки C3 (qualquer quantidade) - APROVADO com condicionantes
             passed = true;
             finalReportType = 'approved_with_c3';
             finalConclusion.approved = true;
-            console.log(`✅ APROVADO з застереженнями: тільки C3=${stats.low}`);
-        } else if (stats.low > 5) {
-            // Більше 5 C3 - REPROVADO
-            passed = false;
-            finalReportType = 'failed';
-            finalConclusion.approved = false;
+            console.log(`✅ APROVADO com condicionantes: apenas C3=${stats.low}`);
         }
         
         console.log(`✅ Final verdict: ${passed ? 'APROVADO' : 'REPROVADO'} (${finalReportType})`);

@@ -162,6 +162,16 @@ function isMetadataNoiseClause(description = '') {
  * FIX 8: Перевіряє чи є violation об'єкт валідним — article не має бути
  * числом > 1000 (номер процесу) і description має містити хоч якийсь
  * технічний зміст (мінімум 5 слів після нормалізації).
+ *
+ * NOTE: services/clause-validator.js (isValidViolation) is NOT imported here
+ * because it overlaps with this function but is stricter in ways that break
+ * this pipeline:
+ *  - it rejects violations where article is null/NOTA — invalid here because
+ *    LLM and BV parsers routinely emit valid C1/C2 violations without an
+ *    article number, which are already pre-validated by those parsers.
+ *  - service-text boilerplate is already caught upstream by
+ *    isLegendOrBoilerplateClause() called in cleanViolations().
+ * clause-validator.js can be deleted if no other caller is added.
  */
 function isValidViolationObject(v) {
     if (!v || !v.classification) return false;
