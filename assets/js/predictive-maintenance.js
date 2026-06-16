@@ -189,6 +189,7 @@ class PredictiveMaintenanceSystem {
             // Аналізуємо кожен ліфт (з обробкою помилок)
             let processedLifts = 0;
             lifts.forEach((lift, index) => {
+                if (lift.status === 'inactive') return;
                 try {
                     this.analyzeElevatorCondition(lift);
                     processedLifts++;

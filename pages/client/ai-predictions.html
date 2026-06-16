@@ -831,6 +831,8 @@ function displayPredictions() {
     let predictions = [];
     
     clientLifts.forEach(lift => {
+        if (lift.status === 'inactive') return;
+
         const predictionData = getPredictionForLift(lift);
 
         if (predictionData) {
@@ -1052,7 +1054,7 @@ function displayGeneralRecommendations(predictions) {
         const lastInspection = p.prediction.lastInspection;
         if (!lastInspection) return true;
         const daysSince = (Date.now() - new Date(lastInspection)) / (1000 * 60 * 60 * 24);
-        return daysSince > 30; // PORTUGAL LAW: inspeção mensal obrigatória!
+        return daysSince > 30; // PORTUGAL LAW: inspeção obrigatória pela entidade inspetora acreditada
     });
     
     let html = '<div class="timeline">';
@@ -1077,7 +1079,7 @@ function displayGeneralRecommendations(predictions) {
                 <div class="alert alert-warning mb-2">
                     <h5><i class="fas fa-calendar-check"></i> ⚠️ Inspeções em atraso (Violação da lei!)</h5>
                     <p><strong>${needsInspection.length}</strong> ${needsInspection.length === 1 ? 'elevador necessita' : 'elevadores necessitam'} de inspeção planeada.</p>
-                    <p class="mb-0"><strong>ATENÇÃO:</strong> Em Portugal é obrigatória <strong>inspeção mensal</strong> para todos os tipos de elevadores! 
+                    <p class="mb-0"><strong>ATENÇÃO:</strong> Em Portugal é obrigatória a <strong>inspeção obrigatória pela entidade inspetora acreditada</strong> para todos os tipos de elevadores!
                     O atraso pode resultar em multas de 500€ a 5000€.</p>
                 </div>
             </div>
