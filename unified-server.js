@@ -14706,7 +14706,7 @@ app.post('/api/agent/client-decide', authenticateToken, async (req, res) => {
 // errors that occur when a request arrives before db is initialised after restart.
 connectMongoPromise
     .then(() => {
-        server.listen(PORT, '0.0.0.0', () => {
+        server.listen(PORT, '127.0.0.1', () => {
             console.log(`🚀 Unified сервер запущено на http://0.0.0.0:${PORT}`);
             console.log(`📁 Статичні файли: ${__dirname}`);
             console.log(`🔐 API endpoints: /api/*`);
