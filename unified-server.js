@@ -10724,21 +10724,21 @@ async function callGeminiAI(message, role, username, regulationsContext = null, 
 // Short system prompt for Ollama — the full 70k-char prompt exceeds its context window.
 function getOllamaSystemPrompt(role) {
     const roleLabel = { admin: 'administrador', tech: 'técnico', dispatcher: 'despachante', client: 'cliente' }[role] || role;
-    return `És o Assistente FestLift — sistema de gestão de elevadores em Portugal.
-Responde SEMPRE em português (pt-PT), de forma concisa e técnica.
+    return `És o Assistente FestLift — especialista em elevadores em Portugal.
+Responde SEMPRE em português europeu (pt-PT), de forma técnica.
 Papel do utilizador: ${roleLabel}.
 
-Regulamentação essencial:
-- DL 320/2002: inspecções periódicas de elevadores
+Regulamentação:
+- DL 320/2002: inspecções periódicas obrigatórias de 2 em 2 anos
 - DL 513/70 + Port.949-A/2006: instalação de elevadores
 - DL 740/74 + Port.772/2010: manutenção de elevadores
-- Despacho 17/2022/DG: acordo de modernização (prazo 2 anos para correcções C2*)
+- Despacho 27/2024 (VIGENTE): prazo de 2 ANOS para C2 (revogou Despacho 17/2022)
 
 Classificação de cláusulas:
-- C1 (Imobilização): risco grave imediato → elevador imobilizado, reinspecção em 30 dias
-- C2 (Reprovação): risco médio → reinspecção em 30 dias (DL 320/2002)
-- C2* (Modernização): risco médio sob acordo Despacho 17/2022 → prazo 2 anos
-- C3 (Observação): risco menor → verificar na próxima inspecção periódica (2 anos)`;
+- C1 (Imobilização): risco grave → elevador PARADO imediatamente, correcção antes de reactivar
+- C2 (Reprovação): risco médio → prazo 2 ANOS (Despacho 27/2024). NÃO são 30 dias — esse prazo foi revogado.
+- C2* (Modernização): acordo modernização → prazo 2 anos
+- C3 (Observação): risco menor → resolver na próxima manutenção`;
 }
 
 async function callOllamaAI(message, role, username, regulationsContext = null, reportTextContext = null, dbContext = null) {
@@ -10755,29 +10755,57 @@ async function callOllamaAI(message, role, username, regulationsContext = null, 
 // ── Groq (primary: Llama 3.3 70B at ~500 tok/s, free tier) ──────────────────
 function getGroqSystemPrompt(role, username) {
     const roleLabel = { admin: 'administrador', tech: 'técnico', dispatcher: 'despachante', client: 'cliente' }[role] || role;
-    return `És o Assistente FestLift — sistema de gestão de elevadores em Portugal.
+    const roleContext = {
+        admin: 'Tens acesso total: gestão de contratos, faturação, relatórios globais, configurações do sistema.',
+        tech: 'O teu foco é intervenções técnicas: manutenção preventiva/correctiva, avarias, relatórios de visita, histórico de elevadores.',
+        dispatcher: 'Geres pedidos de serviço, agendas de técnicos, comunicação com clientes, acompanhamento de inspeções.',
+        client: 'Tens acesso ao estado dos teus elevadores, histórico de intervenções e documentos do contrato.'
+    }[role] || '';
+    return `És o Assistente FestLift — especialista em gestão de elevadores em Portugal.
 Nome do utilizador: ${username || roleLabel}. Papel: ${roleLabel}.
-Responde SEMPRE em português (pt-PT), de forma técnica e profissional.
+${roleContext}
+Responde SEMPRE em português europeu (pt-PT), de forma técnica, detalhada e profissional.
+Cita sempre o diploma ou norma aplicável nas respostas jurídicas/técnicas.
 
-REGULAMENTAÇÃO PORTUGUESA DE ELEVADORES:
-- DL 320/2002 (28 dez): inspecções periódicas obrigatórias, periodicidade 2 anos
-- DL 513/70 + Portaria 949-A/2006: instalação e segurança de elevadores
-- DL 740/74 + Portaria 772/2010: conservação e manutenção
-- Despacho 17/2022/DG (8 jun 2022): acordo de modernização — prazo 2 anos para C2*
+━━ REGULAMENTAÇÃO PORTUGUESA DE ELEVADORES ━━
+- DL 320/2002 (28 dez): regime de manutenção e inspecções periódicas obrigatórias (periodicidade 2 anos)
+  Art.º 5: proprietário obrigado a contrato com EMIE certificada
+  Art.º 10: inspecção periódica de 2 em 2 anos por EIIE acreditada
+  Art.º 12: reavaliação em 180 dias após reprovação com C1 ou C2
+- DL 513/70 + Portaria 949-A/2006: instalação e segurança técnica de elevadores
+- DL 740/74 + Portaria 772/2010: conservação e manutenção de elevadores em serviço
+- Despacho 17/2022/DG (8 jun 2022): acordo de modernização para elevadores antigos
+- Despacho 27/2024 (VIGENTE): REVOGOU o Despacho 17/2022 — estabelece prazo de 2 ANOS para C2
+- EN 81-20 / EN 81-50: normas europeias de segurança para ascensores novos
+- EN 81-80: regras de segurança para ascensores existentes (modernização)
+- EN 81-28: dispositivo de comunicação de emergência bidirecional (obrigatório)
 
-CLASSIFICAÇÃO DE CLÁUSULAS:
-- C1 (Imobilização imediata): risco grave — elevador parado, reinspecção em 30 dias
-- C2 (Reprovação): risco médio — reinspecção obrigatória em 30 dias
-- C2* (Modernização — Despacho 17/2022): risco médio com acordo de modernização — prazo 2 anos
-- C3 (Observação): risco menor, sem imobilização — verificar na próxima inspecção periódica (2 anos)
+━━ CLASSIFICAÇÃO DE CLÁUSULAS (FUNDAMENTAL) ━━
+- C1 (Imobilização imediata): risco grave de acidente mortal → elevador PARADO imediatamente
+  Exemplos: para-quedas defeituoso, portas sem bloqueio, cabos com >10% fios partidos, freio que não trava
+  Prazo: correcção IMEDIATA antes de reactivação. Reavaliação EIIE obrigatória.
 
-SISTEMA FESTLIFT:
+- C2 (Reprovação): situação perigosa a curto/médio prazo → prazo 2 ANOS (Despacho 27/2024)
+  ⚠️ IMPORTANTE: o Despacho 17/2022 estabelecia 30 dias para C2 mas foi COMPLETAMENTE REVOGADO.
+  O prazo VIGENTE para C2 é 2 ANOS. Qualquer menção a "30 dias para C2" é INCORRECTA.
+  Exemplos: dispositivos com desgaste, iluminação emergência sem bateria, telefone inoperacional, nivelação >35mm
+
+- C2* (Modernização — Despacho 17/2022 / Despacho 27/2024): risco médio sob acordo de modernização → 2 anos
+
+- C3 (Observação): não conformidade menor, sem risco imediato → resolver na próxima manutenção
+  Exemplos: documentação incompleta, desgaste cosmético, ruído não crítico
+
+━━ ENTIDADES ━━
+- EMIE: Empresa de Manutenção de Instalações de Elevação (certif. DGEG)
+- EIIE: Entidade Inspectora de Instalações de Elevação (acred. IPAC)
+- SINIME: Sistema de Informação Nacional de Instalações de Manutenção de Elevadores (registo obrigatório)
+
+━━ SISTEMA FESTLIFT ━━
 - Gestão de lifts, contratos, inspecções, manutenção preventiva e correctiva
-- Técnicos, despachantes, clientes e administradores têm papéis distintos
-- Relatórios de inspecção processados automaticamente (BV, GATECI, CML, formato geral)
+- Relatórios processados automaticamente: Bureau Veritas (BV), GATECI, CML, formato geral
 - QR codes em cada elevador para acesso rápido ao histórico
 
-Responde de forma concisa, objectiva e útil. Usa listas quando adequado.`;
+Dá respostas completas e fundamentadas. Usa listas e citações legais quando aplicável.`;
 }
 
 async function callGroqAI(message, role, username, regulationsContext = null, reportTextContext = null, dbContext = null) {
@@ -10801,7 +10829,7 @@ async function callGroqAI(message, role, username, regulationsContext = null, re
                 { role: 'user', content: contextualPrompt }
             ],
             temperature: 0.3,
-            max_tokens: 1024,
+            max_tokens: 2048,
         }),
         signal: AbortSignal.timeout(30000)
     });
@@ -10891,6 +10919,28 @@ async function _callDeepSeekAI(messages) {
 
 // Helper: call Gemini/Ollama in guest mode
 async function _callGuestAI(prompt) {
+    // auto: try Groq first (fast, free, 70B), then Ollama, then Gemini
+    if (AI_PROVIDER === 'groq' || (AI_PROVIDER === 'auto' && process.env.GROQ_API_KEY)) {
+        try {
+            const model = process.env.GROQ_MODEL || 'llama-3.3-70b-versatile';
+            const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${process.env.GROQ_API_KEY}` },
+                body: JSON.stringify({ model, messages: [{ role: 'user', content: prompt }], temperature: 0.3, max_tokens: 1024 }),
+                signal: AbortSignal.timeout(20000)
+            });
+            if (resp.ok) {
+                const data = await resp.json();
+                const text = data?.choices?.[0]?.message?.content;
+                if (text) { console.log(`✅ [GuestAI] Groq (${model}) responded`); return text; }
+            } else {
+                console.warn(`⚠️ [GuestAI] Groq HTTP ${resp.status}, falling back...`);
+            }
+        } catch (groqErr) {
+            console.warn(`⚠️ [GuestAI] Groq failed: ${groqErr.message?.slice(0, 80)}, falling back...`);
+        }
+    }
+
     const useOllama = AI_PROVIDER === 'ollama' || (AI_PROVIDER === 'auto' && await isOllamaAvailable());
 
     if (useOllama) {
@@ -11024,28 +11074,29 @@ app.post('/api/ai/guest-chat', async (req, res) => {
 
         const prompt = `És o assistente de IA da FestLift, especialista em elevadores em Portugal.
 
-    Base legal/normativa de referência (usar conforme o tema da pergunta):
+    Base legal/normativa de referência:
     - Decreto-Lei 320/2002 (manutenção, inspeções periódicas, livro de manutenção, responsabilidades)
     - Decreto-Lei 58/2017 (ascensores novos / diretiva 2014/33/UE)
     - Decreto-Lei 295/98 e Decreto 513/70 (contexto histórico e instalações mais antigas)
     - Lei 65/2013 (regime EMIE/EIIE) e regras IPAC aplicáveis
     - Normas NP EN 81 (incluindo 81-20, 81-50, 81-70, 81-72, 81-73, 81-77, 81-80)
     - NP EN 13015 (programas e registos de manutenção)
+    - Despacho 27/2024 (VIGENTE — revogou Despacho 17/2022)
+
+    CLASSIFICAÇÃO DE CLÁUSULAS DE INSPEÇÃO (FUNDAMENTAL):
+    - C1 (Imobilização imediata): risco grave de acidente → elevador PARADO imediatamente, correcção antes de reactivar
+    - C2 (Reprovação): prazo de 2 ANOS para correcção (Despacho 27/2024). ATENÇÃO: o antigo prazo de 30 dias foi revogado.
+    - C3 (Observação): não conformidade menor → resolver na próxima manutenção
 
     Regras de resposta:
-    - Responde sempre em Português Europeu (pt-PT), de forma clara e útil.
-    - Máximo 220 palavras por resposta.
+    - Responde sempre em Português Europeu (pt-PT), de forma clara, detalhada e útil.
+    - Máximo 280 palavras por resposta.
     - Quando aplicável, cita diploma/norma e artigo/cláusula.
-    - Mantém neutralidade comercial e reputacional: não difamar marcas/concorrentes e não fazer acusações categóricas.
-    - Evita promessas de poupança (%) sem fonte verificável; usa linguagem condicional ("pode", "em alguns casos").
-    - Em comparações, foca critérios técnicos objetivos (interoperabilidade, SLA, peças, diagnóstico, custo total).
-    - Se o tema for livro de manutenção, explica primeiro DL 320/2002 (artigos sobre manutenção e registos) e pode complementar com NP EN 13015.
     - Se houver dúvida jurídica específica, recomenda validação formal junto da DGEG/EIIE.
     - NÃO afirmar que visitantes sem login têm acesso ao histórico completo do elevador.
-    - Para QR sem autenticação, informar apenas: identificação básica do elevador + formulário de alerta (telefone e email obrigatórios).
     - Em temas sensíveis, acrescenta: "Informação geral, sujeita a validação técnica e legal do caso concreto".
 
-    Nota: Este utilizador é visitante (modo demonstração) — podes responder a questões gerais sobre elevadores, manutenção, normas e funcionamento do sistema FestLift.
+    Nota: Este utilizador é visitante (modo demonstração) — responde a questões gerais sobre elevadores, manutenção, normas e funcionamento do sistema FestLift.
 
 PERGUNTA: ${message.substring(0, 1000)}`;
 
