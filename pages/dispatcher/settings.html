@@ -123,11 +123,6 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#" id="darkModeToggle" title="Tema escuro">
-                        <i class="fas fa-moon"></i>
-                    </a>
-                </li>
-                <li class="nav-item">
                     <a class="nav-link" href="#" onclick="logout()" title="Sair">
                         <i class="fas fa-sign-out-alt"></i>
                     </a>
@@ -457,20 +452,6 @@
             // Inicialização AdminLTE
             $('[data-widget="pushmenu"]').PushMenu();
             
-            // Tema escuro
-            $('#darkModeToggle').on('click', function() {
-                $('body').toggleClass('dark-mode');
-                $(this).find('i').toggleClass('fa-moon fa-sun');
-                // Guardar configurações do tema
-                const isDarkMode = $('body').hasClass('dark-mode');
-                localStorage.setItem('darkMode', isDarkMode);
-            });
-
-            // Recuperação do tema
-            if (localStorage.getItem('darkMode') === 'true') {
-                $('body').addClass('dark-mode');
-                $('#darkModeToggle').find('i').removeClass('fa-moon').addClass('fa-sun');
-            }
 
             // Verificação de ligação
             setInterval(() => {

@@ -88,7 +88,7 @@ async function loadNotifications() {
         const response = await AuthManager.fetchWithAuth('/api/notifications?unread=true');
         if (response.ok) {
             const data = await response.json();
-            const notifications = data.data || [];
+            const notifications = data.data || data.notifications || [];
             
             const countEl = document.getElementById('notificationCount');
             const listEl = document.getElementById('notificationList');

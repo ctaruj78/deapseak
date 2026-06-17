@@ -295,11 +295,6 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#" id="darkModeToggle" title="Tema escuro">
-                        <i class="fas fa-moon"></i>
-                    </a>
-                </li>
-                <li class="nav-item">
                     <a class="nav-link" href="#" onclick="logout()" title="Sair">
                         <i class="fas fa-sign-out-alt"></i>
                     </a>
@@ -778,13 +773,7 @@
             }
             // ПРИМІТКА: window.arHelper створюexisteться в ar-helper.js модулі
 
-            // Tema escuro
-            $('#darkModeToggle').on('click', function() {
-                $('body').toggleClass('dark-mode');
-                $(this).find('i').toggleClass('fa-moon fa-sun');
-            });
-
-            // Controlo por voz - ініціалізація desde затримкою para ARHelper встиг descarregarся
+// Controlo por voz - ініціалізація desde затримкою para ARHelper встиг descarregarся
             setTimeout(function() {
                 if (typeof VoiceAR !== 'undefined' && window.arHelper) {
                     const voiceAR = new VoiceAR(window.arHelper);

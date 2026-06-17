@@ -152,11 +152,6 @@
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#" id="darkModeToggle" title="Tema escuro">
-                        <i class="fas fa-moon"></i>
-                    </a>
-                </li>
-                <li class="nav-item">
                     <a class="nav-link" href="#" onclick="logout()" title="Sair">
                         <i class="fas fa-sign-out-alt"></i>
                     </a>
@@ -536,13 +531,7 @@
             // Inicialização AdminLTE
             $('[data-widget="pushmenu"]').PushMenu();
             
-            // Tema escuro
-            $('#darkModeToggle').on('click', function() {
-                $('body').toggleClass('dark-mode');
-                $(this).find('i').toggleClass('fa-moon fa-sun');
-            });
-
-            // Verificação de ligação
+// Verificação de ligação
             setInterval(() => {
                 const online = navigator.onLine;
                 $('#connectionStatus').html(

@@ -7482,15 +7482,27 @@ Email de contacto: info@festlift.pt`;
             }
             
             if (!contract || !contract.contractFile) {
-                // Não há contrato - показуexisteмо botão carregamento
-                container.innerHTML = `
-                    <div class="alert alert-warning">
-                        <i class="fas fa-exclamation-triangle"></i> Contrato não carregado
-                    </div>
-                    <button type="button" class="btn btn-sm btn-success" onclick="showUploadContractModal('${liftId}')">
-                        <i class="fas fa-upload"></i> Carregar contrato
-                    </button>
-                `;
+                const liftCn = lift.contractNumber || (lift.maintenanceContract && lift.maintenanceContract.contractNumber) || (contract && contract.contractNumber) || '';
+                if (liftCn) {
+                    container.innerHTML = `
+                        <div class="alert alert-info py-2">
+                            <i class="fas fa-file-contract mr-1"></i>
+                            Contrato n.º <strong>${liftCn}</strong> (PDF não carregado)
+                        </div>
+                        <button type="button" class="btn btn-sm btn-success" onclick="showUploadContractModal('${liftId}')">
+                            <i class="fas fa-upload"></i> Descarregar PDF do contrato
+                        </button>
+                    `;
+                } else {
+                    container.innerHTML = `
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle"></i> Contrato não carregado
+                        </div>
+                        <button type="button" class="btn btn-sm btn-success" onclick="showUploadContractModal('${liftId}')">
+                            <i class="fas fa-upload"></i> Carregar contrato
+                        </button>
+                    `;
+                }
                 return;
             }
             
@@ -8505,6 +8517,10 @@ Email de contacto: info@festlift.pt`;
                 
                 console.log('👤 Client data:', {clientName, clientPhone, clientEmail});
                 
+                const installYearAdmin = lift.installationDate
+                    ? new Date(lift.installationDate).getFullYear()
+                    : (lift.installYear || lift.installationYear || 'N/A');
+
                 const liftData = {
                     municipalNumber: lift.municipalNumber || 'Não especificado',
                     address: addressStr,
@@ -8512,7 +8528,7 @@ Email de contacto: info@festlift.pt`;
                     postalCode: postalCode,
                     brand: lift.manufacturer || lift.brand || 'N/A',
                     model: lift.model || 'N/A',
-                    year: lift.installYear || lift.installationYear || 'N/A',
+                    year: installYearAdmin,
                     capacity: lift.capacity || 'N/A',
                     clientName: clientName,
                     clientPhone: clientPhone,

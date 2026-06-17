@@ -3,7 +3,7 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const { authenticate } = require('../middleware/auth');
-const { isAdmin } = require('../middleware/roleAuth');
+const { isAdmin, isAdminOrDispatcher } = require('../middleware/roleAuth');
 const ctrl = require('../controllers/saftController');
 
 const router = express.Router();
@@ -41,39 +41,43 @@ const uploadCsv = multer({
     limits: { fileSize: 5 * 1024 * 1024 },
 }).single('csv');
 
-router.use(authenticate, isAdmin);
-
-router.post('/upload', (req, res, next) => {
+// Upload SAF-T XML — admin only
+router.post('/upload', authenticate, isAdmin, (req, res, next) => {
     uploadXml(req, res, (err) => {
         if (err) return res.status(400).json({ success: false, message: err.message });
         next();
     });
 }, ctrl.uploadSaft);
 
-router.post('/import-moloni', (req, res, next) => {
+// Import Moloni clients CSV — admin only
+router.post('/import-moloni', authenticate, isAdmin, (req, res, next) => {
     uploadCsv(req, res, (err) => {
         if (err) return res.status(400).json({ success: false, message: err.message });
         next();
     });
 }, ctrl.importMoloniClients);
 
-router.get('/settings/ignored-nifs',        ctrl.getIgnoredNifs);
-router.post('/settings/ignore/:nif',        ctrl.ignoreNif);
-router.delete('/settings/ignore/:nif',      ctrl.unignoreNif);
-
-router.get('/debtors',        ctrl.getAllDebtors);
-router.post('/debtors/send',  ctrl.sendAlerts);
-
-router.post('/import-pendentes', (req, res, next) => {
+// Import pendentes CSV — admin only
+router.post('/import-pendentes', authenticate, isAdmin, (req, res, next) => {
     uploadCsv(req, res, (err) => {
         if (err) return res.status(400).json({ success: false, message: err.message });
         next();
     });
 }, ctrl.importPendentes);
 
-router.get('/',             ctrl.listImports);
-router.get('/:id',          ctrl.getImport);
-router.post('/:id/resend',  ctrl.resendAlerts);
-router.delete('/:id',       ctrl.deleteImport);
+// NIF ignore settings — admin only
+router.get('/settings/ignored-nifs',   authenticate, isAdmin, ctrl.getIgnoredNifs);
+router.post('/settings/ignore/:nif',   authenticate, isAdmin, ctrl.ignoreNif);
+router.delete('/settings/ignore/:nif', authenticate, isAdmin, ctrl.unignoreNif);
+
+// Delete import — admin only
+router.delete('/:id', authenticate, isAdmin, ctrl.deleteImport);
+
+// Read + send alerts — admin and dispatcher
+router.get('/debtors',       authenticate, isAdminOrDispatcher, ctrl.getAllDebtors);
+router.post('/debtors/send', authenticate, isAdminOrDispatcher, ctrl.sendAlerts);
+router.get('/',              authenticate, isAdminOrDispatcher, ctrl.listImports);
+router.get('/:id',           authenticate, isAdminOrDispatcher, ctrl.getImport);
+router.post('/:id/resend',   authenticate, isAdminOrDispatcher, ctrl.resendAlerts);
 
 module.exports = router;

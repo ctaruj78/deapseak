@@ -568,53 +568,62 @@ const qrManager = (function() {
         const canvas = document.querySelector('#qrCodeCanvas canvas');
         if (!canvas) return;
 
+        const lift = qr.liftData || {};
+        const municipalNumber = lift.municipalNumber || qr.code || 'N/D';
+        const manufacturer = lift.manufacturer || lift.brand || '';
+        const model = lift.model ? (manufacturer ? manufacturer + ' ' + lift.model : lift.model) : (manufacturer || 'N/D');
+        const liftTypePT = qr.liftType === 'cargo' ? 'Carga' : 'Passageiro';
+        const liftTypeEN = qr.liftType === 'cargo' ? 'Freight' : 'Passenger';
+        const address = qr.name || 'N/D';
+        const city = qr.location || '';
+        const whatsapp = '+351 926 380 243';
+
         const printWindow = window.open('', '_blank');
-        printWindow.document.write(`
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <title>Друк QR Коду - ${qr.code}</title>
-                <style>
-                    body { 
-                        font-family: Arial, sans-serif; 
-                        text-align: center;
-                        padding: 20px;
-                    }
-                    img { 
-                        max-width: 300px; 
-                        margin: 20px auto;
-                        display: block;
-                    }
-                    h2 { margin: 10px 0; }
-                    .details { 
-                        margin-top: 20px;
-                        text-align: left;
-                        max-width: 400px;
-                        margin-left: auto;
-                        margin-right: auto;
-                    }
-                    @media print {
-                        body { padding: 0; }
-                    }
-                </style>
-            </head>
-            <body>
-                <h2>${qr.code}</h2>
-                <img src="${canvas.toDataURL()}" alt="QR Code"/>
-                <div class="details">
-                    <p><strong>Endereço:</strong> ${qr.name}</p>
-                    <p><strong>Tipo:</strong> ${qr.liftType === 'cargo' ? 'Carga' : 'Passageiro'}</p>
-                    <p><strong>Cidade:</strong> ${qr.location}</p>
-                </div>
-                <script>
-                    window.onload = function() {
-                        window.print();
-                        window.onafterprint = function() { window.close(); };
-                    };
-                </script>
-            </body>
-            </html>
-        `);
+        printWindow.document.write(`<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>QR Code - ${municipalNumber}</title>
+<style>
+  body { font-family: Arial, sans-serif; margin: 0; padding: 24px; background: #fff; }
+  .card { max-width: 420px; margin: 0 auto; border: 2px solid #222; border-radius: 8px; padding: 20px; text-align: center; }
+  .brand { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: #666; margin-bottom: 4px; }
+  .title { font-size: 18px; font-weight: bold; color: #111; margin-bottom: 2px; }
+  .subtitle { font-size: 11px; color: #888; margin-bottom: 14px; }
+  .qr-img { width: 220px; height: 220px; border: 1px solid #ddd; padding: 8px; margin: 0 auto 14px; display: block; }
+  table { width: 100%; border-collapse: collapse; margin-bottom: 14px; text-align: left; }
+  td { padding: 4px 6px; font-size: 12px; vertical-align: top; }
+  td:first-child { font-weight: bold; color: #333; width: 38%; }
+  .bilingual { background: #f5f5f5; border-radius: 6px; padding: 10px 12px; margin-bottom: 14px; font-size: 11px; color: #444; line-height: 1.7; text-align: left; }
+  .contact { background: #e8f5e9; border-radius: 6px; padding: 8px 12px; font-size: 12px; }
+  .contact strong { color: #2e7d32; }
+  .wa-icon { display: inline-block; width: 14px; height: 14px; vertical-align: middle; margin-right: 4px; }
+  @media print { body { padding: 0; } }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="brand">FestLift — Gestão de Elevadores</div>
+  <div class="title">Código QR do Elevador</div>
+  <div class="subtitle">Lift QR Code</div>
+  <img src="${canvas.toDataURL()}" class="qr-img" alt="QR Code">
+  <table>
+    <tr><td>Nº Municipal / Municipal No.:</td><td><strong>${municipalNumber}</strong></td></tr>
+    <tr><td>Endereço / Address:</td><td>${address}${city ? ', ' + city : ''}</td></tr>
+    <tr><td>Equipamento / Equipment:</td><td>${model}</td></tr>
+    <tr><td>Tipo / Type:</td><td>${liftTypePT} / ${liftTypeEN}</td></tr>
+  </table>
+  <div class="bilingual">
+    <strong>PT:</strong> Leia este código QR para obter apoio técnico, reportar uma avaria ou solicitar manutenção.<br>
+    <strong>EN:</strong> Scan this QR code for technical support, fault reporting or maintenance request.
+  </div>
+  <div class="contact">
+    <strong>&#128241; WhatsApp / Contato:</strong> ${whatsapp}
+  </div>
+</div>
+<script>window.onload=function(){window.print();window.onafterprint=function(){window.close();};}</script>
+</body>
+</html>`);
         printWindow.document.close();
     }
 

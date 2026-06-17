@@ -526,6 +526,23 @@
     }
 
     // ── View detail ──────────────────────────────────────────────────────────
+    async function resolveLiftAddress(ins, token) {
+        if (ins.liftAddress && !/^[0-9a-f]{24}$/i.test(String(ins.liftAddress))) return;
+        const liftId = ins.liftId || ins.lift;
+        if (!liftId || !/^[0-9a-f]{24}$/i.test(String(liftId))) return;
+        try {
+            const r = await fetch('/api/lifts/' + liftId, { headers: { 'Authorization': 'Bearer ' + token } });
+            if (!r.ok) return;
+            const d = await r.json();
+            const lift = d.data || d;
+            if (lift.address) {
+                const a = lift.address;
+                ins.liftAddress = typeof a === 'string' ? a : [a.street, a.building, a.city, a.postalCode].filter(Boolean).join(', ');
+            }
+            if (!ins.municipalNumber && lift.municipalNumber) ins.municipalNumber = lift.municipalNumber;
+        } catch(e) {}
+    }
+
     async function viewInspection(id) {
         if (!id) return;
         const token = getToken();
@@ -536,12 +553,16 @@
             if (!res.ok) throw new Error('HTTP ' + res.status);
             const data = await res.json();
             const ins = data.data || data;
+            await resolveLiftAddress(ins, token);
             renderViewModal(ins);
             $('#viewModal').modal('show');
         } catch (err) {
             const ins = allInspections.find(i => (i._id || i.id) === id);
-            if (ins) { renderViewModal(ins); $('#viewModal').modal('show'); }
-            else Swal.fire('Erro', 'Não foi possível descarregar detalhes', 'error');
+            if (ins) {
+                await resolveLiftAddress(ins, token);
+                renderViewModal(ins);
+                $('#viewModal').modal('show');
+            } else Swal.fire('Erro', 'Não foi possível descarregar detalhes', 'error');
         }
     }
 
@@ -585,7 +606,9 @@
                 </ul></div>`;
             }
         }
-        const liftAddr = ins.liftAddress || ins.liftLocation || ins.liftId || ins.lift || '—';
+        const rawAddr = ins.liftAddress || ins.liftLocation || '';
+        const isObjectId = /^[0-9a-f]{24}$/i.test(rawAddr);
+        const liftAddr = (!rawAddr || isObjectId) ? (ins.municipalNumber ? 'Nº ' + ins.municipalNumber : '—') : rawAddr;
         const techName = ins.technicianName || ins.inspector || ins.assignedTechnicianName || '—';
         const comments = ins.notes || ins.generalComments || ins.observations || ins.description || '';
 
@@ -595,6 +618,7 @@
                     <table class="table table-sm table-borderless">
                         <tr><th width="40%">Tipo</th><td>${escapeHtml(type)}</td></tr>
                         <tr><th>Local / Morada</th><td>${escapeHtml(liftAddr)}</td></tr>
+                        ${ins.municipalNumber ? `<tr><th>Nº Municipal</th><td>${escapeHtml(String(ins.municipalNumber))}</td></tr>` : ''}
                         <tr><th>Técnico</th><td>${escapeHtml(techName)}</td></tr>
                         <tr><th>Data</th><td>${formattedDate}</td></tr>
                     </table>

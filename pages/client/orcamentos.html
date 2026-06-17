@@ -157,7 +157,14 @@
                             <i class="nav-icon fas fa-user"></i><p>Perfil</p>
                         </a>
                     </li>
+                    <!-- Definições -->
                     <li class="nav-item">
+                        <a href="/pages/client/settings.html" class="nav-link" id="nav-settings">
+                            <i class="nav-icon fas fa-cog"></i>
+                            <p>Definições</p>
+                        </a>
+                    </li>
+                                        <li class="nav-item">
                         <a href="#" onclick="logout()" class="nav-link">
                             <i class="nav-icon fas fa-sign-out-alt text-danger"></i><p>Sair</p>
                         </a>
@@ -660,13 +667,7 @@
 // Nome do utilizador — auth.js _populateSidebarName handles this consistently
 
         // Tema escuro
-        document.getElementById('darkModeToggle')?.addEventListener('click', function() {
-            document.body.classList.toggle('dark-mode');
-            this.querySelector('i').classList.toggle('fa-moon');
-            this.querySelector('i').classList.toggle('fa-sun');
-        });
-
-        // Fechar modal sem foco perdido (acessibilidade)
+// Fechar modal sem foco perdido (acessibilidade)
         $(document).on('hide.bs.modal', '.modal', function() {
             if (document.activeElement && this.contains(document.activeElement)) {
                 document.activeElement.blur();

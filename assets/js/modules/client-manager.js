@@ -67,7 +67,8 @@ class ClientManager {
                 totalRequests: client.totalRequests ?? client.requestsCount ?? 0,
                 activeRequests: client.activeRequests ?? 0,
                 liftsCount: this._resolveClientLiftCount(client, liftsCountByClient),
-                avatar: client.avatar || (client.name ? client.name.charAt(0).toUpperCase() : 'C'),
+                avatarUrl: (client.avatar && (client.avatar.startsWith('/') || client.avatar.startsWith('http'))) ? client.avatar : null,
+                avatar: (client.avatar && !client.avatar.startsWith('/') && !client.avatar.startsWith('http')) ? client.avatar : (client.name ? client.name.charAt(0).toUpperCase() : 'C'),
                 notes: client.notes || ''
             }));
 
@@ -189,7 +190,7 @@ class ClientManager {
         col.innerHTML = `
             <div class="client-card">
                 <span class="status-badge ${statusClass}">${statusText}</span>
-                <div class="client-avatar">${client.avatar || 'C'}</div>
+                <div class="client-avatar">${client.avatarUrl ? `<img src="${client.avatarUrl}" alt="${client.name}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">` : (client.avatar || 'C')}</div>
                 <h5 class="text-center">${client.name}</h5>
                 <p class="text-center text-muted mb-2">${typeText}</p>
                 <div class="text-center mb-3">

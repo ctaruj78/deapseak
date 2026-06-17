@@ -8344,6 +8344,10 @@ Equipa FestLift</textarea>
                 
                 console.log('👤 Client data:', {clientName, clientPhone, clientEmail});
                 
+                const installYear = lift.installationDate
+                    ? new Date(lift.installationDate).getFullYear()
+                    : (lift.installationYear || 'Não especificado');
+
                 const liftData = {
                     municipalNumber: lift.municipalNumber || 'Não especificado',
                     address: addressStr,
@@ -8351,7 +8355,11 @@ Equipa FestLift</textarea>
                     postalCode: postalCode,
                     clientName: clientName,
                     clientPhone: clientPhone,
-                    clientEmail: clientEmail
+                    clientEmail: clientEmail,
+                    brand: lift.manufacturer || lift.brand || 'Não especificado',
+                    model: lift.model || 'Não especificado',
+                    year: installYear,
+                    capacity: lift.capacity || 'Não especificado'
                 };
                 
                 const municipalityData = {
@@ -8389,20 +8397,26 @@ Equipa FestLift</textarea>
                     });
                 };
                 
-                // Deамінюexisteмо плейсхолдери реальними даними
+                // Substituição de placeholders pelos dados reais
                 htmlContent = htmlContent
                     .replace(/{{municipalityName}}/g, municipalityData.concelho)
                     .replace(/{{municipalNumber}}/g, liftData.municipalNumber)
                     .replace(/{{qrCode}}/g, liftData.qrCode)
                     .replace(/{{liftAddress}}/g, liftData.address)
+                    .replace(/{{address}}/g, liftData.address)
                     .replace(/{{postalCode}}/g, liftData.postalCode)
                     .replace(/{{concelho}}/g, municipalityData.concelho)
                     .replace(/{{distrito}}/g, municipalityData.distrito)
                     .replace(/{{clientName}}/g, liftData.clientName)
                     .replace(/{{clientPhone}}/g, liftData.clientPhone)
                     .replace(/{{clientEmail}}/g, liftData.clientEmail)
+                    .replace(/{{brand}}/g, liftData.brand)
+                    .replace(/{{model}}/g, liftData.model)
+                    .replace(/{{year}}/g, liftData.year)
+                    .replace(/{{capacity}}/g, liftData.capacity)
                     .replace(/{{serviceStartDate}}/g, formatDate(serviceStartDate))
                     .replace(/{{currentDate}}/g, formatDate(new Date().toISOString().split('T')[0]))
+                    .replace(/{{date}}/g, formatDate(new Date().toISOString().split('T')[0]))
                     .replace(/{{notes}}/g, notes || 'Sem notas adicionais');
 
                 // Browser preview não resolve imagens CID (usadas no envio real por email).
@@ -8582,17 +8596,25 @@ Equipa FestLift</textarea>
                     return;
                 }
 
+                const _instYear = lift.installationDate
+                    ? new Date(lift.installationDate).getFullYear()
+                    : (lift.installYear || lift.installationYear || 'N/A');
+
                 const result = await apiCall('/api/lifts/send-municipality-form', 'POST', {
                     templateType: apiTemplateType,
                     municipalityEmail: municipalityEmail,
                     liftData: {
                         municipalNumber: lift.municipalNumber || lift.liftMunicipalNumber || 'N/A',
                         address: address || 'N/A',
+                        postalCode: lift.address?.zipCode || lift.postalCode || lift.zipCode || 'N/A',
                         brand: lift.manufacturer || lift.brand || 'N/A',
                         model: lift.model || 'N/A',
-                        installationYear: lift.installYear || lift.installationYear || 'N/A',
+                        installationYear: _instYear,
                         capacity: lift.capacity || 'N/A',
-                        municipalityName: currentMunicipalityData.name || 'Câmara Municipal',
+                        clientName: lift.clientName || (lift.client?.name) || 'N/A',
+                        clientPhone: lift.clientPhone || (lift.client?.phone) || 'N/A',
+                        clientEmail: lift.clientEmail || (lift.client?.email) || 'N/A',
+                        municipalityName: currentMunicipalityData.name || currentMunicipalityData.concelho || 'Câmara Municipal',
                         serviceStartDate: serviceStartDate || '',
                         notes: notes || ''
                     }

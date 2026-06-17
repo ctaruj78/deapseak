@@ -412,7 +412,14 @@
                     </a>
                 </li>
                 
-                <!-- Saída -->
+                <!-- Definições -->
+                <li class="nav-item">
+                    <a href="/pages/client/settings.html" class="nav-link" id="nav-settings">
+                        <i class="nav-icon fas fa-cog"></i>
+                        <p>Definições</p>
+                    </a>
+                </li>
+                                <!-- Saída -->
                 <li class="nav-item">
                     <a href="#" onclick="logout()" class="nav-link">
                         <i class="nav-icon fas fa-sign-out-alt text-danger"></i>
@@ -917,16 +924,7 @@
             }, 1000));
 
             // Escuro assunto
-            $('#darkModeToggle').on('click', function() {
-                $('body').toggleClass('dark-mode');
-                $(this).find('i').toggleClass('fa-moon fa-sun');
-                window.clientDashboard?.showNotification(
-                    $('body').hasClass('dark-mode') ? 'Tema escuro ativado' : 'Tema escuro desativado', 
-                    'success'
-                );
-            });
-
-            // Verificação de ligação
+// Verificação de ligação
             window._clientDashboardIntervals.push(setInterval(() => {
                 const online = navigator.onLine;
                 $('#connectionStatus').html(
