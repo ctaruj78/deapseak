@@ -2753,6 +2753,26 @@ app.post('/api/users/avatar', authenticateToken, uploadAvatar.single('avatar'), 
     }
 });
 
+// 🖼  POST /api/technicians/:id/avatar — upload avatar de técnico (admin/dispatcher)
+app.post('/api/technicians/:id/avatar', authenticateToken, uploadAvatar.single('avatar'), async (req, res) => {
+    try {
+        if (req.user.role !== 'admin' && req.user.role !== 'dispatcher') {
+            return res.status(403).json({ success: false, message: 'Acesso negado' });
+        }
+        const { ObjectId } = require('mongodb');
+        if (!req.file) return res.status(400).json({ success: false, message: 'Ficheiro não enviado.' });
+        const avatarUrl = `/uploads/avatars/${req.file.filename}`;
+        await db.collection('users').updateOne(
+            { _id: new ObjectId(req.params.id) },
+            { $set: { avatar: avatarUrl, updatedAt: new Date() } }
+        );
+        res.json({ success: true, avatarUrl });
+    } catch (err) {
+        console.error('❌ technician avatar upload error:', err);
+        res.status(500).json({ success: false, message: 'Erro ao guardar avatar.' });
+    }
+});
+
 // ─────────────────────────────────────────────────────────────────────────────
 // 🎫  /api/support/tickets  — tickets de suporte ao cliente
 // ─────────────────────────────────────────────────────────────────────────────

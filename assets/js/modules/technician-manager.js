@@ -8,7 +8,6 @@ class TechnicianManager {
 
     init() {
         this.loadTechnicians();
-        this.updateStats();
         this.setupRealTimeUpdates();
     }
 
@@ -25,20 +24,18 @@ class TechnicianManager {
             if (response.ok) {
                 this.technicians = await response.json();
                 this.filteredTechnicians = [...this.technicians];
-                this.renderTechnicians();
-                this.updateBadges();
             } else {
                 this.technicians = [];
                 this.filteredTechnicians = [];
-                this.renderTechnicians();
-                this.updateBadges();
             }
         } catch (error) {
-            console.error('Erro завантаження техніків:', error);
+            console.error('Erro завантaження техніків:', error);
             this.technicians = [];
             this.filteredTechnicians = [];
+        } finally {
             this.renderTechnicians();
             this.updateBadges();
+            this.updateStats();
         }
     }
 
@@ -264,9 +261,9 @@ class TechnicianManager {
         if (techId) {
             const tech = this.technicians.find(t => String(t.id) === String(techId));
             if (!tech) return;
-            
+
             this.currentTechnician = tech;
-            
+
             document.getElementById('technicianModalTitle').textContent = 'Editar técnico';
             document.getElementById('techId').value = tech.id;
             document.getElementById('techFirstName').value = tech.firstName;
@@ -278,8 +275,14 @@ class TechnicianManager {
             document.getElementById('techSkills').value = tech.skills.join(', ');
             document.getElementById('techLocation').value = tech.location || '';
             document.getElementById('techNotes').value = tech.notes || '';
-            
-            $('#technicianModal').modal('show');
+
+            const $view = $('#viewTechnicianModal');
+            if ($view.hasClass('show')) {
+                $view.modal('hide');
+                $view.one('hidden.bs.modal', () => $('#technicianModal').modal('show'));
+            } else {
+                $('#technicianModal').modal('show');
+            }
         } else if (this.currentTechnician) {
             this.editTechnician(this.currentTechnician.id);
         }
@@ -305,9 +308,27 @@ class TechnicianManager {
             location: document.getElementById('techLocation').value,
             notes: document.getElementById('techNotes').value
         };
-        
+
+        // Upload avatar if a file was selected
+        const avatarInput = document.getElementById('techAvatar');
+        if (techData.id && avatarInput && avatarInput.files && avatarInput.files[0]) {
+            try {
+                const fd = new FormData();
+                fd.append('avatar', avatarInput.files[0]);
+                const token = localStorage.getItem('token') || localStorage.getItem('liftmanager_jwt') || localStorage.getItem('authToken');
+                const avatarRes = await fetch(`/api/technicians/${techData.id}/avatar`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` },
+                    body: fd
+                });
+                if (avatarRes.ok) {
+                    const avatarData = await avatarRes.json();
+                    techData.avatar = avatarData.avatarUrl;
+                }
+            } catch(e) { console.warn('Avatar upload failed:', e); }
+        }
+
         try {
-            // Симуляція збереження через API
             if (techData.id) {
                 // Atualização існуючого техніка
                 const response = await fetch(`/api/technicians/${techData.id}`, {
