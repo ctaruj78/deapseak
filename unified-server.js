@@ -6410,10 +6410,23 @@ async function _loadPdfFonts(pdfDoc) {
 
 // AcroForm field writer — all fields remain editable in PDF readers
 function _makeFormFields(pdfDoc, page, jW, jH, font) {
-    const { rgb } = require('pdf-lib');
+    const { rgb, PDFName } = require('pdf-lib');
     const pW = page.getWidth(), pH = page.getHeight();
     const sx = pW / jW, sy = pH / jH;
     const form = pdfDoc.getForm();
+
+    // Register font as 'Helv' in AcroForm /DR/Font — required for /DA to work
+    try {
+        const acroDict = form.acroForm.dict;
+        let dr = acroDict.get(PDFName.of('DR'));
+        if (!dr) { dr = pdfDoc.context.obj({}); acroDict.set(PDFName.of('DR'), dr); }
+        const drObj = pdfDoc.context.lookup(dr);
+        let fd = drObj.get(PDFName.of('Font'));
+        if (!fd) { fd = pdfDoc.context.obj({}); drObj.set(PDFName.of('Font'), fd); }
+        const fdObj = pdfDoc.context.lookup(fd);
+        fdObj.set(PDFName.of('Helv'), font.ref);
+    } catch (_) {}
+
     let _n = 0;
     const uid = () => `_${Date.now()}_${++_n}`;
 
@@ -6421,10 +6434,11 @@ function _makeFormFields(pdfDoc, page, jW, jH, font) {
         field(value, jx, jy, jw, opts = {}) {
             if (!value && value !== 0) return;
             const h = opts.h || 14;
+            const sz = opts.size || 8;
             try {
                 const f = form.createTextField(uid());
                 f.setText(String(value));
-                f.setFontSize(opts.size || 8);
+                f.acroField.setDefaultAppearance(`/Helv ${sz} Tf 0 g`);
                 f.addToPage(page, {
                     x: jx * sx,
                     y: pH - jy * sy - h + 3,
@@ -6433,15 +6447,14 @@ function _makeFormFields(pdfDoc, page, jW, jH, font) {
                     textColor: rgb(0, 0, 0),
                     backgroundColor: rgb(1, 1, 1),
                     borderColor: rgb(1, 1, 1),
-                    font,
                 });
-            } catch (e) {}
+            } catch (e) { console.error('form field err:', e.message?.slice(0, 60)); }
         },
         check(on, jx, jy, sz = 9) {
             try {
                 const f = form.createTextField(uid());
                 f.setText(on ? 'X' : '');
-                f.setFontSize(sz - 1);
+                f.acroField.setDefaultAppearance(`/Helv ${Math.max(6, sz - 1)} Tf 0 g`);
                 f.addToPage(page, {
                     x: jx * sx,
                     y: pH - jy * sy - sz + 3,
@@ -6450,9 +6463,8 @@ function _makeFormFields(pdfDoc, page, jW, jH, font) {
                     textColor: rgb(0, 0, 0),
                     backgroundColor: rgb(1, 1, 1),
                     borderColor: rgb(0.5, 0.5, 0.5),
-                    font,
                 });
-            } catch (e) {}
+            } catch (e) { console.error('form check err:', e.message?.slice(0, 60)); }
         },
     };
 }
