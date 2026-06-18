@@ -1703,15 +1703,17 @@ class AgentService {
         }
 
         // ── 2. Gemini for complex / conversational queries ────────────────────
+        // Build context outside try so fast-fallback (catch) can also use it
+        const context = await this._buildContext(userRole, clientEmail, userId);
+        context.chatMemory = memory;
+        const contextSummary = this._buildCompactContextSummary(userRole, context);
+
         try {
-            const context = await this._buildContext(userRole, clientEmail, userId);
             const routeHint = this._detectTaskType(userMessage || '');
             const needsRag = /(norma|decreto|lei|artigo|compliance|procedimento|runbook|policy|seguranca|segurança|processo)/i.test(userMessage || '');
             const ragSnippets = needsRag ? await this._retrieveKnowledgeSnippets(userMessage, routeHint) : [];
-            context.chatMemory = memory;
             const systemPrompt = this._buildSystemPrompt(userRole, context, ragSnippets);
             const prompt = `${systemPrompt}\n\nMENSAGEM DO UTILIZADOR: ${userMessage}`;
-            const contextSummary = this._buildCompactContextSummary(userRole, context);
             const routeTimeoutMs = Number(process.env.ASSISTANT_CHAT_ROUTE_TIMEOUT_MS || 30000);
             const reply = await Promise.race([
                 this._generateText(prompt, routeHint, {

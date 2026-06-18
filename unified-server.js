@@ -493,6 +493,12 @@ app.use(logger.requestMiddleware); // 📋 Structured HTTP request logging (Wins
 // General rate limit для всіх API запитів
 app.use('/api/', generalLimiter);
 
+// Return 503 on API requests when MongoDB is temporarily disconnected
+app.use('/api/', (req, res, next) => {
+    if (!db) return res.status(503).json({ success: false, message: 'Serviço temporariamente indisponível. Tente novamente.' });
+    next();
+});
+
 // MongoDB підключення
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017';
 const DB_NAME = 'deapseak';

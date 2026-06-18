@@ -168,6 +168,19 @@ async function autoExpirarOrcamentos(filterExtra = {}) {
 
 // Função para gerar PDF do orçamento
 async function gerarPDFOrcamento(orcamento) {
+    // Pre-convert photos to JPEG buffers — pdfkit doesn't support WebP
+    const photoBuffers = new Map();
+    for (const fotoPath of (orcamento.fotos || [])) {
+        const absPath = path.join(__dirname, '../..', fotoPath.startsWith('/') ? fotoPath : '/' + fotoPath);
+        if (!fs.existsSync(absPath)) continue;
+        try {
+            const buf = await sharp(absPath).jpeg({ quality: 85 }).toBuffer();
+            photoBuffers.set(fotoPath, buf);
+        } catch (e) {
+            console.warn('⚠️ Erro ao converter foto para JPEG:', fotoPath, e.message);
+        }
+    }
+
     return new Promise((resolve, reject) => {
         try {
             const ORCAMENTO_COLOR = '#1a3a6b';
@@ -370,13 +383,12 @@ async function gerarPDFOrcamento(orcamento) {
                 const gap = 20;
                 let col = 0; // 0 = esquerda, 1 = direita
                 for (const fotoPath of orcamento.fotos) {
-                    // Construímos caminho absoluto a partir de uploads/ na raiz do projecto
-                    const absPath = path.join(__dirname, '../..', fotoPath.startsWith('/') ? fotoPath : '/' + fotoPath);
-                    if (!fs.existsSync(absPath)) continue;
+                    const imgBuf = photoBuffers.get(fotoPath);
+                    if (!imgBuf) continue;
                     try {
                         const x = col === 0 ? 50 : 50 + imgW + gap;
                         if (yPos + imgH > 780) { doc.addPage(); yPos = 50; col = 0; }
-                        doc.image(absPath, x, yPos, { width: imgW, height: imgH, fit: [imgW, imgH] });
+                        doc.image(imgBuf, x, yPos, { width: imgW, height: imgH, fit: [imgW, imgH] });
                         if (col === 1) { yPos += imgH + 12; col = 0; } else { col = 1; }
                     } catch (imgErr) {
                         console.warn('⚠️ Erro ao inserir foto no PDF:', fotoPath, imgErr.message);

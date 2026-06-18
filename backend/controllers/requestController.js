@@ -696,8 +696,13 @@ exports.cancelRequest = async (req, res, next) => {
 exports.submitFeedback = async (req, res, next) => {
     try {
         const { rating, comment } = req.body;
+        // Strip ObjectId('...') wrapper if client sends stringified ObjectId
+        const rawId = req.params.id;
+        const requestId = /^ObjectId\('([a-f0-9]{24})'\)$/i.test(rawId)
+            ? rawId.match(/([a-f0-9]{24})/i)[1]
+            : rawId;
 
-        const request = await Request.findById(req.params.id)
+        const request = await Request.findById(requestId)
             .populate('client', 'firstName lastName email')
             .populate('assignedTo', 'firstName lastName email');
 
