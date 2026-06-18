@@ -6333,7 +6333,7 @@ const REQUERIMENTO_FILES = {
     'Cascais': 'Requerimento_CMCascais.pdf',
     'Sintra': 'Requerimento_CMSintra.pdf',
     'Amadora': 'Requerimento_CMAmadora.pdf',
-    'Barreiro': null,
+    'Barreiro': 'Requerimento_CMBarreiro.pdf',
     'Mafra': 'Requerimento_CMMafra.pdf',
     'Vila Franca de Xira': 'Requerimento_CMVilaFrancaXira.pdf',
     'Alenquer': 'Requerimento_CMAlenquer.pdf',
@@ -6348,153 +6348,350 @@ const REQUERIMENTO_FILES = {
 
 function _liftEquipmentType(lift) {
     const t = (lift.type || '').toLowerCase();
-    const d = (lift.driveType || '').toLowerCase();
-    if (t.includes('escada') || t.includes('escalator')) return 'ESCADA(S) MECÂNICA(S)';
-    if (t.includes('tapete') || t.includes('moving walkway')) return 'TAPETE(S) ROLANTE(S)';
+    if (t.includes('escada') || t.includes('escalator')) return 'ESCADA';
+    if (t.includes('tapete') || t.includes('moving walkway')) return 'TAPETE';
     if (t.includes('monta') || t.includes('freight') || t.includes('goods')) return 'MONTA-CARGAS';
-    return 'ASCENSOR(ES)';
+    return 'ASCENSOR';
 }
 
-async function gerarRequerimentoPDF(lift, munName, inspType) {
-    const PDFDocument = require('pdfkit');
-    const FESTLIFT = {
-        name: 'FestLift - Elevadores e Serviços, Lda.',
-        address: 'Av. do Parque 84B',
-        cp: '2635-609', locality: 'Rio de Mouro',
-        nif: '515 924 741',
-        email: 'info@festlift.pt',
-        phone: '+351 214 190 863'
+// pdf-lib helper: overlay text at pdf2json coordinates on a page
+// jW/jH = pdf2json page width/height in units; page = PDFPage from pdf-lib
+function _makePageWriter(page, jW, jH, font, fontBold) {
+    const { rgb } = require('pdf-lib');
+    const pW = page.getWidth();
+    const pH = page.getHeight();
+    const sx = pW / jW;
+    const sy = pH / jH;
+    const BLACK = rgb(0, 0, 0);
+    const WHITE = rgb(1, 1, 1);
+
+    const toX = (jx) => jx * sx;
+    const toY = (jy) => pH - jy * sy;
+
+    return {
+        text(str, jx, jy, opts = {}) {
+            if (!str) return;
+            page.drawText(String(str), {
+                x: toX(jx),
+                y: toY(jy),
+                font: opts.bold ? fontBold : font,
+                size: opts.size || 8,
+                color: opts.color || BLACK,
+            });
+        },
+        check(jx, jy, opts = {}) {
+            page.drawText('X', {
+                x: toX(jx),
+                y: toY(jy),
+                font: fontBold,
+                size: opts.size || 8,
+                color: BLACK,
+            });
+        },
+        whiteRect(jx, jy, jw, jh) {
+            page.drawRectangle({
+                x: toX(jx),
+                y: toY(jy + jh),
+                width: jw * sx,
+                height: jh * sy,
+                color: WHITE,
+                borderWidth: 0,
+            });
+        },
     };
-    const inspLabels = {
-        periodica: 'INSPEÇÃO PERIÓDICA',
-        '1a': '1.ª INSPEÇÃO',
-        reinspecao: 'REINSPECÇÃO',
-        extraordinaria: 'INSPEÇÃO EXTRAORDINÁRIA',
+}
+
+async function _loadPdfFonts(pdfDoc) {
+    const { StandardFonts } = require('pdf-lib');
+    const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+    const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+    return { font, fontBold };
+}
+
+// AcroForm field writer — all fields remain editable in PDF readers
+function _makeFormFields(pdfDoc, page, jW, jH, font) {
+    const { rgb } = require('pdf-lib');
+    const pW = page.getWidth(), pH = page.getHeight();
+    const sx = pW / jW, sy = pH / jH;
+    const form = pdfDoc.getForm();
+    let _n = 0;
+    const uid = () => `_${Date.now()}_${++_n}`;
+
+    return {
+        field(value, jx, jy, jw, opts = {}) {
+            if (!value && value !== 0) return;
+            const h = opts.h || 14;
+            try {
+                const f = form.createTextField(uid());
+                f.setText(String(value));
+                f.setFontSize(opts.size || 8);
+                f.addToPage(page, {
+                    x: jx * sx,
+                    y: pH - jy * sy - h + 3,
+                    width: jw * sx,
+                    height: h,
+                    textColor: rgb(0, 0, 0),
+                    backgroundColor: rgb(1, 1, 1),
+                    borderColor: rgb(1, 1, 1),
+                    font,
+                });
+            } catch (e) {}
+        },
+        check(on, jx, jy, sz = 9) {
+            try {
+                const f = form.createTextField(uid());
+                f.setText(on ? 'X' : '');
+                f.setFontSize(sz - 1);
+                f.addToPage(page, {
+                    x: jx * sx,
+                    y: pH - jy * sy - sz + 3,
+                    width: sz,
+                    height: sz,
+                    textColor: rgb(0, 0, 0),
+                    backgroundColor: rgb(1, 1, 1),
+                    borderColor: rgb(0.5, 0.5, 0.5),
+                    font,
+                });
+            } catch (e) {}
+        },
     };
-    const inspLabel = inspLabels[inspType] || 'INSPEÇÃO PERIÓDICA';
-    const equipType = _liftEquipmentType(lift);
+}
+
+// === VFX form fill — Requerimento_CMVilaFrancaXira.pdf ===
+async function _fillVFX(pdfDoc, lift, inspType, requerente, req, pagamento) {
+    const page = pdfDoc.getPages()[0];
+    const { font } = await _loadPdfFonts(pdfDoc);
+    const fw = _makeFormFields(pdfDoc, page, 37.208, 52.62, font);
     const addr = lift.address || {};
-    const munEmail = lift.municipality?.email || '';
+    const today = new Date().toLocaleDateString('pt-PT');
+    const equip = _liftEquipmentType(lift);
 
-    return new Promise((resolve, reject) => {
-        const doc = new PDFDocument({ margin: 50, size: 'A4' });
-        const chunks = [];
-        doc.on('data', c => chunks.push(c));
-        doc.on('end', () => resolve(Buffer.concat(chunks)));
-        doc.on('error', reject);
+    fw.field(req.name,    7.0,  8.371, 26.0);
+    fw.field(req.address, 7.4,  9.459, 26.0);
+    fw.field((req.cp || '') + (req.locality ? '  ' + req.locality : ''), 9.0, 10.539, 23.0);
+    fw.field(req.nif,    26.5, 11.626, 10.0);
+    fw.field(req.email,   7.0, 12.624, 26.0);
+    fw.field(req.phone,   7.6, 13.689, 20.0);
 
-        const W = 495, L = 50;
-        const grey = '#4a4a4a', blue = '#003399', lightGrey = '#f5f5f5', darkGrey = '#333';
+    fw.check(inspType === '1a',             10.2, 24.078);
+    fw.check(inspType === 'periodica',      17.2, 24.078);
+    fw.check(inspType === 'reinspecao',     10.2, 24.648);
+    fw.check(inspType === 'extraordinaria', 17.2, 24.648);
 
-        // Header — municipality crest placeholder + title
-        doc.fontSize(11).font('Helvetica-Bold').fillColor(blue)
-           .text(`CÂMARA MUNICIPAL DE ${(munName || '').toUpperCase()}`, L, 50, { align: 'center', width: W });
-        doc.fontSize(9).font('Helvetica').fillColor(grey)
-           .text('INSPEÇÃO PERIÓDICA DE ELEVADORES, TAPETES ROLANTES E ESCADAS MECÂNICAS', L, 68, { align: 'center', width: W });
-        doc.moveTo(L, 82).lineTo(L + W, 82).strokeColor(blue).lineWidth(1.5).stroke();
-        doc.moveDown(0.3);
+    fw.check(requerente === 'cliente', 10.5, 25.863);
+    fw.check(requerente !== 'cliente', 17.4, 25.863);
 
-        // Address line
-        if (munEmail) {
-            doc.fontSize(8).font('Helvetica').fillColor(grey)
-               .text(`Email do município: ${munEmail}`, L, 88, { align: 'right', width: W });
-        }
-        doc.moveDown(0.5);
+    fw.check(equip === 'ASCENSOR',     10.5, 27.881);
+    fw.check(equip === 'ESCADA',       18.0, 27.881);
+    fw.check(equip === 'MONTA-CARGAS', 10.5, 28.466);
+    fw.check(equip === 'TAPETE',       18.0, 28.466);
 
-        const drawSectionHeader = (title, y) => {
-            doc.rect(L, y, W, 16).fill('#d0d8ee').stroke('#aab4cc');
-            doc.fontSize(8).font('Helvetica-Bold').fillColor(darkGrey)
-               .text(title, L + 6, y + 4, { width: W - 12 });
-            return y + 18;
-        };
+    fw.field(lift.municipalNumber || '', 10.55, 30.792, 4.0);
+    fw.field(addr.street || '', 12.5, 31.954, 20.0);
+    fw.field(addr.zipCode || addr.postcode || '', 9.2, 33.499, 14.0);
+    fw.field(addr.city || addr.parish || '', 25.0, 33.499, 9.0);
 
-        const drawField = (label, value, x, y, w, h = 14) => {
-            doc.rect(x, y, w, h).stroke('#cccccc');
-            doc.fontSize(6.5).font('Helvetica').fillColor('#888').text(label, x + 2, y + 1.5, { width: w - 4 });
-            doc.fontSize(8.5).font('Helvetica').fillColor(darkGrey).text(value || '', x + 2, y + 6, { width: w - 4 });
-        };
+    fw.field('FestLift - Elevadores e Serviços, Lda.', 12.9, 37.167, 22.0, { size: 7 });
+    fw.field('515 924 741', 9.9, 38.172, 8.0);
 
-        const drawCheckbox = (label, checked, x, y) => {
-            doc.rect(x, y, 9, 9).stroke('#555');
-            if (checked) {
-                doc.fontSize(8).font('Helvetica-Bold').fillColor(blue).text('X', x + 1.5, y + 0.5);
-            }
-            doc.fontSize(8).font('Helvetica').fillColor(darkGrey).text(label, x + 12, y + 0.5);
-        };
+    fw.check(pagamento === 'dinheiro' || pagamento === 'numerario' || pagamento === 'multibanco' || pagamento === 'transferencia', 12.2, 40.302);
+    fw.check(pagamento === 'cheque', 12.2, 41.466);
 
-        // --- SECÇÃO 1: IDENTIFICAÇÃO DO REQUERENTE ---
-        let y = 102;
-        y = drawSectionHeader('IDENTIFICAÇÃO DO REQUERENTE', y);
+    fw.field(today, 5.1, 46.258, 10.0);
+}
 
-        drawField('Nome', FESTLIFT.name, L, y, W);
-        y += 16;
-        drawField('Morada', FESTLIFT.address, L, y, W);
-        y += 16;
-        drawField('Código Postal', `${FESTLIFT.cp}  ${FESTLIFT.locality}`, L, y, W * 0.4);
-        drawField('N.º Identificação Fiscal', FESTLIFT.nif, L + W * 0.4 + 2, y, W * 0.6 - 2);
-        y += 16;
-        drawField('E-mail', FESTLIFT.email, L, y, W * 0.5);
-        drawField('Telefone', FESTLIFT.phone, L + W * 0.5 + 2, y, W * 0.5 - 2);
-        y += 20;
+// === Lisboa form fill — Requerimento_CMLisboa.pdf (page 2 of 3) ===
+// All positions from pdf2json; AcroForm fields bypass content-stream transform offset
+async function _fillLisboa(pdfDoc, lift, inspType, requerente, req) {
+    const page = pdfDoc.getPages()[1];
+    const { font } = await _loadPdfFonts(pdfDoc);
+    const fw = _makeFormFields(pdfDoc, page, 37.201, 52.625, font);
+    const addr = lift.address || {};
+    const today = new Date().toLocaleDateString('pt-PT');
+    const equip = _liftEquipmentType(lift);
 
-        doc.fontSize(8).font('Helvetica').fillColor(darkGrey).text('Na qualidade de:', L, y);
-        drawCheckbox('Próprio', false, L + 80, y);
-        drawCheckbox('Representante', false, L + 145, y);
-        drawCheckbox('Empresa de Manutenção', true, L + 240, y);
-        y += 20;
+    // Requerente type (left column: x≈2.55)
+    fw.check(requerente !== 'cliente', 2.55, 9.682);  // Empresa de Manutenção
+    fw.check(requerente === 'cliente', 2.55, 11.414); // Proprietário do Edifício
 
-        // --- SECÇÃO 2: IDENTIFICAÇÃO DO PEDIDO ---
-        y = drawSectionHeader('IDENTIFICAÇÃO DO PEDIDO', y);
-        doc.fontSize(7.5).font('Helvetica').fillColor(grey).text('REQUER NOS TERMOS LEGAIS:', L, y + 3);
-        y += 16;
+    // Billing data
+    fw.field(req.name,                    4.8,  13.762, 22.0);
+    fw.field(req.nif,                    29.5,  13.604,  7.5);
+    fw.field(req.address,                 4.773, 14.789, 12.7);
+    fw.field(req.cp || '',               21.0,  14.759,  3.5);
+    fw.field(req.locality || '',         27.0,  14.752, 10.0);
+    fw.field(req.phone || '',            10.0,  15.879,  5.5);
+    fw.field(req.email || '',            18.0,  15.879, 19.0);
 
-        drawCheckbox('1.ª INSPEÇÃO / REINSPECÇÃO', inspType === '1a' || inspType === 'reinspecao', L, y);
-        drawCheckbox('INSPEÇÃO PERIÓDICA', inspType === 'periodica' || !inspType, L + 180, y);
-        drawCheckbox('INSPEÇÃO EXTRAORDINÁRIA', inspType === 'extraordinaria', L + 340, y);
-        y += 18;
+    // Notifications → send to Requerente
+    fw.check(true, 18.3, 18.474);
 
-        doc.fontSize(7.5).font('Helvetica').fillColor(grey).text('NA QUALIDADE DE:', L, y + 3);
-        y += 14;
-        drawCheckbox('PROPRIETÁRIO', false, L, y);
-        drawCheckbox('EMPRESA DE MANUTENÇÃO', true, L + 120, y);
-        drawCheckbox('OUTRO', false, L + 280, y);
-        y += 18;
+    // Inspection type
+    fw.check(inspType === 'periodica' || inspType === '1a', 2.7, 25.389);
+    fw.check(inspType === 'reinspecao',                     8.5, 25.381);
+    fw.check(inspType === 'extraordinaria',                 2.7, 26.658);
 
-        doc.fontSize(7.5).font('Helvetica').fillColor(grey).text('DO(S):', L, y + 3);
-        y += 14;
-        drawCheckbox('ASCENSOR(ES) / MONTA-CARGAS', equipType === 'ASCENSOR(ES)' || equipType === 'MONTA-CARGAS', L, y);
-        drawCheckbox('ESCADA(S) MECÂNICA(S) / TAPETE(S) ROLANTE(S)', equipType.includes('ESCADA') || equipType.includes('TAPETE'), L + 200, y);
-        y += 22;
+    // Equipment type
+    fw.check(equip === 'ASCENSOR',       7.4, 27.895);
+    fw.check(equip === 'MONTA-CARGAS',  11.3, 27.903);
+    fw.check(equip === 'ESCADA',        16.3, 27.918);
+    fw.check(equip === 'TAPETE',        22.1, 27.888);
 
-        // Elevator number + address
-        drawField('ELEVADOR(ES) N.º(S)', lift.municipalNumber || '—', L, y, W * 0.5);
-        y += 18;
-        drawField('INSTALADO(S) EM MORADA', addr.street || '—', L, y, W);
-        y += 16;
-        drawField('COD. POSTAL', addr.zipCode || addr.postcode || '—', L, y, W * 0.4);
-        drawField('FREGUESIA DE', addr.city || '—', L + W * 0.4 + 2, y, W * 0.6 - 2);
-        y += 18;
+    // Installation address
+    fw.field(addr.street || '',                        4.833, 30.483, 20.0);
+    fw.field(addr.zipCode || addr.postcode || '',     31.5,  30.513,  5.5);
+    fw.field(addr.city || addr.parish || '',           5.0,  31.518, 22.0);
 
-        drawField('EMPRESA DE MANUTENÇÃO', FESTLIFT.name, L, y, W * 0.65);
-        drawField('CONTRIBUINTE N.º', FESTLIFT.nif, L + W * 0.65 + 2, y, W * 0.35 - 2);
-        y += 22;
+    // EMIE
+    fw.field('FestLift - Elevadores e Serviços, Lda.', 18.304, 35.350, 18.0, { size: 7 });
+    if (lift.municipalNumber) fw.field(lift.municipalNumber, 6.738, 36.409, 4.0);
 
-        // --- Signature + Date ---
-        doc.moveTo(L, y).lineTo(L + W, y).strokeColor('#cccccc').lineWidth(0.5).stroke();
-        y += 12;
-        const today = new Date().toLocaleDateString('pt-PT', { day: '2-digit', month: '2-digit', year: 'numeric' });
-        doc.fontSize(8).font('Helvetica').fillColor(grey)
-           .text(`Rio de Mouro, ${today}`, L, y)
-           .text('Assinatura / Carimbo:', L + W - 180, y);
-        y += 30;
-        doc.moveTo(L + W - 180, y).lineTo(L + W, y).strokeColor('#555').lineWidth(0.5).stroke();
+    fw.field(today, 5.5, 45.837, 5.0);
+}
 
-        // Footer
-        doc.fontSize(7).font('Helvetica').fillColor('#aaa')
-           .text(`Gerado automaticamente por FestLift CRM  •  ${new Date().toLocaleString('pt-PT')}`, L, 780, { align: 'center', width: W });
+// === Cascais form fill — Requerimento_CMCascais.pdf ===
+// Positions from pdf2json W=37.188 H=52.625
+async function _fillCascais(pdfDoc, lift, inspType, requerente, req) {
+    const page = pdfDoc.getPages()[0];
+    const { font } = await _loadPdfFonts(pdfDoc);
+    const fw = _makeFormFields(pdfDoc, page, 37.188, 52.625, font);
+    const addr = lift.address || {};
+    const today = new Date().toLocaleDateString('pt-PT');
+    const equip = _liftEquipmentType(lift);
 
-        doc.end();
+    fw.field(req.name,    7.0,   11.730, 27.0);
+    fw.field(req.address, 7.782, 12.645, 26.0);
+    fw.field(req.cp,      9.935, 13.553,  7.5);
+    fw.field(req.phone,  18.035, 13.553,  7.5);
+    fw.field(req.nif,    13.0,   14.468,  9.0);
+
+    fw.check(requerente === 'cliente',  5.55, 15.63);
+    fw.check(requerente !== 'cliente', 21.22, 15.63);
+
+    fw.check(inspType === 'periodica' || inspType === '1a', 8.37, 17.80);
+    fw.check(inspType === 'reinspecao',                    17.56, 17.80);
+    fw.check(inspType === 'extraordinaria',                23.97, 17.80);
+
+    fw.field(addr.street || '',             7.782, 20.640, 26.0);
+    fw.field(addr.city || addr.parish || '', 9.462, 23.325, 10.0);
+
+    fw.check(equip === 'ASCENSOR',      6.5,  26.09);
+    fw.check(equip === 'MONTA-CARGAS', 11.65, 26.09);
+    fw.check(equip === 'ESCADA',       18.1,  26.09);
+    fw.check(equip === 'TAPETE',       25.98, 26.09);
+
+    fw.field(lift.municipalNumber || '', 30.5, 27.165, 8.0);
+    fw.field('FestLift - Elevadores e Serviços, Lda.', 8.5, 28.140, 25.0, { size: 7 });
+    fw.field(today, 7.767, 31.050, 5.0);
+}
+
+// === Generic form fill for other municipalities ===
+async function _fillGeneric(pdfDoc, lift, munName, inspType, requerente, req) {
+    const PDFParser = require('pdf2json');
+    const pdfPath = require('path').join(__dirname, 'uploads/requerimentos', REQUERIMENTO_FILES[munName]);
+
+    const pageData = await new Promise((resolve, reject) => {
+        const parser = new PDFParser(null, 1);
+        parser.on('pdfParser_dataError', reject);
+        parser.on('pdfParser_dataReady', d => resolve(d.Pages?.[0] || null));
+        parser.loadPDF(pdfPath);
     });
+    if (!pageData) return;
+
+    const page = pdfDoc.getPages()[0];
+    const { font } = await _loadPdfFonts(pdfDoc);
+    const fw = _makeFormFields(pdfDoc, page, pageData.Width || 37.208, pageData.Height || 52.625, font);
+    const texts = pageData.Texts.map(t => ({
+        x: t.x, y: t.y,
+        text: decodeURIComponent(t.R.map(r => r.T).join('')).trim(),
+    }));
+
+    const addr = lift.address || {};
+    const today = new Date().toLocaleDateString('pt-PT');
+    const equip = _liftEquipmentType(lift);
+
+    const find = (patterns) => {
+        const pat = Array.isArray(patterns) ? patterns : [patterns];
+        for (const t of texts) {
+            if (pat.some(p => t.text.toLowerCase().includes(p.toLowerCase()))) return t;
+        }
+        return null;
+    };
+
+    const fld = (patterns, value, offX = 2.5, w = 15.0, opts = {}) => {
+        const t = find(patterns);
+        if (t && value) fw.field(value, t.x + offX, t.y, w, opts);
+    };
+    const chk = (patterns, on, offX = -1.2) => {
+        const t = find(patterns);
+        if (t) fw.check(on, t.x + offX, t.y);
+    };
+
+    fld(['Nome/', 'Nome:', 'Nome '], req.name, 1.5, 22.0);
+    fld(['Morada/', 'Morada:', 'Morada ', 'Sede'], req.address, 1.5, 22.0);
+    fld(['Código Postal', 'Código postal', 'Cód. Postal'], req.cp, 2.5, 8.0);
+    fld(['Identificação Fiscal', 'N.I.F', 'N.º C.', 'NIF', 'nif'], req.nif, 2.5, 10.0);
+    fld(['E-mail', 'email', 'Email'], req.email, 1.5, 15.0);
+    fld(['Telefone', 'Telef', 'Contacto Tel'], req.phone, 1.5, 10.0);
+
+    if (inspType === 'periodica')       chk(['Periódica', 'Periodica', 'PERIÓDICA', 'PERIODICA'], true);
+    else if (inspType === 'reinspecao') chk(['Reinspecção', 'Reinspe', 'REINSPECÇÃO'], true);
+    else if (inspType === '1a')         chk(['1.ª', '1ª', 'Primeira', '1.a'], true);
+    else if (inspType === 'extraordinaria') chk(['Extraordinária', 'Extraordinar', 'EXTRAORDINÁRIA'], true);
+
+    if (requerente === 'cliente') chk(['Proprietário', 'PROPRIETÁRIO'], true);
+    else chk(['Empresa de Manutenção', 'EMPRESA DE MANUTENÇÃO', 'E.M.I.E', 'E.M.'], true);
+
+    if (equip === 'ASCENSOR')          chk(['Ascensor', 'ASCENSOR'], true);
+    else if (equip === 'ESCADA')       chk(['Escada', 'ESCADA'], true);
+    else if (equip === 'MONTA-CARGAS') chk(['Monta', 'MONTA'], true);
+    else if (equip === 'TAPETE')       chk(['Tapete', 'TAPETE'], true);
+
+    fld(['Elevador', 'Ascensor', 'N.º(s)', 'Processo'], lift.municipalNumber, 2.5, 8.0);
+    fld(['Instalado', 'Local da instal', 'Morada da instal'], addr.street, 3.0, 18.0);
+    fld(['Freguesia', 'FREGUESIA'], addr.city || addr.parish, 2.0, 10.0);
+    fld(['Empresa de Manutenção', 'E.M.I.E', 'empresa de manuten'], 'FestLift - Elevadores e Serviços, Lda.', 3.0, 22.0, { size: 7 });
+    fld(['Contribuinte', 'CONTRIBUINTE', 'NIF da emp'], '515 924 741', 2.5, 8.0);
+    fld(['Data', '___/___/____', '__/__/____'], today, 0.5, 8.0);
+}
+
+async function fillRequerimentoOriginal(lift, munName, inspType, requerente, clientData) {
+    const { PDFDocument } = require('pdf-lib');
+    const fs = require('fs');
+    const path = require('path');
+
+    const FESTLIFT = {
+        name:     'FestLift - Elevadores e Serviços, Lda.',
+        address:  'Av. do Parque 84B',
+        cp:       '2635-609',
+        locality: 'Rio de Mouro',
+        nif:      '515 924 741',
+        email:    'info@festlift.pt',
+        phone:    '214 190 863',
+    };
+
+    const req = (requerente === 'cliente' && clientData) ? clientData : FESTLIFT;
+
+    const munFile = REQUERIMENTO_FILES[munName];
+    if (!munFile) throw new Error(`Formulário não disponível para ${munName}`);
+
+    const pdfPath = path.join(__dirname, 'uploads/requerimentos', munFile);
+    const pdfBytes = fs.readFileSync(pdfPath);
+    const pdfDoc = await PDFDocument.load(pdfBytes, { ignoreEncryption: true });
+
+    const pagamento = lift._reqPagamento || 'dinheiro';
+
+    if (munName === 'Vila Franca de Xira') {
+        await _fillVFX(pdfDoc, lift, inspType, requerente, req, pagamento);
+    } else if (munName === 'Cascais') {
+        await _fillCascais(pdfDoc, lift, inspType, requerente, req);
+    } else if (munName === 'Lisboa') {
+        await _fillLisboa(pdfDoc, lift, inspType, requerente, req);
+    } else {
+        await _fillGeneric(pdfDoc, lift, munName, inspType, requerente, req);
+    }
+
+    return Buffer.from(await pdfDoc.save());
 }
 
 // GET /api/lifts/:id/requerimento — gera PDF de requerimento preenchido
@@ -6510,10 +6707,35 @@ app.get('/api/lifts/:id/requerimento', authenticateToken, async (req, res) => {
         const lift = await db.collection('lifts').findOne({ _id: new ObjectId(liftId) });
         if (!lift) return res.status(404).json({ success: false, message: 'Elevador não encontrado' });
 
-        const munName = lift.municipality?.name || '';
-        const inspType = (req.query.type || 'periodica').toLowerCase();
+        const munName   = lift.municipality?.name || '';
+        const inspType  = (req.query.type      || 'periodica').toLowerCase();
+        const requerente = (req.query.requerente || 'festlift').toLowerCase();
+        const pagamento  = (req.query.pagamento  || 'dinheiro').toLowerCase();
 
-        const pdfBuffer = await gerarRequerimentoPDF(lift, munName, inspType);
+        // Attach pagamento to lift object for form fill
+        lift._reqPagamento = pagamento;
+
+        // Fetch client data if needed
+        let clientData = null;
+        if (requerente === 'cliente' && lift.clientId) {
+            const client = await db.collection('clients').findOne(
+                { _id: new (require('mongodb').ObjectId)(String(lift.clientId)) },
+                { projection: { name: 1, address: 1, nif: 1, email: 1, phone: 1 } }
+            );
+            if (client) {
+                clientData = {
+                    name:     client.name || '',
+                    address:  client.address?.street || client.address || '',
+                    cp:       client.address?.zipCode || client.address?.postcode || '',
+                    locality: client.address?.city || '',
+                    nif:      client.nif || '',
+                    email:    client.email || '',
+                    phone:    client.phone || '',
+                };
+            }
+        }
+
+        const pdfBuffer = await fillRequerimentoOriginal(lift, munName, inspType, requerente, clientData);
         const filename = `Requerimento_${(munName || 'Municipio').replace(/\s+/g, '_')}_${lift.municipalNumber || lift._id}.pdf`;
 
         res.setHeader('Content-Type', 'application/pdf');
@@ -6521,7 +6743,7 @@ app.get('/api/lifts/:id/requerimento', authenticateToken, async (req, res) => {
         res.send(pdfBuffer);
     } catch (err) {
         console.error('❌ Erro ao gerar requerimento:', err);
-        res.status(500).json({ success: false, message: 'Erro ao gerar requerimento' });
+        res.status(500).json({ success: false, message: err.message || 'Erro ao gerar requerimento' });
     }
 });
 
