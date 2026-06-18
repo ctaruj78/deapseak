@@ -1743,6 +1743,7 @@ class AgentService {
                         userRole,
                         userId,
                         userMessage,
+                        contextSummary,
                         forceModel: fastModel,
                         timeoutMs: fastTimeoutMs,
                         maxNumCtx: fastCtx,
