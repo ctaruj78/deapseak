@@ -2471,6 +2471,20 @@
                             <button type="button" id="btnSendToMun" class="btn btn-warning btn-sm w-100">
                                 <i class="fas fa-building mr-1"></i> Pedido ao município
                             </button>
+                            <hr class="my-2">
+                            <div class="form-group mb-1">
+                                <label class="small font-weight-bold">Tipo de inspecção (requerimento)</label>
+                                <select id="inspReqModal_reqType" class="form-control form-control-sm">
+                                    <option value="periodica">Inspeção Periódica</option>
+                                    <option value="1a">1.ª Inspeção</option>
+                                    <option value="reinspecao">Reinspecção</option>
+                                    <option value="extraordinaria">Inspeção Extraordinária</option>
+                                </select>
+                            </div>
+                            <button type="button" id="btnGerarRequerimento" class="btn btn-success btn-sm w-100">
+                                <i class="fas fa-file-pdf mr-1"></i> Gerar Requerimento PDF
+                            </button>
+                            <small class="text-muted d-block mt-1" style="font-size:10px;"><i class="fas fa-info-circle mr-1"></i>O PDF é gerado preenchido — só falta assinar e entregar/enviar.</small>
                         </div>
                     </div>
                 </div>
@@ -3880,6 +3894,34 @@ Email de contacto: info@festlift.pt`;
             return false;
         }
     }
+
+    // Gerar Requerimento PDF
+    $(document).on('click', '#btnGerarRequerimento', async function() {
+        const liftId = window._currentInspectionLiftId;
+        if (!liftId) return toastr.error('Elevador não identificado');
+        const type = $('#inspReqModal_reqType').val() || 'periodica';
+        const btn = this;
+        const old = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> A gerar...';
+        try {
+            const token = localStorage.getItem('liftmanager_jwt') || localStorage.getItem('authToken') || localStorage.getItem('token') || '';
+            const res = await fetch(`/api/lifts/${liftId}/requerimento?type=${type}`, { headers: { 'Authorization': `Bearer ${token}` } });
+            if (!res.ok) { const d = await res.json().catch(()=>{}); throw new Error(d?.message || `HTTP ${res.status}`); }
+            const blob = await res.blob();
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = res.headers.get('Content-Disposition')?.match(/filename="([^"]+)"/)?.[1] || 'requerimento.pdf';
+            document.body.appendChild(a); a.click(); document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            toastr.success('Requerimento gerado — verifique os downloads');
+        } catch (err) {
+            toastr.error('Erro ao gerar requerimento: ' + err.message);
+        } finally {
+            btn.disabled = false; btn.innerHTML = old;
+        }
+    });
 
     // Кнопки в модалі (ініціалізація одноразово)
     $(document).on('click', '#btnSendToClient', async function() {

@@ -6324,6 +6324,208 @@ app.get('/api/municipalities/stats', authenticateToken, async (req, res) => {
 });
 
 // ========================================
+// 📋 REQUERIMENTO MUNICÍPIOS
+// ========================================
+
+const REQUERIMENTO_FILES = {
+    'Lisboa': 'Requerimento_CMLisboa.pdf',
+    'Oeiras': 'Requerimento_CMOeiras.pdf',
+    'Cascais': 'Requerimento_CMCascais.pdf',
+    'Sintra': 'Requerimento_CMSintra.pdf',
+    'Amadora': 'Requerimento_CMAmadora.pdf',
+    'Barreiro': null,
+    'Mafra': 'Requerimento_CMMafra.pdf',
+    'Vila Franca de Xira': 'Requerimento_CMVilaFrancaXira.pdf',
+    'Alenquer': 'Requerimento_CMAlenquer.pdf',
+    'Almada': 'Requerimento_CMAlmada.pdf',
+    'Odivelas': 'Requerimento_CMOdivelas.pdf',
+    'Setúbal': 'Requerimento_CMSetubal.pdf',
+    'Torres Vedras': 'Requerimento_CMTorresVedras.pdf',
+    'Montijo': 'Requerimento_CMMontijo.pdf',
+    'Lourinhã': 'Requerimento_CMLourinha.pdf',
+    'Loures': null,
+};
+
+function _liftEquipmentType(lift) {
+    const t = (lift.type || '').toLowerCase();
+    const d = (lift.driveType || '').toLowerCase();
+    if (t.includes('escada') || t.includes('escalator')) return 'ESCADA(S) MECÂNICA(S)';
+    if (t.includes('tapete') || t.includes('moving walkway')) return 'TAPETE(S) ROLANTE(S)';
+    if (t.includes('monta') || t.includes('freight') || t.includes('goods')) return 'MONTA-CARGAS';
+    return 'ASCENSOR(ES)';
+}
+
+async function gerarRequerimentoPDF(lift, munName, inspType) {
+    const PDFDocument = require('pdfkit');
+    const FESTLIFT = {
+        name: 'FestLift - Elevadores e Serviços, Lda.',
+        address: 'Av. do Parque 84B',
+        cp: '2635-609', locality: 'Rio de Mouro',
+        nif: '515 924 741',
+        email: 'info@festlift.pt',
+        phone: '+351 214 190 863'
+    };
+    const inspLabels = {
+        periodica: 'INSPEÇÃO PERIÓDICA',
+        '1a': '1.ª INSPEÇÃO',
+        reinspecao: 'REINSPECÇÃO',
+        extraordinaria: 'INSPEÇÃO EXTRAORDINÁRIA',
+    };
+    const inspLabel = inspLabels[inspType] || 'INSPEÇÃO PERIÓDICA';
+    const equipType = _liftEquipmentType(lift);
+    const addr = lift.address || {};
+    const munEmail = lift.municipality?.email || '';
+
+    return new Promise((resolve, reject) => {
+        const doc = new PDFDocument({ margin: 50, size: 'A4' });
+        const chunks = [];
+        doc.on('data', c => chunks.push(c));
+        doc.on('end', () => resolve(Buffer.concat(chunks)));
+        doc.on('error', reject);
+
+        const W = 495, L = 50;
+        const grey = '#4a4a4a', blue = '#003399', lightGrey = '#f5f5f5', darkGrey = '#333';
+
+        // Header — municipality crest placeholder + title
+        doc.fontSize(11).font('Helvetica-Bold').fillColor(blue)
+           .text(`CÂMARA MUNICIPAL DE ${(munName || '').toUpperCase()}`, L, 50, { align: 'center', width: W });
+        doc.fontSize(9).font('Helvetica').fillColor(grey)
+           .text('INSPEÇÃO PERIÓDICA DE ELEVADORES, TAPETES ROLANTES E ESCADAS MECÂNICAS', L, 68, { align: 'center', width: W });
+        doc.moveTo(L, 82).lineTo(L + W, 82).strokeColor(blue).lineWidth(1.5).stroke();
+        doc.moveDown(0.3);
+
+        // Address line
+        if (munEmail) {
+            doc.fontSize(8).font('Helvetica').fillColor(grey)
+               .text(`Email do município: ${munEmail}`, L, 88, { align: 'right', width: W });
+        }
+        doc.moveDown(0.5);
+
+        const drawSectionHeader = (title, y) => {
+            doc.rect(L, y, W, 16).fill('#d0d8ee').stroke('#aab4cc');
+            doc.fontSize(8).font('Helvetica-Bold').fillColor(darkGrey)
+               .text(title, L + 6, y + 4, { width: W - 12 });
+            return y + 18;
+        };
+
+        const drawField = (label, value, x, y, w, h = 14) => {
+            doc.rect(x, y, w, h).stroke('#cccccc');
+            doc.fontSize(6.5).font('Helvetica').fillColor('#888').text(label, x + 2, y + 1.5, { width: w - 4 });
+            doc.fontSize(8.5).font('Helvetica').fillColor(darkGrey).text(value || '', x + 2, y + 6, { width: w - 4 });
+        };
+
+        const drawCheckbox = (label, checked, x, y) => {
+            doc.rect(x, y, 9, 9).stroke('#555');
+            if (checked) {
+                doc.fontSize(8).font('Helvetica-Bold').fillColor(blue).text('X', x + 1.5, y + 0.5);
+            }
+            doc.fontSize(8).font('Helvetica').fillColor(darkGrey).text(label, x + 12, y + 0.5);
+        };
+
+        // --- SECÇÃO 1: IDENTIFICAÇÃO DO REQUERENTE ---
+        let y = 102;
+        y = drawSectionHeader('IDENTIFICAÇÃO DO REQUERENTE', y);
+
+        drawField('Nome', FESTLIFT.name, L, y, W);
+        y += 16;
+        drawField('Morada', FESTLIFT.address, L, y, W);
+        y += 16;
+        drawField('Código Postal', `${FESTLIFT.cp}  ${FESTLIFT.locality}`, L, y, W * 0.4);
+        drawField('N.º Identificação Fiscal', FESTLIFT.nif, L + W * 0.4 + 2, y, W * 0.6 - 2);
+        y += 16;
+        drawField('E-mail', FESTLIFT.email, L, y, W * 0.5);
+        drawField('Telefone', FESTLIFT.phone, L + W * 0.5 + 2, y, W * 0.5 - 2);
+        y += 20;
+
+        doc.fontSize(8).font('Helvetica').fillColor(darkGrey).text('Na qualidade de:', L, y);
+        drawCheckbox('Próprio', false, L + 80, y);
+        drawCheckbox('Representante', false, L + 145, y);
+        drawCheckbox('Empresa de Manutenção', true, L + 240, y);
+        y += 20;
+
+        // --- SECÇÃO 2: IDENTIFICAÇÃO DO PEDIDO ---
+        y = drawSectionHeader('IDENTIFICAÇÃO DO PEDIDO', y);
+        doc.fontSize(7.5).font('Helvetica').fillColor(grey).text('REQUER NOS TERMOS LEGAIS:', L, y + 3);
+        y += 16;
+
+        drawCheckbox('1.ª INSPEÇÃO / REINSPECÇÃO', inspType === '1a' || inspType === 'reinspecao', L, y);
+        drawCheckbox('INSPEÇÃO PERIÓDICA', inspType === 'periodica' || !inspType, L + 180, y);
+        drawCheckbox('INSPEÇÃO EXTRAORDINÁRIA', inspType === 'extraordinaria', L + 340, y);
+        y += 18;
+
+        doc.fontSize(7.5).font('Helvetica').fillColor(grey).text('NA QUALIDADE DE:', L, y + 3);
+        y += 14;
+        drawCheckbox('PROPRIETÁRIO', false, L, y);
+        drawCheckbox('EMPRESA DE MANUTENÇÃO', true, L + 120, y);
+        drawCheckbox('OUTRO', false, L + 280, y);
+        y += 18;
+
+        doc.fontSize(7.5).font('Helvetica').fillColor(grey).text('DO(S):', L, y + 3);
+        y += 14;
+        drawCheckbox('ASCENSOR(ES) / MONTA-CARGAS', equipType === 'ASCENSOR(ES)' || equipType === 'MONTA-CARGAS', L, y);
+        drawCheckbox('ESCADA(S) MECÂNICA(S) / TAPETE(S) ROLANTE(S)', equipType.includes('ESCADA') || equipType.includes('TAPETE'), L + 200, y);
+        y += 22;
+
+        // Elevator number + address
+        drawField('ELEVADOR(ES) N.º(S)', lift.municipalNumber || '—', L, y, W * 0.5);
+        y += 18;
+        drawField('INSTALADO(S) EM MORADA', addr.street || '—', L, y, W);
+        y += 16;
+        drawField('COD. POSTAL', addr.zipCode || addr.postcode || '—', L, y, W * 0.4);
+        drawField('FREGUESIA DE', addr.city || '—', L + W * 0.4 + 2, y, W * 0.6 - 2);
+        y += 18;
+
+        drawField('EMPRESA DE MANUTENÇÃO', FESTLIFT.name, L, y, W * 0.65);
+        drawField('CONTRIBUINTE N.º', FESTLIFT.nif, L + W * 0.65 + 2, y, W * 0.35 - 2);
+        y += 22;
+
+        // --- Signature + Date ---
+        doc.moveTo(L, y).lineTo(L + W, y).strokeColor('#cccccc').lineWidth(0.5).stroke();
+        y += 12;
+        const today = new Date().toLocaleDateString('pt-PT', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        doc.fontSize(8).font('Helvetica').fillColor(grey)
+           .text(`Rio de Mouro, ${today}`, L, y)
+           .text('Assinatura / Carimbo:', L + W - 180, y);
+        y += 30;
+        doc.moveTo(L + W - 180, y).lineTo(L + W, y).strokeColor('#555').lineWidth(0.5).stroke();
+
+        // Footer
+        doc.fontSize(7).font('Helvetica').fillColor('#aaa')
+           .text(`Gerado automaticamente por FestLift CRM  •  ${new Date().toLocaleString('pt-PT')}`, L, 780, { align: 'center', width: W });
+
+        doc.end();
+    });
+}
+
+// GET /api/lifts/:id/requerimento — gera PDF de requerimento preenchido
+app.get('/api/lifts/:id/requerimento', authenticateToken, async (req, res) => {
+    if (!['admin', 'dispatcher'].includes(req.user.role)) {
+        return res.status(403).json({ success: false, message: 'Acesso negado' });
+    }
+    try {
+        const { ObjectId } = require('mongodb');
+        const liftId = req.params.id;
+        if (!ObjectId.isValid(liftId)) return res.status(400).json({ success: false, message: 'ID inválido' });
+
+        const lift = await db.collection('lifts').findOne({ _id: new ObjectId(liftId) });
+        if (!lift) return res.status(404).json({ success: false, message: 'Elevador não encontrado' });
+
+        const munName = lift.municipality?.name || '';
+        const inspType = (req.query.type || 'periodica').toLowerCase();
+
+        const pdfBuffer = await gerarRequerimentoPDF(lift, munName, inspType);
+        const filename = `Requerimento_${(munName || 'Municipio').replace(/\s+/g, '_')}_${lift.municipalNumber || lift._id}.pdf`;
+
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+        res.send(pdfBuffer);
+    } catch (err) {
+        console.error('❌ Erro ao gerar requerimento:', err);
+        res.status(500).json({ success: false, message: 'Erro ao gerar requerimento' });
+    }
+});
+
+// ========================================
 // 👥 USERS API ENDPOINTS
 // ========================================
 

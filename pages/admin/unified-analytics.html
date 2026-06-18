@@ -2444,7 +2444,7 @@ setTimeout(() => {
             if (!res.ok || result.success === false) throw new Error(result.message || `HTTP ${res.status}`);
             $('#addMunicipalityModal').modal('hide');
             if (typeof toastr !== 'undefined') toastr.success(`Município "${name}" adicionado com sucesso`);
-            await loadTopMunicipalities();
+            await loadMunicipalitiesAnalytics();
         } catch (err) {
             btn.disabled = false; btn.innerHTML = old;
             if (typeof toastr !== 'undefined') toastr.error('Erro ao adicionar: ' + err.message);
