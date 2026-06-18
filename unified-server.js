@@ -6433,15 +6433,15 @@ function _makeFormFields(pdfDoc, page, jW, jH, font) {
     return {
         field(value, jx, jy, jw, opts = {}) {
             if (!value && value !== 0) return;
-            const h = opts.h || 14;
             const sz = opts.size || 8;
+            const h = opts.h || sz + 4;
             try {
                 const f = form.createTextField(uid());
                 f.setText(String(value));
                 f.acroField.setDefaultAppearance(`/Helv ${sz} Tf 0 g`);
                 f.addToPage(page, {
                     x: jx * sx,
-                    y: pH - jy * sy - h + 3,
+                    y: pH - jy * sy - sz - 1,
                     width: jw * sx,
                     height: h,
                     textColor: rgb(0, 0, 0),
@@ -6612,59 +6612,117 @@ async function _fillGeneric(pdfDoc, lift, munName, inspType, requerente, req) {
 
     const page = pdfDoc.getPages()[0];
     const { font } = await _loadPdfFonts(pdfDoc);
-    const fw = _makeFormFields(pdfDoc, page, pageData.Width || 37.208, pageData.Height || 52.625, font);
+    const jW = pageData.Width || 37.208;
+    const jH = pageData.Height || 52.625;
+    // pdf2json t.w is in PDF points; convert to coordinate units (≈16 pts/unit for A4)
+    const _ptToU = 842 / jH;
+    const fw = _makeFormFields(pdfDoc, page, jW, jH, font);
     const texts = pageData.Texts.map(t => ({
         x: t.x, y: t.y,
+        wU: (t.w || 0) / _ptToU,  // width in coordinate units
         text: decodeURIComponent(t.R.map(r => r.T).join('')).trim(),
-    }));
+    })).filter(t => t.text.length > 0);
 
     const addr = lift.address || {};
     const today = new Date().toLocaleDateString('pt-PT');
     const equip = _liftEquipmentType(lift);
 
-    const find = (patterns) => {
+    // Find first label matching any pattern (optionally skip elements before minX)
+    const find = (patterns, minX = 0) => {
         const pat = Array.isArray(patterns) ? patterns : [patterns];
         for (const t of texts) {
+            if (t.x < minX) continue;
             if (pat.some(p => t.text.toLowerCase().includes(p.toLowerCase()))) return t;
         }
         return null;
     };
 
-    const fld = (patterns, value, offX = 2.5, w = 15.0, opts = {}) => {
-        const t = find(patterns);
-        if (t && value) fw.field(value, t.x + offX, t.y, w, opts);
+    // Place a text field after a label.
+    // Uses wU (width in coordinate units) to find real label right-edge so the
+    // field starts after the label text and never overflows the page.
+    // Also detects blank/underscore input zones on the same line (Sintra-style forms).
+    const fld = (patterns, value, offX = 2.5, w = 15.0, opts = {}, minX = 0) => {
+        const t = find(patterns, minX);
+        if (!t || !value) return;
+        // Label right-edge: prefer measured width (wU), fall back to char-count estimate
+        const labelW = t.wU > 0.3 ? t.wU : t.text.length * 0.38;
+        const labelEnd = t.x + labelW;
+
+        // Case A: embedded label+dots in ONE element — "Nome ____..." or "contribuinte n.º ____"
+        // Detect by: element starts with keyword AND rest is mostly underscores/dots
+        const pat = Array.isArray(patterns) ? patterns : [patterns];
+        const matchedKw = pat.find(p => t.text.toLowerCase().startsWith(p.toLowerCase()));
+        if (matchedKw) {
+            const afterKw = t.text.slice(matchedKw.length);
+            const underscoreRatio = (afterKw.match(/[_\s\.]/g) || []).length / (afterKw.length || 1);
+            if (underscoreRatio > 0.6 && afterKw.length > 4) {
+                // Input area starts right after the keyword text
+                const kwW = matchedKw.length * 0.40;
+                const inputX = t.x + kwW + 0.1;
+                const maxW2 = jW - inputX - 0.3;
+                if (maxW2 >= 1) { fw.field(value, inputX, t.y, Math.min(w, maxW2), opts); return; }
+            }
+        }
+
+        // Case B: blank/underscore element on the same y-line — Sintra/running-text forms
+        const sameLineBlank = texts.find(el =>
+            Math.abs(el.y - t.y) < 0.3 &&
+            el.x > labelEnd &&
+            /^[_\s\.]{4,}$/.test(el.text)
+        );
+        if (sameLineBlank) {
+            const bW = Math.min(w, sameLineBlank.wU > 0.5 ? sameLineBlank.wU - 0.1 : w, jW - sameLineBlank.x - 0.3);
+            if (bW >= 1) { fw.field(value, sameLineBlank.x, t.y, bW, opts); return; }
+        }
+
+        // Case C: standard — field starts at max(label+gap, label_x+offX)
+        const fieldX = Math.max(t.x + offX, labelEnd + 0.2);
+        // Cap width so the field stays within page bounds
+        const maxW = jW - fieldX - 0.3;
+        if (maxW < 1) return;
+        fw.field(value, fieldX, t.y, Math.min(w, maxW), opts);
     };
-    const chk = (patterns, on, offX = -1.2) => {
-        const t = find(patterns);
+
+    const chk = (patterns, on, offX = -1.2, minX = 0) => {
+        const t = find(patterns, minX);
         if (t) fw.check(on, t.x + offX, t.y);
     };
 
-    fld(['Nome/', 'Nome:', 'Nome '], req.name, 1.5, 22.0);
-    fld(['Morada/', 'Morada:', 'Morada ', 'Sede'], req.address, 1.5, 22.0);
-    fld(['Código Postal', 'Código postal', 'Cód. Postal'], req.cp, 2.5, 8.0);
-    fld(['Identificação Fiscal', 'N.I.F', 'N.º C.', 'NIF', 'nif'], req.nif, 2.5, 10.0);
-    fld(['E-mail', 'email', 'Email'], req.email, 1.5, 15.0);
-    fld(['Telefone', 'Telef', 'Contacto Tel'], req.phone, 1.5, 10.0);
+    // Requerente fields
+    fld(['Nome/', 'Nome:', 'Nome ', 'NOME', 'Nome/Firma', 'Nome/Denom', 'nome do requer',
+         '(Identificação)', 'Identificação)'], req.name, 1.5, 22.0);
+    fld(['Morada/', 'Morada:', 'Morada ', 'MORADA', 'Morada/Sede', 'MORADA / SEDE',
+         'Domicílio/Sede', 'Domicilio/Sede', 'Sede'], req.address, 1.5, 22.0);
+    fld(['Código Postal', 'Código postal', 'CÓDIGO POSTAL', 'CÓDIGO P',
+         'Cód. Postal', '(cód. postal)', 'código postal', '(cód.', 'postal'], req.cp, 2.5, 8.0);
+    // NIF — each municipality uses a different label
+    fld(['Identificação Fiscal', 'N.I.F', 'NIF:', 'NIF/', 'Contribuinte/NIPC',
+         'N.º de Contribuinte', 'N.º DE CONTRIBUINTE', 'Contribuinte *', 'Contribuinte Fiscal',
+         'contribuinte n.º', 'de contribuinte /NIP', 'N.º C.'], req.nif, 1.5, 9.0);
+    fld(['E-mail', 'email', 'Email', 'e-mail'], req.email, 1.5, 15.0);
+    fld(['Telefone', 'Telef', 'N.º Telefone', 'Contacto Tel'], req.phone, 1.5, 10.0);
 
-    if (inspType === 'periodica')       chk(['Periódica', 'Periodica', 'PERIÓDICA', 'PERIODICA'], true);
-    else if (inspType === 'reinspecao') chk(['Reinspecção', 'Reinspe', 'REINSPECÇÃO'], true);
-    else if (inspType === '1a')         chk(['1.ª', '1ª', 'Primeira', '1.a'], true);
+    if (inspType === 'periodica')           chk(['Periódica', 'Periodica', 'PERIÓDICA', 'PERIODICA', 'ção periódica'], true);
+    else if (inspType === 'reinspecao')     chk(['Reinspecção', 'Reinspe', 'REINSPECÇÃO'], true);
+    else if (inspType === '1a')             chk(['1.ª', '1ª', 'Primeira', '1.a'], true);
     else if (inspType === 'extraordinaria') chk(['Extraordinária', 'Extraordinar', 'EXTRAORDINÁRIA'], true);
 
     if (requerente === 'cliente') chk(['Proprietário', 'PROPRIETÁRIO'], true);
-    else chk(['Empresa de Manutenção', 'EMPRESA DE MANUTENÇÃO', 'E.M.I.E', 'E.M.'], true);
+    else chk(['Empresa de Manutenção', 'EMPRESA DE MANUTENÇÃO', 'E.M.I.E', 'E.M.', 'E.M.I.E.'], true);
 
-    if (equip === 'ASCENSOR')          chk(['Ascensor', 'ASCENSOR'], true);
-    else if (equip === 'ESCADA')       chk(['Escada', 'ESCADA'], true);
-    else if (equip === 'MONTA-CARGAS') chk(['Monta', 'MONTA'], true);
-    else if (equip === 'TAPETE')       chk(['Tapete', 'TAPETE'], true);
+    if (equip === 'ASCENSOR')          chk(['Ascensor', 'ASCENSOR', 'Elevadores'], true);
+    else if (equip === 'ESCADA')       chk(['Escada', 'ESCADA', 'Escadas Mec'], true);
+    else if (equip === 'MONTA-CARGAS') chk(['Monta', 'MONTA', 'Monta Cargas'], true);
+    else if (equip === 'TAPETE')       chk(['Tapete', 'TAPETE', 'Tapetes Rol'], true);
 
-    fld(['Elevador', 'Ascensor', 'N.º(s)', 'Processo'], lift.municipalNumber, 2.5, 8.0);
-    fld(['Instalado', 'Local da instal', 'Morada da instal'], addr.street, 3.0, 18.0);
-    fld(['Freguesia', 'FREGUESIA'], addr.city || addr.parish, 2.0, 10.0);
-    fld(['Empresa de Manutenção', 'E.M.I.E', 'empresa de manuten'], 'FestLift - Elevadores e Serviços, Lda.', 3.0, 22.0, { size: 7 });
-    fld(['Contribuinte', 'CONTRIBUINTE', 'NIF da emp'], '515 924 741', 2.5, 8.0);
-    fld(['Data', '___/___/____', '__/__/____'], today, 0.5, 8.0);
+    // Municipal number
+    fld(['N.º(s)', 'N.º elevador', 'N.º ascensor', 'Nº elevador', 'REF.ª DO PROCESSO', 'processo(s) Camará', 'Processo n', 'PROCESSO'], lift.municipalNumber, 2.5, 8.0);
+    fld(['Instalado em', 'Local da instal', 'LOCAL /MORADA', 'Morada da instal', 'Instalação em', 'Instalado'], addr.street, 3.0, 18.0);
+    fld(['Freguesia', 'FREGUESIA', 'Localidade', 'Localidade/Freg'], addr.city || addr.parish, 2.0, 10.0);
+    // EMIE (Empresa de Manutenção) — search below requerente section (minX=0 but only after first occurrence)
+    fld(['manutenção é efetuada por', 'Empresa de Manutenção de Elevadores', 'E.M.I.E', 'EMIE', 'empresa de manut'], 'FestLift - Elevadores e Serviços, Lda.', 3.0, 22.0, { size: 7 });
+    fld(['Contribuinte', 'CONTRIBUINTE', 'NIF da emp', 'NIF Empresa'], '515 924 741', 2.5, 8.0);
+    fld(['Data', '___/___/____', '__/__/____', 'de ____'], today, 0.5, 8.0);
 }
 
 async function fillRequerimentoOriginal(lift, munName, inspType, requerente, clientData) {
