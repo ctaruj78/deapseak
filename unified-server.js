@@ -6817,7 +6817,8 @@ app.get('/api/lifts/:id/requerimento', authenticateToken, async (req, res) => {
         }
 
         const pdfBuffer = await fillRequerimentoOriginal(lift, munName, inspType, requerente, clientData);
-        const filename = `Requerimento_${(munName || 'Municipio').replace(/\s+/g, '_')}_${lift.municipalNumber || lift._id}.pdf`;
+        const sanitize = s => String(s).replace(/[/\\?%*:|"<>]/g, '-').replace(/\s+/g, '_');
+        const filename = `Requerimento_${sanitize(munName || 'Municipio')}_${sanitize(lift.municipalNumber || lift._id)}.pdf`;
 
         res.setHeader('Content-Type', 'application/pdf');
         res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
@@ -6881,7 +6882,8 @@ app.post('/api/lifts/:id/requerimento/generate', authenticateToken, async (req, 
         if (!fs.existsSync(sentDir)) fs.mkdirSync(sentDir, { recursive: true });
 
         const ts = Date.now();
-        const filename = `Req_${(munName || 'Municipio').replace(/\s+/g, '_')}_${lift.municipalNumber || liftId}_${inspType}_${ts}.pdf`;
+        const sanitize = s => String(s).replace(/[/\\?%*:|"<>]/g, '-').replace(/\s+/g, '_');
+        const filename = `Req_${sanitize(munName || 'Municipio')}_${sanitize(lift.municipalNumber || liftId)}_${inspType}_${ts}.pdf`;
         const filePath = path.join(sentDir, filename);
         fs.writeFileSync(filePath, pdfBuffer);
 
