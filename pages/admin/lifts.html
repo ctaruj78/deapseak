@@ -3915,6 +3915,22 @@ Email de contacto: info@festlift.pt`;
         $('#inspectionRequestModal').modal('show');
     }
 
+    async function _deleteReq(reqId) {
+        if (!confirm('Eliminar este requerimento? Esta ação não pode ser revertida.')) return;
+        try {
+            const token = AuthManager.getAuthToken();
+            const res = await fetch(`/api/requerimentos/${reqId}`, {
+                method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await res.json();
+            if (!data.success) throw new Error(data.message);
+            toastr.success('Requerimento eliminado');
+            _loadReqHistory(window._currentInspectionLiftId);
+        } catch (err) {
+            toastr.error('Erro ao eliminar: ' + err.message);
+        }
+    }
+
     async function _openReqPdf(url) {
         try {
             const token = AuthManager.getAuthToken();
@@ -3951,6 +3967,9 @@ Email de contacto: info@festlift.pt`;
                     <span style="background:${col};color:#fff;border-radius:10px;padding:1px 7px;font-size:10px;">${stat}</span>
                     <button type="button" onclick="_openReqPdf('/api/requerimentos/${r._id}/pdf')" class="btn btn-xs btn-outline-secondary" style="padding:1px 6px;font-size:10px;white-space:nowrap;">
                         <i class="fas fa-eye"></i>
+                    </button>
+                    <button type="button" onclick="_deleteReq('${r._id}')" class="btn btn-xs btn-outline-danger" style="padding:1px 6px;font-size:10px;white-space:nowrap;">
+                        <i class="fas fa-trash"></i>
                     </button>
                 </div>`;
             }).join('');

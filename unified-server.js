@@ -7028,6 +7028,26 @@ Tel: +351 214 190 863 &nbsp;|&nbsp; <a href="mailto:info@festlift.pt" style="col
     }
 });
 
+// DELETE /api/requerimentos/:id — remove record + file
+app.delete('/api/requerimentos/:id', authenticateToken, async (req, res) => {
+    if (!['admin', 'dispatcher'].includes(req.user.role))
+        return res.status(403).json({ success: false, message: 'Acesso negado' });
+    try {
+        const { ObjectId } = require('mongodb');
+        if (!ObjectId.isValid(req.params.id)) return res.status(400).json({ success: false, message: 'ID inválido' });
+        const rec = await db.collection('requerimentos').findOne({ _id: new ObjectId(req.params.id) });
+        if (!rec) return res.status(404).json({ success: false, message: 'Não encontrado' });
+        const fs = require('fs');
+        const path = require('path');
+        const filePath = path.join(__dirname, rec.pdfPath);
+        if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+        await db.collection('requerimentos').deleteOne({ _id: new ObjectId(req.params.id) });
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
 // ========================================
 // 👥 USERS API ENDPOINTS
 // ========================================
