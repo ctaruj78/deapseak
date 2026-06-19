@@ -2471,6 +2471,15 @@
                             <button type="button" id="btnSendToMun" class="btn btn-warning btn-sm w-100">
                                 <i class="fas fa-building mr-1"></i> Pedido ao município
                             </button>
+                            <!-- Aviso Lisboa — submissão obrigatória online desde 11/05/2026 -->
+                            <div id="lisboaOnlineWarning" style="display:none;margin-top:10px;" class="alert alert-warning p-2 mb-0">
+                                <strong style="font-size:12px;"><i class="fas fa-exclamation-triangle mr-1"></i>Loja Lisboa — submissão online obrigatória</strong>
+                                <p class="mb-2 mt-1" style="font-size:11px;line-height:1.4;">Desde 11/05/2026, a CM Lisboa exige pedidos de inspecção através da plataforma online. O requerimento em papel/PDF <strong>não é aceite</strong>.</p>
+                                <a href="https://www.lojalisboa.pt" target="_blank" rel="noopener" class="btn btn-warning btn-sm w-100" style="font-size:11px;">
+                                    <i class="fas fa-external-link-alt mr-1"></i> Abrir Loja Lisboa
+                                </a>
+                            </div>
+                            <div id="reqFormSection">
                             <hr class="my-2">
                             <div class="form-group mb-1">
                                 <label class="small font-weight-bold">Tipo de inspecção (requerimento)</label>
@@ -2521,6 +2530,7 @@
                                 </div>
                             </div>
                             <small id="reqHint" class="text-muted d-block mt-1" style="font-size:10px;"><i class="fas fa-info-circle mr-1"></i>PDF preenchido com o formulário original da câmara.</small>
+                            </div>
                         </div>
                     </div>
                     <!-- Requerimentos archive -->
@@ -3883,6 +3893,9 @@ Email de contacto: info@festlift.pt`;
         $('#inspReqModal_munName').text(munName);
         $('#inspReqModal_munSubject').val(munSubject);
         $('#inspReqModal_munBody').val(munBody);
+        const _isLisboa = munName === 'Lisboa';
+        $('#lisboaOnlineWarning').toggle(_isLisboa);
+        $('#reqFormSection').toggle(!_isLisboa);
         // Reset кнопок та бейджів
         $('#btnSendToClient').removeClass('btn-success').addClass('btn-primary').html('<i class="fas fa-paper-plane mr-1"></i> Enviar ao cliente');
         $('#btnSendToMun').removeClass('btn-success').addClass('btn-warning').html('<i class="fas fa-building mr-1"></i> Pedido ao município');
