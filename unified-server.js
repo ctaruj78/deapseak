@@ -6829,6 +6829,204 @@ app.get('/api/lifts/:id/requerimento', authenticateToken, async (req, res) => {
 });
 
 // ========================================
+// 📋 REQUERIMENTOS — generate / view / save / send
+// ========================================
+
+// Shared logic: fetch lift + optional client data for requerimento
+async function _getReqLiftData(liftId, requerente) {
+    const { ObjectId } = require('mongodb');
+    const lift = await db.collection('lifts').findOne({ _id: new ObjectId(liftId) });
+    if (!lift) throw Object.assign(new Error('Elevador não encontrado'), { status: 404 });
+    let clientData = null;
+    if (requerente === 'cliente' && lift.clientId) {
+        const client = await db.collection('clients').findOne(
+            { _id: new ObjectId(String(lift.clientId)) },
+            { projection: { name: 1, address: 1, nif: 1, email: 1, phone: 1 } }
+        );
+        if (client) clientData = {
+            name:     client.name || '',
+            address:  client.address?.street || client.address || '',
+            cp:       client.address?.zipCode || client.address?.postcode || '',
+            locality: client.address?.city || '',
+            nif:      client.nif || '',
+            email:    client.email || '',
+            phone:    client.phone || '',
+        };
+    }
+    return { lift, clientData };
+}
+
+// POST /api/lifts/:id/requerimento/generate — generate, save file + DB record
+app.post('/api/lifts/:id/requerimento/generate', authenticateToken, async (req, res) => {
+    if (!['admin', 'dispatcher'].includes(req.user.role))
+        return res.status(403).json({ success: false, message: 'Acesso negado' });
+    try {
+        const { ObjectId } = require('mongodb');
+        const liftId = req.params.id;
+        if (!ObjectId.isValid(liftId)) return res.status(400).json({ success: false, message: 'ID inválido' });
+
+        const inspType   = (req.body.type      || 'periodica').toLowerCase();
+        const requerente = (req.body.requerente || 'festlift').toLowerCase();
+        const pagamento  = (req.body.pagamento  || 'dinheiro').toLowerCase();
+
+        const { lift, clientData } = await _getReqLiftData(liftId, requerente);
+        const munName = lift.municipality?.name || '';
+        lift._reqPagamento = pagamento;
+
+        const pdfBuffer = await fillRequerimentoOriginal(lift, munName, inspType, requerente, clientData);
+
+        const fs = require('fs');
+        const path = require('path');
+        const sentDir = path.join(__dirname, 'uploads/requerimentos/sent');
+        if (!fs.existsSync(sentDir)) fs.mkdirSync(sentDir, { recursive: true });
+
+        const ts = Date.now();
+        const filename = `Req_${(munName || 'Municipio').replace(/\s+/g, '_')}_${lift.municipalNumber || liftId}_${inspType}_${ts}.pdf`;
+        const filePath = path.join(sentDir, filename);
+        fs.writeFileSync(filePath, pdfBuffer);
+
+        const addrParts = lift.address && typeof lift.address === 'object'
+            ? [lift.address.street, lift.address.zipCode, lift.address.city].filter(Boolean)
+            : [lift.address].filter(Boolean);
+
+        const record = {
+            liftId: new ObjectId(liftId),
+            munName,
+            inspType,
+            requerente,
+            pagamento,
+            status: 'draft',
+            filename,
+            pdfPath: `uploads/requerimentos/sent/${filename}`,
+            municipalNumber: lift.municipalNumber || null,
+            liftAddress: addrParts.join(', ') || null,
+            createdAt: new Date(),
+            createdBy: req.user.email || req.user.username || 'unknown',
+        };
+        const result = await db.collection('requerimentos').insertOne(record);
+        const reqId = result.insertedId.toString();
+
+        res.json({ success: true, id: reqId, filename, pdfUrl: `/api/requerimentos/${reqId}/pdf` });
+    } catch (err) {
+        console.error('❌ Erro ao gerar requerimento:', err);
+        res.status(err.status || 500).json({ success: false, message: err.message || 'Erro ao gerar requerimento' });
+    }
+});
+
+// GET /api/requerimentos/:id/pdf — serve PDF inline for browser viewing
+app.get('/api/requerimentos/:id/pdf', authenticateToken, async (req, res) => {
+    if (!['admin', 'dispatcher'].includes(req.user.role))
+        return res.status(403).json({ success: false, message: 'Acesso negado' });
+    try {
+        const { ObjectId } = require('mongodb');
+        if (!ObjectId.isValid(req.params.id)) return res.status(400).json({ success: false, message: 'ID inválido' });
+        const rec = await db.collection('requerimentos').findOne({ _id: new ObjectId(req.params.id) });
+        if (!rec) return res.status(404).json({ success: false, message: 'Não encontrado' });
+        const path = require('path');
+        const filePath = path.join(__dirname, rec.pdfPath);
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `inline; filename="${rec.filename}"`);
+        res.sendFile(filePath);
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// GET /api/lifts/:id/requerimentos — list of all requerimentos for a lift
+app.get('/api/lifts/:id/requerimentos', authenticateToken, async (req, res) => {
+    if (!['admin', 'dispatcher'].includes(req.user.role))
+        return res.status(403).json({ success: false, message: 'Acesso negado' });
+    try {
+        const { ObjectId } = require('mongodb');
+        if (!ObjectId.isValid(req.params.id)) return res.status(400).json({ success: false, message: 'ID inválido' });
+        const recs = await db.collection('requerimentos')
+            .find({ liftId: new ObjectId(req.params.id) })
+            .sort({ createdAt: -1 }).limit(30).toArray();
+        res.json({ success: true, requerimentos: recs });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// POST /api/requerimentos/:id/save — mark as saved (proof of generation)
+app.post('/api/requerimentos/:id/save', authenticateToken, async (req, res) => {
+    if (!['admin', 'dispatcher'].includes(req.user.role))
+        return res.status(403).json({ success: false, message: 'Acesso negado' });
+    try {
+        const { ObjectId } = require('mongodb');
+        if (!ObjectId.isValid(req.params.id)) return res.status(400).json({ success: false, message: 'ID inválido' });
+        await db.collection('requerimentos').updateOne(
+            { _id: new ObjectId(req.params.id) },
+            { $set: { status: 'saved', savedAt: new Date() } }
+        );
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ success: false, message: err.message });
+    }
+});
+
+// POST /api/requerimentos/:id/send — send branded email + PDF to municipality
+app.post('/api/requerimentos/:id/send', authenticateToken, async (req, res) => {
+    if (!['admin', 'dispatcher'].includes(req.user.role))
+        return res.status(403).json({ success: false, message: 'Acesso negado' });
+    try {
+        const { ObjectId } = require('mongodb');
+        if (!ObjectId.isValid(req.params.id)) return res.status(400).json({ success: false, message: 'ID inválido' });
+        const rec = await db.collection('requerimentos').findOne({ _id: new ObjectId(req.params.id) });
+        if (!rec) return res.status(404).json({ success: false, message: 'Requerimento não encontrado' });
+
+        const { email } = req.body;
+        if (!email) return res.status(400).json({ success: false, message: 'Email do município é obrigatório' });
+
+        const fs = require('fs');
+        const path = require('path');
+        const filePath = path.join(__dirname, rec.pdfPath);
+        if (!fs.existsSync(filePath)) return res.status(404).json({ success: false, message: 'Ficheiro PDF não encontrado' });
+        const pdfB64 = fs.readFileSync(filePath).toString('base64');
+
+        const INSP_LABELS = {
+            periodica: 'Inspeção Periódica', reinspecao: 'Reinspecção',
+            '1a': '1.ª Inspeção', extraordinaria: 'Inspeção Extraordinária'
+        };
+        const inspLabel = INSP_LABELS[rec.inspType] || rec.inspType;
+        const today = new Date().toLocaleDateString('pt-PT', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        const munName  = rec.munName || '';
+        const liftRef  = rec.municipalNumber || '—';
+        const liftAddr = rec.liftAddress || '—';
+
+        const bodyHtml = `
+<p>Exmos. Srs.,</p>
+<p>A <strong>FestLift — Elevadores e Serviços, Lda.</strong>, empresa de manutenção de elevadores com NIF <strong>515 924 741</strong>, vem por este meio solicitar o agendamento de <strong>${inspLabel}</strong> para o(s) elevador(es) adiante identificado(s).</p>
+<table style="width:100%;border-collapse:collapse;margin:16px 0;font-size:13px;">
+  <tr style="background:#f0f4f8;"><td style="padding:8px 12px;font-weight:600;width:42%;border:1px solid #dee2e6;">Câmara Municipal</td><td style="padding:8px 12px;border:1px solid #dee2e6;">${munName}</td></tr>
+  <tr><td style="padding:8px 12px;font-weight:600;border:1px solid #dee2e6;">N.º processo camarário</td><td style="padding:8px 12px;border:1px solid #dee2e6;">${liftRef}</td></tr>
+  <tr style="background:#f0f4f8;"><td style="padding:8px 12px;font-weight:600;border:1px solid #dee2e6;">Morada da instalação</td><td style="padding:8px 12px;border:1px solid #dee2e6;">${liftAddr}</td></tr>
+  <tr><td style="padding:8px 12px;font-weight:600;border:1px solid #dee2e6;">Tipo de inspecção</td><td style="padding:8px 12px;border:1px solid #dee2e6;">${inspLabel}</td></tr>
+</table>
+<p>Em anexo enviamos o formulário de requerimento devidamente preenchido, pronto a ser processado pelos serviços camarários.</p>
+<p>Agradecemos a vossa atenção e ficamos ao dispor para qualquer esclarecimento adicional.</p>
+<p style="margin-top:20px;">Com os melhores cumprimentos,</p>
+<p><strong>FestLift — Elevadores e Serviços, Lda.</strong><br>
+Av. do Parque 84B, Rio de Mouro, 2635-609<br>
+Tel: +351 214 190 863 &nbsp;|&nbsp; <a href="mailto:info@festlift.pt" style="color:#1565c0;">info@festlift.pt</a></p>
+<p style="font-size:11px;color:#999;margin-top:12px;">Data: ${today}</p>`;
+
+        const subject = `Requerimento de ${inspLabel} — Elevador ${liftRef} — ${munName}`;
+        const html = emailService._tpl('#1565c0', `📋 Requerimento — ${inspLabel}`, bodyHtml);
+        await emailService._sendEmail(email, subject, html, [{ name: rec.filename, content: pdfB64 }]);
+
+        await db.collection('requerimentos').updateOne(
+            { _id: new ObjectId(req.params.id) },
+            { $set: { status: 'sent', sentAt: new Date(), sentTo: email, savedAt: new Date() } }
+        );
+        res.json({ success: true, message: `Requerimento enviado para ${email}` });
+    } catch (err) {
+        console.error('❌ Erro ao enviar requerimento:', err);
+        res.status(500).json({ success: false, message: err.message || 'Erro ao enviar email' });
+    }
+});
+
+// ========================================
 // 👥 USERS API ENDPOINTS
 // ========================================
 

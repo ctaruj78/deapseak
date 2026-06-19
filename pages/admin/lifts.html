@@ -2497,11 +2497,39 @@
                                     <option value="transferencia">Transferência bancária</option>
                                 </select>
                             </div>
-                            <button type="button" id="btnGerarRequerimento" class="btn btn-success btn-sm w-100">
-                                <i class="fas fa-file-pdf mr-1"></i> Gerar Requerimento PDF
+                            <button type="button" id="btnAbrirRequerimento" class="btn btn-success btn-sm w-100">
+                                <i class="fas fa-folder-open mr-1"></i> Abrir e Editar Online
                             </button>
-                            <small class="text-muted d-block mt-1" style="font-size:10px;"><i class="fas fa-info-circle mr-1"></i>PDF preenchido com o formulário original da câmara — assinar e enviar.</small>
+                            <!-- Preview panel — shown after generation -->
+                            <div id="reqPreviewPanel" style="display:none;margin-top:8px;">
+                                <div style="background:#f8f9fa;border:1px solid #dee2e6;border-radius:6px;padding:10px;">
+                                    <div class="d-flex align-items-center mb-2">
+                                        <i class="fas fa-file-pdf text-danger mr-2"></i>
+                                        <span id="reqPreviewName" style="font-size:11px;font-weight:600;flex:1;word-break:break-all;"></span>
+                                        <a id="reqPreviewLink" href="#" target="_blank" class="btn btn-sm btn-outline-secondary ml-2" style="font-size:11px;white-space:nowrap;">
+                                            <i class="fas fa-external-link-alt mr-1"></i>Ver PDF
+                                        </a>
+                                    </div>
+                                    <div class="d-flex" style="gap:6px;">
+                                        <button type="button" id="btnGuardarReq" class="btn btn-outline-primary btn-sm" style="flex:1;font-size:12px;">
+                                            <i class="fas fa-save mr-1"></i> Guardar
+                                        </button>
+                                        <button type="button" id="btnEnviarReqMun" class="btn btn-warning btn-sm" style="flex:1;font-size:12px;">
+                                            <i class="fas fa-paper-plane mr-1"></i> Enviar ao Município
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <small id="reqHint" class="text-muted d-block mt-1" style="font-size:10px;"><i class="fas fa-info-circle mr-1"></i>PDF preenchido com o formulário original da câmara.</small>
                         </div>
+                    </div>
+                    <!-- Requerimentos archive -->
+                    <div id="reqHistorySection" style="display:none;margin-top:12px;padding:0 4px;">
+                        <hr class="mt-0 mb-2">
+                        <h6 style="font-size:12px;font-weight:700;color:#555;margin-bottom:6px;">
+                            <i class="fas fa-history mr-1"></i> Requerimentos arquivados
+                        </h6>
+                        <div id="reqHistoryList"></div>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -3876,7 +3904,44 @@ Email de contacto: info@festlift.pt`;
             $('#inspReqModal_munSentBadge').hide();
         }
 
+        // Reset requerimento preview + history
+        $('#reqPreviewPanel').hide();
+        $('#reqHistorySection').hide();
+        $('#reqHistoryList').empty();
+        window._currentReqId = null;
+        _loadReqHistory(liftId);
+
         $('#inspectionRequestModal').modal('show');
+    }
+
+    async function _loadReqHistory(liftId) {
+        if (!liftId) return;
+        const token = AuthManager.getAuthToken();
+        try {
+            const res = await fetch(`/api/lifts/${liftId}/requerimentos`, { headers: { 'Authorization': `Bearer ${token}` } });
+            const data = await res.json();
+            if (!data.success || !data.requerimentos?.length) return;
+            const STATUS_LABELS = { draft: 'Rascunho', saved: 'Guardado', sent: 'Enviado' };
+            const STATUS_COLOR  = { draft: '#6c757d', saved: '#007bff', sent: '#28a745' };
+            const TYPE_LABELS   = { periodica: 'Periódica', reinspecao: 'Reinspecção', '1a': '1.ª Insp.', extraordinaria: 'Extraordinária' };
+            const html = data.requerimentos.map(r => {
+                const dt   = r.createdAt ? new Date(r.createdAt).toLocaleDateString('pt-PT', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '—';
+                const stat = STATUS_LABELS[r.status] || r.status;
+                const col  = STATUS_COLOR[r.status] || '#888';
+                const type = TYPE_LABELS[r.inspType] || r.inspType;
+                return `<div style="display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid #f0f0f0;font-size:11px;">
+                    <i class="fas fa-file-pdf text-danger" style="width:14px;text-align:center;"></i>
+                    <span style="flex:1;font-weight:600;color:#333;">${type}</span>
+                    <span style="color:#555;">${dt}</span>
+                    <span style="background:${col};color:#fff;border-radius:10px;padding:1px 7px;font-size:10px;">${stat}</span>
+                    <a href="/api/requerimentos/${r._id}/pdf" target="_blank" class="btn btn-xs btn-outline-secondary" style="padding:1px 6px;font-size:10px;white-space:nowrap;">
+                        <i class="fas fa-eye"></i>
+                    </a>
+                </div>`;
+            }).join('');
+            $('#reqHistoryList').html(html);
+            $('#reqHistorySection').show();
+        } catch (e) { /* silently ignore */ }
     }
 
     async function _sendInspReqEmail(emailField, subjectField, bodyField, successMsg, type) {
@@ -3911,8 +3976,8 @@ Email de contacto: info@festlift.pt`;
         }
     }
 
-    // Gerar Requerimento PDF
-    $(document).on('click', '#btnGerarRequerimento', async function() {
+    // Gerar e pré-visualizar Requerimento PDF
+    $(document).on('click', '#btnAbrirRequerimento', async function() {
         const liftId = window._currentInspectionLiftId;
         if (!liftId) return toastr.error('Elevador não identificado');
         const type       = $('#inspReqModal_reqType').val()    || 'periodica';
@@ -3923,21 +3988,72 @@ Email de contacto: info@festlift.pt`;
         btn.disabled = true;
         btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> A gerar...';
         try {
-            const token = localStorage.getItem('liftmanager_jwt') || localStorage.getItem('authToken') || localStorage.getItem('token') || '';
-            const apiUrl = `/api/lifts/${liftId}/requerimento?type=${type}&requerente=${requerente}&pagamento=${pagamento}`;
-            const res = await fetch(apiUrl, { headers: { 'Authorization': `Bearer ${token}` } });
-            if (!res.ok) { const d = await res.json().catch(()=>{}); throw new Error(d?.message || `HTTP ${res.status}`); }
-            const blob = await res.blob();
-            const blobUrl = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = blobUrl;
-            a.download = res.headers.get('Content-Disposition')?.match(/filename="([^"]+)"/)?.[1] || 'requerimento.pdf';
-            document.body.appendChild(a); a.click(); document.body.removeChild(a);
-            URL.revokeObjectURL(blobUrl);
-            toastr.success('Requerimento gerado — verifique os downloads');
+            const token = AuthManager.getAuthToken();
+            const res = await fetch(`/api/lifts/${liftId}/requerimento/generate`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ type, requerente, pagamento })
+            });
+            const data = await res.json();
+            if (!data.success) throw new Error(data.message || `HTTP ${res.status}`);
+            window._currentReqId = data.id;
+            $('#reqPreviewName').text(data.filename);
+            $('#reqPreviewLink').attr('href', data.pdfUrl);
+            $('#reqPreviewPanel').show();
+            $('#reqHint').hide();
+            toastr.success('Requerimento gerado com sucesso');
+            _loadReqHistory(liftId);
         } catch (err) {
             toastr.error('Erro ao gerar requerimento: ' + err.message);
         } finally {
+            btn.disabled = false; btn.innerHTML = old;
+        }
+    });
+
+    // Guardar requerimento
+    $(document).on('click', '#btnGuardarReq', async function() {
+        const reqId = window._currentReqId;
+        if (!reqId) return toastr.error('Gere o requerimento primeiro');
+        const btn = this; const old = btn.innerHTML;
+        btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>';
+        try {
+            const token = AuthManager.getAuthToken();
+            const res = await fetch(`/api/requerimentos/${reqId}/save`, {
+                method: 'POST', headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const data = await res.json();
+            if (!data.success) throw new Error(data.message);
+            toastr.success('Requerimento guardado');
+            btn.innerHTML = '<i class="fas fa-check mr-1"></i> Guardado';
+            _loadReqHistory(window._currentInspectionLiftId);
+        } catch (err) {
+            toastr.error('Erro ao guardar: ' + err.message);
+            btn.disabled = false; btn.innerHTML = old;
+        }
+    });
+
+    // Enviar requerimento ao município
+    $(document).on('click', '#btnEnviarReqMun', async function() {
+        const reqId = window._currentReqId;
+        if (!reqId) return toastr.error('Gere o requerimento primeiro');
+        const email = ($('#inspReqModal_munEmail').val() || '').trim();
+        if (!email) return toastr.error('Email do município não especificado');
+        const btn = this; const old = btn.innerHTML;
+        btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> A enviar...';
+        try {
+            const token = AuthManager.getAuthToken();
+            const res = await fetch(`/api/requerimentos/${reqId}/send`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ email })
+            });
+            const data = await res.json();
+            if (!data.success) throw new Error(data.message);
+            toastr.success(`Requerimento enviado para ${email}`);
+            btn.innerHTML = '<i class="fas fa-check mr-1"></i> Enviado';
+            _loadReqHistory(window._currentInspectionLiftId);
+        } catch (err) {
+            toastr.error('Erro ao enviar: ' + err.message);
             btn.disabled = false; btn.innerHTML = old;
         }
     });
