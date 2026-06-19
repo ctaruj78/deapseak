@@ -6675,6 +6675,17 @@ async function _fillGeneric(pdfDoc, lift, munName, inspType, requerente, req) {
             if (bW >= 1) { fw.field(value, sameLineBlank.x, t.y, bW, opts); return; }
         }
 
+        // Case B2: blank/underscore on the NEXT line — running-text forms where label ends
+        // the line and the input area starts on the following line (e.g. Sintra lift address)
+        const nextLineBlank = texts.find(el =>
+            el.y > t.y && el.y - t.y < 1.6 &&
+            /^[_\s\.]{4,}$/.test(el.text)
+        );
+        if (nextLineBlank) {
+            const bW = Math.min(w, nextLineBlank.wU > 0.5 ? nextLineBlank.wU - 0.1 : w, jW - nextLineBlank.x - 0.3);
+            if (bW >= 1) { fw.field(value, nextLineBlank.x, nextLineBlank.y, bW, opts); return; }
+        }
+
         // Case C: standard — field starts at max(label+gap, label_x+offX)
         const fieldX = Math.max(t.x + offX, labelEnd + 0.2);
         // Cap width so the field stays within page bounds
@@ -6692,7 +6703,7 @@ async function _fillGeneric(pdfDoc, lift, munName, inspType, requerente, req) {
     fld(['Nome/', 'Nome:', 'Nome ', 'NOME', 'Nome/Firma', 'Nome/Denom', 'nome do requer',
          '(Identificação)', 'Identificação)'], req.name, 1.5, 22.0);
     fld(['Morada/', 'Morada:', 'Morada ', 'MORADA', 'Morada/Sede', 'MORADA / SEDE',
-         'Domicílio/Sede', 'Domicilio/Sede', 'Sede'], req.address, 1.5, 22.0);
+         'Domicílio/Sede', 'Domicilio/Sede', 'Sede', 'residente em'], req.address, 1.5, 22.0);
     fld(['Código Postal', 'Código postal', 'CÓDIGO POSTAL', 'CÓDIGO P',
          'Cód. Postal', '(cód. postal)', 'código postal', '(cód.', 'postal'], req.cp, 2.5, 8.0);
     // NIF — each municipality uses a different label
@@ -6717,7 +6728,7 @@ async function _fillGeneric(pdfDoc, lift, munName, inspType, requerente, req) {
 
     // Municipal number
     fld(['N.º(s)', 'N.º elevador', 'N.º ascensor', 'Nº elevador', 'REF.ª DO PROCESSO', 'processo(s) Camará', 'Processo n', 'PROCESSO'], lift.municipalNumber, 2.5, 8.0);
-    fld(['Instalado em', 'Local da instal', 'LOCAL /MORADA', 'Morada da instal', 'Instalação em', 'Instalado'], addr.street, 3.0, 18.0);
+    fld(['Instalado em', 'Local da instal', 'LOCAL /MORADA', 'Morada da instal', 'Instalação em', 'Instalado', 'sitos'], addr.street, 3.0, 18.0);
     fld(['Freguesia', 'FREGUESIA', 'Localidade', 'Localidade/Freg'], addr.city || addr.parish, 2.0, 10.0);
     // EMIE (Empresa de Manutenção) — search below requerente section (minX=0 but only after first occurrence)
     fld(['manutenção é efetuada por', 'Empresa de Manutenção de Elevadores', 'E.M.I.E', 'EMIE', 'empresa de manut'], 'FestLift - Elevadores e Serviços, Lda.', 3.0, 22.0, { size: 7 });
