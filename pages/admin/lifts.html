@@ -2506,9 +2506,9 @@
                                     <div class="d-flex align-items-center mb-2">
                                         <i class="fas fa-file-pdf text-danger mr-2"></i>
                                         <span id="reqPreviewName" style="font-size:11px;font-weight:600;flex:1;word-break:break-all;"></span>
-                                        <a id="reqPreviewLink" href="#" target="_blank" class="btn btn-sm btn-outline-secondary ml-2" style="font-size:11px;white-space:nowrap;">
+                                        <button type="button" id="btnVerReqPdf" class="btn btn-sm btn-outline-secondary ml-2" style="font-size:11px;white-space:nowrap;">
                                             <i class="fas fa-external-link-alt mr-1"></i>Ver PDF
-                                        </a>
+                                        </button>
                                     </div>
                                     <div class="d-flex" style="gap:6px;">
                                         <button type="button" id="btnGuardarReq" class="btn btn-outline-primary btn-sm" style="flex:1;font-size:12px;">
@@ -3909,9 +3909,24 @@ Email de contacto: info@festlift.pt`;
         $('#reqHistorySection').hide();
         $('#reqHistoryList').empty();
         window._currentReqId = null;
+        window._currentReqPdfUrl = null;
         _loadReqHistory(liftId);
 
         $('#inspectionRequestModal').modal('show');
+    }
+
+    async function _openReqPdf(url) {
+        try {
+            const token = AuthManager.getAuthToken();
+            const res = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } });
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const blob = await res.blob();
+            const blobUrl = URL.createObjectURL(blob);
+            window.open(blobUrl, '_blank');
+            setTimeout(() => URL.revokeObjectURL(blobUrl), 60000);
+        } catch (err) {
+            toastr.error('Erro ao abrir PDF: ' + err.message);
+        }
     }
 
     async function _loadReqHistory(liftId) {
@@ -3934,9 +3949,9 @@ Email de contacto: info@festlift.pt`;
                     <span style="flex:1;font-weight:600;color:#333;">${type}</span>
                     <span style="color:#555;">${dt}</span>
                     <span style="background:${col};color:#fff;border-radius:10px;padding:1px 7px;font-size:10px;">${stat}</span>
-                    <a href="/api/requerimentos/${r._id}/pdf" target="_blank" class="btn btn-xs btn-outline-secondary" style="padding:1px 6px;font-size:10px;white-space:nowrap;">
+                    <button type="button" onclick="_openReqPdf('/api/requerimentos/${r._id}/pdf')" class="btn btn-xs btn-outline-secondary" style="padding:1px 6px;font-size:10px;white-space:nowrap;">
                         <i class="fas fa-eye"></i>
-                    </a>
+                    </button>
                 </div>`;
             }).join('');
             $('#reqHistoryList').html(html);
@@ -3997,8 +4012,8 @@ Email de contacto: info@festlift.pt`;
             const data = await res.json();
             if (!data.success) throw new Error(data.message || `HTTP ${res.status}`);
             window._currentReqId = data.id;
+            window._currentReqPdfUrl = data.pdfUrl;
             $('#reqPreviewName').text(data.filename);
-            $('#reqPreviewLink').attr('href', data.pdfUrl);
             $('#reqPreviewPanel').show();
             $('#reqHint').hide();
             toastr.success('Requerimento gerado com sucesso');
@@ -4056,6 +4071,15 @@ Email de contacto: info@festlift.pt`;
             toastr.error('Erro ao enviar: ' + err.message);
             btn.disabled = false; btn.innerHTML = old;
         }
+    });
+
+    // Ver PDF do requerimento gerado (fetch com auth → blob URL)
+    $(document).on('click', '#btnVerReqPdf', async function() {
+        const pdfUrl = window._currentReqPdfUrl;
+        if (!pdfUrl) return toastr.error('PDF não disponível');
+        this.disabled = true;
+        await _openReqPdf(pdfUrl);
+        this.disabled = false;
     });
 
     // Кнопки в модалі (ініціалізація одноразово)
