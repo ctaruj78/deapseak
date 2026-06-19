@@ -6563,38 +6563,53 @@ async function _fillLisboa(pdfDoc, lift, inspType, requerente, req) {
 
 // === Cascais form fill — Requerimento_CMCascais.pdf ===
 // Positions from pdf2json W=37.188 H=52.625
+// Uses direct drawText (no AcroForm/white-background boxes) so filled values
+// never cover the original form labels.
 async function _fillCascais(pdfDoc, lift, inspType, requerente, req) {
     const page = pdfDoc.getPages()[0];
-    const { font } = await _loadPdfFonts(pdfDoc);
-    const fw = _makeFormFields(pdfDoc, page, 37.188, 52.625, font);
+    const { font, fontBold } = await _loadPdfFonts(pdfDoc);
+    const pw = _makePageWriter(page, 37.188, 52.625, font, fontBold);
     const addr = lift.address || {};
     const today = new Date().toLocaleDateString('pt-PT');
     const equip = _liftEquipmentType(lift);
 
-    fw.field(req.name,    7.0,   11.730, 27.0);
-    fw.field(req.address, 7.782, 12.645, 26.0);
-    fw.field(req.cp,      9.935, 13.553,  7.5);
-    fw.field(req.phone,  18.035, 13.553,  7.5);
-    fw.field(req.nif,    13.0,   14.468,  9.0);
+    // pdf2json y = top of element; drawText y = baseline → shift 0.4 units down
+    const D = 0.4;
+    const t = (v, jx, jy, opts = {}) => pw.text(v, jx, jy + D, opts);
+    const c = (on, jx, jy) => { if (on) pw.check(jx, jy + D); };
 
-    fw.check(requerente === 'cliente',  5.55, 15.63);
-    fw.check(requerente !== 'cliente', 21.22, 15.63);
+    // Requerente — X positions measured from pdf2json blank-area starts
+    t(req.name,    7.3,  11.730);                      // blank after "NOME" (~x 7.1)
+    t(req.address, 7.9,  12.645);                      // blank "___" at x 7.782
+    t(req.cp,     10.0,  13.553, { size: 7 });         // blank after "CÓDIGO POSTAL" x 9.935
+    t(req.phone,  18.1,  13.553, { size: 7 });         // blank "___" at x 18.035
+    t(req.nif,    13.5,  14.468, { size: 7 });         // blank ~x 13.4 (after "CONTRIBUINTE FISCAL Nº. ")
 
-    fw.check(inspType === 'periodica' || inspType === '1a', 8.37, 17.80);
-    fw.check(inspType === 'reinspecao',                    17.56, 17.80);
-    fw.check(inspType === 'extraordinaria',                23.97, 17.80);
+    c(requerente === 'cliente',  5.55, 15.563);
+    c(requerente !== 'cliente', 21.22, 15.563);
 
-    fw.field(addr.street || '',             7.782, 20.640, 26.0);
-    fw.field(addr.city || addr.parish || '', 9.462, 23.325, 10.0);
+    c(inspType === 'periodica' || inspType === '1a',  8.50, 17.738);
+    c(inspType === 'reinspecao',                     17.60, 17.738);
+    c(inspType === 'extraordinaria',                 24.05, 17.738);
 
-    fw.check(equip === 'ASCENSOR',      6.5,  26.09);
-    fw.check(equip === 'MONTA-CARGAS', 11.65, 26.09);
-    fw.check(equip === 'ESCADA',       18.1,  26.09);
-    fw.check(equip === 'TAPETE',       25.98, 26.09);
+    t(addr.street || '',              7.9, 20.640);
+    t(addr.city || addr.parish || '', 9.8, 23.325, { size: 7 }); // blank at x 9.695
 
-    fw.field(lift.municipalNumber || '', 30.5, 27.165, 8.0);
-    fw.field('FestLift - Elevadores e Serviços, Lda.', 8.5, 28.140, 25.0, { size: 7 });
-    fw.field(today, 7.767, 31.050, 5.0);
+    c(equip === 'ASCENSOR',      6.50, 26.033);
+    c(equip === 'MONTA-CARGAS', 11.65, 26.033);
+    c(equip === 'ESCADA',       18.10, 26.033);
+    c(equip === 'TAPETE',       25.98, 26.033);
+
+    // Nº processo — blank in "ELEVADOR______" starts ~x 27.0
+    t(lift.municipalNumber || '',                    27.0, 27.165, { size: 7 });
+    // Empresa manutenção — second blank block starts at x 23.3; label ends ~x 13.5
+    t('FestLift - Elevadores e Serviços, Lda.',     14.0, 28.140, { size: 7 });
+    t(today,                                          7.8, 31.050);
+
+    // Carimbo da EMA — right column (x 21+), between header y 34.118 and signature y 36.098
+    t('FestLift - Elevadores e Serviços, Lda.',     21.5, 34.400, { size: 7 });
+    t('NIF: 515 924 741',                           21.5, 34.950, { size: 7 });
+    t('Tel: 214 190 863',                           21.5, 35.500, { size: 7 });
 }
 
 // === Generic form fill for other municipalities ===
