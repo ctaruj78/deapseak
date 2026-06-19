@@ -6573,43 +6573,44 @@ async function _fillCascais(pdfDoc, lift, inspType, requerente, req) {
     const today = new Date().toLocaleDateString('pt-PT');
     const equip = _liftEquipmentType(lift);
 
-    // pdf2json y = top of element; drawText y = baseline → shift 0.4 units down
-    const D = 0.4;
-    const t = (v, jx, jy, opts = {}) => pw.text(v, jx, jy + D, opts);
-    const c = (on, jx, jy) => { if (on) pw.check(jx, jy + D); };
+    // Coordinate offsets (measured empirically vs pdf2json readback):
+    // DY = 0.75 units: pdf2json reports leading-adjusted line top, drawText needs baseline
+    // DX = 0.25 units: pdf-lib content stream has +4pt X shift vs original PDF stream
+    // CX = 0.50 units: checkpoint X inside ⇒ box (centre-ish), includes DX
+    const DY = 0.75, DX = 0.25, CX = 0.65;
+    const t = (v, jx, jy, opts = {}) => pw.text(v, jx + DX, jy + DY, opts);
+    const c = (on, jx, jy) => { if (on) pw.check(jx + CX, jy + DY); };
 
-    // Requerente — X positions measured from pdf2json blank-area starts
-    t(req.name,    7.3,  11.730);                      // blank after "NOME" (~x 7.1)
-    t(req.address, 7.9,  12.645);                      // blank "___" at x 7.782
-    t(req.cp,     10.0,  13.553, { size: 7 });         // blank after "CÓDIGO POSTAL" x 9.935
-    t(req.phone,  18.1,  13.553, { size: 7 });         // blank "___" at x 18.035
-    t(req.nif,    13.5,  14.468, { size: 7 });         // blank ~x 13.4 (after "CONTRIBUINTE FISCAL Nº. ")
+    // Requerente
+    t(req.name,    7.1,  11.730);                      // blank after "NOME" (~x 7.1)
+    t(req.address, 7.6,  12.645);                      // blank "___" at x 7.782
+    t(req.cp,      9.7,  13.553, { size: 7 });         // blank after "CÓDIGO POSTAL" x 9.935
+    t(req.phone,  17.9,  13.553, { size: 7 });         // blank "___" at x 18.035
+    t(req.nif,    13.2,  14.468, { size: 7 });         // blank ~x 13.4 (after "CONTRIBUINTE FISCAL Nº. ")
 
-    c(requerente === 'cliente',  5.55, 15.563);
-    c(requerente !== 'cliente', 21.22, 15.563);
+    c(requerente === 'cliente',  5.20, 15.563);        // ⇒ box at x 5.502
+    c(requerente !== 'cliente', 20.80, 15.563);        // ⇒ box at x 21.170
 
-    c(inspType === 'periodica' || inspType === '1a',  8.50, 17.738);
-    c(inspType === 'reinspecao',                     17.60, 17.738);
-    c(inspType === 'extraordinaria',                 24.05, 17.738);
+    c(inspType === 'periodica' || inspType === '1a',  8.05, 17.738);  // ⇒ at x 8.315
+    c(inspType === 'reinspecao',                     17.15, 17.738);  // ⇒ at x 17.510
+    c(inspType === 'extraordinaria',                 23.60, 17.738);  // ⇒ at x 23.915
 
-    t(addr.street || '',              7.9, 20.640);
-    t(addr.city || addr.parish || '', 9.8, 23.325, { size: 7 }); // blank at x 9.695
+    t(addr.street || '',              7.6, 20.640);
+    t(addr.city || addr.parish || '', 9.5, 23.325, { size: 7 }); // blank at x 9.695
 
-    c(equip === 'ASCENSOR',      6.50, 26.033);
-    c(equip === 'MONTA-CARGAS', 11.65, 26.033);
-    c(equip === 'ESCADA',       18.10, 26.033);
-    c(equip === 'TAPETE',       25.98, 26.033);
+    c(equip === 'ASCENSOR',      6.00, 26.033);        // ⇒ at x 6.200
+    c(equip === 'MONTA-CARGAS', 11.10, 26.033);        // ⇒ at x 11.352
+    c(equip === 'ESCADA',       17.60, 26.033);        // ⇒ at x 17.832
+    c(equip === 'TAPETE',       25.40, 26.033);        // ⇒ at x 25.685
 
-    // Nº processo — blank in "ELEVADOR______" starts ~x 27.0
-    t(lift.municipalNumber || '',                    27.0, 27.165, { size: 7 });
-    // Empresa manutenção — second blank block starts at x 23.3; label ends ~x 13.5
-    t('FestLift - Elevadores e Serviços, Lda.',     14.0, 28.140, { size: 7 });
-    t(today,                                          7.8, 31.050);
+    t(lift.municipalNumber || '',                    27.2, 27.165, { size: 7 }); // blank after "ELEVADOR" x≈26.9
+    t('FestLift - Elevadores e Serviços, Lda.',     13.7, 28.140, { size: 7 }); // label ends ~x 13.5
+    t(today,                                          7.5, 31.050);
 
     // Carimbo da EMA — right column (x 21+), between header y 34.118 and signature y 36.098
-    t('FestLift - Elevadores e Serviços, Lda.',     21.5, 34.400, { size: 7 });
-    t('NIF: 515 924 741',                           21.5, 34.950, { size: 7 });
-    t('Tel: 214 190 863',                           21.5, 35.500, { size: 7 });
+    t('FestLift - Elevadores e Serviços, Lda.',     21.2, 34.400, { size: 7 });
+    t('NIF: 515 924 741',                           21.2, 34.950, { size: 7 });
+    t('Tel: 214 190 863',                           21.2, 35.500, { size: 7 });
 }
 
 // === Generic form fill for other municipalities ===
