@@ -46,8 +46,18 @@ class AuthManager {
         return true;
     }
 
-    // Atualização access token через refresh token (без виходу з системи)
+    // Singleton promise — evita múltiplos pedidos simultâneos de refresh (BUG-06)
+    static _refreshPromise = null;
+
     static async refreshAccessToken() {
+        if (this._refreshPromise) return this._refreshPromise;
+        this._refreshPromise = this._doRefreshToken().finally(() => {
+            this._refreshPromise = null;
+        });
+        return this._refreshPromise;
+    }
+
+    static async _doRefreshToken() {
         const refreshToken = localStorage.getItem(this.REFRESH_KEY);
         if (!refreshToken) return false;
         try {
@@ -63,7 +73,6 @@ class AuthManager {
             const data = await resp.json();
             if (data.success && data.data && data.data.token) {
                 const t = data.data.token;
-                // Зберігаємо в усі ключі щоб всі хелпери підхопили новий токен
                 ['liftmanager_jwt', 'authToken', 'token', 'lm_token', 'deapseak_token'].forEach(k => {
                     localStorage.setItem(k, t);
                 });

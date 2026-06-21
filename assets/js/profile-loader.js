@@ -68,7 +68,9 @@
         // Nome користувача
         const nameElements = document.querySelectorAll('[data-user-name]');
         nameElements.forEach(el => {
-            const fullName = user.name || user.username || 'Desconhecido';
+            const fullName = user.fullName
+                || (user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : null)
+                || user.name || user.username || 'Desconhecido';
             if (el.tagName === 'INPUT') {
                 el.value = fullName;
             } else {
