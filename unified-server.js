@@ -2585,11 +2585,16 @@ app.get('/api/dashboard', authenticateToken, async (req, res) => {
         const role = req.user.role;
         
         // Базова статистика для всіх
-        const [liftsCount, requestsCount, usersCount] = await Promise.all([
+        const [liftsCount, requestsCount, usersCount, revenueResult] = await Promise.all([
             db.collection('lifts').countDocuments(),
             db.collection('requests').countDocuments({ status: { $ne: 'completed' } }),
-            db.collection('users').countDocuments()
+            db.collection('users').countDocuments(),
+            db.collection('orcamentos').aggregate([
+                { $match: { status: 'aprovado' } },
+                { $group: { _id: null, total: { $sum: '$total' } } }
+            ]).toArray()
         ]);
+        const totalRevenue = revenueResult[0]?.total || 0;
         
         // Останні заявки
         const recentRequests = await db.collection('requests')
@@ -2610,6 +2615,7 @@ app.get('/api/dashboard', authenticateToken, async (req, res) => {
                 totalUsers: usersCount,
                 totalLifts: liftsCount,
                 activeRequests: requestsCount,
+                totalRevenue,
                 recentRequests,
                 liftsNeedingAttention,
                 role

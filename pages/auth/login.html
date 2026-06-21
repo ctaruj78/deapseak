@@ -511,6 +511,15 @@
                                     redirectUserByRole(user.role);
                                 }
                             }, 220);
+                            // Failsafe: reset isSubmitting if navigation doesn't happen within 3s
+                            setTimeout(() => {
+                                if (isSubmitting) {
+                                    isSubmitting = false;
+                                    loginForm.dataset.processing = 'false';
+                                    submitButton.disabled = false;
+                                    submitButton.innerHTML = originalButtonText;
+                                }
+                            }, 3000);
                         }
                         
                     } else {
