@@ -2,15 +2,25 @@
 class ToolManager {
     constructor() {
         this.tools = [];
-        this.filters = {
-            status: 'all',
-            category: 'all',
-            location: 'all'
-        };
-            return [];
+        this.filters = { status: 'all', category: 'all', location: 'all' };
+        this.currentPage = 1;
+        this.itemsPerPage = 10;
+        this.tools = this.loadTools();
+        this.init();
+    }
+
+    init() {
+        this.setupEventListeners();
+        this.applyFilters();
+        this.updateStatistics();
+        this.checkLowStock();
+    }
+
+    loadTools() {
+        return [
             {
                 id: 'TOOL-004',
-                name: 'Детектор напруги',
+                name: 'Detector de tensão',
                 category: 'safety',
                 status: 'available',
                 location: 'van',
@@ -24,11 +34,11 @@ class ToolManager {
                 quantity: 2,
                 minQuantity: 2,
                 condition: 'excellent',
-                notes: 'Novo, з автоматичним відключенням'
+                notes: 'Novo, com desligamento automático'
             },
             {
                 id: 'TOOL-005',
-                name: 'Лазерний далекомір',
+                name: 'Medidor laser de distância',
                 category: 'measuring',
                 status: 'broken',
                 location: 'warehouse',
@@ -42,13 +52,13 @@ class ToolManager {
                 quantity: 1,
                 minQuantity: 1,
                 condition: 'broken',
-                notes: 'Не відображає результати вимірювань',
+                notes: 'Não exibe resultados de medição',
                 maintenanceHistory: [
                     {
                         date: '2024-06-05',
                         type: 'diagnostic',
                         technician: 'Іван Петренко',
-                        notes: 'Diagnóstico дисплея - потребує заміни'
+                        notes: 'Diagnóstico do display - necessita substituição'
                     }
                 ]
             }

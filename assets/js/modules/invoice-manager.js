@@ -2,9 +2,26 @@
 class InvoiceManager {
     constructor() {
         this.invoices = [];
-        this.filters = {
-            status: 'all',
-                return [];
+        this.filters = { status: 'all', period: 'current', sort: 'date-desc' };
+        this.currentPage = 1;
+        this.itemsPerPage = 10;
+        this.invoices = this.loadInvoices();
+    }
+
+    loadInvoices() {
+        return [
+            {
+                id: 'INV-2024-001',
+                number: 'INV-2024-001',
+                date: '2024-01-05',
+                dueDate: '2024-01-20',
+                clientId: 'client-1',
+                amount: 12500.00,
+                status: 'paid',
+                items: [
+                    {
+                        description: 'Manutenção preventiva mensal',
+                        quantity: 1,
                         price: 12500.00,
                         lift: 'Otis Gen2 - вул. Центральна, 12'
                     }
@@ -23,9 +40,9 @@ class InvoiceManager {
                 amount: 8300.00,
                 status: 'pending',
                 items: [
-                    { 
-                        description: 'Аварійний ремонт дверей ліфта', 
-                        quantity: 1, 
+                    {
+                        description: 'Reparação de emergência de portas do elevador',
+                        quantity: 1,
                         price: 8300.00,
                         lift: 'Schindler 3300 - пр. Перемоги, 45'
                     }
@@ -42,9 +59,9 @@ class InvoiceManager {
                 amount: 15600.00,
                 status: 'overdue',
                 items: [
-                    { 
-                        description: 'Планове ТО та заміна деталей', 
-                        quantity: 1, 
+                    {
+                        description: 'Manutenção preventiva e substituição de peças',
+                        quantity: 1,
                         price: 15600.00,
                         lift: 'KONE MonoSpace - вул. Шевченка, 78'
                     }
@@ -61,9 +78,9 @@ class InvoiceManager {
                 amount: 9200.00,
                 status: 'pending',
                 items: [
-                    { 
-                        description: 'Регулярне технічне обслуговування', 
-                        quantity: 1, 
+                    {
+                        description: 'Manutenção técnica regular',
+                        quantity: 1,
                         price: 9200.00,
                         lift: 'Otis Gen2 - вул. Центральна, 12'
                     }

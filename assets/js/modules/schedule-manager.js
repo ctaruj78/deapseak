@@ -8,14 +8,16 @@ class ScheduleManager {
     }
 
     init() {
-        this.loadEvents();
+        this.events = this.loadEvents();
         this.setupEventListeners();
         this.initCalendar();
-            return [];
+    }
+
+    loadEvents() {
         const today = new Date();
         const tomorrow = new Date(today);
         tomorrow.setDate(tomorrow.getDate() + 1);
-        
+
         return [
             {
                 id: 'event-1',
@@ -31,7 +33,7 @@ class ScheduleManager {
             },
             {
                 id: 'event-2',
-                title: 'Inspeção безпеки - Schindler 3300',
+                title: 'Inspeção de segurança - Schindler 3300',
                 type: 'inspection',
                 start: new Date(today.getFullYear(), today.getMonth(), today.getDate(), 14, 0),
                 end: new Date(today.getFullYear(), today.getMonth(), today.getDate(), 16, 0),
@@ -39,7 +41,7 @@ class ScheduleManager {
                 priority: 'medium',
                 status: 'scheduled',
                 description: 'Перевірка систем безпеки',
-                technician: 'Марія Коваленko'
+                technician: 'Maria Kovalenko'
             },
             {
                 id: 'event-3',
@@ -50,19 +52,19 @@ class ScheduleManager {
                 lift: 'KONE MonoSpace - вул. Шевченка, 78',
                 priority: 'high',
                 status: 'scheduled',
-                description: 'Reparação дверей ліфта',
-                technician: 'Петро Сидоренко'
+                description: 'Reparação de portas do elevador',
+                technician: 'Pedro Sidorenko'
             },
             {
                 id: 'event-4',
-                title: 'Консультація з клієнтом',
+                title: 'Consulta com cliente',
                 type: 'task',
                 start: new Date(tomorrow.getFullYear(), tomorrow.getMonth(), tomorrow.getDate(), 15, 0),
                 end: new Date(tomorrow.getFullYear(), tomorrow.getMonth(), tomorrow.getDate(), 16, 0),
-                lift: 'Офіс',
+                lift: 'Escritório',
                 priority: 'medium',
                 status: 'scheduled',
-                description: 'Консультація щодо модернізації ліфта',
+                description: 'Consulta sobre modernização do elevador',
                 technician: 'Іван Петренко'
             }
         ];

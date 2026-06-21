@@ -115,7 +115,7 @@ class ReportManager {
         $('#timeTrend').text('—').attr('class', 'trend-indicator trend-neutral');
         $('#slaTrend').text('—').attr('class', 'trend-indicator trend-neutral');
         $('#escalationsTrend').text('—').attr('class', 'trend-indicator trend-neutral');
-        $('#satisfactionTrend').text(trends.satisfaction).attr('class', 'trend-indicator trend-up');
+        $('#satisfactionTrend').text('—').attr('class', 'trend-indicator trend-neutral');
     }
 
     initializeCharts() {
