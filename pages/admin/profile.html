@@ -2,9 +2,11 @@
 <html lang="pt">
 <head>
     <meta charset="UTF-8">
+    <link rel="stylesheet" href="/plugins/toastr/css/toastr.min.css">
     <link rel="icon" type="image/png" href="/assets/img/favicon.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Perfil do administrador - FestLift</title>
+    <link rel="stylesheet" href="/plugins/sweetalert2/css/sweetalert2.min.css">
     <script src="../../plugins/sweetalert2/js/sweetalert2.min.js"></script>
     <script src="../../assets/js/auth.js"></script>
 
@@ -995,7 +997,7 @@
                             
                             <h5 class="mt-4">Eliminar conta</h5>
                             <p class="text-danger">Esta ação não pode ser cancelada. Todas os seus dados serão eliminados permanentemente.</p>
-                            <button class="btn btn-outline-danger" onclick="if(await swalConfirm('Eliminar conta? Esta ação não pode ser cancelada!')){if(await swalConfirm('Tem a certeza? Todas dados serão eliminados permanentemente.')){const token=localStorage.getItem('authToken');fetch('/api/users/me',{method:'DELETE',headers:{Authorization:'Bearer '+token}}).then(()=>{localStorage.clear();sessionStorage.clear();window.location.replace('/pages/auth/login.html');}).catch(()=>{toastr.error('Erro eliminação. Contacte o administrador.');});}}">
+                            <button class="btn btn-outline-danger" onclick="eliminarConta()">
                                 <i class="fas fa-trash mr-2"></i>Eliminar conta
                             </button>
                         </div>
@@ -1411,6 +1413,7 @@
             }
         }
     </script>
+    <script src="/plugins/toastr/js/toastr.min.js"></script>
 </body>
 </html>
 <script src="../../assets/js/monitor.js"></script>
@@ -1428,6 +1431,15 @@ async function swalConfirm(text, title = 'Confirmar') {
         cancelButtonText: 'Cancelar'
     });
     return r.isConfirmed;
+}
+
+async function eliminarConta() {
+    if (!await swalConfirm('Eliminar conta? Esta ação não pode ser cancelada!')) return;
+    if (!await swalConfirm('Tem a certeza? Todas os dados serão eliminados permanentemente.')) return;
+    const token = localStorage.getItem('authToken') || localStorage.getItem('liftmanager_jwt');
+    fetch('/api/users/me', { method: 'DELETE', headers: { Authorization: 'Bearer ' + token } })
+        .then(() => { localStorage.clear(); sessionStorage.clear(); window.location.replace('/pages/auth/login.html'); })
+        .catch(() => { toastr.error('Erro na eliminação. Contacte o administrador.'); });
 }
 </script>
 </body> -->

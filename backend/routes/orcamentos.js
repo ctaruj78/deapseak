@@ -620,10 +620,11 @@ router.get('/', authenticate, authorizeRoles('admin', 'dispatcher', 'client'), a
         
         // Пошук по клієнту ou номеру
         if (search) {
+            const safeSearch = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
             query.$or = [
-                { numero: new RegExp(search, 'i') },
-                { 'cliente.nome': new RegExp(search, 'i') },
-                { 'cliente.email': new RegExp(search, 'i') }
+                { numero: new RegExp(safeSearch, 'i') },
+                { 'cliente.nome': new RegExp(safeSearch, 'i') },
+                { 'cliente.email': new RegExp(safeSearch, 'i') }
             ];
         }
         

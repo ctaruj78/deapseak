@@ -2238,7 +2238,7 @@ setTimeout(() => {
 
         // --- Estado do sistema: ping real ---
         const t0 = Date.now();
-        fetch('/api/auth/check', { method: 'GET' }).then(r => {
+        fetch('/api/health', { method: 'GET' }).then(r => {
             const ms = Date.now() - t0;
             const serverEl = document.getElementById('sys-server-status');
             const dbEl = document.getElementById('sys-db-status');

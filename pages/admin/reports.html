@@ -2,6 +2,7 @@
 <html lang="pt">
 <head>
     <meta charset="UTF-8">
+    <link rel="stylesheet" href="/plugins/toastr/css/toastr.min.css">
     <link rel="icon" type="image/png" href="/assets/img/favicon.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Relatórios - FestLift</title>
@@ -629,7 +630,7 @@
                                         <i class="fas fa-file-pdf mr-1"></i> Exportar PDF
                                     </button>
                                     <button class="btn btn-info mr-2" id="btn-export-excel" disabled>
-                                        <i class="fas fa-file-excel mr-1"></i> Exportar para Excel
+                                        <i class="fas fa-file-csv mr-1"></i> Exportar para CSV
                                     </button>
                                 </div>
                             </div>
@@ -932,8 +933,6 @@
                             const name = u.name || [u.firstName, u.lastName].filter(Boolean).join(' ') || u.username || 'Técnico';
                             if (id) {
                                 $('#technicianFilter').append('<option value="' + id + '">' + name + '</option>');
-                                $('#result-total').text(data.stats.total || data.items?.length || 0);
-                                $('#result-waiting').text(data.stats.pending || data.stats.waiting || 0);
                             }
                         });
                     }
@@ -944,5 +943,6 @@
     <script src="/assets/js/table-drag-scroll.js"></script>
 <script src="../../assets/js/monitor.js"></script>
 <script></script>
+    <script src="/plugins/toastr/js/toastr.min.js"></script>
 </body>
 </html>

@@ -3224,7 +3224,7 @@ Equipa FestLift
             toastr.success(`Relatório descarregado como: ${filename}`);
         }
 
-        function archivePDF() {
+        async function archivePDF() {
             if (!currentPDFFile) {
                 toastr.warning('Primeiro carregue o ficheiro PDF');
                 return;
@@ -7374,7 +7374,7 @@ Email de contacto: info@festlift.pt`;
         $('#viewReportModal').modal('show');
     }
 
-    function attachPDFToReport(reportIndex) {
+    async function attachPDFToReport(reportIndex) {
         const liftId = window.currentReportLiftId;
         if (!liftId) return toastr.error('Não foi possível determinar o ID do elevador');
         const idx = reportIndex !== undefined ? reportIndex : window.currentReportOrigIndex;

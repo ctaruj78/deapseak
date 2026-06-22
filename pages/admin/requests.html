@@ -3012,12 +3012,6 @@ async function loadComments(requestId) {
     }
 }
 
-async function logout() {
-    if (await swalConfirm('Tem a certeza que quer sair?')) {
-        window.location.replace('/pages/auth/login.html');
-    }
-}
-
 // Função de actualização da lista de pedidos
 async function refreshRequests() {
     if (window.serviceManager) {

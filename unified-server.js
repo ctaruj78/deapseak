@@ -449,7 +449,7 @@ const contactLimiter = rateLimit({
 });
 const refreshLimiter = rateLimit({
     windowMs: 5 * 60 * 1000, // 5 min
-    max: 10,                  // max 10 refresh requests per 5 min per IP
+    max: 60,                  // max 60 refresh requests per 5 min per IP (normal navigation pattern)
     message: { success: false, message: 'Demasiados pedidos de renovação de sessão. Aguarde 5 minutos.' },
     standardHeaders: true,
     legacyHeaders: false,
@@ -612,14 +612,10 @@ mongoose.connect(mongooseURI).then(() => {
 
 // JWT secret
 if (!process.env.JWT_SECRET) {
-    if (process.env.NODE_ENV === 'production') {
-        console.error('❌ FATAL: JWT_SECRET não definido em .env! O servidor irá parar.');
-        process.exit(1);
-    } else {
-        console.warn('⚠️  AVISO: JWT_SECRET não definido em .env! A usar fallback inseguro. НЕ для production!');
-    }
+    console.error('❌ FATAL: JWT_SECRET não definido em .env! O servidor irá parar.');
+    process.exit(1);
 }
-const JWT_SECRET = process.env.JWT_SECRET || 'deapseak_secret_key_2024';
+const JWT_SECRET = process.env.JWT_SECRET;
 
 // API маршрути
 app.get('/api/health', async (req, res) => {
@@ -2400,7 +2396,7 @@ app.get('/api/inspections/:id', authenticateToken, async (req, res) => {
 });
 
 // POST /api/inspections — guardar novo relatório de inspecção / manutenção
-app.post('/api/inspections', authenticateToken, async (req, res) => {
+app.post('/api/inspections', authenticateToken, requireRole('admin', 'dispatcher', 'technician'), async (req, res) => {
     try {
         if (!db) {
             return res.status(503).json({ success: false, message: 'Base de dados indisponível' });
@@ -2464,7 +2460,7 @@ app.post('/api/inspections', authenticateToken, async (req, res) => {
 });
 
 // DELETE /api/inspections/:id — apagar relatório
-app.delete('/api/inspections/:id', authenticateToken, async (req, res) => {
+app.delete('/api/inspections/:id', authenticateToken, requireRole('admin', 'dispatcher'), async (req, res) => {
     try {
         if (!db) {
             return res.status(503).json({ success: false, message: 'Base de dados indisponível' });
