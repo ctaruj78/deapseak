@@ -1221,12 +1221,11 @@ router.patch('/:id/status', authenticate, authorizeRoles('admin', 'dispatcher'),
 // POST /api/orcamentos/:id/archive - Arquivar orçamento (admin/dispatcher)
 router.post('/:id/archive', authenticate, authorizeRoles('admin', 'dispatcher'), async (req, res) => {
     try {
-        const orcamento = await Orcamento.findById(req.params.id);
-        if (!orcamento) return res.status(404).json({ success: false, message: 'Orçamento não encontrado' });
-        orcamento.archived = true;
-        orcamento.archivedAt = new Date();
-        orcamento.archivedBy = req.user.username || req.user.email || req.user.id;
-        await orcamento.save();
+        const result = await Orcamento.updateOne(
+            { _id: req.params.id },
+            { $set: { archived: true, archivedAt: new Date(), archivedBy: req.user.username || req.user.email || req.user.id } }
+        );
+        if (result.matchedCount === 0) return res.status(404).json({ success: false, message: 'Orçamento não encontrado' });
         res.json({ success: true, message: 'Orçamento arquivado com sucesso' });
     } catch (error) {
         console.error('Erro ao arquivar orçamento:', error);
@@ -1237,12 +1236,11 @@ router.post('/:id/archive', authenticate, authorizeRoles('admin', 'dispatcher'),
 // POST /api/orcamentos/:id/unarchive - Restaurar do arquivo (somente admin)
 router.post('/:id/unarchive', authenticate, authorizeRoles('admin'), async (req, res) => {
     try {
-        const orcamento = await Orcamento.findById(req.params.id);
-        if (!orcamento) return res.status(404).json({ success: false, message: 'Orçamento não encontrado' });
-        orcamento.archived = false;
-        orcamento.archivedAt = undefined;
-        orcamento.archivedBy = undefined;
-        await orcamento.save();
+        const result = await Orcamento.updateOne(
+            { _id: req.params.id },
+            { $unset: { archived: '', archivedAt: '', archivedBy: '' } }
+        );
+        if (result.matchedCount === 0) return res.status(404).json({ success: false, message: 'Orçamento não encontrado' });
         res.json({ success: true, message: 'Orçamento restaurado do arquivo' });
     } catch (error) {
         console.error('Erro ao restaurar orçamento:', error);
