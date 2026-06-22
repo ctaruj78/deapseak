@@ -3032,7 +3032,7 @@
 
     <script>
         // 🧹 Função para очиaindaння testeових dados (temporária, para розробки)
-        window.clearTestData = function() {
+        window.clearTestData = async function() {
             const confirm = await swalConfirm('Tem a certeza? Isto eliminará todos os dados de teste do localStorage.');
             if (confirm) {
                 let removed = 0;
@@ -3194,7 +3194,7 @@ Equipa FestLift
             }
         }
 
-        function removePDF() {
+        async function removePDF() {
             if (await swalConfirm('Tem a certeza que quer eliminar este relatório?')) {
                 currentPDFFile = null;
                 document.getElementById('inspectionReport').value = '';
@@ -3317,7 +3317,7 @@ Equipa FestLift
             $('#archiveModal').modal('show');
         }
 
-        function deleteArchivedReport(reportId) {
+        async function deleteArchivedReport(reportId) {
             if (await swalConfirm('Eliminar este relatório do arquivo permanentemente?')) {
                 let archivedReports = JSON.parse(localStorage.getItem('archived_reports') || '[]');
                 archivedReports = archivedReports.filter(report => report.id !== reportId);
@@ -3329,7 +3329,7 @@ Equipa FestLift
             }
         }
 
-        function clearArchive() {
+        async function clearArchive() {
             if (await swalConfirm('Limpar todo o arquivo de relatórios? Esta acção é irreversível!')) {
                 localStorage.removeItem('archived_reports');
                 $('#archiveModal').modal('hide');
@@ -3410,7 +3410,7 @@ Equipa FestLift
         });
 
         // Função виходу
-        function logout() {
+        async function logout() {
             if (await swalConfirm('Tem a certeza que quer sair?')) {
                 if (typeof AuthManager !== 'undefined') {
                     AuthManager.logout();
@@ -3791,7 +3791,7 @@ Equipa FestLift
     document.addEventListener('DOMContentLoaded', function() {
         const adminSvcTab = document.getElementById('eLiftTab-svc');
         if (adminSvcTab) {
-            adminSvcTab.addEventListener('click', function() {
+            adminSvcTab.addEventListener('click', async function() {
                 const liftIdEl = document.getElementById('enhancedLiftId');
                 const liftId = (window.enhancedLiftModal && window.enhancedLiftModal.currentLiftId)
                     || (liftIdEl && liftIdEl.value) || null;
@@ -3903,7 +3903,7 @@ Email de contacto: info@festlift.pt`;
         $('#btnSendToMun').removeClass('btn-success').addClass('btn-warning').html('<i class="fas fa-building mr-1"></i> Pedido ao município');
 
         // Показати бейджі якщо вже надсилалося раніше
-        const fmtDate = iso => iso ? new Date(iso).toLocaleDateString('pt-PT', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '';
+        const fmtDate = async iso => iso ? new Date(iso).toLocaleDateString('pt-PT', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '';
         if (lift.clientNotified?.sentAt) {
             $('#inspReqModal_clientSentDate').text(fmtDate(lift.clientNotified.sentAt));
             $('#inspReqModal_clientSentBadge').show();
@@ -4194,7 +4194,7 @@ Email de contacto: info@festlift.pt`;
         }
     }
 
-    function cancelInspection(inspectionId) {
+    async function cancelInspection(inspectionId) {
         if (await swalConfirm('Cancelar esta inspecção?')) {
             let inspections = JSON.parse(localStorage.getItem('scheduled_inspections') || '[]');
             inspections = inspections.filter(i => i.id !== inspectionId);
@@ -6761,7 +6761,7 @@ Email de contacto: info@festlift.pt`;
                         window.allLiftsData[globalIdx].status = 'maintenance';
                     }
                 }
-                if (typeof applyAllFilters === 'function') {
+                if (typeof applyAllFilters === 'async function') {
                     applyAllFilters();
                 } else {
                     displayLiftsInTable(lifts);

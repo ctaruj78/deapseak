@@ -681,7 +681,7 @@
     <script src="../../assets/js/modules/monitoring-manager.js"></script>
 
     <script>
-        function logout() {
+        async function logout() {
             if (await swalConfirm('Tem a certeza que quer sair do sistema?')) {
                 localStorage.removeItem('authToken');
                 localStorage.removeItem('userData');

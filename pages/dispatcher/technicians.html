@@ -542,7 +542,7 @@
     <script src="../../assets/js/modules/technician-manager.js"></script>
 
     <script>
-        function logout() {
+        async function logout() {
             if (await swalConfirm('Tem a certeza que quer sair do sistema?')) {
                 if (typeof AuthManager !== 'undefined') {
                     AuthManager.logout();

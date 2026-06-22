@@ -596,7 +596,7 @@ async function openImport(id) {
     }
 }
 
-function confirmAndResend() {
+async function confirmAndResend() {
     if (!currentImportId) return;
     if (!await swalConfirm('⚠️ Confirma o envio de emails de aviso de pagamento a todos os devedores desta importação?\n\nEsta ação é irreversível — os clientes receberão o email imediatamente.')) return;
     resendAlerts();
@@ -842,14 +842,14 @@ function previewDebtorEmail(idx) {
     $('#emailPreviewModal').modal('show');
 }
 
-function confirmAndSendFromPreview() {
+async function confirmAndSendFromPreview() {
     if (!_previewNif) return;
     if (!await swalConfirm('Confirma o envio do email de aviso de pagamento?\n\nEsta acção é irreversível.')) return;
     $('#emailPreviewModal').modal('hide');
     sendDebtorAlerts([_previewNif]);
 }
 
-function buildDebtorEmailHtml(deb) {
+async function buildDebtorEmailHtml(deb) {
     const esc = s => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
     const fmt = n => Number(n||0).toFixed(2).replace('.',',') + ' €';
     const fmtD = s => s ? new Date(s).toLocaleDateString('pt-PT') : '—';

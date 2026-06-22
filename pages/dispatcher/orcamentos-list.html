@@ -523,7 +523,7 @@
         }
 
         // Editar orçamento
-        function editarOrcamento(id) {
+        async function editarOrcamento(id) {
             window.location.href = `invoice-template.html?id=${id}`;
         }
 
@@ -656,7 +656,7 @@
         }
 
         // Toggle modo arquivo
-        function toggleArchiveView() {
+        async function toggleArchiveView() {
             _archiveMode = !_archiveMode;
             const banner = document.getElementById('orcArchiveBanner');
             const btn = document.getElementById('orcArchiveToggleBtn');
@@ -707,7 +707,7 @@
             }
         }
 
-        function renderModalFotosGrid(fotos) {
+        async function renderModalFotosGrid(fotos) {
             const grid = document.getElementById('fotosModalGrid');
             if (!fotos || fotos.length === 0) {
                 grid.innerHTML = '<small class="text-muted">Sem fotografias ainda.</small>';

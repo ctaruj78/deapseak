@@ -241,7 +241,7 @@
     }
 
     // ─── Notifications rendering ───────────────────────────────────────────────
-    function safeAddr(loc) {
+    async function safeAddr(loc) {
         if (!loc) return '—';
         if (typeof loc === 'string') return loc;
         if (typeof loc === 'object') {

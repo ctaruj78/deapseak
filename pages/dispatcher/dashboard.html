@@ -737,7 +737,7 @@
     <script src="../../assets/js/modules/dispatcher-dashboard-real.js"></script>
 
     <script>
-        function logout() {
+        async function logout() {
             if (await swalConfirm('Tem a certeza que quer sair do sistema?')) {
                 localStorage.removeItem('token');
                 localStorage.removeItem('authToken');

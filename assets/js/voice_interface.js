@@ -382,7 +382,7 @@ class VoiceInterface {
                 break;
                 
             case 'open_settings':
-                if (typeof showSettingsModal === 'function') {
+                if (typeof showSettingsModal === 'async function') {
                     showSettingsModal();
                 } else {
                     window.location.href = '/settings';

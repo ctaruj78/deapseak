@@ -2751,7 +2751,7 @@
 
     <script>
         // 🧹 Função para очиaindaння testeових dados (temporária, para розробки)
-        window.clearTestData = function() {
+        window.clearTestData = async function() {
             const confirm = await swalConfirm('Tem a certeza? Isto eliminará todos os dados de teste do localStorage.');
             if (confirm) {
                 let removed = 0;
@@ -2933,7 +2933,7 @@ Equipa FestLift
             }
         }
 
-        function removePDF() {
+        async function removePDF() {
             if (await swalConfirm('Tem a certeza que quer eliminar este relatório?')) {
                 currentPDFFile = null;
                 document.getElementById('inspectionReport').value = '';
@@ -3056,7 +3056,7 @@ Equipa FestLift
             $('#archiveModal').modal('show');
         }
 
-        function deleteArchivedReport(reportId) {
+        async function deleteArchivedReport(reportId) {
                 if (await swalConfirm('Eliminar definitivamente este relatório do arquivo?')) {
                 let archivedReports = JSON.parse(localStorage.getItem('archived_reports') || '[]');
                 archivedReports = archivedReports.filter(report => report.id !== reportId);
@@ -3068,7 +3068,7 @@ Equipa FestLift
             }
         }
 
-        function clearArchive() {
+        async function clearArchive() {
             if (await swalConfirm('Limpar todo o arquivo de relatórios? Esta acção é irreversível!')) {
                 localStorage.removeItem('archived_reports');
                 $('#archiveModal').modal('hide');
@@ -3149,7 +3149,7 @@ Equipa FestLift
         });
 
         // Função de saída
-        function logout() {
+        async function logout() {
             if (await swalConfirm('Tem a certeza que quer sair?')) {
                 if (typeof AuthManager !== 'undefined') {
                     AuthManager.logout();
@@ -3577,7 +3577,7 @@ Equipa FestLift
         }
     }
 
-    function cancelInspection(inspectionId) {
+    async function cancelInspection(inspectionId) {
         if (await swalConfirm('Eliminar esta inspecção?')) {
             let inspections = JSON.parse(localStorage.getItem('scheduled_inspections') || '[]');
             inspections = inspections.filter(i => i.id !== inspectionId);
@@ -3673,7 +3673,7 @@ Equipa FestLift
     window.closeInspectionModal = closeInspectionModal;
 
     // Обробник кнопки "Adicionar relatório de inspecção"
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', async function() {
         const addInspectionReportBtn = document.getElementById('addInspectionReportBtn');
         if (addInspectionReportBtn) {
             addInspectionReportBtn.addEventListener('click', async function() {
@@ -4411,7 +4411,7 @@ Equipa FestLift</textarea>
         toastr.success('Relatório de inspecção arquivado com sucesso!');
     }
 
-    function removeInspectionPDF() {
+    async function removeInspectionPDF() {
         if (await swalConfirm('Tem a certeza que quer eliminar este relatório de inspecção?')) {
             currentInspectionPDFFile = null;
             document.getElementById('inspectionReportPDF').value = '';
@@ -6440,7 +6440,7 @@ Equipa FestLift</textarea>
         }
     }
 
-    function scheduleMaintenance(liftId) {
+    async function scheduleMaintenance(liftId) {
         console.log('🔧 A planear manutenção do elevador:', liftId);
         
         // Pode-se abrir модальне вікно планування ou перенаправити
@@ -6467,7 +6467,7 @@ Equipa FestLift</textarea>
                         window.allLiftsData[globalIdx].status = 'maintenance';
                     }
                 }
-                if (typeof applyAllFilters === 'function') {
+                if (typeof applyAllFilters === 'async function') {
                     applyAllFilters();
                 } else {
                     displayLiftsInTable(lifts);
@@ -6835,7 +6835,7 @@ Equipa FestLift</textarea>
             filterReports();
     }
     
-    function showAddReportModal() {
+    async function showAddReportModal() {
         // Отримуexisteмо _id do elevador desde dataset модального вікна дetc
         const modal = document.getElementById('liftDetailsModal');
         const liftId = modal?.dataset?.liftId || $('#detail-id').text();

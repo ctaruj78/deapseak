@@ -109,7 +109,7 @@ const LiftsManager = (function() {
         return checkRole(['admin', 'dispatcher']);
     }
     
-    function canDelete() {
+    async function canDelete() {
         return checkRole(['admin']);
     }
     

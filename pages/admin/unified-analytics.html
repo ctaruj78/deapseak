@@ -2270,7 +2270,7 @@ setTimeout(() => {
     }
     
     // Global function for viewing email details
-    window.viewEmailDetails = function(idx) {
+    window.viewEmailDetails = async function(idx) {
         const body = document.getElementById('emailDetailsBody');
         if (!body) return;
         const comm = _allCommunications[idx];

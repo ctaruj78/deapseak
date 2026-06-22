@@ -595,7 +595,7 @@
             emailTemplateManager.saveTemplate();
         }
 
-        function deleteTemplate(templateId) {
+        async function deleteTemplate(templateId) {
             if (await swalConfirm('Tem certeza que deseja eliminar este modelo?')) {
                 delete emailTemplateManager.templates[templateId];
                 localStorage.setItem('emailTemplates', JSON.stringify(emailTemplateManager.templates));

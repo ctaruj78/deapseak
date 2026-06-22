@@ -386,7 +386,7 @@
             || localStorage.getItem('authToken');
     }
 
-    function logout() {
+    async function logout() {
         if (await swalConfirm('Tem a certeza que quer sair?')) {
             if (typeof AuthManager !== 'undefined') {
                 AuthManager.logout();

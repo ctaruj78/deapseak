@@ -321,7 +321,7 @@
                localStorage.getItem('lm_token');
     }
 
-    function logout() {
+    async function logout() {
         if (await swalConfirm('Tem certeza que deseja sair?')) {
             localStorage.clear();
             sessionStorage.clear();

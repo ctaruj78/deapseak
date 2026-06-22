@@ -2959,13 +2959,11 @@ async function submitTechnicianAssignment() {
     }
 }
 
-function getCurrentAssignmentId() {
-    // TODO: Lógica para obter ID do pedido actualmente seleccionado
-    // Pode estar guardado em variável global ou recebido da UI
+async function getCurrentAssignmentId() {
     return window.currentAssignmentId || null;
 }
 
-function logout() {
+async function logout() {
     if (await swalConfirm('Tem a certeza que quer sair?')) {
         window.location.replace('/pages/auth/login.html');
     }
@@ -3014,7 +3012,7 @@ async function loadComments(requestId) {
     }
 }
 
-function logout() {
+async function logout() {
     if (await swalConfirm('Tem a certeza que quer sair?')) {
         window.location.replace('/pages/auth/login.html');
     }

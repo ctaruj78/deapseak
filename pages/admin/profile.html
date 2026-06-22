@@ -989,7 +989,7 @@
                             
                             <h5 class="mt-4">Exportar dados</h5>
                             <p class="text-muted">Exporte todos os seus dados em formato JSON</p>
-                            <button class="btn btn-outline-primary" onclick="(function(){const data={user:JSON.parse(localStorage.getItem('userData')||'{}'),exported:new Date().toISOString()};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='profile-export-'+Date.now()+'.json';a.click();})()">
+                            <button class="btn btn-outline-primary" onclick="(async function(){const data={user:JSON.parse(localStorage.getItem('userData')||'{}'),exported:new Date().toISOString()};const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='profile-export-'+Date.now()+'.json';a.click();})()">
                                 <i class="fas fa-download mr-2"></i>Exportar dados
                             </button>
                             

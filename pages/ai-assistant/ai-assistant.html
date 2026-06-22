@@ -1051,7 +1051,7 @@
             let streamBubble = null;
             let streamTextEl = null;
 
-            function createStreamBubble() {
+            async function createStreamBubble() {
                 const container = document.getElementById('chatMessages');
                 const typingIndicator = container.querySelector('.typing-indicator').parentElement;
                 const now = new Date();
@@ -1203,7 +1203,7 @@
             }
         }
 
-        function clearChat() {
+        async function clearChat() {
             if (await swalConfirm('Limpar todo o histórico do chat?')) {
                 const container = document.getElementById('chatMessages');
                 const children = Array.from(container.children);

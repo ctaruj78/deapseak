@@ -896,7 +896,7 @@
 
     <script>
         // Função de saída
-        function logout() {
+        async function logout() {
             if (await swalConfirm('Tem a certeza que quer sair do sistema?')) {
                 // Оouщуexisteмо todos dados através de AuthManager
                 if (typeof AuthManager !== 'undefined') {

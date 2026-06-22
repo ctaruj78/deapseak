@@ -420,7 +420,7 @@
             || '';
     }
 
-    function logout() {
+    async function logout() {
         if (await swalConfirm('Tem a certeza que quer sair do sistema?')) {
             if (typeof AuthManager !== 'undefined') {
                 AuthManager.logout();
@@ -582,7 +582,7 @@
             });
 
             if (!res.ok) {
-                var err = await res.json().catch(function() { return {}; });
+                var err = await res.json().catch(async function() { return {}; });
                 throw new Error(err.message || 'Erro ao descarregar ficheiro');
             }
 

@@ -500,7 +500,7 @@ if (typeof window !== 'undefined') {
 // proper AuthManager.logout() that clears all 12+ auth keys.
 // ═══════════════════════════════════════════════════════════
 if (typeof window !== 'undefined') {
-    const _overrideLogout = function () {
+    const _overrideLogout = async function () {
         window.logout = async function () {
             if (!await swalConfirm('Tem a certeza que quer sair do sistema?')) return;
             AuthManager.logout();

@@ -186,7 +186,7 @@
     renderAll();
   }
 
-  function togglePause() {
+  async function togglePause() {
     paused = !paused;
     const btn = document.getElementById('pauseBtn');
     btn.textContent = paused ? '▶ Continuar' : '⏸ Pausar';

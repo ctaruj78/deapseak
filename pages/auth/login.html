@@ -323,7 +323,7 @@
             }
             
             // Sair e обрати іншу função
-            function logoutAndChooseRole() {
+            async function logoutAndChooseRole() {
                 if (await swalConfirm('Tem a certeza que quer sair?')) {
                     AuthManager.logout();
                     location.reload();

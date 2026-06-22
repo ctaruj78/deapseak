@@ -582,7 +582,7 @@ class CRMNavigationManager {
     /**
      * A carregar чат системи
      */
-    async loadChatSystem(action) {
+    async loadChatSystem() {
         const content = document.getElementById('main-content');
         
         content.innerHTML = `
@@ -727,7 +727,9 @@ class CRMNavigationManager {
             link.classList.remove('active');
         });
         
-        // TODO: Adicionar логіку встановлення активного пункту меню
+        const selector = `[data-module="${moduleName}"]${action ? `[data-action="${action}"]` : ''}`;
+        const activeLink = document.querySelector(selector) || document.querySelector(`[data-module="${moduleName}"]`);
+        if (activeLink) activeLink.classList.add('active');
     }
 
     showLoading() {
@@ -814,19 +816,16 @@ class CRMNavigationManager {
     }
 
     // Методи для інших модулів (заглушки)
-    async loadQRSystem(action) {
-        // TODO: Реалізувати завантаження QR системи
-        this.showError('QR система буде реалізована пізніше');
+    async loadQRSystem() {
+        window.location.href = '/pages/admin/qr-management.html';
     }
 
     async loadUsersModule() {
-        // TODO: Реалізувати модуль користувачів
-        this.showError('Модуль користувачів буде реалізований пізніше');
+        window.location.href = '/pages/admin/users.html';
     }
 
     async loadSettingsModule() {
-        // TODO: Реалізувати модуль налаштувань
-        this.showError('Модуль налаштувань буде реалізований пізніше');
+        window.location.href = '/pages/admin/settings.html';
     }
 
     async loadNotFound(moduleName) {

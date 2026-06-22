@@ -643,7 +643,7 @@ class SettingsManager {
         toast.toast('show');
 
         // Автоматичне видалення після закриття
-        toast.on('hidden.bs.toast', function () {
+        toast.on('hidden.bs.toast', async function () {
             $(this).remove();
         });
     }

@@ -778,7 +778,7 @@
             toastr.success('A iniciar diagnóstico do sistema...\nVerificação dos componentes do sistema...\nDiagnóstico concluída com sucesso!');
         }
 
-        function createBackup() {
+        async function createBackup() {
             if (await swalConfirm('Criar cópia de segurança do sistema? Isto pode demorar alguns minutos.')) {
                 toastr.success('Cópia de segurança criada com sucesso!\nFicheiro guardado: backup_2025-09-24.zip');
             }
@@ -793,7 +793,7 @@
         }
 
         // Logout function
-        function logout() {
+        async function logout() {
             if (await swalConfirm('Tem a certeza que quer sair?')) {
                 window.location.replace('/pages/auth/login.html');
             }

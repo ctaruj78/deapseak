@@ -734,7 +734,7 @@
     <script src="../../assets/js/modules/messenger.js"></script>
     <script>
         // Função de saída
-        function logout() {
+        async function logout() {
             if (await swalConfirm('Tem a certeza que quer sair do sistema?')) {
                 if (typeof AuthManager !== 'undefined') {
                     AuthManager.logout();

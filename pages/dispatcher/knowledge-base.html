@@ -469,7 +469,7 @@ async function saveArticle() {
     }
 }
 
-function previewArticle() {
+async function previewArticle() {
     const content = $('#fContent').val();
     $('#previewContent').html(content || '<p class="text-muted">Sem conteúdo para pré-visualizar.</p>');
     $('#previewModal').modal('show');

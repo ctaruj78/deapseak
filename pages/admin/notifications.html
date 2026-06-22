@@ -909,7 +909,7 @@
             }).get();
         }
 
-        function toggleBulkActions() {
+        async function toggleBulkActions() {
             const selectedCount = getSelectedNotificationIds().length;
             if (selectedCount > 0) {
                 $('#bulkActions').removeClass('d-none');
@@ -920,7 +920,7 @@
         }
 
         // Event delegation for dynamic elements
-        $(document).on('click', '.mark-read', function() {
+        $(document).on('click', '.mark-read', async function() {
             const id = $(this).data('id');
             const notification = notifications.find(n => n.id == id);
             if (notification) {

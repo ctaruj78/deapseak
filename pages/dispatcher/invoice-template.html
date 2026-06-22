@@ -742,7 +742,7 @@
                     // ═══════════════════════════════════════════════════════════
                     
                     const servicos = [];
-                    $('#servicesTable tbody tr').each(function(index) {
+                    $('#servicesTable tbody tr').each(async function(index) {
                         const descricao = $(this).find('input[type="text"]').val() || 'Servico';
                         const quantidade = $(this).find('.qty').val() || '0';
                         const preco = parseFloat($(this).find('.price').val()) || 0;
@@ -1012,7 +1012,7 @@
             
             const servicos = [];
             
-            $('#servicesTable tbody tr').each(function() {
+            $('#servicesTable tbody tr').each(async function() {
                 const descricao = $(this).find('input[type="text"]').val();
                 const quantidade = parseFloat($(this).find('.qty').val()) || 0;
                 const precoUnitario = parseFloat($(this).find('.price').val()) || 0;

@@ -2469,7 +2469,7 @@ function showProfile() {
     window.crmSystem.loadModule('profile');
 }
 
-function logout() {
+async function logout() {
     if (await swalConfirm('Ви впевнені, що хочете вийти?')) {
         localStorage.removeItem('auth_token');
         window.location.href = '/login.html';

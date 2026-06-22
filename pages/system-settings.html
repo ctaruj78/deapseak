@@ -707,7 +707,7 @@
             window.systemSettings.showNotification('✅ Todas configurações guardado!', 'success');
         }
         
-        function resetToDefaults() {
+        async function resetToDefaults() {
             if (await swalConfirm('Repor todas as configurações para as predefinições?')) {
                 localStorage.removeItem('deapseak_settings');
                 location.reload();

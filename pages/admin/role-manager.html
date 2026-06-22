@@ -124,7 +124,7 @@
             $('#roleModal').data('editRole', roleName);
         });
 
-        $(document).on('click', '.deleteRoleBtn', function() {
+        $(document).on('click', '.deleteRoleBtn', async function() {
             const roleName = $(this).data('role');
             if (await swalConfirm(`Eliminar função ${roleName}?`)) {
                 delete window.roleManager.roles[roleName];
