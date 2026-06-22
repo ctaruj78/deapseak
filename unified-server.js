@@ -6982,11 +6982,39 @@ app.get('/api/requerimentos/:id/pdf', authenticateToken, async (req, res) => {
         return res.status(403).json({ success: false, message: 'Acesso negado' });
     try {
         const { ObjectId } = require('mongodb');
+        const fs = require('fs');
+        const path = require('path');
         if (!ObjectId.isValid(req.params.id)) return res.status(400).json({ success: false, message: 'ID inválido' });
         const rec = await db.collection('requerimentos').findOne({ _id: new ObjectId(req.params.id) });
         if (!rec) return res.status(404).json({ success: false, message: 'Não encontrado' });
-        const path = require('path');
         const filePath = path.join(__dirname, rec.pdfPath);
+        if (!fs.existsSync(filePath)) {
+            // File missing — try to regenerate on-the-fly
+            try {
+                const liftDoc = await db.collection('lifts').findOne({ _id: rec.liftId });
+                if (!liftDoc) return res.status(404).json({ success: false, message: 'Ficheiro PDF não encontrado e elevador não localizado para regenerar' });
+                liftDoc._reqPagamento = rec.pagamento || 'dinheiro';
+                const pdfBuf = await fillRequerimentoOriginal(liftDoc, rec.munName || '', rec.inspType || 'periodica', rec.requerente || 'festlift', null);
+                // Save to a sanitized path and update DB record
+                const sentDir = path.join(__dirname, 'uploads/requerimentos/sent');
+                if (!fs.existsSync(sentDir)) fs.mkdirSync(sentDir, { recursive: true });
+                const sanFn = s => String(s).replace(/[/\\?%*:|"<>]/g, '-').replace(/\s+/g, '_');
+                const newFilename = `Req_${sanFn(rec.munName || 'Municipio')}_${sanFn(liftDoc.municipalNumber || rec.liftId)}_${rec.inspType || 'periodica'}_${Date.now()}.pdf`;
+                const newFilePath = path.join(sentDir, newFilename);
+                fs.writeFileSync(newFilePath, pdfBuf);
+                await db.collection('requerimentos').updateOne(
+                    { _id: rec._id },
+                    { $set: { pdfPath: `uploads/requerimentos/sent/${newFilename}`, filename: newFilename } }
+                );
+                console.log(`♻️ Requerimento regenerado: ${newFilename}`);
+                res.setHeader('Content-Type', 'application/pdf');
+                res.setHeader('Content-Disposition', `inline; filename="${newFilename}"`);
+                return res.send(pdfBuf);
+            } catch (regenErr) {
+                console.error('❌ Requerimento regen failed:', regenErr.message);
+                return res.status(404).json({ success: false, message: 'Ficheiro PDF não encontrado. Por favor gere um novo requerimento.' });
+            }
+        }
         res.setHeader('Content-Type', 'application/pdf');
         res.setHeader('Content-Disposition', `inline; filename="${rec.filename}"`);
         res.sendFile(filePath);
@@ -7044,8 +7072,33 @@ app.post('/api/requerimentos/:id/send', authenticateToken, async (req, res) => {
         const fs = require('fs');
         const path = require('path');
         const filePath = path.join(__dirname, rec.pdfPath);
-        if (!fs.existsSync(filePath)) return res.status(404).json({ success: false, message: 'Ficheiro PDF não encontrado' });
-        const pdfB64 = fs.readFileSync(filePath).toString('base64');
+        let pdfB64;
+        if (!fs.existsSync(filePath)) {
+            // File missing — regenerate on-the-fly before sending
+            try {
+                const liftDoc = await db.collection('lifts').findOne({ _id: rec.liftId });
+                if (!liftDoc) return res.status(404).json({ success: false, message: 'Ficheiro PDF não encontrado e elevador não localizado para regenerar' });
+                liftDoc._reqPagamento = rec.pagamento || 'dinheiro';
+                const pdfBuf = await fillRequerimentoOriginal(liftDoc, rec.munName || '', rec.inspType || 'periodica', rec.requerente || 'festlift', null);
+                const sentDir = path.join(__dirname, 'uploads/requerimentos/sent');
+                if (!fs.existsSync(sentDir)) fs.mkdirSync(sentDir, { recursive: true });
+                const sanFn = s => String(s).replace(/[/\\?%*:|"<>]/g, '-').replace(/\s+/g, '_');
+                const newFilename = `Req_${sanFn(rec.munName || 'Municipio')}_${sanFn(liftDoc.municipalNumber || rec.liftId)}_${rec.inspType || 'periodica'}_${Date.now()}.pdf`;
+                const newFilePath = path.join(sentDir, newFilename);
+                fs.writeFileSync(newFilePath, pdfBuf);
+                await db.collection('requerimentos').updateOne(
+                    { _id: rec._id },
+                    { $set: { pdfPath: `uploads/requerimentos/sent/${newFilename}`, filename: newFilename } }
+                );
+                pdfB64 = pdfBuf.toString('base64');
+                console.log(`♻️ Requerimento regenerado para envio: ${newFilename}`);
+            } catch (regenErr) {
+                console.error('❌ Requerimento regen failed:', regenErr.message);
+                return res.status(404).json({ success: false, message: 'Ficheiro PDF não encontrado. Por favor gere um novo requerimento.' });
+            }
+        } else {
+            pdfB64 = fs.readFileSync(filePath).toString('base64');
+        }
 
         const INSP_LABELS = {
             periodica: 'Inspeção Periódica', reinspecao: 'Reinspecção',
