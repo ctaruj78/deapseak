@@ -253,7 +253,7 @@
                                'userData','token','authToken','user','currentUser','lm_session',
                                'lm_token','deapseak_token','redirect_after_login','redirecting'];
                 _keys.forEach(k => { localStorage.removeItem(k); sessionStorage.removeItem(k); });
-                return;
+                // Não retornar aqui — continuar para ligar o handler do formulário
             }
 
             const redirecting = sessionStorage.getItem('redirecting');

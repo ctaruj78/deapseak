@@ -304,7 +304,7 @@ class MonitoringManager {
         updateElement('activeAssignments', this.systemMetrics.activeAssignments ?? 0, 'number');
         updateElement('pendingAlerts', this.systemMetrics.pendingAlerts ?? 0, 'number');
         const avgSec = this.systemMetrics.activeAssignments > 0 ? Math.round(15 + this.systemMetrics.activeAssignments * 2) : 0;
-        updateElement('avgResponse', `${avgSec}с`);
+        updateElement('avgResponse', `${avgSec} min`);
         updateElement('emergencyCases', this.systemMetrics.emergencyCases ?? 0, 'number');
         updateElement('systemUptime', this.systemMetrics.averageUptime?.toFixed(1) ?? '100', 'percent');
         // Simож оновлюємо лічильник у заголовку

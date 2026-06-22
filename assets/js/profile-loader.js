@@ -140,7 +140,7 @@
                 el.src = user.avatar;
             } else {
                 // Дефолтний аватар на основі першої літери імені
-                const initial = (user.name || 'U').charAt(0).toUpperCase();
+                const initial = (user.firstName || user.name || user.username || 'U').charAt(0).toUpperCase();
                 el.innerHTML = `<div style="width: 100%; height: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 2.5rem; font-weight: bold;">${initial}</div>`;
             }
         });

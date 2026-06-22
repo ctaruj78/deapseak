@@ -227,7 +227,7 @@ class DashboardLoader {
         this.updateElement('totalLifts', stats.totalLifts);
         this.updateElement('activeRequests', stats.activeRequests);
         this.updateElement('activeLifts', stats.activeLifts);
-        this.updateElement('totalRevenue', stats.totalRevenue === 0 ? 'N/A' : stats.totalRevenue);
+        this.updateElement('totalRevenue', (stats.totalRevenue || 0).toLocaleString('pt-PT'));
         
         // Елементи для profile.html
         this.updateElement('qrCodes', stats.totalLifts);

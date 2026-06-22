@@ -518,13 +518,21 @@
 
             // Анімація статистики
             $('.stats-box').each(function() {
+                const $h3 = $(this).find('h3');
+                const originalText = $h3.text();
+                const numericPart = parseFloat(originalText);
+                if (isNaN(numericPart)) return;
+                const suffix = originalText.replace(/^[\d.]+/, '');
                 $(this).prop('Counter', 0).animate({
-                    Counter: $(this).find('h3').text()
+                    Counter: numericPart
                 }, {
                     duration: 2000,
                     easing: 'swing',
                     step: function(now) {
-                        $(this).find('h3').text(Math.ceil(now));
+                        $h3.text(Math.ceil(now) + suffix);
+                    },
+                    complete: function() {
+                        $h3.text(originalText);
                     }
                 });
             });
