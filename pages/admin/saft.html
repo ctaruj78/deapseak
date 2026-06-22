@@ -805,7 +805,10 @@ async function loadDebtors() {
                     <td class="text-right text-danger font-weight-bold">${fmtEur(deb.totalOutstanding)}</td>
                     <td class="text-center" onclick="event.stopPropagation()">
                         ${deb.clientEmail
-                            ? `${deb.alertSent ? `<span class="badge badge-success mr-1" title="Enviado em ${deb.alertSentAt ? new Date(deb.alertSentAt).toLocaleDateString('pt-PT') : ''}"><i class="fas fa-check mr-1"></i>Enviado</span>` : ''}<button class="btn btn-xs btn-outline-info mr-1" onclick="previewDebtorEmail(${idx})" title="Pré-visualizar email"><i class="fas fa-eye"></i></button><button class="btn btn-xs btn-outline-danger" onclick="sendDebtorAlerts(['${esc(deb.customerTaxId)}'], this)"><i class="fas fa-paper-plane mr-1"></i>Enviar</button>`
+                            ? (deb.alertSent
+                                ? `<span class="badge badge-success" title="Enviado em ${deb.alertSentAt ? new Date(deb.alertSentAt).toLocaleDateString('pt-PT') : ''}"><i class="fas fa-check mr-1"></i>Enviado</span>`
+                                : `<button class="btn btn-xs btn-outline-info mr-1" onclick="previewDebtorEmail(${idx})" title="Pré-visualizar email"><i class="fas fa-eye"></i></button><button class="btn btn-xs btn-outline-danger" onclick="sendDebtorAlerts(['${esc(deb.customerTaxId)}'], this)"><i class="fas fa-paper-plane mr-1"></i>Enviar</button>`
+                            )
                             : '<span class="badge badge-secondary">Sem email</span>'}
                     </td>
                     <td class="text-center"><small class="text-muted">${(() => {
