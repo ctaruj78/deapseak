@@ -290,7 +290,6 @@ class AuthManager {
             'ai-demo.html',
             'ai-guest.html',
             'qr-scanner.html',
-            'qr-generator.html',
             'pages/public/',
             'test-',
             'debug-'

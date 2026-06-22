@@ -974,6 +974,7 @@
     <script src="../../assets/js/auth.js"></script>
 
     <script>
+        const escapeHtml = s => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
         let currentRequestId = null;
         let serviceIntegration;
         // Array de fotos selecionadas (File objects)
@@ -1223,14 +1224,14 @@
 
                     // Morada do elevador
                     const liftLabel = (() => {
-                        const addr = request.liftAddress || '';
-                        const num = request.liftMunicipalNumber || request.liftId || '';
+                        const addr = escapeHtml(request.liftAddress || '');
+                        const num = escapeHtml(request.liftMunicipalNumber || request.liftId || '');
                         if (addr && num) return `${num}<br><small class="text-muted">${addr}</small>`;
                         return addr || num || '—';
                     })();
 
                     // Descrição (скорочений)
-                    const descShort = (request.description || '—').substring(0, 60) + ((request.description || '').length > 60 ? '…' : '');
+                    const descShort = escapeHtml((request.description || '—').substring(0, 60)) + ((request.description || '').length > 60 ? '…' : '');
 
                     // Prioridade
                     const priorityClass = { critical: 'danger', urgent: 'danger', high: 'warning', medium: 'info', low: 'success' }[request.priority] || 'secondary';
@@ -1307,7 +1308,7 @@
                                 <h6>Informação principal</h6>
                                 <p><strong>ID:</strong> ${request.requestNumber || ('#' + requestId.slice(-6).toUpperCase())}</p>
                                 <p><strong>Elevador:</strong> ${request.liftMunicipalNumber || request.liftId || '—'}</p>
-                                ${request.liftAddress ? `<p><strong>Morada:</strong> ${request.liftAddress}</p>` : ''}
+                                ${request.liftAddress ? `<p><strong>Morada:</strong> ${escapeHtml(request.liftAddress)}</p>` : ''}
                                 <p><strong>Tipo:</strong> ${this.getTypeText(request.type)}</p>
                                 <p><strong>Prioridade:</strong> ${this.getPriorityText(request.priority)}</p>
                                 <p><strong>Estado:</strong> ${this.getStatusText(request.status)}</p>
@@ -1315,16 +1316,16 @@
                             <div class="col-md-6">
                                 <h6>Detalhes</h6>
                                 <p><strong>Criado em:</strong> ${new Date(request.createdAt).toLocaleString('pt-PT')}</p>
-                                ${request.technicianName ? `<p><strong>Técnico:</strong> ${request.technicianName}</p>` : '<p><strong>Técnico:</strong> <span class="text-muted">Não atribuído</span></p>'}
+                                ${request.technicianName ? `<p><strong>Técnico:</strong> ${escapeHtml(request.technicianName)}</p>` : '<p><strong>Técnico:</strong> <span class="text-muted">Não atribuído</span></p>'}
                                 ${request.deadline ? `<p><strong>Prazo:</strong> ${new Date(request.deadline).toLocaleString('pt-PT')}</p>` : ''}
                                 ${request.completedAt ? `<p><strong>Concluído em:</strong> ${new Date(request.completedAt).toLocaleString('pt-PT')}</p>` : ''}
                             </div>
                             <div class="col-12 mt-3">
                                 <h6>Descrição</h6>
-                                <p>${request.description || 'Sem descrição'}</p>
+                                <p>${escapeHtml(request.description || 'Sem descrição')}</p>
                                 ${request.resolution ? `
                                     <h6>Solução</h6>
-                                    <p>${request.resolution}</p>
+                                    <p>${escapeHtml(request.resolution)}</p>
                                 ` : ''}
                             </div>
                         </div>

@@ -519,26 +519,6 @@ router.get('/my', authenticate, authorizeRoles('client'), async (req, res) => {
             .sort({ data: -1 })
             .select('-emailsEnviados -pdfPath');
 
-        // Re-vinculação automática para registos antigos sem liftId
-        for (const orcamento of orcamentos) {
-            if (orcamento.liftId) continue;
-
-            const detected = await detectarLiftPorOrcamento(orcamento);
-            if (!detected) continue;
-
-            orcamento.liftId = detected.liftId;
-            orcamento.liftAddress = detected.liftAddress || orcamento.liftAddress || null;
-
-            const existingLifts = Array.isArray(orcamento.lifts) ? orcamento.lifts : [];
-            const hasDetected = existingLifts.some(item => String(item?.liftId || item) === String(detected.liftId));
-            if (!hasDetected) {
-                orcamento.lifts = [...existingLifts, detected.liftId];
-            }
-
-            await orcamento.save();
-            console.log(`🔧 Auto-link orçamento ${orcamento.numero} → elevador ${detected.municipalNumber || detected.liftId}`);
-        }
-
         res.json({ success: true, data: orcamentos });
     } catch (error) {
         console.error('Erro ao buscar orçamentos do cliente:', error);

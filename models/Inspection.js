@@ -130,25 +130,19 @@ const inspectionSchema = new mongoose.Schema({
     timestamps: true
 });
 
-// ─── Static: gerar número único ──────────────────────────────────────────────
+// ─── Static: gerar número único (атомарний лічильник) ────────────────────────
 inspectionSchema.statics.gerarNumero = async function () {
     const now = new Date();
     const yyyy = now.getFullYear();
     const mm = String(now.getMonth() + 1).padStart(2, '0');
-
-    const prefix = `INSP-${yyyy}-${mm}-`;
-    const last = await this.findOne(
-        { numero: new RegExp(`^${prefix}`) },
-        {},
-        { sort: { numero: -1 } }
+    const key = `INSP-${yyyy}-${mm}`;
+    const counter = await mongoose.connection.db.collection('counters').findOneAndUpdate(
+        { _id: key },
+        { $inc: { seq: 1 } },
+        { upsert: true, returnDocument: 'after' }
     );
-
-    let seq = 1;
-    if (last) {
-        const parts = last.numero.split('-');
-        seq = parseInt(parts[parts.length - 1], 10) + 1;
-    }
-    return `${prefix}${String(seq).padStart(3, '0')}`;
+    const seq = counter.seq ?? counter.value?.seq ?? 1;
+    return `${key}-${String(seq).padStart(3, '0')}`;
 };
 
 module.exports = mongoose.model('Inspection', inspectionSchema);

@@ -256,6 +256,7 @@
 
     <script>
         const API_BASE_URL = window.API_BASE_URL || '';
+        const escapeHtml = s => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 
         let _archiveMode = false;
         let _viewMode = 'grid';
@@ -382,11 +383,12 @@
             const isArchived = orc.archived || false;
             const sc = statusClass[orc.status] || 'secondary';
             const st = statusText[orc.status] || orc.status;
-            const morada = orc.cliente.morada ? orc.cliente.morada.split('\n')[0] : '—';
+            const cli = orc.cliente || {};
+            const morada = cli.morada ? escapeHtml(cli.morada.split('\n')[0]) : '—';
             const fotosBadge = orc.fotos && orc.fotos.length > 0 ? `<span class="badge badge-info">${orc.fotos.length}</span>` : '';
             return `<tr>
-                <td><strong>${orc.numero}</strong>${isArchived ? ' <span class="badge badge-warning"><i class="fas fa-archive"></i></span>':''}</td>
-                <td>${orc.cliente.nome}<br><small class="text-muted">${orc.cliente.email}</small></td>
+                <td><strong>${escapeHtml(orc.numero)}</strong>${isArchived ? ' <span class="badge badge-warning"><i class="fas fa-archive"></i></span>':''}</td>
+                <td>${escapeHtml(cli.nome)}<br><small class="text-muted">${escapeHtml(cli.email)}</small></td>
                 <td><small>${morada}</small></td>
                 <td>${data}</td>
                 <td>${val}</td>
@@ -407,6 +409,7 @@
         // Criar card de orçamento
         function criarCardOrcamento(orcamento) {
             const isArchived = orcamento.archived || false;
+            const cli = orcamento.cliente || {};
             const headerClass = isArchived ? 'bg-secondary' : 'bg-gradient-primary';
             const statusClass = `badge-${orcamento.status || 'rascunho'}`;
             const statusText = {
@@ -451,16 +454,16 @@
                         <div class="card-body">
                             <p class="mb-2">
                                 <i class="fas fa-user text-primary"></i>
-                                <strong>${orcamento.cliente.nome}</strong>
+                                <strong>${escapeHtml(cli.nome)}</strong>
                             </p>
                             <p class="mb-2">
                                 <i class="fas fa-envelope text-info"></i>
-                                ${orcamento.cliente.email}
+                                ${escapeHtml(cli.email)}
                             </p>
-                            ${orcamento.cliente.morada ? `
+                            ${cli.morada ? `
                             <p class="mb-2">
                                 <i class="fas fa-map-marker-alt text-danger"></i>
-                                ${orcamento.cliente.morada.split('\n')[0]}
+                                ${escapeHtml(cli.morada.split('\n')[0])}
                             </p>` : ''}
                             <p class="mb-2">
                                 <i class="fas fa-calendar text-success"></i>

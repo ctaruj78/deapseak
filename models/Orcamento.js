@@ -181,25 +181,18 @@ orcamentoSchema.index({ data: -1 });
 orcamentoSchema.index({ criadoPor: 1 });
 orcamentoSchema.index({ liftId: 1 });
 
-// Метод для генерації номеру орçаменту
+// Метод для генерації номеру орçаменту (атомарний лічильник)
 orcamentoSchema.statics.gerarNumero = async function() {
     const ano = new Date().getFullYear();
     const mes = String(new Date().getMonth() + 1).padStart(2, '0');
-    
-    // Знайти останній орçаменто цього місяця
-    const ultimoOrcamento = await this.findOne({
-        numero: new RegExp(`^ORC-${ano}-${mes}`)
-    }).sort({ numero: -1 });
-    
-    let sequencia = 1;
-    if (ultimoOrcamento) {
-        const match = ultimoOrcamento.numero.match(/ORC-\d{4}-\d{2}-(\d{3})/);
-        if (match) {
-            sequencia = parseInt(match[1]) + 1;
-        }
-    }
-    
-    return `ORC-${ano}-${mes}-${String(sequencia).padStart(3, '0')}`;
+    const key = `ORC-${ano}-${mes}`;
+    const counter = await mongoose.connection.db.collection('counters').findOneAndUpdate(
+        { _id: key },
+        { $inc: { seq: 1 } },
+        { upsert: true, returnDocument: 'after' }
+    );
+    const seq = counter.seq ?? counter.value?.seq ?? 1;
+    return `${key}-${String(seq).padStart(3, '0')}`;
 };
 
 // Метод для calcular валідність (30 днів)
