@@ -3837,7 +3837,7 @@ Equipa FestLift
         const licExpiry = lift.licenseExpiry || lift.certExpiry || null;
         const expiryStr = licExpiry ? new Date(licExpiry).toLocaleDateString('pt-PT') : 'não especificado';
 
-        const address = async (() => {
+        const address = (() => {
             if (!lift.address) return 'N/D';
             if (typeof lift.address === 'string') return lift.address;
             const a = lift.address;
@@ -3903,7 +3903,7 @@ Email de contacto: info@festlift.pt`;
         $('#btnSendToMun').removeClass('btn-success').addClass('btn-warning').html('<i class="fas fa-building mr-1"></i> Pedido ao município');
 
         // Показати бейджі якщо вже надсилалося раніше
-        const fmtDate = async iso => iso ? new Date(iso).toLocaleDateString('pt-PT', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '';
+        const fmtDate = iso => iso ? new Date(iso).toLocaleDateString('pt-PT', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '';
         if (lift.clientNotified?.sentAt) {
             $('#inspReqModal_clientSentDate').text(fmtDate(lift.clientNotified.sentAt));
             $('#inspReqModal_clientSentBadge').show();
@@ -10183,7 +10183,8 @@ $(document).on('click', '#editInspRptSaveBtn', async function() {
 });
 </script>
 
-<script src="../../assets/js/monitor.js">
+<script src="../../assets/js/monitor.js"></script>
+<script>
 // swalConfirm — substitui confirm() nativo pelo Swal
 async function swalConfirm(text, title = 'Confirmar') {
     const r = await Swal.fire({

@@ -1030,6 +1030,28 @@ router.post('/:id/enviar', authenticate, authorizeRoles('admin', 'dispatcher'), 
             day: '2-digit', month: '2-digit', year: 'numeric'
         });
 
+        // Preparar fotos como CID inline para evitar bloqueio de imagens externas
+        const fotoAttachments = [];
+        if (orcamento.fotos && orcamento.fotos.length > 0) {
+            for (let i = 0; i < orcamento.fotos.length; i++) {
+                const fotoPath = orcamento.fotos[i];
+                const fsPath = path.join(__dirname, '../..', fotoPath);
+                try {
+                    const fotoBuffer = fs.readFileSync(fsPath);
+                    const ext = (path.extname(fotoPath).replace('.', '') || 'jpeg').toLowerCase();
+                    const mimeType = ext === 'jpg' ? 'image/jpeg' : `image/${ext}`;
+                    fotoAttachments.push({
+                        filename: `foto${i}.${ext}`,
+                        content: fotoBuffer,
+                        contentType: mimeType,
+                        cid: `foto${i}@festlift`
+                    });
+                } catch (e) {
+                    console.warn(`⚠️ Foto não encontrada no disco: ${fsPath}`);
+                }
+            }
+        }
+
         // Nota: corpo simples — detalhes completos constam APENAS no PDF em anexo.
         // Evita duplicação no Apple Mail / macOS Mail.
         const emailHTML = `
@@ -1059,9 +1081,8 @@ router.post('/:id/enviar', authenticate, authorizeRoles('admin', 'dispatcher'), 
                     <div style="margin-bottom: 24px;">
                         <p style="font-size: 13px; color: #555; margin-bottom: 10px;"><strong>📷 Documentação fotográfica:</strong></p>
                         <div style="display:flex; flex-wrap:wrap; gap:8px;">
-                            ${orcamento.fotos.map(fotoPath => {
-                                const absUrl = req.protocol + '://' + req.get('host') + (fotoPath.startsWith('/') ? fotoPath : '/' + fotoPath);
-                                return `<img src="${absUrl}" style="width:160px;height:120px;object-fit:cover;border-radius:6px;border:1px solid #ddd;" alt="Foto">`;
+                            ${orcamento.fotos.map((fotoPath, i) => {
+                                return `<img src="cid:foto${i}@festlift" style="width:160px;height:120px;object-fit:cover;border-radius:6px;border:1px solid #ddd;" alt="Foto">`;
                             }).join('')}
                         </div>
                     </div>` : ''}
@@ -1090,10 +1111,13 @@ router.post('/:id/enviar', authenticate, authorizeRoles('admin', 'dispatcher'), 
                 bcc: adminBcc && adminBcc.toLowerCase() !== emailDestino.toLowerCase() ? adminBcc : undefined,
                 subject: `Orçamento ${orcamento.numero} - FestLift - Elevadores e Serviços, Lda.`,
                 html: emailHTML,
-                attachments: [{
-                    filename: `Orcamento_${orcamento.numero}.pdf`,
-                    content: pdfBuffer
-                }]
+                attachments: [
+                    {
+                        filename: `Orcamento_${orcamento.numero}.pdf`,
+                        content: pdfBuffer
+                    },
+                    ...fotoAttachments
+                ]
             });
 
             console.log(`✅ Orçamento ${orcamento.numero} enviado via SMTP para ${emailDestino}`);

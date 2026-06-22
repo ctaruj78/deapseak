@@ -951,7 +951,13 @@
                     console.log('📧 Resultado completo:', result);
 
                     if (response.ok && result.success) {
-                        toastr.success(`✅ ${result.message}`);
+                        await Swal.fire({
+                            icon: 'success',
+                            title: 'Email enviado!',
+                            html: `Orçamento enviado com sucesso para <b>${clientEmail}</b>`,
+                            confirmButtonText: 'OK',
+                            confirmButtonColor: '#28a745'
+                        });
                         console.log('✅ Email enviado com sucesso!');
                     } else {
                         const errorMsg = result.message || result.error || 'Erro desconhecido';
@@ -1709,7 +1715,8 @@
         });
     </script>
     <script src="/assets/js/table-drag-scroll.js"></script>
-<script src="../../assets/js/monitor.js">
+<script src="../../assets/js/monitor.js"></script>
+<script>
 // swalConfirm — substitui confirm() nativo pelo Swal
 async function swalConfirm(text, title = 'Confirmar') {
     const r = await Swal.fire({
