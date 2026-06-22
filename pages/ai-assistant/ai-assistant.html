@@ -1082,7 +1082,7 @@
                     document.getElementById('typingIndicator').classList.remove('active');
                     addChatMessage('⚠️ Sessão expirada. Por favor, inicie sessão novamente.', false);
                     localStorage.removeItem('token'); localStorage.removeItem('lm_token'); localStorage.removeItem('deapseak_token');
-                    setTimeout(() => { if (await swalConfirm('Sessão expirada. Ir para a página de início de sessão?')) window.location.replace('/pages/auth/login.html'); }, 2000);
+                    setTimeout(async () => { if (await swalConfirm('Sessão expirada. Ir para a página de início de sessão?')) window.location.replace('/pages/auth/login.html'); }, 2000);
                     return;
                 }
 
@@ -2269,8 +2269,8 @@
             console.log('✅ AI Assistant - minimal sidebar ready (common zone)');
         });
     </script>
-<script src="../../assets/js/monitor.js">
-// swalConfirm — substitui confirm() nativo pelo Swal
+<script src="../../assets/js/monitor.js"></script>
+<script>
 async function swalConfirm(text, title = 'Confirmar') {
     const r = await Swal.fire({
         title,

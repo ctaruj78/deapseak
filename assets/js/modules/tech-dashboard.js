@@ -333,15 +333,8 @@ class TechDashboard {
             this.loadTodayTasks();
         }, 120000);
 
-        // Темна тема
-        $('#darkModeToggle').on('click', () => {
-            $('body').toggleClass('dark-mode');
-            $('#darkModeToggle i').toggleClass('fa-moon fa-sun');
-            this.showNotification(
-                $('body').hasClass('dark-mode') ? 'Темна тема увімкнена' : 'Темна тема вимкнена', 
-                'success'
-            );
-        });
+        // Темна тема не підтримується — кнопку залишаємо, але нічого не робить
+        $('#darkModeToggle').on('click', () => {});
 
         // Перевірка з'єднання
         setInterval(() => {

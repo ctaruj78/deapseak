@@ -9329,6 +9329,7 @@ app.get('/api/settings', authenticateToken, async (req, res) => {
             await db.collection('user_settings').insertOne(userSettings);
         }
         
+        userSettings.theme = 'light';
         res.json({
             success: true,
             settings: userSettings

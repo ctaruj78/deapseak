@@ -270,7 +270,8 @@ class SettingsManager {
 
     // Guardar локально
     saveLocal(settings) {
-        localStorage.setItem('user_settings', JSON.stringify(settings));
+        const toSave = Object.assign({}, settings, { theme: 'light' });
+        localStorage.setItem('user_settings', JSON.stringify(toSave));
     }
 
     // Aplicar тему
@@ -309,8 +310,8 @@ class SettingsManager {
 
     // Ініціалізація при завантаженні сторінки
     async init() {
-        // Застосовуємо збережені налаштування
-        this.applyTheme(this.settings.theme);
+        // Темна тема не підтримується — завжди світла
+        this.applyTheme('light');
         
         if (typeof i18n !== 'undefined') {
             i18n.setLanguage(this.settings.language);

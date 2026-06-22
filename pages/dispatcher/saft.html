@@ -849,7 +849,7 @@ async function confirmAndSendFromPreview() {
     sendDebtorAlerts([_previewNif]);
 }
 
-async function buildDebtorEmailHtml(deb) {
+function buildDebtorEmailHtml(deb) {
     const esc = s => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
     const fmt = n => Number(n||0).toFixed(2).replace('.',',') + ' €';
     const fmtD = s => s ? new Date(s).toLocaleDateString('pt-PT') : '—';

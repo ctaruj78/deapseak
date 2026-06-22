@@ -95,13 +95,8 @@
         
         console.log('📦 Applying stored settings:', settings);
         
-        // Застосовуємо тему (за замовчуванням СВІТЛА)
-        if (settings.theme) {
-            applyTheme(settings.theme);
-        } else {
-            // Якщо в налаштуваннях немає теми - застосовуємо світлу
-            applyTheme('light');
-        }
+        // Темна тема не підтримується в UI — завжди світла
+        applyTheme('light');
         
         // Застосовуємо мову
         if (settings.language) {
