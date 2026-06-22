@@ -1268,6 +1268,43 @@ app.patch('/api/notifications/read-all', authenticateToken, async (req, res) => 
     }
 });
 
+// Broadcast notification to all technicians (dispatcher/admin only)
+app.post('/api/notifications/broadcast', authenticateToken, async (req, res) => {
+    try {
+        if (!db) return res.status(503).json({ success: false, message: 'Base de dados indisponível' });
+        const { role } = req.user;
+        if (!['admin', 'dispatcher'].includes(role)) {
+            return res.status(403).json({ success: false, message: 'Acesso negado' });
+        }
+        const { message, title = 'Notificação do Dispatcher', type = 'info' } = req.body;
+        if (!message || !message.trim()) {
+            return res.status(400).json({ success: false, message: 'Mensagem obrigatória' });
+        }
+        const technicians = await db.collection('users')
+            .find({ role: { $in: ['technician', 'tech'] } }, { projection: { _id: 1 } })
+            .lean().toArray();
+        if (technicians.length === 0) {
+            return res.json({ success: true, sent: 0, message: 'Nenhum técnico encontrado' });
+        }
+        const now = new Date();
+        const docs = technicians.map(t => ({
+            userId: t._id.toString(),
+            title,
+            message: message.trim(),
+            type,
+            read: false,
+            createdAt: now,
+            fromRole: role,
+            fromId: req.user.id
+        }));
+        const result = await db.collection('notifications').insertMany(docs);
+        res.json({ success: true, sent: result.insertedCount, message: `Notificação enviada a ${result.insertedCount} técnico(s)` });
+    } catch (error) {
+        console.error('❌ Erro broadcast:', error);
+        res.status(500).json({ success: false, message: 'Erro do servidor' });
+    }
+});
+
 // ═══════════════════════════════════════════════════════════
 // 📊 QR CODE HISTORY
 // ═══════════════════════════════════════════════════════════

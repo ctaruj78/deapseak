@@ -897,6 +897,57 @@
         </div>
     </div>
 
+    <!-- Modal: Broadcast de notificações -->
+    <div class="modal fade" id="broadcastModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-warning text-dark">
+                    <h5 class="modal-title">📢 Envio de notificações aos técnicos</h5>
+                    <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Mensagem:</label>
+                        <textarea id="broadcastMessage" class="form-control" rows="4" placeholder="Escreva a mensagem para todos os técnicos..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Prioridade:</label>
+                        <select id="broadcastPriority" class="form-control">
+                            <option value="info">Normal</option>
+                            <option value="warning">Importante</option>
+                            <option value="error">Urgente</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-warning" onclick="window.dispatcherDashboard.confirmBroadcast()">
+                        <i class="fas fa-paper-plane"></i> Enviar a todos os técnicos
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Detalhes do pedido -->
+    <div class="modal fade" id="viewRequestModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="viewRequestTitle">Detalhes do Pedido</h5>
+                    <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+                </div>
+                <div class="modal-body" id="viewRequestBody"></div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
+                    <button type="button" class="btn btn-primary" id="viewRequestAssignBtn">
+                        <i class="fas fa-user-plus"></i> Atribuir técnico
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Janela modal relatório по do técnicoх -->
     <div class="modal fade" id="techReportModal" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-lg" role="document">

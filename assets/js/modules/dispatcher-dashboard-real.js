@@ -62,8 +62,11 @@ class DispatcherDashboardReal {
                 this.loadRequests(),
                 this.loadTechnicians(),
                 this.loadLifts(),
-                this.loadStatistics()
+                this.loadStatistics(),
+                this.loadClients()
             ]);
+            // Оновлюємо імена клієнтів після завантаження
+            this.requests = this.requests.map(req => ({ ...req, client: this.getClientName(req.clientId) }));
             
             // ✅ Перерахунок завдань техніків після завантаження заявок
             // (Promise.all виконується паралельно, atrás при нормалізації техніків
@@ -237,6 +240,22 @@ class DispatcherDashboardReal {
         }
     }
     
+    async loadClients() {
+        try {
+            const response = await fetch(`${this.API_BASE}/api/users?role=client`, {
+                headers: { 'Authorization': `Bearer ${this.token}`, 'Content-Type': 'application/json' }
+            });
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            const data = await response.json();
+            const list = data.success ? data.data : (Array.isArray(data) ? data : []);
+            this.clients = list;
+            console.log('✅ Завантажено клієнтів:', this.clients.length);
+        } catch (error) {
+            console.warn('⚠️ Não foi possível carregar clientes:', error.message);
+            this.clients = [];
+        }
+    }
+
     /**
      * 🔄 Нормалізація заявки до єдиного формату
      */
@@ -300,12 +319,16 @@ class DispatcherDashboardReal {
      */
     getClientName(clientId) {
         if (!clientId) return 'Cliente desconhecido';
-        
-        // Шукаємо в завантажених користувачах
-        // TODO: Завантажувати користувачів окремо
-        
-        // Поки що повертаємо ID
-        return `Cliente ${clientId.toString().slice(-4)}`;
+        const id = clientId.toString();
+        const client = (this.clients || []).find(c =>
+            (c._id || c.id)?.toString() === id
+        );
+        if (client) {
+            return client.firstName
+                ? `${client.firstName} ${client.lastName || ''}`.trim()
+                : (client.name || client.email || `Cliente ${id.slice(-4)}`);
+        }
+        return `Cliente ${id.slice(-4)}`;
     }
     
     /**
@@ -947,8 +970,36 @@ class DispatcherDashboardReal {
             return;
         }
         
-        // TODO: Показати модальне вікно з деталями
-        toastr.info(`Detalhes do pedido:\n\nID: ${request.id}\nTítulo: ${request.title}\nCliente: ${request.client}\nEstado: ${request.status}\nPrioridade: ${request.priority}\n\n${request.description}`);
+        const body = document.getElementById('viewRequestBody');
+        const title = document.getElementById('viewRequestTitle');
+        const assignBtn = document.getElementById('viewRequestAssignBtn');
+        if (body) {
+            body.innerHTML = `
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Nº:</strong> ${request.requestNumber || request.id.toString().slice(-6)}</p>
+                        <p><strong>Título:</strong> ${request.title}</p>
+                        <p><strong>Cliente:</strong> ${request.client}</p>
+                        <p><strong>Local:</strong> ${request.location}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Estado:</strong> ${this.getStatusBadge(request.status)}</p>
+                        <p><strong>Prioridade:</strong> ${request.priority}</p>
+                        <p><strong>Data:</strong> ${request.date}</p>
+                        <p><strong>Técnico:</strong> ${request.assignedTo || '<em>Não atribuído</em>'}</p>
+                    </div>
+                    <div class="col-12">
+                        <p><strong>Descrição:</strong></p>
+                        <p class="text-muted">${request.description || '—'}</p>
+                    </div>
+                </div>`;
+        }
+        if (title) title.textContent = `Pedido #${request.requestNumber || request.id.toString().slice(-6)}`;
+        if (assignBtn) {
+            assignBtn.onclick = () => { $('#viewRequestModal').modal('hide'); this.assignRequest(id); };
+            assignBtn.style.display = request.status === 'completed' ? 'none' : 'inline-block';
+        }
+        $('#viewRequestModal').modal('show');
     }
     
     /**
@@ -1157,17 +1208,56 @@ class DispatcherDashboardReal {
      * 📢 Розсилка повідомлень
      */
     sendBroadcast() {
-        // TODO: Реалізувати розсилку
-        toastr.info('Funcionalidade de envio em desenvolvimento');
+        $('#broadcastModal').modal('show');
+    }
+
+    async confirmBroadcast() {
+        const message = document.getElementById('broadcastMessage')?.value?.trim();
+        const type = document.getElementById('broadcastPriority')?.value || 'info';
+        if (!message) { toastr.warning('Escreva a mensagem antes de enviar'); return; }
+        try {
+            const resp = await fetch(`${this.API_BASE}/api/notifications/broadcast`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${this.token}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ title: '📢 Mensagem do Dispatcher', message, type })
+            });
+            const data = await resp.json();
+            $('#broadcastModal').modal('hide');
+            if (document.getElementById('broadcastMessage')) document.getElementById('broadcastMessage').value = '';
+            if (data.success) {
+                toastr.success(`Notificação enviada a ${data.sent} técnico(s)`);
+            } else {
+                toastr.error(data.message || 'Erro ao enviar notificação');
+            }
+        } catch (e) {
+            toastr.error('Erro de ligação ao servidor');
+        }
     }
     
     /**
      * 🚨 Emergência протокол
      */
-    emergencyProtocol() {
-        if (await swalConfirm('Ativar protocolo de emergência?\n\nTodos os técnicos disponíveis serão notificados!')) {
-            // TODO: Реалізувати avariйний протокол
-            this.showNotification('Protocolo de emergência ativado', 'warning');
+    async emergencyProtocol() {
+        const ok = await swalConfirm('Ativar protocolo de emergência?\n\nTodos os técnicos disponíveis serão notificados imediatamente!', '🚨 Emergência');
+        if (!ok) return;
+        try {
+            const resp = await fetch(`${this.API_BASE}/api/notifications/broadcast`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${this.token}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    title: '🚨 Protocolo de Emergência',
+                    message: 'EMERGÊNCIA ATIVADA pelo Dispatcher. Apresente-se disponível imediatamente.',
+                    type: 'error'
+                })
+            });
+            const data = await resp.json();
+            if (data.success) {
+                toastr.error(`🚨 Protocolo de emergência ativado — ${data.sent} técnico(s) notificado(s)`);
+            } else {
+                toastr.warning('Protocolo ativado localmente (API indisponível)');
+            }
+        } catch {
+            toastr.warning('Protocolo ativado localmente (sem ligação ao servidor)');
         }
     }
     
@@ -1371,10 +1461,7 @@ class DispatcherDashboardReal {
      * 💬 Показати повідомлення
      */
     showMessages() {
-        console.log('💬 Повідомлення');
-        
-        // TODO: Реалізувати чат
-        toastr.info('Funcionalidade de mensagens em desenvolvimento');
+        window.location.href = '/pages/dispatcher/support.html';
     }
     
     /**
@@ -1403,13 +1490,15 @@ class DispatcherDashboardReal {
     filterActivities(type) {
         console.log('🔍 Filtro активностей:', type);
         
-        // TODO: Реалізувати фільтрацію
         let filteredRequests = this.requests;
-        
         if (type === 'assignments') {
             filteredRequests = this.requests.filter(r => r.status === 'assigned');
         } else if (type === 'completions') {
             filteredRequests = this.requests.filter(r => r.status === 'completed');
+        } else if (type === 'urgent') {
+            filteredRequests = this.requests.filter(r => r.urgent || r.priority === 'high');
+        } else if (type === 'pending') {
+            filteredRequests = this.requests.filter(r => ['new', 'pending'].includes(r.status));
         }
         
         // Перерендеримо список активностей
@@ -1502,10 +1591,7 @@ class DispatcherDashboardReal {
      * 📈 A gerar relatório
      */
     generateReport() {
-        console.log('📈 A gerar relatório');
-        
-        // TODO: Реалізувати генерацію звітів
-        toastr.info('Funcionalidade de relatórios em desenvolvimento');
+        this.showTechReport();
     }
 }
 
