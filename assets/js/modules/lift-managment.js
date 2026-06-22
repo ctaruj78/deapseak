@@ -192,7 +192,7 @@ class LiftManagement {
     }
 
     deleteLift(id) {
-        if (confirm('Tem a certeza que pretende eliminar este elevador?')) {
+        if (await swalConfirm('Tem a certeza que pretende eliminar este elevador?')) {
             const lifts = JSON.parse(localStorage.getItem('lifts')) || [];
             const filteredLifts = lifts.filter(lift => lift.id !== id);
             localStorage.setItem('lifts', JSON.stringify(filteredLifts));

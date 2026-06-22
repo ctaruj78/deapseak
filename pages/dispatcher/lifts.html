@@ -31,6 +31,7 @@
 
     <!-- Toastr -->
     <link rel="stylesheet" href="/plugins/toastr/css/toastr.min.css">
+    <link rel="stylesheet" href="../../plugins/sweetalert2/css/sweetalert2.min.css">
     
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -2708,6 +2709,7 @@
     <script src="../../plugins/bootstrap/bootstrap.bundle.min.js"></script>
     <script src="../../plugins/adminlte/adminlte.min.js"></script>
     <script src="/plugins/toastr/js/toastr.min.js"></script>
+    <script src="../../plugins/sweetalert2/js/sweetalert2.min.js"></script>
 
     <!-- Load sidebar with proper initialization -->
     <script src="../../assets/js/sidebar-init.js"></script>
@@ -2750,7 +2752,7 @@
     <script>
         // 🧹 Função para очиaindaння testeових dados (temporária, para розробки)
         window.clearTestData = function() {
-            const confirm = window.confirm('Tem a certeza? Isto eliminará todos os dados de teste do localStorage.');
+            const confirm = await swalConfirm('Tem a certeza? Isto eliminará todos os dados de teste do localStorage.');
             if (confirm) {
                 let removed = 0;
                 Object.keys(localStorage).forEach(key => {
@@ -2932,7 +2934,7 @@ Equipa FestLift
         }
 
         function removePDF() {
-            if (confirm('Tem a certeza que quer eliminar este relatório?')) {
+            if (await swalConfirm('Tem a certeza que quer eliminar este relatório?')) {
                 currentPDFFile = null;
                 document.getElementById('inspectionReport').value = '';
                 document.getElementById('pdfPreviewContainer').style.display = 'none';
@@ -2989,7 +2991,7 @@ Equipa FestLift
             
             // Atéказуexisteмо діалог desde опціями
             setTimeout(() => {
-                if (confirm('Relatório arquivado. Deseja ver o arquivo de relatórios?')) {
+                if (await swalConfirm('Relatório arquivado. Deseja ver o arquivo de relatórios?')) {
                     showArchivedReports();
                 }
             }, 1000);
@@ -3055,7 +3057,7 @@ Equipa FestLift
         }
 
         function deleteArchivedReport(reportId) {
-                if (confirm('Eliminar definitivamente este relatório do arquivo?')) {
+                if (await swalConfirm('Eliminar definitivamente este relatório do arquivo?')) {
                 let archivedReports = JSON.parse(localStorage.getItem('archived_reports') || '[]');
                 archivedReports = archivedReports.filter(report => report.id !== reportId);
                 localStorage.setItem('archived_reports', JSON.stringify(archivedReports));
@@ -3067,7 +3069,7 @@ Equipa FestLift
         }
 
         function clearArchive() {
-            if (confirm('Limpar todo o arquivo de relatórios? Esta acção é irreversível!')) {
+            if (await swalConfirm('Limpar todo o arquivo de relatórios? Esta acção é irreversível!')) {
                 localStorage.removeItem('archived_reports');
                 $('#archiveModal').modal('hide');
                 toastr.info('Arquivo limpo');
@@ -3148,7 +3150,7 @@ Equipa FestLift
 
         // Função de saída
         function logout() {
-            if (confirm('Tem a certeza que quer sair?')) {
+            if (await swalConfirm('Tem a certeza que quer sair?')) {
                 if (typeof AuthManager !== 'undefined') {
                     AuthManager.logout();
                 } else {
@@ -3576,7 +3578,7 @@ Equipa FestLift
     }
 
     function cancelInspection(inspectionId) {
-        if (confirm('Eliminar esta inspecção?')) {
+        if (await swalConfirm('Eliminar esta inspecção?')) {
             let inspections = JSON.parse(localStorage.getItem('scheduled_inspections') || '[]');
             inspections = inspections.filter(i => i.id !== inspectionId);
             localStorage.setItem('scheduled_inspections', JSON.stringify(inspections));
@@ -3689,7 +3691,7 @@ Equipa FestLift
                         const daysAgo = (Date.now() - new Date(window._step4LastReportDate)) / 86400000;
                         if (daysAgo < 30) {
                             const dateStr = new Date(window._step4LastReportDate).toLocaleDateString('pt-PT');
-                            const proceed = confirm(`⚠️ Atenção: Já existe um relatório para este elevador de ${dateStr} (há ${Math.ceil(daysAgo)} dias).
+                            const proceed = await swalConfirm(`⚠️ Atenção: Já existe um relatório para este elevador de ${dateStr} (há ${Math.ceil(daysAgo)} dias).
 
 Adicionar outro relatório?`);
                             if (!proceed) return;
@@ -4410,7 +4412,7 @@ Equipa FestLift</textarea>
     }
 
     function removeInspectionPDF() {
-        if (confirm('Tem a certeza que quer eliminar este relatório de inspecção?')) {
+        if (await swalConfirm('Tem a certeza que quer eliminar este relatório de inspecção?')) {
             currentInspectionPDFFile = null;
             document.getElementById('inspectionReportPDF').value = '';
             document.getElementById('pdfReportPreviewContainer').style.display = 'none';
@@ -6482,7 +6484,7 @@ Equipa FestLift</textarea>
         
         // Dispatcher pode apenas pedidoати eliminação (модерація)
         if (userRole === 'dispatcher') {
-            if (!confirm('Pretende enviar um pedido de eliminação deste elevador? O administrador terá de confirmar.')) {
+            if (!await swalConfirm('Pretende enviar um pedido de eliminação deste elevador? O administrador terá de confirmar.')) {
                 return;
             }
             
@@ -6509,7 +6511,7 @@ Equipa FestLift</textarea>
         }
         
         // Admin pode видаляти imediatamente
-        if (!confirm('Tem a certeza que quer eliminar este elevador? Esta acção não pode ser desfeita.')) {
+        if (!await swalConfirm('Tem a certeza que quer eliminar este elevador? Esta acção não pode ser desfeita.')) {
             return;
         }
 
@@ -6732,7 +6734,7 @@ Equipa FestLift</textarea>
                         .replace(/\bConclusão:\s*failed\b/g, 'Conclusão: Reprovado').replace(/\bConclusão:\s*passed\b/g, 'Conclusão: Aprovado')
                         .replace(/ {2,}/g, ' ').trim();
                 }
-                function sanitizeInspector(name) {
+                async function sanitizeInspector(name) {
                     if (!name) return 'Não identificado';
                     const junkPatterns = /CLÁUSULAS|CUMPRIMENTO OBRIGATÓRIO|ASCENSOR|DECRETO.LEI|REGULAMENTO/i;
                     if (junkPatterns.test(name) || (name.length > 55 && name === name.toUpperCase())) return 'Não identificado';
@@ -6846,7 +6848,7 @@ Equipa FestLift</textarea>
     // Видmasння relatório
     // =============================================
     async function deleteReport(reportIndex) {
-        if (!confirm('Eliminar definitivamente este relatório?')) return;
+        if (!await swalConfirm('Eliminar definitivamente este relatório?')) return;
 
         const modal = document.getElementById('liftDetailsModal');
         const liftId = modal?.dataset?.liftId || $('#detail-id').text();
@@ -7672,7 +7674,7 @@ Equipa FestLift</textarea>
     }
     
     async function deleteContract(liftId) {
-        if (!confirm('Tem a certeza que quer eliminar o contrato?')) return;
+        if (!await swalConfirm('Tem a certeza que quer eliminar o contrato?')) return;
         
         try {
             const result = await apiCall(`/api/lifts/${liftId}/contract`, 'DELETE');
@@ -9685,6 +9687,21 @@ Equipa FestLift</textarea>
 </div>
 <!-- /PDF Parser Modal -->
 
-<script src="../../assets/js/monitor.js"></script>
+<script src="../../assets/js/monitor.js">
+// swalConfirm — substitui confirm() nativo pelo Swal
+async function swalConfirm(text, title = 'Confirmar') {
+    const r = await Swal.fire({
+        title,
+        text,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#e74c3c',
+        cancelButtonColor: '#95a5a6',
+        confirmButtonText: 'Confirmar',
+        cancelButtonText: 'Cancelar'
+    });
+    return r.isConfirmed;
+}
+</script>
 </body>
 </html>

@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <link rel="icon" type="image/png" href="/assets/img/favicon.png">
     <title>Gestão de funções</title>
+    <script src="../../plugins/sweetalert2/js/sweetalert2.min.js"></script>
     <script src="../../assets/js/auth.js"></script>
 
     <link rel="stylesheet" href="../../plugins/adminlte/adminlte.min.css">
@@ -125,7 +126,7 @@
 
         $(document).on('click', '.deleteRoleBtn', function() {
             const roleName = $(this).data('role');
-            if (confirm(`Eliminar função ${roleName}?`)) {
+            if (await swalConfirm(`Eliminar função ${roleName}?`)) {
                 delete window.roleManager.roles[roleName];
                 renderRolesTable();
             }
@@ -156,6 +157,21 @@
         });
     });
     </script>
-<script src="../../assets/js/monitor.js"></script>
+<script src="../../assets/js/monitor.js">
+// swalConfirm — substitui confirm() nativo pelo Swal
+async function swalConfirm(text, title = 'Confirmar') {
+    const r = await Swal.fire({
+        title,
+        text,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#e74c3c',
+        cancelButtonColor: '#95a5a6',
+        confirmButtonText: 'Confirmar',
+        cancelButtonText: 'Cancelar'
+    });
+    return r.isConfirmed;
+}
+</script>
 </body>
 </html>

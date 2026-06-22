@@ -5,6 +5,7 @@
     <link rel="icon" type="image/png" href="/assets/img/favicon.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Os Meus Orçamentos - FestLift</title>
+    <script src="../../plugins/sweetalert2/js/sweetalert2.min.js"></script>
     <script src="../../assets/js/auth.js"></script>
 
 
@@ -321,7 +322,7 @@
     }
 
     function logout() {
-        if (confirm('Tem certeza que deseja sair?')) {
+        if (await swalConfirm('Tem certeza que deseja sair?')) {
             localStorage.clear();
             sessionStorage.clear();
             window.location.replace('/pages/auth/login.html');
@@ -706,6 +707,21 @@
 .dark-mode .card { background: #1e2435; border-color: #2d3347; }
 .dark-mode .card-header { background: #252a3a !important; }
 </style>
-<script src="../../assets/js/monitor.js"></script>
+<script src="../../assets/js/monitor.js">
+// swalConfirm — substitui confirm() nativo pelo Swal
+async function swalConfirm(text, title = 'Confirmar') {
+    const r = await Swal.fire({
+        title,
+        text,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#e74c3c',
+        cancelButtonColor: '#95a5a6',
+        confirmButtonText: 'Confirmar',
+        cancelButtonText: 'Cancelar'
+    });
+    return r.isConfirmed;
+}
+</script>
 </body>
 </html>

@@ -5,6 +5,7 @@
     <link rel="icon" type="image/png" href="/assets/img/favicon.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lista de Orçamentos - FESTLIFT</title>
+    <script src="../../plugins/sweetalert2/js/sweetalert2.min.js"></script>
     <script src="../../assets/js/auth.js"></script>
 
     
@@ -354,7 +355,7 @@
             document.getElementById('orcPaginationInfo').textContent = `A mostrar ${from}–${to} de ${total} orçamentos`;
             const ul = document.getElementById('orcPaginationLinks');
             ul.innerHTML = '';
-            const mkLi = (label, p, disabled, active) => {
+            const mkLi = async (label, p, disabled, active) => {
                 const li = document.createElement('li');
                 li.className = 'page-item' + (disabled ? ' disabled' : '') + (active ? ' active' : '');
                 li.innerHTML = disabled
@@ -528,7 +529,7 @@
 
         // Eliminar orçamento
         async function eliminarOrcamento(id) {
-            if (!confirm('Tem certeza que deseja eliminar este orçamento?')) {
+            if (!await swalConfirm('Tem certeza que deseja eliminar este orçamento?')) {
                 return;
             }
 
@@ -670,7 +671,7 @@
         }
 
         async function arquivarOrcamento(id) {
-            if (!confirm('Arquivar este orçamento? Ele deixará de aparecer na lista ativa.')) return;
+            if (!await swalConfirm('Arquivar este orçamento? Ele deixará de aparecer na lista ativa.')) return;
             try {
                 const res = await fetch(`${API_BASE_URL}/api/orcamentos/${id}/archive`, {
                     method: 'POST',
@@ -727,7 +728,7 @@
 
         async function removerFotoModal(idx) {
             if (!_fotosCurrentId) return;
-            if (!confirm('Remover esta fotografia?')) return;
+            if (!await swalConfirm('Remover esta fotografia?')) return;
             try {
                 const res = await fetch(`${API_BASE_URL}/api/orcamentos/${_fotosCurrentId}/fotos/${idx}`, {
                     method: 'DELETE',
@@ -1067,6 +1068,21 @@ $(document).ready(function() {
     </div>
 </div>
 
-<script src="../../assets/js/monitor.js"></script>
+<script src="../../assets/js/monitor.js">
+// swalConfirm — substitui confirm() nativo pelo Swal
+async function swalConfirm(text, title = 'Confirmar') {
+    const r = await Swal.fire({
+        title,
+        text,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#e74c3c',
+        cancelButtonColor: '#95a5a6',
+        confirmButtonText: 'Confirmar',
+        cancelButtonText: 'Cancelar'
+    });
+    return r.isConfirmed;
+}
+</script>
 </body>
 </html>

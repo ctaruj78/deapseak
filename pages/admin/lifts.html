@@ -21,6 +21,7 @@
     
     <!-- Toastr -->
     <link rel="stylesheet" href="/plugins/toastr/css/toastr.min.css">
+    <link rel="stylesheet" href="../../plugins/sweetalert2/css/sweetalert2.min.css">
 
     <!-- Custom CSS (optimizado, sem !important desnecessários) -->
     <link rel="stylesheet" href="/assets/css/lifts.css?v=20260401j">
@@ -2985,6 +2986,7 @@
     <script src="../../plugins/bootstrap/bootstrap.bundle.min.js"></script>
     <script src="../../plugins/adminlte/adminlte.min.js"></script>
     <script src="/plugins/toastr/js/toastr.min.js"></script>
+    <script src="../../plugins/sweetalert2/js/sweetalert2.min.js"></script>
 
     <!-- Load sidebar with proper initialization -->
     <script src="../../assets/js/sidebar-init.js"></script>
@@ -3031,7 +3033,7 @@
     <script>
         // 🧹 Função para очиaindaння testeових dados (temporária, para розробки)
         window.clearTestData = function() {
-            const confirm = window.confirm('Tem a certeza? Isto eliminará todos os dados de teste do localStorage.');
+            const confirm = await swalConfirm('Tem a certeza? Isto eliminará todos os dados de teste do localStorage.');
             if (confirm) {
                 let removed = 0;
                 Object.keys(localStorage).forEach(key => {
@@ -3193,7 +3195,7 @@ Equipa FestLift
         }
 
         function removePDF() {
-            if (confirm('Tem a certeza que quer eliminar este relatório?')) {
+            if (await swalConfirm('Tem a certeza que quer eliminar este relatório?')) {
                 currentPDFFile = null;
                 document.getElementById('inspectionReport').value = '';
                 document.getElementById('pdfPreviewContainer').style.display = 'none';
@@ -3250,7 +3252,7 @@ Equipa FestLift
             
             // Atéказуexisteмо діалог desde опціями
             setTimeout(() => {
-                if (confirm('Relatório arquivado. Deseja ver o arquivo de relatórios?')) {
+                if (await swalConfirm('Relatório arquivado. Deseja ver o arquivo de relatórios?')) {
                     showArchivedReports();
                 }
             }, 1000);
@@ -3316,7 +3318,7 @@ Equipa FestLift
         }
 
         function deleteArchivedReport(reportId) {
-            if (confirm('Eliminar este relatório do arquivo permanentemente?')) {
+            if (await swalConfirm('Eliminar este relatório do arquivo permanentemente?')) {
                 let archivedReports = JSON.parse(localStorage.getItem('archived_reports') || '[]');
                 archivedReports = archivedReports.filter(report => report.id !== reportId);
                 localStorage.setItem('archived_reports', JSON.stringify(archivedReports));
@@ -3328,7 +3330,7 @@ Equipa FestLift
         }
 
         function clearArchive() {
-            if (confirm('Limpar todo o arquivo de relatórios? Esta acção é irreversível!')) {
+            if (await swalConfirm('Limpar todo o arquivo de relatórios? Esta acção é irreversível!')) {
                 localStorage.removeItem('archived_reports');
                 $('#archiveModal').modal('hide');
                 toastr.info('Arquivo limpo');
@@ -3409,7 +3411,7 @@ Equipa FestLift
 
         // Função виходу
         function logout() {
-            if (confirm('Tem a certeza que quer sair?')) {
+            if (await swalConfirm('Tem a certeza que quer sair?')) {
                 if (typeof AuthManager !== 'undefined') {
                     AuthManager.logout();
                 } else {
@@ -3812,7 +3814,7 @@ Equipa FestLift
                     const daysAgo = (Date.now() - new Date(window._adminStep4LastReportDate)) / 86400000;
                     if (daysAgo < 30) {
                         const dateStr = new Date(window._adminStep4LastReportDate).toLocaleDateString('pt-PT');
-                        const proceed = confirm('\u26a0\ufe0f Atenção: Já existe um relatório para este elevador de ' + dateStr + ' (' + Math.ceil(daysAgo) + ' dias atrás).\n\nAdicionar mais um relatório?');
+                        const proceed = await swalConfirm('\u26a0\ufe0f Atenção: Já existe um relatório para este elevador de ' + dateStr + ' (' + Math.ceil(daysAgo) + ' dias atrás).\n\nAdicionar mais um relatório?');
                         if (!proceed) return;
                     }
                 }
@@ -3835,7 +3837,7 @@ Equipa FestLift
         const licExpiry = lift.licenseExpiry || lift.certExpiry || null;
         const expiryStr = licExpiry ? new Date(licExpiry).toLocaleDateString('pt-PT') : 'não especificado';
 
-        const address = (() => {
+        const address = async (() => {
             if (!lift.address) return 'N/D';
             if (typeof lift.address === 'string') return lift.address;
             const a = lift.address;
@@ -3929,7 +3931,7 @@ Email de contacto: info@festlift.pt`;
     }
 
     async function _deleteReq(reqId) {
-        if (!confirm('Eliminar este requerimento? Esta ação não pode ser revertida.')) return;
+        if (!await swalConfirm('Eliminar este requerimento? Esta ação não pode ser revertida.')) return;
         try {
             const token = AuthManager.getAuthToken();
             const res = await fetch(`/api/requerimentos/${reqId}`, {
@@ -4193,7 +4195,7 @@ Email de contacto: info@festlift.pt`;
     }
 
     function cancelInspection(inspectionId) {
-        if (confirm('Cancelar esta inspecção?')) {
+        if (await swalConfirm('Cancelar esta inspecção?')) {
             let inspections = JSON.parse(localStorage.getItem('scheduled_inspections') || '[]');
             inspections = inspections.filter(i => i.id !== inspectionId);
             localStorage.setItem('scheduled_inspections', JSON.stringify(inspections));
@@ -6771,7 +6773,7 @@ Email de contacto: info@festlift.pt`;
     async function deleteLift(liftId) {
         console.log('🗑️ A eliminar elevador:', liftId);
         
-        if (!confirm('Tem a certeza que quer eliminar este elevador? Esta acção não pode ser desfeita.')) {
+        if (!await swalConfirm('Tem a certeza que quer eliminar este elevador? Esta acção não pode ser desfeita.')) {
             return;
         }
 
@@ -7943,7 +7945,7 @@ Email de contacto: info@festlift.pt`;
     }
     
     async function deleteContract(liftId) {
-        if (!confirm('Tem a certeza que quer eliminar o contrato?')) return;
+        if (!await swalConfirm('Tem a certeza que quer eliminar o contrato?')) return;
         
         try {
             const result = await apiCall(`/api/lifts/${liftId}/contract`, 'DELETE');
@@ -7968,7 +7970,7 @@ Email de contacto: info@festlift.pt`;
     async function deleteInspectionReport(liftId, reportIndex) {
         if (!liftId) { toastr.error('ID do elevador não encontrado'); return; }
         if (reportIndex === undefined || reportIndex === null) { toastr.info('Índice do relatório não definido'); return; }
-        if (!confirm('Tem a certeza que quer eliminar este relatório?')) return;
+        if (!await swalConfirm('Tem a certeza que quer eliminar este relatório?')) return;
 
         try {
             const result = await apiCall(`/api/lifts/${liftId}/inspection-report/${reportIndex}`, 'DELETE');
@@ -10181,6 +10183,21 @@ $(document).on('click', '#editInspRptSaveBtn', async function() {
 });
 </script>
 
-<script src="../../assets/js/monitor.js"></script>
+<script src="../../assets/js/monitor.js">
+// swalConfirm — substitui confirm() nativo pelo Swal
+async function swalConfirm(text, title = 'Confirmar') {
+    const r = await Swal.fire({
+        title,
+        text,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#e74c3c',
+        cancelButtonColor: '#95a5a6',
+        confirmButtonText: 'Confirmar',
+        cancelButtonText: 'Cancelar'
+    });
+    return r.isConfirmed;
+}
+</script>
 </body>
 </html>

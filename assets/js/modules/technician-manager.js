@@ -394,7 +394,7 @@ class TechnicianManager {
 
     // Видалення техніка
     async deleteTechnician(techId) {
-if (!confirm('Tem a certeza que quer eliminar este técnico?')) return;
+if (!await swalConfirm('Tem a certeza que quer eliminar este técnico?')) return;
         
         try {
             const response = await fetch(`/api/technicians/${techId}`, {

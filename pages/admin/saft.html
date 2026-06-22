@@ -5,6 +5,7 @@
     <link rel="icon" type="image/png" href="/assets/img/favicon.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SAF-T — FestLift</title>
+    <script src="../../plugins/sweetalert2/js/sweetalert2.min.js"></script>
     <script src="../../assets/js/auth.js"></script>
     <link rel="stylesheet" href="../../plugins/adminlte/adminlte.min.css">
     <link rel="stylesheet" href="../../plugins/fontawesome/css/all.min.css">
@@ -598,7 +599,7 @@ async function openImport(id) {
 
 function confirmAndResend() {
     if (!currentImportId) return;
-    if (!confirm('⚠️ Confirma o envio de emails de aviso de pagamento a todos os devedores desta importação?\n\nEsta ação é irreversível — os clientes receberão o email imediatamente.')) return;
+    if (!await swalConfirm('⚠️ Confirma o envio de emails de aviso de pagamento a todos os devedores desta importação?\n\nEsta ação é irreversível — os clientes receberão o email imediatamente.')) return;
     resendAlerts();
 }
 
@@ -613,7 +614,7 @@ async function resendAlerts() {
 }
 
 async function deleteImport(id, filename) {
-    if (!confirm('Eliminar importação "' + filename + '"?\n\nOs NIFs dos elevadores já actualizados não serão revertidos. Esta acção é irreversível.')) return;
+    if (!await swalConfirm('Eliminar importação "' + filename + '"?\n\nOs NIFs dos elevadores já actualizados não serão revertidos. Esta acção é irreversível.')) return;
     try {
         const r = await fetch(API() + '/api/saft/' + id, { method: 'DELETE', headers: HDRS() });
         const d = await r.json();
@@ -701,7 +702,7 @@ async function uploadMoloniCsv() {
 
 // ── ignore / unignore NIF ─────────────────────────────────────────────────────
 async function ignoreNif(nif, name, btn) {
-    if (!confirm(`Marcar NIF ${nif} (${name}) como cliente pontual?\n\nEste NIF será ignorado em futuras importações SAF-T.`)) return;
+    if (!await swalConfirm(`Marcar NIF ${nif} (${name}) como cliente pontual?\n\nEste NIF será ignorado em futuras importações SAF-T.`)) return;
     try {
         const r = await fetch(API() + '/api/saft/settings/ignore/' + encodeURIComponent(nif), {
             method: 'POST', headers: HDRS(),
@@ -848,7 +849,7 @@ function previewDebtorEmail(idx) {
 
 function confirmAndSendFromPreview() {
     if (!_previewNif) return;
-    if (!confirm('Confirma o envio do email de aviso de pagamento?\n\nEsta acção é irreversível.')) return;
+    if (!await swalConfirm('Confirma o envio do email de aviso de pagamento?\n\nEsta acção é irreversível.')) return;
     $('#emailPreviewModal').modal('hide');
     sendDebtorAlerts([_previewNif]);
 }
@@ -903,7 +904,7 @@ function buildDebtorEmailHtml(deb) {
 
 async function sendDebtorAlerts(nifs, btn) {
     const all = !nifs;
-    if (!confirm(all
+    if (!await swalConfirm(all
         ? '⚠️ Enviar email de aviso de pagamento a TODOS os devedores com email?\n\nOs clientes receberão o email imediatamente.'
         : '⚠️ Enviar email de aviso de pagamento a este devedor?')) return;
     if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>'; }
@@ -1000,6 +1001,21 @@ async function uploadPendentes() {
 
 // ── init ──────────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => { loadHistory(); loadDebtors(); });
+
+// swalConfirm — substitui confirm() nativo pelo Swal
+async function swalConfirm(text, title = 'Confirmar') {
+    const r = await Swal.fire({
+        title,
+        text,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#e74c3c',
+        cancelButtonColor: '#95a5a6',
+        confirmButtonText: 'Confirmar',
+        cancelButtonText: 'Cancelar'
+    });
+    return r.isConfirmed;
+}
 </script>
 </body>
 </html>

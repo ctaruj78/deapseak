@@ -512,7 +512,7 @@ class SettingsManager {
                 return;
             }
 
-            if (confirm('A restauração da cópia de segurança irá substituir os dados actuais. Continuar?')) {
+            if (await swalConfirm('A restauração da cópia de segurança irá substituir os dados actuais. Continuar?')) {
                 // Відновлення даних
                 localStorage.setItem('users', JSON.stringify(backupData.data.users || []));
                 localStorage.setItem('lifts', JSON.stringify(backupData.data.lifts || []));
@@ -650,7 +650,7 @@ class SettingsManager {
 
     // Метод для скидання налаштувань до стандартних
     resetToDefaults() {
-        if (confirm('Repor todas as definições para os valores predefinidos? Esta acção é irreversível.')) {
+        if (await swalConfirm('Repor todas as definições para os valores predefinidos? Esta acção é irreversível.')) {
             this.settings = this.getDefaultSettings();
             this.saveSettings();
             this.initializeFormValues();
@@ -678,7 +678,7 @@ class SettingsManager {
         this.readFileAsText(file).then(content => {
             const importedSettings = JSON.parse(content);
             if (this.validateSettings(importedSettings)) {
-                if (confirm('Importar definições irá substituir as definições actuais. Continuar?')) {
+                if (await swalConfirm('Importar definições irá substituir as definições actuais. Continuar?')) {
                     this.settings = importedSettings;
                     this.saveSettings();
                     this.initializeFormValues();

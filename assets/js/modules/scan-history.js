@@ -292,7 +292,7 @@ const scanHistory = (function() {
 
     // Clear history
     async function clearHistory() {
-        if (!confirm('Tem a certeza que pretende limpar todo o histórico de digitalizações?')) return;
+        if (!await swalConfirm('Tem a certeza que pretende limpar todo o histórico de digitalizações?')) return;
 
         try {
             const token = localStorage.getItem('liftmanager_jwt') ||

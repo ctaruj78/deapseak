@@ -421,6 +421,7 @@
     </div>
 
     <!-- Scripts -->
+    <script src="../../plugins/sweetalert2/js/sweetalert2.min.js"></script>
     <script src="../../plugins/jquery/jquery.min.js"></script>
     <script src="../../plugins/bootstrap/bootstrap.bundle.min.js"></script>
     <script src="../../plugins/adminlte/adminlte.min.js"></script>
@@ -428,7 +429,7 @@
 
     <script>
         function logout() {
-            if (confirm('Tem a certeza que quer sair do sistema?')) {
+            if (await swalConfirm('Tem a certeza que quer sair do sistema?')) {
                 localStorage.removeItem('authToken');
                 localStorage.removeItem('userData');
                 window.location.replace('/pages/auth/login.html');
@@ -513,7 +514,7 @@ class TicketsManager {
             }
 
             updateStats(tickets) {
-                const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+                const set = async (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
                 set('statTotal', tickets.length);
                 set('statOpen', tickets.filter(t => t.status === 'open').length);
                 set('statInProgress', tickets.filter(t => t.status === 'in_progress').length);
@@ -576,7 +577,7 @@ class TicketsManager {
             }
 
             async closeTicket(id) {
-                if (!confirm('Fechar este ticket?')) return;
+                if (!await swalConfirm('Fechar este ticket?')) return;
                 try {
                     const res = await AuthManager.fetchWithAuth(`/api/support/tickets/${id}/close`, { method: 'POST' });
                     const data = res ? await res.json() : {};
@@ -611,6 +612,21 @@ class TicketsManager {
 
 });
     </script>
-<script src="../../assets/js/monitor.js"></script>
+<script src="../../assets/js/monitor.js">
+// swalConfirm — substitui confirm() nativo pelo Swal
+async function swalConfirm(text, title = 'Confirmar') {
+    const r = await Swal.fire({
+        title,
+        text,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#e74c3c',
+        cancelButtonColor: '#95a5a6',
+        confirmButtonText: 'Confirmar',
+        cancelButtonText: 'Cancelar'
+    });
+    return r.isConfirmed;
+}
+</script>
 </body>
 </html>

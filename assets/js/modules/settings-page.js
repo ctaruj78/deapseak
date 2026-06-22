@@ -416,7 +416,7 @@ class SettingsPage {
     }
 
     async resetSettings() {
-        if (!confirm('Tem a certeza? Todas as definições serão repostas para os valores predefinidos.')) return;
+        if (!await swalConfirm('Tem a certeza? Todas as definições serão repostas para os valores predefinidos.')) return;
         try {
             await settingsManager.resetSettings();
         } catch (error) {

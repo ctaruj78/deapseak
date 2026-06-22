@@ -158,7 +158,7 @@ const LiftsManager = (function() {
     async function deleteLift(liftId) {
         if (!canDelete()) return;
         
-        if (!confirm('Tem a certeza que pretende eliminar este elevador?')) {
+        if (!await swalConfirm('Tem a certeza que pretende eliminar este elevador?')) {
             return;
         }
         

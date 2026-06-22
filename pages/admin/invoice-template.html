@@ -5,6 +5,7 @@
     <link rel="icon" type="image/png" href="/assets/img/favicon.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Orçamento - Administração</title>
+    <script src="../../plugins/sweetalert2/js/sweetalert2.min.js"></script>
     <script src="../../assets/js/auth.js"></script>
 
     
@@ -1259,7 +1260,7 @@
                 
                 // Verificação чи орçаменто guardado
                 if (!window.lastSavedOrcamentoId && !window.currentOrcamentoId) {
-                    const save = confirm('Orçamento não foi salvo. Deseja salvar antes de enviar?');
+                    const save = await swalConfirm('Orçamento não foi salvo. Deseja salvar antes de enviar?');
                     if (save) {
                         await saveOrcamento();
                         if (!window.lastSavedOrcamentoId) {
@@ -1318,11 +1319,11 @@
                                 console.log('✅ Fotos enviadas antes do email:', uploadResult.fotos.length);
                             } else {
                                 console.warn('⚠️ Erro ao enviar fotos:', uploadResult.message);
-                                if (!confirm(`Aviso: As fotografias não foram guardadas (${uploadResult.message}).\nDeseja enviar o orçamento mesmo assim (sem fotos)?`)) return;
+                                if (!await swalConfirm(`Aviso: As fotografias não foram guardadas (${uploadResult.message}).\nDeseja enviar o orçamento mesmo assim (sem fotos)?`)) return;
                             }
                         } catch (fotoErr) {
                             console.error('❌ Erro ao enviar fotos:', fotoErr);
-                            if (!confirm('Aviso: Erro ao carregar as fotografias.\nDeseja enviar o orçamento mesmo assim (sem fotos)?')) return;
+                            if (!await swalConfirm('Aviso: Erro ao carregar as fotografias.\nDeseja enviar o orçamento mesmo assim (sem fotos)?')) return;
                         }
                     }
 
@@ -1583,7 +1584,7 @@
                           `Cliente: ${clienteNome}`);
                     
                     // Redirecionar para lista de orçamentos
-                    if (confirm(`✅ Orçamento ${action}!\n\n📋 Deseja ver a lista de orçamentos?`)) {
+                    if (await swalConfirm(`✅ Orçamento ${action}!\n\n📋 Deseja ver a lista de orçamentos?`)) {
                         window.location.href = 'orcamentos-list.html';
                     } else {
                         console.log('💡 Orçamento salvo. ID disponível para envio de email.');
@@ -1954,7 +1955,7 @@
 
         async function deleteFoto(idx) {
             if (!window.currentOrcamentoId) return toastr.info('Guarde o orçamento antes de remover fotos.');
-            if (!confirm('Remover esta fotografia?')) return;
+            if (!await swalConfirm('Remover esta fotografia?')) return;
             const token = getPageAuthToken(['admin', 'dispatcher']);
             try {
                 const res = await fetch(`/api/orcamentos/${window.currentOrcamentoId}/fotos/${idx}`, {
@@ -2134,6 +2135,21 @@
         }
     </script>
     <script src="/assets/js/table-drag-scroll.js"></script>
-<script src="../../assets/js/monitor.js"></script>
+<script src="../../assets/js/monitor.js">
+// swalConfirm — substitui confirm() nativo pelo Swal
+async function swalConfirm(text, title = 'Confirmar') {
+    const r = await Swal.fire({
+        title,
+        text,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#e74c3c',
+        cancelButtonColor: '#95a5a6',
+        confirmButtonText: 'Confirmar',
+        cancelButtonText: 'Cancelar'
+    });
+    return r.isConfirmed;
+}
+</script>
 </body>
 </html>

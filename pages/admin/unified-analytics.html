@@ -22,7 +22,9 @@
     
     <!-- Toastr -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+    <link rel="stylesheet" href="../../plugins/sweetalert2/css/sweetalert2.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <script src="../../plugins/sweetalert2/js/sweetalert2.min.js"></script>
     
     <style>
         .analytics-card {
@@ -2299,7 +2301,7 @@ setTimeout(() => {
 
     window.deleteCommLog = async function(id) {
         if (!id) return;
-        if (!confirm('Apagar este registo? Esta ação não pode ser revertida.')) return;
+        if (!await swalConfirm('Apagar este registo? Esta ação não pode ser revertida.')) return;
         try {
             const token = getAuthToken();
             const res = await fetch(`/api/municipalities/communications/${id}`, {
@@ -2631,6 +2633,21 @@ setTimeout(() => {
 </script>
 
     <script src="/assets/js/table-drag-scroll.js"></script>
-<script src="../../assets/js/monitor.js"></script>
+<script src="../../assets/js/monitor.js">
+// swalConfirm — substitui confirm() nativo pelo Swal
+async function swalConfirm(text, title = 'Confirmar') {
+    const r = await Swal.fire({
+        title,
+        text,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#e74c3c',
+        cancelButtonColor: '#95a5a6',
+        confirmButtonText: 'Confirmar',
+        cancelButtonText: 'Cancelar'
+    });
+    return r.isConfirmed;
+}
+</script>
 </body>
 </html>

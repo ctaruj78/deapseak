@@ -5,6 +5,7 @@
     <link rel="icon" type="image/png" href="/assets/img/favicon.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Orçamento - Administração</title>
+    <script src="../../plugins/sweetalert2/js/sweetalert2.min.js"></script>
     <script src="../../assets/js/auth.js"></script>
 
     
@@ -880,7 +881,7 @@
                 
                 // Verificação чи орçаменто guardado
                 if (!window.lastSavedOrcamentoId && !window.currentOrcamentoId) {
-                    const save = confirm('Orçamento não foi salvo. Deseja salvar antes de enviar?');
+                    const save = await swalConfirm('Orçamento não foi salvo. Deseja salvar antes de enviar?');
                     if (save) {
                         await saveOrcamento();
                         if (!window.lastSavedOrcamentoId) {
@@ -1178,7 +1179,7 @@
                     const liftsCount = (Array.isArray(orcamentoData.lifts) ? orcamentoData.lifts.length : 0) || (orcamentoData.liftId ? 1 : 0);
                     const liftMsg = liftsCount > 0 ? `\n🔗 ${liftsCount} elevador(es) vinculado(s)` : (result.liftLinked ? `\n🔗 Ligado ao elevador: ${result.liftAddress || ''}` : '');
                     
-                    if (confirm(`✅ Orçamento ${numero} ${action} com sucesso!\n\nTotal: €${total.toFixed(2)}\nCliente: ${clienteNome}${liftMsg}\n\n📋 Deseja ver a lista de orçamentos?\n(Cancele para ficar aqui e enviar email)`)) {
+                    if (await swalConfirm(`✅ Orçamento ${numero} ${action} com sucesso!\n\nTotal: €${total.toFixed(2)}\nCliente: ${clienteNome}${liftMsg}\n\n📋 Deseja ver a lista de orçamentos?\n(Cancele para ficar aqui e enviar email)`)) {
                         window.location.href = 'orcamentos-list.html';
                     }
                 } else {
@@ -1642,7 +1643,7 @@
 
         async function deleteFoto(idx) {
             if (!window.currentOrcamentoId) return toastr.info('Guarde o orçamento antes de remover fotos.');
-            if (!confirm('Remover esta fotografia?')) return;
+            if (!await swalConfirm('Remover esta fotografia?')) return;
             const token = localStorage.getItem('liftmanager_jwt') || localStorage.getItem('jwt_token') || localStorage.getItem('token') || localStorage.getItem('lm_token');
             try {
                 const res = await fetch(`/api/orcamentos/${window.currentOrcamentoId}/fotos/${idx}`, {
@@ -1708,6 +1709,21 @@
         });
     </script>
     <script src="/assets/js/table-drag-scroll.js"></script>
-<script src="../../assets/js/monitor.js"></script>
+<script src="../../assets/js/monitor.js">
+// swalConfirm — substitui confirm() nativo pelo Swal
+async function swalConfirm(text, title = 'Confirmar') {
+    const r = await Swal.fire({
+        title,
+        text,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#e74c3c',
+        cancelButtonColor: '#95a5a6',
+        confirmButtonText: 'Confirmar',
+        cancelButtonText: 'Cancelar'
+    });
+    return r.isConfirmed;
+}
+</script>
 </body>
 </html>

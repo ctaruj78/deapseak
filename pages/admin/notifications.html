@@ -14,6 +14,7 @@
     <link rel="stylesheet" href="/plugins/datatables/css/dataTables.bootstrap4.min.css">
     <link rel="stylesheet" href="/plugins/datatables/css/buttons.bootstrap4.min.css">
     <link rel="stylesheet" href="/plugins/toastr/css/toastr.min.css">
+    <link rel="stylesheet" href="../../plugins/sweetalert2/css/sweetalert2.min.css">
 
     <style>
         .notification-item {
@@ -608,6 +609,7 @@
     <script src="/plugins/datatables/js/jquery.dataTables.min.js"></script>
     <script src="/plugins/datatables/js/dataTables.bootstrap4.min.js"></script>
     <script src="/plugins/toastr/js/toastr.min.js"></script>
+    <script src="../../plugins/sweetalert2/js/sweetalert2.min.js"></script>
 
     <script>
         // 🔥 ПІДКЛЮЧЕНО ДО РЕАЛЬНОГО API /api/notifications
@@ -880,7 +882,7 @@
         }
 
         async function bulkDelete() {
-            if (!confirm('Tem a certeza que quer eliminar as notificações selecionadas?')) return;
+            if (!await swalConfirm('Tem a certeza que quer eliminar as notificações selecionadas?')) return;
 
             const selectedIds = getSelectedNotificationIds();
             const token = localStorage.getItem('liftmanager_jwt') || localStorage.getItem('authToken') || localStorage.getItem('token');
@@ -929,7 +931,7 @@
         });
 
         $(document).on('click', '.delete-notification', async function() {
-            if (!confirm('Tem a certeza que quer eliminar estas notificações?')) return;
+            if (!await swalConfirm('Tem a certeza que quer eliminar estas notificações?')) return;
 
             const id = $(this).data('id');
             const token = localStorage.getItem('liftmanager_jwt') || localStorage.getItem('authToken') || localStorage.getItem('token');
@@ -958,7 +960,7 @@
         $(document).on('click', '.approve-deletion', async function() {
             const liftId = $(this).data('lift-id');
             const notificationId = $(this).data('notification-id');
-            if (!confirm('Tem a certeza que quer eliminar este elevador? Esta ação não pode ser cancelada.')) return;
+            if (!await swalConfirm('Tem a certeza que quer eliminar este elevador? Esta ação não pode ser cancelada.')) return;
 
             try {
                 const token = localStorage.getItem('liftmanager_jwt') || localStorage.getItem('authToken') || localStorage.getItem('token');
@@ -1011,6 +1013,21 @@
             }
         });
     </script>
-<script src="../../assets/js/monitor.js"></script>
+<script src="../../assets/js/monitor.js">
+// swalConfirm — substitui confirm() nativo pelo Swal
+async function swalConfirm(text, title = 'Confirmar') {
+    const r = await Swal.fire({
+        title,
+        text,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#e74c3c',
+        cancelButtonColor: '#95a5a6',
+        confirmButtonText: 'Confirmar',
+        cancelButtonText: 'Cancelar'
+    });
+    return r.isConfirmed;
+}
+</script>
 </body>
 </html>

@@ -390,7 +390,7 @@ class VoiceInterface {
                 break;
                 
             case 'logout':
-                if (confirm('Ви дійсно хочете вийти?')) {
+                if (await swalConfirm('Ви дійсно хочете вийти?')) {
                     window.location.href = '/logout';
                 }
                 break;

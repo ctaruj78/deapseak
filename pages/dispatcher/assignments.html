@@ -1021,7 +1021,7 @@
         let serviceIntegration;
         
         function logout() {
-            if (confirm('Tem a certeza que quer sair do sistema?')) {
+            if (await swalConfirm('Tem a certeza que quer sair do sistema?')) {
                 localStorage.removeItem('authToken');
                 localStorage.removeItem('userData');
                 window.location.replace('/pages/auth/login.html');
@@ -1978,7 +1978,7 @@
             async unarchiveFromModal() {
                 const assignment = this.currentViewingAssignment;
                 if (!assignment) return;
-                if (!confirm('Restaurar pedido do arquivo?')) return;
+                if (!await swalConfirm('Restaurar pedido do arquivo?')) return;
                 try {
                     const res = await AuthManager.fetchWithAuth(`/api/requests/${assignment._id}/unarchive`, { method: 'POST' });
                     const result = await res.json();
@@ -2206,7 +2206,7 @@
                 
                 console.log('⚡ Atribuição rápida:', { requestId: this.currentViewingId, technicianId });
                 
-                if (confirm('Atribuir este técnico ao pedido?')) {
+                if (await swalConfirm('Atribuir este técnico ao pedido?')) {
                     await this.assignRequest(this.currentViewingId, technicianId);
                     
                     // Fechar janela modal após atribuição
@@ -2742,7 +2742,7 @@
                 
                 // Iniciar роботу
                 startWork: async function(requestId) {
-                    if (!confirm('Iniciar trabalho neste pedido?')) {
+                    if (!await swalConfirm('Iniciar trabalho neste pedido?')) {
                         return;
                     }
                     
@@ -2853,7 +2853,7 @@
                 
                 // Concluir o pedido
                 completeRequest: async function(requestId) {
-                    if (!confirm('Concluir este pedido?')) {
+                    if (!await swalConfirm('Concluir este pedido?')) {
                         return;
                     }
                     
@@ -3088,6 +3088,21 @@
             }
         });
     });
+
+// swalConfirm — substitui confirm() nativo pelo Swal
+async function swalConfirm(text, title = 'Confirmar') {
+    const r = await Swal.fire({
+        title,
+        text,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#e74c3c',
+        cancelButtonColor: '#95a5a6',
+        confirmButtonText: 'Confirmar',
+        cancelButtonText: 'Cancelar'
+    });
+    return r.isConfirmed;
+}
 </script>
 </body>
 </html>

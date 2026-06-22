@@ -7,6 +7,7 @@
     <title>AI Assistente | FestLift</title>
     
     <!-- Global Settings -->
+    <script src="../../plugins/sweetalert2/js/sweetalert2.min.js"></script>
     <script src="../../assets/js/global-settings.js"></script>
     
     <!-- AdminLTE CSS -->
@@ -1081,7 +1082,7 @@
                     document.getElementById('typingIndicator').classList.remove('active');
                     addChatMessage('⚠️ Sessão expirada. Por favor, inicie sessão novamente.', false);
                     localStorage.removeItem('token'); localStorage.removeItem('lm_token'); localStorage.removeItem('deapseak_token');
-                    setTimeout(() => { if (confirm('Sessão expirada. Ir para a página de início de sessão?')) window.location.replace('/pages/auth/login.html'); }, 2000);
+                    setTimeout(() => { if (await swalConfirm('Sessão expirada. Ir para a página de início de sessão?')) window.location.replace('/pages/auth/login.html'); }, 2000);
                     return;
                 }
 
@@ -1203,7 +1204,7 @@
         }
 
         function clearChat() {
-            if (confirm('Limpar todo o histórico do chat?')) {
+            if (await swalConfirm('Limpar todo o histórico do chat?')) {
                 const container = document.getElementById('chatMessages');
                 const children = Array.from(container.children);
                 children.forEach((child, index) => {
@@ -2268,6 +2269,21 @@
             console.log('✅ AI Assistant - minimal sidebar ready (common zone)');
         });
     </script>
-<script src="../../assets/js/monitor.js"></script>
+<script src="../../assets/js/monitor.js">
+// swalConfirm — substitui confirm() nativo pelo Swal
+async function swalConfirm(text, title = 'Confirmar') {
+    const r = await Swal.fire({
+        title,
+        text,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#e74c3c',
+        cancelButtonColor: '#95a5a6',
+        confirmButtonText: 'Confirmar',
+        cancelButtonText: 'Cancelar'
+    });
+    return r.isConfirmed;
+}
+</script>
 </body>
 </html>

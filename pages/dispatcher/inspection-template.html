@@ -5,6 +5,7 @@
     <link rel="icon" type="image/png" href="/assets/img/favicon.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manutenção Mensal - Dispatcher</title>
+    <script src="../../plugins/sweetalert2/js/sweetalert2.min.js"></script>
     <script src="../../assets/js/global-settings.js"></script>
     <script src="../../assets/js/auth.js"></script>
     <!-- Inspection template engine -->
@@ -840,7 +841,7 @@
                     inspectionManager.updateReportPreview();
                 }
                 
-                const confirmed = confirm(`Enviar relatório para: ${email}?`);
+                const confirmed = await swalConfirm(`Enviar relatório para: ${email}?`);
                 if (!confirmed) return;
                 
                 try {
@@ -1013,7 +1014,7 @@
         }
 
         async function deleteInspectionDB(id, numero) {
-            if (!confirm(`Apagar o relatório ${numero}?`)) return;
+            if (!await swalConfirm(`Apagar o relatório ${numero}?`)) return;
             try {
                 const token = localStorage.getItem('liftmanager_jwt') || localStorage.getItem('authToken');
                 const response = await fetch(`/api/inspections/${id}`, {
@@ -1035,6 +1036,21 @@
             loadInspectionHistory();
         });
     </script>
-<script src="../../assets/js/monitor.js"></script>
+<script src="../../assets/js/monitor.js">
+// swalConfirm — substitui confirm() nativo pelo Swal
+async function swalConfirm(text, title = 'Confirmar') {
+    const r = await Swal.fire({
+        title,
+        text,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#e74c3c',
+        cancelButtonColor: '#95a5a6',
+        confirmButtonText: 'Confirmar',
+        cancelButtonText: 'Cancelar'
+    });
+    return r.isConfirmed;
+}
+</script>
 </body>
 </html>

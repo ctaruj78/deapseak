@@ -1165,7 +1165,7 @@ class DispatcherDashboardReal {
      * 🚨 Emergência протокол
      */
     emergencyProtocol() {
-        if (confirm('Ativar protocolo de emergência?\n\nTodos os técnicos disponíveis serão notificados!')) {
+        if (await swalConfirm('Ativar protocolo de emergência?\n\nTodos os técnicos disponíveis serão notificados!')) {
             // TODO: Реалізувати avariйний протокол
             this.showNotification('Protocolo de emergência ativado', 'warning');
         }

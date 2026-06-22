@@ -341,7 +341,7 @@ class NotificationManager {
     }
 
     deleteNotification(id) {
-        if (confirm('Eliminar esta notificação?')) {
+        if (await swalConfirm('Eliminar esta notificação?')) {
             this.notifications = this.notifications.filter(n => n.id !== id);
             this.saveNotifications();
             this.filterNotifications(this.currentFilter);
@@ -351,7 +351,7 @@ class NotificationManager {
     }
 
     clearAll() {
-        if (confirm('Eliminar todas as notificações? Esta ação não pode ser desfeita.')) {
+        if (await swalConfirm('Eliminar todas as notificações? Esta ação não pode ser desfeita.')) {
             this.notifications = [];
             this.saveNotifications();
             this.filteredNotifications = [];

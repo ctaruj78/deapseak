@@ -5,6 +5,7 @@
     <link rel="icon" type="image/png" href="/assets/img/favicon.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Suporte técnico - FestLift</title>
+    <script src="../../plugins/sweetalert2/js/sweetalert2.min.js"></script>
     <script src="../../assets/js/auth.js"></script>
 
 
@@ -778,7 +779,7 @@
         }
 
         function createBackup() {
-            if (confirm('Criar cópia de segurança do sistema? Isto pode demorar alguns minutos.')) {
+            if (await swalConfirm('Criar cópia de segurança do sistema? Isto pode demorar alguns minutos.')) {
                 toastr.success('Cópia de segurança criada com sucesso!\nFicheiro guardado: backup_2025-09-24.zip');
             }
         }
@@ -793,11 +794,26 @@
 
         // Logout function
         function logout() {
-            if (confirm('Tem a certeza que quer sair?')) {
+            if (await swalConfirm('Tem a certeza que quer sair?')) {
                 window.location.replace('/pages/auth/login.html');
             }
         }
     </script>
-<script src="../../assets/js/monitor.js"></script>
+<script src="../../assets/js/monitor.js">
+// swalConfirm — substitui confirm() nativo pelo Swal
+async function swalConfirm(text, title = 'Confirmar') {
+    const r = await Swal.fire({
+        title,
+        text,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#e74c3c',
+        cancelButtonColor: '#95a5a6',
+        confirmButtonText: 'Confirmar',
+        cancelButtonText: 'Cancelar'
+    });
+    return r.isConfirmed;
+}
+</script>
 </body>
 </html>

@@ -501,8 +501,8 @@ if (typeof window !== 'undefined') {
 // ═══════════════════════════════════════════════════════════
 if (typeof window !== 'undefined') {
     const _overrideLogout = function () {
-        window.logout = function () {
-            if (!confirm('Tem a certeza que quer sair do sistema?')) return;
+        window.logout = async function () {
+            if (!await swalConfirm('Tem a certeza que quer sair do sistema?')) return;
             AuthManager.logout();
         };
     };
@@ -533,3 +533,20 @@ if (typeof window !== 'undefined') {
         _startHeartbeat();
     }
 }
+
+// Global swalConfirm — replaces native confirm() with SweetAlert2 when available
+window.__nativeConfirm = window.confirm.bind(window);
+window.swalConfirm = async function(text, title = 'Confirmar') {
+    if (typeof Swal === 'undefined') return window.__nativeConfirm(text);
+    const r = await Swal.fire({
+        title,
+        text,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#e74c3c',
+        cancelButtonColor: '#95a5a6',
+        confirmButtonText: 'Confirmar',
+        cancelButtonText: 'Cancelar'
+    });
+    return r.isConfirmed;
+};

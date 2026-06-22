@@ -682,7 +682,7 @@
 
     <script>
         function logout() {
-            if (confirm('Tem a certeza que quer sair do sistema?')) {
+            if (await swalConfirm('Tem a certeza que quer sair do sistema?')) {
                 localStorage.removeItem('authToken');
                 localStorage.removeItem('userData');
                 window.location.replace('/pages/auth/login.html');
@@ -730,6 +730,21 @@
         }
     });
 </script>
-<script src="../../assets/js/monitor.js"></script>
+<script src="../../assets/js/monitor.js">
+// swalConfirm — substitui confirm() nativo pelo Swal
+async function swalConfirm(text, title = 'Confirmar') {
+    const r = await Swal.fire({
+        title,
+        text,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#e74c3c',
+        cancelButtonColor: '#95a5a6',
+        confirmButtonText: 'Confirmar',
+        cancelButtonText: 'Cancelar'
+    });
+    return r.isConfirmed;
+}
+</script>
 </body>
 </html>

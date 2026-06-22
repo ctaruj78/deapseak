@@ -251,7 +251,7 @@
     }
 
     async function dismissAllNotifications() {
-        if (!confirm('Descartar todas as notificações pendentes?')) return;
+        if (!await swalConfirm('Descartar todas as notificações pendentes?')) return;
         const res = await apiFetch('/api/agent/dismiss-all', { method: 'POST' });
         if (res.success) {
             notifications = [];

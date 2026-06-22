@@ -74,7 +74,8 @@
   </div>
 </div>
 
-<script src="../../plugins/jquery/jquery.min.js"></script>
+<script src="../../plugins/sweetalert2/js/sweetalert2.min.js"></script>
+    <script src="../../plugins/jquery/jquery.min.js"></script>
 <script src="/socket.io/socket.io.js"></script>
 <script>
   let logs = [];
@@ -194,7 +195,7 @@
   }
 
   async function clearLogs() {
-    if (!confirm('Limpar todos os logs?')) return;
+    if (!await swalConfirm('Limpar todos os logs?')) return;
     await fetch('/api/monitor/logs', {
       method: 'DELETE',
       headers: { 'Authorization': 'Bearer ' + token }
@@ -212,6 +213,21 @@
   // Init
   loadLogs();
 </script>
-<script src="../../assets/js/monitor.js"></script>
+<script src="../../assets/js/monitor.js">
+// swalConfirm — substitui confirm() nativo pelo Swal
+async function swalConfirm(text, title = 'Confirmar') {
+    const r = await Swal.fire({
+        title,
+        text,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#e74c3c',
+        cancelButtonColor: '#95a5a6',
+        confirmButtonText: 'Confirmar',
+        cancelButtonText: 'Cancelar'
+    });
+    return r.isConfirmed;
+}
+</script>
 </body>
 </html>

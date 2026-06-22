@@ -606,7 +606,7 @@ class LiftManager {
     }
 
     deleteLift(id) {
-        if (confirm('Tem a certeza que pretende eliminar este elevador?')) {
+        if (await swalConfirm('Tem a certeza que pretende eliminar este elevador?')) {
             allLifts = allLifts.filter(lift => lift.id !== id);
             CommonUtils.saveLifts(allLifts);
             this.loadLifts();

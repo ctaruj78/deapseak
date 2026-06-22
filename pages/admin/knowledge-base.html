@@ -289,7 +289,9 @@
 <script src="../../plugins/bootstrap/bootstrap.bundle.min.js"></script>
 <script src="../../plugins/adminlte/adminlte.min.js"></script>
 <script src="/plugins/toastr/js/toastr.min.js"></script>
+    <script src="../../plugins/sweetalert2/js/sweetalert2.min.js"></script>
 <link rel="stylesheet" href="/plugins/toastr/css/toastr.min.css">
+    <link rel="stylesheet" href="../../plugins/sweetalert2/css/sweetalert2.min.css">
 <script src="../../assets/js/sidebar-init.js"></script>
 <script src="../../assets/js/config.js"></script>
 
@@ -482,7 +484,7 @@ function previewArticle() {
 }
 
 async function deleteArticle(id, title) {
-    if (!confirm(`Eliminar o artigo "${title}"?\nEsta ação é irreversível.`)) return;
+    if (!await swalConfirm(`Eliminar o artigo "${title}"?\nEsta ação é irreversível.`)) return;
     const res = await apiCall(`/api/knowledge-base/${id}`, 'DELETE');
     if (res.success) {
         toastr.success('Artigo eliminado');
@@ -510,6 +512,21 @@ function logout() {
 }
 
 $('#searchInput').on('keypress', function(e) { if (e.which === 13) loadArticles(); });
+
+// swalConfirm — substitui confirm() nativo pelo Swal
+async function swalConfirm(text, title = 'Confirmar') {
+    const r = await Swal.fire({
+        title,
+        text,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#e74c3c',
+        cancelButtonColor: '#95a5a6',
+        confirmButtonText: 'Confirmar',
+        cancelButtonText: 'Cancelar'
+    });
+    return r.isConfirmed;
+}
 </script>
 </body>
 </html>

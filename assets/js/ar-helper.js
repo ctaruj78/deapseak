@@ -820,7 +820,7 @@ class ARHelperManager {
             if (arBtn && enabled) {
                 arBtn.title = 'AR Helper готовий!';
                 arBtn.style.borderColor = '#4CAF50';
-                arBtn.onclick = () => {
+                arBtn.onclick = async () => {
                     if (this.arHelper) {
                         this.arHelper.startAR('guide');
                     }
@@ -830,7 +830,7 @@ class ARHelperManager {
     }
     
     showSettingsPrompt() {
-        const result = confirm('AR Helper вимкнено в налаштуваннях.\n\nВи хочете перейти до налаштувань щоб увімкнути AR?');
+        const result = await swalConfirm('AR Helper вимкнено в налаштуваннях.\n\nВи хочете перейти до налаштувань щоб увімкнути AR?');
         if (result) {
             window.open('system-settings.html', '_blank');
         }

@@ -1237,7 +1237,7 @@
                 const userId = $('#userId').val();
                 const email = $('#userEmail').val();
                 if (!userId) return;
-                if (!confirm(`Enviar nova senha temporária por email para ${email}?`)) return;
+                if (!await swalConfirm(`Enviar nova senha temporária por email para ${email}?`)) return;
                 try {
                     const res = await AuthManager.fetchWithAuth(`/api/auth/users/${userId}/reset-password`, { method: 'POST' });
                     if (res.success) {
@@ -1413,7 +1413,7 @@
                 }
 
                 const confirmMsg = `Tem a certeza que quer ELIMINAR o utilizador ${user.firstName} ${user.lastName}?\n\nEsta acção NÃO pode ser desfeita!`;
-                if (!confirm(confirmMsg)) {
+                if (!await swalConfirm(confirmMsg)) {
                     return;
                 }
 
@@ -1718,6 +1718,21 @@
     </script>
     <script src="/assets/js/table-drag-scroll.js"></script>
     <script src="../../plugins/sweetalert2/js/sweetalert2.min.js"></script>
-<script src="../../assets/js/monitor.js"></script>
+<script src="../../assets/js/monitor.js">
+// swalConfirm — substitui confirm() nativo pelo Swal
+async function swalConfirm(text, title = 'Confirmar') {
+    const r = await Swal.fire({
+        title,
+        text,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#e74c3c',
+        cancelButtonColor: '#95a5a6',
+        confirmButtonText: 'Confirmar',
+        cancelButtonText: 'Cancelar'
+    });
+    return r.isConfirmed;
+}
+</script>
 </body>
 </html>

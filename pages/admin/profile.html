@@ -5,6 +5,7 @@
     <link rel="icon" type="image/png" href="/assets/img/favicon.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Perfil do administrador - FestLift</title>
+    <script src="../../plugins/sweetalert2/js/sweetalert2.min.js"></script>
     <script src="../../assets/js/auth.js"></script>
 
     
@@ -842,7 +843,7 @@
                                     <small class="text-muted">Último entrada: ontem</small>
                                 </div>
                             </div>
-                            <button class="btn btn-danger btn-sm mt-2" onclick="if(confirm('Terminar todas as sessões ativas? Será removido do sistema.')){localStorage.removeItem('authToken');localStorage.removeItem('userData');sessionStorage.clear();window.location.replace('/pages/auth/login.html');}">
+                            <button class="btn btn-danger btn-sm mt-2" onclick="if(await swalConfirm('Terminar todas as sessões ativas? Será removido do sistema.')){localStorage.removeItem('authToken');localStorage.removeItem('userData');sessionStorage.clear();window.location.replace('/pages/auth/login.html');}">
                                 <i class="fas fa-sign-out-alt mr-1"></i>Concluir todas as sessões
                             </button>
                         </div>
@@ -994,7 +995,7 @@
                             
                             <h5 class="mt-4">Eliminar conta</h5>
                             <p class="text-danger">Esta ação não pode ser cancelada. Todas os seus dados serão eliminados permanentemente.</p>
-                            <button class="btn btn-outline-danger" onclick="if(confirm('Eliminar conta? Esta ação não pode ser cancelada!')){if(confirm('Tem a certeza? Todas dados serão eliminados permanentemente.')){const token=localStorage.getItem('authToken');fetch('/api/users/me',{method:'DELETE',headers:{Authorization:'Bearer '+token}}).then(()=>{localStorage.clear();sessionStorage.clear();window.location.replace('/pages/auth/login.html');}).catch(()=>{toastr.error('Erro eliminação. Contacte o administrador.');});}}">
+                            <button class="btn btn-outline-danger" onclick="if(await swalConfirm('Eliminar conta? Esta ação não pode ser cancelada!')){if(await swalConfirm('Tem a certeza? Todas dados serão eliminados permanentemente.')){const token=localStorage.getItem('authToken');fetch('/api/users/me',{method:'DELETE',headers:{Authorization:'Bearer '+token}}).then(()=>{localStorage.clear();sessionStorage.clear();window.location.replace('/pages/auth/login.html');}).catch(()=>{toastr.error('Erro eliminação. Contacte o administrador.');});}}">
                                 <i class="fas fa-trash mr-2"></i>Eliminar conta
                             </button>
                         </div>
@@ -1412,5 +1413,20 @@
     </script>
 </body>
 </html>
-<script src="../../assets/js/monitor.js"></script>
+<script src="../../assets/js/monitor.js">
+// swalConfirm — substitui confirm() nativo pelo Swal
+async function swalConfirm(text, title = 'Confirmar') {
+    const r = await Swal.fire({
+        title,
+        text,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#e74c3c',
+        cancelButtonColor: '#95a5a6',
+        confirmButtonText: 'Confirmar',
+        cancelButtonText: 'Cancelar'
+    });
+    return r.isConfirmed;
+}
+</script>
 </body> -->

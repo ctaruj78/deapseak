@@ -377,7 +377,7 @@ class SimpleLiftModal {
         console.log('🗑️ Delete lift:', liftId);
         const lift = this.findLiftById(liftId);
         if (lift) {
-            if (confirm(`Tem a certeza que pretende eliminar o elevador ${lift.municipalNumber}?`)) {
+            if (await swalConfirm(`Tem a certeza que pretende eliminar o elevador ${lift.municipalNumber}?`)) {
                 this.performDelete(liftId);
             }
         } else {

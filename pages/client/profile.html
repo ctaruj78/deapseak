@@ -5,6 +5,7 @@
     <link rel="icon" type="image/png" href="/assets/img/favicon.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Perfil - Cliente</title>
+    <script src="../../plugins/sweetalert2/js/sweetalert2.min.js"></script>
     <script src="../../assets/js/auth.js"></script>
 
     
@@ -1073,7 +1074,7 @@
         }
 
         function logout() {
-            if (confirm('Tem a certeza que quer sair do sistema?')) {
+            if (await swalConfirm('Tem a certeza que quer sair do sistema?')) {
                 if (typeof AuthManager !== 'undefined') {
                     AuthManager.logout();
                 } else {
@@ -1245,7 +1246,7 @@
                 }
                 
                 logoutAllSessions() {
-                    if (confirm('Prazoar todas as sessões?')) {
+                    if (await swalConfirm('Prazoar todas as sessões?')) {
                         toastr.info('Todas as sessões terminadas');
                     }
                 }
@@ -1255,7 +1256,7 @@
                 }
                 
                 deleteAccount() {
-                    if (confirm('Eliminar conta permanentemente?')) {
+                    if (await swalConfirm('Eliminar conta permanentemente?')) {
                         toastr.info('Conta será eliminada');
                     }
                 }
@@ -1426,5 +1427,20 @@
     </script>
 </body>
 </html>
-<script src="../../assets/js/monitor.js"></script>
+<script src="../../assets/js/monitor.js">
+// swalConfirm — substitui confirm() nativo pelo Swal
+async function swalConfirm(text, title = 'Confirmar') {
+    const r = await Swal.fire({
+        title,
+        text,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#e74c3c',
+        cancelButtonColor: '#95a5a6',
+        confirmButtonText: 'Confirmar',
+        cancelButtonText: 'Cancelar'
+    });
+    return r.isConfirmed;
+}
+</script>
 </body> -->

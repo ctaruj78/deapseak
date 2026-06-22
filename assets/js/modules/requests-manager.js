@@ -655,7 +655,7 @@ this.showNotification('A abrir chat com o técnico...', 'info');
         const request = this.requests.find(req => req.id === requestId);
         if (!request) return;
 
-        if (confirm('Tem a certeza que pretende cancelar este pedido?')) {
+        if (await swalConfirm('Tem a certeza que pretende cancelar este pedido?')) {
             this.setRequestStatus(request, 'cancelled');
             this.showNotification('Pedido cancelado', 'success');
         }

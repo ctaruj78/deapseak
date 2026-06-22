@@ -184,8 +184,8 @@ window.updateSidebarUserName = updateSidebarUserName;
 // Global logout fallback — used by pages that don't define their own logout()
 // Pages with their own logout() function override this automatically
 if (typeof window.logout !== 'function') {
-    window.logout = function() {
-        if (!confirm('Ви впевнені, що хочете вийти з системи?')) return;
+    window.logout = async function() {
+        if (!await swalConfirm('Ви впевнені, що хочете вийти з системи?')) return;
         if (typeof AuthManager !== 'undefined') {
             AuthManager.logout();
         } else {

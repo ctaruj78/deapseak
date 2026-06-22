@@ -1769,7 +1769,7 @@ class CRMUnified {
                         const result = prompt(options.title + '\n' + (options.text || ''));
                         return { value: result };
                     } else {
-                        const confirmed = confirm(options.title + '\n' + (options.text || ''));
+                        const confirmed = await swalConfirm(options.title + '\n' + (options.text || ''));
                         return { isConfirmed: confirmed };
                     }
                 }
@@ -2470,7 +2470,7 @@ function showProfile() {
 }
 
 function logout() {
-    if (confirm('Ви впевнені, що хочете вийти?')) {
+    if (await swalConfirm('Ви впевнені, що хочете вийти?')) {
         localStorage.removeItem('auth_token');
         window.location.href = '/login.html';
     }
@@ -2497,4 +2497,19 @@ if (document.readyState === 'loading') {
 // Exportar для використання в інших модулях
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = CRMUnified;
+}
+
+// swalConfirm — substitui confirm() nativo pelo Swal
+async function swalConfirm(text, title = 'Confirmar') {
+    const r = await Swal.fire({
+        title,
+        text,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#e74c3c',
+        cancelButtonColor: '#95a5a6',
+        confirmButtonText: 'Confirmar',
+        cancelButtonText: 'Cancelar'
+    });
+    return r.isConfirmed;
 }

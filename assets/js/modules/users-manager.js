@@ -502,7 +502,7 @@ class UserManager {
     }
 
     toggleUserStatus(id) {
-        if (!confirm('Tem a certeza que pretende alterar o estado deste utilizador?')) {
+        if (!await swalConfirm('Tem a certeza que pretende alterar o estado deste utilizador?')) {
             return;
         }
 
