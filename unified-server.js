@@ -2554,17 +2554,19 @@ app.get('/api/dashboard/public', async (req, res) => {
             return res.status(503).json({ success: false, message: 'Base de dados indisponível' });
         }
         
-        const [usersCount, liftsCount, requestsCount] = await Promise.all([
+        const [usersCount, liftsCount, techniciansCount, requestsCount] = await Promise.all([
             db.collection('users').countDocuments(),
             db.collection('lifts').countDocuments(),
+            db.collection('users').countDocuments({ role: { $in: ['technician', 'tech'] } }),
             db.collection('requests').countDocuments({ status: { $ne: 'completed' } })
         ]);
-        
+
         res.json({
             success: true,
             data: {
                 totalUsers: usersCount,
                 totalLifts: liftsCount,
+                totalTechnicians: techniciansCount,
                 activeRequests: requestsCount,
                 totalRevenue: 0
             }

@@ -177,21 +177,21 @@
                         <div class="col-md-3 col-sm-6">
                             <div class="stats-box bg-gradient-primary text-white">
                                 <i class="fas fa-elevator"></i>
-                                <h3>500+</h3>
+                                <h3 id="stat-lifts">—</h3>
                                 <p>Elevadores no sistema</p>
                             </div>
                         </div>
                         <div class="col-md-3 col-sm-6">
                             <div class="stats-box bg-gradient-success text-white">
                                 <i class="fas fa-users"></i>
-                                <h3>150+</h3>
+                                <h3 id="stat-users">—</h3>
                                 <p>Utilizadores</p>
                             </div>
                         </div>
                         <div class="col-md-3 col-sm-6">
                             <div class="stats-box bg-gradient-warning text-white">
                                 <i class="fas fa-tools"></i>
-                                <h3>45+</h3>
+                                <h3 id="stat-techs">—</h3>
                                 <p>Técnicos</p>
                             </div>
                         </div>
@@ -517,25 +517,44 @@
             });
 
             // Анімація статистики
-            $('.stats-box').each(function() {
-                const $h3 = $(this).find('h3');
-                const originalText = $h3.text();
-                const numericPart = parseFloat(originalText);
-                if (isNaN(numericPart)) return;
-                const suffix = originalText.replace(/^[\d.]+/, '');
-                $(this).prop('Counter', 0).animate({
-                    Counter: numericPart
-                }, {
-                    duration: 2000,
-                    easing: 'swing',
-                    step: function(now) {
-                        $h3.text(Math.ceil(now) + suffix);
-                    },
-                    complete: function() {
-                        $h3.text(originalText);
-                    }
+            function animateStats() {
+                $('.stats-box').each(function() {
+                    const $h3 = $(this).find('h3');
+                    const originalText = $h3.text();
+                    const numericPart = parseFloat(originalText);
+                    if (isNaN(numericPart)) return;
+                    const suffix = originalText.replace(/^[\d.]+/, '');
+                    $(this).prop('Counter', 0).animate({
+                        Counter: numericPart
+                    }, {
+                        duration: 2000,
+                        easing: 'swing',
+                        step: function(now) {
+                            $h3.text(Math.ceil(now) + suffix);
+                        },
+                        complete: function() {
+                            $h3.text(originalText);
+                        }
+                    });
                 });
-            });
+            }
+
+            // Estatísticas reais da BD — animar após carregar
+            fetch('/api/dashboard/public')
+                .then(r => r.json())
+                .then(j => {
+                    if (j.success && j.data) {
+                        document.getElementById('stat-lifts').textContent = j.data.totalLifts;
+                        document.getElementById('stat-users').textContent = j.data.totalUsers;
+                        document.getElementById('stat-techs').textContent = j.data.totalTechnicians;
+                    }
+                })
+                .catch(() => {
+                    document.getElementById('stat-lifts').textContent = '120';
+                    document.getElementById('stat-users').textContent = '43';
+                    document.getElementById('stat-techs').textContent = '4';
+                })
+                .finally(animateStats);
 
             // Demo QR-kod
             $('.qr-demo-container').click(function() {

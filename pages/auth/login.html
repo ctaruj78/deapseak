@@ -578,22 +578,24 @@
           <p style="color:#666;font-size:14px;margin:0">A sua conta foi criada com uma palavra-passe temporária.<br>Por segurança, defina uma palavra-passe pessoal antes de continuar.</p>
         </div>
         <div id="mcpError" style="display:none;background:#fff3cd;border:1px solid #ffc107;border-radius:6px;padding:10px 14px;margin-bottom:14px;color:#856404;font-size:14px"></div>
-        <div style="margin-bottom:14px">
-          <label style="font-weight:600;font-size:14px;color:#333">Palavra-passe temporária (que usou para entrar)</label>
-          <input type="password" id="mcpCurrent" class="form-control" placeholder="Palavra-passe temporária" style="margin-top:5px">
-        </div>
-        <div style="margin-bottom:14px">
-          <label style="font-weight:600;font-size:14px;color:#333">Nova palavra-passe</label>
-          <input type="password" id="mcpNew" class="form-control" placeholder="Mínimo 8 caracteres" style="margin-top:5px">
-        </div>
-        <div style="margin-bottom:20px">
-          <label style="font-weight:600;font-size:14px;color:#333">Confirmar nova palavra-passe</label>
-          <input type="password" id="mcpConfirm" class="form-control" placeholder="Repita a nova palavra-passe" style="margin-top:5px">
-        </div>
-        <input type="hidden" id="mcpEmail">
-        <button id="mcpSubmitBtn" onclick="submitMustChangePassword()" style="width:100%;background:#1565c0;color:#fff;border:none;border-radius:6px;padding:13px;font-size:16px;font-weight:bold;cursor:pointer">
-          🔐 Guardar nova palavra-passe
-        </button>
+        <form autocomplete="new-password" onsubmit="submitMustChangePassword(); return false;">
+          <div style="margin-bottom:14px">
+            <label style="font-weight:600;font-size:14px;color:#333">Palavra-passe temporária (que usou para entrar)</label>
+            <input type="password" id="mcpCurrent" class="form-control" placeholder="Palavra-passe temporária" autocomplete="current-password" style="margin-top:5px">
+          </div>
+          <div style="margin-bottom:14px">
+            <label style="font-weight:600;font-size:14px;color:#333">Nova palavra-passe</label>
+            <input type="password" id="mcpNew" class="form-control" placeholder="Mínimo 8 caracteres" autocomplete="new-password" style="margin-top:5px">
+          </div>
+          <div style="margin-bottom:20px">
+            <label style="font-weight:600;font-size:14px;color:#333">Confirmar nova palavra-passe</label>
+            <input type="password" id="mcpConfirm" class="form-control" placeholder="Repita a nova palavra-passe" autocomplete="new-password" style="margin-top:5px">
+          </div>
+          <input type="hidden" id="mcpEmail">
+          <button id="mcpSubmitBtn" type="submit" style="width:100%;background:#1565c0;color:#fff;border:none;border-radius:6px;padding:13px;font-size:16px;font-weight:bold;cursor:pointer">
+            🔐 Guardar nova palavra-passe
+          </button>
+        </form>
       </div>
     </div>
 
