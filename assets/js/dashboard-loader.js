@@ -90,12 +90,13 @@ class DashboardLoader {
             this.setLoading();
             
             // Паралельно завантажуємо всі дані
-            const [usersData, liftsData, requestsData] = await Promise.all([
+            const [usersData, liftsData, requestsData, dashboardData] = await Promise.all([
                 this.fetchAPI('/api/users'),
                 this.fetchAPI('/api/lifts'),
-                this.fetchAPI('/api/requests')
+                this.fetchAPI('/api/requests'),
+                this.fetchAPI('/api/dashboard')
             ]);
-            
+
             console.log('📦 Отримані дані:', {
                 users: usersData?.length || 0,
                 lifts: liftsData?.length || 0,
@@ -108,7 +109,7 @@ class DashboardLoader {
                 totalLifts: liftsData?.length || 0,
                 activeRequests: this.countActiveRequests(requestsData),
                 activeLifts: this.countActiveLifts(liftsData),
-                totalRevenue: 0 // TODO: додати підрахунок з бази
+                totalRevenue: dashboardData?.totalRevenue ?? dashboardData?.data?.totalRevenue ?? 0
             };
 
             // Atualização UI
