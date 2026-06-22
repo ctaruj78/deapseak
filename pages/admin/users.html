@@ -894,7 +894,7 @@
                     
                 } catch (error) {
                     console.error('❌ Erro ao carregar utilizadores:', error);
-                    alert('Não foi possível descarregar de utilizadores. Verifique a ligação ao servidor.');
+                    toastr.error('Não foi possível descarregar de utilizadores. Verifique a ligação ao servidor.');
                     this.allUsers = [];
                 }
                 

@@ -973,11 +973,11 @@
         class SupportManager {
             showCategory(category) {
                 console.log('Showing category:', category);
-                alert(`Categorias disponíveis: ${category}`);
+                toastr.info(`Categorias disponíveis: ${category}`);
             }
             
             callSupport() {
-                alert('Ligar para suporte: +351 800 502 020');
+                toastr.info('Ligar para suporte: +351 800 502 020');
             }
             
             emailSupport() {
@@ -985,7 +985,7 @@
             }
             
             startChat() {
-                alert('Função de chat disponível em breve');
+                toastr.info('Função de chat disponível em breve');
             }
             
             showTicketForm() {
@@ -1001,7 +1001,7 @@
                 const priority    = document.getElementById('ticketPriority')?.value || 'medium';
                 const subject     = document.getElementById('ticketSubject')?.value?.trim();
                 const description = document.getElementById('ticketDescription')?.value?.trim() || '';
-                if (!subject) { alert('Preencha o assunto do ticket.'); return; }
+                if (!subject) { toastr.warning('Preencha o assunto do ticket.'); return; }
                 const token = localStorage.getItem('authToken') || localStorage.getItem('liftmanager_jwt') || localStorage.getItem('token') || '';
                 try {
                     const res = await fetch('/api/support/tickets', {
@@ -1011,29 +1011,29 @@
                     });
                     const data = await res.json();
                     if (!res.ok) throw new Error(data.message || 'Erro ao criar ticket');
-                    alert(`Ticket criado com sucesso! ID: ${data.data?._id}`);
+                    toastr.success(`Ticket criado com sucesso! ID: ${data.data?._id}`);
                     $('#ticketModal').modal('hide');
                 } catch (e) {
-                    alert(e.message || 'Erro ao enviar ticket');
+                    toastr.error(e.message || 'Erro ao enviar ticket');
                 }
             }
             
             searchKnowledgeBase() {
                 const query = $('#knowledgeSearch').val() || $('#knowledgeBaseSearch').val();
                 console.log('Searching knowledge base for:', query);
-                alert(`Pesquisar na base de conhecimento: ${query || 'pesquisa vazia'}`);
+                toastr.info(`Pesquisar na base de conhecimento: ${query || 'pesquisa vazia'}`);
             }
             
             sendMessage() {
-                alert('Mensagem enviada');
+                toastr.info('Mensagem enviada');
             }
             
             endChat() {
-                alert('Chat terminado');
+                toastr.info('Chat terminado');
             }
             
             addComment() {
-                alert('Comentário adicionado');
+                toastr.success('Comentário adicionado');
             }
         }
 

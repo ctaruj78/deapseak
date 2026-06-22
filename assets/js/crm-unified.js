@@ -1634,7 +1634,7 @@ class CRMUnified {
     
     handleAuthError() {
         // Обробка помилки авторизації
-        alert('Erro авторизації. Перенаправлення на сторінку входу...');
+        toastr.error('Erro авторизації. Перенаправлення на сторінку входу...');
         window.location.href = '/login.html';
     }
 
@@ -2100,7 +2100,7 @@ class CRMUnified {
                 showConfirmButton: false
             });
         } else {
-            alert(message);
+            toastr.info(message);
         }
     }
 
@@ -2114,7 +2114,7 @@ class CRMUnified {
                 text: message
             });
         } else {
-            alert(message);
+            toastr.info(message);
         }
     }
 

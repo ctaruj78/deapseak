@@ -415,17 +415,17 @@
 
     async function gerarRelatorio() {
         if (!_selectedType) {
-            alert('Por favor, escolha um modelo de relatório primeiro (passo 1).');
+            toastr.warning('Por favor, escolha um modelo de relatório primeiro (passo 1).');
             return;
         }
         const startDate = document.getElementById('paramStartDate').value;
         const endDate   = document.getElementById('paramEndDate').value;
         if (!startDate || !endDate) {
-            alert('Por favor, indique a data de início e data de fim.');
+            toastr.warning('Por favor, indique a data de início e data de fim.');
             return;
         }
         if (startDate > endDate) {
-            alert('A data de início deve ser anterior à data de fim.');
+            toastr.warning('A data de início deve ser anterior à data de fim.');
             return;
         }
 
@@ -462,7 +462,7 @@
             carregarRecentes();
 
         } catch (err) {
-            alert('Erro: ' + err.message);
+            toastr.error('Erro: ' + err.message);
         } finally {
             btn.disabled = false;
             btn.innerHTML = '<i class="fas fa-cogs mr-2"></i>Gerar Relatório';
@@ -524,7 +524,7 @@
     // ── Exportar CSV ──────────────────────────────────────────
     function exportarCSV() {
         if (!_lastReportData || !_lastReportData.items) {
-            alert('Gere primeiro um relatório.');
+            toastr.warning('Gere primeiro um relatório.');
             return;
         }
         const rows = [['#','Título','Elevador','Técnico','Estado','Prioridade','Criado em','Concluído em']];

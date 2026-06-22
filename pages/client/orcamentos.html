@@ -597,7 +597,7 @@
             // Recarregar lista
             await carregarOrcamentos();
         } catch (err) {
-            alert('Erro: ' + err.message);
+            toastr.error('Erro: ' + err.message);
         } finally {
             btn.disabled = false;
         }
@@ -620,7 +620,7 @@
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
         } catch (err) {
-            alert('Erro ao descarregar PDF: ' + err.message);
+            toastr.error('Erro ao descarregar PDF: ' + err.message);
         }
     }
 
@@ -639,7 +639,7 @@
             }
             setTimeout(() => URL.revokeObjectURL(url), 20000);
         } catch (err) {
-            alert('Erro ao imprimir PDF: ' + err.message);
+            toastr.error('Erro ao imprimir PDF: ' + err.message);
         }
     }
 
@@ -658,7 +658,7 @@
             );
             window.location.href = `mailto:${encodeURIComponent(to)}?subject=${subject}&body=${body}`;
         } catch (err) {
-            alert('Erro ao preparar email: ' + err.message);
+            toastr.error('Erro ao preparar email: ' + err.message);
         }
     }
 

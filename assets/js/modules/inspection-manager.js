@@ -694,7 +694,7 @@ class InspectionManager {
             });
         } else {
             // Fallback до звичайного alert
-            alert(message);
+            toastr.info(message);
         }
     }
 }

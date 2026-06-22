@@ -948,7 +948,7 @@ class DispatcherDashboardReal {
         }
         
         // TODO: Показати модальне вікно з деталями
-        alert(`Detalhes do pedido:\n\nID: ${request.id}\nTítulo: ${request.title}\nCliente: ${request.client}\nEstado: ${request.status}\nPrioridade: ${request.priority}\n\n${request.description}`);
+        toastr.info(`Detalhes do pedido:\n\nID: ${request.id}\nTítulo: ${request.title}\nCliente: ${request.client}\nEstado: ${request.status}\nPrioridade: ${request.priority}\n\n${request.description}`);
     }
     
     /**
@@ -1120,7 +1120,7 @@ class DispatcherDashboardReal {
         }
         
         // Fallback на alert
-        alert(`${type.toUpperCase()}: ${message}`);
+        toastr.info(`${type.toUpperCase()}: ${message}`);
     }
     
     /**
@@ -1144,7 +1144,6 @@ class DispatcherDashboardReal {
 🏢 Elevadores: ${this.lifts.length}
         `;
         
-        alert(stats);
     }
     
     /**
@@ -1159,7 +1158,7 @@ class DispatcherDashboardReal {
      */
     sendBroadcast() {
         // TODO: Реалізувати розсилку
-        alert('Funcionalidade de envio em desenvolvimento');
+        toastr.info('Funcionalidade de envio em desenvolvimento');
     }
     
     /**
@@ -1375,7 +1374,7 @@ class DispatcherDashboardReal {
         console.log('💬 Повідомлення');
         
         // TODO: Реалізувати чат
-        alert('Funcionalidade de mensagens em desenvolvimento');
+        toastr.info('Funcionalidade de mensagens em desenvolvimento');
     }
     
     /**
@@ -1506,7 +1505,7 @@ class DispatcherDashboardReal {
         console.log('📈 A gerar relatório');
         
         // TODO: Реалізувати генерацію звітів
-        alert('Funcionalidade de relatórios em desenvolvimento');
+        toastr.info('Funcionalidade de relatórios em desenvolvimento');
     }
 }
 

@@ -756,10 +756,10 @@
                         link.setAttribute('download', '');
                         link.click();
                     } else {
-                        alert('Erro ao gerar relatório: ' + (data.message || 'Erro desconhecido'));
+                        toastr.error('Erro ao gerar relatório: ' + (data.message || 'Erro desconhecido'));
                     }
                 })
-                .catch(err => alert('Erro de ligação: ' + err.message));
+                .catch(err => toastr.error('Erro de ligação: ' + err.message));
             }
 
             generateCustomReport() {
@@ -835,7 +835,7 @@
                 const format = document.getElementById('exportFormat').value;
                 const auto = document.getElementById('autoGenerate').value;
                 
-                alert(`Configurações guardado: Formato - ${format}, Autogeração - ${auto}`);
+                toastr.success(`Configurações guardado: Formato - ${format}, Autogeração - ${auto}`);
             }
         }
 

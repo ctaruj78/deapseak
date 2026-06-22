@@ -16,7 +16,7 @@ class VoiceAssistantClient {
 
   init() {
     if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
-      alert('Assistente de voz não é suportado pelo seu browser');
+      toastr.info('Assistente de voz não é suportado pelo seu browser');
       return;
     }
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -47,7 +47,7 @@ class VoiceAssistantClient {
         return;
       }
     }
-    alert('Comando não reconhecido: ' + text);
+    toastr.info('Comando não reconhecido: ' + text);
   }
 }
 

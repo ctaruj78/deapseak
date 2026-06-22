@@ -135,7 +135,7 @@
                     }
                 },
                 eventClick: function(info) {
-                    alert('Pedido #' + info.event.id + '\n' + info.event.title);
+                    toastr.info('Pedido #' + info.event.id + '\n' + info.event.title);
                 }
             });
             calendar.render();

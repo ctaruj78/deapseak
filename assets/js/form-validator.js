@@ -227,7 +227,7 @@ class FormValidator {
                 enableHtml: true
             });
         } else {
-            alert(this.errors.map(e => e.message).join('\n'));
+            toastr.warning(this.errors.map(e => e.message).join(' | '));
         }
     }
 }

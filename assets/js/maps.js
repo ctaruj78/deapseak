@@ -124,7 +124,7 @@ $(document).ready(function() {
     $('#btnGeocode').click(function() {
         const address = $('#addressInput').val().trim();
         if (!address) {
-            alert('Введіть адресу!');
+            toastr.info('Введіть адресу!');
             return;
         }
 
@@ -147,10 +147,10 @@ $(document).ready(function() {
                     .bindPopup('Знайдено: ' + address)
                     .openPopup();
             } else {
-                alert('Адресу не знайдено!');
+                toastr.info('Адресу не знайдено!');
             }
         }).fail(function() {
-            alert('Erro пошуку адреси. Перевірте інтернет-з\'єднання.');
+            toastr.error('Erro пошуку адреси. Перевірте інтернет-з\'єднання.');
         }).always(function() {
             btn.html(originalText).prop('disabled', false);
         });
@@ -160,14 +160,14 @@ $(document).ready(function() {
     $('#btnRoute').click(function() {
         const selectedLift = $('#routeToLift').val();
         if (!selectedLift) {
-            alert('Оберіть ліфт для прокладання маршруту!');
+            toastr.info('Оберіть ліфт для прокладання маршруту!');
             return;
         }
 
         if (routeLayer) map.removeLayer(routeLayer);
 
         if (!navigator.geolocation) {
-            alert('Geolocalização não suportada pelo seu browser');
+            toastr.info('Geolocalização não suportada pelo seu browser');
             return;
         }
 
@@ -209,7 +209,7 @@ $(document).ready(function() {
                     errorMessage = 'Час очікування визначення місцезнаходження минув.';
                     break;
             }
-            alert(errorMessage);
+            toastr.error(errorMessage);
             btn.html(originalText).prop('disabled', false);
         }, {
             enableHighAccuracy: true,

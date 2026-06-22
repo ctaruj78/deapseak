@@ -170,7 +170,7 @@
                 timer: 3000
             });
         } else {
-            alert(message);
+            toastr.info(message);
         }
     }
 

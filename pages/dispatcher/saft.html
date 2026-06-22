@@ -407,7 +407,7 @@ document.getElementById('saftFile').addEventListener('change', e => {
 let selectedFile = null;
 function setFile(f) {
     if (!f.name.toLowerCase().endsWith('.xml')) {
-        return alert('Apenas ficheiros .xml são aceites.');
+        return toastr.info('Apenas ficheiros .xml são aceites.');
     }
     selectedFile = f;
     document.getElementById('selectedFileName').textContent = f.name + ' (' + (f.size / 1024).toFixed(0) + ' KB)';
@@ -438,7 +438,7 @@ async function uploadSaft() {
         document.getElementById('uploadBtn').disabled = false;
 
         if (!data.success) {
-            alert('Erro: ' + data.message);
+            toastr.error('Erro: ' + data.message);
             return;
         }
         showResult(data);
@@ -447,7 +447,7 @@ async function uploadSaft() {
     } catch (e) {
         document.getElementById('uploadSpinner').style.display = 'none';
         document.getElementById('uploadBtn').disabled = false;
-        alert('Erro de rede: ' + e.message);
+        toastr.error('Erro de rede: ' + e.message);
     }
 }
 
@@ -606,9 +606,9 @@ async function resendAlerts() {
     try {
         const r = await fetch(API() + '/api/saft/' + currentImportId + '/resend', { method: 'POST', headers: HDRS() });
         const d = await r.json();
-        alert('Alertas enviados: ' + (d.alertsSent ?? 0));
+        toastr.success('Alertas enviados: ' + (d.alertsSent ?? 0));
         openImport(currentImportId);
-    } catch(e) { alert('Erro: ' + e.message); }
+    } catch(e) { toastr.error('Erro: ' + e.message); }
 }
 
 async function deleteImport(id, filename) {
@@ -618,7 +618,7 @@ async function deleteImport(id, filename) {
         const d = await r.json();
         if (!d.success) throw new Error(d.message || 'Erro desconhecido');
         loadHistory();
-    } catch (e) { alert('Erro ao eliminar: ' + e.message); }
+    } catch (e) { toastr.error('Erro ao eliminar: ' + e.message); }
 }
 
 function esc(s) {
@@ -646,7 +646,7 @@ document.getElementById('csvFile').addEventListener('change', e => {
 
 let selectedCsvFile = null;
 function setCsvFile(f) {
-    if (!f.name.toLowerCase().endsWith('.csv')) return alert('Apenas ficheiros .csv são aceites.');
+    if (!f.name.toLowerCase().endsWith('.csv')) return toastr.info('Apenas ficheiros .csv são aceites.');
     selectedCsvFile = f;
     document.getElementById('csvFileName').textContent = f.name + ' (' + (f.size / 1024).toFixed(0) + ' KB)';
     document.getElementById('csvSelected').classList.remove('d-none');
@@ -674,7 +674,7 @@ async function uploadMoloniCsv() {
         document.getElementById('csvSpinner').style.display = 'none';
         document.getElementById('csvUploadBtn').disabled = false;
 
-        if (!data.success) { alert('Erro: ' + data.message); return; }
+        if (!data.success) { toastr.error('Erro: ' + data.message); return; }
 
         const notFoundHtml = data.notFoundList?.length
             ? `<div class="mt-2"><small class="text-muted">Sem correspondência (${data.notFoundList.length}):</small>
@@ -692,7 +692,7 @@ async function uploadMoloniCsv() {
     } catch (e) {
         document.getElementById('csvSpinner').style.display = 'none';
         document.getElementById('csvUploadBtn').disabled = false;
-        alert('Erro de rede: ' + e.message);
+        toastr.error('Erro de rede: ' + e.message);
     }
 }
 
@@ -707,7 +707,7 @@ async function ignoreNif(nif, name, btn) {
         btn.classList.replace('btn-outline-secondary', 'btn-secondary');
         btn.disabled = true;
         btn.title = 'Ignorado';
-    } catch (e) { alert('Erro: ' + e.message); }
+    } catch (e) { toastr.error('Erro: ' + e.message); }
 }
 
 async function loadIgnoredNifs() {
@@ -743,7 +743,7 @@ async function unignoreNif(nif, btn) {
         btn.closest('.d-flex').remove();
         const list = document.getElementById('ignoredList');
         if (!list.children.length) list.innerHTML = '<span class="text-muted">Nenhum NIF ignorado.</span>';
-    } catch (e) { alert('Erro: ' + e.message); }
+    } catch (e) { toastr.error('Erro: ' + e.message); }
 }
 
 async function loadDebtors() {
@@ -910,10 +910,10 @@ async function sendDebtorAlerts(nifs, btn) {
         });
         const d = await r.json();
         if (!d.success) throw new Error(d.message);
-        alert('✅ ' + d.sent + ' alerta(s) enviado(s).' + (d.errors?.length ? '\n\nErros:\n' + d.errors.join('\n') : ''));
+        toastr.success('✅ ' + d.sent + ' alerta(s) enviado(s).' + (d.errors?.length ? '\n\nErros:\n' + d.errors.join('\n') : ''));
         loadDebtors();
     } catch (e) {
-        alert('Erro: ' + e.message);
+        toastr.error('Erro: ' + e.message);
         if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-paper-plane mr-1"></i>Enviar'; }
     }
 }
@@ -942,7 +942,7 @@ document.getElementById('pendFile').addEventListener('change', e => {
 
 let selectedPendFile = null;
 function setPendFile(f) {
-    if (!f.name.toLowerCase().endsWith('.csv')) return alert('Apenas ficheiros .csv são aceites.');
+    if (!f.name.toLowerCase().endsWith('.csv')) return toastr.info('Apenas ficheiros .csv são aceites.');
     selectedPendFile = f;
     document.getElementById('pendFileName').textContent = f.name + ' (' + (f.size / 1024).toFixed(0) + ' KB)';
     document.getElementById('pendSelected').classList.remove('d-none');
@@ -970,7 +970,7 @@ async function uploadPendentes() {
         document.getElementById('pendSpinner').style.display = 'none';
         document.getElementById('pendUploadBtn').disabled = false;
 
-        if (!data.success) { alert('Erro: ' + data.message); return; }
+        if (!data.success) { toastr.error('Erro: ' + data.message); return; }
 
         const noEmailHtml = data.noEmailList?.length
             ? `<div class="mt-1"><small class="text-muted">Sem email (${data.noEmailList.length}): ${data.noEmailList.map(n => esc(n)).join(', ')}</small></div>`
@@ -988,7 +988,7 @@ async function uploadPendentes() {
     } catch (e) {
         document.getElementById('pendSpinner').style.display = 'none';
         document.getElementById('pendUploadBtn').disabled = false;
-        alert('Erro de rede: ' + e.message);
+        toastr.error('Erro de rede: ' + e.message);
     }
 }
 

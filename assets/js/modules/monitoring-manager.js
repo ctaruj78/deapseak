@@ -1522,7 +1522,7 @@ class MonitoringManager {
         const msg = textarea ? textarea.value.trim() : '';
         const priority = select ? select.value : 'normal';
         if (!msg) {
-            alert('Introduza o texto da mensagem');
+            toastr.warning('Introduza o texto da mensagem');
             return;
         }
         console.log(`📡 Maiнсляція (${priority}): ${msg}`);
@@ -1530,7 +1530,7 @@ class MonitoringManager {
             $('#broadcastModal').modal('hide');
         }
         if (textarea) textarea.value = '';
-        alert(`Mensagem enviada (prioridade: ${priority})`);
+        toastr.info(`Mensagem enviada (prioridade: ${priority})`);
     }
 
     /**
@@ -1582,7 +1582,6 @@ class MonitoringManager {
             `Notificações:`,
             `  Непрочитаних: ${this.alerts.filter(a => !a.read && !a.readAt).length}`,
         ].join('\n');
-        alert(report);
         console.log(report);
     }
 
@@ -1596,7 +1595,7 @@ class MonitoringManager {
         );
         if (interval !== null && !isNaN(parseInt(interval))) {
             this.refreshInterval = parseInt(interval) * 1000;
-            alert(`✅ Intervalo de atualização definido: ${interval}s`);
+            toastr.success(`✅ Intervalo de atualização definido: ${interval}s`);
         }
     }
 }

@@ -571,7 +571,7 @@
                 const liftLocation = $('#liftLocation').val();
 
                 if (!inspector || !liftLocation) {
-                    alert('⚠️ Preencha o técnico responsável e a localização.');
+                    toastr.warning('⚠️ Preencha o técnico responsável e a localização.');
                     return;
                 }
 
@@ -610,7 +610,7 @@
                         saved.unshift({ ...inspectionData, _id: result.inspection._id, numero: result.inspection.numero });
                         localStorage.setItem('inspections', JSON.stringify(saved.slice(0, 50)));
 
-                        alert(`✅ Manutenção ${result.inspection.numero} guardada com sucesso na base de dados!`);
+                        toastr.success(`✅ Manutenção ${result.inspection.numero} guardada com sucesso na base de dados!`);
                     } else {
                         throw new Error(result.message || 'Erro desconhecido');
                     }
@@ -620,7 +620,7 @@
                     const saved = JSON.parse(localStorage.getItem('inspections') || '[]');
                     saved.unshift({ ...inspectionData, timestamp: new Date().toISOString() });
                     localStorage.setItem('inspections', JSON.stringify(saved.slice(0, 50)));
-                    alert('⚠️ Guardado localmente (sem ligação ao servidor). Sincronize quando online.');
+                    toastr.warning('⚠️ Guardado localmente (sem ligação ao servidor). Sincronize quando online.');
                 }
             },
 
@@ -753,7 +753,7 @@
                               localStorage.getItem('authToken') ||
                               localStorage.getItem('token');
                 if (!token) {
-                    alert('Sessão expirada. Por favor, faça login novamente.');
+                    toastr.error('Sessão expirada. Por favor, faça login novamente.');
                     return;
                 }
 
@@ -818,7 +818,7 @@
 
                 } catch (error) {
                     console.error('Erro ao gerar PDF:', error);
-                    alert('Erro ao gerar PDF: ' + error.message);
+                    toastr.error('Erro ao gerar PDF: ' + error.message);
                 } finally {
                     if (btn) btn.innerHTML = origHtml;
                 }
@@ -832,7 +832,7 @@
                     email = prompt('Email do cliente não preenchido. Digite o email para enviar o relatório:');
                     if (!email) return;
                     if (!emailRegex.test(email)) {
-                        alert('Email inválido. Por favor, tente novamente.');
+                        toastr.error('Email inválido. Por favor, tente novamente.');
                         return;
                     }
                     // Preenchae o campo para ficar guardado
@@ -874,14 +874,14 @@
                     });
                     
                     if (response.ok) {
-                        alert(`✅ Relatório enviado com sucesso para ${email}`);
+                        toastr.success(`✅ Relatório enviado com sucesso para ${email}`);
                     } else {
                         const error = await response.json();
-                        alert(`❌ Erro ao enviar: ${error.message || 'Erro desconhecido'}`);
+                        toastr.error(`❌ Erro ao enviar: ${error.message || 'Erro desconhecido'}`);
                     }
                 } catch (error) {
                     console.error('Erro ao enviar relatório:', error);
-                    alert('❌ Erro ao enviar relatório. Verifique a conexão com o servidor.');
+                    toastr.error('❌ Erro ao enviar relatório. Verifique a conexão com o servidor.');
                 }
             }
         };
@@ -1022,9 +1022,9 @@
                 });
                 const data = await response.json();
                 if (data.success) { loadInspectionHistory(); }
-                else alert('Erro: ' + data.message);
+                else toastr.error('Erro: ' + data.message);
             } catch (err) {
-                alert('Erro ao apagar: ' + err.message);
+                toastr.error('Erro ao apagar: ' + err.message);
             }
         }
 

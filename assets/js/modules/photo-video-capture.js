@@ -31,7 +31,7 @@ class PhotoVideoCapture {
       this.mediaStream = await navigator.mediaDevices.getUserMedia({ video: true });
       this.videoElement.srcObject = this.mediaStream;
     } else {
-      alert('Câmara não suportada');
+      toastr.info('Câmara não suportada');
     }
   }
 

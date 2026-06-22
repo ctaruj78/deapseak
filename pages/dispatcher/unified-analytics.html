@@ -1837,7 +1837,7 @@ setTimeout(() => {
         if (typeof toastr !== 'undefined') {
             toastr.error(message);
         } else {
-            alert(message);
+            toastr.info(message);
         }
     }
     

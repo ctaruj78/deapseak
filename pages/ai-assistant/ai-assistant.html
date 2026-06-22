@@ -880,7 +880,7 @@
                         if (hasBrazilianOnly) {
                             console.error('❌ ERRO: Apenas vozes brasileiras disponíveis (pt-BR). TTS DESATIVADO!');
                             console.warn('💡 Instale o idioma português europeu (pt-PT) nas configurações do sistema');
-                            alert('⚠️ Acompanhamento de voz indisponível!\n\nO sistema encontrou apenas o português do Brasil (pt-BR).\n\nPara funcionarhos necessária a língua portuguesa europeia (pt-PT).\n\n📌 Instruções:\nWindows: Settings → Language → Add Portuguese (Portugal)\nmacOS: System Preferences → Accessibility → Spoken Content');
+                            toastr.warning('⚠️ Acompanhamento de voz indisponível!\n\nO sistema encontrou apenas o português do Brasil (pt-BR).\n\nPara funcionarhos necessária a língua portuguesa europeia (pt-PT).\n\n📌 Instruções:\nWindows: Settings → Language → Add Portuguese (Portugal)\nmacOS: System Preferences → Accessibility → Spoken Content');
                             return; // NÃO REPRODUZIR
                         } else {
                             console.warn('⚠️ Voz portuguesa não encontrada, a usar voz predefinida do sistema');
@@ -1251,7 +1251,7 @@
         function askLegalCustom() {
             const question = document.getElementById('legalQuestion').value.trim();
             if (!question) {
-                alert('Por favor, descreva a sua situação');
+                toastr.warning('Por favor, descreva a sua situação');
                 return;
             }
             
@@ -1508,7 +1508,7 @@
                 query = document.getElementById('regulationSearch').value.trim();
             }
             if (!query) {
-                alert('Introduza uma palavra-chave para pesquisar');
+                toastr.warning('Introduza uma palavra-chave para pesquisar');
                 return;
             }
             
@@ -1574,7 +1574,7 @@
             if (files.length > 0 && files[0].type === 'application/pdf') {
                 handleAnalysisFile({ target: { files: [files[0]] } });
             } else {
-                alert('Por favor, carregue um ficheiro PDF');
+                toastr.warning('Por favor, carregue um ficheiro PDF');
             }
         });
 
@@ -1582,7 +1582,7 @@
             const file = event.target.files[0];
             if (file) {
                 if (file.size > 10 * 1024 * 1024) {
-                    alert('Ficheiro demasiado grande! Máximo 10 MB');
+                    toastr.info('Ficheiro demasiado grande! Máximo 10 MB');
                     return;
                 }
                 currentAnalysisFile = file;
@@ -1601,7 +1601,7 @@
             const manualText = document.getElementById('manualReport').value.trim();
             
             if (!currentAnalysisFile && !manualText) {
-                alert('Carregue um ficheiro PDF ou introduza o texto do relatório');
+                toastr.warning('Carregue um ficheiro PDF ou introduza o texto do relatório');
                 return;
             }
             
@@ -2131,7 +2131,7 @@
                 
             } catch (error) {
                 console.error('Error checking updates:', error);
-                alert('Erro ao verificar actualizações: ' + error.message);
+                toastr.error('Erro ao verificar actualizações: ' + error.message);
             } finally {
                 btn.disabled = false;
                 btn.innerHTML = originalHTML;
@@ -2191,7 +2191,7 @@
         
         function copyPdfTextToClipboard(buttonElement) {
             if (!window.currentPdfText) {
-                alert('Não há texto para copiar');
+                toastr.info('Não há texto para copiar');
                 return;
             }
 
@@ -2235,7 +2235,7 @@
                     return;
                 }
 
-                alert('Não foi possível copiar o texto automaticamente. Selecione o texto no bloco e copie Ctrl/Cmd+C.');
+                toastr.error('Não foi possível copiar o texto automaticamente. Selecione o texto no bloco e copie Ctrl/Cmd+C.');
             };
 
             if (navigator.clipboard && window.isSecureContext) {

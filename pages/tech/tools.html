@@ -695,7 +695,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-primary" onclick="var id=document.getElementById('scanToolIdInput').value.trim();if(id){toolManager.viewTool(id);$('#scanToolModal').modal('hide');}else{alert('Digite ID da ferramenta');}">
+                    <button type="button" class="btn btn-primary" onclick="var id=document.getElementById('scanToolIdInput').value.trim();if(id){toolManager.viewTool(id);$('#scanToolModal').modal('hide');}else{toastr.info('Digite ID da ferramenta');}">
                         <i class="fas fa-search"></i> Encontrar
                     </button>
                 </div>

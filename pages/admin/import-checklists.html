@@ -48,7 +48,7 @@
             const fileInput = document.getElementById('checklistFile');
             const file = fileInput.files[0];
             if (!file) {
-                alert('Selecione ficheiro para importar');
+                toastr.warning('Selecione ficheiro para importar');
                 return;
             }
             const reader = new FileReader();
@@ -64,9 +64,9 @@
                     const checklists = JSON.parse(localStorage.getItem('imported_checklists') || '[]');
                     localStorage.setItem('imported_checklists', JSON.stringify([...checklists, ...imported]));
                     renderChecklists();
-                    alert('Listas de verificação importadas com sucesso!');
+                    toastr.success('Listas de verificação importadas com sucesso!');
                 } catch (err) {
-                    alert('Erro de importação: ' + err.message);
+                    toastr.error('Erro de importação: ' + err.message);
                 }
             };
             reader.readAsText(file);

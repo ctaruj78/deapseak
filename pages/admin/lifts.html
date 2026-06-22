@@ -3041,7 +3041,7 @@
                     }
                 });
                 console.log(`✅ ${removed} registos de teste eliminados`);
-                alert(`${removed} registos eliminados. A página será actualizada.`);
+                toastr.success(`${removed} registos eliminados. A página será actualizada.`);
                 location.reload(true);
             }
         };
@@ -3069,7 +3069,7 @@
 
         function emailPDF() {
             if (!currentPDFFile) {
-                alert('Primeiro carregue o ficheiro PDF');
+                toastr.warning('Primeiro carregue o ficheiro PDF');
                 return;
             }
 
@@ -3131,14 +3131,14 @@ Equipa FestLift
             const message = document.getElementById('emailMessage').value;
 
             if (!email) {
-                alert('Por favor, introduza o email do cliente');
+                toastr.warning('Por favor, introduza o email do cliente');
                 return;
             }
 
             // Валідація email
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             if (!emailRegex.test(email)) {
-                alert('Formato de email inválido');
+                toastr.error('Formato de email inválido');
                 return;
             }
 
@@ -3146,7 +3146,7 @@ Equipa FestLift
                 const token = AuthManager.getAuthToken();
                 
                 if (!token) {
-                    alert('Autenticação necessária');
+                    toastr.error('Autenticação necessária');
                     window.location.href = '/pages/auth/login.html';
                     return;
                 }
@@ -3180,15 +3180,15 @@ Equipa FestLift
                         }, { source: 'email-system' });
                     }
 
-                    alert('✅ Contrato enviado com sucesso por email para: ' + email);
+                    toastr.success('✅ Contrato enviado com sucesso por email para: ' + email);
                     $('#emailModal').modal('hide');
                 } else {
-                    alert('❌ Erro de envio: ' + result.error);
+                    toastr.error('❌ Erro de envio: ' + result.error);
                 }
 
             } catch (error) {
                 console.error('Erro ao enviar email:', error);
-                alert('❌ Não foi possível enviar o email: ' + error.message);
+                toastr.error('❌ Não foi possível enviar o email: ' + error.message);
             }
         }
 
@@ -3203,7 +3203,7 @@ Equipa FestLift
         // Novos функції para розширеної trabalhos desde PDF
         function downloadPDF() {
             if (!currentPDFFile) {
-                alert('Primeiro carregue o ficheiro PDF');
+                toastr.warning('Primeiro carregue o ficheiro PDF');
                 return;
             }
 
@@ -3224,7 +3224,7 @@ Equipa FestLift
 
         function archivePDF() {
             if (!currentPDFFile) {
-                alert('Primeiro carregue o ficheiro PDF');
+                toastr.warning('Primeiro carregue o ficheiro PDF');
                 return;
             }
 
@@ -3346,7 +3346,7 @@ Equipa FestLift
                         document.getElementById('pdfFileName').textContent = file.name;
                         document.getElementById('pdfPreviewContainer').style.display = 'block';
                     } else if (file) {
-                        alert('Por favor, seleccione apenas ficheiros PDF');
+                        toastr.warning('Por favor, seleccione apenas ficheiros PDF');
                         e.target.value = '';
                     }
                 });
@@ -3503,7 +3503,7 @@ Equipa FestLift
         if (typeof window.enhancedLiftModal === 'undefined') {
             console.error('❌ Enhanced lift modal not available');
             // Atéказуexisteмо mensagem utilizadorу
-            alert('A janela com mapa ainda não carregou. Tente novamente em alguns segundos.');
+            toastr.info('A janela com mapa ainda não carregou. Tente novamente em alguns segundos.');
             return;
         }
         
@@ -3588,12 +3588,12 @@ Equipa FestLift
         const autoEmails = document.getElementById('enableAutoEmails').checked;
 
         if (!inspectionDate) {
-            alert('Por favor, indique a data de inspecção');
+            toastr.warning('Por favor, indique a data de inspecção');
             return;
         }
 
         if (!clientEmail) {
-            alert('Por favor, indique o email do cliente para notificações');
+            toastr.warning('Por favor, indique o email do cliente para notificações');
             return;
         }
 
@@ -3804,7 +3804,7 @@ Equipa FestLift
                 const editLiftId = (window.enhancedLiftModal && window.enhancedLiftModal.currentLiftId)
                     || (liftIdEl && liftIdEl.value) || null;
                 if (!editLiftId) {
-                    alert('Primeiro guarde o elevador para poder adicionar um relatório.');
+                    toastr.warning('Primeiro guarde o elevador para poder adicionar um relatório.');
                     return;
                 }
                 // Перевіряexisteмо дублювання
@@ -3830,7 +3830,7 @@ Equipa FestLift
     function requestLiftInspection() {
         const liftId = window._currentInspectionLiftId;
         const lift = window._currentInspectionLift;
-        if (!liftId || !lift) { alert('Dados do elevador não carregados'); return; }
+        if (!liftId || !lift) { toastr.info('Dados do elevador não carregados'); return; }
 
         const licExpiry = lift.licenseExpiry || lift.certExpiry || null;
         const expiryStr = licExpiry ? new Date(licExpiry).toLocaleDateString('pt-PT') : 'não especificado';
@@ -3995,7 +3995,7 @@ Email de contacto: info@festlift.pt`;
         const email   = $(emailField).val().trim();
         const subject = $(subjectField).val().trim();
         const body    = $(bodyField).val().trim();
-        if (!email) { alert('Email não especificado. Preencha o campo email.'); return false; }
+        if (!email) { toastr.warning('Email não especificado. Preencha o campo email.'); return false; }
         try {
             const token = AuthManager.getAuthToken();
             const res = await fetch('/api/email/send-inspection-reminder', {
@@ -4557,7 +4557,7 @@ Email de contacto: info@festlift.pt`;
         if (typeof QRCode === 'undefined') {
             if (initAttempts >= maxAttempts) {
                 console.error('❌ QRCode library failed to load after ' + (maxAttempts/10) + ' seconds');
-                alert('⚠️ A biblioteca de QR codes não carregou. Tente actualizar a página (Ctrl+Shift+R)');
+                toastr.warning('⚠️ A biblioteca de QR codes não carregou. Tente actualizar a página (Ctrl+Shift+R)');
                 return;
             }
             console.log('⏳ A aguardar o carregamento da biblioteca QRCode... (tentativa ' + initAttempts + '/' + maxAttempts + ')');
@@ -4586,7 +4586,7 @@ Email de contacto: info@festlift.pt`;
                     window.enhancedLiftModal.generateQRCode(inputId, liftNumber);
                 } else {
                     console.error('❌ Enhanced Lift Modal não pronto para geração de QR!');
-                    alert('O gerador QR ainda não está pronto. Tente novamente dentro de alguns segundos.');
+                    toastr.info('O gerador QR ainda não está pronto. Tente novamente dentro de alguns segundos.');
                 }
             };
             
@@ -4596,7 +4596,7 @@ Email de contacto: info@festlift.pt`;
             // Fallback функція se щось пішло не eк
             if (typeof window.openEnhancedModal === 'undefined') {
                 window.openEnhancedModal = function() {
-                    alert('A janela modal está temporariamente indisponível. Tente actualizar a página.');
+                    toastr.info('A janela modal está temporariamente indisponível. Tente actualizar a página.');
                 };
             }
         }
@@ -4688,7 +4688,7 @@ Email de contacto: info@festlift.pt`;
         const address  = ($('#enhancedLiftAddress').val() || '').trim();
         const postcode = ($('#enhancedLiftPostcode').val() || '').trim();
         if (!address) {
-            if (!silent) alert('Por favor, introduza o endereço');
+            if (!silent) toastr.warning('Por favor, introduza o endereço');
             return;
         }
         // Se existe поштовий код — він унікальний і досeтньо точний
@@ -4704,7 +4704,7 @@ Email de contacto: info@festlift.pt`;
             const data = await resp.json();
 
             if (!data.success) {
-                if (!silent) alert('Endereço não encontrado. Especifique o nome da rua e o número da casa.');
+                if (!silent) toastr.error('Endereço não encontrado. Especifique o nome da rua e o número da casa.');
                 console.warn('⚠️ Geocode não encontrado:', q);
                 return;
             }
@@ -4725,7 +4725,7 @@ Email de contacto: info@festlift.pt`;
             }
         } catch (err) {
             console.error('❌ Erro геоcódigoвання:', err);
-            if (!silent) alert('Erro de geocodificação. Verifique a ligação.');
+            if (!silent) toastr.error('Erro de geocodificação. Verifique a ligação.');
         } finally {
             if (btn) { btn.innerHTML = origHtml; btn.disabled = false; }
         }
@@ -5630,7 +5630,7 @@ Email de contacto: info@festlift.pt`;
             }
             
             if (!lift) {
-                alert('Elevador não encontrado');
+                toastr.error('Elevador não encontrado');
                 return;
             }
 
@@ -6127,7 +6127,7 @@ Email de contacto: info@festlift.pt`;
             }
         } catch (error) {
             console.error('❌ Erro ao carregar detalhes do elevador:', error);
-            alert('Erro ao carregar detalhes do elevador');
+            toastr.error('Erro ao carregar detalhes do elevador');
         }
     }
     
@@ -6231,7 +6231,7 @@ Email de contacto: info@festlift.pt`;
             }
             
             if (!lift) {
-                alert('Elevador não encontrado');
+                toastr.error('Elevador não encontrado');
                 return;
             }
             
@@ -6426,7 +6426,7 @@ Email de contacto: info@festlift.pt`;
             
         } catch (error) {
             console.error('❌ Erro ao carregar elevador:', error);
-            alert('Erro ao carregar dados do elevador');
+            toastr.error('Erro ao carregar dados do elevador');
         }
     }
 
@@ -6564,7 +6564,7 @@ Email de contacto: info@festlift.pt`;
             
             if (!lift) {
                 console.error('❌ Elevador não encontrado após todas as tentativas');
-                alert('Elevador não encontrado');
+                toastr.error('Elevador não encontrado');
                 return;
             }
             
@@ -6577,7 +6577,7 @@ Email de contacto: info@festlift.pt`;
             
             // Перевіряexisteмо наявність бібліотеки QRCode
             if (typeof QRCode === 'undefined') {
-                alert('A biblioteca de códigos QR ainda está a carregar. Tente em alguns segundos.');
+                toastr.info('A biblioteca de códigos QR ainda está a carregar. Tente em alguns segundos.');
                 return;
             }
             
@@ -6635,7 +6635,7 @@ Email de contacto: info@festlift.pt`;
             
         } catch (error) {
             console.error('❌ Erro ao gerar código QR:', error);
-            alert('Erro ao gerar código QR: ' + error.message);
+            toastr.error('Erro ao gerar código QR: ' + error.message);
         }
     }
     
@@ -6643,7 +6643,7 @@ Email de contacto: info@festlift.pt`;
         try {
             const canvas = document.querySelector('#qrcode canvas');
             if (!canvas) {
-                alert('Código QR não encontrado');
+                toastr.error('Código QR não encontrado');
                 return;
             }
             
@@ -6661,7 +6661,7 @@ Email de contacto: info@festlift.pt`;
             });
         } catch (error) {
             console.error('❌ Erro ao carregar código QR:', error);
-            alert('Erro ao carregar código QR');
+            toastr.error('Erro ao carregar código QR');
         }
     }
     
@@ -6672,7 +6672,7 @@ Email de contacto: info@festlift.pt`;
             const canvas = document.querySelector('#qrcode canvas');
             
             if (!canvas) {
-                alert('Código QR não encontrado');
+                toastr.error('Código QR não encontrado');
                 return;
             }
             
@@ -6728,7 +6728,7 @@ Email de contacto: info@festlift.pt`;
             };
         } catch (error) {
             console.error('❌ Erro ao imprimir código QR:', error);
-            alert('Erro ao imprimir código QR');
+            toastr.error('Erro ao imprimir código QR');
         }
     }
 
@@ -6740,7 +6740,7 @@ Email de contacto: info@festlift.pt`;
         
         if (maintenanceDate) {
             // Тут pode-se adicionar логіку збереження в API
-            alert(`Manutenção planeada para ${maintenanceDate}`);
+            toastr.info(`Manutenção planeada para ${maintenanceDate}`);
             
             // Actualizar estado do elevador
             const lifts = JSON.parse(localStorage.getItem('lifts') || '[]');
@@ -6803,7 +6803,7 @@ Email de contacto: info@festlift.pt`;
             displayLiftsInTable(window.allLiftsData || []);
         }
         
-        alert('Elevador eliminado com sucesso');
+        toastr.success('Elevador eliminado com sucesso');
     }
     
     // Verificação de autorização при заванeженні da página
@@ -7138,7 +7138,7 @@ Email de contacto: info@festlift.pt`;
         console.log('📋 A enviar relatório de inspecção:', { liftId, type, date, status });
         
         if (!type || !date) {
-            alert('Por favor, preencha os campos obrigatórios');
+            toastr.warning('Por favor, preencha os campos obrigatórios');
             return;
         }
         
@@ -7146,7 +7146,7 @@ Email de contacto: info@festlift.pt`;
             // Виutilizовуexisteмо AuthManager para отримання tokenа (suporte sessionStorage)
             const token = AuthManager.getAuthToken();
             if (!token) {
-                alert('Sessão expirada. Por favor, entre novamente.');
+                toastr.error('Sessão expirada. Por favor, entre novamente.');
                 window.location.replace('/pages/auth/login.html');
                 return;
             }
@@ -7200,7 +7200,7 @@ Email de contacto: info@festlift.pt`;
             console.log('📥 Resposta do servidor:', result);
             
             if (result.success) {
-                alert('Relatório adicionado com sucesso!');
+                toastr.success('Relatório adicionado com sucesso!');
                 $('#addReportModal').modal('hide');
                 $('#addReportForm')[0].reset();
                 // Sync all open views
@@ -7223,11 +7223,11 @@ Email de contacto: info@festlift.pt`;
                     $('#licenseExpiryBadge').hide();
                 }
             } else {
-                alert('Erro: ' + (result.message || result.error || 'Não foi possível adicionar relatório'));
+                toastr.error('Erro: ' + (result.message || result.error || 'Não foi possível adicionar relatório'));
             }
         } catch (error) {
             console.error('❌ Erro ao adicionar relatório:', error);
-            alert('Erro ao adicionar relatório: ' + error.message);
+            toastr.error('Erro ao adicionar relatório: ' + error.message);
         }
     }
     
@@ -7374,9 +7374,9 @@ Email de contacto: info@festlift.pt`;
 
     function attachPDFToReport(reportIndex) {
         const liftId = window.currentReportLiftId;
-        if (!liftId) return alert('Não foi possível determinar o ID do elevador');
+        if (!liftId) return toastr.error('Não foi possível determinar o ID do elevador');
         const idx = reportIndex !== undefined ? reportIndex : window.currentReportOrigIndex;
-        if (idx === null || idx === undefined) return alert('Índice de relatório inválido');
+        if (idx === null || idx === undefined) return toastr.error('Índice de relatório inválido');
 
         const inp = document.createElement('input');
         inp.type = 'file';
@@ -7402,13 +7402,13 @@ Email de contacto: info@festlift.pt`;
                 if (result.success) {
                     $('#viewReportModal').modal('hide');
                     if (typeof toastr !== 'undefined') toastr.success('PDF anexado com sucesso!');
-                    else alert('PDF anexado com sucesso!');
+                    else toastr.success('PDF anexado com sucesso!');
                     if (typeof showLiftDetails === 'function') showLiftDetails(liftId);
                 } else {
-                    alert('Erro: ' + (result.message || 'Não foi possível anexar o PDF'));
+                    toastr.error('Erro: ' + (result.message || 'Não foi possível anexar o PDF'));
                 }
             } catch (e) {
-                alert('Erro: ' + e.message);
+                toastr.error('Erro: ' + e.message);
             }
         });
         inp.click();
@@ -7841,14 +7841,14 @@ Email de contacto: info@festlift.pt`;
         const fileInput = document.getElementById('contract-file');
         
         if (!contractNumber || !startDate || !fileInput.files[0]) {
-            alert('Por favor, preencha todos os campos obrigatórios e seleccione o ficheiro');
+            toastr.warning('Por favor, preencha todos os campos obrigatórios e seleccione o ficheiro');
             return;
         }
         
         try {
             // Перевіряexisteмо автентифікацію
             if (!AuthManager.isAuthenticated()) {
-                alert('Sessão expirada. Por favor, entre novamente.');
+                toastr.error('Sessão expirada. Por favor, entre novamente.');
                 window.location.replace('/pages/auth/login.html');
                 return;
             }
@@ -7863,7 +7863,7 @@ Email de contacto: info@festlift.pt`;
             // Отримуexisteмо token através de AuthManager
             const token = AuthManager.getAuthToken(); // Corrigido: getAuthToken em vez de getToken
             if (!token) {
-                alert('Token não encontrado. Por favor, entre novamente.');
+                toastr.error('Token não encontrado. Por favor, entre novamente.');
                 window.location.replace('/pages/auth/login.html');
                 return;
             }
@@ -7910,17 +7910,17 @@ Email de contacto: info@festlift.pt`;
                 const msg = sharedCount > 0
                     ? `Contrato com sucesso carregado e aplicado a ${sharedCount + 1} elevadores neste endereço!`
                     : 'Contrato carregado com sucesso!';
-                alert(msg);
+                toastr.info(msg);
                 $('#uploadContractModal').modal('hide');
                 $('#uploadContractForm')[0].reset();
                 // Оновлюexisteмо detalhes do elevador
                 showLiftDetails(liftId);
             } else {
-                alert('Erro: ' + (result.message || result.error || 'Não foi possível carregar o contrato'));
+                toastr.error('Erro: ' + (result.message || result.error || 'Não foi possível carregar o contrato'));
             }
         } catch (error) {
             console.error('❌ Erro ao carregar contrato:', error);
-            alert('Erro ao carregar contrato: ' + error.message);
+            toastr.error('Erro ao carregar contrato: ' + error.message);
         }
     }
     
@@ -7932,13 +7932,13 @@ Email de contacto: info@festlift.pt`;
             const result = await apiCall(`/api/lifts/${liftId}/contract/email`, 'POST', { email });
             
             if (result.success) {
-                alert('Contrato enviado para ' + email);
+                toastr.success('Contrato enviado para ' + email);
             } else {
-                alert('Erro ao enviar: ' + (result.message || 'Erro desconhecido'));
+                toastr.error('Erro ao enviar: ' + (result.message || 'Erro desconhecido'));
             }
         } catch (error) {
             console.error('❌ Erro ao enviar contrato:', error);
-            alert('Erro ao enviar contrato');
+            toastr.error('Erro ao enviar contrato');
         }
     }
     
@@ -7949,15 +7949,15 @@ Email de contacto: info@festlift.pt`;
             const result = await apiCall(`/api/lifts/${liftId}/contract`, 'DELETE');
             
             if (result.success) {
-                alert('Contrato eliminado com sucesso');
+                toastr.success('Contrato eliminado com sucesso');
                 // Оновлюexisteмо detalhes do elevador
                 showLiftDetails(liftId);
             } else {
-                alert('Erro ao eliminar: ' + (result.message || 'Erro desconhecido'));
+                toastr.error('Erro ao eliminar: ' + (result.message || 'Erro desconhecido'));
             }
         } catch (error) {
             console.error('❌ Erro ao eliminar contrato:', error);
-            alert('Erro ao eliminar contrato');
+            toastr.error('Erro ao eliminar contrato');
         }
     }
 
@@ -7966,24 +7966,24 @@ Email de contacto: info@festlift.pt`;
     // ============================================
 
     async function deleteInspectionReport(liftId, reportIndex) {
-        if (!liftId) { alert('ID do elevador não encontrado'); return; }
-        if (reportIndex === undefined || reportIndex === null) { alert('Índice do relatório não definido'); return; }
+        if (!liftId) { toastr.error('ID do elevador não encontrado'); return; }
+        if (reportIndex === undefined || reportIndex === null) { toastr.info('Índice do relatório não definido'); return; }
         if (!confirm('Tem a certeza que quer eliminar este relatório?')) return;
 
         try {
             const result = await apiCall(`/api/lifts/${liftId}/inspection-report/${reportIndex}`, 'DELETE');
 
             if (result && result.success) {
-                alert('Relatório com sucesso eliminado');
+                toastr.success('Relatório com sucesso eliminado');
                 showLiftDetails(liftId);
                 if (typeof loadAdminStep4InspectionInfo === 'function') loadAdminStep4InspectionInfo(liftId);
                 if (typeof loadInspectionReports === 'function') loadInspectionReports(liftId);
             } else {
-                alert('Erro eliminação: ' + (result?.message || 'Erro desconhecido'));
+                toastr.error('Erro eliminação: ' + (result?.message || 'Erro desconhecido'));
             }
         } catch (error) {
             console.error('❌ Erro ao eliminar relatório:', error);
-            alert('Erro ao eliminar relatório');
+            toastr.error('Erro ao eliminar relatório');
         }
     }
 
@@ -8002,13 +8002,13 @@ Email de contacto: info@festlift.pt`;
             });
 
             if (result && result.success) {
-                alert('Relatório enviado para ' + email);
+                toastr.success('Relatório enviado para ' + email);
             } else {
-                alert('Erro ao enviar: ' + (result?.message || 'Erro desconhecido'));
+                toastr.error('Erro ao enviar: ' + (result?.message || 'Erro desconhecido'));
             }
         } catch (error) {
             console.error('❌ Erro ao enviar relatório:', error);
-            alert('Erro ao enviar relatório');
+            toastr.error('Erro ao enviar relatório');
         }
     }
 
@@ -8016,7 +8016,7 @@ Email de contacto: info@festlift.pt`;
         const liftId = window.currentReportLiftId;
         const reportIndex = window.currentReportOrigIndex;
         if (!liftId || reportIndex === null || reportIndex === undefined) {
-            alert('Não é possível eliminar: dados do relatório não encontrados');
+            toastr.error('Não é possível eliminar: dados do relatório não encontrados');
             return;
         }
         $('#viewReportModal').modal('hide');
@@ -8028,7 +8028,7 @@ Email de contacto: info@festlift.pt`;
         const reportIndex = window.currentReportOrigIndex;
         const report = window.currentReportForActions;
         if (!liftId) {
-            alert('Não é possível enviar: ID do elevador não encontrado');
+            toastr.error('Não é possível enviar: ID do elevador não encontrado');
             return;
         }
         emailInspectionReport(liftId, reportIndex, report);
@@ -8238,7 +8238,7 @@ Email de contacto: info@festlift.pt`;
                     }
                     
                     if (!lifts || lifts.length === 0) {
-                        alert('Sem dados para exportar');
+                        toastr.info('Sem dados para exportar');
                         return;
                     }
                     
@@ -8313,7 +8313,7 @@ Email de contacto: info@festlift.pt`;
                     }
                 } catch (error) {
                     console.error('❌ Erro ao exportar CSV:', error);
-                    alert('Erro ao exportar CSV: ' + error.message);
+                    toastr.error('Erro ao exportar CSV: ' + error.message);
                 }
             });
             console.log('✅ Processador CSV adicionado');
@@ -8357,7 +8357,7 @@ Email de contacto: info@festlift.pt`;
                             lifts = await window.loadLiftsFromAPI();
                         }
                         if (!lifts || lifts.length === 0) {
-                            alert('Sem dados para exportar');
+                            toastr.info('Sem dados para exportar');
                             return;
                         }
 
@@ -8432,7 +8432,7 @@ Email de contacto: info@festlift.pt`;
                     } catch (err) {
                         console.error('Erro ao gerar PDF:', err);
                         if (typeof toastr !== 'undefined') toastr.error('Erro ao gerar PDF: ' + err.message);
-                        else alert('Erro ao gerar PDF: ' + err.message);
+                        else toastr.error('Erro ao gerar PDF: ' + err.message);
                     } finally {
                         btn.disabled = false;
                         btn.innerHTML = '<i class="fas fa-file-pdf mr-1"></i> Exportar PDF';
@@ -8674,7 +8674,7 @@ Email de contacto: info@festlift.pt`;
             
         } catch (error) {
             console.error('❌ Erro ao abrir janela do município:', error);
-            alert('Erro ao carregar dados do elevador: ' + error.message);
+            toastr.error('Erro ao carregar dados do elevador: ' + error.message);
         }
     }
     
@@ -8690,7 +8690,7 @@ Email de contacto: info@festlift.pt`;
             console.log('👁️ Pré-visualização email...');
             
             if (!currentMunicipalityLiftId || !currentMunicipalityLiftData) {
-                alert('Erro: Dados do elevador não carregados');
+                toastr.error('Erro: Dados do elevador não carregados');
                 return;
             }
             
@@ -8836,7 +8836,7 @@ Email de contacto: info@festlift.pt`;
                 const previewWindow = window.open('', '_blank', 'width=800,height=600,scrollbars=yes');
                 
                 if (!previewWindow) {
-                    alert('⚠️ Por favor, permita pop-ups para pré-visualização');
+                    toastr.warning('⚠️ Por favor, permita pop-ups para pré-visualização');
                     return;
                 }
                 
@@ -8920,7 +8920,7 @@ Email de contacto: info@festlift.pt`;
                 
             } catch (error) {
                 console.error('❌ Erro na pré-visualização:', error);
-                alert('Erro na pré-visualização: ' + error.message);
+                toastr.error('Erro na pré-visualização: ' + error.message);
             }
         });
         
@@ -8975,8 +8975,8 @@ Email de contacto: info@festlift.pt`;
 
         // Send email button
         $('#btn-send-to-municipality').on('click', async function() {
-            if (!currentMunicipalityLiftId) { alert('Erro: ID do elevador não definido'); return; }
-            if (!currentMunicipalityData) { alert('Município não determinado. Por favor selecione um município primeiro.'); return; }
+            if (!currentMunicipalityLiftId) { toastr.error('Erro: ID do elevador não definido'); return; }
+            if (!currentMunicipalityData) { toastr.warning('Município não determinado. Por favor selecione um município primeiro.'); return; }
 
             const templateType = $('#email-template-type').val();
             const apiTemplateType = templateType.replace(/^municipality-/, '');
@@ -9075,7 +9075,7 @@ Email de contacto: info@festlift.pt`;
                 }
                 
                 if (file.type !== 'application/pdf') {
-                    alert('❌ Por favor, seleccione apenas ficheiros PDF');
+                    toastr.error('❌ Por favor, seleccione apenas ficheiros PDF');
                     e.target.value = '';
                     return;
                 }
@@ -9267,7 +9267,7 @@ Email de contacto: info@festlift.pt`;
                         tmp.select(); document.execCommand('copy');
                         document.body.removeChild(tmp);
                     }
-                } else { alert('Coordenadas não especificadas'); }
+                } else { toastr.info('Coordenadas não especificadas'); }
             });
         }
 
@@ -9278,7 +9278,7 @@ Email de contacto: info@festlift.pt`;
                 var type = document.getElementById('intType');
                 var desc = document.getElementById('intDescription');
                 if (!date||!date.value||!type||!type.value||!desc||!desc.value) {
-                    alert('Preencha os campos obrigatórios: data, tipo, descrição');
+                    toastr.warning('Preencha os campos obrigatórios: data, tipo, descrição');
                     return;
                 }
                 var token = localStorage.getItem('authToken')||localStorage.getItem('token')||localStorage.getItem('liftmanager_jwt');
@@ -9302,10 +9302,10 @@ Email de contacto: info@festlift.pt`;
                             if(typeof $!=='undefined') $('#interventionModal').modal('hide');
                             if(document.getElementById('interventionForm')) document.getElementById('interventionForm').reset();
                             if(typeof toastr!=='undefined') toastr.success('Intervenção guardada!');
-                            else alert('Intervenção guardada com sucesso!');
-                        } else { alert('Erro: '+((res.data&&res.data.message)||'Erro desconhecido')); }
+                            else toastr.success('Intervenção guardada com sucesso!');
+                        } else { toastr.error('Erro: '+((res.data&&res.data.message)||'Erro desconhecido')); }
                     })
-                    .catch(function(e){alert('Erro: '+e.message);})
+                    .catch(function(e){toastr.error('Erro: '+e.message);})
                     .finally(function(){saveBtn.disabled=false;saveBtn.innerHTML='Guardar intervenção';});
             });
         }
@@ -9366,7 +9366,7 @@ Email de contacto: info@festlift.pt`;
                     $('#pdfParserStep1').show();
                     $('#pdfParserFooterStep1').show();
                     if (typeof toastr !== 'undefined') toastr.error(data.message || 'Erro na análise do PDF');
-                    else alert('Erro: ' + (data.message || 'Não foi possível analisar o PDF'));
+                    else toastr.error('Erro: ' + (data.message || 'Não foi possível analisar o PDF'));
                     return;
                 }
 
@@ -9602,7 +9602,7 @@ Email de contacto: info@festlift.pt`;
                 $('#pdfParserLoading').hide();
                 $('#pdfParserStep1').show();
                 $('#pdfParserFooterStep1').show();
-                alert('Erro de rede: ' + err.message);
+                toastr.error('Erro de rede: ' + err.message);
             }
         });
 
@@ -9671,7 +9671,7 @@ Email de contacto: info@festlift.pt`;
                 }
                 $('#pdfParserDate').addClass('is-invalid').focus();
                 if (typeof toastr !== 'undefined') toastr.warning('Preencha a data de inspecção antes de guardar.');
-                else alert('Por favor preencha a data de inspecção antes de guardar.');
+                else toastr.warning('Por favor preencha a data de inspecção antes de guardar.');
                 return;
             }
             $('#pdfParserDate').removeClass('is-invalid');
@@ -9681,7 +9681,7 @@ Email de contacto: info@festlift.pt`;
                 $('#pdfParserToggleEdit').trigger('click');
             }
             var liftId = $('#pdfParserLiftSelect').val();
-            if (!liftId) { alert('Selecione o elevador da lista'); return; }
+            if (!liftId) { toastr.warning('Selecione o elevador da lista'); return; }
 
             var $btn = $(this);
             $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-1"></i> A guardar...');
@@ -9728,7 +9728,7 @@ Email de contacto: info@festlift.pt`;
                 if (!result.success) {
                     if (result.duplicate) {
                         if (typeof toastr !== 'undefined') toastr.warning('⚠️ ' + result.message);
-                        else alert(result.message);
+                        else toastr.success(result.message);
                         $('#pdfParserModal').modal('hide');
                         // Reload to show the conflicting record so user can see why it's a duplicate
                         if (typeof loadAdminStep4InspectionInfo === 'function') loadAdminStep4InspectionInfo(liftId);
@@ -9740,7 +9740,7 @@ Email de contacto: info@festlift.pt`;
                 $('#pdfParserModal').modal('hide');
 
                 if (typeof toastr !== 'undefined') toastr.success('✅ Relatório de inspecção guardado!');
-                else alert('Relatório de inspecção guardado com sucesso!');
+                else toastr.success('Relatório de inspecção guardado com sucesso!');
 
                 // Sync all open views after save
                 if (window._currentEditingLift) window._currentEditingLift.inspectionHistory = null;
@@ -9759,9 +9759,9 @@ Email de contacto: info@festlift.pt`;
 
             } catch (err) {
                 if (err && err.name === 'AbortError') {
-                    alert('Tempo esgotado ao guardar. Tente novamente.');
+                    toastr.info('Tempo esgotado ao guardar. Tente novamente.');
                 } else {
-                    alert('Erro: ' + err.message);
+                    toastr.error('Erro: ' + err.message);
                 }
             } finally {
                 $btn.prop('disabled', false).html('<i class="fas fa-check mr-1"></i> Sim, guardar');
@@ -10138,7 +10138,7 @@ $(document).on('click', '#editInspRptSaveBtn', async function() {
     if (!dateVal) {
         $('#editInspRptDate').addClass('is-invalid').focus();
         if (typeof toastr !== 'undefined') toastr.warning('A data de inspecção é obrigatória.');
-        else alert('Por favor preencha a data de inspecção.');
+        else toastr.warning('Por favor preencha a data de inspecção.');
         return;
     }
     $('#editInspRptDate').removeClass('is-invalid');
@@ -10168,7 +10168,7 @@ $(document).on('click', '#editInspRptSaveBtn', async function() {
 
         $('#editInspectionReportModal').modal('hide');
         if (typeof toastr !== 'undefined') toastr.success('✅ Relatório actualizado!');
-        else alert('Relatório actualizado com sucesso!');
+        else toastr.success('Relatório actualizado com sucesso!');
 
         // Reload detail view
         if (typeof showLiftDetails === 'function' && liftId) {
@@ -10176,7 +10176,7 @@ $(document).on('click', '#editInspRptSaveBtn', async function() {
         }
     } catch (err) {
         $btn.prop('disabled', false).html('<i class="fas fa-save mr-1"></i> Guardar alterações');
-        alert('Erro: ' + err.message);
+        toastr.error('Erro: ' + err.message);
     }
 });
 </script>

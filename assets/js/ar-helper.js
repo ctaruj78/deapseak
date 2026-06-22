@@ -542,7 +542,7 @@ class DeapSeaKARHelper {
                 this.setupARVoiceCommands();
             }
         } else {
-            alert('Голосове управління недоступне');
+            toastr.info('Голосове управління недоступне');
         }
     }
 
@@ -576,7 +576,7 @@ class DeapSeaKARHelper {
             eventBus.emit('ar:lift-details-requested', { liftId: liftId }, { source: 'ar-helper' });
         }
         
-        alert(`Відкриваю деталі ліфта ${liftId}`);
+        toastr.info(`Відкриваю деталі ліфта ${liftId}`);
         // Тут може бути навігація до сторінки ліфта
     }
 
@@ -682,7 +682,7 @@ class DeapSeaKARHelper {
 
     // Fallback методи
     simulateQRScan() {
-        alert('🔍 QR Сканер: Ліфт #12345 знайдено!\n📍 Адреса: вул. Хрещатик, 1\n✅ Статус: Активний');
+        toastr.success('🔍 QR Сканер: Ліфт #12345 знайдено!\n📍 Адреса: вул. Хрещатик, 1\n✅ Статус: Активний');
         
         if (window.eventBus) {
             eventBus.emit('ar:qr-simulated', { liftId: '12345' }, { source: 'ar-helper-fallback' });
@@ -696,15 +696,15 @@ class DeapSeaKARHelper {
             'Крок 3: Планування інспекції - встановіть дати і налаштування'
         ];
         
-        alert('🎯 Інтерактивний гід:\n\n' + steps.join('\n\n'));
+        toastr.info('🎯 Інтерактивний гід:\n\n' + steps.join('\n\n'));
     }
 
     showInspectionHelp() {
-        alert('🔍 Допомога з інспекціями:\n\n• Перевірте двигун ліфта\n• Оцініть стан тросів\n• Протестуйте гальмівну систему\n• Перевірте роботу дверей');
+        toastr.info('🔍 Допомога з інспекціями:\n\n• Перевірте двигун ліфта\n• Оцініть стан тросів\n• Протестуйте гальмівну систему\n• Перевірте роботу дверей');
     }
 
     show3DPreview() {
-        alert('🏢 3D Попередній перегляд недоступний без AR.\n\nСкористайтеся картою ліфтів для візуалізації розташування.');
+        toastr.info('🏢 3D Попередній перегляд недоступний без AR.\n\nСкористайтеся картою ліфтів для візуалізації розташування.');
     }
 
     // EventBus інтеграція

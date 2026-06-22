@@ -994,7 +994,7 @@
                             
                             <h5 class="mt-4">Eliminar conta</h5>
                             <p class="text-danger">Esta ação não pode ser cancelada. Todas os seus dados serão eliminados permanentemente.</p>
-                            <button class="btn btn-outline-danger" onclick="if(confirm('Eliminar conta? Esta ação não pode ser cancelada!')){if(confirm('Tem a certeza? Todas dados serão eliminados permanentemente.')){const token=localStorage.getItem('authToken');fetch('/api/users/me',{method:'DELETE',headers:{Authorization:'Bearer '+token}}).then(()=>{localStorage.clear();sessionStorage.clear();window.location.replace('/pages/auth/login.html');}).catch(()=>{alert('Erro eliminação. Contacte o administrador.');});}}">
+                            <button class="btn btn-outline-danger" onclick="if(confirm('Eliminar conta? Esta ação não pode ser cancelada!')){if(confirm('Tem a certeza? Todas dados serão eliminados permanentemente.')){const token=localStorage.getItem('authToken');fetch('/api/users/me',{method:'DELETE',headers:{Authorization:'Bearer '+token}}).then(()=>{localStorage.clear();sessionStorage.clear();window.location.replace('/pages/auth/login.html');}).catch(()=>{toastr.error('Erro eliminação. Contacte o administrador.');});}}">
                                 <i class="fas fa-trash mr-2"></i>Eliminar conta
                             </button>
                         </div>
@@ -1082,7 +1082,7 @@
 
             const token = authToken();
             if (!token) {
-                alert('Sessão inválida. Faça login novamente.');
+                toastr.error('Sessão inválida. Faça login novamente.');
                 return;
             }
 
@@ -1104,10 +1104,10 @@
                 if (avatarUrl) {
                     document.getElementById('profileAvatar').innerHTML = `<img src="${avatarUrl}?v=${Date.now()}" alt="Avatar" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
                 }
-                alert('Avatar atualizado com sucesso.');
+                toastr.success('Avatar atualizado com sucesso.');
             } catch (error) {
                 console.error('❌ avatar update error:', error);
-                alert(error.message || 'Erro ao atualizar avatar.');
+                toastr.error(error.message || 'Erro ao atualizar avatar.');
             } finally {
                 e.target.value = '';
             }
@@ -1119,7 +1119,7 @@
 
             const token = authToken();
             if (!token) {
-                alert('Sessão inválida. Faça login novamente.');
+                toastr.error('Sessão inválida. Faça login novamente.');
                 return;
             }
 
@@ -1144,11 +1144,11 @@
                     throw new Error(result.message || 'Erro ao atualizar perfil');
                 }
 
-                alert('Informação pessoal atualizada com sucesso.');
+                toastr.success('Informação pessoal atualizada com sucesso.');
                 await loadAdminProfile();
             } catch (error) {
                 console.error('❌ profile update error:', error);
-                alert(error.message || 'Erro ao atualizar perfil.');
+                toastr.error(error.message || 'Erro ao atualizar perfil.');
             }
         });
 
@@ -1160,18 +1160,18 @@
             const confirmPassword = document.getElementById('confirmPassword').value;
 
             if (!currentPassword || !newPassword) {
-                alert('Preencha a palavra-passe atual e a nova.');
+                toastr.warning('Preencha a palavra-passe atual e a nova.');
                 return;
             }
 
             if (newPassword !== confirmPassword) {
-                alert('A confirmação não coincide com a nova palavra-passe.');
+                toastr.info('A confirmação não coincide com a nova palavra-passe.');
                 return;
             }
 
             const token = authToken();
             if (!token) {
-                alert('Sessão inválida. Faça login novamente.');
+                toastr.error('Sessão inválida. Faça login novamente.');
                 return;
             }
 
@@ -1190,13 +1190,13 @@
                     throw new Error(result.message || 'Erro ao alterar palavra-passe');
                 }
 
-                alert('Palavra-passe alterada com sucesso.');
+                toastr.success('Palavra-passe alterada com sucesso.');
                 document.getElementById('currentPassword').value = '';
                 document.getElementById('newPassword').value = '';
                 document.getElementById('confirmPassword').value = '';
             } catch (error) {
                 console.error('❌ password change error:', error);
-                alert(error.message || 'Erro ao alterar palavra-passe.');
+                toastr.error(error.message || 'Erro ao alterar palavra-passe.');
             }
         });
 

@@ -172,7 +172,7 @@
         if (typeof toastr !== 'undefined') {
             toastr.error(message);
         } else {
-            alert(message);
+            toastr.info(message);
         }
     }
 
@@ -208,7 +208,7 @@
             if (typeof toastr !== 'undefined') {
                 toastr.success('Perfil atualizado com sucesso!');
             } else {
-                alert('Perfil atualizado com sucesso!');
+                toastr.success('Perfil atualizado com sucesso!');
             }
 
             return updatedUser;
@@ -249,7 +249,7 @@
             if (typeof toastr !== 'undefined') {
                 toastr.success('Palavra-passe com sucesso змінено!');
             } else {
-                alert('Palavra-passe com sucesso змінено!');
+                toastr.success('Palavra-passe com sucesso змінено!');
             }
 
             return true;

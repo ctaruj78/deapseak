@@ -504,17 +504,17 @@ if (!confirm('Tem a certeza que quer eliminar este técnico?')) return;
         if (typeof toastr !== 'undefined') {
             toastr[type](message);
         } else {
-            alert(message);
+            toastr.info(message);
         }
     }
 
     // Mostrar notificações (para navegação)
     showNotifications() {
-        alert('Funcionalidade de notificações será implementada na próxima versão');
+        toastr.info('Funcionalidade de notificações será implementada na próxima versão');
     }
 
     // Показати повідомлення (для навігації)
     showMessages() {
-        alert('Funcionalidade de mensagens será implementada na próxima versão');
+        toastr.info('Funcionalidade de mensagens será implementada na próxima versão');
     }
 }

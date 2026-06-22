@@ -245,7 +245,7 @@ const LiftsManager = (function() {
             console.log(`[${type.toUpperCase()}] ${message}`);
             // Fallback alert
             if (type === 'error') {
-                alert(message);
+                toastr.info(message);
             }
         }
     }

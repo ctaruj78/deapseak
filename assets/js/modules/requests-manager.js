@@ -744,7 +744,7 @@ this.showNotification('A abrir chat com o técnico...', 'info');
             const iconMap = { success: 'success', error: 'error', warning: 'warning', info: 'info' };
             Toast.fire({ icon: iconMap[type] || 'info', title: message });
         } else {
-            alert(message);
+            toastr.info(message);
         }
     }
 }

@@ -1391,7 +1391,7 @@
                     
                 } catch (error) {
                     console.error('Erro ao carregar atribuições:', error);
-                    alert('Erro ao carregar atribuições: ' + error.message);
+                    toastr.error('Erro ao carregar atribuições: ' + error.message);
                 }
             }
             
@@ -1654,7 +1654,7 @@
                 
                 if (!assignment) {
                     console.warn('⚠️ Pedido não encontrado:', requestId);
-                    alert(`Pedido #${requestId} não encontrado`);
+                    toastr.error(`Pedido #${requestId} não encontrado`);
                     return;
                 }
                 
@@ -1987,10 +1987,10 @@
                         $('#assignmentModal').modal('hide');
                         await this.loadAssignments();
                     } else {
-                        alert('Erro: ' + (result.message || 'Não foi possível restaurar'));
+                        toastr.error('Erro: ' + (result.message || 'Não foi possível restaurar'));
                     }
                 } catch (err) {
-                    alert('Erro: ' + err.message);
+                    toastr.error('Erro: ' + err.message);
                 }
             }
 
@@ -2200,7 +2200,7 @@
             // Atribuição rápida de técnico
             async quickAssign(technicianId) {
                 if (!this.currentViewingId) {
-                    alert('Erro: ID do pedido não encontrado');
+                    toastr.error('Erro: ID do pedido não encontrado');
                     return;
                 }
                 
@@ -2221,7 +2221,7 @@
                 console.log('✏️ A editar atribuição:', this.currentViewingId);
                 
                 if (!this.currentViewingId || !this.currentViewingAssignment) {
-                    alert('Erro: dados do pedido não encontrados');
+                    toastr.error('Erro: dados do pedido não encontrados');
                     return;
                 }
                 
@@ -2246,21 +2246,21 @@
                     });
                     
                     if (response && response.ok) {
-                        alert('Descrição actualizada com sucesso!');
+                        toastr.success('Descrição actualizada com sucesso!');
                         await this.loadAssignments();
                     } else {
                         throw new Error('Erro ao actualizar');
                     }
                 } catch (error) {
                     console.error('Erro ao actualizar descrição:', error);
-                    alert('Não foi possível actualizar a descrição: ' + error.message);
+                    toastr.error('Não foi possível actualizar a descrição: ' + error.message);
                 }
             }
             
             // Reatribuir técnico da janela modal
             async reassignFromModal() {
                 if (!this.currentViewingId) {
-                    alert('Erro: ID do pedido não encontrado');
+                    toastr.error('Erro: ID do pedido não encontrado');
                     return;
                 }
                 const self = this;
@@ -2285,12 +2285,12 @@
                         throw new Error(error.message || 'Erro de confirmação');
                     }
                     
-                    alert('Pedido confirmado!');
+                    toastr.info('Pedido confirmado!');
                     await this.loadAssignments();
                     
                 } catch (error) {
                     console.error('Erro ao confirmar pedido:', error);
-                    alert('Não foi possível confirmar o pedido: ' + error.message);
+                    toastr.error('Não foi possível confirmar o pedido: ' + error.message);
                 }
             }
             
@@ -2349,7 +2349,7 @@
             window.assignmentManager = {
                 // Mostrar notificações
                 showNotifications: function() {
-                    alert('Notificações: Tem 3 novos pedidos!');
+                    toastr.info('Notificações: Tem 3 novos pedidos!');
                 },
                 
                 // Aplicar filtros
@@ -2358,7 +2358,7 @@
                     const priority = $('#priorityFilter').val();
                     const status = $('#statusFilter').val();
                     console.log('Filtros:', { priority, status });
-                    alert(`Filtros aplicados: Prioridade=${priority}, Estado=${status}`);
+                    toastr.info(`Filtros aplicados: Prioridade=${priority}, Estado=${status}`);
                 },
                 
                 // Repor filtros
@@ -2366,18 +2366,18 @@
                     $('#priorityFilter').val('');
                     $('#statusFilter').val('');
                     console.log('Filtros limpos');
-                    alert('Filtros limpos');
+                    toastr.info('Filtros limpos');
                 },
                 
                 // Exportar atribuições
                 exportAssignments: function() {
                     console.log('A exportar atribuições...');
-                    alert('Exportação iniciada. O ficheiro será descarregado em breve.');
+                    toastr.info('Exportação iniciada. O ficheiro será descarregado em breve.');
                 },
                 
                 // Mostrar calendário
                 showCalendarView: function() {
-                    alert('A abrir vista de calendário...');
+                    toastr.info('A abrir vista de calendário...');
                     // Aqui pode redirecionar para o calendário
                     window.location.href = 'calendar.html';
                 },
@@ -2386,19 +2386,19 @@
                 searchAssignments: function() {
                     const query = $('#searchInput').val();
                     console.log('Pesquisar:', query);
-                    alert(`Pesquisar por: "${query}"`);
+                    toastr.info(`Pesquisar por: "${query}"`);
                 },
                 
                 // Anterior página
                 previousPage: function() {
                     console.log('Anterior página');
-                    alert('Ir para a página anterior');
+                    toastr.info('Ir para a página anterior');
                 },
                 
                 // Seguinte página
                 nextPage: function() {
                     console.log('Seguinte página'); 
-                    alert('Ir para a página seguinte');
+                    toastr.info('Ir para a página seguinte');
                 },
                 
                 // Criar nova atribuição
@@ -2757,12 +2757,12 @@
                             throw new Error(error.message || 'Erro de alteração estado');
                         }
                         
-                        alert('Trabalho iniciado!');
+                        toastr.info('Trabalho iniciado!');
                         await this.loadAssignments();
                         
                     } catch (error) {
                         console.error('Erro ao iniciar trabalho:', error);
-                        alert('Não foi possível iniciar o trabalho: ' + error.message);
+                        toastr.error('Não foi possível iniciar o trabalho: ' + error.message);
                     }
                 },
                 
@@ -2780,7 +2780,7 @@
                         const technicians = result.data?.users || result.users || [];
                         
                         if (technicians.length === 0) {
-                            alert('Não há técnicos disponíveis');
+                            toastr.info('Não há técnicos disponíveis');
                             return;
                         }
                         
@@ -2795,7 +2795,7 @@
                         
                         const techIndex = parseInt(choice) - 1;
                         if (techIndex < 0 || techIndex >= technicians.length) {
-                            alert('Seleção inválida');
+                            toastr.error('Seleção inválida');
                             return;
                         }
                         
@@ -2815,12 +2815,12 @@
                             throw new Error(error.message || 'Erro de atribuição');
                         }
                         
-                        alert(`Técnico ${selectedTech.firstName} ${selectedTech.lastName} atribuído!`);
+                        toastr.info(`Técnico ${selectedTech.firstName} ${selectedTech.lastName} atribuído!`);
                         await this.loadAssignments();
                         
                     } catch (error) {
                         console.error('Erro ao atribuir técnico:', error);
-                        alert('Não foi possível atribuir do técnico: ' + error.message);
+                        toastr.error('Não foi possível atribuir do técnico: ' + error.message);
                     }
                 },
                 
@@ -2842,12 +2842,12 @@
                             throw new Error(error.message || 'Erro ao adicionar comentário');
                         }
                         
-                        alert('Comentário adicionado!');
+                        toastr.success('Comentário adicionado!');
                         await this.loadAssignments();
                         
                     } catch (error) {
                         console.error('Erro ao adicionar comentário:', error);
-                        alert('Não foi possível adicionar comentário: ' + error.message);
+                        toastr.error('Não foi possível adicionar comentário: ' + error.message);
                     }
                 },
                 
@@ -2872,12 +2872,12 @@
                             throw new Error(error.message || 'Erro conclusão');
                         }
                         
-                        alert('Pedido concluído!');
+                        toastr.info('Pedido concluído!');
                         await this.loadAssignments();
                         
                     } catch (error) {
                         console.error('Erro conclusão pedidos:', error);
-                        alert('Não foi possível concluir o pedido: ' + error.message);
+                        toastr.error('Não foi possível concluir o pedido: ' + error.message);
                     }
                 },
                 
@@ -2911,7 +2911,7 @@
                     if (window.dispatcherManager) {
                         window.dispatcherManager.editAssignment();
                     } else {
-                        alert('Erro: gestor não inicializado');
+                        toastr.error('Erro: gestor não inicializado');
                     }
                 },
                 
@@ -2922,7 +2922,7 @@
                     if (window.dispatcherManager) {
                         await window.dispatcherManager.reassignFromModal();
                     } else {
-                        alert('Erro: gestor não inicializado');
+                        toastr.error('Erro: gestor não inicializado');
                     }
                 },
                 
@@ -2933,7 +2933,7 @@
                     if (window.dispatcherManager) {
                         window.dispatcherManager.openInMaps();
                     } else {
-                        alert('Erro: gestor não inicializado');
+                        toastr.error('Erro: gestor não inicializado');
                     }
                 },
                 
@@ -2944,7 +2944,7 @@
                     if (window.dispatcherManager) {
                         await window.dispatcherManager.quickAssign(technicianId);
                     } else {
-                        alert('Erro: gestor não inicializado');
+                        toastr.error('Erro: gestor não inicializado');
                     }
                 },
                 
@@ -2955,7 +2955,7 @@
                     if (window.dispatcherManager) {
                         window.dispatcherManager.viewAssignment(requestId);
                     } else {
-                        alert('Erro: gestor não inicializado');
+                        toastr.error('Erro: gestor não inicializado');
                     }
                 },
                 
@@ -2966,7 +2966,7 @@
                     if (window.dispatcherManager) {
                         await window.dispatcherManager.assignRequest(requestId, technicianId);
                     } else {
-                        alert('Erro: gestor não inicializado');
+                        toastr.error('Erro: gestor não inicializado');
                     }
                 },
                 
@@ -2975,7 +2975,7 @@
                     if (window.dispatcherManager) {
                         window.dispatcherManager.toggleArchiveView();
                     } else {
-                        alert('Erro: gestor não inicializado');
+                        toastr.error('Erro: gestor não inicializado');
                     }
                 },
 
@@ -2984,7 +2984,7 @@
                     if (window.dispatcherManager) {
                         await window.dispatcherManager.unarchiveFromModal();
                     } else {
-                        alert('Erro: gestor não inicializado');
+                        toastr.error('Erro: gestor não inicializado');
                     }
                 },
 
@@ -2993,7 +2993,7 @@
                     if (window.dispatcherManager) {
                         await window.dispatcherManager.archiveFromModal();
                     } else {
-                        alert('Erro: gestor não inicializado');
+                        toastr.error('Erro: gestor não inicializado');
                     }
                 },
 
@@ -3002,7 +3002,7 @@
                     if (window.dispatcherManager) {
                         await window.dispatcherManager.changeStatusFromModal(newStatus);
                     } else {
-                        alert('Erro: gestor não inicializado');
+                        toastr.error('Erro: gestor não inicializado');
                     }
                 },
 
@@ -3011,7 +3011,7 @@
                     if (window.dispatcherManager) {
                         await window.dispatcherManager.postDispComment();
                     } else {
-                        alert('Erro: gestor não inicializado');
+                        toastr.error('Erro: gestor não inicializado');
                     }
                 },
 
@@ -3020,7 +3020,7 @@
                     if (window.dispatcherManager) {
                         await window.dispatcherManager.falseCallFromModal();
                     } else {
-                        alert('Erro: gestor não inicializado');
+                        toastr.error('Erro: gestor não inicializado');
                     }
                 },
 
@@ -3031,7 +3031,7 @@
                     if (window.dispatcherManager) {
                         await window.dispatcherManager.loadAssignments();
                     } else {
-                        alert('Erro: gestor não inicializado');
+                        toastr.error('Erro: gestor não inicializado');
                     }
                 }
             };

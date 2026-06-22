@@ -204,7 +204,7 @@ class KnowledgeManager {
             if (window.$ && $('#viewArticleModal').length) $('#viewArticleModal').modal('show');
         } catch (err) {
             console.error('KB viewArticle:', err);
-            alert('Erro ao carregar artigo: ' + err.message);
+            toastr.error('Erro ao carregar artigo: ' + err.message);
         }
     }
 

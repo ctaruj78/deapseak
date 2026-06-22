@@ -24,11 +24,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 AuthManager.login(data.token, data.user);
                 window.location.href = 'index.html';
             } else {
-                alert(data.message || 'Erro ao iniciar sessão');
+                toastr.info(data.message || 'Erro ao iniciar sessão');
             }
         } catch (error) {
             console.error('Erro ao iniciar sessão:', error);
-            alert('Ocorreu um erro durante o início de sessão');
+            toastr.error('Ocorreu um erro durante o início de sessão');
         }
     });
 });

@@ -368,7 +368,7 @@
             if (typeof Swal !== 'undefined') {
                 Swal.fire({ icon: 'success', title: 'Pedido enviado!', html: `O seu número de pedido: <strong>${ticketNum}</strong><br>Aguarde resposta no seu email.`, confirmButtonColor: '#667eea' });
             } else {
-                alert('Pedido ' + ticketNum + ' enviado! Aguarde resposta por email.');
+                toastr.info('Pedido ' + ticketNum + ' enviado! Aguarde resposta por email.');
             }
             this.reset();
         });

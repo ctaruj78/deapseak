@@ -659,7 +659,7 @@ class ScheduleManager {
             const iconMap = { success: 'success', error: 'error', warning: 'warning', info: 'info' };
             Toast.fire({ icon: iconMap[type] || 'info', title: message });
         } else {
-            alert(message);
+            toastr.info(message);
         }
     }
 }

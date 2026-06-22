@@ -1854,7 +1854,7 @@ class ServiceRequestManager {
     async editRequest(requestId) {
         const request = this.requests.find(r => r.id === requestId);
         if (!request) {
-            alert('Pedido não encontrado');
+            toastr.error('Pedido não encontrado');
             return;
         }
 
@@ -1912,7 +1912,7 @@ class ServiceRequestManager {
             
             const result = await response.json();
             
-            alert('Pedido actualizado com sucesso!');
+            toastr.success('Pedido actualizado com sucesso!');
             
             // Fechar janela modal
             $('#editRequestModal').modal('hide');
@@ -1923,7 +1923,7 @@ class ServiceRequestManager {
             
         } catch (error) {
             console.error('Erro ao actualizar pedido:', error);
-            alert('Não foi possível actualizar o pedido: ' + error.message);
+            toastr.error('Não foi possível actualizar o pedido: ' + error.message);
         }
     }
 
@@ -2409,7 +2409,7 @@ function applyFilters() {
 function assignTechnician() {
     // Verificar disponibilidade de AuthManager
     if (typeof AuthManager === 'undefined') {
-        alert('É necessária autenticação para esta acção.\nPor favor, entre através da página de login.');
+        toastr.error('É necessária autenticação para esta acção.\nPor favor, entre através da página de login.');
         window.location.replace('/pages/auth/login.html');
         return;
     }
@@ -2423,20 +2423,20 @@ function assignTechnician() {
     
     // Verificação de autorização
     if (!AuthManager.isAuthenticated()) {
-        alert('A sua sessão expirou.\nPor favor, entre novamente.');
+        toastr.error('A sua sessão expirou.\nPor favor, entre novamente.');
         window.location.replace('/pages/auth/login.html');
         return;
     }
     
     // Verificar se pedido não está concluído
     if (window.serviceManager?.currentRequest?.status === 'completed') {
-        alert('Não é possível atribuir técnico.\nEste pedido já está concluído.\n\nSe necessário fazer alterações, devolva primeiro o pedido ao trabalho.');
+        toastr.warning('Não é possível atribuir técnico.\nEste pedido já está concluído.\n\nSe necessário fazer alterações, devolva primeiro o pedido ao trabalho.');
         return;
     }
     
     const currentUser = AuthManager.getCurrentUser();
     if (!currentUser || (currentUser.role !== 'admin' && currentUser.role !== 'dispatcher')) {
-        alert('Não tem permissão para atribuir técnicos');
+        toastr.info('Não tem permissão para atribuir técnicos');
         return;
     }
     
@@ -2447,25 +2447,25 @@ function assignTechnician() {
 async function changeRequestStatus(newStatus) {
     // Verificar disponibilidade de AuthManager
     if (typeof AuthManager === 'undefined') {
-        alert('É necessária autenticação para esta acção.\nPor favor, entre através da página de login.');
+        toastr.error('É necessária autenticação para esta acção.\nPor favor, entre através da página de login.');
         window.location.replace('/pages/auth/login.html');
         return;
     }
     
     if (!AuthManager.isAuthenticated()) {
-        alert('A sua sessão expirou.\nPor favor, entre novamente.');
+        toastr.error('A sua sessão expirou.\nPor favor, entre novamente.');
         window.location.replace('/pages/auth/login.html');
         return;
     }
     
     // Verificar se pedido não está concluído
     if (window.serviceManager?.currentRequest?.status === 'completed') {
-        alert('Não é possível alterar estado.\nEste pedido já está concluído.\n\nSe necessário fazer alterações, devolva primeiro o pedido ao trabalho.');
+        toastr.warning('Não é possível alterar estado.\nEste pedido já está concluído.\n\nSe necessário fazer alterações, devolva primeiro o pedido ao trabalho.');
         return;
     }
     
     if (!window.serviceManager || !window.serviceManager.currentRequest) {
-        alert('Nenhum pedido seleccionado');
+        toastr.info('Nenhum pedido seleccionado');
         return;
     }
     
@@ -2498,7 +2498,7 @@ async function changeRequestStatus(newStatus) {
         const result = await response.json();
         console.log('Estado alterado:', result);
         
-        alert('Estado do pedido alterado com sucesso!');
+        toastr.success('Estado do pedido alterado com sucesso!');
         
         // Fechar janela modal
         $('#viewRequestModal').modal('hide');
@@ -2509,25 +2509,25 @@ async function changeRequestStatus(newStatus) {
         
     } catch (error) {
         console.error('Erro ao alterar estado:', error);
-        alert('Não foi possível alterar o estado: ' + error.message);
+        toastr.error('Não foi possível alterar o estado: ' + error.message);
     }
 }
 
 async function completeRequest() {
     if (typeof AuthManager === 'undefined' || !AuthManager.isAuthenticated()) {
-        alert('Autorização necessária');
+        toastr.info('Autorização necessária');
         window.location.replace('/pages/auth/login.html');
         return;
     }
     
     if (!window.serviceManager?.currentRequest) {
-        alert('Nenhum pedido seleccionado');
+        toastr.info('Nenhum pedido seleccionado');
         return;
     }
     
     const workDescription = prompt('Introduza a descrição do trabalho concluído:');
     if (!workDescription?.trim()) {
-        alert('A descrição do trabalho concluído é obrigatória');
+        toastr.info('A descrição do trabalho concluído é obrigatória');
         return;
     }
     
@@ -2544,7 +2544,7 @@ async function completeRequest() {
             throw new Error(errBody.message || (response ? `Erro ${response.status}` : 'Erro de autorização'));
         }
         
-        alert('Pedido concluído com sucesso!');
+        toastr.success('Pedido concluído com sucesso!');
         $('#viewRequestModal').modal('hide');
         
         await window.serviceManager.loadRequests();
@@ -2552,7 +2552,7 @@ async function completeRequest() {
         
     } catch (error) {
         console.error('Erro ao concluir:', error);
-        alert('Não foi possível concluir o pedido: ' + error.message);
+        toastr.error('Não foi possível concluir o pedido: ' + error.message);
     }
 }
 
@@ -2561,19 +2561,19 @@ async function addComment() {
         const commentTextRaw = $('#newCommentText').val();
         
         if (!commentTextRaw || typeof commentTextRaw !== 'string') {
-            alert('Introduza o texto do comentário');
+            toastr.warning('Introduza o texto do comentário');
             return;
         }
         
         const commentText = commentTextRaw.trim();
         
         if (!commentText) {
-            alert('Introduza o texto do comentário');
+            toastr.warning('Introduza o texto do comentário');
             return;
         }
 
         if (!window.serviceManager.currentRequest) {
-            alert('Nenhum pedido seleccionado');
+            toastr.info('Nenhum pedido seleccionado');
             return;
         }
 
@@ -2595,24 +2595,24 @@ async function addComment() {
         await window.serviceManager.loadRequests();
         await loadComments(requestId);
 
-        alert('Comentário adicionado com sucesso');
+        toastr.success('Comentário adicionado com sucesso');
 
     } catch (error) {
         console.error('❌ Error adding comment:', error);
-        alert('Erro ao adicionar comentário: ' + error.message);
+        toastr.error('Erro ao adicionar comentário: ' + error.message);
     }
 }
 
 async function reopenRequest() {
     // Verificar disponibilidade de AuthManager
     if (typeof AuthManager === 'undefined') {
-        alert('É necessária autenticação para esta acção.\nPor favor, entre através da página de login.');
+        toastr.error('É necessária autenticação para esta acção.\nPor favor, entre através da página de login.');
         window.location.replace('/pages/auth/login.html');
         return;
     }
     
     if (!AuthManager.isAuthenticated()) {
-        alert('A sua sessão expirou.\nPor favor, entre novamente.');
+        toastr.error('A sua sessão expirou.\nPor favor, entre novamente.');
         window.location.replace('/pages/auth/login.html');
         return;
     }
@@ -2620,12 +2620,12 @@ async function reopenRequest() {
     // Verificar papel - só admin pode devolver ao trabalho
     const currentUser = AuthManager.getCurrentUser();
     if (!currentUser || currentUser.role !== 'admin') {
-        alert('Apenas o administrador pode devolver pedidos concluídos ao trabalho');
+        toastr.info('Apenas o administrador pode devolver pedidos concluídos ao trabalho');
         return;
     }
     
     if (!window.serviceManager || !window.serviceManager.currentRequest) {
-        alert('Nenhum pedido seleccionado');
+        toastr.info('Nenhum pedido seleccionado');
         return;
     }
     
@@ -2654,7 +2654,7 @@ async function reopenRequest() {
         
         const result = await response.json();
         
-        alert('Pedido devolvido ao trabalho!');
+        toastr.info('Pedido devolvido ao trabalho!');
         
         // Fechar janela modal
         $('#viewRequestModal').modal('hide');
@@ -2665,7 +2665,7 @@ async function reopenRequest() {
         
     } catch (error) {
         console.error('Erro recuperação pedidos:', error);
-        alert('Não foi possível devolver o pedido ao trabalho: ' + error.message);
+        toastr.error('Não foi possível devolver o pedido ao trabalho: ' + error.message);
     }
 }
 
@@ -2895,13 +2895,13 @@ function setReqView(mode) {
 async function submitTechnicianAssignment() {
     // Verificar disponibilidade de AuthManager
     if (typeof AuthManager === 'undefined') {
-        alert('É necessária autenticação para esta acção.\nPor favor, entre através da página de login.');
+        toastr.error('É necessária autenticação para esta acção.\nPor favor, entre através da página de login.');
         window.location.replace('/pages/auth/login.html');
         return;
     }
     
     if (!AuthManager.isAuthenticated()) {
-        alert('A sua sessão expirou.\nPor favor, entre novamente.');
+        toastr.error('A sua sessão expirou.\nPor favor, entre novamente.');
         window.location.replace('/pages/auth/login.html');
         return;
     }
@@ -2912,12 +2912,12 @@ async function submitTechnicianAssignment() {
         const deadline = $('#deadline').val();
         
         if (!selectedTechnician) {
-            alert('Selecione o técnico');
+            toastr.warning('Selecione o técnico');
             return;
         }
         
         if (!window.serviceManager || !window.serviceManager.currentRequest) {
-            alert('Nenhum pedido seleccionado para atribuição');
+            toastr.info('Nenhum pedido seleccionado para atribuição');
             return;
         }
         
@@ -2947,7 +2947,7 @@ async function submitTechnicianAssignment() {
         $('#viewRequestModal').modal('hide');
         
         // Mensagem de sucesso
-        alert('Técnico atribuído com sucesso!');
+        toastr.success('Técnico atribuído com sucesso!');
         
         // Recarregar dados do pedido
         await window.serviceManager.loadRequests();
@@ -2955,7 +2955,7 @@ async function submitTechnicianAssignment() {
         
     } catch (error) {
         console.error('Erro ao atribuir técnico:', error);
-        alert('Erro ao atribuir técnico: ' + error.message);
+        toastr.error('Erro ao atribuir técnico: ' + error.message);
     }
 }
 

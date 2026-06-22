@@ -770,13 +770,13 @@ function searchLocalRegulations(query, max = 50) {
 
 async function showRegulationDetail(code) {
     if (!code || code === 'undefined') {
-        alert('Erro: identificador do documento inválido');
+        toastr.error('Erro: identificador do documento inválido');
         return;
     }
     const result = await regulationsAI.getRegulation(code);
     
     if (!result.success || !result.data) {
-        alert('Erro ao carregar documento');
+        toastr.error('Erro ao carregar documento');
         return;
     }
     
@@ -892,7 +892,7 @@ async function askAI() {
     const question = $('#searchInput').val().trim();
     
     if (!question) {
-        alert('Por favor, digite uma pergunta');
+        toastr.warning('Por favor, digite uma pergunta');
         return;
     }
     
@@ -931,7 +931,7 @@ async function askAI() {
         `;
         $('#regulationsList').prepend(aiAnswer);
     } else {
-        alert(result.error || 'Erro ao processar pergunta');
+        toastr.error(result.error || 'Erro ao processar pergunta');
         loadAllRegulations();
     }
 }

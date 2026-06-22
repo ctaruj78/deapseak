@@ -417,7 +417,7 @@ class ClientManager {
 
     showRequestDetails(requestId) {
         const req = this.requests.find(r => String(r.id) === String(requestId));
-        if (req) alert(`${req.clientName}\n${req.title}`);
+        if (req) toastr.info(`${req.clientName}\n${req.title}`);
     }
 
     showAllRequests() {
@@ -489,7 +489,7 @@ class ClientManager {
 
     showNotification(message, type = 'info') {
         if (typeof toastr !== 'undefined' && toastr[type]) toastr[type](message);
-        else alert(message);
+        else toastr.info(message);
     }
 
     showNotifications() { this.showNotification('Funcionalidade de notificações em breve.', 'info'); }

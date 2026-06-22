@@ -1236,27 +1236,27 @@
             // Simple ProfileManager stub to prevent console errors
             class ProfileManager {
                 editProfile() {
-                    alert('Editar perfil');
+                    toastr.info('Editar perfil');
                     $('#profileModal').modal('show');
                 }
                 
                 changePassword() {
-                    alert('Alterar palavra-passe');
+                    toastr.info('Alterar palavra-passe');
                 }
                 
                 logoutAllSessions() {
                     if (confirm('Prazoar todas as sessões?')) {
-                        alert('Todas as sessões terminadas');
+                        toastr.info('Todas as sessões terminadas');
                     }
                 }
                 
                 exportData() {
-                    alert('Exportação de dados iniciada');
+                    toastr.info('Exportação de dados iniciada');
                 }
                 
                 deleteAccount() {
                     if (confirm('Eliminar conta permanentemente?')) {
-                        alert('Conta será eliminada');
+                        toastr.info('Conta será eliminada');
                     }
                 }
                 
@@ -1283,12 +1283,12 @@
                             localStorage.setItem('userData', JSON.stringify(updated));
                             fillProfileUI(updated);
                             $('#editProfileModal').modal('hide');
-                            alert('✅ Perfil guardado com sucesso!');
+                            toastr.success('✅ Perfil guardado com sucesso!');
                         } else {
-                            alert('❌ Erro ao guardar o perfil.');
+                            toastr.error('❌ Erro ao guardar o perfil.');
                         }
                     } catch (e) {
-                        alert('❌ Erro de conexão.');
+                        toastr.error('❌ Erro de conexão.');
                     }
                 }
                 

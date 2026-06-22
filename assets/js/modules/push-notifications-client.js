@@ -8,7 +8,7 @@ class PushNotificationsClient {
 
   async init() {
     if (!('Notification' in window)) {
-      alert('Notificações push não são suportadas pelo seu browser');
+      toastr.info('Notificações push não são suportadas pelo seu browser');
       return;
     }
     this.permission = await Notification.requestPermission();

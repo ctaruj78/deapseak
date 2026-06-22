@@ -762,7 +762,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
-                    <button type="button" class="btn btn-primary" onclick="alert('Função de criação de tarefas disponível através da página principalinel')">
+                    <button type="button" class="btn btn-primary" onclick="toastr.info('Função de criação de tarefas disponível através da página principalinel')">
                         <i class="fas fa-info"></i> Informação
                     </button>
                 </div>
@@ -852,7 +852,7 @@
             async init() {
                 const role = this.currentUser ? this.currentUser.role : null;
                 if (!AuthManager.isAuthenticated() || !role || (role !== 'technician' && role !== 'tech')) {
-                    alert('Acesso apenas para de técnicos');
+                    toastr.info('Acesso apenas para de técnicos');
                     AuthManager.logout();
                     return;
                 }
@@ -1061,7 +1061,7 @@
             viewTask(requestId) {
                 const task = this.tasks.find(t => t.id === requestId);
                 if (!task) {
-                    alert('Tarefa não encontrada');
+                    toastr.error('Tarefa não encontrada');
                     return;
                 }
                 

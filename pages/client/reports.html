@@ -465,11 +465,11 @@
         var endDate   = document.getElementById('endDate').value;
 
         if (!startDate || !endDate) {
-            alert('Indique as datas de início e fim.');
+            toastr.warning('Indique as datas de início e fim.');
             return;
         }
         if (startDate > endDate) {
-            alert('A data de início não pode ser posterior à data de fim.');
+            toastr.info('A data de início não pode ser posterior à data de fim.');
             return;
         }
 
@@ -490,7 +490,7 @@
             currentReport = data;
             renderResult(data);
         } catch (e) {
-            alert(e.message || 'Erro ao gerar relatório');
+            toastr.error(e.message || 'Erro ao gerar relatório');
         } finally {
             btn.disabled = false;
             btn.innerHTML = '<i class="fas fa-cogs mr-2"></i>Gerar relatório';
@@ -568,7 +568,7 @@
     // ── Download ─────────────────────────────────────────────────
     async function downloadReport(kind) {
         if (!currentReport || !currentReport.id) {
-            alert('Gere primeiro um relatório.');
+            toastr.warning('Gere primeiro um relatório.');
             return;
         }
         try {
@@ -597,13 +597,13 @@
             document.body.removeChild(a);
             URL.revokeObjectURL(url);
         } catch (e) {
-            alert(e.message || 'Erro ao descarregar ficheiro');
+            toastr.error(e.message || 'Erro ao descarregar ficheiro');
         }
     }
 
     async function deleteCurrentReport() {
         if (!currentReport || !currentReport.id) {
-            alert('Não existe relatório para apagar.');
+            toastr.info('Não existe relatório para apagar.');
             return;
         }
 
@@ -620,9 +620,9 @@
 
             currentReport = null;
             document.getElementById('resultCard').style.display = 'none';
-            alert('Relatório apagado com sucesso.');
+            toastr.success('Relatório apagado com sucesso.');
         } catch (e) {
-            alert(e.message || 'Erro ao apagar relatório');
+            toastr.error(e.message || 'Erro ao apagar relatório');
         }
     }
 

@@ -668,7 +668,7 @@
 
             // Verificar чи existe геоlocalização do utilizador
             if (!userLocation) {
-                alert('Não foi possível determinar a sua localização actual. Permita o acesso à geolocalização no navegador.');
+                toastr.error('Não foi possível determinar a sua localização actual. Permita o acesso à geolocalização no navegador.');
                 map.setView([lift.lat, lift.lng], 16);
                 unlockRouteButton(liftId);
                 return;
@@ -800,7 +800,7 @@
         function showRoute() {
             const liftId = $('#routeToLift').val();
             if (!liftId) {
-                alert('Selecione um elevador para traçar a rota');
+                toastr.warning('Selecione um elevador para traçar a rota');
                 return;
             }
 
@@ -809,7 +809,7 @@
 
             // Verificar чи existe геоlocalização do utilizador
             if (!userLocation) {
-                alert('Não foi possível determinar a sua localização actual. Permita o acesso à geolocalização no navegador.');
+                toastr.error('Não foi possível determinar a sua localização actual. Permita o acesso à geolocalização no navegador.');
                 map.setView([lift.lat, lift.lng], 16);
                 return;
             }
@@ -845,7 +845,7 @@
                 console.warn('⚠️ AVISO: Відсeнь занадто мала!');
                 console.warn('  Можливо coordenadas do elevador збережені incorretamente');
                 console.warn('  Або геоlocalização browser визначила вашу позицію incorretamente');
-                alert(`⚠️ AVISO\n\nDistância ao elevador: ${distance.toFixed(0)} m\n\nÉ muito pouco. Possivelmente:\n• Está perto do elevador\n• Coordenadas do elevador na base de dados incorretos\n• A geolocalização do browser determinou a posição incorretamente\n\nVerifique coordenadas do elevador na secção "Elevadores".`);
+                toastr.warning(`⚠️ AVISO\n\nDistância ao elevador: ${distance.toFixed(0)} m\n\nÉ muito pouco. Possivelmente:\n• Está perto do elevador\n• Coordenadas do elevador na base de dados incorretos\n• A geolocalização do browser determinou a posição incorretamente\n\nVerifique coordenadas do elevador na secção "Elevadores".`);
             }
 
             // Criar rota desde atualmenteї позиції до do elevador
@@ -1001,7 +1001,7 @@
                 }, 100);
             }).on('routingerror', function(e) {
                 console.error('❌ Erro побудови rotaу:', e.error);
-                alert('Não foi possível traçar a rota. Possivelmente, o endereço é demasiado longo ou indisponível para trânsito automóvel.');
+                toastr.error('Não foi possível traçar a rota. Possivelmente, o endereço é demasiado longo ou indisponível para trânsito automóvel.');
             }).addTo(map);
 
             const displayName = lift.model || lift.name || `Elevador ${lift.id}`;

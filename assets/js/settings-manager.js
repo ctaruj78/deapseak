@@ -303,7 +303,7 @@ class SettingsManager {
         if (typeof toastr !== 'undefined') {
             toastr[type](message);
         } else {
-            alert(message);
+            toastr.info(message);
         }
     }
 

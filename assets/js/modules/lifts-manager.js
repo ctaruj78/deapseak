@@ -947,7 +947,7 @@ class LiftsManager {
         if (!email) return;
 
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(email)) { alert('Formato de email inválido'); return; }
+        if (!emailRegex.test(email)) { toastr.error('Formato de email inválido'); return; }
 
         const token = (typeof AuthManager !== 'undefined' && AuthManager.getAuthToken)
             ? AuthManager.getAuthToken()
@@ -963,12 +963,12 @@ class LiftsManager {
         .then(r => r.json())
         .then(result => {
             if (result.success) {
-                alert(`✅ Relatório enviado com sucesso para ${email}`);
+                toastr.success(`✅ Relatório enviado com sucesso para ${email}`);
             } else {
-                alert('❌ Erro ao enviar: ' + (result.message || 'Erro desconhecido'));
+                toastr.error('❌ Erro ao enviar: ' + (result.message || 'Erro desconhecido'));
             }
         })
-        .catch(e => alert('❌ Erro: ' + e.message));
+        .catch(e => toastr.error('❌ Erro: ' + e.message));
     }
 
     forwardContractByEmail(fileUrl, contractNumber) {
@@ -976,7 +976,7 @@ class LiftsManager {
         if (!email) return;
 
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(email)) { alert('Formato de email inválido'); return; }
+        if (!emailRegex.test(email)) { toastr.error('Formato de email inválido'); return; }
 
         const token = (typeof AuthManager !== 'undefined' && AuthManager.getAuthToken)
             ? AuthManager.getAuthToken()
@@ -994,13 +994,13 @@ class LiftsManager {
         .then(r => r.json())
         .then(result => {
             if (result.success) {
-                alert(`✅ Contrato enviado com sucesso para ${email}`);
+                toastr.success(`✅ Contrato enviado com sucesso para ${email}`);
             } else {
                 // Fallback: попередити що надсилання не вдалось але PDF доступний
-                alert(`⚠️ Não foi possível enviar via servidor. Pode descarregar o PDF e enviar manualmente:\n${window.location.origin}${fileUrl}`);
+                toastr.warning(`⚠️ Não foi possível enviar via servidor. Pode descarregar o PDF e enviar manualmente:\n${window.location.origin}${fileUrl}`);
             }
         })
-        .catch(() => alert(`⚠️ Erro de ligação. PDF disponível em:\n${window.location.origin}${fileUrl}`));
+        .catch(() => toastr.warning(`⚠️ Erro de ligação. PDF disponível em:\n${window.location.origin}${fileUrl}`));
     }
 
     printClientReport(report) {
@@ -1790,7 +1790,7 @@ class LiftsManager {
             const iconMap = { success: 'success', error: 'error', warning: 'warning', info: 'info' };
             Toast.fire({ icon: iconMap[type] || 'info', title: message });
         } else {
-            alert(message);
+            toastr.info(message);
         }
     }
 }

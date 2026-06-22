@@ -550,7 +550,7 @@ class TicketsManager {
                 const description = document.getElementById('ticketDescription').value.trim();
 
                 if (!category || !subject || !description) {
-                    alert('Por favor, preencha todos os campos obrigatórios');
+                    toastr.warning('Por favor, preencha todos os campos obrigatórios');
                     return;
                 }
 
@@ -567,11 +567,11 @@ class TicketsManager {
                         document.getElementById('newTicketForm').reset();
                         this.loadTickets();
                     } else {
-                        alert(data.message || 'Erro ao criar o ticket');
+                        toastr.info(data.message || 'Erro ao criar o ticket');
                     }
                 } catch (err) {
                     console.error('Error submitting ticket:', err);
-                    alert('Erro de ligação ao servidor');
+                    toastr.error('Erro de ligação ao servidor');
                 }
             }
 
@@ -583,11 +583,11 @@ class TicketsManager {
                     if (data.success) {
                         this.loadTickets();
                     } else {
-                        alert(data.message || 'Não foi possível fechar o ticket');
+                        toastr.info(data.message || 'Não foi possível fechar o ticket');
                     }
                 } catch (err) {
                     console.error('Error closing ticket:', err);
-                    alert('Erro de ligação ao servidor');
+                    toastr.error('Erro de ligação ao servidor');
                 }
             }
 

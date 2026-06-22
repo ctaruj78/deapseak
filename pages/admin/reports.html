@@ -780,7 +780,7 @@
             async function downloadReportFile(reportId, format) {
                 const token = getToken();
                 if (!token) {
-                    alert('Sessão expirada. Faça login novamente.');
+                    toastr.error('Sessão expirada. Faça login novamente.');
                     return;
                 }
 
@@ -810,7 +810,7 @@
                     document.body.removeChild(a);
                     URL.revokeObjectURL(url);
                 } catch (e) {
-                    alert(e.message || 'Erro ao exportar ficheiro');
+                    toastr.error(e.message || 'Erro ao exportar ficheiro');
                 }
             }
 
@@ -856,7 +856,7 @@
                 const status = $('#statusFilter').val();
 
                 if (!startDate || !endDate) {
-                    alert('Selecione as datas inicial e final');
+                    toastr.warning('Selecione as datas inicial e final');
                     return;
                 }
 
@@ -865,7 +865,7 @@
 
                 const token = getToken();
                 if (!token) {
-                    alert('Sessão expirada. Faça login novamente.');
+                    toastr.error('Sessão expirada. Faça login novamente.');
                     $btn.prop('disabled', false).html('<i class="fas fa-file-alt mr-1"></i> Criar relatório');
                     return;
                 }
@@ -891,7 +891,7 @@
                     },
                     error: function(xhr) {
                         const msg = xhr.responseJSON && xhr.responseJSON.message ? xhr.responseJSON.message : 'Erro na geração do relatório';
-                        alert(msg);
+                        toastr.info(msg);
                     },
                     complete: function() {
                         $btn.prop('disabled', false).html('<i class="fas fa-file-alt mr-1"></i> Criar relatório');
@@ -903,7 +903,7 @@
             $('#btn-export-pdf').on('click', function() {
                 const reportId = $(this).data('report-id');
                 if (!reportId) {
-                    alert('Gere primeiro um relatório');
+                    toastr.warning('Gere primeiro um relatório');
                     return;
                 }
                 downloadReportFile(reportId, 'pdf');
@@ -913,7 +913,7 @@
             $('#btn-export-excel').on('click', function() {
                 const reportId = $(this).data('report-id');
                 if (!reportId) {
-                    alert('Gere primeiro um relatório');
+                    toastr.warning('Gere primeiro um relatório');
                     return;
                 }
                 downloadReportFile(reportId, 'excel');

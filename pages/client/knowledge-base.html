@@ -240,7 +240,7 @@ async function viewArticle(id) {
         $('#viewModal').modal('show');
         fetch(`/api/knowledge-base/${id}/view`, { method:'POST' }).catch(()=>{});
     } catch(e) {
-        alert('Erro ao carregar artigo.');
+        toastr.error('Erro ao carregar artigo.');
     }
 }
 

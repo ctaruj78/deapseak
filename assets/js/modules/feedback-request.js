@@ -33,8 +33,8 @@ class FeedbackRequest {
   }
 
   submitFeedback() {
-    if (this.rating === 0) { alert('Avalie o trabalho!'); return; }
-    alert(`Дякуємо за оцінку: ${this.rating}★\nComentário: ${this.comment}`);
+    if (this.rating === 0) { toastr.info('Avalie o trabalho!'); return; }
+    toastr.info(`Дякуємо за оцінку: ${this.rating}★\nComentário: ${this.comment}`);
     // Тут можна додати інтеграцію з сервером
     this.rating = 0;
     this.comment = '';

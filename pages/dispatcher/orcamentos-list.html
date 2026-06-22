@@ -284,7 +284,7 @@
             try {
                 const token = getToken();
                 if (!token) {
-                    alert('Não autorizado. Faça login novamente.');
+                    toastr.error('Não autorizado. Faça login novamente.');
                     window.location.href = '../auth/login.html';
                     return;
                 }
@@ -321,7 +321,7 @@
                 }
             } catch (error) {
                 console.error('Erro:', error);
-                alert('Erro ao carregar orçamentos: ' + error.message);
+                toastr.error('Erro ao carregar orçamentos: ' + error.message);
             } finally {
                 loading.style.display = 'none';
             }
@@ -544,11 +544,11 @@
                     throw new Error('Erro ao eliminar orçamento');
                 }
 
-                alert('Orçamento eliminado com sucesso!');
+                toastr.success('Orçamento eliminado com sucesso!');
                 carregarOrcamentos(_lastFiltros, 1);
             } catch (error) {
                 console.error('Erro:', error);
-                alert('Erro ao eliminar orçamento: ' + error.message);
+                toastr.error('Erro ao eliminar orçamento: ' + error.message);
             }
         }
 
@@ -569,7 +569,7 @@
                 document.body.removeChild(a);
                 URL.revokeObjectURL(url);
             } catch (err) {
-                alert('Erro ao descarregar PDF: ' + err.message);
+                toastr.error('Erro ao descarregar PDF: ' + err.message);
             }
         }
 
@@ -620,11 +620,11 @@
 
                 $('#statusModal').modal('hide');
                 pendingStatusAction = null;
-                alert(data.message);
+                toastr.info(data.message);
                 carregarOrcamentos(_lastFiltros, _currentPage);
             } catch (error) {
                 console.error('Erro:', error);
-                alert('Erro: ' + error.message);
+                toastr.error('Erro: ' + error.message);
             } finally {
                 btn.disabled = false;
                 btn.innerHTML = 'Confirmar';
@@ -678,10 +678,10 @@
                 });
                 const data = await res.json();
                 if (!data.success) throw new Error(data.message);
-                alert('✅ Orçamento arquivado.');
+                toastr.success('✅ Orçamento arquivado.');
                 carregarOrcamentos(_lastFiltros, 1);
             } catch (err) {
-                alert('Erro: ' + err.message);
+                toastr.error('Erro: ' + err.message);
             }
         }
 
@@ -738,14 +738,14 @@
                 renderModalFotosGrid(data.fotos);
                 carregarOrcamentos(_lastFiltros, _currentPage);
             } catch (err) {
-                alert('Erro: ' + err.message);
+                toastr.error('Erro: ' + err.message);
             }
         }
 
         async function uploadFotos() {
             if (!_fotosCurrentId) return;
             const input = document.getElementById('fotosModalInput');
-            if (!input.files || input.files.length === 0) { alert('Selecione pelo menos uma fotografia.'); return; }
+            if (!input.files || input.files.length === 0) { toastr.warning('Selecione pelo menos uma fotografia.'); return; }
             const btn = document.getElementById('uploadFotosBtn');
             btn.disabled = true;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>A enviar...';
@@ -762,9 +762,9 @@
                 renderModalFotosGrid(data.fotos);
                 input.value = '';
                 carregarOrcamentos(_lastFiltros, _currentPage);
-                alert(`✅ ${data.novasFotos.length} fotografia(s) adicionada(s)!`);
+                toastr.success(`✅ ${data.novasFotos.length} fotografia(s) adicionada(s)!`);
             } catch (err) {
-                alert('Erro: ' + err.message);
+                toastr.error('Erro: ' + err.message);
             } finally {
                 btn.disabled = false;
                 btn.innerHTML = '<i class="fas fa-upload mr-1"></i>Enviar Fotos';
@@ -968,11 +968,11 @@
                 });
                 const data = await res.json();
                 if (!data.success) throw new Error(data.message);
-                alert(`✅ ${data.message}`);
+                toastr.success(`✅ ${data.message}`);
                 $('#vincularModal').modal('hide');
                 carregarOrcamentos();
             } catch (err) {
-                alert('Erro ao vincular: ' + err.message);
+                toastr.error('Erro ao vincular: ' + err.message);
             }
         }
 

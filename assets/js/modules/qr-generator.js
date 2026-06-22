@@ -151,13 +151,13 @@ const qrGenerator = (function() {
     // A carregar SVG (використовуємо canvas як fallback)
     function downloadSVG() {
         if (!currentQRCode) return;
-        alert('A exportação SVG será adicionada na próxima versão. Utilize PNG.');
+        toastr.info('A exportação SVG será adicionada na próxima versão. Utilize PNG.');
     }
     
     // A carregar PDF
     function downloadPDF() {
         if (!qrCanvas) return;
-        alert('A exportação PDF será adicionada na próxima versão. Utilize PNG.');
+        toastr.info('A exportação PDF será adicionada na próxima versão. Utilize PNG.');
     }
     
     // Копіювання в буфер обміну
@@ -167,10 +167,10 @@ const qrGenerator = (function() {
         qrCanvas.toBlob(function(blob) {
             const item = new ClipboardItem({ 'image/png': blob });
             navigator.clipboard.write([item]).then(function() {
-                alert('QR code copiado para a área de transferência!');
+                toastr.info('QR code copiado para a área de transferência!');
             }, function(error) {
                 console.error('Erro копіювання:', error);
-                alert('Não foi possível copiar o QR code');
+                toastr.error('Não foi possível copiar o QR code');
             });
         });
     }
@@ -216,7 +216,7 @@ const qrGenerator = (function() {
             console.log('📋 Form submitted:', { type, target, customData });
             
             if (!type || !target) {
-                alert('Por favor, заповніть всі обов\'язкові поля');
+                toastr.warning('Por favor, заповніть всі обов\'язкові поля');
                 return;
             }
             

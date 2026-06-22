@@ -247,7 +247,7 @@ class LiftManagement {
 
     showNotification(message, type = 'info') {
         // Реалізація сповіщення
-        alert(message);
+        toastr.info(message);
     }
 }
 

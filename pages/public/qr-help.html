@@ -461,7 +461,7 @@
             const website = document.getElementById('website').value;
 
             if (!issueType || !issueDetails || !phone || !email) {
-                alert(t('fillRequired'));
+                toastr.warning(t('fillRequired'));
                 return;
             }
 
@@ -498,7 +498,7 @@
                 document.getElementById('publicAlertForm').reset();
                 updateUrgencyUI();
             } catch (error) {
-                alert(error.message || t('alertSendError'));
+                toastr.error(error.message || t('alertSendError'));
             } finally {
                 btn.disabled = false;
                 btn.innerHTML = original;

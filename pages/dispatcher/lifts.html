@@ -2760,7 +2760,7 @@
                     }
                 });
                 console.log(`✅ ${removed} registos de teste eliminados`);
-                alert(`${removed} registos eliminados. A página será actualizada.`);
+                toastr.success(`${removed} registos eliminados. A página será actualizada.`);
                 location.reload(true);
             }
         };
@@ -2802,7 +2802,7 @@
 
         function emailPDF() {
             if (!currentPDFFile) {
-                alert('Primeiro carregue o ficheiro PDF');
+                toastr.warning('Primeiro carregue o ficheiro PDF');
                 return;
             }
 
@@ -2864,14 +2864,14 @@ Equipa FestLift
             const message = document.getElementById('emailMessage').value;
 
             if (!email) {
-                alert('Por favor, introduza o email do cliente');
+                toastr.warning('Por favor, introduza o email do cliente');
                 return;
             }
 
             // Validação email
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             if (!emailRegex.test(email)) {
-                alert('Formato de email inválido');
+                toastr.error('Formato de email inválido');
                 return;
             }
 
@@ -2882,7 +2882,7 @@ Equipa FestLift
                              || localStorage.getItem('token');
                 
                 if (!token) {
-                    alert('Autenticação necessária');
+                    toastr.error('Autenticação necessária');
                     window.location.href = '/pages/auth/login.html';
                     return;
                 }
@@ -2919,15 +2919,15 @@ Equipa FestLift
                         }, { source: 'email-system' });
                     }
 
-                    alert('✅ Contrato enviado com sucesso por email para: ' + email);
+                    toastr.success('✅ Contrato enviado com sucesso por email para: ' + email);
                     $('#emailModal').modal('hide');
                 } else {
-                    alert('❌ Erro de envio: ' + result.error);
+                    toastr.error('❌ Erro de envio: ' + result.error);
                 }
 
             } catch (error) {
                 console.error('Erro ao enviar email:', error);
-                alert('❌ Não foi possível enviar o email: ' + error.message);
+                toastr.error('❌ Não foi possível enviar o email: ' + error.message);
             }
         }
 
@@ -2942,7 +2942,7 @@ Equipa FestLift
         // Novos функції para розширеної trabalhos desde PDF
         function downloadPDF() {
             if (!currentPDFFile) {
-                alert('Primeiro carregue o ficheiro PDF');
+                toastr.warning('Primeiro carregue o ficheiro PDF');
                 return;
             }
 
@@ -2963,7 +2963,7 @@ Equipa FestLift
 
         function archivePDF() {
             if (!currentPDFFile) {
-                alert('Primeiro carregue o ficheiro PDF');
+                toastr.warning('Primeiro carregue o ficheiro PDF');
                 return;
             }
 
@@ -3085,7 +3085,7 @@ Equipa FestLift
                         document.getElementById('pdfFileName').textContent = file.name;
                         document.getElementById('pdfPreviewContainer').style.display = 'block';
                     } else if (file) {
-                        alert('Por favor, seleccione apenas ficheiros PDF');
+                        toastr.warning('Por favor, seleccione apenas ficheiros PDF');
                         e.target.value = '';
                     }
                 });
@@ -3308,7 +3308,7 @@ Equipa FestLift
         if (typeof window.enhancedLiftModal === 'undefined') {
             console.error('❌ Enhanced lift modal not available');
             // Atéказуexisteмо mensagem utilizadorу
-            alert('A janela com mapa ainda não carregou. Tente novamente em alguns segundos.');
+            toastr.info('A janela com mapa ainda não carregou. Tente novamente em alguns segundos.');
             return;
         }
         
@@ -3393,12 +3393,12 @@ Equipa FestLift
         const autoEmails = document.getElementById('enableAutoEmails').checked;
 
         if (!inspectionDate) {
-            alert('Por favor, indique a data de inspecção');
+            toastr.warning('Por favor, indique a data de inspecção');
             return;
         }
 
         if (!clientEmail) {
-            alert('Por favor, indique o email do cliente para notificações');
+            toastr.warning('Por favor, indique o email do cliente para notificações');
             return;
         }
 
@@ -3792,7 +3792,7 @@ Adicionar outro relatório?`);
                     document.getElementById('pdfReportFileName').textContent = file.name;
                     document.getElementById('pdfReportPreviewContainer').style.display = 'block';
                 } else if (file) {
-                    alert('Por favor, seleccione apenas ficheiros PDF');
+                    toastr.warning('Por favor, seleccione apenas ficheiros PDF');
                     e.target.value = '';
                 }
             });
@@ -3823,7 +3823,7 @@ Adicionar outro relatório?`);
                     saveInspectionReport();
                 } catch (error) {
                     console.error('❌ Erro ao chamar saveInspectionReport:', error);
-                    alert('❌ Erro ao guardar: ' + error.message);
+                    toastr.error('❌ Erro ao guardar: ' + error.message);
                 }
             });
         } else {
@@ -3949,7 +3949,7 @@ Adicionar outro relatório?`);
         for (const [key, field] of Object.entries(fields)) {
             if (!field) {
                 console.error(`Campo ${key} não encontrado no DOM`);
-                alert(`Erro: campo ${key} não encontrado`);
+                toastr.error(`Erro: campo ${key} não encontrado`);
                 return false;
             }
             console.log(`${key}: "${field.value}" (element exists: ${!!field})`);
@@ -3957,19 +3957,19 @@ Adicionar outro relatório?`);
 
         // Validação de valores
         if (!fields.date.value.trim()) {
-            alert('Por favor, indique a data de inspecção');
+            toastr.warning('Por favor, indique a data de inspecção');
             fields.date.focus();
             return false;
         }
 
         if (!fields.type.value.trim()) {
-            alert('Por favor, seleccione o tipo de inspecção');
+            toastr.warning('Por favor, seleccione o tipo de inspecção');
             fields.type.focus();
             return false;
         }
 
         if (!fields.inspector.value.trim()) {
-            alert('Por favor, indique o nome do inspector');
+            toastr.warning('Por favor, indique o nome do inspector');
             fields.inspector.focus();
             fields.inspector.style.backgroundColor = '#ffebee'; // Destacamos a vermelho
             setTimeout(() => {
@@ -3979,7 +3979,7 @@ Adicionar outro relatório?`);
         }
 
         if (!currentInspectionPDFFile) {
-            alert('Por favor, carregue o relatório PDF de inspecção');
+            toastr.warning('Por favor, carregue o relatório PDF de inspecção');
             document.getElementById('inspectionReportPDF').focus();
             return false;
         }
@@ -4011,7 +4011,7 @@ Adicionar outro relatório?`);
         
         if (!inspectorField || !dateField || !statusField) {
             console.error('❌ Nem todos os campos do formulário foram encontrados!');
-            alert('❌ Erro: Nem todos os campos do formulário foram encontrados!');
+            toastr.error('❌ Erro: Nem todos os campos do formulário foram encontrados!');
             return;
         }
         
@@ -4034,13 +4034,13 @@ Adicionar outro relatório?`);
         
         // Validação обов'язкових полів
         if (!inspectorName) {
-            alert('❌ Erro: Introduza o nome do inspector');
+            toastr.error('❌ Erro: Introduza o nome do inspector');
             document.getElementById('inspectorName').focus();
             return;
         }
         
         if (!inspectionDate) {
-            alert('❌ Erro: Selecione a data de inspecção');
+            toastr.error('❌ Erro: Selecione a data de inspecção');
             document.getElementById('inspectionDate').focus();
             return;
         }
@@ -4067,7 +4067,7 @@ Adicionar outro relatório?`);
         console.log('🏗️ Lift ID:', liftMongoId);
 
         if (!liftMongoId || !/^[a-f0-9]{24}$/i.test(liftMongoId)) {
-            alert('❌ Erro: Não foi possível determinar o ID do elevador.\nPor favor, feche e abra novamente os detalhes do elevador.');
+            toastr.error('❌ Erro: Não foi possível determinar o ID do elevador.\nPor favor, feche e abra novamente os detalhes do elevador.');
             return;
         }
 
@@ -4130,7 +4130,7 @@ Adicionar outro relatório?`);
             if (typeof toastr !== 'undefined') {
                 toastr.success(_successMsg);
             } else {
-                alert('✅ ' + _successMsg);
+                toastr.success('✅ ' + _successMsg);
             }
 
             // Close modal
@@ -4150,7 +4150,7 @@ Adicionar outro relatório?`);
 
         } catch (error) {
             console.error('❌ Erro ao guardar:', error);
-            alert('❌ Erro ao guardar relatório: ' + error.message);
+            toastr.error('❌ Erro ao guardar relatório: ' + error.message);
         } finally {
             if (_saveBtnEl) {
                 _saveBtnEl.disabled = false;
@@ -4242,7 +4242,7 @@ Adicionar outro relatório?`);
 
     function downloadInspectionPDF() {
         if (!currentInspectionPDFFile) {
-            alert('Primeiro carregue o ficheiro PDF');
+            toastr.warning('Primeiro carregue o ficheiro PDF');
             return;
         }
 
@@ -4261,7 +4261,7 @@ Adicionar outro relatório?`);
 
     function emailInspectionPDF() {
         if (!currentInspectionPDFFile) {
-            alert('Primeiro carregue o ficheiro PDF');
+            toastr.warning('Primeiro carregue o ficheiro PDF');
             return;
         }
 
@@ -4325,14 +4325,14 @@ Equipa FestLift</textarea>
         const message = document.getElementById('emailInspectionMessage').value;
 
         if (!email) {
-            alert('Por favor, introduza o email do cliente');
+            toastr.warning('Por favor, introduza o email do cliente');
             return;
         }
 
         // Validação email
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email)) {
-            alert('Formato de email inválido');
+            toastr.error('Formato de email inválido');
             return;
         }
 
@@ -4342,7 +4342,7 @@ Equipa FestLift</textarea>
                          || localStorage.getItem('token');
             
             if (!token) {
-                alert('Autenticação necessária');
+                toastr.error('Autenticação necessária');
                 window.location.href = '/pages/auth/login.html';
                 return;
             }
@@ -4368,21 +4368,21 @@ Equipa FestLift</textarea>
             const result = await response.json();
 
             if (result.success) {
-                alert('✅ Relatório de inspecção enviado com sucesso por email para: ' + email);
+                toastr.success('✅ Relatório de inspecção enviado com sucesso por email para: ' + email);
                 $('#emailInspectionModal').modal('hide');
             } else {
-                alert('❌ Erro de envio: ' + result.error);
+                toastr.error('❌ Erro de envio: ' + result.error);
             }
 
         } catch (error) {
             console.error('Erro ao enviar email:', error);
-            alert('❌ Não foi possível enviar o email: ' + error.message);
+            toastr.error('❌ Não foi possível enviar o email: ' + error.message);
         }
     }
 
     function archiveInspectionPDF() {
         if (!currentInspectionPDFFile) {
-            alert('Primeiro carregue o ficheiro PDF');
+            toastr.warning('Primeiro carregue o ficheiro PDF');
             return;
         }
 
@@ -4591,7 +4591,7 @@ Equipa FestLift</textarea>
         if (typeof QRCode === 'undefined') {
             if (initAttempts >= maxAttempts) {
                 console.error('❌ QRCode library failed to load after ' + (maxAttempts/10) + ' seconds');
-                alert('⚠️ A biblioteca de QR codes não carregou. Tente actualizar a página (Ctrl+Shift+R)');
+                toastr.warning('⚠️ A biblioteca de QR codes não carregou. Tente actualizar a página (Ctrl+Shift+R)');
                 return;
             }
             console.log('⏳ A aguardar o carregamento da biblioteca QRCode... (tentativa ' + initAttempts + '/' + maxAttempts + ')');
@@ -4620,7 +4620,7 @@ Equipa FestLift</textarea>
                     window.enhancedLiftModal.generateQRCode(inputId, liftNumber);
                 } else {
                     console.error('❌ Enhanced Lift Modal não pronto para geração de QR!');
-                    alert('O gerador QR ainda não está pronto. Tente novamente dentro de alguns segundos.');
+                    toastr.info('O gerador QR ainda não está pronto. Tente novamente dentro de alguns segundos.');
                 }
             };
             
@@ -4630,7 +4630,7 @@ Equipa FestLift</textarea>
             // Fallback функція se щось пішло не eк
             if (typeof window.openEnhancedModal === 'undefined') {
                 window.openEnhancedModal = function() {
-                    alert('A janela modal está temporariamente indisponível. Tente actualizar a página.');
+                    toastr.info('A janela modal está temporariamente indisponível. Tente actualizar a página.');
                 };
             }
         }
@@ -4656,7 +4656,7 @@ Equipa FestLift</textarea>
         const address  = ($('#enhancedLiftAddress').val() || '').trim();
         const postcode = ($('#enhancedLiftPostcode').val() || '').trim();
         if (!address) {
-            if (!silent) alert('Por favor, introduza o endereço');
+            if (!silent) toastr.warning('Por favor, introduza o endereço');
             return;
         }
         const q = postcode ? `${address}, ${postcode}, Portugal` : `${address}, Portugal`;
@@ -4671,7 +4671,7 @@ Equipa FestLift</textarea>
             const data = await resp.json();
 
             if (!data.success) {
-                if (!silent) alert('Endereço não encontrado. Especifique o nome da rua e número.');
+                if (!silent) toastr.error('Endereço não encontrado. Especifique o nome da rua e número.');
                 console.warn('⚠️ Geocode não encontrado:', q);
                 return;
             }
@@ -4700,7 +4700,7 @@ Equipa FestLift</textarea>
             }
         } catch (err) {
             console.error('❌ Erro геоcódigoвання:', err);
-            if (!silent) alert('Erro de geocodificação. Verifique a ligação.');
+            if (!silent) toastr.error('Erro de geocodificação. Verifique a ligação.');
         } finally {
             if (btn) { btn.innerHTML = origHtml; btn.disabled = false; }
         }
@@ -5499,7 +5499,7 @@ Equipa FestLift</textarea>
             }
             
             if (!lift) {
-                alert('Elevador não encontrado');
+                toastr.error('Elevador não encontrado');
                 return;
             }
 
@@ -5955,7 +5955,7 @@ Equipa FestLift</textarea>
             }
             
             if (!lift) {
-                alert('Elevador não encontrado');
+                toastr.error('Elevador não encontrado');
                 return;
             }
             
@@ -6131,7 +6131,7 @@ Equipa FestLift</textarea>
             
         } catch (error) {
             console.error('❌ Erro ao carregar elevador:', error);
-            alert('Erro ao carregar dados do elevador');
+            toastr.error('Erro ao carregar dados do elevador');
         }
     }
 
@@ -6269,7 +6269,7 @@ Equipa FestLift</textarea>
             
             if (!lift) {
                 console.error('❌ Elevador não encontrado após todas as tentativas');
-                alert('Elevador não encontrado');
+                toastr.error('Elevador não encontrado');
                 return;
             }
             
@@ -6282,7 +6282,7 @@ Equipa FestLift</textarea>
             
             // Перевіряexisteмо наявність бібліотеки QRCode
             if (typeof QRCode === 'undefined') {
-                alert('A biblioteca de códigos QR ainda está a carregar. Tente em alguns segundos.');
+                toastr.info('A biblioteca de códigos QR ainda está a carregar. Tente em alguns segundos.');
                 return;
             }
             
@@ -6340,7 +6340,7 @@ Equipa FestLift</textarea>
             
         } catch (error) {
             console.error('❌ Erro ao gerar código QR:', error);
-            alert('Erro ao gerar código QR: ' + error.message);
+            toastr.error('Erro ao gerar código QR: ' + error.message);
         }
     }
     
@@ -6348,7 +6348,7 @@ Equipa FestLift</textarea>
         try {
             const canvas = document.querySelector('#qrcode canvas');
             if (!canvas) {
-                alert('Código QR não encontrado');
+                toastr.error('Código QR não encontrado');
                 return;
             }
             
@@ -6366,7 +6366,7 @@ Equipa FestLift</textarea>
             });
         } catch (error) {
             console.error('❌ Erro ao carregar código QR:', error);
-            alert('Erro ao carregar código QR');
+            toastr.error('Erro ao carregar código QR');
         }
     }
     
@@ -6377,7 +6377,7 @@ Equipa FestLift</textarea>
             const canvas = document.querySelector('#qrcode canvas');
             
             if (!canvas) {
-                alert('Código QR não encontrado');
+                toastr.error('Código QR não encontrado');
                 return;
             }
             
@@ -6434,7 +6434,7 @@ Equipa FestLift</textarea>
             };
         } catch (error) {
             console.error('❌ Erro ao imprimir código QR:', error);
-            alert('Erro ao imprimir código QR');
+            toastr.error('Erro ao imprimir código QR');
         }
     }
 
@@ -6446,7 +6446,7 @@ Equipa FestLift</textarea>
         
         if (maintenanceDate) {
             // Тут pode-se adicionar логіку збереження в API
-            alert(`Manutenção planeada para ${maintenanceDate}`);
+            toastr.info(`Manutenção planeada para ${maintenanceDate}`);
             
             // Actualizar estado do elevador
             const lifts = JSON.parse(localStorage.getItem('lifts') || '[]');
@@ -6491,7 +6491,7 @@ Equipa FestLift</textarea>
                 const result = await apiCall(`/api/lifts/${liftId}/request-deletion`, 'POST');
                 
                 if (result.success) {
-                    alert('✅ Pedido de eliminação enviado! O administrador recebeu a notificação.');
+                    toastr.success('✅ Pedido de eliminação enviado! O administrador recebeu a notificação.');
                     // Pode-se adicionar візуальне поvalor що elevador на eliminação
                     const liftCard = document.querySelector(`[data-lift-id="${liftId}"]`);
                     if (liftCard) {
@@ -6499,11 +6499,11 @@ Equipa FestLift</textarea>
                         liftCard.innerHTML += '<span class="badge badge-warning">Aguarda eliminação</span>';
                     }
                 } else {
-                    alert('❌ Erro ao enviar pedido: ' + (result.message || 'Tente mais tarde'));
+                    toastr.error('❌ Erro ao enviar pedido: ' + (result.message || 'Tente mais tarde'));
                 }
             } catch (error) {
                 console.error('❌ Erro:', error);
-                alert('❌ Não foi possível enviar o pedido de eliminação');
+                toastr.error('❌ Não foi possível enviar o pedido de eliminação');
             }
             return;
         }
@@ -6540,7 +6540,7 @@ Equipa FestLift</textarea>
             displayLiftsInTable(lifts);
         }
         
-        alert('Elevador eliminado com sucesso');
+        toastr.success('Elevador eliminado com sucesso');
     }
     
     // Verificação de autorização при заванeженні da página
@@ -6850,7 +6850,7 @@ Equipa FestLift</textarea>
 
         const modal = document.getElementById('liftDetailsModal');
         const liftId = modal?.dataset?.liftId || $('#detail-id').text();
-        if (!liftId) return alert('Não foi possível determinar o ID do elevador');
+        if (!liftId) return toastr.error('Não foi possível determinar o ID do elevador');
 
         // reportIndex - це _originalIndex (індекс у БД inspectionHistory)
         try {
@@ -6864,10 +6864,10 @@ Equipa FestLift</textarea>
                 if (window._currentEditingLift) window._currentEditingLift.inspectionHistory = null;
                 showLiftDetails(liftId);
             } else {
-                alert('Erro: ' + (result.message || 'Não foi possível eliminar'));
+                toastr.error('Erro: ' + (result.message || 'Não foi possível eliminar'));
             }
         } catch (e) {
-            alert('Erro ao eliminar: ' + e.message);
+            toastr.error('Erro ao eliminar: ' + e.message);
         }
     }
 
@@ -6893,26 +6893,26 @@ Equipa FestLift</textarea>
             });
             const result = await response.json();
             if (result.success) {
-                alert('Relatório enviado para ' + email);
+                toastr.success('Relatório enviado para ' + email);
             } else {
-                alert('Erro ao enviar: ' + (result.message || 'Erro desconhecido'));
+                toastr.error('Erro ao enviar: ' + (result.message || 'Erro desconhecido'));
             }
         } catch (e) {
             console.error('❌ Erro ao enviar relatório:', e);
-            alert('Erro ao enviar relatório: ' + e.message);
+            toastr.error('Erro ao enviar relatório: ' + e.message);
         }
     }
 
     function sendReportByEmailFromModal() {
         const liftId = window.currentReportLiftId;
         const report = window.currentReportForActions;
-        if (!liftId) { alert('Não é possível enviar: ID do elevador não encontrado'); return; }
+        if (!liftId) { toastr.error('Não é possível enviar: ID do elevador não encontrado'); return; }
         sendReportByEmailFromHistory(liftId, report);
     }
 
     function deleteReportFromModal() {
         const reportIndex = window.currentReportOrigIndex;
-        if (reportIndex === null || reportIndex === undefined) { alert('Índice do relatório não definido'); return; }
+        if (reportIndex === null || reportIndex === undefined) { toastr.info('Índice do relatório não definido'); return; }
         $('#viewReportModal').modal('hide');
         setTimeout(() => deleteReport(reportIndex), 350);
     }
@@ -6923,7 +6923,7 @@ Equipa FestLift</textarea>
     function attachPDFToReport(reportIndex) {
         const modal = document.getElementById('liftDetailsModal');
         const liftId = modal?.dataset?.liftId || $('#detail-id').text();
-        if (!liftId) return alert('Não foi possível determinar o ID do elevador');
+        if (!liftId) return toastr.error('Não foi possível determinar o ID do elevador');
 
         // Створюexisteмо oculto input para вибору PDF
         const inp = document.createElement('input');
@@ -6948,13 +6948,13 @@ Equipa FestLift</textarea>
                 );
                 const result = await response.json();
                 if (result.success) {
-                    alert('PDF anexado com sucesso!');
+                    toastr.success('PDF anexado com sucesso!');
                     showLiftDetails(liftId);
                 } else {
-                    alert('Erro: ' + (result.message || 'Não foi possível anexar o PDF'));
+                    toastr.error('Erro: ' + (result.message || 'Não foi possível anexar o PDF'));
                 }
             } catch (e) {
-                alert('Erro: ' + e.message);
+                toastr.error('Erro: ' + e.message);
             }
         });
 
@@ -6972,7 +6972,7 @@ Equipa FestLift</textarea>
         console.log('📋 A enviar relatório de inspecção:', { liftId, type, date, status });
         
         if (!type || !date) {
-            alert('Por favor, preencha os campos obrigatórios');
+            toastr.warning('Por favor, preencha os campos obrigatórios');
             return;
         }
         
@@ -7014,7 +7014,7 @@ Equipa FestLift</textarea>
             console.log('📥 Resposta do servidor:', result);
             
             if (result.success) {
-                alert('Relatório adicionado com sucesso!');
+                toastr.success('Relatório adicionado com sucesso!');
                 $('#addReportModal').modal('hide');
                 $('#addReportForm')[0].reset();
                 showLiftDetails(liftId);
@@ -7034,11 +7034,11 @@ Equipa FestLift</textarea>
                     $('#dispLicenseExpiryBadge').hide();
                 }
             } else {
-                alert('Erro: ' + (result.message || result.error || 'Não foi possível adicionar o relatório'));
+                toastr.error('Erro: ' + (result.message || result.error || 'Não foi possível adicionar o relatório'));
             }
         } catch (error) {
             console.error('❌ Erro ao adicionar relatório:', error);
-            alert('Erro ao adicionar relatório: ' + error.message);
+            toastr.error('Erro ao adicionar relatório: ' + error.message);
         }
     }
     
@@ -7566,14 +7566,14 @@ Equipa FestLift</textarea>
         const fileInput = document.getElementById('contract-file');
         
         if (!contractNumber || !startDate || !fileInput.files[0]) {
-            alert('Por favor, preencha todos os campos obrigatórios e seleccione o ficheiro');
+            toastr.warning('Por favor, preencha todos os campos obrigatórios e seleccione o ficheiro');
             return;
         }
         
         try {
             // Перевіряexisteмо автентифікацію
             if (!AuthManager.isAuthenticated()) {
-                alert('Sessão expirada. Por favor, entre novamente.');
+                toastr.error('Sessão expirada. Por favor, entre novamente.');
                 window.location.replace('/pages/auth/login.html');
                 return;
             }
@@ -7588,7 +7588,7 @@ Equipa FestLift</textarea>
             // Отримуexisteмо token através de AuthManager
             const token = AuthManager.getAuthToken(); // Corrigido: getAuthToken em vez de getToken
             if (!token) {
-                alert('Token não encontrado. Por favor, entre novamente.');
+                toastr.error('Token não encontrado. Por favor, entre novamente.');
                 window.location.replace('/pages/auth/login.html');
                 return;
             }
@@ -7639,17 +7639,17 @@ Equipa FestLift</textarea>
                 const msg = sharedCount > 0
                     ? `Contrato carregado com sucesso e aplicado a ${sharedCount + 1} elevadores neste endereço!`
                     : 'Contrato carregado com sucesso!';
-                alert(msg);
+                toastr.info(msg);
                 $('#uploadContractModal').modal('hide');
                 $('#uploadContractForm')[0].reset();
                 // Оновлюexisteмо detalhes do elevador
                 showLiftDetails(liftId);
             } else {
-                alert('Erro: ' + (result.message || result.error || 'Não foi possível carregar o contrato'));
+                toastr.error('Erro: ' + (result.message || result.error || 'Não foi possível carregar o contrato'));
             }
         } catch (error) {
             console.error('❌ Erro ao carregar contrato:', error);
-            alert('Erro ao carregar contrato: ' + error.message);
+            toastr.error('Erro ao carregar contrato: ' + error.message);
         }
     }
     
@@ -7661,13 +7661,13 @@ Equipa FestLift</textarea>
             const result = await apiCall(`/api/lifts/${liftId}/contract/email`, 'POST', { email });
             
             if (result.success) {
-                alert('Contrato enviado para ' + email);
+                toastr.success('Contrato enviado para ' + email);
             } else {
-                alert('Erro ao enviar: ' + (result.message || 'Erro desconhecido'));
+                toastr.error('Erro ao enviar: ' + (result.message || 'Erro desconhecido'));
             }
         } catch (error) {
             console.error('❌ Erro ao enviar contrato:', error);
-            alert('Erro ao enviar contrato');
+            toastr.error('Erro ao enviar contrato');
         }
     }
     
@@ -7678,15 +7678,15 @@ Equipa FestLift</textarea>
             const result = await apiCall(`/api/lifts/${liftId}/contract`, 'DELETE');
             
             if (result.success) {
-                alert('Contrato eliminado com sucesso');
+                toastr.success('Contrato eliminado com sucesso');
                 // Оновлюexisteмо detalhes do elevador
                 showLiftDetails(liftId);
             } else {
-                alert('Erro ao eliminar: ' + (result.message || 'Erro desconhecido'));
+                toastr.error('Erro ao eliminar: ' + (result.message || 'Erro desconhecido'));
             }
         } catch (error) {
             console.error('❌ Erro ao eliminar contrato:', error);
-            alert('Erro ao eliminar contrato');
+            toastr.error('Erro ao eliminar contrato');
         }
     }
     
@@ -7878,7 +7878,7 @@ Equipa FestLift</textarea>
                     const lifts = await window.loadLiftsFromAPI();
                     
                     if (!lifts || lifts.length === 0) {
-                        alert('Sem dados para exportar');
+                        toastr.info('Sem dados para exportar');
                         return;
                     }
                     
@@ -7952,7 +7952,7 @@ Equipa FestLift</textarea>
                     }
                 } catch (error) {
                     console.error('❌ Erro ao exportar CSV:', error);
-                    alert('Erro ao exportar CSV: ' + error.message);
+                    toastr.error('Erro ao exportar CSV: ' + error.message);
                 }
             });
             console.log('✅ Processador CSV adicionado');
@@ -7996,7 +7996,7 @@ Equipa FestLift</textarea>
                             lifts = await window.loadLiftsFromAPI();
                         }
                         if (!lifts || lifts.length === 0) {
-                            alert('Sem dados para exportar');
+                            toastr.info('Sem dados para exportar');
                             return;
                         }
 
@@ -8070,7 +8070,7 @@ Equipa FestLift</textarea>
                     } catch (err) {
                         console.error('Erro ao gerar PDF:', err);
                         if (typeof toastr !== 'undefined') toastr.error('Erro ao gerar PDF: ' + err.message);
-                        else alert('Erro ao gerar PDF: ' + err.message);
+                        else toastr.error('Erro ao gerar PDF: ' + err.message);
                     } finally {
                         btn.disabled = false;
                         btn.innerHTML = '<i class="fas fa-file-pdf mr-1"></i> Exportar PDF';
@@ -8308,7 +8308,7 @@ Equipa FestLift</textarea>
             
         } catch (error) {
             console.error('❌ Erro ao abrir janela do município:', error);
-            alert('Erro ao carregar dados do elevador: ' + error.message);
+            toastr.error('Erro ao carregar dados do elevador: ' + error.message);
         }
     }
     
@@ -8324,7 +8324,7 @@ Equipa FestLift</textarea>
             console.log('👁️ Pré-visualização email...');
             
             if (!currentMunicipalityLiftId || !currentMunicipalityLiftData) {
-                alert('Erro: Dados do elevador não carregados');
+                toastr.error('Erro: Dados do elevador não carregados');
                 return;
             }
             
@@ -8470,7 +8470,7 @@ Equipa FestLift</textarea>
                 const previewWindow = window.open('', '_blank', 'width=800,height=600,scrollbars=yes');
                 
                 if (!previewWindow) {
-                    alert('⚠️ Por favor, permita pop-ups para pré-visualização');
+                    toastr.warning('⚠️ Por favor, permita pop-ups para pré-visualização');
                     return;
                 }
                 
@@ -8555,7 +8555,7 @@ Equipa FestLift</textarea>
                 
             } catch (error) {
                 console.error('❌ Erro na pré-visualização:', error);
-                alert('Erro na pré-visualização: ' + error.message);
+                toastr.error('Erro na pré-visualização: ' + error.message);
             }
         });
         
@@ -8575,7 +8575,7 @@ Equipa FestLift</textarea>
                         $dropdown.append(`<option value="${m.id}">${m.name} (${m.distrito || ''})</option>`);
                     });
                 } catch (e) {
-                    alert('Erro ao carregar municípios: ' + e.message);
+                    toastr.error('Erro ao carregar municípios: ' + e.message);
                     return;
                 }
             }
@@ -8605,13 +8605,13 @@ Equipa FestLift</textarea>
                 $('#municipality-info-loading').hide();
                 $('#municipality-info-content').show();
             } catch (e) {
-                alert('Erro ao selecionar município: ' + e.message);
+                toastr.error('Erro ao selecionar município: ' + e.message);
             }
         });
 
         $('#btn-send-to-municipality').on('click', async function() {
-            if (!currentMunicipalityLiftId) { alert('Erro: ID do elevador não definido'); return; }
-            if (!currentMunicipalityData) { alert('Município não determinado. Por favor selecione um município primeiro.'); return; }
+            if (!currentMunicipalityLiftId) { toastr.error('Erro: ID do elevador não definido'); return; }
+            if (!currentMunicipalityData) { toastr.warning('Município não determinado. Por favor selecione um município primeiro.'); return; }
 
             const templateType = $('#email-template-type').val();
             const apiTemplateType = templateType.replace(/^municipality-/, '');
@@ -8631,7 +8631,7 @@ Equipa FestLift</textarea>
 
                 const municipalityEmail = currentMunicipalityData.lift_department?.email || currentMunicipalityData.email;
                 if (!municipalityEmail) {
-                    alert('Email do município não disponível');
+                    toastr.info('Email do município não disponível');
                     $btn.prop('disabled', false).html(originalText);
                     return;
                 }
@@ -8662,17 +8662,17 @@ Equipa FestLift</textarea>
 
                 if (result && (result.success || result.data?.success)) {
                     if (typeof toastr !== 'undefined') toastr.success(`Relatório enviado com sucesso para ${municipalityEmail}`);
-                    else alert(`Relatório enviado com sucesso para ${municipalityEmail}`);
+                    else toastr.success(`Relatório enviado com sucesso para ${municipalityEmail}`);
                     $('#municipalityModal').modal('hide');
                 } else {
                     const errMsg = result?.message || result?.data?.message || 'Erro ao enviar relatório';
-                    if (typeof toastr !== 'undefined') toastr.error(errMsg); else alert(errMsg);
+                    if (typeof toastr !== 'undefined') toastr.error(errMsg); else toastr.error(errMsg);
                     $btn.prop('disabled', false).html(originalText);
                 }
             } catch (error) {
                 console.error('❌ Erro ao enviar relatório ao município:', error);
                 if (typeof toastr !== 'undefined') toastr.error('Erro ao enviar: ' + error.message);
-                else alert('Erro ao enviar: ' + error.message);
+                else toastr.error('Erro ao enviar: ' + error.message);
                 $btn.prop('disabled', false).html(originalText);
             }
         });
@@ -8708,7 +8708,7 @@ Equipa FestLift</textarea>
                 }
                 
                 if (file.type !== 'application/pdf') {
-                    alert('❌ Por favor, seleccione apenas ficheiros PDF');
+                    toastr.error('❌ Por favor, seleccione apenas ficheiros PDF');
                     e.target.value = '';
                     return;
                 }
@@ -8902,7 +8902,7 @@ Equipa FestLift</textarea>
                         tmp.select(); document.execCommand('copy');
                         document.body.removeChild(tmp);
                     }
-                } else { alert('Coordenadas não especificadas'); }
+                } else { toastr.info('Coordenadas não especificadas'); }
             });
         }
 
@@ -8913,7 +8913,7 @@ Equipa FestLift</textarea>
                 var type = document.getElementById('intType');
                 var desc = document.getElementById('intDescription');
                 if (!date||!date.value||!type||!type.value||!desc||!desc.value) {
-                    alert('Preencha os campos obrigatórios: data, tipo, descrição');
+                    toastr.warning('Preencha os campos obrigatórios: data, tipo, descrição');
                     return;
                 }
                 var token = (typeof AuthManager!=='undefined'&&AuthManager.getAuthToken())||localStorage.getItem('liftmanager_jwt')||localStorage.getItem('authToken')||localStorage.getItem('token');
@@ -8937,10 +8937,10 @@ Equipa FestLift</textarea>
                             if(typeof $!=='undefined') $('#interventionModal').modal('hide');
                             if(document.getElementById('interventionForm')) document.getElementById('interventionForm').reset();
                             if(typeof toastr!=='undefined') toastr.success('Intervenção guardada!');
-                            else alert('Intervenção guardada com sucesso!');
-                        } else { alert('Erro: '+((res.data&&res.data.message)||'Erro desconhecido')); }
+                            else toastr.success('Intervenção guardada com sucesso!');
+                        } else { toastr.error('Erro: '+((res.data&&res.data.message)||'Erro desconhecido')); }
                     })
-                    .catch(function(e){alert('Erro: '+e.message);})
+                    .catch(function(e){toastr.error('Erro: '+e.message);})
                     .finally(function(){saveBtn.disabled=false;saveBtn.innerHTML='Guardar intervenção';});
             });
         }
@@ -9047,7 +9047,7 @@ Equipa FestLift</textarea>
     function requestLiftInspection() {
         const liftId = window._currentInspectionLiftId;
         const lift = window._currentInspectionLift;
-        if (!liftId || !lift) { alert('Dados do elevador não carregados'); return; }
+        if (!liftId || !lift) { toastr.info('Dados do elevador não carregados'); return; }
         const licExpiry = lift.licenseExpiry || lift.certExpiry || lift.nextInspectionDate || null;
         const expiryStr = licExpiry ? new Date(licExpiry).toLocaleDateString('pt-PT') : 'não especificado';
         const address = (function() {
@@ -9136,7 +9136,7 @@ Equipa FestLift</textarea>
         const email   = $(emailField).val().trim();
         const subject = $(subjectField).val().trim();
         const body    = $(bodyField).val().trim();
-        if (!email) { alert('Email não especificado. Preencha o campo email.'); return false; }
+        if (!email) { toastr.warning('Email não especificado. Preencha o campo email.'); return false; }
         try {
             const token = typeof AuthManager !== 'undefined' ? AuthManager.getAuthToken() : localStorage.getItem('liftmanager_jwt');
             const res = await fetch('/api/email/send-inspection-reminder', {
@@ -9147,7 +9147,7 @@ Equipa FestLift</textarea>
             const data = await res.json();
             if (data.success) {
                 if (typeof toastr !== 'undefined') toastr.success(successMsg);
-                else alert(successMsg);
+                else toastr.success(successMsg);
                 if (window._currentInspectionLift) {
                     const now = data.sentAt || new Date().toISOString();
                     if (type === 'mun_request') window._currentInspectionLift.munRequest = { sentAt: now };
@@ -9157,12 +9157,12 @@ Equipa FestLift</textarea>
             }
             const errMsg = data.error || data.message || 'Erro desconhecido ao enviar email';
             if (typeof toastr !== 'undefined') toastr.error('Erro ao enviar email: ' + errMsg);
-            else alert('Erro ao enviar email: ' + errMsg);
+            else toastr.error('Erro ao enviar email: ' + errMsg);
             return false;
         } catch (err) {
             console.error('❌ Erro ao enviar email via SMTP:', err);
             if (typeof toastr !== 'undefined') toastr.error('Erro de ligação ao servidor de email: ' + err.message);
-            else alert('Erro de ligação ao servidor de email: ' + err.message);
+            else toastr.error('Erro de ligação ao servidor de email: ' + err.message);
             return false;
         }
     }
@@ -9259,7 +9259,7 @@ Equipa FestLift</textarea>
                     $('#pdfParserStep1').show();
                     $('#pdfParserFooterStep1').show();
                     if (typeof toastr !== 'undefined') toastr.error(data.message || 'Erro na análise do PDF');
-                    else alert('Erro: ' + (data.message || 'Não foi possível analisar o PDF'));
+                    else toastr.error('Erro: ' + (data.message || 'Não foi possível analisar o PDF'));
                     return;
                 }
 
@@ -9425,7 +9425,7 @@ Equipa FestLift</textarea>
                 $('#pdfParserLoading').hide();
                 $('#pdfParserStep1').show();
                 $('#pdfParserFooterStep1').show();
-                alert('Erro de rede: ' + err.message);
+                toastr.error('Erro de rede: ' + err.message);
             }
         });
 
@@ -9453,7 +9453,7 @@ Equipa FestLift</textarea>
         $(document).on('click', '#pdfParserConfirmBtn', async function() {
             // Obter liftId: do preset (se aberto de elevador específico) ou do dropdown
             var liftId = $('#pdfParserLiftSelect').val() || window._pdfPresetLiftId || null;
-            if (!liftId) { alert('Selecione o elevador da lista'); return; }
+            if (!liftId) { toastr.warning('Selecione o elevador da lista'); return; }
 
             var $btn = $(this);
             $btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-1"></i> A guardar...');
@@ -9494,7 +9494,7 @@ Equipa FestLift</textarea>
                 if (!result.success) {
                     if (result.duplicate) {
                         if (typeof toastr !== 'undefined') toastr.warning('⚠️ ' + result.message);
-                        else alert(result.message);
+                        else toastr.success(result.message);
                         $('#pdfParserModal').modal('hide');
                         return;
                     }
@@ -9504,7 +9504,7 @@ Equipa FestLift</textarea>
                 $('#pdfParserModal').modal('hide');
 
                 if (typeof toastr !== 'undefined') toastr.success('✅ Relatório de inspecção guardado!');
-                else alert('Relatório de inspecção guardado com sucesso!');
+                else toastr.success('Relatório de inspecção guardado com sucesso!');
 
                 // Reload inspection data if lift is currently viewed
                 var curId = window.currentLiftId || window._currentInspectionLiftId;
@@ -9519,7 +9519,7 @@ Equipa FestLift</textarea>
 
             } catch (err) {
                 $btn.prop('disabled', false).html('<i class="fas fa-check mr-1"></i> Confirmar e guardar');
-                alert('Erro: ' + err.message);
+                toastr.error('Erro: ' + err.message);
             }
         });
 

@@ -260,7 +260,7 @@
                     console.log('  Hora:', Math.round(summary.totalTime/60), 'хв');
                 }).on('routingerror', function(e) {
                     console.error('❌ Erro rotaу:', e.error);
-                    alert('Não foi possível calcular a rota. Verifique de ligação.');
+                    toastr.error('Não foi possível calcular a rota. Verifique de ligação.');
                 }).addTo(map);
 
             } catch (error) {
@@ -272,7 +272,7 @@
                 const liftLatFb = _fbHas ? _fbCoords[1] : null;
                 const liftLngFb = _fbHas ? _fbCoords[0] : null;
                 if (!liftLatFb || !liftLngFb) {
-                    alert('Não foi possível determinar a sua posição nem as coordenadas do elevador.');
+                    toastr.error('Não foi possível determinar a sua posição nem as coordenadas do elevador.');
                     return;
                 }
                 const liftLat = liftLatFb;
@@ -287,7 +287,7 @@
                 L.marker([liftLat, liftLng]).addTo(map)
                     .bindPopup(`${lift.model || 'Elevador'}<br>${lift.address?.street || ''}`).openPopup();
                 
-                alert('Não foi possível determinar a sua posição. A mostrar apenas local de atribuição.');
+                toastr.error('Não foi possível determinar a sua posição. A mostrar apenas local de atribuição.');
             }
         }
 

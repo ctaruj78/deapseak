@@ -2263,7 +2263,7 @@ setTimeout(() => {
         if (typeof toastr !== 'undefined') {
             toastr.error(message);
         } else {
-            alert(message);
+            toastr.info(message);
         }
     }
     
@@ -2311,10 +2311,10 @@ setTimeout(() => {
                 _allCommunications = _allCommunications.filter(c => String(c._id) !== String(id));
                 _applyCommFilters();
             } else {
-                alert(data.message || 'Não foi possível apagar.');
+                toastr.info(data.message || 'Não foi possível apagar.');
             }
         } catch (err) {
-            alert('Falha de ligação ao servidor.');
+            toastr.error('Falha de ligação ao servidor.');
         }
     };
 

@@ -190,7 +190,7 @@
             const current  = document.getElementById('currentPassword').value;
             const newPass  = document.getElementById('newPassword').value;
             const confirm  = document.getElementById('confirmPassword').value;
-            if (newPass !== confirm) { alert('As palavras-passe não coincidem'); return; }
+            if (newPass !== confirm) { toastr.info('As palavras-passe não coincidem'); return; }
             if (window.changeUserPassword) {
                 window.changeUserPassword(current, newPass);
             }

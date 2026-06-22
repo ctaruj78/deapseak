@@ -33,14 +33,9 @@
             if (!userRole || !allowedRoles.includes(userRole)) {
                 console.error('❌ Acesso negado! Função:', userRole);
                 
-                alert(
-                    '❌ Acesso negado!\n\n' +
-                    'Ця сторінка доступна тільки для:\n' +
-                    '• Dispatcherів\n' +
-                    '• Administradorів\n\n' +
-                    `Ваша роль: ${userRole || 'не визначена'}\n\n` +
-                    'Ви будете перенаправлені на сторінку входу.'
-                );
+                if (typeof toastr !== 'undefined') {
+                    toastr.error(`Acesso negado. Função: ${userRole || 'não definida'}. A redirecionar...`);
+                }
                 
                 // Перенаправлення на логін
                 window.location.href = '/pages/auth/login.html';
@@ -52,7 +47,7 @@
             
         } catch (error) {
             console.error('❌ Erro перевірки доступу:', error);
-            alert('Erro авторизації. Увійдіть в систему заново.');
+            toastr.error('Erro авторизації. Увійдіть в систему заново.');
             window.location.href = '/pages/auth/login.html';
             return false;
         }

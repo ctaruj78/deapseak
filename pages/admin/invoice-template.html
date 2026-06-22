@@ -1245,10 +1245,10 @@
                     doc.save(fileName);
                     
                     console.log('✅ PDF gerado com sucesso:', fileName);
-                    alert('✅ PDF gerado com sucesso!');
+                    toastr.success('✅ PDF gerado com sucesso!');
                 } catch (error) {
                     console.error('❌ Erro ao gerar PDF:', error);
-                    alert('❌ Erro ao gerar PDF: ' + error.message);
+                    toastr.error('❌ Erro ao gerar PDF: ' + error.message);
                 }
             },
 
@@ -1263,7 +1263,7 @@
                     if (save) {
                         await saveOrcamento();
                         if (!window.lastSavedOrcamentoId) {
-                            alert('Não foi possível salvar o orçamento');
+                            toastr.error('Não foi possível salvar o orçamento');
                             return;
                         }
                     } else {
@@ -1281,7 +1281,7 @@
                 // Валідація email
                 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
                 if (!emailRegex.test(clientEmail)) {
-                    alert('Email inválido');
+                    toastr.error('Email inválido');
                     return;
                 }
 
@@ -1293,7 +1293,7 @@
                     console.log('🔑 Token keys in localStorage:', Object.keys(localStorage).filter(k => k.includes('token') || k.includes('jwt')));
                     
                     if (!validToken) {
-                        alert('Autenticação necessária. Faça login novamente.');
+                        toastr.error('Autenticação necessária. Faça login novamente.');
                         window.location.href = '/pages/auth/login.html';
                         return;
                     }
@@ -1354,22 +1354,22 @@
                     console.log('📧 Resultado completo:', result);
 
                     if (response.ok && result.success) {
-                        alert(`✅ ${result.message}`);
+                        toastr.success(`✅ ${result.message}`);
                         console.log('✅ Email enviado com sucesso!');
                     } else {
                         const errorMsg = result.message || result.error || 'Erro desconhecido';
                         const tokenRole = decodeTokenRole(validToken) || 'unknown';
                         if (response.status === 403 && /Acesso negado|Papel necess/i.test(errorMsg)) {
-                            alert(`❌ Erro: ${errorMsg}\n\nRole no token atual: ${tokenRole}\nFaça logout/login como admin ou dispatcher nesta mesma aba.`);
+                            toastr.error(`❌ Erro: ${errorMsg}\n\nRole no token atual: ${tokenRole}\nFaça logout/login como admin ou dispatcher nesta mesma aba.`);
                         } else {
-                            alert(`❌ Erro: ${errorMsg}`);
+                            toastr.error(`❌ Erro: ${errorMsg}`);
                         }
                         console.error('❌ Erro ao enviar:', errorMsg, '| role:', tokenRole, '| status:', response.status);
                     }
 
                 } catch (error) {
                     console.error('❌ Erro ao enviar email:', error);
-                    alert('Não foi possível enviar o email: ' + error.message);
+                    toastr.error('Não foi possível enviar o email: ' + error.message);
                 }
             },
 
@@ -1438,7 +1438,7 @@
             console.log('📦 Serviços coletados:', servicos.length);
             
             if (servicos.length === 0) {
-                alert('❌ Adicione pelo menos um serviço com quantidade e preço válidos!');
+                toastr.error('❌ Adicione pelo menos um serviço com quantidade e preço válidos!');
                 return;
             }
             
@@ -1450,14 +1450,14 @@
             
             // Validação
             if (!clienteNome || !clienteEmail || !clienteMorada) {
-                alert('❌ Preencha todos os dados do cliente (Nome, Morada e Email)!');
+                toastr.error('❌ Preencha todos os dados do cliente (Nome, Morada e Email)!');
                 return;
             }
             
             // Validação email
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             if (!emailRegex.test(clienteEmail)) {
-                alert('❌ Email do cliente inválido!');
+                toastr.error('❌ Email do cliente inválido!');
                 return;
             }
             
@@ -1493,7 +1493,7 @@
                 console.log('🔑 Token encontrado:', validToken ? 'SIM' : 'NÃO');
                 
                 if (!validToken) {
-                    alert('❌ Sessão expirada. Faça login novamente.');
+                    toastr.error('❌ Sessão expirada. Faça login novamente.');
                     window.location.href = '../auth/login.html';
                     return;
                 }
@@ -1531,7 +1531,7 @@
                 console.log('📋 Resultado:', result);
 
                 if (response.status === 401) {
-                    alert('❌ Sessão expirada. Faça login novamente.');
+                    toastr.error('❌ Sessão expirada. Faça login novamente.');
                     window.location.href = '../auth/login.html';
                     return;
                 }
@@ -1578,7 +1578,7 @@
                     const total = orcamentoData.total || parseFloat($('#grandTotal').text().replace(' €', ''));
                     const clienteNome = orcamentoData.cliente?.nome || $('#clientName').val();
                     
-                    alert(`✅ Orçamento ${numero} ${action} com sucesso!\n\n` +
+                    toastr.success(`✅ Orçamento ${numero} ${action} com sucesso!\n\n` +
                           `Total: €${total.toFixed(2)}\n` +
                           `Cliente: ${clienteNome}`);
                     
@@ -1590,11 +1590,11 @@
                     }
                 } else {
                     console.error('❌ Erro do servidor:', result);
-                    alert('❌ Erro ao salvar: ' + (result.message || 'Erro desconhecido'));
+                    toastr.error('❌ Erro ao salvar: ' + (result.message || 'Erro desconhecido'));
                 }
             } catch (error) {
                 console.error('💥 Erro crítico ao salvar orçamento:', error);
-                alert('❌ Erro ao salvar orçamento:\n\n' + error.message + 
+                toastr.error('❌ Erro ao salvar orçamento:\n\n' + error.message + 
                       '\n\nVerifique:\n' +
                       '• Conexão com servidor\n' +
                       '• Token de autenticação\n' +
@@ -1621,7 +1621,7 @@
             const token = getPageAuthToken(['admin', 'dispatcher']);
             
             if (!token) {
-                alert('Sessão expirada. Faça login novamente.');
+                toastr.error('Sessão expirada. Faça login novamente.');
                 window.location.href = '/pages/auth/login.html';
                 return;
             }
@@ -1915,7 +1915,7 @@
                 
             } catch (error) {
                 console.error('❌ Erro ao carregar orçamento público:', error);
-                alert('❌ Erro ao carregar orçamento:\n\n' + error.message);
+                toastr.error('❌ Erro ao carregar orçamento:\n\n' + error.message);
                 window.location.href = '/pages/auth/login.html';
             }
         }
@@ -1953,7 +1953,7 @@
         }
 
         async function deleteFoto(idx) {
-            if (!window.currentOrcamentoId) return alert('Guarde o orçamento antes de remover fotos.');
+            if (!window.currentOrcamentoId) return toastr.info('Guarde o orçamento antes de remover fotos.');
             if (!confirm('Remover esta fotografia?')) return;
             const token = getPageAuthToken(['admin', 'dispatcher']);
             try {
@@ -1963,9 +1963,9 @@
                 });
                 const data = await res.json();
                 if (data.success) renderFotosGrid(data.fotos);
-                else alert('Erro ao remover: ' + data.message);
+                else toastr.error('Erro ao remover: ' + data.message);
             } catch (e) {
-                alert('Erro ao remover foto: ' + e.message);
+                toastr.error('Erro ao remover foto: ' + e.message);
             }
         }
 
@@ -2129,7 +2129,7 @@
                 
             } catch (error) {
                 console.error('❌ Erro ao carregar orçamento:', error);
-                alert('Erro ao carregar orçamento: ' + error.message);
+                toastr.error('Erro ao carregar orçamento: ' + error.message);
             }
         }
     </script>
