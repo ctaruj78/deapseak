@@ -799,11 +799,9 @@ async function loadDebtors() {
                     <td><code>${esc(deb.customerTaxId)}</code></td>
                     <td class="text-right text-danger font-weight-bold">${fmtEur(deb.totalOutstanding)}</td>
                     <td class="text-center" onclick="event.stopPropagation()">
-                        ${deb.alertSent
-                            ? `<span class="badge badge-success" title="Enviado em ${deb.alertSentAt ? new Date(deb.alertSentAt).toLocaleDateString('pt-PT') : ''}"><i class="fas fa-check mr-1"></i>Enviado</span>`
-                            : (deb.clientEmail
-                                ? `<button class="btn btn-xs btn-outline-info mr-1" onclick="previewDebtorEmail(${idx})" title="Pré-visualizar email"><i class="fas fa-eye"></i></button><button class="btn btn-xs btn-outline-danger" onclick="sendDebtorAlerts(['${esc(deb.customerTaxId)}'], this)"><i class="fas fa-paper-plane mr-1"></i>Enviar</button>`
-                                : '<span class="badge badge-secondary">Sem email</span>')}
+                        ${deb.clientEmail
+                            ? `${deb.alertSent ? `<span class="badge badge-success mr-1" title="Enviado em ${deb.alertSentAt ? new Date(deb.alertSentAt).toLocaleDateString('pt-PT') : ''}"><i class="fas fa-check mr-1"></i>Enviado</span>` : ''}<button class="btn btn-xs btn-outline-info mr-1" onclick="previewDebtorEmail(${idx})" title="Pré-visualizar email"><i class="fas fa-eye"></i></button><button class="btn btn-xs btn-outline-danger" onclick="sendDebtorAlerts(['${esc(deb.customerTaxId)}'], this)"><i class="fas fa-paper-plane mr-1"></i>Enviar</button>`
+                            : '<span class="badge badge-secondary">Sem email</span>'}
                     </td>
                     <td class="text-center"><small class="text-muted">${(() => {
                         if (deb.alertSentAt) {
@@ -899,9 +897,9 @@ function buildDebtorEmailHtml(deb) {
 
 async function sendDebtorAlerts(nifs, btn) {
     const all = !nifs;
-    if (!await swalConfirm(all
-        ? '⚠️ Enviar email de aviso de pagamento a TODOS os devedores com email?\n\nOs clientes receberão o email imediatamente.'
-        : '⚠️ Enviar email de aviso de pagamento a este devedor?')) return;
+    if (all) {
+        if (!await swalConfirm('⚠️ Enviar email de aviso de pagamento a TODOS os devedores com email?\n\nOs clientes receberão o email imediatamente.')) return;
+    }
     if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>'; }
     try {
         const r = await fetch(API() + '/api/saft/debtors/send', {
