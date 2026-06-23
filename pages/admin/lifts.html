@@ -907,6 +907,11 @@
         }
     } catch (e) {}
 }());
+
+function escapeHtml(s) {
+    if (s == null) return '';
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
 </script>
 
         <!-- Content Wrapper -->
@@ -1823,24 +1828,25 @@
                 let html = '<div class="list-group list-group-flush">';
                 list.forEach(ins => {
                     const dateStr = ins.data ? new Date(ins.data).toLocaleDateString('pt-PT') : '—';
-                    const type    = VISIT_LABELS[ins.visitType] || ins.visitType || 'Manutenção';
+                    const type    = VISIT_LABELS[ins.visitType] || escapeHtml(ins.visitType || 'Manutenção');
                     const badge   = STATUS_BADGE[ins.status] || 'secondary';
-                    const statusLabel = { rascunho:'Rascunho', finalizado:'Finalizado', enviado:'Enviado', arquivado:'Arquivado' }[ins.status] || ins.status;
+                    const statusLabel = { rascunho:'Rascunho', finalizado:'Finalizado', enviado:'Enviado', arquivado:'Arquivado' }[ins.status] || escapeHtml(ins.status || '—');
+                    const safeNumero = escapeHtml(ins.numero);
                     html += `<div class="list-group-item px-0 py-2" style="border-left:none;border-right:none;">
                         <div class="d-flex justify-content-between align-items-start">
                             <div>
-                                <strong style="font-size:0.82rem;">${ins.numero}</strong>
+                                <strong style="font-size:0.82rem;">${safeNumero}</strong>
                                 <span class="text-muted ml-2" style="font-size:0.8rem;">${dateStr}</span>
                                 <br>
                                 <span class="badge badge-light border" style="font-size:0.72rem;">${type}</span>
                                 <span class="badge badge-${badge} ml-1" style="font-size:0.72rem;">${statusLabel}</span>
-                                <span class="text-muted ml-1" style="font-size:0.75rem;">— ${ins.inspector || '—'}</span>
+                                <span class="text-muted ml-1" style="font-size:0.75rem;">— ${escapeHtml(ins.inspector || '—')}</span>
                             </div>
                             <div class="d-flex" style="gap:4px;flex-shrink:0;">
                                 <a href="/api/inspections/${ins._id}/pdf" target="_blank"
                                    class="btn btn-xs btn-outline-danger" title="Descarregar PDF"
                                    style="font-size:0.72rem;padding:2px 7px;"
-                                   onclick="this.setAttribute('href','/api/inspections/${ins._id}/pdf');localStorage.getItem('liftmanager_jwt')&&fetch(this.getAttribute('href'),{headers:{'Authorization':'Bearer '+localStorage.getItem('liftmanager_jwt')}}).then(r=>r.blob()).then(b=>{let a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='${ins.numero}.pdf';a.click();});return false;">
+                                   onclick="this.setAttribute('href','/api/inspections/${ins._id}/pdf');localStorage.getItem('liftmanager_jwt')&&fetch(this.getAttribute('href'),{headers:{'Authorization':'Bearer '+localStorage.getItem('liftmanager_jwt')}}).then(r=>r.blob()).then(b=>{let a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='${safeNumero}.pdf';a.click();});return false;">
                                     <i class="fas fa-file-pdf"></i> PDF
                                 </a>
                             </div>
@@ -3763,8 +3769,8 @@ Equipa FestLift
             const _origIdx = reports.indexOf(r);
             const d = (r.inspectionDate || r.date)
                 ? new Date(r.inspectionDate || r.date).toLocaleDateString('pt-PT') : '—';
-            const type = typeLabels[r.inspectionType || r.type] || r.inspectionType || r.type || '—';
-            const status = statusLabels[r.status] || r.status || '—';
+            const type = typeLabels[r.inspectionType || r.type] || escapeHtml(r.inspectionType || r.type || '—');
+            const status = statusLabels[r.status] || escapeHtml(r.status || '—');
             let validUntil = '—';
             const vu = r.validUntil || (r.status === 'passed' ? r.nextInspectionDate : null);
             if (vu) validUntil = new Date(vu).toLocaleDateString('pt-PT');
@@ -3777,7 +3783,7 @@ Equipa FestLift
                 <td class="text-nowrap">
                     <button class="btn btn-xs btn-outline-success mr-1" onclick='printReportDirect(${_rJson})' title="Imprimir"><i class="fas fa-print"></i></button>
                     <button class="btn btn-xs btn-outline-warning mr-1" onclick='emailInspectionReport("${liftId}", ${_origIdx < 0 ? _ri : _origIdx}, ${_rJson})' title="Email"><i class="fas fa-envelope"></i></button>
-                    ${_fileUrl ? `<a href="${_fileUrl}" target="_blank" class="btn btn-xs btn-outline-info mr-1" title="PDF"><i class="fas fa-file-pdf"></i></a>` : ''}
+                    ${_fileUrl ? `<a href="${escapeHtml(_fileUrl)}" target="_blank" class="btn btn-xs btn-outline-info mr-1" title="PDF"><i class="fas fa-file-pdf"></i></a>` : ''}
                     <button class="btn btn-xs btn-outline-danger" onclick='deleteInspectionReport("${liftId}", ${_origIdx < 0 ? _ri : _origIdx})' title="Eliminar"><i class="fas fa-trash"></i></button>
                 </td>
             </tr>`;
@@ -3972,9 +3978,9 @@ Email de contacto: info@festlift.pt`;
             const TYPE_LABELS   = { periodica: 'Periódica', reinspecao: 'Reinspecção', '1a': '1.ª Insp.', extraordinaria: 'Extraordinária' };
             const html = data.requerimentos.map(r => {
                 const dt   = r.createdAt ? new Date(r.createdAt).toLocaleDateString('pt-PT', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '—';
-                const stat = STATUS_LABELS[r.status] || r.status;
+                const stat = STATUS_LABELS[r.status] || escapeHtml(r.status);
                 const col  = STATUS_COLOR[r.status] || '#888';
-                const type = TYPE_LABELS[r.inspType] || r.inspType;
+                const type = TYPE_LABELS[r.inspType] || escapeHtml(r.inspType);
                 return `<div style="display:flex;align-items:center;gap:6px;padding:5px 0;border-bottom:1px solid #f0f0f0;font-size:11px;">
                     <i class="fas fa-file-pdf text-danger" style="width:14px;text-align:center;"></i>
                     <span style="flex:1;font-weight:600;color:#333;">${type}</span>
@@ -4978,7 +4984,7 @@ Email de contacto: info@festlift.pt`;
                             const hint = document.createElement('small');
                             hint.id = 'admin-siblings-price-hint';
                             hint.className = 'text-success d-block mt-1';
-                            hint.innerHTML = `<i class="fas fa-tag mr-1"></i>Preço ${siblingContract} €/mês obtido do elevador vizinho. Pode alterar manualmente.`;
+                            hint.innerHTML = `<i class="fas fa-tag mr-1"></i>Preço ${escapeHtml(siblingContract)} €/mês obtido do elevador vizinho. Pode alterar manualmente.`;
                             infoEl.appendChild(hint);
                         }
                     }
@@ -5022,7 +5028,7 @@ Email de contacto: info@festlift.pt`;
                             const hint = document.createElement('small');
                             hint.id = 'admin-siblings-nif-hint';
                             hint.className = 'text-secondary d-block mt-1';
-                            hint.innerHTML = `<i class="fas fa-file-invoice mr-1"></i>NIF ${siblingNif} obtido do elevador vizinho. Pode alterar manualmente.`;
+                            hint.innerHTML = `<i class="fas fa-file-invoice mr-1"></i>NIF ${escapeHtml(siblingNif)} obtido do elevador vizinho. Pode alterar manualmente.`;
                             infoEl.appendChild(hint);
                         }
                     }
@@ -5338,17 +5344,24 @@ Email de contacto: info@festlift.pt`;
             if (addrGroupIdx !== undefined) {
                 row.classList.add(addrGroupIdx % 2 === 0 ? 'addr-group-even' : 'addr-group-odd');
             }
+            const _eMun  = escapeHtml(lift.municipalNumber || 'Indefinido');
+            const _eMod  = escapeHtml(modelCell);
+            const _eType = escapeHtml(liftTypeLabel);
+            const _eAddr = escapeHtml(addressStr);
+            const _ePost = escapeHtml(postalCode);
+            const _eCN   = escapeHtml(clientName);
+            const _eCE   = escapeHtml(clientEmail);
             row.innerHTML = `
-                <td><strong>${lift.municipalNumber || 'Indefinido'}</strong></td>
-                <td><span class="lift-model-cell" title="${modelCell}">${modelCell}</span></td>
-                <td>${liftTypeLabel}</td>
+                <td><strong>${_eMun}</strong></td>
+                <td><span class="lift-model-cell" title="${_eMod}">${_eMod}</span></td>
+                <td>${_eType}</td>
                 <td>
-                    <strong>${addressStr}</strong>
-                    ${postalCode ? `<br><small class="text-muted">${postalCode}</small>` : ''}
+                    <strong>${_eAddr}</strong>
+                    ${postalCode ? `<br><small class="text-muted">${_ePost}</small>` : ''}
                     ${hasSiblings ? `<br><span class="address-siblings-badge"><i class="fas fa-layer-group" style="font-size:.6rem"></i> ${siblingsCount} elevadores</span>` : ''}
                 </td>
-                <td>${clientName} ${clientBadge}</td>
-                <td>${clientEmail}</td>
+                <td>${_eCN} ${clientBadge}</td>
+                <td>${_eCE}</td>
                 <td>
                     <span class="badge ${statusClass} text-white px-2 py-1">
                         ${statusText}
@@ -6336,10 +6349,10 @@ Email de contacto: info@festlift.pt`;
                             <div class="alert alert-success py-2 mb-0 d-flex align-items-center">
                                 <i class="fas fa-file-contract fa-lg mr-2"></i>
                                 <div class="flex-grow-1">
-                                    <strong>Contrato carregado</strong> №${contract.contractNumber || '—'}
-                                    <span class="text-success ml-2">&bull; ${cfPeriod}</span>
+                                    <strong>Contrato carregado</strong> №${escapeHtml(contract.contractNumber || '—')}
+                                    <span class="text-success ml-2">&bull; ${escapeHtml(cfPeriod)}</span>
                                 </div>
-                                <a href="${cfUrl}" target="_blank" class="btn btn-sm btn-outline-success ml-2">
+                                <a href="${escapeHtml(cfUrl)}" target="_blank" class="btn btn-sm btn-outline-success ml-2">
                                     <i class="fas fa-eye"></i> Ver
                                 </a>
                             </div>`;
@@ -7004,7 +7017,7 @@ Email de contacto: info@festlift.pt`;
                 const date = _dt ? new Date(_dt).toLocaleDateString('pt-PT') : 'Data desconhecida';
                 const _typeKey = report.reportType || report.inspectionType || report.type || 'routine';
                 const _typeLabels = { 'routine': 'Planeada', 'annual': 'Anual / Periódica', 'certification': 'Certificação', 'emergency': 'Não planeada', 'reinspection': 'Reinspecção', 'inspection': 'Inspecção' };
-                const type = _typeLabels[_typeKey] || _typeKey;
+                const type = _typeLabels[_typeKey] || escapeHtml(_typeKey);
                 const notes = report.notes || report.comments || report.findings || '';
                 const status = report.status || '';
                 // Sanitizar nome do inspector (evitar texto lixo do PDF)
@@ -7052,8 +7065,8 @@ Email de contacto: info@festlift.pt`;
                                     ${type} ${statusBadge}
                                 </h6>
                                 <p class="mb-1"><small><strong>Data:</strong> ${date}${nextInspDate ? ' &nbsp;→&nbsp; <strong>Seguinte: ' + nextInspDate + '</strong>' : ''}</small></p>
-                                <p class="mb-1"><small><strong>Inspector:</strong> ${inspector}</small></p>
-                                ${notes ? '<p class="mb-1"><small class="text-muted">' + cleanCardText(notes).substring(0, 130) + (cleanCardText(notes).length > 130 ? '…' : '') + '</small></p>' : ''}
+                                <p class="mb-1"><small><strong>Inspector:</strong> ${escapeHtml(inspector)}</small></p>
+                                ${notes ? '<p class="mb-1"><small class="text-muted">' + escapeHtml(cleanCardText(notes).substring(0, 130)) + (cleanCardText(notes).length > 130 ? '…' : '') + '</small></p>' : ''}
                             </div>
                             <div class="btn-group-vertical ml-2">
                                 <button class="btn btn-sm btn-outline-secondary mb-1" onclick='editInspectionReport("${reportLiftId}", ${reportOrigIndex})' title="Editar relatório">
@@ -7072,7 +7085,7 @@ Email de contacto: info@festlift.pt`;
                                     <i class="fas fa-trash"></i> Eliminar
                                 </button>
                                 ${fileUrl ? `
-                                    <a href="${fileUrl}" target="_blank" class="btn btn-sm btn-outline-info" title="Abrir ficheiro PDF">
+                                    <a href="${escapeHtml(fileUrl)}" target="_blank" class="btn btn-sm btn-outline-info" title="Abrir ficheiro PDF">
                                         <i class="fas fa-file-pdf"></i> PDF
                                     </a>
                                 ` : ''}
