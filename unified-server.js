@@ -13030,6 +13030,7 @@ app.use('/api/auth/login', loginLimiter);             // захист від bru
 app.use('/api/auth/register', loginLimiter);          // захист від brute-force
 app.use('/api/auth/refresh', refreshLimiter);         // захист від token-refresh abuse
 app.use('/api/auth/forgot-password', forgotPasswordLimiter); // захист від email spam
+app.use('/api/auth/reset-password', forgotPasswordLimiter);  // захист від token-submission abuse
 app.use('/api/auth', authRoutes);
 app.use('/api/users', authRoutes); // authRoutes містить /users endpoints
 

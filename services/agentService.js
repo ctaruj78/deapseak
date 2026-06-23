@@ -958,12 +958,20 @@ class AgentService {
         const apiKey = process.env.GROQ_API_KEY;
         if (!apiKey) throw new Error('GROQ_API_KEY not set');
         const model = process.env.GROQ_MODEL || 'llama-3.3-70b-versatile';
+        const CHAT_MARKER = '\n\nMENSAGEM DO UTILIZADOR: ';
+        const splitIdx = prompt.indexOf(CHAT_MARKER);
+        const messages = splitIdx !== -1
+            ? [
+                { role: 'system', content: prompt.slice(0, splitIdx) },
+                { role: 'user', content: prompt.slice(splitIdx + CHAT_MARKER.length) }
+              ]
+            : [{ role: 'user', content: prompt }];
         const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
             body: JSON.stringify({
                 model,
-                messages: [{ role: 'user', content: prompt }],
+                messages,
                 temperature: 0.2,
                 max_tokens: 1024,
             }),
@@ -1012,8 +1020,8 @@ class AgentService {
         };
 
         try {
-            // Groq: fastest, free tier — always try first regardless of task type
-            if (process.env.GROQ_API_KEY && provider !== 'gemini' && provider !== 'ollama') {
+            // Groq: explicit provider override (not 'auto' — auto uses task-type routing below)
+            if (process.env.GROQ_API_KEY && provider !== 'gemini' && provider !== 'ollama' && provider !== 'auto') {
                 try {
                     outputText = await this._generateViaGroq(prompt);
                     selectedProvider = 'groq';
@@ -1059,20 +1067,34 @@ class AgentService {
                 return outputText;
             }
 
-            // auto: explicit hybrid routing by task type, then fallback.
+            // auto: hybrid routing by task type.
             const taskType = detectedTaskType;
+            const groqAvailable = Boolean(process.env.GROQ_API_KEY);
 
             if (taskType === 'legal') {
+                // Legal: Gemini (best reasoning) → Groq → Ollama
                 selectedProvider = 'gemini';
                 try {
                     outputText = await tryGeminiWithFallbackModel();
                     selectedModel = this.model;
                     return outputText;
                 } catch (gemErr) {
+                    if (groqAvailable) {
+                        try {
+                            fallbackUsed = true;
+                            fallbackReason = gemErr.message;
+                            selectedProvider = 'groq';
+                            console.warn(`🤖 AgentService legal route Gemini->Groq fallback: ${gemErr.message}`);
+                            outputText = await this._generateViaGroq(prompt);
+                            selectedModel = process.env.GROQ_MODEL || 'llama-3.3-70b-versatile';
+                            return outputText;
+                        } catch (groqErr) {
+                            fallbackReason = groqErr.message;
+                        }
+                    }
                     const ollamaReady = await this._isOllamaAvailable();
                     if (!ollamaReady) throw gemErr;
                     fallbackUsed = true;
-                    fallbackReason = gemErr.message;
                     selectedProvider = 'ollama';
                     console.warn(`🤖 AgentService legal route Gemini->Ollama fallback: ${gemErr.message}`);
                     const strongModel = await this._selectOllamaModel();
@@ -1085,27 +1107,20 @@ class AgentService {
                 }
             }
 
-            if (taskType === 'operations') {
-                selectedProvider = 'ollama';
+            // operations and generic: Groq first (fast, free) → Ollama → Gemini
+            if (groqAvailable) {
                 try {
-                    const fastModel = await this._selectFastOllamaModel();
-                    selectedModel = fastModel;
-                    outputText = await this._generateViaOllama(prompt, routeHint, {
-                        ...meta,
-                        forceModel: fastModel
-                    });
+                    selectedProvider = 'groq';
+                    outputText = await this._generateViaGroq(prompt);
+                    selectedModel = process.env.GROQ_MODEL || 'llama-3.3-70b-versatile';
                     return outputText;
-                } catch (ollErr) {
+                } catch (groqErr) {
                     fallbackUsed = true;
-                    fallbackReason = ollErr.message;
-                    selectedProvider = 'gemini';
-                    outputText = await tryGeminiWithFallbackModel();
-                    selectedModel = this.model;
-                    return outputText;
+                    fallbackReason = groqErr.message;
+                    console.warn(`🤖 AgentService Groq failed (${taskType}), falling back: ${groqErr.message}`);
                 }
             }
 
-            // generic: Ollama first (local-first), then Gemini fallback.
             selectedProvider = 'ollama';
             try {
                 const fastModel = await this._selectFastOllamaModel();
@@ -1119,7 +1134,7 @@ class AgentService {
                 fallbackUsed = true;
                 fallbackReason = ollErr.message;
                 selectedProvider = 'gemini';
-                console.warn(`🤖 AgentService Ollama fallback to Gemini: ${ollErr.message}`);
+                console.warn(`🤖 AgentService Ollama failed (${taskType}), fallback to Gemini: ${ollErr.message}`);
                 outputText = await tryGeminiWithFallbackModel();
                 selectedModel = this.model;
                 return outputText;
@@ -1659,16 +1674,14 @@ class AgentService {
         if (this._isGenerativeDraftRequest(userMessage || '')) {
             try {
                 const routeHint = this._detectTaskType(userMessage || '');
-                const routeTimeoutMs = Number(process.env.ASSISTANT_CHAT_ROUTE_TIMEOUT_MS || 18000);
+                const draftPrompt = this._buildQuickDraftPrompt(userMessage, userRole);
+                const routeTimeoutMs = Number(process.env.ASSISTANT_CHAT_ROUTE_TIMEOUT_MS || 20000);
                 const reply = await Promise.race([
-                    this._generateViaOllama(this._buildQuickDraftPrompt(userMessage, userRole), routeHint, {
+                    this._generateText(draftPrompt, routeHint, {
                         channel: 'chat',
                         userRole,
                         userId,
-                        userMessage,
-                        timeoutMs: Number(process.env.OLLAMA_CHAT_TIMEOUT_MS || 16000),
-                        maxNumCtx: Number(process.env.OLLAMA_CHAT_FAST_NUM_CTX || 1536),
-                        maxNumPredict: Number(process.env.OLLAMA_CHAT_FAST_NUM_PREDICT || 64)
+                        userMessage
                     }),
                     new Promise((_, reject) => {
                         setTimeout(() => reject(new Error(`CHAT_ROUTE_TIMEOUT_${routeTimeoutMs}`)), routeTimeoutMs);
@@ -3370,7 +3383,16 @@ ${inspections}
 CONTEXTO RESUMIDO:
 - Notificações pendentes: ${pending}
 - Decisões recentes: ${recentDecisions}
-- Módulos principais da app: Dashboard, Pedidos, Orçamentos, Inspeções, Elevadores, Clientes, Utilizadores, Analytics
+
+NAVEGAÇÃO DA APP (onde está o quê e ações típicas):
+• Dashboard — KPIs em tempo real: total de elevadores, pedidos abertos, alertas do agente, inspeções do mês
+• Pedidos — pedidos de serviço: criar novo pedido, atribuir técnico, mudar estado (aberto→em curso→fechado), ver historial
+• Orçamentos — ciclo completo: rascunho → enviado → aprovado / rejeitado / expirado; editar serviços e preços, enviar ao cliente por email
+• Inspeções — registar visita técnica; ver checklist com itens OK/NOK; cláusulas C1 (imobilização), C2 (prazo 30 dias), C3 (recomendação); conforme DL 320/2002
+• Elevadores — ficha do elevador: morada, número municipal, datas de inspeção, certificado; filtrar por estado ou vencimento
+• Clientes — perfil do cliente: todos os elevadores, pedidos, orçamentos associados; pesquisar por nome ou email
+• Utilizadores — criar/editar contas e técnicos, gerir roles e permissões (só admin)
+• Analytics — gráficos de inspeções por mês, orçamentos por estado, tendências e técnicos mais ativos
 
 MEMÓRIA CURTA DA CONVERSA:
 ${memory}
