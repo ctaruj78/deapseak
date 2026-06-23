@@ -2911,7 +2911,6 @@ function authenticateToken(req, res, next) {
                 message: 'Token inválido ou expirado'
             });
         }
-        console.log('✅ Token valid, user:', user.email || user.id);
         req.user = user;
         next();
     });
