@@ -7680,16 +7680,16 @@ Email de contacto: info@festlift.pt`;
             const statusBadge = s => {
                 const map = { rascunho:'secondary', enviado:'info', aprovado:'success', rejeitado:'danger', expirado:'warning' };
                 const labels = { rascunho:'Rascunho', enviado:'Enviado', aprovado:'Aprovado', rejeitado:'Rejeitado', expirado:'Expirado' };
-                return `<span class="badge badge-${map[s]||'secondary'}">${labels[s]||s}</span>`;
+                return `<span class="badge badge-${map[s]||'secondary'}">${labels[s]||escapeHtml(s)}</span>`;
             };
             container.innerHTML = `<table class="table table-sm table-hover table-bordered">
                 <thead class="thead-light"><tr>
                     <th>Número</th><th>Data</th><th>Cliente</th><th>Total</th><th>Status</th><th></th>
                 </tr></thead>
                 <tbody>${list.map(o => `<tr>
-                    <td><strong>${o.numero}</strong></td>
+                    <td><strong>${escapeHtml(o.numero)}</strong></td>
                     <td>${new Date(o.data).toLocaleDateString('pt-PT')}</td>
-                    <td>${o.cliente?.nome || '—'}</td>
+                    <td>${escapeHtml(o.cliente?.nome || '—')}</td>
                     <td>€${(o.total||0).toFixed(2)}</td>
                     <td>${statusBadge(o.status)}</td>
                     <td class="text-nowrap">
@@ -7735,7 +7735,7 @@ Email de contacto: info@festlift.pt`;
                     container.innerHTML = `
                         <div class="alert alert-info py-2">
                             <i class="fas fa-file-contract mr-1"></i>
-                            Contrato n.º <strong>${liftCn}</strong> (PDF não carregado)
+                            Contrato n.º <strong>${escapeHtml(liftCn)}</strong> (PDF não carregado)
                         </div>
                         <button type="button" class="btn btn-sm btn-success" onclick="showUploadContractModal('${liftId}')">
                             <i class="fas fa-upload"></i> Descarregar PDF do contrato
@@ -7770,17 +7770,17 @@ Email de contacto: info@festlift.pt`;
                 <div class="card">
                     <div class="card-body">
                         <h6 class="card-title">
-                            <i class="fas fa-file-contract text-success"></i> Contrato №${contractNumber}
+                            <i class="fas fa-file-contract text-success"></i> Contrato №${escapeHtml(contractNumber)}
                         </h6>
                         <p class="card-text">
-                            <strong>Período de ações:</strong> ${periodText}<br>
-                            ${description ? `<strong>Notas:</strong> ${description}<br>` : ''}
+                            <strong>Período de ações:</strong> ${escapeHtml(periodText)}<br>
+                            ${description ? `<strong>Notas:</strong> ${escapeHtml(description)}<br>` : ''}
                         </p>
                         <div class="btn-group">
-                            <a href="${fileUrl}" target="_blank" class="btn btn-sm btn-primary">
+                            <a href="${escapeHtml(fileUrl)}" target="_blank" class="btn btn-sm btn-primary">
                                 <i class="fas fa-eye"></i> Ver
                             </a>
-                            <a href="${fileUrl}" download class="btn btn-sm btn-info">
+                            <a href="${escapeHtml(fileUrl)}" download class="btn btn-sm btn-info">
                                 <i class="fas fa-download"></i> Descarregar
                             </a>
                             <button type="button" class="btn btn-sm btn-success" onclick="emailContract('${liftId}')">
