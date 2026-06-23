@@ -1053,6 +1053,11 @@
             inspectionManager.sendReport();
         }
 
+        function _esc(s) {
+            if (s == null) return '';
+            return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+        }
+
         async function loadInspectionHistory() {
             const tbody = document.getElementById('inspectionHistoryBody');
             const loading = document.getElementById('inspectionHistoryLoading');
@@ -1061,7 +1066,7 @@
 
             try {
                 const token = localStorage.getItem('liftmanager_jwt') || localStorage.getItem('authToken');
-                const response = await fetch('/api/inspections?limit=20', {
+                const response = await fetch('/api/inspections?limit=50&visitType=maintenance,quarterly', {
                     headers: token ? { 'Authorization': `Bearer ${token}` } : {}
                 });
                 const data = await response.json();
@@ -1070,17 +1075,22 @@
 
                 if (data.success && data.data?.length > 0) {
                     const statusLabels = { rascunho: 'warning', finalizado: 'success', enviado: 'info', arquivado: 'secondary' };
+                    const statusText   = { rascunho: 'Rascunho', finalizado: 'Finalizado', enviado: 'Enviado', arquivado: 'Arquivado' };
                     tbody.innerHTML = data.data.map(insp => {
                         const dt = insp.data ? new Date(insp.data).toLocaleDateString('pt-PT') : '—';
                         const badge = statusLabels[insp.status] || 'secondary';
+                        const label = statusText[insp.status] || _esc(insp.status);
+                        const id = insp._id;
                         return `<tr>
-                            <td><strong>${insp.numero}</strong></td>
+                            <td><strong>${_esc(insp.numero)}</strong></td>
                             <td>${dt}</td>
-                            <td>${insp.inspector}</td>
-                            <td>${insp.liftLocation}</td>
-                            <td><span class="badge badge-${badge}">${insp.status}</span></td>
-                            <td class="text-right">
-                                <button class="btn btn-xs btn-danger" onclick="deleteInspectionDB('${insp._id}','${insp.numero}')" title="Apagar"><i class="fas fa-trash"></i></button>
+                            <td>${_esc(insp.inspector)}</td>
+                            <td>${_esc(insp.liftLocation)}</td>
+                            <td><span class="badge badge-${badge}">${label}</span></td>
+                            <td class="text-right text-nowrap">
+                                <button class="btn btn-xs btn-primary mr-1" onclick="loadInspectionFromDB('${id}')" title="Carregar no formulário"><i class="fas fa-upload"></i> Carregar</button>
+                                <button class="btn btn-xs btn-info mr-1" onclick="downloadInspectionPDF('${id}')" title="Descarregar PDF"><i class="fas fa-file-pdf"></i> PDF</button>
+                                <button class="btn btn-xs btn-danger" onclick="deleteInspectionDB('${id}','${_esc(insp.numero)}')" title="Apagar"><i class="fas fa-trash"></i></button>
                             </td>
                         </tr>`;
                     }).join('');
@@ -1091,6 +1101,106 @@
                 if (loading) loading.style.display = 'none';
                 if (tbody) tbody.innerHTML = '<tr><td colspan="6" class="text-center text-danger p-3">Erro ao carregar. Verifique a ligação.</td></tr>';
                 console.error('Erro ao carregar histórico:', err);
+            }
+        }
+
+        async function loadInspectionFromDB(id) {
+            try {
+                const token = localStorage.getItem('liftmanager_jwt') || localStorage.getItem('authToken');
+                const res = await fetch(`/api/inspections/${id}`, {
+                    headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+                });
+                const data = await res.json();
+                const insp = data.inspection || data.data || data;
+                if (!insp || !insp.numero) throw new Error('Dados inválidos');
+
+                // Preencher campos do formulário
+                $('#inspectionNumber').val(insp.numero || '');
+                if (insp.data) $('#inspectionDate').val(new Date(insp.data).toISOString().split('T')[0]);
+                $('#inspector').val(insp.inspector || '');
+                $('#liftLocation').val(insp.liftLocation || '');
+                $('#liftModel').val(insp.liftModel || '');
+                $('#clientEmail').val(insp.clientEmail || '');
+                $('#generalComments').val(insp.generalComments || '');
+                $('#recommendations').val(insp.recommendations || '');
+                if (insp.visitType) $('#visitType').val(insp.visitType);
+                if (insp.driveType) $('#driveType').val(insp.driveType);
+                if (insp.doorType)  $('#doorType').val(insp.doorType);
+
+                // Regenerar checklist e restaurar estados
+                if (typeof refreshChecklist === 'function') refreshChecklist();
+                if (insp.checklist && typeof insp.checklist === 'object') {
+                    setTimeout(() => {
+                        Object.entries(insp.checklist).forEach(([itemId, val]) => {
+                            const el = document.getElementById(itemId) || document.querySelector(`[name="${itemId}"]`);
+                            if (el) {
+                                if (el.type === 'checkbox') el.checked = !!val;
+                                else if (el.type === 'radio') {
+                                    const r = document.querySelector(`[name="${el.name}"][value="${val}"]`);
+                                    if (r) r.checked = true;
+                                } else el.value = val;
+                            }
+                        });
+                    }, 300);
+                }
+
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                toastr.success(`Relatório ${_esc(insp.numero)} carregado no formulário`);
+            } catch (err) {
+                console.error('Erro ao carregar relatório:', err);
+                toastr.error('Não foi possível carregar o relatório');
+            }
+        }
+
+        async function downloadInspectionPDF(id) {
+            try {
+                const token = localStorage.getItem('liftmanager_jwt') || localStorage.getItem('authToken');
+                const res = await fetch(`/api/inspections/${id}`, {
+                    headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+                });
+                const data = await res.json();
+                const insp = data.inspection || data.data || data;
+                if (!insp || !insp.numero) throw new Error('Dados inválidos');
+
+                const reportData = {
+                    inspectionNumber: insp.numero,
+                    inspectionDate: insp.data,
+                    inspector: insp.inspector,
+                    liftLocation: insp.liftLocation,
+                    liftModel: insp.liftModel,
+                    clientEmail: insp.clientEmail,
+                    visitType: insp.visitType,
+                    driveType: insp.driveType,
+                    doorType: insp.doorType,
+                    checklist: insp.checklist || {},
+                    generalComments: insp.generalComments || '',
+                    recommendations: insp.recommendations || ''
+                };
+                if (typeof INSPECTION_TEMPLATES !== 'undefined') {
+                    reportData.visitTypeMeta = INSPECTION_TEMPLATES.VISIT_META[insp.visitType] || null;
+                    reportData.driveTypeMeta = INSPECTION_TEMPLATES.NORMS_META[insp.driveType] || null;
+                    reportData.doorTypeMeta  = INSPECTION_TEMPLATES.DOOR_META[insp.doorType]   || null;
+                }
+
+                const pdfRes = await fetch('/api/inspections/download-pdf', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify(reportData)
+                });
+                if (!pdfRes.ok) throw new Error(`Erro ${pdfRes.status}`);
+                const blob = await pdfRes.blob();
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `Relatorio_${insp.numero.replace(/[\\/]/g, '-')}.pdf`;
+                a.style.display = 'none';
+                document.body.appendChild(a);
+                a.click();
+                setTimeout(() => { URL.revokeObjectURL(url); document.body.removeChild(a); }, 1500);
+                toastr.success('PDF gerado com sucesso');
+            } catch (err) {
+                console.error('Erro ao gerar PDF:', err);
+                toastr.error('Não foi possível gerar o PDF');
             }
         }
 

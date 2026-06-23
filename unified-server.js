@@ -2313,8 +2313,14 @@ app.get('/api/inspections', authenticateToken, async (req, res) => {
         const limit = Math.min(10000, Math.max(1, parseInt(req.query.limit) || 200));
         const page  = Math.max(1, parseInt(req.query.page) || 1);
         const skip  = (page - 1) * limit;
+        const filter = {};
+        if (req.query.visitType) {
+            const types = req.query.visitType.split(',').map(t => t.trim()).filter(Boolean);
+            filter.visitType = types.length === 1 ? types[0] : { $in: types };
+        }
+        if (req.query.liftId) filter.liftId = req.query.liftId;
         const inspections = await db.collection('inspections')
-            .find({})
+            .find(filter)
             .sort({ createdAt: -1 })
             .skip(skip)
             .limit(limit)
