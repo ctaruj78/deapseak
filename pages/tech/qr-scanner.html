@@ -1156,7 +1156,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
             // Tasks assigned to this technician this week
             try {
-                const weekReqs = await fetchWithAuth(
+                const weekReqs = await AuthManager.fetchWithAuth(
                     `/api/requests?assignedTo=${encodeURIComponent(username)}&fromDate=${weekAgo.toISOString()}&limit=1000`
                 );
                 const reqCount = weekReqs.success

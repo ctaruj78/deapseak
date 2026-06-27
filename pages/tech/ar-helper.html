@@ -694,14 +694,14 @@
                                     <h3 class="card-title"><i class="fas fa-vr-cardboard"></i> WebXR Overlay (3D)</h3>
                                 </div>
                                 <div class="card-body">
-                                    <div class="ar-webxr-overlay mt-3">
-                                      <a-scene embedded arjs>
-                                        <a-marker preset="hiro">
-                                          <a-box position="0 0.5 0" material="color: #4CAF50; opacity: 0.7;"></a-box>
-                                          <a-text value="Elevador" position="0 1.2 0" color="#fff"></a-text>
-                                        </a-marker>
-                                        <a-entity camera></a-entity>
-                                      </a-scene>
+                                    <div id="arWebxrPlaceholder" class="text-center py-4">
+                                        <i class="fas fa-vr-cardboard fa-3x text-muted mb-3"></i>
+                                        <p class="text-muted mb-3">Clique em "Ativar AR" para iniciar a visualização com marcador Hiro.<br><small>Requer câmara e HTTPS.</small></p>
+                                        <button class="btn btn-primary" id="startWebxrBtn">
+                                            <i class="fas fa-play"></i> Ativar AR
+                                        </button>
+                                    </div>
+                                    <div id="arWebxrScene" class="ar-webxr-overlay mt-3" style="display:none;min-height:300px;">
                                     </div>
                                 </div>
                             </div>
@@ -810,6 +810,22 @@
             setTimeout(() => {
                 window.messenger.render('.ar-control-panel');
             }, 1500);
+        });
+
+        // WebXR Overlay — só inicia câmara quando o utilizador clica
+        document.getElementById('startWebxrBtn').addEventListener('click', function() {
+            const placeholder = document.getElementById('arWebxrPlaceholder');
+            const sceneDiv = document.getElementById('arWebxrScene');
+            placeholder.style.display = 'none';
+            sceneDiv.style.display = 'block';
+            sceneDiv.innerHTML = `
+                <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;">
+                    <a-marker preset="hiro">
+                        <a-box position="0 0.5 0" material="color: #4CAF50; opacity: 0.7;"></a-box>
+                        <a-text value="Elevador" position="0 1.2 0" color="#fff"></a-text>
+                    </a-marker>
+                    <a-entity camera></a-entity>
+                </a-scene>`;
         });
 
         // Registo service worker

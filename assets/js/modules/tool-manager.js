@@ -130,9 +130,9 @@ class ToolManager {
             const row = `
                 <tr>
                     <td>
-                        <img src="../../assets/img/tools/${tool.image || 'default-tool.png'}"
-                             alt="${tool.name}" class="tool-image"
-                             onerror="this.src='../../assets/img/tools/default-tool.png'">
+                        <div class="tool-image d-flex align-items-center justify-content-center bg-light">
+                            <i class="fas fa-tools fa-2x text-muted"></i>
+                        </div>
                     </td>
                     <td>
                         <strong>${tool.name}</strong><br>
