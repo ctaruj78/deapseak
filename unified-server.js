@@ -15679,4 +15679,136 @@ async function atualizarOrcamentosExpirados() {
 atualizarOrcamentosExpirados();
 setInterval(atualizarOrcamentosExpirados, 24 * 60 * 60 * 1000);
 
+// ─────────────────────────────────────────────────────────────────────────────
+// ⏰ PLANIFICADOR DE MANUTENÇÃO AUTOMÁTICA
+// Todos os dias às 07:00 verifica elevadores com manutenção em atraso
+// e cria pedidos automáticos para os técnicos atribuídos.
+// Intervalo de manutenção por defeito: 30 dias (configurable via env MANUT_INTERVAL_DAYS)
+// ─────────────────────────────────────────────────────────────────────────────
+async function agendarManutencaoAutomatica() {
+    try {
+        if (!db) return;
+
+        const INTERVAL_DAYS = parseInt(process.env.MANUT_INTERVAL_DAYS || '30');
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const overdueThreshold = new Date(today);
+        overdueThreshold.setDate(overdueThreshold.getDate() - INTERVAL_DAYS);
+
+        // 1. Buscar elevadores com técnico atribuído e que estejam operacionais
+        const lifts = await db.collection('lifts').find(
+            { technician: { $exists: true, $ne: null }, status: { $nin: ['out_of_service', 'inactive'] } },
+            { projection: { _id: 1, municipalNumber: 1, address: 1, client: 1, technician: 1 } }
+        ).toArray();
+
+        if (!lifts.length) return;
+
+        const liftIds = lifts.map(l => l._id.toString());
+
+        // 2. Última manutenção completa por elevador (inspections ou requests concluídos)
+        const lastMaintMap = {};
+
+        const lastInspections = await db.collection('inspections').aggregate([
+            { $match: {
+                liftId: { $in: liftIds },
+                visitType: { $in: ['maintenance', 'Manutenção', 'manutencao'] }
+            }},
+            { $sort: { date: -1 } },
+            { $group: { _id: '$liftId', lastDate: { $first: '$date' } } }
+        ]).toArray();
+        lastInspections.forEach(r => { lastMaintMap[r._id] = new Date(r.lastDate); });
+
+        const lastRequests = await db.collection('requests').aggregate([
+            { $match: {
+                liftId: { $in: liftIds },
+                type: 'maintenance',
+                status: { $in: ['completed', 'resolved'] }
+            }},
+            { $sort: { createdAt: -1 } },
+            { $group: { _id: '$liftId', lastDate: { $first: '$createdAt' } } }
+        ]).toArray();
+        lastRequests.forEach(r => {
+            const d = new Date(r.lastDate);
+            if (!lastMaintMap[r._id] || d > lastMaintMap[r._id]) lastMaintMap[r._id] = d;
+        });
+
+        // 3. Pedidos de manutenção já pendentes (para evitar duplicados)
+        const pendingRequests = await db.collection('requests').find(
+            { liftId: { $in: liftIds }, type: 'maintenance', status: { $in: ['new', 'pending', 'assigned', 'in_progress'] } },
+            { projection: { liftId: 1 } }
+        ).toArray();
+        const alreadyPending = new Set(pendingRequests.map(r => r.liftId));
+
+        // 4. Filtrar elevadores com manutenção em atraso
+        const overdue = lifts.filter(lift => {
+            const id = lift._id.toString();
+            if (alreadyPending.has(id)) return false; // já tem pedido aberto
+            const last = lastMaintMap[id];
+            if (!last) return true; // nunca fez manutenção
+            return last <= overdueThreshold;
+        });
+
+        if (!overdue.length) {
+            console.log(`⏰ Manutenção automática: todos os ${lifts.length} elevadores em dia.`);
+            return;
+        }
+
+        // 5. Criar pedidos para elevadores em atraso
+        const reqCount = await db.collection('requests').countDocuments();
+        const year = today.getFullYear();
+        let created = 0;
+
+        for (let i = 0; i < overdue.length; i++) {
+            const lift = overdue[i];
+            const addr = lift.address
+                ? [lift.address.street, lift.address.city].filter(Boolean).join(', ')
+                : 'Endereço não disponível';
+            const liftLabel = lift.municipalNumber ? `Elevador №${lift.municipalNumber}` : 'Elevador';
+            const requestNumber = `REQ-${year}-${String(reqCount + i + 1).padStart(4, '0')}`;
+
+            await db.collection('requests').insertOne({
+                requestNumber,
+                type: 'maintenance',
+                title: `Manutenção técnica — ${liftLabel}`,
+                description: `Manutenção periódica automática (intervalo: ${INTERVAL_DAYS} dias).`,
+                status: 'new',
+                priority: 'medium',
+                liftId: lift._id.toString(),
+                liftMunicipalNumber: lift.municipalNumber || '',
+                liftAddress: addr,
+                liftClient: lift.client || '',
+                technician: lift.technician,
+                technicianId: lift.technician,
+                assignedTo: lift.technician,
+                scheduledAt: today.toISOString(),
+                source: 'auto_scheduler',
+                createdBy: 'Sistema Automático',
+                createdByUserId: null,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+            });
+            created++;
+        }
+
+        console.log(`⏰ Manutenção automática: ${created} pedido(s) criado(s) de ${lifts.length} elevador(es).`);
+    } catch (err) {
+        console.error('❌ Erro no agendamento automático de manutenção:', err.message);
+    }
+}
+
+// Calcular delay até próximas 07:00
+function _msUntil7am() {
+    const now = new Date();
+    const next7 = new Date(now);
+    next7.setHours(7, 0, 0, 0);
+    if (next7 <= now) next7.setDate(next7.getDate() + 1);
+    return next7 - now;
+}
+
+// Primeira execução às 07:00, depois a cada 24h
+setTimeout(() => {
+    agendarManutencaoAutomatica();
+    setInterval(agendarManutencaoAutomatica, 24 * 60 * 60 * 1000);
+}, _msUntil7am());
+
 module.exports = { app, server, io };
