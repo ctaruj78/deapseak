@@ -44,8 +44,13 @@
     <script src="../../assets/js/auth.js"></script>
     
     <script>
+        function escapeHtml(s) {
+            if (s == null) return '';
+            return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+        }
+
         let map, routingControl, userLocation;
-        
+
         // Obter ID do elevador desde URL
         function getLiftId() {
             const params = new URLSearchParams(window.location.search);
@@ -138,9 +143,9 @@
             document.getElementById('taskInfo').innerHTML = `
                 <div class="d-flex justify-content-between align-items-start">
                     <div>
-                        <h5><i class="fas fa-elevator text-primary"></i> ${lift.model || 'Elevador'} ${lift.municipalNumber ? `№${lift.municipalNumber}` : ''}</h5>
-                        <p class="mb-1"><i class="fas fa-map-marker-alt text-danger"></i> <strong>Endereço:</strong> ${fullAddress}</p>
-                        <p class="mb-1"><i class="fas fa-industry"></i> <strong>Fabricante:</strong> ${lift.manufacturer || 'Desconhecido'}</p>
+                        <h5><i class="fas fa-elevator text-primary"></i> ${escapeHtml(lift.model) || 'Elevador'} ${lift.municipalNumber ? `№${escapeHtml(lift.municipalNumber)}` : ''}</h5>
+                        <p class="mb-1"><i class="fas fa-map-marker-alt text-danger"></i> <strong>Endereço:</strong> ${escapeHtml(fullAddress)}</p>
+                        <p class="mb-1"><i class="fas fa-industry"></i> <strong>Fabricante:</strong> ${escapeHtml(lift.manufacturer) || 'Desconhecido'}</p>
                         <p class="mb-0"><i class="fas fa-info-circle"></i> <strong>Estado:</strong> ${statusText}</p>
                     </div>
                     <button class="btn btn-secondary" onclick="window.close()">
@@ -362,8 +367,8 @@
                 }).addTo(map);
 
                 marker.bindPopup(`
-                    <b>${lift.model || 'Elevador'} ${lift.municipalNumber ? '№' + lift.municipalNumber : ''}</b><br>
-                    ${fullAddress || ''}<br>
+                    <b>${escapeHtml(lift.model) || 'Elevador'} ${lift.municipalNumber ? '№' + escapeHtml(lift.municipalNumber) : ''}</b><br>
+                    ${escapeHtml(fullAddress) || ''}<br>
                     <a href="/pages/tech/task-map.html?lift=${lift._id || lift.id}" class="btn btn-sm btn-primary mt-1" style="color:#fff">
                         <i class="fas fa-route"></i> Rota
                     </a>

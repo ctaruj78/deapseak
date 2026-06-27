@@ -681,10 +681,10 @@
                 row.innerHTML = `
                     <td>${time}</td>
                     <td>
-                        ${address}
-                        ${task.lift?.municipalNumber ? `<br><small class="text-muted">Elevador №${task.lift.municipalNumber}</small>` : ''}
+                        ${escapeHtml(address)}
+                        ${task.lift?.municipalNumber ? `<br><small class="text-muted">Elevador №${escapeHtml(task.lift.municipalNumber)}</small>` : ''}
                     </td>
-                    <td>${workType}</td>
+                    <td>${escapeHtml(workType)}</td>
                     <td>${priorityBadge}</td>
                     <td>${statusBadge}</td>
                     <td>
@@ -716,6 +716,11 @@
                 
                 tasksTable.appendChild(row);
             });
+        }
+
+        function escapeHtml(s) {
+            if (s == null) return '';
+            return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
         }
 
         // Допоentreні функції para apresentação
@@ -1159,7 +1164,7 @@
                             <div class="d-flex justify-content-between align-items-start">
                                 <div>
                                     <strong class="text-success">${stop.order}.</strong>
-                                    <strong>${stop.address}</strong>${noCoordWarn}${distText}
+                                    <strong>${escapeHtml(stop.address)}</strong>${noCoordWarn}${distText}
                                     <div class="mt-1">${requests}</div>
                                 </div>
                                 <div class="ml-2 text-nowrap">

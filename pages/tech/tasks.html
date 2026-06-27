@@ -842,6 +842,11 @@
             }
         }
 
+        function escapeHtml(s) {
+            if (s == null) return '';
+            return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+        }
+
         // Gestor de tarefas para de técnicos (виutilizовуexiste API v2)
         class TechTaskManager {
             constructor() {
@@ -1000,8 +1005,8 @@
                     const row = document.createElement('tr');
                     row.innerHTML = `
                         <td>#${taskId.toString().substr(-6)}</td>
-                        <td>${task.liftId || 'Geral'}</td>
-                        <td>${task.type || 'Manutenção'}</td>
+                        <td>${escapeHtml(task.liftId) || 'Geral'}</td>
+                        <td>${escapeHtml(task.type) || 'Manutenção'}</td>
                         <td>
                             <span class="status-badge status-${task.status.replace('_', '-')}">
                                 ${this.getStatusText(task.status)}
@@ -1072,25 +1077,25 @@
                     <div class="row">
                         <div class="col-md-6">
                             <h6>Informação principal</h6>
-                            <p><strong>ID:</strong> #${task.id}</p>
-                            <p><strong>Elevador:</strong> ${task.liftId}</p>
-                            <p><strong>Endereço:</strong> ${task.liftAddress}</p>
-                            <p><strong>Tipo:</strong> ${task.type}</p>
+                            <p><strong>ID:</strong> #${escapeHtml(task.id)}</p>
+                            <p><strong>Elevador:</strong> ${escapeHtml(task.liftId)}</p>
+                            <p><strong>Endereço:</strong> ${escapeHtml(task.liftAddress)}</p>
+                            <p><strong>Tipo:</strong> ${escapeHtml(task.type)}</p>
                             <p><strong>Prioridade:</strong> <span class="priority-badge priority-${task.priority}">${this.getPriorityText(task.priority)}</span></p>
                             <p><strong>Estado:</strong> <span class="status-badge status-${task.status.replace('_', '-')}">${this.getStatusText(task.status)}</span></p>
                         </div>
                         <div class="col-md-6">
                             <h6>Detalhes</h6>
                             <p><strong>Criado:</strong> ${new Date(task.createdAt).toLocaleString('pt-PT')}</p>
-                            <p><strong>Criado por:</strong> ${task.createdBy}</p>
+                            <p><strong>Criado por:</strong> ${escapeHtml(task.createdBy)}</p>
                             ${task.deadline ? `<p><strong>Prazo:</strong> ${new Date(task.deadline).toLocaleString('pt-PT')}</p>` : ''}
                         </div>
                         <div class="col-12 mt-3">
                             <h6>Descrição</h6>
-                            <p>${task.description || 'Descrição ausente'}</p>
+                            <p>${escapeHtml(task.description) || 'Descrição ausente'}</p>
                             ${task.resolution ? `
                                 <h6>Solução</h6>
-                                <p>${task.resolution}</p>
+                                <p>${escapeHtml(task.resolution)}</p>
                             ` : ''}
                         </div>
                     </div>
