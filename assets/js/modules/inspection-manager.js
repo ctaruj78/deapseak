@@ -162,8 +162,8 @@ class InspectionManager {
                 <tr>
                     <td colspan="8" class="text-center py-5">
                         <i class="fas fa-search fa-3x text-muted mb-3"></i>
-                        <h4>Інспекцій не знайдено</h4>
-                        <p>Спробуйте змінити параметри фільтрів</p>
+                        <h4>Nenhuma inspeção encontrada</h4>
+                        <p>Tente alterar os parâmetros dos filtros</p>
                     </td>
                 </tr>
             `);
@@ -328,9 +328,30 @@ class InspectionManager {
         return filteredInspections;
     }
 
-    startNewInspection() {
+    async startNewInspection() {
         $('#newInspectionForm')[0].reset();
+        await this.populateLiftDropdown('#inspectionLift');
         $('#newInspectionModal').modal('show');
+    }
+
+    async populateLiftDropdown(selector) {
+        const select = $(selector);
+        select.html('<option value="">Selecione o elevador...</option>');
+        try {
+            const token = localStorage.getItem('authToken') || localStorage.getItem('token') || localStorage.getItem('liftmanager_jwt');
+            const res = await fetch('/api/lifts?limit=200', { headers: { 'Authorization': `Bearer ${token}` } });
+            if (!res.ok) return;
+            const data = await res.json();
+            const lifts = Array.isArray(data) ? data : (data.data || data.lifts || []);
+            lifts.forEach(lift => {
+                const street = lift.address?.street || lift.location || '';
+                const city = lift.address?.city || '';
+                const label = `${lift.brand || ''} ${lift.model || ''} — ${street}${city ? ', ' + city : ''}`.trim();
+                select.append(`<option value="${lift._id}">${label}</option>`);
+            });
+        } catch (e) {
+            console.error('Erro ao carregar elevadores:', e);
+        }
     }
 
     createInspection() {
@@ -344,7 +365,7 @@ class InspectionManager {
         };
 
         if (!formData.type || !formData.liftId || !formData.scheduledDate) {
-            this.showNotification('Por favor, заповніть обов\'язкові поля', 'error');
+            this.showNotification('Por favor, preencha todos os campos obrigatórios', 'error');
             return;
         }
 
