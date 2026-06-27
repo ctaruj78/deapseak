@@ -340,6 +340,37 @@ class ToolManager {
         this.showNotification('A preparar etiqueta para impressão...', 'info');
     }
 
+    printTools() {
+        window.print();
+    }
+
+    requestMaintenance(toolId) {
+        const tool = this.tools.find(t => t.id === toolId);
+        if (!tool) return;
+        tool.status = 'maintenance';
+        this.saveTools();
+        this.applyFilters();
+        $('#viewToolModal').modal('hide');
+        this.showNotification(`Ferramenta "${tool.name}" enviada para manutenção`, 'warning');
+    }
+
+    confirmCheckout() {
+        const toolId = window.currentToolId;
+        if (!toolId) return;
+        this.checkoutTool(toolId);
+        $('#checkoutToolModal').modal('hide');
+    }
+
+    checkoutToolModal(toolId) {
+        window.currentToolId = toolId;
+        // Set current datetime on the input
+        const now = new Date();
+        const pad = n => String(n).padStart(2, '0');
+        const localIso = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
+        document.getElementById('checkoutDate') && (document.getElementById('checkoutDate').value = localIso);
+        $('#checkoutToolModal').modal('show');
+    }
+
     prepareCheckoutForm(toolId) {
         window.currentToolId = toolId;
     }
@@ -370,6 +401,4 @@ class ToolManager {
     }
 }
 
-$(document).ready(function() {
-    window.toolManager = new ToolManager();
-});
+// Instantiated by tools.html inline script to avoid duplicate init
