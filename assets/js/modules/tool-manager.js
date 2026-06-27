@@ -1,11 +1,10 @@
-// tool-manager.js - МЕНЕДЖЕР ІНСТРУМЕНТІВ ДЛЯ ТЕХНІКА
+// tool-manager.js — Gestor de ferramentas para técnicos
 class ToolManager {
     constructor() {
-        this.tools = [];
+        this.tools = this.loadTools();
         this.filters = { status: 'all', category: 'all', location: 'all' };
         this.currentPage = 1;
         this.itemsPerPage = 10;
-        this.tools = this.loadTools();
         this.init();
     }
 
@@ -17,6 +16,8 @@ class ToolManager {
     }
 
     loadTools() {
+        const saved = localStorage.getItem('tools');
+        if (saved) return JSON.parse(saved);
         return [
             {
                 id: 'TOOL-004',
@@ -52,80 +53,33 @@ class ToolManager {
                 quantity: 1,
                 minQuantity: 1,
                 condition: 'broken',
-                notes: 'Não exibe resultados de medição',
+                notes: 'Não apresenta resultados de medição',
                 maintenanceHistory: [
                     {
                         date: '2024-06-05',
                         type: 'diagnostic',
-                        technician: 'Іван Петренко',
-                        notes: 'Diagnóstico do display - necessita substituição'
+                        technician: 'Técnico',
+                        notes: 'Diagnóstico do ecrã — necessita substituição'
                     }
                 ]
             }
         ];
     }
 
+    saveTools() {
+        localStorage.setItem('tools', JSON.stringify(this.tools));
+    }
+
     setupEventListeners() {
-        $('#statusFilter').on('change', (e) => {
-            this.filters.status = e.target.value;
-            this.applyFilters();
-        });
-
-        $('#categoryFilter').on('change', (e) => {
-            this.filters.category = e.target.value;
-            this.applyFilters();
-        });
-
-        $('#locationFilter').on('change', (e) => {
-            this.filters.location = e.target.value;
-            this.applyFilters();
-        });
-
-        // Pesquisa
-        $('#searchInput').on('input', (e) => {
-            this.searchTools(e.target.value);
-        });
-
-        // Події для модальних вікон
-        $('#viewToolModal').on('show.bs.modal', (event) => {
-            const button = $(event.relatedTarget);
-            const toolId = button.data('tool-id');
-            this.showToolDetails(toolId);
-        });
-
-        $('#checkoutToolModal').on('show.bs.modal', (event) => {
-            const button = $(event.relatedTarget);
-            const toolId = button.data('tool-id');
-            this.prepareCheckoutForm(toolId);
-        });
+        $('#statusFilter').on('change', () => { this.filters.status = $('#statusFilter').val(); this.applyFilters(); });
+        $('#categoryFilter').on('change', () => { this.filters.category = $('#categoryFilter').val(); this.applyFilters(); });
+        $('#locationFilter').on('change', () => { this.filters.location = $('#locationFilter').val(); this.applyFilters(); });
+        $('#searchInput').on('input', () => this.applyFilters());
     }
 
     applyFilters() {
-        let filteredTools = [...this.tools];
-
-        // Filtroація за статусом
-        if (this.filters.status !== 'all') {
-            filteredTools = filteredTools.filter(tool => 
-                tool.status === this.filters.status
-            );
-        }
-
-        // Filtroація за категорією
-        if (this.filters.category !== 'all') {
-            filteredTools = filteredTools.filter(tool => 
-                tool.category === this.filters.category
-            );
-        }
-
-        // Filtroація за локацією
-        if (this.filters.location !== 'all') {
-            filteredTools = filteredTools.filter(tool => 
-                tool.location === this.filters.location
-            );
-        }
-
         const searchTerm = $('#searchInput').val().toLowerCase();
-        filteredTools = filteredTools.filter(tool => {
+        const filtered = this.tools.filter(tool => {
             const matchesStatus = this.filters.status === 'all' || tool.status === this.filters.status;
             const matchesCategory = this.filters.category === 'all' || tool.category === this.filters.category;
             const matchesLocation = this.filters.location === 'all' || tool.location === this.filters.location;
@@ -133,13 +87,11 @@ class ToolManager {
                 tool.name.toLowerCase().includes(searchTerm) ||
                 tool.id.toLowerCase().includes(searchTerm) ||
                 (tool.manufacturer && tool.manufacturer.toLowerCase().includes(searchTerm));
-
             return matchesStatus && matchesCategory && matchesLocation && matchesSearch;
         });
-
-        this.renderTools(filteredTools);
-        this.updateStats(filteredTools);
-        this.updatePagination(filteredTools);
+        this.renderTools(filtered);
+        this.updateStats(filtered);
+        this.updatePagination(filtered.length);
     }
 
     resetFilters() {
@@ -152,24 +104,6 @@ class ToolManager {
         this.applyFilters();
     }
 
-    searchTools(query) {
-        if (!query.trim()) {
-            this.applyFilters();
-            return;
-        }
-
-        const filteredTools = this.tools.filter(tool =>
-            tool.name.toLowerCase().includes(query.toLowerCase()) ||
-            tool.id.toLowerCase().includes(query.toLowerCase()) ||
-            tool.manufacturer.toLowerCase().includes(query.toLowerCase()) ||
-            tool.model.toLowerCase().includes(query.toLowerCase()) ||
-            (tool.serialNumber && tool.serialNumber.toLowerCase().includes(query.toLowerCase()))
-        );
-
-        this.renderTools(filteredTools);
-        this.updateStats(filteredTools);
-    }
-
     renderTools(tools) {
         const tbody = $('#toolsTableBody');
         tbody.empty();
@@ -179,97 +113,87 @@ class ToolManager {
                 <tr>
                     <td colspan="7" class="text-center py-5">
                         <i class="fas fa-search fa-3x text-muted mb-3"></i>
-                        <h4>Інструментів не знайдено</h4>
-                        <p>Спробуйте змінити параметри фільтрів</p>
+                        <h4>Nenhuma ferramenta encontrada</h4>
+                        <p>Tente alterar os parâmetros dos filtros</p>
                     </td>
                 </tr>
             `);
+            $('#itemsShown').text(0);
+            $('#totalItems').text(0);
             return;
         }
 
-        // Пагінація
         const startIndex = (this.currentPage - 1) * this.itemsPerPage;
-        const paginatedTools = tools.slice(startIndex, startIndex + this.itemsPerPage);
+        const paginated = tools.slice(startIndex, startIndex + this.itemsPerPage);
 
-        paginatedTools.forEach(tool => {
-            const row = this.createToolRow(tool);
+        paginated.forEach(tool => {
+            const row = `
+                <tr>
+                    <td>
+                        <img src="../../assets/img/tools/${tool.image || 'default-tool.png'}"
+                             alt="${tool.name}" class="tool-image"
+                             onerror="this.src='../../assets/img/tools/default-tool.png'">
+                    </td>
+                    <td>
+                        <strong>${tool.name}</strong><br>
+                        <small class="text-muted">${tool.id}</small>
+                    </td>
+                    <td>${this.getCategoryText(tool.category)}</td>
+                    <td><span class="tool-status status-${tool.status}">${this.getStatusText(tool.status)}</span></td>
+                    <td>${this.getLocationText(tool.location)}</td>
+                    <td>${this.formatDate(tool.lastInspection)}</td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="btn btn-sm btn-info btn-action" onclick="toolManager.viewTool('${tool.id}')" title="Ver">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <button class="btn btn-sm btn-secondary btn-action" onclick="toolManager.printToolLabel('${tool.id}')" title="Imprimir etiqueta">
+                                <i class="fas fa-print"></i>
+                            </button>
+                            ${tool.status === 'available' ?
+                                `<button class="btn btn-sm btn-success btn-action" onclick="toolManager.checkoutTool('${tool.id}')" title="Entregar">
+                                    <i class="fas fa-sign-out-alt"></i>
+                                </button>` : ''}
+                            ${tool.status === 'in-use' ?
+                                `<button class="btn btn-sm btn-warning btn-action" onclick="toolManager.returnTool('${tool.id}')" title="Devolver">
+                                    <i class="fas fa-sign-in-alt"></i>
+                                </button>` : ''}
+                        </div>
+                    </td>
+                </tr>
+            `;
             tbody.append(row);
         });
 
-        $('#itemsShown').text(paginatedTools.length);
+        $('#itemsShown').text(paginated.length);
         $('#totalItems').text(tools.length);
-    }
-
-    createToolRow(tool) {
-        const statusClass = `status-${tool.status}`;
-        const categoryClass = `category-${tool.category}`;
-        const statusText = this.getStatusText(tool.status);
-        const categoryText = this.getCategoryText(tool.category);
-        const locationText = this.getLocationText(tool.location);
-        
-        return $(`
-            <tr>
-                <td>
-                    <img src="../assets/img/tools/${tool.image}" 
-                         class="tool-image" 
-                         alt="${tool.name}"
-                         onerror="this.src='../assets/img/tools/default.jpg'">
-                </td>
-                <td>
-                    <strong>${tool.name}</strong><br>
-                    <small class="text-muted">${tool.id}</small>
-                </td>
-                <td><span class="category-badge ${categoryClass}">${categoryText}</span></td>
-                <td><span class="status-badge ${statusClass}">${statusText}</span></td>
-                <td>${locationText}</td>
-                <td>${this.formatDate(tool.lastInspection)}</td>
-                <td>
-                    <div class="btn-group">
-                        <button class="btn btn-sm btn-info btn-icon" onclick="toolManager.viewTool('${tool.id}')" title="Перегляд">
-                            <i class="fas fa-eye"></i>
-                        </button>
-                        <button class="btn btn-sm btn-secondary btn-icon" onclick="toolManager.printToolLabel('${tool.id}')" title="Друк ярлика">
-                            <i class="fas fa-print"></i>
-                        </button>
-                        ${tool.status === 'available' ? 
-                            `<button class="btn btn-sm btn-success btn-icon" onclick="toolManager.checkoutTool('${tool.id}')" title="Видати">
-                                <i class="fas fa-sign-out-alt"></i>
-                            </button>` : ''}
-                        ${tool.status === 'in-use' ? 
-                            `<button class="btn btn-sm btn-warning btn-icon" onclick="toolManager.returnTool('${tool.id}')" title="Повернути">
-                                <i class="fas fa-sign-in-alt"></i>
-                            </button>` : ''}
-                    </div>
-                </td>
-            </tr>
-        `);
     }
 
     getStatusText(status) {
         const statuses = {
-            'available': 'Доступний',
-            'in-use': 'Використовується',
+            'available': 'Disponível',
+            'in-use': 'Em uso',
             'maintenance': 'Manutenção',
-            'broken': 'Несправний'
+            'broken': 'Avariado'
         };
         return statuses[status] || status;
     }
 
     getCategoryText(category) {
         const categories = {
-            'mechanical': 'Механічний',
-            'electrical': 'Електричний',
-            'safety': 'Безпека',
-            'measuring': 'Вимірювальний'
+            'mechanical': 'Mecânica',
+            'electrical': 'Elétrica',
+            'safety': 'Segurança',
+            'measuring': 'Medição'
         };
         return categories[category] || category;
     }
 
     getLocationText(location) {
         const locations = {
-            'van': 'Автомобіль',
-            'warehouse': 'Склад',
-            'site': 'На об\'єкті'
+            'van': 'Viatura',
+            'warehouse': 'Armazém',
+            'site': 'Em obra'
         };
         return locations[location] || location;
     }
@@ -282,627 +206,170 @@ class ToolManager {
     updateStats(tools = this.tools) {
         $('#totalTools').text(tools.length);
         $('#toolsBadge').text(tools.filter(t => t.status === 'in-use' || t.status === 'maintenance').length);
-        
-        const available = tools.filter(t => t.status === 'available').length;
-        $('#availableTools').text(available);
-
-        const inUse = tools.filter(t => t.status === 'in-use').length;
-        $('#inUseTools').text(inUse);
-
-        const maintenance = tools.filter(t => t.status === 'maintenance' || t.status === 'broken').length;
-        $('#maintenanceTools').text(maintenance);
+        $('#availableTools').text(tools.filter(t => t.status === 'available').length);
+        $('#inUseTools').text(tools.filter(t => t.status === 'in-use').length);
+        $('#maintenanceTools').text(tools.filter(t => t.status === 'maintenance' || t.status === 'broken').length);
     }
 
-    updatePagination(tools) {
-        const totalPages = Math.ceil(tools.length / this.itemsPerPage);
+    updateStatistics() {
+        this.updateStats();
+    }
+
+    updatePagination(totalItems) {
+        const totalPages = Math.ceil(totalItems / this.itemsPerPage) || 1;
         $('#totalPages').text(totalPages);
         $('#currentPage').text(this.currentPage);
-
-        // Atualização стану кнопок пагінації
         $('.page-item').removeClass('disabled');
-        if (this.currentPage === 1) {
-            $('.page-item:first-child').addClass('disabled');
-        }
-        if (this.currentPage === totalPages) {
-            $('.page-item:last-child').addClass('disabled');
-        }
+        if (this.currentPage === 1) $('.page-item:first-child').addClass('disabled');
+        if (this.currentPage === totalPages) $('.page-item:last-child').addClass('disabled');
     }
 
     previousPage() {
-        if (this.currentPage > 1) {
-            this.currentPage--;
-            this.applyFilters();
-        }
+        if (this.currentPage > 1) { this.currentPage--; this.applyFilters(); }
     }
 
     nextPage() {
-        const totalPages = Math.ceil(this.getFilteredTools().length / this.itemsPerPage);
-        if (this.currentPage < totalPages) {
-            this.currentPage++;
-            this.applyFilters();
-        }
-    }
-
-    getFilteredTools() {
-        let filteredTools = [...this.tools];
-
-        if (this.filters.status !== 'all') {
-            filteredTools = filteredTools.filter(tool => 
-                tool.status === this.filters.status
-            );
-        }
-
-        if (this.filters.category !== 'all') {
-            filteredTools = filteredTools.filter(tool => 
-                tool.category === this.filters.category
-            );
-        }
-
-        if (this.filters.location !== 'all') {
-            filteredTools = filteredTools.filter(tool => 
-                tool.location === this.filters.location
-            );
-        }
-
-        const searchTerm = $('#searchInput').val().toLowerCase();
-        filteredTools = filteredTools.filter(tool => {
-            const matchesStatus = this.filters.status === 'all' || tool.status === this.filters.status;
-            const matchesCategory = this.filters.category === 'all' || tool.category === this.filters.category;
-            const matchesLocation = this.filters.location === 'all' || tool.location === this.filters.location;
-            const matchesSearch = !searchTerm ||
-                tool.name.toLowerCase().includes(searchTerm) ||
-                tool.id.toLowerCase().includes(searchTerm) ||
-                (tool.manufacturer && tool.manufacturer.toLowerCase().includes(searchTerm));
-
-            return matchesStatus && matchesCategory && matchesLocation && matchesSearch;
-        });
-
-        return filteredTools;
+        const totalPages = Math.ceil(this.tools.length / this.itemsPerPage);
+        if (this.currentPage < totalPages) { this.currentPage++; this.applyFilters(); }
     }
 
     checkLowStock() {
-        const lowStockTools = this.tools.filter(tool => tool.quantity <= tool.minQuantity);
-
+        const lowStock = this.tools.filter(tool => tool.quantity <= tool.minQuantity);
         const container = $('#lowStockTools');
         container.empty();
 
-        if (lowStockTools.length === 0) {
+        if (lowStock.length === 0) {
             container.html('<p class="text-muted text-center">Todas as ferramentas em quantidade suficiente</p>');
             return;
         }
 
-        lowStockTools.forEach(tool => {
-            const alertHtml = `
+        lowStock.forEach(tool => {
+            container.append(`
                 <div class="col-md-6">
                     <div class="low-stock-alert">
                         <div class="d-flex justify-content-between align-items-start">
                             <div>
                                 <div class="tool-name">${tool.name}</div>
                                 <div class="stock-info">
-                                    В наявності: ${tool.quantity} од. | Мінімум: ${tool.minQuantity} од.
+                                    Em stock: ${tool.quantity} un. | Mínimo: ${tool.minQuantity} un.
                                 </div>
                             </div>
                             <button class="btn btn-sm btn-primary" onclick="toolManager.orderTool('${tool.id}')">
-                                <i class="fas fa-plus"></i> Замовити
+                                <i class="fas fa-plus"></i> Encomendar
                             </button>
                         </div>
                     </div>
                 </div>
-            `;
-            container.append(alertHtml);
+            `);
         });
-    }
-
-    scanTool() {
-        $('#scanToolModal').modal('show');
-        // Тут буде реалізація Leitura QR
-        this.showNotification('Функція Leitura QR em desenvolvimento', 'info');
-    }
-
-    saveTools() {
-        localStorage.setItem('tools', JSON.stringify(this.tools));
-    }
-
-    // Нові методи для HTML інтерфейсу
-    loadUserInfo() {
-        const user = JSON.parse(localStorage.getItem('currentUser')) || { name: 'Técnico' };
-        $('#userName').text(user.name || 'Técnico');
-    }
-
-    updateStatistics() {
-        const stats = this.getStats();
-        $('#totalTools').text(stats.total);
-        $('#availableTools').text(stats.available);
-        $('#inUseTools').text(stats.inUse);
-        $('#maintenanceTools').text(stats.maintenance);
-    }
-
-    getStats() {
-        const total = this.tools.length;
-        const available = this.tools.filter(t => t.status === 'available').length;
-        const inUse = this.tools.filter(t => t.status === 'in-use').length;
-        const maintenance = this.tools.filter(t => t.status === 'maintenance' || t.status === 'broken').length;
-
-        return { total, available, inUse, maintenance };
-    }
-
-    setupEventListeners() {
-        // Filtroи
-        $('#statusFilter').on('change', () => {
-            this.filters.status = $('#statusFilter').val();
-            this.applyFilters();
-        });
-
-        $('#categoryFilter').on('change', () => {
-            this.filters.category = $('#categoryFilter').val();
-            this.applyFilters();
-        });
-
-        $('#locationFilter').on('change', () => {
-            this.filters.location = $('#locationFilter').val();
-            this.applyFilters();
-        });
-
-        $('#searchInput').on('input', () => {
-            this.applyFilters();
-        });
-
-        // Події для модальних вікон
-        $('#viewToolModal').on('show.bs.modal', (event) => {
-            const button = $(event.relatedTarget);
-            const toolId = button.data('tool-id');
-            this.showToolDetails(toolId);
-        });
-
-        $('#checkoutToolModal').on('show.bs.modal', (event) => {
-            const button = $(event.relatedTarget);
-            const toolId = button.data('tool-id');
-            this.prepareCheckoutForm(toolId);
-        });
-    }
-
-    applyFilters() {
-        const searchTerm = $('#searchInput').val().toLowerCase();
-        const filteredTools = this.tools.filter(tool => {
-            const matchesStatus = this.filters.status === 'all' || tool.status === this.filters.status;
-            const matchesCategory = this.filters.category === 'all' || tool.category === this.filters.category;
-            const matchesLocation = this.filters.location === 'all' || tool.location === this.filters.location;
-            const matchesSearch = !searchTerm ||
-                tool.name.toLowerCase().includes(searchTerm) ||
-                tool.id.toLowerCase().includes(searchTerm) ||
-                (tool.manufacturer && tool.manufacturer.toLowerCase().includes(searchTerm));
-
-            return matchesStatus && matchesCategory && matchesLocation && matchesSearch;
-        });
-
-        this.renderToolsTable(filteredTools);
-        this.updatePagination(filteredTools.length);
-    }
-
-    renderToolsTable(tools) {
-        const startIndex = (this.currentPage - 1) * this.itemsPerPage;
-        const endIndex = startIndex + this.itemsPerPage;
-        const pageTools = tools.slice(startIndex, endIndex);
-
-        const tbody = $('#toolsTableBody');
-        tbody.empty();
-
-        pageTools.forEach(tool => {
-            const row = `
-                <tr>
-                    <td>
-                        <img src="../../assets/img/tools/${tool.image || 'default-tool.png'}"
-                             alt="${tool.name}" class="tool-image" onerror="this.src='../../assets/img/tools/default-tool.png'">
-                    </td>
-                    <td>
-                        <strong>${tool.name}</strong><br>
-                        <small class="text-muted">${tool.id}</small>
-                    </td>
-                    <td>${this.getCategoryText(tool.category)}</td>
-                    <td>
-                        <span class="tool-status status-${tool.status}">${this.getStatusText(tool.status)}</span>
-                    </td>
-                    <td>${this.getLocationText(tool.location)}</td>
-                    <td>${this.formatDate(tool.lastInspection)}</td>
-                    <td>
-                        <div class="action-buttons">
-                            <button class="btn btn-sm btn-info btn-action" onclick="toolManager.viewTool('${tool.id}')" title="Ver">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                            <button class="btn btn-sm btn-warning btn-action" onclick="toolManager.checkoutTool('${tool.id}')" title="Видати">
-                                <i class="fas fa-sign-out-alt"></i>
-                            </button>
-                            <button class="btn btn-sm btn-success btn-action" onclick="toolManager.returnTool('${tool.id}')" title="Повернути">
-                                <i class="fas fa-sign-in-alt"></i>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-            `;
-            tbody.append(row);
-        });
-
-        $('#itemsShown').text(pageTools.length);
-        $('#totalItems').text(tools.length);
-    }
-
-    updatePagination(totalItems) {
-        const totalPages = Math.ceil(totalItems / this.itemsPerPage);
-        $('#totalPages').text(totalPages);
-        $('#currentPage').text(this.currentPage);
-
-        // Atualização стану кнопок пагінації
-        $('.page-item').removeClass('disabled');
-        if (this.currentPage === 1) {
-            $('.page-item:first-child').addClass('disabled');
-        }
-        if (this.currentPage === totalPages) {
-            $('.page-item:last-child').addClass('disabled');
-        }
-    }
-
-    nextPage() {
-        const totalPages = Math.ceil(this.getFilteredTools().length / this.itemsPerPage);
-        if (this.currentPage < totalPages) {
-            this.currentPage++;
-            this.applyFilters();
-        }
-    }
-
-    previousPage() {
-        if (this.currentPage > 1) {
-            this.currentPage--;
-            this.applyFilters();
-        }
-    }
-
-    getFilteredTools() {
-        const searchTerm = $('#searchInput').val().toLowerCase();
-        return this.tools.filter(tool => {
-            const matchesStatus = this.filters.status === 'all' || tool.status === this.filters.status;
-            const matchesCategory = this.filters.category === 'all' || tool.category === this.filters.category;
-            const matchesLocation = this.filters.location === 'all' || tool.location === this.filters.location;
-            const matchesSearch = !searchTerm ||
-                tool.name.toLowerCase().includes(searchTerm) ||
-                tool.id.toLowerCase().includes(searchTerm) ||
-                (tool.manufacturer && tool.manufacturer.toLowerCase().includes(searchTerm));
-
-            return matchesStatus && matchesCategory && matchesLocation && matchesSearch;
-        });
-    }
-
-    resetFilters() {
-        this.filters = { status: 'all', category: 'all', location: 'all' };
-        $('#statusFilter').val('all');
-        $('#categoryFilter').val('all');
-        $('#locationFilter').val('all');
-        $('#searchInput').val('');
-        this.currentPage = 1;
-        this.applyFilters();
     }
 
     viewTool(toolId) {
-        currentToolId = toolId;
+        const tool = this.tools.find(t => t.id === toolId);
+        if (!tool) return;
+        window.currentToolId = toolId;
+
+        const html = `
+            <div class="tool-details-grid">
+                <div class="detail-section">
+                    <h5><i class="fas fa-info-circle"></i> Informação geral</h5>
+                    <div class="detail-item"><span class="detail-label">ID:</span><span class="detail-value">${tool.id}</span></div>
+                    <div class="detail-item"><span class="detail-label">Nome:</span><span class="detail-value">${tool.name}</span></div>
+                    <div class="detail-item"><span class="detail-label">Categoria:</span><span class="detail-value">${this.getCategoryText(tool.category)}</span></div>
+                    <div class="detail-item"><span class="detail-label">Fabricante:</span><span class="detail-value">${tool.manufacturer || 'Desconhecido'}</span></div>
+                    <div class="detail-item"><span class="detail-label">Modelo:</span><span class="detail-value">${tool.model || '-'}</span></div>
+                    <div class="detail-item"><span class="detail-label">Número de série:</span><span class="detail-value">${tool.serialNumber || '-'}</span></div>
+                </div>
+                <div class="detail-section">
+                    <h5><i class="fas fa-cogs"></i> Estado e localização</h5>
+                    <div class="detail-item"><span class="detail-label">Estado:</span><span class="detail-value"><span class="tool-status status-${tool.status}">${this.getStatusText(tool.status)}</span></span></div>
+                    <div class="detail-item"><span class="detail-label">Localização:</span><span class="detail-value">${this.getLocationText(tool.location)}</span></div>
+                    <div class="detail-item"><span class="detail-label">Quantidade:</span><span class="detail-value">${tool.quantity} un.</span></div>
+                    <div class="detail-item"><span class="detail-label">Mínimo:</span><span class="detail-value">${tool.minQuantity} un.</span></div>
+                    <div class="detail-item"><span class="detail-label">Última verificação:</span><span class="detail-value">${this.formatDate(tool.lastInspection)}</span></div>
+                    <div class="detail-item"><span class="detail-label">Próxima verificação:</span><span class="detail-value">${this.formatDate(tool.nextInspection)}</span></div>
+                </div>
+                ${tool.notes ? `
+                    <div class="detail-section" style="grid-column: 1/-1">
+                        <h5><i class="fas fa-sticky-note"></i> Notas</h5>
+                        <p>${tool.notes}</p>
+                    </div>
+                ` : ''}
+            </div>
+        `;
+
+        $('#toolDetailsContent').html(html);
         $('#viewToolModal').modal('show');
     }
 
-    showToolDetails(toolId) {
+    checkoutTool(toolId) {
         const tool = this.tools.find(t => t.id === toolId);
         if (!tool) return;
-
-        const detailsHtml = `
-            <div class="tool-details-grid">
-                <div class="detail-section">
-                    <h5><i class="fas fa-info-circle"></i> Основна інформація</h5>
-                    <div class="detail-item">
-                        <span class="detail-label">ID:</span>
-                        <span class="detail-value">${tool.id}</span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="detail-label">Nome:</span>
-                        <span class="detail-value">${tool.name}</span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="detail-label">Категорія:</span>
-                        <span class="detail-value">${this.getCategoryText(tool.category)}</span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="detail-label">Виробник:</span>
-                        <span class="detail-value">${tool.manufacturer || 'Desconhecido'}</span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="detail-label">Modelo:</span>
-                        <span class="detail-value">${tool.model || 'Невідома'}</span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="detail-label">Número de série:</span>
-                        <span class="detail-value">${tool.serialNumber || 'Немає'}</span>
-                    </div>
-                </div>
-
-                <div class="detail-section">
-                    <h5><i class="fas fa-cogs"></i> Стан та локація</h5>
-                    <div class="detail-item">
-                        <span class="detail-label">Estado:</span>
-                        <span class="detail-value">
-                            <span class="tool-status status-${tool.status}">${this.getStatusText(tool.status)}</span>
-                        </span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="detail-label">Локація:</span>
-                        <span class="detail-value">${this.getLocationText(tool.location)}</span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="detail-label">Стан:</span>
-                        <span class="detail-value">${this.getConditionText(tool.condition)}</span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="detail-label">Кількість:</span>
-                        <span class="detail-value">${tool.quantity} од.</span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="detail-label">Мінімум:</span>
-                        <span class="detail-value">${tool.minQuantity} од.</span>
-                    </div>
-                </div>
-
-                <div class="detail-section">
-                    <h5><i class="fas fa-calendar-alt"></i> Datas</h5>
-                    <div class="detail-item">
-                        <span class="detail-label">Data покупки:</span>
-                        <span class="detail-value">${this.formatDate(tool.purchaseDate)}</span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="detail-label">Остання перевірка:</span>
-                        <span class="detail-value">${this.formatDate(tool.lastInspection)}</span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="detail-label">Наступна перевірка:</span>
-                        <span class="detail-value">${this.formatDate(tool.nextInspection)}</span>
-                    </div>
-                </div>
-            </div>
-
-            ${tool.notes ? `
-                <div class="detail-section">
-                    <h5><i class="fas fa-sticky-note"></i> Примітки</h5>
-                    <p>${tool.notes}</p>
-                </div>
-            ` : ''}
-
-            ${tool.maintenanceHistory && tool.maintenanceHistory.length > 0 ? `
-                <div class="detail-section">
-                    <h5><i class="fas fa-tools"></i> Історія обслуговування</h5>
-                    <div class="maintenance-history">
-                        ${tool.maintenanceHistory.map(item => `
-                            <div class="maintenance-item ${item.type === 'completed' ? 'completed' : ''}">
-                                <div class="date">${this.formatDate(item.date)}</div>
-                                <div class="description">${item.notes}</div>
-                                <small>Técnico: ${item.technician}</small>
-                            </div>
-                        `).join('')}
-                    </div>
-                </div>
-            ` : ''}
-
-            ${tool.checkoutHistory && tool.checkoutHistory.length > 0 ? `
-                <div class="detail-section">
-                    <h5><i class="fas fa-exchange-alt"></i> Історія видач</h5>
-                    <div class="checkout-history">
-                        ${tool.checkoutHistory.map(item => `
-                            <div class="checkout-item ${item.returned ? 'returned' : ''}">
-                                <div class="technician">${item.technician}</div>
-                                <div class="dates">
-                                    Видано: ${this.formatDate(item.checkoutDate)}
-                                    ${item.returnDate ? `Повернено: ${this.formatDate(item.returnDate)}` : `Pendenteться: ${this.formatDate(item.expectedReturn)}`}
-                                </div>
-                                <span class="status ${item.returned ? 'returned' : 'active'}">${item.returned ? 'Повернено' : 'Активно'}</span>
-                            </div>
-                        `).join('')}
-                    </div>
-                </div>
-            ` : ''}
-        `;
-
-        $('#toolDetailsContent').html(detailsHtml);
-
-        // Atualização кнопок в залежності від статусу
-        const checkoutBtn = $('#checkoutBtn');
-        const maintenanceBtn = $('#maintenanceBtn');
-
-        if (tool.status === 'available') {
-            checkoutBtn.show();
-            maintenanceBtn.show();
-        } else if (tool.status === 'in-use') {
-            checkoutBtn.hide();
-            maintenanceBtn.show();
-        } else {
-            checkoutBtn.hide();
-            maintenanceBtn.hide();
-        }
-    }
-
-    prepareCheckoutForm(toolId) {
-        const tool = this.tools.find(t => t.id === toolId);
-        if (!tool) return;
-
-        $('#toolSelect').html(`<option value="${tool.id}">${tool.name} (${tool.id})</option>`);
-        $('#technicianName').val('');
-        $('#expectedReturnDate').val('');
-        $('#checkoutNotes').val('');
-    }
-
-    confirmCheckout() {
-        const toolId = $('#toolSelect').val();
-        const technicianName = $('#technicianName').val().trim();
-        const expectedReturnDate = $('#expectedReturnDate').val();
-        const notes = $('#checkoutNotes').val().trim();
-
-        if (!technicianName || !expectedReturnDate) {
-            this.showNotification('Por favor, заповніть всі обов\'язкові поля', 'error');
+        if (tool.status !== 'available') {
+            this.showNotification('Ferramenta não disponível para entrega', 'warning');
             return;
         }
-
-        const tool = this.tools.find(t => t.id === toolId);
-        if (!tool) return;
-
-        // Atualização статусу інструменту
         tool.status = 'in-use';
-        tool.currentUser = technicianName;
-        tool.checkoutDate = new Date().toISOString().split('T')[0];
-        tool.expectedReturn = expectedReturnDate;
-
-        if (!tool.checkoutHistory) tool.checkoutHistory = [];
-        tool.checkoutHistory.push({
-            technician: technicianName,
-            checkoutDate: tool.checkoutDate,
-            expectedReturn: expectedReturnDate,
-            notes: notes,
-            returned: false
-        });
-
         this.saveTools();
         this.applyFilters();
-        this.updateStatistics();
-
-        $('#checkoutToolModal').modal('hide');
-        this.showNotification(`Інструмент "${tool.name}" видано техніку ${technicianName}`, 'success');
+        this.checkLowStock();
+        this.showNotification(`Ferramenta "${tool.name}" entregue`, 'success');
     }
 
     returnTool(toolId) {
         const tool = this.tools.find(t => t.id === toolId);
-        if (!tool || tool.status !== 'in-use') {
-            this.showNotification('Інструмент не знаходиться в використанні', 'warning');
-            return;
-        }
-
-        const returnDate = new Date().toISOString().split('T')[0];
-        const lastCheckout = tool.checkoutHistory[tool.checkoutHistory.length - 1];
-
-        if (lastCheckout) {
-            lastCheckout.returnDate = returnDate;
-            lastCheckout.returned = true;
-        }
-
+        if (!tool) return;
         tool.status = 'available';
-        delete tool.currentUser;
-        delete tool.checkoutDate;
-        delete tool.expectedReturn;
-
         this.saveTools();
         this.applyFilters();
-        this.updateStatistics();
-
-        this.showNotification(`Інструмент "${tool.name}" повернено`, 'success');
+        this.checkLowStock();
+        this.showNotification(`Ferramenta "${tool.name}" devolvida`, 'success');
     }
 
-    checkLowStock() {
-        const lowStockTools = this.tools.filter(tool => tool.quantity <= tool.minQuantity);
-
-        const container = $('#lowStockTools');
-        container.empty();
-
-        if (lowStockTools.length === 0) {
-            container.html('<p class="text-muted text-center">Todas as ferramentas em quantidade suficiente</p>');
-            return;
-        }
-
-        lowStockTools.forEach(tool => {
-            const alertHtml = `
-                <div class="col-md-6">
-                    <div class="low-stock-alert">
-                        <div class="d-flex justify-content-between align-items-start">
-                            <div>
-                                <div class="tool-name">${tool.name}</div>
-                                <div class="stock-info">
-                                    В наявності: ${tool.quantity} од. | Мінімум: ${tool.minQuantity} од.
-                                </div>
-                            </div>
-                            <button class="btn btn-sm btn-primary" onclick="toolManager.orderTool('${tool.id}')">
-                                <i class="fas fa-plus"></i> Замовити
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            `;
-            container.append(alertHtml);
-        });
+    orderTool(toolId) {
+        const tool = this.tools.find(t => t.id === toolId);
+        if (!tool) return;
+        this.showNotification(`Encomenda de "${tool.name}" registada`, 'info');
     }
 
     scanTool() {
-        $('#scanToolModal').modal('show');
-        // Тут буде реалізація Leitura QR
-        this.showNotification('Функція Leitura QR em desenvolvimento', 'info');
+        this.showNotification('Função de leitura QR em desenvolvimento', 'info');
     }
 
-    saveTools() {
-        localStorage.setItem('tools', JSON.stringify(this.tools));
+    printToolLabel(toolId) {
+        this.showNotification('A preparar etiqueta para impressão...', 'info');
+    }
+
+    prepareCheckoutForm(toolId) {
+        window.currentToolId = toolId;
+    }
+
+    exportTools() {
+        const headers = ['ID', 'Nome', 'Categoria', 'Estado', 'Localização', 'Fabricante', 'Modelo', 'Última verificação'];
+        const rows = this.tools.map(t => [
+            t.id, t.name, this.getCategoryText(t.category), this.getStatusText(t.status),
+            this.getLocationText(t.location), t.manufacturer || '', t.model || '',
+            this.formatDate(t.lastInspection)
+        ]);
+        const csv = [headers, ...rows].map(r => r.join(',')).join('\n');
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `ferramentas_${new Date().toISOString().split('T')[0]}.csv`;
+        link.click();
+        this.showNotification('Exportação concluída', 'success');
     }
 
     showNotification(message, type = 'info') {
         if (typeof Swal !== 'undefined') {
-            const Toast = Swal.mixin({
-                toast: true,
-                position: 'bottom-end',
-                showConfirmButton: false,
-                timer: 3000,
-                timerProgressBar: true
-            });
-            const iconMap = { success: 'success', error: 'error', warning: 'warning', info: 'info' };
-            Toast.fire({ icon: iconMap[type] || 'info', title: message });
-        } else {
-            toastr.info(message);
+            Swal.mixin({ toast: true, position: 'bottom-end', showConfirmButton: false, timer: 3000, timerProgressBar: true })
+                .fire({ icon: type, title: message });
+        } else if (typeof toastr !== 'undefined') {
+            toastr[type] ? toastr[type](message) : toastr.info(message);
         }
-    }
-
-    // Допоміжні методи
-    getCategoryText(category) {
-        const categories = {
-            mechanical: 'Механічний',
-            electrical: 'Електричний',
-            safety: 'Безпека',
-            measuring: 'Вимірювальний'
-        };
-        return categories[category] || category;
-    }
-
-    getStatusText(status) {
-        const statuses = {
-            available: 'Доступний',
-            'in-use': 'Використовується',
-            maintenance: 'Manutenção',
-            broken: 'Несправний'
-        };
-        return statuses[status] || status;
-    }
-
-    getLocationText(location) {
-        const locations = {
-            van: 'Автомобіль',
-            warehouse: 'Склад',
-            site: 'На об\'єкті'
-        };
-        return locations[location] || location;
-    }
-
-    getConditionText(condition) {
-        const conditions = {
-            excellent: 'Відмінний',
-            good: 'Добрий',
-            fair: 'Задовільний',
-            poor: 'Поганий'
-        };
-        return conditions[condition] || condition;
-    }
-
-    formatDate(dateString) {
-        if (!dateString) return 'Desconhecido';
-        const date = new Date(dateString);
-        return date.toLocaleDateString('pt-PT');
     }
 }
 
-// Ініціалізація
 $(document).ready(function() {
     window.toolManager = new ToolManager();
 });
