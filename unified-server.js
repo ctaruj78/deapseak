@@ -580,6 +580,9 @@ async function connectMongo() {
                 db.collection('requests').createIndex({ assignedTo: 1, status: 1 }, { background: true }),
                 // lifts: municipality lookup
                 db.collection('lifts').createIndex({ 'municipality.id': 1 }, { background: true }),
+                // tasks: technician lookup + scheduling
+                db.collection('tasks').createIndex({ assignedTo: 1, status: 1 }, { background: true }),
+                db.collection('tasks').createIndex({ dueDate: 1, status: 1 }, { background: true }),
             ]);
             console.log('📊 MongoDB indexes ensured');
         } catch (idxErr) {
@@ -2198,7 +2201,17 @@ app.get('/api/knowledge-base/:id', async (req, res) => {
     try {
         if (!db) return res.status(503).json({ success: false, message: 'Base de dados indisponível' });
         const { ObjectId } = require('mongodb');
-        const article = await db.collection('knowledge_base').findOne({ _id: new ObjectId(req.params.id) });
+        const isStaff = req.headers.authorization && (() => {
+            try {
+                const token = req.headers.authorization.replace('Bearer ', '');
+                const decoded = jwt.verify(token, JWT_SECRET);
+                return ['admin', 'dispatcher'].includes(decoded.role);
+            } catch { return false; }
+        })();
+        // Staff (admin/dispatcher) vê todos os artigos; público só vê publicados
+        const query = { _id: new ObjectId(req.params.id) };
+        if (!isStaff) query.status = 'published';
+        const article = await db.collection('knowledge_base').findOne(query);
         if (!article) return res.status(404).json({ success: false, message: 'Artigo não encontrado' });
         res.json({ success: true, data: article });
     } catch (error) {
@@ -2496,11 +2509,11 @@ app.get('/api/tasks', authenticateToken, async (req, res) => {
         }
         
         let query = {};
-        // Техніки бачать тільки свої завдання
-        if (req.user.role === 'tech') {
+        // Техніки бачать тільки свої завдання (обидва варіанти ролі)
+        if (req.user.role === 'tech' || req.user.role === 'technician') {
             query.assignedTo = req.user.id;
         }
-        
+
         const tasks = await db.collection('tasks')
             .find(query)
             .sort({ dueDate: 1, priority: -1 })
@@ -2519,15 +2532,24 @@ app.get('/api/tasks/:id', authenticateToken, async (req, res) => {
         if (!db) {
             return res.status(503).json({ success: false, message: 'Base de dados indisponível' });
         }
-        
+
         const { ObjectId } = require('mongodb');
         const task = await db.collection('tasks')
             .findOne({ _id: new ObjectId(req.params.id) });
-        
+
         if (!task) {
             return res.status(404).json({ success: false, message: 'Tarefa não encontrada' });
         }
-        
+
+        // Técnicos só podem ver as suas próprias tarefas
+        const role = req.user.role;
+        if (role === 'tech' || role === 'technician') {
+            const userId = (req.user.id || req.user.userId || '').toString();
+            if ((task.assignedTo || '').toString() !== userId) {
+                return res.status(403).json({ success: false, message: 'Acesso negado' });
+            }
+        }
+
         res.json({ success: true, data: task });
     } catch (error) {
         console.error('❌ Помилка отримання завдання:', error);
@@ -4155,7 +4177,7 @@ app.post('/api/lifts', authenticateToken, async (req, res) => {
                     created: true
                 };
 
-                console.log(`👤 Новий клієнт створено автоматично: ${clientEmail} / пароль: ${rawPassword}`);
+                console.log(`👤 Novo cliente criado automaticamente: ${clientEmail}`);
 
                 // 📧 Відправляємо запрошення ТІЛЬКИ якщо адмін увімкнув цю опцію
                 const shouldSendEmail = liftData.sendAccessEmail === true;
