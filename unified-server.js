@@ -2469,6 +2469,35 @@ app.post('/api/inspections', authenticateToken, requireRole('admin', 'dispatcher
         };
         const result = await db.collection('inspections').insertOne(doc);
         console.log(`✅ Inspecção ${numero} guardada (${doc.visitType}) por ${doc.inspector}`);
+
+        // Auto-fechar pedidos de manutenção pendentes para este elevador
+        const isMaintenanceVisit = ['maintenance', 'manutencao', 'Manutenção', 'MANU'].some(
+            v => (doc.visitType || '').toLowerCase().startsWith(v.toLowerCase())
+        );
+        if (isMaintenanceVisit && doc.liftId) {
+            try {
+                const closeResult = await db.collection('requests').updateMany(
+                    {
+                        liftId: doc.liftId,
+                        type: 'maintenance',
+                        status: { $in: ['new', 'pending', 'assigned'] },
+                        source: 'auto_scheduler'
+                    },
+                    { $set: {
+                        status: 'completed',
+                        completedAt: new Date().toISOString(),
+                        resolution: `Manutenção concluída — relatório ${numero}`,
+                        updatedAt: new Date().toISOString()
+                    }}
+                );
+                if (closeResult.modifiedCount > 0) {
+                    console.log(`✅ ${closeResult.modifiedCount} pedido(s) auto_scheduler fechado(s) para elevador ${doc.liftId}`);
+                }
+            } catch (closeErr) {
+                console.warn('⚠️ Não foi possível fechar pedidos automáticos:', closeErr.message);
+            }
+        }
+
         // 🤖 Agent: analyse async, never block response
         try { agentService.analyseInspection({ ...doc, _id: result.insertedId }); } catch (_) {}
         res.status(201).json({ success: true, inspection: { ...doc, _id: result.insertedId } });
