@@ -8299,12 +8299,15 @@ app.get('/api/requests', authenticateToken, async (req, res) => {
         let query = {};
 
         if (role === 'tech' || role === 'technician') {
-            // Technician sees only requests assigned to them
+            // Self-assign model: technician sees all NEW/unassigned requests
+            // plus requests already assigned to them (in progress, etc.)
             query.$or = [
+                { status: { $in: ['new', 'pending'] }, archived: { $ne: true } },
                 { technician: userId },
-                { technicianId: userId }
+                { technicianId: userId },
+                { assignedTo: userId }
             ];
-            console.log(`🔧 Tech ${req.user.username} запитує свої завдання (userId=${userId})`);
+            console.log(`🔧 Tech ${req.user.username} — pool aberto + próprias tarefas (userId=${userId})`);
         } else if (role === 'client') {
             // Client sees only requests on their lifts
             const { ObjectId: OID } = require('mongodb');
