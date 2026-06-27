@@ -445,8 +445,7 @@ router.get('/public/:id', async (req, res) => {
         }
         
         const orcamento = await Orcamento.findById(id)
-            .populate('criadoPor', 'name email')
-            .lean();
+            .populate('criadoPor', 'name email');
 
         if (!orcamento) {
             return res.status(404).json({
@@ -623,8 +622,7 @@ router.get('/', authenticate, authorizeRoles('admin', 'dispatcher', 'client'), a
 
         const orcamentos = await orcamentosQuery
             .skip(skip)
-            .limit(parseInt(limit))
-            .lean();
+            .limit(parseInt(limit));
         
         const total = await Orcamento.countDocuments(query);
         
@@ -741,8 +739,7 @@ router.get('/:id/pdf', authenticate, async (req, res) => {
 router.get('/:id', authenticate, async (req, res) => {
     try {
         const orcamento = await Orcamento.findById(req.params.id)
-            .populate('criadoPor', 'name email')
-            .lean();
+            .populate('criadoPor', 'name email');
 
         if (!orcamento) {
             return res.status(404).json({ success: false, message: 'Orçamento não encontrado' });
