@@ -445,15 +445,16 @@ router.get('/public/:id', async (req, res) => {
         }
         
         const orcamento = await Orcamento.findById(id)
-            .populate('criadoPor', 'name email');
-        
+            .populate('criadoPor', 'name email')
+            .lean();
+
         if (!orcamento) {
             return res.status(404).json({
                 success: false,
                 message: 'Orçamento não encontrado'
             });
         }
-        
+
         res.json({
             success: true,
             data: orcamento
@@ -517,7 +518,8 @@ router.get('/my', authenticate, authorizeRoles('client'), async (req, res) => {
             status: { $in: ['enviado', 'aprovado', 'rejeitado', 'expirado'] }
         })
             .sort({ data: -1 })
-            .select('-emailsEnviados -pdfPath');
+            .select('-emailsEnviados -pdfPath')
+            .lean();
 
         res.json({ success: true, data: orcamentos });
     } catch (error) {
@@ -621,7 +623,8 @@ router.get('/', authenticate, authorizeRoles('admin', 'dispatcher', 'client'), a
 
         const orcamentos = await orcamentosQuery
             .skip(skip)
-            .limit(parseInt(limit));
+            .limit(parseInt(limit))
+            .lean();
         
         const total = await Orcamento.countDocuments(query);
         
@@ -654,7 +657,7 @@ router.get('/next-number', authenticate, authorizeRoles('admin', 'dispatcher'), 
         // Buscar último orçamento do mês
         const ultimoOrcamento = await Orcamento.findOne({
             numero: new RegExp(`^ORC-${ano}-${mes}`)
-        }).sort({ numero: -1 });
+        }).sort({ numero: -1 }).lean();
         
         let sequencia = 1;
         if (ultimoOrcamento) {
@@ -738,7 +741,8 @@ router.get('/:id/pdf', authenticate, async (req, res) => {
 router.get('/:id', authenticate, async (req, res) => {
     try {
         const orcamento = await Orcamento.findById(req.params.id)
-            .populate('criadoPor', 'name email');
+            .populate('criadoPor', 'name email')
+            .lean();
 
         if (!orcamento) {
             return res.status(404).json({ success: false, message: 'Orçamento não encontrado' });
