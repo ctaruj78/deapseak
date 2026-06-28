@@ -7,6 +7,7 @@ const SaftImport = require('../models/SaftImport');
 const SaftSettings = require('../models/SaftSettings');
 const DebtorAlertLog = require('../models/DebtorAlertLog');
 const emailService = require('../services/emailService');
+const LiftInvoice = require('../models/LiftInvoice');
 
 const ALERT_COOLDOWN_DAYS = 30;
 
@@ -349,6 +350,67 @@ exports.uploadSaft = async (req, res) => {
             debtors,
             warnings,
         });
+
+        // ── 4b. Sync ALL invoices from this SAF-T to LiftInvoice collection ─────────
+        // Build nif → liftId(s) map from ALL lifts in DB that have matching NIFs
+        const allNifsInSaft = [...new Set(Object.values(customerMap).map(c => c.nif).filter(Boolean))];
+        const nifToLiftIds = {};
+        if (allNifsInSaft.length) {
+            const existingLifts = await Lift.find({ nif: { $in: allNifsInSaft } }, '_id nif').lean();
+            for (const lift of existingLifts) {
+                if (!nifToLiftIds[lift.nif]) nifToLiftIds[lift.nif] = [];
+                nifToLiftIds[lift.nif].push(lift._id);
+            }
+        }
+
+        const bulkOps = [];
+        for (const inv of Object.values(invoiceMap)) {
+            const cust = customerMap[inv.custId];
+            if (!cust || !cust.nif) continue;
+
+            const paid = paidMap[inv.no] || 0;
+            const outstanding = Math.max(0, inv.gross - paid);
+            const days = inv.date ? daysBetween(inv.date, today) : 0;
+
+            let status = 'pending';
+            if (inv.status === 'A') status = 'cancelled';
+            else if (outstanding < 0.01) status = 'paid';
+            else if (paid > 0.01) status = 'partial';
+            else if (days > OVERDUE_DAYS) status = 'overdue';
+
+            const liftIds = nifToLiftIds[cust.nif] || [];
+            const targets = liftIds.length ? liftIds : [null];
+
+            for (const liftId of targets) {
+                const resolvedLiftId = liftId || null;
+                const setDoc = {
+                    liftId: resolvedLiftId,
+                    nif: cust.nif, invoiceNo: inv.no, invoiceDate: inv.date,
+                    invoiceType: inv.type, grossTotal: inv.gross,
+                    amountPaid: paid, outstanding, daysOverdue: days,
+                    fiscalYear: period.fiscalYear, status, source: 'saft',
+                    customerName: cust.name, customerTaxId: cust.nif,
+                    saftImportId: record._id,
+                };
+
+                bulkOps.push({
+                    updateOne: {
+                        filter: { invoiceNo: inv.no, liftId: resolvedLiftId },
+                        update: { $set: setDoc },
+                        upsert: true,
+                    }
+                });
+                // No break — create one record per liftId when a NIF maps to multiple lifts
+            }
+        }
+
+        if (bulkOps.length) {
+            try {
+                await LiftInvoice.bulkWrite(bulkOps, { ordered: false });
+            } catch (bulkErr) {
+                warnings.push('LiftInvoice sync: ' + bulkErr.message);
+            }
+        }
 
         // Clean up uploaded file
         fs.unlinkSync(filePath);

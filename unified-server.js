@@ -13089,6 +13089,13 @@ app.use('/api/users', authRoutes); // authRoutes містить /users endpoints
 
 // 🏢 Lift Routes (CRUD операції з ліфтами)
 const liftRoutes = require('./backend/routes/liftRoutes');
+
+// 💰 Lift Invoice Routes — must come BEFORE liftRoutes so /api/lifts/:liftId/invoices
+// is not swallowed by the /:id wildcard in liftRoutes.
+const liftInvoiceController = require('./backend/controllers/liftInvoiceController');
+app.get('/api/lifts/:liftId/invoices/summary', authenticateToken, liftInvoiceController.getInvoiceSummaryForLift);
+app.get('/api/lifts/:liftId/invoices', authenticateToken, liftInvoiceController.getInvoicesByLift);
+
 app.use('/api/lifts', liftRoutes);
 
 // � Inspection PDF Parser Route (аналіз PDF-звітів Bureau Veritas / CML Lisboa)

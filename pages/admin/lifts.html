@@ -1157,6 +1157,12 @@ function escapeHtml(s) {
                             <i class="fas fa-wrench"></i> Serviço <span class="tab-badge">4</span>
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link" id="eLiftTab-fat" data-toggle="tab" href="#eLiftPane-fat" role="tab" onclick="eSetProgress(100,4)">
+                            <i class="fas fa-file-invoice-dollar mr-1"></i>Faturas
+                            <span class="tab-badge" id="fatBadge">0</span>
+                        </a>
+                    </li>
                 </ul>
                 <!-- FORM -->
                 <form id="enhancedLiftForm" novalidate autocomplete="off" style="display:flex;flex-direction:column;flex:1;min-height:0;overflow:hidden;">
@@ -1742,6 +1748,84 @@ function escapeHtml(s) {
 
                             </div><!-- /eLiftPane-svc -->
 
+                            <div class="tab-pane fade" id="eLiftPane-fat" role="tabpanel">
+                                <div class="p-3">
+                                    <!-- Summary cards -->
+                                    <div id="fatSummaryCards" class="row mb-3" style="display:none">
+                                        <div class="col-6 col-md-3 mb-2">
+                                            <div class="card border-0 shadow-sm text-center p-2">
+                                                <div class="text-muted" style="font-size:.7rem;text-transform:uppercase;letter-spacing:.5px">Total Faturado</div>
+                                                <div class="font-weight-bold" id="fatTotalGross" style="font-size:1.05rem">—</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-6 col-md-3 mb-2">
+                                            <div class="card border-0 shadow-sm text-center p-2" style="border-left:3px solid #28a745">
+                                                <div class="text-muted" style="font-size:.7rem;text-transform:uppercase;letter-spacing:.5px">Pago</div>
+                                                <div class="font-weight-bold text-success" id="fatTotalPaid" style="font-size:1.05rem">—</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-6 col-md-3 mb-2">
+                                            <div class="card border-0 shadow-sm text-center p-2" style="border-left:3px solid #ffc107">
+                                                <div class="text-muted" style="font-size:.7rem;text-transform:uppercase;letter-spacing:.5px">Pendente</div>
+                                                <div class="font-weight-bold text-warning" id="fatTotalPending" style="font-size:1.05rem">—</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-6 col-md-3 mb-2">
+                                            <div class="card border-0 shadow-sm text-center p-2" style="border-left:3px solid #dc3545">
+                                                <div class="text-muted" style="font-size:.7rem;text-transform:uppercase;letter-spacing:.5px">Em Dívida</div>
+                                                <div class="font-weight-bold text-danger" id="fatTotalOutstanding" style="font-size:1.05rem">—</div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Toolbar: year filter + print -->
+                                    <div class="d-flex align-items-center justify-content-between mb-2 flex-wrap">
+                                        <div class="d-flex align-items-center">
+                                            <label class="mb-0 small font-weight-bold mr-2">Ano:</label>
+                                            <select id="fatYearFilter" class="form-control form-control-sm" style="width:auto;min-width:90px" onchange="fatLoadInvoices()">
+                                                <option value="">—</option>
+                                            </select>
+                                        </div>
+                                        <button class="btn btn-sm btn-outline-secondary" onclick="fatPrint()">
+                                            <i class="fas fa-print mr-1"></i>Imprimir
+                                        </button>
+                                    </div>
+
+                                    <!-- States -->
+                                    <div id="fatLoading" class="text-center py-4" style="display:none">
+                                        <div class="spinner-border spinner-border-sm text-success"></div>
+                                        <span class="ml-2 small text-muted">A carregar faturas...</span>
+                                    </div>
+                                    <div id="fatEmpty" class="text-center py-4 text-muted" style="display:none">
+                                        <i class="fas fa-file-invoice fa-2x mb-2 d-block text-muted"></i>
+                                        <small>Sem faturas para este período</small>
+                                    </div>
+                                    <div id="fatNoData" class="text-center py-4 text-muted">
+                                        <i class="fas fa-info-circle mr-1"></i>
+                                        <small>Abra um elevador para ver as suas faturas</small>
+                                    </div>
+
+                                    <!-- Invoice table -->
+                                    <div id="fatTableWrap" style="display:none;overflow-x:auto">
+                                        <table class="table table-sm table-hover mb-0" style="font-size:.8rem">
+                                            <thead class="thead-light">
+                                                <tr>
+                                                    <th>Fatura</th>
+                                                    <th>Tipo</th>
+                                                    <th>Data</th>
+                                                    <th class="text-right">Total</th>
+                                                    <th class="text-right">Pago</th>
+                                                    <th class="text-right">Em Dívida</th>
+                                                    <th class="text-center">Estado</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="fatTableBody"></tbody>
+                                            <tfoot id="fatTableFoot" class="font-weight-bold bg-light" style="font-size:.82rem"></tfoot>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div><!-- /eLiftPane-fat -->
+
                         </div><!-- /tab-content -->
                     </div><!-- /modal-body -->
 
@@ -1778,7 +1862,7 @@ function escapeHtml(s) {
     (function() {
         var eLiftTabIdx = 0;
         var eLiftTabNavIds = ['eLiftTab-obj','eLiftTab-cli','eLiftTab-lift','eLiftTab-svc'];
-        var eLiftTabLabels = ["Instalação","Cliente","Elevador","Serviço"];
+        var eLiftTabLabels = ["Instalação","Cliente","Elevador","Serviço","Faturas"];
 
         window.eSetProgress = function(pct, idx) {
             var bar = document.getElementById('eModalProgress');
@@ -3523,9 +3607,10 @@ Equipa FestLift
             // КРИТИЧНО: Всeновлюexisteмо currentLiftId ПЕРЕД відкриттям модалки
             window.enhancedLiftModal.currentLiftId = liftData.id || liftData._id;
             console.log('✅ Set currentLiftId BEFORE opening modal:', window.enhancedLiftModal.currentLiftId);
-            
+            if (typeof fatInitForLift === 'function') fatInitForLift(liftData.id || liftData._id);
+
             $('#enhancedModalTitle').text('Editar elevador');
-            
+
             if (window.enhancedLiftModal.loadLiftForEdit) {
                 window.enhancedLiftModal.loadLiftForEdit(liftData);
                 console.log('✅ Data loaded into form');
@@ -3533,13 +3618,14 @@ Equipa FestLift
                 console.error('❌ Método loadLiftForEdit não encontrado');
             }
         } else {
-            // Режим створення - скидаexisteмо форму
+            // Режим створення - скидaexisteмо форму
             console.log('➕ CREATE MODE: New lift');
             $('#enhancedModalTitle').text('Adicionar novo elevador');
-            
+
             // Очищуexisteмо currentLiftId para режиму створення
             window.enhancedLiftModal.currentLiftId = null;
             console.log('✅ Cleared currentLiftId for new lift');
+            if (typeof fatInitForLift === 'function') fatInitForLift(null);
             
             if (window.enhancedLiftModal.resetForm) {
                 window.enhancedLiftModal.resetForm();
@@ -10194,6 +10280,183 @@ $(document).on('click', '#editInspRptSaveBtn', async function() {
         toastr.error('Erro: ' + err.message);
     }
 });
+
+        // ── Faturas tab ───────────────────────────────────────────────────────
+        var _fatLiftId = null, _fatData = null;
+
+        function fatShowState(id) {
+            ['fatLoading','fatEmpty','fatTableWrap','fatNoData'].forEach(function(el) {
+                var e = document.getElementById(el);
+                if (e) e.style.display = (el === id) ? '' : 'none';
+            });
+        }
+
+        function fatFmt(n) {
+            return Number(n || 0).toLocaleString('pt-PT', { minimumFractionDigits:2, maximumFractionDigits:2 }) + ' €';
+        }
+
+        function fatDate(d) {
+            if (!d) return '—';
+            return new Date(d).toLocaleDateString('pt-PT');
+        }
+
+        function fatBadgeHtml(status) {
+            var m = {
+                paid:      ['badge-success',   'Pago'],
+                partial:   ['badge-warning',   'Parcial'],
+                overdue:   ['badge-danger',    'Em atraso'],
+                pending:   ['badge-secondary', 'Pendente'],
+                cancelled: ['badge-light',     'Anulado'],
+            };
+            var b = m[status] || ['badge-light', status];
+            return '<span class="badge ' + b[0] + '" style="font-size:.7rem">' + b[1] + '</span>';
+        }
+
+        function fatTypeName(t) {
+            return { FT:'Fatura', FR:'Fat.-Recibo', ND:'N.Débito', NC:'N.Crédito' }[t] || t;
+        }
+
+        function fatUpdateSummaryCards(summary) {
+            var sc = document.getElementById('fatSummaryCards');
+            if (!sc || !summary) return;
+            sc.style.display = '';
+            var pending = (summary.totalGross || 0) - (summary.totalPaid || 0) - (summary.totalOutstanding || 0);
+            document.getElementById('fatTotalGross').textContent       = fatFmt(summary.totalGross);
+            document.getElementById('fatTotalPaid').textContent        = fatFmt(summary.totalPaid);
+            document.getElementById('fatTotalPending').textContent     = fatFmt(Math.max(0, pending));
+            document.getElementById('fatTotalOutstanding').textContent = fatFmt(summary.totalOutstanding);
+            var badge = document.getElementById('fatBadge');
+            if (badge) badge.textContent = summary.countTotal || 0;
+        }
+
+        function fatRender(data) {
+            var invoices = data.invoices || [];
+            var summary  = data.summary;
+            var years    = data.years || [];
+            var currentYear = data.currentYear || new Date().getFullYear();
+
+            // Year selector
+            var yearEl = document.getElementById('fatYearFilter');
+            if (yearEl) {
+                var curVal = yearEl.value || String(currentYear);
+                var opts = '<option value="all">Todos os anos</option>';
+                years.slice().sort(function(a,b){return b-a;}).forEach(function(y) {
+                    opts += '<option value="' + y + '"' + (String(y) === String(curVal) ? ' selected' : '') + '>' + y + '</option>';
+                });
+                yearEl.innerHTML = opts;
+                if (!yearEl.value || yearEl.value === '') yearEl.value = String(currentYear);
+            }
+
+            fatUpdateSummaryCards(summary);
+
+            if (!invoices.length) { fatShowState('fatEmpty'); return; }
+
+            // Table body
+            var tbody = document.getElementById('fatTableBody');
+            if (tbody) {
+                tbody.innerHTML = invoices.map(function(inv) {
+                    var rowCls = inv.status === 'overdue' ? 'table-danger' : inv.status === 'pending' ? 'table-warning' : '';
+                    return '<tr class="' + rowCls + '">' +
+                        '<td class="font-weight-500">' + (inv.invoiceNo || '—') + '</td>' +
+                        '<td><small>' + fatTypeName(inv.invoiceType) + '</small></td>' +
+                        '<td>' + fatDate(inv.invoiceDate) + '</td>' +
+                        '<td class="text-right">' + fatFmt(inv.grossTotal) + '</td>' +
+                        '<td class="text-right text-success">' + fatFmt(inv.amountPaid) + '</td>' +
+                        '<td class="text-right' + (inv.outstanding > 0.01 ? ' text-danger font-weight-bold' : '') + '">' + fatFmt(inv.outstanding) + '</td>' +
+                        '<td class="text-center">' + fatBadgeHtml(inv.status) + '</td>' +
+                        '</tr>';
+                }).join('');
+            }
+
+            // Table footer
+            var tfoot = document.getElementById('fatTableFoot');
+            if (tfoot && summary) {
+                tfoot.innerHTML = '<tr>' +
+                    '<td colspan="3"><small class="text-muted">' + (summary.countTotal || 0) + ' fatura(s)</small></td>' +
+                    '<td class="text-right">' + fatFmt(summary.totalGross) + '</td>' +
+                    '<td class="text-right text-success">' + fatFmt(summary.totalPaid) + '</td>' +
+                    '<td class="text-right text-danger">' + fatFmt(summary.totalOutstanding) + '</td>' +
+                    '<td></td></tr>';
+            }
+
+            fatShowState('fatTableWrap');
+        }
+
+        function fatLoadInvoices() {
+            if (!_fatLiftId) return;
+            var yearEl = document.getElementById('fatYearFilter');
+            var year   = yearEl ? yearEl.value : String(new Date().getFullYear());
+            var url    = '/api/lifts/' + _fatLiftId + '/invoices' + (year ? '?year=' + year : '');
+
+            fatShowState('fatLoading');
+            var sc = document.getElementById('fatSummaryCards');
+            if (sc) sc.style.display = 'none';
+
+            var token = localStorage.getItem('token') || sessionStorage.getItem('token') || '';
+            fetch(url, { headers: { 'Authorization': 'Bearer ' + token } })
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    if (!data.success) throw new Error(data.message || 'Erro');
+                    _fatData = data;
+                    fatRender(data);
+                })
+                .catch(function(e) {
+                    fatShowState('fatEmpty');
+                    console.error('[Faturas]', e);
+                });
+        }
+
+        function fatInitForLift(liftId) {
+            _fatLiftId = liftId;
+            _fatData   = null;
+            var badge  = document.getElementById('fatBadge');
+            if (badge) badge.textContent = '0';
+            var yearEl = document.getElementById('fatYearFilter');
+            if (yearEl) yearEl.innerHTML = '<option value="">—</option>';
+            var sc = document.getElementById('fatSummaryCards');
+            if (sc) sc.style.display = 'none';
+            fatShowState('fatNoData');
+        }
+
+        function fatPrint() {
+            if (!_fatData || !_fatData.invoices) return;
+            var inv = _fatData.invoices;
+            var s   = _fatData.summary || {};
+            var yearEl = document.getElementById('fatYearFilter');
+            var year   = yearEl ? yearEl.value : '';
+            var rows = inv.map(function(i) {
+                return '<tr><td>' + (i.invoiceNo||'') + '</td><td>' + fatTypeName(i.invoiceType) + '</td>' +
+                    '<td>' + fatDate(i.invoiceDate) + '</td>' +
+                    '<td align="right">' + fatFmt(i.grossTotal) + '</td>' +
+                    '<td align="right">' + fatFmt(i.amountPaid) + '</td>' +
+                    '<td align="right">' + fatFmt(i.outstanding) + '</td>' +
+                    '<td>' + (i.status||'') + '</td></tr>';
+            }).join('');
+            var w = window.open('','_blank');
+            w.document.write('<!DOCTYPE html><html><head><title>Faturas Elevador</title>' +
+                '<style>body{font-family:Arial,sans-serif;font-size:12px}table{width:100%;border-collapse:collapse}' +
+                'th,td{border:1px solid #ddd;padding:4px 8px}th{background:#f5f5f5}tfoot td{font-weight:bold;background:#f9f9f9}</style></head><body>' +
+                '<h3>Faturas — Elevador' + (year ? ' (' + year + ')' : '') + '</h3>' +
+                '<table><thead><tr><th>Fatura</th><th>Tipo</th><th>Data</th><th>Total</th><th>Pago</th><th>Em Dívida</th><th>Estado</th></tr></thead>' +
+                '<tbody>' + rows + '</tbody>' +
+                '<tfoot><tr><td colspan="3">' + (s.countTotal||inv.length) + ' fatura(s)</td>' +
+                '<td align="right">' + fatFmt(s.totalGross) + '</td>' +
+                '<td align="right">' + fatFmt(s.totalPaid) + '</td>' +
+                '<td align="right">' + fatFmt(s.totalOutstanding) + '</td><td></td></tr></tfoot>' +
+                '</table></body></html>');
+            w.document.close();
+            w.print();
+        }
+
+        // Load invoices when Faturas tab is clicked
+        document.addEventListener('DOMContentLoaded', function() {
+            var fatTab = document.getElementById('eLiftTab-fat');
+            if (fatTab) {
+                fatTab.addEventListener('click', function() {
+                    if (_fatLiftId) fatLoadInvoices();
+                });
+            }
+        });
 </script>
 
 <script src="../../assets/js/monitor.js"></script>
