@@ -352,17 +352,7 @@ exports.uploadSaft = async (req, res) => {
         });
 
         // ── 4b. Sync ALL invoices from this SAF-T to LiftInvoice collection ─────────
-        // Build nif → liftId(s) map from ALL lifts in DB that have matching NIFs
-        const allNifsInSaft = [...new Set(Object.values(customerMap).map(c => c.nif).filter(Boolean))];
-        const nifToLiftIds = {};
-        if (allNifsInSaft.length) {
-            const existingLifts = await Lift.find({ nif: { $in: allNifsInSaft } }, '_id nif').lean();
-            for (const lift of existingLifts) {
-                if (!nifToLiftIds[lift.nif]) nifToLiftIds[lift.nif] = [];
-                nifToLiftIds[lift.nif].push(lift._id);
-            }
-        }
-
+        // Um registo por fatura (chave: invoiceNo único). Liga pelo moloniCode = SAF-T CustomerID.
         const bulkOps = [];
         for (const inv of Object.values(invoiceMap)) {
             const cust = customerMap[inv.custId];
@@ -378,30 +368,24 @@ exports.uploadSaft = async (req, res) => {
             else if (paid > 0.01) status = 'partial';
             else if (days > OVERDUE_DAYS) status = 'overdue';
 
-            const liftIds = nifToLiftIds[cust.nif] || [];
-            const targets = liftIds.length ? liftIds : [null];
+            const setDoc = {
+                moloniCode: inv.custId,    // SAF-T CustomerID = código Moloni do cliente
+                liftId: null,              // não ligar a elevador específico
+                nif: cust.nif, invoiceNo: inv.no, invoiceDate: inv.date,
+                invoiceType: inv.type, grossTotal: inv.gross,
+                amountPaid: paid, outstanding, daysOverdue: days,
+                fiscalYear: period.fiscalYear, status, source: 'saft',
+                customerName: cust.name, customerTaxId: cust.nif,
+                saftImportId: record._id,
+            };
 
-            for (const liftId of targets) {
-                const resolvedLiftId = liftId || null;
-                const setDoc = {
-                    liftId: resolvedLiftId,
-                    nif: cust.nif, invoiceNo: inv.no, invoiceDate: inv.date,
-                    invoiceType: inv.type, grossTotal: inv.gross,
-                    amountPaid: paid, outstanding, daysOverdue: days,
-                    fiscalYear: period.fiscalYear, status, source: 'saft',
-                    customerName: cust.name, customerTaxId: cust.nif,
-                    saftImportId: record._id,
-                };
-
-                bulkOps.push({
-                    updateOne: {
-                        filter: { invoiceNo: inv.no, liftId: resolvedLiftId },
-                        update: { $set: setDoc },
-                        upsert: true,
-                    }
-                });
-                // No break — create one record per liftId when a NIF maps to multiple lifts
-            }
+            bulkOps.push({
+                updateOne: {
+                    filter: { invoiceNo: inv.no },
+                    update: { $set: setDoc },
+                    upsert: true,
+                }
+            });
         }
 
         if (bulkOps.length) {

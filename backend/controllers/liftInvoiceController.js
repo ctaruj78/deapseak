@@ -8,7 +8,7 @@ exports.getInvoicesByLift = async (req, res) => {
         const liftId = req.params.liftId || req.params.id;
 
         // Security: verify lift access
-        const lift = await Lift.findById(liftId, '_id client nif').lean();
+        const lift = await Lift.findById(liftId, '_id client nif moloniCode').lean();
         if (!lift) return res.status(404).json({ success: false, message: 'Elevador não encontrado' });
 
         if (req.user.role === 'client') {
@@ -20,15 +20,28 @@ exports.getInvoicesByLift = async (req, res) => {
         }
 
         const year = req.query.year;
-        const query = { liftId: lift._id };
+        let query;
+        if (lift.moloniCode) {
+            query = { moloniCode: lift.moloniCode };
+        } else if (lift.nif) {
+            query = { nif: lift.nif };
+        } else {
+            const emptySummary = {
+                totalGross: 0, totalPaid: 0, totalOutstanding: 0,
+                totalPending: 0, totalOverdue: 0,
+                countTotal: 0, countPaid: 0, countPending: 0, countOverdue: 0,
+            };
+            return res.json({ success: true, invoices: [], summary: emptySummary, years: [], currentYear: new Date().getFullYear() });
+        }
         if (year && year !== 'all') query.fiscalYear = String(year);
 
         const invoices = await LiftInvoice.find(query)
             .sort({ invoiceDate: -1 })
             .lean();
 
-        // Get all years with data for this lift
-        const allYears = await LiftInvoice.distinct('fiscalYear', { liftId: lift._id });
+        // Get all years with data for this client
+        const yearQuery = lift.moloniCode ? { moloniCode: lift.moloniCode } : { nif: lift.nif };
+        const allYears = await LiftInvoice.distinct('fiscalYear', yearQuery);
         const years = allYears.filter(Boolean).map(Number).sort((a, b) => b - a);
         const currentYear = new Date().getFullYear();
 
@@ -72,7 +85,7 @@ exports.getInvoiceSummaryForLift = async (req, res) => {
     try {
         const liftId = req.params.liftId || req.params.id;
 
-        const lift = await Lift.findById(liftId, '_id client').lean();
+        const lift = await Lift.findById(liftId, '_id client nif moloniCode').lean();
         if (!lift) return res.status(404).json({ success: false, message: 'Elevador não encontrado' });
 
         if (req.user.role === 'client') {
@@ -84,12 +97,26 @@ exports.getInvoiceSummaryForLift = async (req, res) => {
         }
 
         const currentYear = String(new Date().getFullYear());
+        let baseQuery;
+        if (lift.moloniCode) {
+            baseQuery = { moloniCode: lift.moloniCode };
+        } else if (lift.nif) {
+            baseQuery = { nif: lift.nif };
+        } else {
+            const emptySummary = {
+                totalGross: 0, totalPaid: 0, totalOutstanding: 0,
+                totalPending: 0, totalOverdue: 0,
+                countTotal: 0, countPaid: 0, countPending: 0, countOverdue: 0,
+            };
+            return res.json({ success: true, summary: emptySummary, years: [], currentYear: Number(currentYear) });
+        }
+
         const invoices = await LiftInvoice.find(
-            { liftId: lift._id, fiscalYear: currentYear },
+            { ...baseQuery, fiscalYear: currentYear },
             'status grossTotal amountPaid outstanding'
         ).lean();
 
-        const allYears = await LiftInvoice.distinct('fiscalYear', { liftId: lift._id });
+        const allYears = await LiftInvoice.distinct('fiscalYear', baseQuery);
         const years = allYears.filter(Boolean).map(Number).sort((a, b) => b - a);
 
         const summary = {
