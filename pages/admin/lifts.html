@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <link rel="icon" type="image/png" href="/assets/img/favicon.png">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- Global Settings -->
     <script src="../../assets/js/global-settings.js"></script>
-    <link rel="stylesheet" href="../../assets/css/theme-dark.css">>
+    <link rel="stylesheet" href="../../assets/css/theme-dark.css">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
@@ -10400,7 +10400,8 @@ $(document).on('click', '#editInspRptSaveBtn', async function() {
             var sc = document.getElementById('fatSummaryCards');
             if (sc) sc.style.display = 'none';
 
-            var token = localStorage.getItem('token') || sessionStorage.getItem('token') || '';
+            var token = (typeof AuthManager !== 'undefined') ? AuthManager.getAuthToken()
+                : (sessionStorage.getItem('liftmanager_jwt') || localStorage.getItem('liftmanager_jwt') || localStorage.getItem('token') || '');
             fetch(url, { headers: { 'Authorization': 'Bearer ' + token } })
                 .then(function(r) { return r.json(); })
                 .then(function(data) {

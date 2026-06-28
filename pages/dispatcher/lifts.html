@@ -9754,7 +9754,8 @@ Equipa FestLift</textarea>
             var sc = document.getElementById('fatSummaryCards');
             if (sc) sc.style.display = 'none';
 
-            var token = localStorage.getItem('token') || sessionStorage.getItem('token') || '';
+            var token = (typeof AuthManager !== 'undefined') ? AuthManager.getAuthToken()
+                : (sessionStorage.getItem('liftmanager_jwt') || localStorage.getItem('liftmanager_jwt') || localStorage.getItem('token') || '');
             fetch(url, { headers: { 'Authorization': 'Bearer ' + token } })
                 .then(function(r) { return r.json(); })
                 .then(function(data) {
