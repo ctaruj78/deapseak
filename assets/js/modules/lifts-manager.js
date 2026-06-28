@@ -291,10 +291,6 @@ class LiftsManager {
             grid.append(card);
         });
 
-        // Pre-load invoice summary badges
-        if (typeof window.fatPreloadBadges === 'function') {
-            window.fatPreloadBadges(lifts.map(function(l) { return l._id || l.id; }));
-        }
     }
 
     _normalizeAddressKey(lift) {
@@ -355,11 +351,9 @@ class LiftsManager {
                             <i class="fas fa-info-circle"></i> Detalhes
                         </button>
                         <div class="mt-2 border-top pt-2">
-                            <button class="btn btn-sm btn-outline-primary btn-block" onclick="toggleFaturas('${lift.id || lift._id}', this)">
+                            <a href="/pages/client/invoices.html" class="btn btn-sm btn-outline-info btn-block">
                                 <i class="fas fa-file-invoice-dollar mr-1"></i>Faturas e Recibos
-                                <span id="fatBadge-${lift.id || lift._id}" class="badge badge-light ml-1" style="font-size:.7rem"></span>
-                            </button>
-                            <div id="fatPanel-${lift.id || lift._id}" style="display:none;margin-top:8px"></div>
+                            </a>
                         </div>
                     </div>
                 </div>

@@ -13095,6 +13095,7 @@ const liftRoutes = require('./backend/routes/liftRoutes');
 const liftInvoiceController = require('./backend/controllers/liftInvoiceController');
 app.get('/api/lifts/:liftId/invoices/summary', authenticateToken, liftInvoiceController.getInvoiceSummaryForLift);
 app.get('/api/lifts/:liftId/invoices', authenticateToken, liftInvoiceController.getInvoicesByLift);
+app.get('/api/client/invoices', authenticateToken, liftInvoiceController.getInvoicesByClient);
 
 app.use('/api/lifts', liftRoutes);
 

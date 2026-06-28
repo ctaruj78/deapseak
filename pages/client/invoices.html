@@ -10,6 +10,7 @@
     
     <!-- AdminLTE CSS -->
     <link rel="stylesheet" href="../../plugins/adminlte/adminlte.min.css">
+    <link rel="stylesheet" href="/plugins/toastr/css/toastr.min.css">
     <link rel="stylesheet" href="../../plugins/fontawesome/css/all.min.css">
     
     <!-- Estilos adicionais -->
@@ -524,7 +525,7 @@
                             <div class="summary-card">
                                 <div class="summary-icon">💰</div>
                                 <div class="summary-info">
-                                    <h3 id="totalAmount">₴0.00</h3>
+                                    <h3 id="totalAmount">—</h3>
                                     <p>Total geral</p>
                                 </div>
                             </div>
@@ -533,7 +534,7 @@
                             <div class="summary-card">
                                 <div class="summary-icon">✅</div>
                                 <div class="summary-info">
-                                    <h3 id="paidAmount">₴0.00</h3>
+                                    <h3 id="paidAmount">—</h3>
                                     <p>Pago</p>
                                 </div>
                             </div>
@@ -542,7 +543,7 @@
                             <div class="summary-card">
                                 <div class="summary-icon">⏳</div>
                                 <div class="summary-info">
-                                    <h3 id="pendingAmount">₴0.00</h3>
+                                    <h3 id="pendingAmount">—</h3>
                                     <p>Pendente</p>
                                 </div>
                             </div>
@@ -551,67 +552,8 @@
                             <div class="summary-card">
                                 <div class="summary-icon">⚠️</div>
                                 <div class="summary-info">
-                                    <h3 id="overdueAmount">₴0.00</h3>
+                                    <h3 id="overdueAmount">—</h3>
                                     <p>Em atraso</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Filtros -->
-                    <div class="row mt-4">
-                        <div class="col-12">
-                            <div class="card invoice-card">
-                                <div class="card-header">
-                                    <h3 class="card-title"><i class="fas fa-filter mr-2"></i>Filtros das faturas</h3>
-                                </div>
-                                <div class="card-body">
-                                    <div class="row">
-                                        <div class="col-md-3">
-                                            <div class="form-group">
-                                                <label>Estado:</label>
-                                                <select id="statusFilter" class="form-control">
-                                                    <option value="all">Todos os estados</option>
-                                                    <option value="paid">Pago</option>
-                                                    <option value="pending">Pendente</option>
-                                                    <option value="overdue">Em atraso</option>
-                                                </select>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-3">
-                                            <div class="form-group">
-                                                <label>Período:</label>
-                                                <select id="periodFilter" class="form-control">
-                                                    <option value="current">Mês atual</option>
-                                                    <option value="last">Mês anterior</option>
-                                                    <option value="quarter">Este trimestre</option>
-                                                    <option value="year">Este ano</option>
-                                                    <option value="all">Todo o período</option>
-                                                </select>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-3">
-                                            <div class="form-group">
-                                                <label>Ordenação:</label>
-                                                <select id="sortFilter" class="form-control">
-                                                    <option value="date-desc">Data (mais recentes)</option>
-                                                    <option value="date-asc">Data (mais antigas)</option>
-                                                    <option value="amount-desc">Valor (maior)</option>
-                                                    <option value="amount-asc">Valor (menor)</option>
-                                                </select>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-3">
-                                            <div class="form-group" style="margin-top: 32px;">
-                                                <button class="btn btn-primary" onclick="invoiceManager.applyFilters()">
-                                                    <i class="fas fa-filter"></i> Aplicar
-                                                </button>
-                                                <button class="btn btn-default" onclick="invoiceManager.resetFilters()">
-                                                    <i class="fas fa-sync"></i> Repor
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -621,48 +563,43 @@
                     <div class="row mt-4">
                         <div class="col-12">
                             <div class="card invoice-card">
-                                <div class="card-header">
-                                    <h3 class="card-title"><i class="fas fa-list mr-2"></i>Lista de faturas</h3>
-                                    <div class="card-tools">
-                                        <div class="btn-group">
-                                            <button class="btn btn-success" onclick="invoiceManager.exportInvoices()">
-                                                <i class="fas fa-download"></i> Exportar
-                                            </button>
-                                            <button class="btn btn-info" onclick="invoiceManager.printInvoices()">
-                                                <i class="fas fa-print"></i> Imprimir
-                                            </button>
-                                        </div>
+                                <div class="card-header d-flex align-items-center justify-content-between flex-wrap" style="gap:8px">
+                                    <h3 class="card-title mb-0">
+                                        <i class="fas fa-file-invoice-dollar mr-2"></i>Faturas e Recibos
+                                        <small id="clientNameLabel" class="text-muted ml-2" style="font-size:.8rem;font-weight:400"></small>
+                                    </h3>
+                                    <div class="d-flex align-items-center flex-wrap" style="gap:6px">
+                                        <select id="yearFilter" class="form-control form-control-sm" style="width:auto" onchange="fatFilterYear(this.value)">
+                                            <option value="all">Todos os anos</option>
+                                        </select>
+                                        <select id="statusFilter" class="form-control form-control-sm" style="width:auto" onchange="fatFilterStatus(this.value)">
+                                            <option value="all">Todos os estados</option>
+                                            <option value="paid">Pago</option>
+                                            <option value="pending">Pendente</option>
+                                            <option value="overdue">Em atraso</option>
+                                        </select>
+                                        <button class="btn btn-sm btn-light border" onclick="fatPrint()" title="Imprimir">
+                                            <i class="fas fa-print"></i>
+                                        </button>
                                     </div>
                                 </div>
                                 <div class="card-body p-0">
                                     <div class="table-responsive">
-                                        <table class="table table-hover invoice-table">
+                                        <table class="table table-hover invoice-table mb-0">
                                             <thead>
                                                 <tr>
-                                                    <th>Número de fatura</th>
+                                                    <th>Fatura</th>
+                                                    <th>Tipo</th>
                                                     <th>Data</th>
-                                                    <th>Descrição</th>
-                                                    <th>Valor</th>
-                                                    <th>Estado</th>
-                                                    <th>Data de vencimento</th>
-                                                    <th>Ações</th>
+                                                    <th class="text-right">Total</th>
+                                                    <th class="text-right">Saldo</th>
+                                                    <th class="text-center">Estado</th>
                                                 </tr>
                                             </thead>
                                             <tbody id="invoicesTableBody">
-                                                <!-- Faturas serão заванeжені aqui -->
+                                                <tr><td colspan="6" class="text-center py-4"><div class="spinner-border spinner-border-sm text-primary mr-2"></div>A carregar...</td></tr>
                                             </tbody>
                                         </table>
-                                    </div>
-                                </div>
-                                <div class="card-footer">
-                                    <div class="pagination">
-                                        <button class="btn btn-sm btn-default" onclick="invoiceManager.previousPage()">
-                                            <i class="fas fa-chevron-left"></i> Anterior
-                                        </button>
-                                        <span class="mx-3">Página <span id="currentPage">1</span> de <span id="totalPages">1</span></span>
-                                        <button class="btn btn-sm btn-default" onclick="invoiceManager.nextPage()">
-                                            Seguinte <i class="fas fa-chevron-right"></i>
-                                        </button>
                                     </div>
                                 </div>
                             </div>
@@ -693,8 +630,8 @@
                                                 <div class="method-icon">🏦</div>
                                                 <h4>Transferência Bancária</h4>
                                                 <p>Banco BPI — IBAN PT50 0010 0000 5854 8320 0015 4</p>
-                                                <button class="btn btn-primary" onclick="invoiceManager.showMultibancoDetails()">
-                                                    <i class="fas fa-eye"></i> Ver dados
+                                                <button class="btn btn-primary" onclick="navigator.clipboard&&navigator.clipboard.writeText('PT50 0010 0000 5854 8320 0015 4').then(function(){toastr.success('IBAN copiado!')})">
+                                                    <i class="fas fa-copy"></i> Copiar IBAN
                                                 </button>
                                             </div>
                                         </div>
@@ -703,9 +640,9 @@
                                                 <div class="method-icon">📱</div>
                                                 <h4>MB Way</h4>
                                                 <p>Pagamento rápido pelo telemóvel — contacte-nos</p>
-                                                <button class="btn btn-primary" onclick="invoiceManager.setupMBWay()">
+                                                <a href="/pages/client/support.html" class="btn btn-primary">
                                                     <i class="fas fa-phone"></i> Contactar
-                                                </button>
+                                                </a>
                                             </div>
                                         </div>
                                     </div>
@@ -727,120 +664,154 @@
         </footer>
     </div>
 
-    <!-- Janela modal visualizaçãoу рахунку -->
-    <div class="modal fade invoice-details-modal" id="invoiceModal" tabindex="-1" role="dialog">
-        <div class="modal-dialog modal-lg" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Detalhes da fatura</h5>
-                    <button type="button" class="close" data-dismiss="modal">
-                        <span>&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body" id="invoiceModalContent">
-                    <!-- Conteúdo рахунку será carregado aqui -->
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
-                    <button type="button" class="btn btn-info" onclick="invoiceManager.downloadInvoice(currentInvoiceId)">
-                        <i class="fas fa-download"></i> Descarregar PDF
-                    </button>
-                    <button type="button" class="btn btn-success" onclick="invoiceManager.payInvoice(currentInvoiceId)" id="payInvoiceBtn">
-                        <i class="fas fa-credit-card"></i> Pagar
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Janela modal оплати -->
-    <div class="modal fade" id="paymentModal" tabindex="-1" role="dialog">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Pagamento da fatura</h5>
-                    <button type="button" class="close" data-dismiss="modal">
-                        <span>&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body" id="paymentModalContent">
-                    <!-- Conteúdo оплати será carregado aqui -->
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- Scripts -->
     <script src="../../plugins/jquery/jquery.min.js"></script>
     <script src="../../plugins/bootstrap/bootstrap.bundle.min.js"></script>
     <script src="../../plugins/adminlte/adminlte.min.js"></script>
-
-    <!-- Invoice Manager JS -->
-    <script src="../../assets/js/modules/invoice-manager.js"></script>
-
+    <script src="/plugins/toastr/js/toastr.min.js"></script>
+    <script src="../../plugins/sweetalert2/js/sweetalert2.min.js"></script>
     <script>
-        let currentInvoiceId = null;
-        
-        async function logout() {
-            if (await swalConfirm('Tem a certeza que quer sair do sistema?')) {
-                localStorage.removeItem('authToken');
-                localStorage.removeItem('userData');
-                window.location.replace('/pages/auth/login.html');
-            }
+    (function() {
+        var _token = sessionStorage.getItem('liftmanager_jwt') || localStorage.getItem('liftmanager_jwt') || localStorage.getItem('authToken') || localStorage.getItem('token') || '';
+        var _cache = null;
+        var _currentYear = String(new Date().getFullYear());
+        var _currentStatus = 'all';
+
+        function fmt(n) {
+            return Number(n || 0).toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
+        }
+        function fmtDate(d) { return d ? new Date(d).toLocaleDateString('pt-PT') : '—'; }
+        function esc(s) {
+            return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
+        function typeName(t) {
+            return { FT: 'Fatura', FR: 'Fat.-Recibo', ND: 'N.Débito', NC: 'N.Crédito' }[t] || (t || '—');
+        }
+        function statusBadge(s) {
+            var m = {
+                paid:      ['badge-success',   'Pago'],
+                partial:   ['badge-warning',   'Parcial'],
+                overdue:   ['badge-danger',    'Em atraso'],
+                pending:   ['badge-secondary', 'Pendente'],
+                cancelled: ['badge-light',     'Anulado'],
+            };
+            var b = m[s] || ['badge-light', s || ''];
+            return '<span class="badge ' + b[0] + '" style="font-size:.8rem">' + b[1] + '</span>';
         }
 
-        $(document).ready(function() {
-            // Inicialização do AdminLTE
-            $('[data-widget="pushmenu"]').PushMenu();
-            
-            // Escuro assunto
-// Verificação de ligação
-            setInterval(() => {
-                const online = navigator.onLine;
-                $('#connectionStatus').html(
-                    online ? 
-                    '<i class="fas fa-wifi text-success"></i> Online' : 
-                    '<i class="fas fa-wifi-slash text-danger"></i> Offline'
-                );
-            }, 30000);
+        function renderSummary(s) {
+            document.getElementById('totalAmount').textContent   = fmt(s.totalGross);
+            document.getElementById('paidAmount').textContent    = fmt(s.totalPaid);
+            document.getElementById('pendingAmount').textContent = fmt(s.totalPending);
+            document.getElementById('overdueAmount').textContent = fmt(s.totalOverdue);
+        }
 
-            // A carregar dados do utilizador
-            const userData = JSON.parse(localStorage.getItem('userData')) || {};
-            if (userData.firstName) {
+        function renderTable(invoices, status) {
+            var list   = status === 'all' ? invoices : invoices.filter(function(i) { return i.status === status; });
+            var tbody  = document.getElementById('invoicesTableBody');
+            if (!list.length) {
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4"><i class="fas fa-check-circle text-success mr-2"></i>Sem faturas neste período</td></tr>';
+                return;
             }
+            tbody.innerHTML = list.map(function(inv) {
+                var rowCls = inv.status === 'overdue' ? 'table-danger' : '';
+                return '<tr class="' + rowCls + '">' +
+                    '<td>' + esc(inv.invoiceNo || '—') + '</td>' +
+                    '<td>' + typeName(inv.invoiceType) + '</td>' +
+                    '<td>' + fmtDate(inv.invoiceDate) + '</td>' +
+                    '<td class="text-right">' + fmt(inv.grossTotal) + '</td>' +
+                    '<td class="text-right' + (inv.outstanding > 0.01 ? ' text-danger' : ' text-success') + '">' + fmt(inv.outstanding) + '</td>' +
+                    '<td class="text-center">' + statusBadge(inv.status) + '</td>' +
+                    '</tr>';
+            }).join('');
+        }
 
-            // Inicialização менеджера рахунків
-            window.invoiceManager = new InvoiceManager();
-
-            // Reagendar фокус desde модалки antes de закриттям (уникнення aria-hidden на focused element)
-            $(document).on('hide.bs.modal', '.modal', function () {
-                if (document.activeElement && this.contains(document.activeElement)) {
-                    document.activeElement.blur();
-                }
+        function populateYears(years, activeYear) {
+            var sel = document.getElementById('yearFilter');
+            if (!sel) return;
+            var opts = '<option value="all"' + (String(activeYear) === 'all' ? ' selected' : '') + '>Todos os anos</option>';
+            years.forEach(function(y) {
+                opts += '<option value="' + y + '"' + (String(y) === String(activeYear) ? ' selected' : '') + '>' + y + '</option>';
             });
-        });
-    </script>
-    <script src="/assets/js/table-drag-scroll.js"></script>
-    <script src="../../plugins/sweetalert2/js/sweetalert2.min.js"></script>
-</body>
+            sel.innerHTML = opts;
+        }
 
+        function loadInvoices(year) {
+            var url  = '/api/client/invoices' + (year && year !== 'all' ? '?year=' + year : '');
+            var tbody = document.getElementById('invoicesTableBody');
+            if (tbody) tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4"><div class="spinner-border spinner-border-sm text-primary mr-2"></div>A carregar...</td></tr>';
+
+            fetch(url, { headers: { 'Authorization': 'Bearer ' + _token } })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (!data.success) throw new Error(data.message || 'Erro');
+                _cache = data;
+                renderSummary(data.summary);
+                renderTable(data.invoices, _currentStatus);
+                if (data.years && data.years.length) populateYears(data.years, year || data.currentYear);
+                // Show customer name if available
+                var label = document.getElementById('clientNameLabel');
+                if (label && data.invoices && data.invoices[0] && data.invoices[0].customerName) {
+                    label.textContent = '— ' + data.invoices[0].customerName;
+                }
+            })
+            .catch(function(e) {
+                if (tbody) tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4"><i class="fas fa-exclamation-circle text-warning mr-2"></i>' + esc(e.message) + '</td></tr>';
+            });
+        }
+
+        window.fatFilterYear = function(year) {
+            _currentYear = year;
+            loadInvoices(year);
+        };
+
+        window.fatFilterStatus = function(status) {
+            _currentStatus = status;
+            if (_cache && _cache.invoices) renderTable(_cache.invoices, status);
+        };
+
+        window.fatPrint = function() {
+            if (!_cache || !_cache.invoices || !_cache.invoices.length) return;
+            var inv = _cache.invoices;
+            var s   = _cache.summary || {};
+            var rows = inv.map(function(i) {
+                return '<tr><td>' + esc(i.invoiceNo || '') + '</td><td>' + typeName(i.invoiceType) + '</td>' +
+                    '<td>' + fmtDate(i.invoiceDate) + '</td>' +
+                    '<td align="right">' + fmt(i.grossTotal) + '</td>' +
+                    '<td align="right">' + fmt(i.outstanding) + '</td>' +
+                    '<td>' + (i.status || '') + '</td></tr>';
+            }).join('');
+            var w = window.open('', '_blank');
+            w.document.write('<!DOCTYPE html><html><head><title>Faturas<\/title>' +
+                '<style>body{font-family:Arial,sans-serif;font-size:12px}table{width:100%;border-collapse:collapse}' +
+                'th,td{border:1px solid #ddd;padding:4px 8px}th{background:#f5f5f5}tfoot td{font-weight:bold}<\/style><\/head><body>' +
+                '<h3>As minhas faturas<\/h3>' +
+                '<table><thead><tr><th>Fatura<\/th><th>Tipo<\/th><th>Data<\/th><th>Total<\/th><th>Saldo<\/th><th>Estado<\/th><\/tr><\/thead>' +
+                '<tbody>' + rows + '<\/tbody>' +
+                '<tfoot><tr><td colspan="3">' + (s.countTotal || inv.length) + ' fatura(s)<\/td>' +
+                '<td align="right">' + fmt(s.totalGross) + '<\/td>' +
+                '<td align="right">' + fmt(s.totalOutstanding) + '<\/td><td><\/td><\/tr><\/tfoot>' +
+                '<\/table><\/body><\/html>');
+            w.document.close();
+            w.print();
+        };
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadInvoices(_currentYear);
+        });
+    })();
+
+    async function swalConfirm(text, title) {
+        title = title || 'Confirmar';
+        var r = await Swal.fire({
+            title: title, text: text, icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#e74c3c', cancelButtonColor: '#95a5a6',
+            confirmButtonText: 'Confirmar', cancelButtonText: 'Cancelar'
+        });
+        return r.isConfirmed;
+    }
+    </script>
+</body>
 </html>
-    <script src="/assets/js/table-drag-scroll.js"></script>
-<script src="../../assets/js/monitor.js"></script>
-<script>
-// swalConfirm — substitui confirm() nativo pelo Swal
-async function swalConfirm(text, title = 'Confirmar') {
-    const r = await Swal.fire({
-        title,
-        text,
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#e74c3c',
-        cancelButtonColor: '#95a5a6',
-        confirmButtonText: 'Confirmar',
-        cancelButtonText: 'Cancelar'
-    });
-    return r.isConfirmed;
-}
-</script>
 </body> -->

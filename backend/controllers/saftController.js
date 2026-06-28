@@ -331,25 +331,42 @@ exports.uploadSaft = async (req, res) => {
             }
         }
 
-        // ── 4. Save import record ─────────────────────────────────────────────
-        const record = await SaftImport.create({
-            importedBy: req.user.id,
-            filename:   req.file.originalname,
-            period,
-            taxEntity,
-            softwareName,
-            stats: {
-                customersFound: Object.keys(customerMap).length,
-                liftsUpdated:   liftsUpdated.length,
-                invoicesTotal:  rawInvoices.length,
-                paymentsTotal:  rawPayments.length,
-                debtorsFound:   debtors.length,
-                alertsSent,
-            },
-            liftsUpdated,
-            debtors,
-            warnings,
-        });
+        // ── 4. Save import record (skip if same period already exists) ───────
+        // Duplicate key: fiscalYear + period.start — same SAF-T export uploaded twice.
+        // Invoices are still re-synced (idempotent upsert), but no new history record.
+        let record;
+        let alreadyImported = false;
+        const existingRecord = period.start
+            ? await SaftImport.findOne({
+                'period.fiscalYear': period.fiscalYear,
+                'period.start':      period.start,
+              }).lean()
+            : null;
+
+        if (existingRecord) {
+            alreadyImported = true;
+            record = existingRecord;
+            warnings.push(`Período ${period.fiscalYear} já importado em ${new Date(existingRecord.createdAt).toLocaleDateString('pt-PT')} (${existingRecord.filename}). Faturas re-sincronizadas.`);
+        } else {
+            record = await SaftImport.create({
+                importedBy: req.user.id,
+                filename:   req.file.originalname,
+                period,
+                taxEntity,
+                softwareName,
+                stats: {
+                    customersFound: Object.keys(customerMap).length,
+                    liftsUpdated:   liftsUpdated.length,
+                    invoicesTotal:  rawInvoices.length,
+                    paymentsTotal:  rawPayments.length,
+                    debtorsFound:   debtors.length,
+                    alertsSent,
+                },
+                liftsUpdated,
+                debtors,
+                warnings,
+            });
+        }
 
         // ── 4b. Sync ALL invoices from this SAF-T to LiftInvoice collection ─────────
         // Um registo por fatura (chave: invoiceNo único). Liga pelo moloniCode = SAF-T CustomerID.
@@ -402,6 +419,9 @@ exports.uploadSaft = async (req, res) => {
         res.json({
             success: true,
             importId: record._id,
+            alreadyImported,
+            period,
+            invoicesSynced: bulkOps.length,
             stats: record.stats,
             liftsUpdated,
             debtors: debtors.map(d => ({
