@@ -948,6 +948,9 @@
         return Number(n || 0).toLocaleString('pt-PT', { minimumFractionDigits:2, maximumFractionDigits:2 }) + ' €';
     }
     function fatDate(d) { return d ? new Date(d).toLocaleDateString('pt-PT') : '—'; }
+    function fatEsc(s) {
+        return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
     function fatTypeName(t) {
         return { FT:'Fatura', FR:'Fat.-Recibo', ND:'N.Débito', NC:'N.Crédito' }[t] || (t || '—');
     }
@@ -990,7 +993,7 @@
             var rows = invoices.map(function(inv) {
                 var rowCls = inv.status === 'overdue' ? 'table-danger' : inv.status === 'pending' ? 'table-warning' : '';
                 return '<tr class="' + rowCls + '">' +
-                    '<td>' + (inv.invoiceNo || '—') + '</td>' +
+                    '<td>' + fatEsc(inv.invoiceNo || '—') + '</td>' +
                     '<td>' + fatTypeName(inv.invoiceType) + '</td>' +
                     '<td>' + fatDate(inv.invoiceDate) + '</td>' +
                     '<td class="text-right">' + fatFmt(inv.grossTotal) + '</td>' +
@@ -1085,7 +1088,7 @@
         var inv = data.invoices;
         var s   = data.summary || {};
         var rows = inv.map(function(i) {
-            return '<tr><td>' + (i.invoiceNo||'') + '</td><td>' + fatTypeName(i.invoiceType) + '</td>' +
+            return '<tr><td>' + fatEsc(i.invoiceNo||'') + '</td><td>' + fatTypeName(i.invoiceType) + '</td>' +
                 '<td>' + fatDate(i.invoiceDate) + '</td>' +
                 '<td align="right">' + fatFmt(i.grossTotal) + '</td>' +
                 '<td align="right">' + fatFmt(i.outstanding) + '</td>' +

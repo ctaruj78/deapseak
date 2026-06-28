@@ -10320,11 +10320,10 @@ $(document).on('click', '#editInspRptSaveBtn', async function() {
             var sc = document.getElementById('fatSummaryCards');
             if (!sc || !summary) return;
             sc.style.display = '';
-            var pending = (summary.totalGross || 0) - (summary.totalPaid || 0) - (summary.totalOutstanding || 0);
             document.getElementById('fatTotalGross').textContent       = fatFmt(summary.totalGross);
             document.getElementById('fatTotalPaid').textContent        = fatFmt(summary.totalPaid);
-            document.getElementById('fatTotalPending').textContent     = fatFmt(Math.max(0, pending));
-            document.getElementById('fatTotalOutstanding').textContent = fatFmt(summary.totalOutstanding);
+            document.getElementById('fatTotalPending').textContent     = fatFmt(summary.totalPending);
+            document.getElementById('fatTotalOutstanding').textContent = fatFmt(summary.totalOverdue || summary.totalOutstanding);
             var badge = document.getElementById('fatBadge');
             if (badge) badge.textContent = summary.countTotal || 0;
         }
@@ -10357,7 +10356,7 @@ $(document).on('click', '#editInspRptSaveBtn', async function() {
                 tbody.innerHTML = invoices.map(function(inv) {
                     var rowCls = inv.status === 'overdue' ? 'table-danger' : inv.status === 'pending' ? 'table-warning' : '';
                     return '<tr class="' + rowCls + '">' +
-                        '<td class="font-weight-500">' + (inv.invoiceNo || '—') + '</td>' +
+                        '<td class="font-weight-500">' + escapeHtml(inv.invoiceNo || '—') + '</td>' +
                         '<td><small>' + fatTypeName(inv.invoiceType) + '</small></td>' +
                         '<td>' + fatDate(inv.invoiceDate) + '</td>' +
                         '<td class="text-right">' + fatFmt(inv.grossTotal) + '</td>' +
@@ -10448,12 +10447,12 @@ $(document).on('click', '#editInspRptSaveBtn', async function() {
             w.print();
         }
 
-        // Load invoices when Faturas tab is clicked
+        // Load invoices when Faturas tab is clicked (only if not already loaded for current lift)
         document.addEventListener('DOMContentLoaded', function() {
             var fatTab = document.getElementById('eLiftTab-fat');
             if (fatTab) {
                 fatTab.addEventListener('click', function() {
-                    if (_fatLiftId) fatLoadInvoices();
+                    if (_fatLiftId && !_fatData) fatLoadInvoices();
                 });
             }
         });
