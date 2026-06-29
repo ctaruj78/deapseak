@@ -6505,7 +6505,10 @@ Email de contacto: info@festlift.pt`;
             }
 
             console.log('✅ Formulário preenchido com dados');
-            
+
+            // Inicializar tab Faturas para este elevador
+            if (typeof fatInitForLift === 'function') fatInitForLift(lift._id || lift.id);
+
             // Abrir janela modal
             $('#enhancedLiftModal').modal('show');
             
@@ -10434,6 +10437,10 @@ $(document).on('click', '#editInspRptSaveBtn', async function() {
             }
             var subtitle = document.getElementById('fatClientSubtitle');
             if (subtitle) subtitle.textContent = '';
+
+            // Pre-load invoices in the background so they are ready when the user clicks the tab.
+            // This also handles the case where the Faturas tab is already active (no click fires).
+            if (liftId) setTimeout(fatLoadInvoices, 0);
         }
 
         function fatPrint() {

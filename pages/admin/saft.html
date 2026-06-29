@@ -549,6 +549,17 @@ function showResult(data) {
 }
 
 // ── history ───────────────────────────────────────────────────────────────────
+const _yearOpen = {};
+
+function toggleYear(yr) {
+    _yearOpen[yr] = !_yearOpen[yr];
+    document.querySelectorAll('.yr-row-' + yr).forEach(r => {
+        r.style.display = _yearOpen[yr] ? '' : 'none';
+    });
+    const icon = document.getElementById('yr-icon-' + yr);
+    if (icon) icon.className = _yearOpen[yr] ? 'fas fa-chevron-down mr-2' : 'fas fa-chevron-right mr-2';
+}
+
 async function loadHistory() {
     try {
         const r = await fetch(API() + '/api/saft', { headers: HDRS() });
@@ -558,22 +569,49 @@ async function loadHistory() {
             tbody.innerHTML = '<tr><td colspan="10" class="text-center text-muted py-3">Sem importações anteriores</td></tr>';
             return;
         }
-        tbody.innerHTML = data.imports.map(imp => `
-            <tr class="import-row">
-                <td>${fmtDate(imp.createdAt)}</td>
-                <td class="small text-truncate" style="max-width:160px;" title="${esc(imp.filename)}">${esc(imp.filename)}</td>
-                <td class="small">${imp.period?.start ? fmtDate(imp.period.start) + ' – ' + fmtDate(imp.period.end) : '—'}</td>
-                <td class="text-center">${imp.stats?.customersFound ?? '—'}</td>
-                <td class="text-center">${imp.stats?.liftsUpdated ?? '—'}</td>
-                <td class="text-center">${imp.stats?.invoicesTotal ?? '—'}</td>
-                <td class="text-center"><span class="${(imp.stats?.debtorsFound||0)>0?'text-danger font-weight-bold':''}">${imp.stats?.debtorsFound ?? '—'}</span></td>
-                <td class="text-center">${imp.stats?.alertsSent ?? '—'}</td>
-                <td class="small">${imp.importedBy ? (imp.importedBy.firstName || '') : '—'}</td>
-                <td class="text-nowrap">
-                    <button class="btn btn-xs btn-outline-primary mr-1" onclick="openImport('${imp._id}')"><i class="fas fa-eye"></i></button>
-                    <button class="btn btn-xs btn-outline-danger" onclick="deleteImport('${imp._id}', '${esc(imp.filename)}')"><i class="fas fa-trash"></i></button>
+
+        // Group by fiscal year
+        const byYear = {};
+        for (const imp of data.imports) {
+            const yr = imp.period?.fiscalYear || String(new Date(imp.createdAt).getFullYear());
+            if (!byYear[yr]) byYear[yr] = [];
+            byYear[yr].push(imp);
+        }
+        const years = Object.keys(byYear).sort((a, b) => b.localeCompare(a));
+
+        // Default: most recent year open, rest collapsed
+        years.forEach((yr, i) => { if (_yearOpen[yr] === undefined) _yearOpen[yr] = (i === 0); });
+
+        let html = '';
+        for (const yr of years) {
+            const imps = byYear[yr];
+            const open = _yearOpen[yr];
+            html += `<tr class="table-secondary" style="cursor:pointer;user-select:none" onclick="toggleYear('${yr}')">
+                <td colspan="10" class="py-2 font-weight-bold">
+                    <i id="yr-icon-${yr}" class="fas ${open ? 'fa-chevron-down' : 'fa-chevron-right'} mr-2"></i>
+                    ${yr}
+                    <span class="badge badge-secondary ml-2">${imps.length} importações</span>
                 </td>
-            </tr>`).join('');
+            </tr>`;
+            for (const imp of imps) {
+                html += `<tr class="import-row yr-row-${yr}" style="${open ? '' : 'display:none'}">
+                    <td>${fmtDate(imp.createdAt)}</td>
+                    <td class="small text-truncate" style="max-width:160px;" title="${esc(imp.filename)}">${esc(imp.filename)}</td>
+                    <td class="small">${imp.period?.start ? fmtDate(imp.period.start) + ' – ' + fmtDate(imp.period.end) : '—'}</td>
+                    <td class="text-center">${imp.stats?.customersFound ?? '—'}</td>
+                    <td class="text-center">${imp.stats?.liftsUpdated ?? '—'}</td>
+                    <td class="text-center">${imp.stats?.invoicesTotal ?? '—'}</td>
+                    <td class="text-center"><span class="${(imp.stats?.debtorsFound||0)>0?'text-danger font-weight-bold':''}">${imp.stats?.debtorsFound ?? '—'}</span></td>
+                    <td class="text-center">${imp.stats?.alertsSent ?? '—'}</td>
+                    <td class="small">${imp.importedBy ? (imp.importedBy.firstName || '') : '—'}</td>
+                    <td class="text-nowrap">
+                        <button class="btn btn-xs btn-outline-primary mr-1" onclick="openImport('${imp._id}')"><i class="fas fa-eye"></i></button>
+                        <button class="btn btn-xs btn-outline-danger" onclick="deleteImport('${imp._id}', '${esc(imp.filename)}')"><i class="fas fa-trash"></i></button>
+                    </td>
+                </tr>`;
+            }
+        }
+        tbody.innerHTML = html;
     } catch (e) {
         document.getElementById('historyBody').innerHTML = '<tr><td colspan="10" class="text-center text-danger">Erro ao carregar histórico</td></tr>';
     }

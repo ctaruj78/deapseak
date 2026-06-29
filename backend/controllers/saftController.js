@@ -331,22 +331,24 @@ exports.uploadSaft = async (req, res) => {
             }
         }
 
-        // ── 4. Save import record (skip if same period already exists) ───────
-        // Duplicate key: fiscalYear + period.start — same SAF-T export uploaded twice.
-        // Invoices are still re-synced (idempotent upsert), but no new history record.
+        // ── 4. Save import record (skip only if exact same filename + period) ───────
+        // A true duplicate = same filename AND same period start (same file uploaded twice).
+        // A different filename covering the same period (e.g. 08.0.xml then 08.xml) is a
+        // different export and must create its own history record.
         let record;
         let alreadyImported = false;
         const existingRecord = period.start
             ? await SaftImport.findOne({
                 'period.fiscalYear': period.fiscalYear,
                 'period.start':      period.start,
+                'filename':          req.file.originalname,
               }).lean()
             : null;
 
         if (existingRecord) {
             alreadyImported = true;
             record = existingRecord;
-            warnings.push(`Período ${period.fiscalYear} já importado em ${new Date(existingRecord.createdAt).toLocaleDateString('pt-PT')} (${existingRecord.filename}). Faturas re-sincronizadas.`);
+            warnings.push(`Ficheiro ${req.file.originalname} já importado em ${new Date(existingRecord.createdAt).toLocaleDateString('pt-PT')}. Faturas re-sincronizadas.`);
         } else {
             record = await SaftImport.create({
                 importedBy: req.user.id,
@@ -448,8 +450,7 @@ exports.listImports = async (req, res) => {
     try {
         const imports = await SaftImport.find({}, 'filename period stats createdAt importedBy')
             .populate('importedBy', 'firstName lastName')
-            .sort({ createdAt: -1 })
-            .limit(50)
+            .sort({ 'period.start': -1, createdAt: -1 })
             .lean();
         res.json({ success: true, imports });
     } catch (err) {
