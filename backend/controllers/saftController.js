@@ -86,25 +86,39 @@ exports.uploadSaft = async (req, res) => {
         const rawInvoices = toArray(root?.SourceDocuments?.SalesInvoices?.Invoice);
         const invoiceMap = {}; // invoiceNo → { custId, gross, date, type, status }
         rawInvoices.forEach(inv => {
-            const no     = String(inv.InvoiceNo || '').trim();
-            const type   = String(inv.InvoiceType || '').trim();   // FT, FR, ND, NC
-            const status = String(inv.InvoiceStatus?.InvoiceStatus || 'N').trim();
-            const gross  = parseFloat(inv.DocumentTotals?.GrossTotal) || 0;
-            const date   = parseDate(inv.InvoiceDate);
-            const custId = String(inv.CustomerID || '').trim();
+            const no      = String(inv.InvoiceNo || '').trim();
+            const type    = String(inv.InvoiceType || '').trim();
+            const status  = String(inv.InvoiceStatus?.InvoiceStatus || 'N').trim();
+            const gross   = parseFloat(inv.DocumentTotals?.GrossTotal) || 0;
+            const date    = parseDate(inv.InvoiceDate);
+            // SAF-T PT doesn't have a standard dueDate field; assume net-30 from invoice date
+            const dueDate = date ? new Date(date.getTime() + 30 * 24 * 60 * 60 * 1000) : null;
+            const custId  = String(inv.CustomerID || '').trim();
             if (!no || !custId) return;
-            invoiceMap[no] = { no, type, status, gross, date, custId };
+            invoiceMap[no] = { no, type, status, gross, date, dueDate, custId };
         });
 
         // ── payments — build paid amounts per invoice ─────────────────────────
         const rawPayments = toArray(root?.SourceDocuments?.Payments?.Payment);
         const paidMap = {}; // invoiceNo → total amount paid
+        // Debug: log first payment line to inspect SAF-T structure
+        if (rawPayments.length > 0) {
+            const first = rawPayments[0];
+            const firstLines = toArray(first.Line || first.Lines?.Line);
+            if (firstLines.length > 0) {
+                console.log('[SAF-T DEBUG] First RC line:', JSON.stringify(firstLines[0], null, 2));
+            }
+        }
         rawPayments.forEach(pmt => {
-            toArray(pmt.Lines?.Line).forEach(line => {
-                // SAF-T PT: amount received from client is DebitAmount (positive).
-                // CreditAmount is used for refunds. SettlementAmount is a discount, not payment.
-                // SourceDocumentID has no amount field per spec — only OriginatingON reference.
-                const lineAmt = parseFloat(line.DebitAmount || line.CreditAmount || 0);
+            // SAF-T PT v1.04 (Portaria 302/2016): Line is direct child of Payment
+            // SAF-T PT v1.01 (older): Line is nested under Lines
+            const lines = toArray(pmt.Line || pmt.Lines?.Line);
+            lines.forEach(line => {
+                // Moloni SAF-T: CreditAmount = NET (sem IVA); Tax.TaxPercentage = 23
+                // Tax.TaxAmount NÃO existe no Moloni SAF-T — calcular via percentagem
+                const baseAmt = parseFloat(line.DebitAmount || line.CreditAmount || 0);
+                const taxPct  = parseFloat(line.Tax?.TaxPercentage || 0);
+                const lineAmt = taxPct > 0 ? +(baseAmt * (1 + taxPct / 100)).toFixed(2) : baseAmt;
                 toArray(line.SourceDocumentID).forEach(src => {
                     const origNo = String(src.OriginatingON || '').trim();
                     if (!origNo || lineAmt <= 0) return;
@@ -380,9 +394,11 @@ exports.uploadSaft = async (req, res) => {
             const cust = customerMap[inv.custId];
             if (!cust || !cust.nif) continue;
 
-            const paid = paidMap[inv.no] || 0;
+            const paid = Math.min(paidMap[inv.no] || 0, inv.gross);
             const outstanding = Math.max(0, inv.gross - paid);
-            const days = inv.date ? daysBetween(inv.date, today) : 0;
+            // daysOverdue counted from dueDate (not invoiceDate)
+            const refDate = inv.dueDate || inv.date;
+            const days = refDate ? Math.max(0, daysBetween(refDate, today)) : 0;
 
             let status = 'pending';
             if (inv.status === 'A') status = 'cancelled';
@@ -393,7 +409,7 @@ exports.uploadSaft = async (req, res) => {
             const setDoc = {
                 moloniCode: inv.custId,    // SAF-T CustomerID = código Moloni do cliente
                 liftId: null,              // não ligar a elevador específico
-                nif: cust.nif, invoiceNo: inv.no, invoiceDate: inv.date,
+                nif: cust.nif, invoiceNo: inv.no, invoiceDate: inv.date, dueDate: inv.dueDate,
                 invoiceType: inv.type, grossTotal: inv.gross,
                 amountPaid: paid, outstanding, daysOverdue: days,
                 fiscalYear: inv.date ? String(new Date(inv.date).getFullYear()) : period.fiscalYear,
@@ -433,7 +449,7 @@ exports.uploadSaft = async (req, res) => {
 
                 const crossOps = [];
                 for (const doc of existingDocs) {
-                    const paid = paidMap[doc.invoiceNo];
+                    const paid = Math.min(paidMap[doc.invoiceNo], doc.grossTotal || Infinity);
                     const newPaid = Math.max(doc.amountPaid || 0, paid);
                     if (newPaid <= (doc.amountPaid || 0)) continue;
                     const newOutstanding = Math.max(0, (doc.grossTotal || 0) - newPaid);
@@ -477,6 +493,7 @@ exports.uploadSaft = async (req, res) => {
             alreadyImported,
             period,
             invoicesSynced: bulkOps.length,
+            paymentsFound: Object.keys(paidMap).length,
             stats: record.stats,
             liftsUpdated,
             debtors: debtors.map(d => ({
@@ -831,11 +848,77 @@ exports.importPendentes = async (req, res) => {
         };
         await settings.save();
 
+        // ── Sync Pendentes → LiftInvoice ──────────────────────────────────────
+        // Pendentes lists ONLY outstanding invoices per client.
+        // Invoices in LiftInvoice for the same client that are NOT in the
+        // Pendentes list have been paid — update their status accordingly.
+        const OVERDUE_DAYS_P = parseInt(process.env.SAFT_OVERDUE_DAYS) || 30;
+        let invoicesSynced = 0;
+        for (const debtor of debtors) {
+            const clientQuery = debtor.moloniCode
+                ? { moloniCode: debtor.moloniCode }
+                : debtor.customerTaxId
+                    ? { nif: debtor.customerTaxId }
+                    : null;
+            if (!clientQuery) continue;
+
+            const outstandingNos = new Set(
+                debtor.invoices.map(i => (i.invoiceNo || '').trim()).filter(Boolean)
+            );
+            const pendentesMap = {};
+            debtor.invoices.forEach(i => { if (i.invoiceNo) pendentesMap[i.invoiceNo.trim()] = i; });
+
+            const existing = await LiftInvoice.find(
+                clientQuery,
+                'invoiceNo grossTotal amountPaid status'
+            ).lean();
+
+            const syncOps = [];
+            for (const inv of existing) {
+                if (inv.status === 'cancelled') continue;
+                const no = (inv.invoiceNo || '').trim();
+
+                if (outstandingNos.has(no)) {
+                    // Invoice is still outstanding in Pendentes — refresh amounts
+                    const p = pendentesMap[no];
+                    if (!p) continue;
+                    const newOutstanding = p.outstanding || 0;
+                    const newPaid = Math.max(0, (inv.grossTotal || 0) - newOutstanding);
+                    const days = p.daysOverdue || 0;
+                    const newStatus = newOutstanding < 0.01 ? 'paid'
+                        : days > OVERDUE_DAYS_P ? 'overdue'
+                        : 'pending';
+                    if (newOutstanding !== inv.outstanding || newStatus !== inv.status) {
+                        syncOps.push({
+                            updateOne: {
+                                filter: { invoiceNo: inv.invoiceNo },
+                                update: { $set: { amountPaid: newPaid, outstanding: newOutstanding, daysOverdue: days, status: newStatus } },
+                            },
+                        });
+                    }
+                } else if (inv.status !== 'paid') {
+                    // Invoice NOT in Pendentes → client has paid it
+                    syncOps.push({
+                        updateOne: {
+                            filter: { invoiceNo: inv.invoiceNo },
+                            update: { $set: { amountPaid: inv.grossTotal || 0, outstanding: 0, daysOverdue: 0, status: 'paid' } },
+                        },
+                    });
+                }
+            }
+
+            if (syncOps.length) {
+                await LiftInvoice.bulkWrite(syncOps, { ordered: false });
+                invoicesSynced += syncOps.length;
+            }
+        }
+
         res.json({
             success:  true,
             total:    debtors.length,
             noEmail:  noEmail.length,
             noEmailList: noEmail,
+            invoicesSynced,
         });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });

@@ -252,6 +252,19 @@ exports.getInvoicePdf = async (req, res) => {
             return res.status(403).json({ success: false, message: 'Acesso negado' });
         }
 
+        // ── Try Moloni API first (original PDF with ATCUD) ──────────────────────
+        const moloni = require('../../services/moloniService');
+        if (moloni.isConfigured()) {
+            try {
+                await moloni.streamInvoicePdf(invoiceNo, res);
+                return;
+            } catch (moloniErr) {
+                console.warn('[Moloni PDF] Falhou para', invoiceNo, '—', moloniErr.message, '— usando PDF local');
+                if (res.headersSent) return;
+            }
+        }
+
+        // ── Fallback: generate summary PDF locally ──────────────────────────────
         const PDFDocument = require('pdfkit');
         const doc = new PDFDocument({ margin: 50, size: 'A4' });
 
@@ -311,7 +324,8 @@ exports.getInvoicePdf = async (req, res) => {
         const tHeaders = ['Descrição', 'Total', 'Pago', 'Em dívida'];
         const tCols    = [50, 330, 410, 490];
         doc.fontSize(9).font('Helvetica-Bold').fillColor('#555');
-        tHeaders.forEach((h, i) => doc.text(h, tCols[i], doc.y, { width: 80, align: i === 0 ? 'left' : 'right' }));
+        const headerY = doc.y;
+        tHeaders.forEach((h, i) => doc.text(h, tCols[i], headerY, { width: 80, align: i === 0 ? 'left' : 'right' }));
         doc.moveDown(0.6);
 
         doc.moveTo(50, doc.y).lineTo(545, doc.y).strokeColor('#ddd').lineWidth(0.5).stroke();

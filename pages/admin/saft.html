@@ -1188,15 +1188,18 @@ async function uploadPendentes() {
                 var d = await resp.json();
                 if (d.success) {
                     var yr     = d.period && d.period.fiscalYear ? d.period.fiscalYear : '';
-                    var fatStr = (d.invoicesSynced !== undefined ? d.invoicesSynced + ' fat.' : 'OK') + (yr ? ' (' + yr + ')' : '');
+                    var noPayments = (d.paymentsFound === 0 && d.invoicesSynced > 0);
+                    var fatStr = (d.invoicesSynced !== undefined ? d.invoicesSynced + ' fat.' : 'OK') +
+                        (noPayments ? ' ⚠️ 0 recibos' : (d.paymentsFound > 0 ? ' ✓ ' + d.paymentsFound + ' rec.' : '')) +
+                        (yr ? ' (' + yr + ')' : '');
                     if (d.alreadyImported) {
                         if (statEl) { statEl.className = 'badge badge-warning badge-pill'; statEl.textContent = 'Já importado' + (yr ? ' ' + yr : ''); }
                         if (rowEl)  rowEl.style.background = '#fffbf0';
                     } else {
-                        if (statEl) { statEl.className = 'badge badge-success badge-pill'; statEl.textContent = fatStr; }
-                        if (rowEl)  rowEl.style.background = '#f0fff4';
+                        if (statEl) { statEl.className = noPayments ? 'badge badge-warning badge-pill' : 'badge badge-success badge-pill'; statEl.textContent = fatStr; }
+                        if (rowEl)  rowEl.style.background = noPayments ? '#fffbf0' : '#f0fff4';
                     }
-                    results.push({ name: f.name, ok: true, label: fatStr, year: yr, dup: d.alreadyImported });
+                    results.push({ name: f.name, ok: true, label: fatStr, year: yr, dup: d.alreadyImported, noPayments });
                 } else {
                     var msg = d.message || 'Erro';
                     if (statEl) { statEl.className = 'badge badge-warning badge-pill'; statEl.textContent = msg.length > 20 ? msg.substring(0,18)+'…' : msg; }
@@ -1229,13 +1232,15 @@ async function uploadPendentes() {
         // Summary block
         var dups = results.filter(function(r) { return r.dup; }).length;
         var newOk = results.filter(function(r) { return r.ok && !r.dup; }).length;
+        var noPaymentFiles = results.filter(function(r) { return r.noPayments; }).length;
         var sumHtml = '<div class="alert ' + (errs ? 'alert-warning' : 'alert-success') + ' py-2 mt-2 small">' +
             '<i class="fas fa-' + (errs ? 'exclamation-triangle' : 'check-circle') + ' mr-1"></i>' +
             '<strong>' + newOk + '</strong> novos' +
             (dups ? ', <strong>' + dups + '</strong> já importados (faturas re-sincronizadas)' : '') +
             (errs ? ', <strong>' + errs + '</strong> com erro' : '') +
             ' — de ' + done + ' ficheiros total.' +
-            '</div>';
+            '</div>' +
+            (noPaymentFiles > 0 ? '<div class="alert alert-warning py-2 mt-1 small"><i class="fas fa-exclamation-triangle mr-1"></i><strong>' + noPaymentFiles + ' ficheiro(s) sem recibos de pagamento.</strong> O campo "Pago" ficará a 0 € para todas as faturas destes ficheiros. Para corrigir: registe os Recibos no Moloni e re-exporte o SAF-T, ou importe o ficheiro <strong>Pendentes</strong> para reconciliar automaticamente.</div>' : '');
         document.getElementById('batchSummary').innerHTML = sumHtml;
 
         if (!errs) toastr.success(newOk + ' novos SAF-T importados' + (dups ? ', ' + dups + ' já existiam.' : '!'));
