@@ -415,6 +415,52 @@ exports.uploadSaft = async (req, res) => {
             }
         }
 
+        // ── 4c. Cross-month payments ──────────────────────────────────────────
+        // Receipts in this SAF-T often pay invoices issued in previous months.
+        // Those invoices were already upserted with amountPaid=0 when their own
+        // SAF-T was processed. Resolve them now.
+        const crossMonthNos = Object.keys(paidMap).filter(no => !invoiceMap[no]);
+        if (crossMonthNos.length > 0) {
+            try {
+                const existingDocs = await LiftInvoice.find(
+                    { invoiceNo: { $in: crossMonthNos } },
+                    'invoiceNo grossTotal amountPaid invoiceDate status'
+                ).lean();
+
+                const crossOps = [];
+                for (const doc of existingDocs) {
+                    const paid = paidMap[doc.invoiceNo];
+                    const newPaid = Math.max(doc.amountPaid || 0, paid);
+                    if (newPaid <= (doc.amountPaid || 0)) continue;
+                    const newOutstanding = Math.max(0, (doc.grossTotal || 0) - newPaid);
+                    const days = doc.invoiceDate ? daysBetween(new Date(doc.invoiceDate), today) : 0;
+                    let newStatus;
+                    if (doc.status === 'cancelled') {
+                        newStatus = 'cancelled';
+                    } else if (newOutstanding < 0.01) {
+                        newStatus = 'paid';
+                    } else if (newPaid > 0.01) {
+                        newStatus = 'partial';
+                    } else if (days > OVERDUE_DAYS) {
+                        newStatus = 'overdue';
+                    } else {
+                        newStatus = 'pending';
+                    }
+                    crossOps.push({
+                        updateOne: {
+                            filter: { invoiceNo: doc.invoiceNo },
+                            update: { $set: { amountPaid: newPaid, outstanding: newOutstanding, status: newStatus } },
+                        },
+                    });
+                }
+                if (crossOps.length) {
+                    await LiftInvoice.bulkWrite(crossOps, { ordered: false });
+                }
+            } catch (crossErr) {
+                warnings.push('Cross-month payments: ' + crossErr.message);
+            }
+        }
+
         // Clean up uploaded file
         fs.unlinkSync(filePath);
 

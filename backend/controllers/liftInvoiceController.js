@@ -9,7 +9,8 @@ exports.getInvoicesByClient = async (req, res) => {
             return res.status(403).json({ success: false, message: 'Acesso negado' });
         }
 
-        const lifts = await Lift.find({ client: req.user._id }, 'moloniCode nif').lean();
+        const userId = req.user._id || req.user.id;
+        const lifts = await Lift.find({ client: userId }, 'moloniCode nif').lean();
         const emptySummary = {
             totalGross: 0, totalPaid: 0, totalOutstanding: 0,
             totalPending: 0, totalOverdue: 0,
@@ -71,11 +72,12 @@ exports.getInvoicesByLift = async (req, res) => {
         const liftId = req.params.liftId || req.params.id;
 
         // Security: verify lift access
-        const lift = await Lift.findById(liftId, '_id client nif moloniCode').lean();
+        const lift = await Lift.findById(liftId, '_id client nif moloniCode municipalNumber').lean();
         if (!lift) return res.status(404).json({ success: false, message: 'Elevador não encontrado' });
 
         if (req.user.role === 'client') {
-            if (!lift.client || lift.client.toString() !== req.user._id.toString()) {
+            const uid = (req.user._id || req.user.id || '').toString();
+            if (!lift.client || lift.client.toString() !== uid) {
                 return res.status(403).json({ success: false, message: 'Acesso negado' });
             }
         } else if (!['admin', 'dispatcher'].includes(req.user.role)) {
@@ -137,7 +139,7 @@ exports.getInvoicesByLift = async (req, res) => {
             }
         }
 
-        res.json({ success: true, invoices, summary, years, currentYear });
+        res.json({ success: true, invoices, summary, years, currentYear, municipalNumber: lift.municipalNumber });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });
     }
@@ -152,7 +154,8 @@ exports.getInvoiceSummaryForLift = async (req, res) => {
         if (!lift) return res.status(404).json({ success: false, message: 'Elevador não encontrado' });
 
         if (req.user.role === 'client') {
-            if (!lift.client || lift.client.toString() !== req.user._id.toString()) {
+            const uid = (req.user._id || req.user.id || '').toString();
+            if (!lift.client || lift.client.toString() !== uid) {
                 return res.status(403).json({ success: false, message: 'Acesso negado' });
             }
         } else if (!['admin', 'dispatcher'].includes(req.user.role)) {

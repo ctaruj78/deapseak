@@ -676,6 +676,7 @@
         var _cache = null;
         var _currentYear = String(new Date().getFullYear());
         var _currentStatus = 'all';
+        var _liftId = new URLSearchParams(window.location.search).get('liftId') || '';
 
         function fmt(n) {
             return Number(n || 0).toLocaleString('pt-PT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
@@ -736,8 +737,17 @@
             sel.innerHTML = opts;
         }
 
+        function buildUrl(year) {
+            if (_liftId) {
+                var u = '/api/lifts/' + _liftId + '/invoices';
+                if (year && year !== 'all') u += '?year=' + year;
+                return u;
+            }
+            return '/api/client/invoices' + (year && year !== 'all' ? '?year=' + year : '');
+        }
+
         function loadInvoices(year) {
-            var url  = '/api/client/invoices' + (year && year !== 'all' ? '?year=' + year : '');
+            var url  = buildUrl(year);
             var tbody = document.getElementById('invoicesTableBody');
             if (tbody) tbody.innerHTML = '<tr><td colspan="6" class="text-center py-4"><div class="spinner-border spinner-border-sm text-primary mr-2"></div>A carregar...</td></tr>';
 
@@ -749,10 +759,16 @@
                 renderSummary(data.summary);
                 renderTable(data.invoices, _currentStatus);
                 if (data.years && data.years.length) populateYears(data.years, year || data.currentYear);
-                // Show customer name if available
+                // Show lift municipal number if filtered by lift, or customer name
                 var label = document.getElementById('clientNameLabel');
-                if (label && data.invoices && data.invoices[0] && data.invoices[0].customerName) {
-                    label.textContent = '— ' + data.invoices[0].customerName;
+                if (label) {
+                    if (data.municipalNumber) {
+                        label.textContent = '— ' + data.municipalNumber;
+                    } else if (!_liftId && data.invoices && data.invoices[0] && data.invoices[0].customerName) {
+                        label.textContent = '— ' + data.invoices[0].customerName;
+                    } else {
+                        label.textContent = '';
+                    }
                 }
             })
             .catch(function(e) {

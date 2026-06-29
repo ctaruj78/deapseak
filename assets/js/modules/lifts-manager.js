@@ -351,7 +351,7 @@ class LiftsManager {
                             <i class="fas fa-info-circle"></i> Detalhes
                         </button>
                         <div class="mt-2 border-top pt-2">
-                            <a href="/pages/client/invoices.html" class="btn btn-sm btn-outline-info btn-block">
+                            <a href="/pages/client/invoices.html?liftId=${lift.id || lift._id}" class="btn btn-sm btn-outline-info btn-block">
                                 <i class="fas fa-file-invoice-dollar mr-1"></i>Faturas e Recibos
                             </a>
                         </div>
