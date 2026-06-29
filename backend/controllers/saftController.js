@@ -91,11 +91,25 @@ exports.uploadSaft = async (req, res) => {
             const status  = String(inv.InvoiceStatus?.InvoiceStatus || 'N').trim();
             const gross   = parseFloat(inv.DocumentTotals?.GrossTotal) || 0;
             const date    = parseDate(inv.InvoiceDate);
-            // SAF-T PT doesn't have a standard dueDate field; assume net-30 from invoice date
             const dueDate = date ? new Date(date.getTime() + 30 * 24 * 60 * 60 * 1000) : null;
             const custId  = String(inv.CustomerID || '').trim();
             if (!no || !custId) return;
-            invoiceMap[no] = { no, type, status, gross, date, dueDate, custId };
+
+            const rawLines = toArray(inv.Line || inv.Lines?.Line);
+            const lines = rawLines.map(l => {
+                const net  = parseFloat(l.CreditAmount || l.DebitAmount || 0);
+                const pct  = parseFloat(l.Tax?.TaxPercentage || 0);
+                return {
+                    description: String(l.Description || l.ProductDescription || '').trim(),
+                    quantity:    parseFloat(l.Quantity || 1),
+                    unitPrice:   parseFloat(l.UnitPrice || 0),
+                    netAmount:   net,
+                    taxPct:      pct,
+                    grossAmount: +(net * (1 + pct / 100)).toFixed(2),
+                };
+            }).filter(l => l.description);
+
+            invoiceMap[no] = { no, type, status, gross, date, dueDate, custId, lines };
         });
 
         // ── payments — build paid amounts per invoice ─────────────────────────
@@ -406,6 +420,7 @@ exports.uploadSaft = async (req, res) => {
                 amountPaid: paid, outstanding, daysOverdue: days,
                 fiscalYear: inv.date ? String(new Date(inv.date).getFullYear()) : period.fiscalYear,
                 status, source: 'saft',
+                ...(inv.lines && inv.lines.length ? { lines: inv.lines } : {}),
                 customerName: cust.name, customerTaxId: cust.nif,
                 saftImportId: record._id,
             };

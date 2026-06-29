@@ -321,23 +321,51 @@ exports.getInvoicePdf = async (req, res) => {
         doc.moveTo(50, doc.y).lineTo(545, doc.y).strokeColor('#ddd').lineWidth(1).stroke();
         doc.moveDown(0.5);
 
-        const tHeaders = ['Descrição', 'Total', 'Pago', 'Em dívida'];
-        const tCols    = [50, 330, 410, 490];
+        // ── Line items ─────────────────────────────────────────────────────────
+        const lHeaders = ['Descrição', 'Qtd', 'Pr. unit.', 'IVA', 'Total'];
+        const lCols    = [50, 330, 375, 440, 480];
+        const lWidths  = [275, 40, 60, 35, 65];
         doc.fontSize(9).font('Helvetica-Bold').fillColor('#555');
         const headerY = doc.y;
-        tHeaders.forEach((h, i) => doc.text(h, tCols[i], headerY, { width: 80, align: i === 0 ? 'left' : 'right' }));
+        lHeaders.forEach((h, i) => doc.text(h, lCols[i], headerY, { width: lWidths[i], align: i === 0 ? 'left' : 'right' }));
         doc.moveDown(0.6);
-
         doc.moveTo(50, doc.y).lineTo(545, doc.y).strokeColor('#ddd').lineWidth(0.5).stroke();
         doc.moveDown(0.4);
 
-        const descLabel = (typeLabel[inv.invoiceType] || 'Serviço') + ' de manutenção de elevadores';
+        const invLines = (inv.lines && inv.lines.length)
+            ? inv.lines
+            : [{ description: (typeLabel[inv.invoiceType] || 'Serviço') + ' de manutenção de elevadores',
+                 quantity: 1, unitPrice: inv.grossTotal / 1.23, netAmount: inv.grossTotal / 1.23,
+                 taxPct: 23, grossAmount: inv.grossTotal }];
+
+        invLines.forEach(line => {
+            const ry = doc.y;
+            doc.fontSize(9).font('Helvetica').fillColor('#111')
+                .text(line.description || '—', lCols[0], ry, { width: lWidths[0] })
+                .text(String(line.quantity || 1),           lCols[1], ry, { width: lWidths[1], align: 'right' })
+                .text(fmt(line.unitPrice || 0),             lCols[2], ry, { width: lWidths[2], align: 'right' })
+                .text((line.taxPct || 0) + '%',             lCols[3], ry, { width: lWidths[3], align: 'right' })
+                .text(fmt(line.grossAmount || 0),           lCols[4], ry, { width: lWidths[4], align: 'right' });
+            doc.moveDown(0.9);
+        });
+
+        // ── Totals summary ─────────────────────────────────────────────────────
+        doc.moveDown(0.3);
+        doc.moveTo(50, doc.y).lineTo(545, doc.y).strokeColor('#ddd').lineWidth(0.5).stroke();
+        doc.moveDown(0.4);
+        const tHeaders = ['', 'Total faturado', 'Pago', 'Em dívida'];
+        const tCols    = [50, 330, 410, 470];
+        const tWidths  = [275, 75, 55, 75];
+        const sumY = doc.y;
+        doc.fontSize(9).font('Helvetica-Bold').fillColor('#555');
+        tHeaders.forEach((h, i) => doc.text(h, tCols[i], sumY, { width: tWidths[i], align: i === 0 ? 'left' : 'right' }));
+        doc.moveDown(0.5);
         const rowY = doc.y;
         doc.fontSize(10).font('Helvetica').fillColor('#111')
-            .text(descLabel, tCols[0], rowY, { width: 260 })
-            .text(fmt(inv.grossTotal),  tCols[1], rowY, { width: 80, align: 'right' })
-            .text(fmt(inv.amountPaid),  tCols[2], rowY, { width: 80, align: 'right' })
-            .text(fmt(inv.outstanding), tCols[3], rowY, { width: 80, align: 'right' });
+            .text('',                   tCols[0], rowY, { width: tWidths[0] })
+            .text(fmt(inv.grossTotal),  tCols[1], rowY, { width: tWidths[1], align: 'right' })
+            .text(fmt(inv.amountPaid),  tCols[2], rowY, { width: tWidths[2], align: 'right' })
+            .text(fmt(inv.outstanding), tCols[3], rowY, { width: tWidths[3], align: 'right' });
 
         doc.moveDown(1.5);
         doc.moveTo(50, doc.y).lineTo(545, doc.y).strokeColor('#aaa').lineWidth(1).stroke();
