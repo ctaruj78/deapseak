@@ -101,14 +101,6 @@ exports.uploadSaft = async (req, res) => {
         // ── payments — build paid amounts per invoice ─────────────────────────
         const rawPayments = toArray(root?.SourceDocuments?.Payments?.Payment);
         const paidMap = {}; // invoiceNo → total amount paid
-        // Debug: log first payment line to inspect SAF-T structure
-        if (rawPayments.length > 0) {
-            const first = rawPayments[0];
-            const firstLines = toArray(first.Line || first.Lines?.Line);
-            if (firstLines.length > 0) {
-                console.log('[SAF-T DEBUG] First RC line:', JSON.stringify(firstLines[0], null, 2));
-            }
-        }
         rawPayments.forEach(pmt => {
             // SAF-T PT v1.04 (Portaria 302/2016): Line is direct child of Payment
             // SAF-T PT v1.01 (older): Line is nested under Lines
