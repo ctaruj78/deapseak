@@ -1821,6 +1821,7 @@ function escapeHtml(s) {
                                                     <th class="text-right">Pago</th>
                                                     <th class="text-right">Em Dívida</th>
                                                     <th class="text-center">Estado</th>
+                                                    <th class="text-center" style="width:60px"></th>
                                                 </tr>
                                             </thead>
                                             <tbody id="fatTableBody"></tbody>
@@ -10367,6 +10368,7 @@ $(document).on('click', '#editInspRptSaveBtn', async function() {
             if (tbody) {
                 tbody.innerHTML = invoices.map(function(inv) {
                     var rowCls = inv.status === 'overdue' ? 'table-danger' : inv.status === 'pending' ? 'table-warning' : '';
+                    var pdfUrl = '/api/invoices/' + encodeURIComponent(inv.invoiceNo) + '/pdf';
                     return '<tr class="' + rowCls + '">' +
                         '<td class="font-weight-500">' + escapeHtml(inv.invoiceNo || '—') + '</td>' +
                         '<td><small>' + fatTypeName(inv.invoiceType) + '</small></td>' +
@@ -10375,6 +10377,7 @@ $(document).on('click', '#editInspRptSaveBtn', async function() {
                         '<td class="text-right text-success">' + fatFmt(inv.amountPaid) + '</td>' +
                         '<td class="text-right' + (inv.outstanding > 0.01 ? ' text-danger font-weight-bold' : '') + '">' + fatFmt(inv.outstanding) + '</td>' +
                         '<td class="text-center">' + fatBadgeHtml(inv.status) + '</td>' +
+                        '<td class="text-center"><button class="btn btn-xs btn-outline-danger" title="Ver PDF" onclick="fatOpenPdf(\'' + encodeURIComponent(inv.invoiceNo) + '\')"><i class="fas fa-file-pdf"></i></button></td>' +
                         '</tr>';
                 }).join('');
             }
@@ -10387,7 +10390,7 @@ $(document).on('click', '#editInspRptSaveBtn', async function() {
                     '<td class="text-right">' + fatFmt(summary.totalGross) + '</td>' +
                     '<td class="text-right text-success">' + fatFmt(summary.totalPaid) + '</td>' +
                     '<td class="text-right text-danger">' + fatFmt(summary.totalOutstanding) + '</td>' +
-                    '<td></td></tr>';
+                    '<td></td><td></td></tr>';
             }
 
             fatShowState('fatTableWrap');
@@ -10396,7 +10399,7 @@ $(document).on('click', '#editInspRptSaveBtn', async function() {
         function fatLoadInvoices() {
             if (!_fatLiftId) return;
             var yearEl = document.getElementById('fatYearFilter');
-            var year   = yearEl ? yearEl.value : String(new Date().getFullYear());
+            var year   = (yearEl && yearEl.value) ? yearEl.value : String(new Date().getFullYear());
             var url    = '/api/lifts/' + _fatLiftId + '/invoices' + (year ? '?year=' + year : '');
 
             fatShowState('fatLoading');
@@ -10424,7 +10427,10 @@ $(document).on('click', '#editInspRptSaveBtn', async function() {
             var badge  = document.getElementById('fatBadge');
             if (badge) badge.textContent = '0';
             var yearEl = document.getElementById('fatYearFilter');
-            if (yearEl) yearEl.innerHTML = '<option value="">—</option>';
+            if (yearEl) {
+                var cy = String(new Date().getFullYear());
+                yearEl.innerHTML = '<option value="' + cy + '" selected>' + cy + '</option>';
+            }
             var sc = document.getElementById('fatSummaryCards');
             if (sc) sc.style.display = 'none';
             fatShowState('fatNoData');
@@ -10441,6 +10447,22 @@ $(document).on('click', '#editInspRptSaveBtn', async function() {
             // Pre-load invoices in the background so they are ready when the user clicks the tab.
             // This also handles the case where the Faturas tab is already active (no click fires).
             if (liftId) setTimeout(fatLoadInvoices, 0);
+        }
+
+        function fatOpenPdf(encodedInvoiceNo) {
+            var token = (typeof AuthManager !== 'undefined') ? AuthManager.getAuthToken()
+                : (sessionStorage.getItem('liftmanager_jwt') || localStorage.getItem('liftmanager_jwt') || localStorage.getItem('token') || '');
+            var url = '/api/invoices/pdf?no=' + encodedInvoiceNo;
+            fetch(url, { headers: { 'Authorization': 'Bearer ' + token } })
+                .then(function(r) {
+                    if (!r.ok) throw new Error('Erro ' + r.status);
+                    return r.blob();
+                })
+                .then(function(blob) {
+                    var objUrl = URL.createObjectURL(blob);
+                    window.open(objUrl, '_blank');
+                })
+                .catch(function(e) { toastr.error('Não foi possível gerar o PDF: ' + e.message); });
         }
 
         function fatPrint() {

@@ -101,11 +101,14 @@ exports.uploadSaft = async (req, res) => {
         const paidMap = {}; // invoiceNo → total amount paid
         rawPayments.forEach(pmt => {
             toArray(pmt.Lines?.Line).forEach(line => {
+                // SAF-T PT: amount received from client is DebitAmount (positive).
+                // CreditAmount is used for refunds. SettlementAmount is a discount, not payment.
+                // SourceDocumentID has no amount field per spec — only OriginatingON reference.
+                const lineAmt = parseFloat(line.DebitAmount || line.CreditAmount || 0);
                 toArray(line.SourceDocumentID).forEach(src => {
                     const origNo = String(src.OriginatingON || '').trim();
-                    const credit = parseFloat(src.CreditAmount || line.CreditAmount || 0);
-                    if (!origNo) return;
-                    paidMap[origNo] = (paidMap[origNo] || 0) + credit;
+                    if (!origNo || lineAmt <= 0) return;
+                    paidMap[origNo] = (paidMap[origNo] || 0) + lineAmt;
                 });
             });
         });
@@ -393,7 +396,8 @@ exports.uploadSaft = async (req, res) => {
                 nif: cust.nif, invoiceNo: inv.no, invoiceDate: inv.date,
                 invoiceType: inv.type, grossTotal: inv.gross,
                 amountPaid: paid, outstanding, daysOverdue: days,
-                fiscalYear: period.fiscalYear, status, source: 'saft',
+                fiscalYear: inv.date ? String(new Date(inv.date).getFullYear()) : period.fiscalYear,
+                status, source: 'saft',
                 customerName: cust.name, customerTaxId: cust.nif,
                 saftImportId: record._id,
             };
@@ -461,8 +465,11 @@ exports.uploadSaft = async (req, res) => {
             }
         }
 
-        // Clean up uploaded file
-        fs.unlinkSync(filePath);
+        // Move uploaded file to permanent saft storage (for future reprocessing)
+        const saftStorageDir = path.join(__dirname, '../../uploads/saft');
+        if (!fs.existsSync(saftStorageDir)) fs.mkdirSync(saftStorageDir, { recursive: true });
+        const storedPath = path.join(saftStorageDir, record.filename);
+        try { fs.renameSync(filePath, storedPath); } catch (_) { try { fs.unlinkSync(filePath); } catch (__) {} }
 
         res.json({
             success: true,
@@ -620,9 +627,9 @@ exports.getAllDebtors = async (req, res) => {
 
         const debtors = Object.values(byNif).filter(d => !ignoredNifs.has(d.customerTaxId));
 
-        // Resolve missing emails dynamically (stored as null when NIF wasn't yet on lift)
+        // Always resolve fresh email from Lift to pick up changes since last import
         for (const d of debtors) {
-            if (d.clientEmail) continue;
+            if (!d.customerTaxId) continue;
             const lift = await Lift.findOne({ nif: d.customerTaxId }, 'clientEmail').lean();
             if (lift?.clientEmail) d.clientEmail = lift.clientEmail;
         }
@@ -658,7 +665,6 @@ exports.sendAlerts = async (req, res) => {
 
         const targets = candidates.filter(d =>
             !ignoredNifs.has(d.customerTaxId) &&
-            d.clientEmail &&
             (!nifs || nifs.includes(d.customerTaxId))
         );
 
@@ -667,6 +673,12 @@ exports.sendAlerts = async (req, res) => {
         const now = new Date();
         for (const d of targets) {
             try {
+                // Always resolve fresh email from Lift to pick up any changes since last import
+                if (d.customerTaxId) {
+                    const freshLift = await Lift.findOne({ nif: d.customerTaxId }, 'clientEmail').lean();
+                    if (freshLift?.clientEmail) d.clientEmail = freshLift.clientEmail;
+                }
+                if (!d.clientEmail) continue;
                 await _sendDebtorAlert(d.clientEmail, d.customerName, d.invoices, d.totalOutstanding);
                 // Persist alert in cross-import log (survives CSV refreshes)
                 await DebtorAlertLog.findOneAndUpdate(
