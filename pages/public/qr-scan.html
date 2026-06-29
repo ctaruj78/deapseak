@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="/assets/img/favicon.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <title>FestLift — Elevador</title>
+    <link rel="stylesheet" href="/plugins/fontawesome/css/all.min.css">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0c1a35;
+            color: #e2e8f0;
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .header {
+            background: #091529;
+            border-bottom: 1px solid #1e3a5f;
+            padding: 14px 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .header-logo { color: #4da6ff; font-size: 1.5rem; }
+        .header-brand { font-size: 1.1rem; font-weight: 700; color: #e2e8f0; }
+        .header-sub { font-size: 0.75rem; color: #64748b; margin-top: 1px; }
+
+        /* Demo badge */
+        .demo-ribbon {
+            background: linear-gradient(135deg, #e65100, #ffa726);
+            color: #fff;
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 3px 10px;
+            border-radius: 20px;
+            letter-spacing: 0.05em;
+            margin-left: auto;
+        }
+
+        /* Main content */
+        .page { max-width: 480px; margin: 0 auto; padding: 20px 16px 40px; }
+
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 60px 20px;
+            color: #64748b;
+        }
+        .loading i { font-size: 2.5rem; color: #1976d2; animation: spin 1s linear infinite; display: block; margin-bottom: 16px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Error */
+        .error-box {
+            background: #1a1020;
+            border: 1px solid #7f1d1d;
+            border-radius: 12px;
+            padding: 24px;
+            text-align: center;
+            display: none;
+        }
+        .error-box i { font-size: 2.5rem; color: #ef4444; margin-bottom: 12px; display: block; }
+        .error-box h3 { color: #fca5a5; margin-bottom: 8px; }
+        .error-box p { color: #94a3b8; font-size: 0.9rem; }
+
+        /* Lift card */
+        .lift-card {
+            background: #112240;
+            border: 1px solid #1e3a5f;
+            border-radius: 14px;
+            overflow: hidden;
+            margin-bottom: 16px;
+            display: none;
+        }
+        .lift-card-header {
+            background: linear-gradient(135deg, #1565c0, #1976d2);
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        .lift-icon { font-size: 2.2rem; color: #fff; }
+        .lift-title { flex: 1; }
+        .lift-title h2 { font-size: 1.15rem; font-weight: 700; color: #fff; }
+        .lift-title p { font-size: 0.82rem; color: #bbdefb; margin-top: 3px; }
+
+        .lift-body { padding: 18px; }
+        .info-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 10px 0;
+            border-bottom: 1px solid #1e3a5f;
+        }
+        .info-row:last-child { border-bottom: none; }
+        .info-row i { color: #4da6ff; width: 18px; text-align: center; margin-top: 2px; flex-shrink: 0; }
+        .info-label { font-size: 0.75rem; color: #64748b; margin-bottom: 2px; }
+        .info-value { font-size: 0.95rem; color: #e2e8f0; font-weight: 500; }
+
+        /* Status badge */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        .status-active    { background: rgba(34,197,94,0.15); color: #4ade80; border: 1px solid rgba(34,197,94,0.3); }
+        .status-inactive  { background: rgba(239,68,68,0.15); color: #f87171; border: 1px solid rgba(239,68,68,0.3); }
+        .status-maintenance { background: rgba(234,179,8,0.15); color: #fbbf24; border: 1px solid rgba(234,179,8,0.3); }
+        .status-unknown   { background: rgba(100,116,139,0.15); color: #94a3b8; border: 1px solid rgba(100,116,139,0.3); }
+
+        /* Action buttons */
+        .actions { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; display: none; }
+        .btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 14px 20px;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            text-decoration: none;
+            transition: opacity 0.2s;
+        }
+        .btn:hover { opacity: 0.88; }
+        .btn-danger  { background: linear-gradient(135deg, #b91c1c, #dc2626); color: #fff; }
+        .btn-warning { background: linear-gradient(135deg, #92400e, #d97706); color: #fff; }
+        .btn-phone   { background: linear-gradient(135deg, #065f46, #059669); color: #fff; }
+        .btn-outline {
+            background: transparent;
+            border: 1px solid #1e3a5f;
+            color: #94a3b8;
+            font-size: 0.85rem;
+            padding: 10px;
+        }
+
+        /* Alert form */
+        .alert-form-wrap {
+            background: #112240;
+            border: 1px solid #1e3a5f;
+            border-radius: 14px;
+            overflow: hidden;
+            margin-bottom: 16px;
+            display: none;
+        }
+        .alert-form-header {
+            background: linear-gradient(135deg, #7f1d1d, #b91c1c);
+            padding: 14px 18px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .alert-form-body { padding: 18px; }
+
+        .form-group { margin-bottom: 14px; }
+        .form-group label { display: block; font-size: 0.8rem; color: #94a3b8; margin-bottom: 6px; }
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            background: #0d1f3c;
+            border: 1px solid #1e3a5f;
+            border-radius: 8px;
+            color: #e2e8f0;
+            padding: 10px 12px;
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus { border-color: #1976d2; }
+        .form-group input::placeholder,
+        .form-group textarea::placeholder { color: #475569; }
+        .form-group select option { background: #0d1f3c; }
+        .form-group textarea { resize: vertical; min-height: 80px; }
+
+        .checkbox-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px;
+            background: rgba(185,28,28,0.1);
+            border: 1px solid rgba(185,28,28,0.3);
+            border-radius: 8px;
+            margin-bottom: 14px;
+        }
+        .checkbox-row input[type=checkbox] { width: 18px; height: 18px; accent-color: #dc2626; flex-shrink: 0; }
+        .checkbox-row label { font-size: 0.88rem; color: #fca5a5; margin: 0; }
+
+        .honeypot { display: none !important; }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(80px);
+            background: #1e3a5f;
+            color: #e2e8f0;
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-size: 0.88rem;
+            max-width: 320px;
+            text-align: center;
+            transition: transform 0.3s ease;
+            z-index: 999;
+            border: 1px solid #2d5a8e;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+        }
+        .toast.show { transform: translateX(-50%) translateY(0); }
+        .toast.success { border-color: #166534; background: #0f2218; color: #4ade80; }
+        .toast.error-toast { border-color: #7f1d1d; background: #1a0808; color: #f87171; }
+
+        /* Emergency contact card */
+        .emergency-card {
+            background: #112240;
+            border: 1px solid #1e3a5f;
+            border-radius: 14px;
+            padding: 18px;
+            display: none;
+        }
+        .emergency-card h4 { font-size: 0.85rem; color: #64748b; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.05em; }
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 0;
+            border-bottom: 1px solid #1e3a5f;
+        }
+        .contact-item:last-child { border-bottom: none; }
+        .contact-icon {
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.9rem;
+            flex-shrink: 0;
+        }
+        .ci-phone { background: rgba(5,150,105,0.2); color: #34d399; }
+        .ci-email { background: rgba(25,118,210,0.2); color: #60a5fa; }
+        .contact-info { flex: 1; }
+        .contact-label { font-size: 0.73rem; color: #64748b; }
+        .contact-val { font-size: 0.9rem; color: #e2e8f0; font-weight: 500; }
+        .contact-val a { color: #4da6ff; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <i class="fas fa-elevator header-logo"></i>
+        <div>
+            <div class="header-brand">FestLift</div>
+            <div class="header-sub">Sistema de elevadores</div>
+        </div>
+        <span class="demo-ribbon" id="demo-ribbon" style="display:none">DEMO</span>
+    </div>
+
+    <div class="page">
+        <!-- Loading -->
+        <div class="loading" id="loading">
+            <i class="fas fa-circle-notch"></i>
+            A carregar informações do elevador...
+        </div>
+
+        <!-- Error -->
+        <div class="error-box" id="error-box">
+            <i class="fas fa-exclamation-triangle"></i>
+            <h3>Elevador não encontrado</h3>
+            <p id="error-msg">Este código QR não corresponde a nenhum elevador registado.</p>
+        </div>
+
+        <!-- Lift info card -->
+        <div class="lift-card" id="lift-card">
+            <div class="lift-card-header">
+                <i class="fas fa-elevator lift-icon"></i>
+                <div class="lift-title">
+                    <h2 id="lift-number">—</h2>
+                    <p>Elevador registado</p>
+                </div>
+                <span class="status-badge" id="status-badge"></span>
+            </div>
+            <div class="lift-body">
+                <div class="info-row">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <div>
+                        <div class="info-label">Localização</div>
+                        <div class="info-value" id="lift-address">—</div>
+                    </div>
+                </div>
+                <div class="info-row">
+                    <i class="fas fa-qrcode"></i>
+                    <div>
+                        <div class="info-label">Código QR</div>
+                        <div class="info-value" id="lift-code">—</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action buttons -->
+        <div class="actions" id="actions">
+            <button class="btn btn-danger" id="btn-stuck">
+                <i class="fas fa-exclamation-circle"></i>
+                Pessoa presa no elevador
+            </button>
+            <button class="btn btn-warning" id="btn-malfunction">
+                <i class="fas fa-tools"></i>
+                Elevador com avaria
+            </button>
+            <button class="btn btn-phone" id="btn-other">
+                <i class="fas fa-comment-alt"></i>
+                Outro problema
+            </button>
+        </div>
+
+        <!-- Alert form -->
+        <div class="alert-form-wrap" id="alert-form-wrap">
+            <div class="alert-form-header">
+                <i class="fas fa-bell"></i>
+                <span id="form-title">Reportar problema</span>
+            </div>
+            <div class="alert-form-body">
+                <div class="checkbox-row" id="trapped-row" style="display:none">
+                    <input type="checkbox" id="is-trapped" checked>
+                    <label for="is-trapped">Confirmo que há pessoa(s) presa(s) neste elevador</label>
+                </div>
+
+                <form id="alert-form" novalidate>
+                    <input type="text" name="website" class="honeypot" tabindex="-1" autocomplete="off">
+
+                    <div class="form-group">
+                        <label>Tipo de situação</label>
+                        <select id="issue-type" required>
+                            <option value="">Selecione...</option>
+                            <option value="stuck">Pessoa presa</option>
+                            <option value="malfunction">Avaria / mau funcionamento</option>
+                            <option value="other">Outro</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Descrição breve</label>
+                        <textarea id="issue-details" placeholder="Descreva o problema..." required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>O seu nome</label>
+                        <input type="text" id="reporter-name" placeholder="Nome (opcional)">
+                    </div>
+                    <div class="form-group">
+                        <label>Telefone <span style="color:#ef4444">*</span></label>
+                        <input type="tel" id="reporter-phone" placeholder="+351 9XX XXX XXX" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Email <span style="color:#ef4444">*</span></label>
+                        <input type="email" id="reporter-email" placeholder="email@exemplo.pt" required>
+                    </div>
+
+                    <button type="submit" class="btn btn-danger" style="width:100%; margin-top:4px" id="submit-btn">
+                        <i class="fas fa-paper-plane"></i>
+                        Enviar alerta
+                    </button>
+                    <button type="button" class="btn btn-outline" style="width:100%; margin-top:8px" id="cancel-btn">
+                        Cancelar
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Emergency contacts -->
+        <div class="emergency-card" id="emergency-card">
+            <h4><i class="fas fa-phone-alt" style="margin-right:6px"></i>Contactos de emergência</h4>
+            <div class="contact-item">
+                <div class="contact-icon ci-phone"><i class="fas fa-phone"></i></div>
+                <div class="contact-info">
+                    <div class="contact-label">Telefone / Emergências 24h</div>
+                    <div class="contact-val"><a href="#" id="contact-phone">+351 214 190 863</a></div>
+                </div>
+            </div>
+            <div class="contact-item">
+                <div class="contact-icon ci-email"><i class="fas fa-envelope"></i></div>
+                <div class="contact-info">
+                    <div class="contact-label">Email de suporte</div>
+                    <div class="contact-val"><a href="#" id="contact-email">info@festlift.pt</a></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        const DEMO_CODE = 'LFT-DEMO-123';
+
+        const DEMO_LIFT = {
+            id: null,
+            municipalNumber: 'EL-2024-DEMO',
+            address: 'Av. da Liberdade 180, Lisboa',
+            status: 'active'
+        };
+        const DEMO_CONTACTS = {
+            phone: '+351 214 190 863',
+            email: 'info@festlift.pt'
+        };
+
+        const STATUS_MAP = {
+            active:      { label: 'Operacional', cls: 'status-active',      icon: 'fa-check-circle' },
+            inactive:    { label: 'Inativo',     cls: 'status-inactive',    icon: 'fa-times-circle' },
+            maintenance: { label: 'Manutenção',  cls: 'status-maintenance', icon: 'fa-wrench' },
+            unknown:     { label: 'Desconhecido',cls: 'status-unknown',     icon: 'fa-question-circle' }
+        };
+
+        // Extract code from path: /qr/<code>
+        const pathParts = window.location.pathname.split('/').filter(Boolean);
+        const code = pathParts[pathParts.length - 1] || '';
+        const isDemo = (code === DEMO_CODE);
+
+        let liftData = null;
+        let contacts = null;
+        let selectedIssueType = null;
+
+        function showToast(msg, type = '') {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.className = 'toast ' + type;
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 3500);
+        }
+
+        function renderLift(lift, emergencyContacts) {
+            liftData = lift;
+            contacts = emergencyContacts;
+
+            document.getElementById('loading').style.display = 'none';
+
+            // Lift card
+            document.getElementById('lift-number').textContent = 'Elevador ' + (lift.municipalNumber || '—');
+            document.getElementById('lift-address').textContent = lift.address || '—';
+            document.getElementById('lift-code').textContent = code;
+
+            const st = STATUS_MAP[lift.status] || STATUS_MAP.unknown;
+            const badge = document.getElementById('status-badge');
+            badge.className = 'status-badge ' + st.cls;
+            badge.innerHTML = `<i class="fas ${st.icon}"></i> ${st.label}`;
+
+            document.getElementById('lift-card').style.display = 'block';
+            document.getElementById('actions').style.display = 'flex';
+            document.getElementById('emergency-card').style.display = 'block';
+
+            // Contacts
+            const ph = emergencyContacts.phone || '+351 214 190 863';
+            const em = emergencyContacts.email || 'info@festlift.pt';
+            const phoneEl = document.getElementById('contact-phone');
+            phoneEl.textContent = ph;
+            phoneEl.href = 'tel:' + ph.replace(/\s/g, '');
+            const emailEl = document.getElementById('contact-email');
+            emailEl.textContent = em;
+            emailEl.href = 'mailto:' + em;
+        }
+
+        function showError(msg) {
+            document.getElementById('loading').style.display = 'none';
+            const box = document.getElementById('error-box');
+            box.style.display = 'block';
+            if (msg) document.getElementById('error-msg').textContent = msg;
+        }
+
+        function openForm(issueType) {
+            if (isDemo) {
+                showToast('Modo demonstração — o envio de alertas não está disponível neste QR.', 'error-toast');
+                return;
+            }
+            selectedIssueType = issueType;
+
+            const titles = { stuck: 'Pessoa presa — alerta urgente', malfunction: 'Reportar avaria', other: 'Outro problema' };
+            document.getElementById('form-title').textContent = titles[issueType] || 'Reportar problema';
+            document.getElementById('issue-type').value = issueType;
+            document.getElementById('trapped-row').style.display = issueType === 'stuck' ? 'flex' : 'none';
+
+            document.getElementById('alert-form-wrap').style.display = 'block';
+            document.getElementById('actions').style.display = 'none';
+            document.getElementById('alert-form-wrap').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        document.getElementById('btn-stuck').addEventListener('click', () => openForm('stuck'));
+        document.getElementById('btn-malfunction').addEventListener('click', () => openForm('malfunction'));
+        document.getElementById('btn-other').addEventListener('click', () => openForm('other'));
+
+        document.getElementById('cancel-btn').addEventListener('click', () => {
+            document.getElementById('alert-form-wrap').style.display = 'none';
+            document.getElementById('actions').style.display = 'flex';
+            document.getElementById('alert-form').reset();
+        });
+
+        document.getElementById('alert-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const phone = document.getElementById('reporter-phone').value.trim();
+            const email = document.getElementById('reporter-email').value.trim();
+            const details = document.getElementById('issue-details').value.trim();
+            const issueType = document.getElementById('issue-type').value;
+            const isTrapped = document.getElementById('is-trapped').checked;
+            const name = document.getElementById('reporter-name').value.trim();
+            const honeypot = document.querySelector('input[name="website"]').value;
+
+            if (!issueType) { showToast('Selecione o tipo de situação', 'error-toast'); return; }
+            if (details.length < 5) { showToast('Descreva brevemente o problema (mín. 5 caracteres)', 'error-toast'); return; }
+            if (phone.replace(/\s/g,'').length < 6) { showToast('Indique um número de telefone válido', 'error-toast'); return; }
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showToast('Indique um email válido', 'error-toast'); return; }
+
+            const btn = document.getElementById('submit-btn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> A enviar...';
+
+            try {
+                const resp = await fetch('/api/qr/public/alert', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        liftId: liftData.id,
+                        issueType,
+                        issueDetails: details,
+                        name,
+                        phone,
+                        email,
+                        isTrapped: issueType === 'stuck' ? isTrapped : false,
+                        website: honeypot
+                    })
+                });
+                const data = await resp.json();
+
+                if (data.success) {
+                    document.getElementById('alert-form-wrap').style.display = 'none';
+                    document.getElementById('actions').style.display = 'none';
+                    showToast('Alerta enviado com sucesso! A equipa FestLift foi notificada.', 'success');
+                    document.getElementById('alert-form').reset();
+                } else {
+                    showToast(data.message || 'Erro ao enviar alerta. Tente de novo.', 'error-toast');
+                }
+            } catch {
+                showToast('Erro de ligação. Verifique a internet e tente de novo.', 'error-toast');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-paper-plane"></i> Enviar alerta';
+            }
+        });
+
+        // Init
+        async function init() {
+            if (!code) { showError('Código QR inválido ou ausente.'); return; }
+
+            if (isDemo) {
+                document.getElementById('demo-ribbon').style.display = 'inline-flex';
+                renderLift(DEMO_LIFT, DEMO_CONTACTS);
+                return;
+            }
+
+            // Validate MongoDB ObjectId format
+            if (!/^[a-f\d]{24}$/i.test(code)) {
+                showError('Este código QR não é reconhecido pelo sistema FestLift.');
+                return;
+            }
+
+            try {
+                const resp = await fetch('/api/qr/public/lift/' + encodeURIComponent(code));
+                const data = await resp.json();
+                if (data.success && data.data) {
+                    renderLift(data.data.lift, data.data.emergencyContacts);
+                } else {
+                    showError(data.message || 'Elevador não encontrado.');
+                }
+            } catch {
+                showError('Não foi possível carregar os dados. Verifique a ligação à internet.');
+            }
+        }
+
+        init();
+    </script>
+</body>
+</html>

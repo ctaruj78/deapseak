@@ -1373,9 +1373,9 @@ app.get('/api/qr/public/lift/:liftId', async (req, res) => {
             data: {
                 lift: safeLift,
                 emergencyContacts: {
-                    phone: process.env.PUBLIC_SUPPORT_PHONE || '+351 961 777 666',
-                    email: process.env.PUBLIC_SUPPORT_EMAIL || 'suporte@festlift.pt',
-                    whatsapp: process.env.PUBLIC_SUPPORT_WHATSAPP || process.env.PUBLIC_SUPPORT_PHONE || '+351 961 777 666'
+                    phone: process.env.PUBLIC_SUPPORT_PHONE || '+351 214 190 863',
+                    email: process.env.PUBLIC_SUPPORT_EMAIL || 'info@festlift.pt',
+                    whatsapp: process.env.PUBLIC_SUPPORT_WHATSAPP || process.env.PUBLIC_SUPPORT_PHONE || '+351 214 190 863'
                 }
             }
         });
@@ -15416,6 +15416,11 @@ app.get('/api/reports/:id/excel', authenticateToken, (req, res) => {
 // Явний маршрут для головної сторінки (фікс для Codespaces proxy)
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+// QR публічна сторінка — доступна без авторизації
+app.get('/qr/:code', (req, res) => {
+    res.sendFile(path.join(__dirname, 'pages/public/qr-scan.html'));
 });
 
 // Статичні файли - ОСТАННІ, щоб не перекривали API

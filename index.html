@@ -9,36 +9,102 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="./plugins/fontawesome/css/all.min.css">
     <style>
-        .login-logo {
-            text-align: center;
-            margin-bottom: 20px;
+        /* === DARK THEME === */
+        body,
+        .wrapper,
+        .content-wrapper {
+            background: #0c1a35 !important;
+            color: #e2e8f0 !important;
         }
-        .login-logo a {
-            font-size: 2.5rem;
-            font-weight: bold;
-            color: #007bff;
+
+        /* Navbar */
+        .main-header.navbar {
+            background: #091529 !important;
+            border-bottom: 1px solid #1e3a5f !important;
         }
+        .main-header .navbar-brand,
+        .main-header .nav-link {
+            color: #e2e8f0 !important;
+        }
+        .main-header .nav-link:hover {
+            color: #4da6ff !important;
+        }
+        .navbar-toggler-icon {
+            filter: invert(1);
+        }
+
+        /* Cards */
+        .card {
+            background: #112240 !important;
+            border: 1px solid #1e3a5f !important;
+            color: #e2e8f0 !important;
+        }
+        .card-header {
+            background: linear-gradient(135deg, #1565c0 0%, #0d47a1 100%);
+            color: #fff !important;
+            border-bottom: 1px solid #1e3a5f !important;
+        }
+        /* Let explicit gradient classes override the default card-header */
+        .card-header.bg-gradient-primary { background: linear-gradient(135deg, #1976d2 0%, #42a5f5 100%) !important; }
+        .card-header.bg-gradient-success { background: linear-gradient(135deg, #2e7d32 0%, #66bb6a 100%) !important; }
+        .card-header.bg-gradient-warning { background: linear-gradient(135deg, #e65100 0%, #ffa726 100%) !important; }
+        .card-header.bg-gradient-info    { background: linear-gradient(135deg, #00838f 0%, #26c6da 100%) !important; }
+        .card-body {
+            color: #e2e8f0 !important;
+        }
+        .card-body p,
+        .card-body h4,
+        .card-body h5,
+        .card-body li {
+            color: #cbd5e1 !important;
+        }
+        .card-body .lead {
+            color: #94a3b8 !important;
+        }
+
+        /* Feature boxes */
         .feature-box {
             text-align: center;
             padding: 20px;
             margin-bottom: 20px;
-            border-radius: 5px;
-            background: #fff;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-            transition: transform 0.3s ease;
+            border-radius: 8px;
+            background: #0d1f3c !important;
+            border: 1px solid #1e3a5f !important;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            color: #e2e8f0 !important;
         }
         .feature-box:hover {
             transform: translateY(-5px);
+            box-shadow: 0 8px 30px rgba(21,101,192,0.3);
+        }
+        .feature-box h4,
+        .feature-box p {
+            color: #cbd5e1 !important;
         }
         .feature-box i {
             font-size: 3rem;
             margin-bottom: 15px;
-            color: #007bff;
+            color: #4da6ff !important;
         }
+
+        /* Stats boxes */
+        .stats-box {
+            text-align: center;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .stats-box i {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        /* QR demo */
         .qr-demo-container {
             text-align: center;
             padding: 30px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #1565c0 0%, #6a1b9a 100%);
             color: white;
             border-radius: 10px;
             margin: 30px 0;
@@ -53,32 +119,84 @@
             border-radius: 15px;
             font-size: 12px;
         }
-        .card-header {
-            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
-            color: white;
-        }
-        .stats-box {
-            text-align: center;
-            padding: 15px;
-            border-radius: 5px;
-            margin-bottom: 20px;
-        }
-        .stats-box i {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-        }
+
+        /* Gradient overrides — vivid on dark bg */
         .bg-gradient-primary {
-            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+            background: linear-gradient(135deg, #1976d2 0%, #42a5f5 100%) !important;
         }
         .bg-gradient-success {
-            background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%);
+            background: linear-gradient(135deg, #2e7d32 0%, #66bb6a 100%) !important;
         }
         .bg-gradient-warning {
-            background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);
+            background: linear-gradient(135deg, #e65100 0%, #ffa726 100%) !important;
         }
         .bg-gradient-info {
-            background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+            background: linear-gradient(135deg, #00838f 0%, #26c6da 100%) !important;
         }
+
+        /* Info boxes */
+        .info-box {
+            background: #0d1f3c !important;
+            border: 1px solid #1e3a5f !important;
+            color: #e2e8f0 !important;
+        }
+        .info-box-text,
+        .info-box-number {
+            color: #cbd5e1 !important;
+        }
+        .info-box-number a {
+            color: #4da6ff !important;
+        }
+
+        /* Form inputs */
+        .form-control {
+            background: #0d1f3c !important;
+            border: 1px solid #1e3a5f !important;
+            color: #e2e8f0 !important;
+        }
+        .form-control::placeholder {
+            color: #64748b !important;
+        }
+        .form-control:focus {
+            background: #0d1f3c !important;
+            border-color: #1565c0 !important;
+            color: #e2e8f0 !important;
+            box-shadow: 0 0 0 0.2rem rgba(21,101,192,0.3) !important;
+        }
+        label {
+            color: #94a3b8 !important;
+        }
+
+        /* Footer */
+        .main-footer {
+            background: #091529 !important;
+            border-top: 1px solid #1e3a5f !important;
+            color: #94a3b8 !important;
+        }
+        .main-footer a {
+            color: #4da6ff !important;
+        }
+
+        /* Text muted */
+        .text-muted {
+            color: #64748b !important;
+        }
+        /* Checkmarks */
+        .text-success {
+            color: #4ade80 !important;
+        }
+
+        /* Buttons outline on dark */
+        .btn-outline-primary { color: #4da6ff !important; border-color: #4da6ff !important; }
+        .btn-outline-primary:hover { background: #1565c0 !important; color: #fff !important; }
+        .btn-outline-info { color: #38bdf8 !important; border-color: #38bdf8 !important; }
+        .btn-outline-info:hover { background: #0097a7 !important; color: #fff !important; }
+        .btn-outline-danger { color: #f87171 !important; border-color: #f87171 !important; }
+        .btn-outline-danger:hover { background: #dc2626 !important; color: #fff !important; }
+        .btn-outline-success { color: #4ade80 !important; border-color: #4ade80 !important; }
+        .btn-outline-success:hover { background: #16a34a !important; color: #fff !important; }
+        .btn-outline-light { color: #e2e8f0 !important; border-color: #e2e8f0 !important; }
+        .btn-outline-light:hover { background: #e2e8f0 !important; color: #0c1a35 !important; }
     </style>
 </head>
 <body class="hold-transition layout-top-nav">
@@ -164,7 +282,7 @@
                                     <i class="fas fa-elevator fa-10x text-primary mb-3"></i>
                                     <div class="qr-demo-container position-relative">
                                         <span class="demo-badge">DEMO</span>
-                                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=LFT-DEMO-123" alt="QR código demo" class="img-fluid">
+                                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https%3A%2F%2Fcrm.festlift.pt%2Fqr%2FLFT-DEMO-123" alt="QR código demo" class="img-fluid">
                                         <p class="mt-2">Scaneie para demonstração</p>
                                     </div>
                                 </div>
@@ -286,7 +404,7 @@
                                         </ul>
                                     </div>
                                     <div class="col-md-5 text-center mt-3 mt-md-0">
-                                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=https://crm.festlift.pt/qr/LFT-DEMO-123"
+                                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=https%3A%2F%2Fcrm.festlift.pt%2Fqr%2FLFT-DEMO-123"
                                              alt="QR de demonstração" class="img-fluid" style="max-width:180px;">
                                         <p class="text-muted mt-2 mb-0">Exemplo de QR de elevador no FestLift</p>
                                     </div>
@@ -407,8 +525,7 @@
                                             <div class="info-box-content">
                                                 <span class="info-box-text">Email</span>
                                                 <span class="info-box-number">
-                                                    <a href="mailto:geral@festlift.pt">geral@festlift.pt</a><br>
-                                                    <a href="mailto:suporte@festlift.pt">suporte@festlift.pt</a>
+                                                    <a href="mailto:info@festlift.pt">info@festlift.pt</a>
                                                 </span>
                                             </div>
                                         </div>
@@ -418,7 +535,7 @@
                                             <div class="info-box-content">
                                                 <span class="info-box-text">Telefone</span>
                                                 <span class="info-box-number">
-                                                    <a href="tel:+351961777666">+351 961 777 666</a><br>
+                                                    <a href="tel:+351214190863">+351 214 190 863</a><br>
                                                     <small>Suporte 24/7</small>
                                                 </span>
                                             </div>
