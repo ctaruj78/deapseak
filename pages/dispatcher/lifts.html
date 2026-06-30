@@ -1539,7 +1539,7 @@
     <script>
     (function() {
         var eLiftTabIdx = 0;
-        var eLiftTabNavIds = ['eLiftTab-obj','eLiftTab-cli','eLiftTab-lift','eLiftTab-svc'];
+        var eLiftTabNavIds = ['eLiftTab-obj','eLiftTab-cli','eLiftTab-lift','eLiftTab-svc','eLiftTab-fat'];
         var eLiftTabLabels = ["Instalação","Cliente","Elevador","Serviço","Faturas"];
 
         window.eSetProgress = function(pct, idx) {
@@ -3302,6 +3302,7 @@ Equipa FestLift
                     // Deаванeжуexisteмо dados do elevador para edição в enhanced модальному вікні
                     const lift = window.allLifts?.find(l => l.id === liftId);
                     if (lift) {
+                        if (typeof fatInitForLift === 'function') fatInitForLift(lift.id || lift._id);
                         window.enhancedLiftModal.loadLiftForEdit(lift);
                         $('#enhancedLiftModal').modal('show');
                     }
@@ -6068,6 +6069,8 @@ Equipa FestLift</textarea>
                 };
                 console.log('✅ Set enhancedLiftModal.currentLiftId:', window.enhancedLiftModal.currentLiftId);
             }
+
+            if (typeof fatInitForLift === 'function') fatInitForLift(lift._id || lift.id);
 
             // Deмінюexisteмо título модального вікна
             $('#enhancedModalTitle').text('Editar elevador');
@@ -9788,6 +9791,8 @@ Equipa FestLift</textarea>
             }
             var subtitle = document.getElementById('fatClientSubtitle');
             if (subtitle) subtitle.textContent = '';
+
+            if (liftId) setTimeout(fatLoadInvoices, 0);
         }
 
         function fatPrint() {
