@@ -519,6 +519,16 @@
             <!-- Main content -->
             <section class="content">
                 <div class="container-fluid">
+                    <!-- Lift context banner (shown only when filtered by liftId) -->
+                    <div id="liftContextBanner" style="display:none" class="alert mb-3" style="border-radius:10px">
+                        <i class="fas fa-elevator mr-2"></i>
+                        <strong>A visualizar faturas do elevador:</strong>
+                        <span id="liftContextText"></span>
+                        <a href="/pages/client/invoices.html" class="btn btn-sm btn-outline-secondary ml-3">
+                            <i class="fas fa-list mr-1"></i>Todas as minhas faturas
+                        </a>
+                    </div>
+
                     <!-- Estatísticas -->
                     <div class="row">
                         <div class="col-lg-3 col-md-6">
@@ -708,14 +718,10 @@
             document.getElementById('overdueAmount').textContent = fmt(s.totalOverdue);
         }
 
-        function openInvoicePdf(encodedInvoiceNo) {
-            fetch('/api/invoices/pdf?no=' + encodedInvoiceNo, { headers: { 'Authorization': 'Bearer ' + _token } })
-                .then(function(r) {
-                    if (!r.ok) throw new Error('Erro ' + r.status);
-                    return r.blob();
-                })
-                .then(function(blob) { window.open(URL.createObjectURL(blob), '_blank'); })
-                .catch(function(e) { alert('Não foi possível gerar o PDF: ' + e.message); });
+        window.openInvoicePdf = function(encodedInvoiceNo) {
+            // Set auth cookie so the PDF route authenticates via cookie (no fetch/blob needed)
+            document.cookie = 'auth_token=' + _token + '; path=/; SameSite=Lax; max-age=300';
+            window.open('/api/invoices/pdf?no=' + encodedInvoiceNo, '_blank');
         }
 
         function renderTable(invoices, status) {
@@ -771,16 +777,25 @@
                 renderSummary(data.summary);
                 renderTable(data.invoices, _currentStatus);
                 if (data.years && data.years.length) populateYears(data.years, year || data.currentYear);
-                // Show lift municipal number if filtered by lift, or customer name
+                // Show lift context banner or customer name label
                 var label = document.getElementById('clientNameLabel');
-                if (label) {
-                    if (data.municipalNumber) {
-                        label.textContent = '— ' + data.municipalNumber;
-                    } else if (!_liftId && data.invoices && data.invoices[0] && data.invoices[0].customerName) {
-                        label.textContent = '— ' + data.invoices[0].customerName;
-                    } else {
-                        label.textContent = '';
+                var banner = document.getElementById('liftContextBanner');
+                var bannerText = document.getElementById('liftContextText');
+                if (_liftId && (data.municipalNumber || data.liftAddress)) {
+                    // Build descriptive text: "Nº 2024-LX-001 — Rua da Prata 42, Lisboa"
+                    var parts = [];
+                    if (data.municipalNumber) parts.push('Nº ' + data.municipalNumber);
+                    if (data.liftAddress) parts.push(data.liftAddress);
+                    var liftDesc = parts.join(' — ');
+                    if (bannerText) bannerText.textContent = ' ' + liftDesc;
+                    if (banner) {
+                        banner.style.display = 'block';
+                        banner.className = 'alert alert-info mb-3';
                     }
+                    if (label) label.textContent = '— ' + liftDesc;
+                } else {
+                    if (banner) banner.style.display = 'none';
+                    if (label) label.textContent = '';
                 }
             })
             .catch(function(e) {

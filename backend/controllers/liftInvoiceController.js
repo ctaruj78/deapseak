@@ -79,7 +79,7 @@ exports.getInvoicesByLift = async (req, res) => {
         const liftId = req.params.liftId || req.params.id;
 
         // Security: verify lift access
-        const lift = await Lift.findById(liftId, '_id client nif moloniCode municipalNumber').lean();
+        const lift = await Lift.findById(liftId, '_id client nif moloniCode municipalNumber address').lean();
         if (!lift) return res.status(404).json({ success: false, message: 'Elevador não encontrado' });
 
         if (req.user.role === 'client') {
@@ -153,7 +153,10 @@ exports.getInvoicesByLift = async (req, res) => {
             }
         }
 
-        res.json({ success: true, invoices, summary, years, currentYear, municipalNumber: lift.municipalNumber });
+        const liftAddress = lift.address
+            ? [lift.address.street, lift.address.city].filter(Boolean).join(', ')
+            : null;
+        res.json({ success: true, invoices, summary, years, currentYear, municipalNumber: lift.municipalNumber, liftAddress });
     } catch (err) {
         res.status(500).json({ success: false, message: err.message });
     }

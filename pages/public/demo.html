@@ -9,45 +9,154 @@
     <link rel="stylesheet" href="../../plugins/fontawesome/css/all.min.css">
     <style>
         body { background: #f4f6f9; }
-        .navbar-brand span { color: #007bff; font-weight: bold; }
         .demo-hero {
-            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+            background: linear-gradient(135deg, #0047ab 0%, #007bff 60%, #00b4d8 100%);
             color: #fff;
-            padding: 60px 0 40px;
+            padding: 70px 0 50px;
             text-align: center;
+            position: relative;
+            overflow: hidden;
         }
-        .demo-hero h1 { font-size: 2.4rem; font-weight: 700; margin-bottom: 10px; }
-        .demo-hero p { font-size: 1.1rem; opacity: .9; margin-bottom: 25px; }
-        .tab-section { background: #fff; border-radius: 8px; box-shadow: 0 2px 12px rgba(0,0,0,.08); margin: 30px 0; overflow: hidden; }
-        .demo-tabs { display: flex; background: #f8f9fa; border-bottom: 2px solid #dee2e6; }
-        .demo-tab { padding: 14px 24px; cursor: pointer; font-weight: 600; color: #6c757d; border-bottom: 3px solid transparent; transition: all .2s; }
+        .demo-hero::before {
+            content: '';
+            position: absolute; inset: 0;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+        .demo-hero h1 { font-size: 2.6rem; font-weight: 800; margin-bottom: 12px; position: relative; }
+        .demo-hero p { font-size: 1.15rem; opacity: .92; margin-bottom: 28px; position: relative; }
+        .hero-badges { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; position: relative; margin-bottom: 10px; }
+        .hero-badge { background: rgba(255,255,255,.15); border: 1px solid rgba(255,255,255,.3); color: #fff; padding: 5px 14px; border-radius: 20px; font-size: .82rem; font-weight: 600; backdrop-filter: blur(4px); }
+
+        /* Stats */
+        .stat-card { text-align: center; padding: 24px 18px; border-radius: 12px; color: #fff; margin-bottom: 15px; box-shadow: 0 4px 15px rgba(0,0,0,.15); transition: transform .2s; }
+        .stat-card:hover { transform: translateY(-3px); }
+        .stat-card i { font-size: 2.4rem; margin-bottom: 10px; opacity: .9; display: block; }
+        .stat-card h3 { font-size: 2.2rem; font-weight: 800; margin: 0 0 4px; }
+        .stat-card p { margin: 0; opacity: .88; font-size: .88rem; }
+
+        /* Feature highlights */
+        .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 14px; margin: 28px 0; }
+        .feature-chip { background: #fff; border: 1px solid #e8ecf0; border-radius: 10px; padding: 16px 14px; text-align: center; transition: all .2s; cursor: default; }
+        .feature-chip:hover { border-color: #007bff; box-shadow: 0 4px 14px rgba(0,123,255,.12); transform: translateY(-2px); }
+        .feature-chip i { font-size: 1.7rem; margin-bottom: 8px; display: block; }
+        .feature-chip span { font-size: .82rem; font-weight: 600; color: #444; display: block; }
+
+        /* Tabs */
+        .tab-section { background: #fff; border-radius: 12px; box-shadow: 0 2px 18px rgba(0,0,0,.08); margin: 28px 0; overflow: hidden; }
+        .demo-tabs { display: flex; background: #f8f9fa; border-bottom: 2px solid #dee2e6; overflow-x: auto; scrollbar-width: none; }
+        .demo-tabs::-webkit-scrollbar { display: none; }
+        .demo-tab { padding: 13px 18px; cursor: pointer; font-weight: 600; color: #6c757d; border-bottom: 3px solid transparent; transition: all .2s; white-space: nowrap; font-size: .88rem; }
         .demo-tab.active { color: #007bff; border-bottom-color: #007bff; background: #fff; }
-        .demo-tab:hover { color: #007bff; }
-        .demo-panel { display: none; padding: 30px; }
+        .demo-tab:hover { color: #007bff; background: rgba(0,123,255,.05); }
+        .demo-panel { display: none; padding: 28px; }
         .demo-panel.active { display: block; }
-        .lift-card { background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 18px; margin-bottom: 15px; display: flex; align-items: center; gap: 18px; transition: box-shadow .2s; }
-        .lift-card:hover { box-shadow: 0 4px 16px rgba(0,123,255,.15); }
-        .lift-icon { width: 54px; height: 54px; border-radius: 50%; background: linear-gradient(135deg, #007bff, #0056b3); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 1.5rem; flex-shrink: 0; }
-        .lift-info h5 { margin: 0 0 4px; font-weight: 700; }
-        .lift-info p { margin: 0; color: #6c757d; font-size: .9rem; }
-        .badge-status { padding: 4px 10px; border-radius: 12px; font-size: .8rem; font-weight: 600; }
+
+        /* Lift cards */
+        .lift-card { background: #fff; border: 1px solid #e8ecf0; border-radius: 10px; padding: 16px; margin-bottom: 12px; display: flex; align-items: center; gap: 16px; transition: box-shadow .2s; }
+        .lift-card:hover { box-shadow: 0 4px 16px rgba(0,123,255,.13); }
+        .lift-icon { width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, #007bff, #0056b3); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 1.3rem; flex-shrink: 0; }
+        .lift-info h5 { margin: 0 0 3px; font-weight: 700; font-size: .95rem; }
+        .lift-info p { margin: 0; color: #6c757d; font-size: .82rem; }
+        .badge-status { padding: 4px 11px; border-radius: 12px; font-size: .78rem; font-weight: 700; white-space: nowrap; }
         .badge-ok { background: #d4edda; color: #155724; }
         .badge-warn { background: #fff3cd; color: #856404; }
         .badge-late { background: #f8d7da; color: #721c24; }
-        .stat-card { text-align: center; padding: 22px; border-radius: 8px; color: #fff; margin-bottom: 15px; }
-        .stat-card i { font-size: 2.2rem; margin-bottom: 8px; opacity: .9; }
-        .stat-card h3 { font-size: 2rem; font-weight: 700; margin: 0; }
-        .stat-card p { margin: 0; opacity: .85; font-size: .9rem; }
+
+        /* Role cards */
+        .role-switcher { display: flex; gap: 10px; margin-bottom: 22px; flex-wrap: wrap; }
+        .role-btn { padding: 9px 18px; border-radius: 8px; border: 2px solid transparent; font-weight: 700; cursor: pointer; transition: all .2s; font-size: .85rem; }
+        .role-btn.active { color: #fff; }
+        .role-btn[data-role="admin"] { border-color: #007bff; color: #007bff; }
+        .role-btn[data-role="admin"].active { background: #007bff; }
+        .role-btn[data-role="dispatcher"] { border-color: #764ba2; color: #764ba2; }
+        .role-btn[data-role="dispatcher"].active { background: #764ba2; }
+        .role-btn[data-role="tech"] { border-color: #28a745; color: #28a745; }
+        .role-btn[data-role="tech"].active { background: #28a745; }
+        .role-btn[data-role="client"] { border-color: #fd7e14; color: #fd7e14; }
+        .role-btn[data-role="client"].active { background: #fd7e14; }
+        .role-panel { display: none; }
+        .role-panel.active { display: block; }
+        .role-feature-list { list-style: none; padding: 0; margin: 0; }
+        .role-feature-list li { padding: 8px 0; border-bottom: 1px solid #f0f0f0; display: flex; align-items: center; gap: 10px; font-size: .88rem; }
+        .role-feature-list li:last-child { border-bottom: none; }
+        .role-feature-list li i { width: 20px; text-align: center; }
+        .role-mockup { background: #f8f9fa; border-radius: 10px; padding: 20px; border: 1px solid #e0e6ed; }
+        .mockup-stat { background: #fff; border-radius: 8px; padding: 14px; text-align: center; box-shadow: 0 1px 6px rgba(0,0,0,.06); }
+        .mockup-stat h4 { margin: 0 0 3px; font-weight: 800; font-size: 1.5rem; }
+        .mockup-stat small { color: #6c757d; font-size: .78rem; }
+
+        /* AI section */
+        .ai-card { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%); color: #fff; border-radius: 12px; padding: 24px; position: relative; overflow: hidden; }
+        .ai-card::before { content: ''; position: absolute; top: -30px; right: -30px; width: 120px; height: 120px; background: rgba(0,180,216,.15); border-radius: 50%; }
+        .ai-badge { background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; padding: 3px 10px; border-radius: 10px; font-size: .72rem; font-weight: 700; display: inline-block; margin-bottom: 10px; }
+        .ai-feature-row { display: flex; align-items: start; gap: 14px; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,.1); }
+        .ai-feature-row:last-child { border-bottom: none; }
+        .ai-feature-row i { font-size: 1.4rem; opacity: .9; margin-top: 2px; flex-shrink: 0; }
+        .ai-feature-row h6 { margin: 0 0 3px; font-weight: 700; font-size: .9rem; }
+        .ai-feature-row p { margin: 0; opacity: .75; font-size: .82rem; }
+        .ai-chat-demo { background: rgba(255,255,255,.05); border-radius: 10px; padding: 16px; margin-top: 14px; }
+        .ai-msg { display: flex; gap: 10px; margin-bottom: 12px; }
+        .ai-msg.user { flex-direction: row-reverse; }
+        .ai-msg-bubble { max-width: 80%; padding: 9px 13px; border-radius: 14px; font-size: .82rem; line-height: 1.5; }
+        .ai-msg.assistant .ai-msg-bubble { background: rgba(255,255,255,.12); color: #fff; border-radius: 4px 14px 14px 14px; }
+        .ai-msg.user .ai-msg-bubble { background: #007bff; color: #fff; border-radius: 14px 4px 14px 14px; }
+        .ai-avatar { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: .85rem; }
+        .ai-avatar.bot { background: linear-gradient(135deg, #667eea, #764ba2); }
+        .ai-avatar.user { background: #007bff; }
+
+        /* QR */
         .qr-box { text-align: center; background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; border-radius: 12px; padding: 35px 20px; }
         .qr-box img { border: 5px solid #fff; border-radius: 8px; }
-        .timeline-item { display: flex; gap: 14px; margin-bottom: 18px; }
-        .timeline-dot { width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; flex-shrink: 0; font-size: 1rem; }
-        .timeline-body { flex: 1; }
-        .timeline-body h6 { margin: 0 0 3px; font-weight: 700; }
-        .timeline-body p { margin: 0; color: #6c757d; font-size: .88rem; }
-        .cta-box { background: linear-gradient(135deg, #28a745, #1e7e34); color: #fff; border-radius: 10px; padding: 35px; text-align: center; margin: 30px 0; }
-        .cta-box h3 { margin-bottom: 10px; }
-        .cta-box p { opacity: .9; margin-bottom: 20px; }
+        .timeline-item { display: flex; gap: 14px; margin-bottom: 16px; }
+        .timeline-dot { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; flex-shrink: 0; font-size: .9rem; }
+        .timeline-body h6 { margin: 0 0 2px; font-weight: 700; }
+        .timeline-body p { margin: 0; color: #6c757d; font-size: .82rem; }
+
+        /* Map mock */
+        .map-mock { background: #e8f4f8; border-radius: 12px; padding: 20px; border: 1px solid #c8dff0; position: relative; min-height: 280px; overflow: hidden; }
+        .map-mock-bg { position: absolute; inset: 0; background: linear-gradient(180deg, #dbeafe 0%, #bfdbfe 100%); }
+        .map-dot { position: absolute; width: 14px; height: 14px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 2px 8px rgba(0,0,0,.25); cursor: pointer; transition: transform .15s; z-index: 2; }
+        .map-dot:hover { transform: scale(1.4); }
+        .map-dot.ok { background: #28a745; }
+        .map-dot.warn { background: #ffc107; }
+        .map-dot.late { background: #dc3545; }
+        .map-dot::after { content: attr(data-label); position: absolute; bottom: calc(100% + 4px); left: 50%; transform: translateX(-50%); background: #333; color: #fff; font-size: .7rem; padding: 2px 6px; border-radius: 4px; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity .15s; }
+        .map-dot:hover::after { opacity: 1; }
+        .map-city { position: absolute; font-size: .7rem; color: #555; font-weight: 700; z-index: 1; }
+        /* SVG Portugal outline placeholder */
+        .map-overlay { position: relative; z-index: 2; }
+        .map-legend { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 12px; }
+        .map-legend-item { display: flex; align-items: center; gap: 6px; font-size: .8rem; font-weight: 600; }
+        .map-legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+
+        /* Inspector */
+        .pdf-flow { display: flex; align-items: center; gap: 0; flex-wrap: wrap; justify-content: center; margin: 16px 0; }
+        .pdf-step { text-align: center; padding: 14px 12px; flex: 1; min-width: 110px; }
+        .pdf-step i { font-size: 1.8rem; display: block; margin-bottom: 6px; }
+        .pdf-step span { font-size: .78rem; font-weight: 600; color: #444; display: block; }
+        .pdf-arrow { color: #007bff; font-size: 1.2rem; margin: 0 2px; }
+
+        /* Reports */
+        .progress-row { display: flex; justify-content: space-between; margin-bottom: 4px; }
+        .bar-track { height: 10px; background: #e9ecef; border-radius: 5px; margin-bottom: 14px; }
+        .bar-fill { height: 10px; border-radius: 5px; transition: width 1s ease; }
+
+        /* Tech tools */
+        .tool-chip { background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 12px 14px; display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+        .tool-chip i { font-size: 1.4rem; width: 30px; text-align: center; }
+        .tool-chip h6 { margin: 0 0 2px; font-size: .88rem; font-weight: 700; }
+        .tool-chip p { margin: 0; font-size: .78rem; color: #6c757d; }
+
+        /* CTA */
+        .cta-box { background: linear-gradient(135deg, #0047ab, #007bff); color: #fff; border-radius: 14px; padding: 40px; text-align: center; margin: 30px 0; }
+        .cta-box h3 { margin-bottom: 10px; font-size: 1.8rem; }
+        .cta-box p { opacity: .92; margin-bottom: 24px; font-size: 1rem; }
+
+        /* Responsive */
+        @media (max-width: 576px) {
+            .demo-hero h1 { font-size: 1.8rem; }
+            .demo-tab { padding: 10px 12px; font-size: .8rem; }
+        }
     </style>
 </head>
 <body class="hold-transition layout-top-nav">
@@ -58,34 +167,20 @@
         <div class="container">
             <a href="../../index.html" class="navbar-brand">
                 <i class="fas fa-elevator fa-2x text-primary"></i>
-                <span class="brand-text ml-2">FestLift</span>
+                <span class="brand-text ml-2" style="font-weight:800;color:#007bff">FestLift</span>
             </a>
             <button class="navbar-toggler order-1" type="button" data-toggle="collapse" data-target="#navbarCollapse">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse order-3" id="navbarCollapse">
                 <ul class="navbar-nav ml-auto">
-                    <li class="nav-item active">
-                        <a href="demo.html" class="nav-link"><i class="fas fa-play-circle"></i> Demo</a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="ai-guest.html" class="nav-link"><i class="fas fa-robot"></i> Assistente IA</a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="../../index.html#features" class="nav-link">Funcionalidades</a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="../../index.html#qr-system" class="nav-link">Sistema QR</a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="../../index.html#about" class="nav-link">Sobre Nós</a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="../../index.html#contact" class="nav-link">Contactos</a>
-                    </li>
+                    <li class="nav-item active"><a href="demo.html" class="nav-link"><i class="fas fa-play-circle mr-1"></i>Demo</a></li>
+                    <li class="nav-item"><a href="ai-guest.html" class="nav-link"><i class="fas fa-robot mr-1"></i>Assistente IA</a></li>
+                    <li class="nav-item"><a href="../../index.html#features" class="nav-link">Funcionalidades</a></li>
+                    <li class="nav-item"><a href="../../index.html#contact" class="nav-link">Contactos</a></li>
                     <li class="nav-item">
                         <a href="../auth/login.html" class="btn btn-primary btn-sm ml-2 mt-1">
-                            <i class="fas fa-sign-in-alt"></i> Entrar
+                            <i class="fas fa-sign-in-alt mr-1"></i>Entrar
                         </a>
                     </li>
                 </ul>
@@ -97,40 +192,50 @@
     <div class="demo-hero">
         <div class="container">
             <h1><i class="fas fa-play-circle mr-2"></i>Demonstração Interactiva</h1>
-            <p>Descubra como o FestLift transforma a gestão de elevadores em Portugal</p>
-            <span class="badge badge-warning p-2"><i class="fas fa-info-circle mr-1"></i>Modo demonstração — dados de exemplo</span>
+            <p>A plataforma completa de gestão de elevadores em Portugal — agora com Inteligência Artificial</p>
+            <div class="hero-badges">
+                <span class="hero-badge"><i class="fas fa-robot mr-1"></i>Gemini 2.5 Flash IA</span>
+                <span class="hero-badge"><i class="fas fa-qrcode mr-1"></i>Sistema QR</span>
+                <span class="hero-badge"><i class="fas fa-brain mr-1"></i>Manutenção Preditiva</span>
+                <span class="hero-badge"><i class="fas fa-map-marked-alt mr-1"></i>Geolocalização</span>
+                <span class="hero-badge"><i class="fas fa-file-pdf mr-1"></i>Parâmetro de PDF</span>
+                <span class="hero-badge"><i class="fas fa-users mr-1"></i>4 Portais de Acesso</span>
+            </div>
+            <div class="mt-3 d-flex gap-2 justify-content-center flex-wrap">
+                <span class="badge badge-warning p-2"><i class="fas fa-info-circle mr-1"></i>Modo demonstração — dados de exemplo</span>
+                <span class="badge p-2" style="background:rgba(255,255,255,.18);color:#fff;border:1px solid rgba(255,255,255,.4)"><i class="fas fa-code mr-1"></i>Desenvolvido internamente pela FestLift</span>
+            </div>
         </div>
     </div>
 
-    <!-- Content -->
     <div class="content-wrapper" style="background:transparent;">
         <div class="container py-4">
 
             <!-- Stats -->
             <div class="row mb-2">
                 <div class="col-6 col-md-3">
-                    <div class="stat-card" style="background: linear-gradient(135deg,#007bff,#0056b3)">
+                    <div class="stat-card" style="background:linear-gradient(135deg,#007bff,#0047ab)">
                         <i class="fas fa-elevator"></i>
                         <h3>248</h3>
                         <p>Elevadores</p>
                     </div>
                 </div>
                 <div class="col-6 col-md-3">
-                    <div class="stat-card" style="background: linear-gradient(135deg,#28a745,#1e7e34)">
+                    <div class="stat-card" style="background:linear-gradient(135deg,#28a745,#1a6e2e)">
                         <i class="fas fa-check-circle"></i>
                         <h3>218</h3>
                         <p>Em dia</p>
                     </div>
                 </div>
                 <div class="col-6 col-md-3">
-                    <div class="stat-card" style="background: linear-gradient(135deg,#ffc107,#e0a800)">
+                    <div class="stat-card" style="background:linear-gradient(135deg,#ffc107,#c68a00)">
                         <i class="fas fa-clock"></i>
                         <h3>21</h3>
                         <p>A vencer</p>
                     </div>
                 </div>
                 <div class="col-6 col-md-3">
-                    <div class="stat-card" style="background: linear-gradient(135deg,#dc3545,#bd2130)">
+                    <div class="stat-card" style="background:linear-gradient(135deg,#dc3545,#9b1c2a)">
                         <i class="fas fa-exclamation-triangle"></i>
                         <h3>9</h3>
                         <p>Vencidos</p>
@@ -138,218 +243,803 @@
                 </div>
             </div>
 
-            <!-- Tabbed Demo -->
+            <!-- Feature chips -->
+            <div class="features-grid">
+                <div class="feature-chip" onclick="showTab('roles')">
+                    <i class="fas fa-users" style="color:#007bff"></i>
+                    <span>4 Portais de Acesso</span>
+                </div>
+                <div class="feature-chip" onclick="showTab('ai')">
+                    <i class="fas fa-robot" style="color:#764ba2"></i>
+                    <span>Assistente IA</span>
+                </div>
+                <div class="feature-chip" onclick="showTab('predictive')">
+                    <i class="fas fa-brain" style="color:#e91e63"></i>
+                    <span>Manutenção Preditiva</span>
+                </div>
+                <div class="feature-chip" onclick="showTab('qr')">
+                    <i class="fas fa-qrcode" style="color:#6610f2"></i>
+                    <span>Sistema QR</span>
+                </div>
+                <div class="feature-chip" onclick="showTab('maps')">
+                    <i class="fas fa-map-marked-alt" style="color:#17a2b8"></i>
+                    <span>Mapa de Elevadores</span>
+                </div>
+                <div class="feature-chip" onclick="showTab('inspections')">
+                    <i class="fas fa-clipboard-check" style="color:#28a745"></i>
+                    <span>Inspecções PDF</span>
+                </div>
+                <div class="feature-chip" onclick="showTab('tech')">
+                    <i class="fas fa-hard-hat" style="color:#fd7e14"></i>
+                    <span>Portal do Técnico</span>
+                </div>
+                <div class="feature-chip" onclick="showTab('reports')">
+                    <i class="fas fa-chart-line" style="color:#20c997"></i>
+                    <span>Analytics &amp; Relatórios</span>
+                </div>
+            </div>
+
+            <!-- Tabbed section -->
             <div class="tab-section">
                 <div class="demo-tabs">
-                    <div class="demo-tab active" onclick="showTab('lifts')"><i class="fas fa-elevator mr-1"></i> Elevadores</div>
-                    <div class="demo-tab" onclick="showTab('qr')"><i class="fas fa-qrcode mr-1"></i> Sistema QR</div>
-                    <div class="demo-tab" onclick="showTab('inspections')"><i class="fas fa-clipboard-check mr-1"></i> Inspecções</div>
-                    <div class="demo-tab" onclick="showTab('reports')"><i class="fas fa-chart-bar mr-1"></i> Relatórios</div>
+                    <div class="demo-tab active" onclick="showTab('lifts')"><i class="fas fa-elevator mr-1"></i>Elevadores</div>
+                    <div class="demo-tab" onclick="showTab('roles')"><i class="fas fa-users mr-1"></i>Portais</div>
+                    <div class="demo-tab" onclick="showTab('ai')"><i class="fas fa-robot mr-1"></i>Assistente IA</div>
+                    <div class="demo-tab" onclick="showTab('predictive')"><i class="fas fa-brain mr-1"></i>IA Preditiva</div>
+                    <div class="demo-tab" onclick="showTab('qr')"><i class="fas fa-qrcode mr-1"></i>Sistema QR</div>
+                    <div class="demo-tab" onclick="showTab('maps')"><i class="fas fa-map mr-1"></i>Mapas</div>
+                    <div class="demo-tab" onclick="showTab('inspections')"><i class="fas fa-clipboard-check mr-1"></i>Inspecções</div>
+                    <div class="demo-tab" onclick="showTab('tech')"><i class="fas fa-hard-hat mr-1"></i>Técnico</div>
+                    <div class="demo-tab" onclick="showTab('reports')"><i class="fas fa-chart-bar mr-1"></i>Relatórios</div>
                 </div>
 
-                <!-- Lifts panel -->
+                <!-- ============ ELEVADORES ============ -->
                 <div class="demo-panel active" id="tab-lifts">
-                    <h5 class="mb-3 text-muted"><i class="fas fa-list mr-1"></i> Lista de Elevadores (exemplo)</h5>
+                    <h5 class="mb-3 text-muted"><i class="fas fa-list mr-1"></i>Lista de Elevadores (exemplo)</h5>
                     <div class="lift-card">
                         <div class="lift-icon"><i class="fas fa-elevator"></i></div>
                         <div class="lift-info flex-grow-1">
                             <h5>ELV-001 — Rua da Prata 42, Lisboa</h5>
-                            <p>Schindler 3300 · Eléctrico tracionado · Nº Municipal: 2024-LX-001</p>
+                            <p>Schindler 3300 · Eléctrico tracionado · Nº Municipal: 2024-LX-001 · Última inspecção: 12/05/2025</p>
                         </div>
                         <span class="badge-status badge-ok">Em dia</span>
                     </div>
                     <div class="lift-card">
-                        <div class="lift-icon" style="background:linear-gradient(135deg,#ffc107,#e0a800)"><i class="fas fa-elevator"></i></div>
+                        <div class="lift-icon" style="background:linear-gradient(135deg,#ffc107,#c68a00)"><i class="fas fa-elevator"></i></div>
                         <div class="lift-info flex-grow-1">
                             <h5>ELV-002 — Av. da Liberdade 180, Lisboa</h5>
-                            <p>KONE MonoSpace 500 · Hidráulico · Nº Municipal: 2024-LX-002</p>
+                            <p>KONE MonoSpace 500 · Hidráulico · Nº Municipal: 2024-LX-002 · Próxima inspecção: 15/07/2026</p>
                         </div>
                         <span class="badge-status badge-warn">Vence em 15 dias</span>
                     </div>
                     <div class="lift-card">
-                        <div class="lift-icon" style="background:linear-gradient(135deg,#28a745,#1e7e34)"><i class="fas fa-elevator"></i></div>
+                        <div class="lift-icon" style="background:linear-gradient(135deg,#28a745,#1a6e2e)"><i class="fas fa-elevator"></i></div>
                         <div class="lift-info flex-grow-1">
                             <h5>ELV-003 — Rua do Ouro 88, Porto</h5>
-                            <p>Otis Gen2 · Eléctrico sem casa de máquinas · Nº Municipal: 2024-PT-015</p>
+                            <p>Otis Gen2 · Eléctrico sem casa de máquinas · Nº Municipal: 2024-PT-015 · Última inspecção: 08/05/2025</p>
                         </div>
                         <span class="badge-status badge-ok">Em dia</span>
                     </div>
                     <div class="lift-card">
-                        <div class="lift-icon" style="background:linear-gradient(135deg,#dc3545,#bd2130)"><i class="fas fa-elevator"></i></div>
+                        <div class="lift-icon" style="background:linear-gradient(135deg,#dc3545,#9b1c2a)"><i class="fas fa-elevator"></i></div>
                         <div class="lift-info flex-grow-1">
                             <h5>ELV-004 — Praça do Município 5, Braga</h5>
-                            <p>ThyssenKrupp Evolution · Hidráulico · Nº Municipal: 2023-BR-041</p>
+                            <p>ThyssenKrupp Evolution · Hidráulico · Nº Municipal: 2023-BR-041 · <strong class="text-danger">Inspecção vencida há 47 dias</strong></p>
                         </div>
                         <span class="badge-status badge-late">Vencido</span>
                     </div>
-                    <div class="text-center mt-2">
-                        <a href="../auth/login.html" class="btn btn-outline-primary btn-sm">
-                            <i class="fas fa-sign-in-alt mr-1"></i>Entrar para ver todos os elevadores
+                    <div class="lift-card">
+                        <div class="lift-icon" style="background:linear-gradient(135deg,#6f42c1,#4b2a8a)"><i class="fas fa-elevator"></i></div>
+                        <div class="lift-info flex-grow-1">
+                            <h5>ELV-005 — Rua de Santa Catarina 12, Porto</h5>
+                            <p>Mitsubishi NexWay · Eléctrico tracionado · Nº Municipal: 2025-PT-003 · IA prevê manutenção em Agosto</p>
+                        </div>
+                        <span class="badge-status badge-ok">Em dia</span>
+                    </div>
+                    <div class="text-center mt-3">
+                        <span class="text-muted small">+ 243 elevadores no sistema</span><br>
+                        <a href="../auth/login.html" class="btn btn-outline-primary btn-sm mt-2">
+                            <i class="fas fa-sign-in-alt mr-1"></i>Entrar para ver todos
                         </a>
                     </div>
                 </div>
 
-                <!-- QR panel -->
+                <!-- ============ PORTAIS / ROLES ============ -->
+                <div class="demo-panel" id="tab-roles">
+                    <h5 class="mb-1 font-weight-bold">4 Portais de Acesso Independentes</h5>
+                    <p class="text-muted small mb-3">Cada perfil de utilizador acede a um painel adaptado às suas necessidades.</p>
+                    <div class="role-switcher">
+                        <div class="role-btn active" data-role="admin" onclick="showRole('admin')">
+                            <i class="fas fa-user-shield mr-1"></i>Administrador
+                        </div>
+                        <div class="role-btn" data-role="dispatcher" onclick="showRole('dispatcher')">
+                            <i class="fas fa-tasks mr-1"></i>Dispatcher
+                        </div>
+                        <div class="role-btn" data-role="tech" onclick="showRole('tech')">
+                            <i class="fas fa-hard-hat mr-1"></i>Técnico
+                        </div>
+                        <div class="role-btn" data-role="client" onclick="showRole('client')">
+                            <i class="fas fa-building mr-1"></i>Cliente
+                        </div>
+                    </div>
+
+                    <!-- Admin -->
+                    <div class="role-panel active" id="role-admin">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="role-mockup">
+                                    <div class="row mb-3">
+                                        <div class="col-4"><div class="mockup-stat"><h4 class="text-primary">248</h4><small>Elevadores</small></div></div>
+                                        <div class="col-4"><div class="mockup-stat"><h4 class="text-success">34</h4><small>Inspecções/mês</small></div></div>
+                                        <div class="col-4"><div class="mockup-stat"><h4 class="text-warning">9</h4><small>Alertas</small></div></div>
+                                    </div>
+                                    <div style="background:#007bff;color:#fff;border-radius:6px;padding:10px 14px;font-size:.82rem;margin-bottom:8px;">
+                                        <i class="fas fa-chart-line mr-1"></i>Smart Analytics Dashboard
+                                    </div>
+                                    <div style="background:#6f42c1;color:#fff;border-radius:6px;padding:10px 14px;font-size:.82rem;margin-bottom:8px;">
+                                        <i class="fas fa-brain mr-1"></i>Predictive Maintenance AI
+                                    </div>
+                                    <div style="background:#28a745;color:#fff;border-radius:6px;padding:10px 14px;font-size:.82rem;">
+                                        <i class="fas fa-robot mr-1"></i>Assistente IA + Diagnóstico
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mt-3 mt-md-0">
+                                <ul class="role-feature-list">
+                                    <li><i class="fas fa-elevator text-primary"></i>Gestão completa de elevadores e clientes</li>
+                                    <li><i class="fas fa-users text-primary"></i>Gestão de utilizadores e permissões (role manager)</li>
+                                    <li><i class="fas fa-chart-line text-primary"></i>Smart Analytics Dashboard com gráficos</li>
+                                    <li><i class="fas fa-brain text-primary"></i>Manutenção preditiva com IA (previsões de risco)</li>
+                                    <li><i class="fas fa-robot text-primary"></i>Assistente IA + Diagnósticos IA</li>
+                                    <li><i class="fas fa-qrcode text-primary"></i>Geração e análise de QR em lote</li>
+                                    <li><i class="fas fa-map-marked-alt text-primary"></i>Mapa interactivo de elevadores</li>
+                                    <li><i class="fas fa-file-pdf text-primary"></i>Importação e análise de relatórios PDF</li>
+                                    <li><i class="fas fa-shield-alt text-primary"></i>Registo de auditoria (audit log)</li>
+                                    <li><i class="fas fa-file-invoice text-primary"></i>Orçamentos, facturas e SAFT-PT</li>
+                                    <li><i class="fas fa-envelope text-primary"></i>Templates de email (servidor SMTP)</li>
+                                    <li><i class="fas fa-monitor text-primary"></i>Monitor de sistema em tempo real</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Dispatcher -->
+                    <div class="role-panel" id="role-dispatcher">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="role-mockup">
+                                    <div class="row mb-3">
+                                        <div class="col-4"><div class="mockup-stat"><h4 style="color:#764ba2">12</h4><small>Agendadas hoje</small></div></div>
+                                        <div class="col-4"><div class="mockup-stat"><h4 class="text-warning">5</h4><small>Pendentes</small></div></div>
+                                        <div class="col-4"><div class="mockup-stat"><h4 class="text-success">28</h4><small>Técnicos activos</small></div></div>
+                                    </div>
+                                    <div style="background:#764ba2;color:#fff;border-radius:6px;padding:10px 14px;font-size:.82rem;margin-bottom:8px;">
+                                        <i class="fas fa-calendar-alt mr-1"></i>Calendário de inspecções
+                                    </div>
+                                    <div style="background:#17a2b8;color:#fff;border-radius:6px;padding:10px 14px;font-size:.82rem;margin-bottom:8px;">
+                                        <i class="fas fa-map-marked-alt mr-1"></i>Monitorização em mapa
+                                    </div>
+                                    <div style="background:#fd7e14;color:#fff;border-radius:6px;padding:10px 14px;font-size:.82rem;">
+                                        <i class="fas fa-tasks mr-1"></i>Atribuição de tarefas
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mt-3 mt-md-0">
+                                <ul class="role-feature-list">
+                                    <li><i class="fas fa-calendar-alt" style="color:#764ba2"></i>Calendário visual de inspecções e manutenções</li>
+                                    <li><i class="fas fa-tasks" style="color:#764ba2"></i>Atribuição e acompanhamento de tarefas a técnicos</li>
+                                    <li><i class="fas fa-map" style="color:#764ba2"></i>Mapa de monitorização em tempo real</li>
+                                    <li><i class="fas fa-clipboard-list" style="color:#764ba2"></i>Gestão de inspecções e agendamentos</li>
+                                    <li><i class="fas fa-building" style="color:#764ba2"></i>Gestão de clientes e contratos</li>
+                                    <li><i class="fas fa-chart-bar" style="color:#764ba2"></i>Relatórios e analytics unificados</li>
+                                    <li><i class="fas fa-file-invoice" style="color:#764ba2"></i>Orçamentos, facturas e SAFT-PT</li>
+                                    <li><i class="fas fa-brain" style="color:#764ba2"></i>Previsões de manutenção preditiva</li>
+                                    <li><i class="fas fa-bell" style="color:#764ba2"></i>Notificações e alertas em tempo real</li>
+                                    <li><i class="fas fa-hard-hat" style="color:#764ba2"></i>Painel de técnicos disponíveis</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tech -->
+                    <div class="role-panel" id="role-tech">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="role-mockup">
+                                    <div class="row mb-3">
+                                        <div class="col-4"><div class="mockup-stat"><h4 class="text-success">4</h4><small>Tarefas hoje</small></div></div>
+                                        <div class="col-4"><div class="mockup-stat"><h4 class="text-warning">2</h4><small>Urgentes</small></div></div>
+                                        <div class="col-4"><div class="mockup-stat"><h4 class="text-primary">18</h4><small>Ferramentas</small></div></div>
+                                    </div>
+                                    <div style="background:#28a745;color:#fff;border-radius:6px;padding:10px 14px;font-size:.82rem;margin-bottom:8px;">
+                                        <i class="fas fa-qrcode mr-1"></i>Leitor QR → Ficha completa
+                                    </div>
+                                    <div style="background:#fd7e14;color:#fff;border-radius:6px;padding:10px 14px;font-size:.82rem;margin-bottom:8px;">
+                                        <i class="fas fa-vr-cardboard mr-1"></i>Auxiliar AR (Realidade Aumentada)
+                                    </div>
+                                    <div style="background:#6c757d;color:#fff;border-radius:6px;padding:10px 14px;font-size:.82rem;">
+                                        <i class="fas fa-book mr-1"></i>Base de conhecimento + Vídeos
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mt-3 mt-md-0">
+                                <ul class="role-feature-list">
+                                    <li><i class="fas fa-qrcode text-success"></i>Leitor QR → acesso directo à ficha do elevador</li>
+                                    <li><i class="fas fa-tasks text-success"></i>Lista de tarefas e agenda pessoal</li>
+                                    <li><i class="fas fa-map-pin text-success"></i>Mapa de tarefas com navegação GPS</li>
+                                    <li><i class="fas fa-clipboard-check text-success"></i>Checklists de inspecção guiados</li>
+                                    <li><i class="fas fa-vr-cardboard text-success"></i>Auxiliar de Realidade Aumentada (AR)</li>
+                                    <li><i class="fas fa-tools text-success"></i>Gestão de ferramentas e equipamentos</li>
+                                    <li><i class="fas fa-video text-success"></i>Tutoriais em vídeo de formação</li>
+                                    <li><i class="fas fa-book text-success"></i>Manuais técnicos digitais</li>
+                                    <li><i class="fas fa-robot text-success"></i>Assistente IA para diagnósticos em campo</li>
+                                    <li><i class="fas fa-wrench text-success"></i>Registo de manutenções realizadas</li>
+                                    <li><i class="fas fa-file-pdf text-success"></i>Geração de relatórios de inspecção PDF</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Client -->
+                    <div class="role-panel" id="role-client">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="role-mockup">
+                                    <div class="row mb-3">
+                                        <div class="col-4"><div class="mockup-stat"><h4 class="text-primary">6</h4><small>Os meus elevadores</small></div></div>
+                                        <div class="col-4"><div class="mockup-stat"><h4 class="text-success">5</h4><small>Em dia</small></div></div>
+                                        <div class="col-4"><div class="mockup-stat"><h4 class="text-warning">1</h4><small>A vencer</small></div></div>
+                                    </div>
+                                    <div style="background:#fd7e14;color:#fff;border-radius:6px;padding:10px 14px;font-size:.82rem;margin-bottom:8px;">
+                                        <i class="fas fa-file-invoice mr-1"></i>Facturas e orçamentos online
+                                    </div>
+                                    <div style="background:#17a2b8;color:#fff;border-radius:6px;padding:10px 14px;font-size:.82rem;margin-bottom:8px;">
+                                        <i class="fas fa-history mr-1"></i>Histórico completo de intervenções
+                                    </div>
+                                    <div style="background:#e91e63;color:#fff;border-radius:6px;padding:10px 14px;font-size:.82rem;">
+                                        <i class="fas fa-brain mr-1"></i>Previsões IA para os meus elevadores
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mt-3 mt-md-0">
+                                <ul class="role-feature-list">
+                                    <li><i class="fas fa-elevator" style="color:#fd7e14"></i>Painel dos meus elevadores com estado em tempo real</li>
+                                    <li><i class="fas fa-history" style="color:#fd7e14"></i>Histórico completo de inspecções e manutenções</li>
+                                    <li><i class="fas fa-file-invoice" style="color:#fd7e14"></i>Facturas e orçamentos online</li>
+                                    <li><i class="fas fa-ticket-alt" style="color:#fd7e14"></i>Submissão de pedidos e tickets de suporte</li>
+                                    <li><i class="fas fa-brain" style="color:#fd7e14"></i>Previsões IA para os meus elevadores</li>
+                                    <li><i class="fas fa-file-pdf" style="color:#fd7e14"></i>Acesso a relatórios de inspecção em PDF</li>
+                                    <li><i class="fas fa-bell" style="color:#fd7e14"></i>Notificações de prazos e alertas</li>
+                                    <li><i class="fas fa-book" style="color:#fd7e14"></i>Documentação e guias do proprietário</li>
+                                    <li><i class="fas fa-mobile-alt" style="color:#fd7e14"></i>PWA — instalar como app no telemóvel</li>
+                                    <li><i class="fas fa-headset" style="color:#fd7e14"></i>Canal de suporte directo</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ============ ASSISTENTE IA ============ -->
+                <div class="demo-panel" id="tab-ai">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="ai-card">
+                                <span class="ai-badge"><i class="fas fa-robot mr-1"></i>Powered by Gemini 2.5 Flash</span>
+                                <h5 class="font-weight-bold mb-1">Assistente IA FestLift</h5>
+                                <p style="opacity:.75;font-size:.85rem;margin-bottom:16px;">Disponível 24/7 para técnicos, dispatchers e clientes. Conhece toda a regulamentação portuguesa.</p>
+                                <div class="ai-chat-demo">
+                                    <div class="ai-msg assistant">
+                                        <div class="ai-avatar bot"><i class="fas fa-robot"></i></div>
+                                        <div class="ai-msg-bubble">Olá! Sou o Assistente FestLift. Como posso ajudar hoje? Posso analisar diagnósticos, verificar conformidade com DL 320/2002 ou DL 58/2017, e muito mais.</div>
+                                    </div>
+                                    <div class="ai-msg user">
+                                        <div class="ai-avatar user"><i class="fas fa-user"></i></div>
+                                        <div class="ai-msg-bubble">O elevador ELV-002 tem ruído metálico nos cabos. O que pode ser?</div>
+                                    </div>
+                                    <div class="ai-msg assistant">
+                                        <div class="ai-avatar bot"><i class="fas fa-robot"></i></div>
+                                        <div class="ai-msg-bubble">Ruído metálico nos cabos pode indicar: <br>• Desgaste ou fraying dos cabos de tracção<br>• Rolamentos da polia desgastados<br>• Falta de lubrificação nas ranhuras<br><br>Recomendo inspecção imediata conforme NP EN 81-20:2020 §5.4. Quer que crie um registo de manutenção?</div>
+                                    </div>
+                                </div>
+                                <div class="text-center mt-3">
+                                    <a href="ai-guest.html" class="btn btn-light btn-sm">
+                                        <i class="fas fa-comments mr-1"></i>Experimentar Assistente IA
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mt-3 mt-md-0">
+                            <h5 class="font-weight-bold mb-3">Capacidades do Assistente IA</h5>
+                            <div class="ai-feature-row" style="color:#333;border-bottom:1px solid #eee">
+                                <i class="fas fa-stethoscope text-danger"></i>
+                                <div>
+                                    <h6>Diagnóstico Técnico</h6>
+                                    <p class="text-muted">Analisa sintomas e sugere diagnósticos baseados em normas técnicas (NP EN 81, DL 320/2002, DL 58/2017).</p>
+                                </div>
+                            </div>
+                            <div class="ai-feature-row" style="color:#333;border-bottom:1px solid #eee">
+                                <i class="fas fa-file-pdf text-danger"></i>
+                                <div>
+                                    <h6>Análise de Relatórios PDF</h6>
+                                    <p class="text-muted">Processa automaticamente relatórios da Bureau Veritas, SGS e outras entidades inspectoras. Extrai não-conformidades e classifica por grau (C1/C2/C3).</p>
+                                </div>
+                            </div>
+                            <div class="ai-feature-row" style="color:#333;border-bottom:1px solid #eee">
+                                <i class="fas fa-gavel text-warning"></i>
+                                <div>
+                                    <h6>Conformidade Legal</h6>
+                                    <p class="text-muted">Verifica artigos aplicáveis do DL 320/2002 e DL 58/2017. Identifica infracções e gera relatórios de conformidade.</p>
+                                </div>
+                            </div>
+                            <div class="ai-feature-row" style="color:#333;border-bottom:1px solid #eee">
+                                <i class="fas fa-lightbulb text-warning"></i>
+                                <div>
+                                    <h6>Base de Conhecimento</h6>
+                                    <p class="text-muted">Acesso a manuais de fabricantes, fichas técnicas, peças de substituição e procedimentos de manutenção.</p>
+                                </div>
+                            </div>
+                            <div class="ai-feature-row" style="color:#333">
+                                <i class="fas fa-language text-primary"></i>
+                                <div>
+                                    <h6>Multilingue &amp; Contextual</h6>
+                                    <p class="text-muted">Responde em Português PT-PT. Conhece o contexto do elevador — marca, modelo, histórico de intervenções.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ============ IA PREDITIVA ============ -->
+                <div class="demo-panel" id="tab-predictive">
+                    <div class="row mb-4">
+                        <div class="col-md-8">
+                            <h5 class="font-weight-bold mb-1"><i class="fas fa-brain mr-1 text-danger"></i>Manutenção Preditiva com IA</h5>
+                            <p class="text-muted small">Análise contínua de todos os elevadores. A IA detecta padrões de risco com 30+ dias de antecedência.</p>
+                        </div>
+                    </div>
+                    <div class="row mb-4">
+                        <div class="col-6 col-md-3">
+                            <div class="card text-center border-0" style="background:linear-gradient(135deg,#dc3545,#9b1c2a);color:#fff;border-radius:10px;">
+                                <div class="card-body py-3">
+                                    <i class="fas fa-exclamation-circle fa-2x mb-2"></i>
+                                    <h3 class="font-weight-bold mb-0">9</h3>
+                                    <small>Risco Alto</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="card text-center border-0" style="background:linear-gradient(135deg,#ffc107,#c68a00);color:#fff;border-radius:10px;">
+                                <div class="card-body py-3">
+                                    <i class="fas fa-exclamation-triangle fa-2x mb-2"></i>
+                                    <h3 class="font-weight-bold mb-0">24</h3>
+                                    <small>Risco Médio</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="card text-center border-0" style="background:linear-gradient(135deg,#28a745,#1a6e2e);color:#fff;border-radius:10px;">
+                                <div class="card-body py-3">
+                                    <i class="fas fa-check-circle fa-2x mb-2"></i>
+                                    <h3 class="font-weight-bold mb-0">215</h3>
+                                    <small>Risco Baixo</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <div class="card text-center border-0" style="background:linear-gradient(135deg,#6f42c1,#4b2a8a);color:#fff;border-radius:10px;">
+                                <div class="card-body py-3">
+                                    <i class="fas fa-calendar-alt fa-2x mb-2"></i>
+                                    <h3 class="font-weight-bold mb-0">16</h3>
+                                    <small>Anos médios (frota)</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card border-0" style="border-radius:10px;box-shadow:0 2px 12px rgba(0,0,0,.07);">
+                                <div class="card-header" style="background:linear-gradient(135deg,#dc3545,#9b1c2a);color:#fff;border-radius:10px 10px 0 0">
+                                    <h6 class="mb-0"><i class="fas fa-exclamation-circle mr-1"></i>Alertas Críticos (IA)</h6>
+                                </div>
+                                <div class="card-body p-0">
+                                    <div style="padding:12px 16px;border-bottom:1px solid #f0f0f0">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <span class="badge badge-danger mr-2">ALTO</span>
+                                            <div>
+                                                <div class="font-weight-bold" style="font-size:.85rem">ELV-004 — Braga</div>
+                                                <div class="text-muted" style="font-size:.78rem">Probabilidade de falha: 87% nos próximos 30 dias</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div style="padding:12px 16px;border-bottom:1px solid #f0f0f0">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <span class="badge badge-danger mr-2">ALTO</span>
+                                            <div>
+                                                <div class="font-weight-bold" style="font-size:.85rem">ELV-017 — Lisboa</div>
+                                                <div class="text-muted" style="font-size:.78rem">Componente crítico: motor de tracção (vida útil esgotada)</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div style="padding:12px 16px">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <span class="badge badge-warning mr-2">MÉDIO</span>
+                                            <div>
+                                                <div class="font-weight-bold" style="font-size:.85rem">ELV-002 — Lisboa</div>
+                                                <div class="text-muted" style="font-size:.78rem">Anomalia detectada: variação de velocidade ±8%</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mt-3 mt-md-0">
+                            <div class="card border-0 h-100" style="border-radius:10px;box-shadow:0 2px 12px rgba(0,0,0,.07);">
+                                <div class="card-header" style="background:linear-gradient(135deg,#6f42c1,#4b2a8a);color:#fff;border-radius:10px 10px 0 0">
+                                    <h6 class="mb-0"><i class="fas fa-crystal-ball mr-1"></i>Previsões para os próximos 90 dias</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between mb-1"><span style="font-size:.85rem">Manutenções preventivas</span><strong>38</strong></div>
+                                    <div class="bar-track"><div class="bar-fill bg-primary" style="width:38%"></div></div>
+                                    <div class="d-flex justify-content-between mb-1"><span style="font-size:.85rem">Substituições de componentes</span><strong>14</strong></div>
+                                    <div class="bar-track"><div class="bar-fill bg-warning" style="width:14%"></div></div>
+                                    <div class="d-flex justify-content-between mb-1"><span style="font-size:.85rem">Inspecções obrigatórias</span><strong>62</strong></div>
+                                    <div class="bar-track"><div class="bar-fill bg-success" style="width:62%"></div></div>
+                                    <p class="text-muted small mb-0 mt-2"><i class="fas fa-info-circle mr-1"></i>Modelo treinado com dados históricos de +5 anos da frota portuguesa.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ============ SISTEMA QR ============ -->
                 <div class="demo-panel" id="tab-qr">
                     <div class="row">
-                        <div class="col-md-5">
+                        <div class="col-md-4">
                             <div class="qr-box">
                                 <h5 class="mb-3"><i class="fas fa-qrcode mr-1"></i>Código QR do Elevador</h5>
-                                <img src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=https://crm.festlift.pt/qr/LFT-DEMO-001&color=ffffff&bgcolor=5a3e9e" alt="QR Demo" class="mb-3">
-                                <p class="mb-1" style="opacity:.85">Elevador: <strong>ELV-001</strong></p>
-                                <p style="opacity:.85;font-size:.9rem">Rua da Prata 42, Lisboa</p>
+                                <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://crm.festlift.pt/qr/LFT-DEMO-001&color=ffffff&bgcolor=5a3e9e" alt="QR Demo" class="mb-3">
+                                <p class="mb-1" style="opacity:.85;font-size:.9rem">Elevador: <strong>ELV-001</strong></p>
+                                <p style="opacity:.75;font-size:.82rem">Rua da Prata 42, Lisboa</p>
                                 <button class="btn btn-light btn-sm mt-2" onclick="simularQR()">
                                     <i class="fas fa-qrcode mr-1"></i>Simular leitura QR
                                 </button>
                             </div>
+                            <div id="qr-result" style="display:none" class="alert alert-success mt-3">
+                                <i class="fas fa-check-circle mr-1"></i><strong>QR lido com sucesso!</strong><br>
+                                Elevador ELV-001 — Rua da Prata 42, Lisboa<br>
+                                <small>Próxima inspecção: 15/08/2026 | Estado: Em dia | Técnico pode aceder a ficha completa</small>
+                            </div>
                         </div>
-                        <div class="col-md-7 mt-3 mt-md-0">
-                            <h5 class="font-weight-bold mb-3">Como funciona o Sistema QR?</h5>
+                        <div class="col-md-8 mt-3 mt-md-0">
+                            <h5 class="font-weight-bold mb-3">Como funciona o Sistema QR FestLift?</h5>
                             <div class="timeline-item">
                                 <div class="timeline-dot" style="background:#007bff"><i class="fas fa-qrcode"></i></div>
                                 <div class="timeline-body">
                                     <h6>1. QR único por elevador</h6>
-                                    <p>Cada elevador recebe um código QR único fixado no equipamento.</p>
+                                    <p>Cada elevador recebe um código QR único e permanente — gerado em batch ou individualmente. Suporta impressão em etiquetas resistentes.</p>
                                 </div>
                             </div>
                             <div class="timeline-item">
                                 <div class="timeline-dot" style="background:#28a745"><i class="fas fa-mobile-alt"></i></div>
                                 <div class="timeline-body">
-                                    <h6>2. Técnico lê o código</h6>
-                                    <p>Com smartphone — sem app instalada. Abre directamente no browser.</p>
+                                    <h6>2. Técnico lê o QR em campo</h6>
+                                    <p>Com qualquer smartphone — sem app instalada. Abre directamente no browser. Identificação automática do elevador.</p>
                                 </div>
                             </div>
                             <div class="timeline-item">
                                 <div class="timeline-dot" style="background:#764ba2"><i class="fas fa-clipboard-check"></i></div>
                                 <div class="timeline-body">
-                                    <h6>3. Acesso imediato ao histórico</h6>
-                                    <p>Fichas técnicas, últimas inspecções, manutenções, orçamentos — tudo num clique.</p>
+                                    <h6>3. Acesso imediato a toda a informação</h6>
+                                    <p>Ficha técnica completa, histórico de inspecções, manutenções, orçamentos, não-conformidades, contactos — tudo num clique.</p>
                                 </div>
                             </div>
                             <div class="timeline-item">
-                                <div class="timeline-dot" style="background:#ffc107"><i class="fas fa-robot"></i></div>
+                                <div class="timeline-dot" style="background:#e91e63"><i class="fas fa-robot"></i></div>
                                 <div class="timeline-body">
-                                    <h6>4. Assistente IA disponível</h6>
-                                    <p>O técnico pode perguntar ao assistente IA sobre diagnósticos, peças e normas DL 320/2002, DL 58/2017 e NP EN 81.</p>
+                                    <h6>4. Assistente IA contextual</h6>
+                                    <p>IA já sabe que elevador é, marca, modelo, histórico. O técnico pergunta directamente sobre diagnósticos e normas aplicáveis.</p>
                                 </div>
                             </div>
-                            <div id="qr-result" style="display:none" class="alert alert-success mt-2">
-                                <i class="fas fa-check-circle mr-1"></i><strong>QR lido com sucesso!</strong><br>
-                                Elevador ELV-001 — Rua da Prata 42, Lisboa<br>
-                                <small>Próxima inspecção: 15/08/2025 | Estado: Em dia</small>
+                            <div class="timeline-item" style="margin-bottom:0">
+                                <div class="timeline-dot" style="background:#fd7e14"><i class="fas fa-chart-bar"></i></div>
+                                <div class="timeline-body">
+                                    <h6>5. Analytics de leituras QR</h6>
+                                    <p>Painel de analytics: quem leu, quando, localização, frequência. Detecta elevadores com muitas leituras (potencial problema).</p>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Inspections panel -->
-                <div class="demo-panel" id="tab-inspections">
-                    <h5 class="mb-3 text-muted"><i class="fas fa-clipboard-check mr-1"></i>Histórico de Inspecções (exemplo)</h5>
-                    <div class="table-responsive">
-                        <table class="table table-sm table-hover">
-                            <thead class="thead-light">
-                                <tr>
-                                    <th>Elevador</th>
-                                    <th>Data</th>
-                                    <th>Tipo</th>
-                                    <th>Técnico</th>
-                                    <th>Resultado</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>ELV-001</td>
-                                    <td>12/05/2025</td>
-                                    <td>Periódica</td>
-                                    <td>João Silva</td>
-                                    <td><span class="badge badge-success">Aprovado</span></td>
-                                </tr>
-                                <tr>
-                                    <td>ELV-003</td>
-                                    <td>08/05/2025</td>
-                                    <td>Periódica</td>
-                                    <td>Ana Costa</td>
-                                    <td><span class="badge badge-success">Aprovado</span></td>
-                                </tr>
-                                <tr>
-                                    <td>ELV-002</td>
-                                    <td>02/05/2025</td>
-                                    <td>Extraordinária</td>
-                                    <td>Pedro Santos</td>
-                                    <td><span class="badge badge-warning">Condicionado</span></td>
-                                </tr>
-                                <tr>
-                                    <td>ELV-004</td>
-                                    <td>14/02/2025</td>
-                                    <td>Periódica</td>
-                                    <td>João Silva</td>
-                                    <td><span class="badge badge-danger">Reprovado</span></td>
-                                </tr>
-                            </tbody>
-                        </table>
+                <!-- ============ MAPAS ============ -->
+                <div class="demo-panel" id="tab-maps">
+                    <h5 class="font-weight-bold mb-1"><i class="fas fa-map-marked-alt mr-1 text-info"></i>Mapa Interactivo de Elevadores</h5>
+                    <p class="text-muted small mb-3">Visualização geográfica de toda a frota em tempo real. Clique nos pontos para ver detalhes.</p>
+                    <div class="map-mock" style="min-height:340px;">
+                        <div class="map-mock-bg"></div>
+                        <!-- SVG simplified Portugal outline -->
+                        <svg style="position:absolute;inset:0;width:100%;height:100%;opacity:.15" viewBox="0 0 300 400" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M80,20 L220,20 L240,60 L250,120 L230,180 L220,240 L200,300 L170,360 L140,380 L110,360 L80,300 L60,240 L50,180 L60,120 L70,60 Z" fill="#1565c0" stroke="#1565c0" stroke-width="2"/>
+                        </svg>
+                        <!-- City labels -->
+                        <span class="map-city" style="top:22%;left:30%">Porto</span>
+                        <span class="map-city" style="top:55%;left:24%">Lisboa</span>
+                        <span class="map-city" style="top:12%;left:38%">Braga</span>
+                        <span class="map-city" style="top:70%;left:50%">Évora</span>
+                        <span class="map-city" style="top:80%;left:35%">Faro</span>
+                        <!-- Elevator dots - Porto area -->
+                        <div class="map-dot ok" style="top:22%;left:31%" data-label="ELV-003 Porto · Em dia"></div>
+                        <div class="map-dot ok" style="top:24%;left:33%" data-label="ELV-012 Porto · Em dia"></div>
+                        <div class="map-dot warn" style="top:21%;left:34%" data-label="ELV-018 Porto · A vencer"></div>
+                        <div class="map-dot ok" style="top:26%;left:29%" data-label="ELV-027 Gaia · Em dia"></div>
+                        <!-- Braga -->
+                        <div class="map-dot ok" style="top:13%;left:30%" data-label="ELV-011 Braga · Em dia"></div>
+                        <div class="map-dot late" style="top:12%;left:34%" data-label="ELV-004 Braga · VENCIDO"></div>
+                        <!-- Lisboa area -->
+                        <div class="map-dot ok" style="top:54%;left:23%" data-label="ELV-001 Lisboa · Em dia"></div>
+                        <div class="map-dot warn" style="top:56%;left:25%" data-label="ELV-002 Lisboa · A vencer"></div>
+                        <div class="map-dot ok" style="top:53%;left:26%" data-label="ELV-009 Lisboa · Em dia"></div>
+                        <div class="map-dot late" style="top:57%;left:22%" data-label="ELV-031 Lisboa · VENCIDO"></div>
+                        <div class="map-dot ok" style="top:58%;left:27%" data-label="ELV-045 Setúbal · Em dia"></div>
+                        <!-- Évora -->
+                        <div class="map-dot ok" style="top:69%;left:45%" data-label="ELV-077 Évora · Em dia"></div>
+                        <!-- Algarve -->
+                        <div class="map-dot ok" style="top:82%;left:30%" data-label="ELV-110 Faro · Em dia"></div>
+                        <div class="map-dot warn" style="top:82%;left:36%" data-label="ELV-112 Albufeira · A vencer"></div>
+                        <!-- Coimbra -->
+                        <div class="map-dot ok" style="top:37%;left:26%" data-label="ELV-055 Coimbra · Em dia"></div>
                     </div>
-                    <p class="text-muted small"><i class="fas fa-info-circle mr-1"></i>Todos os relatórios são gerados automaticamente em PDF e enviados por email ao cliente.</p>
+                    <div class="map-legend mt-3">
+                        <div class="map-legend-item"><div class="map-legend-dot" style="background:#28a745"></div>Em dia</div>
+                        <div class="map-legend-item"><div class="map-legend-dot" style="background:#ffc107"></div>A vencer (&lt;30 dias)</div>
+                        <div class="map-legend-item"><div class="map-legend-dot" style="background:#dc3545"></div>Vencido</div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <div class="alert alert-info mb-0" style="font-size:.85rem">
+                                <i class="fas fa-info-circle mr-1"></i>
+                                O mapa é interactivo no sistema real. Filtre por cidade, estado, técnico responsável ou tipo de elevador. Clique num ponto para abrir a ficha completa.
+                            </div>
+                        </div>
+                        <div class="col-md-6 mt-2 mt-md-0">
+                            <div class="alert alert-warning mb-0" style="font-size:.85rem">
+                                <i class="fas fa-route mr-1"></i>
+                                <strong>Optimização de rotas:</strong> O dispatcher vê os técnicos em campo e optimiza a rota de visitas automaticamente.
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                <!-- Reports panel -->
-                <div class="demo-panel" id="tab-reports">
-                    <h5 class="mb-3 text-muted"><i class="fas fa-chart-bar mr-1"></i>Dashboard de Relatórios</h5>
+                <!-- ============ INSPECÇÕES / PDF ============ -->
+                <div class="demo-panel" id="tab-inspections">
                     <div class="row">
+                        <div class="col-md-7">
+                            <h5 class="font-weight-bold mb-1"><i class="fas fa-clipboard-check mr-1 text-success"></i>Gestão de Inspecções e PDF</h5>
+                            <p class="text-muted small mb-3">Importação automática de relatórios de entidades inspectoras. Classificação de não-conformidades por grau.</p>
+                            <!-- PDF flow -->
+                            <div style="background:#f8f9fa;border-radius:10px;padding:18px;border:1px solid #e0e6ed;margin-bottom:18px;">
+                                <h6 class="font-weight-bold mb-3 text-center"><i class="fas fa-cogs mr-1"></i>Fluxo de processamento de PDF</h6>
+                                <div class="pdf-flow">
+                                    <div class="pdf-step">
+                                        <i class="fas fa-file-pdf text-danger"></i>
+                                        <span>PDF recebido</span>
+                                    </div>
+                                    <div class="pdf-arrow"><i class="fas fa-arrow-right"></i></div>
+                                    <div class="pdf-step">
+                                        <i class="fas fa-eye text-primary"></i>
+                                        <span>OCR + Extracção</span>
+                                    </div>
+                                    <div class="pdf-arrow"><i class="fas fa-arrow-right"></i></div>
+                                    <div class="pdf-step">
+                                        <i class="fas fa-robot text-purple" style="color:#764ba2"></i>
+                                        <span>IA classifica</span>
+                                    </div>
+                                    <div class="pdf-arrow"><i class="fas fa-arrow-right"></i></div>
+                                    <div class="pdf-step">
+                                        <i class="fas fa-tags text-success"></i>
+                                        <span>C1 / C2 / C3</span>
+                                    </div>
+                                    <div class="pdf-arrow"><i class="fas fa-arrow-right"></i></div>
+                                    <div class="pdf-step">
+                                        <i class="fas fa-bell text-warning"></i>
+                                        <span>Alerta + Registo</span>
+                                    </div>
+                                </div>
+                                <div class="d-flex justify-content-center gap-3 mt-2 flex-wrap">
+                                    <small class="badge" style="background:#d4edda;color:#155724;padding:5px 10px">C1 — Sem conformidade</small>
+                                    <small class="badge" style="background:#fff3cd;color:#856404;padding:5px 10px">C2 — Não conformidade menor</small>
+                                    <small class="badge" style="background:#f8d7da;color:#721c24;padding:5px 10px">C3 — Não conformidade grave</small>
+                                </div>
+                            </div>
+
+                            <h6 class="font-weight-bold mb-2">Entidades inspectoras suportadas</h6>
+                            <div class="row mb-3">
+                                <div class="col-6">
+                                    <div style="background:#fff;border:1px solid #e0e6ed;border-radius:8px;padding:10px 14px;margin-bottom:8px;font-size:.83rem;font-weight:600;"><i class="fas fa-check-circle text-success mr-2"></i>Bureau Veritas</div>
+                                    <div style="background:#fff;border:1px solid #e0e6ed;border-radius:8px;padding:10px 14px;margin-bottom:8px;font-size:.83rem;font-weight:600;"><i class="fas fa-check-circle text-success mr-2"></i>SGS Portugal</div>
+                                </div>
+                                <div class="col-6">
+                                    <div style="background:#fff;border:1px solid #e0e6ed;border-radius:8px;padding:10px 14px;margin-bottom:8px;font-size:.83rem;font-weight:600;"><i class="fas fa-check-circle text-success mr-2"></i>TÜV Rheinland</div>
+                                    <div style="background:#fff;border:1px solid #e0e6ed;border-radius:8px;padding:10px 14px;font-size:.83rem;font-weight:600;"><i class="fas fa-robot mr-2 text-primary"></i>IA (LLM genérico)</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-5 mt-3 mt-md-0">
+                            <h6 class="font-weight-bold mb-2">Histórico de Inspecções</h6>
+                            <div class="table-responsive">
+                                <table class="table table-sm table-hover" style="font-size:.82rem">
+                                    <thead class="thead-light">
+                                        <tr><th>Elevador</th><th>Data</th><th>Tipo</th><th>Resultado</th></tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr><td>ELV-001</td><td>12/05/2025</td><td>Periódica</td><td><span class="badge badge-success">Aprovado</span></td></tr>
+                                        <tr><td>ELV-003</td><td>08/05/2025</td><td>Periódica</td><td><span class="badge badge-success">Aprovado</span></td></tr>
+                                        <tr><td>ELV-002</td><td>02/05/2025</td><td>Extraordinária</td><td><span class="badge badge-warning">Condicionado</span></td></tr>
+                                        <tr><td>ELV-004</td><td>14/02/2025</td><td>Periódica</td><td><span class="badge badge-danger">Reprovado</span></td></tr>
+                                        <tr><td>ELV-017</td><td>30/04/2025</td><td>Periódica</td><td><span class="badge badge-warning">Condicionado</span></td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <p class="text-muted small"><i class="fas fa-envelope mr-1 text-primary"></i>Relatórios PDF gerados e enviados por email automaticamente ao cliente.</p>
+                            <p class="text-muted small"><i class="fas fa-gavel mr-1 text-warning"></i>Verificação de conformidade com DL 320/2002 e DL 58/2017 em cada inspecção.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ============ PORTAL TÉCNICO ============ -->
+                <div class="demo-panel" id="tab-tech">
+                    <h5 class="font-weight-bold mb-1"><i class="fas fa-hard-hat mr-1" style="color:#fd7e14"></i>Portal do Técnico — Ferramentas Especializadas</h5>
+                    <p class="text-muted small mb-3">Aplicação mobile-first desenhada para uso em campo.</p>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="tool-chip">
+                                <i class="fas fa-vr-cardboard" style="color:#764ba2"></i>
+                                <div>
+                                    <h6>Auxiliar AR (Realidade Aumentada)</h6>
+                                    <p>Aponta a câmara para o elevador e vê sobreposição de informação técnica em tempo real. WebXR 3D overlay no browser.</p>
+                                </div>
+                            </div>
+                            <div class="tool-chip">
+                                <i class="fas fa-clipboard-list" style="color:#007bff"></i>
+                                <div>
+                                    <h6>Checklists de Inspecção</h6>
+                                    <p>Listas guiadas adaptadas ao tipo de elevador. Registo fotográfico integrado. Assinatura digital no final.</p>
+                                </div>
+                            </div>
+                            <div class="tool-chip">
+                                <i class="fas fa-tools" style="color:#fd7e14"></i>
+                                <div>
+                                    <h6>Gestão de Ferramentas</h6>
+                                    <p>Inventário de ferramentas pessoais. Alertas de reposição, calibração e manutenção dos equipamentos.</p>
+                                </div>
+                            </div>
+                            <div class="tool-chip">
+                                <i class="fas fa-video" style="color:#e91e63"></i>
+                                <div>
+                                    <h6>Tutoriais em Vídeo</h6>
+                                    <p>Biblioteca de vídeos de formação organizada por marca, modelo e tipo de avaria. Acesso offline.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="tool-chip">
+                                <i class="fas fa-map-marked-alt" style="color:#17a2b8"></i>
+                                <div>
+                                    <h6>Mapa de Tarefas</h6>
+                                    <p>Visualização das tarefas do dia no mapa com optimização de rota. Navegação GPS integrada.</p>
+                                </div>
+                            </div>
+                            <div class="tool-chip">
+                                <i class="fas fa-book" style="color:#28a745"></i>
+                                <div>
+                                    <h6>Manuais Técnicos Digitais</h6>
+                                    <p>Biblioteca de manuais de fabricantes (Schindler, KONE, Otis, ThyssenKrupp). Pesquisa por número de peça.</p>
+                                </div>
+                            </div>
+                            <div class="tool-chip">
+                                <i class="fas fa-wrench" style="color:#6c757d"></i>
+                                <div>
+                                    <h6>Registo de Manutenções</h6>
+                                    <p>Registo de trabalhos realizados com peças substituídas, tempo de trabalho e fotos. Sincronização automática.</p>
+                                </div>
+                            </div>
+                            <div class="tool-chip">
+                                <i class="fas fa-robot" style="color:#764ba2"></i>
+                                <div>
+                                    <h6>Assistente IA em Campo</h6>
+                                    <p>Consulta IA directamente durante a visita, com contexto completo do elevador lido por QR.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ============ RELATÓRIOS ============ -->
+                <div class="demo-panel" id="tab-reports">
+                    <h5 class="mb-3 text-muted"><i class="fas fa-chart-bar mr-1"></i>Analytics &amp; Relatórios</h5>
+                    <div class="row mb-3">
                         <div class="col-md-6 mb-3">
-                            <div class="card">
-                                <div class="card-header" style="background:linear-gradient(135deg,#007bff,#0056b3);color:#fff">
+                            <div class="card border-0" style="border-radius:10px;box-shadow:0 2px 12px rgba(0,0,0,.07)">
+                                <div class="card-header" style="background:linear-gradient(135deg,#007bff,#0047ab);color:#fff;border-radius:10px 10px 0 0">
                                     <h6 class="mb-0"><i class="fas fa-chart-pie mr-1"></i>Estado dos Elevadores</h6>
                                 </div>
                                 <div class="card-body">
-                                    <div class="d-flex justify-content-between mb-1"><span>Em dia</span><strong class="text-success">87.9%</strong></div>
-                                    <div class="progress mb-3" style="height:10px"><div class="progress-bar bg-success" style="width:87.9%"></div></div>
-                                    <div class="d-flex justify-content-between mb-1"><span>A vencer</span><strong class="text-warning">8.5%</strong></div>
-                                    <div class="progress mb-3" style="height:10px"><div class="progress-bar bg-warning" style="width:8.5%"></div></div>
-                                    <div class="d-flex justify-content-between mb-1"><span>Vencidos</span><strong class="text-danger">3.6%</strong></div>
-                                    <div class="progress" style="height:10px"><div class="progress-bar bg-danger" style="width:3.6%"></div></div>
+                                    <div class="progress-row"><span style="font-size:.85rem">Em dia</span><strong class="text-success">87.9%</strong></div>
+                                    <div class="bar-track"><div class="bar-fill bg-success" id="bar1" style="width:0%"></div></div>
+                                    <div class="progress-row"><span style="font-size:.85rem">A vencer</span><strong class="text-warning">8.5%</strong></div>
+                                    <div class="bar-track"><div class="bar-fill bg-warning" id="bar2" style="width:0%"></div></div>
+                                    <div class="progress-row"><span style="font-size:.85rem">Vencidos</span><strong class="text-danger">3.6%</strong></div>
+                                    <div class="bar-track"><div class="bar-fill bg-danger" id="bar3" style="width:0%"></div></div>
                                 </div>
                             </div>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <div class="card h-100">
-                                <div class="card-header" style="background:linear-gradient(135deg,#28a745,#1e7e34);color:#fff">
-                                    <h6 class="mb-0"><i class="fas fa-calendar-check mr-1"></i>Inspecções — Maio 2025</h6>
+                            <div class="card border-0 h-100" style="border-radius:10px;box-shadow:0 2px 12px rgba(0,0,0,.07)">
+                                <div class="card-header" style="background:linear-gradient(135deg,#28a745,#1a6e2e);color:#fff;border-radius:10px 10px 0 0">
+                                    <h6 class="mb-0"><i class="fas fa-calendar-check mr-1"></i>Inspecções — Junho 2026</h6>
                                 </div>
                                 <div class="card-body">
-                                    <div class="row text-center">
-                                        <div class="col-4">
-                                            <h3 class="text-success font-weight-bold">34</h3>
-                                            <small class="text-muted">Realizadas</small>
-                                        </div>
-                                        <div class="col-4">
-                                            <h3 class="text-warning font-weight-bold">8</h3>
-                                            <small class="text-muted">Agendadas</small>
-                                        </div>
-                                        <div class="col-4">
-                                            <h3 class="text-danger font-weight-bold">2</h3>
-                                            <small class="text-muted">Em falta</small>
-                                        </div>
+                                    <div class="row text-center mb-2">
+                                        <div class="col-4"><h3 class="text-success font-weight-bold mb-0">34</h3><small class="text-muted">Realizadas</small></div>
+                                        <div class="col-4"><h3 class="text-warning font-weight-bold mb-0">8</h3><small class="text-muted">Agendadas</small></div>
+                                        <div class="col-4"><h3 class="text-danger font-weight-bold mb-0">2</h3><small class="text-muted">Em falta</small></div>
                                     </div>
-                                    <hr>
-                                    <p class="text-muted small mb-0"><i class="fas fa-robot mr-1"></i>O assistente IA analisa tendências e prevê necessidades de manutenção com 30 dias de antecedência.</p>
+                                    <hr class="mt-2 mb-2">
+                                    <p class="text-muted small mb-0"><i class="fas fa-robot mr-1"></i>IA analisa tendências e envia alertas preventivos 30 dias antes do vencimento.</p>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <p class="text-muted small"><i class="fas fa-file-pdf mr-1 text-danger"></i>Exportação PDF e CSV disponível no painel de administração.</p>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <div class="card border-0" style="border-radius:10px;box-shadow:0 2px 12px rgba(0,0,0,.07)">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-file-invoice fa-2x text-primary mb-2"></i>
+                                    <h6 class="font-weight-bold">Facturação</h6>
+                                    <p class="text-muted small mb-1">Geração de orçamentos e facturas. SAFT-PT automático.</p>
+                                    <span class="badge badge-success">Integrado</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="card border-0" style="border-radius:10px;box-shadow:0 2px 12px rgba(0,0,0,.07)">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-envelope fa-2x text-warning mb-2"></i>
+                                    <h6 class="font-weight-bold">Email Automático</h6>
+                                    <p class="text-muted small mb-1">Servidor SMTP próprio. Templates personalizados por cliente.</p>
+                                    <span class="badge badge-success">Integrado</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="card border-0" style="border-radius:10px;box-shadow:0 2px 12px rgba(0,0,0,.07)">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-shield-alt fa-2x text-danger mb-2"></i>
+                                    <h6 class="font-weight-bold">Audit Log</h6>
+                                    <p class="text-muted small mb-1">Registo de segurança de todas as acções do sistema.</p>
+                                    <span class="badge badge-success">Activo</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-muted small"><i class="fas fa-file-export mr-1 text-primary"></i>Exportação para PDF, CSV e Excel disponível em todos os relatórios.</p>
                 </div>
-            </div>
+
+            </div><!-- end tab-section -->
 
             <!-- CTA -->
             <div class="cta-box">
-                <h3><i class="fas fa-rocket mr-2"></i>Pronto para começar?</h3>
-                <p>Registe a sua empresa e comece a gerir elevadores de forma mais inteligente.</p>
-                <a href="../auth/login.html" class="btn btn-light btn-lg mr-2">
-                    <i class="fas fa-sign-in-alt mr-1"></i>Entrar
-                </a>
-                <a href="ai-guest.html" class="btn btn-outline-light btn-lg">
-                    <i class="fas fa-robot mr-1"></i>Falar com o Assistente IA
-                </a>
+                <h3><i class="fas fa-rocket mr-2"></i>Pronto para gerir elevadores com IA?</h3>
+                <p>Uma plataforma completa — do QR em campo ao analytics no escritório. Conforme com toda a legislação portuguesa.<br><small style="opacity:.75"><i class="fas fa-code mr-1"></i>Software desenvolvido internamente pela equipa FestLift</small></p>
+                <div class="d-flex gap-3 justify-content-center flex-wrap">
+                    <a href="../auth/login.html" class="btn btn-light btn-lg">
+                        <i class="fas fa-sign-in-alt mr-1"></i>Entrar no Sistema
+                    </a>
+                    <a href="ai-guest.html" class="btn btn-outline-light btn-lg">
+                        <i class="fas fa-robot mr-1"></i>Falar com o Assistente IA
+                    </a>
+                </div>
             </div>
 
         </div>
@@ -358,7 +1048,9 @@
     <footer class="main-footer text-center">
         <strong>&copy; 2026 FestLift.</strong> Todos os direitos reservados. &nbsp;|&nbsp;
         <a href="../../index.html">Início</a> &nbsp;|&nbsp;
-        <a href="ai-guest.html">Assistente IA</a>
+        <a href="ai-guest.html">Assistente IA</a> &nbsp;|&nbsp;
+        <a href="../auth/login.html">Entrar</a>
+        <br><small class="text-muted"><i class="fas fa-code mr-1"></i>Plataforma desenvolvida internamente pela equipa FestLift — Portugal</small>
     </footer>
 </div>
 
@@ -366,20 +1058,54 @@
 <script src="../../plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
 <script src="../../plugins/adminlte/adminlte.min.js"></script>
 <script>
-function showTab(id) {
-    document.querySelectorAll('.demo-tab').forEach((t, i) => {
-        const ids = ['lifts','qr','inspections','reports'];
-        t.classList.toggle('active', ids[i] === id);
-    });
-    document.querySelectorAll('.demo-panel').forEach(p => p.classList.remove('active'));
-    document.getElementById('tab-' + id).classList.add('active');
-}
+    const TAB_IDS = ['lifts','roles','ai','predictive','qr','maps','inspections','tech','reports'];
 
-function simularQR() {
-    const el = document.getElementById('qr-result');
-    el.style.display = 'block';
-    el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-}
+    function showTab(id) {
+        document.querySelectorAll('.demo-tab').forEach((t, i) => {
+            t.classList.toggle('active', TAB_IDS[i] === id);
+        });
+        document.querySelectorAll('.demo-panel').forEach(p => p.classList.remove('active'));
+        const el = document.getElementById('tab-' + id);
+        if (el) {
+            el.classList.add('active');
+            el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+        if (id === 'reports') animateBars();
+    }
+
+    function showRole(role) {
+        document.querySelectorAll('.role-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.role-panel').forEach(p => p.classList.remove('active'));
+        const btn = document.querySelector('.role-btn[data-role="' + role + '"]');
+        if (btn) btn.classList.add('active');
+        const panel = document.getElementById('role-' + role);
+        if (panel) panel.classList.add('active');
+    }
+
+    function simularQR() {
+        const el = document.getElementById('qr-result');
+        el.style.display = 'block';
+        el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function animateBars() {
+        setTimeout(() => {
+            const b1 = document.getElementById('bar1');
+            const b2 = document.getElementById('bar2');
+            const b3 = document.getElementById('bar3');
+            if (b1) b1.style.width = '87.9%';
+            if (b2) b2.style.width = '8.5%';
+            if (b3) b3.style.width = '3.6%';
+        }, 100);
+    }
+
+    // Feature chips onclick (map to tabs)
+    document.querySelectorAll('.feature-chip').forEach(chip => {
+        chip.style.cursor = 'pointer';
+    });
+
+    // Auto-animate bars if reports tab is active on load
+    if (document.querySelector('#tab-reports.active')) animateBars();
 </script>
 </body>
 </html>

@@ -27,6 +27,7 @@ const { promisify } = require('util');
 const zlib = require('zlib');
 const { EJSON } = require('bson');
 const mongoSanitize = require('express-mongo-sanitize'); // 🔐 NoSQL injection protection
+const cookieParser = require('cookie-parser');
 const execAsync = promisify(exec);
 
 // ═══════════════════════════════════════════════════════════
@@ -414,6 +415,7 @@ console.log(`🔧 Налаштування порту: DEAPSEAK_PORT=${process.e
 
 // Gzip compression — reduces response size by ~70%
 app.use(compression());
+app.use(cookieParser());
 
 // 🔐 Helmet - HTTP security headers (XSS, clickjacking, sniffing, etc.)
 app.use(helmet({

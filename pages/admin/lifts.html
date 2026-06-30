@@ -10452,17 +10452,8 @@ $(document).on('click', '#editInspRptSaveBtn', async function() {
         function fatOpenPdf(encodedInvoiceNo) {
             var token = (typeof AuthManager !== 'undefined') ? AuthManager.getAuthToken()
                 : (sessionStorage.getItem('liftmanager_jwt') || localStorage.getItem('liftmanager_jwt') || localStorage.getItem('token') || '');
-            var url = '/api/invoices/pdf?no=' + encodedInvoiceNo;
-            fetch(url, { headers: { 'Authorization': 'Bearer ' + token } })
-                .then(function(r) {
-                    if (!r.ok) throw new Error('Erro ' + r.status);
-                    return r.blob();
-                })
-                .then(function(blob) {
-                    var objUrl = URL.createObjectURL(blob);
-                    window.open(objUrl, '_blank');
-                })
-                .catch(function(e) { toastr.error('Não foi possível gerar o PDF: ' + e.message); });
+            document.cookie = 'auth_token=' + token + '; path=/; SameSite=Lax; max-age=300';
+            window.open('/api/invoices/pdf?no=' + encodedInvoiceNo, '_blank');
         }
 
         function fatPrint() {
