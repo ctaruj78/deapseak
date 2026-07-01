@@ -4675,6 +4675,8 @@ app.put('/api/lifts/:id', authenticateToken, async (req, res) => {
             if (existingClientUser) {
                 // Знайдений існуючий акаунт — прив'язуємо ліфт до нього
                 updateData.client = existingClientUser._id;
+                // Синхронізуємо clientEmail з фактичним email акаунту (уникаємо застарілих даних)
+                updateData.clientEmail = existingClientUser.email.toLowerCase();
                 console.log(`👤 Клієнт знайдений: ${_putClientEmail} (${existingClientUser._id})`);
             } else {
                 // Новий email — створюємо акаунт клієнта автоматично

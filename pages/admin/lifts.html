@@ -5346,9 +5346,8 @@ Email de contacto: info@festlift.pt`;
             const _accountName = (client.firstName && client.lastName) ? `${client.firstName} ${client.lastName}` : null;
             // null = не встановлено (використати fallback); '' = навмисно очищено (показати як відсутнє)
             const clientName = (_savedName !== null ? _savedName : (_accountName || 'Não especificado'));
-            // Пріоритет: явно збережений clientEmail у ліфті (може відрізнятися від client.email)
-            // client.email є email облікового запису, clientEmail — фактичний email власника
-            const clientEmail = lift.clientEmail || client.email || lift.email || 'Não especificado';
+            // Пріоритет: client.email (актуальний акаунт) → clientEmail (збережене поле, може бути застарілим)
+            const clientEmail = (client && client.email) || lift.clientEmail || lift.email || 'Não especificado';
             // Іконка-індикатор: se cliente беdesde акаунту — показуexisteмо aviso
             const clientBadge = hasLinkedAccount
                 ? `<i class="fas fa-user-check text-success ml-1" title="Cliente registado"></i>`
@@ -5888,9 +5887,8 @@ Email de contacto: info@festlift.pt`;
                 const _detailSavedName = lift.clientName && lift.clientName !== 'Não especificado' ? lift.clientName : '';
                 const _detailAccountName = client.firstName && client.lastName ? `${client.firstName} ${client.lastName}` : '';
                 const clientName = _detailSavedName || _detailAccountName || 'Não especificado';
-                // Пріоритет: lift.clientEmail (поле самого ліфту) → client.email (акаунт)
-                // Це відповідає логіці сітки ліфтів і дозволяє коректно відображати новий email після зміни клієнта
-                const clientEmail = lift.clientEmail || client.email || lift.email || 'Não especificado';
+                // Пріоритет: client.email (актуальний акаунт) → clientEmail (може бути застарілим після зміни клієнта)
+                const clientEmail = (client && client.email) || lift.clientEmail || lift.email || 'Não especificado';
                 
                 $('#detail-client').text(clientName);
                 $('#detail-email').text(clientEmail);
@@ -6414,9 +6412,8 @@ Email de contacto: info@festlift.pt`;
             const savedClientName = (lift.clientName && lift.clientName !== 'Não especificado') ? lift.clientName : null;
             const accountName = (client.firstName && client.lastName) ? `${client.firstName} ${client.lastName}` : '';
             $('#enhancedClientName').val(savedClientName !== null ? savedClientName : accountName);
-            // Пріоритет clientEmail (явно збережений) над client.email (з облікового запису)
-            // Це гарантує що при зміні email відображається саме нове значення, а не старий обліковий запис
-            $('#enhancedClientEmail').val(lift.clientEmail || client.email || lift.email || '');
+            // Пріоритет: client.email (актуальний акаунт) → clientEmail (резерв якщо акаунт не прив'язаний)
+            $('#enhancedClientEmail').val((client && client.email) || lift.clientEmail || lift.email || '');
             $('#enhancedClientPhone').val(lift.clientPhone || client.phone || lift.phone || '');
             $('#enhancedContactPerson').val(lift.contactPerson || '');
             $('#enhancedAccessCode').val(lift.intercomCode || lift.accessCode || '');
