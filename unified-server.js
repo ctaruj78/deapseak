@@ -1775,10 +1775,13 @@ app.get('/api/qr/history', authenticateToken, async (req, res) => {
             query.referenceId = referenceId;
         }
 
-        if (scannedBy) {
+        // Técnicos só podem ver os seus próprios scans — ignora scannedBy pedido pelo cliente
+        const isPrivileged = req.user.role === 'admin' || req.user.role === 'dispatcher';
+        const effectiveScannedBy = isPrivileged ? scannedBy : (req.user.username || req.user.email);
+        if (effectiveScannedBy) {
             query.$or = [
-                { scannedBy },
-                { username: scannedBy }
+                { scannedBy: effectiveScannedBy },
+                { username: effectiveScannedBy }
             ];
         }
 
@@ -1881,10 +1884,13 @@ app.get('/api/qr/scans', authenticateToken, async (req, res) => {
             query.referenceId = referenceId;
         }
 
-        if (scannedBy) {
+        // Técnicos só podem ver os seus próprios scans — ignora scannedBy pedido pelo cliente
+        const isPrivileged = req.user.role === 'admin' || req.user.role === 'dispatcher';
+        const effectiveScannedBy = isPrivileged ? scannedBy : (req.user.username || req.user.email);
+        if (effectiveScannedBy) {
             query.$or = [
-                { scannedBy },
-                { username: scannedBy }
+                { scannedBy: effectiveScannedBy },
+                { username: effectiveScannedBy }
             ];
         }
 
@@ -2334,6 +2340,10 @@ app.get('/api/inspections', authenticateToken, async (req, res) => {
             filter.visitType = types.length === 1 ? types[0] : { $in: types };
         }
         if (req.query.liftId) filter.liftId = req.query.liftId;
+        // Técnicos só veem as inspecções que criaram — admin/dispatcher veem todas
+        if (req.user.role !== 'admin' && req.user.role !== 'dispatcher') {
+            filter.createdBy = req.user.id;
+        }
         const inspections = await db.collection('inspections')
             .find(filter)
             .sort({ createdAt: -1 })
@@ -7266,6 +7276,10 @@ app.get('/api/users/profile', authenticateToken, async (req, res) => {
 // GET /api/users/by-email?email=... - пошук клієнта по email (для автозаповнення)
 app.get('/api/users/by-email', authenticateToken, async (req, res) => {
     try {
+        if (req.user.role !== 'admin' && req.user.role !== 'dispatcher') {
+            return res.status(403).json({ success: false, error: 'Sem permissão' });
+        }
+
         const email = (req.query.email || '').trim().toLowerCase();
         if (!email) return res.status(400).json({ success: false, error: 'Email не вказано' });
 
@@ -7285,11 +7299,15 @@ app.get('/api/users/by-email', authenticateToken, async (req, res) => {
 // GET /api/users/technicians - список техніків (для призначення)
 app.get('/api/users/technicians', authenticateToken, async (req, res) => {
     try {
+        if (req.user.role !== 'admin' && req.user.role !== 'dispatcher') {
+            return res.status(403).json({ success: false, message: 'Sem permissão' });
+        }
+
         const technicians = await db.collection('users').find(
             { role: 'technician' },
-            { projection: { password: 0 } }
+            { projection: { password: 0, tempPasswordHint: 0, loginAttempts: 0, lockUntil: 0 } }
         ).toArray();
-        
+
         res.json(technicians);
     } catch (error) {
         console.error('❌ Erro ao carregar técnicos:', error);
@@ -7303,6 +7321,10 @@ app.get('/api/users/technicians', authenticateToken, async (req, res) => {
 // GET /api/technicians - список техніків для TechnicianManager
 app.get('/api/technicians', authenticateToken, async (req, res) => {
     try {
+        if (req.user.role !== 'admin' && req.user.role !== 'dispatcher') {
+            return res.status(403).json({ success: false, message: 'Sem permissão' });
+        }
+
         const technicians = await db.collection('users').find(
             { role: { $in: ['technician', 'tech'] } },
             { projection: { password: 0 } }
@@ -15151,6 +15173,10 @@ app.post('/api/reports/generate', authenticateToken, async (req, res) => {
         const userId = req.user?.id || req.user?.userId || req.user?._id;
         const userEmail = String(req.user?.email || '').toLowerCase();
 
+        // Técnicos só podem gerar relatórios com os seus próprios dados —
+        // ignora technicianId pedido pelo cliente (evita agregação à escala da empresa)
+        const effectiveTechnicianId = userRole === 'technician' ? userId : technicianId;
+
         let clientLiftIds = [];
         if (userRole === 'client') {
             const liftClientConditions = [];
@@ -15180,8 +15206,8 @@ app.post('/api/reports/generate', authenticateToken, async (req, res) => {
             createdAt: { $gte: start, $lte: end }
         };
         if (status) requestsQuery.status = status;
-        if (technicianId) {
-            try { requestsQuery.assignedTo = new ObjectId(technicianId); } catch (e) { requestsQuery.assignedTo = technicianId; }
+        if (effectiveTechnicianId) {
+            try { requestsQuery.assignedTo = new ObjectId(effectiveTechnicianId); } catch (e) { requestsQuery.assignedTo = effectiveTechnicianId; }
         }
         if (liftId) {
             requestsQuery.$or = [{ liftId: liftId }, { lift: liftId }];

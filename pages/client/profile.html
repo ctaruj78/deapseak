@@ -752,16 +752,22 @@
                                                 <i class="fas fa-lock mr-2"></i>Segurança
                                             </a>
                                         </li>
-                
-                <!-- Tickets -->
-                
-                <!-- Settings -->
+                                        <li class="nav-item">
+                                            <a class="nav-link" id="notifications-tab" data-toggle="pill" href="#notifications" role="tab">
+                                                <i class="fas fa-bell mr-2"></i>Notificações
+                                            </a>
+                                        </li>
                                     </ul>
                                 </div>
                                 <div class="card-body">
                                     <div class="tab-content" id="profileTabContent">
                                         <!-- Informação pessoal -->
                                         <div class="tab-pane fade show active" id="info" role="tabpanel">
+                                            <div class="text-right mb-3">
+                                                <button type="button" class="btn btn-outline-primary" data-toggle="modal" data-target="#editProfileModal">
+                                                    <i class="fas fa-edit mr-2"></i>Editar perfil
+                                                </button>
+                                            </div>
                                             <div class="row">
                                                 <div class="col-md-6">
                                                     <h4 class="mb-4">Informações de contacto</h4>
@@ -871,7 +877,7 @@
                                                         <div class="card-header">
                                                             <h5 class="card-title">Alterar palavra-passe</h5>
                                                         </div>
-                                                        <div class="card-body">
+                                        <div class="card-body">
                                                             <form id="passwordForm">
                                                                 <div class="form-group">
                                                                     <label for="currentPassword">Palavra-passe atual</label>
@@ -886,12 +892,93 @@
                                                                     <label for="confirmPassword">Confirmar palavra-passe</label>
                                                                     <input type="password" class="form-control" id="confirmPassword" required>
                                                                 </div>
-                                                                <button type="button" class="btn btn-primary" onclick="profileManager.changePassword()">
+                                                                <button type="submit" class="btn btn-primary" id="changePwdBtn">
                                                                     <i class="fas fa-key mr-2"></i>Alterar palavra-passe
                                                                 </button>
                                                             </form>
                                                         </div>
                                                     </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Notificações -->
+                                        <div class="tab-pane fade" id="notifications" role="tabpanel">
+                                            <h4 class="mb-4">Notificações</h4>
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="card">
+                                                        <div class="card-header">
+                                                            <h5 class="card-title">Canais de notificações</h5>
+                                                        </div>
+                                                        <div class="card-body">
+                                                            <div class="form-group d-flex justify-content-between align-items-center">
+                                                                <label for="notifyEmail" class="mb-0"><i class="fas fa-envelope mr-2 text-primary"></i>Email</label>
+                                                                <div class="custom-control custom-switch">
+                                                                    <input type="checkbox" class="custom-control-input" id="notifyEmail">
+                                                                    <label class="custom-control-label" for="notifyEmail"></label>
+                                                                </div>
+                                                            </div>
+                                                            <div class="form-group d-flex justify-content-between align-items-center">
+                                                                <label for="notifyPush" class="mb-0"><i class="fas fa-mobile-alt mr-2 text-success"></i>Notificações push</label>
+                                                                <div class="custom-control custom-switch">
+                                                                    <input type="checkbox" class="custom-control-input" id="notifyPush">
+                                                                    <label class="custom-control-label" for="notifyPush"></label>
+                                                                </div>
+                                                            </div>
+                                                            <div class="form-group d-flex justify-content-between align-items-center mb-0">
+                                                                <label for="notifySMS" class="mb-0"><i class="fas fa-sms mr-2 text-muted"></i>SMS <small class="text-muted">(não disponível)</small></label>
+                                                                <div class="custom-control custom-switch">
+                                                                    <input type="checkbox" class="custom-control-input" id="notifySMS" disabled>
+                                                                    <label class="custom-control-label" for="notifySMS"></label>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="card">
+                                                        <div class="card-header">
+                                                            <h5 class="card-title">Tipos de eventos</h5>
+                                                        </div>
+                                                        <div class="card-body">
+                                                            <div class="form-group d-flex justify-content-between align-items-center">
+                                                                <label for="notifyMaintenance" class="mb-0"><i class="fas fa-tools mr-2 text-info"></i>Manutenção técnica</label>
+                                                                <div class="custom-control custom-switch">
+                                                                    <input type="checkbox" class="custom-control-input" id="notifyMaintenance">
+                                                                    <label class="custom-control-label" for="notifyMaintenance"></label>
+                                                                </div>
+                                                            </div>
+                                                            <div class="form-group d-flex justify-content-between align-items-center">
+                                                                <label for="notifyEmergency" class="mb-0"><i class="fas fa-exclamation-triangle mr-2 text-danger"></i>Situações de emergência</label>
+                                                                <div class="custom-control custom-switch">
+                                                                    <input type="checkbox" class="custom-control-input" id="notifyEmergency">
+                                                                    <label class="custom-control-label" for="notifyEmergency"></label>
+                                                                </div>
+                                                            </div>
+                                                            <div class="form-group d-flex justify-content-between align-items-center">
+                                                                <label for="notifyInvoice" class="mb-0"><i class="fas fa-file-invoice-dollar mr-2 text-success"></i>Novas faturas</label>
+                                                                <div class="custom-control custom-switch">
+                                                                    <input type="checkbox" class="custom-control-input" id="notifyInvoice">
+                                                                    <label class="custom-control-label" for="notifyInvoice"></label>
+                                                                </div>
+                                                            </div>
+                                                            <div class="form-group d-flex justify-content-between align-items-center mb-0">
+                                                                <label for="notifyStatus" class="mb-0"><i class="fas fa-sync mr-2 text-secondary"></i>Alteração do estado dos pedidos</label>
+                                                                <div class="custom-control custom-switch">
+                                                                    <input type="checkbox" class="custom-control-input" id="notifyStatus">
+                                                                    <label class="custom-control-label" for="notifyStatus"></label>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-12">
+                                                    <button class="btn btn-success" id="saveNotificationsProfile">
+                                                        <i class="fas fa-save mr-2"></i>Guardar definições de notificações
+                                                    </button>
                                                 </div>
                                             </div>
                                         </div>
@@ -1088,21 +1175,7 @@
         }
 
         $(document).ready(async function() {
-            // Inicialização do AdminLTE
             $('[data-widget="pushmenu"]').PushMenu();
-            
-            // Escuro assunto
-// Verificação de ligação
-            setInterval(() => {
-                const online = navigator.onLine;
-                $('#connectionStatus').html(
-                    online ? 
-                    '<i class="fas fa-wifi text-success"></i> Online' : 
-                    '<i class="fas fa-wifi-slash text-danger"></i> Offline'
-                );
-            }, 30000);
-
-            // 🔥 ПІДКЛЮЧЕНО ДО РЕАЛЬНОГО API /api/users/me
             await loadUserProfile();
         });
 
@@ -1176,11 +1249,6 @@
 
         function fillProfileUI(userData) {
             const fullName = [userData.firstName, userData.lastName].filter(Boolean).join(' ') || '—';
-            
-            // Sidebar / header
-            if (userData.firstName) {
-                $('#sidebarName').text(userData.firstName);
-            }
 
             // Profile header card
             $('#profileName').text(fullName);
@@ -1216,53 +1284,12 @@
             if (userData.avatar) {
                 const avatarEl = document.getElementById('profileAvatar');
                 if (avatarEl) avatarEl.innerHTML = `<img src="${userData.avatar}" alt="Avatar" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" onerror="this.parentElement.innerHTML='<i class=&quot;fas fa-user&quot;></i>'">`;
-                $('#userAvatar').attr('src', userData.avatar);
-                $('#settingsAvatarPreview').attr('src', userData.avatar);
             }
         }
 
         $(document).ready(function() {
-            // Inicialização do AdminLTE
-            $('[data-widget="pushmenu"]').PushMenu();
-            
-            // Escuro assunto
-// Verificação de ligação
-            setInterval(() => {
-                const online = navigator.onLine;
-                $('#connectionStatus').html(
-                    online ? 
-                    '<i class="fas fa-wifi text-success"></i> Online' : 
-                    '<i class="fas fa-wifi-slash text-danger"></i> Offline'
-                );
-            }, 30000);
-
-            // Simple ProfileManager stub to prevent console errors
+            // Gestor do perfil: guardar dados pessoais e avatar
             class ProfileManager {
-                editProfile() {
-                    toastr.info('Editar perfil');
-                    $('#profileModal').modal('show');
-                }
-                
-                changePassword() {
-                    toastr.info('Alterar palavra-passe');
-                }
-                
-                async logoutAllSessions() {
-                    if (await swalConfirm('Prazoar todas as sessões?')) {
-                        toastr.info('Todas as sessões terminadas');
-                    }
-                }
-                
-                exportData() {
-                    toastr.info('Exportação de dados iniciada');
-                }
-                
-                async deleteAccount() {
-                    if (await swalConfirm('Eliminar conta permanentemente?')) {
-                        toastr.info('Conta será eliminada');
-                    }
-                }
-                
                 async saveProfile() {
                     const token = getClientToken();
                     const body = {
@@ -1300,7 +1327,6 @@
                     // Pré-visualização imediata
                     const reader = new FileReader();
                     reader.onload = (e) => {
-                        $('#userAvatar').attr('src', e.target.result);
                         const avatarEl = document.getElementById('profileAvatar');
                         if (avatarEl) avatarEl.innerHTML = `<img src="${e.target.result}" alt="Avatar" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
                     };
@@ -1327,56 +1353,35 @@
             // Inicialização менеджера perfil
             window.profileManager = new ProfileManager();
             
-            // Processamento a carregar аваeра
+            // Processamento a carregar avatar
             $('#avatarInput').on('change', function(e) {
                 profileManager.handleAvatarUpload(e.target.files[0]);
             });
 
-            // ── Definições: аваeр ──────────────────────────────────
-            $('#settingsAvatarInput').on('change', async function(e) {
-                const file = e.target.files[0];
-                if (!file) return;
-                if (file.size > 2 * 1024 * 1024) { showSettingsToast('Ficheiro demasiado grande (máximo 2 MB)', 'error'); return; }
-                const reader = new FileReader();
-                reader.onload = function(ev) {
-                    $('#settingsAvatarPreview').attr('src', ev.target.result);
-                    $('#userAvatar').attr('src', ev.target.result);
-                };
-                reader.readAsDataURL(file);
-                const formData = new FormData();
-                formData.append('avatar', file);
-                try {
-                    const token = getClientToken();
-                    const res = await fetch('/api/users/avatar', { method: 'POST', headers: { 'Authorization': `Bearer ${token}` }, body: formData });
-                    if (res.ok) { showSettingsToast('Avatar atualizado', 'success'); }
-                    else { showSettingsToast('Não foi possível carregar o avatar', 'error'); }
-                } catch { showSettingsToast('Avatar guardado localmente', 'success'); }
-            });
-
-            // ── Definições: alteração palavra-passe ──────────────────────────
-            $('#profileChangePasswordForm').on('submit', async function(e) {
+            // ── Segurança: alteração de palavra-passe ──────────────────────────
+            $('#passwordForm').on('submit', async function(e) {
                 e.preventDefault();
-                const current = $('#profileCurrentPassword').val();
-                const newPwd = $('#profileNewPassword').val();
-                const confirm = $('#profileConfirmPassword').val();
+                const current = $('#currentPassword').val();
+                const newPwd = $('#newPassword').val();
+                const confirm = $('#confirmPassword').val();
                 if (newPwd.length < 8) { showSettingsToast('A palavra-passe deve ter no mínimo 8 caracteres', 'error'); return; }
                 if (newPwd !== confirm) { showSettingsToast('As palavras-passe não coincidem', 'error'); return; }
-                const btn = $('#profileChangePwdBtn').prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-2"></i>A guardar...');
+                const btn = $('#changePwdBtn').prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-2"></i>A guardar...');
                 try {
                     const token = getClientToken();
                     const res = await fetch('/api/auth/change-password', { method: 'POST', headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ currentPassword: current, newPassword: newPwd }) });
                     if (res.ok) {
-                        showSettingsToast('Palauma-passe alterada com sucesso', 'success');
-                        $('#profileChangePasswordForm')[0].reset();
-                        // Ocultar підказку temporariamenteго palavra-passe
+                        showSettingsToast('Palavra-passe alterada com sucesso', 'success');
+                        $('#passwordForm')[0].reset();
+                        // Ocultar cartão de palavra-passe temporária após alteração
                         document.getElementById('tempPasswordHintCard').style.display = 'none';
                     }
                     else { const d = await res.json(); showSettingsToast(d.message || 'Erro ao alterar a palavra-passe', 'error'); }
                 } catch { showSettingsToast('Erro de ligação', 'error'); }
-                finally { $('#profileChangePwdBtn').prop('disabled', false).html('<i class="fas fa-key mr-2"></i>Alterar palavra-passe'); }
+                finally { $('#changePwdBtn').prop('disabled', false).html('<i class="fas fa-key mr-2"></i>Alterar palavra-passe'); }
             });
 
-            // ── Definições: notificações ──────────────────────────
+            // ── Notificações ──────────────────────────
             function loadNotifSettings() {
                 const saved = JSON.parse(localStorage.getItem('client_notification_settings') || '{}');
                 const def = { notifyEmail:true, notifyPush:true, notifySMS:false, notifyMaintenance:true, notifyEmergency:true, notifyInvoice:true, notifyStatus:true };
@@ -1401,9 +1406,11 @@
                 setTimeout(() => t.fadeOut(400, () => t.remove()), 3000);
             }
 
-            // Abrir separador de Segurança via hash (compatível com #settings legado)
+            // Abrir separador via hash (compatível com #settings legado, que aponta para Segurança)
             if (window.location.hash === '#settings' || window.location.hash === '#security') {
                 $('#security-tab').tab('show');
+            } else if (window.location.hash === '#notifications') {
+                $('#notifications-tab').tab('show');
             }
         });
 
@@ -1428,23 +1435,22 @@
         }
     </script>
     <script src="/plugins/toastr/js/toastr.min.js"></script>
+    <script src="../../assets/js/monitor.js"></script>
+    <script>
+    // swalConfirm — substitui confirm() nativo pelo Swal
+    async function swalConfirm(text, title = 'Confirmar') {
+        const r = await Swal.fire({
+            title,
+            text,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#e74c3c',
+            cancelButtonColor: '#95a5a6',
+            confirmButtonText: 'Confirmar',
+            cancelButtonText: 'Cancelar'
+        });
+        return r.isConfirmed;
+    }
+    </script>
 </body>
 </html>
-<script src="../../assets/js/monitor.js"></script>
-<script>
-// swalConfirm — substitui confirm() nativo pelo Swal
-async function swalConfirm(text, title = 'Confirmar') {
-    const r = await Swal.fire({
-        title,
-        text,
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#e74c3c',
-        cancelButtonColor: '#95a5a6',
-        confirmButtonText: 'Confirmar',
-        cancelButtonText: 'Cancelar'
-    });
-    return r.isConfirmed;
-}
-</script>
-</body> -->
