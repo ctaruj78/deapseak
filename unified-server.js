@@ -15244,7 +15244,7 @@ app.post('/api/reports/generate', authenticateToken, async (req, res) => {
             ]
         };
         if (status) inspectionsQuery.status = status;
-        if (technicianId) inspectionsQuery.inspector = technicianId;
+        if (effectiveTechnicianId) inspectionsQuery.createdBy = effectiveTechnicianId;
         if (liftId) inspectionsQuery.liftId = liftId;
 
         if (userRole === 'client') {

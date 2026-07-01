@@ -831,10 +831,23 @@ exports.exportRequestPDF = async (req, res, next) => {
         const request = await Request.findById(req.params.id)
             .populate('client', 'firstName lastName email phone')
             .populate('assignedTo', 'firstName lastName email phone')
-            .populate('lift', 'municipalNumber');
+            .populate('lift', 'municipalNumber clientEmail client');
 
         if (!request) {
             throw new AppError('Pedido não encontrado', 404);
+        }
+
+        // Клієнт може експортувати тільки свої запити — перевіряємо всі можливі поля
+        if (req.user.role === 'client') {
+            const clientId = request.client?._id?.toString() || request.client?.toString();
+            const liftClientEmail = request.lift?.clientEmail;
+            const liftClientId = request.lift?.client?.toString();
+            const isOwner =
+                clientId === req.user.id ||
+                request.clientEmail === req.user.email ||
+                liftClientEmail === req.user.email ||
+                liftClientId === req.user.id;
+            if (!isOwner) throw new AppError('Acesso negado', 403);
         }
 
         const pdfBuffer = await exportService.exportRequestToPDF(request);
