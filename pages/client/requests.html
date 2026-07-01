@@ -424,13 +424,6 @@
                     </a>
                 </li>
                 
-                <!-- Definições -->
-                <li class="nav-item">
-                    <a href="/pages/client/settings.html" class="nav-link" id="nav-settings">
-                        <i class="nav-icon fas fa-cog"></i>
-                        <p>Definições</p>
-                    </a>
-                </li>
                                 <!-- Saída -->
                 <li class="nav-item">
                     <a href="#" onclick="logout()" class="nav-link">
@@ -957,9 +950,6 @@
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Fechar</button>
                     <button type="button" class="btn btn-info" onclick="requestsManager.downloadReport(currentRequestId)">
                         <i class="fas fa-download"></i> Descarregar relatório
-                    </button>
-                    <button type="button" class="btn btn-success" onclick="requestsManager.chatWithTech(currentRequestId)" id="chatWithTechBtn">
-                        <i class="fas fa-comments"></i> Chat com técnico
                     </button>
                 </div>
             </div>
@@ -1500,12 +1490,22 @@
                 toastr.info('Função de paginação disponível em breve');
             }
 
-            downloadReport(requestId) {
-                toastr.info('Função de descargar relatório disponível em breve');
-            }
-
-            chatWithTech(requestId) {
-                toastr.info('Função de chat com técnico disponível em breve');
+            async downloadReport(requestId) {
+                try {
+                    const res = await AuthManager.fetchWithAuth(`/api/requests/${requestId}/export/pdf`);
+                    if (!res.ok) throw new Error('Erro ao descarregar relatório');
+                    const blob = await res.blob();
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `Pedido_${requestId}.pdf`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                } catch (err) {
+                    toastr.error('Erro ao descarregar relatório: ' + err.message);
+                }
             }
         }
 

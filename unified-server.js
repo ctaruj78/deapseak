@@ -2218,7 +2218,7 @@ app.get('/api/knowledge-base/:id', async (req, res) => {
         })();
         // Staff (admin/dispatcher) vê todos os artigos; público só vê publicados
         const query = { _id: new ObjectId(req.params.id) };
-        if (!isStaff) query.status = 'published';
+        if (!isStaff) query.published = true;
         const article = await db.collection('knowledge_base').findOne(query);
         if (!article) return res.status(404).json({ success: false, message: 'Artigo não encontrado' });
         res.json({ success: true, data: article });

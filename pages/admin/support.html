@@ -560,21 +560,9 @@
 
                     <!-- Quick Actions -->
                     <div class="quick-actions">
-                        <a href="#" class="action-btn diagnostic" onclick="runDiagnostics()">
-                            <i class="fas fa-stethoscope"></i>
-                            <div>Diagnóstico do sistema</div>
-                        </a>
-                        <a href="#" class="action-btn backup" onclick="createBackup()">
-                            <i class="fas fa-save"></i>
-                            <div>Criar cópia de segurança</div>
-                        </a>
                         <a href="#" class="action-btn logs" onclick="viewLogs()">
                             <i class="fas fa-file-alt"></i>
                             <div>Ver registos</div>
-                        </a>
-                        <a href="#" class="action-btn update" onclick="checkUpdates()">
-                            <i class="fas fa-sync-alt"></i>
-                            <div>Verificar atualização</div>
                         </a>
                     </div>
 
@@ -776,22 +764,8 @@
         });
 
         // Quick action functions
-        function runDiagnostics() {
-            toastr.success('A iniciar diagnóstico do sistema...\nVerificação dos componentes do sistema...\nDiagnóstico concluída com sucesso!');
-        }
-
-        async function createBackup() {
-            if (await swalConfirm('Criar cópia de segurança do sistema? Isto pode demorar alguns minutos.')) {
-                toastr.success('Cópia de segurança criada com sucesso!\nFicheiro guardado: backup_2025-09-24.zip');
-            }
-        }
-
         function viewLogs() {
-            window.open('logs-viewer.html', '_blank');
-        }
-
-        function checkUpdates() {
-            toastr.success('Verificação de atualizações...\nSistema atualizado para a versão mais recente!\nReiniciar do sistema...');
+            window.open('monitor.html', '_blank');
         }
 
         // Logout function

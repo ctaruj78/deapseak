@@ -730,7 +730,6 @@
     <!-- AR Helper JS -->
     <script src="../../assets/js/modules/ar-helper.js?v=20260209"></script>
     <script src="../../assets/js/modules/voice-ar.js"></script>
-    <script src="../../assets/js/modules/ar-checklist.js?v=20260209"></script>
     <script src="../../assets/js/modules/photo-video-capture.js"></script>
     <script src="../../assets/js/modules/push-notifications.js"></script>
     <script src="../../assets/js/modules/messenger.js"></script>
@@ -798,10 +797,6 @@
             pushBtn.innerHTML = '<i class="fas fa-bell"></i> Testar notificações push';
             pushBtn.onclick = () => window.pushNotifications.notifyNewTask('Verificar elevador №5');
             document.querySelector('.ar-control-panel')?.appendChild(pushBtn);
-
-            setTimeout(() => {
-                window.arChecklist.render('.ar-control-panel');
-            }, 500);
 
             setTimeout(() => {
                 window.photoVideoCapture.init('.ar-control-panel');

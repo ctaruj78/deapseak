@@ -432,10 +432,10 @@ if (typeof window !== 'undefined') {
                 }
             } catch(e) {}
 
-            // Support both {firstName, lastName} (admin/dispatcher) and {name} (client)
-            const fullName = u.name ||
-                ((u.firstName || '') + ' ' + (u.lastName || '')).trim() ||
-                u.username || u.email || '—';
+            // Preferir firstName+lastName (mantido atualizado via edição de perfil)
+            // sobre o campo legado {name} (só definido na criação, pode ficar desatualizado)
+            const fullName = ((u.firstName || '') + ' ' + (u.lastName || '')).trim() ||
+                u.name || u.username || u.email || '—';
 
             // All known sidebar name element IDs across panels
             // sidebarFullName = admin user-panel link; sidebarName = brand area (admin/dispatcher)

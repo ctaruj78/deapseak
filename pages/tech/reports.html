@@ -616,23 +616,40 @@
 
             init() {
                 this.loadReports();
+            }
+
+            async loadReports() {
+                try {
+                    const token = localStorage.getItem('authToken');
+                    const resp = await fetch('/api/reports', { headers: { 'Authorization': `Bearer ${token}` } });
+                    const data = await resp.json();
+                    const typeLabel = { daily: 'Diário', weekly: 'Semanal', monthly: 'Mensal', custom: 'Personalizado', all: 'Completo', maintenance: 'Manutenção', inspection: 'Inspeções' };
+                    this.reports = (data.reports || []).map(r => ({
+                        id: r.id,
+                        apiId: r.id,
+                        date: r.endDate || r.createdAt,
+                        type: r.type,
+                        name: `Relatório ${typeLabel[r.type] || r.type} ${r.startDate} a ${r.endDate}`,
+                        status: 'completed',
+                        size: '—',
+                        format: 'pdf'
+                    }));
+                } catch (err) {
+                    toastr.error('Erro ao carregar relatórios: ' + err.message);
+                    this.reports = [];
+                }
+                this.filteredReports = [...this.reports];
+                this.renderReportsTable();
                 this.updateStats();
             }
 
-            loadReports() {
-                // Симуляція carregamento de relatórios
-                this.reports = [
-                    { id: 1, date: '2025-09-28', type: 'daily', name: 'Relatório diário 28.09.2025', status: 'completed', size: '2.3 MB' },
-                    { id: 2, date: '2025-09-27', type: 'weekly', name: 'Relatório semanal 22-28.09.2025', status: 'completed', size: '5.1 MB' },
-                    { id: 3, date: '2025-09-01', type: 'monthly', name: 'Relatório mensal setembro 2025', status: 'pending', size: '-' }
-                ];
-                this.filteredReports = [...this.reports];
-                this.renderReportsTable();
-            }
-
             updateStats() {
+                const now = new Date();
                 const total = this.reports.length;
-                const thisMonth = this.reports.filter(r => r.date.startsWith('2025-09')).length;
+                const thisMonth = this.reports.filter(r => {
+                    const d = new Date(r.date);
+                    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+                }).length;
                 const generated = this.reports.filter(r => r.status === 'completed').length;
                 const pending = this.reports.filter(r => r.status === 'pending').length;
 

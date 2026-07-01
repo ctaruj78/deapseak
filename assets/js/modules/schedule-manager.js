@@ -7,67 +7,73 @@ class ScheduleManager {
         this.init();
     }
 
-    init() {
-        this.events = this.loadEvents();
+    async init() {
+        this.events = await this.loadEvents();
         this.setupEventListeners();
         this.initCalendar();
+        this.renderEvents();
     }
 
-    loadEvents() {
-        const today = new Date();
-        const tomorrow = new Date(today);
-        tomorrow.setDate(tomorrow.getDate() + 1);
+    getToken() {
+        return localStorage.getItem('authToken')
+            || sessionStorage.getItem('liftmanager_jwt')
+            || localStorage.getItem('liftmanager_jwt')
+            || localStorage.getItem('token')
+            || '';
+    }
 
-        return [
-            {
-                id: 'event-1',
-                title: 'Manutenção técnica - Otis Gen2',
-                type: 'maintenance',
-                start: new Date(today.getFullYear(), today.getMonth(), today.getDate(), 9, 0),
-                end: new Date(today.getFullYear(), today.getMonth(), today.getDate(), 12, 0),
-                lift: 'Otis Gen2 - R. Central, 12',
-                priority: 'high',
-                status: 'scheduled',
-                description: 'Manutenção técnica mensal programada',
-                technician: 'Tech One'
-            },
-            {
-                id: 'event-2',
-                title: 'Inspeção de segurança - Schindler 3300',
-                type: 'inspection',
-                start: new Date(today.getFullYear(), today.getMonth(), today.getDate(), 14, 0),
-                end: new Date(today.getFullYear(), today.getMonth(), today.getDate(), 16, 0),
-                lift: 'Schindler 3300 - Av. da Liberdade, 45',
-                priority: 'medium',
-                status: 'scheduled',
-                description: 'Verificação dos sistemas de segurança',
-                technician: 'Tech One'
-            },
-            {
-                id: 'event-3',
-                title: 'Reparação de emergência - KONE MonoSpace',
-                type: 'emergency',
-                start: new Date(tomorrow.getFullYear(), tomorrow.getMonth(), tomorrow.getDate(), 10, 0),
-                end: new Date(tomorrow.getFullYear(), tomorrow.getMonth(), tomorrow.getDate(), 13, 0),
-                lift: 'KONE MonoSpace - R. do Comércio, 78',
-                priority: 'high',
-                status: 'scheduled',
-                description: 'Reparação de portas do elevador',
-                technician: 'Tech One'
-            },
-            {
-                id: 'event-4',
-                title: 'Consulta com cliente',
-                type: 'task',
-                start: new Date(tomorrow.getFullYear(), tomorrow.getMonth(), tomorrow.getDate(), 15, 0),
-                end: new Date(tomorrow.getFullYear(), tomorrow.getMonth(), tomorrow.getDate(), 16, 0),
-                lift: 'Escritório',
-                priority: 'medium',
-                status: 'scheduled',
-                description: 'Consulta sobre modernização do elevador',
-                technician: 'Tech One'
-            }
-        ];
+    // Mapeia o tipo do pedido de serviço para o tipo de evento do calendário
+    mapRequestType(type) {
+        const map = { emergency: 'emergency', maintenance: 'maintenance', inspection: 'inspection', repair: 'task', consultation: 'task', other: 'task' };
+        return map[type] || 'task';
+    }
+
+    // Mapeia o estado do pedido para o estado do evento do calendário
+    mapRequestStatus(status) {
+        const map = { new: 'scheduled', assigned: 'scheduled', in_progress: 'in-progress', completed: 'completed', cancelled: 'cancelled' };
+        return map[status] || 'scheduled';
+    }
+
+    mapRequestPriority(priority) {
+        if (priority === 'urgent' || priority === 'critical') return 'high';
+        if (priority === 'low') return 'low';
+        return priority || 'medium';
+    }
+
+    async loadEvents() {
+        try {
+            const userData = JSON.parse(localStorage.getItem('userData')) || {};
+            const technicianName = [userData.firstName, userData.lastName].filter(Boolean).join(' ') || '—';
+
+            const res = await fetch('/api/requests?limit=200', {
+                headers: { 'Authorization': `Bearer ${this.getToken()}` }
+            });
+            if (!res.ok) throw new Error('Erro ao carregar pedidos atribuídos');
+            const data = await res.json();
+            const requests = Array.isArray(data.data) ? data.data : (data.data?.requests || []);
+
+            return requests.map(r => {
+                const start = new Date(r.scheduledDate || r.createdAt);
+                const end = new Date(start.getTime() + 2 * 60 * 60 * 1000); // bloco de 2h por omissão
+                return {
+                    id: r._id,
+                    title: r.title || r.requestNumber || 'Pedido de serviço',
+                    type: this.mapRequestType(r.type),
+                    start,
+                    end,
+                    lift: r.liftAddress || r.liftMunicipalNumber || '—',
+                    priority: this.mapRequestPriority(r.priority),
+                    status: this.mapRequestStatus(r.status),
+                    description: r.description || '',
+                    technician: technicianName,
+                    createdAt: r.createdAt
+                };
+            });
+        } catch (err) {
+            console.error('Erro ao carregar agenda:', err);
+            this.showNotification('Erro ao carregar a agenda: ' + err.message, 'error');
+            return [];
+        }
     }
 
     setupEventListeners() {

@@ -165,11 +165,6 @@
             color: #212529;
         }
         
-        .contact-chat {
-            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
-            color: #212529;
-        }
-        
         .contact-form {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
@@ -449,13 +444,6 @@
                     </a>
                 </li>
                 
-                <!-- Definições -->
-                <li class="nav-item">
-                    <a href="/pages/client/settings.html" class="nav-link" id="nav-settings">
-                        <i class="nav-icon fas fa-cog"></i>
-                        <p>Definições</p>
-                    </a>
-                </li>
                                 <!-- Saída -->
                 <li class="nav-item">
                     <a href="#" onclick="logout()" class="nav-link">
@@ -678,7 +666,7 @@
                                 </div>
                                 <div class="card-body">
                                     <div class="row">
-                                        <div class="col-lg-3 col-md-6 mb-3">
+                                        <div class="col-lg-4 col-md-6 mb-3">
                                             <div class="contact-method contact-phone">
                                                 <i class="fas fa-phone fa-3x mb-3"></i>
                                                 <h4>Telefone</h4>
@@ -689,7 +677,7 @@
                                                 </button>
                                             </div>
                                         </div>
-                                        <div class="col-lg-3 col-md-6 mb-3">
+                                        <div class="col-lg-4 col-md-6 mb-3">
                                             <div class="contact-method contact-email">
                                                 <i class="fas fa-envelope fa-3x mb-3"></i>
                                                 <h4>Email</h4>
@@ -700,18 +688,7 @@
                                                 </button>
                                             </div>
                                         </div>
-                                        <div class="col-lg-3 col-md-6 mb-3">
-                                            <div class="contact-method contact-chat">
-                                                <i class="fas fa-comments fa-3x mb-3"></i>
-                                                <h4>Chat online</h4>
-                                                <p>Estamos online agora</p>
-                                                <p>Ajuda rápida</p>
-                                                <button class="btn btn-primary mt-2" onclick="supportManager.startChat()">
-                                                    <i class="fas fa-comment"></i> Iniciar chat
-                                                </button>
-                                            </div>
-                                        </div>
-                                        <div class="col-lg-3 col-md-6 mb-3">
+                                        <div class="col-lg-4 col-md-6 mb-3">
                                             <div class="contact-method contact-form">
                                                 <i class="fas fa-headset fa-3x mb-3"></i>
                                                 <h4>Formulário de ticket</h4>
@@ -881,37 +858,6 @@
                         </div>
                     </div>
 
-                    <!-- Чат desde підтримкою -->
-                    <div class="row mt-4" id="chatSection" style="display: none;">
-                        <div class="col-12">
-                            <div class="card">
-                                <div class="card-header">
-                                    <h3 class="card-title">
-                                        <i class="fas fa-comments mr-2"></i>Chat online com suporte
-                                        <span class="badge badge-success ml-2" id="supportStatus">Online</span>
-                                    </h3>
-                                    <div class="card-tools">
-                                        <button class="btn btn-sm btn-danger" onclick="supportManager.endChat()">
-                                            <i class="fas fa-times"></i> Prazoar chat
-                                        </button>
-                                    </div>
-                                </div>
-                                <div class="card-body">
-                                    <div class="chat-container" id="chatMessages">
-                                        <!-- Notificações чату serão aqui -->
-                                    </div>
-                                    <div class="input-group mt-3">
-                                        <input type="text" class="form-control" placeholder="Escreva a sua mensagem..." id="chatInput">
-                                        <div class="input-group-append">
-                                            <button class="btn btn-primary" onclick="supportManager.sendMessage()">
-                                                <i class="fas fa-paper-plane"></i> Enviar
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </section>
         </div>
@@ -999,10 +945,6 @@
                 window.location.href = 'mailto:info@festlift.pt';
             }
             
-            startChat() {
-                toastr.info('Função de chat disponível em breve');
-            }
-            
             showTicketForm() {
                 const section = document.getElementById('ticketFormSection');
                 section.style.display = '';
@@ -1039,14 +981,6 @@
                 const query = $('#knowledgeSearch').val() || $('#knowledgeBaseSearch').val();
                 console.log('Searching knowledge base for:', query);
                 toastr.info(`Pesquisar na base de conhecimento: ${query || 'pesquisa vazia'}`);
-            }
-            
-            sendMessage() {
-                toastr.info('Mensagem enviada');
-            }
-            
-            endChat() {
-                toastr.info('Chat terminado');
             }
             
             addComment() {
@@ -1099,12 +1033,6 @@
             $('#knowledgeBaseSearch').on('keypress', function(e) {
                 if (e.which === 13) {
                     supportManager.searchKnowledgeBase();
-                }
-            });
-            
-            $('#chatInput').on('keypress', function(e) {
-                if (e.which === 13) {
-                    supportManager.sendMessage();
                 }
             });
         });
