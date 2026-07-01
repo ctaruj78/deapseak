@@ -515,6 +515,20 @@
                 const count = data.data.length;
                 const badge = document.getElementById('liftsCount');
                 if (badge) badge.textContent = count;
+
+                const select = document.getElementById('ticketLift');
+                if (select) {
+                    data.data.forEach(lift => {
+                        const addr = lift.address
+                            ? [lift.address.street, lift.address.city].filter(Boolean).join(', ')
+                            : '';
+                        const label = (lift.municipalNumber || lift._id) + (addr ? ' — ' + addr : '');
+                        const opt = document.createElement('option');
+                        opt.value = lift._id;
+                        opt.textContent = label;
+                        select.appendChild(opt);
+                    });
+                }
             }
         })
         .catch(err => console.warn('Failed to load lifts count:', err));
@@ -830,9 +844,6 @@
                                                     <label for="ticketLift">Elevador associado (se aplicável)</label>
                                                     <select class="form-control" id="ticketLift">
                                                         <option value="">Escolha o elevador...</option>
-                                                        <option value="lift-1">Elevador №1 - Rua Central, 12</option>
-                                                        <option value="lift-2">Elevador №2 - Rua Central, 12</option>
-                                                        <option value="lift-3">Elevador №3 - Rua Principal, 25</option>
                                                     </select>
                                                 </div>
                                             </div>
@@ -975,8 +986,9 @@
         // Simple SupportManager stub to prevent console errors
         class SupportManager {
             showCategory(category) {
-                console.log('Showing category:', category);
-                toastr.info(`Categorias disponíveis: ${category}`);
+                this.showTicketForm();
+                const select = document.getElementById('ticketCategory');
+                if (select && select.tagName === 'SELECT') select.value = category;
             }
             
             callSupport() {
@@ -992,11 +1004,13 @@
             }
             
             showTicketForm() {
-                $('#ticketModal').modal('show');
+                const section = document.getElementById('ticketFormSection');
+                section.style.display = '';
+                section.scrollIntoView({ behavior: 'smooth' });
             }
-            
+
             hideTicketForm() {
-                $('#ticketModal').modal('hide');
+                document.getElementById('ticketFormSection').style.display = 'none';
             }
             
             async submitTicket() {
@@ -1015,7 +1029,7 @@
                     const data = await res.json();
                     if (!res.ok) throw new Error(data.message || 'Erro ao criar ticket');
                     toastr.success(`Ticket criado com sucesso! ID: ${data.data?._id}`);
-                    $('#ticketModal').modal('hide');
+                    this.hideTicketForm();
                 } catch (e) {
                     toastr.error(e.message || 'Erro ao enviar ticket');
                 }

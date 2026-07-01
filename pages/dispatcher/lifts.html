@@ -3078,7 +3078,7 @@ Equipa FestLift
             toastr.success('Relatório arquivado com sucesso!');
             
             // Atéказуexisteмо діалог desde опціями
-            setTimeout(() => {
+            setTimeout(async () => {
                 if (await swalConfirm('Relatório arquivado. Deseja ver o arquivo de relatórios?')) {
                     showArchivedReports();
                 }

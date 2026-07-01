@@ -1092,7 +1092,7 @@
                 }
 
                 document.getElementById('typingIndicator').classList.remove('active');
-                const { bubble, textEl } = createStreamBubble();
+                const { bubble, textEl } = await createStreamBubble();
                 streamBubble = bubble;
                 streamTextEl = textEl;
 

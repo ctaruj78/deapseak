@@ -1247,7 +1247,7 @@
                     toastr.info('Alterar palavra-passe');
                 }
                 
-                logoutAllSessions() {
+                async logoutAllSessions() {
                     if (await swalConfirm('Prazoar todas as sessões?')) {
                         toastr.info('Todas as sessões terminadas');
                     }
@@ -1257,7 +1257,7 @@
                     toastr.info('Exportação de dados iniciada');
                 }
                 
-                deleteAccount() {
+                async deleteAccount() {
                     if (await swalConfirm('Eliminar conta permanentemente?')) {
                         toastr.info('Conta será eliminada');
                     }
