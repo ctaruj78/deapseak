@@ -8766,9 +8766,20 @@ app.post('/api/requests', authenticateToken, async (req, res) => {
         const reqYear = new Date().getFullYear();
         const requestNumber = `REQ-${reqYear}-${String(reqCount + 1).padStart(4, '0')}`;
 
+        // client: referência real ao User do cliente (necessária para
+        // requestController.assignTechnician poder notificar por email —
+        // sem isto, request.client fica undefined e o email nunca é enviado)
+        let clientRef = null;
+        if (liftData?.client) {
+            clientRef = liftData.client;
+        } else if (req.user.role === 'client') {
+            try { clientRef = new ObjectId(userId); } catch (_) {}
+        }
+
         const newRequest = {
             ...req.body,
             requestNumber,
+            client: clientRef,
             status: req.body.status || req.body.state || 'new',
             // Автоматично генеруємо заголовок якщо не вказано
             title: req.body.title || (() => {
