@@ -654,7 +654,9 @@ exports.adminResetUserPassword = async (req, res, next) => {
         user.loginAttempts = 0;
         user.lockUntil = null;
         user.isActive = true;
-        await user.save();
+        // validateModifiedOnly: не валідувати поля, які не змінюємо — старі записи
+        // клієнтів можуть мати порожній lastName і інакше .save() падав на них
+        await user.save({ validateModifiedOnly: true });
 
         // Надсилаємо email
         try {

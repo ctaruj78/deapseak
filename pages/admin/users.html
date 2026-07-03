@@ -1241,12 +1241,13 @@
                 if (!await swalConfirm(`Enviar nova senha temporária por email para ${email}?`)) return;
                 try {
                     const res = await AuthManager.fetchWithAuth(`/api/auth/users/${userId}/reset-password`, { method: 'POST' });
-                    if (res.success) {
+                    const data = res ? await res.json() : null;
+                    if (data && data.success) {
                         toastr.success(`Acesso enviado para ${email}`);
                         $('#userModal').modal('hide');
                         this.loadUsers();
                     } else {
-                        toastr.error(res.message || 'Erro ao enviar acesso');
+                        toastr.error((data && data.message) || 'Erro ao enviar acesso');
                     }
                 } catch (err) {
                     toastr.error('Erro de ligação');
