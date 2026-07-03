@@ -587,7 +587,7 @@ const qrManager = (function() {
         const liftTypeEN = qr.liftType === 'cargo' ? 'Freight' : 'Passenger';
         const address = qr.name || 'N/D';
         const city = qr.location || '';
-        const whatsapp = '+351 926 380 243';
+        const whatsapp = '+351 926 380 243 / 244';
 
         const printWindow = window.open('', '_blank');
         printWindow.document.write(`<!DOCTYPE html>
@@ -645,7 +645,7 @@ const qrManager = (function() {
     function getCabinContact() {
         return {
             phone: '+351 214 190 863',
-            whatsapp: '+351 926 380 243',
+            whatsapp: '+351 926 380 243 / 244',
             email: 'info@festlift.pt'
         };
     }
