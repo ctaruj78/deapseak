@@ -264,7 +264,7 @@ const qrManager = (function() {
                         <button class="btn btn-sm btn-outline-secondary ml-1" onclick="qrManager.printSingleById('${qr.id}')" title="Imprimir">
                             <i class="fas fa-print"></i>
                         </button>
-                        <button class="btn btn-sm btn-outline-dark ml-1" onclick="qrManager.printCabinById('${qr.id}')" title="Autocolante cabine (A7)">
+                        <button class="btn btn-sm btn-outline-dark ml-1" onclick="qrManager.printCabinById('${qr.id}')" title="Autocolante cabine (A6)">
                             <i class="fas fa-id-card"></i>
                         </button>
                     </td>
@@ -346,7 +346,7 @@ const qrManager = (function() {
                             <button class="btn btn-sm btn-outline-info" onclick="qrManager.printSingleById('${qr.id}')" title="Imprimir QR">
                                 <i class="fas fa-print"></i>
                             </button>
-                            <button class="btn btn-sm btn-outline-dark" onclick="qrManager.printCabinById('${qr.id}')" title="Autocolante cabine (A7)">
+                            <button class="btn btn-sm btn-outline-dark" onclick="qrManager.printCabinById('${qr.id}')" title="Autocolante cabine (A6)">
                                 <i class="fas fa-id-card"></i>
                             </button>
                             <button class="btn btn-sm btn-outline-success" onclick="qrManager.downloadById('${qr.id}')" title="Descarregar QR">
@@ -560,7 +560,7 @@ const qrManager = (function() {
             printQRCode(qr);
         });
 
-        // Cabin sticker (A7) print button handler
+        // Cabin sticker (A6) print button handler
         $('#printCabinBtn').off('click').on('click', function() {
             printCabinSticker(qr);
         });
@@ -658,38 +658,44 @@ const qrManager = (function() {
         return { cls: 'fl-status--off', label: 'INATIVO' };
     }
 
-    // Shared CSS for the A7 (74x105mm) cabin sticker. `bodyRule` differs between
+    // Shared CSS for the A6 (105x148mm) cabin sticker. `bodyRule` differs between
     // single print (center one page, autoprint+close) and batch print (stack
-    // multiple full A7 pages with a page-break after each sticker).
-    function cabinStickerCss(bodyRule) {
+    // multiple full A6 pages with a page-break after each sticker).
+    function cabinStickerCss(bodyRule, pageSize) {
         return `
   * { margin:0; padding:0; box-sizing:border-box; }
-  @page { size: 74mm 105mm; margin: 0; }
-  html { width:74mm; }
+  @page { size: ${pageSize || '105mm 148mm'}; margin: 0; }
+  html { width:${pageSize ? '210mm' : '105mm'}; }
   body {
     background:#0F172A;
     -webkit-print-color-adjust:exact; print-color-adjust:exact;
     ${bodyRule}
   }
+  .fl-page {
+    width:210mm; height:297mm;
+    display:grid; grid-template-columns:105mm 105mm; grid-template-rows:148.5mm 148.5mm;
+    page-break-after: always;
+  }
+  .fl-page:last-child { page-break-after: auto; }
   .fl-sticker {
-    position:relative; width:74mm; height:105mm;
+    position:relative; width:105mm; height:148mm;
     background:#0F172A; color:#F8FAFC; overflow:hidden;
     display:flex; flex-direction:column;
     font-family:'Inter',sans-serif;
-    page-break-after: always;
+    border:1px dashed rgba(255,255,255,.35);
   }
-  .fl-sticker:last-child { page-break-after: auto; }
-  .fl-bar { height:6px; background:linear-gradient(90deg,#F4B223 0%,#F4B223 46%,#2456A6 100%); }
-  .fl-head { padding:15px 18px 14px; display:flex; align-items:flex-start; justify-content:space-between; gap:11px; border-bottom:1px solid rgba(255,255,255,.07); }
-  .fl-logo { height:60px; width:auto; display:block; flex-shrink:0; margin-top:1px; }
+  .fl-bar { height:8px; flex-shrink:0; background:linear-gradient(90deg,#F4B223 0%,#F4B223 46%,#2456A6 100%); }
+  .fl-head { padding:16px 25px 15px; display:flex; align-items:flex-start; justify-content:space-between; gap:16px; border-bottom:1px solid rgba(255,255,255,.07); }
+  .fl-logo { height:66px; width:auto; display:block; flex-shrink:0; margin-top:1px; }
   .fl-info { display:flex; flex-direction:column; align-items:flex-end; text-align:right; gap:5px; min-width:0; }
-  .fl-id-label { font-family:'Space Grotesk',sans-serif; font-size:6px; letter-spacing:1.8px; text-transform:uppercase; color:#7C8AA3; font-weight:700; }
-  .fl-id { font-family:'Space Grotesk',sans-serif; font-weight:800; font-size:13px; color:#F4B223; line-height:1.1; margin-top:2px; word-break:break-word; }
-  .fl-addr { font-size:8px; color:#A7B4C8; line-height:1.4; display:flex; align-items:flex-start; gap:4px; justify-content:flex-end; }
+  .fl-id-label { font-family:'Space Grotesk',sans-serif; font-size:8px; letter-spacing:2.5px; text-transform:uppercase; color:#7C8AA3; font-weight:700; }
+  .fl-id { font-family:'Space Grotesk',sans-serif; font-weight:800; font-size:18px; color:#F4B223; line-height:1.1; margin-top:3px; word-break:break-word; }
+  .fl-addr { font-size:13px; font-weight:600; color:#F8FAFC; line-height:1.4; display:flex; align-items:flex-start; gap:6px; justify-content:flex-end; text-align:left; }
   .fl-addr svg { flex-shrink:0; margin-top:1px; }
-  .fl-status { display:inline-flex; align-items:center; gap:4px; padding:4px 8px; border-radius:999px; border:1px solid; }
-  .fl-status span:first-child { width:5px; height:5px; border-radius:50%; }
-  .fl-status span:last-child { font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:7px; letter-spacing:1px; text-transform:uppercase; }
+  .fl-addr span { display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+  .fl-status { display:inline-flex; align-items:center; gap:6px; padding:6px 11px; border-radius:999px; border:1px solid; }
+  .fl-status span:first-child { width:7px; height:7px; border-radius:50%; }
+  .fl-status span:last-child { font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:10px; letter-spacing:1.4px; text-transform:uppercase; }
   .fl-status--active { background:rgba(74,222,128,.12); border-color:rgba(74,222,128,.3); }
   .fl-status--active span:first-child { background:#4ade80; }
   .fl-status--active span:last-child { color:#4ade80; }
@@ -699,26 +705,26 @@ const qrManager = (function() {
   .fl-status--off { background:rgba(255,107,107,.12); border-color:rgba(255,107,107,.35); }
   .fl-status--off span:first-child { background:#ff6b6b; }
   .fl-status--off span:last-child { color:#ff6b6b; }
-  .fl-body { padding:0 18px; display:flex; flex-direction:column; flex:1; }
-  .fl-support { text-align:center; margin-top:10px; font-family:'Space Grotesk',sans-serif; font-size:7px; letter-spacing:1.8px; text-transform:uppercase; color:#7C8AA3; font-weight:700; }
-  .fl-qr-card { margin:7px auto 0; background:#F8FAFC; border-radius:14px; padding:11px; position:relative; }
-  .fl-qr-card canvas { width:132px !important; height:132px !important; display:block; }
-  .fl-qr-card i { position:absolute; width:11px; height:11px; }
-  .fl-qr-card i.tl { top:6px; left:6px; border-top:2px solid #F4B223; border-left:2px solid #F4B223; border-radius:3px 0 0 0; }
-  .fl-qr-card i.tr { top:6px; right:6px; border-top:2px solid #F4B223; border-right:2px solid #F4B223; border-radius:0 3px 0 0; }
-  .fl-qr-card i.bl { bottom:6px; left:6px; border-bottom:2px solid #F4B223; border-left:2px solid #F4B223; border-radius:0 0 0 3px; }
-  .fl-qr-card i.br { bottom:6px; right:6px; border-bottom:2px solid #F4B223; border-right:2px solid #F4B223; border-radius:0 0 3px 0; }
-  .fl-caption { text-align:center; margin-top:9px; font-size:8px; line-height:1.55; color:#A7B4C8; }
+  .fl-body { padding:0 25px; display:flex; flex-direction:column; flex:1; }
+  .fl-support { text-align:center; margin-top:10px; font-family:'Space Grotesk',sans-serif; font-size:10px; letter-spacing:2.5px; text-transform:uppercase; color:#7C8AA3; font-weight:700; }
+  .fl-qr-card { margin:8px auto 0; background:#F8FAFC; border-radius:20px; padding:16px; position:relative; }
+  .fl-qr-card canvas { width:187px !important; height:187px !important; display:block; }
+  .fl-qr-card i { position:absolute; width:16px; height:16px; }
+  .fl-qr-card i.tl { top:8px; left:8px; border-top:3px solid #F4B223; border-left:3px solid #F4B223; border-radius:4px 0 0 0; }
+  .fl-qr-card i.tr { top:8px; right:8px; border-top:3px solid #F4B223; border-right:3px solid #F4B223; border-radius:0 4px 0 0; }
+  .fl-qr-card i.bl { bottom:8px; left:8px; border-bottom:3px solid #F4B223; border-left:3px solid #F4B223; border-radius:0 0 0 4px; }
+  .fl-qr-card i.br { bottom:8px; right:8px; border-bottom:3px solid #F4B223; border-right:3px solid #F4B223; border-radius:0 0 4px 0; }
+  .fl-caption { text-align:center; margin-top:10px; font-size:11px; line-height:1.55; color:#A7B4C8; }
   .fl-caption b { color:#F8FAFC; }
-  .fl-foot { margin-top:8px; background:#020617; padding:9px 18px; display:flex; flex-direction:column; gap:7px; }
-  .fl-foot-row { display:flex; justify-content:space-between; gap:10px; }
-  .fl-contact { display:flex; flex-direction:column; gap:3px; flex:1; }
-  .fl-contact.right { padding-left:10px; }
-  .fl-contact-head { display:flex; align-items:center; gap:4px; }
-  .fl-contact-head span { font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:6px; letter-spacing:1px; text-transform:uppercase; }
-  .fl-contact-val { font-size:9px; color:#F8FAFC; font-weight:600; }
+  .fl-foot { margin-top:8px; background:#020617; padding:11px 25px; display:flex; flex-direction:column; gap:10px; }
+  .fl-foot-row { display:flex; justify-content:space-between; gap:14px; }
+  .fl-contact { display:flex; flex-direction:column; gap:4px; flex:1; }
+  .fl-contact.right { padding-left:14px; }
+  .fl-contact-head { display:flex; align-items:center; gap:6px; }
+  .fl-contact-head span { font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:8px; letter-spacing:1.4px; text-transform:uppercase; }
+  .fl-contact-val { font-size:13px; color:#F8FAFC; font-weight:600; }
   .fl-divider { width:1px; background:rgba(255,255,255,.1); }
-  .fl-email { display:flex; align-items:center; gap:4px; padding-top:7px; border-top:1px solid rgba(255,255,255,.1); font-size:8px; color:#A7B4C8; font-weight:500; }
+  .fl-email { display:flex; align-items:center; gap:6px; padding-top:8px; border-top:1px solid rgba(255,255,255,.1); font-size:11px; color:#A7B4C8; font-weight:500; }
 `;
     }
 
@@ -747,7 +753,7 @@ const qrManager = (function() {
         <div class="fl-id">${liftId}</div>
       </div>
       <div class="fl-addr">
-        <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="#7C8AA3" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#F4B223" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
         <span>${address}</span>
       </div>
     </div>
@@ -767,7 +773,7 @@ const qrManager = (function() {
     <div class="fl-foot-row">
       <div class="fl-contact">
         <div class="fl-contact-head">
-          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
           <span style="color:#4ade80;">WhatsApp</span>
         </div>
         <div class="fl-contact-val">${contact.whatsapp}</div>
@@ -775,14 +781,14 @@ const qrManager = (function() {
       <div class="fl-divider"></div>
       <div class="fl-contact right">
         <div class="fl-contact-head">
-          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#F4B223" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.9.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#F4B223" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.9.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
           <span style="color:#F4B223;">Apoio 24/7</span>
         </div>
         <div class="fl-contact-val">${contact.phone}</div>
       </div>
     </div>
     <div class="fl-email">
-      <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#F4B223" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2.5"/><path d="M22 7l-10 5L2 7"/></svg>
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#F4B223" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2.5"/><path d="M22 7l-10 5L2 7"/></svg>
       <span>${contact.email}</span>
     </div>
   </div>
@@ -790,7 +796,7 @@ const qrManager = (function() {
         return { html, payload, liftId };
     }
 
-    // Build a single-lift A7 cabin sticker print document (centered, autoprint+close)
+    // Build a single-lift A6 cabin sticker print document (centered, autoprint+close)
     function buildCabinStickerHtml(qr) {
         const item = buildCabinStickerMarkup(qr, 'cabinQrCanvas');
         const qrScriptSrc = document.querySelector('script[src*="qrcode"]')?.src || '/plugins/qrcode/js/qrcode.min.js';
@@ -808,7 +814,7 @@ ${item.html}
 <script src="${qrScriptSrc}"></script>
 <script>
   try {
-    new QRCode(document.getElementById('cabinQrCanvas'), { text: '${item.payload}', width: 132, height: 132, correctLevel: QRCode.CorrectLevel.M });
+    new QRCode(document.getElementById('cabinQrCanvas'), { text: '${item.payload}', width: 187, height: 187, correctLevel: QRCode.CorrectLevel.M });
   } catch(e) {}
   window.onload = function() {
     window.print();
@@ -819,23 +825,25 @@ ${item.html}
 </html>`;
     }
 
-    // Build a multi-lift A7 cabin sticker batch print document — one full A7 page
-    // per lift, page-break-after between each (mirrors buildPrintHtml's batching
-    // for the 70x50mm door stickers).
+    // Build a multi-lift A6 cabin sticker batch print document — 4 stickers
+    // tiled per A4 sheet (2x2 grid, no gaps: A4 = 2x A6 in both directions),
+    // page-break-after between each full sheet of 4.
     function buildCabinBatchHtml(qrs) {
         const qrScriptSrc = document.querySelector('script[src*="qrcode"]')?.src || '/plugins/qrcode/js/qrcode.min.js';
         const items = qrs.map((qr, i) => buildCabinStickerMarkup(qr, 'cabinQrCanvas-' + i));
-        const bodies = items.map(it => it.html).join('\n');
+        const pages = [];
+        for (let i = 0; i < items.length; i += 4) pages.push(items.slice(i, i + 4));
+        const bodies = pages.map(page => `<div class="fl-page">${page.map(it => it.html).join('\n')}</div>`).join('\n');
         const qrInits = items.map((it, i) => `
-  try { new QRCode(document.getElementById('cabinQrCanvas-${i}'), { text: '${it.payload}', width: 132, height: 132, correctLevel: QRCode.CorrectLevel.M }); } catch(e) {}`).join('');
+  try { new QRCode(document.getElementById('cabinQrCanvas-${i}'), { text: '${it.payload}', width: 187, height: 187, correctLevel: QRCode.CorrectLevel.M }); } catch(e) {}`).join('');
 
         return `<!DOCTYPE html>
 <html lang="pt">
 <head>
 <meta charset="UTF-8">
-<title>Autocolantes Cabine (A7) - FestLift</title>
+<title>Autocolantes Cabine (A6) - FestLift</title>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>${cabinStickerCss('')}</style>
+<style>${cabinStickerCss('', '210mm 297mm')}</style>
 </head>
 <body>
 ${bodies}
@@ -851,34 +859,34 @@ ${bodies}
 </html>`;
     }
 
-    // Print a single A7 cabin sticker
+    // Print a single A6 cabin sticker
     function printCabinSticker(qr) {
         const win = window.open('', '_blank', 'width=420,height=560');
         win.document.write(buildCabinStickerHtml(qr));
         win.document.close();
     }
 
-    // Print A7 cabin sticker by lift id (row action, no modal needed)
+    // Print A6 cabin sticker by lift id (row action, no modal needed)
     function printCabinById(id) {
         const qr = currentQRs.find(q => q.id === id);
         if (!qr) return;
         printCabinSticker(qr);
     }
 
-    // Print A7 cabin stickers for every lift currently matching the filters
+    // Print A6 cabin stickers for every lift currently matching the filters
     function printAllCabinStickers() {
         const data = filterQRData();
         if (data.length === 0) {
             showNotification('Não há elevadores para imprimir', 'warning');
             return;
         }
-        showNotification(`A preparar ${data.length} autocolantes de cabine (A7)...`, 'info');
+        showNotification(`A preparar ${data.length} autocolantes de cabine (A6)...`, 'info');
         const win = window.open('', '_blank', 'width=900,height=700');
         win.document.write(buildCabinBatchHtml(data));
         win.document.close();
     }
 
-    // Print A7 cabin stickers for the checked rows only
+    // Print A6 cabin stickers for the checked rows only
     function printSelectedCabinStickers() {
         const selected = $('.qr-checkbox:checked').map(function() {
             return $(this).data('id');
@@ -890,7 +898,7 @@ ${bodies}
         }
 
         const qrs = currentQRs.filter(qr => selected.includes(qr.id));
-        showNotification(`A preparar ${qrs.length} autocolantes de cabine (A7)...`, 'info');
+        showNotification(`A preparar ${qrs.length} autocolantes de cabine (A6)...`, 'info');
         const win = window.open('', '_blank', 'width=900,height=700');
         win.document.write(buildCabinBatchHtml(qrs));
         win.document.close();
