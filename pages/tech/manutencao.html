@@ -194,12 +194,6 @@
                         <p>Mapa de tarefas</p>
                     </a>
                 </li>
-                <li class="nav-item">
-                    <a href="/pages/tech/tools.html" class="nav-link">
-                        <i class="fas fa-tools nav-icon"></i>
-                        <p>Ferramentas</p>
-                    </a>
-                </li>
             </ul>
         </li>
 
@@ -1069,6 +1063,24 @@
     <script src="../../assets/js/common.js"></script>
 
     <script>
+        function escapeHtml(str) {
+            if (str === null || str === undefined) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+        function escapeForOnclickArg(str) {
+            return String(str ?? '')
+                .replace(/\\/g, '\\\\')
+                .replace(/'/g, "\\'")
+                .replace(/"/g, '&quot;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;');
+        }
+
         /* ================================================================
            CHECKLIST ENGINE — gera checklist a partir de INSPECTION_TEMPLATES
            ================================================================ */
@@ -1743,13 +1755,13 @@
                         const dt = insp.data ? new Date(insp.data).toLocaleDateString('pt-PT') : '—';
                         const badge = statusLabels[insp.status] || 'secondary';
                         return `<tr>
-                            <td><strong>${insp.numero}</strong></td>
+                            <td><strong>${escapeHtml(insp.numero)}</strong></td>
                             <td>${dt}</td>
-                            <td>${insp.inspector}</td>
-                            <td>${insp.liftLocation}</td>
-                            <td><span class="badge badge-${badge}">${insp.status}</span></td>
+                            <td>${escapeHtml(insp.inspector)}</td>
+                            <td>${escapeHtml(insp.liftLocation)}</td>
+                            <td><span class="badge badge-${badge}">${escapeHtml(insp.status)}</span></td>
                             <td class="text-right">
-                                <button class="btn btn-xs btn-danger" onclick="deleteInspectionDB('${insp._id}','${insp.numero}')" title="Apagar"><i class="fas fa-trash"></i></button>
+                                <button class="btn btn-xs btn-danger" onclick="deleteInspectionDB('${insp._id}','${escapeForOnclickArg(insp.numero)}')" title="Apagar"><i class="fas fa-trash"></i></button>
                             </td>
                         </tr>`;
                     }).join('');

@@ -1276,7 +1276,15 @@
             // Avatar — mostrar foto guardada no servidor
             if (userData.avatar) {
                 const avatarEl = document.getElementById('profileAvatar');
-                if (avatarEl) avatarEl.innerHTML = `<img src="${userData.avatar}" alt="Avatar" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" onerror="this.parentElement.innerHTML='<i class=&quot;fas fa-user&quot;></i>'">`;
+                if (avatarEl) {
+                    avatarEl.innerHTML = '';
+                    const img = document.createElement('img');
+                    img.alt = 'Avatar';
+                    img.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:50%;';
+                    img.onerror = () => { avatarEl.innerHTML = '<i class="fas fa-user"></i>'; };
+                    img.src = userData.avatar; // atribuição por propriedade — não interpretado como HTML
+                    avatarEl.appendChild(img);
+                }
             }
         }
 

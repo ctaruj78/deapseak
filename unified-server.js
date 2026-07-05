@@ -1960,7 +1960,10 @@ app.post('/api/qr/scan', authenticateToken, async (req, res) => {
             } catch(e) { /* não é URL */ }
         }
 
-        const actorName = req.body.scannedBy || req.user.username || req.user.email || req.user.id;
+        // 🔒 Só admin/dispatcher podem indicar scannedBy de outra pessoa; os restantes ficam presos à própria identidade
+        const actorName = (['admin', 'dispatcher'].includes(req.user.role) && req.body.scannedBy)
+            ? req.body.scannedBy
+            : (req.user.username || req.user.email || req.user.id);
 
         const ua = req.headers['user-agent'] || '';
         const isMobile = /android|iphone|ipad|mobile/i.test(ua);
@@ -2414,11 +2417,16 @@ app.get('/api/inspections/:id', authenticateToken, async (req, res) => {
         const { ObjectId } = require('mongodb');
         const inspection = await db.collection('inspections')
             .findOne({ _id: new ObjectId(req.params.id) });
-        
+
         if (!inspection) {
             return res.status(404).json({ success: false, message: 'Inspeção não encontrada' });
         }
-        
+
+        // 🔒 Técnicos só podem ver as inspeções que criaram — admin/dispatcher veem todas
+        if (req.user.role !== 'admin' && req.user.role !== 'dispatcher' && inspection.createdBy !== req.user.id) {
+            return res.status(403).json({ success: false, message: 'Acesso negado' });
+        }
+
         res.json({ success: true, data: inspection });
     } catch (error) {
         console.error('❌ Помилка отримання інспекції:', error);
@@ -4351,6 +4359,16 @@ app.post('/api/lifts', authenticateToken, async (req, res) => {
     }
 });
 
+// 🔒 Verifica se um cliente tem acesso a este elevador (por ObjectId ou email)
+function hasClientAccessToLift(lift, req) {
+    const clientId = (req.user.id || req.user.userId || '').toString();
+    const liftClientId = lift.client ? lift.client.toString() : null;
+    const clientEmail = req.user.email ? req.user.email.toLowerCase() : null;
+    const liftClientEmail = lift.clientEmail ? lift.clientEmail.toLowerCase() : null;
+    return (clientId && liftClientId && liftClientId === clientId)
+        || (clientEmail && liftClientEmail && liftClientEmail === clientEmail);
+}
+
 app.get('/api/lifts/:id', authenticateToken, async (req, res) => {
     try {
         if (!db) return res.status(503).json({ success: false, message: 'Base de dados indisponível.' });
@@ -4875,8 +4893,13 @@ app.get('/api/lifts/:id/contract', authenticateToken, async (req, res) => {
     try {
         const { ObjectId } = require('mongodb');
         const liftId = new ObjectId(req.params.id);
-        const lift = await db.collection('lifts').findOne({ _id: liftId }, { projection: { maintenanceContract: 1 } });
+        const lift = await db.collection('lifts').findOne({ _id: liftId }, { projection: { maintenanceContract: 1, client: 1, clientEmail: 1 } });
         if (!lift) return res.status(404).json({ success: false, message: 'Elevador não encontrado' });
+
+        if (req.user.role === 'client' && !hasClientAccessToLift(lift, req)) {
+            return res.status(403).json({ success: false, message: 'Sem acesso a este elevador' });
+        }
+
         res.json({ success: true, data: { contract: lift.maintenanceContract || null } });
     } catch (error) {
         console.error('❌ Помилка отримання контракту:', error);
@@ -5758,7 +5781,13 @@ app.post('/api/lifts/:id/documents', authenticateToken, uploadLiftDoc.single('do
         const { ObjectId } = require('mongodb');
         const liftId = new ObjectId(req.params.id);
         const documentType = req.body.type; // 'contract' або 'inspection'
-        
+
+        // 🔒 Клієнти не можуть завантажувати документи на ліфти (тільки перегляд своїх)
+        if (req.user.role === 'client') {
+            if (req.file) await fs.unlink(req.file.path).catch(() => {});
+            return res.status(403).json({ success: false, message: 'Acesso negado' });
+        }
+
         console.log('📄 Uploading document for lift:', liftId);
         console.log('📝 Type:', documentType);
         console.log('👤 User:', req.user.username);
@@ -5850,6 +5879,14 @@ app.get('/api/lifts/:id/orcamentos', authenticateToken, async (req, res) => {
         let liftObjId;
         try { liftObjId = new ObjectId(liftId); } catch { return res.status(400).json({ success: false, message: 'ID inválido' }); }
 
+        if (req.user.role === 'client') {
+            const lift = await db.collection('lifts').findOne({ _id: liftObjId }, { projection: { client: 1, clientEmail: 1 } });
+            if (!lift) return res.status(404).json({ success: false, message: 'Elevador não encontrado' });
+            if (!hasClientAccessToLift(lift, req)) {
+                return res.status(403).json({ success: false, message: 'Sem acesso a este elevador' });
+            }
+        }
+
         // Шукаємо орсаменти де:
         //  1. старе поле liftId (string або ObjectId) збігається з цим ліфтом
         //  2. новий масив lifts[] містить об'єкт з liftId = цьому ліфту
@@ -5881,14 +5918,14 @@ app.get('/api/lifts/:id/documents', authenticateToken, async (req, res) => {
             return res.status(400).json({ success: false, message: 'ID de elevador inválido' });
         }
         const liftId = new ObjectId(req.params.id);
-        
+
         console.log('📄 Запит документів для ліфта:', liftId);
-        
+
         const lift = await db.collection('lifts').findOne(
             { _id: liftId },
-            { projection: { documents: 1 } }
+            { projection: { documents: 1, client: 1, clientEmail: 1 } }
         );
-        
+
         if (!lift) {
             console.error('❌ Elevador não encontrado:', liftId);
             return res.status(404).json({
@@ -5896,7 +5933,11 @@ app.get('/api/lifts/:id/documents', authenticateToken, async (req, res) => {
                 message: 'Elevador não encontrado'
             });
         }
-        
+
+        if (req.user.role === 'client' && !hasClientAccessToLift(lift, req)) {
+            return res.status(403).json({ success: false, message: 'Sem acesso a este elevador' });
+        }
+
         const documents = lift.documents || [];
         console.log(`✅ Знайдено ${documents.length} документів для ліфта ${liftId}`);
         
@@ -7304,7 +7345,7 @@ app.get('/api/users/technicians', authenticateToken, async (req, res) => {
         }
 
         const technicians = await db.collection('users').find(
-            { role: 'technician' },
+            { role: { $in: ['technician', 'tech'] } },
             { projection: { password: 0, tempPasswordHint: 0, loginAttempts: 0, lockUntil: 0 } }
         ).toArray();
 
@@ -7592,20 +7633,20 @@ app.get('/api/users', authenticateToken, async (req, res) => {
                 });
             }
             
-            // Нормалізуємо роль: 'tech' -> 'technician'
+            // Нормалізуємо роль: технік може зберігатися в БД як 'tech' або 'technician'
             let requestedRole = req.query.role;
-            if (requestedRole === 'tech') {
-                requestedRole = 'technician';
+            if (requestedRole === 'tech' || requestedRole === 'technician') {
+                requestedRole = { $in: ['tech', 'technician'] };
             }
-            
+
             // Якщо role вказано - повертаємо тільки цю роль, інакше - всі дозволені
             const filter = requestedRole
                 ? { role: requestedRole }
-                : { role: { $in: ['client', 'technician'] } };
+                : { role: { $in: ['client', 'technician', 'tech'] } };
             
             const users = await db.collection('users').find(
                 filter,
-                { projection: { password: 0 } }
+                { projection: { password: 0, tempPasswordHint: 0, loginAttempts: 0, lockUntil: 0 } }
             ).toArray();
             
             // Додати підрахунок ліфтів для кожного клієнта
@@ -7652,7 +7693,7 @@ app.get('/api/users', authenticateToken, async (req, res) => {
             adminFilter = { role: { $in: [roleQuery, req.query.role] } };
         }
         const users = await db.collection('users').find(adminFilter, {
-            projection: { password: 0, tempPasswordHint: 0 }
+            projection: { password: 0, tempPasswordHint: 0, loginAttempts: 0, lockUntil: 0 }
         }).toArray();
 
         // Підрахунок ліфтів для клієнтів (тільки коли фільтр role=client)
@@ -7896,6 +7937,22 @@ app.put('/api/users/:id', authenticateToken, async (req, res) => {
             }
         }
 
+        // 🔒 ОБМЕЖЕННЯ ДЛЯ ДИСПЕТЧЕРА: не може редагувати адмінів та інших диспетчерів
+        // (не тільки коли міняється role — навіть зміна пароля/email іншого адміна є захопленням акаунту)
+        if (req.user.role === 'dispatcher') {
+            const userToUpdate = await db.collection('users').findOne({ _id: userId });
+            if (!userToUpdate) {
+                return res.status(404).json({ success: false, error: 'Utilizador não encontrado' });
+            }
+            if (userToUpdate.role === 'admin' || userToUpdate.role === 'dispatcher') {
+                console.warn(`⛔ Диспетчер ${req.user.email} спробував PUT іншого ${userToUpdate.role}`);
+                return res.status(403).json({
+                    success: false,
+                    error: 'Os operadores não podem editar administradores ou outros operadores'
+                });
+            }
+        }
+
         const updateData = {
             updatedAt: new Date()
         };
@@ -8086,6 +8143,15 @@ app.post('/api/users/:id/reset-password', authenticateToken, async (req, res) =>
         const userId = new ObjectId(req.params.id);
         const user = await db.collection('users').findOne({ _id: userId }, { projection: { password: 0 } });
         if (!user) return res.status(404).json({ success: false, error: 'Utilizador não encontrado' });
+
+        // 🔒 Диспетчер не може скидати пароль адміна чи іншого диспетчера
+        if (req.user.role === 'dispatcher' && (user.role === 'admin' || user.role === 'dispatcher')) {
+            console.warn(`⛔ Диспетчер ${req.user.email} спробував скинути пароль ${user.role}`);
+            return res.status(403).json({
+                success: false,
+                error: 'Os operadores não podem redefinir a palavra-passe de administradores ou outros operadores'
+            });
+        }
 
         // Генеруємо тимчасовий пароль
         const rawPassword =
@@ -8855,13 +8921,37 @@ app.post('/api/requests', authenticateToken, async (req, res) => {
 app.put('/api/requests/:id', authenticateToken, async (req, res) => {
     try {
         const requestQuery = buildRequestQuery(req.params.id);
-        
+        const role = req.user.role;
+
+        // 🔒 Clientes não podem editar pedidos por esta via
+        if (role === 'client') {
+            return res.status(403).json({ success: false, message: 'Acesso negado' });
+        }
+
+        let bodyToApply = req.body;
+
+        // 🔒 Técnicos só podem atualizar pedidos que lhes foram atribuídos,
+        // e apenas os campos de execução do trabalho (não status/técnico/etc.)
+        if (role === 'tech' || role === 'technician') {
+            const userId = (req.user.userId || req.user.id || '').toString();
+            const existing = await db.collection('requests').findOne(requestQuery);
+            if (!existing) {
+                return res.status(404).json({ success: false, message: 'Pedido não encontrado' });
+            }
+            const assignedToMe = existing.technician === userId || existing.technicianId === userId;
+            if (!assignedToMe) {
+                return res.status(403).json({ success: false, message: 'Acesso negado' });
+            }
+            const { workDescription, partsUsed, laborHours } = req.body;
+            bodyToApply = { workDescription, partsUsed, laborHours };
+        }
+
         const updateData = {
-            ...req.body,
+            ...bodyToApply,
             updatedAt: new Date().toISOString(),
             updatedBy: req.user.username
         };
-        
+
         const result = await db.collection('requests').updateOne(
             requestQuery,
             { $set: updateData }
@@ -8892,27 +8982,50 @@ app.patch('/api/requests/:id/status', authenticateToken, async (req, res) => {
     try {
         const requestQuery = buildRequestQuery(req.params.id);
         const { status, technician } = req.body;
-        
+        const role = req.user.role;
+
         console.log('🔄 Зміна статусу заявки:', req.params.id, '→', status);
-        
+
         if (!status) {
             return res.status(400).json({
                 success: false,
                 message: 'Статус обов\'язковий'
             });
         }
-        
+
+        // 🔒 Clientes não podem alterar o estado dos pedidos
+        if (role === 'client') {
+            return res.status(403).json({ success: false, message: 'Acesso negado' });
+        }
+
+        // 🔒 Técnicos só podem alterar o estado de pedidos que lhes foram atribuídos,
+        // e não podem reatribuir a outro técnico (só admin/dispatcher)
+        if (role === 'tech' || role === 'technician') {
+            const userId = (req.user.userId || req.user.id || '').toString();
+            const existing = await db.collection('requests').findOne(requestQuery);
+            if (!existing) {
+                return res.status(404).json({ success: false, message: 'Pedido não encontrado' });
+            }
+            const assignedToMe = existing.technician === userId || existing.technicianId === userId;
+            if (!assignedToMe) {
+                return res.status(403).json({ success: false, message: 'Acesso negado' });
+            }
+            if (technician && technician !== userId) {
+                return res.status(403).json({ success: false, message: 'Não pode reatribuir o pedido a outro técnico' });
+            }
+        }
+
         const updateData = {
             status: status,
             updatedAt: new Date().toISOString(),
             updatedBy: req.user.username
         };
-        
+
         // Операції для видалення полів
         const unsetFields = {};
-        
-        // Якщо призначається технік
-        if (technician) {
+
+        // Якщо призначається технік (тільки admin/dispatcher; технік — тільки сам собі, вже перевірено вище)
+        if (technician && role !== 'tech' && role !== 'technician') {
             updateData.technician = technician;
             updateData.assignedAt = new Date().toISOString();
         }
@@ -9139,7 +9252,14 @@ app.post('/api/requests/:id/assign', authenticateToken, async (req, res) => {
                 message: 'O utilizador selecionado não é técnico'
             });
         }
-        
+
+        if (technician.isActive === false) {
+            return res.status(400).json({
+                success: false,
+                message: 'Técnico inativo, não pode ser atribuído'
+            });
+        }
+
         const updateData = {
             technician: technicianId,
             technicianName: `${technician.firstName} ${technician.lastName}`,
@@ -11058,7 +11178,6 @@ PAINEL ADMIN (pages/admin/):
 • Dashboard — visão geral: estatísticas de elevadores, pedidos pendentes, alertas
 • Lifts (lifts.html) — gestão completa do parque de elevadores: adicionar, editar, ver estado
 • Users (users.html) — gestão de utilizadores, atribuição de papéis (admin/dispatcher/tech/client)
-• Role Manager (role-manager.html) — permissões e papéis do sistema
 • Reports (reports.html) — relatórios de inspeção, geração e envio por email
 • Orçamentos (orcamentos-list.html) — lista e gestão de orçamentos/propostas
 • Requests (requests.html) — pedidos de serviço dos clientes
@@ -11067,7 +11186,6 @@ PAINEL ADMIN (pages/admin/):
 • QR Management (qr-management.html) — gestão de QR codes dos elevadores
 • Predictive Maintenance (predictive-maintenance.html) — análise preditiva com AI
 • Notifications (notifications.html) — alertas e notificações do sistema
-• Audit Log (audit-log.html) — registo de todas as ações
 
 PAINEL DISPATCHER (pages/dispatcher/):
 • Dashboard — tarefas do dia, técnicos disponíveis, mapa de atribuições

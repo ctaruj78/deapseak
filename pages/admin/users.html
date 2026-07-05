@@ -352,7 +352,6 @@
         'requests':               'nav-requests',
         'maps':                   'nav-maps',
         'users':                  'nav-users',
-        'role-manager':           'nav-users',
         'invoice-template':       'nav-invoice-template',
         'orcamentos-list':        'nav-orcamentos-list',
         'email-template':         'nav-email-template',
@@ -754,6 +753,16 @@
         }
 
         class UserManager {
+            escapeHtml(str) {
+                if (str === null || str === undefined) return '';
+                return String(str)
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#39;');
+            }
+
             constructor() {
                 this.currentPage = 1;
                 this.itemsPerPage = 10;
@@ -1020,8 +1029,8 @@
                     const row = `
                         <tr>
                             <td>${displayId}</td>
-                            <td>${displayName}</td>
-                            <td>${user.email}</td>
+                            <td>${this.escapeHtml(displayName)}</td>
+                            <td>${this.escapeHtml(user.email)}</td>
                             <td><span class="role-badge role-${user.role}">${this.getRoleLabel(user.role)}</span></td>
                             <td><span class="status-badge status-${user.status || 'active'}">${this.getStatusLabel(user.status || 'active')}</span></td>
                             <td class="text-center">${_accessBadge}</td>

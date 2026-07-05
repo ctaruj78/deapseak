@@ -204,12 +204,6 @@
                         <p>Mapa de tarefas</p>
                     </a>
                 </li>
-                <li class="nav-item">
-                    <a href="/pages/tech/tools.html" class="nav-link">
-                        <i class="fas fa-tools nav-icon"></i>
-                        <p>Ferramentas</p>
-                    </a>
-                </li>
             </ul>
         </li>
 
@@ -491,6 +485,16 @@
 <script src="../../assets/js/qr-utils.js"></script>
 
 <script>
+function escapeHtml(str) {
+    if (str === null || str === undefined) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
 document.addEventListener("DOMContentLoaded", function() {
     // Inicialização bs-custom-file-input (se disponível)
     if (typeof bsCustomFileInput !== 'undefined') {
@@ -807,11 +811,11 @@ document.addEventListener("DOMContentLoaded", function() {
                                 </tr>
                                 <tr>
                                     <th class="bg-light">Morada</th>
-                                    <td>${liftAddr}</td>
+                                    <td>${escapeHtml(liftAddr)}</td>
                                 </tr>
                                 <tr>
                                     <th class="bg-light">Fabricante / Modelo</th>
-                                    <td>${[lift.manufacturer, lift.model].filter(Boolean).join(' ') || '—'}</td>
+                                    <td>${escapeHtml([lift.manufacturer, lift.model].filter(Boolean).join(' ') || '—')}</td>
                                 </tr>
                                 <tr>
                                     <th class="bg-light">Accionamento</th>
@@ -863,7 +867,7 @@ document.addEventListener("DOMContentLoaded", function() {
                                 </tr>
                                 <tr>
                                     <th>Descrição</th>
-                                    <td>${request.description || 'Não especificado'}</td>
+                                    <td>${escapeHtml(request.description || 'Não especificado')}</td>
                                 </tr>
                                 <tr>
                                     <th>Prioridade</th>
@@ -885,11 +889,11 @@ document.addEventListener("DOMContentLoaded", function() {
                                 </tr>
                                 <tr>
                                     <th>Endereço</th>
-                                    <td>${request.address || 'Não especificado'}</td>
+                                    <td>${escapeHtml(request.address || 'Não especificado')}</td>
                                 </tr>
                                 <tr>
                                     <th>Cliente</th>
-                                    <td>${request.clientName || 'Não especificado'}</td>
+                                    <td>${escapeHtml(request.clientName || 'Não especificado')}</td>
                                 </tr>
                                 <tr>
                                     <th>Criado</th>
@@ -914,19 +918,19 @@ document.addEventListener("DOMContentLoaded", function() {
                                 </tr>
                                 <tr>
                                     <th>Nome</th>
-                                    <td>${result.data.firstName || 'Não especificado'}</td>
+                                    <td>${escapeHtml(result.data.firstName || 'Não especificado')}</td>
                                 </tr>
                                 <tr>
                                     <th>Apelido</th>
-                                    <td>${result.data.lastName || 'Não especificado'}</td>
+                                    <td>${escapeHtml(result.data.lastName || 'Não especificado')}</td>
                                 </tr>
                                 <tr>
                                     <th>Email</th>
-                                    <td>${result.data.email || 'Não especificado'}</td>
+                                    <td>${escapeHtml(result.data.email || 'Não especificado')}</td>
                                 </tr>
                                 <tr>
                                     <th>Telefone</th>
-                                    <td>${result.data.phone || 'Não especificado'}</td>
+                                    <td>${escapeHtml(result.data.phone || 'Não especificado')}</td>
                                 </tr>
                             </table>
                         `;
@@ -936,41 +940,41 @@ document.addEventListener("DOMContentLoaded", function() {
                         // Para outros tipos de códigos QR apresentar informação geral
                         resultHtml += `
                             <h5><i class="fas fa-qrcode"></i> Dados gerais do código QR</h5>
-                            <pre class="bg-light p-3">${JSON.stringify(result.data, null, 2)}</pre>
+                            <pre class="bg-light p-3">${escapeHtml(JSON.stringify(result.data, null, 2))}</pre>
                         `;
                 }
             } else {
                 // Se o tipo não está definido
                 resultHtml += `
                     <h5><i class="fas fa-qrcode"></i> Dados do código QR</h5>
-                    <pre class="bg-light p-3">${JSON.stringify(result, null, 2)}</pre>
+                    <pre class="bg-light p-3">${escapeHtml(JSON.stringify(result, null, 2))}</pre>
                 `;
             }
-            
+
             resultHtml += `</div>`;
         } else if (result.success && !result.valid) {
             // Código QR lido, mas desconhecido pelo sistema
             resultHtml += `
                 <div class="alert alert-warning">
-                    <i class="fas fa-exclamation-triangle"></i> ${result.message || 'Código QR desconhecido pelo sistema'}
+                    <i class="fas fa-exclamation-triangle"></i> ${escapeHtml(result.message || 'Código QR desconhecido pelo sistema')}
                 </div>
                 <div class="qr-code-details">
                     <h5><i class="fas fa-question-circle"></i> Dados recebidos</h5>
                     <p>O código QR foi lido com sucesso, mas o sistema não conseguiu reconhecer o seu conteúdo.</p>
                     <p><strong>Texto do código QR:</strong></p>
-                    <pre class="bg-light p-3">${rawData}</pre>
+                    <pre class="bg-light p-3">${escapeHtml(rawData)}</pre>
                 </div>
             `;
         } else {
             // Erro de leitura do código QR
             resultHtml += `
                 <div class="alert alert-danger">
-                    <i class="fas fa-times-circle"></i> ${result.message || 'Erro de leitura do código QR'}
+                    <i class="fas fa-times-circle"></i> ${escapeHtml(result.message || 'Erro de leitura do código QR')}
                 </div>
                 <div class="qr-code-details">
                     <h5><i class="fas fa-exclamation-circle"></i> Detalhes erros</h5>
                     <p>Ocorreu um erro ao processar o código QR. Tente ler novamente ou verifique a validade do código.</p>
-                    <pre class="bg-light p-3">${JSON.stringify(result, null, 2)}</pre>
+                    <pre class="bg-light p-3">${escapeHtml(JSON.stringify(result, null, 2))}</pre>
                 </div>
             `;
         }

@@ -404,7 +404,6 @@
         'requests':               'nav-requests',
         'maps':                   'nav-maps',
         'users':                  'nav-users',
-        'role-manager':           'nav-users',
         'invoice-template':       'nav-invoice-template',
         'orcamentos-list':        'nav-orcamentos-list',
         'email-template':         'nav-email-template',
@@ -566,107 +565,6 @@
                         </a>
                     </div>
 
-                    <!-- Create Support Ticket -->
-                    <div class="card support-card">
-                        <div class="card-header">
-                            <h3 class="card-title">
-                                <i class="fas fa-plus-circle mr-2"></i>
-                                Criar pedido de suporte técnico
-                            </h3>
-                        </div>
-                        <div class="card-body">
-                            <form id="supportTicketForm">
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <div class="form-group">
-                                            <label for="ticketSubject">Assunto do pedido *</label>
-                                            <input type="text" class="form-control" id="ticketSubject" required>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="form-group">
-                                            <label for="ticketPriority">Prioridade</label>
-                                            <select class="form-control" id="ticketPriority">
-                                                <option value="low">Baixo</option>
-                                                <option value="medium" selected>Médio</option>
-                                                <option value="high">Alto</option>
-                                                <option value="critical">Crítico</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <label for="ticketCategory">Categoria</label>
-                                    <select class="form-control" id="ticketCategory">
-                                        <option value="technical">Problema técnico</option>
-                                        <option value="feature">Pedido de funcionalidade</option>
-                                        <option value="bug">Relatório de erro</option>
-                                        <option value="performance">Problema de desempenho</option>
-                                        <option value="security">Questão de segurança</option>
-                                        <option value="other">Outro</option>
-                                    </select>
-                                </div>
-                                <div class="form-group">
-                                    <label for="ticketDescription">Descrição do problema *</label>
-                                    <textarea class="form-control" id="ticketDescription" rows="5" required
-                                              placeholder="Descreva o problema detalhadamente, incluindo passos para reprodução, resultado esperado e quaisquer mensagens de erro"></textarea>
-                                </div>
-                                <div class="form-group">
-                                    <label for="systemLogs">Registos do sistema (opcional)</label>
-                                    <textarea class="form-control" id="systemLogs" rows="3"
-                                              placeholder="Cole aqui os registos do sistema, se existirem"></textarea>
-                                </div>
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="fas fa-paper-plane mr-2"></i>
-                                    Enviar pedido
-                                </button>
-                            </form>
-                        </div>
-                    </div>
-
-                    <!-- Recent Tickets -->
-                    <div class="card support-card">
-                        <div class="card-header">
-                            <h3 class="card-title">
-                                <i class="fas fa-history mr-2"></i>
-                                Recentes pedidoи до tecnicamenteї підтримки
-                            </h3>
-                        </div>
-                        <div class="card-body">
-                            <div id="recentTickets">
-                                <div class="ticket-card ticket-medium">
-                                    <div class="d-flex justify-content-between align-items-start">
-                                        <div>
-                                            <h6 class="mb-1">TKT-2025-001: Problema de sincronização de dados</h6>
-                                            <p class="mb-2 text-muted">Dados de QR-codes não sincronizam entre dispositivos</p>
-                                            <small class="text-muted">Criado: 24 de setembro de 2025, 10:30</small>
-                                        </div>
-                                        <div class="text-right">
-                                            <span class="status-badge status-in-progress">Em progresso</span>
-                                            <br>
-                                            <small class="text-muted">Prioridade: Médio</small>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="ticket-card ticket-high">
-                                    <div class="d-flex justify-content-between align-items-start">
-                                        <div>
-                                            <h6 class="mb-1">TKT-2025-002: Erro crítico na API</h6>
-                                            <p class="mb-2 text-muted">API devolve 500 ao aceder aos elevadores</p>
-                                            <small class="text-muted">Criado: 23 de setembro de 2025, 15:45</small>
-                                        </div>
-                                        <div class="text-right">
-                                            <span class="status-badge status-resolved">Resolvido</span>
-                                            <br>
-                                            <small class="text-muted">Prioridade: Alto</small>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
                     <!-- Knowledge Base -->
                     <div class="card support-card">
                         <div class="card-header">
@@ -740,29 +638,6 @@
     <script src="../../assets/js/i18n.js"></script>
 
     <script>
-        // Support ticket form handling
-        document.getElementById('supportTicketForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-
-            const ticketData = {
-                subject: document.getElementById('ticketSubject').value,
-                priority: document.getElementById('ticketPriority').value,
-                category: document.getElementById('ticketCategory').value,
-                description: document.getElementById('ticketDescription').value,
-                systemLogs: document.getElementById('systemLogs').value,
-                timestamp: new Date().toISOString()
-            };
-
-            // Here you would send the ticket to the support system
-            console.log('Support ticket created:', ticketData);
-
-            // Show success message
-            toastr.success('O seu pedido de suporte técnico foi enviado! Número do pedido: TKT-2025-' + Date.now().toString().slice(-3));
-
-            // Reset form
-            this.reset();
-        });
-
         // Quick action functions
         function viewLogs() {
             window.open('monitor.html', '_blank');
