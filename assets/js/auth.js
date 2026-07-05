@@ -533,6 +533,21 @@ if (typeof window !== 'undefined') {
     }
 }
 
+// AdminLTE sets .sidebar{overflow-y:initial} and expects the OverlayScrollbars
+// plugin (not included in this project) to add real scrolling. Without it, on
+// roles with long menus (dispatcher, admin) the bottom items (e.g. "Sair") are
+// below the viewport and completely unreachable. Enable native scrolling —
+// no visual/layout change, just makes the existing overflow reachable.
+// Kept here (not just in sidebar-init.js) because most tech/client pages load
+// auth.js but not sidebar-init.js.
+(function injectSidebarScrollFix() {
+    if (document.getElementById('__sidebar_scroll_fix')) return;
+    const style = document.createElement('style');
+    style.id = '__sidebar_scroll_fix';
+    style.textContent = '.main-sidebar .sidebar{overflow-y:auto !important;padding-bottom:30px !important;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.3) transparent;}';
+    (document.head || document.documentElement).appendChild(style);
+})();
+
 // Global swalConfirm — replaces native confirm() with SweetAlert2 when available
 window.__nativeConfirm = window.confirm.bind(window);
 window.swalConfirm = async function(text, title = 'Confirmar') {

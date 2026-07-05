@@ -1,9 +1,24 @@
 /**
  * 🔧 Sidebar Treeview Initialization
  * Ініціалізує випадаючі меню sidebar після завантаження
- * 
+ *
  * КРИТИЧНО: Цей файл повинен завантажуватися ПІСЛЯ sidebar.html
  */
+
+/**
+ * AdminLTE задає .sidebar{overflow-y:initial} і розраховує, що прокрутку
+ * додасть плагін OverlayScrollbars — але він у проєкті не підключений.
+ * Через це на ролях з довгим меню (dispatcher, admin) нижні пункти
+ * (напр. "Sair") фізично недосяжні: скрол не працює взагалі.
+ * Вмикаємо нативну прокрутку без зміни вигляду сайдбару.
+ */
+(function injectSidebarScrollFix() {
+    if (document.getElementById('__sidebar_scroll_fix')) return;
+    const style = document.createElement('style');
+    style.id = '__sidebar_scroll_fix';
+    style.textContent = '.main-sidebar .sidebar{overflow-y:auto !important;padding-bottom:30px !important;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.3) transparent;}';
+    (document.head || document.documentElement).appendChild(style);
+})();
 
 /**
  * Прибирає anti-FOUC приховання, щоб сторінка стала видимою.
