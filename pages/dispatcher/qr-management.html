@@ -389,6 +389,12 @@
                                     <button class="btn btn-warning ml-2" id="printAllBtn" onclick="qrManager.printAll()">
                                         <i class="fas fa-print"></i> Imprimir todos
                                     </button>
+                                    <button class="btn btn-dark ml-2" id="printCabinSelectedBtn">
+                                        <i class="fas fa-id-card"></i> Cabines A6 (selecionados)
+                                    </button>
+                                    <button class="btn btn-dark ml-2" id="printCabinAllBtn" onclick="qrManager.printAllCabinStickers()">
+                                        <i class="fas fa-id-card"></i> Cabines A6 (todos)
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -494,6 +500,7 @@
                 <div class="modal-header bg-info">
                     <h5 class="modal-title" id="viewQRModalTitle">Detalhes do QR-code</h5>
                     <button type="button" class="btn btn-light btn-sm mr-2" id="printQRBtn" title="Imprimir" aria-label="Imprimir QR-code"><i class="fas fa-print"></i> Impressão</button>
+                    <button type="button" class="btn btn-dark btn-sm mr-2" id="printCabinBtn" title="Autocolante cabine (A6)" aria-label="Imprimir autocolante de cabine A6"><i class="fas fa-id-card"></i> Cabine A6</button>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Fechar"><span>&times;</span></button>
                 </div>
                 <div class="modal-body">
@@ -1011,7 +1018,12 @@
         $('#printSelectedBtn').off('click').on('click', function() {
             if (typeof qrManager !== 'undefined') qrManager.printSelected();
         });
-        
+
+        // Print selected cabin (A6) stickers via qrManager
+        $('#printCabinSelectedBtn').off('click').on('click', function() {
+            if (typeof qrManager !== 'undefined') qrManager.printSelectedCabinStickers();
+        });
+
         // Função показу de notificações
         function showNotification(message, type = 'info') {
             const alertClass = type === 'success' ? 'alert-success' : 
