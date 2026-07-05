@@ -4048,7 +4048,12 @@ Email de contacto: info@festlift.pt`;
             const res = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } });
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
             const blob = await res.blob();
-            const blobUrl = URL.createObjectURL(blob);
+            // Nomear o blob antes de abrir: se o Chrome do utilizador estiver configurado
+            // para descarregar PDFs em vez de os pré-visualizar, um blob sem nome é
+            // gravado com o UUID interno como nome de ficheiro (sem extensão, ilegível).
+            const reqId = (url.match(/requerimentos\/([^/]+)\/pdf/) || [])[1] || Date.now();
+            const namedFile = new File([blob], `Requerimento_${reqId}.pdf`, { type: blob.type || 'application/pdf' });
+            const blobUrl = URL.createObjectURL(namedFile);
             window.open(blobUrl, '_blank');
             setTimeout(() => URL.revokeObjectURL(blobUrl), 60000);
         } catch (err) {
@@ -7740,7 +7745,8 @@ Email de contacto: info@festlift.pt`;
             });
             if (!response.ok) throw new Error('Erro ao gerar PDF');
             const blob = await response.blob();
-            const url = URL.createObjectURL(blob);
+            const namedFile = new File([blob], `Orcamento_${orcamentoId}.pdf`, { type: blob.type || 'application/pdf' });
+            const url = URL.createObjectURL(namedFile);
             const win = window.open(url, '_blank');
             if (!win) {
                 // fallback se popup bloqueado

@@ -1378,7 +1378,8 @@ class LiftsManager {
             });
             if (!res.ok) throw new Error('Não foi possível abrir PDF');
             const blob = await res.blob();
-            const url = URL.createObjectURL(blob);
+            const namedFile = new File([blob], `Orcamento_${numero || id}.pdf`, { type: blob.type || 'application/pdf' });
+            const url = URL.createObjectURL(namedFile);
             window.open(url, '_blank');
             setTimeout(() => URL.revokeObjectURL(url), 15000);
         } catch (error) {
@@ -1394,7 +1395,8 @@ class LiftsManager {
             });
             if (!res.ok) throw new Error('Não foi possível imprimir o PDF');
             const blob = await res.blob();
-            const url = URL.createObjectURL(blob);
+            const namedFile = new File([blob], `Orcamento_${numero || id}.pdf`, { type: blob.type || 'application/pdf' });
+            const url = URL.createObjectURL(namedFile);
             const win = window.open(url, '_blank');
             if (win) {
                 win.addEventListener('load', () => { try { win.print(); } catch (e) {} });
