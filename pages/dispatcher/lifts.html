@@ -2802,6 +2802,15 @@
 
     <!-- Scripts -->
     <script src="../../plugins/bootstrap/bootstrap.bundle.min.js"></script>
+    <script>
+        // Corrige aviso "Blocked aria-hidden ... retained focus": ao fechar/trocar de modal
+        // aninhada, o foco por vezes não sai do botão activo antes do aria-hidden ser aplicado.
+        $(document).on('hide.bs.modal', '.modal', function() {
+            if (document.activeElement && this.contains(document.activeElement)) {
+                document.activeElement.blur();
+            }
+        });
+    </script>
     <script src="../../plugins/adminlte/adminlte.min.js"></script>
     <script src="/plugins/toastr/js/toastr.min.js"></script>
     <script src="../../plugins/sweetalert2/js/sweetalert2.min.js"></script>
