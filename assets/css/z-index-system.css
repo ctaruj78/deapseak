@@ -29,6 +29,8 @@
 #inspectionReportModal { z-index: var(--z-modal) !important; }
 #enhancedLiftModal     { z-index: var(--z-modal) !important; }
 #municipalityNotificationModal { z-index: calc(var(--z-modal) + 20) !important; }
+#addReportModal        { z-index: calc(var(--z-modal) + 20) !important; }
+#pdfParserModal        { z-index: calc(var(--z-modal) + 20) !important; }
 
 /* Sidebar */
 .main-sidebar          { z-index: var(--z-sidebar) !important; }

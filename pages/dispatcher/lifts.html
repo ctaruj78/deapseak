@@ -1923,9 +1923,16 @@
                         <div class="col-12">
                             <div class="d-flex justify-content-between align-items-center mb-2">
                                 <h6>Relatórios de inspecção</h6>
-                                <button type="button" class="btn btn-sm btn-primary" onclick="showAddReportModal()">
-                                    <i class="fas fa-plus"></i> Adicionar relatório
-                                </button>
+                                <div class="btn-group btn-group-sm">
+                                    <button type="button" class="btn btn-primary" onclick="showAddReportModal()">
+                                        <i class="fas fa-plus"></i> Adicionar relatório
+                                    </button>
+                                    <button type="button" class="btn btn-outline-secondary" id="detailsPdfParserBtn"
+                                            onclick="window._pdfPresetLiftId = document.getElementById('liftDetailsModal')?.dataset?.liftId || $('#detail-id').text(); $('#pdfParserModal').modal('show');"
+                                            title="Importar relatório PDF">
+                                        <i class="fas fa-file-pdf"></i> PDF
+                                    </button>
+                                </div>
                             </div>
                             
                             <!-- Filtros -->
