@@ -121,9 +121,11 @@ class AuthManager {
     }
 
     static isAuthenticated() {
-        // Prefer sessionStorage (tab-specific) over localStorage
-        const token = sessionStorage.getItem(this.TOKEN_KEY) || localStorage.getItem(this.TOKEN_KEY);
-        
+        // Only sessionStorage (tab-specific). localStorage can hold a leftover token from a
+        // different account tested earlier in the same browser without an explicit logout —
+        // trusting it here would silently authenticate this tab as that other account.
+        const token = sessionStorage.getItem(this.TOKEN_KEY);
+
         if (!token) {
             console.log('❌ isAuthenticated: Токен не знайдено');
             return false;
@@ -146,20 +148,13 @@ class AuthManager {
                 localStorage.removeItem(this.USER_KEY);
                 return false;
             }
-            
+
             // Якщо токен закінчується менш ніж через 24 horasи — оновлюємо заздалегідь
             if (payload.exp && (payload.exp - now) < 86400) {
                 console.log('🔄 Токен закінчується < 24h, оновлюємо у фоні...');
                 this.refreshAccessToken().catch(() => {});
             }
-            
-            // Якщо токен є тільки в localStorage (стара сесія) — скопіюємо в sessionStorage
-            if (!sessionStorage.getItem(this.TOKEN_KEY)) {
-                sessionStorage.setItem(this.TOKEN_KEY, token);
-                const lsUser = localStorage.getItem(this.USER_KEY);
-                if (lsUser) sessionStorage.setItem(this.USER_KEY, lsUser);
-            }
-            
+
             console.log('✅ isAuthenticated: Токен валідний');
             return true;
         } catch (error) {
@@ -169,18 +164,19 @@ class AuthManager {
     }
 
     static getCurrentUser() {
-        // Prefer sessionStorage (tab-specific)
-        const token = sessionStorage.getItem(this.TOKEN_KEY) || localStorage.getItem(this.TOKEN_KEY);
+        // Only sessionStorage (tab-specific) — see isAuthenticated() for why localStorage
+        // is not trusted here.
+        const token = sessionStorage.getItem(this.TOKEN_KEY);
         if (!token) return null;
-        
+
         try {
             const payload = JSON.parse(atob(token.split('.')[1]));
             const now = Math.floor(Date.now() / 1000);
             if (payload.exp && payload.exp < now) return null;
-            
+
             // JWT payload is authoritative for role/id/email (signed, can't be tampered)
             // Merge with stored user data for additional fields (name, phone, etc.)
-            const storedUser = sessionStorage.getItem(this.USER_KEY) || localStorage.getItem(this.USER_KEY);
+            const storedUser = sessionStorage.getItem(this.USER_KEY);
             const userData = storedUser ? JSON.parse(storedUser) : {};
             
             return {
@@ -305,6 +301,38 @@ class AuthManager {
             const refreshToken = localStorage.getItem(this.REFRESH_KEY);
             if (refreshToken) {
                 console.log('🔄 Access token відсутній/прострочений, спроба оновлення...');
+
+                // Security: this tab has no session of its own — the only thing we found is a
+                // *global* (cross-tab) remembered session in localStorage. Silently resuming it
+                // is exactly what let a leftover test-login (e.g. a client account, tested in this
+                // same browser without an explicit logout) auto-take-over a fresh tab meant for a
+                // different account. Ask once, so "remember me" keeps working but never invisibly.
+                let remembered = null;
+                try { remembered = JSON.parse(localStorage.getItem(this.USER_KEY) || 'null'); } catch (e) {}
+                const label = remembered
+                    ? (((remembered.firstName || '') + ' ' + (remembered.lastName || '')).trim() || remembered.name || remembered.email || 'sessão guardada')
+                    : 'sessão guardada';
+                const roleLabel = remembered && remembered.role ? ` (${remembered.role})` : '';
+                const resumeText = `Continuar sessão como ${label}${roleLabel}?`;
+                const wantsResume = typeof Swal !== 'undefined'
+                    ? (await Swal.fire({
+                        title: 'Sessão anterior encontrada',
+                        text: resumeText,
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonText: 'Continuar',
+                        cancelButtonText: 'Iniciar sessão'
+                    })).isConfirmed
+                    : window.confirm(resumeText);
+
+                if (!wantsResume) {
+                    [this.TOKEN_KEY, this.USER_KEY, this.REFRESH_KEY, 'token', 'authToken', 'userData', 'currentUser'].forEach(k => {
+                        localStorage.removeItem(k); sessionStorage.removeItem(k);
+                    });
+                    this._doLoginRedirect(pathname);
+                    return;
+                }
+
                 try {
                     const refreshed = await this.refreshAccessToken();
                     if (refreshed) {

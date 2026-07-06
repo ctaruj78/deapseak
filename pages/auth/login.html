@@ -20,13 +20,17 @@
         try {
             if (new URLSearchParams(window.location.search).get('logout') === 'true') return;
             if (sessionStorage.getItem('redirecting')) return;
-            var token = sessionStorage.getItem('liftmanager_jwt') || localStorage.getItem('liftmanager_jwt');
+            // Security: only trust sessionStorage here (per-tab). localStorage can hold
+            // a leftover token from a previous session in the same browser (e.g. testing
+            // another account) that was never explicitly logged out — silently trusting it
+            // would auto-login the visitor into that stale account instead of showing the form.
+            var token = sessionStorage.getItem('liftmanager_jwt');
             if (!token) return;
             var parts = token.split('.');
             if (parts.length !== 3) return;
             var payload = JSON.parse(atob(parts[1]));
             if (!payload.exp || payload.exp * 1000 <= Date.now()) return;
-            var userStr = sessionStorage.getItem('liftmanager_user') || localStorage.getItem('liftmanager_user');
+            var userStr = sessionStorage.getItem('liftmanager_user');
             if (!userStr) return;
             var user = JSON.parse(userStr);
             if (!user || !user.role) return;
