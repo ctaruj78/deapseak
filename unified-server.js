@@ -3532,6 +3532,9 @@ app.get('/api/lifts/stats', authenticateToken, async (req, res) => {
 
 // GET /api/lifts/notifications - отримання статистики сповіщень
 app.get('/api/lifts/notifications', authenticateToken, async (req, res) => {
+    if (req.user.role !== 'admin' && req.user.role !== 'dispatcher') {
+        return res.status(403).json({ success: false, message: 'Acesso negado' });
+    }
     try {
         const liftsCollection = db.collection('lifts');
         const today = new Date();
@@ -3678,8 +3681,12 @@ app.get('/api/lifts', authenticateToken, async (req, res) => {
                 query.$or = orConds;
                 console.log(`🔍 Фільтр по clientId: ${clientId} (${orConds.length} умов)`);
             }
+        } else {
+            // 🔐 Невідома/непідтримувана роль — НІКОЛИ не повертати весь список за замовчуванням
+            console.error(`❌ GET /api/lifts: невідома роль "${req.user.role}" для user ${req.user.id || req.user.userId}`);
+            return res.status(403).json({ success: false, message: 'Acesso negado' });
         }
-        
+
         // 🔍 Фільтр пошуку (municipalNumber, вулиця, місто, ім'я клієнта)
         // Sanitize: ensure search is a plain string (prevent NoSQL injection via $regex object)
         const rawSearch = req.query.search;
@@ -15811,6 +15818,19 @@ app.get('/api/agent/lift-history', authenticateToken, async (req, res) => {
     try {
         const { liftLocation } = req.query;
         if (!liftLocation) return res.status(400).json({ success: false, error: 'Missing liftLocation' });
+
+        // 🔐 Клієнт може запитувати лише findings по адресах своїх власних ліфтів —
+        // liftLocation це вільний текст, тому перевіряємо через agent_notifications,
+        // де для кожного findings вже зберігається clientEmail власника.
+        if (req.user.role === 'client') {
+            if (!req.user.email) return res.status(403).json({ success: false, error: 'Acesso negado' });
+            const owns = await db.collection('agent_notifications').findOne({
+                liftLocation,
+                clientEmail: req.user.email.toLowerCase()
+            });
+            if (!owns) return res.status(403).json({ success: false, error: 'Acesso negado' });
+        }
+
         const data = await agentService.buildCumulativeQuoteContext(liftLocation);
         res.json({ success: true, data });
     } catch (err) {

@@ -150,20 +150,13 @@ class PredictiveMaintenanceSystem {
                 }
             } catch (e) {
                 console.error('❌ Erro запиту до API /api/lifts:', e);
-                console.warn('⚠️ Спробуємо localStorage як fallback');
             }
-            
-            // Fallback на localStorage якщо API не спрацював
-            if (lifts.length === 0) {
-                try {
-                    lifts = JSON.parse(localStorage.getItem('lifts') || '[]');
-                    console.log(`📦 Завантажено ${lifts.length} ліфтів з localStorage`);
-                } catch (e) {
-                    console.warn('⚠️ Не вдалося завантажити дані ліфтів з localStorage');
-                    lifts = [];
-                }
-            }
-            
+
+            // ⚠️ NÃO usar localStorage['lifts'] como fallback: essa chave é partilhada
+            // globalmente (admin/dispatcher também escrevem nela) e não é filtrada por
+            // utilizador/role — usá-la aqui podia mostrar a um cliente os elevadores
+            // doutra conta que tenha usado o mesmo navegador antes.
+
             // Якщо немає жодних ліфтів - показуємо попередження
             if (lifts.length === 0) {
                 console.warn('⚠️ Немає ліфтів в базі даних. Додайте ліфти через адмін панель.');
@@ -1251,8 +1244,8 @@ class PredictiveMaintenanceSystem {
     }
 
     getElevatorById(liftId) {
-        const lifts = JSON.parse(localStorage.getItem('lifts') || '[]');
-        return lifts.find(lift => lift.id === liftId || lift.municipalNumber === liftId);
+        const lifts = this.lifts || [];
+        return lifts.find(lift => (lift.id || lift._id) === liftId || lift.municipalNumber === liftId);
     }
 
     estimateTotalMaintenanceCost(data) {

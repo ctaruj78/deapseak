@@ -106,7 +106,11 @@ class AuthManager {
             'lm_token',           // Старий формат
             'deapseak_token',     // V2 формат
             'user',               // Головний user (login.html)
-            'currentUser'         // Dashboard/profile cache
+            'currentUser',        // Dashboard/profile cache
+            'lifts'               // ⚠️ Кеш ліфтів — спільний ключ між ролями (admin/dispatcher
+                                   // пишуть сюди повний список), не має «пережити» вихід з системи,
+                                   // інакше наступний користувач на цьому ж пристрої/браузері
+                                   // може побачити чужі/адмінські дані як fallback
         ];
         keys.forEach(key => {
             localStorage.removeItem(key);

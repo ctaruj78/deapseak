@@ -18,6 +18,7 @@ class LiftsManager {
     }
 
     async loadLifts() {
+        this._loadError = false;
         try {
             // Спроба отримати дані з API
             const token = AuthManager.getAuthToken
@@ -28,7 +29,7 @@ class LiftsManager {
                     'Authorization': `Bearer ${token}`
                 }
             });
-            
+
             if (response.ok) {
                 const result = await response.json();
                 // API повертає {success: true, data: [...]}
@@ -37,17 +38,17 @@ class LiftsManager {
                 if (this.lifts.length > 0) {
                     console.log('📋 Приклад ліфта:', this.lifts[0]);
                 }
-                localStorage.setItem('lifts', JSON.stringify(this.lifts));
             } else {
                 throw new Error('API indisponível');
             }
         } catch (error) {
+            // ⚠️ NÃO usar cache localStorage como fallback: a chave 'lifts' é partilhada
+            // globalmente (admin/dispatcher também escrevem nela) e sobrevive ao logout,
+            // logo pode conter a lista completa doutra sessão/role neste mesmo navegador.
+            // Mostrar um erro é mais seguro do que arriscar mostrar dados doutro cliente.
             console.warn('Erro завантаження з API:', error);
-            this.lifts = JSON.parse(localStorage.getItem('lifts')) || [];
-            
-            if (this.lifts.length === 0) {
-                console.info('ℹ️ Sem dados про ліфти. Додайте ліфти через адмін-панель.');
-            }
+            this.lifts = [];
+            this._loadError = true;
         }
 
         this.applyFilters();
@@ -302,6 +303,22 @@ class LiftsManager {
     renderLifts(lifts) {
         const grid = $('#liftsGrid');
         grid.empty();
+
+        if (this._loadError) {
+            grid.html(`
+                <div class="col-12">
+                    <div class="empty-state">
+                        <i class="fas fa-exclamation-triangle fa-3x mb-3 text-warning"></i>
+                        <h4>Não foi possível carregar os elevadores</h4>
+                        <p>Verifique a sua ligação e tente novamente.</p>
+                        <button class="btn btn-primary" onclick="liftsManager.loadLifts()">
+                            <i class="fas fa-sync"></i> Tentar novamente
+                        </button>
+                    </div>
+                </div>
+            `);
+            return;
+        }
 
         if (lifts.length === 0) {
             grid.html(`

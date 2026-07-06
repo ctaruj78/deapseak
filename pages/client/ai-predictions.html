@@ -807,9 +807,10 @@ async function loadClientLifts() {
             console.log('📋 Dados dos elevadores do cliente:', clientLifts);
         } else {
             console.error('❌ Erro ao carregar de elevadores:', response.status);
-            // Fallback на localStorage
-            const allLifts = JSON.parse(localStorage.getItem('lifts') || '[]');
-            clientLifts = allLifts.filter(lift => lift.client === user.id);
+            // ⚠️ NÃO usar localStorage['lifts'] como fallback: é uma chave global partilhada
+            // (admin/dispatcher também escrevem lá a lista completa), não fica limpa no logout,
+            // e podia mostrar a este cliente elevadores doutra conta usada neste navegador.
+            clientLifts = [];
         }
     } catch (error) {
         console.error('❌ Erro:', error);

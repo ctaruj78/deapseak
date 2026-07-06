@@ -583,7 +583,10 @@ router.get('/', authenticate, authorizeRoles('admin', 'dispatcher', 'client'), a
         const query = {};
         
         // Clientes só podem ver os próprios orçamentos
-        if (req.user.role === 'client' && req.user.email) {
+        if (req.user.role === 'client') {
+            if (!req.user.email) {
+                return res.status(400).json({ success: false, message: 'Token de utilizador incorreto' });
+            }
             query['cliente.email'] = req.user.email.toLowerCase();
         }
 
@@ -721,7 +724,7 @@ router.get('/:id/pdf', authenticate, async (req, res) => {
         }
 
         // Cliente só pode descarregar o seu próprio orçamento
-        if (req.user.role === 'client' && orcamento.cliente.email.toLowerCase() !== req.user.email.toLowerCase()) {
+        if (req.user.role === 'client' && orcamento.cliente.email.toLowerCase() !== (req.user.email || '').toLowerCase()) {
             return res.status(403).json({ success: false, message: 'Sem permissão para este orçamento' });
         }
 
@@ -746,7 +749,7 @@ router.get('/:id', authenticate, async (req, res) => {
         }
 
         // Cliente só pode ver o seu próprio orçamento
-        if (req.user.role === 'client' && orcamento.cliente.email.toLowerCase() !== req.user.email.toLowerCase()) {
+        if (req.user.role === 'client' && orcamento.cliente.email.toLowerCase() !== (req.user.email || '').toLowerCase()) {
             return res.status(403).json({ success: false, message: 'Sem permissão para este orçamento' });
         }
 
