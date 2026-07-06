@@ -75,6 +75,61 @@ class LiftsManager {
         $('#searchInput').on('input', (e) => {
             this.applyFilters();
         });
+
+        $('#searchBtn').on('click', (e) => {
+            $('#searchInput').trigger('input');
+        });
+    }
+
+    normalizeSearchText(value) {
+        return String(value || '')
+            .toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+            .replace(/\s+/g, ' ')
+            .trim();
+    }
+
+    collectLiftSearchBlob(lift) {
+        const parts = [];
+        const add = (value) => {
+            if (!value && value !== 0) return;
+            const text = String(value).trim();
+            if (text) parts.push(text);
+        };
+
+        add(lift.municipalNumber);
+        add(lift.manufacturer);
+        add(lift.model);
+        add(lift.type);
+        add(lift.name);
+        add((lift._id || lift.id || '').toString());
+
+        if (typeof lift.address === 'object' && lift.address) {
+            add(lift.address.street);
+            add(lift.address.city);
+            add(lift.address.zipCode);
+        } else if (typeof lift.address === 'string') {
+            add(lift.address);
+        }
+        add(lift.location);
+
+        if (typeof lift.municipality === 'object' && lift.municipality) {
+            add(lift.municipality.name);
+        } else {
+            add(lift.municipality);
+        }
+
+        return this.normalizeSearchText(parts.join(' '));
+    }
+
+    liftMatchesSearch(lift, rawQuery) {
+        const normalizedQuery = this.normalizeSearchText(rawQuery);
+        if (!normalizedQuery) return true;
+
+        const searchable = this.collectLiftSearchBlob(lift);
+        const terms = normalizedQuery.split(' ').filter(Boolean);
+        return terms.every(term => searchable.includes(term));
     }
 
     applyFilters() {
@@ -95,19 +150,9 @@ class LiftsManager {
         }
 
         // Pesquisa
-        const searchTerm = $('#searchInput').val()?.toLowerCase() || '';
-        if (searchTerm) {
-            filteredLifts = filteredLifts.filter(lift => {
-                // Безпечне отримання значень з перевіркою на undefined
-                const model = String(lift.model || lift.municipalNumber || '').toLowerCase();
-                const addressStr = lift.address ? (typeof lift.address === 'string' ? lift.address : (lift.address.street || '')) : '';
-                const location = String(lift.location || addressStr || '').toLowerCase();
-                const name = String(lift.name || '').toLowerCase();
-                
-                return model.includes(searchTerm) ||
-                       location.includes(searchTerm) ||
-                       name.includes(searchTerm);
-            });
+        const searchTerm = $('#searchInput').val() || '';
+        if (searchTerm.trim()) {
+            filteredLifts = filteredLifts.filter(lift => this.liftMatchesSearch(lift, searchTerm));
         }
 
         filteredLifts = this.sortLifts(filteredLifts);
