@@ -396,7 +396,7 @@
 
             const ul = document.getElementById('orcPaginationLinks');
             ul.innerHTML = '';
-            const mkLi = async (label, p, disabled, active) => {
+            const mkLi = (label, p, disabled, active) => {
                 const li = document.createElement('li');
                 li.className = 'page-item' + (disabled ? ' disabled' : '') + (active ? ' active' : '');
                 li.innerHTML = disabled

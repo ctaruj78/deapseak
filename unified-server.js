@@ -13281,6 +13281,10 @@ if (!mongoose.modelNames().includes('User')) {
 const orcamentosRoutes = require('./backend/routes/orcamentos');
 app.use('/api/orcamentos', orcamentosRoutes);
 
+// 📋 Catálogo de categorias para orçamentos de modernização
+const orcamentoCategoriasRoutes = require('./backend/routes/orcamentoCategorias');
+app.use('/api/orcamento-categorias', orcamentoCategoriasRoutes);
+
 const saftRoutes = require('./backend/routes/saftRoutes');
 app.use('/api/saft', saftRoutes);
 

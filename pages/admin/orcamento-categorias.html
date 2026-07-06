@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="/assets/img/favicon.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FestLift — Categorias de Orçamento</title>
+    <script src="../../assets/js/auth.js"></script>
+    <link rel="stylesheet" href="../../plugins/adminlte/adminlte.min.css">
+    <link rel="stylesheet" href="../../plugins/fontawesome/css/all.min.css">
+    <style>
+        .badge-grupo-eletrico    { background:#17a2b8; }
+        .badge-grupo-mecanico    { background:#6f42c1; }
+        .badge-grupo-estrutural  { background:#dc3545; }
+        .badge-grupo-seguranca   { background:#fd7e14; }
+        .badge-grupo-outro       { background:#6c757d; }
+        .categoria-row:hover { background:#f8f9fa; }
+        .categoria-row.inativa { opacity:.55; }
+    </style>
+</head>
+<body class="hold-transition sidebar-mini layout-fixed" data-required-role="admin">
+<div class="wrapper">
+
+    <!-- Navbar -->
+    <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+        <ul class="navbar-nav">
+            <li class="nav-item"><a class="nav-link" data-widget="pushmenu" href="#"><i class="fas fa-bars"></i></a></li>
+            <li class="nav-item d-none d-sm-inline-block"><a href="admin-dashboard.html" class="nav-link">Painel</a></li>
+            <li class="nav-item d-none d-sm-inline-block"><a class="nav-link text-muted">/ Categorias de Orçamento</a></li>
+        </ul>
+        <ul class="navbar-nav ml-auto">
+            <li class="nav-item"><a class="nav-link" href="#" onclick="logout()"><i class="fas fa-sign-out-alt text-danger"></i></a></li>
+        </ul>
+    </nav>
+
+    <!-- Sidebar -->
+    <aside class="main-sidebar sidebar-dark-primary elevation-4">
+        <div id="sidebar-container"></div>
+    </aside>
+
+    <!-- Content -->
+    <div class="content-wrapper">
+        <div class="content-header">
+            <div class="container-fluid">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <h1 class="m-0"><i class="fas fa-layer-group mr-2 text-primary"></i>Categorias de Orçamento</h1>
+                        <p class="text-muted mb-0 small">Catálogo de materiais/trabalhos usados para montar orçamentos de modernização. Categorias marcadas como "crítica" geram aviso de não-conformidade no PDF quando não forem incluídas no orçamento.</p>
+                    </div>
+                    <div class="col-auto">
+                        <button class="btn btn-primary" data-toggle="modal" data-target="#categoriaModal" onclick="openCreate()">
+                            <i class="fas fa-plus mr-1"></i>Nova categoria
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <section class="content">
+            <div class="container-fluid">
+
+                <!-- Filtros -->
+                <div class="card card-outline card-primary mb-3">
+                    <div class="card-body py-2">
+                        <div class="row align-items-center">
+                            <div class="col-auto"><strong class="small">Grupo:</strong></div>
+                            <div class="col-auto">
+                                <select id="filterGrupo" class="form-control form-control-sm" onchange="loadCategorias()">
+                                    <option value="">Todos</option>
+                                    <option value="eletrico">Elétrico</option>
+                                    <option value="mecanico">Mecânico</option>
+                                    <option value="estrutural">Estrutural</option>
+                                    <option value="seguranca">Segurança</option>
+                                    <option value="outro">Outro</option>
+                                </select>
+                            </div>
+                            <div class="col-auto">
+                                <div class="custom-control custom-switch">
+                                    <input type="checkbox" class="custom-control-input" id="filterAtivo" onchange="loadCategorias()">
+                                    <label class="custom-control-label small" for="filterAtivo">Só ativas</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tabela -->
+                <div class="card">
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th style="width:28%">Nome</th>
+                                        <th>Grupo</th>
+                                        <th>Preço sugerido</th>
+                                        <th>Norma</th>
+                                        <th>Crítica</th>
+                                        <th>Estado</th>
+                                        <th style="width:110px">Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="categoriasTableBody">
+                                    <tr><td colspan="7" class="text-center py-4"><i class="fas fa-spinner fa-spin mr-2"></i>A carregar...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="card-footer text-muted small" id="tableFooter"></div>
+                </div>
+
+            </div>
+        </section>
+    </div>
+
+    <footer class="main-footer">
+        <strong>FestLift</strong> — Sistema de Gestão de Elevadores v2.1
+    </footer>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════
+     Modal: Criar / Editar categoria
+══════════════════════════════════════════════════════════ -->
+<div class="modal fade" id="categoriaModal" tabindex="-1">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="categoriaModalTitle"><i class="fas fa-layer-group mr-2"></i>Nova categoria</h5>
+                <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="editCategoriaId">
+                <div class="row">
+                    <div class="col-md-7">
+                        <div class="form-group">
+                            <label>Nome <span class="text-danger">*</span></label>
+                            <input type="text" id="fNome" class="form-control" placeholder="Ex.: Quadro de Elevador CPU STO">
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="form-group">
+                            <label>Grupo</label>
+                            <select id="fGrupo" class="form-control">
+                                <option value="eletrico">Elétrico</option>
+                                <option value="mecanico">Mecânico</option>
+                                <option value="estrutural">Estrutural</option>
+                                <option value="seguranca">Segurança</option>
+                                <option value="outro">Outro</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-1">
+                        <div class="form-group">
+                            <label>Unidade</label>
+                            <input type="text" id="fUnidade" class="form-control" placeholder="un">
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="form-group">
+                            <label>Preço sugerido (€)</label>
+                            <input type="number" id="fPreco" class="form-control" min="0" step="0.01" placeholder="0.00">
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Descrição da linha de serviço <span class="text-danger">*</span></label>
+                    <textarea id="fDescricao" class="form-control" rows="4" placeholder="Texto completo usado como descrição no orçamento quando esta categoria é vendida"></textarea>
+                </div>
+                <hr>
+                <div class="row">
+                    <div class="col-md-9">
+                        <div class="form-group">
+                            <label>Norma aplicável</label>
+                            <input type="text" id="fNorma" class="form-control" placeholder="Ex.: EN 81-20:2014, Art. 5.2.1; D.L. n.º 320/2002, Art. 9.º">
+                        </div>
+                    </div>
+                    <div class="col-md-3 d-flex align-items-center">
+                        <div class="custom-control custom-switch mt-3">
+                            <input type="checkbox" class="custom-control-input" id="fCritico">
+                            <label class="custom-control-label" for="fCritico">Categoria crítica (gera aviso se excluída)</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Nota de não-conformidade <small class="text-muted">(inserida no PDF do AVISO quando esta categoria NÃO estiver no orçamento)</small></label>
+                    <textarea id="fNota" class="form-control" rows="4" placeholder="Ex.: A caixa do elevador deve ser completamente fechada em toda a sua altura..."></textarea>
+                </div>
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="custom-control custom-switch mt-3">
+                            <input type="checkbox" class="custom-control-input" id="fAtivo" checked>
+                            <label class="custom-control-label" for="fAtivo">Ativa</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="saveCategoria()"><i class="fas fa-save mr-1"></i>Guardar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="../../plugins/jquery/jquery.min.js"></script>
+<script src="../../plugins/bootstrap/bootstrap.bundle.min.js"></script>
+<script src="../../plugins/adminlte/adminlte.min.js"></script>
+<script src="/plugins/toastr/js/toastr.min.js"></script>
+<script src="../../plugins/sweetalert2/js/sweetalert2.min.js"></script>
+<script src="../../assets/js/sidebar-init.js"></script>
+<script src="../../assets/js/config.js"></script>
+
+<script>
+$(document).ready(function() {
+    loadSidebarWithInit('includes/sidebar.html');
+    loadCategorias();
+});
+
+const GRUPO_LABELS = { eletrico:'Elétrico', mecanico:'Mecânico', estrutural:'Estrutural', seguranca:'Segurança', outro:'Outro' };
+
+function getToken() {
+    return sessionStorage.getItem('liftmanager_jwt') || localStorage.getItem('liftmanager_jwt') || '';
+}
+
+async function apiCall(url, method = 'GET', body = null) {
+    const opts = { method, headers: { 'Authorization': `Bearer ${getToken()}`, 'Content-Type': 'application/json' } };
+    if (body) opts.body = JSON.stringify(body);
+    try {
+        let res = await fetch(url, opts);
+        if (res.status === 401 || res.status === 403) {
+            const refreshed = (typeof AuthManager !== 'undefined') && await AuthManager.refreshAccessToken().catch(() => false);
+            if (refreshed) {
+                opts.headers['Authorization'] = `Bearer ${getToken()}`;
+                res = await fetch(url, opts);
+            }
+        }
+        return await res.json();
+    } catch (e) {
+        console.error('apiCall error:', url, e);
+        return { success: false, message: e.message };
+    }
+}
+
+async function loadCategorias() {
+    const grupo = $('#filterGrupo').val();
+    const soAtivas = $('#filterAtivo').is(':checked');
+
+    const params = new URLSearchParams();
+    if (grupo) params.append('grupo', grupo);
+    if (soAtivas) params.append('ativo', 'true');
+
+    const res = await apiCall(`/api/orcamento-categorias?${params.toString()}`);
+    if (!res.success) {
+        $('#categoriasTableBody').html(`<tr><td colspan="7" class="text-center py-4 text-danger"><i class="fas fa-exclamation-triangle mr-2"></i>Erro ao carregar categorias: ${escHtml(res.message || '')}</td></tr>`);
+        return;
+    }
+    renderTable(res.data || []);
+}
+
+function renderTable(categorias) {
+    if (!categorias.length) {
+        $('#categoriasTableBody').html('<tr><td colspan="7" class="text-center py-4 text-muted">Nenhuma categoria encontrada</td></tr>');
+        $('#tableFooter').text('');
+        return;
+    }
+    const rows = categorias.map(c => {
+        const grupoLabel = GRUPO_LABELS[c.grupo] || c.grupo;
+        const criticoBadge = c.critico ? '<span class="badge badge-danger">Crítica</span>' : '<span class="text-muted">—</span>';
+        const estadoBadge = c.ativo ? '<span class="badge badge-success">Ativa</span>' : '<span class="badge badge-secondary">Inativa</span>';
+        const preco = typeof c.precoSugerido === 'number' ? c.precoSugerido.toLocaleString('pt-PT', { style:'currency', currency:'EUR' }) : '—';
+        return `<tr class="categoria-row ${c.ativo ? '' : 'inativa'}">
+            <td><strong>${escHtml(c.nome)}</strong></td>
+            <td><span class="badge badge-grupo-${c.grupo}">${grupoLabel}</span></td>
+            <td>${preco}</td>
+            <td class="small">${escHtml(c.norma || '—')}</td>
+            <td>${criticoBadge}</td>
+            <td>${estadoBadge}</td>
+            <td>
+                <button class="btn btn-xs btn-outline-primary mr-1" onclick="editCategoria('${c._id}')" title="Editar"><i class="fas fa-edit"></i></button>
+                <button class="btn btn-xs btn-outline-danger" onclick="deleteCategoria('${c._id}', '${escHtml(c.nome).replace(/'/g,"\\'")}')" title="Eliminar"><i class="fas fa-trash"></i></button>
+            </td>
+        </tr>`;
+    });
+    $('#categoriasTableBody').html(rows.join(''));
+    $('#tableFooter').text(`${categorias.length} categoria${categorias.length !== 1 ? 's' : ''} encontrada${categorias.length !== 1 ? 's' : ''}`);
+}
+
+function openCreate() {
+    $('#categoriaModalTitle').html('<i class="fas fa-plus mr-2"></i>Nova categoria');
+    $('#editCategoriaId').val('');
+    $('#fNome,#fDescricao,#fNorma,#fNota').val('');
+    $('#fGrupo').val('eletrico');
+    $('#fUnidade').val('un');
+    $('#fPreco').val('');
+    $('#fCritico').prop('checked', false);
+    $('#fAtivo').prop('checked', true);
+}
+
+async function editCategoria(id) {
+    const res = await apiCall(`/api/orcamento-categorias/${id}`);
+    if (!res.success) { toastr.error('Erro ao carregar categoria'); return; }
+    const c = res.data;
+    $('#categoriaModalTitle').html('<i class="fas fa-edit mr-2"></i>Editar categoria');
+    $('#editCategoriaId').val(c._id);
+    $('#fNome').val(c.nome);
+    $('#fGrupo').val(c.grupo);
+    $('#fUnidade').val(c.unidade || 'un');
+    $('#fPreco').val(c.precoSugerido || 0);
+    $('#fDescricao').val(c.descricao || '');
+    $('#fNorma').val(c.norma || '');
+    $('#fNota').val(c.notaNaoConformidade || '');
+    $('#fCritico').prop('checked', !!c.critico);
+    $('#fAtivo').prop('checked', c.ativo !== false);
+    $('#categoriaModal').modal('show');
+}
+
+async function saveCategoria() {
+    const id = $('#editCategoriaId').val();
+    const payload = {
+        nome: $('#fNome').val().trim(),
+        grupo: $('#fGrupo').val(),
+        unidade: $('#fUnidade').val().trim() || 'un',
+        precoSugerido: parseFloat($('#fPreco').val()) || 0,
+        descricao: $('#fDescricao').val().trim(),
+        norma: $('#fNorma').val().trim(),
+        notaNaoConformidade: $('#fNota').val().trim(),
+        critico: $('#fCritico').is(':checked'),
+        ativo: $('#fAtivo').is(':checked')
+    };
+    if (!payload.nome || !payload.descricao) {
+        toastr.warning('Nome e descrição são obrigatórios');
+        return;
+    }
+    const url = id ? `/api/orcamento-categorias/${id}` : '/api/orcamento-categorias';
+    const method = id ? 'PUT' : 'POST';
+    const res = await apiCall(url, method, payload);
+    if (res.success) {
+        toastr.success(id ? 'Categoria atualizada' : 'Categoria criada');
+        $('#categoriaModal').modal('hide');
+        loadCategorias();
+    } else {
+        toastr.error(res.message || 'Erro ao guardar');
+    }
+}
+
+async function deleteCategoria(id, nome) {
+    if (!await swalConfirm(`Eliminar a categoria "${nome}"?\nEsta ação é irreversível.`)) return;
+    const res = await apiCall(`/api/orcamento-categorias/${id}`, 'DELETE');
+    if (res.success) {
+        toastr.success('Categoria eliminada');
+        loadCategorias();
+    } else {
+        toastr.error(res.message || 'Erro ao eliminar');
+    }
+}
+
+function escHtml(str) {
+    return (str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function logout() {
+    if (typeof AuthManager !== 'undefined') AuthManager.logout();
+    else { localStorage.clear(); window.location.replace('/pages/auth/login.html'); }
+}
+
+async function swalConfirm(text, title = 'Confirmar') {
+    const r = await Swal.fire({
+        title, text, icon: 'warning', showCancelButton: true,
+        confirmButtonColor: '#e74c3c', cancelButtonColor: '#95a5a6',
+        confirmButtonText: 'Confirmar', cancelButtonText: 'Cancelar'
+    });
+    return r.isConfirmed;
+}
+</script>
+<script src="../../assets/js/monitor.js"></script>
+</body>
+</html>
