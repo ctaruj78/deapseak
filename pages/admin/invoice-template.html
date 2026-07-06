@@ -507,6 +507,16 @@
                                         <div class="row">
                                             <div class="col-12">
                                                 <h5>Serviços/Produtos</h5>
+                                                <div class="input-group input-group-sm mb-2" style="max-width:480px;">
+                                                    <select id="catalogoSelect" class="form-control">
+                                                        <option value="">Escolher do catálogo de categorias...</option>
+                                                    </select>
+                                                    <div class="input-group-append">
+                                                        <button type="button" class="btn btn-outline-primary" onclick="addServiceFromCatalog()">
+                                                            <i class="fas fa-layer-group"></i> Adicionar do catálogo
+                                                        </button>
+                                                    </div>
+                                                </div>
                                                 <div class="table-responsive">
                                                     <table class="table table-bordered" id="servicesTable">
                                                         <thead>
@@ -520,7 +530,7 @@
                                                         </thead>
                                                         <tbody>
                                                             <tr>
-                                                                <td><input type="text" class="form-control" placeholder="Manutenção técnica de elevador"></td>
+                                                                <td><input type="hidden" class="categoria-id" value=""><input type="text" class="form-control" placeholder="Manutenção técnica de elevador"></td>
                                                                 <td><input type="number" class="form-control qty" value="1" min="1"></td>
                                                                 <td><input type="number" class="form-control price" placeholder="100.00" step="0.01"></td>
                                                                 <td class="total">0.00</td>
@@ -877,7 +887,7 @@
             addServiceRow() {
                 const newRow = `
                     <tr>
-                        <td><input type="text" class="form-control" placeholder="Descrição do serviço"></td>
+                        <td><input type="hidden" class="categoria-id" value=""><input type="text" class="form-control" placeholder="Descrição do serviço"></td>
                         <td><input type="number" class="form-control qty" value="1" min="1"></td>
                         <td><input type="number" class="form-control price" placeholder="0.00" step="0.01"></td>
                         <td class="total">0.00</td>
@@ -1401,6 +1411,67 @@
             invoiceManager.removeRow(button);
         }
 
+        // ─── Catálogo de categorias de orçamento ─────────────────────────
+        window._catalogoCategorias = [];
+
+        function escAttr(str) {
+            return String(str || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        }
+
+        async function loadCategoriasCatalogo(token) {
+            try {
+                const res = await fetch('/api/orcamento-categorias?ativo=true', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const result = await res.json();
+                if (!result.success) return;
+                window._catalogoCategorias = result.data || [];
+
+                const grupoLabels = { eletrico: 'Elétrico', mecanico: 'Mecânico', estrutural: 'Estrutural', seguranca: 'Segurança', outro: 'Outro' };
+                const porGrupo = {};
+                window._catalogoCategorias.forEach(c => {
+                    (porGrupo[c.grupo] = porGrupo[c.grupo] || []).push(c);
+                });
+
+                const sel = document.getElementById('catalogoSelect');
+                if (!sel) return;
+                let html = '<option value="">Escolher do catálogo de categorias...</option>';
+                Object.keys(porGrupo).forEach(grupo => {
+                    html += `<optgroup label="${escAttr(grupoLabels[grupo] || grupo)}">`;
+                    porGrupo[grupo].forEach(c => {
+                        const preco = typeof c.precoSugerido === 'number' ? c.precoSugerido.toFixed(2) + ' €' : '';
+                        html += `<option value="${c._id}">${escAttr(c.nome)}${preco ? ' — ' + preco : ''}</option>`;
+                    });
+                    html += '</optgroup>';
+                });
+                sel.innerHTML = html;
+            } catch (e) {
+                console.error('Erro ao carregar catálogo de categorias:', e);
+            }
+        }
+
+        function addServiceFromCatalog() {
+            const sel = document.getElementById('catalogoSelect');
+            const id = sel.value;
+            if (!id) return;
+            const cat = (window._catalogoCategorias || []).find(c => c._id === id);
+            if (!cat) return;
+
+            const newRow = `
+                <tr>
+                    <td><input type="hidden" class="categoria-id" value="${cat._id}"><input type="text" class="form-control" value="${escAttr(cat.descricao)}"></td>
+                    <td><input type="number" class="form-control qty" value="1" min="1"></td>
+                    <td><input type="number" class="form-control price" value="${cat.precoSugerido || 0}" step="0.01"></td>
+                    <td class="total">0.00</td>
+                    <td><button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)"><i class="fas fa-trash"></i></button></td>
+                </tr>
+            `;
+            $('#servicesTable tbody').append(newRow);
+            sel.value = '';
+            invoiceManager.calculateTotals();
+            invoiceManager.updatePreview();
+        }
+
         function printInvoice() {
             invoiceManager.printInvoice();
         }
@@ -1432,14 +1503,17 @@
                 const descricao = $(this).find('input[type="text"]').val();
                 const quantidade = parseFloat($(this).find('.qty').val()) || 0;
                 const precoUnitario = parseFloat($(this).find('.price').val()) || 0;
-                
+                const categoriaId = $(this).find('.categoria-id').val() || '';
+
                 if (descricao && quantidade > 0 && precoUnitario > 0) {
-                    servicos.push({
+                    const item = {
                         descricao,
                         quantidade,
                         precoUnitario,
                         total: quantidade * precoUnitario
-                    });
+                    };
+                    if (categoriaId) item.categoriaId = categoriaId;
+                    servicos.push(item);
                 }
             });
             
@@ -1636,6 +1710,7 @@
             
             invoiceManager.init();
             await loadLiftOptions(token);
+            await loadCategoriasCatalogo(token);
 
             // Verificar чи existe ID орçаменту в URL (para edição/visualizaçãoу)
             if (orcamentoId) {
@@ -2074,7 +2149,7 @@
                 orcamento.servicos.forEach(servico => {
                     const newRow = `
                         <tr>
-                            <td><input type="text" class="form-control" value="${servico.descricao}"></td>
+                            <td><input type="hidden" class="categoria-id" value="${servico.categoriaId || ''}"><input type="text" class="form-control" value="${servico.descricao}"></td>
                             <td><input type="number" class="form-control qty" value="${servico.quantidade}" min="1"></td>
                             <td><input type="number" class="form-control price" value="${servico.precoUnitario}" step="0.01"></td>
                             <td class="total">${(servico.quantidade * servico.precoUnitario).toFixed(2)}</td>

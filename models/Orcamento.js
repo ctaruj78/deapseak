@@ -60,6 +60,13 @@ const orcamentoSchema = new mongoose.Schema({
             type: Number,
             required: true,
             min: 0
+        },
+        // Categoria de origem no catálogo (models/OrcamentoCategoria) — opcional,
+        // presente apenas quando a linha foi adicionada via "Adicionar do catálogo".
+        // Usado para saber quais categorias críticas ficaram de fora do orçamento.
+        categoriaId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'OrcamentoCategoria'
         }
     }],
     

@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="/assets/img/favicon.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FestLift — Contactar Cliente</title>
+    <script src="../../assets/js/auth.js"></script>
+    <link rel="stylesheet" href="../../plugins/adminlte/adminlte.min.css">
+    <link rel="stylesheet" href="../../plugins/fontawesome/css/all.min.css">
+</head>
+<body class="hold-transition sidebar-mini layout-fixed" data-required-role="admin">
+<div class="wrapper">
+
+    <!-- Navbar -->
+    <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+        <ul class="navbar-nav">
+            <li class="nav-item"><a class="nav-link" data-widget="pushmenu" href="#"><i class="fas fa-bars"></i></a></li>
+            <li class="nav-item d-none d-sm-inline-block"><a href="admin-dashboard.html" class="nav-link">Painel</a></li>
+            <li class="nav-item d-none d-sm-inline-block"><a class="nav-link text-muted">/ Contactar Cliente</a></li>
+        </ul>
+        <ul class="navbar-nav ml-auto">
+            <li class="nav-item"><a class="nav-link" href="#" onclick="logout()"><i class="fas fa-sign-out-alt text-danger"></i></a></li>
+        </ul>
+    </nav>
+
+    <!-- Sidebar -->
+    <aside class="main-sidebar sidebar-dark-primary elevation-4">
+        <div id="sidebar-container"></div>
+    </aside>
+
+    <!-- Content -->
+    <div class="content-wrapper">
+        <div class="content-header">
+            <div class="container-fluid">
+                <h1 class="m-0"><i class="fas fa-paper-plane mr-2 text-primary"></i>Contactar Cliente</h1>
+                <p class="text-muted mb-0 small">Envie um email diretamente a qualquer cliente sobre uma questão pontual — sem precisar de um orçamento ou pedido associado.</p>
+            </div>
+        </div>
+
+        <section class="content">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="card card-outline card-primary">
+                            <div class="card-body">
+                                <div class="form-group">
+                                    <label>Cliente <span class="text-danger">*</span></label>
+                                    <select id="clienteSelect" class="form-control">
+                                        <option value="">A carregar clientes...</option>
+                                    </select>
+                                    <small class="text-muted" id="clienteEmailPreview"></small>
+                                </div>
+                                <div class="form-group">
+                                    <label>Assunto <span class="text-danger">*</span></label>
+                                    <input type="text" id="assunto" class="form-control" placeholder="Ex.: Sobre a sua questão relativa ao elevador">
+                                </div>
+                                <div class="form-group">
+                                    <label>Mensagem <span class="text-danger">*</span></label>
+                                    <textarea id="mensagem" class="form-control" rows="10" placeholder="Escreva aqui a mensagem para o cliente..."></textarea>
+                                    <small class="text-muted">Quebras de linha são preservadas no email. Não é necessário HTML.</small>
+                                </div>
+                                <button type="button" class="btn btn-primary" id="btnEnviar" onclick="enviarContacto()">
+                                    <i class="fas fa-paper-plane mr-1"></i>Enviar email
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card card-outline card-secondary">
+                            <div class="card-header"><h3 class="card-title">Pré-visualização</h3></div>
+                            <div class="card-body">
+                                <div class="small text-muted mb-2">Para: <span id="prevPara">—</span></div>
+                                <div class="small text-muted mb-2">Assunto: <span id="prevAssunto">—</span></div>
+                                <hr>
+                                <div id="prevMensagem" class="small" style="white-space:pre-wrap;">—</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <footer class="main-footer">
+        <strong>FestLift</strong> — Sistema de Gestão de Elevadores v2.1
+    </footer>
+</div>
+
+<script src="../../plugins/jquery/jquery.min.js"></script>
+<script src="../../plugins/bootstrap/bootstrap.bundle.min.js"></script>
+<script src="../../plugins/adminlte/adminlte.min.js"></script>
+<script src="/plugins/toastr/js/toastr.min.js"></script>
+<script src="../../plugins/sweetalert2/js/sweetalert2.min.js"></script>
+<script src="../../assets/js/sidebar-init.js"></script>
+<script src="../../assets/js/config.js"></script>
+
+<script>
+let clientes = [];
+
+$(document).ready(function() {
+    loadSidebarWithInit('includes/sidebar.html');
+    loadClientes();
+    $('#assunto, #mensagem').on('input', updatePreview);
+});
+
+function getToken() {
+    return sessionStorage.getItem('liftmanager_jwt') || localStorage.getItem('liftmanager_jwt') || '';
+}
+
+async function loadClientes() {
+    try {
+        const res = await fetch('/api/users?role=client', {
+            headers: { 'Authorization': `Bearer ${getToken()}` }
+        });
+        const result = await res.json();
+        clientes = Array.isArray(result) ? result : (result.data || result.users || []);
+
+        const sel = document.getElementById('clienteSelect');
+        if (!clientes.length) {
+            sel.innerHTML = '<option value="">Nenhum cliente encontrado</option>';
+            return;
+        }
+        sel.innerHTML = '<option value="">Selecione um cliente...</option>' +
+            clientes.map(c => {
+                const nome = ((c.firstName || '') + ' ' + (c.lastName || '')).trim() || c.name || c.username || c.email;
+                const empresa = c.company ? ` (${escHtml(c.company)})` : '';
+                return `<option value="${c._id}">${escHtml(nome)}${empresa} — ${escHtml(c.email)}</option>`;
+            }).join('');
+    } catch (e) {
+        console.error('Erro ao carregar clientes:', e);
+        toastr.error('Erro ao carregar lista de clientes');
+    }
+}
+
+document.addEventListener('change', function(e) {
+    if (e.target && e.target.id === 'clienteSelect') updatePreview();
+});
+
+function getClienteAtual() {
+    const id = document.getElementById('clienteSelect').value;
+    return clientes.find(c => c._id === id) || null;
+}
+
+function updatePreview() {
+    const cliente = getClienteAtual();
+    document.getElementById('prevPara').textContent = cliente ? cliente.email : '—';
+    document.getElementById('clienteEmailPreview').textContent = cliente ? cliente.email : '';
+    document.getElementById('prevAssunto').textContent = $('#assunto').val() || '—';
+    document.getElementById('prevMensagem').textContent = $('#mensagem').val() || '—';
+}
+
+function escHtml(str) {
+    return (str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function montarHtmlEmail(mensagem) {
+    const paragrafos = escHtml(mensagem).split(/\n{2,}/).map(p => `<p style="margin:0 0 14px;">${p.replace(/\n/g, '<br>')}</p>`).join('');
+    return `
+        <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;">
+            <div style="background:#003366;padding:20px;text-align:center;">
+                <span style="color:#fff;font-size:22px;font-weight:bold;">FestLift</span>
+            </div>
+            <div style="padding:24px;color:#222;font-size:14px;line-height:1.5;">
+                ${paragrafos}
+            </div>
+            <div style="padding:16px 24px;background:#f4f4f4;color:#888;font-size:12px;">
+                FestLift, Lda. — Rua Actor Francisco Ribeiro 9B, 2795-086 Linda-a-Velha · info@festlift.pt · 214 190 863
+            </div>
+        </div>
+    `;
+}
+
+async function enviarContacto() {
+    const cliente = getClienteAtual();
+    const assunto = $('#assunto').val().trim();
+    const mensagem = $('#mensagem').val().trim();
+
+    if (!cliente) { toastr.warning('Selecione um cliente'); return; }
+    if (!assunto) { toastr.warning('Indique o assunto'); return; }
+    if (!mensagem) { toastr.warning('Escreva a mensagem'); return; }
+
+    if (!await swalConfirm(`Enviar este email para ${cliente.email}?`, 'Confirmar envio')) return;
+
+    const btn = document.getElementById('btnEnviar');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>A enviar...';
+
+    try {
+        const res = await fetch('/api/email/send-template', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` },
+            body: JSON.stringify({
+                email: cliente.email,
+                subject: assunto,
+                htmlContent: montarHtmlEmail(mensagem),
+                templateId: 'contacto-cliente-livre'
+            })
+        });
+        const result = await res.json();
+        if (result.success) {
+            toastr.success(`Email enviado para ${cliente.email}`);
+            $('#assunto,#mensagem').val('');
+            document.getElementById('clienteSelect').value = '';
+            updatePreview();
+        } else {
+            toastr.error(result.error || result.message || 'Erro ao enviar email');
+        }
+    } catch (e) {
+        console.error('Erro ao enviar contacto:', e);
+        toastr.error('Erro ao enviar email');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-paper-plane mr-1"></i>Enviar email';
+    }
+}
+
+function logout() {
+    if (typeof AuthManager !== 'undefined') AuthManager.logout();
+    else { localStorage.clear(); window.location.replace('/pages/auth/login.html'); }
+}
+
+async function swalConfirm(text, title = 'Confirmar') {
+    const r = await Swal.fire({
+        title, text, icon: 'question', showCancelButton: true,
+        confirmButtonColor: '#007bff', cancelButtonColor: '#95a5a6',
+        confirmButtonText: 'Enviar', cancelButtonText: 'Cancelar'
+    });
+    return r.isConfirmed;
+}
+</script>
+<script src="../../assets/js/monitor.js"></script>
+</body>
+</html>
