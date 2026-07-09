@@ -398,6 +398,9 @@
                     <button class="btn btn-xs btn-info" onclick="verOrcamento('${orc._id}')" title="Ver"><i class="fas fa-eye"></i></button>
                     <button class="btn btn-xs btn-secondary" onclick="downloadPDF('${orc._id}','${orc.numero}')" title="PDF"><i class="fas fa-file-pdf"></i></button>
                     <button class="btn btn-xs btn-outline-info" onclick="abrirModalFotos('${orc._id}','${orc.numero}')" title="Fotos"><i class="fas fa-camera"></i>${fotosBadge}</button>
+                    ${!isArchived && orc.status !== 'aprovado' ? `
+                    <button class="btn btn-xs btn-primary" onclick="enviarOrcamentoRapido('${orc._id}', '${escapeHtml(cli.email || '')}', this)" title="${orc.status === 'rascunho' ? 'Enviar' : 'Reenviar'} por email ao cliente"><i class="fas fa-paper-plane"></i></button>
+                    ` : ''}
                     ${!isArchived ? `
                     <button class="btn btn-xs btn-warning" onclick="editarOrcamento('${orc._id}')" title="Editar"><i class="fas fa-edit"></i></button>
                     <button class="btn btn-xs btn-danger" onclick="eliminarOrcamento('${orc._id}')" title="Eliminar"><i class="fas fa-trash"></i></button>
@@ -489,6 +492,10 @@
                             <button class="btn btn-sm btn-outline-info" onclick="abrirModalFotos('${orcamento._id}', '${orcamento.numero}'); event.stopPropagation();" title="Fotografias">
                                 <i class="fas fa-camera"></i> Fotos${orcamento.fotos && orcamento.fotos.length > 0 ? ` <span class="badge badge-info">${orcamento.fotos.length}</span>` : ''}
                             </button>
+                            ${!isArchived && orcamento.status !== 'aprovado' ? `
+                            <button class="btn btn-sm btn-primary" onclick="enviarOrcamentoRapido('${orcamento._id}', '${escapeHtml(cli.email || '')}', this); event.stopPropagation();" title="Enviar por email ao cliente">
+                                <i class="fas fa-paper-plane"></i> ${orcamento.status === 'rascunho' ? 'Enviar' : 'Reenviar'}
+                            </button>` : ''}
                             ${!isArchived ? `
                             <button class="btn btn-sm btn-warning" onclick="editarOrcamento('${orcamento._id}'); event.stopPropagation();">
                                 <i class="fas fa-edit"></i> Editar
@@ -510,10 +517,6 @@
                             </button>
                             <button class="btn btn-sm btn-warning mt-1" onclick="abrirStatusModal('${orcamento._id}', 'rejeitado'); event.stopPropagation();">
                                 <i class="fas fa-times"></i> Rejeitar
-                            </button>` : ''}
-                            ${orcamento.status === 'rejeitado' ? `
-                            <button class="btn btn-sm btn-info mt-1" onclick="abrirStatusModal('${orcamento._id}', 'enviado'); event.stopPropagation();">
-                                <i class="fas fa-paper-plane"></i> Reenviar
                             </button>` : ''}
                             ` : `<p class="text-muted text-center small mt-2"><i class="fas fa-lock mr-1"></i>Arquivado &mdash; contacte o administrador para restaurar</p>`}
                         </div>
@@ -576,6 +579,48 @@
                 URL.revokeObjectURL(url);
             } catch (err) {
                 toastr.error('Erro ao descarregar PDF: ' + err.message);
+            }
+        }
+
+        // Enviar orçamento por email diretamente da lista (sem abrir o orçamento)
+        async function enviarOrcamentoRapido(id, emailAtual, btn) {
+            const clientEmail = prompt('Confirme o email do cliente:', emailAtual || '');
+            if (!clientEmail) return;
+
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(clientEmail)) {
+                toastr.error('Email inválido');
+                return;
+            }
+
+            const originalHtml = btn ? btn.innerHTML : null;
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> A enviar...';
+            }
+
+            try {
+                // AuthManager.fetchWithAuth tenta refresh silencioso do token antes de desistir
+                const response = await AuthManager.fetchWithAuth(`/api/orcamentos/${id}/enviar`, {
+                    method: 'POST',
+                    body: JSON.stringify({ email: clientEmail })
+                });
+                if (!response) {
+                    throw new Error('Sessão expirada. Faça login novamente.');
+                }
+                const data = await response.json();
+                if (!response.ok || !data.success) {
+                    throw new Error(data.message || 'Erro ao enviar orçamento');
+                }
+                toastr.success(`Orçamento enviado para ${clientEmail}`);
+                carregarOrcamentos(_lastFiltros, _currentPage);
+            } catch (error) {
+                console.error('Erro:', error);
+                toastr.error('Erro ao enviar orçamento: ' + error.message);
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = originalHtml;
+                }
             }
         }
 

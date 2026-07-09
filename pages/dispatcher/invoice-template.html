@@ -920,34 +920,22 @@
                 }
 
                 try {
-                    const token = localStorage.getItem('liftmanager_jwt') || 
-                                 localStorage.getItem('jwt_token') ||
-                                 localStorage.getItem('token') || 
-                                 localStorage.getItem('lm_token');
-                    const validToken = token && token !== 'null' && token !== 'undefined' && token.trim() !== '';
-                    
-                    console.log('🔑 Sending email with token:', validToken ? 'EXISTS' : 'NOT FOUND');
-                    console.log('🔑 Token keys in localStorage:', Object.keys(localStorage).filter(k => k.includes('token') || k.includes('jwt')));
-                    
-                    if (!validToken) {
-                        toastr.error('Autenticação necessária. Faça login novamente.');
-                        window.location.href = '/pages/auth/login.html';
-                        return;
-                    }
-
                     console.log('📤 Enviando email para:', clientEmail);
                     console.log('   Orçamento ID:', orcamentoId);
-                    
-                    const response = await fetch(`/api/orcamentos/${orcamentoId}/enviar`, {
+
+                    // AuthManager.fetchWithAuth tenta refresh silencioso do token antes de desistir
+                    const response = await AuthManager.fetchWithAuth(`/api/orcamentos/${orcamentoId}/enviar`, {
                         method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${validToken}`
-                        },
                         body: JSON.stringify({
                             email: clientEmail
                         })
                     });
+
+                    if (!response) {
+                        toastr.error('Autenticação necessária. Faça login novamente.');
+                        window.location.href = '/pages/auth/login.html';
+                        return;
+                    }
 
                     console.log('📨 Response status:', response.status);
                     console.log('📨 Response ok:', response.ok);
@@ -1166,40 +1154,30 @@
             console.log('📊 Dados completos:', data);
             
             try {
-                const token = localStorage.getItem('liftmanager_jwt') || 
-                             localStorage.getItem('jwt_token') ||
-                             localStorage.getItem('token') || 
-                             localStorage.getItem('lm_token');
-                const validToken = token && token !== 'null' && token !== 'undefined' && token.trim() !== '';
-                
-                console.log('🔑 Token encontrado:', validToken ? 'SIM' : 'NÃO');
-                
-                if (!validToken) {
+                // Verificar чи це atualização чи створення
+                const isUpdate = window.currentOrcamentoId;
+                const url = isUpdate
+                    ? `/api/orcamentos/${window.currentOrcamentoId}`
+                    : '/api/orcamentos';
+                const method = isUpdate ? 'PUT' : 'POST';
+
+                console.log(`🌐 ${isUpdate ? 'Оновлення' : 'Створення'} орçаменту...`);
+                console.log('   URL:', url);
+                console.log('   Method:', method);
+
+                // AuthManager.fetchWithAuth tenta refresh silencioso do token antes de
+                // desistir — evita "sessão expirada" a meio de uma edição longa.
+                const response = await AuthManager.fetchWithAuth(url, {
+                    method: method,
+                    body: JSON.stringify(data)
+                });
+
+                if (!response) {
                     toastr.error('❌ Sessão expirada. Faça login novamente.');
                     window.location.href = '../auth/login.html';
                     return;
                 }
-                
-                // Verificar чи це atualização чи створення
-                const isUpdate = window.currentOrcamentoId;
-                const url = isUpdate 
-                    ? `/api/orcamentos/${window.currentOrcamentoId}` 
-                    : '/api/orcamentos';
-                const method = isUpdate ? 'PUT' : 'POST';
-                
-                console.log(`🌐 ${isUpdate ? 'Оновлення' : 'Створення'} орçаменту...`);
-                console.log('   URL:', url);
-                console.log('   Method:', method);
-                
-                const response = await fetch(url, {
-                    method: method,
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${validToken}`
-                    },
-                    body: JSON.stringify(data)
-                });
-                
+
                 console.log('📡 Resposta recebida:', response.status, response.statusText);
 
                 // Safe JSON parse — corpo pode estar vazio (proxy 401/404)
@@ -1212,7 +1190,7 @@
                 }
                 console.log('📋 Resultado:', result);
 
-                if (response.status === 401) {
+                if (response.status === 401 || response.status === 403) {
                     toastr.error('❌ Sessão expirada. Faça login novamente.');
                     window.location.href = '../auth/login.html';
                     return;
@@ -1237,7 +1215,7 @@
                             for (const f of window._pendingFotoFiles) fd.append('fotos', f);
                             const uploadRes = await fetch(`/api/orcamentos/${orcamentoId}/fotos`, {
                                 method: 'POST',
-                                headers: { 'Authorization': `Bearer ${token}` },
+                                headers: { 'Authorization': `Bearer ${AuthManager.getAuthToken()}` },
                                 body: fd
                             });
                             const uploadResult = await uploadRes.json();
