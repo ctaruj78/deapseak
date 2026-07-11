@@ -641,10 +641,11 @@ app.get('/api/health', async (req, res) => {
             version: '2.0.0'
         });
     } catch (error) {
+        console.error('❌ Health check falhou:', error.message);
         res.status(503).json({
             status: 'error',
             mongodb: 'error',
-            error: error.message
+            error: 'Serviço indisponível'
         });
     }
 });
@@ -1565,11 +1566,15 @@ app.get('/api/qr/codes', authenticateToken, async (req, res) => {
             liftFilter.$or = orConds;
         }
 
-        const lifts = await db.collection('lifts').find(liftFilter).toArray();
-        const total = lifts.length;
+        const total = await db.collection('lifts').countDocuments(liftFilter);
+        const lifts = await db.collection('lifts')
+            .find(liftFilter)
+            .skip(skip)
+            .limit(parseInt(limit))
+            .toArray();
 
         // Будуємо унікальний код ліфта — єдиний формат для всіх панелей
-        const qrCodes = lifts.slice(skip, skip + parseInt(limit)).map(lift => {
+        const qrCodes = lifts.map(lift => {
             const munNum = lift.municipalNumber || '';
             const storedQR = lift.qrCode || null;
             const code = typeof storedQR === 'object' && storedQR?.code
@@ -2568,6 +2573,7 @@ app.get('/api/tasks', authenticateToken, async (req, res) => {
         const tasks = await db.collection('tasks')
             .find(query)
             .sort({ dueDate: 1, priority: -1 })
+            .limit(1000)
             .toArray();
         
         res.json({ success: true, data: tasks || [] });
@@ -3014,6 +3020,16 @@ function requireRole(...roles) {
         req.user.role = userRole;
         next();
     };
+}
+
+// 🔒 HTML-escape helper — previne injeção de HTML/scripts em templates de email
+function escapeHtml(s) {
+    return String(s == null ? '' : s)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
 }
 
 // 🔒 ObjectId validation helper
@@ -4498,11 +4514,30 @@ app.get('/api/lifts/:id/history', authenticateToken, async (req, res) => {
         }
 
         // 🔐 Перевірка прав доступу
-        if (req.user.role === 'client') {
-            const clientId = req.user.id || req.user.userId;
-            const liftClientId = lift.client ? lift.client.toString() : null;
-            if (liftClientId !== clientId) {
-                return res.status(403).json({ success: false, message: 'Sem acesso a este elevador' });
+        if (req.user.role === 'client' && !hasClientAccessToLift(lift, req)) {
+            return res.status(403).json({ success: false, message: 'Sem acesso a este elevador' });
+        }
+
+        if (req.user.role === 'technician') {
+            // Технік має доступ або через активне завдання, або через нещодавній успішний QR scan цього ліфта.
+            const techId = (req.user.id || req.user.userId || '').toString();
+            const techActor = req.user.username || req.user.email || techId;
+            const recentScanSince = new Date(Date.now() - 12 * 60 * 60 * 1000);
+            const [activeTaskAccess, recentQrAccess] = await Promise.all([
+                db.collection('requests').findOne({
+                    liftId: liftId.toString(),
+                    technician: techId,
+                    status: { $in: ['pending', 'in_progress', 'assigned'] }
+                }),
+                db.collection('qr_scans').findOne({
+                    liftId: liftId.toString(),
+                    referenceType: 'lift',
+                    scannedAt: { $gte: recentScanSince },
+                    $or: [{ userId: techId }, { username: techActor }, { scannedBy: techActor }]
+                })
+            ]);
+            if (!activeTaskAccess && !recentQrAccess) {
+                return res.status(403).json({ success: false, message: 'Sem tarefa ativa ou leitura QR recente para este elevador' });
             }
         }
 
@@ -4584,7 +4619,7 @@ app.put('/api/lifts/:id', authenticateToken, async (req, res) => {
         }
         
         // Клієнт може оновлювати тільки свої ліфти
-        if (req.user.role === 'client' && lift.clientId !== req.user.id && lift.clientId !== req.user.userId) {
+        if (req.user.role === 'client' && !hasClientAccessToLift(lift, req)) {
             console.warn(`⚠️ Клієнт ${req.user.username} намагається оновити чужий ліфт ${liftId}`);
             return res.status(403).json({
                 success: false,
@@ -4646,6 +4681,13 @@ app.put('/api/lifts/:id', authenticateToken, async (req, res) => {
         delete updateData.interventionHistory;
         delete updateData.photos;
         delete updateData.chat;
+        // 🔒 Захист від mass-assignment: власність та ідентичність не редагуються через загальний PUT
+        delete updateData._id;
+        delete updateData.id;
+        delete updateData.client;
+        delete updateData.clientId;
+        delete updateData.createdAt;
+        delete updateData.createdBy;
         // nextMaintenance НЕ зберігається — обчислюється динамічно як lastMaintenance + 1 місяць
         delete updateData.nextMaintenance;
 
@@ -4915,6 +4957,28 @@ app.get('/api/lifts/:id/contract', authenticateToken, async (req, res) => {
             return res.status(403).json({ success: false, message: 'Sem acesso a este elevador' });
         }
 
+        if (req.user.role === 'technician') {
+            const techId = (req.user.id || req.user.userId || '').toString();
+            const techActor = req.user.username || req.user.email || techId;
+            const recentScanSince = new Date(Date.now() - 12 * 60 * 60 * 1000);
+            const [activeTaskAccess, recentQrAccess] = await Promise.all([
+                db.collection('requests').findOne({
+                    liftId: liftId.toString(),
+                    technician: techId,
+                    status: { $in: ['pending', 'in_progress', 'assigned'] }
+                }),
+                db.collection('qr_scans').findOne({
+                    liftId: liftId.toString(),
+                    referenceType: 'lift',
+                    scannedAt: { $gte: recentScanSince },
+                    $or: [{ userId: techId }, { username: techActor }, { scannedBy: techActor }]
+                })
+            ]);
+            if (!activeTaskAccess && !recentQrAccess) {
+                return res.status(403).json({ success: false, message: 'Sem tarefa ativa ou leitura QR recente para este elevador' });
+            }
+        }
+
         res.json({ success: true, data: { contract: lift.maintenanceContract || null } });
     } catch (error) {
         console.error('❌ Помилка отримання контракту:', error);
@@ -4923,7 +4987,7 @@ app.get('/api/lifts/:id/contract', authenticateToken, async (req, res) => {
 });
 
 // DELETE /api/lifts/:id/contract - видалення контракту
-app.delete('/api/lifts/:id/contract', authenticateToken, async (req, res) => {
+app.delete('/api/lifts/:id/contract', authenticateToken, requireRole('admin', 'dispatcher'), async (req, res) => {
     try {
         const { ObjectId } = require('mongodb');
         const liftId = new ObjectId(req.params.id);
@@ -4950,7 +5014,7 @@ app.delete('/api/lifts/:id/contract', authenticateToken, async (req, res) => {
 });
 
 // POST /api/lifts/:id/contract/email - надіслати контракт по email
-app.post('/api/lifts/:id/contract/email', authenticateToken, async (req, res) => {
+app.post('/api/lifts/:id/contract/email', authenticateToken, requireRole('admin', 'dispatcher'), async (req, res) => {
     try {
         const { ObjectId } = require('mongodb');
         const liftId = new ObjectId(req.params.id);
@@ -5006,7 +5070,7 @@ app.post('/api/lifts/:id/contract/email', authenticateToken, async (req, res) =>
 });
 
 // POST /api/lifts/:id/contract/share-to-siblings - поширити контракт на ліфти за тією ж адресою
-app.post('/api/lifts/:id/contract/share-to-siblings', authenticateToken, async (req, res) => {
+app.post('/api/lifts/:id/contract/share-to-siblings', authenticateToken, requireRole('admin', 'dispatcher'), async (req, res) => {
     try {
         const { ObjectId } = require('mongodb');
         const liftId = new ObjectId(req.params.id);
@@ -5377,7 +5441,7 @@ app.patch('/api/lifts/:id/inspection-report/:index', authenticateToken, async (r
 });
 
 // DELETE /api/lifts/:id/inspection-report/:index - видалення звіту з масиву
-app.delete('/api/lifts/:id/inspection-report/:index', authenticateToken, async (req, res) => {
+app.delete('/api/lifts/:id/inspection-report/:index', authenticateToken, requireRole('admin', 'dispatcher'), async (req, res) => {
     try {
         const { ObjectId } = require('mongodb');
         const liftId = new ObjectId(req.params.id);
@@ -5951,6 +6015,28 @@ app.get('/api/lifts/:id/documents', authenticateToken, async (req, res) => {
 
         if (req.user.role === 'client' && !hasClientAccessToLift(lift, req)) {
             return res.status(403).json({ success: false, message: 'Sem acesso a este elevador' });
+        }
+
+        if (req.user.role === 'technician') {
+            const techId = (req.user.id || req.user.userId || '').toString();
+            const techActor = req.user.username || req.user.email || techId;
+            const recentScanSince = new Date(Date.now() - 12 * 60 * 60 * 1000);
+            const [activeTaskAccess, recentQrAccess] = await Promise.all([
+                db.collection('requests').findOne({
+                    liftId: liftId.toString(),
+                    technician: techId,
+                    status: { $in: ['pending', 'in_progress', 'assigned'] }
+                }),
+                db.collection('qr_scans').findOne({
+                    liftId: liftId.toString(),
+                    referenceType: 'lift',
+                    scannedAt: { $gte: recentScanSince },
+                    $or: [{ userId: techId }, { username: techActor }, { scannedBy: techActor }]
+                })
+            ]);
+            if (!activeTaskAccess && !recentQrAccess) {
+                return res.status(403).json({ success: false, message: 'Sem tarefa ativa ou leitura QR recente para este elevador' });
+            }
         }
 
         const documents = lift.documents || [];
@@ -7228,9 +7314,9 @@ app.post('/api/requerimentos/:id/send', authenticateToken, async (req, res) => {
         };
         const inspLabel = INSP_LABELS[rec.inspType] || rec.inspType;
         const today = new Date().toLocaleDateString('pt-PT', { day: '2-digit', month: '2-digit', year: 'numeric' });
-        const munName  = rec.munName || '';
-        const liftRef  = rec.municipalNumber || '—';
-        const liftAddr = rec.liftAddress || '—';
+        const munName  = escapeHtml(rec.munName || '');
+        const liftRef  = escapeHtml(rec.municipalNumber || '—');
+        const liftAddr = escapeHtml(rec.liftAddress || '—');
 
         const bodyHtml = `
 <p>Exmos. Srs.,</p>
@@ -7497,7 +7583,6 @@ async function createUserWithInvite(userData, role, createdBy, req) {
     let emailError = null;
     if (!SEND_WELCOME_EMAILS) {
         console.log(`📭 [DEV] Email de boas-vindas não enviado para ${email} — SEND_WELCOME_EMAILS desativado`);
-        emailSkipped = true;
     } else {
         try {
             await emailService.sendEmail(email, `🏢 FestLift — Bem-vindo(a)! Dados de acesso (${roleLabel})`, inviteHtml);
@@ -7562,15 +7647,22 @@ app.put('/api/clients/:id', authenticateToken, async (req, res) => {
         const { ObjectId } = require('mongodb');
         const updateData = { ...req.body };
         delete updateData._id; delete updateData.id; delete updateData.password;
+        // 🔒 Запобігання ескалації привілеїв: role/campos de identidade não editáveis por aqui
+        delete updateData.role; delete updateData.tempPasswordHint; delete updateData.mustChangePassword;
+        delete updateData.createdAt; delete updateData.createdBy;
         // Синхронізуємо clientType з type щоб обидва поля були актуальні
         if (updateData.type) updateData.clientType = updateData.type;
         updateData.updatedAt = new Date().toISOString();
         updateData.updatedBy = req.user.username;
 
-        await db.collection('users').updateOne(
-            { _id: new ObjectId(req.params.id) },
+        // 🔒 Só permite editar utilizadores que já são clientes (impede alterar admins/técnicos)
+        const result = await db.collection('users').updateOne(
+            { _id: new ObjectId(req.params.id), role: 'client' },
             { $set: updateData }
         );
+        if (result.matchedCount === 0) {
+            return res.status(404).json({ success: false, message: 'Cliente não encontrado' });
+        }
         res.json({ success: true, message: 'Cliente actualizado' });
     } catch (error) {
         console.error('❌ Erro ao actualizar cliente:', error);
@@ -7611,13 +7703,20 @@ app.put('/api/technicians/:id', authenticateToken, async (req, res) => {
         const { ObjectId } = require('mongodb');
         const updateData = { ...req.body };
         delete updateData._id; delete updateData.id; delete updateData.password;
+        // 🔒 Запобігання ескалації привілеїв: role/campos de identidade não editáveis por aqui
+        delete updateData.role; delete updateData.tempPasswordHint; delete updateData.mustChangePassword;
+        delete updateData.createdAt; delete updateData.createdBy;
         updateData.updatedAt = new Date().toISOString();
         updateData.updatedBy = req.user.username;
 
-        await db.collection('users').updateOne(
-            { _id: new ObjectId(req.params.id) },
+        // 🔒 Só permite editar utilizadores que já são técnicos (impede alterar admins/clientes)
+        const result = await db.collection('users').updateOne(
+            { _id: new ObjectId(req.params.id), role: { $in: ['technician', 'tech'] } },
             { $set: updateData }
         );
+        if (result.matchedCount === 0) {
+            return res.status(404).json({ success: false, message: 'Técnico não encontrado' });
+        }
         res.json({ success: true, message: 'Técnico actualizado' });
     } catch (error) {
         console.error('❌ Erro ao actualizar técnico:', error);
@@ -9175,7 +9274,21 @@ app.post('/api/requests/:id/complete', authenticateToken, async (req, res) => {
                 message: 'Опис виконаної роботи обов\'язковий'
             });
         }
-        
+
+        // 🔐 Só admin/dispatcher ou o técnico atribuído podem concluir o pedido
+        const existingReq = await db.collection('requests').findOne(requestQuery);
+        if (!existingReq) {
+            return res.status(404).json({ success: false, message: 'Pedido não encontrado' });
+        }
+        const _role = req.user.role;
+        const _uid = (req.user.id || req.user.userId || '').toString();
+        const _isStaff = ['admin', 'dispatcher'].includes(_role);
+        const _isAssignedTech = (_role === 'technician' || _role === 'tech')
+            && String(existingReq.technician || '') === _uid;
+        if (!_isStaff && !_isAssignedTech) {
+            return res.status(403).json({ success: false, message: 'Sem permissões para concluir este pedido' });
+        }
+
         const updateData = {
             status: 'completed',
             resolution: resolution.trim(),
@@ -9627,11 +9740,14 @@ app.get('/api/settings', authenticateToken, async (req, res) => {
 app.put('/api/settings', authenticateToken, async (req, res) => {
     try {
         const userId = req.user.id || req.user.userId;
-        const newSettings = req.body;
-        
+        // 🔒 Evita mass-assignment de campos de identidade/privilégio no documento de definições
+        const newSettings = { ...req.body };
+        delete newSettings._id; delete newSettings.userId; delete newSettings.role;
+        delete newSettings.isAdmin; delete newSettings.password;
+
         const result = await db.collection('user_settings').updateOne(
             { userId },
-            { 
+            {
                 $set: {
                     ...newSettings,
                     userId,
@@ -11959,6 +12075,14 @@ const _guestAiUsage = new Map(); // ip → { reports, chat, resetAt }
 const _GUEST_REPORT_LIMIT = 2;
 const _GUEST_CHAT_LIMIT   = 20;
 
+// 🧹 Limpeza periódica de entradas expiradas para evitar crescimento ilimitado do Map
+setInterval(() => {
+    const now = Date.now();
+    for (const [ip, entry] of _guestAiUsage) {
+        if (!entry || entry.resetAt < now) _guestAiUsage.delete(ip);
+    }
+}, 60 * 60 * 1000).unref?.();
+
 function _getGuestUsage(ip) {
     const entry = _guestAiUsage.get(ip);
     const now = Date.now();
@@ -13083,8 +13207,8 @@ app.post('/api/ai/consult', authenticateToken, async (req, res) => {
         }
         else {
             // Fallback to general AI chat response
-            const chatResponse = await this.handleChatMessage(question);
-            answer = chatResponse;
+            const aiResult = await callMainAI(question, req.user.role, req.user.username);
+            answer = aiResult.response;
         }
 
         res.json({
@@ -13943,7 +14067,7 @@ app.post('/api/send-email', authenticateToken, async (req, res) => {
 });
 
 // POST /api/email/send-inspection-report - Відправити inspection report
-app.post('/api/email/send-inspection-report', authenticateToken, async (req, res) => {
+app.post('/api/email/send-inspection-report', authenticateToken, requireRole('admin', 'dispatcher', 'technician'), async (req, res) => {
     try {
         const { clientEmail, reportData } = req.body;
         
@@ -13974,10 +14098,10 @@ app.post('/api/email/send-inspection-report', authenticateToken, async (req, res
                 violationsHTML += `
                     <li style="margin-bottom: 15px;">
                         <strong>${priority}</strong><br>
-                        <strong>Artigo:</strong> ${v.article}<br>
-                        <strong>Descrição:</strong> ${v.description}<br>
-                        <strong>Consequências:</strong> ${v.consequences}<br>
-                        ${v.deadline ? `<strong>Prazo:</strong> ${v.deadline}<br>` : ''}
+                        <strong>Artigo:</strong> ${escapeHtml(v.article)}<br>
+                        <strong>Descrição:</strong> ${escapeHtml(v.description)}<br>
+                        <strong>Consequências:</strong> ${escapeHtml(v.consequences)}<br>
+                        ${v.deadline ? `<strong>Prazo:</strong> ${escapeHtml(v.deadline)}<br>` : ''}
                     </li>
                 `;
             });
@@ -14017,7 +14141,7 @@ app.post('/api/email/send-inspection-report', authenticateToken, async (req, res
 });
 
 // POST /api/email/send-critical-alert - Відправити критичний алерт
-app.post('/api/email/send-critical-alert', authenticateToken, async (req, res) => {
+app.post('/api/email/send-critical-alert', authenticateToken, requireRole('admin', 'dispatcher', 'technician'), async (req, res) => {
     try {
         const { clientEmail, violations, liftId } = req.body;
         
@@ -14049,10 +14173,10 @@ app.post('/api/email/send-critical-alert', authenticateToken, async (req, res) =
         criticalViolations.forEach(v => {
             alertHTML += `
                 <li style="background: #ffe5e5; padding: 15px; margin-bottom: 10px; border-left: 4px solid #dc3545;">
-                    <strong style="color: #dc3545;">🔴 ${v.article}</strong><br>
-                    <strong>Descrição:</strong> ${v.description}<br>
-                    <strong>Consequências:</strong> ${v.consequences}<br>
-                    <strong style="color: #dc3545;">⏰ PRAZO: ${v.deadline || 'IMEDIATO (0-7 dias)'}</strong>
+                    <strong style="color: #dc3545;">🔴 ${escapeHtml(v.article)}</strong><br>
+                    <strong>Descrição:</strong> ${escapeHtml(v.description)}<br>
+                    <strong>Consequências:</strong> ${escapeHtml(v.consequences)}<br>
+                    <strong style="color: #dc3545;">⏰ PRAZO: ${escapeHtml(v.deadline || 'IMEDIATO (0-7 dias)')}</strong>
                 </li>
             `;
         });
@@ -14069,7 +14193,7 @@ app.post('/api/email/send-critical-alert', authenticateToken, async (req, res) =
                     </div>
                     <div style="padding: 20px; border: 2px solid #dc3545;">
                         <p><strong>Foram detectadas deficiências críticas (C1) que requerem ação imediata!</strong></p>
-                        ${liftId ? `<p><strong>Elevador:</strong> ${liftId}</p>` : ''}
+                        ${liftId ? `<p><strong>Elevador:</strong> ${escapeHtml(liftId)}</p>` : ''}
                         ${alertHTML}
                         <div style="background: #fff3cd; padding: 15px; border-left: 4px solid #ffc107; margin-top: 20px;">
                             <p style="margin: 0;"><strong>⚠️ ATENÇÃO:</strong> As deficiências C1 podem resultar em:</p>
@@ -14100,7 +14224,7 @@ app.post('/api/email/send-critical-alert', authenticateToken, async (req, res) =
 });
 
 // POST /api/email/send-action-plan - Відправити action plan
-app.post('/api/email/send-action-plan', authenticateToken, async (req, res) => {
+app.post('/api/email/send-action-plan', authenticateToken, requireRole('admin', 'dispatcher', 'technician'), async (req, res) => {
     try {
         const { clientEmail, actionPlan, liftId } = req.body;
         
@@ -14127,7 +14251,7 @@ app.post('/api/email/send-action-plan', authenticateToken, async (req, res) => {
         if (actionPlan.immediate && actionPlan.immediate.length > 0) {
             planHTML += '<h4 style="color: #dc3545;">🚨 Ações Imediatas (0-7 dias)</h4><ol>';
             actionPlan.immediate.forEach(action => {
-                planHTML += `<li style="margin-bottom: 10px;">${action}</li>`;
+                planHTML += `<li style="margin-bottom: 10px;">${escapeHtml(action)}</li>`;
             });
             planHTML += '</ol>';
         }
@@ -14135,7 +14259,7 @@ app.post('/api/email/send-action-plan', authenticateToken, async (req, res) => {
         if (actionPlan.shortTerm && actionPlan.shortTerm.length > 0) {
             planHTML += '<h4 style="color: #ffc107;">⏰ Ações de Curto Prazo (30 dias)</h4><ol>';
             actionPlan.shortTerm.forEach(action => {
-                planHTML += `<li style="margin-bottom: 10px;">${action}</li>`;
+                planHTML += `<li style="margin-bottom: 10px;">${escapeHtml(action)}</li>`;
             });
             planHTML += '</ol>';
         }
@@ -14143,7 +14267,7 @@ app.post('/api/email/send-action-plan', authenticateToken, async (req, res) => {
         if (actionPlan.longTerm && actionPlan.longTerm.length > 0) {
             planHTML += '<h4 style="color: #28a745;">📅 Ações de Longo Prazo</h4><ol>';
             actionPlan.longTerm.forEach(action => {
-                planHTML += `<li style="margin-bottom: 10px;">${action}</li>`;
+                planHTML += `<li style="margin-bottom: 10px;">${escapeHtml(action)}</li>`;
             });
             planHTML += '</ol>';
         }
@@ -14179,7 +14303,7 @@ app.post('/api/email/send-action-plan', authenticateToken, async (req, res) => {
 });
 
 // POST /api/email/send-orcamento - Відправити orçamento клієнту
-app.post('/api/email/send-orcamento', authenticateToken, async (req, res) => {
+app.post('/api/email/send-orcamento', authenticateToken, requireRole('admin', 'dispatcher'), async (req, res) => {
     try {
         const { orcamentoId, clientEmail } = req.body;
         
@@ -14216,7 +14340,7 @@ app.post('/api/email/send-orcamento', authenticateToken, async (req, res) => {
         orcamento.servicos.forEach(s => {
             servicosHTML += `
                 <tr>
-                    <td style="border: 1px solid #ddd; padding: 8px;">${s.descricao}</td>
+                    <td style="border: 1px solid #ddd; padding: 8px;">${escapeHtml(s.descricao)}</td>
                     <td style="border: 1px solid #ddd; padding: 8px; text-align: right;">${s.quantidade}</td>
                     <td style="border: 1px solid #ddd; padding: 8px; text-align: right;">€${s.precoUnitario.toFixed(2)}</td>
                     <td style="border: 1px solid #ddd; padding: 8px; text-align: right;">€${(s.quantidade * s.precoUnitario).toFixed(2)}</td>
@@ -14270,10 +14394,10 @@ app.post('/api/email/send-orcamento', authenticateToken, async (req, res) => {
                             </h2>
                             
                             <div style="margin: 20px 0; line-height: 1.6;">
-                                <p style="margin: 5px 0;"><strong>Cliente:</strong> ${orcamento.cliente.nome}</p>
-                                <p style="margin: 5px 0; word-break: break-word;"><strong>Email:</strong> ${orcamento.cliente.email}</p>
-                                ${orcamento.cliente.telefone ? `<p style="margin: 5px 0;"><strong>Telefone:</strong> ${orcamento.cliente.telefone}</p>` : ''}
-                                ${orcamento.cliente.morada ? `<p style="margin: 5px 0;"><strong>Morada:</strong> ${orcamento.cliente.morada}</p>` : ''}
+                                <p style="margin: 5px 0;"><strong>Cliente:</strong> ${escapeHtml(orcamento.cliente.nome)}</p>
+                                <p style="margin: 5px 0; word-break: break-word;"><strong>Email:</strong> ${escapeHtml(orcamento.cliente.email)}</p>
+                                ${orcamento.cliente.telefone ? `<p style="margin: 5px 0;"><strong>Telefone:</strong> ${escapeHtml(orcamento.cliente.telefone)}</p>` : ''}
+                                ${orcamento.cliente.morada ? `<p style="margin: 5px 0;"><strong>Morada:</strong> ${escapeHtml(orcamento.cliente.morada)}</p>` : ''}
                             </div>
 
                             <div style="margin: 20px 0; line-height: 1.6;">
@@ -14306,7 +14430,7 @@ app.post('/api/email/send-orcamento', authenticateToken, async (req, res) => {
                             ${orcamento.notas ? `
                                 <div style="margin-top: 20px; padding: 15px; background: #fff3cd; border-left: 4px solid #ffc107; border-radius: 4px;">
                                     <strong>Notas:</strong><br>
-                                    ${orcamento.notas}
+                                    ${escapeHtml(orcamento.notas)}
                                 </div>
                             ` : ''}
 
@@ -14609,7 +14733,7 @@ async function gerarPDFRelatorio(data) {
 }
 
 // POST /api/inspections/download-pdf - Descarregar PDF do relatório
-app.post('/api/inspections/download-pdf', authenticateToken, async (req, res) => {
+app.post('/api/inspections/download-pdf', authenticateToken, requireRole('admin', 'dispatcher', 'technician'), async (req, res) => {
     try {
         const { inspectionNumber } = req.body;
         if (!inspectionNumber) {
@@ -14628,7 +14752,7 @@ app.post('/api/inspections/download-pdf', authenticateToken, async (req, res) =>
 });
 
 // POST /api/inspections/send-report - Enviar relatório por email
-app.post('/api/inspections/send-report', authenticateToken, async (req, res) => {
+app.post('/api/inspections/send-report', authenticateToken, requireRole('admin', 'dispatcher', 'technician'), async (req, res) => {
     try {
         const {
             inspectionNumber,
@@ -14686,13 +14810,13 @@ app.post('/api/inspections/send-report', authenticateToken, async (req, res) => 
                     </div>
                     <div style="padding:30px 32px;">
                         <p style="font-size:15px;color:#333;margin:0 0 14px;">
-                            Exmo(a). Sr(a.)${clientName ? ' <strong>' + clientName + '</strong>' : ''},
+                            Exmo(a). Sr(a.)${clientName ? ' <strong>' + escapeHtml(clientName) + '</strong>' : ''},
                         </p>
                         <p style="font-size:15px;color:#333;line-height:1.65;margin:0 0 16px;">
-                            Em anexo encontra o <strong>${visitMeta.title} ${inspectionNumber}</strong>
-                            relativo ao ascensor em <strong>${liftLocation || '—'}</strong>,
+                            Em anexo encontra o <strong>${escapeHtml(visitMeta.title)} ${escapeHtml(inspectionNumber)}</strong>
+                            relativo ao ascensor em <strong>${escapeHtml(liftLocation || '—')}</strong>,
                             realizado em <strong>${dataFormatted}</strong>
-                            pelo técnico <strong>${inspector || '—'}</strong>.
+                            pelo técnico <strong>${escapeHtml(inspector || '—')}</strong>.
                         </p>
                         <div style="background:#f0f4ff;border-left:4px solid #1a3a6b;padding:12px 16px;border-radius:0 6px 6px 0;margin-bottom:24px;">
                             <p style="margin:0;font-size:13px;color:#555;">
@@ -14741,7 +14865,7 @@ app.post('/api/inspections/send-report', authenticateToken, async (req, res) => 
 });
 
 // POST /api/email/send-contract - Відправити контракт клієнту
-app.post('/api/email/send-contract', authenticateToken, upload.single('pdf'), async (req, res) => {
+app.post('/api/email/send-contract', authenticateToken, requireRole('admin', 'dispatcher'), upload.single('pdf'), async (req, res) => {
     try {
         const { email, subject, message } = req.body;
         const pdfFile = req.file;
@@ -14817,7 +14941,7 @@ app.post('/api/email/send-contract', authenticateToken, upload.single('pdf'), as
 });
 
 // POST /api/email/send-inspection-pdf - Відправити PDF звіт інспекції
-app.post('/api/email/send-inspection-pdf', authenticateToken, upload.single('pdf'), async (req, res) => {
+app.post('/api/email/send-inspection-pdf', authenticateToken, requireRole('admin', 'dispatcher'), upload.single('pdf'), async (req, res) => {
     try {
         const { email, subject, message } = req.body;
         const pdfFile = req.file;
@@ -15022,7 +15146,7 @@ app.post('/api/email/send-inspection-reminder', authenticateToken, async (req, r
 });
 
 // POST /api/email/send-template - Відправити email з кастомного template
-app.post('/api/email/send-template', authenticateToken, async (req, res) => {
+app.post('/api/email/send-template', authenticateToken, requireRole('admin', 'dispatcher'), async (req, res) => {
     try {
         const { email, templateId, subject, htmlContent } = req.body;
 
@@ -15406,8 +15530,8 @@ app.post('/api/reports/generate', authenticateToken, async (req, res) => {
         }
 
         const [requests, inspections] = await Promise.all([
-            db.collection('requests').find(requestsQuery).toArray(),
-            db.collection('inspections').find(inspectionsQuery).toArray()
+            db.collection('requests').find(requestsQuery).limit(10000).toArray(),
+            db.collection('inspections').find(inspectionsQuery).limit(10000).toArray()
         ]);
 
         // Підтягуємо дані ліфтів та технікiв
@@ -15748,7 +15872,7 @@ app.post('/api/agent/decide', authenticateToken, async (req, res) => {
 });
 
 // POST /api/agent/dismiss-all — mark all pending notifications as rejected (bulk dismiss)
-app.post('/api/agent/dismiss-all', authenticateToken, async (req, res) => {
+app.post('/api/agent/dismiss-all', authenticateToken, requireRole('admin', 'dispatcher'), async (req, res) => {
     try {
         if (!db) return res.status(503).json({ success: false, error: 'DB not ready' });
         const col = db.collection('agent_notifications');

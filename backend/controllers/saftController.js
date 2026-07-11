@@ -491,7 +491,7 @@ exports.uploadSaft = async (req, res) => {
         // Move uploaded file to permanent saft storage (for future reprocessing)
         const saftStorageDir = path.join(__dirname, '../../uploads/saft');
         if (!fs.existsSync(saftStorageDir)) fs.mkdirSync(saftStorageDir, { recursive: true });
-        const storedPath = path.join(saftStorageDir, record.filename);
+        const storedPath = path.join(saftStorageDir, path.basename(record.filename || `saft-${Date.now()}.xml`));
         try { fs.renameSync(filePath, storedPath); } catch (_) { try { fs.unlinkSync(filePath); } catch (__) {} }
 
         res.json({
@@ -937,9 +937,13 @@ exports.deleteImport = async (req, res) => {
         const record = await SaftImport.findById(req.params.id);
         if (!record) return res.status(404).json({ success: false, message: 'Import não encontrado' });
         // remove uploaded XML file if it exists
+        // Segurança: basename evita path traversal se filename contiver '../'
         try {
-            const xmlPath = path.join(__dirname, '../../uploads/saft', record.filename);
-            if (fs.existsSync(xmlPath)) fs.unlinkSync(xmlPath);
+            const safeName = path.basename(record.filename || '');
+            if (safeName) {
+                const xmlPath = path.join(__dirname, '../../uploads/saft', safeName);
+                if (fs.existsSync(xmlPath)) fs.unlinkSync(xmlPath);
+            }
         } catch (_) {}
         await record.deleteOne();
         res.json({ success: true });
@@ -1149,18 +1153,10 @@ exports.importMoloniClients = async (req, res) => {
             return res.json({ debug: true, headerIdx, delim, headers, samples: dbg });
         }
 
-        // Temporary diagnostic log
-        console.log('[CSV] headerIdx=%d delim=%s headers=%j', headerIdx, delim, headers);
-        console.log('[CSV] colIdx code=%d nif=%d addr=%d zip=%d name=%d', iCode, iNif, iAddr, iZip, iName);
-
         const clients = [];
         for (let i = headerIdx + 1; i < lines.length; i++) {
             const cols = splitCsvLine(lines[i], delim);
             const rawNif = (cols[iNif] || '').replace(/\D/g, '').trim();
-            if (i <= headerIdx + 3) {
-                console.log('[CSV] row %d: cols=%d nif=%j addr=%j zip=%j', i, cols.length,
-                    iNif >= 0 ? cols[iNif] : '?', iAddr >= 0 ? cols[iAddr] : '?', iZip >= 0 ? cols[iZip] : '?');
-            }
             if (!rawNif || rawNif === '0') continue;
 
             const code  = iCode  >= 0 ? (cols[iCode]  || '').trim() : '';

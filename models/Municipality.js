@@ -148,12 +148,13 @@ municipalitySchema.methods.addNotification = function(notificationData) {
 
 // Метод для пошуку за поштовим кодом
 municipalitySchema.statics.findByPostalCode = function(postalCode) {
-    const prefix = postalCode.substring(0, 4);
-    return this.findOne({ 
-        postal_codes: { 
-            $regex: `^${prefix}`, 
-            $options: 'i' 
-        } 
+    // Segurança: escapar metacaracteres regex para evitar injeção/ReDoS
+    const prefix = String(postalCode || '').substring(0, 4).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return this.findOne({
+        postal_codes: {
+            $regex: `^${prefix}`,
+            $options: 'i'
+        }
     });
 };
 

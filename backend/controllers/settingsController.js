@@ -39,10 +39,17 @@ exports.updateUserSettings = async (req, res, next) => {
             return next(new AppError('Utilizador não encontrado', 404));
         }
 
+        // Whitelist: aceitar apenas chaves de configuração conhecidas (evita mass-assignment)
+        const ALLOWED_SETTINGS = ['language', 'theme', 'notifications', 'privacy', 'display'];
+        const sanitized = {};
+        for (const key of ALLOWED_SETTINGS) {
+            if (req.body[key] !== undefined) sanitized[key] = req.body[key];
+        }
+
         // Об'єднуємо існуючі налаштування з новими
         user.settings = {
             ...user.settings,
-            ...req.body,
+            ...sanitized,
             updatedAt: new Date()
         };
 
