@@ -470,6 +470,13 @@ const geocodeLimiter = rateLimit({
     standardHeaders: true,
     legacyHeaders: false,
 });
+const emailLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 min
+    max: 20,                   // max 20 emails enviados por IP a cada 15 min (protege contra spam/abuso sem travar o uso normal)
+    message: { success: false, message: 'Demasiados emails enviados. Aguarde 15 minutos.' },
+    standardHeaders: true,
+    legacyHeaders: false,
+});
 
 // Middleware - CORS
 const isProduction = process.env.NODE_ENV === 'production';
@@ -1460,9 +1467,7 @@ app.post('/api/qr/public/alert', async (req, res) => {
         }
 
         const nowIso = new Date().toISOString();
-        const reqCount = await db.collection('requests').countDocuments();
-        const reqYear = new Date().getFullYear();
-        const requestNumber = `REQ-${reqYear}-${String(reqCount + 1).padStart(4, '0')}`;
+        const requestNumber = await getNextRequestNumber();
 
         const issueLabelMap = {
             stuck: 'Pessoa presa na cabina',
@@ -5014,7 +5019,7 @@ app.delete('/api/lifts/:id/contract', authenticateToken, requireRole('admin', 'd
 });
 
 // POST /api/lifts/:id/contract/email - надіслати контракт по email
-app.post('/api/lifts/:id/contract/email', authenticateToken, requireRole('admin', 'dispatcher'), async (req, res) => {
+app.post('/api/lifts/:id/contract/email', authenticateToken, emailLimiter, requireRole('admin', 'dispatcher'), async (req, res) => {
     try {
         const { ObjectId } = require('mongodb');
         const liftId = new ObjectId(req.params.id);
@@ -5070,7 +5075,7 @@ app.post('/api/lifts/:id/contract/email', authenticateToken, requireRole('admin'
 });
 
 // POST /api/lifts/:id/contract/share-to-siblings - поширити контракт на ліфти за тією ж адресою
-app.post('/api/lifts/:id/contract/share-to-siblings', authenticateToken, requireRole('admin', 'dispatcher'), async (req, res) => {
+app.post('/api/lifts/:id/contract/share-to-siblings', authenticateToken, emailLimiter, requireRole('admin', 'dispatcher'), async (req, res) => {
     try {
         const { ObjectId } = require('mongodb');
         const liftId = new ObjectId(req.params.id);
@@ -5536,7 +5541,7 @@ app.post('/api/lifts/:id/inspection-report/:index/attach-pdf', authenticateToken
 });
 
 // POST /api/lifts/send-municipality-form - відправка форми до муніципалітету
-app.post('/api/lifts/send-municipality-form', authenticateToken, async (req, res) => {
+app.post('/api/lifts/send-municipality-form', authenticateToken, emailLimiter, async (req, res) => {
     if (!['admin', 'dispatcher'].includes(req.user.role)) {
         return res.status(403).json({ success: false, message: 'Acesso negado' });
     }
@@ -7265,7 +7270,7 @@ app.post('/api/requerimentos/:id/save', authenticateToken, async (req, res) => {
 });
 
 // POST /api/requerimentos/:id/send — send branded email + PDF to municipality
-app.post('/api/requerimentos/:id/send', authenticateToken, async (req, res) => {
+app.post('/api/requerimentos/:id/send', authenticateToken, emailLimiter, async (req, res) => {
     if (!['admin', 'dispatcher'].includes(req.user.role))
         return res.status(403).json({ success: false, message: 'Acesso negado' });
     try {
@@ -8765,6 +8770,44 @@ function buildRequestQuery(id) {
     catch (_) { return { requestNumber: id }; }
 }
 
+// Хелпер: gera requestNumber via contador atómico (evita colisões sob concorrência)
+async function getNextRequestNumber() {
+    const year = new Date().getFullYear();
+    const key = `REQ-${year}`;
+    const counter = await db.collection('counters').findOneAndUpdate(
+        { _id: key },
+        { $inc: { seq: 1 } },
+        { upsert: true, returnDocument: 'after' }
+    );
+    const seq = counter.seq ?? counter.value?.seq ?? 1;
+    return `${key}-${String(seq).padStart(4, '0')}`;
+}
+
+// Хелпер: verifica se o utilizador (qualquer role) pode ver/comentar este pedido.
+// admin/dispatcher — sempre; tech — só se atribuído; client — só se dono do pedido/elevador.
+async function canAccessRequest(role, userId, req, request) {
+    if (role === 'admin' || role === 'dispatcher') return true;
+    if (role === 'tech' || role === 'technician') {
+        return request.technician === userId || request.technicianId === userId;
+    }
+    if (role === 'client') {
+        if (request.createdByUserId === userId) return true;
+        const { ObjectId: OID } = require('mongodb');
+        let clientObjId = null;
+        try { clientObjId = new OID(userId); } catch (_) {}
+        const clientEmail = (req.user.email || '').toLowerCase();
+        const liftOrConds = clientObjId
+            ? [{ client: userId }, { client: clientObjId }, { clientEmail: clientEmail }]
+            : [{ client: userId }, { clientEmail: clientEmail }];
+        const clientLifts = await db.collection('lifts')
+            .find({ $or: liftOrConds }, { projection: { _id: 1 } })
+            .toArray();
+        const liftIds = clientLifts.map(l => l._id.toString());
+        return liftIds.includes(request.liftId?.toString());
+    }
+    return false;
+}
+
 app.get('/api/requests/:id', authenticateToken, async (req, res) => {
     try {
         const requestQuery = buildRequestQuery(req.params.id);
@@ -8941,10 +8984,8 @@ app.post('/api/requests', authenticateToken, async (req, res) => {
             }
         }
 
-        // Генерація читабельного номеру заявки (REQ-2026-0001)
-        const reqCount = await db.collection('requests').countDocuments();
-        const reqYear = new Date().getFullYear();
-        const requestNumber = `REQ-${reqYear}-${String(reqCount + 1).padStart(4, '0')}`;
+        // Генерація читабельного номеру заявки (REQ-2026-0001, атомарний лічильник)
+        const requestNumber = await getNextRequestNumber();
 
         // client: referência real ao User do cliente (necessária para
         // requestController.assignTechnician poder notificar por email —
@@ -9203,16 +9244,26 @@ app.post('/api/requests/:id/comment', authenticateToken, async (req, res) => {
         const { ObjectId } = require('mongodb');
         const requestQuery = buildRequestQuery(req.params.id);
         const commentText = req.body.comment || req.body.text;
-        
+
         console.log('💬 Додавання коментаря до заявки:', req.params.id);
-        
+
         if (!commentText || !commentText.trim()) {
             return res.status(400).json({
                 success: false,
                 message: 'O comentário não pode estar vazio'
             });
         }
-        
+
+        const existing = await db.collection('requests').findOne(requestQuery);
+        if (!existing) {
+            return res.status(404).json({ success: false, message: 'Pedido não encontrado' });
+        }
+        const userId = (req.user.userId || req.user.id || '').toString();
+        const allowed = await canAccessRequest(req.user.role, userId, req, existing);
+        if (!allowed) {
+            return res.status(403).json({ success: false, message: 'Acesso negado' });
+        }
+
         // Створюємо об'єкт коментаря
         const newComment = {
             id: new ObjectId().toString(),
@@ -9607,12 +9658,9 @@ app.get('/api/requests/:id/export/pdf', authenticateToken, async (req, res) => {
         if (!request) return res.status(404).json({ message: 'Pedido não encontrado' });
 
         const role = req.user?.role || '';
-        if (!['admin', 'dispatcher', 'tech'].includes(role)) {
-            const userId = (req.user?.id || req.user?.userId || '').toString();
-            const liftDoc = request.liftId ? await db.collection('lifts').findOne({ _id: request.liftId }) : null;
-            const ownerId = liftDoc ? (liftDoc.client || liftDoc.clientId || '').toString() : '';
-            if (ownerId !== userId) return res.status(403).json({ message: 'Acesso negado' });
-        }
+        const userId = (req.user?.id || req.user?.userId || '').toString();
+        const allowed = await canAccessRequest(role, userId, req, request);
+        if (!allowed) return res.status(403).json({ message: 'Acesso negado' });
 
         const [liftDoc, techDoc] = await Promise.all([
             request.liftId ? db.collection('lifts').findOne({ _id: request.liftId }) : Promise.resolve(null),
@@ -14007,7 +14055,7 @@ body{font-family:Arial,sans-serif;line-height:1.6;color:#333}
 });
 
 // POST /api/send-email - Загальний endpoint для відправки email (Admin only)
-app.post('/api/send-email', authenticateToken, async (req, res) => {
+app.post('/api/send-email', authenticateToken, emailLimiter, async (req, res) => {
     try {
         // Перевірка ролі адміністратора
         if (req.user.role !== 'admin') {
@@ -14067,7 +14115,7 @@ app.post('/api/send-email', authenticateToken, async (req, res) => {
 });
 
 // POST /api/email/send-inspection-report - Відправити inspection report
-app.post('/api/email/send-inspection-report', authenticateToken, requireRole('admin', 'dispatcher', 'technician'), async (req, res) => {
+app.post('/api/email/send-inspection-report', authenticateToken, emailLimiter, requireRole('admin', 'dispatcher', 'technician'), async (req, res) => {
     try {
         const { clientEmail, reportData } = req.body;
         
@@ -14141,7 +14189,7 @@ app.post('/api/email/send-inspection-report', authenticateToken, requireRole('ad
 });
 
 // POST /api/email/send-critical-alert - Відправити критичний алерт
-app.post('/api/email/send-critical-alert', authenticateToken, requireRole('admin', 'dispatcher', 'technician'), async (req, res) => {
+app.post('/api/email/send-critical-alert', authenticateToken, emailLimiter, requireRole('admin', 'dispatcher', 'technician'), async (req, res) => {
     try {
         const { clientEmail, violations, liftId } = req.body;
         
@@ -14224,7 +14272,7 @@ app.post('/api/email/send-critical-alert', authenticateToken, requireRole('admin
 });
 
 // POST /api/email/send-action-plan - Відправити action plan
-app.post('/api/email/send-action-plan', authenticateToken, requireRole('admin', 'dispatcher', 'technician'), async (req, res) => {
+app.post('/api/email/send-action-plan', authenticateToken, emailLimiter, requireRole('admin', 'dispatcher', 'technician'), async (req, res) => {
     try {
         const { clientEmail, actionPlan, liftId } = req.body;
         
@@ -14303,7 +14351,7 @@ app.post('/api/email/send-action-plan', authenticateToken, requireRole('admin', 
 });
 
 // POST /api/email/send-orcamento - Відправити orçamento клієнту
-app.post('/api/email/send-orcamento', authenticateToken, requireRole('admin', 'dispatcher'), async (req, res) => {
+app.post('/api/email/send-orcamento', authenticateToken, emailLimiter, requireRole('admin', 'dispatcher'), async (req, res) => {
     try {
         const { orcamentoId, clientEmail } = req.body;
         
@@ -14752,7 +14800,7 @@ app.post('/api/inspections/download-pdf', authenticateToken, requireRole('admin'
 });
 
 // POST /api/inspections/send-report - Enviar relatório por email
-app.post('/api/inspections/send-report', authenticateToken, requireRole('admin', 'dispatcher', 'technician'), async (req, res) => {
+app.post('/api/inspections/send-report', authenticateToken, emailLimiter, requireRole('admin', 'dispatcher', 'technician'), async (req, res) => {
     try {
         const {
             inspectionNumber,
@@ -14865,7 +14913,7 @@ app.post('/api/inspections/send-report', authenticateToken, requireRole('admin',
 });
 
 // POST /api/email/send-contract - Відправити контракт клієнту
-app.post('/api/email/send-contract', authenticateToken, requireRole('admin', 'dispatcher'), upload.single('pdf'), async (req, res) => {
+app.post('/api/email/send-contract', authenticateToken, emailLimiter, requireRole('admin', 'dispatcher'), upload.single('pdf'), async (req, res) => {
     try {
         const { email, subject, message } = req.body;
         const pdfFile = req.file;
@@ -14941,7 +14989,7 @@ app.post('/api/email/send-contract', authenticateToken, requireRole('admin', 'di
 });
 
 // POST /api/email/send-inspection-pdf - Відправити PDF звіт інспекції
-app.post('/api/email/send-inspection-pdf', authenticateToken, requireRole('admin', 'dispatcher'), upload.single('pdf'), async (req, res) => {
+app.post('/api/email/send-inspection-pdf', authenticateToken, emailLimiter, requireRole('admin', 'dispatcher'), upload.single('pdf'), async (req, res) => {
     try {
         const { email, subject, message } = req.body;
         const pdfFile = req.file;
@@ -15020,7 +15068,7 @@ app.post('/api/email/send-inspection-pdf', authenticateToken, requireRole('admin
 });
 
 // POST /api/email/send-inspection-reminder - Відправити нагадування про інспекцію
-app.post('/api/email/send-inspection-reminder', authenticateToken, async (req, res) => {
+app.post('/api/email/send-inspection-reminder', authenticateToken, emailLimiter, async (req, res) => {
     if (!['admin', 'dispatcher'].includes(req.user.role)) {
         return res.status(403).json({ success: false, message: 'Acesso negado' });
     }
@@ -15146,7 +15194,7 @@ app.post('/api/email/send-inspection-reminder', authenticateToken, async (req, r
 });
 
 // POST /api/email/send-template - Відправити email з кастомного template
-app.post('/api/email/send-template', authenticateToken, requireRole('admin', 'dispatcher'), async (req, res) => {
+app.post('/api/email/send-template', authenticateToken, emailLimiter, requireRole('admin', 'dispatcher'), async (req, res) => {
     try {
         const { email, templateId, subject, htmlContent } = req.body;
 
@@ -16115,8 +16163,6 @@ async function agendarManutencaoAutomatica() {
         }
 
         // 5. Criar pedidos para elevadores em atraso
-        const reqCount = await db.collection('requests').countDocuments();
-        const year = today.getFullYear();
         let created = 0;
 
         for (let i = 0; i < overdue.length; i++) {
@@ -16125,7 +16171,7 @@ async function agendarManutencaoAutomatica() {
                 ? [lift.address.street, lift.address.city].filter(Boolean).join(', ')
                 : 'Endereço não disponível';
             const liftLabel = lift.municipalNumber ? `Elevador №${lift.municipalNumber}` : 'Elevador';
-            const requestNumber = `REQ-${year}-${String(reqCount + i + 1).padStart(4, '0')}`;
+            const requestNumber = await getNextRequestNumber();
 
             await db.collection('requests').insertOne({
                 requestNumber,
