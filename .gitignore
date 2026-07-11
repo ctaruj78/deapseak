@@ -64,6 +64,9 @@ server.pid
 ehthumbs.db
 Thumbs.db
 
+# AI audit raw outputs (regeneratable, not for commit)
+audit-reports/
+
 # IDE files
 .vscode/settings.json
 .idea/

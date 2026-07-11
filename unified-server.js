@@ -1613,7 +1613,7 @@ app.get('/api/qr/codes', authenticateToken, async (req, res) => {
 });
 
 // GET QR code by ID
-app.get('/api/qr/codes/:id', authenticateToken, async (req, res) => {
+app.get('/api/qr/codes/:id', authenticateToken, requireRole('admin', 'dispatcher'), async (req, res) => {
     try {
         if (!db) {
             return res.status(503).json({ success: false, message: 'Base de dados indisponível' });
@@ -1634,7 +1634,7 @@ app.get('/api/qr/codes/:id', authenticateToken, async (req, res) => {
 });
 
 // POST create new QR code
-app.post('/api/qr/codes', authenticateToken, async (req, res) => {
+app.post('/api/qr/codes', authenticateToken, requireRole('admin', 'dispatcher'), async (req, res) => {
     try {
         if (!db) {
             return res.status(503).json({ success: false, message: 'Base de dados indisponível' });
@@ -1658,7 +1658,7 @@ app.post('/api/qr/codes', authenticateToken, async (req, res) => {
 });
 
 // PUT update QR code
-app.put('/api/qr/codes/:id', authenticateToken, async (req, res) => {
+app.put('/api/qr/codes/:id', authenticateToken, requireRole('admin', 'dispatcher'), async (req, res) => {
     try {
         if (!db) {
             return res.status(503).json({ success: false, message: 'Base de dados indisponível' });
@@ -1687,7 +1687,7 @@ app.put('/api/qr/codes/:id', authenticateToken, async (req, res) => {
 });
 
 // DELETE QR code
-app.delete('/api/qr/codes/:id', authenticateToken, async (req, res) => {
+app.delete('/api/qr/codes/:id', authenticateToken, requireRole('admin', 'dispatcher'), async (req, res) => {
     try {
         if (!db) {
             return res.status(503).json({ success: false, message: 'Base de dados indisponível' });
@@ -2176,12 +2176,14 @@ app.get('/api/knowledge-base', async (req, res) => {
         if (difficulty && difficulty !== 'all') filter.difficulty = difficulty;
         if (featured === 'true') filter.featured = true;
         if (search) {
-            const re = new RegExp(search, 'i');
+            const escapedSearch = String(search).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const re = new RegExp(escapedSearch, 'i');
             filter.$or = [{ title: re }, { summary: re }, { tags: re }];
         }
         const articles = await db.collection('knowledge_base')
             .find(filter, { projection: { content: 0 } })
             .sort({ featured: -1, updatedAt: -1 })
+            .limit(500)
             .toArray();
         res.json({ success: true, data: articles });
     } catch (error) {
@@ -3230,15 +3232,23 @@ app.post('/api/agent/pdf-estimate/save-draft', authenticateToken, requireRole('a
     }
 });
 
+// Cache for static reference data files (loaded once, avoids blocking the event loop per request)
+const _staticJsonCache = {};
+function _loadStaticJson(relPath) {
+    if (!_staticJsonCache[relPath]) {
+        const fs = require('fs');
+        _staticJsonCache[relPath] = JSON.parse(fs.readFileSync(path.join(__dirname, relPath), 'utf8'));
+    }
+    return _staticJsonCache[relPath];
+}
+
 // Portuguese Regulations Search API (public - no auth required)
 app.get('/api/regulations', async (req, res) => {
     try {
         const { search } = req.query;
-        
-        // Load regulations
-        const fs = require('fs');
-        const regulationsPath = path.join(__dirname, 'data', 'portugal-lift-regulations.json');
-        const regulationsData = JSON.parse(fs.readFileSync(regulationsPath, 'utf8'));
+
+        // Load regulations (cached in memory after first read)
+        const regulationsData = _loadStaticJson(path.join('data', 'portugal-lift-regulations.json'));
         
         if (!search) {
             // Return all regulations
@@ -3285,10 +3295,8 @@ app.get('/api/regulations', async (req, res) => {
 app.get('/api/en-standards', authenticateToken, async (req, res) => {
     try {
         const { search, type } = req.query;
-        
-        const fs = require('fs');
-        const standardsPath = path.join(__dirname, 'data', 'en-standards-lift-regulations.json');
-        const standardsData = JSON.parse(fs.readFileSync(standardsPath, 'utf8'));
+
+        const standardsData = _loadStaticJson(path.join('data', 'en-standards-lift-regulations.json'));
         
         if (!search && !type) {
             return res.json({

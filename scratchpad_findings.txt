@@ -1,0 +1,521 @@
+==== #0 [critical/privesc] L4918-4942 prov=deepseek conf=high
+TITLE: No role check on DELETE /api/lifts/:id/contract allows any authenticated user to delete contracts
+DESC: The route handler does not verify the user's role beyond `authenticateToken`. Any authenticated user (client, technician) can delete a lift's contract by calling this endpoint.
+EVID: app.delete('/api/lifts/:id/contract', authenticateToken, async (req, res) => { ... });
+FIX: Add a role check (e.g., `requireRole('admin', 'dispatcher')`) before performing the deletion.
+
+==== #1 [critical/privesc] L7555-7565 prov=deepseek conf=high
+TITLE: PUT /api/clients/:id allows mass-assignment and privilege escalation for any authenticated dispatcher/admin
+DESC: The route handler spreads req.body into updateData without a whitelist, deletes only _id/id/password, then applies $set to the users collection. Se nenhuma verificação impede que um dispatcher edite o campo role de qualquer utilizador (incluindo admins). Um dispatcher pode mudar o role de um admin para 'client', ou escalar os seus próprios privilégios encontrado o _id de um admin.
+EVID: const updateData = { ...req.body }; delete updateData._id; delete updateData.id; delete updateData.password; ... await db.collection('users').updateOne({ _id: new ObjectId(req.params.id) }, { $set: updateData });
+FIX: Adicionar uma whitelist de campos permitidos (ex.: firstName, lastName, phone, address, company, ...) e verificar que o utilizador alvo tem role='client'. Para dispatchers, impedir a alteração do campo role ou qualquer campo crítico.
+
+==== #2 [critical/privesc] L7604-7612 prov=deepseek conf=high
+TITLE: PUT /api/technicians/:id permite mass-assignment e escalação de privilégios
+DESC: O handler espalha req.body em updateData, remove apenas _id/id/password, e actualiza directamente na coleção users. Não verifica se o alvo é um técnico nem impõe restrições ao campo role. Um dispatcher pode alterar o role de qualquer utilizador para 'admin', escalando privilégios.
+EVID: const updateData = { ...req.body }; delete updateData._id; delete updateData.id; delete updateData.password; ... await db.collection('users').updateOne({ _id: new ObjectId(req.params.id) }, { $set: updateData });
+FIX: Aplicar whitelist de campos permitidos (ex.: specialty, skills, notes, status) e assegurar que o utilizador alvo tem role='technician' ou 'tech'. Bloquear alterações ao campo role.
+
+==== #3 [critical/idor] L9161-9210 prov=deepseek conf=high
+TITLE: POST /api/requests/:id/complete permite que qualquer autenticado finalize um pedido sem verificação de permissões
+DESC: A rota não verifica se o utilizador tem permissão para completar o pedido (admin/dispatcher ou técnico atribuído). Um cliente ou técnico não atribuído poderia marcar qualquer pedido como 'completed', adulterando o fluxo de trabalho.
+EVID: app.post('/api/requests/:id/complete', authenticateToken, async (req, res) => { ... const result = await db.collection('requests').updateOne(requestQuery, { $set: updateData }); ... })
+FIX: Incluir verificação de autorização: apenas admin/dispatcher ou o técnico designado ao pedido deve poder completá-lo.
+
+==== #4 [critical/privesc] L15017-15061 prov=deepseek conf=high
+TITLE: Missing role check on send-template allows any authenticated user to send arbitrary HTML emails to any address
+DESC: The /api/email/send-template endpoint trusts any authenticated user to supply a recipient, subject, and raw HTML content. Without role verification, a low-privilege user (e.g., a client) could send phishing emails, spam, or malicious content through the company’s mail server, constituting a severe abuse risk.
+EVID: app.post('/api/email/send-template', authenticateToken, async (req, res) => { ... const mailOptions = { ..., html: htmlContent } ...
+FIX: Restrict this endpoint to admin and dispatcher roles only, and consider adding a content-safety filter for the HTML payload.
+
+==== #5 [high/idor] L1616-1634 prov=deepseek conf=high
+TITLE: No ownership check on QR scan get/update/delete allows any user to access any scan
+DESC: GET /api/qr/codes/:id, PUT /api/qr/codes/:id, and DELETE /api/qr/codes/:id lack ownership verification. Any authenticated user can read, edit, or delete any QR scan record regardless of who created it.
+EVID: const qrCode = await db.collection('qr_scans').findOne({ _id: new ObjectId(req.params.id) });
+FIX: Add ownership guard: for non‑admin roles, scope the query to the current user (e.g., by scannedBy or userId); alternatively, restrict these endpoints to admin/dispatcher only if scan data is sensitive.
+
+==== #6 [high/mass-assignment] L1637-1658 prov=grok conf=high
+TITLE: Mass assignment via req.body spread into qr_scans insert
+DESC: POST /api/qr/codes accepts arbitrary fields from req.body and spreads them directly into the MongoDB document without whitelist, allowing attackers to set arbitrary fields (e.g. userId, status, internal flags).
+EVID: const qrCodeData = {
+    ...req.body,
+    createdBy: req.user.id,
+    createdAt: new Date(),
+    updatedAt: new Date()
+};
+FIX: Explicitly pick only allowed fields instead of spreading req.body.
+
+==== #7 [high/mass-assignment] L1643-1648 prov=deepseek conf=high
+TITLE: Mass‑assignment in QR code creation allows arbitrary field injection
+DESC: POST /api/qr/codes spreads the entire req.body into the document without a field whitelist. An attacker can inject internal fields (e.g., _id, role, status) to corrupt the collection or escalate privileges.
+EVID: const qrCodeData = {
+            ...req.body,
+            createdBy: req.user.id,
+            createdAt: new Date(),
+            updatedAt: new Date()
+        };
+FIX: Explicitly pick only the allowed fields (e.g., code, liftId, action) instead of spreading req.body.
+
+==== #8 [high/mass-assignment] L1661-1687 prov=grok conf=high
+TITLE: Mass assignment via req.body spread into qr_scans update
+DESC: PUT /api/qr/codes/:id spreads req.body into the update without field whitelist, enabling modification of any document fields.
+EVID: const updateData = {
+    ...req.body,
+    updatedAt: new Date()
+};
+FIX: Build updateData from an explicit allow-list of fields.
+
+==== #9 [high/mass-assignment] L1668-1675 prov=deepseek conf=high
+TITLE: Mass‑assignment in QR code update allows modification of arbitrary fields
+DESC: PUT /api/qr/codes/:id spreads req.body directly into the $set update without a whitelist. An attacker can modify sensitive fields or inject data that could compromise the application.
+EVID: const updateData = {
+            ...req.body,
+            updatedAt: new Date()
+        };
+FIX: Restrict updatable fields to a known set (e.g., code, status, location) – explode, not spread.
+
+==== #10 [high/injection] L2178-2180 prov=deepseek conf=high
+TITLE: Unsanitised user input in public knowledge‑base search enables non‑admin ReDoS
+DESC: GET /api/knowledge-base builds a RegExp directly from the `search` query parameter without escaping. An unauthenticated attacker can submit a crafted regex causing catastrophic backtracking, leading to CPU exhaustion and denial of service.
+EVID: const re = new RegExp(search, 'i');
+            filter.$or = [{ title: re }, { summary: re }, { tags: re }];
+FIX: Escape special regex characters (e.g., with a helper like `escapeRegex`) to ensure the pattern is treated as a literal string, or perform a text‑index search instead of a regex.
+
+==== #11 [high/logic-bug] L3578-3582 prov=deepseek conf=high
+TITLE: Incorrect `withoutContracts` count inflates notifications
+DESC: The query uses `{ 'documents.type': { $ne: 'contract' } }` to count lifts without contracts. Because `documents` is an array, this condition matches lifts that have any document whose `type` is not `'contract'` (e.g., an inspection document), causing false positives. The count over-reports lifts as missing contracts.
+EVID: liftsCollection.countDocuments({
+    $or: [
+        { documents: { $exists: false } },
+        { 'documents.type': { $ne: 'contract' } }
+    ]
+})
+FIX: Use `{ documents: { $not: { $elemMatch: { type: 'contract' } } } }` to properly check that no contract document exists, or combine with `$exists: false`.
+
+==== #12 [high/mass-assignment] L4041-4041 prov=deepseek conf=high
+TITLE: Mass-assignment in POST /api/lifts enables arbitrary field injection
+DESC: The route directly spreads `req.body` into a new object (`const liftData = { ...req.body };`) without any whitelist or sanitization. An attacker with admin/dispatcher role can inject arbitrary fields (e.g., `role`, `isAdmin`, or any other sensitive property) into the lift document, potentially corrupting data or affecting downstream logic.
+EVID: const liftData = { ...req.body };
+FIX: Explicitly extract only the allowed fields from `req.body` (e.g., `{ name, address, ... }`) instead of spreading the entire body. Alternatively, use a validate/sanitize library with strict whitelist.
+
+==== #13 [high/secret-leak] L4230-4234 prov=deepseek conf=high
+TITLE: Plaintext temporary password returned in API response
+DESC: When a new client is auto-created during lift creation (POST /api/lifts), the randomly generated raw password is included in the `newClientInfo` object and returned in the HTTP response. This exposes the plaintext password to the admin/dispatcher making the request, and it may be logged or stored insecurely on the client side.
+EVID: newClientInfo = {
+    email: clientEmail,
+    password: rawPassword,
+    created: true
+};
+FIX: Do not include the raw password in the API response. Instead, send a one-time secure link or force the user to set a password on first login via a separate flow.
+
+==== #14 [high/idor] L4482-4557 prov=deepseek conf=high
+TITLE: Missing authorization check for technician on lift history
+DESC: The /api/lifts/:id/history route only enforces access control for clients. A technician can fetch the maintenance history of any lift by its ID, even without an active task or recent QR scan, bypassing the usual technician access restrictions enforced on GET /api/lifts/:id.
+EVID: if (req.user.role === 'client') {
+    const clientId = req.user.id || req.user.userId;
+    const liftClientId = lift.client ? lift.client.toString() : null;
+    if (liftClientId !== clientId) {
+        return res.status(403).json({ success: false, message: 'Sem acesso a este elevador' });
+    }
+}
+FIX: Add a technician access check similar to the one in GET /api/lifts/:id, e.g., verify that the technician has an active task or a recent QR scan for that lift.
+
+==== #15 [high/logic-bug] L4579-4579 prov=deepseek conf=high
+TITLE: Wrong ownership check uses non-existent field `clientId`
+DESC: The PUT route checks `lift.clientId !== req.user.id && lift.clientId !== req.user.userId` to restrict client access. However, the lift document uses the field `client` (ObjectId) to store the owner, not `clientId`. As a result, `lift.clientId` is always `undefined`, the condition always passes as not equal, and clients are always denied update access to their own lifts.
+EVID: if (req.user.role === 'client' && lift.clientId !== req.user.id && lift.clientId !== req.user.userId) {
+FIX: Change the check to compare `lift.client` (converted to string) with the user's ID, e.g., `if (req.user.role === 'client' && (!lift.client || lift.client.toString() !== String(req.user.id || req.user.userId)))`.
+
+==== #16 [high/idor] L4579-4579 prov=grok conf=high
+TITLE: Wrong field name in client ownership check on PUT /api/lifts/:id
+DESC: Client role check uses non-existent lift.clientId instead of the actual 'client' field used everywhere else (hasClientAccessToLift, GET /api/lifts, GET /api/lifts/:id, etc.). This breaks the ownership guard, allowing potential unauthorized updates by clients.
+EVID: if (req.user.role === 'client' && lift.clientId !== req.user.id && lift.clientId !== req.user.userId) {
+FIX: Replace lift.clientId with lift.client (normalize to string for comparison, matching hasClientAccessToLift logic at 4370-4376)
+
+==== #17 [high/mass-assignment] L4630-4634 prov=deepseek conf=high
+TITLE: Mass-assignment in PUT /api/lifts/:id updateData spread
+DESC: Similar to the POST route, the PUT handler spreads `req.body` into `updateData` (`const updateData = { ...req.body, updatedAt: ... }`) without a whitelist. This allows an authorized user to inject arbitrary fields into the lift document.
+EVID: let updateData = {
+    ...req.body,
+    updatedAt: new Date().toISOString(),
+    updatedBy: req.user.username
+};
+FIX: Define a whitelist of updatable fields and only copy those from `req.body`.
+
+==== #18 [high/idor] L4899-4915 prov=deepseek conf=high
+TITLE: Missing authorization for technician on contract retrieval
+DESC: The GET /api/lifts/:id/contract endpoint only checks client access via `hasClientAccessToLift` but does not restrict technicians. A technician can retrieve the maintenance contract of any lift without authorization.
+EVID: if (req.user.role === 'client' && !hasClientAccessToLift(lift, req)) {
+    return res.status(403).json({ success: false, message: 'Sem acesso a este elevador' });
+}
+FIX: Extend the authorization to deny technicians unless they have a valid assignment or recent QR scan for the lift.
+
+==== #19 [high/privesc] L4945-4998 prov=deepseek conf=high
+TITLE: No role check on contract email endpoint
+DESC: The POST /api/lifts/:id/contract/email route has no authorization check. Any authenticated user can send the contract file to any email address, potentially leaking sensitive documents or spamming arbitrary recipients.
+EVID: app.post('/api/lifts/:id/contract/email', authenticateToken, async (req, res) => { ... });
+FIX: Restrict this endpoint to admin/dispatcher roles.
+
+==== #20 [high/privesc] L5001-5033 prov=deepseek conf=high
+TITLE: No role check on contract share-to-siblings endpoint
+DESC: The POST /api/lifts/:id/contract/share-to-siblings route lacks any role verification. Any authenticated user can trigger the sharing of a contract to other lifts at the same address, potentially overwriting existing contracts.
+EVID: app.post('/api/lifts/:id/contract/share-to-siblings', authenticateToken, async (req, res) => { ... });
+FIX: Add a role guard (e.g., `requireRole('admin', 'dispatcher')`).
+
+==== #21 [high/idor] L5372-5429 prov=deepseek conf=high
+TITLE: No role check on DELETE inspection report allows any authenticated user to delete reports
+DESC: The DELETE /api/lifts/:id/inspection-report/:index handler does not check the user's role. A client or technician can delete inspection reports of any lift.
+EVID: app.delete('/api/lifts/:id/inspection-report/:index', authenticateToken, async (req, res) => { ... });
+FIX: Add a role check to deny clients and technicians from deleting inspection reports (at minimum require admin/dispatcher).
+
+==== #22 [high/idor] L5921-5959 prov=deepseek conf=high
+TITLE: Missing authorization for technician on document retrieval
+DESC: The GET /api/lifts/:id/documents endpoint only checks client access but does not restrict technicians. A technician can view documents of any lift without a valid assignment.
+EVID: if (req.user.role === 'client' && !hasClientAccessToLift(lift, req)) {
+    return res.status(403).json({ success: false, message: 'Sem acesso a este elevador' });
+}
+FIX: Add a technician access check (active task or recent QR scan) similar to GET /api/lifts/:id.
+
+==== #23 [high/injection] L7060-7063 prov=deepseek conf=medium
+TITLE: Path traversal possível no nome do ficheiro gerado em POST /api/lifts/:id/requerimento/generate
+DESC: A função 'sanitize' remove apenas alguns caracteres especiais, mas não previne sequências '../'. Se um atacante conseguir inserir '..' no nome do município ou no municipalNumber (ex.: através de um admin malicioso ou injeção), o ficheiro PDF será escrito fora do diretório 'uploads/requerimentos/sent/'.
+EVID: const sanitize = s => String(s).replace(/[/\\?%*:|"<>]/g, '-').replace(/\s+/g, '_');
+const filename = `Req_${sanitize(munName || 'Municipio')}_${sanitize(lift.municipalNumber || liftId)}_...`;
+FIX: Garantir que o nome do ficheiro não contém segmentos de diretório. Pode-se remover todos os '.' consecutivos ou, melhor, extrair apenas o basename e usar um nome seguro com UUID. Validar que o caminho final permanece dentro do diretório pretendido.
+
+==== #24 [high/injection] L7104-7104 prov=deepseek conf=medium
+TITLE: Path traversal em GET /api/requerimentos/:id/pdf através do campo pdfPath da base de dados
+DESC: O endpoint lê o ficheiro usando path.join(__dirname, rec.pdfPath). Se o documento na coleção 'requerimentos' contiver um pdfPath com '..' (injectado maliciosamente via o endpoint de geração ou manipulação directa da BD), o atacante pode ler ficheiros arbitrários do servidor.
+EVID: const filePath = path.join(__dirname, rec.pdfPath);
+...
+res.sendFile(filePath);
+FIX: Validar que rec.pdfPath não contém segmentos '..' e que o caminho resolvido está dentro da árvore de uploads. Preferir armazenar apenas um UUID e mapear para o ficheiro em disco, em vez de guardar caminhos relativos arbitrários.
+
+==== #25 [high/secret-leak] L7445-7445 prov=grok conf=high
+TITLE: Plaintext temporary password stored in user document
+DESC: createUserWithInvite stores the generated raw password in tempPasswordHint field on every new user. This value is persisted to MongoDB and can be read back via multiple /api/users* endpoints (even when sometimes projected out).
+EVID: tempPasswordHint: rawPassword
+FIX: Remove tempPasswordHint entirely; store only the bcrypt hash and require password change on first login without exposing the value.
+
+==== #26 [high/idor] L9110-9146 prov=deepseek conf=high
+TITLE: POST /api/requests/:id/comment permite que qualquer utilizador autenticado adicione comentários a qualquer pedido
+DESC: O endpoint não verifica se o utilizador é o técnico atribuído, o cliente dono do elevador, ou um admin/dispatcher. Qualquer utilizador autenticado pode adicionar comentários indiscriminadamente, podendo poluir ou vazar informação restrita.
+EVID: app.post('/api/requests/:id/comment', authenticateToken, async (req, res) => { ... const result = await db.collection('requests').updateOne(requestQuery, { $push: { comments: newComment }, $set: { ... } }); ... })
+FIX: Antes de adicionar o comentário, verificar a relação do utilizador com o pedido: admin/dispatcher permitidos, técnico apenas se assignedTo coincide, cliente apenas se o pedido pertence a um dos seus elevadores.
+
+==== #27 [high/idor] L9488-9494 prov=deepseek conf=high
+TITLE: Technicians can export PDF of any service request, bypassing ownership assignment
+DESC: The PDF export route only performs an ownership check if the user's role is NOT 'admin', 'dispatcher', or 'tech'. Since 'tech' users are allowed without the check, any technician can retrieve PDF reports of all requests, including those not assigned to them, leading to data leakage.
+EVID: if (!['admin', 'dispatcher', 'tech'].includes(role)) {
+    ... ownership check ...
+}
+FIX: Verify that the technician is assigned to the request (e.g., by checking request.assignedTo or request.technicianId matches req.user.id), and only allow access to assigned requests.
+
+==== #28 [high/mass-assignment] L9619-9648 prov=grok conf=high
+TITLE: Mass assignment in user settings update
+DESC: PUT /api/settings spreads the entire req.body into the MongoDB update without any field whitelist or schema validation, allowing an authenticated user to set arbitrary fields (including userId, role, or other privileged keys) on their settings document.
+EVID: const newSettings = req.body;
+...
+$set: {
+    ...newSettings,
+    userId,
+    updatedAt: new Date().toISOString()
+}
+FIX: Define an explicit whitelist of allowed fields (e.g. language, theme, notifications, display) and only copy those from req.body into the $set object.
+
+==== #29 [high/mass-assignment] L9622-9628 prov=deepseek conf=high
+TITLE: PUT /api/settings spreads entire request body into MongoDB update, allowing arbitrary field modification
+DESC: The endpoint directly uses req.body as the source for $set: `$set: { ...newSettings, userId, updatedAt: ... }`. An attacker can inject arbitrary fields (e.g., `isAdmin`, `role`) into the user_settings document, potentially escalating privileges or corrupting settings.
+EVID: const newSettings = req.body;
+...
+$set: {
+    ...newSettings,
+    userId,
+    updatedAt: new Date().toISOString()
+}
+FIX: Whitelist allowed fields (language, theme, notifications, display) and only update those, never spread req.body directly.
+
+==== #30 [high/logic-bug] L13078-13078 prov=grok conf=high
+TITLE: Broken this.handleChatMessage call in /api/ai/consult
+DESC: Inside the arrow-function route handler, 'this' is undefined; handleChatMessage does not exist on any reachable object, so the fallback path will always throw.
+EVID: const chatResponse = await this.handleChatMessage(question);
+FIX: Remove the dead fallback or replace with a direct call to the existing callMainAI / callGroqAI logic used by /api/ai/chat.
+
+==== #31 [high/xss] L13961-13978 prov=deepseek conf=high
+TITLE: Stored HTML injection via unescaped violation fields in inspection report email
+DESC: The endpoint `POST /api/email/send-inspection-report` builds an HTML email by directly interpolating `v.description`, `v.consequences`, `v.article`, and `v.deadline` from the request body without any HTML escaping. A malicious authenticated user could inject arbitrary HTML/JavaScript, leading to XSS when the recipient views the email.
+EVID: violationsHTML += `
+    <li style="margin-bottom: 15px;">
+        <strong>${priority}</strong><br>
+        <strong>Artigo:</strong> ${v.article}<br>
+        <strong>Descrição:</strong> ${v.description}<br>
+        <strong>Consequências:</strong> ${v.consequences}<br>
+        ${v.deadline ? `<strong>Prazo:</strong> ${v.deadline}<br>` : ''}
+    </li>
+`;
+FIX: Sanitize all interpolated string values with an HTML-escaping function (e.g., the `esc` helper already present in the project) before inserting them into the email template.
+
+==== #32 [high/xss] L14041-14048 prov=deepseek conf=high
+TITLE: Stored HTML injection via unescaped violation fields in critical alert email
+DESC: The endpoint `POST /api/email/send-critical-alert` constructs HTML with `v.description`, `v.consequences`, `v.article`, and `v.deadline` from the request body without HTML encoding. An authenticated attacker can embed scripts or phishing content into the alert email.
+EVID: alertHTML += `
+    <li style="background: #ffe5e5; padding: 15px; margin-bottom: 10px; border-left: 4px solid #dc3545;">
+        <strong style="color: #dc3545;">🔴 ${v.article}</strong><br>
+        <strong>Descrição:</strong> ${v.description}<br>
+        <strong>Consequências:</strong> ${v.consequences}<br>
+        <strong style="color: #dc3545;">⏰ PRAZO: ${v.deadline || 'IMEDIATO (0-7 dias)'}</strong>
+    </li>
+`;
+FIX: Apply HTML escaping to all interpolated user-supplied values before building the email HTML.
+
+==== #33 [high/xss] L14119-14142 prov=deepseek conf=high
+TITLE: Stored HTML injection via unescaped action plan items in email
+DESC: The endpoint `POST /api/email/send-action-plan` inserts items from `actionPlan.immediate`, `actionPlan.shortTerm`, and `actionPlan.longTerm` directly into the email HTML without escaping. A malicious user could inject scripts or misleading content.
+EVID: actionPlan.immediate.forEach(action => {
+    planHTML += `<li style="margin-bottom: 10px;">${action}</li>`;
+});
+...
+actionPlan.shortTerm.forEach(action => {
+    planHTML += `<li style="margin-bottom: 10px;">${action}</li>`;
+});
+...
+actionPlan.longTerm.forEach(action => {
+    planHTML += `<li style="margin-bottom: 10px;">${action}</li>`;
+});
+FIX: Escape each `action` string with an HTML-encoding function before concatenating.
+
+==== #34 [high/xss] L14212-14301 prov=deepseek conf=high
+TITLE: Stored HTML injection in orcamento email via unescaped client name, service descriptions, and notes
+DESC: The endpoint `POST /api/email/send-orcamento` builds an HTML email using fields from an orcamento document without HTML escaping. Specifically, `orcamento.cliente.nome` (line 14265), each service's `descricao` (line 14212), and `orcamento.notas` (line 14301) are interpolated directly. An attacker who can influence an orcamento's content (e.g., by creating or editing one) could inject malicious HTML, leading to XSS when the email is opened.
+EVID: line 14265: `<p style="margin: 5px 0;"><strong>Cliente:</strong> ${orcamento.cliente.nome}</p>`
+line 14212: `<td style="border: 1px solid #ddd; padding: 8px;">${s.descricao}</td>`
+line 14301: `${orcamento.notas}`
+FIX: Apply HTML escaping (e.g., using the existing `esc` function) to `orcamento.cliente.nome`, each `s.descricao`, and `orcamento.notas` before injecting them into the email HTML.
+
+==== #35 [high/idor] L14604-14620 prov=grok conf=high
+TITLE: Missing ownership check on inspection PDF download
+DESC: POST /api/inspections/download-pdf only authenticates the caller and accepts any inspectionNumber from req.body. It passes the entire body to gerarPDFRelatorio without verifying that the authenticated user (technician/client) is allowed to access that inspection. Any logged-in user can obtain any report by guessing the number.
+EVID: const { inspectionNumber } = req.body;
+if (!inspectionNumber) { return res.status(400)... }
+const pdfBuffer = await gerarPDFRelatorio(req.body);
+FIX: Look up the inspection by inspectionNumber, verify req.user.role+id matches the inspector/assigned technician or client of the associated lift, then call gerarPDFRelatorio only with the DB record.
+
+==== #36 [high/privesc] L14623-14733 prov=deepseek conf=high
+TITLE: Missing role check on send-report allows any authenticated user to send emails via company SMTP
+DESC: The /api/inspections/send-report endpoint only requires authenticateToken but does not restrict access by role. Any authenticated user (including clients or technicians) can send arbitrary inspection reports with crafted data to any email address using the corporate SMTP server, enabling spam, phishing, or impersonation.
+EVID: app.post('/api/inspections/send-report', authenticateToken, async (req, res) => { ... }
+FIX: Add a role guard: if (!['admin', 'dispatcher', 'technician'].includes(req.user.role)) return res.status(403).json(...). Restrict access to roles that should send reports.
+
+==== #37 [high/idor] L14623-14733 prov=grok conf=high
+TITLE: Missing ownership check on inspection report email send
+DESC: POST /api/inspections/send-report accepts arbitrary inspection data (including inspectionNumber) from any authenticated user and emails the generated PDF without DB ownership verification.
+EVID: const { inspectionNumber, ... } = req.body;
+...
+const pdfBuffer = await gerarPDFRelatorio(req.body);
+FIX: Resolve the inspection from DB first, enforce ownership/role check identical to the download-pdf fix, then proceed.
+
+==== #38 [high/privesc] L14736-14809 prov=deepseek conf=high
+TITLE: Missing role check on send-contract allows any authenticated user to send emails with attachments
+DESC: The /api/email/send-contract endpoint uses authenticateToken but has no role verification. Any logged-in user (including clients and technicians) can send emails through the company mail server with an arbitrary subject, message, and attached file, creating a risk of spam, phishing, or malware distribution.
+EVID: app.post('/api/email/send-contract', authenticateToken, upload.single('pdf'), async (req, res) => { ...
+FIX: Restrict access to admin and dispatcher roles: if (!['admin', 'dispatcher'].includes(req.user.role)) return res.status(403).json(...).
+
+==== #39 [high/privesc] L14812-14888 prov=deepseek conf=high
+TITLE: Missing role check on send-inspection-pdf allows any authenticated user to send emails with attachments
+DESC: The /api/email/send-inspection-pdf endpoint authenticates but does not enforce any role restriction. Any user can send emails with an uploaded PDF attachment through the corporate SMTP, enabling abuse similar to send-contract.
+EVID: app.post('/api/email/send-inspection-pdf', authenticateToken, upload.single('pdf'), async (req, res) => { ...
+FIX: Add a role guard to restrict usage to admin and dispatcher, or at least to technicians with additional validation.
+
+==== #40 [high/privesc] L15743-15797 prov=deepseek conf=high
+TITLE: Missing role check on dismiss-all allows any authenticated user to globally suppress agent notifications
+DESC: The /api/agent/dismiss-all endpoint marks all pending or postponed notifications as rejected and suppresses overdue lift alerts for 30 days. It does not verify the user’s role, so a client or technician could dismiss all important operational alerts, disrupting maintenance and causing data loss.
+EVID: app.post('/api/agent/dismiss-all', authenticateToken, async (req, res) => { ... if (!db) return ... const col = db.collection('agent_notifications'); ... await col.updateMany(..., { $set: { status: 'rejected', ... } }); ...
+FIX: Add a role check ensuring only admin and dispatcher can dismiss all notifications: if (!['admin','dispatcher'].includes(req.user.role)) return res.status(403).json(...).
+
+==== #41 [medium/xss] L1414-1422 prov=deepseek conf=medium
+TITLE: Stored XSS risk from unsanitised public QR alert and support ticket user input
+DESC: User‑supplied fields such as `issueDetails`, `subject`, and `description` (in /api/qr/public/alert and /api/support/tickets) are stored without sanitisation. If the admin panel renders them via innerHTML or similar unsafe method, it could execute arbitrary scripts. The backend should sanitise input before persistence.
+EVID: const trimmedDetails = String(issueDetails || '').trim(); … stored; also ticket = { … description: description || '' } directly from req.body.
+FIX: Sanitise HTML/script content server‑side using a library like DOMPurify, or at minimum reject input containing <script> tags and event handlers.
+
+==== #42 [medium/unbounded-query] L1541-1569 prov=grok conf=high
+TITLE: Unbounded .find().toArray() on lifts collection before JS-side pagination
+DESC: GET /api/qr/codes loads every matching lift document into memory with .toArray() then slices in JS; no server-side limit/pagination on the query.
+EVID: const lifts = await db.collection('lifts').find(liftFilter).toArray();
+const total = lifts.length;
+...lifts.slice(skip, skip + parseInt(limit))...
+FIX: Use .limit() + .skip() on the Mongo query (or aggregation) and obtain total via a separate count.
+
+==== #43 [medium/idor] L1616-1634 prov=grok conf=high
+TITLE: Missing ownership check on single QR scan record retrieval
+DESC: GET /api/qr/codes/:id returns any qr_scans document by _id with only authenticateToken; no role or ownership filter, so any authenticated user can read any scan record.
+EVID: const qrCode = await db.collection('qr_scans').findOne({ _id: new ObjectId(req.params.id) });
+FIX: Add role-based or ownership filter (e.g. scannedBy == req.user.id for non-admins).
+
+==== #44 [medium/unbounded-query] L2182-2185 prov=deepseek conf=high
+TITLE: Unbounded result set in GET /api/knowledge-base (public)
+DESC: The public knowledge‑base listing (and the admin‑only all) returns all articles without pagination or limit. Growth of articles will degrade performance.
+EVID: const articles = await db.collection('knowledge_base')
+            .find(filter, { projection: { content: 0 } })
+            .sort({ featured: -1, updatedAt: -1 })
+            .toArray();
+FIX: Implement pagination on both endpoints, defaulting to a sensible limit (e.g., 20) and capping at 100.
+
+==== #45 [medium/unbounded-query] L2554-2576 prov=deepseek conf=high
+TITLE: Unbounded result set in GET /api/tasks
+DESC: The tasks endpoint returns all matching documents without pagination or limit. A large number of tasks could cause high memory usage and slow responses.
+EVID: const tasks = await db.collection('tasks')
+            .find(query)
+            .sort({ dueDate: 1, priority: -1 })
+            .toArray();
+FIX: Add pagination (page, limit) with a reasonable maximum limit (e.g., 200) to prevent excessive resource consumption.
+
+==== #46 [medium/secret-leak] L2771-2776 prov=deepseek conf=medium
+TITLE: User profile endpoint returns tempPasswordHint, possibly disclosing password recovery data
+DESC: GET /api/users/me (and the updated user returned by PUT) omit only `password` but include `tempPasswordHint`. This hint can reveal sensitive password‑recovery information, aiding account takeovers.
+EVID: const { password, ...userProfile } = user;
+        …
+        res.json({ … userProfile });
+FIX: Explicitly exclude `tempPasswordHint` from the output, or protect it behind a separate admin‑only endpoint.
+
+==== #47 [medium/other] L3241-3241 prov=deepseek conf=high
+TITLE: Synchronous file read blocks event loop in /api/regulations
+DESC: The route handler uses `fs.readFileSync` to load a JSON file, which will block the Node.js event loop during every request to the public endpoint. This can cause performance degradation under concurrent access.
+EVID: const regulationsData = JSON.parse(fs.readFileSync(regulationsPath, 'utf8'));
+FIX: Load the regulations file asynchronously using `fs.promises.readFile` or cache it in memory after startup.
+
+==== #48 [medium/other] L3291-3291 prov=deepseek conf=high
+TITLE: Synchronous file read blocks event loop in /api/en-standards
+DESC: The /api/en-standards handler uses `fs.readFileSync` identically to the regulations endpoint, causing the same event-loop blocking issue on authenticated requests.
+EVID: const standardsData = JSON.parse(fs.readFileSync(standardsPath, 'utf8'));
+FIX: Use asynchronous file reading or cache the file contents after server startup.
+
+==== #49 [medium/missing-index] L6392-6394 prov=deepseek conf=high
+TITLE: Falta de índice em lifts.municipality.id para consultas por município
+DESC: A rota GET /api/municipalities/:id/lifts e outras operações que filtram por municipality.id dependem de um campo não indexado, o que pode degradar o desempenho em colecções grandes.
+EVID: const lifts = await db.collection('lifts').find({ 'municipality.id': municipalityId }).toArray();
+FIX: Criar um índice em { 'municipality.id': 1 } na colecção 'lifts'.
+
+==== #50 [medium/xss] L7227-7242 prov=deepseek conf=medium
+TITLE: HTML do email de requerimento não escapa dados provenientes da base de dados
+DESC: A variável bodyHtml insere munName, liftRef e liftAddr directamente sem qualquer sanitização. Como estes valores podem ser controlados por admins/dispatchers através dos campos do elevador e município, é possível injectar script malicioso no email enviado à câmara municipal, constituindo stored XSS (no contexto do cliente de email).
+EVID: ...<td>${munName}</td>...<td>${liftRef}</td>...<td>${liftAddr}</td>...
+FIX: Escapar os valores para HTML (ex.: substituir '<', '>', '&', etc.) antes de os incluir no corpo do email.
+
+==== #51 [medium/logic-bug] L7492-7492 prov=grok conf=high
+TITLE: Undeclared variable assignment in email skip path
+DESC: When SEND_WELCOME_EMAILS is false the code does 'emailSkipped = true' but the variable was never declared (only emailSent exists), causing a ReferenceError in that branch.
+EVID: emailSkipped = true;
+FIX: Declare let emailSkipped = false; at the top of the function or remove the dead assignment.
+
+==== #52 [medium/secret-leak] L7538-7541 prov=deepseek conf=high
+TITLE: POST /api/clients e POST /api/technicians retornam a palavra-passe em texto puro na resposta
+DESC: Ao criar um cliente ou técnico, o objecto de resposta inclui 'newClient.password' (ou 'newUser.password') com a palavra-passe temporária. Isto expõe a credencial no corpo da resposta, podendo ser registada em logs do cliente, proxy ou browser.
+EVID: newClient: created ? { email: user.email, password: rawPassword, emailSent, emailError } : null
+FIX: Remover o campo password da resposta. A palavra-passe deve ser comunicada exclusivamente por email. Se necessário, retornar apenas uma indicação de que foi enviada.
+
+==== #53 [medium/mass-assignment] L7555-7556 prov=grok conf=high
+TITLE: Mass assignment via spread of req.body into update
+DESC: PUT /api/clients/:id does const updateData = { ...req.body }; then only deletes three fields before writing. Any other field present in the request body (including unexpected ones) will be persisted.
+EVID: const updateData = { ...req.body };
+delete updateData._id; delete updateData.id; delete updateData.password;
+FIX: Replace spread with an explicit whitelist of allowed fields before constructing updateData.
+
+==== #54 [medium/missing-index] L8457-8457 prov=deepseek conf=high
+TITLE: Falta de índice em requests.liftId
+DESC: A filtragem de pedidos por liftId (utilizada para clientes e enriquecimento) não possui índice dedicado, tornando a pesquisa lenta à medida que a colecção cresce.
+EVID: const liftIds = clientLifts.map(l => l._id.toString()); ... query.liftId = { $in: liftIds };
+FIX: Criar um índice em { liftId: 1 } na colecção 'requests'.
+
+==== #55 [medium/race-condition] L8838-8840 prov=deepseek conf=high
+TITLE: Condição de corrida na geração do número de pedido (requestNumber)
+DESC: O número sequencial é obtido com countDocuments e depois incrementado manualmente. Pedidos concorrentes podem obter o mesmo reqCount, gerando requestNumbers duplicados.
+EVID: const reqCount = await db.collection('requests').countDocuments();
+const requestNumber = `REQ-${reqYear}-${String(reqCount + 1).padStart(4, '0')}`;
+FIX: Usar um contador atómico (ex.: colecção 'counters' com findOneAndUpdate e $inc) para garantir unicidade do número de pedido.
+
+==== #56 [medium/logic-bug] L9448-9448 prov=deepseek conf=medium
+TITLE: Ownership check in request cancellation may fail when lift.client is an object
+DESC: The code uses `liftDoc.client || liftDoc.clientId` and calls `.toString()`. If `liftDoc.client` is a sub-document (e.g., `{ id: 'xyz', name: '...' }`), `.toString()` returns `'[object Object]'`, which will never match `userId`. This can incorrectly deny a legitimate client from cancelling their own request.
+EVID: const liftOwnerId = liftDoc ? (liftDoc.client || liftDoc.clientId || '').toString() : '';
+FIX: Extract the identifier more robustly, e.g., `(liftDoc.client?.id || (typeof liftDoc.client === 'string' ? liftDoc.client : '') || liftDoc.clientId || '').toString()`, or consistently store a primitive string field like `clientId` for owner references.
+
+==== #57 [medium/memory-leak] L11950-11961 prov=grok conf=high
+TITLE: Unbounded growth of _guestAiUsage Map
+DESC: _guestAiUsage Map stores an entry for every unique IP that ever calls guest endpoints. _getGuestUsage only creates/replaces on resetAt expiry but never deletes stale entries, causing permanent memory growth.
+EVID: const _guestAiUsage = new Map(); // ip → { reports, chat, resetAt }
+FIX: Add periodic cleanup: setInterval(() => { const now=Date.now(); for(const [k,v] of _guestAiUsage) if(v.resetAt<now) _guestAiUsage.delete(k); }, 3600000);
+
+==== #58 [medium/logic-bug] L13078-13078 prov=deepseek conf=high
+TITLE: Reference to undefined `this.handleChatMessage` in AI consult endpoint causes 500 errors for generic questions
+DESC: In the fallback branch of `POST /api/ai/consult`, the code calls `this.handleChatMessage(question)`. The handler is a plain function, so `this` has no `handleChatMessage` method, resulting in a runtime TypeError and a 500 response for any question that does not match the predefined keywords.
+EVID: const chatResponse = await this.handleChatMessage(question);
+FIX: Replace with a proper call to the AI chat logic, e.g., `const aiResult = await callMainAI(question, req.user.role, req.user.username); const answer = aiResult.response;`
+
+==== #59 [medium/logic-bug] L14349-14349 prov=deepseek conf=medium
+TITLE: Inconsistent argument signature when calling emailService.sendEmail may break orcamento email sending
+DESC: The call `emailService.sendEmail(clientEmail, mailOptions.subject, mailOptions.html, adminEmail)` passes four positional arguments. Elsewhere the service is invoked with an options object (line 13863) or three positional args (line 13914). The mismatch can cause the email to be sent incorrectly or throw an error, potentially preventing delivery of orcamento emails.
+EVID: await emailService.sendEmail(clientEmail, mailOptions.subject, mailOptions.html, adminEmail);
+FIX: Unify the call signature to match the expected interface of `emailService.sendEmail`, e.g., using an options object: `emailService.sendEmail({ to: clientEmail, subject: mailOptions.subject, html: mailOptions.html, bcc: adminEmail })`.
+
+==== #60 [medium/rate-limit] L14623-14733 prov=deepseek conf=high
+TITLE: Missing rate limiting on sensitive email endpoints
+DESC: Several email‑sending routes (send-report, send-contract, send-inspection-pdf, send-template, send-inspection-reminder) are not protected by rate limiting. An attacker who obtains a valid session could abuse these to flood mailboxes, exhaust SMTP quotas, or perform denial‑of‑service.
+EVID: No rate limiter middleware applied on app.post('/api/inspections/send-report', ...), app.post('/api/email/send-contract', ...), etc.
+FIX: Apply express-rate-limit to these routes with a reasonable window and max requests per user/IP, e.g., 5 requests per minute per endpoint.
+
+==== #61 [medium/xss] L14681-14687 prov=deepseek conf=high
+TITLE: Stored/reflected XSS in HTML email via unescaped user-input fields
+DESC: The email HTML body is built by directly inserting req.body fields (clientName, liftLocation, dataFormatted, inspector) without HTML encoding. An authenticated attacker (e.g., a malicious technician) can include script tags or event handlers in these fields, resulting in JavaScript execution when the email is opened in an HTML-capable mail client (e.g., webmail rendering).
+EVID: Exmo(a). Sr(a.)${clientName ? ' <strong>' + clientName + '</strong>' : ''}<br>...relativo ao ascensor em <strong>${liftLocation || '—'}</strong>, realizado em <strong>${dataFormatted}</strong> pelo técnico <strong>${inspector || '—'}</strong>.
+FIX: Sanitize all variables with a robust HTML escaping function (e.g., a `htmlEscape` helper that replaces <, >, ', ", &) before inserting them into the email HTML.
+
+==== #62 [medium/unbounded-query] L15400-15403 prov=grok conf=high
+TITLE: Unbounded find().toArray() on reports generation
+DESC: requests and inspections collections are queried with only a date range (plus optional filters); no .limit() or pagination, so a wide date range or missing filters can return the entire collection into memory.
+EVID: const [requests, inspections] = await Promise.all([
+    db.collection('requests').find(requestsQuery).toArray(),
+    db.collection('inspections').find(inspectionsQuery).toArray()
+]);
+FIX: Add .limit(5000) (or configurable) and/or require narrower date ranges; stream results if full export is needed.
+
+==== #63 [low/error-handling] L644-648 prov=deepseek conf=medium
+TITLE: Health endpoint exposes internal error details to unauthenticated users
+DESC: /api/health returns `error: error.message` when MongoDB ping fails, potentially revealing stack traces or database connectivity information that aids reconnaissance.
+EVID: res.status(503).json({ status: 'error', mongodb: 'error', error: error.message });
+FIX: Return a generic error message (e.g., 'Erro do servidor') instead of the raw error.message; log the detailed error on the server.
+
+==== #64 [low/race-condition] L1462-1464 prov=deepseek conf=medium
+TITLE: Non‑atomic generation of requestNumber for public QR alerts can produce duplicates
+DESC: The code reads the total document count then uses count+1 as a sequential ID. Concurrent requests may obtain the same number, leading to duplicate identifiers.
+EVID: const reqCount = await db.collection('requests').countDocuments();
+        const requestNumber = `REQ-${reqYear}-${String(reqCount + 1).padStart(4, '0')}`;
+FIX: Use a dedicated sequence collection with $inc to atomically generate the next number, or rely on MongoDB ObjectId uniqueness for IDs.
+
+==== #65 [low/error-handling] L7003-7003 prov=deepseek conf=high
+TITLE: Mensagens de erro expõem detalhes internos ao cliente
+DESC: Em várias rotas, o catch envia err.message na resposta, o que pode revelar caminhos do sistema, nomes de módulos ou outros detalhes da stack. Exemplo: 'res.status(500).json({ success: false, message: err.message || ... })' no endpoint de requerimento.
+EVID: res.status(500).json({ success: false, message: err.message || 'Erro ao gerar requerimento' });
+FIX: Substituir err.message por uma mensagem genérica e registar o erro real apenas no servidor.
+
+==== #66 [low/logic-bug] L7492-7492 prov=deepseek conf=high
+TITLE: Variável 'emailSkipped' não declarada, poluindo o escopo global
+DESC: Dentro da função createUserWithInvite, a linha 'emailSkipped = true;' atribui a uma variável que não foi declarada com let/const, criando uma propriedade global e podendo causar efeitos colaterais.
+EVID: emailSkipped = true;
+FIX: Declarar 'let emailSkipped = false;' no início do bloco e usá-la adequadamente.
+
+==== #67 [low/n-plus-1] L8712-8734 prov=deepseek conf=high
+TITLE: N+1 queries em GET /api/requests/:id ao enriquecer dados do pedido
+DESC: Após obter o pedido, o código faz várias chamadas findOne sequenciais para encontrar o cliente (request.client), o elevador (liftId), o cliente através do elevador, e o cliente por email. Isto resulta em múltiplas queries desnecessárias.
+EVID: const u = await db.collection('users').findOne({ _id: cId }, ...);
+const liftDoc = await db.collection('lifts').findOne({ _id: lId }, ...);
+const lcU = await db.collection('users').findOne({ _id: lcId }, ...);
+const u2 = await db.collection('users').findOne({ email: liftDoc.clientEmail.toLowerCase() }, ...);
+FIX: Substituir por uma única query de agregação ou buscar todos os utilizadores e elevadores necessários de uma vez com $in, evitando o padrão N+1.
+
+==== #68 [low/error-handling] L14618-14618 prov=grok conf=high
+TITLE: Error details leaked to client in PDF endpoint
+DESC: Catch block returns err.message in the JSON error response, exposing internal stack or DB details to any caller.
+EVID: res.status(500).json({ success: false, message: 'Erro ao gerar PDF', error: err.message });
+FIX: Return only a generic message; log the full error server-side.
+
