@@ -7,6 +7,7 @@
     <title>Ajuda QR | FestLift</title>
     <link rel="stylesheet" href="../../plugins/adminlte/adminlte.min.css">
     <link rel="stylesheet" href="../../plugins/fontawesome/css/all.min.css">
+    <script src="../../assets/js/auth.js"></script>
     <style>
         body { background: #f4f6f9; }
         .hero {
@@ -94,6 +95,35 @@
         .wa-action { background: #25D366; }
         .call-action { background: #0d6efd; }
         .mail-action { background: #6f42c1; }
+
+        .tech-actions {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 10px;
+            margin-top: 4px;
+        }
+        .tech-action {
+            border: 0;
+            border-radius: 10px;
+            color: #fff;
+            font-weight: 700;
+            padding: 16px 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .tech-action i { font-size: 1.4rem; }
+        .tech-action:hover, .tech-action:focus { color: #fff; text-decoration: none; opacity: .92; }
+        .maint-action { background: #0d6efd; }
+        .repair-action { background: #fd7e14; }
+        .emergency-action { background: #dc3545; }
+        @media (max-width: 576px) {
+            .tech-actions { grid-template-columns: 1fr; }
+        }
         .footer-mini {
             text-align: center;
             padding: 12px;
@@ -147,11 +177,6 @@
                                 <div><strong id="addressLabel">Morada:</strong> <span id="liftAddress">-</span></div>
                             </div>
 
-                            <div class="alert alert-info mb-3" id="infoBanner">
-                                <i class="fas fa-info-circle mr-1"></i>
-                                Esta página não mostra histórico técnico. Para segurança, visitantes sem conta apenas podem abrir alerta.
-                            </div>
-
                             <div class="lift-meta mb-3">
                                 <div><strong id="quickSupportTitle">Contacto rápido de suporte</strong></div>
                                 <div class="support-actions">
@@ -165,6 +190,31 @@
                                         <i class="fas fa-envelope"></i><span id="supportEmailText">Email</span>
                                     </a>
                                 </div>
+                            </div>
+
+                            <!-- Técnico autenticado: escolha de intervenção -->
+                            <div id="techSection" style="display:none">
+                                <div class="lift-meta mb-3">
+                                    <div><strong id="techSectionTitle">O que vai fazer neste elevador?</strong></div>
+                                    <div class="tech-actions">
+                                        <button type="button" id="techMaintenanceBtn" class="tech-action maint-action">
+                                            <i class="fas fa-clipboard-check"></i><span id="techMaintenanceText">Manutenção</span>
+                                        </button>
+                                        <button type="button" id="techRepairBtn" class="tech-action repair-action">
+                                            <i class="fas fa-wrench"></i><span id="techRepairText">Reparação</span>
+                                        </button>
+                                        <button type="button" id="techEmergencyBtn" class="tech-action emergency-action">
+                                            <i class="fas fa-exclamation-triangle"></i><span id="techEmergencyText">Avaria</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Visitante sem conta: formulário de alerta -->
+                            <div id="guestSection">
+                            <div class="alert alert-info mb-3" id="infoBanner">
+                                <i class="fas fa-info-circle mr-1"></i>
+                                Esta página não mostra histórico técnico. Para segurança, visitantes sem conta apenas podem abrir alerta.
                             </div>
 
                             <form id="publicAlertForm" novalidate>
@@ -212,11 +262,14 @@
                                 </button>
                             </form>
 
+                            <div id="submitErrorBox" class="alert alert-danger mt-3" style="display:none"></div>
+
                             <div id="resultBox" class="alert alert-success mt-3" style="display:none"></div>
 
                             <p class="muted-note mt-3 mb-0" id="privacyNote">
                                 Ao enviar, os dados são usados apenas para contacto e gestão do pedido de assistência.
                             </p>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -273,7 +326,11 @@
                 requestNumberPrefix: 'Pedido:',
                 issueLabelStuck: 'Pessoa presa na cabina',
                 issueLabelMalfunction: 'Elevador avariado',
-                issueLabelOther: 'Outro problema'
+                issueLabelOther: 'Outro problema',
+                techSectionTitle: 'O que vai fazer neste elevador?',
+                techMaintenanceText: 'Manutenção',
+                techRepairText: 'Reparação',
+                techEmergencyText: 'Avaria'
             },
             en: {
                 title: 'QR Help | FestLift',
@@ -315,7 +372,11 @@
                 requestNumberPrefix: 'Request:',
                 issueLabelStuck: 'Person trapped in the cabin',
                 issueLabelMalfunction: 'Elevator malfunction',
-                issueLabelOther: 'Other problem'
+                issueLabelOther: 'Other problem',
+                techSectionTitle: 'What will you do on this elevator?',
+                techMaintenanceText: 'Maintenance',
+                techRepairText: 'Repair',
+                techEmergencyText: 'Breakdown'
             }
         };
 
@@ -356,6 +417,10 @@
             document.getElementById('submitBtnText').textContent = t('submit');
             document.getElementById('privacyNote').textContent = t('privacyNote');
             document.getElementById('supportLabel').textContent = t('supportLabel');
+            document.getElementById('techSectionTitle').textContent = t('techSectionTitle');
+            document.getElementById('techMaintenanceText').textContent = t('techMaintenanceText');
+            document.getElementById('techRepairText').textContent = t('techRepairText');
+            document.getElementById('techEmergencyText').textContent = t('techEmergencyText');
 
             document.querySelectorAll('.lang-btn').forEach(btn => {
                 btn.classList.toggle('active', btn.dataset.lang === currentLang);
@@ -377,6 +442,17 @@
             document.getElementById('loadingBox').style.display = 'none';
         }
 
+        function showSubmitError(message) {
+            const box = document.getElementById('submitErrorBox');
+            box.textContent = message;
+            box.style.display = 'block';
+            box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        function hideSubmitError() {
+            document.getElementById('submitErrorBox').style.display = 'none';
+        }
+
         function updateUrgencyUI() {
             const issueType = document.getElementById('issueType').value;
             document.getElementById('urgentBox').style.display = issueType === 'stuck' ? 'block' : 'none';
@@ -396,6 +472,24 @@
                 ? `Hello FestLift support. I scanned the elevator QR code. Lift: ${municipal || '-'} | Address: ${address || '-'}.`
                 : `Olá suporte FestLift. Li o QR do elevador. Elevador: ${municipal || '-'} | Morada: ${address || '-'}.`;
             return `https://wa.me/${waNumber}?text=${encodeURIComponent(message)}`;
+        }
+
+        function isLoggedInTechnician() {
+            if (typeof AuthManager === 'undefined' || !AuthManager.isAuthenticated()) return false;
+            const user = AuthManager.getCurrentUser();
+            const role = String((user && user.role) || '').trim().toLowerCase();
+            return role === 'tech' || role === 'technician' || role === 'tecnico' || role === 'técnico';
+        }
+
+        function applyRoleView() {
+            const isTech = isLoggedInTechnician();
+            document.getElementById('techSection').style.display = isTech ? 'block' : 'none';
+            document.getElementById('guestSection').style.display = isTech ? 'none' : 'block';
+
+            // Técnicos usam sempre PT-PT; o seletor de idioma é só para visitantes
+            const langSwitcher = document.querySelector('.lang-switcher');
+            if (langSwitcher) langSwitcher.style.display = isTech ? 'none' : 'inline-flex';
+            if (isTech && currentLang !== 'pt') applyLanguage('pt');
         }
 
         async function loadLiftInfo() {
@@ -441,6 +535,8 @@
                 const whatsappBtn = document.getElementById('supportWhatsAppBtn');
                 whatsappBtn.href = buildWhatsAppLink(whatsapp, data.data.lift.municipalNumber, data.data.lift.address);
 
+                applyRoleView();
+
                 document.getElementById('loadingBox').style.display = 'none';
                 document.getElementById('mainBox').style.display = 'block';
             } catch (error) {
@@ -460,8 +556,10 @@
             const email = document.getElementById('contactEmail').value.trim();
             const website = document.getElementById('website').value;
 
+            hideSubmitError();
+
             if (!issueType || !issueDetails || !phone || !email) {
-                toastr.warning(t('fillRequired'));
+                showSubmitError(t('fillRequired'));
                 return;
             }
 
@@ -495,10 +593,11 @@
                 const reqNum = data.data && data.data.requestNumber ? ` ${t('requestNumberPrefix')} ${data.data.requestNumber}.` : '';
                 box.textContent = (data.message || t('alertSuccessFallback')) + reqNum;
                 box.style.display = 'block';
+                box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
                 document.getElementById('publicAlertForm').reset();
                 updateUrgencyUI();
             } catch (error) {
-                toastr.error(error.message || t('alertSendError'));
+                showSubmitError(error.message || t('alertSendError'));
             } finally {
                 btn.disabled = false;
                 btn.innerHTML = original;
@@ -510,6 +609,17 @@
         });
         document.getElementById('issueType').addEventListener('change', updateUrgencyUI);
         document.getElementById('publicAlertForm').addEventListener('submit', sendPublicAlert);
+
+        document.getElementById('techMaintenanceBtn').addEventListener('click', () => {
+            window.location.href = `/pages/tech/manutencao.html?liftId=${encodeURIComponent(currentLiftId)}`;
+        });
+        document.getElementById('techRepairBtn').addEventListener('click', () => {
+            window.location.href = `/pages/tech/tasks.html?liftId=${encodeURIComponent(currentLiftId)}`;
+        });
+        document.getElementById('techEmergencyBtn').addEventListener('click', () => {
+            window.location.href = `/pages/tech/tasks.html?liftId=${encodeURIComponent(currentLiftId)}`;
+        });
+
         applyLanguage(chooseInitialLanguage());
         loadLiftInfo();
     </script>

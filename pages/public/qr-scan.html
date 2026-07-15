@@ -66,6 +66,19 @@
         .error-box h3 { color: #fca5a5; margin-bottom: 8px; }
         .error-box p { color: #94a3b8; font-size: 0.9rem; }
 
+        /* Success confirmation (persistent, not a fading toast) */
+        .success-box {
+            background: #0f2218;
+            border: 1px solid #166534;
+            border-radius: 12px;
+            padding: 24px;
+            text-align: center;
+            display: none;
+        }
+        .success-box i { font-size: 2.5rem; color: #4ade80; margin-bottom: 12px; display: block; }
+        .success-box h3 { color: #4ade80; margin-bottom: 8px; }
+        .success-box p { color: #94a3b8; font-size: 0.9rem; }
+
         /* Lift card */
         .lift-card {
             background: #112240;
@@ -375,6 +388,13 @@
             </div>
         </div>
 
+        <!-- Success confirmation -->
+        <div class="success-box" id="success-box">
+            <i class="fas fa-check-circle"></i>
+            <h3>Alerta enviado com sucesso</h3>
+            <p id="success-msg">A equipa FestLift foi notificada e irá contactá-lo o mais rapidamente possível.</p>
+        </div>
+
         <!-- Emergency contacts -->
         <div class="emergency-card" id="emergency-card">
             <h4><i class="fas fa-phone-alt" style="margin-right:6px"></i>Contactos de emergência</h4>
@@ -516,6 +536,11 @@
             if (phone.replace(/\s/g,'').length < 6) { showToast('Indique um número de telefone válido', 'error-toast'); return; }
             if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showToast('Indique um email válido', 'error-toast'); return; }
 
+            // Fecha o teclado virtual (tablets/telemóveis) para que o toast não fique escondido por baixo dele
+            if (document.activeElement && typeof document.activeElement.blur === 'function') {
+                document.activeElement.blur();
+            }
+
             const btn = document.getElementById('submit-btn');
             btn.disabled = true;
             btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> A enviar...';
@@ -540,6 +565,12 @@
                 if (data.success) {
                     document.getElementById('alert-form-wrap').style.display = 'none';
                     document.getElementById('actions').style.display = 'none';
+                    if (data.data && data.data.requestNumber) {
+                        document.getElementById('success-msg').textContent =
+                            `Pedido nº ${data.data.requestNumber} registado. A equipa FestLift foi notificada e irá contactá-lo o mais rapidamente possível.`;
+                    }
+                    document.getElementById('success-box').style.display = 'block';
+                    document.getElementById('success-box').scrollIntoView({ behavior: 'smooth', block: 'start' });
                     showToast('Alerta enviado com sucesso! A equipa FestLift foi notificada.', 'success');
                     document.getElementById('alert-form').reset();
                 } else {

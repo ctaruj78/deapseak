@@ -602,6 +602,10 @@
                                     </div>
                                 </div>
                                 <div class="card-body p-0">
+                                    <div id="liftFilterBanner" class="alert alert-info d-flex justify-content-between align-items-center m-3" style="display:none">
+                                        <span><i class="fas fa-filter mr-1"></i>A mostrar apenas tarefas do elevador <strong id="liftFilterLabel"></strong></span>
+                                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="techTaskManager.clearLiftFilter()">Limpar filtro</button>
+                                    </div>
                                     <div class="table-responsive">
                                         <table class="table table-hover task-table">
                                             <thead>
@@ -838,7 +842,12 @@
             constructor() {
                 this.tasks = [];
                 this.currentUser = AuthManager.getCurrentUser();
+                this.filterLiftId = new URLSearchParams(window.location.search).get('liftId') || null;
                 this.init();
+            }
+
+            clearLiftFilter() {
+                window.location.href = '/pages/tech/tasks.html';
             }
             
             async init() {
@@ -887,7 +896,17 @@
                     } else {
                         this.tasks = [];
                     }
-                    
+
+                    if (this.filterLiftId) {
+                        this.tasks = this.tasks.filter(t => t.rawLiftId === this.filterLiftId);
+                        const banner = document.getElementById('liftFilterBanner');
+                        const label = document.getElementById('liftFilterLabel');
+                        if (banner && label) {
+                            label.textContent = this.tasks[0] ? this.tasks[0].liftId : this.filterLiftId;
+                            banner.style.display = 'flex';
+                        }
+                    }
+
                     this.displayTasks(this.tasks);
                     this.updateStats(this.tasks);
                     
@@ -980,7 +999,11 @@
                 if (!tbody) return;
                 
                 tbody.innerHTML = '';
-                
+
+                if (tasks.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted py-4">Não há tarefas ativas.</td></tr>';
+                }
+
                 tasks.forEach(task => {
                     // Виutilizовуexisteмо task.id desde маппінгу (já existe _id)
                     const taskId = task.id || task._id;
