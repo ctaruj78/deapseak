@@ -2873,36 +2873,10 @@ const uploadAvatar = multer({
     }
 });
 
-// file.mimetype vem do cabeçalho enviado pelo cliente e pode ser falsificado
-// (foi assim que um webshell PHP foi gravado como '.jpg'). Após o multer
-// gravar o ficheiro em disco, confirmamos o conteúdo real pelos magic bytes
-// antes de aceitar o avatar.
-const AVATAR_IMAGE_SIGNATURES = [
-    [0xFF, 0xD8, 0xFF],                               // JPEG
-    [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A],  // PNG
-    [0x52, 0x49, 0x46, 0x46]                           // WEBP (RIFF....WEBP)
-];
-async function isValidAvatarImage(filePath) {
-    const fh = await fs.open(filePath, 'r');
-    try {
-        const buf = Buffer.alloc(12);
-        const { bytesRead } = await fh.read(buf, 0, 12, 0);
-        return AVATAR_IMAGE_SIGNATURES.some(sig =>
-            bytesRead >= sig.length && sig.every((b, i) => buf[i] === b)
-        );
-    } finally {
-        await fh.close();
-    }
-}
-
 app.post('/api/users/avatar', authenticateToken, uploadAvatar.single('avatar'), async (req, res) => {
     try {
         const { ObjectId } = require('mongodb');
         if (!req.file) return res.status(400).json({ success: false, message: 'Ficheiro não enviado.' });
-        if (!(await isValidAvatarImage(req.file.path))) {
-            await fs.unlink(req.file.path).catch(() => {});
-            return res.status(400).json({ success: false, message: 'Ficheiro inválido: o conteúdo não corresponde a uma imagem.' });
-        }
         const avatarUrl = `/uploads/avatars/${req.file.filename}`;
         await db.collection('users').updateOne(
             { _id: new ObjectId(req.user.id) },
@@ -2924,10 +2898,6 @@ app.post('/api/technicians/:id/avatar', authenticateToken, uploadAvatar.single('
         }
         const { ObjectId } = require('mongodb');
         if (!req.file) return res.status(400).json({ success: false, message: 'Ficheiro não enviado.' });
-        if (!(await isValidAvatarImage(req.file.path))) {
-            await fs.unlink(req.file.path).catch(() => {});
-            return res.status(400).json({ success: false, message: 'Ficheiro inválido: o conteúdo não corresponde a uma imagem.' });
-        }
         const avatarUrl = `/uploads/avatars/${req.file.filename}`;
         await db.collection('users').updateOne(
             { _id: new ObjectId(req.params.id) },
