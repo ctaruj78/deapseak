@@ -1020,10 +1020,10 @@
                         _lastLoginStr = `<span class="text-success">${_minsAgo === 0 ? 'agora' : _minsAgo + ' min atrás'}</span>`;
                     } else if (user.mustChangePassword) {
                         _accessBadge = '<span class="badge badge-warning" title="Entrou mas não alterou a senha temporária">🔑 Senha temp.</span>';
-                        _lastLoginStr = this.formatDate(_lastLogin);
+                        _lastLoginStr = this.formatDate(_lastActiveDate);
                     } else {
                         _accessBadge = '<span class="badge badge-info" title="Acesso confirmado e senha alterada">✅ Activo</span>';
-                        _lastLoginStr = this.formatDate(_lastLogin);
+                        _lastLoginStr = this.formatDate(_lastActiveDate);
                     }
 
                     const row = `
