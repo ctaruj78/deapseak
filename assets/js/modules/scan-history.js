@@ -50,6 +50,8 @@ const scanHistory = (function() {
             console.error('❌ Erro ao carregar histórico:', error);
             scansData = [];
             filteredScans = [];
+            updateStatistics();
+            renderScans();
         }
     }
 

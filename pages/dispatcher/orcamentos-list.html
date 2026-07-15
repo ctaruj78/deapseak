@@ -112,7 +112,7 @@
                                 <div class="col-md-3">
                                     <div class="form-group">
                                         <label>Cliente</label>
-                                        <input type="text" id="filterCliente" class="form-control" placeholder="Nome ou email">
+                                        <input type="text" id="filterCliente" class="form-control" placeholder="Nome ou email" onkeypress="if(event.key==='Enter'){event.preventDefault();aplicarFiltros();}">
                                     </div>
                                 </div>
                                 <div class="col-md-3">

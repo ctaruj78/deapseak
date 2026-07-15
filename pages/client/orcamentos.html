@@ -235,6 +235,24 @@
                     </div>
                 </div>
 
+                <!-- Pesquisa -->
+                <div class="row mb-3" id="searchRow" style="display:none;">
+                    <div class="col-md-5">
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text"><i class="fas fa-search"></i></span>
+                            </div>
+                            <input type="text" id="orcSearchInput" class="form-control" placeholder="Pesquisar por número, estado ou morada...">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sem resultados da pesquisa -->
+                <div id="noSearchResults" class="text-center py-5" style="display:none;">
+                    <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">Nenhum orçamento corresponde à pesquisa</h5>
+                </div>
+
                 <!-- Estado vazio -->
                 <div id="emptyState" class="text-center py-5">
                     <i class="fas fa-file-invoice-dollar fa-4x text-muted mb-3"></i>
@@ -372,7 +390,7 @@
     function renderOrcamentos(list) {
         document.getElementById('loadingState').style.display = 'none';
 
-        // Contadores
+        // Contadores — sempre com base no conjunto completo, não no filtrado pela pesquisa
         const counts = { enviado: 0, aprovado: 0, rejeitado: 0, expirado: 0 };
         list.forEach(o => { if (counts[o.status] !== undefined) counts[o.status]++; });
         document.getElementById('countEnviado').textContent   = counts.enviado;
@@ -384,15 +402,49 @@
         const badge = document.getElementById('orcamentosCount');
         if (badge) badge.textContent = counts.enviado;
 
+        document.getElementById('searchRow').style.display = list.length > 0 ? 'block' : 'none';
+
         if (list.length === 0) {
             document.getElementById('emptyState').style.display = 'block';
             return;
         }
 
+        renderCards(list);
+    }
+
+    function renderCards(list) {
         const container = document.getElementById('orcamentosList');
+        const noResults = document.getElementById('noSearchResults');
+
+        if (list.length === 0) {
+            container.innerHTML = '';
+            container.style.display = 'none';
+            noResults.style.display = 'block';
+            return;
+        }
+
+        noResults.style.display = 'none';
         container.innerHTML = list.map(o => criarCard(o)).join('');
         container.style.display = 'flex';
         container.classList.add('row');
+    }
+
+    function filterOrcamentos() {
+        const q = document.getElementById('orcSearchInput').value.trim().toLowerCase();
+        if (!q) {
+            renderCards(orcamentosData);
+            return;
+        }
+        const filtered = orcamentosData.filter(o => {
+            const haystack = [
+                o.numero,
+                statusLabels[o.status] || o.status,
+                o.liftAddress,
+                o.cliente && o.cliente.morada
+            ].filter(Boolean).join(' ').toLowerCase();
+            return haystack.includes(q);
+        });
+        renderCards(filtered);
     }
 
     function criarCard(o) {
@@ -683,6 +735,8 @@
                 document.activeElement.blur();
             }
         });
+
+        document.getElementById('orcSearchInput').addEventListener('input', filterOrcamentos);
 
         carregarOrcamentos();
     });
