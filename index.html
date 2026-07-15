@@ -4,6 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FestLift - Painel de Controlo</title>
+    <link rel="icon" type="image/png" href="/assets/img/favicon.png">
+    <!-- PWA -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#1565c0">
+    <link rel="apple-touch-icon" href="/assets/img/icons/pwa-icon-192.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="FestLift">
     <!-- AdminLTE CSS -->
     <link rel="stylesheet" href="./plugins/adminlte/adminlte.min.css">
     <!-- Font Awesome -->
@@ -413,6 +421,44 @@
                         </div>
                     </section>
 
+                    <!-- Install App Section -->
+                    <section id="install-app" class="mt-5">
+                        <div class="card">
+                            <div class="card-header bg-gradient-success">
+                                <h3 class="card-title text-white">Instalar aplicação</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="row align-items-center">
+                                    <div class="col-md-7">
+                                        <h4>Acesso rápido a partir do ecrã principal</h4>
+                                        <p class="lead mb-2">Digitalize o código, instale a aplicação FestLift no telemóvel ou tablet e abra sempre a partir do ícone — sem passar pelo navegador.</p>
+                                        <ul class="list-unstyled mb-3">
+                                            <li><i class="fas fa-check text-success mr-2"></i>Ícone dedicado no ecrã principal</li>
+                                            <li><i class="fas fa-check text-success mr-2"></i>Abre diretamente no ecrã de entrada</li>
+                                            <li><i class="fas fa-check text-success mr-2"></i>No computador do escritório continue a usar o navegador normalmente</li>
+                                        </ul>
+                                        <button type="button" id="install-app-btn" class="btn btn-success" style="display:none">
+                                            <i class="fas fa-download"></i> Instalar aplicação
+                                        </button>
+                                        <div id="ios-install-instructions" class="alert alert-info mt-2 mb-0" style="display:none">
+                                            <i class="fas fa-share-square mr-1"></i>
+                                            No Safari: toque em <strong>Partilhar</strong> e depois em <strong>Adicionar ao Ecrã Principal</strong>.
+                                        </div>
+                                        <div id="already-installed-note" class="alert alert-success mt-2 mb-0" style="display:none">
+                                            <i class="fas fa-check-circle mr-1"></i>
+                                            Está a usar a aplicação instalada.
+                                        </div>
+                                    </div>
+                                    <div class="col-md-5 text-center mt-3 mt-md-0">
+                                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=https%3A%2F%2Fcrm.festlift.pt%2F%3Finstall%3D1"
+                                             alt="QR para instalar a aplicação FestLift" class="img-fluid" style="max-width:180px;">
+                                        <p class="text-muted mt-2 mb-0">Digitalize com a câmara do telemóvel/tablet</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
                     <!-- About Us Section -->
                     <section id="about" class="mt-5">
                         <div class="card">
@@ -737,6 +783,41 @@
                     $submitBtn.prop('disabled', false).html(originalText);
                 });
             });
+
+            // ==== Instalar aplicação (PWA) ====
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('/sw.js').catch(() => {});
+            }
+
+            const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+            const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
+
+            if (isStandalone) {
+                $('#already-installed-note').show();
+            } else if (isIOS) {
+                $('#ios-install-instructions').show();
+            }
+
+            let deferredInstallPrompt = null;
+            window.addEventListener('beforeinstallprompt', function (e) {
+                e.preventDefault();
+                deferredInstallPrompt = e;
+                if (!isStandalone) $('#install-app-btn').show();
+            });
+
+            $('#install-app-btn').on('click', async function () {
+                if (!deferredInstallPrompt) return;
+                deferredInstallPrompt.prompt();
+                await deferredInstallPrompt.userChoice;
+                deferredInstallPrompt = null;
+                $('#install-app-btn').hide();
+            });
+
+            if (new URLSearchParams(window.location.search).get('install') === '1' && !isStandalone) {
+                setTimeout(function () {
+                    document.getElementById('install-app').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 300);
+            }
         });
     </script>
 
