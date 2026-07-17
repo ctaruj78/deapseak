@@ -658,27 +658,30 @@ const qrManager = (function() {
         return { cls: 'fl-status--off', label: 'INATIVO' };
     }
 
-    // Shared CSS for the A6 (105x148mm) cabin sticker. `bodyRule` differs between
-    // single print (center one page, autoprint+close) and batch print (stack
-    // multiple full A6 pages with a page-break after each sticker).
-    function cabinStickerCss(bodyRule, pageSize) {
+    // Shared CSS for the A6 cabin sticker, tiled 2x2 on an A4 sheet. The sheet
+    // keeps a 5mm blank buffer on every edge (@page margin) because home/office
+    // printers reserve a hardware-only unprintable strip near the paper edges
+    // (usually worst at the trailing edge) — without this buffer that strip
+    // clips straight into the bottom row's sticker content instead of blank
+    // paper. Stickers are sized to fill the remaining 200x287mm evenly (100x143mm
+    // each), just under nominal A6 (105x148mm).
+    function cabinStickerCss() {
         return `
   * { margin:0; padding:0; box-sizing:border-box; }
-  @page { size: ${pageSize || '105mm 148mm'}; margin: 0; }
-  html { width:${pageSize ? '210mm' : '105mm'}; }
+  @page { size: 210mm 297mm; margin: 5mm; }
+  html { width:200mm; }
   body {
     background:#0F172A;
     -webkit-print-color-adjust:exact; print-color-adjust:exact;
-    ${bodyRule}
   }
   .fl-page {
-    width:210mm; height:297mm;
-    display:grid; grid-template-columns:105mm 105mm; grid-template-rows:148.5mm 148.5mm;
+    width:200mm; height:287mm;
+    display:grid; grid-template-columns:100mm 100mm; grid-template-rows:143.5mm 143.5mm;
     page-break-after: always;
   }
   .fl-page:last-child { page-break-after: auto; }
   .fl-sticker {
-    position:relative; width:105mm; height:148mm;
+    position:relative; width:100mm; height:143mm;
     background:#0F172A; color:#F8FAFC; overflow:hidden;
     display:flex; flex-direction:column;
     font-family:'Inter',sans-serif;
@@ -796,35 +799,6 @@ const qrManager = (function() {
         return { html, payload, liftId };
     }
 
-    // Build a single-lift A6 cabin sticker print document (centered, autoprint+close)
-    function buildCabinStickerHtml(qr) {
-        const item = buildCabinStickerMarkup(qr, 'cabinQrCanvas');
-        const qrScriptSrc = document.querySelector('script[src*="qrcode"]')?.src || '/plugins/qrcode/js/qrcode.min.js';
-
-        return `<!DOCTYPE html>
-<html lang="pt">
-<head>
-<meta charset="UTF-8">
-<title>Autocolante Cabine - ${item.liftId}</title>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>${cabinStickerCss('display:flex; justify-content:center; align-items:center;')}</style>
-</head>
-<body>
-${item.html}
-<script src="${qrScriptSrc}"></script>
-<script>
-  try {
-    new QRCode(document.getElementById('cabinQrCanvas'), { text: '${item.payload}', width: 187, height: 187, correctLevel: QRCode.CorrectLevel.M });
-  } catch(e) {}
-  window.onload = function() {
-    window.print();
-    window.onafterprint = function() { window.close(); };
-  };
-</script>
-</body>
-</html>`;
-    }
-
     // Build a multi-lift A6 cabin sticker batch print document — 4 stickers
     // tiled per A4 sheet (2x2 grid, no gaps: A4 = 2x A6 in both directions),
     // page-break-after between each full sheet of 4.
@@ -843,7 +817,7 @@ ${item.html}
 <meta charset="UTF-8">
 <title>Autocolantes Cabine (A6) - FestLift</title>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>${cabinStickerCss('', '210mm 297mm')}</style>
+<style>${cabinStickerCss()}</style>
 </head>
 <body>
 ${bodies}
@@ -859,10 +833,11 @@ ${bodies}
 </html>`;
     }
 
-    // Print a single A6 cabin sticker
+    // Print a single lift's A6 cabin sticker — 4 copies tiled on one A4 sheet
+    // (same 2x2 layout as the batch print) so 3 spares are on hand if one gets damaged
     function printCabinSticker(qr) {
-        const win = window.open('', '_blank', 'width=420,height=560');
-        win.document.write(buildCabinStickerHtml(qr));
+        const win = window.open('', '_blank', 'width=900,height=700');
+        win.document.write(buildCabinBatchHtml([qr, qr, qr, qr]));
         win.document.close();
     }
 
