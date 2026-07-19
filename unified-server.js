@@ -896,6 +896,22 @@ app.get('/api/admin/backup/download/:fileName', authenticateToken, requireRole('
     }
 });
 
+// Thin read-only proxy to the isolated real-estate-bot service (own process, own MongoDB
+// database, port 5050, localhost-only) — no DB access here, just forwards the request.
+app.get('/api/realestate/listings', authenticateToken, requireRole('admin'), async (req, res) => {
+    try {
+        const qs = req._parsedUrl.search || '';
+        const upstream = await fetch(`http://127.0.0.1:5050/api/listings${qs}`, {
+            headers: { 'x-internal-secret': process.env.REALESTATE_BOT_SECRET || '' }
+        });
+        const body = await upstream.json();
+        res.status(upstream.status).json(body);
+    } catch (error) {
+        console.error('❌ realestate/listings proxy error:', error);
+        res.status(502).json({ success: false, message: 'Serviço de imóveis indisponível' });
+    }
+});
+
 app.post('/api/admin/backup/restore', authenticateToken, requireRole('admin'), async (req, res) => {
     try {
         if (!db) {

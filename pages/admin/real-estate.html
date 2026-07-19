@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="/assets/img/favicon.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Imóveis (beta) — FestLift</title>
+    <script src="../../assets/js/auth.js"></script>
+    <link rel="stylesheet" href="../../plugins/adminlte/adminlte.min.css">
+    <link rel="stylesheet" href="../../plugins/fontawesome/css/all.min.css">
+    <style>
+        .listing-row.is-new td { background: #e8f5e9; }
+        .price-cell { font-weight: 700; white-space: nowrap; }
+    </style>
+</head>
+<body class="hold-transition sidebar-mini layout-fixed" data-required-role="admin">
+<div class="wrapper">
+
+    <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+        <ul class="navbar-nav">
+            <li class="nav-item"><a class="nav-link" data-widget="pushmenu" href="#"><i class="fas fa-bars"></i></a></li>
+        </ul>
+        <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+                <a class="nav-link" href="#" onclick="if(typeof AuthManager!=='undefined'){AuthManager.logout();}else{localStorage.clear();window.location.replace('/pages/auth/login.html');}">
+                    <i class="fas fa-sign-out-alt"></i>
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <aside class="main-sidebar sidebar-dark-primary elevation-4">
+        <a href="/pages/admin/admin-dashboard.html" class="brand-link">
+            <img src="/assets/img/logo.png" alt="FestLift" class="brand-image img-circle elevation-3">
+            <span class="brand-text font-weight-light">FestLift</span>
+        </a>
+        <div class="sidebar">
+            <div class="user-panel mt-3 pb-3 mb-3 d-flex">
+                <div class="info"><a href="/pages/admin/profile.html" class="d-block" id="sidebarFullName">Admin</a></div>
+            </div>
+            <div id="sidebarContainer"></div>
+        </div>
+    </aside>
+
+    <div class="content-wrapper">
+        <div class="content-header">
+            <div class="container-fluid">
+                <div class="row mb-2">
+                    <div class="col-sm-6">
+                        <h1 class="m-0"><i class="fas fa-home text-primary mr-2"></i>Imóveis — particulares (beta)</h1>
+                    </div>
+                    <div class="col-sm-6">
+                        <ol class="breadcrumb float-sm-right">
+                            <li class="breadcrumb-item"><a href="admin-dashboard.html">Dashboard</a></li>
+                            <li class="breadcrumb-item active">Imóveis (beta)</li>
+                        </ol>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="content">
+            <div class="container-fluid">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle mr-1"></i>
+                    Anúncios OLX.pt de <strong>particulares</strong> (filtro nativo do OLX, não é heurística).
+                    Ferramenta isolada em teste — base de dados própria, não relacionada com o CRM.
+                    <button class="btn btn-sm btn-outline-primary float-right" onclick="loadListings()">
+                        <i class="fas fa-sync mr-1"></i>Atualizar
+                    </button>
+                </div>
+
+                <div class="card">
+                    <div class="card-body p-0">
+                        <table class="table table-striped mb-0" id="listingsTable">
+                            <thead>
+                                <tr>
+                                    <th>Título</th>
+                                    <th>Preço</th>
+                                    <th>Localização</th>
+                                    <th>Publicado</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody id="listingsBody">
+                                <tr><td colspan="5" class="text-center text-muted py-4">A carregar...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="../../plugins/jquery/jquery.min.js"></script>
+<script src="../../plugins/bootstrap/bootstrap.bundle.min.js"></script>
+<script src="../../plugins/adminlte/adminlte.min.js"></script>
+<script src="../../assets/js/sidebar-init.js"></script>
+<script>
+loadSidebarWithInit("includes/sidebar.html");
+
+function formatPrice(price) {
+    if (price === null || price === undefined) return '—';
+    return price.toLocaleString('pt-PT') + ' €';
+}
+
+function formatDate(dateStr) {
+    if (!dateStr) return '—';
+    return new Date(dateStr).toLocaleString('pt-PT', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
+
+async function loadListings() {
+    const tbody = document.getElementById('listingsBody');
+    tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4">A carregar...</td></tr>';
+    try {
+        const res = await AuthManager.fetchWithAuth(AuthManager.getApiUrl('/api/realestate/listings?limit=100'));
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || 'Erro ao carregar');
+
+        const listings = data.listings || [];
+        if (!listings.length) {
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-4">Sem anúncios ainda — o scraper corre a cada 15 min.</td></tr>';
+            return;
+        }
+
+        const oneHourAgo = Date.now() - 60 * 60 * 1000;
+        tbody.innerHTML = listings.map(l => `
+            <tr class="listing-row ${new Date(l.firstSeenAt).getTime() > oneHourAgo ? 'is-new' : ''}">
+                <td>${l.title || '—'}</td>
+                <td class="price-cell">${formatPrice(l.price)}</td>
+                <td>${l.location || '—'}</td>
+                <td>${formatDate(l.postedAt)}</td>
+                <td><a href="${l.url}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-primary"><i class="fas fa-external-link-alt"></i></a></td>
+            </tr>
+        `).join('');
+    } catch (err) {
+        console.error('realestate listings load failed', err);
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center text-danger py-4">Erro ao carregar anúncios. Sessão expirada?</td></tr>';
+    }
+}
+
+loadListings();
+</script>
+</body>
+</html>
