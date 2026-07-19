@@ -371,6 +371,14 @@
                         <p>Documentação</p>
                     </a>
                 </li>
+
+                <!-- Imóveis (parceria) — apenas visível para este cliente, ver id="nav-realestate" abaixo -->
+                <li class="nav-item" id="nav-realestate-item" style="display:none;">
+                    <a href="/pages/client/real-estate.html" class="nav-link" id="nav-realestate">
+                        <i class="nav-icon fas fa-home"></i>
+                        <p>Imóveis<span class="badge badge-success right">Novo</span></p>
+                    </a>
+                </li>
                 
                 <!-- 8. Assistente de IA -->
                 <li class="nav-item">
@@ -1436,6 +1444,19 @@
     </script>
     
     <script src="/assets/js/table-drag-scroll.js"></script>
+
+    <!-- Imóveis (parceria) — mostra o link no menu só para este cliente -->
+    <script>
+        (function() {
+            try {
+                var u = typeof AuthManager !== 'undefined' ? AuthManager.getCurrentUser() : null;
+                if (u && u.email === 'condominio@convenio.com.pt') {
+                    var el = document.getElementById('nav-realestate-item');
+                    if (el) el.style.display = '';
+                }
+            } catch (e) {}
+        })();
+    </script>
 
     <!-- 🤖 AI Agent Widget -->
     <link rel="stylesheet" href="/assets/css/agent-widget.css">

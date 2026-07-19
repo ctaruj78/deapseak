@@ -912,6 +912,28 @@ app.get('/api/realestate/listings', authenticateToken, requireRole('admin'), asy
     }
 });
 
+// Same isolated real-estate-bot proxy, scoped to a single client (Convenio / Maria Estrela) for
+// this beta rollout. No per-user feature-flag field exists on the User model, so this is a
+// hardcoded single-email allowlist rather than a role check — deliberately NOT `requireRole('client')`,
+// which would expose it to every client account.
+const REALESTATE_CLIENT_EMAILS = ['condominio@convenio.com.pt'];
+app.get('/api/realestate/client-listings', authenticateToken, async (req, res) => {
+    if (!REALESTATE_CLIENT_EMAILS.includes(req.user.email)) {
+        return res.status(403).json({ success: false, message: 'Acesso não autorizado' });
+    }
+    try {
+        const qs = req._parsedUrl.search || '';
+        const upstream = await fetch(`http://127.0.0.1:5050/api/listings${qs}`, {
+            headers: { 'x-internal-secret': process.env.REALESTATE_BOT_SECRET || '' }
+        });
+        const body = await upstream.json();
+        res.status(upstream.status).json(body);
+    } catch (error) {
+        console.error('❌ realestate/client-listings proxy error:', error);
+        res.status(502).json({ success: false, message: 'Serviço de imóveis indisponível' });
+    }
+});
+
 app.post('/api/admin/backup/restore', authenticateToken, requireRole('admin'), async (req, res) => {
     try {
         if (!db) {

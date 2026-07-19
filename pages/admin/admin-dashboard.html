@@ -564,6 +564,28 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- Real Estate Bot widget (beta, isolated tool) -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title"><i class="fas fa-home mr-1"></i>Imóveis novos — particulares (beta)</h3>
+                                    <div class="card-tools">
+                                        <a href="real-estate.html" class="btn btn-sm btn-outline-primary">Ver todos <i class="fas fa-arrow-right ml-1"></i></a>
+                                    </div>
+                                </div>
+                                <div class="card-body p-0">
+                                    <ul class="list-unstyled mb-0" id="realEstateWidget">
+                                        <li class="media p-3">
+                                            <i class="fas fa-spinner fa-spin text-muted mr-3 mt-1"></i>
+                                            <div class="media-body"><h6 class="mt-0 mb-1">A carregar...</h6></div>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </section>
         </div>
@@ -660,6 +682,62 @@
             `).join('');
 
             container.html(html);
+        }
+
+        function renderRealEstateWidget(listings) {
+            const container = $('#realEstateWidget');
+            if (!container.length) return;
+
+            if (!listings || listings.length === 0) {
+                container.html(`
+                    <li class="media p-3">
+                        <i class="fas fa-info-circle text-muted mr-3 mt-1"></i>
+                        <div class="media-body">
+                            <h6 class="mt-0 mb-1">Sem anúncios ainda</h6>
+                            <small class="text-muted">O scraper corre a cada 15 min</small>
+                        </div>
+                    </li>
+                `);
+                return;
+            }
+
+            const oneHourAgo = Date.now() - 60 * 60 * 1000;
+            const platformLabels = { olx: 'OLX', imovirtual: 'Imovirtual', customjusto: 'CustoJusto' };
+            const html = listings.map(l => {
+                const isNew = new Date(l.firstSeenAt).getTime() > oneHourAgo;
+                const price = l.price === null || l.price === undefined ? '—' : l.price.toLocaleString('pt-PT') + ' €';
+                return `
+                    <li class="media p-3 ${isNew ? 'bg-light' : ''}" style="border-bottom:1px solid #f0f0f0;">
+                        <div class="media-body">
+                            <h6 class="mt-0 mb-1">
+                                ${isNew ? '<span class="badge badge-success mr-1">Novo</span>' : ''}
+                                <span class="badge badge-secondary mr-1">${platformLabels[l.platform] || l.platform}</span>
+                                <a href="${l.url}" target="_blank" rel="noopener">${l.title || 'Sem título'}</a>
+                            </h6>
+                            <small class="text-muted">${price} · ${l.location || '—'} · ${formatRelativeTime(l.firstSeenAt)}</small>
+                        </div>
+                    </li>
+                `;
+            }).join('');
+
+            container.html(html);
+        }
+
+        async function loadRealEstateWidget() {
+            try {
+                const res = await AuthManager.fetchWithAuth('/api/realestate/listings?limit=5');
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.message || 'Erro ao carregar');
+                renderRealEstateWidget(data.listings);
+            } catch (err) {
+                console.warn('⚠️ Failed to load real estate widget:', err);
+                $('#realEstateWidget').html(`
+                    <li class="media p-3">
+                        <i class="fas fa-exclamation-circle text-danger mr-3 mt-1"></i>
+                        <div class="media-body"><h6 class="mt-0 mb-1">Erro ao carregar</h6></div>
+                    </li>
+                `);
+            }
         }
 
         async function loadRecentActivity(token) {
@@ -846,6 +924,7 @@
                          localStorage.getItem('jwt_token') ||
                          localStorage.getItem('lm_token');
             await loadRecentActivity(token);
+            await loadRealEstateWidget();
         });
 
         // logout() is handled globally by auth.js (AuthManager.logout clears all 12+ auth keys)
