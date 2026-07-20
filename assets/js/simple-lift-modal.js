@@ -373,7 +373,7 @@ class SimpleLiftModal {
         }
     }
     
-    deleteLift(liftId) {
+    async deleteLift(liftId) {
         console.log('🗑️ Delete lift:', liftId);
         const lift = this.findLiftById(liftId);
         if (lift) {

@@ -8,6 +8,14 @@
     
     console.log('🌍 Global Settings Loader initialized');
 
+    // ─── Opt out of browser/OS "auto dark theme for web content" ─────────────
+    // App only ships a light theme (applyTheme() below always forces 'light').
+    // Without this, Android Chrome/Samsung Internet/MIUI browser's system-wide
+    // dark mode auto-recolors the page with its own heuristic (since we never
+    // declare which color schemes we support), producing washed-out, low-contrast
+    // colors on mobile that don't appear on desktop where that heuristic is off.
+    document.documentElement.style.colorScheme = 'light';
+
     // ─── Anti-FOUC ──────────────────────────────────────────────────────────
     // Ховаємо сторінку до завантаження sidebar, щоб уникнути миготіння.
     // Тільки для захищених сторінок (не login/register/index тощо).

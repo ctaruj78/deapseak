@@ -1,5 +1,5 @@
 // Service Worker для push notifications та PWA
-const CACHE_NAME = 'liftmanager-v2.1';
+const CACHE_NAME = 'liftmanager-v2.2';
 const urlsToCache = [
     '/manifest.json'
 ];

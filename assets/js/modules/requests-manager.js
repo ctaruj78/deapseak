@@ -651,7 +651,7 @@ this.showNotification('A abrir chat com o técnico...', 'info');
         this.showNotification('Pedido concluído com sucesso!', 'success');
     }
 
-    cancelRequest(requestId) {
+    async cancelRequest(requestId) {
         const request = this.requests.find(req => req.id === requestId);
         if (!request) return;
 

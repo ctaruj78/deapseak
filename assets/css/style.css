@@ -405,38 +405,33 @@ body {
     }
 }
 
-/* Dark Mode Support */
-@media (prefers-color-scheme: dark) {
-    :root {
-        --primary-color: #0d6efd;
-        --secondary-color: #6c757d;
-        --success-color: #198754;
-        --danger-color: #dc3545;
-        --warning-color: #ffc107;
-        --info-color: #0dcaf0;
-        --light-color: #212529;
-        --dark-color: #f8f9fa;
-    }
-    
-    body {
-        background-color: #212529;
-        color: #f8f9fa;
-    }
-    
-    .card {
-        background-color: #343a40;
-        color: #f8f9fa;
-    }
-    
-    .table {
-        --bs-table-bg: #343a40;
-        --bs-table-color: #f8f9fa;
-    }
-    
-    .modal-content {
-        background-color: #343a40;
-        color: #f8f9fa;
-    }
+/* Dark Mode Support — only when the app's theme is explicitly set to dark (ThemeManager), not the OS/browser preference */
+body.theme-dark {
+    --primary-color: #0d6efd;
+    --secondary-color: #6c757d;
+    --success-color: #198754;
+    --danger-color: #dc3545;
+    --warning-color: #ffc107;
+    --info-color: #0dcaf0;
+    --light-color: #212529;
+    --dark-color: #f8f9fa;
+    background-color: #212529;
+    color: #f8f9fa;
+}
+
+body.theme-dark .card {
+    background-color: #343a40;
+    color: #f8f9fa;
+}
+
+body.theme-dark .table {
+    --bs-table-bg: #343a40;
+    --bs-table-color: #f8f9fa;
+}
+
+body.theme-dark .modal-content {
+    background-color: #343a40;
+    color: #f8f9fa;
 }
 
 /* Utility Classes */

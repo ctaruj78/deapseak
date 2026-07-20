@@ -191,7 +191,7 @@ class LiftManagement {
         }
     }
 
-    deleteLift(id) {
+    async deleteLift(id) {
         if (await swalConfirm('Tem a certeza que pretende eliminar este elevador?')) {
             const lifts = JSON.parse(localStorage.getItem('lifts')) || [];
             const filteredLifts = lifts.filter(lift => lift.id !== id);

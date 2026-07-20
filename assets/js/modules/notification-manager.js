@@ -340,7 +340,7 @@ class NotificationManager {
         this.showNotification('Todas as notificações marcadas como lidas', 'success');
     }
 
-    deleteNotification(id) {
+    async deleteNotification(id) {
         if (await swalConfirm('Eliminar esta notificação?')) {
             this.notifications = this.notifications.filter(n => n.id !== id);
             this.saveNotifications();
@@ -350,7 +350,7 @@ class NotificationManager {
         }
     }
 
-    clearAll() {
+    async clearAll() {
         if (await swalConfirm('Eliminar todas as notificações? Esta ação não pode ser desfeita.')) {
             this.notifications = [];
             this.saveNotifications();

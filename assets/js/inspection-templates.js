@@ -924,11 +924,11 @@ const INSPECTION_TEMPLATES = (() => {
         const critBadge = it.critical ? '<span class="badge badge-danger ml-1" title="Item crítico de segurança">CRIT</span>' : '';
         const selectOptions = section.binary
           ? `<option value="">— ? —</option>
-                  <option value="yes">✓ Sim</option>
+                  <option value="yes" selected>✓ Sim</option>
                   <option value="no">✗ Não</option>
                   <option value="na">N/A</option>`
           : `<option value="">— Estado —</option>
-                  <option value="ok">✓ Conforme</option>
+                  <option value="ok" selected>✓ Conforme</option>
                   <option value="warning">⚠ Atenção</option>
                   <option value="error">✗ Não conforme</option>
                   <option value="na">N/A</option>`;

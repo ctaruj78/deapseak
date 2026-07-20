@@ -2397,13 +2397,16 @@ app.get('/api/inspections', authenticateToken, async (req, res) => {
         if (req.user.role !== 'admin' && req.user.role !== 'dispatcher') {
             filter.createdBy = req.user.id;
         }
-        const inspections = await db.collection('inspections')
-            .find(filter)
-            .sort({ createdAt: -1 })
-            .skip(skip)
-            .limit(limit)
-            .toArray();
-        res.json({ success: true, data: inspections || [] });
+        const [inspections, total] = await Promise.all([
+            db.collection('inspections')
+                .find(filter)
+                .sort({ createdAt: -1 })
+                .skip(skip)
+                .limit(limit)
+                .toArray(),
+            db.collection('inspections').countDocuments(filter)
+        ]);
+        res.json({ success: true, data: inspections || [], total });
     } catch (error) {
         console.error('❌ Помилка отримання інспекцій:', error);
         res.status(500).json({ success: false, message: 'Erro do servidor' });
@@ -2481,6 +2484,51 @@ app.get('/api/inspections/:id', authenticateToken, async (req, res) => {
     } catch (error) {
         console.error('❌ Помилка отримання інспекції:', error);
         res.status(500).json({ success: false, message: 'Erro do servidor' });
+    }
+});
+
+// GET /api/inspections/:id/pdf — descarregar o PDF de um relatório já guardado
+app.get('/api/inspections/:id/pdf', authenticateToken, async (req, res) => {
+    try {
+        if (!db) {
+            return res.status(503).json({ success: false, message: 'Base de dados indisponível' });
+        }
+
+        const { ObjectId } = require('mongodb');
+        const inspection = await db.collection('inspections')
+            .findOne({ _id: new ObjectId(req.params.id) });
+
+        if (!inspection) {
+            return res.status(404).json({ success: false, message: 'Inspeção não encontrada' });
+        }
+
+        // 🔒 Técnicos só podem descarregar as inspeções que criaram — admin/dispatcher veem todas
+        if (req.user.role !== 'admin' && req.user.role !== 'dispatcher' && inspection.createdBy !== req.user.id) {
+            return res.status(403).json({ success: false, message: 'Acesso negado' });
+        }
+
+        const pdfBuffer = await gerarPDFRelatorio({
+            inspectionNumber: inspection.numero,
+            inspectionDate: inspection.data,
+            inspector: inspection.inspector,
+            liftLocation: inspection.liftLocation,
+            liftModel: inspection.liftModel,
+            liftSerial: inspection.liftSerial,
+            visitType: inspection.visitType,
+            driveType: inspection.driveType,
+            doorType: inspection.doorType,
+            checklist: inspection.checklist,
+            generalComments: inspection.generalComments,
+            recommendations: inspection.recommendations
+        });
+        const numSafe = String(inspection.numero || req.params.id).replace(/[/\\]/g, '-');
+
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `attachment; filename="Relatorio_${numSafe}.pdf"`);
+        res.send(pdfBuffer);
+    } catch (error) {
+        console.error('❌ Erro ao gerar PDF da inspeção:', error);
+        res.status(500).json({ success: false, message: 'Erro ao gerar PDF', error: error.message });
     }
 });
 

@@ -363,7 +363,7 @@ class VoiceInterface {
         }
     }
     
-    executeCommand(commandType) {
+    async executeCommand(commandType) {
         switch (commandType) {
             case 'create_request':
                 if (typeof showCreateRequestModal === 'function') {

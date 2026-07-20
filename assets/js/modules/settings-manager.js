@@ -644,7 +644,7 @@ class SettingsManager {
     }
 
     // Метод для скидання налаштувань до стандартних
-    resetToDefaults() {
+    async resetToDefaults() {
         if (await swalConfirm('Repor todas as definições para os valores predefinidos? Esta acção é irreversível.')) {
             this.settings = this.getDefaultSettings();
             this.saveSettings();
@@ -670,7 +670,7 @@ class SettingsManager {
     importSettings(file) {
         if (!file) return;
 
-        this.readFileAsText(file).then(content => {
+        this.readFileAsText(file).then(async content => {
             const importedSettings = JSON.parse(content);
             if (this.validateSettings(importedSettings)) {
                 if (await swalConfirm('Importar definições irá substituir as definições actuais. Continuar?')) {

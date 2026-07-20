@@ -813,83 +813,83 @@ Comandos disponíveis:
 
     // Funcionalidades avançadas do admin
     performDataAnalysis() {
-        this.addMessage('assistant', '🔍 A analisar dados do sistema...
+        this.addMessage('assistant', `🔍 A analisar dados do sistema...
 
 📈 Tendências encontradas:
 • Crescimento de utilização em 15%
 • 3 elevadores com manutenção pendente
-• Tempo médio de resposta: 2.3h');
+• Tempo médio de resposta: 2.3h`);
     }
 
     optimizeSystem() {
-        this.addMessage('assistant', '⚡ A otimizar o sistema...
+        this.addMessage('assistant', `⚡ A otimizar o sistema...
 
 ✅ Concluído:
 • Cache limpa (2.3MB)
 • Base de dados otimizada
-• Sessões expiradas removidas');
+• Sessões expiradas removidas`);
     }
 
     checkIntegrations() {
-        this.addMessage('assistant', '🔗 A verificar integrações...
+        this.addMessage('assistant', `🔗 A verificar integrações...
 
 📡 Estado:
 • API FestLift: ✅ Ativo
 • Servidor de email: ✅ Ativo
-• WebSocket: ✅ Ligado');
+• WebSocket: ✅ Ligado`);
     }
 
     securityAudit() {
-        this.addMessage('assistant', '🔒 A efetuar auditoria de segurança...
+        this.addMessage('assistant', `🔒 A efetuar auditoria de segurança...
 
 🛡️ Resultados:
 • Palavras-passe: ✅ Seguras
 • Acessos: ✅ Configurados
-• JWT: ✅ Válido');
+• JWT: ✅ Válido`);
     }
 
     setupAutomation() {
-        this.addMessage('assistant', '🤖 A configurar automatização...
+        this.addMessage('assistant', `🤖 A configurar automatização...
 
 ⚙️ Ativado:
 • Geração automática de relatórios
 • Atribuição automática de técnicos
-• Notificações automáticas');
+• Notificações automáticas`);
     }
 
     manageNotifications() {
-        this.addMessage('assistant', '📢 A gerir notificações...
+        this.addMessage('assistant', `📢 A gerir notificações...
 
 📨 Configurado:
 • Email: 45 utilizadores
 • WebSocket: ativo
-• SMS: não disponível');
+• SMS: não disponível`);
     }
 
     exportAllData() {
-        this.addMessage('assistant', '📤 A exportar todos os dados...
+        this.addMessage('assistant', `📤 A exportar todos os dados...
 
 💾 Criado:
 • QR-codes: qr_export.json (2.1MB)
-• Utilizadores: users_export.csv');
+• Utilizadores: users_export.csv`);
     }
 
     showSystemLogs() {
-        this.addMessage('assistant', '📋 A mostrar registos do sistema...
+        this.addMessage('assistant', `📋 A mostrar registos do sistema...
 
 📝 Últimos eventos:
 • 14:32: Leitura QR #QR0042
 • 14:28: Login admin
-• 14:15: Novo pedido criado');
+• 14:15: Novo pedido criado`);
     }
 
     runDiagnostics() {
-        this.addMessage('assistant', '🔧 A executar diagnóstico...
+        this.addMessage('assistant', `🔧 A executar diagnóstico...
 
 ⚡ Verificado:
 • Servidor: ✅ A responder (45ms)
 • Base de dados: ✅ Ligada
-• WebSocket: ✅ Ativo');
+• WebSocket: ✅ Ativo`);
     }
 
     // Novos métodos para regulamentos (Circular IPAC 06/2025)

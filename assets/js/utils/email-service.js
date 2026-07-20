@@ -33,7 +33,7 @@ class EmailService {
                 throw new Error(`Template not found: ${templateName}`);
             }
 
-            const emailData = this.prepareEmailData(to, template, data, options);
+            const emailData = await this.prepareEmailData(to, template, data, options);
             const result = await this.sendViaSMTP(emailData);
 
             await this.logEmailDelivery(result, emailData);
@@ -66,7 +66,7 @@ class EmailService {
         return this.processBulkResults(results);
     }
 
-    prepareEmailData(to, template, data, options) {
+    async prepareEmailData(to, template, data, options) {
         const compiledTemplate = this.compileTemplate(template, data);
         
         return {

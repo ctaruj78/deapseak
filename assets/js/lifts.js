@@ -605,7 +605,7 @@ class LiftManager {
         }
     }
 
-    deleteLift(id) {
+    async deleteLift(id) {
         if (await swalConfirm('Tem a certeza que pretende eliminar este elevador?')) {
             allLifts = allLifts.filter(lift => lift.id !== id);
             CommonUtils.saveLifts(allLifts);

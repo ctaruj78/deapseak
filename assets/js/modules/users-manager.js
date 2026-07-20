@@ -501,7 +501,7 @@ class UserManager {
         return emailRegex.test(email);
     }
 
-    toggleUserStatus(id) {
+    async toggleUserStatus(id) {
         if (!await swalConfirm('Tem a certeza que pretende alterar o estado deste utilizador?')) {
             return;
         }

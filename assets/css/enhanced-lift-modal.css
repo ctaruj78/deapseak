@@ -227,23 +227,21 @@
     }
 }
 
-/* Dark mode support */
-@media (prefers-color-scheme: dark) {
-    .intervention-item {
-        background: #2d3748;
-        color: #e2e8f0;
-    }
-    
-    .card {
-        background: #2d3748;
-        color: #e2e8f0;
-    }
-    
-    .input-group-text {
-        background: #4a5568;
-        color: #e2e8f0;
-        border-color: #4a5568;
-    }
+/* Dark mode support — only when the app's theme is explicitly set to dark (ThemeManager) */
+body.theme-dark .intervention-item {
+    background: #2d3748;
+    color: #e2e8f0;
+}
+
+body.theme-dark .card {
+    background: #2d3748;
+    color: #e2e8f0;
+}
+
+body.theme-dark .input-group-text {
+    background: #4a5568;
+    color: #e2e8f0;
+    border-color: #4a5568;
 }
 
 /* Animation improvements */

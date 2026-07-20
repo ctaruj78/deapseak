@@ -829,7 +829,7 @@ class ARHelperManager {
         }, 500);
     }
     
-    showSettingsPrompt() {
+    async showSettingsPrompt() {
         const result = await swalConfirm('AR Helper вимкнено в налаштуваннях.\n\nВи хочете перейти до налаштувань щоб увімкнути AR?');
         if (result) {
             window.open('system-settings.html', '_blank');
