@@ -16,6 +16,12 @@ const INSPECTION_TEMPLATES = (() => {
     return { id, label, norm, critical };
   }
 
+  // Remove itens (por id) de um bloco reutilizável — usado nas combinações
+  // "mistas" para evitar verificar o mesmo componente físico duas vezes.
+  function withoutIds(list, ids) {
+    return list.filter(i => !ids.includes(i.id));
+  }
+
   /* ------------------------------------------------------------------ */
   /* Blocos de itens reutilizáveis                                        */
   /* ------------------------------------------------------------------ */
@@ -100,7 +106,6 @@ const INSPECTION_TEMPLATES = (() => {
     item('stop-sem-portas',   'Botão STOP vermelho acessível na cabina sem portas',           'DR 13/80 Art. 93.º',         true),
     item('alarme-sem-portas', 'Alarme sonoro funcional com bateria de emergência',            'DR 13/80 Art. 94.º',         true),
     item('avisos-sem-portas', 'Avisos e instruções legíveis na cabina',                       'DR 13/80 Art. 95.º'),
-    item('mov-manual',        'Instruções para o movimento manual da cabina conformes',       'DR 13/80 Art. 105.º',        true),
   ];
 
   // --- Mecânica elétrica de tração ---
@@ -170,6 +175,7 @@ const INSPECTION_TEMPLATES = (() => {
     item('temp-cm',       'Ventilação/temperatura da casa das máquinas',      'EN 81-20 § 6.3.2'),
     item('limp-cm',       'Limpeza da casa das máquinas',                     'DL 320/2002 Art. 8.º'),
     item('lub-redutor',   'Nível de óleo do redutor (se aplicável)',          'Manual fabricante'),
+    item('mov-manual',    'Instruções para o movimento manual da cabina conformes', 'DR 13/80 Art. 105.º', true),
   ];
 
   // --- Documentação ---
@@ -274,7 +280,6 @@ const INSPECTION_TEMPLATES = (() => {
     item('stop-513',          'Botão STOP vermelho acima dos restantes comandos',              'DR 13/80 Art. 93.º',    true),
     item('alarme-513-portas', 'Alarme da cabina com acumulador de emergência',                'DR 13/80 Art. 94.º',    true),
     item('avisos-513',        'Avisos / instruções visíveis e indeléveis na cabina',          'DR 13/80 Art. 95.º'),
-    item('mov-manual-513',    'Instruções para movimento manual da cabina disponíveis',       'DR 13/80 Art. 105.º',   true),
   ];
 
   // --- DL 513/70 — Vão e fosso ---
@@ -309,6 +314,7 @@ const INSPECTION_TEMPLATES = (() => {
     item('limp-cm-513',    'Limpeza da casa das máquinas',                                'DL 320/2002 Art. 8.º'),
     item('temp-cm-513',    'Ventilação / temperatura adequada',                           'DL 513/70 Art. 49.º'),
     item('extintor-513',   'Extintor de incêndio — presente e dentro da validade',        'DL 513/70 Art. 52.º'),
+    item('mov-manual-513', 'Instruções para movimento manual da cabina disponíveis',      'DR 13/80 Art. 105.º',   true),
   ];
 
   // --- DL 513/70 — Documentação ---
@@ -482,27 +488,30 @@ const INSPECTION_TEMPLATES = (() => {
       // Ascensor DL 513/70 — modernização parcial possível (batentes patamar + automática cabina)
       if (isMixedAutomatic) {
         // Caso mais comum: portas de patamar batentes originais + operador automático na cabina
+        // (contatos/fechaduras de patamar já verificados no bloco batentes — não repetir)
         dl513Sections.push({
           id: 'portas-pat', title: 'Portas de Patamar — Batentes (DL 513/70)',
           icon: 'door-open', color: 'primary', items: DL513_DOORS_SWING,
         });
         dl513Sections.push({
           id: 'portas-cab', title: 'Porta de Cabina — Automática (Modernização)',
-          icon: 'sync-alt', color: 'info', items: DOORS_AUTOMATIC,
+          icon: 'sync-alt', color: 'info', items: withoutIds(DOORS_AUTOMATIC, ['contatos-porta', 'fechaduras-pat']),
         });
       } else if (isMixedGate) {
+        // STOP de cabina já verificado no bloco do portão — não repetir no bloco batentes
         dl513Sections.push({
           id: 'portas-pat', title: 'Portas de Patamar — Batentes (DL 513/70)',
-          icon: 'door-open', color: 'primary', items: DL513_DOORS_SWING,
+          icon: 'door-open', color: 'primary', items: withoutIds(DL513_DOORS_SWING, ['stop-bat-513']),
         });
         dl513Sections.push({
           id: 'portas-cab', title: 'Porta de Cabina — Portões / Guilhotina (DL 513/70)',
           icon: 'grip-lines-vertical', color: 'info', items: DL513_DOORS_GATE,
         });
       } else if (isMixedPatim) {
+        // STOP de cabina já verificado no bloco patim móvel — não repetir no bloco batentes
         dl513Sections.push({
           id: 'portas-pat', title: 'Portas de Patamar — Batentes (DL 513/70)',
-          icon: 'door-open', color: 'primary', items: DL513_DOORS_SWING,
+          icon: 'door-open', color: 'primary', items: withoutIds(DL513_DOORS_SWING, ['stop-bat-513']),
         });
         dl513Sections.push({
           id: 'portas-cab', title: 'Cabina sem Portas / Patim Móvel (DL 513/70)',
@@ -610,6 +619,7 @@ const INSPECTION_TEMPLATES = (() => {
     // ---- Portas ----
     if (isMixedAutomatic) {
       // Modernização parcial: portas de patamar batentes + operador automático na cabina
+      // (contatos/fechaduras de patamar já verificados no bloco batentes — não repetir)
       sections.push({
         id: 'portas-pat',
         title: 'Portas de Patamar — Batentes',
@@ -622,15 +632,16 @@ const INSPECTION_TEMPLATES = (() => {
         title: 'Porta de Cabina — Automática',
         icon: 'sync-alt',
         color: 'info',
-        items: DOORS_AUTOMATIC,
+        items: withoutIds(DOORS_AUTOMATIC, ['contatos-porta', 'fechaduras-pat']),
       });
     } else if (isMixedGate) {
+      // STOP de cabina já verificado no bloco do portão — não repetir no bloco batentes
       sections.push({
         id: 'portas-pat',
         title: 'Portas de Patamar — Batentes',
         icon: 'door-open',
         color: 'primary',
-        items: DOORS_SWING,
+        items: withoutIds(DOORS_SWING, ['stop-cabina']),
       });
       sections.push({
         id: 'portas-cab',
@@ -640,12 +651,13 @@ const INSPECTION_TEMPLATES = (() => {
         items: DOORS_GATE,
       });
     } else if (isMixedPatim) {
+      // STOP de cabina já verificado no bloco patim móvel — não repetir no bloco batentes
       sections.push({
         id: 'portas-pat',
         title: 'Portas de Patamar — Batentes',
         icon: 'door-open',
         color: 'primary',
-        items: DOORS_SWING,
+        items: withoutIds(DOORS_SWING, ['stop-cabina']),
       });
       sections.push({
         id: 'portas-cab',
@@ -728,8 +740,9 @@ const INSPECTION_TEMPLATES = (() => {
       items: ELECTRICAL_COMMON,
     });
 
-    // ---- Casa das máquinas (apenas se tiver CM) ----
-    if (driveType === 'traction') {
+    // ---- Casa das máquinas (apenas se tiver CM, ou se precisar do item de
+    // movimento manual da cabina — obrigatório em qualquer cabina sem portas) ----
+    if (driveType === 'traction' || doorType === 'patim_movel' || isMixedPatim) {
       sections.push({
         id: 'cm',
         title: 'Casa das Máquinas',
