@@ -8,7 +8,7 @@ const { authorizeRoles } = require('../middleware/roleAuth');
 const PDFDocument = require('pdfkit');
 const path = require('path');
 const fs = require('fs');
-const { CONDICOES_GERAIS } = require('../constants/propostaManutencaoTerms');
+const { CONDICOES_GERAIS_ARTIGOS } = require('../constants/propostaManutencaoTerms');
 
 async function autoExpirarPropostas(filterExtra = {}) {
     try {
@@ -109,19 +109,23 @@ async function gerarPDFPropostaManutencao(proposta) {
             doc.text(termosTexto, 50, doc.y, { width: 500, align: 'justify' });
             doc.moveDown();
 
-            // Condições Gerais (resumo)
+            // Condições Gerais (texto integral)
             if (doc.y > 650) { doc.addPage(); }
-            doc.fontSize(12).font('Helvetica-Bold').fillColor(AZUL).text('Condições Gerais (resumo)', 50, doc.y);
+            doc.fontSize(12).font('Helvetica-Bold').fillColor(AZUL).text('Condições Gerais', 50, doc.y);
             doc.moveDown(0.3);
-            doc.fontSize(9).font('Helvetica').fillColor('#000000');
-            CONDICOES_GERAIS.forEach((linha) => {
-                if (doc.y > 740) { doc.addPage(); }
-                doc.text(`•  ${linha}`, 50, doc.y, { width: 500 });
-                doc.moveDown(0.3);
+
+            CONDICOES_GERAIS_ARTIGOS.forEach((artigo) => {
+                if (doc.y > 700) { doc.addPage(); }
+                doc.fontSize(10).font('Helvetica-Bold').fillColor(AZUL).text(artigo.titulo, 50, doc.y, { width: 500 });
+                doc.moveDown(0.2);
+                doc.fontSize(9).font('Helvetica').fillColor('#000000');
+                artigo.itens.forEach((item, idx) => {
+                    if (doc.y > 740) { doc.addPage(); }
+                    doc.text(`${idx + 1}. ${item}`, 50, doc.y, { width: 500, align: 'justify' });
+                    doc.moveDown(0.25);
+                });
+                doc.moveDown(0.2);
             });
-            doc.moveDown(0.3);
-            doc.fontSize(8).font('Helvetica-Oblique').fillColor('#666666')
-                .text('Nota: esta é uma versão resumida das condições gerais. As condições integrais aplicam-se ao contrato de manutenção assinado entre as partes.', 50, doc.y, { width: 500 });
 
             // Notas
             if (proposta.notas) {
