@@ -5,11 +5,10 @@
     <link rel="stylesheet" href="/plugins/toastr/css/toastr.min.css">
     <link rel="icon" type="image/png" href="/assets/img/favicon.png">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Os Meus Orçamentos - FestLift</title>
+    <title>Propostas de Manutenção - FestLift</title>
     <link rel="stylesheet" href="/plugins/sweetalert2/css/sweetalert2.min.css">
     <script src="../../plugins/sweetalert2/js/sweetalert2.min.js"></script>
     <script src="../../assets/js/auth.js"></script>
-
 
     <link rel="stylesheet" href="../../plugins/adminlte/adminlte.min.css">
     <link rel="stylesheet" href="../../plugins/fontawesome/css/all.min.css">
@@ -36,18 +35,6 @@
         .badge-aprovado  { background-color: #28a745; color: #fff; }
         .badge-rejeitado { background-color: #dc3545; color: #fff; }
         .badge-expirado  { background-color: #ffc107; color: #000; }
-
-        .action-banner {
-            background: linear-gradient(135deg, #28a745, #20c997);
-            color: white;
-            border-radius: 10px;
-            padding: 18px 24px;
-            margin-bottom: 10px;
-        }
-        .action-banner.reject {
-            background: linear-gradient(135deg, #dc3545, #e83e8c);
-        }
-        .servicos-table th { background: #f4f6f9; }
         #emptyState { display: none; }
     </style>
 </head>
@@ -64,7 +51,7 @@
                 <a href="/pages/client/dashboard.html" class="nav-link">Início</a>
             </li>
             <li class="nav-item d-none d-sm-inline-block">
-                <a href="/pages/client/orcamentos.html" class="nav-link active">Orçamentos</a>
+                <a href="/pages/client/propostas-manutencao.html" class="nav-link active">Propostas de Manutenção</a>
             </li>
         </ul>
         <ul class="navbar-nav ml-auto">
@@ -110,13 +97,13 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a href="/pages/client/orcamentos.html" class="nav-link active" id="nav-orcamentos">
+                        <a href="/pages/client/orcamentos.html" class="nav-link" id="nav-orcamentos">
                             <i class="nav-icon fas fa-file-invoice-dollar"></i>
                             <p>Orçamentos<span class="badge badge-warning right" id="orcamentosCount">0</span></p>
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a href="/pages/client/propostas-manutencao.html" class="nav-link" id="nav-propostas-manutencao">
+                        <a href="/pages/client/propostas-manutencao.html" class="nav-link active" id="nav-propostas-manutencao">
                             <i class="nav-icon fas fa-file-contract"></i>
                             <p>Propostas de Manutenção<span class="badge badge-warning right" id="propostasManutencaoCount">0</span></p>
                         </a>
@@ -166,7 +153,7 @@
                             <i class="nav-icon fas fa-user"></i><p>Perfil</p>
                         </a>
                     </li>
-                                        <li class="nav-item">
+                    <li class="nav-item">
                         <a href="#" onclick="logout()" class="nav-link">
                             <i class="nav-icon fas fa-sign-out-alt text-danger"></i><p>Sair</p>
                         </a>
@@ -182,16 +169,12 @@
             <div class="container-fluid">
                 <div class="row mb-2">
                     <div class="col-sm-6">
-                        <h1><i class="fas fa-file-invoice-dollar mr-2"></i>Os Meus Orçamentos</h1>
+                        <h1><i class="fas fa-file-contract mr-2"></i>Propostas de Manutenção</h1>
                     </div>
                     <div class="col-sm-6">
                         <ol class="breadcrumb float-sm-right">
                             <li class="breadcrumb-item"><a href="/pages/client/dashboard.html">Início</a></li>
-                
-                <!-- Tickets -->
-                
-                <!-- Settings -->
-                            <li class="breadcrumb-item active">Orçamentos</li>
+                            <li class="breadcrumb-item active">Propostas de Manutenção</li>
                         </ol>
                     </div>
                 </div>
@@ -216,7 +199,7 @@
                         <div class="info-box bg-success">
                             <span class="info-box-icon"><i class="fas fa-check-circle"></i></span>
                             <div class="info-box-content">
-                                <span class="info-box-text">Aprovados</span>
+                                <span class="info-box-text">Aprovadas</span>
                                 <span class="info-box-number" id="countAprovado">0</span>
                             </div>
                         </div>
@@ -225,7 +208,7 @@
                         <div class="info-box bg-danger">
                             <span class="info-box-icon"><i class="fas fa-times-circle"></i></span>
                             <div class="info-box-content">
-                                <span class="info-box-text">Rejeitados</span>
+                                <span class="info-box-text">Rejeitadas</span>
                                 <span class="info-box-number" id="countRejeitado">0</span>
                             </div>
                         </div>
@@ -234,46 +217,28 @@
                         <div class="info-box bg-warning">
                             <span class="info-box-icon"><i class="fas fa-hourglass-end"></i></span>
                             <div class="info-box-content">
-                                <span class="info-box-text">Expirados</span>
+                                <span class="info-box-text">Expiradas</span>
                                 <span class="info-box-number" id="countExpirado">0</span>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Pesquisa -->
-                <div class="row mb-3" id="searchRow" style="display:none;">
-                    <div class="col-md-5">
-                        <div class="input-group">
-                            <div class="input-group-prepend">
-                                <span class="input-group-text"><i class="fas fa-search"></i></span>
-                            </div>
-                            <input type="text" id="orcSearchInput" class="form-control" placeholder="Pesquisar por número, estado ou morada...">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Sem resultados da pesquisa -->
-                <div id="noSearchResults" class="text-center py-5" style="display:none;">
-                    <i class="fas fa-search fa-3x text-muted mb-3"></i>
-                    <h5 class="text-muted">Nenhum orçamento corresponde à pesquisa</h5>
-                </div>
-
                 <!-- Estado vazio -->
                 <div id="emptyState" class="text-center py-5">
-                    <i class="fas fa-file-invoice-dollar fa-4x text-muted mb-3"></i>
-                    <h4 class="text-muted">Ainda não recebeu nenhum orçamento</h4>
-                    <p class="text-muted">Quando a FestLift enviar um orçamento para si, aparecerá aqui.</p>
+                    <i class="fas fa-file-contract fa-4x text-muted mb-3"></i>
+                    <h4 class="text-muted">Ainda não recebeu nenhuma proposta de manutenção</h4>
+                    <p class="text-muted">Quando a FestLift enviar uma proposta para si, aparecerá aqui.</p>
                 </div>
 
                 <!-- Loading -->
                 <div id="loadingState" class="text-center py-5">
                     <div class="spinner-border text-primary" role="status"></div>
-                    <p class="mt-2 text-muted">A carregar orçamentos...</p>
+                    <p class="mt-2 text-muted">A carregar propostas...</p>
                 </div>
 
-                <!-- Lista de orçamentos -->
-                <div id="orcamentosList" class="row" style="display:none;"></div>
+                <!-- Lista -->
+                <div id="propostasList" class="row" style="display:none;"></div>
 
             </div>
         </section>
@@ -285,12 +250,12 @@
     </footer>
 </div>
 
-<!-- Modal detalhe do orçamento -->
-<div class="modal fade" id="orcamentoModal" tabindex="-1" role="dialog">
+<!-- Modal detalhe -->
+<div class="modal fade" id="propostaModal" tabindex="-1" role="dialog">
     <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header bg-gradient-primary text-white">
-                <h5 class="modal-title"><i class="fas fa-file-invoice-dollar mr-2"></i><span id="modalNumero"></span></h5>
+                <h5 class="modal-title"><i class="fas fa-file-contract mr-2"></i><span id="modalNumero"></span></h5>
                 <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
             </div>
             <div class="modal-body" id="modalBody"></div>
@@ -328,11 +293,10 @@
 
 <script>
     const API_BASE_URL = '';
-    let orcamentosData = [];
-    let pendingAction = null; // { id, status }
+    let propostasData = [];
+    let pendingAction = null; // { id, novoStatus }
 
     function getToken() {
-        // sessionStorage tem prioridade — уникаexisteмо old tokenів desde localStorage
         return sessionStorage.getItem('liftmanager_jwt') ||
                localStorage.getItem('liftmanager_jwt') ||
                sessionStorage.getItem('token') ||
@@ -348,9 +312,14 @@
         }
     }
 
-    // ─── Carregar orçamentos ─────────────────────────────────────
-    async function carregarOrcamentos() {
-        // Deve ser exactamente 'client' — qualquer outra role (ou ausente) → login
+    const statusLabels = {
+        enviado:   'Aguarda resposta',
+        aprovado:  'Aprovada',
+        rejeitado: 'Rejeitada',
+        expirado:  'Expirada'
+    };
+
+    async function carregarPropostas() {
         const currentUser = (typeof AuthManager !== 'undefined') ? AuthManager.getCurrentUser() : null;
         if (!currentUser || currentUser.role !== 'client') {
             localStorage.clear();
@@ -360,25 +329,24 @@
         }
 
         document.getElementById('loadingState').style.display = 'block';
-        document.getElementById('orcamentosList').style.display = 'none';
+        document.getElementById('propostasList').style.display = 'none';
         document.getElementById('emptyState').style.display = 'none';
 
         try {
             const token = AuthManager.getAuthToken();
-            const res = await fetch(`${API_BASE_URL}/api/orcamentos/my`, {
+            const res = await fetch(`${API_BASE_URL}/api/propostas-manutencao/my`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const json = await res.json();
             if (res.status === 401 || res.status === 403) {
-                // Token inválido ou role errada → logout
                 AuthManager.logout();
                 window.location.replace('/pages/auth/login.html');
                 return;
             }
             if (!res.ok) throw new Error(json.message || 'Erro ao carregar');
 
-            orcamentosData = json.data || [];
-            renderOrcamentos(orcamentosData);
+            propostasData = json.data || [];
+            renderPropostas(propostasData);
         } catch (err) {
             console.error(err);
             document.getElementById('loadingState').style.display = 'none';
@@ -386,127 +354,76 @@
         }
     }
 
-    const statusLabels = {
-        enviado:   'Aguarda resposta',
-        aprovado:  'Aprovado',
-        rejeitado: 'Rejeitado',
-        expirado:  'Expirado'
-    };
-
-    function renderOrcamentos(list) {
+    function renderPropostas(list) {
         document.getElementById('loadingState').style.display = 'none';
 
-        // Contadores — sempre com base no conjunto completo, não no filtrado pela pesquisa
         const counts = { enviado: 0, aprovado: 0, rejeitado: 0, expirado: 0 };
-        list.forEach(o => { if (counts[o.status] !== undefined) counts[o.status]++; });
+        list.forEach(p => { if (counts[p.status] !== undefined) counts[p.status]++; });
         document.getElementById('countEnviado').textContent   = counts.enviado;
         document.getElementById('countAprovado').textContent  = counts.aprovado;
         document.getElementById('countRejeitado').textContent = counts.rejeitado;
         document.getElementById('countExpirado').textContent  = counts.expirado;
 
-        // Badge no sidebar
-        const badge = document.getElementById('orcamentosCount');
+        const badge = document.getElementById('propostasManutencaoCount');
         if (badge) badge.textContent = counts.enviado;
-
-        document.getElementById('searchRow').style.display = list.length > 0 ? 'block' : 'none';
 
         if (list.length === 0) {
             document.getElementById('emptyState').style.display = 'block';
             return;
         }
 
-        renderCards(list);
-    }
-
-    function renderCards(list) {
-        const container = document.getElementById('orcamentosList');
-        const noResults = document.getElementById('noSearchResults');
-
-        if (list.length === 0) {
-            container.innerHTML = '';
-            container.style.display = 'none';
-            noResults.style.display = 'block';
-            return;
-        }
-
-        noResults.style.display = 'none';
-        container.innerHTML = list.map(o => criarCard(o)).join('');
+        const container = document.getElementById('propostasList');
+        container.innerHTML = list.map(p => criarCard(p)).join('');
         container.style.display = 'flex';
-        container.classList.add('row');
     }
 
-    function filterOrcamentos() {
-        const q = document.getElementById('orcSearchInput').value.trim().toLowerCase();
-        if (!q) {
-            renderCards(orcamentosData);
-            return;
-        }
-        const filtered = orcamentosData.filter(o => {
-            const haystack = [
-                o.numero,
-                statusLabels[o.status] || o.status,
-                o.liftAddress,
-                o.cliente && o.cliente.morada
-            ].filter(Boolean).join(' ').toLowerCase();
-            return haystack.includes(q);
-        });
-        renderCards(filtered);
-    }
-
-    function criarCard(o) {
-        const statusClass = `badge-${o.status}`;
-        const statusText = statusLabels[o.status] || o.status;
-        const data = new Date(o.data).toLocaleDateString('pt-PT');
-        const validadeAte = o.validadeAte ? new Date(o.validadeAte).toLocaleDateString('pt-PT') : 'N/A';
-        const total = (o.total || 0).toFixed(2);
+    function criarCard(p) {
+        const statusClass = `badge-${p.status}`;
+        const statusText = statusLabels[p.status] || p.status;
+        const data = new Date(p.data).toLocaleDateString('pt-PT');
+        const validadeAte = p.validadeAte ? new Date(p.validadeAte).toLocaleDateString('pt-PT') : 'N/A';
+        const preco = (p.precoMensal || 0).toFixed(2);
 
         let actionBtns = '';
-        if (o.status === 'enviado') {
+        if (p.status === 'enviado') {
             actionBtns = `
-                <button class="btn btn-success btn-sm mr-1" onclick="abrirResposta('${o._id}', 'aprovado'); event.stopPropagation();">
+                <button class="btn btn-success btn-sm mr-1" onclick="abrirResposta('${p._id}', 'aprovado'); event.stopPropagation();">
                     <i class="fas fa-check"></i> Aprovar
                 </button>
-                <button class="btn btn-outline-danger btn-sm" onclick="abrirResposta('${o._id}', 'rejeitado'); event.stopPropagation();">
+                <button class="btn btn-outline-danger btn-sm" onclick="abrirResposta('${p._id}', 'rejeitado'); event.stopPropagation();">
                     <i class="fas fa-times"></i> Rejeitar
                 </button>`;
-        } else if (o.status === 'aprovado') {
-            const quem = !o.aprovadoPor || o.aprovadoPor === 'cliente' ? 'por si' : 'pela FestLift';
-            actionBtns = `<span class="text-success"><i class="fas fa-check-circle"></i> Aprovado ${quem}</span>`;
-        } else if (o.status === 'rejeitado') {
-            const quem = !o.aprovadoPor || o.aprovadoPor === 'cliente' ? 'por si' : 'pela FestLift';
-            actionBtns = `<span class="text-danger"><i class="fas fa-times-circle"></i> Rejeitado ${quem}</span>`;
-        } else if (o.status === 'expirado') {
-            actionBtns = `<span class="text-warning"><i class="fas fa-hourglass-end"></i> Orçamento expirado</span>`;
+        } else if (p.status === 'aprovado') {
+            const quem = !p.aprovadoPor || p.aprovadoPor === 'cliente' ? 'por si' : 'pela FestLift';
+            actionBtns = `<span class="text-success"><i class="fas fa-check-circle"></i> Aprovada ${quem}</span>`;
+        } else if (p.status === 'rejeitado') {
+            const quem = !p.aprovadoPor || p.aprovadoPor === 'cliente' ? 'por si' : 'pela FestLift';
+            actionBtns = `<span class="text-danger"><i class="fas fa-times-circle"></i> Rejeitada ${quem}</span>`;
+        } else if (p.status === 'expirado') {
+            actionBtns = `<span class="text-warning"><i class="fas fa-hourglass-end"></i> Proposta expirada</span>`;
         }
 
         return `
             <div class="col-md-6 col-lg-4 mb-4">
-                <div class="card orcamento-card h-100" style="cursor:pointer;" onclick="verDetalhe('${o._id}')">
+                <div class="card orcamento-card h-100" style="cursor:pointer;" onclick="verDetalhe('${p._id}')">
                     <div class="card-header bg-gradient-primary d-flex justify-content-between align-items-center">
-                        <span class="text-white font-weight-bold"><i class="fas fa-file-invoice-dollar mr-1"></i>${o.numero}</span>
+                        <span class="text-white font-weight-bold"><i class="fas fa-file-contract mr-1"></i>${p.numero}</span>
                         <span class="status-badge ${statusClass}">${statusText}</span>
                     </div>
                     <div class="card-body">
                         <p class="mb-1"><i class="fas fa-calendar text-primary mr-1"></i><strong>Data:</strong> ${data}</p>
-                        <p class="mb-1"><i class="fas fa-clock text-warning mr-1"></i><strong>Válido até:</strong> ${validadeAte}</p>
-                        ${(o.liftAddress || o.cliente?.morada) ? `<p class="mb-1 text-muted small"><i class="fas fa-map-marker-alt mr-1"></i>${(o.liftAddress || o.cliente.morada).replace(/\n/g, ', ')}</p>` : ''}
-                        ${(o.fotos && o.fotos.length > 0) ? `<p class="mb-1 text-muted small"><i class="fas fa-camera mr-1"></i>${o.fotos.length} fotografia${o.fotos.length > 1 ? 's' : ''}</p>` : ''}
+                        <p class="mb-1"><i class="fas fa-clock text-warning mr-1"></i><strong>Válida até:</strong> ${validadeAte}</p>
+                        ${p.instalacao?.morada ? `<p class="mb-1 text-muted small"><i class="fas fa-map-marker-alt mr-1"></i>${p.instalacao.morada}</p>` : ''}
                         <hr>
-                        <h4 class="text-right text-primary mb-0"><strong>€ ${total}</strong></h4>
+                        <h4 class="text-right text-primary mb-0"><strong>€ ${preco}<small class="text-muted" style="font-size:.55em;">/mês</small></strong></h4>
                     </div>
                     <div class="card-footer d-flex align-items-center justify-content-between flex-wrap" style="gap:6px;">
                         <div style="display:flex;gap:6px;align-items:center;">
-                            <button class="btn btn-info btn-sm" onclick="verDetalhe('${o._id}'); event.stopPropagation();">
+                            <button class="btn btn-info btn-sm" onclick="verDetalhe('${p._id}'); event.stopPropagation();">
                                 <i class="fas fa-eye"></i> Ver detalhe
                             </button>
-                            <button class="btn btn-secondary btn-sm" onclick="downloadPDF('${o._id}', '${o.numero}'); event.stopPropagation();" title="Download PDF">
+                            <button class="btn btn-secondary btn-sm" onclick="downloadPDF('${p._id}', '${p.numero}'); event.stopPropagation();" title="Download PDF">
                                 <i class="fas fa-file-pdf"></i> PDF
-                            </button>
-                            <button class="btn btn-outline-success btn-sm" onclick="printPDF('${o._id}', '${o.numero}'); event.stopPropagation();" title="Imprimir">
-                                <i class="fas fa-print"></i>
-                            </button>
-                            <button class="btn btn-outline-warning btn-sm" onclick="emailOrcamento('${o._id}', '${o.numero}'); event.stopPropagation();" title="Enviar por email">
-                                <i class="fas fa-envelope"></i>
                             </button>
                         </div>
                         <div>${actionBtns}</div>
@@ -515,116 +432,84 @@
             </div>`;
     }
 
-    // ─── Ver detalhe no modal ────────────────────────────────────
     function verDetalhe(id) {
-        const o = orcamentosData.find(x => x._id === id);
-        if (!o) return;
+        const p = propostasData.find(x => x._id === id);
+        if (!p) return;
 
-        document.getElementById('modalNumero').textContent = `Orçamento ${o.numero}`;
+        document.getElementById('modalNumero').textContent = `Proposta ${p.numero}`;
 
-        const linhas = (o.servicos || []).map(s => `
-            <tr>
-                <td>${s.descricao}</td>
-                <td class="text-center">${s.quantidade}</td>
-                <td class="text-right">€${(s.precoUnitario || 0).toFixed(2)}</td>
-                <td class="text-right">€${(s.total || 0).toFixed(2)}</td>
-            </tr>`).join('');
-
+        const renovacao = p.renovacao || {};
         document.getElementById('modalBody').innerHTML = `
             <div class="row mb-3">
                 <div class="col-sm-6">
-                    <p><strong>Data:</strong> ${new Date(o.data).toLocaleDateString('pt-PT')}</p>
-                    <p><strong>Válido até:</strong> ${o.validadeAte ? new Date(o.validadeAte).toLocaleDateString('pt-PT') : 'N/A'}</p>
-                    <p><strong>Status:</strong> <span class="status-badge ${`badge-${o.status}`}">${statusLabels[o.status] || o.status}</span></p>
-                    ${o.dataResposta ? `<p><strong>Data de resposta:</strong> ${new Date(o.dataResposta).toLocaleDateString('pt-PT')}</p>` : ''}
-                    ${(o.status === 'aprovado' || o.status === 'rejeitado') ? `<p><strong>${o.status === 'aprovado' ? 'Aprovado' : 'Rejeitado'} por:</strong> ${!o.aprovadoPor || o.aprovadoPor === 'cliente' ? 'si próprio(a)' : 'FestLift'}</p>` : ''}
-                    ${o.observacao ? `<p><strong>Observação:</strong> ${o.observacao}</p>` : ''}
-                    ${o.liftAddress ? `<p><strong><i class="fas fa-map-marker-alt text-warning mr-1"></i>Elevador:</strong> ${o.liftAddress}</p>` : ''}
+                    <p><strong>Data:</strong> ${new Date(p.data).toLocaleDateString('pt-PT')}</p>
+                    <p><strong>Válida até:</strong> ${p.validadeAte ? new Date(p.validadeAte).toLocaleDateString('pt-PT') : 'N/A'}</p>
+                    <p><strong>Status:</strong> <span class="status-badge ${`badge-${p.status}`}">${statusLabels[p.status] || p.status}</span></p>
+                    ${p.dataResposta ? `<p><strong>Data de resposta:</strong> ${new Date(p.dataResposta).toLocaleDateString('pt-PT')}</p>` : ''}
+                    ${(p.status === 'aprovado' || p.status === 'rejeitado') ? `<p><strong>${p.status === 'aprovado' ? 'Aprovada' : 'Rejeitada'} por:</strong> ${!p.aprovadoPor || p.aprovadoPor === 'cliente' ? 'si próprio(a)' : 'FestLift'}</p>` : ''}
+                    ${p.observacao ? `<p><strong>Observação:</strong> ${p.observacao}</p>` : ''}
                 </div>
                 <div class="col-sm-6">
-                    <p><strong>Nome:</strong> ${o.cliente?.nome || '—'}</p>
-                    <p><strong>Email:</strong> ${o.cliente?.email || '—'}</p>
-                    ${o.cliente?.morada ? `<p><strong>Morada:</strong> ${o.cliente.morada}</p>` : ''}
+                    <p><strong>Nome:</strong> ${p.cliente?.nome || '—'}</p>
+                    <p><strong>Email:</strong> ${p.cliente?.email || '—'}</p>
+                    ${p.instalacao?.morada ? `<p><strong>Instalação:</strong> ${p.instalacao.morada}</p>` : ''}
                 </div>
             </div>
-            <table class="table table-sm table-bordered servicos-table">
-                <thead><tr><th>Descrição</th><th class="text-center">Qtd</th><th class="text-right">Preço unit.</th><th class="text-right">Total</th></tr></thead>
-                <tbody>${linhas}</tbody>
-                <tfoot>
-                    <tr><td colspan="3" class="text-right"><strong>Subtotal</strong></td><td class="text-right">€${(o.subtotal || 0).toFixed(2)}</td></tr>
-                    <tr><td colspan="3" class="text-right"><strong>IVA (23%)</strong></td><td class="text-right">€${(o.iva || 0).toFixed(2)}</td></tr>
-                    <tr class="table-active"><td colspan="3" class="text-right"><strong>TOTAL</strong></td><td class="text-right"><strong>€${(o.total || 0).toFixed(2)}</strong></td></tr>
-                </tfoot>
+            <table class="table table-sm table-bordered">
+                <tbody>
+                    <tr><th style="width:40%">Nº de ascensores</th><td>${p.numAscensores || '—'}</td></tr>
+                    <tr><th>Preço mensal (por unidade)</th><td>€${(p.precoMensal || 0).toFixed(2)} + IVA</td></tr>
+                    <tr><th>Pagamento</th><td>${p.pagamento || '—'}</td></tr>
+                    <tr><th>Duração do contrato</th><td>${p.duracaoAnos || 1} ano(s)</td></tr>
+                    <tr><th>Data de início</th><td>${p.dataInicioContrato ? new Date(p.dataInicioContrato).toLocaleDateString('pt-PT') : '—'}</td></tr>
+                    <tr><th>Renovação tácita</th><td>${renovacao.periodo || '—'}</td></tr>
+                    <tr><th>Aviso prévio de denúncia</th><td>${renovacao.avisoDias || '—'} (via ${renovacao.metodoNotificacao || '—'})</td></tr>
+                </tbody>
             </table>
-            ${o.notas ? `<div class="alert alert-light mt-2"><strong>Notas:</strong> ${o.notas}</div>` : ''}
-            ${(o.fotos && o.fotos.length > 0) ? `
-                <div class="mt-3">
-                    <h6><i class="fas fa-camera mr-1"></i>Fotografias (${o.fotos.length})</h6>
-                    <div class="d-flex flex-wrap" style="gap:10px;">
-                        ${o.fotos.map(f => `
-                            <a href="${f}" target="_blank">
-                                <img src="${f}" style="width:130px;height:95px;object-fit:cover;border-radius:6px;border:1px solid #ddd;">
-                            </a>
-                        `).join('')}
-                    </div>
-                </div>
-            ` : ''}`;
+            ${p.notas ? `<div class="alert alert-light mt-2"><strong>Notas:</strong> ${p.notas}</div>` : ''}
+            <p class="text-muted small mt-2"><i class="fas fa-info-circle mr-1"></i>Consulte o PDF em anexo para os termos e condições completos.</p>`;
 
         const footer = document.getElementById('modalFooter');
-        if (o.status === 'enviado') {
+        if (p.status === 'enviado') {
             footer.innerHTML = `
                 <button class="btn btn-secondary" data-dismiss="modal">Fechar</button>
-                <button class="btn btn-outline-secondary" onclick="downloadPDF('${o._id}', '${o.numero}')">
+                <button class="btn btn-outline-secondary" onclick="downloadPDF('${p._id}', '${p.numero}')">
                     <i class="fas fa-file-pdf"></i> Download PDF
                 </button>
-                <button class="btn btn-outline-success" onclick="printPDF('${o._id}', '${o.numero}')">
-                    <i class="fas fa-print"></i> Imprimir
+                <button class="btn btn-success" onclick="abrirResposta('${p._id}', 'aprovado')">
+                    <i class="fas fa-check"></i> Aprovar proposta
                 </button>
-                <button class="btn btn-outline-warning" onclick="emailOrcamento('${o._id}', '${o.numero}')">
-                    <i class="fas fa-envelope"></i> Enviar por Email
-                </button>
-                <button class="btn btn-success" onclick="abrirResposta('${o._id}', 'aprovado')">
-                    <i class="fas fa-check"></i> Aprovar orçamento
-                </button>
-                <button class="btn btn-danger" onclick="abrirResposta('${o._id}', 'rejeitado')">
-                    <i class="fas fa-times"></i> Rejeitar orçamento
+                <button class="btn btn-danger" onclick="abrirResposta('${p._id}', 'rejeitado')">
+                    <i class="fas fa-times"></i> Rejeitar proposta
                 </button>`;
         } else {
             footer.innerHTML = `
                 <button class="btn btn-secondary" data-dismiss="modal">Fechar</button>
-                <button class="btn btn-outline-secondary" onclick="downloadPDF('${o._id}', '${o.numero}')">
+                <button class="btn btn-outline-secondary" onclick="downloadPDF('${p._id}', '${p.numero}')">
                     <i class="fas fa-file-pdf"></i> Download PDF
-                </button>
-                <button class="btn btn-outline-success" onclick="printPDF('${o._id}', '${o.numero}')">
-                    <i class="fas fa-print"></i> Imprimir
-                </button>
-                <button class="btn btn-outline-warning" onclick="emailOrcamento('${o._id}', '${o.numero}')">
-                    <i class="fas fa-envelope"></i> Enviar por Email
                 </button>`;
         }
 
-        $('#orcamentoModal').modal('show');
+        $('#propostaModal').modal('show');
     }
 
-    // ─── Aprovar / Rejeitar ──────────────────────────────────────
     function abrirResposta(id, novoStatus) {
         pendingAction = { id, novoStatus };
         const isAprovar = novoStatus === 'aprovado';
 
         const header = document.getElementById('respostaModalHeader');
         header.className = 'modal-header ' + (isAprovar ? 'bg-success text-white' : 'bg-danger text-white');
-        document.getElementById('respostaModalTitle').textContent = isAprovar ? '✔ Aprovar orçamento' : '✕ Rejeitar orçamento';
+        document.getElementById('respostaModalTitle').textContent = isAprovar ? '✔ Aprovar proposta' : '✕ Rejeitar proposta';
         document.getElementById('respostaModalText').textContent = isAprovar
-            ? 'Ao aprovar, está a confirmar que aceita este orçamento e a FestLift será notificada para avançar.'
-            : 'Ao rejeitar, está a recusar este orçamento. Pode adicionar um comentário para justificar.';
+            ? 'Ao aprovar, está a confirmar que aceita esta proposta de contrato de manutenção e a FestLift será notificada para avançar.'
+            : 'Ao rejeitar, está a recusar esta proposta. Pode adicionar um comentário para justificar.';
         document.getElementById('observacaoInput').value = '';
 
         const btn = document.getElementById('confirmarRespostaBtn');
         btn.className = 'btn ' + (isAprovar ? 'btn-success' : 'btn-danger');
         btn.textContent = isAprovar ? 'Confirmar aprovação' : 'Confirmar rejeição';
 
-        // Fechar modal de detalhe se estiver aberto
-        $('#orcamentoModal').modal('hide');
+        $('#propostaModal').modal('hide');
         setTimeout(() => $('#respostaModal').modal('show'), 400);
     }
 
@@ -638,7 +523,7 @@
         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> A processar...';
 
         try {
-            const res = await fetch(`${API_BASE_URL}/api/orcamentos/${id}/resposta`, {
+            const res = await fetch(`${API_BASE_URL}/api/propostas-manutencao/${id}/resposta`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${getToken()}`,
@@ -652,7 +537,6 @@
             $('#respostaModal').modal('hide');
             pendingAction = null;
 
-            // Mostrar mensagem de sucesso
             const alertClass = novoStatus === 'aprovado' ? 'alert-success' : 'alert-danger';
             const msg = document.createElement('div');
             msg.className = `alert ${alertClass} alert-dismissible fade show position-fixed`;
@@ -661,8 +545,7 @@
             document.body.appendChild(msg);
             setTimeout(() => msg.remove(), 5000);
 
-            // Recarregar lista
-            await carregarOrcamentos();
+            await carregarPropostas();
         } catch (err) {
             toastr.error('Erro: ' + err.message);
         } finally {
@@ -670,10 +553,9 @@
         }
     }
 
-    // ─── Download PDF ────────────────────────────────────────────
     async function downloadPDF(id, numero) {
         try {
-            const res = await fetch(`${API_BASE_URL}/api/orcamentos/${id}/pdf`, {
+            const res = await fetch(`${API_BASE_URL}/api/propostas-manutencao/${id}/pdf`, {
                 headers: { 'Authorization': `Bearer ${getToken()}` }
             });
             if (!res.ok) throw new Error('Erro ao descarregar PDF');
@@ -681,7 +563,7 @@
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `Orcamento_${numero}.pdf`;
+            a.download = `Proposta_${numero}.pdf`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
@@ -691,60 +573,14 @@
         }
     }
 
-    async function printPDF(id, numero) {
-        try {
-            const res = await fetch(`${API_BASE_URL}/api/orcamentos/${id}/pdf`, {
-                headers: { 'Authorization': `Bearer ${getToken()}` }
-            });
-            if (!res.ok) throw new Error('Erro ao abrir PDF para impressão');
-
-            const blob = await res.blob();
-            const namedFile = new File([blob], `Orcamento_${numero}.pdf`, { type: blob.type || 'application/pdf' });
-            const url = URL.createObjectURL(namedFile);
-            const win = window.open(url, '_blank');
-            if (win) {
-                win.addEventListener('load', () => { try { win.print(); } catch (_) {} });
-            }
-            setTimeout(() => URL.revokeObjectURL(url), 20000);
-        } catch (err) {
-            toastr.error('Erro ao imprimir PDF: ' + err.message);
-        }
-    }
-
-    async function emailOrcamento(id, numero) {
-        try {
-            const o = orcamentosData.find(x => x._id === id);
-            const to = o?.cliente?.email || '';
-            const subject = encodeURIComponent(`Orçamento ${numero || ''} - FestLift`);
-            const body = encodeURIComponent(
-                `Olá,\n\n` +
-                `Segue referência do orçamento ${numero || ''}.\n` +
-                `Data: ${o?.data ? new Date(o.data).toLocaleDateString('pt-PT') : '—'}\n` +
-                `Total: €${Number(o?.total || 0).toFixed(2)}\n\n` +
-                `Pode consultar e descarregar o PDF no portal FestLift em "Orçamentos".\n\n` +
-                `Cumprimentos.`
-            );
-            window.location.href = `mailto:${encodeURIComponent(to)}?subject=${subject}&body=${body}`;
-        } catch (err) {
-            toastr.error('Erro ao preparar email: ' + err.message);
-        }
-    }
-
-    // ─── Init ─────────────────────────────────────────────────────
     document.addEventListener('DOMContentLoaded', () => {
-// Nome do utilizador — auth.js _populateSidebarName handles this consistently
-
-        // Tema escuro
-// Fechar modal sem foco perdido (acessibilidade)
         $(document).on('hide.bs.modal', '.modal', function() {
             if (document.activeElement && this.contains(document.activeElement)) {
                 document.activeElement.blur();
             }
         });
 
-        document.getElementById('orcSearchInput').addEventListener('input', filterOrcamentos);
-
-        carregarOrcamentos();
+        carregarPropostas();
     });
 </script>
 
@@ -778,7 +614,6 @@
 </style>
 <script src="../../assets/js/monitor.js"></script>
 <script>
-// swalConfirm — substitui confirm() nativo pelo Swal
 async function swalConfirm(text, title = 'Confirmar') {
     const r = await Swal.fire({
         title,

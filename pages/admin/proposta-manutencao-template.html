@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="/plugins/toastr/css/toastr.min.css">
+    <link rel="icon" type="image/png" href="/assets/img/favicon.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FestLift — Proposta de Manutenção</title>
+    <link rel="stylesheet" href="/plugins/sweetalert2/css/sweetalert2.min.css">
+    <script src="../../plugins/sweetalert2/js/sweetalert2.min.js"></script>
+    <script src="../../assets/js/auth.js"></script>
+    <link rel="stylesheet" href="../../plugins/adminlte/adminlte.min.css">
+    <link rel="stylesheet" href="../../plugins/fontawesome/css/all.min.css">
+</head>
+<body class="hold-transition sidebar-mini layout-fixed" data-required-role="admin">
+<div class="wrapper">
+
+    <!-- Navbar -->
+    <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+        <ul class="navbar-nav">
+            <li class="nav-item"><a class="nav-link" data-widget="pushmenu" href="#"><i class="fas fa-bars"></i></a></li>
+            <li class="nav-item d-none d-sm-inline-block"><a href="admin-dashboard.html" class="nav-link">Painel</a></li>
+            <li class="nav-item d-none d-sm-inline-block"><a href="propostas-manutencao-list.html" class="nav-link">Propostas de Manutenção</a></li>
+            <li class="nav-item d-none d-sm-inline-block"><a class="nav-link text-muted" id="breadcrumbTitle">/ Nova Proposta</a></li>
+        </ul>
+        <ul class="navbar-nav ml-auto">
+            <li class="nav-item"><a class="nav-link" href="#" onclick="logout()"><i class="fas fa-sign-out-alt text-danger"></i></a></li>
+        </ul>
+    </nav>
+
+    <!-- Sidebar -->
+    <aside class="main-sidebar sidebar-dark-primary elevation-4">
+        <div id="sidebar-container"></div>
+    </aside>
+
+    <!-- Content -->
+    <div class="content-wrapper">
+        <div class="content-header">
+            <div class="container-fluid">
+                <h1 class="m-0"><i class="fas fa-file-contract mr-2 text-primary"></i><span id="pageTitle">Nova Proposta de Manutenção</span></h1>
+                <p class="text-muted mb-0 small">Crie uma proposta de contrato de manutenção, guarde-a e envie-a por email ao cliente.</p>
+            </div>
+        </div>
+
+        <section class="content">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-md-9">
+
+                        <div class="card card-outline card-primary">
+                            <div class="card-header">
+                                <h3 class="card-title">Identificação</h3>
+                                <div class="card-tools">
+                                    <span class="badge badge-secondary" id="numeroBadge">A gerar número...</span>
+                                    <span class="badge" id="statusBadge" style="display:none"></span>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="form-group">
+                                    <label>Cliente existente <span class="text-muted font-weight-normal">(opcional — preenche os campos abaixo)</span></label>
+                                    <select id="clienteSelect" class="form-control">
+                                        <option value="">A carregar clientes...</option>
+                                    </select>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6 form-group">
+                                        <label>Nome do Cliente <span class="text-danger">*</span></label>
+                                        <input type="text" id="clienteNome" class="form-control" placeholder="Administração do Condomínio">
+                                    </div>
+                                    <div class="col-md-6 form-group">
+                                        <label>Email <span class="text-danger">*</span></label>
+                                        <input type="email" id="clienteEmail" class="form-control" placeholder="cliente@exemplo.com">
+                                    </div>
+                                    <div class="col-md-4 form-group">
+                                        <label>NIF</label>
+                                        <input type="text" id="clienteNif" class="form-control">
+                                    </div>
+                                    <div class="col-md-5 form-group">
+                                        <label>Morada</label>
+                                        <input type="text" id="clienteMorada" class="form-control">
+                                    </div>
+                                    <div class="col-md-3 form-group">
+                                        <label>Código Postal</label>
+                                        <input type="text" id="clienteCodigoPostal" class="form-control" placeholder="0000-000 Localidade">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card card-outline card-secondary">
+                            <div class="card-header"><h3 class="card-title">Dados da Instalação</h3></div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6 form-group">
+                                        <label>Edifício</label>
+                                        <input type="text" id="instEdificio" class="form-control" placeholder="Nome / Designação do Edifício">
+                                    </div>
+                                    <div class="col-md-6 form-group">
+                                        <label>Nome</label>
+                                        <input type="text" id="instNome" class="form-control" placeholder="Administração do Condomínio">
+                                    </div>
+                                    <div class="col-md-9 form-group">
+                                        <label>Morada</label>
+                                        <input type="text" id="instMorada" class="form-control">
+                                    </div>
+                                    <div class="col-md-3 form-group">
+                                        <label>Código Postal</label>
+                                        <input type="text" id="instCodigoPostal" class="form-control" placeholder="0000-000 Localidade">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card card-outline card-secondary">
+                            <div class="card-header"><h3 class="card-title">Morada de Faturação</h3></div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6 form-group">
+                                        <label>Nome</label>
+                                        <input type="text" id="fatNome" class="form-control">
+                                    </div>
+                                    <div class="col-md-6 form-group">
+                                        <label>Unidades Contratadas</label>
+                                        <input type="text" id="fatUnidades" class="form-control" placeholder="Ex: 2 ascensores">
+                                    </div>
+                                    <div class="col-md-9 form-group">
+                                        <label>Morada</label>
+                                        <input type="text" id="fatMorada" class="form-control">
+                                    </div>
+                                    <div class="col-md-3 form-group">
+                                        <label>Código Postal</label>
+                                        <input type="text" id="fatCodigoPostal" class="form-control" placeholder="0000-000 Localidade">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card card-outline card-warning">
+                            <div class="card-header"><h3 class="card-title">Termos do Contrato</h3></div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-3 form-group">
+                                        <label>Nº de Ascensores</label>
+                                        <input type="number" id="numAscensores" class="form-control" min="1" value="1">
+                                    </div>
+                                    <div class="col-md-9 form-group">
+                                        <label>Local da Instalação</label>
+                                        <input type="text" id="localInstalacao" class="form-control" placeholder="Designação / morada da instalação">
+                                    </div>
+                                    <div class="col-md-4 form-group">
+                                        <label>Preço Mensal (€ / unidade)</label>
+                                        <input type="number" id="precoMensal" class="form-control" min="0" step="0.01">
+                                    </div>
+                                    <div class="col-md-4 form-group">
+                                        <label>Pagamento</label>
+                                        <input type="text" id="pagamento" class="form-control" value="Trimestral e adiantado">
+                                    </div>
+                                    <div class="col-md-4 form-group">
+                                        <label>Duração (anos)</label>
+                                        <input type="number" id="duracaoAnos" class="form-control" min="1" value="1">
+                                    </div>
+                                    <div class="col-md-4 form-group">
+                                        <label>Data de Início</label>
+                                        <input type="date" id="dataInicioContrato" class="form-control">
+                                    </div>
+                                    <div class="col-md-4 form-group">
+                                        <label>Renovação Tácita</label>
+                                        <select id="renovacaoPeriodo" class="form-control">
+                                            <option value="1 ano">1 ano</option>
+                                            <option value="6 meses">6 meses</option>
+                                            <option value="3 meses">3 meses</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4 form-group">
+                                        <label>Aviso Prévio de Denúncia</label>
+                                        <select id="renovacaoAvisoDias" class="form-control">
+                                            <option value="60 dias">60 dias</option>
+                                            <option value="30 dias">30 dias</option>
+                                            <option value="90 dias">90 dias</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-4 form-group">
+                                        <label>Método de Notificação</label>
+                                        <select id="renovacaoMetodo" class="form-control" onchange="toggleEmailNotificacao()">
+                                            <option value="carta registada">carta registada</option>
+                                            <option value="correio eletrónico com comprovativo de leitura">correio eletrónico</option>
+                                            <option value="carta registada ou correio eletrónico com comprovativo de leitura">carta registada ou correio eletrónico</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6 form-group" id="emailNotificacaoWrap" style="display:none">
+                                        <label>Email para Notificação</label>
+                                        <input type="email" id="renovacaoEmail" class="form-control" placeholder="email@exemplo.com">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card card-outline card-secondary">
+                            <div class="card-header"><h3 class="card-title">Notas</h3></div>
+                            <div class="card-body">
+                                <textarea id="notas" class="form-control" rows="3">Esta proposta é válida por 30 dias a partir da data de apresentação.</textarea>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <button type="button" class="btn btn-primary" id="btnGuardar" onclick="guardarProposta()">
+                                <i class="fas fa-save mr-1"></i>Guardar
+                            </button>
+                            <button type="button" class="btn btn-success" id="btnEnviar" onclick="enviarProposta()" disabled>
+                                <i class="fas fa-paper-plane mr-1"></i>Enviar ao Cliente
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary" id="btnPdf" onclick="descarregarPdf()" disabled>
+                                <i class="fas fa-file-pdf mr-1"></i>Descarregar PDF
+                            </button>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <footer class="main-footer">
+        <strong>FestLift</strong> — Sistema de Gestão de Elevadores v2.1
+    </footer>
+</div>
+
+<script src="../../plugins/jquery/jquery.min.js"></script>
+<script src="../../plugins/bootstrap/bootstrap.bundle.min.js"></script>
+<script src="../../plugins/adminlte/adminlte.min.js"></script>
+<script src="/plugins/toastr/js/toastr.min.js"></script>
+<script src="../../assets/js/sidebar-init.js"></script>
+<script src="../../assets/js/config.js"></script>
+
+<script>
+let clientes = [];
+let currentPropostaId = null;
+
+$(document).ready(function() {
+    loadSidebarWithInit('includes/sidebar.html');
+    loadClientes();
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const id = urlParams.get('id');
+    if (id) {
+        currentPropostaId = id;
+        loadProposta(id);
+    } else {
+        loadNextNumero();
+    }
+});
+
+function getToken() {
+    return sessionStorage.getItem('liftmanager_jwt') || localStorage.getItem('liftmanager_jwt') || '';
+}
+
+function escHtml(str) {
+    return (str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function toggleEmailNotificacao() {
+    const metodo = document.getElementById('renovacaoMetodo').value;
+    const wrap = document.getElementById('emailNotificacaoWrap');
+    wrap.style.display = metodo.indexOf('correio eletrónico') !== -1 ? '' : 'none';
+}
+
+async function loadClientes() {
+    try {
+        const res = await fetch('/api/users?role=client', {
+            headers: { 'Authorization': `Bearer ${getToken()}` }
+        });
+        const result = await res.json();
+        clientes = Array.isArray(result) ? result : (result.data || result.users || []);
+
+        const sel = document.getElementById('clienteSelect');
+        sel.innerHTML = '<option value="">— Selecionar cliente existente —</option>' +
+            clientes.map(c => {
+                const nome = ((c.firstName || '') + ' ' + (c.lastName || '')).trim() || c.name || c.username || c.email;
+                return `<option value="${c._id}">${escHtml(nome)} — ${escHtml(c.email)}</option>`;
+            }).join('');
+    } catch (e) {
+        console.error('Erro ao carregar clientes:', e);
+        toastr.error('Erro ao carregar lista de clientes');
+    }
+}
+
+document.addEventListener('change', function(e) {
+    if (e.target && e.target.id === 'clienteSelect') {
+        const cliente = clientes.find(c => c._id === e.target.value);
+        if (!cliente) return;
+        const nome = ((cliente.firstName || '') + ' ' + (cliente.lastName || '')).trim() || cliente.name || cliente.username || cliente.email;
+        document.getElementById('clienteNome').value = nome;
+        document.getElementById('clienteEmail').value = cliente.email || '';
+        document.getElementById('clienteMorada').value = cliente.address || '';
+        document.getElementById('instMorada').value = cliente.address || '';
+        document.getElementById('instNome').value = nome;
+        document.getElementById('fatNome').value = nome;
+    }
+});
+
+async function loadNextNumero() {
+    try {
+        const res = await fetch('/api/propostas-manutencao/next-number', {
+            headers: { 'Authorization': `Bearer ${getToken()}` }
+        });
+        const result = await res.json();
+        if (result.success) {
+            document.getElementById('numeroBadge').textContent = result.numero;
+        }
+    } catch (e) {
+        console.error('Erro ao obter próximo número:', e);
+    }
+}
+
+function statusBadgeClass(status) {
+    return { rascunho: 'badge-secondary', enviado: 'badge-info', aprovado: 'badge-success', rejeitado: 'badge-danger', expirado: 'badge-warning' }[status] || 'badge-secondary';
+}
+
+async function loadProposta(id) {
+    try {
+        const res = await fetch(`/api/propostas-manutencao/${id}`, {
+            headers: { 'Authorization': `Bearer ${getToken()}` }
+        });
+        const result = await res.json();
+        if (!result.success) { toastr.error(result.message || 'Proposta não encontrada'); return; }
+
+        const p = result.data;
+        document.getElementById('pageTitle').textContent = `Proposta ${p.numero}`;
+        document.getElementById('breadcrumbTitle').textContent = `/ ${p.numero}`;
+        document.title = `FestLift — Proposta ${p.numero}`;
+        document.getElementById('numeroBadge').textContent = p.numero;
+
+        const statusEl = document.getElementById('statusBadge');
+        statusEl.style.display = '';
+        statusEl.className = `badge ${statusBadgeClass(p.status)}`;
+        statusEl.textContent = p.status;
+
+        document.getElementById('clienteNome').value = p.cliente?.nome || '';
+        document.getElementById('clienteEmail').value = p.cliente?.email || '';
+        document.getElementById('clienteNif').value = p.cliente?.nif || '';
+        document.getElementById('clienteMorada').value = p.cliente?.morada || '';
+        document.getElementById('clienteCodigoPostal').value = p.cliente?.codigoPostal || '';
+
+        document.getElementById('instEdificio').value = p.instalacao?.edificio || '';
+        document.getElementById('instNome').value = p.instalacao?.nome || '';
+        document.getElementById('instMorada').value = p.instalacao?.morada || '';
+        document.getElementById('instCodigoPostal').value = p.instalacao?.codigoPostal || '';
+
+        document.getElementById('fatNome').value = p.faturacao?.nome || '';
+        document.getElementById('fatUnidades').value = p.faturacao?.unidadesContratadas || '';
+        document.getElementById('fatMorada').value = p.faturacao?.morada || '';
+        document.getElementById('fatCodigoPostal').value = p.faturacao?.codigoPostal || '';
+
+        document.getElementById('numAscensores').value = p.numAscensores || 1;
+        document.getElementById('localInstalacao').value = p.localInstalacao || '';
+        document.getElementById('precoMensal').value = p.precoMensal || '';
+        document.getElementById('pagamento').value = p.pagamento || 'Trimestral e adiantado';
+        document.getElementById('duracaoAnos').value = p.duracaoAnos || 1;
+        document.getElementById('dataInicioContrato').value = p.dataInicioContrato ? p.dataInicioContrato.substring(0, 10) : '';
+
+        document.getElementById('renovacaoPeriodo').value = p.renovacao?.periodo || '1 ano';
+        document.getElementById('renovacaoAvisoDias').value = p.renovacao?.avisoDias || '60 dias';
+        document.getElementById('renovacaoMetodo').value = p.renovacao?.metodoNotificacao || 'carta registada';
+        document.getElementById('renovacaoEmail').value = p.renovacao?.emailNotificacao || '';
+        toggleEmailNotificacao();
+
+        document.getElementById('notas').value = p.notas || '';
+
+        document.getElementById('btnEnviar').disabled = false;
+        document.getElementById('btnPdf').disabled = false;
+    } catch (e) {
+        console.error('Erro ao carregar proposta:', e);
+        toastr.error('Erro ao carregar proposta');
+    }
+}
+
+function coletarDados() {
+    return {
+        cliente: {
+            nome: document.getElementById('clienteNome').value.trim(),
+            email: document.getElementById('clienteEmail').value.trim(),
+            nif: document.getElementById('clienteNif').value.trim(),
+            morada: document.getElementById('clienteMorada').value.trim(),
+            codigoPostal: document.getElementById('clienteCodigoPostal').value.trim()
+        },
+        instalacao: {
+            edificio: document.getElementById('instEdificio').value.trim(),
+            nome: document.getElementById('instNome').value.trim(),
+            morada: document.getElementById('instMorada').value.trim(),
+            codigoPostal: document.getElementById('instCodigoPostal').value.trim()
+        },
+        faturacao: {
+            nome: document.getElementById('fatNome').value.trim(),
+            unidadesContratadas: document.getElementById('fatUnidades').value.trim(),
+            morada: document.getElementById('fatMorada').value.trim(),
+            codigoPostal: document.getElementById('fatCodigoPostal').value.trim()
+        },
+        numAscensores: parseInt(document.getElementById('numAscensores').value) || 1,
+        localInstalacao: document.getElementById('localInstalacao').value.trim(),
+        precoMensal: parseFloat(document.getElementById('precoMensal').value) || 0,
+        pagamento: document.getElementById('pagamento').value.trim() || 'Trimestral e adiantado',
+        duracaoAnos: parseInt(document.getElementById('duracaoAnos').value) || 1,
+        dataInicioContrato: document.getElementById('dataInicioContrato').value || null,
+        renovacao: {
+            periodo: document.getElementById('renovacaoPeriodo').value,
+            avisoDias: document.getElementById('renovacaoAvisoDias').value,
+            metodoNotificacao: document.getElementById('renovacaoMetodo').value,
+            emailNotificacao: document.getElementById('renovacaoEmail').value.trim()
+        },
+        notas: document.getElementById('notas').value.trim()
+    };
+}
+
+async function guardarProposta() {
+    const dados = coletarDados();
+    if (!dados.cliente.nome || !dados.cliente.email) {
+        toastr.warning('Indique o nome e o email do cliente');
+        return;
+    }
+
+    const btn = document.getElementById('btnGuardar');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>A guardar...';
+
+    try {
+        const isUpdate = !!currentPropostaId;
+        const url = isUpdate ? `/api/propostas-manutencao/${currentPropostaId}` : '/api/propostas-manutencao';
+        const res = await fetch(url, {
+            method: isUpdate ? 'PUT' : 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` },
+            body: JSON.stringify(dados)
+        });
+        const result = await res.json();
+        if (result.success) {
+            toastr.success(result.message || 'Proposta guardada com sucesso');
+            currentPropostaId = result.data._id;
+            const newUrl = `${window.location.pathname}?id=${currentPropostaId}`;
+            window.history.replaceState({}, '', newUrl);
+            await loadProposta(currentPropostaId);
+        } else {
+            toastr.error(result.message || 'Erro ao guardar proposta');
+        }
+    } catch (e) {
+        console.error('Erro ao guardar proposta:', e);
+        toastr.error('Erro ao guardar proposta');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-save mr-1"></i>Guardar';
+    }
+}
+
+async function enviarProposta() {
+    if (!currentPropostaId) { toastr.warning('Guarde a proposta antes de enviar'); return; }
+    const email = document.getElementById('clienteEmail').value.trim();
+    if (!await swalConfirm(`Enviar esta proposta para ${email}?`, 'Confirmar envio')) return;
+
+    const btn = document.getElementById('btnEnviar');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>A enviar...';
+
+    try {
+        const res = await fetch(`/api/propostas-manutencao/${currentPropostaId}/enviar`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` },
+            body: JSON.stringify({})
+        });
+        const result = await res.json();
+        if (result.success) {
+            toastr.success(result.message || 'Proposta enviada com sucesso');
+            await loadProposta(currentPropostaId);
+        } else {
+            toastr.error(result.message || 'Erro ao enviar proposta');
+        }
+    } catch (e) {
+        console.error('Erro ao enviar proposta:', e);
+        toastr.error('Erro ao enviar proposta');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-paper-plane mr-1"></i>Enviar ao Cliente';
+    }
+}
+
+async function descarregarPdf() {
+    if (!currentPropostaId) { toastr.warning('Guarde a proposta antes de descarregar o PDF'); return; }
+    try {
+        const res = await fetch(`/api/propostas-manutencao/${currentPropostaId}/pdf`, {
+            headers: { 'Authorization': `Bearer ${getToken()}` }
+        });
+        if (!res.ok) throw new Error('Erro ao descarregar PDF');
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Proposta_${document.getElementById('numeroBadge').textContent}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    } catch (e) {
+        console.error('Erro ao descarregar PDF:', e);
+        toastr.error('Erro ao descarregar PDF: ' + e.message);
+    }
+}
+
+function logout() {
+    if (typeof AuthManager !== 'undefined') AuthManager.logout();
+    else { localStorage.clear(); window.location.replace('/pages/auth/login.html'); }
+}
+
+async function swalConfirm(text, title = 'Confirmar') {
+    const r = await Swal.fire({
+        title, text, icon: 'question', showCancelButton: true,
+        confirmButtonColor: '#007bff', cancelButtonColor: '#95a5a6',
+        confirmButtonText: 'Enviar', cancelButtonText: 'Cancelar'
+    });
+    return r.isConfirmed;
+}
+</script>
+<script src="../../assets/js/monitor.js"></script>
+</body>
+</html>

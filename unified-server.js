@@ -13584,6 +13584,10 @@ if (!mongoose.modelNames().includes('User')) {
 const orcamentosRoutes = require('./backend/routes/orcamentos');
 app.use('/api/orcamentos', orcamentosRoutes);
 
+// 🔧 Propostas de Manutenção (contratos de manutenção — criar, guardar, enviar)
+const propostasManutencaoRoutes = require('./backend/routes/propostasManutencao');
+app.use('/api/propostas-manutencao', propostasManutencaoRoutes);
+
 // 📋 Catálogo de categorias para orçamentos de modernização
 const orcamentoCategoriasRoutes = require('./backend/routes/orcamentoCategorias');
 app.use('/api/orcamento-categorias', orcamentoCategoriasRoutes);
@@ -15309,8 +15313,62 @@ app.post('/api/email/send-inspection-reminder', authenticateToken, emailLimiter,
     }
 });
 
-// POST /api/email/send-template - Відправити email з кастомного template
-app.post('/api/email/send-template', authenticateToken, emailLimiter, requireRole('admin', 'dispatcher'), async (req, res) => {
+// Multer config for "Contactar Cliente" attachments (documents/photos)
+const contactAttachmentStorage = multer.diskStorage({
+    destination: async (req, file, cb) => {
+        const uploadDir = path.join(__dirname, 'uploads', 'contact-attachments');
+        try {
+            await fs.mkdir(uploadDir, { recursive: true });
+            cb(null, uploadDir);
+        } catch (error) {
+            cb(error);
+        }
+    },
+    filename: (req, file, cb) => {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        const extMap = {
+            'application/pdf': '.pdf',
+            'application/msword': '.doc',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document': '.docx',
+            'application/vnd.ms-excel': '.xls',
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': '.xlsx',
+            'image/jpeg': '.jpg',
+            'image/jpg': '.jpg',
+            'image/png': '.png'
+        };
+        const ext = extMap[file.mimetype] || '.bin';
+        cb(null, `contact-${uniqueSuffix}${ext}`);
+    }
+});
+
+const uploadContactAttachment = multer({
+    storage: contactAttachmentStorage,
+    limits: {
+        fileSize: 10 * 1024 * 1024, // 10MB por ficheiro
+        files: 5
+    },
+    fileFilter: (req, file, cb) => {
+        const allowedTypes = [
+            'application/pdf',
+            'application/msword',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'application/vnd.ms-excel',
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'image/jpeg',
+            'image/jpg',
+            'image/png'
+        ];
+        if (allowedTypes.includes(file.mimetype)) {
+            cb(null, true);
+        } else {
+            cb(new Error('Tipo de ficheiro não permitido. Permitidos: PDF, DOC, DOCX, XLS, XLSX, JPG, PNG'));
+        }
+    }
+});
+
+// POST /api/email/send-template - Відправити email з кастомного template (com anexos opcionais)
+app.post('/api/email/send-template', authenticateToken, emailLimiter, requireRole('admin', 'dispatcher'), uploadContactAttachment.array('attachments', 5), async (req, res) => {
+    const attachedFiles = req.files || [];
     try {
         const { email, templateId, subject, htmlContent } = req.body;
 
@@ -15339,11 +15397,18 @@ app.post('/api/email/send-template', authenticateToken, emailLimiter, requireRol
             html: htmlContent
         };
 
+        if (attachedFiles.length) {
+            mailOptions.attachments = attachedFiles.map(f => ({
+                filename: f.originalname,
+                path: f.path
+            }));
+        }
+
         await transporter.sendMail(mailOptions);
-        
-        console.log(`✅ Template email sent to ${email} (template: ${templateId || 'custom'})`)
-        res.json({ 
-            success: true, 
+
+        console.log(`✅ Template email sent to ${email} (template: ${templateId || 'custom'}, anexos: ${attachedFiles.length})`)
+        res.json({
+            success: true,
             message: 'Email успішно відправлено',
             templateId: templateId
         });
@@ -15353,6 +15418,12 @@ app.post('/api/email/send-template', authenticateToken, emailLimiter, requireRol
             success: false,
             error: error.message
         });
+    } finally {
+        if (attachedFiles.length) {
+            for (const f of attachedFiles) {
+                await fs.unlink(f.path).catch(() => {});
+            }
+        }
     }
 });
 

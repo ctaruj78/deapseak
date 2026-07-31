@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="/plugins/toastr/css/toastr.min.css">
+    <link rel="icon" type="image/png" href="/assets/img/favicon.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FestLift — Propostas de Manutenção</title>
+    <link rel="stylesheet" href="../../plugins/sweetalert2/css/sweetalert2.min.css">
+    <script src="../../plugins/sweetalert2/js/sweetalert2.min.js"></script>
+    <script src="../../assets/js/auth.js"></script>
+    <link rel="stylesheet" href="../../plugins/adminlte/adminlte.min.css">
+    <link rel="stylesheet" href="../../plugins/fontawesome/css/all.min.css">
+    <style>
+        .badge-rascunho { background-color: #6c757d; }
+        .badge-enviado { background-color: #17a2b8; }
+        .badge-aprovado { background-color: #28a745; }
+        .badge-rejeitado { background-color: #dc3545; }
+        .badge-expirado { background-color: #ffc107; color: #000; }
+        #propostasTable td { vertical-align: middle; font-size: .875rem; }
+        #propostasTable th { font-size: .8rem; white-space: nowrap; }
+    </style>
+</head>
+<body class="hold-transition sidebar-mini layout-fixed" data-required-role="admin">
+<div class="wrapper">
+
+    <!-- Navbar -->
+    <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+        <ul class="navbar-nav">
+            <li class="nav-item"><a class="nav-link" data-widget="pushmenu" href="#"><i class="fas fa-bars"></i></a></li>
+            <li class="nav-item d-none d-sm-inline-block"><a href="admin-dashboard.html" class="nav-link">Painel</a></li>
+            <li class="nav-item d-none d-sm-inline-block"><a class="nav-link text-muted">/ Propostas de Manutenção</a></li>
+        </ul>
+        <ul class="navbar-nav ml-auto">
+            <li class="nav-item"><a class="nav-link" href="#" onclick="logout()"><i class="fas fa-sign-out-alt text-danger"></i></a></li>
+        </ul>
+    </nav>
+
+    <!-- Sidebar -->
+    <aside class="main-sidebar sidebar-dark-primary elevation-4">
+        <div id="sidebar-container"></div>
+    </aside>
+
+    <!-- Content -->
+    <div class="content-wrapper">
+        <div class="content-header">
+            <div class="container-fluid">
+                <div class="d-flex justify-content-between align-items-center flex-wrap">
+                    <div>
+                        <h1 class="m-0"><i class="fas fa-file-contract mr-2 text-primary"></i>Propostas de Manutenção</h1>
+                        <p class="text-muted mb-0 small">Contratos de manutenção propostos a clientes — criar, enviar e acompanhar respostas.</p>
+                    </div>
+                    <a href="proposta-manutencao-template.html" class="btn btn-primary"><i class="fas fa-plus mr-1"></i>Nova Proposta</a>
+                </div>
+            </div>
+        </div>
+
+        <section class="content">
+            <div class="container-fluid">
+
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-4 form-group">
+                                <label>Pesquisar</label>
+                                <input type="text" id="filtroSearch" class="form-control" placeholder="Número, nome ou email do cliente">
+                            </div>
+                            <div class="col-md-3 form-group">
+                                <label>Estado</label>
+                                <select id="filtroStatus" class="form-control">
+                                    <option value="">Todos</option>
+                                    <option value="rascunho">Rascunho</option>
+                                    <option value="enviado">Enviado</option>
+                                    <option value="aprovado">Aprovado</option>
+                                    <option value="rejeitado">Rejeitado</option>
+                                    <option value="expirado">Expirado</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2 form-group d-flex align-items-end">
+                                <button class="btn btn-outline-secondary btn-block" onclick="carregarPropostas()"><i class="fas fa-search mr-1"></i>Filtrar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-body table-responsive p-0">
+                        <table class="table table-hover" id="propostasTable">
+                            <thead>
+                                <tr>
+                                    <th>Número</th>
+                                    <th>Cliente</th>
+                                    <th>Instalação</th>
+                                    <th>Preço/mês</th>
+                                    <th>Data</th>
+                                    <th>Estado</th>
+                                    <th class="text-right">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="propostasTbody">
+                                <tr><td colspan="7" class="text-center text-muted py-4">A carregar...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+    </div>
+
+    <footer class="main-footer">
+        <strong>FestLift</strong> — Sistema de Gestão de Elevadores v2.1
+    </footer>
+</div>
+
+<script src="../../plugins/jquery/jquery.min.js"></script>
+<script src="../../plugins/bootstrap/bootstrap.bundle.min.js"></script>
+<script src="../../plugins/adminlte/adminlte.min.js"></script>
+<script src="/plugins/toastr/js/toastr.min.js"></script>
+<script src="../../assets/js/sidebar-init.js"></script>
+<script src="../../assets/js/config.js"></script>
+
+<script>
+$(document).ready(function() {
+    loadSidebarWithInit('includes/sidebar.html');
+    carregarPropostas();
+    $('#filtroSearch').on('keyup', function(e) { if (e.key === 'Enter') carregarPropostas(); });
+});
+
+function getToken() {
+    return sessionStorage.getItem('liftmanager_jwt') || localStorage.getItem('liftmanager_jwt') || '';
+}
+
+function escHtml(str) {
+    return (str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function statusBadgeClass(status) {
+    return { rascunho: 'badge-rascunho', enviado: 'badge-enviado', aprovado: 'badge-aprovado', rejeitado: 'badge-rejeitado', expirado: 'badge-expirado' }[status] || 'badge-secondary';
+}
+
+async function carregarPropostas() {
+    const tbody = document.getElementById('propostasTbody');
+    tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">A carregar...</td></tr>';
+
+    const search = document.getElementById('filtroSearch').value.trim();
+    const status = document.getElementById('filtroStatus').value;
+    const params = new URLSearchParams();
+    if (search) params.set('search', search);
+    if (status) params.set('status', status);
+    params.set('limit', '100');
+
+    try {
+        const res = await fetch(`/api/propostas-manutencao?${params.toString()}`, {
+            headers: { 'Authorization': `Bearer ${getToken()}` }
+        });
+        const result = await res.json();
+        if (!result.success) { toastr.error(result.message || 'Erro ao carregar propostas'); return; }
+
+        const propostas = result.data || [];
+        if (!propostas.length) {
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">Nenhuma proposta encontrada.</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = propostas.map(p => {
+            const instalacao = p.instalacao?.edificio || p.instalacao?.morada || p.localInstalacao || '—';
+            const preco = p.precoMensal ? `€${Number(p.precoMensal).toFixed(2)}` : '—';
+            const data = p.data ? new Date(p.data).toLocaleDateString('pt-PT') : '—';
+            return `
+                <tr>
+                    <td><strong>${escHtml(p.numero)}</strong></td>
+                    <td>${escHtml(p.cliente?.nome || '—')}<br><small class="text-muted">${escHtml(p.cliente?.email || '')}</small></td>
+                    <td>${escHtml(instalacao)}</td>
+                    <td>${preco}</td>
+                    <td>${data}</td>
+                    <td><span class="badge ${statusBadgeClass(p.status)}">${escHtml(p.status)}</span></td>
+                    <td class="text-right">
+                        <a href="proposta-manutencao-template.html?id=${p._id}" class="btn btn-sm btn-outline-primary" title="Ver / Editar"><i class="fas fa-edit"></i></a>
+                        <button class="btn btn-sm btn-outline-secondary" onclick="downloadPDF('${p._id}', '${p.numero}')" title="Descarregar PDF"><i class="fas fa-file-pdf"></i></button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="arquivarProposta('${p._id}')" title="Arquivar"><i class="fas fa-archive"></i></button>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    } catch (e) {
+        console.error('Erro ao carregar propostas:', e);
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center text-danger py-4">Erro ao carregar propostas.</td></tr>';
+    }
+}
+
+async function downloadPDF(id, numero) {
+    try {
+        const res = await fetch(`/api/propostas-manutencao/${id}/pdf`, {
+            headers: { 'Authorization': `Bearer ${getToken()}` }
+        });
+        if (!res.ok) throw new Error('Erro ao descarregar PDF');
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Proposta_${numero}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    } catch (e) {
+        toastr.error('Erro ao descarregar PDF: ' + e.message);
+    }
+}
+
+async function arquivarProposta(id) {
+    if (!await swalConfirm('Arquivar esta proposta? Pode ser restaurada mais tarde.', 'Arquivar proposta')) return;
+    try {
+        const res = await fetch(`/api/propostas-manutencao/${id}/archive`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${getToken()}` }
+        });
+        const result = await res.json();
+        if (result.success) {
+            toastr.success('Proposta arquivada');
+            carregarPropostas();
+        } else {
+            toastr.error(result.message || 'Erro ao arquivar');
+        }
+    } catch (e) {
+        toastr.error('Erro ao arquivar proposta');
+    }
+}
+
+function logout() {
+    if (typeof AuthManager !== 'undefined') AuthManager.logout();
+    else { localStorage.clear(); window.location.replace('/pages/auth/login.html'); }
+}
+
+async function swalConfirm(text, title = 'Confirmar') {
+    const r = await Swal.fire({
+        title, text, icon: 'question', showCancelButton: true,
+        confirmButtonColor: '#dc3545', cancelButtonColor: '#95a5a6',
+        confirmButtonText: 'Confirmar', cancelButtonText: 'Cancelar'
+    });
+    return r.isConfirmed;
+}
+</script>
+<script src="../../assets/js/monitor.js"></script>
+</body>
+</html>

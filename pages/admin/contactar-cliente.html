@@ -60,6 +60,15 @@
                                     <textarea id="mensagem" class="form-control" rows="10" placeholder="Escreva aqui a mensagem para o cliente..."></textarea>
                                     <small class="text-muted">Quebras de linha são preservadas no email. Não é necessário HTML.</small>
                                 </div>
+                                <div class="form-group">
+                                    <label>Anexos <span class="text-muted font-weight-normal">(opcional)</span></label>
+                                    <div class="custom-file">
+                                        <input type="file" class="custom-file-input" id="anexos" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png" onchange="onAnexosChange(this.files)">
+                                        <label class="custom-file-label" for="anexos" id="anexosLabel">Escolher ficheiros...</label>
+                                    </div>
+                                    <small class="text-muted">PDF, DOC, DOCX, XLS, XLSX, JPG ou PNG — máx. 10MB por ficheiro, até 5 ficheiros.</small>
+                                    <ul class="list-group mt-2" id="anexosLista"></ul>
+                                </div>
                                 <button type="button" class="btn btn-primary" id="btnEnviar" onclick="enviarContacto()">
                                     <i class="fas fa-paper-plane mr-1"></i>Enviar email
                                 </button>
@@ -72,6 +81,7 @@
                             <div class="card-body">
                                 <div class="small text-muted mb-2">Para: <span id="prevPara">—</span></div>
                                 <div class="small text-muted mb-2">Assunto: <span id="prevAssunto">—</span></div>
+                                <div class="small text-muted mb-2">Anexos: <span id="prevAnexos">—</span></div>
                                 <hr>
                                 <div id="prevMensagem" class="small" style="white-space:pre-wrap;">—</div>
                             </div>
@@ -97,12 +107,56 @@
 
 <script>
 let clientes = [];
+let anexosSelecionados = [];
+const MAX_ANEXOS = 5;
+const MAX_ANEXO_SIZE = 10 * 1024 * 1024;
 
 $(document).ready(function() {
     loadSidebarWithInit('includes/sidebar.html');
     loadClientes();
     $('#assunto, #mensagem').on('input', updatePreview);
 });
+
+function onAnexosChange(fileList) {
+    const novos = Array.from(fileList || []);
+    for (const f of novos) {
+        if (anexosSelecionados.length >= MAX_ANEXOS) {
+            toastr.warning(`Máximo de ${MAX_ANEXOS} ficheiros em anexo`);
+            break;
+        }
+        if (f.size > MAX_ANEXO_SIZE) {
+            toastr.warning(`"${f.name}" excede o limite de 10MB`);
+            continue;
+        }
+        anexosSelecionados.push(f);
+    }
+    document.getElementById('anexos').value = '';
+    renderAnexos();
+}
+
+function removerAnexo(index) {
+    anexosSelecionados.splice(index, 1);
+    renderAnexos();
+}
+
+function formatFileSize(bytes) {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function renderAnexos() {
+    const lista = document.getElementById('anexosLista');
+    const label = document.getElementById('anexosLabel');
+    label.textContent = anexosSelecionados.length ? `${anexosSelecionados.length} ficheiro(s) selecionado(s)` : 'Escolher ficheiros...';
+    lista.innerHTML = anexosSelecionados.map((f, i) => `
+        <li class="list-group-item d-flex justify-content-between align-items-center py-1 px-2">
+            <span class="small text-truncate mr-2"><i class="fas fa-paperclip mr-1 text-muted"></i>${escHtml(f.name)} <span class="text-muted">(${formatFileSize(f.size)})</span></span>
+            <button type="button" class="btn btn-sm btn-link text-danger p-0" onclick="removerAnexo(${i})" title="Remover"><i class="fas fa-times"></i></button>
+        </li>
+    `).join('');
+    updatePreview();
+}
 
 function getToken() {
     return sessionStorage.getItem('liftmanager_jwt') || localStorage.getItem('liftmanager_jwt') || '';
@@ -148,6 +202,9 @@ function updatePreview() {
     document.getElementById('clienteEmailPreview').textContent = cliente ? cliente.email : '';
     document.getElementById('prevAssunto').textContent = $('#assunto').val() || '—';
     document.getElementById('prevMensagem').textContent = $('#mensagem').val() || '—';
+    document.getElementById('prevAnexos').textContent = anexosSelecionados.length
+        ? anexosSelecionados.map(f => f.name).join(', ')
+        : '—';
 }
 
 function escHtml(str) {
@@ -187,21 +244,25 @@ async function enviarContacto() {
     btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i>A enviar...';
 
     try {
+        const formData = new FormData();
+        formData.append('email', cliente.email);
+        formData.append('subject', assunto);
+        formData.append('htmlContent', montarHtmlEmail(mensagem));
+        formData.append('templateId', 'contacto-cliente-livre');
+        anexosSelecionados.forEach(f => formData.append('attachments', f));
+
         const res = await fetch('/api/email/send-template', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` },
-            body: JSON.stringify({
-                email: cliente.email,
-                subject: assunto,
-                htmlContent: montarHtmlEmail(mensagem),
-                templateId: 'contacto-cliente-livre'
-            })
+            headers: { 'Authorization': `Bearer ${getToken()}` },
+            body: formData
         });
         const result = await res.json();
         if (result.success) {
             toastr.success(`Email enviado para ${cliente.email}`);
             $('#assunto,#mensagem').val('');
             document.getElementById('clienteSelect').value = '';
+            anexosSelecionados = [];
+            renderAnexos();
             updatePreview();
         } else {
             toastr.error(result.error || result.message || 'Erro ao enviar email');
