@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="/plugins/toastr/css/toastr.min.css">
+    <link rel="icon" type="image/png" href="/assets/img/favicon.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FestLift — Contrato de Manutenção</title>
+    <link rel="stylesheet" href="/plugins/sweetalert2/css/sweetalert2.min.css">
+    <script src="../../plugins/sweetalert2/js/sweetalert2.min.js"></script>
+    <script src="../../assets/js/auth.js"></script>
+    <link rel="stylesheet" href="../../plugins/adminlte/adminlte.min.css">
+    <link rel="stylesheet" href="../../plugins/fontawesome/css/all.min.css">
+    <style>
+        .badge-pendente { background-color: #6c757d; }
+        .badge-assinado_festlift { background-color: #17a2b8; }
+        .badge-assinado { background-color: #28a745; }
+        .badge-cancelado { background-color: #dc3545; }
+        .cond-title { font-weight: 700; color: #1a3a6b; margin: 14px 0 6px; }
+        .cond-item { font-size: .85rem; margin-bottom: 6px; line-height: 1.5; }
+        .sig-canvas-wrap { position: relative; background: #fff; border: 1.5px dashed #8aaed4; border-radius: 4px; margin-bottom: 10px; }
+        canvas.sig-canvas { display: block; width: 100%; height: 130px; border-radius: 4px; touch-action: none; cursor: crosshair; }
+        .sig-placeholder { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; font-size: 12px; color: #bbb; font-style: italic; }
+        .sig-canvas-wrap.has-sig .sig-placeholder { opacity: 0; }
+        .sig-img-preview { max-height: 130px; border: 1px solid #ddd; border-radius: 4px; background: #fff; }
+    </style>
+</head>
+<body class="hold-transition sidebar-mini layout-fixed" data-required-role="admin">
+<div class="wrapper">
+
+    <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+        <ul class="navbar-nav">
+            <li class="nav-item"><a class="nav-link" data-widget="pushmenu" href="#"><i class="fas fa-bars"></i></a></li>
+            <li class="nav-item d-none d-sm-inline-block"><a href="admin-dashboard.html" class="nav-link">Painel</a></li>
+            <li class="nav-item d-none d-sm-inline-block"><a href="propostas-manutencao-list.html" class="nav-link">Propostas de Manutenção</a></li>
+            <li class="nav-item d-none d-sm-inline-block"><a class="nav-link text-muted" id="breadcrumbTitle">/ Contrato</a></li>
+        </ul>
+        <ul class="navbar-nav ml-auto">
+            <li class="nav-item"><a class="nav-link" href="#" onclick="logout()"><i class="fas fa-sign-out-alt text-danger"></i></a></li>
+        </ul>
+    </nav>
+
+    <aside class="main-sidebar sidebar-dark-primary elevation-4">
+        <div id="sidebar-container"></div>
+    </aside>
+
+    <div class="content-wrapper">
+        <div class="content-header">
+            <div class="container-fluid">
+                <div class="d-flex justify-content-between align-items-center flex-wrap">
+                    <div>
+                        <h1 class="m-0"><i class="fas fa-file-signature mr-2 text-primary"></i>Contrato de Manutenção <span id="numeroTitle">—</span></h1>
+                        <p class="text-muted mb-0 small">Gerado automaticamente a partir da proposta aprovada. Termos e condições completos, prontos para assinatura.</p>
+                    </div>
+                    <span class="badge" id="statusBadge" style="font-size:.9rem;padding:8px 14px;"></span>
+                </div>
+            </div>
+        </div>
+
+        <section class="content">
+            <div class="container-fluid">
+
+                <div class="card card-outline card-primary">
+                    <div class="card-header"><h3 class="card-title">Cliente / Instalação</h3></div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p class="mb-1"><strong>Cliente:</strong> <span id="clienteNome">—</span></p>
+                                <p class="mb-1"><strong>NIF:</strong> <span id="clienteNif">—</span></p>
+                                <p class="mb-1"><strong>Email:</strong> <span id="clienteEmail">—</span></p>
+                                <p class="mb-1"><strong>Morada:</strong> <span id="clienteMorada">—</span></p>
+                            </div>
+                            <div class="col-md-6">
+                                <p class="mb-1"><strong>Instalação:</strong> <span id="instNome">—</span></p>
+                                <p class="mb-1"><strong>Morada da instalação:</strong> <span id="instMorada">—</span></p>
+                                <p class="mb-1"><strong>Nº de ascensores:</strong> <span id="numAscensores">—</span></p>
+                                <p class="mb-1"><strong>Preço mensal:</strong> <span id="precoMensal">—</span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card card-outline card-secondary">
+                    <div class="card-header"><h3 class="card-title">Termos do Contrato</h3></div>
+                    <div class="card-body">
+                        <p id="termosTexto" class="text-justify" style="font-size:.9rem;"></p>
+                    </div>
+                </div>
+
+                <div class="card card-outline card-warning">
+                    <div class="card-header">
+                        <h3 class="card-title">Condições Gerais</h3>
+                        <div class="card-tools"><button class="btn btn-sm btn-outline-secondary" onclick="toggleCondicoes()"><i class="fas fa-chevron-down mr-1"></i><span id="toggleCondicoesLabel">Mostrar texto integral</span></button></div>
+                    </div>
+                    <div class="card-body" id="condicoesBody" style="display:none;">
+                        <div class="row" id="condicoesContainer"><p class="text-muted">A carregar...</p></div>
+                    </div>
+                </div>
+
+                <div class="card card-outline card-success">
+                    <div class="card-header"><h3 class="card-title">Assinaturas</h3></div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5><i class="fas fa-building mr-1"></i>FESTLIFT, Lda. <small class="text-muted">(Fornecedora / EMIE)</small></h5>
+                                <div id="empresaAssinada" style="display:none;">
+                                    <img id="empresaImg" class="sig-img-preview" />
+                                    <p class="text-success mt-2 mb-0"><i class="fas fa-check-circle"></i> Assinado por <span id="empresaAssinante"></span> em <span id="empresaData"></span></p>
+                                </div>
+                                <div id="empresaPorAssinar">
+                                    <div class="sig-canvas-wrap" id="wrap-empresa">
+                                        <canvas class="sig-canvas" id="canvas-empresa"></canvas>
+                                        <div class="sig-placeholder">↙ Assine aqui com o rato ou dedo</div>
+                                    </div>
+                                    <button class="btn btn-sm btn-outline-secondary" onclick="clearSig()"><i class="fas fa-eraser mr-1"></i>Limpar</button>
+                                    <button class="btn btn-sm btn-primary" onclick="guardarAssinaturaEmpresa()"><i class="fas fa-save mr-1"></i>Guardar assinatura FESTLIFT</button>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <h5><i class="fas fa-user-tie mr-1"></i>Cliente</h5>
+                                <div id="clienteAssinado" style="display:none;">
+                                    <img id="clienteImg" class="sig-img-preview" />
+                                    <p class="text-success mt-2 mb-0"><i class="fas fa-check-circle"></i> Assinado por <span id="clienteAssinante"></span> em <span id="clienteData"></span></p>
+                                </div>
+                                <div id="clienteAguarda">
+                                    <p class="text-muted"><i class="fas fa-hourglass-half mr-1"></i>Aguarda assinatura do cliente.</p>
+                                    <div id="linkAssinaturaBox" style="display:none;">
+                                        <p class="small text-muted mb-2">O cliente pode assinar a partir do portal (se tiver conta) ou através de um link de assinatura — sem necessidade de conta. Se ainda não tiver conta na plataforma, será criada automaticamente ao assinar.</p>
+                                        <button class="btn btn-sm btn-outline-primary mr-1" onclick="copiarLinkAssinatura()"><i class="fas fa-link mr-1"></i>Copiar link</button>
+                                        <button class="btn btn-sm btn-success" onclick="enviarLinkAssinatura()"><i class="fas fa-paper-plane mr-1"></i>Enviar link por email</button>
+                                    </div>
+                                    <div id="linkAssinaturaIndisponivel" style="display:none;">
+                                        <p class="small text-muted"><i class="fas fa-info-circle mr-1"></i>O link de assinatura fica disponível assim que a FESTLIFT assinar o contrato.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <button class="btn btn-outline-secondary" onclick="downloadPDF()"><i class="fas fa-file-pdf mr-1"></i>Descarregar PDF</button>
+                    <button class="btn btn-outline-danger" id="btnCancelar" onclick="cancelarContrato()" style="display:none;"><i class="fas fa-ban mr-1"></i>Cancelar contrato</button>
+                </div>
+
+            </div>
+        </section>
+    </div>
+
+    <footer class="main-footer">
+        <strong>FestLift</strong> — Sistema de Gestão de Elevadores v2.1
+    </footer>
+</div>
+
+<script src="../../plugins/jquery/jquery.min.js"></script>
+<script src="../../plugins/bootstrap/bootstrap.bundle.min.js"></script>
+<script src="../../plugins/adminlte/adminlte.min.js"></script>
+<script src="/plugins/toastr/js/toastr.min.js"></script>
+<script src="../../assets/js/sidebar-init.js"></script>
+<script src="../../assets/js/config.js"></script>
+
+<script>
+let contrato = null;
+let sigCtx = null, sigDrawing = false, sigHasSig = false;
+const isAdminUser = true; // esta página é apenas 'admin'; cancelar disponível
+
+$(document).ready(function() {
+    loadSidebarWithInit('includes/sidebar.html');
+    const id = new URLSearchParams(window.location.search).get('id');
+    if (!id) { toastr.error('Contrato não especificado'); return; }
+    loadContrato(id);
+    loadCondicoes();
+    initSigPad();
+});
+
+function getToken() {
+    return sessionStorage.getItem('liftmanager_jwt') || localStorage.getItem('liftmanager_jwt') || '';
+}
+
+function escHtml(str) {
+    return (str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function statusLabel(status) {
+    return { pendente: 'Pendente', assinado_festlift: 'Assinado pela FESTLIFT', assinado: 'Assinado por ambas as partes', cancelado: 'Cancelado' }[status] || status;
+}
+
+async function loadContrato(id) {
+    try {
+        const res = await fetch(`/api/contratos-manutencao/${id}`, { headers: { 'Authorization': `Bearer ${getToken()}` } });
+        const result = await res.json();
+        if (!result.success) { toastr.error(result.message || 'Contrato não encontrado'); return; }
+
+        contrato = result.data;
+        document.getElementById('numeroTitle').textContent = contrato.numero;
+        document.getElementById('breadcrumbTitle').textContent = `/ Contrato ${contrato.numero}`;
+        document.title = `FestLift — Contrato ${contrato.numero}`;
+
+        const statusEl = document.getElementById('statusBadge');
+        statusEl.className = `badge badge-${contrato.status}`;
+        statusEl.textContent = statusLabel(contrato.status);
+
+        document.getElementById('clienteNome').textContent = contrato.cliente?.nome || '—';
+        document.getElementById('clienteNif').textContent = contrato.cliente?.nif || '—';
+        document.getElementById('clienteEmail').textContent = contrato.cliente?.email || '—';
+        document.getElementById('clienteMorada').textContent = [contrato.cliente?.morada, contrato.cliente?.codigoPostal].filter(Boolean).join(', ') || '—';
+
+        document.getElementById('instNome').textContent = contrato.instalacao?.nome || contrato.instalacao?.edificio || '—';
+        document.getElementById('instMorada').textContent = [contrato.instalacao?.morada, contrato.instalacao?.codigoPostal].filter(Boolean).join(', ') || contrato.localInstalacao || '—';
+        document.getElementById('numAscensores').textContent = contrato.numAscensores || '—';
+        document.getElementById('precoMensal').textContent = contrato.precoMensal ? `€${Number(contrato.precoMensal).toFixed(2)} / mês + IVA` : '—';
+
+        const renovacao = contrato.renovacao || {};
+        document.getElementById('termosTexto').textContent =
+            `Contrato de Manutenção Simples respeitante a ${contrato.numAscensores || '__'} ascensor(es), destinado(s) a transporte de pessoas, instalado(s) em ${contrato.localInstalacao || '—'}. ` +
+            `O preço do serviço de manutenção é de €${(contrato.precoMensal || 0).toFixed(2)} por mês, por unidade, acrescido de IVA à taxa legal em vigor. ` +
+            `O pagamento é ${contrato.pagamento || 'Trimestral e adiantado'}. ` +
+            `O contrato terá início em ${contrato.dataInicioContrato ? new Date(contrato.dataInicioContrato).toLocaleDateString('pt-PT') : '—'} e manter-se-á válido durante ${contrato.duracaoAnos || 1} ano(s), considerando-se tacitamente prorrogado por períodos de ${renovacao.periodo || '1 ano'}, salvo denúncia por qualquer das partes com pelo menos ${renovacao.avisoDias || '60 dias'} de antecedência, através de ${renovacao.metodoNotificacao || 'carta registada'}${renovacao.emailNotificacao ? ' (' + renovacao.emailNotificacao + ')' : ''}. ` +
+            `Em caso de denúncia antecipada pelo Cliente, a FESTLIFT terá direito a indemnização no valor da totalidade das mensalidades previstas até ao termo do prazo contratado.`;
+
+        renderAssinaturas();
+
+        document.getElementById('btnCancelar').style.display = (contrato.status === 'assinado' || contrato.status === 'cancelado') ? 'none' : 'inline-block';
+    } catch (e) {
+        console.error('Erro ao carregar contrato:', e);
+        toastr.error('Erro ao carregar contrato');
+    }
+}
+
+function renderAssinaturas() {
+    if (contrato.assinaturaEmpresa?.imagem) {
+        document.getElementById('empresaAssinada').style.display = 'block';
+        document.getElementById('empresaPorAssinar').style.display = 'none';
+        document.getElementById('empresaImg').src = contrato.assinaturaEmpresa.imagem;
+        document.getElementById('empresaAssinante').textContent = contrato.assinaturaEmpresa.nomeAssinante || 'FESTLIFT';
+        document.getElementById('empresaData').textContent = contrato.assinaturaEmpresa.data ? new Date(contrato.assinaturaEmpresa.data).toLocaleString('pt-PT') : '—';
+    } else {
+        document.getElementById('empresaAssinada').style.display = 'none';
+        document.getElementById('empresaPorAssinar').style.display = 'block';
+    }
+
+    if (contrato.assinaturaCliente?.imagem) {
+        document.getElementById('clienteAssinado').style.display = 'block';
+        document.getElementById('clienteAguarda').style.display = 'none';
+        document.getElementById('clienteImg').src = contrato.assinaturaCliente.imagem;
+        document.getElementById('clienteAssinante').textContent = contrato.assinaturaCliente.nomeAssinante || contrato.cliente?.nome || '—';
+        document.getElementById('clienteData').textContent = contrato.assinaturaCliente.data ? new Date(contrato.assinaturaCliente.data).toLocaleString('pt-PT') : '—';
+    } else {
+        document.getElementById('clienteAssinado').style.display = 'none';
+        document.getElementById('clienteAguarda').style.display = 'block';
+        document.getElementById('linkAssinaturaBox').style.display = contrato.assinaturaEmpresa?.imagem ? 'block' : 'none';
+        document.getElementById('linkAssinaturaIndisponivel').style.display = contrato.assinaturaEmpresa?.imagem ? 'none' : 'block';
+    }
+}
+
+async function copiarLinkAssinatura() {
+    try {
+        const res = await fetch(`/api/contratos-manutencao/${contrato._id}/link-assinatura`, { headers: { 'Authorization': `Bearer ${getToken()}` } });
+        const result = await res.json();
+        if (!result.success) { toastr.error(result.message || 'Erro ao gerar link'); return; }
+        await navigator.clipboard.writeText(result.url);
+        toastr.success('Link de assinatura copiado para a área de transferência');
+    } catch (e) {
+        toastr.error('Erro ao copiar link');
+    }
+}
+
+async function enviarLinkAssinatura() {
+    if (!await swalConfirm(`Enviar o link de assinatura para ${contrato.cliente?.email}?`, 'Enviar link ao cliente')) return;
+    try {
+        const res = await fetch(`/api/contratos-manutencao/${contrato._id}/enviar-link`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${getToken()}` }
+        });
+        const result = await res.json();
+        if (result.success) {
+            toastr.success(result.message || 'Link enviado');
+        } else {
+            toastr.error(result.message || 'Erro ao enviar link');
+        }
+    } catch (e) {
+        toastr.error('Erro ao enviar link');
+    }
+}
+
+async function loadCondicoes() {
+    try {
+        const res = await fetch('/api/contratos-manutencao/condicoes-gerais/texto', { headers: { 'Authorization': `Bearer ${getToken()}` } });
+        const result = await res.json();
+        if (!result.success) return;
+
+        const container = document.getElementById('condicoesContainer');
+        container.innerHTML = result.data.map((artigo, artIdx) => `
+            <div class="col-md-6">
+                <div class="cond-title">${escHtml(artigo.titulo)}</div>
+                ${artigo.itens.map((item, idx) => `<div class="cond-item"><strong>${idx + 1}.</strong> ${escHtml(item)}</div>`).join('')}
+            </div>
+        `).join('');
+    } catch (e) {
+        console.error('Erro ao carregar condições gerais:', e);
+    }
+}
+
+function toggleCondicoes() {
+    const body = document.getElementById('condicoesBody');
+    const isHidden = body.style.display === 'none';
+    body.style.display = isHidden ? 'block' : 'none';
+    document.getElementById('toggleCondicoesLabel').textContent = isHidden ? 'Ocultar texto integral' : 'Mostrar texto integral';
+}
+
+function initSigPad() {
+    const canvas = document.getElementById('canvas-empresa');
+    const wrap = document.getElementById('wrap-empresa');
+    sigCtx = canvas.getContext('2d');
+
+    function resize() {
+        const ratio = window.devicePixelRatio || 1;
+        const rect = canvas.getBoundingClientRect();
+        canvas.width = rect.width * ratio;
+        canvas.height = rect.height * ratio;
+        sigCtx.scale(ratio, ratio);
+        sigCtx.strokeStyle = '#1a3a6b';
+        sigCtx.lineWidth = 2.2;
+        sigCtx.lineCap = 'round';
+        sigCtx.lineJoin = 'round';
+    }
+
+    function getPos(e) {
+        const rect = canvas.getBoundingClientRect();
+        if (e.touches) return { x: e.touches[0].clientX - rect.left, y: e.touches[0].clientY - rect.top };
+        return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+    }
+
+    function start(e) { e.preventDefault(); sigDrawing = true; const p = getPos(e); sigCtx.beginPath(); sigCtx.moveTo(p.x, p.y); }
+    function move(e) {
+        if (!sigDrawing) return;
+        e.preventDefault();
+        const p = getPos(e);
+        sigCtx.lineTo(p.x, p.y);
+        sigCtx.stroke();
+        if (!sigHasSig) { sigHasSig = true; wrap.classList.add('has-sig'); }
+    }
+    function end() { sigDrawing = false; }
+
+    canvas.addEventListener('mousedown', start);
+    canvas.addEventListener('mousemove', move);
+    canvas.addEventListener('mouseup', end);
+    canvas.addEventListener('mouseleave', end);
+    canvas.addEventListener('touchstart', start, { passive: false });
+    canvas.addEventListener('touchmove', move, { passive: false });
+    canvas.addEventListener('touchend', end);
+
+    resize();
+    window.addEventListener('resize', resize);
+}
+
+function clearSig() {
+    const canvas = document.getElementById('canvas-empresa');
+    sigCtx.clearRect(0, 0, canvas.width, canvas.height);
+    sigHasSig = false;
+    document.getElementById('wrap-empresa').classList.remove('has-sig');
+}
+
+async function guardarAssinaturaEmpresa() {
+    if (!sigHasSig) { toastr.warning('Assine no quadro antes de guardar'); return; }
+    const canvas = document.getElementById('canvas-empresa');
+    const imagem = canvas.toDataURL('image/png');
+
+    try {
+        const res = await fetch(`/api/contratos-manutencao/${contrato._id}/assinar-empresa`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` },
+            body: JSON.stringify({ imagem })
+        });
+        const result = await res.json();
+        if (result.success) {
+            toastr.success(result.message || 'Assinatura guardada');
+            contrato = result.data;
+            renderAssinaturas();
+            const statusEl = document.getElementById('statusBadge');
+            statusEl.className = `badge badge-${contrato.status}`;
+            statusEl.textContent = statusLabel(contrato.status);
+        } else {
+            toastr.error(result.message || 'Erro ao guardar assinatura');
+        }
+    } catch (e) {
+        console.error('Erro ao guardar assinatura:', e);
+        toastr.error('Erro ao guardar assinatura');
+    }
+}
+
+async function downloadPDF() {
+    if (!contrato) return;
+    try {
+        const res = await fetch(`/api/contratos-manutencao/${contrato._id}/pdf`, { headers: { 'Authorization': `Bearer ${getToken()}` } });
+        if (!res.ok) throw new Error('Erro ao descarregar PDF');
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Contrato_${contrato.numero}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    } catch (e) {
+        toastr.error('Erro ao descarregar PDF: ' + e.message);
+    }
+}
+
+async function cancelarContrato() {
+    if (!contrato) return;
+    if (!await swalConfirm('Cancelar este contrato? Esta ação não pode ser revertida.', 'Cancelar contrato')) return;
+    try {
+        const res = await fetch(`/api/contratos-manutencao/${contrato._id}/cancelar`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${getToken()}` }
+        });
+        const result = await res.json();
+        if (result.success) {
+            toastr.success('Contrato cancelado');
+            contrato = result.data;
+            const statusEl = document.getElementById('statusBadge');
+            statusEl.className = `badge badge-${contrato.status}`;
+            statusEl.textContent = statusLabel(contrato.status);
+            document.getElementById('btnCancelar').style.display = 'none';
+        } else {
+            toastr.error(result.message || 'Erro ao cancelar');
+        }
+    } catch (e) {
+        toastr.error('Erro ao cancelar contrato');
+    }
+}
+
+function logout() {
+    if (typeof AuthManager !== 'undefined') AuthManager.logout();
+    else { localStorage.clear(); window.location.replace('/pages/auth/login.html'); }
+}
+
+async function swalConfirm(text, title = 'Confirmar') {
+    const r = await Swal.fire({
+        title, text, icon: 'question', showCancelButton: true,
+        confirmButtonColor: '#dc3545', cancelButtonColor: '#95a5a6',
+        confirmButtonText: 'Confirmar', cancelButtonText: 'Cancelar'
+    });
+    return r.isConfirmed;
+}
+</script>
+<script src="../../assets/js/monitor.js"></script>
+</body>
+</html>

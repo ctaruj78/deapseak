@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="/assets/img/favicon.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assinatura de Contrato — FestLift</title>
+    <link rel="stylesheet" href="../../plugins/fontawesome/css/all.min.css">
+    <style>
+        :root { --blue: #1a3a6b; --blue-mid: #2355a0; --gold: #c8971a; }
+        * { box-sizing: border-box; }
+        body { font-family: Georgia, 'Times New Roman', serif; background: #ddd8ce; margin: 0; padding: 24px 14px 60px; color: #1a1a2e; }
+        .paper { max-width: 780px; margin: 0 auto; background: #faf8f4; border-radius: 6px; box-shadow: 0 8px 40px rgba(0,0,0,.2); padding: 36px 34px 44px; position: relative; }
+        .paper::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 5px; background: linear-gradient(90deg, var(--blue), var(--blue-mid) 60%, var(--gold)); border-radius: 6px 6px 0 0; }
+        .brand { text-align: center; margin-bottom: 18px; }
+        .brand h1 { color: var(--blue); font-size: 1.5rem; margin: 0; }
+        .brand small { color: var(--gold); font-weight: 600; letter-spacing: .04em; }
+        h2.doc-title { text-align: center; color: var(--blue); font-size: 1.25rem; letter-spacing: .03em; text-transform: uppercase; margin: 18px 0 4px; }
+        .doc-line { height: 2px; background: linear-gradient(90deg, transparent, var(--gold), transparent); width: 220px; margin: 0 auto 22px; }
+        .badge { display: inline-block; padding: 5px 14px; border-radius: 20px; font-size: .78rem; font-weight: 700; letter-spacing: .04em; }
+        .badge-pendente { background: #6c757d; color: #fff; }
+        .badge-assinado_festlift { background: #17a2b8; color: #fff; }
+        .badge-assinado { background: #28a745; color: #fff; }
+        .badge-cancelado { background: #dc3545; color: #fff; }
+        .section-title { font-weight: 700; color: var(--blue); border-bottom: 1.5px solid var(--gold); padding-bottom: 5px; margin: 24px 0 10px; font-size: .95rem; }
+        .field-row { display: flex; flex-wrap: wrap; gap: 4px 24px; font-size: .88rem; margin-bottom: 4px; }
+        .field-row strong { color: #333; }
+        p.termos { font-size: .88rem; line-height: 1.7; text-align: justify; }
+        .cond-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 30px; margin-top: 6px; }
+        .cond-title { font-weight: 700; color: var(--blue); background: #f0ece4; border-left: 3px solid var(--gold); padding: 4px 9px; margin: 12px 0 6px; font-size: .82rem; border-radius: 0 2px 2px 0; }
+        .cond-item { font-size: .76rem; margin-bottom: 5px; line-height: 1.55; color: #333; }
+        .toggle-btn { background: none; border: 1px solid #999; border-radius: 4px; padding: 5px 12px; font-size: .78rem; cursor: pointer; color: #555; }
+        .sign-box { border: 1.5px solid #c5bba8; border-radius: 6px; padding: 16px; margin-top: 10px; }
+        .sign-box h3 { margin: 0 0 10px; font-size: 1rem; color: var(--blue); }
+        input.name-input { width: 100%; padding: 8px 10px; border: 1.5px solid #8aaed4; border-radius: 4px; font-size: .9rem; margin-bottom: 12px; background: #eef3fb; }
+        .sig-canvas-wrap { position: relative; background: #fff; border: 1.5px dashed #8aaed4; border-radius: 4px; margin-bottom: 12px; }
+        canvas.sig-canvas { display: block; width: 100%; height: 160px; border-radius: 4px; touch-action: none; cursor: crosshair; }
+        .sig-placeholder { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; font-size: 13px; color: #bbb; font-style: italic; }
+        .sig-canvas-wrap.has-sig .sig-placeholder { opacity: 0; }
+        .btn { display: inline-flex; align-items: center; gap: 6px; padding: 10px 20px; border-radius: 5px; font-size: .88rem; font-weight: 600; cursor: pointer; border: none; }
+        .btn-primary { background: var(--blue); color: #fff; }
+        .btn-outline { background: transparent; color: var(--blue); border: 1.5px solid var(--blue); }
+        .sig-img-preview { max-height: 130px; border: 1px solid #ddd; border-radius: 4px; background: #fff; }
+        .alert { border-radius: 6px; padding: 14px 18px; font-size: .88rem; margin: 16px 0; }
+        .alert-success { background: #e6f7ec; border-left: 4px solid #28a745; color: #14532d; }
+        .alert-info { background: #eef3fb; border-left: 4px solid var(--blue); color: #1a3a6b; }
+        .alert-danger { background: #fdecea; border-left: 4px solid #dc3545; color: #7a1c1c; }
+        .toast { position: fixed; bottom: 22px; right: 22px; background: var(--blue); color: #fff; padding: 12px 20px; border-radius: 5px; font-size: .82rem; box-shadow: 0 4px 20px rgba(0,0,0,.25); transform: translateY(60px); opacity: 0; transition: all .3s; z-index: 999; }
+        .toast.show { transform: translateY(0); opacity: 1; }
+        #loadingState, #errorState { text-align: center; padding: 60px 20px; color: #666; }
+    </style>
+</head>
+<body>
+
+<div id="loadingState" class="paper">
+    <i class="fas fa-spinner fa-spin fa-2x"></i>
+    <p style="margin-top:14px;">A carregar contrato...</p>
+</div>
+
+<div id="errorState" class="paper" style="display:none;">
+    <i class="fas fa-triangle-exclamation fa-2x" style="color:#dc3545;"></i>
+    <p style="margin-top:14px;" id="errorMessage">Link inválido ou expirado.</p>
+</div>
+
+<div id="contractPaper" class="paper" style="display:none;">
+    <div class="brand">
+        <h1>FESTLIFT <small>elevadores e serviços</small></h1>
+    </div>
+    <h2 class="doc-title">Contrato de Manutenção Simples</h2>
+    <div class="doc-line"></div>
+
+    <div style="text-align:center;margin-bottom:16px;">
+        <strong id="numeroTitle">—</strong> &nbsp;
+        <span class="badge" id="statusBadge"></span>
+    </div>
+
+    <div class="section-title">Cliente / Instalação</div>
+    <div class="field-row"><strong>Cliente:</strong> <span id="clienteNome">—</span></div>
+    <div class="field-row"><strong>Email:</strong> <span id="clienteEmail">—</span></div>
+    <div class="field-row"><strong>Instalação:</strong> <span id="instNome">—</span></div>
+    <div class="field-row"><strong>Nº de ascensores:</strong> <span id="numAscensores">—</span></div>
+    <div class="field-row"><strong>Preço mensal:</strong> <span id="precoMensal">—</span></div>
+
+    <div class="section-title">Termos do Contrato</div>
+    <p class="termos" id="termosTexto"></p>
+
+    <div class="section-title" style="display:flex;justify-content:space-between;align-items:center;">
+        <span>Condições Gerais</span>
+        <button class="toggle-btn" onclick="toggleCondicoes()"><span id="toggleCondicoesLabel">Mostrar texto integral</span></button>
+    </div>
+    <div id="condicoesBody" style="display:none;">
+        <div class="cond-grid" id="condicoesContainer"></div>
+    </div>
+
+    <div class="section-title">Assinaturas</div>
+    <div class="field-row" style="margin-bottom:10px;">
+        <i class="fas fa-building" style="color:var(--blue);"></i>
+        <span>FESTLIFT, Lda. — <span id="empresaStatusText" style="color:#28a745;font-weight:600;">assinado</span></span>
+    </div>
+
+    <div id="jaAssinadoBox" style="display:none;">
+        <div class="alert alert-success"><i class="fas fa-check-circle mr-1"></i> Este contrato já foi assinado por ambas as partes.</div>
+        <img id="clienteImgAssinado" class="sig-img-preview" />
+    </div>
+
+    <div id="signBox" class="sign-box" style="display:none;">
+        <h3><i class="fas fa-signature mr-1"></i>A sua assinatura</h3>
+        <label style="font-size:.8rem;color:#555;">Nome de quem assina</label>
+        <input type="text" class="name-input" id="nomeAssinanteInput" placeholder="Nome completo" />
+        <div class="sig-canvas-wrap" id="wrapSig">
+            <canvas class="sig-canvas" id="canvasSig"></canvas>
+            <div class="sig-placeholder">↙ Assine aqui com o rato ou dedo</div>
+        </div>
+        <button class="btn btn-outline" onclick="clearSig()"><i class="fas fa-eraser mr-1"></i>Limpar</button>
+        <button class="btn btn-primary" onclick="assinar()"><i class="fas fa-check mr-1"></i>Assinar contrato</button>
+    </div>
+
+    <div id="aguardaEmpresaBox" style="display:none;">
+        <div class="alert alert-info"><i class="fas fa-hourglass-half mr-1"></i> A FESTLIFT ainda não assinou este contrato. Volte a este link assim que for notificado.</div>
+    </div>
+
+    <div id="successBox" style="display:none;" class="alert alert-success"></div>
+
+    <div style="margin-top:22px;text-align:center;">
+        <button class="btn btn-outline" onclick="downloadPDF()"><i class="fas fa-file-pdf mr-1"></i>Descarregar PDF</button>
+    </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let contrato = null;
+let sigCtx = null, sigDrawing = false, sigHasSig = false;
+const params = new URLSearchParams(window.location.search);
+const contratoId = params.get('id');
+const token = params.get('token');
+
+function escHtml(str) {
+    return (str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function statusLabel(status) {
+    return { pendente: 'Pendente', assinado_festlift: 'Aguarda a sua assinatura', assinado: 'Assinado por ambas as partes', cancelado: 'Cancelado' }[status] || status;
+}
+
+function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+async function init() {
+    if (!contratoId || !token) {
+        document.getElementById('loadingState').style.display = 'none';
+        document.getElementById('errorState').style.display = 'block';
+        return;
+    }
+    try {
+        const res = await fetch(`/api/contratos-manutencao/public/${contratoId}?token=${encodeURIComponent(token)}`);
+        const result = await res.json();
+        if (!res.ok || !result.success) {
+            document.getElementById('errorMessage').textContent = result.message || 'Link inválido ou expirado.';
+            document.getElementById('loadingState').style.display = 'none';
+            document.getElementById('errorState').style.display = 'block';
+            return;
+        }
+        contrato = result.data;
+        render();
+        loadCondicoes();
+        document.getElementById('loadingState').style.display = 'none';
+        document.getElementById('contractPaper').style.display = 'block';
+    } catch (e) {
+        console.error(e);
+        document.getElementById('loadingState').style.display = 'none';
+        document.getElementById('errorState').style.display = 'block';
+    }
+}
+
+function render() {
+    document.getElementById('numeroTitle').textContent = `Contrato ${contrato.numero}`;
+    document.title = `Contrato ${contrato.numero} — FestLift`;
+
+    const statusEl = document.getElementById('statusBadge');
+    statusEl.className = `badge badge-${contrato.status}`;
+    statusEl.textContent = statusLabel(contrato.status);
+
+    document.getElementById('clienteNome').textContent = contrato.cliente?.nome || '—';
+    document.getElementById('clienteEmail').textContent = contrato.cliente?.email || '—';
+    document.getElementById('instNome').textContent = contrato.instalacao?.nome || contrato.instalacao?.edificio || '—';
+    document.getElementById('numAscensores').textContent = contrato.numAscensores || '—';
+    document.getElementById('precoMensal').textContent = contrato.precoMensal ? `€${Number(contrato.precoMensal).toFixed(2)} / mês + IVA` : '—';
+
+    const renovacao = contrato.renovacao || {};
+    document.getElementById('termosTexto').textContent =
+        `Contrato de Manutenção Simples respeitante a ${contrato.numAscensores || '__'} ascensor(es), destinado(s) a transporte de pessoas, instalado(s) em ${contrato.localInstalacao || '—'}. ` +
+        `O preço do serviço de manutenção é de €${(contrato.precoMensal || 0).toFixed(2)} por mês, por unidade, acrescido de IVA à taxa legal em vigor. ` +
+        `O pagamento é ${contrato.pagamento || 'Trimestral e adiantado'}. ` +
+        `O contrato terá início em ${contrato.dataInicioContrato ? new Date(contrato.dataInicioContrato).toLocaleDateString('pt-PT') : '—'} e manter-se-á válido durante ${contrato.duracaoAnos || 1} ano(s), considerando-se tacitamente prorrogado por períodos de ${renovacao.periodo || '1 ano'}, salvo denúncia por qualquer das partes com pelo menos ${renovacao.avisoDias || '60 dias'} de antecedência, através de ${renovacao.metodoNotificacao || 'carta registada'}${renovacao.emailNotificacao ? ' (' + renovacao.emailNotificacao + ')' : ''}. ` +
+        `Em caso de denúncia antecipada pelo Cliente, a FESTLIFT terá direito a indemnização no valor da totalidade das mensalidades previstas até ao termo do prazo contratado.`;
+
+    document.getElementById('jaAssinadoBox').style.display = 'none';
+    document.getElementById('signBox').style.display = 'none';
+    document.getElementById('aguardaEmpresaBox').style.display = 'none';
+
+    if (contrato.assinaturaCliente?.imagem) {
+        document.getElementById('jaAssinadoBox').style.display = 'block';
+        document.getElementById('clienteImgAssinado').src = contrato.assinaturaCliente.imagem;
+    } else if (contrato.assinaturaEmpresa?.imagem) {
+        document.getElementById('signBox').style.display = 'block';
+        document.getElementById('nomeAssinanteInput').value = contrato.cliente?.nome || '';
+        initSigPad();
+    } else {
+        document.getElementById('aguardaEmpresaBox').style.display = 'block';
+    }
+}
+
+async function loadCondicoes() {
+    try {
+        const res = await fetch('/api/contratos-manutencao/condicoes-gerais/texto');
+        const result = await res.json();
+        if (!result.success) return;
+        document.getElementById('condicoesContainer').innerHTML = result.data.map((artigo) => `
+            <div>
+                <div class="cond-title">${escHtml(artigo.titulo)}</div>
+                ${artigo.itens.map((item, idx) => `<div class="cond-item"><strong>${idx + 1}.</strong> ${escHtml(item)}</div>`).join('')}
+            </div>
+        `).join('');
+    } catch (e) { console.error(e); }
+}
+
+function toggleCondicoes() {
+    const body = document.getElementById('condicoesBody');
+    const isHidden = body.style.display === 'none';
+    body.style.display = isHidden ? 'block' : 'none';
+    document.getElementById('toggleCondicoesLabel').textContent = isHidden ? 'Ocultar texto integral' : 'Mostrar texto integral';
+}
+
+function initSigPad() {
+    const canvas = document.getElementById('canvasSig');
+    const wrap = document.getElementById('wrapSig');
+    sigCtx = canvas.getContext('2d');
+
+    function resize() {
+        const ratio = window.devicePixelRatio || 1;
+        const rect = canvas.getBoundingClientRect();
+        canvas.width = rect.width * ratio;
+        canvas.height = rect.height * ratio;
+        sigCtx.scale(ratio, ratio);
+        sigCtx.strokeStyle = '#1a3a6b';
+        sigCtx.lineWidth = 2.2;
+        sigCtx.lineCap = 'round';
+        sigCtx.lineJoin = 'round';
+    }
+
+    function getPos(e) {
+        const rect = canvas.getBoundingClientRect();
+        if (e.touches) return { x: e.touches[0].clientX - rect.left, y: e.touches[0].clientY - rect.top };
+        return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+    }
+
+    function start(e) { e.preventDefault(); sigDrawing = true; const p = getPos(e); sigCtx.beginPath(); sigCtx.moveTo(p.x, p.y); }
+    function move(e) {
+        if (!sigDrawing) return;
+        e.preventDefault();
+        const p = getPos(e);
+        sigCtx.lineTo(p.x, p.y);
+        sigCtx.stroke();
+        if (!sigHasSig) { sigHasSig = true; wrap.classList.add('has-sig'); }
+    }
+    function end() { sigDrawing = false; }
+
+    canvas.addEventListener('mousedown', start);
+    canvas.addEventListener('mousemove', move);
+    canvas.addEventListener('mouseup', end);
+    canvas.addEventListener('mouseleave', end);
+    canvas.addEventListener('touchstart', start, { passive: false });
+    canvas.addEventListener('touchmove', move, { passive: false });
+    canvas.addEventListener('touchend', end);
+
+    resize();
+    window.addEventListener('resize', resize);
+}
+
+function clearSig() {
+    const canvas = document.getElementById('canvasSig');
+    sigCtx.clearRect(0, 0, canvas.width, canvas.height);
+    sigHasSig = false;
+    document.getElementById('wrapSig').classList.remove('has-sig');
+}
+
+async function assinar() {
+    if (!sigHasSig) { showToast('Assine no quadro antes de confirmar'); return; }
+    const nomeAssinante = document.getElementById('nomeAssinanteInput').value.trim();
+    if (!nomeAssinante) { showToast('Indique o nome de quem assina'); return; }
+    if (!confirm('Ao assinar, está a confirmar que aceita os termos e condições deste contrato de manutenção. Confirmar assinatura?')) return;
+
+    const canvas = document.getElementById('canvasSig');
+    const imagem = canvas.toDataURL('image/png');
+
+    try {
+        const res = await fetch(`/api/contratos-manutencao/public/${contratoId}/assinar?token=${encodeURIComponent(token)}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ imagem, nomeAssinante })
+        });
+        const result = await res.json();
+        if (result.success) {
+            contrato = result.data;
+            render();
+            const successBox = document.getElementById('successBox');
+            successBox.style.display = 'block';
+            successBox.innerHTML = result.contaCriada
+                ? `<i class="fas fa-check-circle mr-1"></i> Contrato assinado com sucesso! Criámos uma conta na plataforma FestLift para si — verifique o seu email (<strong>${escHtml(contrato.cliente.email)}</strong>) para aceder com a sua palavra-passe temporária.`
+                : `<i class="fas fa-check-circle mr-1"></i> Contrato assinado com sucesso!`;
+        } else {
+            showToast(result.message || 'Erro ao assinar contrato');
+        }
+    } catch (e) {
+        console.error(e);
+        showToast('Erro ao assinar contrato');
+    }
+}
+
+async function downloadPDF() {
+    try {
+        const res = await fetch(`/api/contratos-manutencao/public/${contratoId}/pdf?token=${encodeURIComponent(token)}`);
+        if (!res.ok) throw new Error('Erro ao descarregar PDF');
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Contrato_${contrato ? contrato.numero : 'FestLift'}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    } catch (e) {
+        showToast('Erro ao descarregar PDF');
+    }
+}
+
+init();
+</script>
+</body>
+</html>

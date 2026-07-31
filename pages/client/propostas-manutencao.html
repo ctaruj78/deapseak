@@ -395,7 +395,10 @@
                 </button>`;
         } else if (p.status === 'aprovado') {
             const quem = !p.aprovadoPor || p.aprovadoPor === 'cliente' ? 'por si' : 'pela FestLift';
-            actionBtns = `<span class="text-success"><i class="fas fa-check-circle"></i> Aprovada ${quem}</span>`;
+            actionBtns = `<span class="text-success mr-2"><i class="fas fa-check-circle"></i> Aprovada ${quem}</span>
+                <button class="btn btn-outline-primary btn-sm" onclick="verContrato('${p._id}'); event.stopPropagation();">
+                    <i class="fas fa-file-signature"></i> Contrato
+                </button>`;
         } else if (p.status === 'rejeitado') {
             const quem = !p.aprovadoPor || p.aprovadoPor === 'cliente' ? 'por si' : 'pela FestLift';
             actionBtns = `<span class="text-danger"><i class="fas fa-times-circle"></i> Rejeitada ${quem}</span>`;
@@ -430,6 +433,22 @@
                     </div>
                 </div>
             </div>`;
+    }
+
+    async function verContrato(propostaId) {
+        try {
+            const res = await fetch(`${API_BASE_URL}/api/contratos-manutencao/by-proposta/${propostaId}`, {
+                headers: { 'Authorization': `Bearer ${getToken()}` }
+            });
+            const json = await res.json();
+            if (res.ok && json.success) {
+                window.location.href = `contrato-manutencao-view.html?id=${json.data._id}`;
+            } else {
+                toastr.info('A FestLift ainda não gerou o contrato para esta proposta. Tente novamente mais tarde.');
+            }
+        } catch (err) {
+            toastr.error('Erro ao verificar contrato');
+        }
     }
 
     function verDetalhe(id) {
@@ -487,7 +506,8 @@
                 <button class="btn btn-secondary" data-dismiss="modal">Fechar</button>
                 <button class="btn btn-outline-secondary" onclick="downloadPDF('${p._id}', '${p.numero}')">
                     <i class="fas fa-file-pdf"></i> Download PDF
-                </button>`;
+                </button>
+                ${p.status === 'aprovado' ? `<button class="btn btn-primary" onclick="verContrato('${p._id}')"><i class="fas fa-file-signature"></i> Ver Contrato</button>` : ''}`;
         }
 
         $('#propostaModal').modal('show');

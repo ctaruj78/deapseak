@@ -13588,6 +13588,9 @@ app.use('/api/orcamentos', orcamentosRoutes);
 const propostasManutencaoRoutes = require('./backend/routes/propostasManutencao');
 app.use('/api/propostas-manutencao', propostasManutencaoRoutes);
 
+const contratosManutencaoRoutes = require('./backend/routes/contratosManutencao');
+app.use('/api/contratos-manutencao', contratosManutencaoRoutes);
+
 // 📋 Catálogo de categorias para orçamentos de modernização
 const orcamentoCategoriasRoutes = require('./backend/routes/orcamentoCategorias');
 app.use('/api/orcamento-categorias', orcamentoCategoriasRoutes);

@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="/plugins/toastr/css/toastr.min.css">
+    <link rel="icon" type="image/png" href="/assets/img/favicon.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contrato de Manutenção - FestLift</title>
+    <link rel="stylesheet" href="/plugins/sweetalert2/css/sweetalert2.min.css">
+    <script src="../../plugins/sweetalert2/js/sweetalert2.min.js"></script>
+    <script src="../../assets/js/auth.js"></script>
+
+    <link rel="stylesheet" href="../../plugins/adminlte/adminlte.min.css">
+    <link rel="stylesheet" href="../../plugins/fontawesome/css/all.min.css">
+
+    <style>
+        .badge-pendente { background-color: #6c757d; color: #fff; }
+        .badge-assinado_festlift { background-color: #17a2b8; color: #fff; }
+        .badge-assinado { background-color: #28a745; color: #fff; }
+        .badge-cancelado { background-color: #dc3545; color: #fff; }
+        .cond-title { font-weight: 700; color: #1a3a6b; margin: 14px 0 6px; }
+        .cond-item { font-size: .85rem; margin-bottom: 6px; line-height: 1.5; }
+        .sig-canvas-wrap { position: relative; background: #fff; border: 1.5px dashed #8aaed4; border-radius: 4px; margin-bottom: 10px; }
+        canvas.sig-canvas { display: block; width: 100%; height: 150px; border-radius: 4px; touch-action: none; cursor: crosshair; }
+        .sig-placeholder { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; pointer-events: none; font-size: 13px; color: #bbb; font-style: italic; }
+        .sig-canvas-wrap.has-sig .sig-placeholder { opacity: 0; }
+        .sig-img-preview { max-height: 130px; border: 1px solid #ddd; border-radius: 4px; background: #fff; }
+    </style>
+</head>
+<body class="hold-transition sidebar-mini layout-fixed" data-required-role="client">
+<div class="wrapper">
+
+    <!-- Navbar -->
+    <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+        <ul class="navbar-nav">
+            <li class="nav-item">
+                <a class="nav-link" data-widget="pushmenu" href="#" role="button"><i class="fas fa-bars"></i></a>
+            </li>
+            <li class="nav-item d-none d-sm-inline-block">
+                <a href="/pages/client/dashboard.html" class="nav-link">Início</a>
+            </li>
+            <li class="nav-item d-none d-sm-inline-block">
+                <a href="/pages/client/propostas-manutencao.html" class="nav-link">Propostas de Manutenção</a>
+            </li>
+            <li class="nav-item d-none d-sm-inline-block">
+                <a class="nav-link text-muted">/ Contrato</a>
+            </li>
+        </ul>
+        <ul class="navbar-nav ml-auto">
+            <li class="nav-item">
+                <a class="nav-link notification-bell" href="/pages/client/notifications.html" title="Notificações">
+                    <i class="fas fa-bell"></i>
+                    <span class="notification-badge" id="notificationCount">0</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#" onclick="logout()" title="Sair"><i class="fas fa-sign-out-alt"></i></a>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Sidebar -->
+    <aside class="main-sidebar sidebar-dark-primary elevation-4">
+        <a href="/pages/client/dashboard.html" class="brand-link">
+            <span class="elevation-3" style="display:inline-flex;align-items:center;justify-content:center;width:33px;height:33px;border-radius:50%;background:linear-gradient(135deg,#28a745,#20c997);color:#fff;font-size:17px;margin-right:8px;opacity:.9;flex-shrink:0;"><i class="fas fa-user-tie"></i></span>
+            <span class="brand-text font-weight-light" style="line-height:1.4;">FestLift <small style="opacity:.7;font-size:11px;">Painel Cliente</small><br><small id="clientName" style="opacity:.85;font-size:11px;color:#aed6b1;font-weight:400;">—</small></span>
+        </a>
+        <div class="sidebar">
+            <nav class="mt-2">
+                <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
+                    <li class="nav-item">
+                        <a href="/pages/client/dashboard.html" class="nav-link" id="nav-dashboard">
+                            <i class="nav-icon fas fa-tachometer-alt"></i><p>Dashboard</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/pages/client/my-lifts.html" class="nav-link" id="nav-my-lifts">
+                            <i class="nav-icon fas fa-elevator"></i><p>Os meus elevadores<span class="badge badge-info right" id="liftsCount">0</span></p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/pages/client/ai-predictions.html" class="nav-link" id="nav-ai-predictions">
+                            <i class="nav-icon fas fa-brain"></i><p>Previsões AI<span class="badge badge-purple right">Novo</span></p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/pages/client/requests.html" class="nav-link" id="nav-requests">
+                            <i class="nav-icon fas fa-tasks"></i><p>Pedidos<span class="badge badge-warning right" id="requestsCount">0</span></p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/pages/client/orcamentos.html" class="nav-link" id="nav-orcamentos">
+                            <i class="nav-icon fas fa-file-invoice-dollar"></i>
+                            <p>Orçamentos<span class="badge badge-warning right" id="orcamentosCount">0</span></p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/pages/client/propostas-manutencao.html" class="nav-link active" id="nav-propostas-manutencao">
+                            <i class="nav-icon fas fa-file-contract"></i>
+                            <p>Propostas de Manutenção<span class="badge badge-warning right" id="propostasManutencaoCount">0</span></p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/pages/client/invoices.html" class="nav-link" id="nav-invoices">
+                            <i class="nav-icon fas fa-file-invoice"></i><p>Faturas<span class="badge badge-success right" id="invoicesCount">0</span></p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/pages/client/history.html" class="nav-link" id="nav-history">
+                            <i class="nav-icon fas fa-history"></i><p>Histórico</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/pages/client/reports.html" class="nav-link" id="nav-reports">
+                            <i class="nav-icon fas fa-chart-line"></i><p>Relatórios</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/pages/client/documentation.html" class="nav-link" id="nav-documentation">
+                            <i class="nav-icon fas fa-book"></i><p>Documentação</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/pages/ai-assistant/ai-assistant.html" class="nav-link" id="nav-ai-assistant">
+                            <i class="nav-icon fas fa-magic"></i><p>Asistente AI<span class="badge badge-success right">★</span></p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/pages/client/notifications.html" class="nav-link" id="nav-notifications">
+                            <i class="nav-icon fas fa-bell"></i><p>Notificações<span class="badge badge-danger right" id="notificationsBadge">0</span></p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/pages/client/knowledge-base.html" class="nav-link" id="nav-kb">
+                            <i class="nav-icon fas fa-book-open"></i><p>Informações Úteis</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/pages/client/support.html" class="nav-link" id="nav-support">
+                            <i class="nav-icon fas fa-headset"></i><p>Suporte</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/pages/client/profile.html" class="nav-link" id="nav-profile">
+                            <i class="nav-icon fas fa-user"></i><p>Perfil</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" onclick="logout()" class="nav-link">
+                            <i class="nav-icon fas fa-sign-out-alt text-danger"></i><p>Sair</p>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </aside>
+
+    <!-- Content -->
+    <div class="content-wrapper">
+        <section class="content-header">
+            <div class="container-fluid">
+                <div class="row mb-2 align-items-center">
+                    <div class="col-sm-8">
+                        <h1><i class="fas fa-file-signature mr-2"></i>Contrato de Manutenção <span id="numeroTitle">—</span></h1>
+                    </div>
+                    <div class="col-sm-4 text-sm-right">
+                        <span class="badge" id="statusBadge" style="font-size:.85rem;padding:6px 12px;"></span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="content">
+            <div class="container-fluid">
+
+                <div class="card">
+                    <div class="card-header bg-gradient-primary text-white"><strong>Cliente / Instalação</strong></div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p class="mb-1"><strong>Cliente:</strong> <span id="clienteNome">—</span></p>
+                                <p class="mb-1"><strong>Email:</strong> <span id="clienteEmail">—</span></p>
+                                <p class="mb-1"><strong>Morada:</strong> <span id="clienteMorada">—</span></p>
+                            </div>
+                            <div class="col-md-6">
+                                <p class="mb-1"><strong>Instalação:</strong> <span id="instNome">—</span></p>
+                                <p class="mb-1"><strong>Nº de ascensores:</strong> <span id="numAscensores">—</span></p>
+                                <p class="mb-1"><strong>Preço mensal:</strong> <span id="precoMensal">—</span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header bg-light"><strong>Termos do Contrato</strong></div>
+                    <div class="card-body">
+                        <p id="termosTexto" class="text-justify" style="font-size:.9rem;"></p>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                        <strong>Condições Gerais</strong>
+                        <button class="btn btn-sm btn-outline-secondary" onclick="toggleCondicoes()"><span id="toggleCondicoesLabel">Mostrar texto integral</span></button>
+                    </div>
+                    <div class="card-body" id="condicoesBody" style="display:none;">
+                        <div class="row" id="condicoesContainer"><p class="text-muted">A carregar...</p></div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header bg-gradient-primary text-white"><strong>Assinaturas</strong></div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6><i class="fas fa-building mr-1"></i>FESTLIFT, Lda. <small class="text-muted">(Fornecedora / EMIE)</small></h6>
+                                <div id="empresaAssinada" style="display:none;">
+                                    <img id="empresaImg" class="sig-img-preview" />
+                                    <p class="text-success mt-2 mb-0"><i class="fas fa-check-circle"></i> Assinado em <span id="empresaData"></span></p>
+                                </div>
+                                <div id="empresaAguarda">
+                                    <p class="text-muted"><i class="fas fa-hourglass-half mr-1"></i>A FESTLIFT ainda não assinou este contrato.</p>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <h6><i class="fas fa-user-tie mr-1"></i>Cliente <small class="text-muted">(Administração do Condomínio)</small></h6>
+
+                                <div id="clienteAssinado" style="display:none;">
+                                    <img id="clienteImg" class="sig-img-preview" />
+                                    <p class="text-success mt-2 mb-0"><i class="fas fa-check-circle"></i> Assinado em <span id="clienteData"></span></p>
+                                </div>
+
+                                <div id="clienteParaAssinar" style="display:none;">
+                                    <div class="sig-canvas-wrap" id="wrap-cliente">
+                                        <canvas class="sig-canvas" id="canvas-cliente"></canvas>
+                                        <div class="sig-placeholder">↙ Assine aqui com o rato ou dedo</div>
+                                    </div>
+                                    <button class="btn btn-sm btn-outline-secondary" onclick="clearSig()"><i class="fas fa-eraser mr-1"></i>Limpar</button>
+                                    <button class="btn btn-sm btn-success" onclick="guardarAssinaturaCliente()"><i class="fas fa-check mr-1"></i>Assinar contrato</button>
+                                </div>
+
+                                <div id="clienteAindaNaoDisponivel" style="display:none;">
+                                    <p class="text-muted"><i class="fas fa-info-circle mr-1"></i>Poderá assinar assim que a FESTLIFT tiver assinado o contrato.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <button class="btn btn-outline-secondary" onclick="downloadPDF()"><i class="fas fa-file-pdf mr-1"></i>Descarregar PDF</button>
+                </div>
+
+            </div>
+        </section>
+    </div>
+
+    <footer class="main-footer">
+        <strong>Copyright &copy; 2026 <a href="https://festlift.pt">FestLift</a>.</strong>
+        Sistema de gestão de elevadores v2.1.0.
+    </footer>
+</div>
+
+<script src="../../plugins/jquery/jquery.min.js"></script>
+<script src="../../plugins/bootstrap/bootstrap.bundle.min.js"></script>
+<script src="../../plugins/adminlte/adminlte.min.js"></script>
+
+<script>
+let contrato = null;
+let sigCtx = null, sigDrawing = false, sigHasSig = false;
+
+function getToken() {
+    return sessionStorage.getItem('liftmanager_jwt') ||
+           localStorage.getItem('liftmanager_jwt') ||
+           sessionStorage.getItem('token') ||
+           localStorage.getItem('token') ||
+           localStorage.getItem('lm_token');
+}
+
+async function logout() {
+    if (await swalConfirm('Tem certeza que deseja sair?')) {
+        localStorage.clear();
+        sessionStorage.clear();
+        window.location.replace('/pages/auth/login.html');
+    }
+}
+
+function escHtml(str) {
+    return (str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function statusLabel(status) {
+    return { pendente: 'Pendente', assinado_festlift: 'Aguarda a sua assinatura', assinado: 'Assinado', cancelado: 'Cancelado' }[status] || status;
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const currentUser = (typeof AuthManager !== 'undefined') ? AuthManager.getCurrentUser() : null;
+    if (!currentUser || currentUser.role !== 'client') {
+        localStorage.clear();
+        sessionStorage.clear();
+        window.location.replace('/pages/auth/login.html');
+        return;
+    }
+
+    const id = new URLSearchParams(window.location.search).get('id');
+    if (!id) { toastr.error('Contrato não especificado'); return; }
+    loadContrato(id);
+    loadCondicoes();
+    initSigPad();
+});
+
+async function loadContrato(id) {
+    try {
+        const res = await fetch(`/api/contratos-manutencao/${id}`, { headers: { 'Authorization': `Bearer ${getToken()}` } });
+        const result = await res.json();
+        if (!result.success) { toastr.error(result.message || 'Contrato não encontrado'); return; }
+
+        contrato = result.data;
+        document.getElementById('numeroTitle').textContent = contrato.numero;
+        document.title = `Contrato ${contrato.numero} - FestLift`;
+
+        const statusEl = document.getElementById('statusBadge');
+        statusEl.className = `badge badge-${contrato.status}`;
+        statusEl.textContent = statusLabel(contrato.status);
+
+        document.getElementById('clienteNome').textContent = contrato.cliente?.nome || '—';
+        document.getElementById('clienteEmail').textContent = contrato.cliente?.email || '—';
+        document.getElementById('clienteMorada').textContent = [contrato.cliente?.morada, contrato.cliente?.codigoPostal].filter(Boolean).join(', ') || '—';
+
+        document.getElementById('instNome').textContent = contrato.instalacao?.nome || contrato.instalacao?.edificio || '—';
+        document.getElementById('numAscensores').textContent = contrato.numAscensores || '—';
+        document.getElementById('precoMensal').textContent = contrato.precoMensal ? `€${Number(contrato.precoMensal).toFixed(2)} / mês + IVA` : '—';
+
+        const renovacao = contrato.renovacao || {};
+        document.getElementById('termosTexto').textContent =
+            `Contrato de Manutenção Simples respeitante a ${contrato.numAscensores || '__'} ascensor(es), destinado(s) a transporte de pessoas, instalado(s) em ${contrato.localInstalacao || '—'}. ` +
+            `O preço do serviço de manutenção é de €${(contrato.precoMensal || 0).toFixed(2)} por mês, por unidade, acrescido de IVA à taxa legal em vigor. ` +
+            `O pagamento é ${contrato.pagamento || 'Trimestral e adiantado'}. ` +
+            `O contrato terá início em ${contrato.dataInicioContrato ? new Date(contrato.dataInicioContrato).toLocaleDateString('pt-PT') : '—'} e manter-se-á válido durante ${contrato.duracaoAnos || 1} ano(s), considerando-se tacitamente prorrogado por períodos de ${renovacao.periodo || '1 ano'}, salvo denúncia por qualquer das partes com pelo menos ${renovacao.avisoDias || '60 dias'} de antecedência, através de ${renovacao.metodoNotificacao || 'carta registada'}${renovacao.emailNotificacao ? ' (' + renovacao.emailNotificacao + ')' : ''}. ` +
+            `Em caso de denúncia antecipada pelo Cliente, a FESTLIFT terá direito a indemnização no valor da totalidade das mensalidades previstas até ao termo do prazo contratado.`;
+
+        renderAssinaturas();
+    } catch (e) {
+        console.error('Erro ao carregar contrato:', e);
+        toastr.error('Erro ao carregar contrato');
+    }
+}
+
+function renderAssinaturas() {
+    if (contrato.assinaturaEmpresa?.imagem) {
+        document.getElementById('empresaAssinada').style.display = 'block';
+        document.getElementById('empresaAguarda').style.display = 'none';
+        document.getElementById('empresaImg').src = contrato.assinaturaEmpresa.imagem;
+        document.getElementById('empresaData').textContent = contrato.assinaturaEmpresa.data ? new Date(contrato.assinaturaEmpresa.data).toLocaleString('pt-PT') : '—';
+    } else {
+        document.getElementById('empresaAssinada').style.display = 'none';
+        document.getElementById('empresaAguarda').style.display = 'block';
+    }
+
+    document.getElementById('clienteAssinado').style.display = 'none';
+    document.getElementById('clienteParaAssinar').style.display = 'none';
+    document.getElementById('clienteAindaNaoDisponivel').style.display = 'none';
+
+    if (contrato.assinaturaCliente?.imagem) {
+        document.getElementById('clienteAssinado').style.display = 'block';
+        document.getElementById('clienteImg').src = contrato.assinaturaCliente.imagem;
+        document.getElementById('clienteData').textContent = contrato.assinaturaCliente.data ? new Date(contrato.assinaturaCliente.data).toLocaleString('pt-PT') : '—';
+    } else if (contrato.assinaturaEmpresa?.imagem) {
+        document.getElementById('clienteParaAssinar').style.display = 'block';
+    } else {
+        document.getElementById('clienteAindaNaoDisponivel').style.display = 'block';
+    }
+}
+
+async function loadCondicoes() {
+    try {
+        const res = await fetch('/api/contratos-manutencao/condicoes-gerais/texto', { headers: { 'Authorization': `Bearer ${getToken()}` } });
+        const result = await res.json();
+        if (!result.success) return;
+
+        const container = document.getElementById('condicoesContainer');
+        container.innerHTML = result.data.map((artigo) => `
+            <div class="col-md-6">
+                <div class="cond-title">${escHtml(artigo.titulo)}</div>
+                ${artigo.itens.map((item, idx) => `<div class="cond-item"><strong>${idx + 1}.</strong> ${escHtml(item)}</div>`).join('')}
+            </div>
+        `).join('');
+    } catch (e) {
+        console.error('Erro ao carregar condições gerais:', e);
+    }
+}
+
+function toggleCondicoes() {
+    const body = document.getElementById('condicoesBody');
+    const isHidden = body.style.display === 'none';
+    body.style.display = isHidden ? 'block' : 'none';
+    document.getElementById('toggleCondicoesLabel').textContent = isHidden ? 'Ocultar texto integral' : 'Mostrar texto integral';
+}
+
+function initSigPad() {
+    const canvas = document.getElementById('canvas-cliente');
+    const wrap = document.getElementById('wrap-cliente');
+    sigCtx = canvas.getContext('2d');
+
+    function resize() {
+        const ratio = window.devicePixelRatio || 1;
+        const rect = canvas.getBoundingClientRect();
+        canvas.width = rect.width * ratio;
+        canvas.height = rect.height * ratio;
+        sigCtx.scale(ratio, ratio);
+        sigCtx.strokeStyle = '#1a3a6b';
+        sigCtx.lineWidth = 2.2;
+        sigCtx.lineCap = 'round';
+        sigCtx.lineJoin = 'round';
+    }
+
+    function getPos(e) {
+        const rect = canvas.getBoundingClientRect();
+        if (e.touches) return { x: e.touches[0].clientX - rect.left, y: e.touches[0].clientY - rect.top };
+        return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+    }
+
+    function start(e) { e.preventDefault(); sigDrawing = true; const p = getPos(e); sigCtx.beginPath(); sigCtx.moveTo(p.x, p.y); }
+    function move(e) {
+        if (!sigDrawing) return;
+        e.preventDefault();
+        const p = getPos(e);
+        sigCtx.lineTo(p.x, p.y);
+        sigCtx.stroke();
+        if (!sigHasSig) { sigHasSig = true; wrap.classList.add('has-sig'); }
+    }
+    function end() { sigDrawing = false; }
+
+    canvas.addEventListener('mousedown', start);
+    canvas.addEventListener('mousemove', move);
+    canvas.addEventListener('mouseup', end);
+    canvas.addEventListener('mouseleave', end);
+    canvas.addEventListener('touchstart', start, { passive: false });
+    canvas.addEventListener('touchmove', move, { passive: false });
+    canvas.addEventListener('touchend', end);
+
+    resize();
+    window.addEventListener('resize', resize);
+}
+
+function clearSig() {
+    const canvas = document.getElementById('canvas-cliente');
+    sigCtx.clearRect(0, 0, canvas.width, canvas.height);
+    sigHasSig = false;
+    document.getElementById('wrap-cliente').classList.remove('has-sig');
+}
+
+async function guardarAssinaturaCliente() {
+    if (!sigHasSig) { toastr.warning('Assine no quadro antes de confirmar'); return; }
+    if (!await swalConfirm('Ao assinar, está a confirmar que aceita os termos e condições deste contrato de manutenção.', 'Confirmar assinatura')) return;
+
+    const canvas = document.getElementById('canvas-cliente');
+    const imagem = canvas.toDataURL('image/png');
+
+    try {
+        const res = await fetch(`/api/contratos-manutencao/${contrato._id}/assinar-cliente`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` },
+            body: JSON.stringify({ imagem })
+        });
+        const result = await res.json();
+        if (result.success) {
+            toastr.success(result.message || 'Contrato assinado com sucesso!');
+            contrato = result.data;
+            renderAssinaturas();
+            const statusEl = document.getElementById('statusBadge');
+            statusEl.className = `badge badge-${contrato.status}`;
+            statusEl.textContent = statusLabel(contrato.status);
+        } else {
+            toastr.error(result.message || 'Erro ao assinar contrato');
+        }
+    } catch (e) {
+        console.error('Erro ao assinar contrato:', e);
+        toastr.error('Erro ao assinar contrato');
+    }
+}
+
+async function downloadPDF() {
+    if (!contrato) return;
+    try {
+        const res = await fetch(`/api/contratos-manutencao/${contrato._id}/pdf`, { headers: { 'Authorization': `Bearer ${getToken()}` } });
+        if (!res.ok) throw new Error('Erro ao descarregar PDF');
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Contrato_${contrato.numero}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    } catch (e) {
+        toastr.error('Erro ao descarregar PDF: ' + e.message);
+    }
+}
+</script>
+
+<style>
+.badge-purple { background: linear-gradient(135deg,#6f42c1,#8e44ad); color: #fff; }
+.dark-mode .card { background: #1e2435; border-color: #2d3347; }
+.dark-mode .card-header { background: #252a3a !important; }
+</style>
+<script src="../../assets/js/monitor.js"></script>
+<script>
+async function swalConfirm(text, title = 'Confirmar') {
+    const r = await Swal.fire({
+        title,
+        text,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#28a745',
+        cancelButtonColor: '#95a5a6',
+        confirmButtonText: 'Confirmar',
+        cancelButtonText: 'Cancelar'
+    });
+    return r.isConfirmed;
+}
+</script>
+    <script src="/plugins/toastr/js/toastr.min.js"></script>
+</body>
+</html>

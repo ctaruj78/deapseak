@@ -50,7 +50,10 @@
                         <h1 class="m-0"><i class="fas fa-file-contract mr-2 text-primary"></i>Propostas de Manutenção</h1>
                         <p class="text-muted mb-0 small">Contratos de manutenção propostos a clientes — criar, enviar e acompanhar respostas.</p>
                     </div>
-                    <a href="proposta-manutencao-template.html" class="btn btn-primary"><i class="fas fa-plus mr-1"></i>Nova Proposta</a>
+                    <div>
+                        <a href="contratos-manutencao-list.html" class="btn btn-outline-primary mr-1"><i class="fas fa-file-signature mr-1"></i>Contratos</a>
+                        <a href="proposta-manutencao-template.html" class="btn btn-primary"><i class="fas fa-plus mr-1"></i>Nova Proposta</a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -178,6 +181,8 @@ async function carregarPropostas() {
                     <td class="text-right">
                         <a href="proposta-manutencao-template.html?id=${p._id}" class="btn btn-sm btn-outline-primary" title="Ver / Editar"><i class="fas fa-edit"></i></a>
                         <button class="btn btn-sm btn-outline-secondary" onclick="downloadPDF('${p._id}', '${p.numero}')" title="Descarregar PDF"><i class="fas fa-file-pdf"></i></button>
+                        ${(p.status === 'rascunho' || p.status === 'enviado') ? `<button class="btn btn-sm btn-outline-success" onclick="marcarAprovado('${p._id}')" title="Marcar como Aprovado (aceite fora do portal)"><i class="fas fa-check-double"></i></button>` : ''}
+                        ${p.status === 'aprovado' ? `<button class="btn btn-sm btn-outline-success" onclick="gerarContrato('${p._id}')" title="Gerar / Ver Contrato"><i class="fas fa-file-signature"></i></button>` : ''}
                         <button class="btn btn-sm btn-outline-danger" onclick="arquivarProposta('${p._id}')" title="Arquivar"><i class="fas fa-archive"></i></button>
                     </td>
                 </tr>
@@ -206,6 +211,43 @@ async function downloadPDF(id, numero) {
         URL.revokeObjectURL(url);
     } catch (e) {
         toastr.error('Erro ao descarregar PDF: ' + e.message);
+    }
+}
+
+async function marcarAprovado(id) {
+    if (!await swalConfirm('Marcar esta proposta como aprovada? Use apenas se o cliente já aceitou fora do portal (telefone, presencialmente, etc.).', 'Marcar como Aprovado')) return;
+    try {
+        const res = await fetch(`/api/propostas-manutencao/${id}/status`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` },
+            body: JSON.stringify({ status: 'aprovado', observacao: 'Aprovado manualmente pela FESTLIFT (aceite fora do portal)' })
+        });
+        const result = await res.json();
+        if (result.success) {
+            toastr.success('Proposta marcada como aprovada');
+            carregarPropostas();
+        } else {
+            toastr.error(result.message || 'Erro ao marcar como aprovado');
+        }
+    } catch (e) {
+        toastr.error('Erro ao marcar como aprovado');
+    }
+}
+
+async function gerarContrato(propostaId) {
+    try {
+        const res = await fetch(`/api/contratos-manutencao/from-proposta/${propostaId}`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${getToken()}` }
+        });
+        const result = await res.json();
+        if (result.success) {
+            window.location.href = `contrato-manutencao-view.html?id=${result.data._id}`;
+        } else {
+            toastr.error(result.message || 'Erro ao gerar contrato');
+        }
+    } catch (e) {
+        toastr.error('Erro ao gerar contrato');
     }
 }
 
