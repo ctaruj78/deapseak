@@ -504,14 +504,19 @@
                                                     <label>Tipo de orçamento</label>
                                                     <div id="tipoOrcamentoGroup">
                                                         <div class="form-check">
-                                                            <input class="form-check-input" type="radio" name="tipoOrcamento" id="tipoDetalhado" value="detalhado" checked onchange="invoiceManager.updatePreview()">
+                                                            <input class="form-check-input" type="radio" name="tipoOrcamento" id="tipoDetalhado" value="detalhado" checked onchange="invoiceManager.onTipoOrcamentoChange()">
                                                             <label class="form-check-label" for="tipoDetalhado">Detalhado <small class="text-muted">(preço por item)</small></label>
                                                         </div>
                                                         <div class="form-check">
-                                                            <input class="form-check-input" type="radio" name="tipoOrcamento" id="tipoResumido" value="resumido" onchange="invoiceManager.updatePreview()">
+                                                            <input class="form-check-input" type="radio" name="tipoOrcamento" id="tipoResumido" value="resumido" onchange="invoiceManager.onTipoOrcamentoChange()">
                                                             <label class="form-check-label" for="tipoResumido">Resumido <small class="text-muted">(só o total final)</small></label>
                                                         </div>
                                                     </div>
+                                                </div>
+                                                <div class="form-group" id="resumidoTotalGroup" style="display:none;">
+                                                    <label for="resumidoTotalOverride">Valor total dos serviços <small class="text-muted">(sem IVA)</small></label>
+                                                    <input type="number" class="form-control" id="resumidoTotalOverride" step="0.01" min="0" placeholder="Ex: 3195.00">
+                                                    <small class="form-text text-muted">Preencha aqui o total em vez de um preço em cada linha — os preços por item ficam apenas internos e não aparecem no orçamento do cliente.</small>
                                                 </div>
                                             </div>
                                         </div>
@@ -858,11 +863,13 @@
             },
 
             bindEvents() {
-                // Update totals on input change
-                $(document).on('input', '.qty, .price', () => this.calculateTotals());
-                
-                // Update preview on form change
-                $('#invoiceForm input, #invoiceForm textarea').on('input', () => this.updatePreview());
+                // Update totals on input change (delegated — funciona também em linhas
+                // adicionadas dinamicamente via "Adicionar serviço"/"Adicionar do catálogo")
+                $(document).on('input', '.qty, .price, #resumidoTotalOverride', () => this.calculateTotals());
+
+                // Update preview on form change (delegated pelo mesmo motivo — descrições
+                // de novas linhas não disparavam refresh do preview antes desta correção)
+                $(document).on('input', '#invoiceForm input, #invoiceForm textarea', () => this.updatePreview());
             },
 
             async generateInvoiceNumber() {
@@ -923,10 +930,18 @@
                     const qty = parseFloat($(this).find('.qty').val()) || 0;
                     const price = parseFloat($(this).find('.price').val()) || 0;
                     const total = qty * price;
-                    
+
                     $(this).find('.total').text(total.toFixed(2));
                     subtotal += total;
                 });
+
+                // Em modo Resumido, o valor total dos serviços pode ser indicado
+                // diretamente (em vez de preencher preço em cada linha).
+                const tipoOrcamento = $('input[name="tipoOrcamento"]:checked').val() || 'detalhado';
+                const overrideVal = parseFloat($('#resumidoTotalOverride').val());
+                if (tipoOrcamento === 'resumido' && !isNaN(overrideVal) && overrideVal > 0) {
+                    subtotal = overrideVal;
+                }
 
                 const tax = subtotal * 0.23; // 23% IVA
                 const grandTotal = subtotal + tax;
@@ -937,6 +952,12 @@
 
                 // Update preview
                 invoiceManager.updatePreview();
+            },
+
+            onTipoOrcamentoChange() {
+                const resumido = ($('input[name="tipoOrcamento"]:checked').val() || 'detalhado') === 'resumido';
+                $('#resumidoTotalGroup').toggle(resumido);
+                invoiceManager.calculateTotals();
             },
 
             updatePreview() {
@@ -1540,7 +1561,9 @@
                 const precoUnitario = parseFloat($(this).find('.price').val()) || 0;
                 const categoriaId = $(this).find('.categoria-id').val() || '';
 
-                if (descricao && quantidade > 0 && precoUnitario > 0) {
+                // Preço não é obrigatório por linha — em modo "Resumido" o total pode
+                // vir de #resumidoTotalOverride em vez de ser somado item a item.
+                if (descricao && quantidade > 0) {
                     const item = {
                         descricao,
                         quantidade,
@@ -1551,11 +1574,18 @@
                     servicos.push(item);
                 }
             });
-            
+
             console.log('📦 Serviços coletados:', servicos.length);
-            
+
             if (servicos.length === 0) {
-                toastr.error('❌ Adicione pelo menos um serviço com quantidade e preço válidos!');
+                toastr.error('❌ Adicione pelo menos um serviço com descrição e quantidade!');
+                return;
+            }
+
+            const tipoOrcamentoSalvar = $('input[name="tipoOrcamento"]:checked').val() || 'detalhado';
+            const totalCalculado = parseFloat($('#grandTotal').text().replace(' €', '')) || 0;
+            if (tipoOrcamentoSalvar === 'resumido' && totalCalculado <= 0) {
+                toastr.error('❌ Indique o "Valor total dos serviços" ou preencha o preço em pelo menos um item.');
                 return;
             }
             
@@ -2177,7 +2207,10 @@
                 $('#invoiceNumber').val(orcamento.numero);
                 $('#invoiceDate').val(orcamento.data.split('T')[0]); // Converter data ISO
                 $('#notes').val(orcamento.notas || '');
-                $(`input[name="tipoOrcamento"][value="${orcamento.tipo === 'resumido' ? 'resumido' : 'detalhado'}"]`).prop('checked', true);
+                const orcamentoResumido = orcamento.tipo === 'resumido';
+                $(`input[name="tipoOrcamento"][value="${orcamentoResumido ? 'resumido' : 'detalhado'}"]`).prop('checked', true);
+                $('#resumidoTotalGroup').toggle(orcamentoResumido);
+                if (orcamentoResumido) $('#resumidoTotalOverride').val((orcamento.subtotal || 0).toFixed(2));
 
                 if (orcamento.status === 'substituido') {
                     $('.card-header').first().prepend('<span class="badge badge-secondary">Substituído — existe uma versão mais recente</span> ');
