@@ -500,6 +500,19 @@
                                                     <label for="invoiceDate">Data do Orçamento</label>
                                                     <input type="date" class="form-control" id="invoiceDate" required>
                                                 </div>
+                                                <div class="form-group">
+                                                    <label>Tipo de orçamento</label>
+                                                    <div id="tipoOrcamentoGroup">
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="radio" name="tipoOrcamento" id="tipoDetalhado" value="detalhado" checked onchange="invoiceManager.updatePreview()">
+                                                            <label class="form-check-label" for="tipoDetalhado">Detalhado <small class="text-muted">(preço por item)</small></label>
+                                                        </div>
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="radio" name="tipoOrcamento" id="tipoResumido" value="resumido" onchange="invoiceManager.updatePreview()">
+                                                            <label class="form-check-label" for="tipoResumido">Resumido <small class="text-muted">(só o total final)</small></label>
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
 
@@ -666,8 +679,8 @@
                                                     <th>Nº</th>
                                                     <th>Descrição</th>
                                                     <th>Quantidade</th>
-                                                    <th>Preço Unit.</th>
-                                                    <th>Total</th>
+                                                    <th class="col-preco-unit">Preço Unit.</th>
+                                                    <th class="col-total-item">Total</th>
                                                 </tr>
                                             </thead>
                                             <tbody id="previewServicesTable">
@@ -952,13 +965,23 @@
                 const previewTable = $('#previewServicesTable');
                 previewTable.empty();
 
+                const tipoOrcamento = $('input[name="tipoOrcamento"]:checked').val() || 'detalhado';
+                const resumido = tipoOrcamento === 'resumido';
+                $('.col-preco-unit, .col-total-item').toggle(!resumido);
+
                 $('#servicesTable tbody tr').each(function(index) {
                     const description = $(this).find('input[type="text"]').val() || 'Serviço';
                     const qty = $(this).find('.qty').val() || '0';
                     const price = parseFloat($(this).find('.price').val()) || 0;
                     const total = (parseFloat(qty) * price).toFixed(2);
 
-                    const row = `
+                    const row = resumido ? `
+                        <tr>
+                            <td>${index + 1}</td>
+                            <td>${description}</td>
+                            <td>${qty}</td>
+                        </tr>
+                    ` : `
                         <tr>
                             <td>${index + 1}</td>
                             <td>${description}</td>
@@ -1089,6 +1112,7 @@
                     // TABELA DE SERVIÇOS
                     // ═══════════════════════════════════════════════════════════
                     
+                    const resumidoPdf = ($('input[name="tipoOrcamento"]:checked').val() || 'detalhado') === 'resumido';
                     const servicos = [];
                     let rowIndex = 0;
                     $('#servicesTable tbody tr').each(async function() {
@@ -1100,7 +1124,11 @@
                         // Include row if it has a description or a price value
                         if (descricao || preco > 0) {
                             rowIndex++;
-                            servicos.push([
+                            servicos.push(resumidoPdf ? [
+                                rowIndex.toString(),
+                                descricao || 'Serviço',
+                                quantidade.toString()
+                            ] : [
                                 rowIndex.toString(),
                                 descricao || 'Serviço',
                                 quantidade.toString(),
@@ -1110,22 +1138,26 @@
                         }
                     });
                     if (servicos.length === 0) {
-                        servicos.push(['—', 'Nenhum serviço adicionado', '—', '—', '—']);
+                        servicos.push(resumidoPdf ? ['—', 'Nenhum serviço adicionado', '—'] : ['—', 'Nenhum serviço adicionado', '—', '—', '—']);
                     }
-                    
+
                     doc.autoTable({
                         startY: yPos,
-                        head: [['#', 'Descrição', 'Qtd', 'Preço Unit.', 'Total']],
+                        head: resumidoPdf ? [['#', 'Descrição', 'Qtd']] : [['#', 'Descrição', 'Qtd', 'Preço Unit.', 'Total']],
                         body: servicos,
                         theme: 'grid',
-                        headStyles: { 
+                        headStyles: {
                             fillColor: [0, 102, 204],
                             textColor: [255, 255, 255],
                             fontSize: 10,
                             fontStyle: 'bold'
                         },
                         styles: { fontSize: 9 },
-                        columnStyles: {
+                        columnStyles: resumidoPdf ? {
+                            0: { cellWidth: 10 },
+                            1: { cellWidth: 140 },
+                            2: { cellWidth: 20, halign: 'center' }
+                        } : {
                             0: { cellWidth: 10 },
                             1: { cellWidth: 90 },
                             2: { cellWidth: 20, halign: 'center' },
@@ -1557,6 +1589,7 @@
                 iva: parseFloat($('#tax').text().replace(' €', '')) || 0,
                 total: parseFloat($('#grandTotal').text().replace(' €', '')) || 0,
                 notas: $('#notes').val() || 'Este orçamento é válido por 30 dias a partir da data de apresentação.',
+                tipo: $('input[name="tipoOrcamento"]:checked').val() || 'detalhado',
                 lifts: getSelectedLifts().map(l => l.id),
                 liftAddress: $('#liftAddressSearch').val() || null
             };
@@ -1649,17 +1682,29 @@
                         }
                     }
                     
-                    const action = isUpdate ? 'atualizado' : 'salvo';
                     const numero = orcamentoData.numero || $('#invoiceNumber').val();
                     const total = orcamentoData.total || parseFloat($('#grandTotal').text().replace(' €', ''));
                     const clienteNome = orcamentoData.cliente?.nome || $('#clientName').val();
-                    
-                    toastr.success(`✅ Orçamento ${numero} ${action} com sucesso!\n\n` +
-                          `Total: €${total.toFixed(2)}\n` +
-                          `Cliente: ${clienteNome}`);
-                    
+
+                    if (result.versioned) {
+                        // O orçamento antigo já tinha sido mostrado ao cliente — o servidor
+                        // preservou-o e criou esta nova versão. Sincronizar o formulário com
+                        // o número/data novos para não continuar a editar em cima do antigo.
+                        $('#invoiceNumber').val(numero);
+                        if (orcamentoData.data) $('#invoiceDate').val(new Date(orcamentoData.data).toISOString().split('T')[0]);
+                        toastr.info(`ℹ️ O orçamento original já tinha sido enviado ao cliente, por isso foi preservado no histórico.\n\n` +
+                              `Nova versão criada: ${numero} (rascunho)\n` +
+                              `Total: €${total.toFixed(2)}`);
+                    } else {
+                        const action = isUpdate ? 'atualizado' : 'salvo';
+                        toastr.success(`✅ Orçamento ${numero} ${action} com sucesso!\n\n` +
+                              `Total: €${total.toFixed(2)}\n` +
+                              `Cliente: ${clienteNome}`);
+                    }
+
                     // Redirecionar para lista de orçamentos
-                    if (await swalConfirm(`✅ Orçamento ${action}!\n\n📋 Deseja ver a lista de orçamentos?`)) {
+                    const acaoRealizada = result.versioned ? 'Nova versão criada' : (isUpdate ? 'atualizado' : 'salvo');
+                    if (await swalConfirm(`✅ Orçamento ${acaoRealizada}!\n\n📋 Deseja ver a lista de orçamentos?`)) {
                         window.location.href = 'orcamentos-list.html';
                     } else {
                         console.log('💡 Orçamento salvo. ID disponível para envio de email.');
@@ -2132,6 +2177,11 @@
                 $('#invoiceNumber').val(orcamento.numero);
                 $('#invoiceDate').val(orcamento.data.split('T')[0]); // Converter data ISO
                 $('#notes').val(orcamento.notas || '');
+                $(`input[name="tipoOrcamento"][value="${orcamento.tipo === 'resumido' ? 'resumido' : 'detalhado'}"]`).prop('checked', true);
+
+                if (orcamento.status === 'substituido') {
+                    $('.card-header').first().prepend('<span class="badge badge-secondary">Substituído — existe uma versão mais recente</span> ');
+                }
 
                 // Carregar fotografias
                 renderFotosGrid(orcamento.fotos || []);

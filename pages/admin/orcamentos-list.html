@@ -33,6 +33,7 @@
         .badge-aprovado { background-color: #28a745; }
         .badge-rejeitado { background-color: #dc3545; }
         .badge-expirado { background-color: #ffc107; color: #000; }
+        .badge-substituido { background-color: #adb5bd; color: #000; }
         /* Toggle view */
         .view-btn-active { background-color: #007bff !important; color: #fff !important; border-color: #007bff !important; }
         /* Table view tweaks */
@@ -110,6 +111,7 @@
                                             <option value="aprovado">Aprovado</option>
                                             <option value="rejeitado">Rejeitado</option>
                                             <option value="expirado">Expirado</option>
+                                            <option value="substituido">Substituído</option>
                                         </select>
                                     </div>
                                 </div>
@@ -423,8 +425,8 @@
 
         // Criar linha de tabela
         function criarLinhaTabela(orc) {
-            const statusText = { rascunho:'Rascunho', enviado:'Enviado', aprovado:'Aprovado', rejeitado:'Rejeitado', expirado:'Expirado' };
-            const statusClass = { rascunho:'secondary', enviado:'info', aprovado:'success', rejeitado:'danger', expirado:'warning' };
+            const statusText = { rascunho:'Rascunho', enviado:'Enviado', aprovado:'Aprovado', rejeitado:'Rejeitado', expirado:'Expirado', substituido:'Substituído' };
+            const statusClass = { rascunho:'secondary', enviado:'info', aprovado:'success', rejeitado:'danger', expirado:'warning', substituido:'secondary' };
             const data = new Date(orc.data).toLocaleDateString('pt-PT');
             const val = orc.validadeAte ? new Date(orc.validadeAte).toLocaleDateString('pt-PT') : '—';
             const total = (orc.total || 0).toFixed(2);
@@ -446,10 +448,10 @@
                     <button class="btn btn-xs btn-info" onclick="verOrcamento('${orc._id}')" title="Ver"><i class="fas fa-eye"></i></button>
                     <button class="btn btn-xs btn-secondary" onclick="downloadPDF('${orc._id}','${orc.numero}')" title="PDF"><i class="fas fa-file-pdf"></i></button>
                     <button class="btn btn-xs btn-outline-info" onclick="abrirModalFotos('${orc._id}','${orc.numero}')" title="Fotos"><i class="fas fa-camera"></i>${fotosBadge}</button>
-                    ${!isArchived && orc.status !== 'aprovado' ? `
+                    ${!isArchived && !['aprovado', 'substituido'].includes(orc.status) ? `
                     <button class="btn btn-xs btn-primary" onclick="enviarOrcamentoRapido('${orc._id}', '${orc.cliente.email || ''}', this)" title="${orc.status === 'rascunho' ? 'Enviar' : 'Reenviar'} por email ao cliente"><i class="fas fa-paper-plane"></i></button>
                     ` : ''}
-                    ${!isArchived ? `
+                    ${!isArchived && orc.status !== 'substituido' ? `
                     <button class="btn btn-xs btn-warning" onclick="editarOrcamento('${orc._id}')" title="Editar"><i class="fas fa-edit"></i></button>
                     <button class="btn btn-xs btn-danger" onclick="eliminarOrcamento('${orc._id}')" title="Eliminar"><i class="fas fa-trash"></i></button>
                     ` : `<button class="btn btn-xs btn-success" onclick="restaurarOrcamento('${orc._id}')" title="Restaurar"><i class="fas fa-box-open"></i></button>`}
@@ -467,7 +469,8 @@
                 'enviado': 'Enviado',
                 'aprovado': 'Aprovado',
                 'rejeitado': 'Rejeitado',
-                'expirado': 'Expirado'
+                'expirado': 'Expirado',
+                'substituido': 'Substituído'
             }[orcamento.status] || 'Desconhecido';
 
             const data = new Date(orcamento.data).toLocaleDateString('pt-PT');
@@ -539,11 +542,11 @@
                             <button class="btn btn-sm btn-outline-info" onclick="abrirModalFotos('${orcamento._id}', '${orcamento.numero}'); event.stopPropagation();" title="Fotografias">
                                 <i class="fas fa-camera"></i> Fotos${orcamento.fotos && orcamento.fotos.length > 0 ? ` <span class="badge badge-info">${orcamento.fotos.length}</span>` : ''}
                             </button>
-                            ${!isArchived && orcamento.status !== 'aprovado' ? `
+                            ${!isArchived && !['aprovado', 'substituido'].includes(orcamento.status) ? `
                             <button class="btn btn-sm btn-primary" onclick="enviarOrcamentoRapido('${orcamento._id}', '${orcamento.cliente.email || ''}', this); event.stopPropagation();" title="Enviar por email ao cliente">
                                 <i class="fas fa-paper-plane"></i> ${orcamento.status === 'rascunho' ? 'Enviar' : 'Reenviar'}
                             </button>` : ''}
-                            ${!isArchived ? `
+                            ${!isArchived && orcamento.status !== 'substituido' ? `
                             <button class="btn btn-sm btn-warning" onclick="editarOrcamento('${orcamento._id}'); event.stopPropagation();">
                                 <i class="fas fa-edit"></i> Editar
                             </button>

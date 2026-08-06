@@ -245,46 +245,52 @@ async function gerarPDFOrcamento(orcamento) {
             doc.moveDown(2);
             
             // Tabela de Serviços
+            const resumido = orcamento.tipo === 'resumido';
             doc.fontSize(12).font('Helvetica-Bold').fillColor(ORCAMENTO_COLOR).text('Serviços:', 50, doc.y);
             doc.moveDown(0.5);
-            
+
             // Cabeçalho da tabela
             const tableTop = doc.y;
             const col1 = 50;
-            const col2 = 300;
+            const col2 = resumido ? 480 : 300;
             const col3 = 380;
             const col4 = 480;
-            
+            const descWidth = resumido ? 420 : 240;
+
             doc.fontSize(10).font('Helvetica-Bold').fillColor(ORCAMENTO_COLOR);
             doc.text('Descrição', col1, tableTop);
             doc.text('Qtd', col2, tableTop, { width: 70, align: 'right' });
-            doc.text('Preço', col3, tableTop, { width: 90, align: 'right' });
-            doc.text('Total', col4, tableTop, { width: 70, align: 'right' });
-            
+            if (!resumido) {
+                doc.text('Preço', col3, tableTop, { width: 90, align: 'right' });
+                doc.text('Total', col4, tableTop, { width: 70, align: 'right' });
+            }
+
             // Linha abaixo do cabeçalho
             doc.moveTo(col1, tableTop + 15).lineTo(550, tableTop + 15).stroke();
-            
+
             // Linhas da tabela
             let yPos = tableTop + 25;
             doc.font('Helvetica').fontSize(10).fillColor(ORCAMENTO_COLOR);
-            
+
             orcamento.servicos.forEach((servico) => {
                 // Calcular altura real do texto de descrição (pode ter múltiplas linhas)
                 const descText = servico.descricao || '';
-                const descHeight = doc.heightOfString(descText, { width: 240 });
+                const descHeight = doc.heightOfString(descText, { width: descWidth });
                 const rowHeight = Math.max(descHeight, 12) + 10; // padding de 10pt
 
                 if (yPos + rowHeight > 700) { // Nova página se necessário
                     doc.addPage();
                     yPos = 50;
                 }
-                
+
                 doc.font('Helvetica').fontSize(10).fillColor(ORCAMENTO_COLOR);
-                doc.text(descText, col1, yPos, { width: 240, lineBreak: true });
+                doc.text(descText, col1, yPos, { width: descWidth, lineBreak: true });
                 doc.text(servico.quantidade.toString(), col2, yPos, { width: 70, align: 'right' });
-                doc.text(`€${servico.precoUnitario.toFixed(2)}`, col3, yPos, { width: 90, align: 'right' });
-                doc.text(`€${servico.total.toFixed(2)}`, col4, yPos, { width: 70, align: 'right' });
-                
+                if (!resumido) {
+                    doc.text(`€${servico.precoUnitario.toFixed(2)}`, col3, yPos, { width: 90, align: 'right' });
+                    doc.text(`€${servico.total.toFixed(2)}`, col4, yPos, { width: 70, align: 'right' });
+                }
+
                 yPos += rowHeight;
             });
             
@@ -763,7 +769,7 @@ router.get('/:id', authenticate, async (req, res) => {
 // POST /api/orcamentos - Criar novo orçamento (admin/dispatcher only)
 router.post('/', authenticate, authorizeRoles('admin', 'dispatcher'), async (req, res) => {
     try {
-        const { cliente, servicos, subtotal, iva, total, notas, liftId: bodyLiftId, lifts: bodyLifts, liftAddress: bodyLiftAddress } = req.body;
+        const { cliente, servicos, subtotal, iva, total, notas, tipo, liftId: bodyLiftId, lifts: bodyLifts, liftAddress: bodyLiftAddress } = req.body;
         
         // Validação básica
         if (!cliente || !cliente.nome || !cliente.email || !cliente.morada) {
@@ -836,6 +842,7 @@ router.post('/', authenticate, authorizeRoles('admin', 'dispatcher'), async (req
             iva,
             total,
             notas,
+            tipo: tipo === 'resumido' ? 'resumido' : 'detalhado',
             criadoPor: req.user.id,
             status: 'rascunho',
             liftId: liftId || null,
@@ -868,24 +875,70 @@ router.post('/', authenticate, authorizeRoles('admin', 'dispatcher'), async (req
 router.put('/:id', authenticate, authorizeRoles('admin', 'dispatcher'), async (req, res) => {
     try {
         const orcamento = await Orcamento.findById(req.params.id);
-        
+
         if (!orcamento) {
             return res.status(404).json({
                 success: false,
                 message: 'Orçamento não encontrado'
             });
         }
-        
-        const wasApproved = orcamento.status === 'aprovado';
-        
-        const { cliente, servicos, subtotal, iva, total, notas, status, numero, data, lifts: bodyLifts, liftAddress: bodyLiftAddress } = req.body;
-        
+
+        const { cliente, servicos, subtotal, iva, total, notas, status, numero, data, tipo, lifts: bodyLifts, liftAddress: bodyLiftAddress } = req.body;
+
+        // Se o orçamento já foi mostrado ao cliente (enviado/aprovado/rejeitado/expirado),
+        // não sobrescrevemos o documento — isso apagaria os valores que o cliente viu e,
+        // por manter a data original, tornaria a versão editada "expirada" instantaneamente.
+        // Em vez disso criamos uma nova versão e preservamos a antiga como histórico.
+        const jaMostradoAoCliente = ['enviado', 'aprovado', 'rejeitado', 'expirado'].includes(orcamento.status);
+
+        if (jaMostradoAoCliente) {
+            const novoNumero = await Orcamento.gerarNumero();
+            const novaData = new Date();
+            const novaValidadeAte = new Date(novaData);
+            novaValidadeAte.setDate(novaValidadeAte.getDate() + 30);
+            const novaVersao = new Orcamento({
+                numero: novoNumero,
+                data: novaData,
+                validadeAte: novaValidadeAte,
+                cliente: cliente || orcamento.cliente,
+                servicos: servicos || orcamento.servicos,
+                subtotal: subtotal !== undefined ? subtotal : orcamento.subtotal,
+                iva: iva !== undefined ? iva : orcamento.iva,
+                total: total !== undefined ? total : orcamento.total,
+                notas: notas || orcamento.notas,
+                tipo: tipo === 'resumido' ? 'resumido' : (tipo === 'detalhado' ? 'detalhado' : orcamento.tipo),
+                status: 'rascunho',
+                criadoPor: orcamento.criadoPor,
+                lifts: Array.isArray(bodyLifts) ? bodyLifts.filter(Boolean) : orcamento.lifts,
+                liftId: Array.isArray(bodyLifts) && bodyLifts.length > 0 ? bodyLifts[0] : orcamento.liftId,
+                liftAddress: bodyLiftAddress !== undefined ? (bodyLiftAddress || null) : orcamento.liftAddress,
+                fotos: orcamento.fotos,
+                origemId: orcamento._id
+            });
+            await novaVersao.save();
+
+            orcamento.status = 'substituido';
+            orcamento.substituidoPorId = novaVersao._id;
+            await orcamento.save();
+
+            console.log(`🔁 Orçamento ${orcamento.numero} substituído por nova versão ${novaVersao.numero}`);
+
+            return res.json({
+                success: true,
+                versioned: true,
+                message: `Orçamento original (${orcamento.numero}) preservado no histórico. Nova versão criada como rascunho: ${novaVersao.numero}`,
+                data: novaVersao
+            });
+        }
+
+        // Ainda em rascunho — nunca foi mostrado ao cliente, seguro editar no mesmo documento
         if (cliente) orcamento.cliente = cliente;
         if (servicos) orcamento.servicos = servicos;
         if (subtotal !== undefined) orcamento.subtotal = subtotal;
         if (iva !== undefined) orcamento.iva = iva;
         if (total !== undefined) orcamento.total = total;
         if (notas) orcamento.notas = notas;
+        if (tipo) orcamento.tipo = tipo;
         if (status) orcamento.status = status;
         // Дозволити оновлення numero та data (хоча зазвичай не потрібно)
         if (numero) orcamento.numero = numero;
@@ -897,21 +950,11 @@ router.put('/:id', authenticate, authorizeRoles('admin', 'dispatcher'), async (r
         }
         if (bodyLiftAddress !== undefined) orcamento.liftAddress = bodyLiftAddress || null;
 
-        if (wasApproved) {
-            orcamento.status = 'rascunho';
-            orcamento.dataResposta = null;
-            orcamento.aprovadoPor = null;
-            orcamento.aprovadoPorUser = null;
-            orcamento.observacao = null;
-        }
-        
         await orcamento.save();
-        
+
         res.json({
             success: true,
-            message: wasApproved
-                ? 'Orçamento atualizado e reaberto como rascunho'
-                : 'Orçamento atualizado com sucesso',
+            message: 'Orçamento atualizado com sucesso',
             data: orcamento
         });
     } catch (error) {

@@ -522,7 +522,12 @@
 
         document.getElementById('modalNumero').textContent = `Orçamento ${o.numero}`;
 
-        const linhas = (o.servicos || []).map(s => `
+        const resumido = o.tipo === 'resumido';
+        const linhas = (o.servicos || []).map(s => resumido ? `
+            <tr>
+                <td>${s.descricao}</td>
+                <td class="text-center">${s.quantidade}</td>
+            </tr>` : `
             <tr>
                 <td>${s.descricao}</td>
                 <td class="text-center">${s.quantidade}</td>
@@ -548,12 +553,15 @@
                 </div>
             </div>
             <table class="table table-sm table-bordered servicos-table">
-                <thead><tr><th>Descrição</th><th class="text-center">Qtd</th><th class="text-right">Preço unit.</th><th class="text-right">Total</th></tr></thead>
+                <thead><tr>${resumido
+                    ? '<th>Descrição</th><th class="text-center">Qtd</th>'
+                    : '<th>Descrição</th><th class="text-center">Qtd</th><th class="text-right">Preço unit.</th><th class="text-right">Total</th>'
+                }</tr></thead>
                 <tbody>${linhas}</tbody>
                 <tfoot>
-                    <tr><td colspan="3" class="text-right"><strong>Subtotal</strong></td><td class="text-right">€${(o.subtotal || 0).toFixed(2)}</td></tr>
-                    <tr><td colspan="3" class="text-right"><strong>IVA (23%)</strong></td><td class="text-right">€${(o.iva || 0).toFixed(2)}</td></tr>
-                    <tr class="table-active"><td colspan="3" class="text-right"><strong>TOTAL</strong></td><td class="text-right"><strong>€${(o.total || 0).toFixed(2)}</strong></td></tr>
+                    <tr><td colspan="${resumido ? 1 : 3}" class="text-right"><strong>Subtotal</strong></td><td class="text-right">€${(o.subtotal || 0).toFixed(2)}</td></tr>
+                    <tr><td colspan="${resumido ? 1 : 3}" class="text-right"><strong>IVA (23%)</strong></td><td class="text-right">€${(o.iva || 0).toFixed(2)}</td></tr>
+                    <tr class="table-active"><td colspan="${resumido ? 1 : 3}" class="text-right"><strong>TOTAL</strong></td><td class="text-right"><strong>€${(o.total || 0).toFixed(2)}</strong></td></tr>
                 </tfoot>
             </table>
             ${o.notas ? `<div class="alert alert-light mt-2"><strong>Notas:</strong> ${o.notas}</div>` : ''}

@@ -229,6 +229,19 @@
                                                     <label for="invoiceDate">Data do Orçamento</label>
                                                     <input type="date" class="form-control" id="invoiceDate" required>
                                                 </div>
+                                                <div class="form-group">
+                                                    <label>Tipo de orçamento</label>
+                                                    <div id="tipoOrcamentoGroup">
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="radio" name="tipoOrcamento" id="tipoDetalhado" value="detalhado" checked onchange="invoiceManager.updatePreview()">
+                                                            <label class="form-check-label" for="tipoDetalhado">Detalhado <small class="text-muted">(preço por item)</small></label>
+                                                        </div>
+                                                        <div class="form-check">
+                                                            <input class="form-check-input" type="radio" name="tipoOrcamento" id="tipoResumido" value="resumido" onchange="invoiceManager.updatePreview()">
+                                                            <label class="form-check-label" for="tipoResumido">Resumido <small class="text-muted">(só o total final)</small></label>
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
 
@@ -393,8 +406,8 @@
                                                     <th>Nº</th>
                                                     <th>Descrição</th>
                                                     <th>Quantidade</th>
-                                                    <th>Preço Unit.</th>
-                                                    <th>Total</th>
+                                                    <th class="col-preco-unit">Preço Unit.</th>
+                                                    <th class="col-total-item">Total</th>
                                                 </tr>
                                             </thead>
                                             <tbody id="previewServicesTable">
@@ -609,13 +622,23 @@
                 const previewTable = $('#previewServicesTable');
                 previewTable.empty();
 
+                const tipoOrcamento = $('input[name="tipoOrcamento"]:checked').val() || 'detalhado';
+                const resumido = tipoOrcamento === 'resumido';
+                $('.col-preco-unit, .col-total-item').toggle(!resumido);
+
                 $('#servicesTable tbody tr').each(function(index) {
                     const description = $(this).find('input[type="text"]').val() || 'Serviço';
                     const qty = $(this).find('.qty').val() || '0';
                     const price = parseFloat($(this).find('.price').val()) || 0;
                     const total = (parseFloat(qty) * price).toFixed(2);
 
-                    const row = `
+                    const row = resumido ? `
+                        <tr>
+                            <td>${index + 1}</td>
+                            <td>${description}</td>
+                            <td>${qty}</td>
+                        </tr>
+                    ` : `
                         <tr>
                             <td>${index + 1}</td>
                             <td>${description}</td>
@@ -753,15 +776,20 @@
                     // TABELA DE SERVIÇOS
                     // ═══════════════════════════════════════════════════════════
                     
+                    const resumidoPdf = ($('input[name="tipoOrcamento"]:checked').val() || 'detalhado') === 'resumido';
                     const servicos = [];
                     $('#servicesTable tbody tr').each(async function(index) {
                         const descricao = $(this).find('input[type="text"]').val() || 'Servico';
                         const quantidade = $(this).find('.qty').val() || '0';
                         const preco = parseFloat($(this).find('.price').val()) || 0;
                         const total = (parseFloat(quantidade) * preco).toFixed(2);
-                        
+
                         if (descricao && quantidade && preco) {
-                            servicos.push([
+                            servicos.push(resumidoPdf ? [
+                                (index + 1).toString(),
+                                descricao,
+                                quantidade
+                            ] : [
                                 (index + 1).toString(),
                                 descricao,
                                 quantidade,
@@ -770,20 +798,24 @@
                             ]);
                         }
                     });
-                    
+
                     doc.autoTable({
                         startY: yPos,
-                        head: [['#', 'Descrição', 'Qtd', 'Preço Unit.', 'Total']],
+                        head: resumidoPdf ? [['#', 'Descrição', 'Qtd']] : [['#', 'Descrição', 'Qtd', 'Preço Unit.', 'Total']],
                         body: servicos,
                         theme: 'grid',
-                        headStyles: { 
+                        headStyles: {
                             fillColor: [0, 102, 204],
                             textColor: [255, 255, 255],
                             fontSize: 10,
                             fontStyle: 'bold'
                         },
                         styles: { fontSize: 9 },
-                        columnStyles: {
+                        columnStyles: resumidoPdf ? {
+                            0: { cellWidth: 10 },
+                            1: { cellWidth: 140 },
+                            2: { cellWidth: 20, halign: 'center' }
+                        } : {
                             0: { cellWidth: 10 },
                             1: { cellWidth: 90 },
                             2: { cellWidth: 20, halign: 'center' },
@@ -1133,7 +1165,8 @@
                 subtotal: parseFloat($('#subtotal').text().replace(' €', '')) || 0,
                 iva: parseFloat($('#tax').text().replace(' €', '')) || 0,
                 total: parseFloat($('#grandTotal').text().replace(' €', '')) || 0,
-                notas: $('#notes').val() || 'Este orçamento é válido por 30 dias a partir da data de apresentação.'
+                notas: $('#notes').val() || 'Este orçamento é válido por 30 dias a partir da data de apresentação.',
+                tipo: $('input[name="tipoOrcamento"]:checked').val() || 'detalhado'
             };
 
             // Incluir ligação aos elevadores selecionados (via checkboxes)
@@ -1232,15 +1265,25 @@
                         }
                     }
                     
-                    const action = isUpdate ? 'atualizado' : 'salvo';
                     const numero = orcamentoData.numero || $('#invoiceNumber').val();
                     const total = orcamentoData.total || parseFloat($('#grandTotal').text().replace(' €', ''));
                     const clienteNome = orcamentoData.cliente?.nome || $('#clientName').val();
                     const liftsCount = (Array.isArray(orcamentoData.lifts) ? orcamentoData.lifts.length : 0) || (orcamentoData.liftId ? 1 : 0);
                     const liftMsg = liftsCount > 0 ? `\n🔗 ${liftsCount} elevador(es) vinculado(s)` : (result.liftLinked ? `\n🔗 Ligado ao elevador: ${result.liftAddress || ''}` : '');
-                    
-                    if (await swalConfirm(`✅ Orçamento ${numero} ${action} com sucesso!\n\nTotal: €${total.toFixed(2)}\nCliente: ${clienteNome}${liftMsg}\n\n📋 Deseja ver a lista de orçamentos?\n(Cancele para ficar aqui e enviar email)`)) {
-                        window.location.href = 'orcamentos-list.html';
+
+                    if (result.versioned) {
+                        // O orçamento antigo já tinha sido mostrado ao cliente — o servidor
+                        // preservou-o e criou esta nova versão em vez de o sobrescrever.
+                        $('#invoiceNumber').val(numero);
+                        if (orcamentoData.data) $('#invoiceDate').val(new Date(orcamentoData.data).toISOString().split('T')[0]);
+                        if (await swalConfirm(`ℹ️ O orçamento original já tinha sido enviado ao cliente, por isso foi preservado no histórico.\n\nNova versão criada: ${numero} (rascunho)\nTotal: €${total.toFixed(2)}${liftMsg}\n\n📋 Deseja ver a lista de orçamentos?\n(Cancele para ficar aqui e enviar email)`)) {
+                            window.location.href = 'orcamentos-list.html';
+                        }
+                    } else {
+                        const action = isUpdate ? 'atualizado' : 'salvo';
+                        if (await swalConfirm(`✅ Orçamento ${numero} ${action} com sucesso!\n\nTotal: €${total.toFixed(2)}\nCliente: ${clienteNome}${liftMsg}\n\n📋 Deseja ver a lista de orçamentos?\n(Cancele para ficar aqui e enviar email)`)) {
+                            window.location.href = 'orcamentos-list.html';
+                        }
                     }
                 } else {
                     console.error('❌ Erro do servidor:', result);
@@ -1589,7 +1632,12 @@
                 $('#invoiceNumber').val(orcamento.numero);
                 $('#invoiceDate').val(orcamento.data.split('T')[0]); // Converter data ISO
                 $('#notes').val(orcamento.notas || '');
-                
+                $(`input[name="tipoOrcamento"][value="${orcamento.tipo === 'resumido' ? 'resumido' : 'detalhado'}"]`).prop('checked', true);
+
+                if (orcamento.status === 'substituido') {
+                    $('.card-header').first().prepend('<span class="badge badge-secondary">Substituído — existe uma versão mais recente</span> ');
+                }
+
                 // Carregar fotografias
                 renderFotosGrid(orcamento.fotos || []);
                 

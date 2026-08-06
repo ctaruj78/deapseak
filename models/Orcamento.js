@@ -101,8 +101,28 @@ const orcamentoSchema = new mongoose.Schema({
     // Статус орçаменту
     status: {
         type: String,
-        enum: ['rascunho', 'enviado', 'aprovado', 'rejeitado', 'expirado'],
+        enum: ['rascunho', 'enviado', 'aprovado', 'rejeitado', 'expirado', 'substituido'],
         default: 'rascunho'
+    },
+
+    // Tipo de apresentação: 'detalhado' (preço por linha) ou 'resumido' (apenas total)
+    tipo: {
+        type: String,
+        enum: ['detalhado', 'resumido'],
+        default: 'detalhado'
+    },
+
+    // Versionamento: quando um orçamento já mostrado ao cliente é editado,
+    // não é sobrescrito — cria-se uma nova versão e este liga-se ao original.
+    origemId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Orcamento',
+        default: null
+    },
+    substituidoPorId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Orcamento',
+        default: null
     },
     
     // Хто створив (admin user)

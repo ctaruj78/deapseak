@@ -7784,8 +7784,8 @@ Email de contacto: info@festlift.pt`;
                 return;
             }
             const statusBadge = s => {
-                const map = { rascunho:'secondary', enviado:'info', aprovado:'success', rejeitado:'danger', expirado:'warning' };
-                const labels = { rascunho:'Rascunho', enviado:'Enviado', aprovado:'Aprovado', rejeitado:'Rejeitado', expirado:'Expirado' };
+                const map = { rascunho:'secondary', enviado:'info', aprovado:'success', rejeitado:'danger', expirado:'warning', substituido:'secondary' };
+                const labels = { rascunho:'Rascunho', enviado:'Enviado', aprovado:'Aprovado', rejeitado:'Rejeitado', expirado:'Expirado', substituido:'Substituído' };
                 return `<span class="badge badge-${map[s]||'secondary'}">${labels[s]||escapeHtml(s)}</span>`;
             };
             container.innerHTML = `<table class="table table-sm table-hover table-bordered">
