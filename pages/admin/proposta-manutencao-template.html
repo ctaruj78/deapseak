@@ -47,7 +47,7 @@
                 <div class="row">
                     <div class="col-md-9">
 
-                        <div class="alert alert-purple d-flex align-items-center" id="avisoPedidoCliente" style="display:none;background:#f3ecfb;border-left:4px solid #6f42c1;color:#4a2d6b;">
+                        <div class="alert" id="avisoPedidoCliente" style="display:none;align-items:center;background:#f3ecfb;border-left:4px solid #6f42c1;color:#4a2d6b;">
                             <i class="fas fa-paper-plane mr-2"></i>
                             <div>Este pedido foi submetido pelo próprio cliente através do painel. Reveja os dados abaixo e preencha as condições comerciais (preço, pagamento, duração) antes de enviar a proposta.</div>
                         </div>
@@ -159,10 +159,15 @@
                                             <option value="completa">Completa</option>
                                         </select>
                                     </div>
-                                    <div class="col-md-6 form-group d-flex align-items-end" id="criarCompletaWrap">
+                                    <div class="col-md-6 form-group" id="criarCompletaWrap" style="display:flex;align-items:flex-end;">
                                         <div class="custom-control custom-checkbox">
                                             <input type="checkbox" class="custom-control-input" id="criarTambemCompleta">
                                             <label class="custom-control-label" for="criarTambemCompleta">Criar também versão Completa (proposta separada, para o cliente comparar)</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 form-group" id="jaTemVersaoIrma" style="display:none;">
+                                        <div class="alert alert-info py-2 px-3 mb-0" style="font-size:.85rem;">
+                                            <i class="fas fa-link mr-1"></i>Esta proposta já tem uma versão irmã (Simples/Completa) associada.
                                         </div>
                                     </div>
                                     <div class="col-md-3 form-group">
@@ -193,6 +198,7 @@
                                         <label>Renovação Tácita</label>
                                         <select id="renovacaoPeriodo" class="form-control">
                                             <option value="1 ano">1 ano</option>
+                                            <option value="3 anos">3 anos</option>
                                             <option value="6 meses">6 meses</option>
                                             <option value="3 meses">3 meses</option>
                                         </select>
@@ -261,6 +267,7 @@
 <script>
 let clientes = [];
 let currentPropostaId = null;
+let propostaTemIrma = false;
 
 $(document).ready(function() {
     loadSidebarWithInit('includes/sidebar.html');
@@ -315,12 +322,21 @@ document.addEventListener('change', function(e) {
         const cliente = clientes.find(c => c._id === e.target.value);
         if (!cliente) return;
         const nome = ((cliente.firstName || '') + ' ' + (cliente.lastName || '')).trim() || cliente.name || cliente.username || cliente.email;
+        // Preenche apenas os dados de contacto do cliente. NÃO copia para
+        // Instalação/Faturação — o cliente é frequentemente um contacto/gestor
+        // (ex.: administradora de condomínios) diferente do prédio a manter,
+        // com NIF e morada próprios que têm de ser preenchidos à parte.
         document.getElementById('clienteNome').value = nome;
         document.getElementById('clienteEmail').value = cliente.email || '';
         document.getElementById('clienteMorada').value = cliente.address || '';
-        document.getElementById('instMorada').value = cliente.address || '';
-        document.getElementById('instNome').value = nome;
-        document.getElementById('fatNome').value = nome;
+    }
+    if (e.target && e.target.id === 'tipoManutencao') {
+        const wrap = document.getElementById('criarCompletaWrap');
+        if (wrap) wrap.style.display = (e.target.value === 'simples' && !propostaTemIrma) ? 'flex' : 'none';
+        // O contrato-modelo de Manutenção Completa prevê renovação tácita por
+        // períodos de 3 anos (vs. 1 ano da Simples) — sugestão, não obrigatória.
+        const renovacaoSel = document.getElementById('renovacaoPeriodo');
+        if (renovacaoSel) renovacaoSel.value = e.target.value === 'completa' ? '3 anos' : '1 ano';
     }
 });
 
@@ -367,7 +383,7 @@ async function loadProposta(id) {
         statusEl.textContent = statusLabel(p.status);
 
         const avisoCliente = document.getElementById('avisoPedidoCliente');
-        if (avisoCliente) avisoCliente.style.display = (p.origem === 'cliente' && p.status === 'solicitado') ? '' : 'none';
+        if (avisoCliente) avisoCliente.style.display = (p.origem === 'cliente' && p.status === 'solicitado') ? 'flex' : 'none';
 
         document.getElementById('clienteNome').value = p.cliente?.nome || '';
         document.getElementById('clienteEmail').value = p.cliente?.email || '';
@@ -377,13 +393,31 @@ async function loadProposta(id) {
 
         document.getElementById('instEdificio').value = p.instalacao?.edificio || '';
         document.getElementById('instNome').value = p.instalacao?.nome || '';
+        document.getElementById('instNif').value = p.instalacao?.nif || '';
         document.getElementById('instMorada').value = p.instalacao?.morada || '';
         document.getElementById('instCodigoPostal').value = p.instalacao?.codigoPostal || '';
 
         document.getElementById('fatNome').value = p.faturacao?.nome || '';
+        document.getElementById('fatNif').value = p.faturacao?.nif || '';
         document.getElementById('fatUnidades').value = p.faturacao?.unidadesContratadas || '';
         document.getElementById('fatMorada').value = p.faturacao?.morada || '';
         document.getElementById('fatCodigoPostal').value = p.faturacao?.codigoPostal || '';
+
+        document.getElementById('tipoManutencao').value = p.tipo === 'completa' ? 'completa' : 'simples';
+        // "Criar também versão Completa" continua disponível ao editar/responder
+        // (não só ao criar de raiz) — é precisamente ao responder a um pedido de
+        // cliente que faz mais sentido oferecer as duas versões. Só se esconde
+        // quando já existe uma irmã associada (evita duplicar) ou quando o tipo
+        // já é Completa.
+        const criarCompletaWrap = document.getElementById('criarCompletaWrap');
+        const criarCompletaCheckbox = document.getElementById('criarTambemCompleta');
+        if (criarCompletaCheckbox) criarCompletaCheckbox.checked = false;
+        if (criarCompletaWrap) {
+            criarCompletaWrap.style.display = (p.tipo !== 'completa' && !p.propostaIrmaId) ? 'flex' : 'none';
+        }
+        const jaTemIrma = document.getElementById('jaTemVersaoIrma');
+        propostaTemIrma = !!p.propostaIrmaId;
+        if (jaTemIrma) jaTemIrma.style.display = propostaTemIrma ? '' : 'none';
 
         document.getElementById('numAscensores').value = p.numAscensores || 1;
         document.getElementById('localInstalacao').value = p.localInstalacao || '';
@@ -420,15 +454,19 @@ function coletarDados() {
         instalacao: {
             edificio: document.getElementById('instEdificio').value.trim(),
             nome: document.getElementById('instNome').value.trim(),
+            nif: document.getElementById('instNif').value.trim(),
             morada: document.getElementById('instMorada').value.trim(),
             codigoPostal: document.getElementById('instCodigoPostal').value.trim()
         },
         faturacao: {
             nome: document.getElementById('fatNome').value.trim(),
+            nif: document.getElementById('fatNif').value.trim(),
             unidadesContratadas: document.getElementById('fatUnidades').value.trim(),
             morada: document.getElementById('fatMorada').value.trim(),
             codigoPostal: document.getElementById('fatCodigoPostal').value.trim()
         },
+        tipo: document.getElementById('tipoManutencao').value,
+        criarTambemCompleta: document.getElementById('criarTambemCompleta').checked,
         numAscensores: parseInt(document.getElementById('numAscensores').value) || 1,
         localInstalacao: document.getElementById('localInstalacao').value.trim(),
         precoMensal: parseFloat(document.getElementById('precoMensal').value) || 0,
@@ -471,6 +509,13 @@ async function guardarProposta() {
             const newUrl = `${window.location.pathname}?id=${currentPropostaId}`;
             window.history.replaceState({}, '', newUrl);
             await loadProposta(currentPropostaId);
+            if (result.dataCompleta) {
+                setTimeout(() => {
+                    if (confirm(`A versão Completa (${result.dataCompleta.numero}) também foi criada. Abrir agora para rever?`)) {
+                        window.location.href = `proposta-manutencao-template.html?id=${result.dataCompleta._id}`;
+                    }
+                }, 300);
+            }
         } else {
             toastr.error(result.message || 'Erro ao guardar proposta');
         }

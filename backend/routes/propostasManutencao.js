@@ -30,7 +30,7 @@ async function gerarPDFPropostaManutencao(proposta) {
     return new Promise((resolve, reject) => {
         try {
             const AZUL = '#1a3a6b';
-            const doc = new PDFDocument({ margin: 50, size: 'A4' });
+            const doc = new PDFDocument({ margin: 50, size: 'A4', bufferPages: true });
             const chunks = [];
 
             doc.on('data', chunk => chunks.push(chunk));
@@ -155,6 +155,23 @@ async function gerarPDFPropostaManutencao(proposta) {
             doc.fontSize(8).font('Helvetica').fillColor('#666666');
             doc.text('FestLift - Elevadores e Serviços, Lda. | NIF: 515 924 741 | Email: info@festlift.pt', 50, footerY, { align: 'center', width: 500 });
             doc.text('Tel: +351 214 190 863 | Móvel: +351 926 380 243 | Avenida do Parque nº 84-B, Rio de Mouro, 2635-609', 50, footerY + 12, { align: 'center', width: 500 });
+            doc.fillColor('#000000');
+
+            // Numeração de páginas ("Página | N") em todas as páginas, ao estilo dos
+            // contratos-modelo FestLift — tem de correr depois de todo o conteúdo
+            // (incluindo addPage automáticos) e antes de doc.end(), com bufferPages.
+            // O texto é escrito dentro da margem inferior da página; sem zerar
+            // temporariamente essa margem, o pdfkit interpreta a escrita perto do
+            // fundo como "não cabe" e insere páginas em branco extra sozinho.
+            const pageRange = doc.bufferedPageRange();
+            for (let i = pageRange.start; i < pageRange.start + pageRange.count; i++) {
+                doc.switchToPage(i);
+                const oldBottomMargin = doc.page.margins.bottom;
+                doc.page.margins.bottom = 0;
+                doc.fontSize(8).font('Helvetica').fillColor('#666666')
+                    .text(`Página | ${i + 1}`, 50, doc.page.height - 28, { align: 'center', width: doc.page.width - 100, lineBreak: false });
+                doc.page.margins.bottom = oldBottomMargin;
+            }
             doc.fillColor('#000000');
 
             doc.end();
@@ -386,22 +403,23 @@ router.get('/', authenticate, authorizeRoles('admin', 'dispatcher', 'client'), a
 });
 
 // GET /api/propostas-manutencao/next-number
+// Pré-visualização apenas — lê o mesmo contador atómico que gerarNumero() usa
+// (sem o incrementar), para nunca divergir do número realmente atribuído ao
+// guardar. A versão anterior escaneava o último "numero" existente, o que dava
+// sempre o mesmo valor em pré-visualizações sucessivas sem guardar entretanto
+// (ex.: abrir duas vezes "Nova Proposta", ou criar Simples + Completa em
+// sequência) — parecia colisão de números, mas os números realmente atribuídos
+// no momento de guardar já eram sempre distintos.
 router.get('/next-number', authenticate, authorizeRoles('admin', 'dispatcher'), async (req, res) => {
     try {
         const ano = new Date().getFullYear();
         const mes = String(new Date().getMonth() + 1).padStart(2, '0');
+        const key = `PROP-${ano}-${mes}`;
 
-        const ultima = await PropostaManutencao.findOne({
-            numero: new RegExp(`^PROP-${ano}-${mes}`)
-        }).sort({ numero: -1 }).lean();
+        const counterDoc = await mongoose.connection.db.collection('counters').findOne({ _id: key });
+        const sequencia = (counterDoc?.seq || 0) + 1;
 
-        let sequencia = 1;
-        if (ultima) {
-            const match = ultima.numero.match(/PROP-\d{4}-\d{2}-(\d{3})/);
-            if (match) sequencia = parseInt(match[1]) + 1;
-        }
-
-        const numero = `PROP-${ano}-${mes}-${String(sequencia).padStart(3, '0')}`;
+        const numero = `${key}-${String(sequencia).padStart(3, '0')}`;
         res.json({ success: true, numero, proximaSequencia: sequencia });
     } catch (error) {
         console.error('❌ Erro ao gerar próximo número:', error);
@@ -570,7 +588,8 @@ router.put('/:id', authenticate, authorizeRoles('admin', 'dispatcher'), async (r
         const {
             cliente, instalacao, faturacao, numAscensores, localInstalacao,
             precoMensal, pagamento, dataInicioContrato, duracaoAnos, renovacao,
-            notas, status, lifts: bodyLifts, liftAddress: bodyLiftAddress, tipo
+            notas, status, lifts: bodyLifts, liftAddress: bodyLiftAddress, tipo,
+            criarTambemCompleta
         } = req.body;
 
         if (cliente) proposta.cliente = cliente;
@@ -602,10 +621,49 @@ router.put('/:id', authenticate, authorizeRoles('admin', 'dispatcher'), async (r
 
         await proposta.save();
 
+        // Permite criar a versão Completa em par também ao RESPONDER a um pedido
+        // existente (PUT), não só ao criar uma proposta nova (POST) — este é de
+        // longe o caso mais comum, já que responder a um pedido de cliente é
+        // sempre uma edição de um registo 'solicitado' já existente. Só cria a
+        // irmã se ainda não existir uma (evita duplicar ao guardar duas vezes).
+        let propostaCompleta = null;
+        if (criarTambemCompleta && proposta.tipo === 'simples' && !proposta.propostaIrmaId) {
+            const numeroCompleta = await PropostaManutencao.gerarNumero();
+            propostaCompleta = new PropostaManutencao({
+                numero: numeroCompleta,
+                data: proposta.data,
+                validadeAte: proposta.validadeAte,
+                cliente: proposta.cliente,
+                instalacao: proposta.instalacao,
+                faturacao: proposta.faturacao,
+                numAscensores: proposta.numAscensores,
+                localInstalacao: proposta.localInstalacao,
+                precoMensal: proposta.precoMensal,
+                pagamento: proposta.pagamento,
+                dataInicioContrato: proposta.dataInicioContrato,
+                duracaoAnos: proposta.duracaoAnos,
+                renovacao: proposta.renovacao,
+                notas: proposta.notas,
+                criadoPor: req.user.id,
+                status: 'rascunho',
+                tipo: 'completa',
+                propostaIrmaId: proposta._id
+            });
+            await propostaCompleta.save();
+
+            proposta.propostaIrmaId = propostaCompleta._id;
+            await proposta.save();
+
+            console.log(`✅ Proposta irmã (Completa) criada ao responder: ${numeroCompleta}`);
+        }
+
         res.json({
             success: true,
-            message: wasApproved ? 'Proposta atualizada e reaberta como rascunho' : 'Proposta atualizada com sucesso',
-            data: proposta
+            message: propostaCompleta
+                ? `Proposta atualizada e versão Completa criada: ${propostaCompleta.numero}`
+                : (wasApproved ? 'Proposta atualizada e reaberta como rascunho' : 'Proposta atualizada com sucesso'),
+            data: proposta,
+            dataCompleta: propostaCompleta
         });
     } catch (error) {
         console.error('Erro ao atualizar proposta:', error);

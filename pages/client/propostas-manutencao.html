@@ -486,6 +486,7 @@
                         <span class="status-badge ${statusClass}">${statusText}</span>
                     </div>
                     <div class="card-body">
+                        <p class="mb-1"><i class="fas fa-tools text-secondary mr-1"></i><strong>Tipo:</strong> Manutenção ${p.tipo === 'completa' ? 'Completa' : 'Simples'}</p>
                         <p class="mb-1"><i class="fas fa-calendar text-primary mr-1"></i><strong>Data:</strong> ${data}</p>
                         ${p.status !== 'solicitado' ? `<p class="mb-1"><i class="fas fa-clock text-warning mr-1"></i><strong>Válida até:</strong> ${validadeAte}</p>` : ''}
                         ${p.instalacao?.morada ? `<p class="mb-1 text-muted small"><i class="fas fa-map-marker-alt mr-1"></i>${p.instalacao.morada}</p>` : ''}
@@ -535,6 +536,7 @@
         document.getElementById('modalBody').innerHTML = `
             <div class="row mb-3">
                 <div class="col-sm-6">
+                    <p><strong>Tipo:</strong> Manutenção ${p.tipo === 'completa' ? 'Completa' : 'Simples'}</p>
                     <p><strong>Data:</strong> ${new Date(p.data).toLocaleDateString('pt-PT')}</p>
                     ${p.status !== 'solicitado' ? `<p><strong>Válida até:</strong> ${p.validadeAte ? new Date(p.validadeAte).toLocaleDateString('pt-PT') : 'N/A'}</p>` : ''}
                     <p><strong>Status:</strong> <span class="status-badge ${`badge-${p.status}`}">${statusLabels[p.status] || p.status}</span></p>

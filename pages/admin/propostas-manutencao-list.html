@@ -49,7 +49,7 @@
                 <div class="d-flex justify-content-between align-items-center flex-wrap">
                     <div>
                         <h1 class="m-0"><i class="fas fa-file-contract mr-2 text-primary"></i>Propostas de Manutenção</h1>
-                        <p class="text-muted mb-0 small">Contratos de manutenção propostos a clientes — criar, enviar e acompanhar respostas.</p>
+                        <p class="text-muted mb-0 small">Contratos de manutenção propostos a clientes — criar, enviar e acompanhar respostas.<span id="pedidosPendentesMsg"></span></p>
                     </div>
                     <div>
                         <a href="contratos-manutencao-list.html" class="btn btn-outline-primary mr-1"><i class="fas fa-file-signature mr-1"></i>Contratos</a>
@@ -94,6 +94,7 @@
                             <thead>
                                 <tr>
                                     <th>Número</th>
+                                    <th>Tipo</th>
                                     <th>Cliente</th>
                                     <th>Instalação</th>
                                     <th>Preço/mês</th>
@@ -103,7 +104,7 @@
                                 </tr>
                             </thead>
                             <tbody id="propostasTbody">
-                                <tr><td colspan="7" class="text-center text-muted py-4">A carregar...</td></tr>
+                                <tr><td colspan="8" class="text-center text-muted py-4">A carregar...</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -150,7 +151,7 @@ function statusLabel(status) {
 
 async function carregarPropostas() {
     const tbody = document.getElementById('propostasTbody');
-    tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">A carregar...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted py-4">A carregar...</td></tr>';
 
     const search = document.getElementById('filtroSearch').value.trim();
     const status = document.getElementById('filtroStatus').value;
@@ -167,18 +168,36 @@ async function carregarPropostas() {
         if (!result.success) { toastr.error(result.message || 'Erro ao carregar propostas'); return; }
 
         const propostas = result.data || [];
+
+        const pendentesMsgEl = document.getElementById('pedidosPendentesMsg');
+        if (pendentesMsgEl) {
+            const nPendentes = propostas.filter(p => p.status === 'solicitado').length;
+            pendentesMsgEl.textContent = nPendentes > 0 ? ` — ${nPendentes} pedido(s) de cliente por analisar` : '';
+            pendentesMsgEl.className = nPendentes > 0 ? 'font-weight-bold text-purple' : '';
+        }
+
         if (!propostas.length) {
-            tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">Nenhuma proposta encontrada.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="8" class="text-center text-muted py-4">Nenhuma proposta encontrada.</td></tr>';
             return;
         }
 
-        tbody.innerHTML = propostas.map(p => {
+        // Pedidos de clientes por analisar sobem para o topo — são os que precisam de ação
+        const propostasOrdenadas = [...propostas].sort((a, b) => {
+            const aPend = a.status === 'solicitado' ? 0 : 1;
+            const bPend = b.status === 'solicitado' ? 0 : 1;
+            return aPend - bPend;
+        });
+
+        tbody.innerHTML = propostasOrdenadas.map(p => {
             const instalacao = p.instalacao?.edificio || p.instalacao?.morada || p.localInstalacao || '—';
             const preco = p.precoMensal ? `€${Number(p.precoMensal).toFixed(2)}` : '—';
             const data = p.data ? new Date(p.data).toLocaleDateString('pt-PT') : '—';
+            const tipoLabel = p.tipo === 'completa' ? 'Completa' : 'Simples';
+            const podeEliminar = ['solicitado', 'rascunho', 'rejeitado', 'expirado'].includes(p.status);
             return `
                 <tr>
                     <td><strong>${escHtml(p.numero)}</strong></td>
+                    <td><span class="badge badge-light border">${tipoLabel}</span></td>
                     <td>${escHtml(p.cliente?.nome || '—')}<br><small class="text-muted">${escHtml(p.cliente?.email || '')}</small></td>
                     <td>${escHtml(instalacao)}</td>
                     <td>${preco}</td>
@@ -192,13 +211,14 @@ async function carregarPropostas() {
                         ${(p.status === 'rascunho' || p.status === 'enviado') ? `<button class="btn btn-sm btn-outline-success" onclick="marcarAprovado('${p._id}')" title="Marcar como Aprovado (aceite fora do portal)"><i class="fas fa-check-double"></i></button>` : ''}
                         ${p.status === 'aprovado' ? `<button class="btn btn-sm btn-outline-success" onclick="gerarContrato('${p._id}')" title="Gerar / Ver Contrato"><i class="fas fa-file-signature"></i></button>` : ''}
                         <button class="btn btn-sm btn-outline-danger" onclick="arquivarProposta('${p._id}')" title="Arquivar"><i class="fas fa-archive"></i></button>
+                        ${podeEliminar ? `<button class="btn btn-sm btn-outline-danger" onclick="eliminarProposta('${p._id}', '${escHtml(p.numero)}')" title="Eliminar definitivamente"><i class="fas fa-trash"></i></button>` : ''}
                     </td>
                 </tr>
             `;
         }).join('');
     } catch (e) {
         console.error('Erro ao carregar propostas:', e);
-        tbody.innerHTML = '<tr><td colspan="7" class="text-center text-danger py-4">Erro ao carregar propostas.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" class="text-center text-danger py-4">Erro ao carregar propostas.</td></tr>';
     }
 }
 
@@ -275,6 +295,25 @@ async function arquivarProposta(id) {
         }
     } catch (e) {
         toastr.error('Erro ao arquivar proposta');
+    }
+}
+
+async function eliminarProposta(id, numero) {
+    if (!await swalConfirm(`Eliminar definitivamente a proposta ${numero}? Esta ação não pode ser desfeita.`, 'Eliminar proposta')) return;
+    try {
+        const res = await fetch(`/api/propostas-manutencao/${id}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${getToken()}` }
+        });
+        const result = await res.json();
+        if (result.success) {
+            toastr.success('Proposta eliminada');
+            carregarPropostas();
+        } else {
+            toastr.error(result.message || 'Erro ao eliminar');
+        }
+    } catch (e) {
+        toastr.error('Erro ao eliminar proposta');
     }
 }
 
