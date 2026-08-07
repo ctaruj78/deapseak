@@ -182,6 +182,38 @@ class EmailService {
         }
     }
 
+    // Notificação interna — admin/dispatcher recebe email quando cliente pede uma proposta de manutenção
+    // (ex.: cliente com elevador de outra empresa que quer mudar para a FestLift)
+    async sendNewPropostaSolicitadaNotification(proposta) {
+        try {
+            const adminEmail = process.env.ADMIN_EMAIL || 'info@festlift.pt';
+            const clienteNome = this._esc(proposta.cliente?.nome || 'Cliente');
+            const clienteEmailEsc = this._esc(proposta.cliente?.email || '');
+            const morada = this._esc(proposta.instalacao?.morada || proposta.cliente?.morada || '—');
+            const codigoPostal = this._esc(proposta.instalacao?.codigoPostal || proposta.cliente?.codigoPostal || '');
+            const nif = this._esc(proposta.cliente?.nif || '—');
+            const body = `
+                <p>Um cliente submeteu um <strong>pedido de proposta de manutenção</strong> através do painel, para um elevador que ainda não está na nossa base de dados.</p>
+                <div style="background:#fff3e0;border-left:4px solid #f9a825;border-radius:6px;padding:18px 22px;margin:20px 0;">
+                    <p style="margin:0 0 8px 0;"><strong>Pedido:</strong> ${this._esc(proposta.numero)}</p>
+                    <p style="margin:0 0 8px 0;"><strong>Cliente:</strong> ${clienteNome}${clienteEmailEsc ? ` — <a href="mailto:${clienteEmailEsc}">${clienteEmailEsc}</a>` : ''}</p>
+                    <p style="margin:0 0 8px 0;"><strong>NIF:</strong> ${nif}</p>
+                    <p style="margin:0 0 8px 0;"><strong>Morada da instalação:</strong> ${morada}${codigoPostal ? `, ${codigoPostal}` : ''}</p>
+                    <p style="margin:0;"><strong>Nº de elevadores:</strong> ${proposta.numAscensores || '—'}</p>
+                    ${proposta.notas ? `<p style="margin:8px 0 0 0;"><strong>Observações do cliente:</strong> ${this._esc(proposta.notas)}</p>` : ''}
+                </div>
+                <p>Aceda ao painel de gestão para preencher os termos comerciais e enviar a proposta ao cliente.</p>`;
+            await this._sendEmail(
+                adminEmail,
+                `📨 Novo pedido de proposta de manutenção — ${clienteNome}`,
+                this._tpl('#f9a825', 'Pedido de Proposta de Manutenção', body)
+            );
+            console.log(`✅ Internal notification sent to ${adminEmail} for proposta solicitada ${proposta.numero}`);
+        } catch (error) {
+            console.error('❌ Error sending internal notification (proposta solicitada):', error);
+        }
+    }
+
     // Tecnico atribuido ao pedido — notificacao ao cliente
     async sendTechnicianAssignedNotification(request, technician, client) {
         try {

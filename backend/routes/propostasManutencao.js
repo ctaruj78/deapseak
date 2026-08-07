@@ -158,7 +158,7 @@ router.get('/my', authenticate, authorizeRoles('client'), async (req, res) => {
 
         const propostas = await PropostaManutencao.find({
             'cliente.email': clienteEmail.toLowerCase(),
-            status: { $in: ['enviado', 'aprovado', 'rejeitado', 'expirado'] }
+            status: { $in: ['solicitado', 'enviado', 'aprovado', 'rejeitado', 'expirado'] }
         })
             .sort({ data: -1 })
             .select('-emailsEnviados -pdfPath')
@@ -168,6 +168,75 @@ router.get('/my', authenticate, authorizeRoles('client'), async (req, res) => {
     } catch (error) {
         console.error('Erro ao buscar propostas do cliente:', error);
         res.status(500).json({ success: false, message: 'Erro ao buscar propostas', error: error.message });
+    }
+});
+
+// POST /api/propostas-manutencao/solicitar - Cliente pede uma proposta para um novo elevador
+// (ex.: cliente que quer mudar de empresa de manutenção e ainda não tem nenhum elevador nosso na base)
+router.post('/solicitar', authenticate, authorizeRoles('client'), async (req, res) => {
+    try {
+        const { nif, morada, codigoPostal, edificio, numAscensores, observacoes } = req.body;
+
+        if (!morada || !String(morada).trim()) {
+            return res.status(400).json({ success: false, message: 'A morada da instalação é obrigatória' });
+        }
+        if (!numAscensores || Number(numAscensores) < 1) {
+            return res.status(400).json({ success: false, message: 'Indique o número de elevadores' });
+        }
+
+        const numero = await PropostaManutencao.gerarNumero();
+        const dataAtual = new Date();
+        const validadeAte = new Date(dataAtual);
+        validadeAte.setDate(validadeAte.getDate() + 30);
+
+        const User = require('../models/User');
+        const clientUser = await User.findById(req.user.id).select('firstName lastName username email').lean();
+        const nomeCliente = clientUser
+            ? (`${clientUser.firstName || ''} ${clientUser.lastName || ''}`.trim() || clientUser.username || clientUser.email)
+            : req.user.email;
+
+        const proposta = new PropostaManutencao({
+            numero,
+            data: dataAtual,
+            validadeAte,
+            cliente: {
+                nome: nomeCliente,
+                morada,
+                codigoPostal,
+                nif,
+                email: req.user.email
+            },
+            instalacao: {
+                edificio,
+                morada,
+                codigoPostal
+            },
+            numAscensores: Number(numAscensores),
+            notas: observacoes,
+            criadoPor: req.user.id,
+            status: 'solicitado',
+            origem: 'cliente'
+        });
+
+        await proposta.save();
+
+        console.log(`📨 Pedido de proposta de manutenção submetido pelo cliente: ${numero} (${req.user.email})`);
+
+        try {
+            const emailService = require('../services/emailService');
+            emailService.sendNewPropostaSolicitadaNotification(proposta).catch(err =>
+                console.error('Erro ao notificar equipa sobre novo pedido de proposta:', err.message)
+            );
+        } catch (_) {}
+
+        res.status(201).json({
+            success: true,
+            message: 'Pedido enviado com sucesso! A FestLift irá analisar e enviar-lhe uma proposta em breve.',
+            data: proposta
+        });
+    } catch (error) {
+        console.error('Erro ao submeter pedido de proposta:', error);
+        res.status(500).json({ success: false, message: 'Erro ao submeter pedido', error: error.message });
     }
 });
 

@@ -81,13 +81,21 @@ const propostaManutencaoSchema = new mongoose.Schema({
     },
 
     // Estado da proposta
+    // 'solicitado' = pedido submetido pelo cliente, ainda sem termos comerciais definidos pela FestLift
     status: {
         type: String,
-        enum: ['rascunho', 'enviado', 'aprovado', 'rejeitado', 'expirado'],
+        enum: ['solicitado', 'rascunho', 'enviado', 'aprovado', 'rejeitado', 'expirado'],
         default: 'rascunho'
     },
 
-    // Quem criou (admin/dispatcher)
+    // Quem originou o registo: 'admin' (criado no painel interno) ou 'cliente' (pedido submetido pelo cliente)
+    origem: {
+        type: String,
+        enum: ['admin', 'cliente'],
+        default: 'admin'
+    },
+
+    // Quem criou (admin/dispatcher, ou o próprio cliente quando origem === 'cliente')
     criadoPor: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',

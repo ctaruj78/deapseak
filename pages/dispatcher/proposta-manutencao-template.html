@@ -45,6 +45,11 @@
                 <div class="row">
                     <div class="col-md-9">
 
+                        <div class="alert alert-purple d-flex align-items-center" id="avisoPedidoCliente" style="display:none;background:#f3ecfb;border-left:4px solid #6f42c1;color:#4a2d6b;">
+                            <i class="fas fa-paper-plane mr-2"></i>
+                            <div>Este pedido foi submetido pelo próprio cliente através do painel. Reveja os dados abaixo e preencha as condições comerciais (preço, pagamento, duração) antes de enviar a proposta.</div>
+                        </div>
+
                         <div class="card card-outline card-primary">
                             <div class="card-header">
                                 <h3 class="card-title">Identificação</h3>
@@ -311,7 +316,11 @@ async function loadNextNumero() {
 }
 
 function statusBadgeClass(status) {
-    return { rascunho: 'badge-secondary', enviado: 'badge-info', aprovado: 'badge-success', rejeitado: 'badge-danger', expirado: 'badge-warning' }[status] || 'badge-secondary';
+    return { solicitado: 'badge-secondary', rascunho: 'badge-secondary', enviado: 'badge-info', aprovado: 'badge-success', rejeitado: 'badge-danger', expirado: 'badge-warning' }[status] || 'badge-secondary';
+}
+
+function statusLabel(status) {
+    return status === 'solicitado' ? 'Pedido do cliente' : status;
 }
 
 async function loadProposta(id) {
@@ -331,7 +340,11 @@ async function loadProposta(id) {
         const statusEl = document.getElementById('statusBadge');
         statusEl.style.display = '';
         statusEl.className = `badge ${statusBadgeClass(p.status)}`;
-        statusEl.textContent = p.status;
+        statusEl.style.backgroundColor = p.status === 'solicitado' ? '#6f42c1' : '';
+        statusEl.textContent = statusLabel(p.status);
+
+        const avisoCliente = document.getElementById('avisoPedidoCliente');
+        if (avisoCliente) avisoCliente.style.display = (p.origem === 'cliente' && p.status === 'solicitado') ? '' : 'none';
 
         document.getElementById('clienteNome').value = p.cliente?.nome || '';
         document.getElementById('clienteEmail').value = p.cliente?.email || '';

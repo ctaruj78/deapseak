@@ -17,6 +17,7 @@
         .badge-aprovado { background-color: #28a745; }
         .badge-rejeitado { background-color: #dc3545; }
         .badge-expirado { background-color: #ffc107; color: #000; }
+        .badge-solicitado { background-color: #6f42c1; }
         #propostasTable td { vertical-align: middle; font-size: .875rem; }
         #propostasTable th { font-size: .8rem; white-space: nowrap; }
     </style>
@@ -72,6 +73,7 @@
                                 <label>Estado</label>
                                 <select id="filtroStatus" class="form-control">
                                     <option value="">Todos</option>
+                                    <option value="solicitado">Pedido do cliente</option>
                                     <option value="rascunho">Rascunho</option>
                                     <option value="enviado">Enviado</option>
                                     <option value="aprovado">Aprovado</option>
@@ -139,7 +141,11 @@ function escHtml(str) {
 }
 
 function statusBadgeClass(status) {
-    return { rascunho: 'badge-rascunho', enviado: 'badge-enviado', aprovado: 'badge-aprovado', rejeitado: 'badge-rejeitado', expirado: 'badge-expirado' }[status] || 'badge-secondary';
+    return { solicitado: 'badge-solicitado', rascunho: 'badge-rascunho', enviado: 'badge-enviado', aprovado: 'badge-aprovado', rejeitado: 'badge-rejeitado', expirado: 'badge-expirado' }[status] || 'badge-secondary';
+}
+
+function statusLabel(status) {
+    return status === 'solicitado' ? 'Pedido do cliente' : status;
 }
 
 async function carregarPropostas() {
@@ -177,10 +183,12 @@ async function carregarPropostas() {
                     <td>${escHtml(instalacao)}</td>
                     <td>${preco}</td>
                     <td>${data}</td>
-                    <td><span class="badge ${statusBadgeClass(p.status)}">${escHtml(p.status)}</span></td>
+                    <td><span class="badge ${statusBadgeClass(p.status)}">${escHtml(statusLabel(p.status))}</span></td>
                     <td class="text-right">
-                        <a href="proposta-manutencao-template.html?id=${p._id}" class="btn btn-sm btn-outline-primary" title="Ver / Editar"><i class="fas fa-edit"></i></a>
-                        <button class="btn btn-sm btn-outline-secondary" onclick="downloadPDF('${p._id}', '${p.numero}')" title="Descarregar PDF"><i class="fas fa-file-pdf"></i></button>
+                        ${p.status === 'solicitado'
+                            ? `<a href="proposta-manutencao-template.html?id=${p._id}" class="btn btn-sm btn-primary" title="Preencher condições e responder ao cliente"><i class="fas fa-reply mr-1"></i>Responder</a>`
+                            : `<a href="proposta-manutencao-template.html?id=${p._id}" class="btn btn-sm btn-outline-primary" title="Ver / Editar"><i class="fas fa-edit"></i></a>
+                        <button class="btn btn-sm btn-outline-secondary" onclick="downloadPDF('${p._id}', '${p.numero}')" title="Descarregar PDF"><i class="fas fa-file-pdf"></i></button>`}
                         ${(p.status === 'rascunho' || p.status === 'enviado') ? `<button class="btn btn-sm btn-outline-success" onclick="marcarAprovado('${p._id}')" title="Marcar como Aprovado (aceite fora do portal)"><i class="fas fa-check-double"></i></button>` : ''}
                         ${p.status === 'aprovado' ? `<button class="btn btn-sm btn-outline-success" onclick="gerarContrato('${p._id}')" title="Gerar / Ver Contrato"><i class="fas fa-file-signature"></i></button>` : ''}
                         <button class="btn btn-sm btn-outline-danger" onclick="arquivarProposta('${p._id}')" title="Arquivar"><i class="fas fa-archive"></i></button>

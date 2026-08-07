@@ -35,6 +35,7 @@
         .badge-aprovado  { background-color: #28a745; color: #fff; }
         .badge-rejeitado { background-color: #dc3545; color: #fff; }
         .badge-expirado  { background-color: #ffc107; color: #000; }
+        .badge-solicitado { background-color: #6f42c1; color: #fff; }
         #emptyState { display: none; }
     </style>
 </head>
@@ -171,8 +172,11 @@
                     <div class="col-sm-6">
                         <h1><i class="fas fa-file-contract mr-2"></i>Propostas de Manutenção</h1>
                     </div>
-                    <div class="col-sm-6">
-                        <ol class="breadcrumb float-sm-right">
+                    <div class="col-sm-6 text-sm-right">
+                        <button type="button" class="btn btn-primary" onclick="abrirSolicitarModal()">
+                            <i class="fas fa-paper-plane mr-1"></i>Solicitar Nova Proposta
+                        </button>
+                        <ol class="breadcrumb float-sm-right d-none d-md-flex">
                             <li class="breadcrumb-item"><a href="/pages/client/dashboard.html">Início</a></li>
                             <li class="breadcrumb-item active">Propostas de Manutenção</li>
                         </ol>
@@ -186,6 +190,15 @@
 
                 <!-- Resumo -->
                 <div class="row mb-3" id="resumoRow">
+                    <div class="col-6 col-md-3 mb-3">
+                        <div class="info-box" style="background-color:#6f42c1;color:#fff;">
+                            <span class="info-box-icon" style="background:rgba(255,255,255,.15);"><i class="fas fa-hourglass-half"></i></span>
+                            <div class="info-box-content">
+                                <span class="info-box-text">Pedidos por analisar</span>
+                                <span class="info-box-number" id="countSolicitado">0</span>
+                            </div>
+                        </div>
+                    </div>
                     <div class="col-6 col-md-3 mb-3">
                         <div class="info-box bg-info">
                             <span class="info-box-icon"><i class="fas fa-paper-plane"></i></span>
@@ -227,8 +240,8 @@
                 <!-- Estado vazio -->
                 <div id="emptyState" class="text-center py-5">
                     <i class="fas fa-file-contract fa-4x text-muted mb-3"></i>
-                    <h4 class="text-muted">Ainda não recebeu nenhuma proposta de manutenção</h4>
-                    <p class="text-muted">Quando a FestLift enviar uma proposta para si, aparecerá aqui.</p>
+                    <h4 class="text-muted">Ainda não tem nenhuma proposta de manutenção</h4>
+                    <p class="text-muted">Quando a FestLift enviar uma proposta para si, aparecerá aqui. Precisa de uma proposta para um elevador novo? Use o botão "Solicitar Nova Proposta" acima.</p>
                 </div>
 
                 <!-- Loading -->
@@ -287,6 +300,61 @@
     </div>
 </div>
 
+<!-- Modal de solicitação de nova proposta -->
+<div class="modal fade" id="solicitarModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-gradient-primary text-white">
+                <h5 class="modal-title"><i class="fas fa-paper-plane mr-2"></i>Solicitar Nova Proposta de Manutenção</h5>
+                <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted">
+                    Utilize este formulário para pedir uma proposta de manutenção para um elevador que ainda não está
+                    associado à sua conta FestLift (por exemplo, se pretende mudar de empresa de manutenção).
+                    A nossa equipa irá analisar o pedido e enviar-lhe uma proposta.
+                </p>
+                <form id="solicitarForm">
+                    <div class="form-row">
+                        <div class="form-group col-md-8">
+                            <label for="solEdificio">Nome do edifício / condomínio</label>
+                            <input type="text" class="form-control" id="solEdificio" placeholder="Ex.: Edifício Central">
+                        </div>
+                        <div class="form-group col-md-4">
+                            <label for="solNumAscensores">Nº de elevadores <span class="text-danger">*</span></label>
+                            <input type="number" min="1" class="form-control" id="solNumAscensores" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="solMorada">Morada da instalação <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="solMorada" placeholder="Rua, número, freguesia" required>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-md-4">
+                            <label for="solCodigoPostal">Código postal</label>
+                            <input type="text" class="form-control" id="solCodigoPostal" placeholder="0000-000">
+                        </div>
+                        <div class="form-group col-md-8">
+                            <label for="solNif">Nº de contribuinte (NIF)</label>
+                            <input type="text" class="form-control" id="solNif" placeholder="Opcional">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="solObservacoes">Observações</label>
+                        <textarea class="form-control" id="solObservacoes" rows="3" placeholder="Ex.: Atualmente com outra empresa de manutenção, contrato termina em..."></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="enviarSolicitacaoBtn" onclick="enviarSolicitacao()">
+                    <i class="fas fa-paper-plane mr-1"></i>Enviar Pedido
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script src="../../plugins/jquery/jquery.min.js"></script>
 <script src="../../plugins/bootstrap/bootstrap.bundle.min.js"></script>
 <script src="../../plugins/adminlte/adminlte.min.js"></script>
@@ -313,6 +381,7 @@
     }
 
     const statusLabels = {
+        solicitado: 'Pedido enviado',
         enviado:   'Aguarda resposta',
         aprovado:  'Aprovada',
         rejeitado: 'Rejeitada',
@@ -357,8 +426,9 @@
     function renderPropostas(list) {
         document.getElementById('loadingState').style.display = 'none';
 
-        const counts = { enviado: 0, aprovado: 0, rejeitado: 0, expirado: 0 };
+        const counts = { solicitado: 0, enviado: 0, aprovado: 0, rejeitado: 0, expirado: 0 };
         list.forEach(p => { if (counts[p.status] !== undefined) counts[p.status]++; });
+        document.getElementById('countSolicitado').textContent = counts.solicitado;
         document.getElementById('countEnviado').textContent   = counts.enviado;
         document.getElementById('countAprovado').textContent  = counts.aprovado;
         document.getElementById('countRejeitado').textContent = counts.rejeitado;
@@ -385,7 +455,9 @@
         const preco = (p.precoMensal || 0).toFixed(2);
 
         let actionBtns = '';
-        if (p.status === 'enviado') {
+        if (p.status === 'solicitado') {
+            actionBtns = `<span class="text-muted"><i class="fas fa-hourglass-half"></i> Aguarda análise da FestLift</span>`;
+        } else if (p.status === 'enviado') {
             actionBtns = `
                 <button class="btn btn-success btn-sm mr-1" onclick="abrirResposta('${p._id}', 'aprovado'); event.stopPropagation();">
                     <i class="fas fa-check"></i> Aprovar
@@ -415,19 +487,21 @@
                     </div>
                     <div class="card-body">
                         <p class="mb-1"><i class="fas fa-calendar text-primary mr-1"></i><strong>Data:</strong> ${data}</p>
-                        <p class="mb-1"><i class="fas fa-clock text-warning mr-1"></i><strong>Válida até:</strong> ${validadeAte}</p>
+                        ${p.status !== 'solicitado' ? `<p class="mb-1"><i class="fas fa-clock text-warning mr-1"></i><strong>Válida até:</strong> ${validadeAte}</p>` : ''}
                         ${p.instalacao?.morada ? `<p class="mb-1 text-muted small"><i class="fas fa-map-marker-alt mr-1"></i>${p.instalacao.morada}</p>` : ''}
                         <hr>
-                        <h4 class="text-right text-primary mb-0"><strong>€ ${preco}<small class="text-muted" style="font-size:.55em;">/mês</small></strong></h4>
+                        ${p.status === 'solicitado'
+                            ? `<p class="text-muted mb-0 text-right"><i class="fas fa-elevator mr-1"></i>${p.numAscensores || '—'} elevador(es)</p>`
+                            : `<h4 class="text-right text-primary mb-0"><strong>€ ${preco}<small class="text-muted" style="font-size:.55em;">/mês</small></strong></h4>`}
                     </div>
                     <div class="card-footer d-flex align-items-center justify-content-between flex-wrap" style="gap:6px;">
                         <div style="display:flex;gap:6px;align-items:center;">
                             <button class="btn btn-info btn-sm" onclick="verDetalhe('${p._id}'); event.stopPropagation();">
                                 <i class="fas fa-eye"></i> Ver detalhe
                             </button>
-                            <button class="btn btn-secondary btn-sm" onclick="downloadPDF('${p._id}', '${p.numero}'); event.stopPropagation();" title="Download PDF">
+                            ${p.status !== 'solicitado' ? `<button class="btn btn-secondary btn-sm" onclick="downloadPDF('${p._id}', '${p.numero}'); event.stopPropagation();" title="Download PDF">
                                 <i class="fas fa-file-pdf"></i> PDF
-                            </button>
+                            </button>` : ''}
                         </div>
                         <div>${actionBtns}</div>
                     </div>
@@ -462,7 +536,7 @@
             <div class="row mb-3">
                 <div class="col-sm-6">
                     <p><strong>Data:</strong> ${new Date(p.data).toLocaleDateString('pt-PT')}</p>
-                    <p><strong>Válida até:</strong> ${p.validadeAte ? new Date(p.validadeAte).toLocaleDateString('pt-PT') : 'N/A'}</p>
+                    ${p.status !== 'solicitado' ? `<p><strong>Válida até:</strong> ${p.validadeAte ? new Date(p.validadeAte).toLocaleDateString('pt-PT') : 'N/A'}</p>` : ''}
                     <p><strong>Status:</strong> <span class="status-badge ${`badge-${p.status}`}">${statusLabels[p.status] || p.status}</span></p>
                     ${p.dataResposta ? `<p><strong>Data de resposta:</strong> ${new Date(p.dataResposta).toLocaleDateString('pt-PT')}</p>` : ''}
                     ${(p.status === 'aprovado' || p.status === 'rejeitado') ? `<p><strong>${p.status === 'aprovado' ? 'Aprovada' : 'Rejeitada'} por:</strong> ${!p.aprovadoPor || p.aprovadoPor === 'cliente' ? 'si próprio(a)' : 'FestLift'}</p>` : ''}
@@ -474,6 +548,16 @@
                     ${p.instalacao?.morada ? `<p><strong>Instalação:</strong> ${p.instalacao.morada}</p>` : ''}
                 </div>
             </div>
+            ${p.status === 'solicitado' ? `
+            <table class="table table-sm table-bordered">
+                <tbody>
+                    <tr><th style="width:40%">NIF / Nº de contribuinte</th><td>${p.cliente?.nif || '—'}</td></tr>
+                    <tr><th>Código postal</th><td>${p.instalacao?.codigoPostal || p.cliente?.codigoPostal || '—'}</td></tr>
+                    <tr><th>Nº de elevadores</th><td>${p.numAscensores || '—'}</td></tr>
+                </tbody>
+            </table>
+            ${p.notas ? `<div class="alert alert-light mt-2"><strong>Observações enviadas:</strong> ${p.notas}</div>` : ''}
+            <p class="text-muted small mt-2"><i class="fas fa-info-circle mr-1"></i>A equipa FestLift irá analisar o seu pedido e enviar-lhe uma proposta com as condições comerciais.</p>` : `
             <table class="table table-sm table-bordered">
                 <tbody>
                     <tr><th style="width:40%">Nº de ascensores</th><td>${p.numAscensores || '—'}</td></tr>
@@ -486,10 +570,14 @@
                 </tbody>
             </table>
             ${p.notas ? `<div class="alert alert-light mt-2"><strong>Notas:</strong> ${p.notas}</div>` : ''}
-            <p class="text-muted small mt-2"><i class="fas fa-info-circle mr-1"></i>Consulte o PDF em anexo para os termos e condições completos.</p>`;
+            <p class="text-muted small mt-2"><i class="fas fa-info-circle mr-1"></i>Consulte o PDF em anexo para os termos e condições completos.</p>`}`;
 
         const footer = document.getElementById('modalFooter');
-        if (p.status === 'enviado') {
+        if (p.status === 'solicitado') {
+            footer.innerHTML = `
+                <button class="btn btn-secondary" data-dismiss="modal">Fechar</button>
+                <span class="text-muted align-self-center mr-2"><i class="fas fa-hourglass-half"></i> Aguarda análise da FestLift</span>`;
+        } else if (p.status === 'enviado') {
             footer.innerHTML = `
                 <button class="btn btn-secondary" data-dismiss="modal">Fechar</button>
                 <button class="btn btn-outline-secondary" onclick="downloadPDF('${p._id}', '${p.numero}')">
@@ -570,6 +658,54 @@
             toastr.error('Erro: ' + err.message);
         } finally {
             btn.disabled = false;
+        }
+    }
+
+    function abrirSolicitarModal() {
+        document.getElementById('solicitarForm').reset();
+        $('#solicitarModal').modal('show');
+    }
+
+    async function enviarSolicitacao() {
+        const morada = document.getElementById('solMorada').value.trim();
+        const numAscensores = document.getElementById('solNumAscensores').value;
+
+        if (!morada) { toastr.error('Indique a morada da instalação'); return; }
+        if (!numAscensores || Number(numAscensores) < 1) { toastr.error('Indique o número de elevadores'); return; }
+
+        const payload = {
+            edificio: document.getElementById('solEdificio').value.trim(),
+            morada,
+            codigoPostal: document.getElementById('solCodigoPostal').value.trim(),
+            nif: document.getElementById('solNif').value.trim(),
+            numAscensores: Number(numAscensores),
+            observacoes: document.getElementById('solObservacoes').value.trim()
+        };
+
+        const btn = document.getElementById('enviarSolicitacaoBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> A enviar...';
+
+        try {
+            const res = await fetch(`${API_BASE_URL}/api/propostas-manutencao/solicitar`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${getToken()}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            });
+            const json = await res.json();
+            if (!res.ok) throw new Error(json.message || 'Erro ao enviar pedido');
+
+            $('#solicitarModal').modal('hide');
+            toastr.success(json.message || 'Pedido enviado com sucesso!');
+            await carregarPropostas();
+        } catch (err) {
+            toastr.error('Erro: ' + err.message);
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-paper-plane mr-1"></i>Enviar Pedido';
         }
     }
 
