@@ -104,6 +104,10 @@
                                         <label>Nome</label>
                                         <input type="text" id="instNome" class="form-control" placeholder="Administração do Condomínio">
                                     </div>
+                                    <div class="col-md-6 form-group">
+                                        <label>NIF <span class="text-muted font-weight-normal">(do prédio/condomínio — pode ser diferente do NIF do cliente acima)</span></label>
+                                        <input type="text" id="instNif" class="form-control">
+                                    </div>
                                     <div class="col-md-9 form-group">
                                         <label>Morada</label>
                                         <input type="text" id="instMorada" class="form-control">
@@ -125,6 +129,10 @@
                                         <input type="text" id="fatNome" class="form-control">
                                     </div>
                                     <div class="col-md-6 form-group">
+                                        <label>NIF</label>
+                                        <input type="text" id="fatNif" class="form-control">
+                                    </div>
+                                    <div class="col-md-6 form-group">
                                         <label>Unidades Contratadas</label>
                                         <input type="text" id="fatUnidades" class="form-control" placeholder="Ex: 2 ascensores">
                                     </div>
@@ -144,6 +152,19 @@
                             <div class="card-header"><h3 class="card-title">Termos do Contrato</h3></div>
                             <div class="card-body">
                                 <div class="row">
+                                    <div class="col-md-6 form-group">
+                                        <label>Tipo de Manutenção</label>
+                                        <select id="tipoManutencao" class="form-control">
+                                            <option value="simples">Simples</option>
+                                            <option value="completa">Completa</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6 form-group d-flex align-items-end" id="criarCompletaWrap">
+                                        <div class="custom-control custom-checkbox">
+                                            <input type="checkbox" class="custom-control-input" id="criarTambemCompleta">
+                                            <label class="custom-control-label" for="criarTambemCompleta">Criar também versão Completa (proposta separada, para o cliente comparar)</label>
+                                        </div>
+                                    </div>
                                     <div class="col-md-3 form-group">
                                         <label>Nº de Ascensores</label>
                                         <input type="number" id="numAscensores" class="form-control" min="1" value="1">

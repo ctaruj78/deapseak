@@ -15983,6 +15983,34 @@ app.use('/docs', (req, res, next) => {
     return res.status(403).send('Acesso negado');
 });
 
+// O static mount abaixo serve __dirname inteiro. Em vez de tentar enumerar todos
+// os ficheiros/pastas sensíveis (backups, logs, código-fonte, scripts com
+// passwords em texto simples, credenciais de demonstração, etc. — abordagem já
+// provada frágil), usa-se uma allow-list: só as pastas/ficheiros que o frontend
+// realmente precisa passam para o express.static; tudo o resto dá 404.
+const STATIC_ALLOWED_DIRS = new Set([
+    'assets', 'pages', 'plugins', 'components', 'mobile', 'uploads', 'templates'
+]);
+const STATIC_ALLOWED_FILES = new Set([
+    'index.html', '404.html', 'offline.html', 'manifest.json',
+    'sw.js', 'service-worker.js', 'sw-offline.js', 'LICENSE'
+]);
+app.use((req, res, next) => {
+    const decodedPath = decodeURIComponent(req.path);
+    if (decodedPath === '/' || decodedPath === '') return next();
+    // /api/* is never served by express.static — some routes are registered
+    // further down this file, so let all of them fall through untouched.
+    if (decodedPath.startsWith('/api/')) return next();
+    // The two public docs already whitelisted by the /docs middleware above
+    // must still reach express.static.
+    if (decodedPath === '/docs/user-manual.pdf' || decodedPath === '/docs/user-manual-short.webm') return next();
+    const segments = decodedPath.split('/').filter(Boolean);
+    const first = segments[0];
+    if (segments.length === 1 && STATIC_ALLOWED_FILES.has(first)) return next();
+    if (STATIC_ALLOWED_DIRS.has(first)) return next();
+    return res.status(404).send('Not found');
+});
+
 app.use(express.static(path.join(__dirname), {
     index: ['index.html'],
     extensions: ['html'],

@@ -35,20 +35,42 @@ const propostaManutencaoSchema = new mongoose.Schema({
         }
     },
 
-    // Dados da instalação
+    // Dados da instalação — o NIF aqui é o do prédio/condomínio a manter,
+    // que é frequentemente diferente do NIF do contacto/cliente acima
+    // (ex.: administradora de condomínios a pedir em nome de um prédio de terceiros)
     instalacao: {
         edificio: String,
         nome: String,
         morada: String,
-        codigoPostal: String
+        codigoPostal: String,
+        nif: String
     },
 
-    // Morada de faturação
+    // Morada de faturação — pode ter NIF próprio (ex.: entidade de faturação
+    // diferente do prédio, como uma administradora ou gestora de condomínio)
     faturacao: {
         nome: String,
+        nif: String,
         unidadesContratadas: String,
         morada: String,
         codigoPostal: String
+    },
+
+    // Tipo de manutenção: 'simples' (inspeção/conservação) ou 'completa'
+    // (inclui reparações/peças — condições gerais próprias, ver
+    // backend/constants/propostaManutencaoTerms.js)
+    tipo: {
+        type: String,
+        enum: ['simples', 'completa'],
+        default: 'simples'
+    },
+
+    // Quando as duas versões (simples + completa) são criadas em conjunto
+    // para o mesmo pedido, ligam-se uma à outra para navegação cruzada na UI
+    propostaIrmaId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'PropostaManutencao',
+        default: null
     },
 
     // Termos do contrato

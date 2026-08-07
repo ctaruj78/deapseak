@@ -8,7 +8,7 @@ const { authorizeRoles } = require('../middleware/roleAuth');
 const PDFDocument = require('pdfkit');
 const path = require('path');
 const fs = require('fs');
-const { CONDICOES_GERAIS_ARTIGOS } = require('../constants/propostaManutencaoTerms');
+const { CONDICOES_GERAIS_ARTIGOS, CONDICOES_GERAIS_ARTIGOS_COMPLETA } = require('../constants/propostaManutencaoTerms');
 
 async function autoExpirarPropostas(filterExtra = {}) {
     try {
@@ -57,8 +57,9 @@ async function gerarPDFPropostaManutencao(proposta) {
             doc.moveDown();
 
             // Título
+            const tipoLabel = proposta.tipo === 'completa' ? 'Manutenção Completa' : 'Manutenção Simples';
             doc.fontSize(17).font('Helvetica-Bold').fillColor(AZUL)
-                .text(`Proposta de Contrato de Manutenção Nº ${proposta.numero}`, { align: 'center' });
+                .text(`Proposta de Contrato de ${tipoLabel} Nº ${proposta.numero}`, { align: 'center' });
             doc.moveDown(0.5);
 
             // Aviso EMIE
@@ -84,7 +85,19 @@ async function gerarPDFPropostaManutencao(proposta) {
                 doc.fontSize(10).font('Helvetica').fillColor('#000000');
                 if (proposta.instalacao.edificio) doc.text(`Edifício: ${proposta.instalacao.edificio}`, 50, doc.y + 5);
                 if (proposta.instalacao.nome) doc.text(`Nome: ${proposta.instalacao.nome}`, 50, doc.y + 5);
+                if (proposta.instalacao.nif) doc.text(`NIF: ${proposta.instalacao.nif}`, 50, doc.y + 5);
                 if (proposta.instalacao.morada) doc.text(`Morada: ${proposta.instalacao.morada}${proposta.instalacao.codigoPostal ? ', ' + proposta.instalacao.codigoPostal : ''}`, 50, doc.y + 5);
+                doc.moveDown();
+            }
+
+            // Bloco Faturação (apenas se distinto da Instalação)
+            if (proposta.faturacao && (proposta.faturacao.nome || proposta.faturacao.morada || proposta.faturacao.nif)) {
+                doc.fontSize(12).font('Helvetica-Bold').fillColor(AZUL).text('Faturação', 50, doc.y);
+                doc.fontSize(10).font('Helvetica').fillColor('#000000');
+                if (proposta.faturacao.nome) doc.text(`Nome: ${proposta.faturacao.nome}`, 50, doc.y + 5);
+                if (proposta.faturacao.nif) doc.text(`NIF: ${proposta.faturacao.nif}`, 50, doc.y + 5);
+                if (proposta.faturacao.unidadesContratadas) doc.text(`Unidades contratadas: ${proposta.faturacao.unidadesContratadas}`, 50, doc.y + 5);
+                if (proposta.faturacao.morada) doc.text(`Morada: ${proposta.faturacao.morada}${proposta.faturacao.codigoPostal ? ', ' + proposta.faturacao.codigoPostal : ''}`, 50, doc.y + 5);
                 doc.moveDown();
             }
 
@@ -100,7 +113,7 @@ async function gerarPDFPropostaManutencao(proposta) {
             doc.fontSize(10).font('Helvetica').fillColor('#000000');
 
             const renovacao = proposta.renovacao || {};
-            const termosTexto = `Contrato de Manutenção Simples respeitante a ${proposta.numAscensores || '__'} ascensor(es), destinado(s) a transporte de pessoas, instalado(s) em ${proposta.localInstalacao || '—'}. ` +
+            const termosTexto = `Contrato de ${tipoLabel} respeitante a ${proposta.numAscensores || '__'} ascensor(es), destinado(s) a transporte de pessoas, instalado(s) em ${proposta.localInstalacao || '—'}. ` +
                 `O preço do serviço de manutenção é de €${(proposta.precoMensal || 0).toFixed(2)} por mês, por unidade, acrescido de IVA à taxa legal em vigor. ` +
                 `O pagamento é ${proposta.pagamento || 'Trimestral e adiantado'}. ` +
                 `O contrato terá início em ${formatDatePT(proposta.dataInicioContrato)} e manter-se-á válido durante ${proposta.duracaoAnos || 1} ano(s), considerando-se tacitamente prorrogado por períodos de ${renovacao.periodo || '1 ano'}, salvo denúncia por qualquer das partes com pelo menos ${renovacao.avisoDias || '60 dias'} de antecedência, através de ${renovacao.metodoNotificacao || 'carta registada'}${renovacao.emailNotificacao ? ' (' + renovacao.emailNotificacao + ')' : ''}. ` +
@@ -114,7 +127,8 @@ async function gerarPDFPropostaManutencao(proposta) {
             doc.fontSize(12).font('Helvetica-Bold').fillColor(AZUL).text('Condições Gerais', 50, doc.y);
             doc.moveDown(0.3);
 
-            CONDICOES_GERAIS_ARTIGOS.forEach((artigo) => {
+            const artigosAplicaveis = proposta.tipo === 'completa' ? CONDICOES_GERAIS_ARTIGOS_COMPLETA : CONDICOES_GERAIS_ARTIGOS;
+            artigosAplicaveis.forEach((artigo) => {
                 if (doc.y > 700) { doc.addPage(); }
                 doc.fontSize(10).font('Helvetica-Bold').fillColor(AZUL).text(artigo.titulo, 50, doc.y, { width: 500 });
                 doc.moveDown(0.2);
@@ -209,7 +223,12 @@ router.post('/solicitar', authenticate, authorizeRoles('client'), async (req, re
             instalacao: {
                 edificio,
                 morada,
-                codigoPostal
+                codigoPostal,
+                // O cliente indica um único NIF no formulário de pedido — normalmente
+                // o do prédio a manter, que é o que importa para o contrato. Fica
+                // também em cliente.nif; o operador pode separar os dois ao responder,
+                // caso o contacto e o prédio sejam entidades fiscais diferentes.
+                nif
             },
             numAscensores: Number(numAscensores),
             notas: observacoes,
@@ -221,6 +240,29 @@ router.post('/solicitar', authenticate, authorizeRoles('client'), async (req, re
         await proposta.save();
 
         console.log(`📨 Pedido de proposta de manutenção submetido pelo cliente: ${numero} (${req.user.email})`);
+
+        try {
+            const staffUsers = await User.find({ role: { $in: ['admin', 'dispatcher'] } }).select('_id role').lean();
+            const notifDocs = staffUsers.map(u => ({
+                userId: u._id.toString(),
+                type: 'proposta_solicitada',
+                title: 'Novo pedido de proposta de manutenção',
+                message: `${nomeCliente} pediu uma proposta para ${morada}${numAscensores ? ` (${numAscensores} elevador(es))` : ''}.`,
+                propostaId: proposta._id.toString(),
+                icon: 'fas fa-paper-plane',
+                priority: 'normal',
+                read: false,
+                actionUrl: u.role === 'admin'
+                    ? '/pages/admin/propostas-manutencao-list.html'
+                    : '/pages/dispatcher/propostas-manutencao-list.html',
+                createdAt: new Date()
+            }));
+            if (notifDocs.length > 0) {
+                await mongoose.connection.db.collection('notifications').insertMany(notifDocs);
+            }
+        } catch (notifErr) {
+            console.error('Erro ao criar notificações internas de pedido de proposta:', notifErr.message);
+        }
 
         try {
             const emailService = require('../services/emailService');
@@ -431,14 +473,13 @@ router.post('/', authenticate, authorizeRoles('admin', 'dispatcher'), async (req
         const {
             cliente, instalacao, faturacao, numAscensores, localInstalacao,
             precoMensal, pagamento, dataInicioContrato, duracaoAnos, renovacao,
-            notas, liftId: bodyLiftId, lifts: bodyLifts, liftAddress: bodyLiftAddress
+            notas, liftId: bodyLiftId, lifts: bodyLifts, liftAddress: bodyLiftAddress,
+            tipo, criarTambemCompleta
         } = req.body;
 
         if (!cliente || !cliente.nome || !cliente.email) {
             return res.status(400).json({ success: false, message: 'Dados do cliente incompletos' });
         }
-
-        const numero = await PropostaManutencao.gerarNumero();
 
         const dataAtual = new Date();
         const validadeAte = new Date(dataAtual);
@@ -455,8 +496,7 @@ router.post('/', authenticate, authorizeRoles('admin', 'dispatcher'), async (req
             liftsArray = [bodyLiftId];
         }
 
-        const proposta = new PropostaManutencao({
-            numero,
+        const dadosComuns = {
             data: dataAtual,
             validadeAte,
             cliente,
@@ -475,13 +515,42 @@ router.post('/', authenticate, authorizeRoles('admin', 'dispatcher'), async (req
             liftId: liftId || null,
             lifts: liftsArray,
             liftAddress: liftAddress || null
+        };
+
+        const numero = await PropostaManutencao.gerarNumero();
+        const proposta = new PropostaManutencao({
+            ...dadosComuns,
+            numero,
+            tipo: tipo === 'completa' ? 'completa' : 'simples'
         });
-
         await proposta.save();
+        console.log(`✅ Proposta de manutenção criada: ${numero} (${proposta.tipo})`);
 
-        console.log(`✅ Proposta de manutenção criada: ${numero}`);
+        let propostaCompleta = null;
+        if (criarTambemCompleta && proposta.tipo === 'simples') {
+            const numeroCompleta = await PropostaManutencao.gerarNumero();
+            propostaCompleta = new PropostaManutencao({
+                ...dadosComuns,
+                numero: numeroCompleta,
+                tipo: 'completa',
+                propostaIrmaId: proposta._id
+            });
+            await propostaCompleta.save();
 
-        res.status(201).json({ success: true, message: 'Proposta criada com sucesso', data: proposta });
+            proposta.propostaIrmaId = propostaCompleta._id;
+            await proposta.save();
+
+            console.log(`✅ Proposta irmã (Completa) criada: ${numeroCompleta}`);
+        }
+
+        res.status(201).json({
+            success: true,
+            message: propostaCompleta
+                ? `Propostas criadas com sucesso: ${proposta.numero} (Simples) e ${propostaCompleta.numero} (Completa)`
+                : 'Proposta criada com sucesso',
+            data: proposta,
+            dataCompleta: propostaCompleta
+        });
     } catch (error) {
         console.error('Erro ao criar proposta:', error);
         res.status(500).json({ success: false, message: 'Erro ao criar proposta', error: error.message });
@@ -501,12 +570,13 @@ router.put('/:id', authenticate, authorizeRoles('admin', 'dispatcher'), async (r
         const {
             cliente, instalacao, faturacao, numAscensores, localInstalacao,
             precoMensal, pagamento, dataInicioContrato, duracaoAnos, renovacao,
-            notas, status, lifts: bodyLifts, liftAddress: bodyLiftAddress
+            notas, status, lifts: bodyLifts, liftAddress: bodyLiftAddress, tipo
         } = req.body;
 
         if (cliente) proposta.cliente = cliente;
         if (instalacao) proposta.instalacao = instalacao;
         if (faturacao) proposta.faturacao = faturacao;
+        if (tipo === 'simples' || tipo === 'completa') proposta.tipo = tipo;
         if (numAscensores !== undefined) proposta.numAscensores = numAscensores;
         if (localInstalacao !== undefined) proposta.localInstalacao = localInstalacao;
         if (precoMensal !== undefined) proposta.precoMensal = precoMensal;

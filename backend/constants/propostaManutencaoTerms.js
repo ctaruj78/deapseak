@@ -68,4 +68,11 @@ const CONDICOES_GERAIS_ARTIGOS = [
     }
 ];
 
-module.exports = { CONDICOES_GERAIS_ARTIGOS };
+// Condições Gerais do Contrato de Manutenção Completa.
+// TODO: substituir por texto próprio da Manutenção Completa (fornecido pelo
+// utilizador em separado — cobre tipicamente peças/reparações, chamadas de
+// emergência, etc., que não estão incluídas na Manutenção Simples). Até lá,
+// usa-se o mesmo texto da Simples para não deixar a proposta sem condições.
+const CONDICOES_GERAIS_ARTIGOS_COMPLETA = CONDICOES_GERAIS_ARTIGOS;
+
+module.exports = { CONDICOES_GERAIS_ARTIGOS, CONDICOES_GERAIS_ARTIGOS_COMPLETA };
