@@ -47,9 +47,12 @@
                 <div class="row">
                     <div class="col-md-9">
 
-                        <div class="alert" id="avisoPedidoCliente" style="display:none;align-items:center;background:#f3ecfb;border-left:4px solid #6f42c1;color:#4a2d6b;">
-                            <i class="fas fa-paper-plane mr-2"></i>
-                            <div>Este pedido foi submetido pelo próprio cliente através do painel. Reveja os dados abaixo e preencha as condições comerciais (preço, pagamento, duração) antes de enviar a proposta.</div>
+                        <div class="alert" id="avisoPedidoCliente" style="display:none;flex-direction:column;background:#f3ecfb;border-left:4px solid #6f42c1;color:#4a2d6b;">
+                            <div style="display:flex;align-items:center;">
+                                <i class="fas fa-paper-plane mr-2"></i>
+                                <div>Este pedido foi submetido pelo próprio cliente através do painel. Reveja os dados abaixo e preencha as condições comerciais (preço, pagamento, duração) antes de enviar a proposta.</div>
+                            </div>
+                            <div id="observacaoClienteBox" style="display:none;margin-top:8px;padding-top:8px;border-top:1px solid rgba(74,45,107,.2);font-size:.9rem;"></div>
                         </div>
 
                         <div class="card card-outline card-primary">
@@ -384,6 +387,15 @@ async function loadProposta(id) {
 
         const avisoCliente = document.getElementById('avisoPedidoCliente');
         if (avisoCliente) avisoCliente.style.display = (p.origem === 'cliente' && p.status === 'solicitado') ? 'flex' : 'none';
+        const obsBox = document.getElementById('observacaoClienteBox');
+        if (obsBox) {
+            if (p.observacaoCliente) {
+                obsBox.textContent = `Observações do cliente: ${p.observacaoCliente}`;
+                obsBox.style.display = '';
+            } else {
+                obsBox.style.display = 'none';
+            }
+        }
 
         document.getElementById('clienteNome').value = p.cliente?.nome || '';
         document.getElementById('clienteEmail').value = p.cliente?.email || '';

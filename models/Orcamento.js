@@ -16,9 +16,18 @@ const orcamentoSchema = new mongoose.Schema({
     },
     
     // Валідність (30 днів від дати)
+    // Default como função (não no pre('save')) — o hook de validação do
+    // Mongoose corre ANTES de qualquer pre('save') do utilizador, logo um
+    // pre('save') a atribuir isto chegaria tarde de mais e "required" falharia.
     validadeAte: {
         type: Date,
-        required: true
+        required: true,
+        default: function() {
+            const dataInicio = this.data || new Date();
+            const validade = new Date(dataInicio);
+            validade.setDate(validade.getDate() + 30);
+            return validade;
+        }
     },
     
     // Дані клієнта
@@ -111,6 +120,11 @@ const orcamentoSchema = new mongoose.Schema({
         enum: ['detalhado', 'resumido'],
         default: 'detalhado'
     },
+
+    // Token de acesso ao link público — aleatório por documento (crypto.randomBytes),
+    // não um hash determinístico do id. Gerado uma vez, com expiração.
+    accessToken: { type: String, index: true },
+    accessTokenExpiresAt: Date,
 
     // Versionamento: quando um orçamento já mostrado ao cliente é editado,
     // não é sobrescrito — cria-se uma nova versão e este liga-se ao original.

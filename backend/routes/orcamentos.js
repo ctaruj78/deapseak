@@ -419,12 +419,32 @@ async function gerarPDFOrcamento(orcamento) {
     });
 }
 
-function generatePublicAccessToken(id) {
-    return crypto
-        .createHash('sha256')
-        .update(id.toString() + (process.env.JWT_SECRET || 'deapseak_secret_key_2024'))
-        .digest('hex')
-        .substring(0, 16);
+// Token de acesso público — aleatório por documento (não um hash determinístico
+// do id, recalculável offline por quem soubesse o id), com expiração.
+const ACCESS_TOKEN_VALIDITY_DAYS = 90;
+
+async function getOrCreatePublicAccessToken(orcamento) {
+    const now = new Date();
+    if (orcamento.accessToken && orcamento.accessTokenExpiresAt && orcamento.accessTokenExpiresAt > now) {
+        return orcamento.accessToken;
+    }
+    const token = crypto.randomBytes(32).toString('hex');
+    const expiresAt = new Date(now.getTime() + ACCESS_TOKEN_VALIDITY_DAYS * 24 * 60 * 60 * 1000);
+    await Orcamento.updateOne(
+        { _id: orcamento._id },
+        { $set: { accessToken: token, accessTokenExpiresAt: expiresAt } }
+    );
+    orcamento.accessToken = token;
+    orcamento.accessTokenExpiresAt = expiresAt;
+    return token;
+}
+
+function isValidPublicAccessToken(orcamento, suppliedToken) {
+    if (!orcamento.accessToken || !suppliedToken) return false;
+    if (orcamento.accessTokenExpiresAt && orcamento.accessTokenExpiresAt < new Date()) return false;
+    const a = Buffer.from(orcamento.accessToken);
+    const b = Buffer.from(String(suppliedToken));
+    return a.length === b.length && crypto.timingSafeEqual(a, b);
 }
 
 function buildPublicPdfUrl(req, orcamentoId, token) {
@@ -437,26 +457,22 @@ function buildPublicPdfUrl(req, orcamentoId, token) {
 // PUBLIC ROUTE: GET /api/orcamentos/public/:id - Перегляд орçаменту без авторизації (з токеном)
 router.get('/public/:id', async (req, res) => {
     try {
-        const { token } = req.query;
         const { id } = req.params;
-        
-        // Перевірка токену (простий base64(id + secret))
-        const expectedToken = generatePublicAccessToken(id);
-        
-        if (!token || token !== expectedToken) {
-            return res.status(401).json({
-                success: false,
-                message: 'Token de acesso inválido'
-            });
-        }
-        
+
         const orcamento = await Orcamento.findById(id)
-            .populate('criadoPor', 'name email');
+            .populate('criadoPor', 'firstName lastName email');
 
         if (!orcamento) {
             return res.status(404).json({
                 success: false,
                 message: 'Orçamento não encontrado'
+            });
+        }
+
+        if (!isValidPublicAccessToken(orcamento, req.query.token)) {
+            return res.status(401).json({
+                success: false,
+                message: 'Token de acesso inválido ou expirado'
             });
         }
 
@@ -478,21 +494,19 @@ router.get('/public/:id', async (req, res) => {
 router.get('/public/:id/pdf', async (req, res) => {
     try {
         const { id } = req.params;
-        const { token } = req.query;
-        const expectedToken = generatePublicAccessToken(id);
-
-        if (!token || token !== expectedToken) {
-            return res.status(401).json({
-                success: false,
-                message: 'Token de acesso inválido'
-            });
-        }
 
         const orcamento = await Orcamento.findById(id);
         if (!orcamento) {
             return res.status(404).json({
                 success: false,
                 message: 'Orçamento não encontrado'
+            });
+        }
+
+        if (!isValidPublicAccessToken(orcamento, req.query.token)) {
+            return res.status(401).json({
+                success: false,
+                message: 'Token de acesso inválido ou expirado'
             });
         }
 

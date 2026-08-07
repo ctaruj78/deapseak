@@ -81,6 +81,13 @@ const contratoManutencaoSchema = new mongoose.Schema({
     assinaturaEmpresa: assinaturaSchema,
     assinaturaCliente: assinaturaSchema,
 
+    // Token de acesso ao link público de assinatura — aleatório por documento
+    // (crypto.randomBytes), não um hash determinístico do id. Gerado uma vez,
+    // com expiração, e invalidado após a assinatura.
+    accessToken: { type: String, index: true },
+    accessTokenExpiresAt: Date,
+    accessTokenUsedAt: Date,
+
     // Ligação a elevador(es) — herdada da proposta
     liftId: { type: mongoose.Schema.Types.Mixed, default: null },
     lifts: { type: [mongoose.Schema.Types.Mixed], default: [] },

@@ -8,7 +8,19 @@ const { authorizeRoles } = require('../middleware/roleAuth');
 const PDFDocument = require('pdfkit');
 const path = require('path');
 const fs = require('fs');
+const rateLimit = require('express-rate-limit');
 const { CONDICOES_GERAIS_ARTIGOS, CONDICOES_GERAIS_ARTIGOS_COMPLETA } = require('../constants/propostaManutencaoTerms');
+
+// Limite dedicado para pedidos de proposta — evita que um cliente esgote a
+// numeração partilhada ou inunde a caixa de entrada interna com pedidos em loop.
+const solicitarLimiter = rateLimit({
+    windowMs: 60 * 60 * 1000,
+    max: 5,
+    standardHeaders: true,
+    legacyHeaders: false,
+    keyGenerator: (req) => req.user?.id || req.ip,
+    message: { success: false, message: 'Demasiados pedidos de proposta. Tente novamente daqui a algum tempo.' }
+});
 
 async function autoExpirarPropostas(filterExtra = {}) {
     try {
@@ -204,15 +216,37 @@ router.get('/my', authenticate, authorizeRoles('client'), async (req, res) => {
 
 // POST /api/propostas-manutencao/solicitar - Cliente pede uma proposta para um novo elevador
 // (ex.: cliente que quer mudar de empresa de manutenção e ainda não tem nenhum elevador nosso na base)
-router.post('/solicitar', authenticate, authorizeRoles('client'), async (req, res) => {
+router.post('/solicitar', authenticate, authorizeRoles('client'), solicitarLimiter, async (req, res) => {
     try {
-        const { nif, morada, codigoPostal, edificio, numAscensores, observacoes } = req.body;
+        let { nif, morada, codigoPostal, edificio, numAscensores, observacoes } = req.body;
 
-        if (!morada || !String(morada).trim()) {
+        morada = String(morada || '').trim().slice(0, 300);
+        codigoPostal = String(codigoPostal || '').trim().slice(0, 20);
+        edificio = String(edificio || '').trim().slice(0, 200);
+        nif = String(nif || '').trim().slice(0, 30);
+        observacoes = String(observacoes || '').trim().slice(0, 2000);
+
+        if (!morada) {
             return res.status(400).json({ success: false, message: 'A morada da instalação é obrigatória' });
         }
-        if (!numAscensores || Number(numAscensores) < 1) {
-            return res.status(400).json({ success: false, message: 'Indique o número de elevadores' });
+        const nAscensores = Number.parseInt(numAscensores, 10);
+        if (!Number.isInteger(nAscensores) || nAscensores < 1 || nAscensores > 50) {
+            return res.status(400).json({ success: false, message: 'Indique um número de elevadores válido (1 a 50)' });
+        }
+
+        // Evita pedidos duplicados por duplo-clique ou reenvio — se já existe um
+        // pedido em aberto para a mesma morada, não cria outro.
+        const moradaNormalizada = morada.toLowerCase();
+        const pedidoExistente = await PropostaManutencao.findOne({
+            'cliente.email': req.user.email.toLowerCase(),
+            status: 'solicitado',
+            $expr: { $eq: [{ $toLower: '$instalacao.morada' }, moradaNormalizada] }
+        }).lean();
+        if (pedidoExistente) {
+            return res.status(409).json({
+                success: false,
+                message: `Já tem um pedido em aberto para esta morada (${pedidoExistente.numero}). Aguarde a análise da FestLift.`
+            });
         }
 
         const numero = await PropostaManutencao.gerarNumero();
@@ -248,7 +282,7 @@ router.post('/solicitar', authenticate, authorizeRoles('client'), async (req, re
                 nif
             },
             numAscensores: Number(numAscensores),
-            notas: observacoes,
+            observacaoCliente: observacoes,
             criadoPor: req.user.id,
             status: 'solicitado',
             origem: 'cliente'
@@ -300,11 +334,16 @@ router.post('/solicitar', authenticate, authorizeRoles('client'), async (req, re
 });
 
 // POST /api/propostas-manutencao/:id/resposta - Cliente aprova ou rejeita a proposta
-router.post('/:id/resposta', authenticate, async (req, res) => {
+router.post('/:id/resposta', authenticate, authorizeRoles('client'), async (req, res) => {
     try {
         const { status, observacao } = req.body;
         if (!['aprovado', 'rejeitado'].includes(status)) {
             return res.status(400).json({ success: false, message: "Status deve ser 'aprovado' ou 'rejeitado'" });
+        }
+
+        const userEmail = (req.user.email || '').toLowerCase();
+        if (!userEmail) {
+            return res.status(400).json({ success: false, message: 'Token de utilizador incorreto' });
         }
 
         const proposta = await PropostaManutencao.findById(req.params.id);
@@ -312,7 +351,7 @@ router.post('/:id/resposta', authenticate, async (req, res) => {
             return res.status(404).json({ success: false, message: 'Proposta não encontrada' });
         }
 
-        if (proposta.cliente.email.toLowerCase() !== req.user.email.toLowerCase()) {
+        if ((proposta.cliente.email || '').toLowerCase() !== userEmail) {
             return res.status(403).json({ success: false, message: 'Sem permissão para responder a esta proposta' });
         }
 
@@ -330,6 +369,32 @@ router.post('/:id/resposta', authenticate, async (req, res) => {
         if (observacao) proposta.observacao = observacao;
         await proposta.save();
 
+        // Avisa a equipa — sem isto, uma aprovação (com contrato para gerar) ou
+        // rejeição do cliente passava despercebida até alguém abrir a lista.
+        try {
+            const User = require('../models/User');
+            const staffUsers = await User.find({ role: { $in: ['admin', 'dispatcher'] } }).select('_id role').lean();
+            const notifDocs = staffUsers.map(u => ({
+                userId: u._id.toString(),
+                type: 'proposta_respondida',
+                title: status === 'aprovado' ? 'Proposta aprovada pelo cliente' : 'Proposta rejeitada pelo cliente',
+                message: `${proposta.cliente.nome} ${status === 'aprovado' ? 'aprovou' : 'rejeitou'} a proposta ${proposta.numero}.`,
+                propostaId: proposta._id.toString(),
+                icon: status === 'aprovado' ? 'fas fa-check-circle' : 'fas fa-times-circle',
+                priority: status === 'aprovado' ? 'high' : 'normal',
+                read: false,
+                actionUrl: u.role === 'admin'
+                    ? '/pages/admin/propostas-manutencao-list.html'
+                    : '/pages/dispatcher/propostas-manutencao-list.html',
+                createdAt: new Date()
+            }));
+            if (notifDocs.length > 0) {
+                await mongoose.connection.db.collection('notifications').insertMany(notifDocs);
+            }
+        } catch (notifErr) {
+            console.error('Erro ao criar notificações internas de resposta:', notifErr.message);
+        }
+
         res.json({
             success: true,
             message: status === 'aprovado' ? 'Proposta aprovada com sucesso!' : 'Proposta rejeitada.',
@@ -346,17 +411,26 @@ router.get('/', authenticate, authorizeRoles('admin', 'dispatcher', 'client'), a
     try {
         await autoExpirarPropostas();
 
-        const { status, page = 1, limit = 20, search } = req.query;
+        const { status, search } = req.query;
+        const page = Math.max(parseInt(req.query.page, 10) || 1, 1);
+        const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 20, 1), 100);
         const query = {};
+
+        // Estados que um cliente pode legitimamente ver — nunca 'rascunho', que
+        // pode conter preços/condições internas ainda não decididas para envio.
+        const ESTADOS_VISIVEIS_CLIENTE = ['solicitado', 'enviado', 'aprovado', 'rejeitado', 'expirado'];
 
         if (req.user.role === 'client') {
             if (!req.user.email) {
                 return res.status(400).json({ success: false, message: 'Token de utilizador incorreto' });
             }
             query['cliente.email'] = req.user.email.toLowerCase();
+            query.status = (status && ESTADOS_VISIVEIS_CLIENTE.includes(status))
+                ? status
+                : { $in: ESTADOS_VISIVEIS_CLIENTE };
+        } else if (status) {
+            query.status = status;
         }
-
-        if (status) query.status = status;
 
         if (req.query.archived === 'true') {
             query.archived = true;
@@ -376,22 +450,23 @@ router.get('/', authenticate, authorizeRoles('admin', 'dispatcher', 'client'), a
         const skip = (page - 1) * limit;
 
         const propostasQuery = PropostaManutencao.find(query)
-            .populate('criadoPor', 'name email')
-            .sort({ data: -1 });
+            .populate('criadoPor', 'firstName lastName email')
+            .sort({ data: -1 })
+            .lean();
 
         if (req.user.role === 'client') {
             propostasQuery.select('-emailsEnviados -pdfPath');
         }
 
-        const propostas = await propostasQuery.skip(skip).limit(parseInt(limit));
+        const propostas = await propostasQuery.skip(skip).limit(limit);
         const total = await PropostaManutencao.countDocuments(query);
 
         res.json({
             success: true,
             data: propostas,
             pagination: {
-                page: parseInt(page),
-                limit: parseInt(limit),
+                page,
+                limit,
                 total,
                 pages: Math.ceil(total / limit)
             }
@@ -443,14 +518,15 @@ router.get('/stats/dashboard', authenticate, authorizeRoles('admin', 'dispatcher
 });
 
 // GET /api/propostas-manutencao/:id/pdf - Download autenticado do PDF
-router.get('/:id/pdf', authenticate, async (req, res) => {
+router.get('/:id/pdf', authenticate, authorizeRoles('admin', 'dispatcher', 'client'), async (req, res) => {
     try {
         const proposta = await PropostaManutencao.findById(req.params.id);
         if (!proposta) {
             return res.status(404).json({ success: false, message: 'Proposta não encontrada' });
         }
 
-        if (req.user.role === 'client' && proposta.cliente.email.toLowerCase() !== (req.user.email || '').toLowerCase()) {
+        const isStaff = ['admin', 'dispatcher'].includes(req.user.role);
+        if (!isStaff && proposta.cliente.email.toLowerCase() !== (req.user.email || '').toLowerCase()) {
             return res.status(403).json({ success: false, message: 'Sem permissão para esta proposta' });
         }
 
@@ -465,16 +541,17 @@ router.get('/:id/pdf', authenticate, async (req, res) => {
 });
 
 // GET /api/propostas-manutencao/:id
-router.get('/:id', authenticate, async (req, res) => {
+router.get('/:id', authenticate, authorizeRoles('admin', 'dispatcher', 'client'), async (req, res) => {
     try {
         const proposta = await PropostaManutencao.findById(req.params.id)
-            .populate('criadoPor', 'name email');
+            .populate('criadoPor', 'firstName lastName email');
 
         if (!proposta) {
             return res.status(404).json({ success: false, message: 'Proposta não encontrada' });
         }
 
-        if (req.user.role === 'client' && proposta.cliente.email.toLowerCase() !== (req.user.email || '').toLowerCase()) {
+        const isStaff = ['admin', 'dispatcher'].includes(req.user.role);
+        if (!isStaff && proposta.cliente.email.toLowerCase() !== (req.user.email || '').toLowerCase()) {
             return res.status(403).json({ success: false, message: 'Sem permissão para esta proposta' });
         }
 
@@ -604,7 +681,20 @@ router.put('/:id', authenticate, authorizeRoles('admin', 'dispatcher'), async (r
         if (duracaoAnos !== undefined) proposta.duracaoAnos = duracaoAnos;
         if (renovacao) proposta.renovacao = renovacao;
         if (notas !== undefined) proposta.notas = notas;
-        if (status) proposta.status = status;
+        // 'aprovado'/'rejeitado' têm efeitos colaterais (dataResposta, aprovadoPor)
+        // que só as rotas dedicadas (/resposta para o cliente, /status para a
+        // equipa) tratam corretamente — o PUT genérico não deve poder definir
+        // esses dois estados diretamente.
+        if (status && ['rascunho', 'enviado', 'expirado'].includes(status)) {
+            proposta.status = status;
+        }
+        // Ao preencher condições comerciais e guardar um pedido do cliente ainda
+        // por responder, promove automaticamente para rascunho — sem isto o
+        // registo ficava preso em 'solicitado' para sempre, e a única forma de o
+        // desbloquear era enviá-lo diretamente (ver guarda em /:id/enviar).
+        if (proposta.status === 'solicitado' && precoMensal !== undefined && Number(precoMensal) > 0) {
+            proposta.status = 'rascunho';
+        }
         if (Array.isArray(bodyLifts)) {
             proposta.lifts = bodyLifts.filter(Boolean);
             if (bodyLifts.length > 0) proposta.liftId = bodyLifts[0];
@@ -698,6 +788,25 @@ router.post('/:id/enviar', authenticate, authorizeRoles('admin', 'dispatcher'), 
         if (!proposta) {
             return res.status(404).json({ success: false, message: 'Proposta não encontrada' });
         }
+
+        // Nunca enviar um pedido de cliente ainda sem condições comerciais, nem
+        // reenviar (e assim reabrir) uma proposta já aprovada/rejeitada — isso
+        // desfaria uma decisão do cliente sobre uma proposta com contrato já gerado.
+        if (proposta.status === 'solicitado') {
+            return res.status(400).json({ success: false, message: 'Preencha as condições comerciais (preço, data de início) antes de enviar este pedido' });
+        }
+        if (!(proposta.precoMensal > 0)) {
+            return res.status(400).json({ success: false, message: 'Indique o preço mensal antes de enviar a proposta' });
+        }
+        if (['aprovado', 'rejeitado'].includes(proposta.status)) {
+            return res.status(400).json({ success: false, message: `Esta proposta já foi respondida (status '${proposta.status}') e não pode ser reenviada` });
+        }
+
+        // Revalida a validade a partir do momento real de envio, não da data do
+        // pedido original — caso contrário uma resposta tardia pode chegar ao
+        // cliente já expirada.
+        proposta.validadeAte = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+        await proposta.save();
 
         const emailDestino = req.body.email || proposta.cliente.email;
 

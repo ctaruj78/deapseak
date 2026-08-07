@@ -15,23 +15,34 @@ const propostaManutencaoSchema = new mongoose.Schema({
         default: Date.now
     },
 
-    // Validade (30 dias a partir da data)
+    // Validade (30 dias a partir da data). Default como função (não no
+    // pre('save')) porque o hook de validação do Mongoose corre ANTES de
+    // qualquer pre('save') do utilizador — um pre('save') a atribuir isto
+    // chegaria tarde de mais e a validação "required" falharia sempre que o
+    // documento fosse criado sem validadeAte explícito.
     validadeAte: {
         type: Date,
-        required: true
+        required: true,
+        default: function() {
+            const dataInicio = this.data || new Date();
+            const validade = new Date(dataInicio);
+            validade.setDate(validade.getDate() + 30);
+            return validade;
+        }
     },
 
     // Dados do cliente
     cliente: {
-        nome: { type: String, required: true },
-        morada: String,
-        codigoPostal: String,
-        nif: String,
+        nome: { type: String, required: true, maxlength: 200 },
+        morada: { type: String, maxlength: 300 },
+        codigoPostal: { type: String, maxlength: 20 },
+        nif: { type: String, maxlength: 30 },
         email: {
             type: String,
             required: true,
             lowercase: true,
-            trim: true
+            trim: true,
+            maxlength: 200
         }
     },
 
@@ -39,21 +50,21 @@ const propostaManutencaoSchema = new mongoose.Schema({
     // que é frequentemente diferente do NIF do contacto/cliente acima
     // (ex.: administradora de condomínios a pedir em nome de um prédio de terceiros)
     instalacao: {
-        edificio: String,
-        nome: String,
-        morada: String,
-        codigoPostal: String,
-        nif: String
+        edificio: { type: String, maxlength: 200 },
+        nome: { type: String, maxlength: 200 },
+        morada: { type: String, maxlength: 300 },
+        codigoPostal: { type: String, maxlength: 20 },
+        nif: { type: String, maxlength: 30 }
     },
 
     // Morada de faturação — pode ter NIF próprio (ex.: entidade de faturação
     // diferente do prédio, como uma administradora ou gestora de condomínio)
     faturacao: {
-        nome: String,
-        nif: String,
-        unidadesContratadas: String,
-        morada: String,
-        codigoPostal: String
+        nome: { type: String, maxlength: 200 },
+        nif: { type: String, maxlength: 30 },
+        unidadesContratadas: { type: String, maxlength: 100 },
+        morada: { type: String, maxlength: 300 },
+        codigoPostal: { type: String, maxlength: 20 }
     },
 
     // Tipo de manutenção: 'simples' (inspeção/conservação) ou 'completa'
@@ -76,7 +87,8 @@ const propostaManutencaoSchema = new mongoose.Schema({
     // Termos do contrato
     numAscensores: {
         type: Number,
-        min: 1
+        min: 1,
+        max: 50
     },
     localInstalacao: String,
     precoMensal: {
@@ -165,10 +177,19 @@ const propostaManutencaoSchema = new mongoose.Schema({
     // PDF gerado (se guardado em disco)
     pdfPath: String,
 
-    // Notas
+    // Notas — texto oficial impresso no PDF (condições/validade). NUNCA deve ser
+    // preenchido diretamente com texto livre do cliente — ver observacaoCliente.
     notas: {
         type: String,
         default: 'Esta proposta é válida por 30 dias a partir da data de apresentação.'
+    },
+
+    // Observações livres submetidas pelo próprio cliente ao pedir a proposta
+    // (ex.: "atualmente com outra empresa, contrato termina em..."). Visível
+    // apenas internamente (admin/dispatcher) — não é impressa no PDF oficial.
+    observacaoCliente: {
+        type: String,
+        maxlength: 2000
     },
 
     // Histórico de emails

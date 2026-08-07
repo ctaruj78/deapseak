@@ -200,7 +200,7 @@ class EmailService {
                     <p style="margin:0 0 8px 0;"><strong>NIF:</strong> ${nif}</p>
                     <p style="margin:0 0 8px 0;"><strong>Morada da instalação:</strong> ${morada}${codigoPostal ? `, ${codigoPostal}` : ''}</p>
                     <p style="margin:0;"><strong>Nº de elevadores:</strong> ${proposta.numAscensores || '—'}</p>
-                    ${proposta.notas ? `<p style="margin:8px 0 0 0;"><strong>Observações do cliente:</strong> ${this._esc(proposta.notas)}</p>` : ''}
+                    ${proposta.observacaoCliente ? `<p style="margin:8px 0 0 0;"><strong>Observações do cliente:</strong> ${this._esc(proposta.observacaoCliente)}</p>` : ''}
                 </div>
                 <p>Aceda ao painel de gestão para preencher os termos comerciais e enviar a proposta ao cliente.</p>`;
             await this._sendEmail(

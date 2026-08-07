@@ -16,21 +16,41 @@ function formatDatePT(date) {
     return new Date(date).toLocaleDateString('pt-PT');
 }
 
-// Token de acesso público (mesma fórmula usada em backend/routes/orcamentos.js)
-function generatePublicAccessToken(id) {
-    return crypto
-        .createHash('sha256')
-        .update(id.toString() + (process.env.JWT_SECRET || 'deapseak_secret_key_2024'))
-        .digest('hex')
-        .substring(0, 16);
+// Token de acesso público — aleatório por documento (não um hash determinístico
+// do id, que qualquer pessoa com o id podia recalcular offline), com expiração
+// e invalidação após uso. Gera e persiste um novo token se não existir um válido.
+const ACCESS_TOKEN_VALIDITY_DAYS = 90;
+
+async function getOrCreatePublicAccessToken(contrato) {
+    const now = new Date();
+    if (contrato.accessToken && contrato.accessTokenExpiresAt && contrato.accessTokenExpiresAt > now) {
+        return contrato.accessToken;
+    }
+    const token = crypto.randomBytes(32).toString('hex');
+    const expiresAt = new Date(now.getTime() + ACCESS_TOKEN_VALIDITY_DAYS * 24 * 60 * 60 * 1000);
+    await ContratoManutencao.updateOne(
+        { _id: contrato._id },
+        { $set: { accessToken: token, accessTokenExpiresAt: expiresAt } }
+    );
+    contrato.accessToken = token;
+    contrato.accessTokenExpiresAt = expiresAt;
+    return token;
 }
 
-function buildPublicSigningUrl(req, contratoId) {
-    const token = generatePublicAccessToken(contratoId);
+function isValidPublicAccessToken(contrato, suppliedToken) {
+    if (!contrato.accessToken || !suppliedToken) return false;
+    if (contrato.accessTokenExpiresAt && contrato.accessTokenExpiresAt < new Date()) return false;
+    const a = Buffer.from(contrato.accessToken);
+    const b = Buffer.from(String(suppliedToken));
+    return a.length === b.length && crypto.timingSafeEqual(a, b);
+}
+
+async function buildPublicSigningUrl(req, contrato) {
+    const token = await getOrCreatePublicAccessToken(contrato);
     const configuredBaseUrl = process.env.SITE_URL || process.env.PUBLIC_BASE_URL;
     const runtimeBaseUrl = `${req.protocol}://${req.get('host')}`;
     const baseUrl = (configuredBaseUrl || runtimeBaseUrl).replace(/\/$/, '');
-    return `${baseUrl}/pages/public/contrato-assinatura.html?id=${contratoId}&token=${token}`;
+    return `${baseUrl}/pages/public/contrato-assinatura.html?id=${contrato._id}&token=${token}`;
 }
 
 function getSmtpTransporter() {
@@ -44,9 +64,10 @@ function getSmtpTransporter() {
 }
 
 function gerarPasswordTemporaria() {
-    return Math.random().toString(36).slice(2, 6).toUpperCase() +
-        Math.floor(1000 + Math.random() * 9000) +
-        ['!', '@', '#', '$'][Math.floor(Math.random() * 4)];
+    // crypto.randomBytes, não Math.random() — Math.random() usa um PRNG não
+    // criptográfico cujo estado é recuperável a partir de poucos valores
+    // observados, o que tornava as passwords temporárias adivinháveis.
+    return crypto.randomBytes(12).toString('base64url');
 }
 
 // Cria conta de cliente (se ainda não existir) quando o contrato é assinado via link público.
@@ -386,13 +407,12 @@ function contratoParaPublico(contrato) {
 // GET /api/contratos-manutencao/public/:id?token=...
 router.get('/public/:id', async (req, res) => {
     try {
-        const { token } = req.query;
-        if (!token || token !== generatePublicAccessToken(req.params.id)) {
-            return res.status(401).json({ success: false, message: 'Link de acesso inválido' });
-        }
-
         const contrato = await ContratoManutencao.findById(req.params.id);
         if (!contrato) return res.status(404).json({ success: false, message: 'Contrato não encontrado' });
+
+        if (!isValidPublicAccessToken(contrato, req.query.token)) {
+            return res.status(401).json({ success: false, message: 'Link de acesso inválido ou expirado' });
+        }
 
         res.json({ success: true, data: contratoParaPublico(contrato) });
     } catch (error) {
@@ -404,13 +424,12 @@ router.get('/public/:id', async (req, res) => {
 // GET /api/contratos-manutencao/public/:id/pdf?token=...
 router.get('/public/:id/pdf', async (req, res) => {
     try {
-        const { token } = req.query;
-        if (!token || token !== generatePublicAccessToken(req.params.id)) {
-            return res.status(401).json({ success: false, message: 'Link de acesso inválido' });
-        }
-
         const contrato = await ContratoManutencao.findById(req.params.id);
         if (!contrato) return res.status(404).json({ success: false, message: 'Contrato não encontrado' });
+
+        if (!isValidPublicAccessToken(contrato, req.query.token)) {
+            return res.status(401).json({ success: false, message: 'Link de acesso inválido ou expirado' });
+        }
 
         const pdfBuffer = await gerarPDFContratoManutencao(contrato);
         res.setHeader('Content-Type', 'application/pdf');
@@ -425,9 +444,11 @@ router.get('/public/:id/pdf', async (req, res) => {
 // POST /api/contratos-manutencao/public/:id/assinar?token=... — assinatura do cliente sem login
 router.post('/public/:id/assinar', async (req, res) => {
     try {
-        const { token } = req.query;
-        if (!token || token !== generatePublicAccessToken(req.params.id)) {
-            return res.status(401).json({ success: false, message: 'Link de acesso inválido' });
+        const contrato = await ContratoManutencao.findById(req.params.id);
+        if (!contrato) return res.status(404).json({ success: false, message: 'Contrato não encontrado' });
+
+        if (!isValidPublicAccessToken(contrato, req.query.token)) {
+            return res.status(401).json({ success: false, message: 'Link de acesso inválido ou expirado' });
         }
 
         const { imagem, nomeAssinante } = req.body;
@@ -435,8 +456,6 @@ router.post('/public/:id/assinar', async (req, res) => {
             return res.status(400).json({ success: false, message: 'Assinatura inválida' });
         }
 
-        const contrato = await ContratoManutencao.findById(req.params.id);
-        if (!contrato) return res.status(404).json({ success: false, message: 'Contrato não encontrado' });
         if (contrato.status === 'cancelado') {
             return res.status(400).json({ success: false, message: 'Contrato cancelado não pode ser assinado' });
         }
@@ -457,6 +476,10 @@ router.post('/public/:id/assinar', async (req, res) => {
         };
         contrato.status = 'assinado';
         if (created) contrato.contaClienteCriada = true;
+        // Nota: o token mantém-se válido até expirar (90 dias) — a página de
+        // assinatura reutiliza-o logo a seguir para mostrar/descarregar o PDF
+        // assinado, por isso não pode ser invalidado no mesmo pedido.
+        contrato.accessTokenUsedAt = new Date();
         await contrato.save();
 
         res.json({
@@ -480,7 +503,7 @@ router.get('/:id/link-assinatura', authenticate, authorizeRoles('admin', 'dispat
             return res.status(400).json({ success: false, message: 'A FESTLIFT deve assinar o contrato antes de partilhar o link com o cliente' });
         }
 
-        res.json({ success: true, url: buildPublicSigningUrl(req, contrato._id) });
+        res.json({ success: true, url: await buildPublicSigningUrl(req, contrato) });
     } catch (error) {
         console.error('Erro ao gerar link de assinatura:', error);
         res.status(500).json({ success: false, message: 'Erro ao gerar link', error: error.message });
@@ -499,7 +522,7 @@ router.post('/:id/enviar-link', authenticate, authorizeRoles('admin', 'dispatche
             return res.status(400).json({ success: false, message: 'Este contrato já foi assinado pelo cliente' });
         }
 
-        const url = buildPublicSigningUrl(req, contrato._id);
+        const url = await buildPublicSigningUrl(req, contrato);
         const assunto = `Assine o seu contrato de manutenção ${contrato.numero} - FestLift`;
         const emailDestino = contrato.cliente.email;
 

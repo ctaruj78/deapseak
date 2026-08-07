@@ -4,8 +4,15 @@ const router = express.Router();
 const FLAGS_PATH = require('path').resolve(process.cwd(), 'config/assistant.flags.json');
 const fs = require('fs');
 const learningStore = require('../services/assistant/learningStore');
+const { authenticate } = require('../middleware/auth');
+const { authorizeRoles } = require('../middleware/roleAuth');
 
-router.get('/health', (_req, res) => {
+// Todo este router lida com histórico de conversas de IA (podem conter
+// moradas de clientes, notas internas) e permite escrita em disco — nada aqui
+// deve ficar acessível sem sessão válida.
+router.use(authenticate);
+
+router.get('/health', authorizeRoles('admin'), (_req, res) => {
   let flags = null;
 
   try {
@@ -20,13 +27,11 @@ router.get('/health', (_req, res) => {
     service: 'assistant',
     enabled: Boolean(flags && flags.assistantEnabled),
     mode: (flags && flags.mode) || 'unknown',
-    rolloutStage: (flags && flags.rolloutStage) || 'unknown',
-    model: process.env.OLLAMA_MODEL || 'qwen2.5:3b',
-    baseUrl: process.env.OLLAMA_BASE_URL || 'http://127.0.0.1:11434'
+    rolloutStage: (flags && flags.rolloutStage) || 'unknown'
   });
 });
 
-router.get('/learning/status', (_req, res) => {
+router.get('/learning/status', authorizeRoles('admin'), (_req, res) => {
   return res.json({
     ok: true,
     enabled: String(process.env.ASSISTANT_LEARNING_ENABLED || 'true') === 'true',
@@ -54,29 +59,31 @@ router.post('/learning/feedback', (req, res) => {
     source: body.source,
     model: body.model,
     provider: body.provider,
+    // Autoria vem sempre da sessão autenticada — nunca do corpo do pedido,
+    // que era falsificável por qualquer chamador.
     user: {
-      id: req.user?.userId || body.userId || null,
-      role: req.user?.role || body.userRole || null
+      id: req.user.id,
+      role: req.user.role
     }
   });
 
   return res.status(201).json({ ok: true, entry });
 });
 
-router.get('/learning/stats', (_req, res) => {
+router.get('/learning/stats', authorizeRoles('admin'), (_req, res) => {
   return res.json({ ok: true, stats: learningStore.getStats() });
 });
 
-router.get('/learning/recent', (req, res) => {
-  const limit = Number(req.query.limit || 20);
+router.get('/learning/recent', authorizeRoles('admin'), (req, res) => {
+  const limit = Math.min(Math.max(Number(req.query.limit) || 20, 1), 200);
   return res.json({ ok: true, entries: learningStore.getRecent(limit) });
 });
 
-router.post('/learning/build-dataset', (req, res) => {
+router.post('/learning/build-dataset', authorizeRoles('admin'), (req, res) => {
   const body = req.body || {};
   const result = learningStore.buildDataset({
     onlyApproved: body.onlyApproved !== false,
-    maxItems: Number(body.maxItems || 2000)
+    maxItems: Math.min(Number(body.maxItems) || 2000, 5000)
   });
   return res.json({ ok: true, dataset: result });
 });
