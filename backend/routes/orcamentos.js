@@ -669,25 +669,23 @@ router.get('/', authenticate, authorizeRoles('admin', 'dispatcher', 'client'), a
     }
 });
 
-// GET /api/orcamentos/next-number - Obter próximo número disponível (admin/dispatcher only)
+// GET /api/orcamentos/next-number - Pré-visualização apenas — lê o mesmo
+// contador atómico que Orcamento.gerarNumero() usa (sem o incrementar), para
+// nunca divergir do número realmente atribuído ao guardar. A versão anterior
+// escaneava o último "numero" existente, que dava o mesmo valor em
+// pré-visualizações sucessivas sem guardar entretanto (parecia colisão de
+// números, mas os números realmente atribuídos ao guardar já eram distintos).
 router.get('/next-number', authenticate, authorizeRoles('admin', 'dispatcher'), async (req, res) => {
     try {
         const ano = new Date().getFullYear();
         const mes = String(new Date().getMonth() + 1).padStart(2, '0');
-        
-        // Buscar último orçamento do mês
-        const ultimoOrcamento = await Orcamento.findOne({
-            numero: new RegExp(`^ORC-${ano}-${mes}`)
-        }).sort({ numero: -1 }).lean();
-        
-        let sequencia = 1;
-        if (ultimoOrcamento) {
-            const match = ultimoOrcamento.numero.match(/ORC-\d{4}-\d{2}-(\d{3})/);
-            if (match) sequencia = parseInt(match[1]) + 1;
-        }
-        
-        const numero = `ORC-${ano}-${mes}-${String(sequencia).padStart(3, '0')}`;
-        
+        const key = `ORC-${ano}-${mes}`;
+
+        const counterDoc = await mongoose.connection.db.collection('counters').findOne({ _id: key });
+        const sequencia = (counterDoc?.seq || 0) + 1;
+
+        const numero = `${key}-${String(sequencia).padStart(3, '0')}`;
+
         res.json({
             success: true,
             numero,

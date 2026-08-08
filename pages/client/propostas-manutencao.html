@@ -435,7 +435,7 @@
         document.getElementById('countExpirado').textContent  = counts.expirado;
 
         const badge = document.getElementById('propostasManutencaoCount');
-        if (badge) badge.textContent = counts.enviado;
+        if (badge) badge.textContent = counts.solicitado + counts.enviado;
 
         if (list.length === 0) {
             document.getElementById('emptyState').style.display = 'block';
@@ -761,6 +761,11 @@
         .then(r => r.json()).then(d => {
             const b = document.getElementById('notificationsBadge');
             if (b && d.data) { b.textContent = d.data.length; b.style.display = d.data.length > 0 ? 'inline-block' : 'none'; }
+        }).catch(() => {});
+    fetch('/api/propostas-manutencao/my', { headers: { 'Authorization': `Bearer ${token}` } })
+        .then(r => r.json()).then(d => {
+            const b = document.getElementById('propostasManutencaoCount');
+            if (b && d.data) b.textContent = d.data.filter(p => ['solicitado', 'enviado'].includes(p.status)).length;
         }).catch(() => {});
 })();
 </script>

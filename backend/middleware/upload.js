@@ -8,17 +8,26 @@ if (!fs.existsSync(uploadsDir)) {
     fs.mkdirSync(uploadsDir, { recursive: true });
 }
 
+// Extensão derivada do mimetype VALIDADO pelo fileFilter, nunca do nome de
+// ficheiro original — este é atribuído livremente pelo cliente no pedido, e
+// usar path.extname(originalname) permitia guardar um "foto.png" que era na
+// realidade um .html/.svg, servido depois a partir da própria origem da app.
+const MIME_TO_EXT = {
+    'application/pdf': '.pdf',
+    'image/jpeg': '.jpg',
+    'image/png': '.png',
+    'image/gif': '.gif'
+};
+
 // Налаштування зберігання файлів
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
         cb(null, uploadsDir);
     },
     filename: function (req, file, cb) {
-        // Генерувати унікальне ім'я файлу
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        const ext = path.extname(file.originalname);
-        const name = path.basename(file.originalname, ext);
-        cb(null, name + '-' + uniqueSuffix + ext);
+        const ext = MIME_TO_EXT[file.mimetype] || '.bin';
+        cb(null, `upload-${uniqueSuffix}${ext}`);
     }
 });
 

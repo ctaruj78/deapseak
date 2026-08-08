@@ -1115,6 +1115,13 @@
  * Sistema de gestão pedidoми на de manutenção de elevadores
  */
 
+// Campos do pedido (title, description, liftAddress, type, technicianName) vêm
+// de dados enviados pelo cliente — sem isto, um pedido com <img onerror=...>
+// na descrição executava no browser de qualquer admin que abrisse esta página.
+function escapeHtml(str) {
+    return String(str ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
 class ServiceRequestManager {
     constructor() {
         this.requests = [];
@@ -1491,7 +1498,7 @@ class ServiceRequestManager {
             const pIcon      = priorityIcons[request.priority]  || 'clipboard';
             const sColor     = statusColors[request.status]     || 'secondary';
             const sText      = statusTexts[request.status]      || request.status;
-            const techName   = request.technicianName || (request.technician ? '<span class="text-warning">Atribuído</span>' : '<span class="text-muted">Não atribuído</span>');
+            const techName   = request.technicianName ? escapeHtml(request.technicianName) : (request.technician ? '<span class="text-warning">Atribuído</span>' : '<span class="text-muted">Não atribuído</span>');
             const isOverdue  = request.status !== 'completed' && request.scheduledAt && new Date(request.scheduledAt) < new Date();
             const dateStr    = request.scheduledAt
                 ? new Date(request.scheduledAt).toLocaleString('pt-PT', {day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})
@@ -1511,13 +1518,13 @@ class ServiceRequestManager {
                                 <span class="badge badge-${sColor}">${sText}</span>
                                 ${isOverdue ? '<span class="badge badge-danger req-pulse">Atrasado</span>' : ''}
                             </div>
-                            <div class="font-weight-bold text-dark mb-1" style="font-size:14px">${request.title || this.getTypeText(request.type) + ' — ' + (request.liftAddress||'')}</div>
-                            <div class="text-muted text-truncate mb-1" style="font-size:12px;max-width:600px">${request.description || ''}</div>
+                            <div class="font-weight-bold text-dark mb-1" style="font-size:14px">${escapeHtml(request.title || this.getTypeText(request.type) + ' — ' + (request.liftAddress||''))}</div>
+                            <div class="text-muted text-truncate mb-1" style="font-size:12px;max-width:600px">${escapeHtml(request.description || '')}</div>
                             <div class="d-flex flex-wrap" style="gap:14px;font-size:12px;color:#6c757d">
-                                <span><i class="fas fa-map-marker-alt mr-1"></i>${request.liftAddress || 'Endereço desconhecido'}</span>
+                                <span><i class="fas fa-map-marker-alt mr-1"></i>${escapeHtml(request.liftAddress || 'Endereço desconhecido')}</span>
                                 <span><i class="fas fa-user mr-1"></i>${techName}</span>
                                 <span><i class="fas fa-calendar mr-1"></i>${dateStr}</span>
-                                <span><i class="fas fa-tools mr-1"></i>${this.getTypeText(request.type)}</span>
+                                <span><i class="fas fa-tools mr-1"></i>${escapeHtml(this.getTypeText(request.type))}</span>
                             </div>
                         </div>
                         <div class="d-flex flex-column align-items-end flex-shrink-0" style="gap:5px">
@@ -1727,7 +1734,7 @@ class ServiceRequestManager {
         // ── Tab①: Descrição ──
         const typeIcon = this.getTypeIcon ? this.getTypeIcon(request.type) : '';
         const typeText = this.getTypeText ? this.getTypeText(request.type) : request.type;
-        $('#vrmType').html(typeIcon + ' ' + typeText);
+        $('#vrmType').html(typeIcon + ' ' + escapeHtml(typeText));
         $('#vrmDescription').text(request.description || 'Sem descrição');
         if (request.notes) { $('#vrmNotesSection').show(); $('#vrmNotes').text(request.notes); }
         else { $('#vrmNotesSection').hide(); }

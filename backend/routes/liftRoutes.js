@@ -68,7 +68,7 @@ router.post('/:id/inspection',
 );
 
 // POST /api/lifts/:id/photo - Додавання фото до ліфта
-router.post('/:id/photo', authenticate, liftController.addPhoto);
+router.post('/:id/photo', authenticate, authorizeRoles('admin', 'dispatcher', 'technician'), liftController.addPhoto);
 
 // POST /api/lifts/:id/assign-technician - Призначення техніка (admin, dispatcher)
 router.post('/:id/assign-technician', 

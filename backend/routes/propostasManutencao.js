@@ -210,7 +210,7 @@ router.get('/my', authenticate, authorizeRoles('client'), async (req, res) => {
         res.json({ success: true, data: propostas });
     } catch (error) {
         console.error('Erro ao buscar propostas do cliente:', error);
-        res.status(500).json({ success: false, message: 'Erro ao buscar propostas', error: error.message });
+        res.status(500).json({ success: false, message: 'Erro ao buscar propostas' });
     }
 });
 
@@ -329,7 +329,7 @@ router.post('/solicitar', authenticate, authorizeRoles('client'), solicitarLimit
         });
     } catch (error) {
         console.error('Erro ao submeter pedido de proposta:', error);
-        res.status(500).json({ success: false, message: 'Erro ao submeter pedido', error: error.message });
+        res.status(500).json({ success: false, message: 'Erro ao submeter pedido' });
     }
 });
 
@@ -402,7 +402,7 @@ router.post('/:id/resposta', authenticate, authorizeRoles('client'), async (req,
         });
     } catch (error) {
         console.error('Erro ao responder proposta:', error);
-        res.status(500).json({ success: false, message: 'Erro ao processar resposta', error: error.message });
+        res.status(500).json({ success: false, message: 'Erro ao processar resposta' });
     }
 });
 
@@ -473,7 +473,7 @@ router.get('/', authenticate, authorizeRoles('admin', 'dispatcher', 'client'), a
         });
     } catch (error) {
         console.error('Erro ao buscar propostas:', error);
-        res.status(500).json({ success: false, message: 'Erro ao buscar propostas', error: error.message });
+        res.status(500).json({ success: false, message: 'Erro ao buscar propostas' });
     }
 });
 
@@ -498,7 +498,7 @@ router.get('/next-number', authenticate, authorizeRoles('admin', 'dispatcher'), 
         res.json({ success: true, numero, proximaSequencia: sequencia });
     } catch (error) {
         console.error('❌ Erro ao gerar próximo número:', error);
-        res.status(500).json({ success: false, message: 'Erro ao gerar próximo número', error: error.message });
+        res.status(500).json({ success: false, message: 'Erro ao gerar próximo número' });
     }
 });
 
@@ -513,7 +513,7 @@ router.get('/stats/dashboard', authenticate, authorizeRoles('admin', 'dispatcher
         res.json({ success: true, data: { total, porStatus: stats } });
     } catch (error) {
         console.error('Erro ao buscar estatísticas:', error);
-        res.status(500).json({ success: false, message: 'Erro ao buscar estatísticas', error: error.message });
+        res.status(500).json({ success: false, message: 'Erro ao buscar estatísticas' });
     }
 });
 
@@ -536,7 +536,7 @@ router.get('/:id/pdf', authenticate, authorizeRoles('admin', 'dispatcher', 'clie
         res.send(pdfBuffer);
     } catch (error) {
         console.error('Erro ao gerar PDF autenticado:', error);
-        res.status(500).json({ success: false, message: 'Erro ao gerar PDF', error: error.message });
+        res.status(500).json({ success: false, message: 'Erro ao gerar PDF' });
     }
 });
 
@@ -558,7 +558,7 @@ router.get('/:id', authenticate, authorizeRoles('admin', 'dispatcher', 'client')
         res.json({ success: true, data: proposta });
     } catch (error) {
         console.error('Erro ao buscar proposta:', error);
-        res.status(500).json({ success: false, message: 'Erro ao buscar proposta', error: error.message });
+        res.status(500).json({ success: false, message: 'Erro ao buscar proposta' });
     }
 });
 
@@ -648,7 +648,7 @@ router.post('/', authenticate, authorizeRoles('admin', 'dispatcher'), async (req
         });
     } catch (error) {
         console.error('Erro ao criar proposta:', error);
-        res.status(500).json({ success: false, message: 'Erro ao criar proposta', error: error.message });
+        res.status(500).json({ success: false, message: 'Erro ao criar proposta' });
     }
 });
 
@@ -757,7 +757,7 @@ router.put('/:id', authenticate, authorizeRoles('admin', 'dispatcher'), async (r
         });
     } catch (error) {
         console.error('Erro ao atualizar proposta:', error);
-        res.status(500).json({ success: false, message: 'Erro ao atualizar proposta', error: error.message });
+        res.status(500).json({ success: false, message: 'Erro ao atualizar proposta' });
     }
 });
 
@@ -777,7 +777,7 @@ router.delete('/:id', authenticate, authorizeRoles('admin', 'dispatcher'), async
         res.json({ success: true, message: 'Proposta eliminada com sucesso' });
     } catch (error) {
         console.error('Erro ao eliminar proposta:', error);
-        res.status(500).json({ success: false, message: 'Erro ao eliminar proposta', error: error.message });
+        res.status(500).json({ success: false, message: 'Erro ao eliminar proposta' });
     }
 });
 
@@ -900,7 +900,7 @@ router.post('/:id/enviar', authenticate, authorizeRoles('admin', 'dispatcher'), 
         }
     } catch (error) {
         console.error('Erro ao enviar proposta:', error);
-        res.status(500).json({ success: false, message: 'Erro ao enviar proposta', error: error.message });
+        res.status(500).json({ success: false, message: 'Erro ao enviar proposta' });
     }
 });
 
@@ -939,7 +939,7 @@ router.patch('/:id/status', authenticate, authorizeRoles('admin', 'dispatcher'),
         res.json({ success: true, message: msg, data: proposta });
     } catch (error) {
         console.error('Erro ao atualizar status:', error);
-        res.status(500).json({ success: false, message: 'Erro ao atualizar status', error: error.message });
+        res.status(500).json({ success: false, message: 'Erro ao atualizar status' });
     }
 });
 
@@ -954,7 +954,7 @@ router.post('/:id/archive', authenticate, authorizeRoles('admin', 'dispatcher'),
         res.json({ success: true, message: 'Proposta arquivada com sucesso' });
     } catch (error) {
         console.error('Erro ao arquivar proposta:', error);
-        res.status(500).json({ success: false, message: 'Erro ao arquivar', error: error.message });
+        res.status(500).json({ success: false, message: 'Erro ao arquivar' });
     }
 });
 
@@ -969,7 +969,7 @@ router.post('/:id/unarchive', authenticate, authorizeRoles('admin'), async (req,
         res.json({ success: true, message: 'Proposta restaurada do arquivo' });
     } catch (error) {
         console.error('Erro ao restaurar proposta:', error);
-        res.status(500).json({ success: false, message: 'Erro ao restaurar', error: error.message });
+        res.status(500).json({ success: false, message: 'Erro ao restaurar' });
     }
 });
 
@@ -1054,7 +1054,7 @@ router.patch('/:id/link-lift', authenticate, authorizeRoles('admin', 'dispatcher
         });
     } catch (error) {
         console.error('Erro ao vincular proposta a elevador:', error);
-        res.status(500).json({ success: false, message: 'Erro ao vincular', error: error.message });
+        res.status(500).json({ success: false, message: 'Erro ao vincular' });
     }
 });
 

@@ -52,7 +52,18 @@ class AgentService {
             .filter(Boolean);
         this.ragCache = { snippets: [], expiresAt: 0 };
         this.clientFocusByUser = new Map();
-        this.aiProvider = (process.env.AI_PROVIDER || 'auto').toLowerCase();
+        // Trim + whitelist — sem isto, um espaço a mais ou um valor
+        // inesperado em AI_PROVIDER (ex.: "auto " ou "gemini-2.5-flash") saltava
+        // silenciosamente o routing por tipo de tarefa mais abaixo (que envia
+        // perguntas legais para o Gemini), caindo antes no branch "qualquer
+        // provider explícito" que usa Groq para tudo — e os logs continuavam a
+        // mostrar provider=groq sem nenhum aviso de fallback.
+        const rawAiProvider = String(process.env.AI_PROVIDER || 'auto').trim().toLowerCase();
+        const VALID_AI_PROVIDERS = ['auto', 'groq', 'gemini', 'ollama'];
+        if (!VALID_AI_PROVIDERS.includes(rawAiProvider)) {
+            console.warn(`⚠️ AI_PROVIDER='${process.env.AI_PROVIDER}' não reconhecido (válidos: ${VALID_AI_PROVIDERS.join(', ')}) — a usar 'auto'.`);
+        }
+        this.aiProvider = VALID_AI_PROVIDERS.includes(rawAiProvider) ? rawAiProvider : 'auto';
     }
 
     _toObjectIdMaybe(value) {
@@ -998,11 +1009,11 @@ class AgentService {
         let outputText = '';
         let errorMessage = null;
 
-        const tryGemini = async () => {
+        const tryGemini = async (modelNameOverride) => {
             if (!process.env.GEMINI_API_KEY) {
                 throw new Error('GEMINI_API_KEY is not configured');
             }
-            const model = this.genAI.getGenerativeModel({ model: this.model });
+            const model = this.genAI.getGenerativeModel({ model: modelNameOverride || this.model });
             const result = await model.generateContent(prompt);
             return result.response.text().trim();
         };
@@ -1012,8 +1023,10 @@ class AgentService {
                 return await tryGemini();
             } catch (err) {
                 if (err.message && (err.message.includes('model') || err.message.includes('not found'))) {
-                    this.model = 'gemini-2.5-flash';
-                    return await tryGemini();
+                    // Fallback só para este pedido — NÃO muta this.model, que é
+                    // partilhado por todos os pedidos concorrentes no processo;
+                    // um erro pontual de modelo não deve rebaixar todos os outros.
+                    return await tryGemini('gemini-2.5-flash');
                 }
                 throw err;
             }

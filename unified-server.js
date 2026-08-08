@@ -16015,7 +16015,15 @@ const STATIC_ALLOWED_FILES = new Set([
     'sw.js', 'service-worker.js', 'sw-offline.js', 'LICENSE'
 ]);
 app.use((req, res, next) => {
-    const decodedPath = decodeURIComponent(req.path);
+    let decodedPath;
+    try {
+        decodedPath = decodeURIComponent(req.path);
+    } catch (_err) {
+        // Sequência de escape malformada (ex.: "/%zz") — decodeURIComponent
+        // lança URIError, que sem isto o Express transformava num 500 em vez
+        // do 404 pretendido para um caminho inválido.
+        return res.status(404).send('Not found');
+    }
     if (decodedPath === '/' || decodedPath === '') return next();
     // /api/* is never served by express.static — some routes are registered
     // further down this file, so let all of them fall through untouched.
@@ -16041,6 +16049,10 @@ app.use(express.static(path.join(__dirname), {
             res.setHeader('Pragma', 'no-cache');
             res.setHeader('Expires', '0');
         }
+        // Impede que o browser tente "adivinhar" um content-type diferente do
+        // declarado (ex.: um ficheiro em uploads/ servido como image/png mas
+        // sniffado como text/html) — mitigação complementar ao fix de extensão.
+        res.setHeader('X-Content-Type-Options', 'nosniff');
     }
 }));
 

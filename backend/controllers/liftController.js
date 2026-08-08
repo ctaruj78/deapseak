@@ -396,9 +396,18 @@ exports.addPhoto = async (req, res, next) => {
     try {
         const { url, description } = req.body;
         if (!url) throw new AppError('Photo URL required', 400);
+        // Só aceita ficheiros já enviados para o próprio uploads/ (via multer) ou
+        // https absoluto — bloqueia javascript:/data: e outros esquemas capazes
+        // de gerar XSS/phishing quando a foto é renderizada num <img>/link.
+        const isSafeUrl = /^\/uploads\//.test(url) || /^https:\/\//i.test(url);
+        if (!isSafeUrl) throw new AppError('Photo URL inválido', 400);
         const lift = await Lift.findById(req.params.id);
         if (!lift) throw new AppError('Lift not found', 404);
-        lift.photos.push({ url, description: description || '', uploadedBy: req.user.id });
+        lift.photos.push({
+            url,
+            description: String(description || '').slice(0, 500),
+            uploadedBy: req.user.id
+        });
         await lift.save();
         res.json({ success: true, message: 'Photo added', data: { lift } });
     } catch (error) {

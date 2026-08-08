@@ -146,6 +146,21 @@ exports.createRequest = async (req, res, next) => {
 
         const request = await Request.create(requestData);
 
+        // Se o pedido já nasce atribuído a um técnico, a carga dele tem de
+        // refletir isso — sem isto, assignRequest() era o único sítio a
+        // incrementar currentAssignments e um pedido criado já atribuído
+        // nunca contava para o limite de trabalho do técnico.
+        if (assignedTo) {
+            const assignedTechnician = await User.findById(assignedTo);
+            if (assignedTechnician && assignedTechnician.role === 'technician') {
+                assignedTechnician.currentAssignments = (assignedTechnician.currentAssignments || 0) + 1;
+                if (!['offline', 'vacation'].includes(assignedTechnician.status)) {
+                    assignedTechnician.status = assignedTechnician.currentAssignments >= assignedTechnician.maxAssignments ? 'busy' : 'online';
+                }
+                await assignedTechnician.save();
+            }
+        }
+
         await request.populate([
             { path: 'lift', select: 'municipalNumber address' },
             { path: 'client', select: 'firstName lastName email phone' },
@@ -369,18 +384,38 @@ exports.assignRequest = async (req, res, next) => {
             throw new AppError('Pedido não encontrado', 404);
         }
 
+        const previousTechnicianId = request.assignedTo ? request.assignedTo.toString() : null;
+        const isSameTechnician = previousTechnicianId === technicianId.toString();
+
         await request.changeStatus('assigned', req.user.id);
         request.assignedTo = technicianId;
         await request.save();
 
-        // Оновити навантаження техніка
-        technician.currentAssignments += 1;
-        if (technician.currentAssignments >= technician.maxAssignments) {
-            technician.status = 'busy';
-        } else {
-            technician.status = 'online';
+        // Liberta a carga do técnico anterior (reatribuição) — sem isto, um
+        // técnico reatribuído ficava com currentAssignments inflado para
+        // sempre, até recusar trabalho novo estando na realidade livre.
+        if (previousTechnicianId && !isSameTechnician) {
+            const previousTechnician = await User.findById(previousTechnicianId);
+            if (previousTechnician && previousTechnician.currentAssignments > 0) {
+                previousTechnician.currentAssignments -= 1;
+                if (!['offline', 'vacation'].includes(previousTechnician.status)) {
+                    previousTechnician.status = previousTechnician.currentAssignments >= previousTechnician.maxAssignments ? 'busy' : 'online';
+                }
+                await previousTechnician.save();
+            }
         }
-        await technician.save();
+
+        // Só incrementa a carga do novo técnico se for de facto uma atribuição
+        // nova — repetir a mesma atribuição não deve contar duas vezes.
+        if (!isSameTechnician) {
+            technician.currentAssignments += 1;
+            // Não força o estado de um técnico offline/de férias para online —
+            // só ajusta o estado de quem já estava disponível.
+            if (!['offline', 'vacation'].includes(technician.status)) {
+                technician.status = technician.currentAssignments >= technician.maxAssignments ? 'busy' : 'online';
+            }
+            await technician.save();
+        }
 
         await request.populate([
             { path: 'lift', select: 'municipalNumber address' },
@@ -591,13 +626,20 @@ exports.completeRequest = async (req, res, next) => {
             throw new AppError('Acesso negado', 403);
         }
 
+        // Um pedido já completado não pode ser completado outra vez — sem isto,
+        // um duplo-clique ou reenvio de rede decrementava a carga do técnico
+        // duas vezes por um único trabalho.
+        if (request.status === 'completed') {
+            throw new AppError('Este pedido já foi concluído', 400);
+        }
+
         // Зменшити навантаження техніка
         if (request.assignedTo) {
             const technician = await User.findById(request.assignedTo);
             if (technician && technician.currentAssignments > 0) {
                 technician.currentAssignments -= 1;
                 // Оновити статус техніка
-                if (technician.currentAssignments < technician.maxAssignments) {
+                if (technician.currentAssignments < technician.maxAssignments && !['offline', 'vacation'].includes(technician.status)) {
                     technician.status = 'online';
                 }
                 await technician.save();
@@ -665,7 +707,7 @@ exports.cancelRequest = async (req, res, next) => {
             if (technician && technician.currentAssignments > 0) {
                 technician.currentAssignments -= 1;
                 // Оновити статус техніка
-                if (technician.currentAssignments < technician.maxAssignments) {
+                if (technician.currentAssignments < technician.maxAssignments && !['offline', 'vacation'].includes(technician.status)) {
                     technician.status = 'online';
                 }
                 await technician.save();
