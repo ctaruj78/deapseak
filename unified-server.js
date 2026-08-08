@@ -15412,11 +15412,19 @@ app.post('/api/email/send-template', authenticateToken, emailLimiter, requireRol
             }
         });
 
+        // BCC para a equipa interna, ao mesmo padrão usado no envio de propostas/
+        // orçamentos — sem isto, um email enviado a um cliente por aqui não
+        // deixava nenhum registo na caixa de entrada do FestLift.
+        const smtpFromRaw = process.env.EMAIL_FROM || process.env.SMTP_FROM || '"LiftMaster Pro" <info@festlift.pt>';
+        const smtpFromEmail = smtpFromRaw.match(/<([^>]+)>/)?.[1] || smtpFromRaw;
+        const adminBcc = process.env.EMAIL_BCC || smtpFromEmail || null;
+
         const mailOptions = {
-            from: process.env.EMAIL_FROM || process.env.SMTP_FROM || '"LiftMaster Pro" <info@festlift.pt>',
+            from: smtpFromRaw,
             to: email,
             subject: subject || 'Email de teste - FestLift',
-            html: htmlContent
+            html: htmlContent,
+            bcc: adminBcc && adminBcc.toLowerCase() !== String(email).toLowerCase() ? adminBcc : undefined
         };
 
         if (attachedFiles.length) {
