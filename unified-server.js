@@ -9113,15 +9113,34 @@ app.post('/api/requests', authenticateToken, async (req, res) => {
             try { clientRef = new ObjectId(userId); } catch (_) {}
         }
 
+        // Whitelist explícita dos campos aceites do corpo do pedido — antes disto
+        // era um spread de req.body inteiro, permitindo a qualquer campo (ex.:
+        // technicianName, campos internos) ser gravado sem controlo e depois
+        // renderizado sem escaping em pages/admin/requests.html (stored XSS).
+        const CAMPOS_PEDIDO_PERMITIDOS = [
+            'type', 'liftId', 'lift', 'title', 'description', 'priority',
+            'liftAddress', 'photosBefore', 'scheduledDate', 'cost', 'duration',
+            'status', 'state', 'liftClient', 'liftMunicipalNumber', 'liftLocation'
+        ];
+        const dadosPedido = {};
+        for (const campo of CAMPOS_PEDIDO_PERMITIDOS) {
+            if (req.body[campo] !== undefined) dadosPedido[campo] = req.body[campo];
+        }
+        if (typeof dadosPedido.title === 'string') dadosPedido.title = dadosPedido.title.slice(0, 300);
+        if (typeof dadosPedido.description === 'string') dadosPedido.description = dadosPedido.description.slice(0, 5000);
+        if (typeof dadosPedido.liftAddress === 'string') dadosPedido.liftAddress = dadosPedido.liftAddress.slice(0, 300);
+        if (typeof dadosPedido.liftClient === 'string') dadosPedido.liftClient = dadosPedido.liftClient.slice(0, 200);
+        if (typeof dadosPedido.liftMunicipalNumber === 'string') dadosPedido.liftMunicipalNumber = dadosPedido.liftMunicipalNumber.slice(0, 50);
+
         const newRequest = {
-            ...req.body,
+            ...dadosPedido,
             requestNumber,
             client: clientRef,
-            status: req.body.status || req.body.state || 'new',
+            status: dadosPedido.status || dadosPedido.state || 'new',
             // Автоматично генеруємо заголовок якщо не вказано
-            title: req.body.title || (() => {
+            title: dadosPedido.title || (() => {
                 const typeMap = { maintenance: 'Manutenção técnica', repair: 'Reparação', inspection: 'Inspeção técnica', consultation: 'Consulta', emergency: 'Situação de emergência' };
-                const typeName = typeMap[req.body.type] || req.body.type || 'Заявка';
+                const typeName = typeMap[dadosPedido.type] || dadosPedido.type || 'Заявка';
                 if (liftData?.address) {
                     const parts = [];
                     if (liftData.address.street) parts.push(liftData.address.street);
@@ -9133,7 +9152,7 @@ app.post('/api/requests', authenticateToken, async (req, res) => {
             })(),
             // Якщо знайшли ліфт - збагачуємо дані
             liftAddress: (() => {
-                if (!liftData?.address) return req.body.liftAddress || 'Endereço desconhecido';
+                if (!liftData?.address) return dadosPedido.liftAddress || 'Endereço desconhecido';
                 if (typeof liftData.address === 'object') {
                     const parts = [];
                     if (liftData.address.street) parts.push(liftData.address.street);
@@ -9142,9 +9161,9 @@ app.post('/api/requests', authenticateToken, async (req, res) => {
                 }
                 return liftData.address;
             })(),
-            liftClient: liftData?.client || req.body.liftClient || 'Cliente desconhecido',
-            liftMunicipalNumber: liftData?.municipalNumber || req.body.liftMunicipalNumber || '',
-            liftLocation: liftData?.location || req.body.liftLocation || null,
+            liftClient: liftData?.client || dadosPedido.liftClient || 'Cliente desconhecido',
+            liftMunicipalNumber: liftData?.municipalNumber || dadosPedido.liftMunicipalNumber || '',
+            liftLocation: liftData?.location || dadosPedido.liftLocation || null,
             // createdByUserId дозволяє клієнту бачити свої заявки у GET /api/requests
             createdByUserId: userId,
             createdAt: new Date().toISOString(),

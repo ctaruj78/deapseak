@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const mongoose = require('mongoose');
 const ContratoManutencao = require('../../models/ContratoManutencao');
 const PropostaManutencao = require('../../models/PropostaManutencao');
 const User = require('../models/User');
@@ -10,6 +11,34 @@ const path = require('path');
 const fs = require('fs');
 const crypto = require('crypto');
 const { CONDICOES_GERAIS_ARTIGOS } = require('../constants/propostaManutencaoTerms');
+
+// Um contrato assinado por ambas as partes não cria sozinho o(s) registo(s) de
+// elevador — dados como fabricante, capacidade ou coordenadas GPS não constam
+// de um contrato e só podem vir de uma visita técnica real. Em vez de inventar
+// esses valores, avisa a equipa para o fazer com dados verdadeiros.
+async function notificarLiftPendente(contrato) {
+    try {
+        const staffUsers = await User.find({ role: { $in: ['admin', 'dispatcher'] } }).select('_id role').lean();
+        const instalacaoDesc = contrato.instalacao?.morada || contrato.instalacao?.edificio || contrato.cliente?.morada || '—';
+        const notifDocs = staffUsers.map(u => ({
+            userId: u._id.toString(),
+            type: 'contrato_assinado_sem_lift',
+            title: 'Contrato assinado — registar elevador(es)',
+            message: `Contrato ${contrato.numero} (${contrato.cliente?.nome || '—'}) foi assinado por ambas as partes. Registe o(s) ${contrato.numAscensores || 1} elevador(es) em ${instalacaoDesc} para ativar manutenção e inspeções.`,
+            contratoId: contrato._id.toString(),
+            icon: 'fas fa-elevator',
+            priority: 'high',
+            read: false,
+            actionUrl: u.role === 'admin' ? '/pages/admin/lifts.html' : '/pages/dispatcher/lifts.html',
+            createdAt: new Date()
+        }));
+        if (notifDocs.length > 0) {
+            await mongoose.connection.db.collection('notifications').insertMany(notifDocs);
+        }
+    } catch (error) {
+        console.error('Erro ao notificar equipa sobre elevador pendente de registo:', error.message);
+    }
+}
 
 function formatDatePT(date) {
     if (!date) return '—';
@@ -481,6 +510,7 @@ router.post('/public/:id/assinar', async (req, res) => {
         // assinado, por isso não pode ser invalidado no mesmo pedido.
         contrato.accessTokenUsedAt = new Date();
         await contrato.save();
+        notificarLiftPendente(contrato).catch(() => {});
 
         res.json({
             success: true,
@@ -633,6 +663,7 @@ router.post('/:id/assinar-empresa', authenticate, authorizeRoles('admin', 'dispa
         if (contrato.status === 'cancelado') {
             return res.status(400).json({ success: false, message: 'Contrato cancelado não pode ser assinado' });
         }
+        const jaEstavaAssinado = contrato.status === 'assinado';
 
         contrato.assinaturaEmpresa = {
             imagem,
@@ -642,6 +673,9 @@ router.post('/:id/assinar-empresa', authenticate, authorizeRoles('admin', 'dispa
         };
         contrato.status = contrato.assinaturaCliente ? 'assinado' : 'assinado_festlift';
         await contrato.save();
+        if (contrato.status === 'assinado' && !jaEstavaAssinado) {
+            notificarLiftPendente(contrato).catch(() => {});
+        }
 
         res.json({ success: true, message: 'Assinatura da FESTLIFT registada', data: contrato });
     } catch (error) {
@@ -679,6 +713,7 @@ router.post('/:id/assinar-cliente', authenticate, authorizeRoles('client'), asyn
         };
         contrato.status = 'assinado';
         await contrato.save();
+        notificarLiftPendente(contrato).catch(() => {});
 
         res.json({ success: true, message: 'Assinatura registada. Contrato assinado por ambas as partes!', data: contrato });
     } catch (error) {
