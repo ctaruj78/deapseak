@@ -83,6 +83,22 @@ Aqui pode:
 - Aceitar ou rejeitar
 - Consultar historico de decisoes
 
+## Propostas de Manutencao e Contratos
+Aqui pode:
+- Ver propostas de manutencao enviadas pela FestLift
+- Pedir uma nova proposta para um elevador novo, atraves do botao "Solicitar Nova Proposta"
+- Acompanhar o estado do seu pedido ate a proposta chegar com preco definido
+
+### Assinar um contrato de manutencao
+Depois de aceitar uma proposta, a FestLift gera um contrato e envia um email com um link de assinatura.
+1. Abra o link recebido por email (nao precisa de ter conta nem sessao iniciada para assinar).
+2. Reveja os termos do contrato.
+3. Assine no ecra.
+
+Apos assinar:
+- Se ja tem conta na plataforma, nada muda — continua a usar o login habitual.
+- Se e a primeira vez, a plataforma cria automaticamente o seu acesso e envia um segundo email com o seu email de login e uma palavra-passe temporaria. Sera pedido para a alterar no primeiro acesso.
+
 ## Faturas
 Nesta area pode:
 - Ver lista de faturas
