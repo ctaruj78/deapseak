@@ -161,6 +161,10 @@ class CommonUtils {
         }
 
         const printWindow = window.open('', '_blank');
+        if (!printWindow) {
+            this.showNotification('O navegador bloqueou a janela de impressão. Permita pop-ups para este site.', 'warning');
+            return;
+        }
         printWindow.document.write(`
             <html>
                 <head>

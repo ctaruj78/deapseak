@@ -20,6 +20,16 @@ const qrManager = (function() {
         return '';
     }
 
+    // Wraps window.open() so a browser/extension popup block (which returns null)
+    // shows a toast instead of throwing "Cannot read properties of null (reading 'document')"
+    function openPrintWindow(features) {
+        const win = window.open('', '_blank', features);
+        if (!win) {
+            showNotification('O navegador bloqueou a janela de impressão. Permita pop-ups para este site.', 'warning');
+        }
+        return win;
+    }
+
     // State
     let currentQRs = [];
     let currentPage = 1;
@@ -589,7 +599,8 @@ const qrManager = (function() {
         const city = qr.location || '';
         const whatsapp = '+351 926 380 243 / 244';
 
-        const printWindow = window.open('', '_blank');
+        const printWindow = openPrintWindow();
+        if (!printWindow) return;
         printWindow.document.write(`<!DOCTYPE html>
 <html>
 <head>
@@ -836,7 +847,8 @@ ${bodies}
     // Print a single lift's A6 cabin sticker — 4 copies tiled on one A4 sheet
     // (same 2x2 layout as the batch print) so 3 spares are on hand if one gets damaged
     function printCabinSticker(qr) {
-        const win = window.open('', '_blank', 'width=900,height=700');
+        const win = openPrintWindow('width=900,height=700');
+        if (!win) return;
         win.document.write(buildCabinBatchHtml([qr, qr, qr, qr]));
         win.document.close();
     }
@@ -856,7 +868,8 @@ ${bodies}
             return;
         }
         showNotification(`A preparar ${data.length} autocolantes de cabine (A6)...`, 'info');
-        const win = window.open('', '_blank', 'width=900,height=700');
+        const win = openPrintWindow('width=900,height=700');
+        if (!win) return;
         win.document.write(buildCabinBatchHtml(data));
         win.document.close();
     }
@@ -874,7 +887,8 @@ ${bodies}
 
         const qrs = currentQRs.filter(qr => selected.includes(qr.id));
         showNotification(`A preparar ${qrs.length} autocolantes de cabine (A6)...`, 'info');
-        const win = window.open('', '_blank', 'width=900,height=700');
+        const win = openPrintWindow('width=900,height=700');
+        if (!win) return;
         win.document.write(buildCabinBatchHtml(qrs));
         win.document.close();
     }
@@ -1385,7 +1399,8 @@ ${bodies}
             return;
         }
         showNotification(`Підготовка ${data.length} QR кодів для друку...`, 'info');
-        const win = window.open('', '_blank', 'width=900,height=700');
+        const win = openPrintWindow('width=900,height=700');
+        if (!win) return;
         const density = (localStorage.getItem('qrPrintDensityMode') === 'balanced') ? 'balanced' : 'max';
         win.document.write(buildPrintHtml(data, 'Todos Códigos QR - FestLift', { density }));
         win.document.close();
@@ -1404,7 +1419,8 @@ ${bodies}
 
         const qrs = currentQRs.filter(qr => selected.includes(qr.id));
         showNotification(`Підготовка ${qrs.length} QR кодів для друку...`, 'info');
-        const win = window.open('', '_blank', 'width=900,height=700');
+        const win = openPrintWindow('width=900,height=700');
+        if (!win) return;
         const density = (localStorage.getItem('qrPrintDensityMode') === 'balanced') ? 'balanced' : 'max';
         win.document.write(buildPrintHtml(qrs, 'Вибрані Códigos QR - FestLift', { density }));
         win.document.close();
@@ -1553,7 +1569,8 @@ ${bodies}
 
     // Print calibration sheet for 70x50mm labels
     function printCalibration70x50() {
-        const win = window.open('', '_blank', 'width=900,height=700');
+        const win = openPrintWindow('width=900,height=700');
+        if (!win) return;
         win.document.write(buildCalibrationHtml());
         win.document.close();
     }
@@ -1570,7 +1587,8 @@ ${bodies}
             return;
         }
 
-        const win = window.open('', '_blank', 'width=500,height=500');
+        const win = openPrintWindow('width=500,height=500');
+        if (!win) return;
         win.document.write(buildPrintHtml([qr], `QR ${qr.code} - FestLift`, { autoPrint: true, autoClose: true }));
         win.document.close();
     }

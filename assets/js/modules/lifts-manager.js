@@ -1090,6 +1090,10 @@ class LiftsManager {
         const notes = this._sanitizeReportText(report.comments || report.findings || report.notes || '');
 
         const win = window.open('', '_blank');
+        if (!win) {
+            toastr.warning('O navegador bloqueou a janela de impressão. Permita pop-ups para este site.');
+            return;
+        }
         win.document.write(`<html><head><title>Relatório: ${typeLabel}</title>
             <style>body{font-family:Arial,sans-serif;padding:20px;}h2{color:#333;}table{width:100%;border-collapse:collapse;}td{padding:8px;border:1px solid #ddd;}</style>
             </head><body>

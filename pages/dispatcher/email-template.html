@@ -433,6 +433,10 @@
                 if (template) {
                     // Open preview in new window
                     const previewWindow = window.open('', '_blank', 'width=600,height=400');
+                    if (!previewWindow) {
+                        this.showNotification('O navegador bloqueou a janela de pré-visualização. Permita pop-ups para este site.', 'error');
+                        return;
+                    }
                     previewWindow.document.write(`
                         <html>
                             <head>

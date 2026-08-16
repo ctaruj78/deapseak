@@ -247,6 +247,10 @@ class KnowledgeManager {
         const content = document.getElementById('articleContent');
         if (!content) return;
         const w = window.open('', '_blank');
+        if (!w) {
+            toastr.warning('O navegador bloqueou a janela de impressão. Permita pop-ups para este site.');
+            return;
+        }
         w.document.write(`<html><head><title>Artigo FestLift</title>
 <style>body{font-family:Arial,sans-serif;max-width:800px;margin:40px auto;padding:0 20px;line-height:1.7}
 table{width:100%;border-collapse:collapse;margin-bottom:1rem}td,th{border:1px solid #ccc;padding:8px}

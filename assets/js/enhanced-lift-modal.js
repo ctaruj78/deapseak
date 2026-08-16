@@ -1470,6 +1470,10 @@ class EnhancedLiftModal {
         
         // Створюємо нове вікно для друку
         const printWindow = window.open('', '_blank');
+        if (!printWindow) {
+            this.showMessage('O navegador bloqueou a janela de impressão. Permita pop-ups para este site.', 'error');
+            return;
+        }
         printWindow.document.write(`
             <!DOCTYPE html>
             <html>
