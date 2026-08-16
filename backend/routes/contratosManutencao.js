@@ -105,13 +105,13 @@ async function garantirContaCliente(cliente, req) {
     const email = (cliente.email || '').trim().toLowerCase();
     if (!email) return { created: false, user: null };
 
-    const existente = await User.findOne({ email });
+    const existente = await User.findOne({ email }).lean();
     if (existente) return { created: false, user: existente };
 
     const rawPassword = gerarPasswordTemporaria();
     const nomeParts = (cliente.nome || 'Cliente FestLift').trim().split(/\s+/);
     let username = email.split('@')[0].replace(/[^a-zA-Z0-9._-]/g, '') || 'cliente';
-    if (await User.findOne({ username })) {
+    if (await User.findOne({ username }).lean()) {
         username = `${username}${Math.floor(1000 + Math.random() * 9000)}`;
     }
 
@@ -326,7 +326,7 @@ async function gerarPDFContratoManutencao(contrato) {
 // POST /api/contratos-manutencao/from-proposta/:propostaId - Gera (ou devolve) o contrato a partir de proposta aprovada
 router.post('/from-proposta/:propostaId', authenticate, authorizeRoles('admin', 'dispatcher'), async (req, res) => {
     try {
-        const proposta = await PropostaManutencao.findById(req.params.propostaId);
+        const proposta = await PropostaManutencao.findById(req.params.propostaId).lean();
         if (!proposta) {
             return res.status(404).json({ success: false, message: 'Proposta não encontrada' });
         }
@@ -334,7 +334,7 @@ router.post('/from-proposta/:propostaId', authenticate, authorizeRoles('admin', 
             return res.status(400).json({ success: false, message: 'Só é possível gerar contrato a partir de uma proposta aprovada' });
         }
 
-        const existente = await ContratoManutencao.findOne({ propostaId: proposta._id });
+        const existente = await ContratoManutencao.findOne({ propostaId: proposta._id }).lean();
         if (existente) {
             return res.json({ success: true, message: 'Contrato já existente para esta proposta', data: existente, jaExistia: true });
         }
@@ -402,7 +402,8 @@ router.get('/', authenticate, authorizeRoles('admin', 'dispatcher', 'client'), a
             .populate('criadoPor', 'name email')
             .sort({ data: -1 })
             .skip(skip)
-            .limit(parseInt(limit));
+            .limit(parseInt(limit))
+            .lean();
         const total = await ContratoManutencao.countDocuments(query);
 
         res.json({
@@ -436,7 +437,7 @@ function contratoParaPublico(contrato) {
 // GET /api/contratos-manutencao/public/:id?token=...
 router.get('/public/:id', async (req, res) => {
     try {
-        const contrato = await ContratoManutencao.findById(req.params.id);
+        const contrato = await ContratoManutencao.findById(req.params.id).lean();
         if (!contrato) return res.status(404).json({ success: false, message: 'Contrato não encontrado' });
 
         if (!isValidPublicAccessToken(contrato, req.query.token)) {
@@ -453,7 +454,7 @@ router.get('/public/:id', async (req, res) => {
 // GET /api/contratos-manutencao/public/:id/pdf?token=...
 router.get('/public/:id/pdf', async (req, res) => {
     try {
-        const contrato = await ContratoManutencao.findById(req.params.id);
+        const contrato = await ContratoManutencao.findById(req.params.id).lean();
         if (!contrato) return res.status(404).json({ success: false, message: 'Contrato não encontrado' });
 
         if (!isValidPublicAccessToken(contrato, req.query.token)) {
@@ -527,7 +528,7 @@ router.post('/public/:id/assinar', async (req, res) => {
 // GET /api/contratos-manutencao/:id/link-assinatura - Obter o link público de assinatura (admin/dispatcher)
 router.get('/:id/link-assinatura', authenticate, authorizeRoles('admin', 'dispatcher'), async (req, res) => {
     try {
-        const contrato = await ContratoManutencao.findById(req.params.id);
+        const contrato = await ContratoManutencao.findById(req.params.id).lean();
         if (!contrato) return res.status(404).json({ success: false, message: 'Contrato não encontrado' });
         if (!contrato.assinaturaEmpresa) {
             return res.status(400).json({ success: false, message: 'A FESTLIFT deve assinar o contrato antes de partilhar o link com o cliente' });
@@ -556,6 +557,11 @@ router.post('/:id/enviar-link', authenticate, authorizeRoles('admin', 'dispatche
         const assunto = `Assine o seu contrato de manutenção ${contrato.numero} - FestLift`;
         const emailDestino = contrato.cliente.email;
 
+        // Só prometemos "acesso automático após assinar" a quem ainda não tem conta —
+        // um cliente já existente assina com o login que já usa, sem novo email de credenciais.
+        const jaTemConta = !!(await User.findOne({ email: emailDestino.toLowerCase() }).lean());
+        const avisoAcesso = jaTemConta ? '' : `<p style="margin: 0 0 20px 0; font-size: 14px; color: #555; line-height: 1.6;">Após assinar, criaremos automaticamente o seu acesso à plataforma FestLift — receberá um segundo email com o email de acesso e uma palavra-passe temporária, para acompanhar os seus elevadores, faturas e pedidos.</p>`;
+
         try {
             const transporter = getSmtpTransporter();
             const smtpFrom = process.env.SMTP_FROM || process.env.EMAIL_FROM || process.env.SMTP_USER;
@@ -572,6 +578,7 @@ router.post('/:id/enviar-link', authenticate, authorizeRoles('admin', 'dispatche
                         <div style="padding: 32px 30px;">
                             <p style="margin: 0 0 16px 0; font-size: 15px; color: #333;">Caro(a) <strong>${contrato.cliente.nome}</strong>,</p>
                             <p style="margin: 0 0 20px 0; font-size: 15px; color: #333; line-height: 1.6;">O seu contrato de manutenção <strong>${contrato.numero}</strong> já foi assinado pela FESTLIFT e está pronto para a sua assinatura. Não precisa de criar conta nenhuma — basta abrir o link abaixo, rever os termos e assinar.</p>
+                            ${avisoAcesso}
                             <a href="${url}" style="display:inline-block;background:#1a3a6b;color:#fff;text-decoration:none;padding:13px 30px;border-radius:6px;font-size:15px;font-weight:bold;">Rever e assinar contrato →</a>
                         </div>
                         <div style="background: #f8f9fa; padding: 18px 30px; text-align: center; border-top: 1px solid #e0e0e0;">
@@ -599,7 +606,7 @@ router.post('/:id/enviar-link', authenticate, authorizeRoles('admin', 'dispatche
 // GET /api/contratos-manutencao/by-proposta/:propostaId
 router.get('/by-proposta/:propostaId', authenticate, authorizeRoles('admin', 'dispatcher', 'client'), async (req, res) => {
     try {
-        const contrato = await ContratoManutencao.findOne({ propostaId: req.params.propostaId });
+        const contrato = await ContratoManutencao.findOne({ propostaId: req.params.propostaId }).lean();
         if (!contrato) return res.status(404).json({ success: false, message: 'Ainda não existe contrato para esta proposta' });
 
         if (req.user.role === 'client' && contrato.cliente.email.toLowerCase() !== (req.user.email || '').toLowerCase()) {
@@ -616,7 +623,7 @@ router.get('/by-proposta/:propostaId', authenticate, authorizeRoles('admin', 'di
 // GET /api/contratos-manutencao/:id/pdf
 router.get('/:id/pdf', authenticate, async (req, res) => {
     try {
-        const contrato = await ContratoManutencao.findById(req.params.id);
+        const contrato = await ContratoManutencao.findById(req.params.id).lean();
         if (!contrato) return res.status(404).json({ success: false, message: 'Contrato não encontrado' });
 
         if (req.user.role === 'client' && contrato.cliente.email.toLowerCase() !== (req.user.email || '').toLowerCase()) {
@@ -636,7 +643,7 @@ router.get('/:id/pdf', authenticate, async (req, res) => {
 // GET /api/contratos-manutencao/:id
 router.get('/:id', authenticate, async (req, res) => {
     try {
-        const contrato = await ContratoManutencao.findById(req.params.id).populate('criadoPor', 'name email');
+        const contrato = await ContratoManutencao.findById(req.params.id).populate('criadoPor', 'name email').lean();
         if (!contrato) return res.status(404).json({ success: false, message: 'Contrato não encontrado' });
 
         if (req.user.role === 'client' && contrato.cliente.email.toLowerCase() !== (req.user.email || '').toLowerCase()) {

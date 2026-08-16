@@ -705,6 +705,12 @@
                         $('#doorType').val(lift.doorType);
                     }
 
+                    // Sugerir automaticamente o nível de visita em falta (mensal/trimestral/
+                    // anual/pré-OI) com base no histórico, salvo se já foi escolhido manualmente.
+                    if (lift.dueVisitType && $('#visitType').val() === 'maintenance' && $('#visitType option[value="' + lift.dueVisitType + '"]').length) {
+                        $('#visitType').val(lift.dueVisitType);
+                    }
+
                     refreshChecklist();
                     this.updateReportPreview();
                 } catch (error) {

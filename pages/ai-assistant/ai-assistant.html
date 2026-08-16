@@ -1073,16 +1073,16 @@
             }
 
             try {
-                const response = await fetch(`${API_URL}/api/ai/chat/stream`, {
+                // AuthManager.fetchWithAuth tenta refresh silencioso do token (401 OU 403)
+                // antes de desistir — o fetch() manual anterior só tratava 401.
+                const response = await AuthManager.fetchWithAuth(`/api/ai/chat/stream`, {
                     method: 'POST',
-                    headers: getAuthHeaders(),
                     body: JSON.stringify({ message })
                 });
 
-                if (response.status === 401) {
+                if (!response) {
                     document.getElementById('typingIndicator').classList.remove('active');
                     addChatMessage('⚠️ Sessão expirada. Por favor, inicie sessão novamente.', false);
-                    localStorage.removeItem('token'); localStorage.removeItem('lm_token'); localStorage.removeItem('deapseak_token');
                     setTimeout(async () => { if (await swalConfirm('Sessão expirada. Ir para a página de início de sessão?')) window.location.replace('/pages/auth/login.html'); }, 2000);
                     return;
                 }

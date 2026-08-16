@@ -520,7 +520,7 @@ router.get('/stats/dashboard', authenticate, authorizeRoles('admin', 'dispatcher
 // GET /api/propostas-manutencao/:id/pdf - Download autenticado do PDF
 router.get('/:id/pdf', authenticate, authorizeRoles('admin', 'dispatcher', 'client'), async (req, res) => {
     try {
-        const proposta = await PropostaManutencao.findById(req.params.id);
+        const proposta = await PropostaManutencao.findById(req.params.id).lean();
         if (!proposta) {
             return res.status(404).json({ success: false, message: 'Proposta não encontrada' });
         }
@@ -544,7 +544,8 @@ router.get('/:id/pdf', authenticate, authorizeRoles('admin', 'dispatcher', 'clie
 router.get('/:id', authenticate, authorizeRoles('admin', 'dispatcher', 'client'), async (req, res) => {
     try {
         const proposta = await PropostaManutencao.findById(req.params.id)
-            .populate('criadoPor', 'firstName lastName email');
+            .populate('criadoPor', 'firstName lastName email')
+            .lean();
 
         if (!proposta) {
             return res.status(404).json({ success: false, message: 'Proposta não encontrada' });

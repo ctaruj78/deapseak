@@ -21,6 +21,7 @@ No menu lateral, o cliente encontra os modulos principais:
 - Previsoes AI
 - Pedidos
 - Orcamentos
+- Propostas de Manutencao
 - Faturas
 - Historico
 - Relatorios

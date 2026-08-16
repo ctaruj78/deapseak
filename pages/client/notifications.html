@@ -489,6 +489,20 @@
             }
         })
         .catch(err => console.warn('Failed to load notifications count:', err));
+
+        // Quantidade de propostas de manutenção pendentes/enviadas
+        fetch('/api/propostas-manutencao/my', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.data && Array.isArray(data.data)) {
+                const count = data.data.filter(p => ['solicitado', 'enviado'].includes(p.status)).length;
+                const badge = document.getElementById('propostasManutencaoCount');
+                if (badge) badge.textContent = count;
+            }
+        })
+        .catch(err => console.warn('Failed to load propostas count:', err));
     }
     
     // Atualizar contadores a cada 30 segundos

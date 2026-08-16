@@ -4521,6 +4521,63 @@ function hasClientAccessToLift(lift, req) {
         || (clientEmail && liftClientEmail && liftClientEmail === clientEmail);
 }
 
+// Calcula qual o nível de visita (mensal/trimestral/anual/pré-OI) está em falta
+// para um elevador, para pré-selecionar o checklist certo em vez do técnico ter
+// de escolher manualmente. Cada nível superior acumula os itens dos inferiores
+// (ver INSPECTION_TEMPLATES: annual = [...QUARTERLY_EXTRA, ...ANNUAL_EXTRA]),
+// por isso basta devolver o nível mais alto em atraso.
+async function computeDueVisitType(liftId, lift) {
+    const MAINT_DAYS = parseInt(process.env.MANUT_INTERVAL_DAYS || '30');
+    const QUARTERLY_DAYS = 90;
+    const ANNUAL_DAYS = 365;
+    const PRE_INSPECTION_LEAD_DAYS = 60; // antecedência para preparar a OI oficial
+
+    const rows = await db.collection('inspections').aggregate([
+        { $match: {
+            liftId: liftId.toString(),
+            visitType: { $in: ['maintenance', 'Manutenção', 'manutencao', 'quarterly', 'annual'] }
+        }},
+        { $sort: { data: -1 } },
+        { $group: { _id: '$visitType', lastDate: { $first: '$data' } } }
+    ]).toArray();
+
+    const lastByType = {};
+    rows.forEach(r => {
+        const key = /manu/i.test(r._id) ? 'maintenance' : r._id;
+        const d = new Date(r.lastDate);
+        if (!lastByType[key] || d > lastByType[key]) lastByType[key] = d;
+    });
+
+    const daysSince = d => d ? Math.floor((Date.now() - d.getTime()) / 86400000) : null;
+
+    // A OI oficial (DL 320/2002) tem prioridade — sugere pré-inspeção se a data
+    // da próxima inspeção periódica estiver próxima ou já ultrapassada.
+    const nextOI = lift && lift.nextInspectionDate ? new Date(lift.nextInspectionDate) : null;
+    if (nextOI && !isNaN(nextOI.getTime())) {
+        const daysToOI = Math.floor((nextOI.getTime() - Date.now()) / 86400000);
+        if (daysToOI <= PRE_INSPECTION_LEAD_DAYS) {
+            return { visitType: 'pre_inspection', reason: daysToOI < 0 ? 'oi_vencida' : 'oi_proxima' };
+        }
+    }
+
+    const annualDays = daysSince(lastByType.annual);
+    if (annualDays === null || annualDays > ANNUAL_DAYS) {
+        return { visitType: 'annual', reason: annualDays === null ? 'nunca_feita' : 'atrasada' };
+    }
+
+    const quarterlyDays = daysSince(lastByType.quarterly);
+    if (quarterlyDays === null || quarterlyDays > QUARTERLY_DAYS) {
+        return { visitType: 'quarterly', reason: quarterlyDays === null ? 'nunca_feita' : 'atrasada' };
+    }
+
+    const maintDays = daysSince(lastByType.maintenance);
+    if (maintDays === null || maintDays > MAINT_DAYS) {
+        return { visitType: 'maintenance', reason: maintDays === null ? 'nunca_feita' : 'atrasada' };
+    }
+
+    return { visitType: 'maintenance', reason: 'em_dia' };
+}
+
 app.get('/api/lifts/:id', authenticateToken, async (req, res) => {
     try {
         if (!db) return res.status(503).json({ success: false, message: 'Base de dados indisponível.' });
@@ -4610,6 +4667,16 @@ app.get('/api/lifts/:id', authenticateToken, async (req, res) => {
             }
         }
         
+        // 🗓️ Nível de visita em falta (mensal/trimestral/anual/pré-OI) — não bloqueia
+        // a resposta principal do elevador se falhar.
+        try {
+            const due = await computeDueVisitType(liftId, liftWithClient);
+            liftWithClient.dueVisitType = due.visitType;
+            liftWithClient.dueVisitReason = due.reason;
+        } catch (dueErr) {
+            console.warn('⚠️ Não foi possível calcular o nível de visita em falta:', dueErr.message);
+        }
+
         res.json({
             success: true,
             data: liftWithClient  // 🔧 Консистентна структура відповіді (data замість lift)
@@ -13758,384 +13825,13 @@ app.use(errorHandler);
 console.log('✅ Global error handler підключено');
 
 // ═══════════════════════════════════════════════════════════
-// 📊 ORÇAMENTOS API (LEGACY) - Старі endpoints для сумісності
+// 📊 ORÇAMENTOS API — implementado em backend/routes/orcamentos.js
+// (montado antes deste ponto do ficheiro; os handlers inline antigos aqui —
+// incluindo um GET /api/orcamentos sem scoping por role/cliente e um
+// /:id/enviar sem role-guard nenhum — já eram código morto por causa da
+// ordem de registo, e foram removidos por segurança em vez de deixados como
+// fallback silencioso caso a montagem alguma vez seja reordenada.)
 // ═══════════════════════════════════════════════════════════
-/*
-// LEGACY - ці endpoints закоментовані, використовується backend/routes/orcamentos.js
-app.get('/api/orcamentos', authenticateToken, async (req, res) => {
-    try {
-        const { status, page = 1, limit = 20, search } = req.query;
-        
-        const query = {};
-        
-        if (status) query.status = status;
-        
-        if (search) {
-            query.$or = [
-                { numero: new RegExp(search, 'i') },
-                { 'cliente.nome': new RegExp(search, 'i') },
-                { 'cliente.email': new RegExp(search, 'i') }
-            ];
-        }
-        
-        const skip = (parseInt(page) - 1) * parseInt(limit);
-        
-        const orcamentos = await db.collection('orcamentos')
-            .find(query)
-            .sort({ data: -1 })
-            .skip(skip)
-            .limit(parseInt(limit))
-            .toArray();
-        
-        const total = await db.collection('orcamentos').countDocuments(query);
-        
-        res.json({
-            success: true,
-            data: orcamentos,
-            pagination: {
-                page: parseInt(page),
-                limit: parseInt(limit),
-                total,
-                pages: Math.ceil(total / parseInt(limit))
-            }
-        });
-    } catch (error) {
-        console.error('❌ Erro ao buscar orçamentos:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Erro ao buscar orçamentos',
-            error: error.message
-        });
-    }
-});
-
-// GET /api/orcamentos/next-number - Obter próximo número disponível (ПЕРЕД :id!)
-app.get('/api/orcamentos/next-number', authenticateToken, async (req, res) => {
-    try {
-        const ano = new Date().getFullYear();
-        const mes = String(new Date().getMonth() + 1).padStart(2, '0');
-        
-        const ultimoOrcamento = await db.collection('orcamentos')
-            .find({ numero: new RegExp(`^ORC-${ano}-${mes}`) })
-            .sort({ numero: -1 })
-            .limit(1)
-            .toArray();
-        
-        let sequencia = 1;
-        if (ultimoOrcamento.length > 0) {
-            const match = ultimoOrcamento[0].numero.match(/ORC-\d{4}-\d{2}-(\d{3})/);
-            if (match) sequencia = parseInt(match[1]) + 1;
-        }
-        
-        const numero = `ORC-${ano}-${mes}-${String(sequencia).padStart(3, '0')}`;
-        
-        res.json({
-            success: true,
-            numero,
-            proximaSequencia: sequencia
-        });
-    } catch (error) {
-        console.error('❌ Erro ao gerar próximo número:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Erro ao gerar próximo número',
-            error: error.message
-        });
-    }
-});
-
-// GET /api/orcamentos/:id - Detalhe do orçamento
-app.get('/api/orcamentos/:id', authenticateToken, async (req, res) => {
-    try {
-        const { ObjectId } = require('mongodb');
-        const orcamento = await db.collection('orcamentos')
-            .findOne({ _id: new ObjectId(req.params.id) });
-        
-        if (!orcamento) {
-            return res.status(404).json({
-                success: false,
-                message: 'Orçamento não encontrado'
-            });
-        }
-        
-        res.json({ success: true, data: orcamento });
-    } catch (error) {
-        console.error('❌ Erro ao buscar orçamento:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Erro ao buscar orçamento',
-            error: error.message
-        });
-    }
-});
-
-// POST /api/orcamentos - Criar novo orçamento
-app.post('/api/orcamentos', authenticateToken, async (req, res) => {
-    try {
-        const { cliente, servicos, subtotal, iva, total, notas } = req.body;
-        
-        // Validação
-        if (!cliente || !cliente.nome || !cliente.email || !cliente.morada) {
-            return res.status(400).json({
-                success: false,
-                message: 'Dados do cliente incompletos'
-            });
-        }
-        
-        if (!servicos || servicos.length === 0) {
-            return res.status(400).json({
-                success: false,
-                message: 'Pelo menos um serviço é obrigatório'
-            });
-        }
-        
-        // Gerar número automático (ORC-2024-12-001)
-        const ano = new Date().getFullYear();
-        const mes = String(new Date().getMonth() + 1).padStart(2, '0');
-        
-        const ultimoOrcamento = await db.collection('orcamentos')
-            .find({ numero: new RegExp(`^ORC-${ano}-${mes}`) })
-            .sort({ numero: -1 })
-            .limit(1)
-            .toArray();
-        
-        let sequencia = 1;
-        if (ultimoOrcamento.length > 0) {
-            const match = ultimoOrcamento[0].numero.match(/ORC-\d{4}-\d{2}-(\d{3})/);
-            if (match) sequencia = parseInt(match[1]) + 1;
-        }
-        
-        const numero = `ORC-${ano}-${mes}-${String(sequencia).padStart(3, '0')}`;
-        
-        // Calcular validade (30 dias)
-        const data = new Date();
-        const validadeAte = new Date(data);
-        validadeAte.setDate(validadeAte.getDate() + 30);
-        
-        const orcamento = {
-            numero,
-            data: data.toISOString(),
-            validadeAte: validadeAte.toISOString(),
-            cliente,
-            servicos,
-            subtotal,
-            iva,
-            total,
-            notas,
-            status: 'rascunho',
-            criadoPor: req.user.username,
-            criadoPorId: req.user.id || req.user.userId,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString()
-        };
-        
-        const result = await db.collection('orcamentos').insertOne(orcamento);
-        
-        console.log(`✅ Orçamento criado: ${numero} para ${cliente.nome}`);
-        
-        res.status(201).json({
-            success: true,
-            message: 'Orçamento criado com sucesso',
-            data: { ...orcamento, _id: result.insertedId }
-        });
-    } catch (error) {
-        console.error('❌ Erro ao criar orçamento:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Erro ao criar orçamento',
-            error: error.message
-        });
-    }
-});
-
-// PUT /api/orcamentos/:id - Atualizar orçamento
-app.put('/api/orcamentos/:id', authenticateToken, async (req, res) => {
-    try {
-        const { ObjectId } = require('mongodb');
-        const { cliente, servicos, subtotal, iva, total, notas, status } = req.body;
-        
-        const updateData = {
-            updatedAt: new Date().toISOString()
-        };
-        
-        if (cliente) updateData.cliente = cliente;
-        if (servicos) updateData.servicos = servicos;
-        if (subtotal !== undefined) updateData.subtotal = subtotal;
-        if (iva !== undefined) updateData.iva = iva;
-        if (total !== undefined) updateData.total = total;
-        if (notas) updateData.notas = notas;
-        if (status) updateData.status = status;
-        
-        const result = await db.collection('orcamentos').updateOne(
-            { _id: new ObjectId(req.params.id) },
-            { $set: updateData }
-        );
-        
-        if (result.matchedCount === 0) {
-            return res.status(404).json({
-                success: false,
-                message: 'Orçamento não encontrado'
-            });
-        }
-        
-        res.json({
-            success: true,
-            message: 'Orçamento atualizado com sucesso'
-        });
-    } catch (error) {
-        console.error('❌ Erro ao atualizar orçamento:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Erro ao atualizar orçamento',
-            error: error.message
-        });
-    }
-});
-
-// PATCH /api/orcamentos/:id/status - Mudar status do orçamento
-app.patch('/api/orcamentos/:id/status', authenticateToken, async (req, res) => {
-    try {
-        if (!db) return res.status(503).json({ success: false, message: 'Base de dados indisponível' });
-        if (req.user.role !== 'admin' && req.user.role !== 'dispatcher') {
-            return res.status(403).json({ success: false, message: 'Sem permissão' });
-        }
-        const { ObjectId } = require('mongodb');
-        const { status, observacao } = req.body;
-
-        const validStatuses = ['rascunho', 'enviado', 'aprovado', 'rejeitado', 'expirado'];
-        if (!status || !validStatuses.includes(status)) {
-            return res.status(400).json({ success: false, message: `Status inválido. Valores aceites: ${validStatuses.join(', ')}` });
-        }
-
-        const updateData = {
-            status,
-            updatedAt: new Date().toISOString(),
-            [`statusHistory.${Date.now()}`]: {
-                status,
-                observacao: observacao || null,
-                alteradoPor: req.user.username,
-                data: new Date().toISOString()
-            }
-        };
-
-        const result = await db.collection('orcamentos').updateOne(
-            { _id: new ObjectId(req.params.id) },
-            { $set: updateData }
-        );
-
-        if (result.matchedCount === 0) {
-            return res.status(404).json({ success: false, message: 'Orçamento não encontrado' });
-        }
-
-        const statusLabels = { rascunho: 'Rascunho', enviado: 'Enviado', aprovado: 'Aprovado', rejeitado: 'Rejeitado', expirado: 'Expirado' };
-        console.log(`✅ Orçamento ${req.params.id} → status: ${status} (por ${req.user.username})`);
-        res.json({ success: true, message: `Status atualizado para: ${statusLabels[status]}` });
-    } catch (error) {
-        console.error('❌ Erro ao mudar status orçamento:', error);
-        res.status(500).json({ success: false, message: error.message });
-    }
-});
-
-// DELETE /api/orcamentos/:id - Deletar orçamento
-app.delete('/api/orcamentos/:id', authenticateToken, async (req, res) => {
-    try {
-        const { ObjectId } = require('mongodb');
-        
-        const result = await db.collection('orcamentos').deleteOne({
-            _id: new ObjectId(req.params.id)
-        });
-        
-        if (result.deletedCount === 0) {
-            return res.status(404).json({
-                success: false,
-                message: 'Orçamento não encontrado'
-            });
-        }
-        
-        res.json({
-            success: true,
-            message: 'Orçamento deletado com sucesso'
-        });
-    } catch (error) {
-        console.error('❌ Erro ao deletar orçamento:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Erro ao deletar orçamento',
-            error: error.message
-        });
-    }
-});
-*/
-// Кінець LEGACY orcamentos endpoints
-
-// PATCH /api/orcamentos/:id/link-lift - Прив'язати орсаменто до одного або кількох ліфтів
-app.patch('/api/orcamentos/:id/link-lift', authenticateToken, async (req, res) => {
-    try {
-        if (!db) return res.status(503).json({ success: false, message: 'Base de dados indisponível' });
-        if (req.user.role !== 'admin' && req.user.role !== 'dispatcher') {
-            return res.status(403).json({ success: false, message: 'Sem permissão' });
-        }
-        const { ObjectId } = require('mongodb');
-        let { liftIds } = req.body;
-        if (!Array.isArray(liftIds)) {
-            return res.status(400).json({ success: false, message: 'liftIds deve ser um array' });
-        }
-        // Validate and filter IDs
-        const validIds = liftIds.filter(id => {
-            try { new ObjectId(String(id)); return true; } catch { return false; }
-        }).map(id => String(id));
-
-        let liftsData = [];
-        if (validIds.length > 0) {
-            const foundLifts = await db.collection('lifts')
-                .find({ _id: { $in: validIds.map(id => new ObjectId(id)) } })
-                .project({ _id: 1, municipalNumber: 1, address: 1, clientName: 1 })
-                .toArray();
-            liftsData = foundLifts.map(l => {
-                const addr = l.address || {};
-                const addrStr = typeof addr === 'string'
-                    ? addr
-                    : [addr.street, addr.zipCode, addr.city].filter(Boolean).join(', ');
-                return {
-                    liftId: l._id.toString(),
-                    municipalNumber: l.municipalNumber || null,
-                    address: addrStr,
-                    clientName: l.clientName || null
-                };
-            });
-        }
-
-        // Backward compatibility: keep single liftId + liftAddress fields pointing to first lift
-        const updateData = {
-            lifts: liftsData,
-            liftId: liftsData.length > 0 ? liftsData[0].liftId : null,
-            liftAddress: liftsData.length > 0 ? liftsData[0].address : null,
-            updatedAt: new Date().toISOString()
-        };
-
-        const result = await db.collection('orcamentos').updateOne(
-            { _id: new ObjectId(req.params.id) },
-            { $set: updateData }
-        );
-
-        if (result.matchedCount === 0) {
-            return res.status(404).json({ success: false, message: 'Orçamento não encontrado' });
-        }
-
-        const count = liftsData.length;
-        const msg = count === 0
-            ? 'Elevadores desvinculados'
-            : count === 1
-                ? `Vinculado a: ${liftsData[0].address || liftsData[0].municipalNumber || ''}`
-                : `Vinculado a ${count} elevadores`;
-
-        console.log(`✅ Orçamento ${req.params.id} vinculado a ${count} elevador(es)`);
-        res.json({ success: true, message: msg, lifts: liftsData });
-    } catch (error) {
-        console.error('❌ Erro ao vincular elevadores:', error);
-        res.status(500).json({ success: false, message: error.message });
-    }
-});
 
 // ═══════════════════════════════════════════════════════════
 // 📧 EMAIL ENDPOINTS - Brevo SMTP Integration
@@ -15457,55 +15153,7 @@ app.post('/api/email/send-template', authenticateToken, emailLimiter, requireRol
     }
 });
 
-// POST /api/orcamentos/:id/enviar - ВИДАЛЕНО, використовується backend/routes/orcamentos.js
-// Цей endpoint дублював функціонал і використовував старий код
-/*
-app.post('/api/orcamentos/:id/enviar', authenticateToken, async (req, res) => {
-    try {
-        const { ObjectId } = require('mongodb');
-        const orcamento = await db.collection('orcamentos').findOne({
-            _id: new ObjectId(req.params.id)
-        });
-        
-        if (!orcamento) {
-            return res.status(404).json({
-                success: false,
-                message: 'Orçamento não encontrado'
-            });
-        }
-        
-        // Відправка через /api/email/send-orcamento
-        const emailResponse = await fetch(`http://localhost:${PORT}/api/email/send-orcamento`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': req.headers.authorization
-            },
-            body: JSON.stringify({
-                orcamentoId: req.params.id,
-                clientEmail: orcamento.cliente.email
-            })
-        });
-
-        const emailResult = await emailResponse.json();
-
-        if (emailResult.success) {
-            res.json({
-                success: true,
-                message: 'Orçamento enviado com sucesso',
-                data: orcamento
-            });
-        }
-    } catch (error) {
-        console.error('❌ Erro ao enviar orçamento:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Erro ao enviar orçamento',
-            error: error.message
-        });
-    }
-});
-*/
+// POST /api/orcamentos/:id/enviar - implementado em backend/routes/orcamentos.js
 
 // ═══════════════════════════════════════════════════════════
 // 🔄 REGULATIONS AUTO-UPDATE API

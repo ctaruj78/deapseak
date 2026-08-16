@@ -2,6 +2,8 @@
 // ERROR HANDLER MIDDLEWARE
 // ============================================
 
+const logger = require('../utils/logger');
+
 class AppError extends Error {
     constructor(message, statusCode) {
         super(message);
@@ -34,8 +36,10 @@ const errorHandler = (err, req, res, next) => {
                 message: err.message
             });
         } else {
-            // Непередбачувані помилки
+            // Непередбачувані помилки — vão para logs/error.log (winston) além do
+            // console.error que só sobrevive via captura de stdout/stderr do PM2.
             console.error('❌ ERROR:', err);
+            logger.error(`Unhandled error on ${req.method} ${req.originalUrl}: ${err.message}`, { stack: err.stack });
             res.status(500).json({
                 success: false,
                 status: 'error',

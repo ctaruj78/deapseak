@@ -307,7 +307,35 @@ document.addEventListener('DOMContentLoaded', () => {
     loadContrato(id);
     loadCondicoes();
     initSigPad();
+    loadSidebarCounts();
 });
+
+// Esta página nunca teve os contadores do sidebar ligados (ao contrário das
+// outras páginas de cliente, que partilham a mesma loadClientCounts()) —
+// os badges ficavam sempre em "0". orcamentosCount fica por preencher aqui
+// também — nenhuma outra página de cliente o preenche (badge órfão pré-existente,
+// fora do âmbito desta correção pontual).
+function loadSidebarCounts() {
+    const token = getToken();
+    if (!token) return;
+
+    fetch('/api/notifications?unread=true', { headers: { 'Authorization': `Bearer ${token}` } })
+        .then(res => res.json())
+        .then(data => {
+            const badge = document.getElementById('notificationsBadge');
+            if (badge && data.data) {
+                badge.textContent = data.data.length;
+                badge.style.display = data.data.length > 0 ? 'inline-block' : 'none';
+            }
+        }).catch(err => console.warn('Failed to load notifications count:', err));
+
+    fetch('/api/propostas-manutencao/my', { headers: { 'Authorization': `Bearer ${token}` } })
+        .then(res => res.json())
+        .then(data => {
+            const badge = document.getElementById('propostasManutencaoCount');
+            if (badge && data.data) badge.textContent = data.data.filter(p => ['solicitado', 'enviado'].includes(p.status)).length;
+        }).catch(err => console.warn('Failed to load propostas count:', err));
+}
 
 async function loadContrato(id) {
     try {

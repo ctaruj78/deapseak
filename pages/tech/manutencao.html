@@ -1277,13 +1277,30 @@
 
                 if (lift.driveType) $('#driveType').val(lift.driveType);
                 if (lift.doorType)  $('#doorType').val(lift.doorType);
-                if (visitType)      $('#visitType').val(visitType);
+
+                // Se ninguém forçou o tipo de visita via URL, sugerir automaticamente
+                // o nível em falta (mensal/trimestral/anual/pré-OI) com base no histórico.
+                let autoVisitType = null;
+                if (visitType) {
+                    $('#visitType').val(visitType);
+                } else if (lift.dueVisitType) {
+                    autoVisitType = lift.dueVisitType;
+                    $('#visitType').val(lift.dueVisitType);
+                }
 
                 refreshChecklist();
 
+                const reasonLabels = {
+                    nunca_feita: 'ainda sem registo',
+                    atrasada: 'em atraso',
+                    oi_vencida: 'inspeção periódica vencida',
+                    oi_proxima: 'inspeção periódica próxima'
+                };
+                const autoReasonLabel = autoVisitType ? (reasonLabels[lift.dueVisitReason] || '') : '';
+
                 const driveM = INSPECTION_TEMPLATES.NORMS_META[lift.driveType || 'traction'];
                 const doorM  = INSPECTION_TEMPLATES.DOOR_META[lift.doorType || 'automatic'];
-                const vm     = INSPECTION_TEMPLATES.VISIT_META[visitType || 'maintenance'];
+                const vm     = INSPECTION_TEMPLATES.VISIT_META[$('#visitType').val() || 'maintenance'];
 
                 $('#liftDataLoading').hide();
                 $('#liftDataInfo').show();
@@ -1304,7 +1321,8 @@
                             <strong>Portas:</strong> ${doorM ? doorM.label : 'N/A'}<br>
                             <i class="fas fa-clipboard-check text-success mr-1"></i>
                             <strong>Visita:</strong>
-                            <span class="badge badge-${vm ? vm.color : 'secondary'}">${vm ? vm.label : (visitType||'N/A')}</span>
+                            <span class="badge badge-${vm ? vm.color : 'secondary'}">${vm ? vm.label : ($('#visitType').val()||'N/A')}</span>
+                            ${autoVisitType ? `<span class="text-muted small ml-1">(sugerido automaticamente${autoReasonLabel ? ' — ' + autoReasonLabel : ''})</span>` : ''}
                         </div>
                     </div>`);
 
