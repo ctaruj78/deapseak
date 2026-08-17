@@ -1107,9 +1107,31 @@ app.get('/api/geocode', geocodeLimiter, async (req, res) => {
 
     const _cacheAndReturn = (payload) => { geocodeCacheSet('api:' + q, payload); return res.json(payload); };
 
-    // 1. Try Google Maps first (best accuracy for Portugal)
+    // 1. Try Nominatim first, through the SAME structured/anchor-validated path
+    // used by the bulk re-geocode job (geocodeWithNominatim) — this is what
+    // actually resolves house-number precision via structured street+postalcode
+    // search; a raw free-text `q=` search (the old approach here) frequently
+    // doesn't. Building a loose address object (street/zipCode) instead of a
+    // plain string is what triggers that structured path.
+    const _qStreet = q.replace(/,?\s*Portugal\s*$/i, '').replace(postalFull, '').replace(/,\s*,/g, ',').replace(/,\s*$/, '').trim();
+    const nomResult = await geocodeWithNominatim({ street: _qStreet, zipCode: postalFull, country: 'Portugal' });
+    if (nomResult && !nomResult.lowConfidence) {
+        return _cacheAndReturn({
+            success: true,
+            lat: nomResult.lat,
+            lng: nomResult.lng,
+            display: nomResult.display,
+            city: nomResult.city,
+            postcode: postalFull || '',
+            source: 'nominatim',
+            results: nomResult.results || []
+        });
+    }
+
+    // 2. Nominatim had nothing, or only a low-confidence (postcode/city-level)
+    // match — try Google, but only trust it if it isn't itself APPROXIMATE.
     const goog = await geocodeWithGoogle(q);
-    if (goog) {
+    if (goog && !goog.lowConfidence) {
         return _cacheAndReturn({
             success: true,
             lat: goog.lat,
@@ -1122,37 +1144,24 @@ app.get('/api/geocode', geocodeLimiter, async (req, res) => {
         });
     }
 
-    // 2. Fallback: Nominatim — enriquece query com cidade extraída do endereço
-    // Tenta detectar cidade embutida na query, ex: "Rua X, 45, Lisboa, 1070-066, Portugal"
-    const _qNorm = normalizeAddressObject({ street: q.replace(/,\s*Portugal$/i, '').trim() });
-    const _enrichedQ = [_qNorm.street, _qNorm.city, postalFull || postalPrefix, 'Portugal'].filter(Boolean).join(', ');
-    const _nomQuery = _enrichedQ !== q ? _enrichedQ : q;
-
-    const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(_nomQuery)}&format=json&limit=5&countrycodes=pt&addressdetails=1`;
-    try {
-        const response = await fetch(url, {
-            headers: {
-                'User-Agent': 'FestLift-LiftManagement/2.0 (info@festlift.pt)',
-                'Accept-Language': 'pt,en'
-            }
+    // Both sources only gave low-confidence area-level matches (or none) —
+    // prefer Nominatim's if it exists (it went through anchor validation),
+    // otherwise fall through to Google's, before trying the coarser
+    // postal/municipality-centroid fallbacks below.
+    if (nomResult) {
+        return _cacheAndReturn({
+            success: true, lat: nomResult.lat, lng: nomResult.lng, display: nomResult.display,
+            city: nomResult.city, postcode: postalFull || '', source: 'nominatim', results: nomResult.results || []
         });
-        if (!response.ok) throw new Error(`Nominatim HTTP ${response.status}`);
-        const data = await response.json();
-        if (data && data.length > 0) {
-            const best = pickBestByPostcode(data, postalFull, postalPrefix);
-            const results = mapNominatim(data);
-            return _cacheAndReturn({
-                success: true,
-                lat: parseFloat(best.lat),
-                lng: parseFloat(best.lon),
-                display: best.display_name,
-                city: best.address?.city || best.address?.town || best.address?.village || best.address?.municipality || best.address?.suburb || best.address?.quarter || '',
-                postcode: best.address?.postcode || '',
-                source: 'nominatim',
-                results
-            });
-        }
+    }
+    if (goog) {
+        return _cacheAndReturn({
+            success: true, lat: goog.lat, lng: goog.lng, display: goog.display,
+            city: goog.city, postcode: goog.postcode || '', source: 'google', results: goog.results || []
+        });
+    }
 
+    try {
         // 3. Nominatim structured fallback by postal code (when available)
         if (postalFull || postalPrefix) {
             const byPostcode = postalFull || postalPrefix;
