@@ -157,6 +157,11 @@ async function nominatimRequest(url) {
 async function geocodeWithGoogle(queryStr) {
     const apiKey = process.env.GOOGLE_MAPS_API_KEY;
     if (!apiKey) return null;
+    // Cache Google results too (24h, same cache as Nominatim) — Google Geocoding is
+    // billed per request, so repeat "Corrigir coordenadas" runs on the same address
+    // must not re-charge the quota until something actually changes.
+    const cached = geocodeCacheGet('goog:' + queryStr);
+    if (cached) return cached;
     try {
         const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(queryStr)}&region=pt&language=pt&key=${apiKey}`;
         const resp = await fetch(url);
@@ -189,8 +194,16 @@ async function geocodeWithGoogle(queryStr) {
             type: (r.types || [])[0] || ''
         }));
 
-        console.log(`✅ [Google Maps] "${queryStr}" → [${loc.lng}, ${loc.lat}] city: ${cityName}`);
-        return { lat: loc.lat, lng: loc.lng, lon: loc.lng, city: cityName, postcode, display: best.formatted_address, results };
+        // location_type === 'APPROXIMATE' means Google itself couldn't pin the exact
+        // address — it's returning a postal/locality-area centroid, same failure mode
+        // we already guard against on the Nominatim side. Flag it so the caller can
+        // fall back instead of silently trusting a coarse point.
+        const locationType = best.geometry.location_type;
+        const lowConfidence = locationType === 'APPROXIMATE';
+        console.log(`✅ [Google Maps] "${queryStr}" → [${loc.lng}, ${loc.lat}] city: ${cityName} (${locationType}${lowConfidence ? ', baixa confiança' : ''})`);
+        const googResult = { lat: loc.lat, lng: loc.lng, lon: loc.lng, city: cityName, postcode, display: best.formatted_address, locationType, lowConfidence, results };
+        geocodeCacheSet('goog:' + queryStr, googResult);
+        return googResult;
     } catch (err) {
         console.error('❌ Google Maps geocode error:', err.message);
         return null;
@@ -242,7 +255,7 @@ async function getPostalAnchor(zipCode) {
     const url = `${BASE}?postalcode=${encodeURIComponent(zipCode)}&country=Portugal&format=json&limit=1&countrycodes=pt&addressdetails=1`;
     const rows = await nominatimRequest(url);
     if (!rows || !rows.length) return null;
-    return { lat: parseFloat(rows[0].lat), lon: parseFloat(rows[0].lon) };
+    return { lat: parseFloat(rows[0].lat), lon: parseFloat(rows[0].lon), source: 'postal' };
 }
 
 // ── City-based anchor (fallback when postal code has no Nominatim data) ──
@@ -252,18 +265,28 @@ async function getCityAnchor(city) {
     const url = `${BASE}?city=${encodeURIComponent(city)}&country=Portugal&format=json&limit=1&countrycodes=pt&addressdetails=1`;
     const rows = await nominatimRequest(url);
     if (!rows || !rows.length) return null;
-    return { lat: parseFloat(rows[0].lat), lon: parseFloat(rows[0].lon) };
+    return { lat: parseFloat(rows[0].lat), lon: parseFloat(rows[0].lon), source: 'city' };
+}
+
+// Portuguese postal codes resolve to a small area (street/block level), so a match far
+// from a postal anchor is almost certainly the wrong street — keep that tolerance tight.
+// City/concelho anchors are much coarser (Cascais, Sintra etc. span 15-20+ km across
+// several freguesias), so a legitimate match near the edge of the concelho needs more
+// slack or it gets wrongly rejected.
+function anchorMaxKm(anchor) {
+    return anchor && anchor.source === 'postal' ? 6 : 20;
 }
 
 // ── Nominatim helper: pick best result (prefer closest to postal anchor, then city match)
 function pickBestResult(results, cityHint, anchor) {
     if (!results || results.length === 0) return null;
-    // If we have a postal anchor, prefer the result closest to it (max 30 km)
+    // If we have an anchor, prefer the result closest to it (within anchorMaxKm)
     if (anchor) {
+        const maxKm = anchorMaxKm(anchor);
         const withDist = results.map(r => ({
             r,
             dist: haversineKm(anchor.lat, anchor.lon, parseFloat(r.lat), parseFloat(r.lon))
-        })).filter(x => x.dist <= 20).sort((a, b) => a.dist - b.dist);
+        })).filter(x => x.dist <= maxKm).sort((a, b) => a.dist - b.dist);
         if (withDist.length) return withDist[0].r;
     }
     // Fallback: city name match
@@ -349,22 +372,23 @@ async function geocodeWithNominatim(address) {
 
     const best = pickBestResult(results, typeof address === 'object' ? address.city : null, anchor);
 
-    // If best result is >20 km from postal anchor, fall back to the anchor itself
+    // If best result is too far from the anchor, fall back to the anchor itself
     if (best && anchor) {
+        const maxKm = anchorMaxKm(anchor);
         const dist = haversineKm(anchor.lat, anchor.lon, parseFloat(best.lat), parseFloat(best.lon));
-        if (dist > 20) {
-            console.warn(`⚠️ [Nominatim] best result is ${dist.toFixed(1)} km from postal anchor — using anchor instead`);
+        if (dist > maxKm) {
+            console.warn(`⚠️ [Nominatim] best result is ${dist.toFixed(1)} km from ${anchor.source} anchor (max ${maxKm}km) — using anchor instead`);
             const anchorResult = results?.find(r => {
                 const d = haversineKm(anchor.lat, anchor.lon, parseFloat(r.lat), parseFloat(r.lon));
-                return d <= 20;
+                return d <= maxKm;
             }) || null;
             if (anchorResult) {
                 const n2 = anchorResult.address || {};
                 const city2 = n2.city || n2.town || n2.village || n2.municipality || n2.suburb || n2.quarter || n2.county || '';
-                return { lat: parseFloat(anchorResult.lat), lng: parseFloat(anchorResult.lon), lon: parseFloat(anchorResult.lon), city: city2, display: anchorResult.display_name, results: (results || []).map(r => ({ lat: parseFloat(r.lat), lng: parseFloat(r.lon), display: r.display_name, city: (r.address?.city || r.address?.town || r.address?.village || ''), postcode: r.address?.postcode || '', type: r.type || '' })) };
+                return { lat: parseFloat(anchorResult.lat), lng: parseFloat(anchorResult.lon), lon: parseFloat(anchorResult.lon), city: city2, display: anchorResult.display_name, lowConfidence: true, results: (results || []).map(r => ({ lat: parseFloat(r.lat), lng: parseFloat(r.lon), display: r.display_name, city: (r.address?.city || r.address?.town || r.address?.village || ''), postcode: r.address?.postcode || '', type: r.type || '' })) };
             }
             // Use raw anchor coords
-            return { lat: anchor.lat, lng: anchor.lon, lon: anchor.lon, city: '', display: `Postal ${typeof address === 'object' ? address.zipCode : ''}`, results: [] };
+            return { lat: anchor.lat, lng: anchor.lon, lon: anchor.lon, city: '', display: `Postal ${typeof address === 'object' ? address.zipCode : ''}`, lowConfidence: true, results: [] };
         }
     }
 
@@ -384,27 +408,42 @@ async function geocodeWithNominatim(address) {
     return nomResult;
 }
 
-// ── Main geocoder: Google → Nominatim fallback ──────────
+// ── Main geocoder: Nominatim (free, primary) → Google (paid, only for the cases
+// Nominatim can't resolve well) ─────────────────────────────────────────────
+// Nominatim goes first because it costs nothing and gets most Portuguese addresses
+// right; Google is reserved for when Nominatim found nothing, or only found a
+// low-confidence match (had to fall back to a coarse postal/city anchor point —
+// see the `lowConfidence` flag set in geocodeWithNominatim). This keeps Google
+// Maps quota spend proportional to the actual hard cases instead of every lookup.
 async function geocodeAddress(address) {
     const searchLabel = typeof address === 'string'
         ? address
         : [address.street, address.zipCode, address.city].filter(Boolean).join(', ');
 
-    // 1. Try Google Maps (most accurate for Portugal)
+    const nomResult = await geocodeWithNominatim(address);
+    if (nomResult && !nomResult.lowConfidence) {
+        console.log(`✅ [Nominatim] "${searchLabel}" → [${nomResult.lon}, ${nomResult.lat}] city: ${nomResult.city}`);
+        return { type: 'Point', coordinates: [nomResult.lon, nomResult.lat], city: nomResult.city };
+    }
+
+    console.log(`⚠️ [Nominatim] ${nomResult ? 'apenas correspondência de baixa confiança' : 'sem resultado'} para "${searchLabel}", a tentar Google Maps...`);
     const googleResult = await geocodeWithGoogle(searchLabel);
+    if (googleResult && !googleResult.lowConfidence) {
+        return { type: 'Point', coordinates: [googleResult.lon, googleResult.lat], city: googleResult.city };
+    }
+
+    // Google devolveu algo mas também de baixa confiança (APPROXIMATE) — entre dois
+    // resultados incertos, preferimos o que tiver uma validação geográfica (anchor)
+    // já feita: o do Nominatim, se existir.
+    if (nomResult) {
+        return { type: 'Point', coordinates: [nomResult.lon, nomResult.lat], city: nomResult.city };
+    }
     if (googleResult) {
         return { type: 'Point', coordinates: [googleResult.lon, googleResult.lat], city: googleResult.city };
     }
 
-    // 2. Fallback to Nominatim
-    console.log(`⚠️ [Google Maps] failed, falling back to Nominatim for: ${searchLabel}`);
-    const nomResult = await geocodeWithNominatim(address);
-    if (!nomResult) {
-        console.warn(`⚠️ Geocoding: endereço não encontrado: ${searchLabel}`);
-        return null;
-    }
-    console.log(`✅ [Nominatim] "${searchLabel}" → [${nomResult.lon}, ${nomResult.lat}] city: ${nomResult.city}`);
-    return { type: 'Point', coordinates: [nomResult.lon, nomResult.lat], city: nomResult.city };
+    console.warn(`⚠️ Geocoding: endereço não encontrado: ${searchLabel}`);
+    return null;
 }
 
 // ═══════════════════════════════════════════════════════════
