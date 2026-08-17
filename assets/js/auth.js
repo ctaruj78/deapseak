@@ -488,10 +488,8 @@ if (typeof window !== 'undefined') {
         if (!badge) return;
         const token = sessionStorage.getItem('liftmanager_jwt') || localStorage.getItem('liftmanager_jwt');
         if (!token) return;
-        fetch('/api/orcamentos/my', {
-            headers: { 'Authorization': 'Bearer ' + token }
-        })
-        .then(function(r) { return r.ok ? r.json() : null; })
+        AuthManager.fetchWithAuth('/api/orcamentos/my')
+        .then(function(r) { return r && r.ok ? r.json() : null; })
         .then(function(data) {
             if (data && data.data && Array.isArray(data.data)) {
                 badge.textContent = data.data.length;
@@ -549,10 +547,7 @@ if (typeof window !== 'undefined') {
     const _sendHeartbeat = () => {
         const token = localStorage.getItem('liftmanager_jwt') || sessionStorage.getItem('liftmanager_jwt');
         if (!token) return;
-        fetch('/api/auth/heartbeat', {
-            method: 'POST',
-            headers: { 'Authorization': `Bearer ${token}` }
-        }).catch(() => {});
+        AuthManager.fetchWithAuth('/api/auth/heartbeat', { method: 'POST' }).catch(() => {});
     };
     const _startHeartbeat = () => {
         _sendHeartbeat(); // immediate ping on page load

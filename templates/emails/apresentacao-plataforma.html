@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FestLift — Plataforma Digital de Gestão de Elevadores</title>
+</head>
+<body style="margin:0;padding:0;background-color:#eef2f8;font-family:Arial,Helvetica,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#eef2f8;">
+    <tr>
+        <td align="center" style="padding:30px 15px;">
+            <table width="650" cellpadding="0" cellspacing="0" border="0" style="max-width:650px;background-color:#ffffff;border:1px solid #dbe3ef;">
+
+                <!-- HEADER -->
+                <tr>
+                    <td bgcolor="#0d1f3c" style="background-color:#0d1f3c;padding:35px 40px;text-align:center;">
+                        <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAScAAABhCAMAAACj8pe2AAABBVBMVEUAAAD////yphPyphPyphPyphPyphPyphPyphPyphP////yphPyphPyphPyphP////yphP////yphP////////51Zj////yphP////////////////////////yphP////yphPyphPyphP////////yphPyphP////////////yphPyphP////////////////yphP////yphPyphP////yphPyphPyphP////////////////////////yphP////yphPyphPyphP////yphPyphP////////yphPyphPyphPyphP////yphP////////////////////yphPyphP////yphMllZjmAAAAVXRSTlMARJlE7xFmzFXdu4h3M6p2uxEizAcD6QfeqvzumFUtIvrq5oluOhsM1J6AbWY5GuPSwsK0paKQSj8zMC0mFgz3yXxBHvXhfWJhWxbZsq+RW0sgt3ODe+6y2gAABTpJREFUeNrs10+LgmAQBvCh1c0oIwR5b6KCHvQihnqLFIP+0Knl+f4fZWsdS3etrgvO7/QSdHB4Z9556P+xFYn39NXUIvGOuQO0DxKv7V3ABUoSL6gJoBXmDljrJJ4Jt8BtOB1XwMwhMezDAzJFV/YcqA8khiwANyZmaEAuC8JfmzPgB3RnJUAakuhzTkB67BVu+VM40WXUwNzmNy+mxsW9NaK4s3OgNrjfpssk2zTnygeuZ9E4psDJad+8mFSWWI9FIZEU0wh84My3pmwmUuwVvHjmgFaQIIpdYMEReJ2Gbe0iuzkdauDLprFTGeBV/ObNcvXoxbXe/gqsxp5irATYhnxzvENvts/M9pYBO5PGrNCAieJJ9DvRGd6eSxYB7p5Gq/v9IfdZf/ecqE49x5piuv0U+OVgltmGnf4cZ4q5z2feAwYt/Ko378fHKaOo4qRifOr0hHUJ+GRe/yBxTwjxzW4do0wMAmEYHlubYbBRNKRImwvkIN/9r/LHDYuYf2QXtlnWebqIhsxbSIwxxhgz4tDzRIQbeljZZwAh7UIVKv2so+a5pB3RX/KV3u0kpT1ntk6DThK6lSDWSe3k0QsyZSdq1FkXVHlzznHEiUfnX3dyw4/4Zu912lAd9MBAIeukjeO7XXsg66SOk1CllS5inar/9yrjEgs7Os3a6YkHnSSjScsHnRr/g53oyN3aap0G40gBmijWaXSNyJ5i2zhnJ9IGU8iyRVRxznv8ZScJ0v8jWCd1nIRw0GWzTsNZGafihGhlVMk6EeGGBXdu2Knnp+r0x84ZpcwNw0B4sGTZrhNj8tQfWnqBnmfuf5SuE22ztKF9KC3kr7+X1aw1ggzYhECCrz/9M3O6yglf3l70x8+YOV3nNA6mt/35+IdPj5T+v5wmk8lkMplMfolEXLNlTE5ouMaIPyCq4V3xl3JCezffFjFlj6B5UQLQuyQWAbJqJ5DLsaLVm4IyvJgHUh4O1zk15T4HzBiz8lhPgsN5R1YukhpoXlRFZO5BWsHGKomIWveWIuvRJMy5bKd5oEFqd20McswBLbJKTfGxHjTuzlu+IbswhFRA82KjmAKydCIzwvxHQXt2r0x1fTEPkjaLro14zqFlAthnRObhvOc7euPSQgXNC/TQA6q2dpWTN0koXE/zIC5Nk2sjfA5oe0Kr57Q7bxnU2CqtgtULmHIdsjH+sO/Mux9KMvNpHiSToK6N8DmgRW2PFd93u/OedxpWmDYELkcBaAIW1Voasmr4fo4zP7tjo4bTfFTKIq4z4XOGSQr1eY4P5z3P8X/AJgWT39NveiswmUwm39o5mxYFoSgM37ZuRLxdSosWCSmkErjow2gRjJuoDN7//1fm0j1m2UiznbnnWcjZuHl5z8PBhf8Bb7fd7s0oy3oo+shK2b6QCfvYjYDTwgSVxLOeNJ2bZ6Yv4DAVNuI5QFyaOVKDn7Ocm6YtTsBoJ+xkOAfCq5nXyhVvTBU1qIwBxxPWcjkgoHyOfiG7MY62ZrqGwNzqf0BtcmBMkir848ta3pwnNV2E3exXQFyb2c3Xz2o6k5rGgC6W7cgzEJLEBypq1UQNmsXAai8YUWlJRU0oiTSrlm8ouhA4W62mljQHCklL5mf6eWoa5AY4VIJpJaUlTk1Ky3hCqRWALhbTICeAIolflaqaU4HV1GUZPCRVps3pCehiMS+kCjASJyKd3FIwXTIf0BInZAKoVDDvUDRtaDZ+RfkMrVr1WEJWUx+kbpI600/tA6vkfiQwvdBpeT86mQ+4AQpW0y8YsJr+Lt9Y8G9bbqBHhQAAAABJRU5ErkJggg==" alt="FestLift" width="160" height="50" style="display:block;margin:0 auto 18px auto;border:0;" />
+                        <p style="margin:0;font-size:12px;color:#ffb74d;letter-spacing:2px;text-transform:uppercase;font-family:Arial,Helvetica,sans-serif;">Plataforma Digital de Gestão de Elevadores</p>
+                        <h1 style="margin:10px 0 0 0;font-size:24px;font-weight:700;color:#ffffff;font-family:Arial,Helvetica,sans-serif;line-height:1.3;">O seu elevador. Sempre acessível — nunca esquecido.</h1>
+                    </td>
+                </tr>
+
+                <!-- INTRO -->
+                <tr>
+                    <td style="padding:40px 40px 10px 40px;">
+                        <p style="margin:0 0 20px 0;font-size:15px;color:#2c3e50;font-family:Arial,Helvetica,sans-serif;">
+                            <strong>Caro(a) {{recipientName}},</strong>
+                        </p>
+                        <p style="margin:0 0 20px 0;font-size:14px;line-height:1.8;color:#555555;font-family:Arial,Helvetica,sans-serif;">
+                            Substituímos as pastas de manutenção e os prazos perdidos por um painel digital: cada elevador com QR próprio, inspeções controladas automaticamente e propostas de modernização geradas por Inteligência Artificial em minutos.
+                        </p>
+                        <table cellpadding="0" cellspacing="0" border="0" style="margin:10px 0 30px 0;">
+                            <tr>
+                                <td bgcolor="#ffa726" style="background:linear-gradient(135deg,#ffa726,#e65100);background-color:#ffa726;border-radius:3px;">
+                                    <a href="mailto:info@festlift.pt?subject=Pedido%20de%20demonstra%C3%A7%C3%A3o%20FestLift" style="display:inline-block;padding:14px 28px;font-size:14px;font-weight:700;color:#241200;text-decoration:none;font-family:Arial,Helvetica,sans-serif;">Pedir uma demonstração →</a>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+
+                <!-- FEATURES -->
+                <tr>
+                    <td style="padding:0 40px 30px 40px;">
+                        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border:2px solid #0d1f3c;">
+                            <tr>
+                                <td bgcolor="#0d1f3c" style="background-color:#0d1f3c;padding:12px 20px;">
+                                    <p style="margin:0;font-size:13px;font-weight:700;color:#ffffff;letter-spacing:1px;text-transform:uppercase;font-family:Arial,Helvetica,sans-serif;">O que encontra na plataforma</p>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="padding:0;">
+                                    <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                                        <tr>
+                                            <td width="15%" valign="top" style="padding:14px 10px 14px 20px;border-bottom:1px solid #e9ecef;font-size:13px;font-weight:700;color:#e65100;font-family:Arial,Helvetica,sans-serif;">QR</td>
+                                            <td style="padding:14px 20px 14px 0;border-bottom:1px solid #e9ecef;font-size:13px;color:#212529;font-family:Arial,Helvetica,sans-serif;"><strong>QR próprio por elevador</strong> — digitalize e veja estado, histórico e assistência, sem instalar nada.</td>
+                                        </tr>
+                                        <tr>
+                                            <td width="15%" valign="top" style="padding:14px 10px 14px 20px;border-bottom:1px solid #e9ecef;font-size:13px;font-weight:700;color:#e65100;background-color:#f8f9fa;font-family:Arial,Helvetica,sans-serif;">IA</td>
+                                            <td style="padding:14px 20px 14px 0;border-bottom:1px solid #e9ecef;font-size:13px;color:#212529;background-color:#f8f9fa;font-family:Arial,Helvetica,sans-serif;"><strong>Assistente de IA 24/7</strong> — resposta técnica disponível a qualquer hora, para o condomínio e para os técnicos.</td>
+                                        </tr>
+                                        <tr>
+                                            <td width="15%" valign="top" style="padding:14px 10px 14px 20px;border-bottom:1px solid #e9ecef;font-size:13px;font-weight:700;color:#e65100;font-family:Arial,Helvetica,sans-serif;">MO</td>
+                                            <td style="padding:14px 20px 14px 0;border-bottom:1px solid #e9ecef;font-size:13px;color:#212529;font-family:Arial,Helvetica,sans-serif;"><strong>Modernização automática</strong> — pede-se a proposta, a IA classifica a conformidade (DL 320/2002 / EN 81-20) e o orçamento chega pronto.</td>
+                                        </tr>
+                                        <tr>
+                                            <td width="15%" valign="top" style="padding:14px 10px 14px 20px;border-bottom:1px solid #e9ecef;font-size:13px;font-weight:700;color:#e65100;background-color:#f8f9fa;font-family:Arial,Helvetica,sans-serif;">PT</td>
+                                            <td style="padding:14px 20px 14px 0;border-bottom:1px solid #e9ecef;font-size:13px;color:#212529;background-color:#f8f9fa;font-family:Arial,Helvetica,sans-serif;"><strong>Portal do condomínio</strong> — pedidos, orçamentos e histórico completo, num único acesso.</td>
+                                        </tr>
+                                        <tr>
+                                            <td width="15%" valign="top" style="padding:14px 10px 14px 20px;border-bottom:1px solid #e9ecef;font-size:13px;font-weight:700;color:#e65100;font-family:Arial,Helvetica,sans-serif;">NT</td>
+                                            <td style="padding:14px 20px 14px 0;border-bottom:1px solid #e9ecef;font-size:13px;color:#212529;font-family:Arial,Helvetica,sans-serif;"><strong>Notificações em tempo real</strong> — prazos de inspeção, avarias e visitas técnicas, sem depender de papel.</td>
+                                        </tr>
+                                        <tr>
+                                            <td width="15%" valign="top" style="padding:14px 10px 14px 20px;font-size:13px;font-weight:700;color:#e65100;background-color:#f8f9fa;font-family:Arial,Helvetica,sans-serif;">AP</td>
+                                            <td style="padding:14px 20px 14px 0;font-size:13px;color:#212529;background-color:#f8f9fa;font-family:Arial,Helvetica,sans-serif;"><strong>Acesso em qualquer telemóvel</strong> — instale como aplicação direto do navegador, sem loja de apps.</td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+
+                <!-- COMO FUNCIONA -->
+                <tr>
+                    <td style="padding:0 40px 30px 40px;">
+                        <p style="margin:0 0 16px 0;font-size:15px;font-weight:700;color:#2c3e50;font-family:Arial,Helvetica,sans-serif;">Manual rápido — como funciona</p>
+                        <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                            <tr>
+                                <td width="30" valign="top" style="padding:0 12px 16px 0;"><span style="display:inline-block;width:22px;height:22px;line-height:22px;text-align:center;border-radius:50%;background-color:#0d1f3c;color:#ffa726;font-size:12px;font-weight:700;font-family:Arial,Helvetica,sans-serif;">1</span></td>
+                                <td style="padding:0 0 16px 0;font-size:13px;line-height:1.7;color:#555555;font-family:Arial,Helvetica,sans-serif;">Instalamos um QR único em cada elevador do seu edifício.</td>
+                            </tr>
+                            <tr>
+                                <td width="30" valign="top" style="padding:0 12px 16px 0;"><span style="display:inline-block;width:22px;height:22px;line-height:22px;text-align:center;border-radius:50%;background-color:#0d1f3c;color:#ffa726;font-size:12px;font-weight:700;font-family:Arial,Helvetica,sans-serif;">2</span></td>
+                                <td style="padding:0 0 16px 0;font-size:13px;line-height:1.7;color:#555555;font-family:Arial,Helvetica,sans-serif;">Administração e condóminos digitalizam o QR e acedem de imediato ao estado e histórico técnico.</td>
+                            </tr>
+                            <tr>
+                                <td width="30" valign="top" style="padding:0 12px 16px 0;"><span style="display:inline-block;width:22px;height:22px;line-height:22px;text-align:center;border-radius:50%;background-color:#0d1f3c;color:#ffa726;font-size:12px;font-weight:700;font-family:Arial,Helvetica,sans-serif;">3</span></td>
+                                <td style="padding:0 0 16px 0;font-size:13px;line-height:1.7;color:#555555;font-family:Arial,Helvetica,sans-serif;">Quando necessário, o cliente pede diretamente uma proposta de modernização pelo portal.</td>
+                            </tr>
+                            <tr>
+                                <td width="30" valign="top" style="padding:0 12px 0 0;"><span style="display:inline-block;width:22px;height:22px;line-height:22px;text-align:center;border-radius:50%;background-color:#0d1f3c;color:#ffa726;font-size:12px;font-weight:700;font-family:Arial,Helvetica,sans-serif;">4</span></td>
+                                <td style="padding:0;font-size:13px;line-height:1.7;color:#555555;font-family:Arial,Helvetica,sans-serif;">A nossa IA analisa a conformidade regulamentar e devolve um orçamento já classificado, pronto a aprovar.</td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+
+                <!-- QR PANEL -->
+                <tr>
+                    <td style="padding:0 40px 35px 40px;">
+                        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border:2px solid #0d1f3c;">
+                            <tr>
+                                <td bgcolor="#0d1f3c" style="background-color:#0d1f3c;padding:12px 20px;">
+                                    <p style="margin:0;font-size:13px;font-weight:700;color:#ffffff;letter-spacing:1px;text-transform:uppercase;font-family:Arial,Helvetica,sans-serif;">Experimente sem compromisso</p>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="padding:25px 20px;">
+                                    <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                                        <tr>
+                                            <td width="33%" align="center" style="padding:0 8px;">
+                                                <img src="https://api.qrserver.com/v1/create-qr-code/?size=130x130&margin=6&data=https%3A%2F%2Ffestlift.pt%2Fpages%2Fpublic%2Fdemo.html" width="110" height="110" alt="QR — Demonstração" style="display:block;margin:0 auto 8px auto;border:1px solid #dbe3ef;" />
+                                                <p style="margin:0;font-size:11px;font-weight:700;color:#e65100;font-family:Arial,Helvetica,sans-serif;">DEMONSTRAÇÃO</p>
+                                            </td>
+                                            <td width="33%" align="center" style="padding:0 8px;">
+                                                <img src="https://api.qrserver.com/v1/create-qr-code/?size=130x130&margin=6&data=https%3A%2F%2Fwa.me%2F351926380243" width="110" height="110" alt="QR — WhatsApp" style="display:block;margin:0 auto 8px auto;border:1px solid #dbe3ef;" />
+                                                <p style="margin:0;font-size:11px;font-weight:700;color:#e65100;font-family:Arial,Helvetica,sans-serif;">FALAR CONNOSCO</p>
+                                            </td>
+                                            <td width="33%" align="center" style="padding:0 8px;">
+                                                <img src="https://api.qrserver.com/v1/create-qr-code/?size=130x130&margin=6&data=mailto%3Ainfo%40festlift.pt%3Fsubject%3DPedido%2520de%2520proposta%2520FestLift" width="110" height="110" alt="QR — Pedir proposta" style="display:block;margin:0 auto 8px auto;border:1px solid #dbe3ef;" />
+                                                <p style="margin:0;font-size:11px;font-weight:700;color:#e65100;font-family:Arial,Helvetica,sans-serif;">PEDIR PROPOSTA</p>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+
+                <!-- CLOSING -->
+                <tr>
+                    <td style="padding:0 40px 35px 40px;">
+                        <p style="margin:0 0 15px 0;font-size:14px;line-height:1.8;color:#555555;font-family:Arial,Helvetica,sans-serif;">
+                            Marque uma demonstração de 15 minutos e mostramos o painel do seu primeiro elevador ainda esta semana.
+                        </p>
+                        <p style="margin:25px 0 5px 0;font-size:15px;font-weight:700;color:#2c3e50;font-family:Arial,Helvetica,sans-serif;">Com os melhores cumprimentos,</p>
+                        <p style="margin:0;font-size:14px;color:#0d1f3c;font-weight:700;font-family:Arial,Helvetica,sans-serif;">Equipa FestLift — Elevadores e Serviços, Lda.</p>
+                    </td>
+                </tr>
+
+                <!-- FOOTER -->
+                <tr>
+                    <td bgcolor="#1a3a5c" style="background-color:#1a3a5c;padding:30px 40px;">
+                        <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                            <tr>
+                                <td style="padding-top:0;">
+                                    <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                                        <tr>
+                                            <td width="50%" valign="top" style="padding:0 10px 0 0;font-size:12px;color:#8ab4d4;line-height:1.8;font-family:Arial,Helvetica,sans-serif;">
+                                                <strong style="color:#ffffff;display:block;margin-bottom:4px;">FestLift - Elevadores e Servicos, Lda.</strong>
+                                                Av. do Parque 84B<br>
+                                                Rio de Mouro, Lisboa 2635-609<br>
+                                                NIF: 515924741
+                                            </td>
+                                            <td width="50%" valign="top" style="padding:0 0 0 10px;font-size:12px;color:#8ab4d4;line-height:1.8;font-family:Arial,Helvetica,sans-serif;">
+                                                <strong style="color:#ffffff;display:block;margin-bottom:4px;">Contactos</strong>
+                                                Escritorio: +351 214 190 863<br>
+                                                Assistencia: +351 926 380 243<br>
+                                                info@festlift.pt | www.festlift.pt
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td bgcolor="#e65100" style="background-color:#e65100;padding:12px 20px;margin-top:20px;text-align:center;">
+                                    <p style="margin:0;font-size:13px;font-weight:700;color:#ffffff;font-family:Arial,Helvetica,sans-serif;">Assistência Técnica 24/7: +351 926 380 243</p>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="padding-top:18px;border-top:1px solid #2c5f8a;margin-top:15px;">
+                                    <p style="margin:0;font-size:11px;color:#6a8fa8;line-height:1.6;font-family:Arial,Helvetica,sans-serif;text-align:center;">
+                                        Recebeu esta apresentação porque identificámos o seu condomínio ou empresa como potencial cliente FestLift. Se preferir não receber futuras comunicações, responda a este email com "Remover" — o seu contacto é retirado de imediato.
+                                    </p>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+
+            </table>
+        </td>
+    </tr>
+</table>
+</body>
+</html>
