@@ -277,6 +277,19 @@ function anchorMaxKm(anchor) {
     return anchor && anchor.source === 'postal' ? 6 : 20;
 }
 
+// Step 4 of geocodeWithNominatim ("postal code only") deliberately searches without a
+// street, so on a street Nominatim can't otherwise resolve it returns the postcode/town's
+// own administrative boundary — geographically that's ~0 km from the anchor (it often IS
+// the anchor), so the distance check alone accepts it as "confident" even though it's not
+// an actual address. Recognize that shape explicitly via Nominatim's class/type/addresstype.
+function isCoarseNominatimResult(r) {
+    if (!r) return true;
+    if (r.class === 'boundary') return true;
+    if (r.class === 'place' && ['city', 'town', 'village', 'suburb', 'municipality', 'county', 'state'].includes(r.type)) return true;
+    if (['postcode', 'city', 'town', 'village', 'suburb', 'administrative', 'county', 'state'].includes(r.addresstype)) return true;
+    return false;
+}
+
 // ── Nominatim helper: pick best result (prefer closest to postal anchor, then city match)
 function pickBestResult(results, cityHint, anchor) {
     if (!results || results.length === 0) return null;
@@ -372,12 +385,15 @@ async function geocodeWithNominatim(address) {
 
     const best = pickBestResult(results, typeof address === 'object' ? address.city : null, anchor);
 
-    // If best result is too far from the anchor, fall back to the anchor itself
+    // If best result is too far from the anchor, OR it's only an area/postcode-level
+    // match rather than an actual street/building (see isCoarseNominatimResult above),
+    // treat it as low-confidence so the caller knows to prefer Google when available.
     if (best && anchor) {
         const maxKm = anchorMaxKm(anchor);
         const dist = haversineKm(anchor.lat, anchor.lon, parseFloat(best.lat), parseFloat(best.lon));
-        if (dist > maxKm) {
-            console.warn(`⚠️ [Nominatim] best result is ${dist.toFixed(1)} km from ${anchor.source} anchor (max ${maxKm}km) — using anchor instead`);
+        const coarse = isCoarseNominatimResult(best);
+        if (dist > maxKm || coarse) {
+            console.warn(`⚠️ [Nominatim] best result is ${coarse ? `a coarse ${best.class}/${best.type} match` : `${dist.toFixed(1)} km from ${anchor.source} anchor (max ${maxKm}km)`} — marking low-confidence`);
             const anchorResult = results?.find(r => {
                 const d = haversineKm(anchor.lat, anchor.lon, parseFloat(r.lat), parseFloat(r.lon));
                 return d <= maxKm;
