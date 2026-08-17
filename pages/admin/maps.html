@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="../../plugins/adminlte/adminlte.min.css">
     <link rel="stylesheet" href="../../plugins/fontawesome/css/all.min.css">
     <link rel="stylesheet" href="../../plugins/leaflet/leaflet.css" />
+    <link rel="stylesheet" href="/plugins/toastr/css/toastr.min.css">
 
     <style>
         #liftsMap {
@@ -195,6 +196,7 @@
 <script src="../../assets/js/sidebar-init.js"></script>
 <script src="../../assets/js/i18n.js"></script>
 <script src="../../plugins/leaflet/leaflet.js"></script>
+<script src="/plugins/toastr/js/toastr.min.js"></script>
 <script src="../../assets/js/auth.js"></script>
 <script src="../../assets/js/config.js"></script>
 
@@ -288,6 +290,11 @@
     }
 
     function initializeMap() {
+        if (map) {
+            map.remove();
+            map = null;
+        }
+
         const mapContainer = document.getElementById('liftsMap');
         if (mapContainer) {
             mapContainer.innerHTML = '';
@@ -396,9 +403,7 @@
             await reloadMapData();
         });
 
-        document.getElementById('btnRegeocodeAll').addEventListener('click', async () => {
-            await reloadMapData();
-        });
+        document.getElementById('btnRegeocodeAll').addEventListener('click', regeocodeAllLifts);
 
         document.getElementById('statusFilter').addEventListener('change', applyFilters);
         document.getElementById('searchInput').addEventListener('input', applyFilters);
@@ -410,6 +415,46 @@
         initializeMap();
         populateLiftSelector();
         updateStats();
+    }
+
+    async function regeocodeAllLifts() {
+        const btn = document.getElementById('btnRegeocodeAll');
+        const originalHtml = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> A corrigir coordenadas...';
+
+        try {
+            const startResp = await AuthManager.fetchWithAuth('/api/lifts/regeocode-all?force=true', { method: 'POST' });
+            if (!startResp || !startResp.ok) throw new Error(`HTTP ${startResp ? startResp.status : '???'}`);
+            const startData = await startResp.json();
+            const jobId = startData.jobId;
+            if (!jobId) throw new Error('Resposta sem jobId');
+
+            let job;
+            while (true) {
+                await new Promise(r => setTimeout(r, 1500));
+                const statusResp = await AuthManager.fetchWithAuth(`/api/lifts/regeocode-all/${jobId}`);
+                if (!statusResp || !statusResp.ok) throw new Error(`HTTP ${statusResp ? statusResp.status : '???'}`);
+                const statusData = await statusResp.json();
+                job = statusData.data;
+                btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> ${job.processed}/${job.total || '?'} elevadores...`;
+                if (job.status === 'done' || job.status === 'failed') break;
+            }
+
+            if (job.status === 'failed') {
+                toastr.error(job.message || 'Erro ao corrigir coordenadas');
+            } else {
+                toastr.success(`Coordenadas corrigidas: ${job.fixed} atualizadas, ${job.failed} falhas de ${job.total} elevadores`);
+            }
+
+            await reloadMapData();
+        } catch (error) {
+            console.error('Erro ao corrigir coordenadas:', error);
+            toastr.error('Erro ao corrigir coordenadas: ' + error.message);
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = originalHtml;
+        }
     }
 
     function applyFilters() {

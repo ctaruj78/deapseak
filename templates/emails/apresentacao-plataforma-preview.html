@@ -1,0 +1,614 @@
+<title>Painel FestLift</title>
+<style>
+  :root {
+    --bg: #0a1424;
+    --surface: #0f1f38;
+    --surface-2: #142a4a;
+    --line: #24405f;
+    --text: #e8edf5;
+    --text-dim: #93a6c2;
+    --accent: #4f9cf0;
+    --accent-deep: #1565c0;
+    --signal: #ffa726;
+    --signal-deep: #e65100;
+    --on-signal: #241200;
+    --shadow: 0 20px 50px -20px rgba(0,0,0,0.6);
+
+    --font-display: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    --font-data: ui-monospace, "SF Mono", "Cascadia Code", "Roboto Mono", Consolas, "Liberation Mono", monospace;
+  }
+
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+      --bg: #f3f6fb;
+      --surface: #ffffff;
+      --surface-2: #edf2f9;
+      --line: #d8e1ee;
+      --text: #172338;
+      --text-dim: #57678a;
+      --accent: #1565c0;
+      --accent-deep: #0d47a1;
+      --shadow: 0 20px 50px -25px rgba(23,35,56,0.25);
+    }
+  }
+
+  :root[data-theme="light"] {
+    --bg: #f3f6fb;
+    --surface: #ffffff;
+    --surface-2: #edf2f9;
+    --line: #d8e1ee;
+    --text: #172338;
+    --text-dim: #57678a;
+    --accent: #1565c0;
+    --accent-deep: #0d47a1;
+    --shadow: 0 20px 50px -25px rgba(23,35,56,0.25);
+  }
+
+  :root[data-theme="dark"] {
+    --bg: #0a1424;
+    --surface: #0f1f38;
+    --surface-2: #142a4a;
+    --line: #24405f;
+    --text: #e8edf5;
+    --text-dim: #93a6c2;
+    --accent: #4f9cf0;
+    --accent-deep: #1565c0;
+    --shadow: 0 20px 50px -20px rgba(0,0,0,0.6);
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; margin: 0; }
+
+  .wrap { max-width: 920px; margin: 0 auto; padding: 0 24px; }
+
+  a { color: inherit; }
+
+  .eyebrow {
+    font-family: var(--font-data);
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--signal);
+    font-weight: 600;
+  }
+
+  /* ===== BRAND MASTHEAD (fixed dark, independent of page theme) ===== */
+  .masthead {
+    background: #071021;
+    border-bottom: 1px solid #1c3350;
+  }
+  .masthead .wrap {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 24px;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .masthead .logo-lockup {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .masthead img { height: 34px; width: auto; display: block; }
+  .masthead .tagline {
+    font-family: var(--font-data);
+    font-size: 12px;
+    color: #7f97b8;
+    letter-spacing: 0.04em;
+  }
+
+  /* ===== HERO — call-panel display ===== */
+  .hero {
+    background:
+      radial-gradient(1100px 480px at 15% -10%, rgba(79,156,240,0.20), transparent 60%),
+      linear-gradient(180deg, var(--surface) 0%, var(--bg) 100%);
+    padding: 76px 0 84px;
+    border-bottom: 1px solid var(--line);
+  }
+  .hero-grid {
+    display: grid;
+    grid-template-columns: 1.15fr 0.85fr;
+    gap: 48px;
+    align-items: center;
+  }
+  @media (max-width: 760px) {
+    .hero-grid { grid-template-columns: 1fr; }
+  }
+  .hero h1 {
+    font-size: clamp(30px, 4.4vw, 46px);
+    font-weight: 800;
+    letter-spacing: -0.015em;
+    line-height: 1.12;
+    margin: 14px 0 18px;
+  }
+  .hero p.lead {
+    font-size: 17px;
+    color: var(--text-dim);
+    max-width: 46ch;
+    margin: 0 0 30px;
+  }
+  .cta-row { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; }
+  .btn-signal {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: linear-gradient(135deg, var(--signal) 0%, var(--signal-deep) 100%);
+    color: var(--on-signal);
+    font-weight: 700;
+    font-size: 15px;
+    padding: 14px 24px;
+    border-radius: 3px;
+    text-decoration: none;
+    box-shadow: 0 12px 28px -10px rgba(230,81,0,0.55);
+    border: 1px solid rgba(0,0,0,0.08);
+  }
+  .btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-dim);
+    text-decoration: none;
+    font-size: 15px;
+    font-weight: 600;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 2px;
+  }
+  .btn-ghost:hover { color: var(--accent); border-color: var(--accent); }
+
+  /* Call panel graphic */
+  .panel {
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 22px;
+    box-shadow: var(--shadow);
+  }
+  .panel-screen {
+    background: #050c18;
+    border: 1px solid #1c3350;
+    border-radius: 4px;
+    padding: 22px 18px;
+    text-align: center;
+    margin-bottom: 16px;
+  }
+  .panel-screen .readout {
+    font-family: var(--font-data);
+    font-variant-numeric: tabular-nums;
+    font-size: 54px;
+    font-weight: 700;
+    color: #ffa726;
+    letter-spacing: 0.04em;
+    text-shadow: 0 0 18px rgba(255,167,38,0.45);
+  }
+  .panel-screen .readout-label {
+    font-family: var(--font-data);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #5d84b8;
+    margin-top: 6px;
+  }
+  .panel-buttons {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+  .panel-buttons span {
+    display: block;
+    text-align: center;
+    padding: 10px 4px;
+    border-radius: 3px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    font-family: var(--font-data);
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+  .panel-buttons span.lit {
+    background: rgba(255,167,38,0.14);
+    border-color: var(--signal);
+    color: var(--signal);
+  }
+
+  /* ===== SECTION SCAFFOLDING ===== */
+  section.block { padding: 72px 0; }
+  section.block.alt { background: var(--surface); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+  .block-head { max-width: 58ch; margin-bottom: 40px; }
+  .block-head h2 {
+    font-size: clamp(24px, 3vw, 32px);
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    margin-top: 10px;
+  }
+  .block-head p { color: var(--text-dim); font-size: 16px; margin: 12px 0 0; }
+
+  /* ===== DIRECTORY (features) ===== */
+  .directory-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  @media (max-width: 640px) {
+    .directory-grid { grid-template-columns: 1fr; }
+  }
+  .directory-item {
+    background: var(--bg);
+    padding: 26px 26px;
+    display: flex;
+    gap: 16px;
+  }
+  .directory-item .code {
+    flex: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 3px;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-data);
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--signal);
+  }
+  .directory-item h3 { font-size: 16.5px; font-weight: 700; margin-bottom: 6px; }
+  .directory-item p { margin: 0; color: var(--text-dim); font-size: 14.5px; }
+
+  /* ===== WORKFLOW (travel rail) ===== */
+  .rail {
+    position: relative;
+    padding-left: 34px;
+    border-left: 2px solid var(--line);
+  }
+  .rail-step {
+    position: relative;
+    padding-bottom: 40px;
+  }
+  .rail-step:last-child { padding-bottom: 0; }
+  .rail-step::before {
+    content: attr(data-n);
+    position: absolute;
+    left: -46px;
+    top: 0;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: var(--surface-2);
+    border: 2px solid var(--signal);
+    color: var(--signal);
+    font-family: var(--font-data);
+    font-weight: 700;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .rail-step h3 { font-size: 16.5px; font-weight: 700; margin-bottom: 6px; }
+  .rail-step p { margin: 0; color: var(--text-dim); font-size: 14.5px; max-width: 56ch; }
+
+  /* ===== QR PANEL ===== */
+  .qr-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+  }
+  @media (max-width: 700px) {
+    .qr-grid { grid-template-columns: 1fr; }
+  }
+  .qr-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 22px;
+    text-align: center;
+  }
+  .qr-card img {
+    width: 132px;
+    height: 132px;
+    border-radius: 4px;
+    background: #fff;
+    padding: 8px;
+    margin-bottom: 14px;
+  }
+  .qr-card .qr-label {
+    font-family: var(--font-data);
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--signal);
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .qr-card p { margin: 0; color: var(--text-dim); font-size: 13.5px; }
+
+  /* ===== TRUST STRIP ===== */
+  .trust-strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 28px;
+    justify-content: space-between;
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    padding: 28px 0;
+  }
+  .trust-item {
+    flex: 1 1 200px;
+    font-size: 13.5px;
+    color: var(--text-dim);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .trust-item .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--signal); flex: none; }
+
+  /* ===== FINAL CTA ===== */
+  .final-cta {
+    text-align: center;
+    background: linear-gradient(135deg, var(--accent-deep) 0%, #0a1a33 100%);
+    border-radius: 8px;
+    padding: 56px 32px;
+    color: #eef4ff;
+  }
+  .final-cta h2 { font-size: clamp(22px,3vw,30px); font-weight: 800; color: #fff; }
+  .final-cta p { color: #b9cbe8; max-width: 48ch; margin: 12px auto 26px; }
+
+  /* ===== FOOTER ===== */
+  footer {
+    background: #071021;
+    border-top: 1px solid #1c3350;
+    padding: 44px 0 30px;
+  }
+  .footer-grid {
+    display: grid;
+    grid-template-columns: 1.3fr 1fr 1fr;
+    gap: 28px;
+    font-size: 13.5px;
+    color: #8fa5c4;
+  }
+  @media (max-width: 640px) { .footer-grid { grid-template-columns: 1fr; } }
+  .footer-grid strong { display: block; color: #d7e3f5; margin-bottom: 8px; font-size: 13px; letter-spacing: 0.04em; }
+  .footer-grid a { color: #8fa5c4; text-decoration: none; }
+  .footer-grid a:hover { color: var(--signal); }
+  .footer-bottom {
+    margin-top: 32px;
+    padding-top: 20px;
+    border-top: 1px solid #1c3350;
+    font-size: 12px;
+    color: #5d7295;
+    line-height: 1.7;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; }
+  }
+</style>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="logo-lockup">
+      <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAScAAABhCAMAAACj8pe2AAABBVBMVEUAAAD////yphPyphPyphPyphPyphPyphPyphPyphP////yphPyphPyphPyphP////yphP////yphP////////51Zj////yphP////////////////////////yphP////yphPyphPyphP////////yphPyphP////////////yphPyphP////////////////yphP////yphPyphP////yphPyphPyphP////////////////////////yphP////yphPyphPyphP////yphPyphP////////yphPyphPyphPyphP////yphP////////////////////yphPyphP////yphMllZjmAAAAVXRSTlMARJlE7xFmzFXdu4h3M6p2uxEizAcD6QfeqvzumFUtIvrq5oluOhsM1J6AbWY5GuPSwsK0paKQSj8zMC0mFgz3yXxBHvXhfWJhWxbZsq+RW0sgt3ODe+6y2gAABTpJREFUeNrs10+LgmAQBvCh1c0oIwR5b6KCHvQihnqLFIP+0Knl+f4fZWsdS3etrgvO7/QSdHB4Z9556P+xFYn39NXUIvGOuQO0DxKv7V3ABUoSL6gJoBXmDljrJJ4Jt8BtOB1XwMwhMezDAzJFV/YcqA8khiwANyZmaEAuC8JfmzPgB3RnJUAakuhzTkB67BVu+VM40WXUwNzmNy+mxsW9NaK4s3OgNrjfpssk2zTnygeuZ9E4psDJad+8mFSWWI9FIZEU0wh84My3pmwmUuwVvHjmgFaQIIpdYMEReJ2Gbe0iuzkdauDLprFTGeBV/ObNcvXoxbXe/gqsxp5irATYhnxzvENvts/M9pYBO5PGrNCAieJJ9DvRGd6eSxYB7p5Gq/v9IfdZf/ecqE49x5piuv0U+OVgltmGnf4cZ4q5z2feAwYt/Ko378fHKaOo4qRifOr0hHUJ+GRe/yBxTwjxzW4do0wMAmEYHlubYbBRNKRImwvkIN/9r/LHDYuYf2QXtlnWebqIhsxbSIwxxhgz4tDzRIQbeljZZwAh7UIVKv2so+a5pB3RX/KV3u0kpT1ntk6DThK6lSDWSe3k0QsyZSdq1FkXVHlzznHEiUfnX3dyw4/4Zu912lAd9MBAIeukjeO7XXsg66SOk1CllS5inar/9yrjEgs7Os3a6YkHnSSjScsHnRr/g53oyN3aap0G40gBmijWaXSNyJ5i2zhnJ9IGU8iyRVRxznv8ZScJ0v8jWCd1nIRw0GWzTsNZGafihGhlVMk6EeGGBXdu2Knnp+r0x84ZpcwNw0B4sGTZrhNj8tQfWnqBnmfuf5SuE22ztKF9KC3kr7+X1aw1ggzYhECCrz/9M3O6yglf3l70x8+YOV3nNA6mt/35+IdPj5T+v5wmk8lkMplMfolEXLNlTE5ouMaIPyCq4V3xl3JCezffFjFlj6B5UQLQuyQWAbJqJ5DLsaLVm4IyvJgHUh4O1zk15T4HzBiz8lhPgsN5R1YukhpoXlRFZO5BWsHGKomIWveWIuvRJMy5bKd5oEFqd20McswBLbJKTfGxHjTuzlu+IbswhFRA82KjmAKydCIzwvxHQXt2r0x1fTEPkjaLro14zqFlAthnRObhvOc7euPSQgXNC/TQA6q2dpWTN0koXE/zIC5Nk2sjfA5oe0Kr57Q7bxnU2CqtgtULmHIdsjH+sO/Mux9KMvNpHiSToK6N8DmgRW2PFd93u/OedxpWmDYELkcBaAIW1Voasmr4fo4zP7tjo4bTfFTKIq4z4XOGSQr1eY4P5z3P8X/AJgWT39NveiswmUwm39o5mxYFoSgM37ZuRLxdSosWCSmkErjow2gRjJuoDN7//1fm0j1m2UiznbnnWcjZuHl5z8PBhf8Bb7fd7s0oy3oo+shK2b6QCfvYjYDTwgSVxLOeNJ2bZ6Yv4DAVNuI5QFyaOVKDn7Ocm6YtTsBoJ+xkOAfCq5nXyhVvTBU1qIwBxxPWcjkgoHyOfiG7MY62ZrqGwNzqf0BtcmBMkir848ta3pwnNV2E3exXQFyb2c3Xz2o6k5rGgC6W7cgzEJLEBypq1UQNmsXAai8YUWlJRU0oiTSrlm8ouhA4W62mljQHCklL5mf6eWoa5AY4VIJpJaUlTk1Ky3hCqRWALhbTICeAIolflaqaU4HV1GUZPCRVps3pCehiMS+kCjASJyKd3FIwXTIf0BInZAKoVDDvUDRtaDZ+RfkMrVr1WEJWUx+kbpI600/tA6vkfiQwvdBpeT86mQ+4AQpW0y8YsJr+Lt9Y8G9bbqBHhQAAAABJRU5ErkJggg==" alt="FestLift — Elevadores e Serviços" />
+    </div>
+    <div class="tagline">PLATAFORMA DIGITAL DE GESTÃO DE ELEVADORES</div>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="wrap hero-grid">
+      <div>
+        <div class="eyebrow">Para condomínios e gestores de propriedade</div>
+        <h1>O seu elevador.<br>Sempre acessível — nunca esquecido.</h1>
+        <p class="lead">
+          Substituímos as pastas de manutenção e os prazos perdidos por um painel digital: cada elevador com QR próprio, inspeções controladas automaticamente e propostas de modernização geradas por IA em minutos.
+        </p>
+        <div class="cta-row">
+          <a class="btn-signal" href="mailto:info@festlift.pt?subject=Pedido%20de%20demonstra%C3%A7%C3%A3o%20FestLift">Pedir uma demonstração</a>
+          <a class="btn-ghost" href="#como-funciona">Ver como funciona ↓</a>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-screen">
+          <div class="readout" id="readout">1</div>
+          <div class="readout-label">Painel digital do elevador</div>
+        </div>
+        <div class="panel-buttons">
+          <span class="lit">QR</span>
+          <span>IA</span>
+          <span>PT</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block alt">
+    <div class="wrap">
+      <div class="block-head">
+        <div class="eyebrow">Diretório do painel</div>
+        <h2>Tudo o que precisa de gerir um edifício com elevador, num só sítio.</h2>
+      </div>
+      <div class="directory-grid">
+        <div class="directory-item">
+          <div class="code">QR</div>
+          <div>
+            <h3>QR próprio por elevador</h3>
+            <p>Digitalize e veja estado, histórico técnico e assistência disponível — sem instalar nenhuma aplicação.</p>
+          </div>
+        </div>
+        <div class="directory-item">
+          <div class="code">IA</div>
+          <div>
+            <h3>Assistente de IA 24/7</h3>
+            <p>O seu condomínio tem sempre uma resposta técnica disponível, de dia ou de noite, para dúvidas e emergências.</p>
+          </div>
+        </div>
+        <div class="directory-item">
+          <div class="code">MO</div>
+          <div>
+            <h3>Modernização automática</h3>
+            <p>O cliente pede a proposta, a IA classifica a conformidade regulamentar (DL 320/2002 / EN 81-20) e o orçamento chega já pronto.</p>
+          </div>
+        </div>
+        <div class="directory-item">
+          <div class="code">PT</div>
+          <div>
+            <h3>Portal do condomínio</h3>
+            <p>Pedidos, orçamentos e histórico completo, num único acesso para toda a administração do edifício.</p>
+          </div>
+        </div>
+        <div class="directory-item">
+          <div class="code">NT</div>
+          <div>
+            <h3>Notificações em tempo real</h3>
+            <p>Prazos de inspeção, avarias e visitas técnicas — sem depender de memória, papel ou telefonemas.</p>
+          </div>
+        </div>
+        <div class="directory-item">
+          <div class="code">AP</div>
+          <div>
+            <h3>Acesso em qualquer telemóvel</h3>
+            <p>Instale como aplicação diretamente do navegador — sem loja de apps, sem fricção, sempre à mão.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="como-funciona">
+    <div class="wrap">
+      <div class="block-head">
+        <div class="eyebrow">Manual rápido</div>
+        <h2>Como funciona, do primeiro QR ao primeiro orçamento.</h2>
+        <p>Quatro passos — é tudo o que separa o seu edifício de uma gestão de elevadores sem prazos perdidos.</p>
+      </div>
+      <div class="rail">
+        <div class="rail-step" data-n="1">
+          <h3>Instalamos o QR em cada elevador</h3>
+          <p>Um código único é afixado na cabine ou no patamar de cada equipamento do seu edifício.</p>
+        </div>
+        <div class="rail-step" data-n="2">
+          <h3>Digitalize e aceda de imediato</h3>
+          <p>Administração e condóminos digitalizam o QR e veem estado, histórico técnico e contacto de assistência, sem login.</p>
+        </div>
+        <div class="rail-step" data-n="3">
+          <h3>Peça uma proposta pelo portal</h3>
+          <p>Quando o elevador precisar de modernização, o próprio cliente pede a proposta diretamente pelo portal FestLift.</p>
+        </div>
+        <div class="rail-step" data-n="4">
+          <h3>A IA devolve o orçamento classificado</h3>
+          <p>A nossa IA analisa a conformidade regulamentar do cenário e devolve um orçamento já classificado, pronto a aprovar.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block alt">
+    <div class="wrap">
+      <div class="block-head">
+        <div class="eyebrow">Painel de chamada</div>
+        <h2>Experimente sem compromisso.</h2>
+        <p>Aponte a câmara do telemóvel a qualquer um destes botões.</p>
+      </div>
+      <div class="qr-grid">
+        <div class="qr-card">
+          <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAANwAAADcAQMAAAAhlF3CAAAABlBMVEX///8QIztGRu5LAAAACXBIWXMAAA7EAAAOxAGVKw4bAAABfElEQVRYheWYwbGDMAxExXDwkRIohdKgNEqhBB85eFC0kkxI5jewP7o49nMOGksrCZFfMXXbZDwn3eUaVY/FjyodvODPsl3jKbMdNZmOZbOjiRC6Z741B/Oq6skLsbUnGxo/xOm8P68SwnykVpA9ufsKTRKYmmCJhAyK5VswSGDa4Lv1kr+MBMIleNZKNXmzILR8Wgfb8UGRooc5mEVHehBOlRCaZ6pWP+3XOmgE4fvViOA77Ca4Cz/3VfPJCGEWHYu+uGruCiFEBu3xQrijyKcefVwQnZmXmRLSIOjTup+EULqgRRBCGiofHJ5KjeYG+fQITSKosWavKanU45ldDRO8QqnV+2XNB4yFDqIlS6VeMGmKa8IdmkwQq0VfKnVzrzEIVDqYhiCco6s5omvjg+qGaqM+LZecy/IvTDAnsVDqNTpPd7fywT4fazQGn6HJCF3l9lQIr0S00BPJe8383pfaRwUj+jRmy+5nK4Tw1gQfyOID010//xH8DXsBHTG3VJSpU7YAAAAASUVORK5CYII=" alt="QR — Ver demonstração" />
+          <div class="qr-label">Demonstração</div>
+          <p>Veja o portal FestLift em ação, sem qualquer registo.</p>
+        </div>
+        <div class="qr-card">
+          <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAANwAAADcAQMAAAAhlF3CAAAABlBMVEX///8QIztGRu5LAAAACXBIWXMAAA7EAAAOxAGVKw4bAAABKUlEQVRYheWY0RnDIAiE2cRRGC2O5iiOkA0oB5g0/bJAT9q++PfF8zhMRHYpy+oiRz9s+IrmykkGc7fdURcdOkQnVhod9A0LRHAZzJzqbGaTFTrAzyACM3RPh595YZka36H27ngCWCGF5j1g6fGSYOzwKlje8+u9/h/GhqV00IiwNvFhgw5CguuwBYAOZm/fk9fC1B5iJxeMo4YKHUpk50KARgZDBNwYI6pxZdTQwHaCOZYjv2osy7OzmaCtsRwX53Y7ngmm4eMfLgNEgOUbHYyBFH3do6/R2hXURHBVJpilq+3JGGBtG/MoKh73rpDaBaYUgb4UanzQ6pnXh9KoFzWzvMAI13GrvTz4E8GcSFmNEaapj/stBjT4fTH3/3CF1BJBa2UnuEd9AJmwG4TSMc4JAAAAAElFTkSuQmCC" alt="QR — Falar no WhatsApp" />
+          <div class="qr-label">Falar connosco</div>
+          <p>Fale diretamente com a nossa equipa pelo WhatsApp.</p>
+        </div>
+        <div class="qr-card">
+          <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAANwAAADcAQMAAAAhlF3CAAAABlBMVEX///8QIztGRu5LAAAACXBIWXMAAA7EAAAOxAGVKw4bAAAB7ElEQVRYheWYQa7DIAxEHbFg2SPkKNyskJvlKDkCSxZR/MdjIrU9gaOPVLXlsQhkPLYR+S9DbRySezlfu2RtqftcjwhPfPLxzja114F/r51zMeFLz3zgB7ai25CadD+zXpFh1V6S6iVrw/lHh4uduBSTB2QSGFImdbwU+niL1HPOPQ96fELxJfWyDb6Vn+ANBH0sCE7A5lv5GYEgHhqS0QHj48Hj1Esa6zaCQrM6O3iEaINgsKNT1vutRINMI41OrSYThKmYyuVxEFbjerEUuQxsEGoa6yVBoaVxNRvvMjWErSye0KNBpBq9BV6mjUBDLceEXZgbP5zaFO+rw0GahyCv7FjTEJiJFl1jQtRGyWIPahHKJLEQud/KoyBsZCDp9EJT0eZOKTGhuUm2DmDW1JUJfZZW8SCicjDpYFlzxQukFBOyKLUn95qaMKHdkpCQqri9r7EX+CxEnwS9KIXUYYy0GnwhRc5XFg9a0gFElWrFqrm5xoWzNrIqFQ3XwdV6Z/to0AdsxKrUDfOwbrvnyCEhKw5KmYWoVFP53eeGg965yu19K5bMWu95kPcJyOSwQ94suYY+b5biQf6mhoSN4tdWosF5wcF+xRrFOeJBmdcxOy84pLIX1Csm9Ph8w6nF+qzD262v4H0K/B/jD2XVU6C7UeEWAAAAAElFTkSuQmCC" alt="QR — Pedir proposta" />
+          <div class="qr-label">Pedir proposta</div>
+          <p>Envie-nos os dados do seu edifício e receba uma proposta.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="wrap">
+      <div class="trust-strip">
+        <div class="trust-item"><span class="dot"></span>Manutenção certificada</div>
+        <div class="trust-item"><span class="dot"></span>Conformidade DL 320/2002 &amp; EN 81-20</div>
+        <div class="trust-item"><span class="dot"></span>Assistência técnica 24/7</div>
+        <div class="trust-item"><span class="dot"></span>Um portal por perfil: administração, técnicos e condóminos</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="wrap">
+      <div class="final-cta">
+        <h2>Pronto para deixar de perseguir prazos de inspeção?</h2>
+        <p>Marque uma demonstração de 15 minutos e mostramos o painel do seu primeiro elevador ainda esta semana.</p>
+        <a class="btn-signal" href="mailto:info@festlift.pt?subject=Pedido%20de%20demonstra%C3%A7%C3%A3o%20FestLift">Pedir uma demonstração</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="footer-grid">
+      <div>
+        <strong>FestLift — Elevadores e Serviços, Lda.</strong>
+        Av. do Parque 84B<br>
+        Rio de Mouro, Lisboa 2635-609<br>
+        NIF 515 924 741
+      </div>
+      <div>
+        <strong>Contactos</strong>
+        Escritório: <a href="tel:+351214190863">+351 214 190 863</a><br>
+        Assistência 24/7: <a href="tel:+351926380243">+351 926 380 243</a><br>
+        <a href="mailto:info@festlift.pt">info@festlift.pt</a>
+      </div>
+      <div>
+        <strong>Plataforma</strong>
+        <a href="https://festlift.pt">festlift.pt</a><br>
+        <a href="https://festlift.pt/pages/public/demo.html">Demonstração</a><br>
+        <a href="https://festlift.pt/pages/auth/login.html">Entrar no portal</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      Recebeu esta apresentação porque identificámos o seu condomínio ou empresa como potencial cliente FestLift.
+      Se preferir não receber futuras comunicações, responda a este email com "Remover" — o seu contacto é retirado de imediato.
+    </div>
+  </div>
+</footer>
+
+<script>
+  (function () {
+    var el = document.getElementById('readout');
+    if (!el) return;
+    var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var seq = ['1', '2', '3', '4', '5', 'IA'];
+    if (reduced) { el.textContent = seq[seq.length - 1]; return; }
+    var i = 0;
+    var t = setInterval(function () {
+      i++;
+      if (i >= seq.length) { clearInterval(t); return; }
+      el.textContent = seq[i];
+    }, 260);
+  })();
+</script>

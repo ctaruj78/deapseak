@@ -862,6 +862,12 @@
                                 <span id="vrmNotes"></span>
                             </div>
                         </div>
+                        <div id="vrmResolutionSection" style="display:none" class="mt-2">
+                            <div class="alert alert-success py-2 px-3 mb-0" style="font-size:.87rem">
+                                <i class="fas fa-check-circle mr-1"></i><strong>Resolução:</strong>
+                                <span id="vrmResolution"></span>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Mini tabs for supplementary info -->
@@ -1738,6 +1744,9 @@ class ServiceRequestManager {
         $('#vrmDescription').text(request.description || 'Sem descrição');
         if (request.notes) { $('#vrmNotesSection').show(); $('#vrmNotes').text(request.notes); }
         else { $('#vrmNotesSection').hide(); }
+        const resolution = request.rawData?.resolution;
+        if (resolution) { $('#vrmResolutionSection').show(); $('#vrmResolution').text(resolution); }
+        else { $('#vrmResolutionSection').hide(); }
 
         // ── Tab②: Localização ──
         $('#vrmAddress').text(request.liftAddress || 'Endereço não especificado');
