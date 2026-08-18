@@ -90,63 +90,22 @@
         .feature-box p {
             color: #cbd5e1 !important;
         }
-        .feature-box .feature-icon {
-            width: 72px;
-            height: 72px;
-            line-height: 72px;
-            border-radius: 50%;
-            background: rgba(77,166,255,0.12);
-            margin: 0 auto 15px;
-        }
         .feature-box i {
-            font-size: 1.8rem;
+            font-size: 3rem;
+            margin-bottom: 15px;
             color: #4da6ff !important;
-        }
-        .feature-box .btn-outline-primary {
-            border-width: 1px;
         }
 
         /* Stats boxes */
         .stats-box {
             text-align: center;
-            padding: 24px 15px;
-            border-radius: 10px;
+            padding: 15px;
+            border-radius: 8px;
             margin-bottom: 20px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.25);
-            transition: transform 0.25s ease, box-shadow 0.25s ease;
-        }
-        .stats-box:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 8px 28px rgba(0,0,0,0.35);
         }
         .stats-box i {
-            font-size: 2.2rem;
+            font-size: 2.5rem;
             margin-bottom: 10px;
-            opacity: 0.9;
-        }
-        .stats-box h3 {
-            font-size: 2rem;
-            font-weight: 800;
-            margin-bottom: 4px;
-        }
-        .stats-box p {
-            font-size: 0.85rem;
-            text-transform: uppercase;
-            letter-spacing: 0.04em;
-            opacity: 0.85;
-            margin-bottom: 0;
-        }
-
-        /* QR frame */
-        .qr-frame {
-            display: inline-block;
-            background: #fff;
-            padding: 16px;
-            border-radius: 12px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.35);
-        }
-        .qr-frame img {
-            display: block;
         }
 
         /* QR demo */
@@ -181,39 +140,6 @@
         }
         .bg-gradient-info {
             background: linear-gradient(135deg, #00838f 0%, #26c6da 100%) !important;
-        }
-
-        /* About highlights (compact, replaces bulky gradient blocks) */
-        .about-highlight {
-            display: flex;
-            align-items: flex-start;
-            gap: 16px;
-            background: #16294a !important;
-            border: 1px solid #1e3a5f;
-            border-radius: 8px;
-            padding: 16px;
-            margin-bottom: 14px;
-        }
-        .about-highlight-icon {
-            flex: 0 0 48px;
-            width: 48px;
-            height: 48px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
-            color: #fff !important;
-        }
-        .about-highlight h5 {
-            margin-bottom: 4px;
-            color: #f1f5f9 !important;
-            font-size: 1rem;
-        }
-        .about-highlight p {
-            margin-bottom: 0;
-            color: #94a3b8 !important;
-            font-size: 0.9rem;
         }
 
         /* Info boxes */
@@ -254,13 +180,6 @@
             background: #0f1f3d !important;
             border-top: 1px solid #1e3a5f !important;
             color: #94a3b8 !important;
-            text-align: center;
-            padding: 20px 15px;
-        }
-        .main-footer .float-right {
-            float: none !important;
-            display: block !important;
-            margin-top: 4px;
         }
         .main-footer a {
             color: #4da6ff !important;
@@ -273,67 +192,6 @@
         /* Checkmarks */
         .text-success {
             color: #4ade80 !important;
-        }
-
-        /* Hero */
-        .hero-eyebrow {
-            display: inline-block;
-            color: #4da6ff;
-            font-weight: 600;
-            letter-spacing: 0.06em;
-            text-transform: uppercase;
-            font-size: 0.85rem;
-            margin-bottom: 12px;
-        }
-        .hero-title {
-            font-size: 2.6rem;
-            font-weight: 800;
-            line-height: 1.15;
-            color: #f1f5f9 !important;
-            margin-bottom: 16px;
-        }
-        .hero-lead {
-            font-size: 1.15rem;
-            color: #94a3b8 !important;
-            margin-bottom: 28px;
-            max-width: 480px;
-        }
-        .btn-hero-cta {
-            background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%) !important;
-            border: none !important;
-            color: #fff !important;
-            padding: 14px 32px;
-            font-weight: 600;
-            border-radius: 8px;
-            box-shadow: 0 8px 24px rgba(21,101,192,0.35);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-        .btn-hero-cta:hover {
-            color: #fff !important;
-            box-shadow: 0 10px 30px rgba(21,101,192,0.5);
-            transform: translateY(-2px);
-        }
-        @media (max-width: 991px) {
-            .hero-title { font-size: 2rem; }
-        }
-
-        /* CTA band (page closer) */
-        .cta-band {
-            background: linear-gradient(135deg, #16294f 0%, #1a2f52 55%, #1565c0 140%);
-            border: 1px solid #1e3a5f;
-            border-radius: 12px;
-            padding: 56px 24px;
-        }
-        .cta-title {
-            font-size: 2rem;
-            font-weight: 800;
-            color: #f1f5f9 !important;
-            margin-bottom: 12px;
-        }
-        .cta-subtitle {
-            color: #94a3b8 !important;
-            font-size: 1.1rem;
-            margin-bottom: 0;
         }
 
         /* Buttons outline on dark */
@@ -407,23 +265,35 @@
             <div class="content">
                 <div class="container">
                     <!-- Hero Section -->
-                    <div class="hero-section row mt-5 align-items-center">
+                    <div class="row mt-5">
                         <div class="col-lg-6">
-                            <span class="hero-eyebrow">Bem-vindo ao FestLift</span>
-                            <h1 class="hero-title">Sistema inteligente de gestão de elevadores</h1>
-                            <p class="hero-lead">
-                                Solução moderna para gestão, monitorização e manutenção de elevadores
-                            </p>
-                            <a href="pages/auth/login.html" class="btn btn-hero-cta btn-lg">
-                                <i class="fas fa-sign-in-alt"></i> Entrar no sistema
-                            </a>
+                            <div class="card card-primary">
+                                <div class="card-header">
+                                    <h3 class="card-title">Bem-vindo ao FestLift</h3>
+                                </div>
+                                <div class="card-body">
+                                    <h4>Sistema inteligente de gestão de elevadores</h4>
+                                    <p class="lead">
+                                        Solução moderna para gestão, monitorização e manutenção de elevadores
+                                    </p>
+                                    <div class="mt-4">
+                                        <a href="pages/auth/login.html" class="btn btn-primary btn-lg mr-2">
+                                            <i class="fas fa-sign-in-alt"></i> Entrar no sistema
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="col-lg-6 text-center mt-4 mt-lg-0">
-                            <i class="fas fa-elevator fa-10x text-primary mb-3"></i>
-                            <div class="qr-demo-container position-relative">
-                                <span class="demo-badge">DEMO</span>
-                                <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https%3A%2F%2Fcrm.festlift.pt%2Fqr%2FLFT-DEMO-123" alt="QR código demo" class="img-fluid">
-                                <p class="mt-2 mb-0">Scaneie para demonstração</p>
+                        <div class="col-lg-6">
+                            <div class="card">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-elevator fa-10x text-primary mb-3"></i>
+                                    <div class="qr-demo-container position-relative">
+                                        <span class="demo-badge">DEMO</span>
+                                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https%3A%2F%2Fcrm.festlift.pt%2Fqr%2FLFT-DEMO-123" alt="QR código demo" class="img-fluid">
+                                        <p class="mt-2">Scaneie para demonstração</p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -464,7 +334,7 @@
                     <section id="features" class="mt-5">
                         <div class="card">
                             <div class="card-header">
-                                <h3 class="card-title"><i class="fas fa-th-large mr-2"></i>Sistemas disponíveis na aplicação</h3>
+                                <h3 class="card-title">Sistemas disponíveis na aplicação</h3>
                             </div>
                             <div class="card-body">
                                 <p class="lead mb-4">
@@ -473,50 +343,50 @@
                                 <div class="row">
                                     <div class="col-md-4">
                                         <div class="feature-box">
-                                            <div class="feature-icon"><i class="fas fa-building"></i></div>
+                                            <i class="fas fa-building"></i>
                                             <h4>Portal do Cliente</h4>
                                             <p>Acesso rápido ao histórico, estado e dados principais dos elevadores</p>
-                                            <a href="pages/auth/login.html" class="btn btn-outline-primary btn-sm">Aceder</a>
+                                            <a href="pages/auth/login.html" class="btn btn-primary btn-sm">Aceder</a>
                                         </div>
                                     </div>
                                     <div class="col-md-4">
                                         <div class="feature-box">
-                                            <div class="feature-icon"><i class="fas fa-magic"></i></div>
+                                            <i class="fas fa-magic"></i>
                                             <h4>Assistente IA</h4>
                                             <p>Assistente de voz para técnicos e administradores</p>
-                                            <a href="pages/auth/login.html" class="btn btn-outline-primary btn-sm">Aceder</a>
+                                            <a href="pages/auth/login.html" class="btn btn-primary btn-sm">Aceder</a>
                                         </div>
                                     </div>
                                     <div class="col-md-4">
                                         <div class="feature-box">
-                                            <div class="feature-icon"><i class="fas fa-vr-cardboard"></i></div>
+                                            <i class="fas fa-vr-cardboard"></i>
                                             <h4>Ajuda AR</h4>
                                             <p>Assistência em reparações através de realidade aumentada</p>
-                                            <a href="pages/auth/login.html" class="btn btn-outline-primary btn-sm">Aceder</a>
+                                            <a href="pages/auth/login.html" class="btn btn-primary btn-sm">Aceder</a>
                                         </div>
                                     </div>
                                     <div class="col-md-4">
                                         <div class="feature-box">
-                                            <div class="feature-icon"><i class="fas fa-chart-line"></i></div>
+                                            <i class="fas fa-chart-line"></i>
                                             <h4>Análise e relatórios</h4>
                                             <p>Relatórios detalhados e previsões do estado técnico</p>
-                                            <a href="pages/auth/login.html" class="btn btn-outline-primary btn-sm">Aceder</a>
+                                            <a href="pages/auth/login.html" class="btn btn-primary btn-sm">Aceder</a>
                                         </div>
                                     </div>
                                     <div class="col-md-4">
                                         <div class="feature-box">
-                                            <div class="feature-icon"><i class="fas fa-bell"></i></div>
+                                            <i class="fas fa-bell"></i>
                                             <h4>Notificações</h4>
                                             <p>Notificações personalizadas para cada tipo de utilizador</p>
-                                            <a href="pages/auth/login.html" class="btn btn-outline-primary btn-sm">Aceder</a>
+                                            <a href="pages/auth/login.html" class="btn btn-primary btn-sm">Aceder</a>
                                         </div>
                                     </div>
                                     <div class="col-md-4">
                                         <div class="feature-box">
-                                            <div class="feature-icon"><i class="fas fa-mobile-alt"></i></div>
+                                            <i class="fas fa-mobile-alt"></i>
                                             <h4>Acesso móvel</h4>
                                             <p>Aplicação completa para iOS e Android</p>
-                                            <a href="pages/auth/login.html" class="btn btn-outline-primary btn-sm">Aceder</a>
+                                            <a href="pages/auth/login.html" class="btn btn-primary btn-sm">Aceder</a>
                                         </div>
                                     </div>
                                 </div>
@@ -528,7 +398,7 @@
                     <section id="qr-system" class="mt-5">
                         <div class="card">
                             <div class="card-header bg-gradient-primary">
-                                <h3 class="card-title text-white"><i class="fas fa-qrcode mr-2"></i>Sistema QR</h3>
+                                <h3 class="card-title text-white">Sistema QR</h3>
                             </div>
                             <div class="card-body">
                                 <div class="row align-items-center">
@@ -542,10 +412,8 @@
                                         </ul>
                                     </div>
                                     <div class="col-md-5 text-center mt-3 mt-md-0">
-                                        <div class="qr-frame">
-                                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=https%3A%2F%2Fcrm.festlift.pt%2Fqr%2FLFT-DEMO-123"
-                                                 alt="QR de demonstração" class="img-fluid" style="max-width:180px;">
-                                        </div>
+                                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=https%3A%2F%2Fcrm.festlift.pt%2Fqr%2FLFT-DEMO-123"
+                                             alt="QR de demonstração" class="img-fluid" style="max-width:180px;">
                                         <p class="text-muted mt-2 mb-0">Exemplo de QR de elevador no FestLift</p>
                                     </div>
                                 </div>
@@ -557,7 +425,7 @@
                     <section id="install-app" class="mt-5">
                         <div class="card">
                             <div class="card-header bg-gradient-success">
-                                <h3 class="card-title text-white"><i class="fas fa-mobile-alt mr-2"></i>Instalar aplicação</h3>
+                                <h3 class="card-title text-white">Instalar aplicação</h3>
                             </div>
                             <div class="card-body">
                                 <div class="row align-items-center">
@@ -582,10 +450,8 @@
                                         </div>
                                     </div>
                                     <div class="col-md-5 text-center mt-3 mt-md-0">
-                                        <div class="qr-frame">
-                                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=https%3A%2F%2Fcrm.festlift.pt%2F%3Finstall%3D1"
-                                                 alt="QR para instalar a aplicação FestLift" class="img-fluid" style="max-width:180px;">
-                                        </div>
+                                        <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=https%3A%2F%2Fcrm.festlift.pt%2F%3Finstall%3D1"
+                                             alt="QR para instalar a aplicação FestLift" class="img-fluid" style="max-width:180px;">
                                         <p class="text-muted mt-2 mb-0">Digitalize com a câmara do telemóvel/tablet</p>
                                     </div>
                                 </div>
@@ -596,8 +462,8 @@
                     <!-- About Us Section -->
                     <section id="about" class="mt-5">
                         <div class="card">
-                            <div class="card-header">
-                                <h3 class="card-title"><i class="fas fa-building mr-2"></i>Sobre Nós</h3>
+                            <div class="card-header bg-gradient-info">
+                                <h3 class="card-title text-white">Sobre Nós</h3>
                             </div>
                             <div class="card-body">
                                 <div class="row">
@@ -624,23 +490,23 @@
                                         </ul>
                                     </div>
                                     <div class="col-md-4">
-                                        <div class="about-highlight">
-                                            <div class="about-highlight-icon bg-gradient-primary"><i class="fas fa-building"></i></div>
-                                            <div>
+                                        <div class="info-box bg-gradient-primary">
+                                            <div class="info-box-content text-center text-white">
+                                                <i class="fas fa-building fa-5x mb-3"></i>
                                                 <h5>FestLift Portugal</h5>
                                                 <p>Manutenção profissional de elevadores</p>
                                             </div>
                                         </div>
-                                        <div class="about-highlight">
-                                            <div class="about-highlight-icon bg-gradient-success"><i class="fas fa-tools"></i></div>
-                                            <div>
+                                        <div class="info-box bg-gradient-success mt-3">
+                                            <div class="info-box-content text-center text-white">
+                                                <i class="fas fa-tools fa-5x mb-3"></i>
                                                 <h5>Desenvolvimento interno</h5>
                                                 <p>Para facilitar o serviço ao cliente</p>
                                             </div>
                                         </div>
-                                        <div class="about-highlight">
-                                            <div class="about-highlight-icon bg-gradient-warning"><i class="fas fa-headset"></i></div>
-                                            <div>
+                                        <div class="info-box bg-gradient-warning mt-3">
+                                            <div class="info-box-content text-center text-white">
+                                                <i class="fas fa-headset fa-5x mb-3"></i>
                                                 <h5>Suporte 24/7</h5>
                                                 <p>Sempre em contacto com os clientes</p>
                                             </div>
@@ -655,7 +521,7 @@
                     <section id="contact" class="mt-5">
                         <div class="card">
                             <div class="card-header bg-gradient-success">
-                                <h3 class="card-title text-white"><i class="fas fa-envelope mr-2"></i>Contactos</h3>
+                                <h3 class="card-title text-white">Contactos</h3>
                             </div>
                             <div class="card-body">
                                 <div class="row">
@@ -758,16 +624,20 @@
 
                     <!-- Call to Action -->
                     <section class="mt-5">
-                        <div class="cta-band text-center">
-                            <h2 class="cta-title">Pronto para começar?</h2>
-                            <p class="cta-subtitle">Entre no sistema moderno de gestão de elevadores!</p>
-                            <div class="mt-4">
-                                <a href="pages/auth/login.html" class="btn btn-hero-cta btn-lg mr-3">
-                                    <i class="fas fa-sign-in-alt"></i> Entrar no sistema
-                                </a>
-                                <a href="#contact" class="btn btn-outline-light btn-lg">
-                                    <i class="fas fa-info-circle"></i> Contacte-nos
-                                </a>
+                        <div class="card card-primary">
+                            <div class="card-header">
+                                <h3 class="card-title">Pronto para começar?</h3>
+                            </div>
+                            <div class="card-body text-center">
+                                <h4>Entre no sistema moderno de gestão de elevadores!</h4>
+                                <div class="mt-4">
+                                    <a href="pages/auth/login.html" class="btn btn-success btn-lg mr-3">
+                                        <i class="fas fa-sign-in-alt"></i> Entrar no sistema
+                                    </a>
+                                    <a href="#contact" class="btn btn-outline-light btn-lg">
+                                        <i class="fas fa-info-circle"></i> Contacte-nos
+                                    </a>
+                                </div>
                             </div>
                         </div>
                     </section>
