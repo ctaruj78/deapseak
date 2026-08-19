@@ -859,6 +859,16 @@ exports.importPendentes = async (req, res) => {
         // Pendentes lists ONLY outstanding invoices per client.
         // Invoices in LiftInvoice for the same client that are NOT in the
         // Pendentes list have been paid — update their status accordingly.
+        //
+        // Pendentes CSV gives bare doc numbers ("M/979") while LiftInvoice.invoiceNo
+        // (synced from SAF-T XML) carries the document-type prefix ("FT M/979").
+        // Compare on the trailing series/number token so both sides line up regardless
+        // of prefix — a raw string match here previously caused every still-outstanding
+        // invoice to look "not in Pendentes" and get wrongly flipped to paid.
+        const coreInvoiceNo = (s) => {
+            const m = String(s || '').trim().match(/(\S+\/\S+)$/);
+            return m ? m[1] : String(s || '').trim();
+        };
         const OVERDUE_DAYS_P = parseInt(process.env.SAFT_OVERDUE_DAYS) || 30;
         let invoicesSynced = 0;
         for (const debtor of debtors) {
@@ -870,10 +880,10 @@ exports.importPendentes = async (req, res) => {
             if (!clientQuery) continue;
 
             const outstandingNos = new Set(
-                debtor.invoices.map(i => (i.invoiceNo || '').trim()).filter(Boolean)
+                debtor.invoices.map(i => coreInvoiceNo(i.invoiceNo)).filter(Boolean)
             );
             const pendentesMap = {};
-            debtor.invoices.forEach(i => { if (i.invoiceNo) pendentesMap[i.invoiceNo.trim()] = i; });
+            debtor.invoices.forEach(i => { if (i.invoiceNo) pendentesMap[coreInvoiceNo(i.invoiceNo)] = i; });
 
             const existing = await LiftInvoice.find(
                 clientQuery,
@@ -883,7 +893,7 @@ exports.importPendentes = async (req, res) => {
             const syncOps = [];
             for (const inv of existing) {
                 if (inv.status === 'cancelled') continue;
-                const no = (inv.invoiceNo || '').trim();
+                const no = coreInvoiceNo(inv.invoiceNo);
 
                 if (outstandingNos.has(no)) {
                     // Invoice is still outstanding in Pendentes — refresh amounts
