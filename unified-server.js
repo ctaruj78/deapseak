@@ -5266,22 +5266,37 @@ app.delete('/api/lifts/:id/contract', authenticateToken, requireRole('admin', 'd
 });
 
 // POST /api/lifts/:id/contract/email - надіслати контракт по email
-app.post('/api/lifts/:id/contract/email', authenticateToken, emailLimiter, requireRole('admin', 'dispatcher'), async (req, res) => {
+app.post('/api/lifts/:id/contract/email', authenticateToken, emailLimiter, async (req, res) => {
     try {
         const { ObjectId } = require('mongodb');
         const liftId = new ObjectId(req.params.id);
         const { email } = req.body;
 
-        if (!email) return res.status(400).json({ success: false, message: 'Email є обов\'язковим' });
+        if (!email) return res.status(400).json({ success: false, message: 'Email é obrigatório' });
 
-        const lift = await db.collection('lifts').findOne({ _id: liftId }, { projection: { maintenanceContract: 1, municipalNumber: 1, 'client.email': 1 } });
+        const lift = await db.collection('lifts').findOne({ _id: liftId }, { projection: { maintenanceContract: 1, municipalNumber: 1, client: 1, clientEmail: 1 } });
         if (!lift) return res.status(404).json({ success: false, message: 'Elevador não encontrado' });
+
+        // 🔐 Cliente só pode reenviar o contrato dos seus próprios elevadores — admin/dispatcher veem todos
+        if (req.user.role === 'client') {
+            const userId = (req.user.id || req.user.userId || '').toString();
+            let clientObjId = null;
+            try { clientObjId = new ObjectId(userId); } catch (_) {}
+            const liftClientId = lift.client?.toString();
+            const liftClientEmail = (lift.clientEmail || '').toLowerCase();
+            const userEmail = (req.user.email || '').toLowerCase();
+            const isOwner = liftClientId === userId ||
+                (clientObjId && liftClientId === clientObjId.toString()) ||
+                (liftClientEmail && liftClientEmail === userEmail);
+            if (!isOwner) return res.status(403).json({ success: false, message: 'Acesso negado' });
+        } else if (!['admin', 'dispatcher'].includes(req.user.role)) {
+            return res.status(403).json({ success: false, message: 'Acesso negado' });
+        }
 
         const contract = lift.maintenanceContract;
         if (!contract?.contractFile) return res.status(404).json({ success: false, message: 'Contrato não carregado' });
 
-        const path = require('path');
-        const filePath = contract.path || path.join('/workspaces/deapseak', contract.contractFile);
+        const filePath = contract.path || path.join(__dirname, contract.contractFile);
 
         const nodemailer = require('nodemailer');
         const transporter = nodemailer.createTransport({
@@ -5755,6 +5770,10 @@ app.delete('/api/lifts/:id/inspection-report/:index', authenticateToken, require
 // POST /api/lifts/:id/inspection-report/:index/attach-pdf - прив'язати PDF до існуючого звіту
 app.post('/api/lifts/:id/inspection-report/:index/attach-pdf', authenticateToken, upload.single('pdfFile'), async (req, res) => {
     try {
+        // 🔐 Тільки admin, dispatcher, technician можуть прикріпляти звіти (як у sibling endpoint вище)
+        if (req.user.role === 'client') {
+            return res.status(403).json({ success: false, message: 'Clientes não podem adicionar relatórios de inspeção' });
+        }
         const { ObjectId } = require('mongodb');
         const liftId = new ObjectId(req.params.id);
         const idx = parseInt(req.params.index);
@@ -5764,6 +5783,14 @@ app.post('/api/lifts/:id/inspection-report/:index/attach-pdf', authenticateToken
         }
         if (!req.file) {
             return res.status(400).json({ success: false, message: 'Ficheiro não carregado' });
+        }
+
+        const existingLift = await db.collection('lifts').findOne({ _id: liftId }, { projection: { inspectionHistory: 1 } });
+        if (!existingLift) {
+            return res.status(404).json({ success: false, message: 'Elevador não encontrado' });
+        }
+        if (idx >= (existingLift.inspectionHistory || []).length) {
+            return res.status(404).json({ success: false, message: 'Relatório não encontrado' });
         }
 
         const fileUrl = `/uploads/pdfs/${req.file.filename}`;
@@ -14017,15 +14044,41 @@ app.post('/api/send-email', authenticateToken, emailLimiter, async (req, res) =>
 });
 
 // POST /api/email/send-inspection-report - Відправити inspection report
-app.post('/api/email/send-inspection-report', authenticateToken, emailLimiter, requireRole('admin', 'dispatcher', 'technician'), async (req, res) => {
+app.post('/api/email/send-inspection-report', authenticateToken, emailLimiter, async (req, res) => {
     try {
-        const { clientEmail, reportData } = req.body;
-        
+        const { clientEmail, reportData, liftId } = req.body;
+
         if (!clientEmail || !reportData) {
             return res.status(400).json({
                 success: false,
                 error: 'Email e dados do relatório são obrigatórios'
             });
+        }
+
+        // 🔐 Cliente só pode reencaminhar relatórios dos seus próprios elevadores — admin/dispatcher/technician sem restrição
+        if (req.user.role === 'client') {
+            if (!liftId) {
+                return res.status(400).json({ success: false, error: 'liftId é obrigatório' });
+            }
+            const { ObjectId } = require('mongodb');
+            let liftObjId;
+            try { liftObjId = new ObjectId(liftId); } catch (_e) {
+                return res.status(400).json({ success: false, error: 'liftId inválido' });
+            }
+            const lift = await db.collection('lifts').findOne({ _id: liftObjId }, { projection: { client: 1, clientEmail: 1 } });
+            if (!lift) return res.status(404).json({ success: false, error: 'Elevador não encontrado' });
+            const userId = (req.user.id || req.user.userId || '').toString();
+            let clientObjId = null;
+            try { clientObjId = new ObjectId(userId); } catch (_e) {}
+            const liftClientId = lift.client?.toString();
+            const liftClientEmail = (lift.clientEmail || '').toLowerCase();
+            const userEmail = (req.user.email || '').toLowerCase();
+            const isOwner = liftClientId === userId ||
+                (clientObjId && liftClientId === clientObjId.toString()) ||
+                (liftClientEmail && liftClientEmail === userEmail);
+            if (!isOwner) return res.status(403).json({ success: false, error: 'Acesso negado' });
+        } else if (!['admin', 'dispatcher', 'technician'].includes(req.user.role)) {
+            return res.status(403).json({ success: false, error: 'Acesso negado' });
         }
 
         const nodemailer = require('nodemailer');
@@ -14060,6 +14113,19 @@ app.post('/api/email/send-inspection-report', authenticateToken, emailLimiter, r
         }
         violationsHTML += '</ul>';
 
+        // Anexa o PDF original do relatório, se existir — resolvido apenas por
+        // basename dentro de uploads/pdfs (reportData vem do cliente, nunca confiar no caminho completo).
+        const rawFileRef = reportData.fileUrl || reportData.reportFile || null;
+        let attachments;
+        if (rawFileRef) {
+            const fsSync = require('fs');
+            const safeName = path.basename(String(rawFileRef));
+            const candidatePath = path.join(__dirname, 'uploads', 'pdfs', safeName);
+            if (fsSync.existsSync(candidatePath)) {
+                attachments = [{ filename: safeName, path: candidatePath }];
+            }
+        }
+
         const mailOptions = {
             from: process.env.EMAIL_FROM,
             to: clientEmail,
@@ -14069,6 +14135,7 @@ app.post('/api/email/send-inspection-report', authenticateToken, emailLimiter, r
                     <h2 style="color: #007bff;">📋 Relatório de Inspeção</h2>
                     <p>Segue o relatório de inspeção detalhado:</p>
                     ${violationsHTML}
+                    ${attachments ? '<p><strong>O relatório PDF original encontra-se em anexo.</strong></p>' : ''}
                     <hr>
                     <p style="color: #666; font-size: 12px;">
                         Este é um email automático. Para mais informações, contacte FestLift.
@@ -14076,9 +14143,10 @@ app.post('/api/email/send-inspection-report', authenticateToken, emailLimiter, r
                 </div>
             `
         };
+        if (attachments) mailOptions.attachments = attachments;
 
         await transporter.sendMail(mailOptions);
-        
+
         console.log(`✅ Inspection report sent to ${clientEmail}`);
         res.json({ success: true, message: 'Relatório enviado com sucesso' });
     } catch (error) {

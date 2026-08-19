@@ -1026,14 +1026,18 @@ class LiftsManager {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ clientEmail: email, reportData: report })
+            body: JSON.stringify({
+                clientEmail: email,
+                reportData: report,
+                liftId: this.currentLift?._id || this.currentLift?.id || this._clientLiftId || ''
+            })
         })
         .then(r => r.json())
         .then(result => {
             if (result.success) {
                 toastr.success(`✅ Relatório enviado com sucesso para ${email}`);
             } else {
-                toastr.error('❌ Erro ao enviar: ' + (result.message || 'Erro desconhecido'));
+                toastr.error('❌ Erro ao enviar: ' + (result.error || result.message || 'Erro desconhecido'));
             }
         })
         .catch(e => toastr.error('❌ Erro: ' + e.message));

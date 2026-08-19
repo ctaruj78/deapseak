@@ -169,9 +169,9 @@ class UnifiedAnalyticsEngine {
             lifts: {
                 raw: lifts,
                 total: lifts.length,
-                active: lifts.filter(l => l.status === 'active').length,
-                maintenance: lifts.filter(l => l.status === 'maintenance').length,
-                offline: lifts.filter(l => l.status === 'offline').length,
+                active: lifts.filter(l => l.status === 'operational' || l.status === 'active' || !l.status).length,
+                maintenance: lifts.filter(l => l.status === 'maintenance' || l.status === 'repair').length,
+                offline: lifts.filter(l => l.status === 'inactive' || l.status === 'out-of-service' || l.status === 'broken' || l.status === 'offline').length,
                 locationGroups: this.groupByLocation(lifts)
             },
             
@@ -744,28 +744,28 @@ class UnifiedAnalyticsEngine {
 
     getScansToday(scans) {
         const today = new Date().toDateString();
-        return scans.filter(scan => 
-            scan.timestamp && 
-            new Date(scan.timestamp).toDateString() === today
+        return scans.filter(scan =>
+            scan.scannedAt &&
+            new Date(scan.scannedAt).toDateString() === today
         ).length;
     }
 
     getScansThisWeek(scans) {
         const weekAgo = new Date();
         weekAgo.setDate(weekAgo.getDate() - 7);
-        return scans.filter(scan => 
-            scan.timestamp && 
-            new Date(scan.timestamp) > weekAgo
+        return scans.filter(scan =>
+            scan.scannedAt &&
+            new Date(scan.scannedAt) > weekAgo
         ).length;
     }
 
     getTopQRUsers(scans) {
         const userCounts = {};
         scans.forEach(scan => {
-            const user = scan.user || 'Anónimo';
+            const user = scan.scannedBy || scan.username || 'Anónimo';
             userCounts[user] = (userCounts[user] || 0) + 1;
         });
-        
+
         return Object.entries(userCounts)
             .map(([name, count]) => ({ name, count }))
             .sort((a, b) => b.count - a.count)
@@ -775,14 +775,14 @@ class UnifiedAnalyticsEngine {
     getQRTimeDistribution(scans) {
         const hours = Array(24).fill(0);
         const labels = Array(24).fill(0).map((_, i) => `${i}:00`);
-        
+
         scans.forEach(scan => {
-            if (scan.timestamp) {
-                const hour = new Date(scan.timestamp).getHours();
+            if (scan.scannedAt) {
+                const hour = new Date(scan.scannedAt).getHours();
                 hours[hour]++;
             }
         });
-        
+
         return { labels, data: hours };
     }
 
@@ -804,50 +804,61 @@ class UnifiedAnalyticsEngine {
 
     generateOverviewData() {
         const labels = [];
+        const dayKeys = [];
         for (let i = 6; i >= 0; i--) {
             const date = new Date();
             date.setDate(date.getDate() - i);
             labels.push(date.toLocaleDateString('pt-PT', { weekday: 'short' }));
+            dayKeys.push(date.toDateString());
         }
-        const zeros = Array(7).fill(0);
-        return { labels, liftsActivity: zeros, qrActivity: zeros, maintenanceActivity: zeros };
-    }
 
-    async loadOverviewDataFromAPI() {
-        try {
-            const token = localStorage.getItem('liftmanager_jwt') || sessionStorage.getItem('liftmanager_jwt') || localStorage.getItem('authToken');
-            if (!token) return;
-            const res = await fetch('/api/qr/history?limit=500', { headers: { 'Authorization': `Bearer ${token}` } });
-            if (!res.ok) return;
-            const { data: scans } = await res.json();
-            if (!scans || !scans.length) return;
+        const qrActivity = Array(7).fill(0);
+        ((this.data.qr && this.data.qr.raw) || []).forEach(scan => {
+            if (!scan.scannedAt) return;
+            const idx = dayKeys.indexOf(new Date(scan.scannedAt).toDateString());
+            if (idx !== -1) qrActivity[idx]++;
+        });
 
-            const dayMap = {};
-            for (let i = 6; i >= 0; i--) {
-                const d = new Date(); d.setDate(d.getDate() - i);
-                dayMap[d.toDateString()] = 0;
-            }
-            scans.forEach(s => {
-                const k = new Date(s.scannedAt || s.createdAt || s.timestamp).toDateString();
-                if (k in dayMap) dayMap[k]++;
-            });
+        const maintenanceActivity = Array(7).fill(0);
+        ((this.data.maintenance && this.data.maintenance.raw) || []).forEach(req => {
+            if (req.status !== 'completed') return;
+            const raw = req.completedAt || req.updatedAt || req.createdAt;
+            if (!raw) return;
+            const idx = dayKeys.indexOf(new Date(raw).toDateString());
+            if (idx !== -1) maintenanceActivity[idx]++;
+        });
 
-            if (this.charts.overview) {
-                this.charts.overview.data.datasets[1].data = Object.values(dayMap);
-                this.charts.overview.update();
-            }
-        } catch (e) { /* silent */ }
+        // Não existe fonte de dados real para "atividade dos elevadores"
+        // (sem telemetria/uso registado por elevador) — mantido a zero.
+        const liftsActivity = Array(7).fill(0);
+
+        return { labels, liftsActivity, qrActivity, maintenanceActivity };
     }
 
     generateMaintenanceTimelineData() {
         const labels = [];
+        const dayKeys = [];
         for (let i = 29; i >= 0; i--) {
             const date = new Date();
             date.setDate(date.getDate() - i);
             labels.push(date.toLocaleDateString('pt-PT', { day: 'numeric', month: 'short' }));
+            dayKeys.push(date.toDateString());
         }
-        const zeros = Array(30).fill(0);
-        return { labels, planned: zeros, emergency: zeros };
+        const planned = Array(30).fill(0);
+        const emergency = Array(30).fill(0);
+        const requests = (this.data.maintenance && this.data.maintenance.raw) || [];
+        requests.forEach(r => {
+            const raw = r.createdAt || r.scheduledDate;
+            if (!raw) return;
+            const idx = dayKeys.indexOf(new Date(raw).toDateString());
+            if (idx === -1) return;
+            if (r.type === 'emergency' || r.priority === 'emergency' || r.priority === 'urgent') {
+                emergency[idx]++;
+            } else {
+                planned[idx]++;
+            }
+        });
+        return { labels, planned, emergency };
     }
 
     generatePredictions() {
@@ -1555,13 +1566,34 @@ class UnifiedAnalyticsEngine {
         const ctx = document.getElementById('inspections-chart');
         if (!ctx) return;
 
+        const existing = Chart.getChart(ctx);
+        if (existing) existing.destroy();
+
+        const lifts = (this.data.lifts && this.data.lifts.raw) || [];
+        const labels = [];
+        const dayMap = {};
+        for (let i = 6; i >= 0; i--) {
+            const date = new Date();
+            date.setDate(date.getDate() - i);
+            labels.push(date.toLocaleDateString('pt-PT', { weekday: 'short' }));
+            dayMap[date.toDateString()] = 0;
+        }
+        lifts.forEach(lift => {
+            (lift.inspectionHistory || []).forEach(entry => {
+                const raw = entry.inspectionDate || entry.date;
+                if (!raw) return;
+                const key = new Date(raw).toDateString();
+                if (key in dayMap) dayMap[key]++;
+            });
+        });
+
         new Chart(ctx, {
             type: 'line',
             data: {
-                labels: ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'],
+                labels,
                 datasets: [{
                     label: 'Inspeções realizadas',
-                    data: [0, 0, 0, 0, 0, 0, 0],
+                    data: Object.values(dayMap),
                     borderColor: 'rgba(0, 123, 255, 1)',
                     backgroundColor: 'rgba(0, 123, 255, 0.1)',
                     tension: 0.4
@@ -1581,12 +1613,25 @@ class UnifiedAnalyticsEngine {
         const ctx = document.getElementById('inspection-results-chart');
         if (!ctx) return;
 
+        const existing = Chart.getChart(ctx);
+        if (existing) existing.destroy();
+
+        const lifts = (this.data.lifts && this.data.lifts.raw) || [];
+        let success = 0, repair = 0, critical = 0;
+        lifts.forEach(lift => {
+            (lift.inspectionHistory || []).forEach(entry => {
+                if (entry.status === 'passed' || entry.status === 'completed') success++;
+                else if (entry.status === 'conditional') repair++;
+                else if (entry.status === 'failed') critical++;
+            });
+        });
+
         new Chart(ctx, {
             type: 'doughnut',
             data: {
                 labels: ['Com sucesso', 'Necessita reparação', 'Crítico'],
                 datasets: [{
-                    data: [0, 0, 0],
+                    data: [success, repair, critical],
                     backgroundColor: [
                         'rgba(40, 167, 69, 0.8)',
                         'rgba(255, 193, 7, 0.8)',
