@@ -70,11 +70,33 @@
                     </button>
                 </div>
 
-                <div class="btn-group mb-3" role="group" id="platformFilter">
-                    <button class="btn btn-outline-secondary active" data-platform="">Todos</button>
-                    <button class="btn btn-outline-secondary" data-platform="olx">OLX</button>
-                    <button class="btn btn-outline-secondary" data-platform="imovirtual">Imovirtual</button>
-                    <button class="btn btn-outline-secondary" data-platform="customjusto">CustoJusto</button>
+                <div class="d-flex flex-wrap align-items-center mb-3" style="gap: .75rem;">
+                    <div class="btn-group" role="group" id="platformFilter">
+                        <button class="btn btn-outline-secondary active" data-platform="">Todos</button>
+                        <button class="btn btn-outline-secondary" data-platform="olx">OLX</button>
+                        <button class="btn btn-outline-secondary" data-platform="imovirtual">Imovirtual</button>
+                        <button class="btn btn-outline-secondary" data-platform="customjusto">CustoJusto</button>
+                    </div>
+                    <div class="input-group" style="max-width: 260px;">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text"><i class="fas fa-map-marker-alt"></i></span>
+                        </div>
+                        <input type="text" class="form-control" id="zoneFilter" placeholder="Filtrar por zona (ex: Lisboa)">
+                    </div>
+                    <div class="input-group" style="max-width: 260px;">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text"><i class="fas fa-sort"></i></span>
+                        </div>
+                        <select class="form-control" id="sortSelect">
+                            <option value="">Ordenar: mais recente</option>
+                            <option value="price:1">Preço: menor para maior</option>
+                            <option value="price:-1">Preço: maior para menor</option>
+                            <option value="location:1">Localização: A-Z</option>
+                            <option value="location:-1">Localização: Z-A</option>
+                            <option value="postedAt:-1">Publicado: mais recente</option>
+                            <option value="postedAt:1">Publicado: mais antigo</option>
+                        </select>
+                    </div>
                 </div>
 
                 <div class="card">
@@ -84,9 +106,9 @@
                                 <tr>
                                     <th>Fonte</th>
                                     <th>Título</th>
-                                    <th>Preço</th>
-                                    <th>Localização</th>
-                                    <th>Publicado</th>
+                                    <th class="sortable-col" data-sort="price" style="cursor:pointer;">Preço <i class="fas fa-sort text-muted"></i></th>
+                                    <th class="sortable-col" data-sort="location" style="cursor:pointer;">Localização <i class="fas fa-sort text-muted"></i></th>
+                                    <th class="sortable-col" data-sort="postedAt" style="cursor:pointer;">Publicado <i class="fas fa-sort text-muted"></i></th>
                                     <th></th>
                                 </tr>
                             </thead>
@@ -120,6 +142,10 @@ function formatDate(dateStr) {
 
 const PLATFORM_LABELS = { olx: 'OLX', imovirtual: 'Imovirtual', customjusto: 'CustoJusto' };
 let currentPlatform = '';
+let allListings = [];
+let zoneQuery = '';
+let sortKey = null;
+let sortDir = 1; // 1 = asc, -1 = desc
 
 async function loadListings() {
     const tbody = document.getElementById('listingsBody');
@@ -130,27 +156,54 @@ async function loadListings() {
         const data = await res.json();
         if (!res.ok) throw new Error(data.message || 'Erro ao carregar');
 
-        const listings = data.listings || [];
-        if (!listings.length) {
-            tbody.innerHTML = '<tr><td colspan="6" class="text-center text-muted py-4">Sem anúncios ainda — o scraper corre a cada 15 min.</td></tr>';
-            return;
-        }
-
-        const oneHourAgo = Date.now() - 60 * 60 * 1000;
-        tbody.innerHTML = listings.map(l => `
-            <tr class="listing-row ${new Date(l.firstSeenAt).getTime() > oneHourAgo ? 'is-new' : ''}">
-                <td><span class="badge badge-secondary">${PLATFORM_LABELS[l.platform] || l.platform}</span></td>
-                <td>${l.title || '—'}</td>
-                <td class="price-cell">${formatPrice(l.price)}</td>
-                <td>${l.location || '—'}</td>
-                <td>${formatDate(l.postedAt)}</td>
-                <td><a href="${l.url}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-primary"><i class="fas fa-external-link-alt"></i></a></td>
-            </tr>
-        `).join('');
+        allListings = data.listings || [];
+        renderListings();
     } catch (err) {
         console.error('realestate listings load failed', err);
         tbody.innerHTML = '<tr><td colspan="6" class="text-center text-danger py-4">Erro ao carregar anúncios. Sessão expirada?</td></tr>';
     }
+}
+
+function renderListings() {
+    const tbody = document.getElementById('listingsBody');
+
+    let listings = allListings;
+    if (zoneQuery) {
+        const q = zoneQuery.toLowerCase();
+        listings = listings.filter(l => (l.location || '').toLowerCase().includes(q));
+    }
+
+    if (!listings.length) {
+        const msg = allListings.length
+            ? 'Nenhum anúncio corresponde ao filtro de zona.'
+            : 'Sem anúncios ainda — o scraper corre a cada 15 min.';
+        tbody.innerHTML = `<tr><td colspan="6" class="text-center text-muted py-4">${msg}</td></tr>`;
+        return;
+    }
+
+    if (sortKey) {
+        listings = [...listings].sort((a, b) => {
+            let va = a[sortKey], vb = b[sortKey];
+            if (sortKey === 'price') { va = va ?? -Infinity; vb = vb ?? -Infinity; }
+            else if (sortKey === 'postedAt') { va = va ? new Date(va).getTime() : -Infinity; vb = vb ? new Date(vb).getTime() : -Infinity; }
+            else { va = (va || '').toLowerCase(); vb = (vb || '').toLowerCase(); }
+            if (va < vb) return -1 * sortDir;
+            if (va > vb) return 1 * sortDir;
+            return 0;
+        });
+    }
+
+    const oneHourAgo = Date.now() - 60 * 60 * 1000;
+    tbody.innerHTML = listings.map(l => `
+        <tr class="listing-row ${new Date(l.firstSeenAt).getTime() > oneHourAgo ? 'is-new' : ''}">
+            <td><span class="badge badge-secondary">${PLATFORM_LABELS[l.platform] || l.platform}</span></td>
+            <td>${l.title || '—'}</td>
+            <td class="price-cell">${formatPrice(l.price)}</td>
+            <td>${l.location || '—'}</td>
+            <td>${formatDate(l.postedAt)}</td>
+            <td><a href="${l.url}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-primary"><i class="fas fa-external-link-alt"></i></a></td>
+        </tr>
+    `).join('');
 }
 
 document.getElementById('platformFilter').addEventListener('click', (e) => {
@@ -160,6 +213,36 @@ document.getElementById('platformFilter').addEventListener('click', (e) => {
     document.querySelectorAll('#platformFilter button').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     loadListings();
+});
+
+document.getElementById('zoneFilter').addEventListener('input', (e) => {
+    zoneQuery = e.target.value.trim();
+    renderListings();
+});
+
+function applySort(key, dir) {
+    sortKey = key || null;
+    sortDir = dir;
+    document.querySelectorAll('#listingsTable .sortable-col i').forEach(i => i.className = 'fas fa-sort text-muted');
+    if (sortKey) {
+        const th = document.querySelector(`#listingsTable .sortable-col[data-sort="${sortKey}"]`);
+        if (th) th.querySelector('i').className = sortDir === 1 ? 'fas fa-sort-up' : 'fas fa-sort-down';
+    }
+    renderListings();
+}
+
+document.getElementById('sortSelect').addEventListener('change', (e) => {
+    const [key, dir] = e.target.value ? e.target.value.split(':') : [null, 1];
+    applySort(key, Number(dir) || 1);
+});
+
+document.querySelectorAll('#listingsTable .sortable-col').forEach(th => {
+    th.addEventListener('click', () => {
+        const key = th.dataset.sort;
+        const dir = (sortKey === key) ? sortDir * -1 : 1;
+        document.getElementById('sortSelect').value = `${key}:${dir}`;
+        applySort(key, dir);
+    });
 });
 
 loadListings();
