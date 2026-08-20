@@ -464,8 +464,10 @@ class EnhancedLiftModal {
                     if (v) return v;
                     return this.editMunicipalNumber || '';
                 }
-                // В режимі редагування public-пріоритетом лишається збережений номер
-                if (this.currentLiftId && this.editMunicipalNumber) return this.editMunicipalNumber;
+                // В режимі редагування public-пріоритетом лишається збережений номер,
+                // АЛЕ якщо це ще плейсхолдер "PENDENTE-..." — беремо те, що ввів користувач
+                const _editNumIsPending = (this.editMunicipalNumber || '').startsWith('PENDENTE-');
+                if (this.currentLiftId && this.editMunicipalNumber && !_editNumIsPending) return this.editMunicipalNumber;
                 if (v) return v;
                 // Try dynamic container (new tab design)
                 const dyn = document.querySelector('#eLiftRowsContainer input[data-elift-idx="1"]');
