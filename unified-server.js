@@ -4179,13 +4179,17 @@ app.post('/api/lifts', authenticateToken, async (req, res) => {
             }
         }
         
-        // 🏷️ АВТОМАТИЧНА ГЕНЕРАЦІЯ QR КОДУ
+        // 🏷️ АВТОМАТИЧНА ГЕНЕРАЦІЯ QR КОДУ — não gera para números municipais ainda
+        // pendentes ("PENDENTE-..."), só quando o número real for atribuído (via PUT depois)
         const municipalNumber = req.body.municipalNumber || '';
-        const qrCode = municipalNumber 
-            ? `LIFT-${municipalNumber.toUpperCase().replace(/\s+/g, '-')}` 
-            : `LIFT-${Date.now().toString(36).toUpperCase()}`;
-        
-        console.log('🏷️ Згенеровано QR код:', qrCode);
+        const isPendingMunicipalNumber = municipalNumber.startsWith('PENDENTE-');
+        const qrCode = isPendingMunicipalNumber
+            ? null
+            : (municipalNumber
+                ? `LIFT-${municipalNumber.toUpperCase().replace(/\s+/g, '-')}`
+                : `LIFT-${Date.now().toString(36).toUpperCase()}`);
+
+        console.log('🏷️ Згенеровано QR код:', qrCode || '(pendente — sem número municipal real)');
         
         // 🏛️ АВТОМАТИЧНЕ ВИЗНАЧЕННЯ МУНІЦИПАЛІТЕТУ
         let municipalityData = null;
@@ -4920,7 +4924,16 @@ app.put('/api/lifts/:id', authenticateToken, async (req, res) => {
                 errors: updateValidationErrors
             });
         }
-        
+
+        // 🏷️ Placeholder pendente ("PENDENTE-...") que agora recebeu um número real —
+        // gera o QR code pela primeira vez (só se ainda não tinha nenhum QR).
+        const wasPending = existingMunicipalNumber.startsWith('PENDENTE-');
+        const nowReal = municipalNumber && !municipalNumber.startsWith('PENDENTE-');
+        if (wasPending && nowReal && !lift.qrCode) {
+            req.body.qrCode = `LIFT-${municipalNumber.toUpperCase().replace(/\s+/g, '-')}`;
+            console.log('🏷️ Número municipal preenchido — QR code gerado agora:', req.body.qrCode);
+        }
+
         // 🌍 ГЕОКОДУВАННЯ: якщо адреса змінилась, перераховуємо координати
         let updateData = {
             ...req.body,

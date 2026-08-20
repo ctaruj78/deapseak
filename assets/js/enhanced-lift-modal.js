@@ -1077,23 +1077,28 @@ class EnhancedLiftModal {
         // Заповнюємо всі поля з префіксом enhanced
         $('#enhancedLiftId').val(this.currentLiftId);
         $('#enhancedMunicipalNumber').val(liftData.municipalNumber || '');
-        // В режимі редагування муніципальний номер — незмінний унікальний ключ реєстру
+        // В режимі редагування муніципальний номер — незмінний унікальний ключ реєстру,
+        // АЛЕ якщо номер ще не призначений (placeholder "PENDENTE-...") — поле лишається
+        // редагованим, щоб можна було вписати реальний номер камаріал пізніше.
+        const _munNum = liftData.municipalNumber || '';
+        const _munIsPending = _munNum.startsWith('PENDENTE-');
         const munInput = document.getElementById('enhancedMunicipalNumber');
-        if (munInput && this.originalLiftSubtype === 'public') {
+        if (munInput && this.originalLiftSubtype === 'public' && !_munIsPending) {
             munInput.readOnly = true;
             munInput.style.backgroundColor = '#f5f5f5';
             munInput.style.cursor = 'not-allowed';
             munInput.title = 'Número municipal не можна змінити після реєстрації ліфта';
+        } else if (munInput && _munIsPending) {
+            munInput.placeholder = 'Número municipal pendente — preencha quando disponível';
         }
 
         // Додатковий захист: відновити значення муніципального номера після показу модалки
         // (shown.bs.modal викликає eLiftUpdateRows повторно і може скинути readOnly/value)
-        const _munNum = liftData.municipalNumber || '';
         const _restoreMun = () => {
             const el = document.getElementById('enhancedMunicipalNumber');
             if (el) {
-                if (_munNum) el.value = _munNum;
-                if (this.originalLiftSubtype === 'public') {
+                if (_munNum && !_munIsPending) el.value = _munNum;
+                if (this.originalLiftSubtype === 'public' && !_munIsPending) {
                     el.readOnly = true;
                     el.style.backgroundColor = '#f5f5f5';
                     el.style.cursor = 'not-allowed';

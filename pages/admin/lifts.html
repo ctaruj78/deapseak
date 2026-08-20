@@ -1998,7 +1998,9 @@ function escapeHtml(s) {
                 var originalMunicipalNumber = modalState && modalState.editMunicipalNumber ? modalState.editMunicipalNumber : '';
 
                 if (isPublic) {
-                    if (isEdit && originalMunicipalNumber) {
+                    // Placeholders "PENDENTE-..." ficam editáveis — só números reais são bloqueados
+                    var origIsPending = originalMunicipalNumber && originalMunicipalNumber.indexOf('PENDENTE-') === 0;
+                    if (isEdit && originalMunicipalNumber && !origIsPending) {
                         inp.value = originalMunicipalNumber;
                         inp.readOnly = true;
                         inp.style.backgroundColor = '#f5f5f5';
@@ -2104,7 +2106,10 @@ function escapeHtml(s) {
                     inp2.placeholder = 'Nº Municipal do elevador ' + i;
                     inp2.required = true;
                     inp2.dataset.eliftIdx = String(i);
-                    if (vals[i]) inp2.value = vals[i];
+                    // Se ainda não há número para este elevador, preenche com um placeholder
+                    // pendente (mesmo padrão do elevador 1) em vez de deixar vazio/obrigatório —
+                    // pode ser substituído pelo número real mais tarde.
+                    inp2.value = vals[i] || ('PENDENTE-L' + i + '-' + Date.now().toString(36).toUpperCase());
                     ig2.appendChild(pre2);
                     ig2.appendChild(inp2);
                     var small2 = document.createElement('small');
@@ -2129,14 +2134,10 @@ function escapeHtml(s) {
             var savedReadOnly = false;
             if (window.enhancedLiftModal && window.enhancedLiftModal.currentLiftId) {
                 var munEl = document.getElementById('enhancedMunicipalNumber');
-                if (munEl && munEl.value) {
-                    savedMunNum = munEl.value;
-                    savedReadOnly = munEl.readOnly;
-                } else {
-                    // Fallback: поле ainda не existe в DOM — беремо збережене valor desde instalação
-                    savedMunNum = window.enhancedLiftModal.editMunicipalNumber || null;
-                    savedReadOnly = true;
-                }
+                savedMunNum = (munEl && munEl.value) ? munEl.value : (window.enhancedLiftModal.editMunicipalNumber || null);
+                // Bloqueia apenas números municipais reais — placeholders "PENDENTE-..."
+                // ficam editáveis para se poder preencher o número real mais tarde.
+                savedReadOnly = !(savedMunNum && String(savedMunNum).indexOf('PENDENTE-') === 0);
             }
             eLiftUpdateRows(cnt ? parseInt(cnt.value) || 1 : 1);
             // Відновлюexisteмо municipalNumber se він був збережений (режим edição)
@@ -3132,7 +3133,7 @@ function escapeHtml(s) {
     <script src="../../assets/js/lifts.js?v=20260401j"></script>
     <script src="../../assets/js/simple-lift-modal.js?v=20241206"></script>
     <script src="../../assets/js/form-validator.js?v=20260303a"></script>
-    <script src="../../assets/js/enhanced-lift-modal.js?v=20260303e"></script>
+    <script src="../../assets/js/enhanced-lift-modal.js?v=20260820a"></script>
 
     <script>
         // 🧹 Função para очиaindaння testeових dados (temporária, para розробки)
@@ -6390,13 +6391,22 @@ Email de contacto: info@festlift.pt`;
             // Restore liftSubtype (home/platform/public)
             var _subtype = lift.liftSubtype || (lift.municipalNumber ? 'public' : 'home');
             if (typeof window.selectLiftSubtype === 'function') window.selectLiftSubtype(_subtype);
-            // Блокуexisteмо поле — municipal número незмінний após реexisteстрації
+            // Блокуexisteмо поле — municipal número незмінний após реexisteстрації,
+            // ЕXCETО quando ainda é um placeholder "PENDENTE-..." (não atribuído pela câmara)
             const _munInpInline = document.getElementById('enhancedMunicipalNumber');
             if (_munInpInline) {
-                _munInpInline.readOnly = true;
-                _munInpInline.style.backgroundColor = '#f5f5f5';
-                _munInpInline.style.cursor = 'not-allowed';
-                _munInpInline.title = 'O número municipal não pode ser alterado após o registo do elevador';
+                const _isPendingInline = String(lift.municipalNumber || '').indexOf('PENDENTE-') === 0;
+                if (!_isPendingInline) {
+                    _munInpInline.readOnly = true;
+                    _munInpInline.style.backgroundColor = '#f5f5f5';
+                    _munInpInline.style.cursor = 'not-allowed';
+                    _munInpInline.title = 'O número municipal não pode ser alterado após o registo do elevador';
+                } else {
+                    _munInpInline.readOnly = false;
+                    _munInpInline.style.backgroundColor = '';
+                    _munInpInline.style.cursor = '';
+                    _munInpInline.title = 'Número municipal pendente — preencha quando disponível';
+                }
             }
             $('#enhancedLiftBrand').val(lift.manufacturer || lift.brand || '');
             $('#enhancedLiftModel').val(lift.model || '');
