@@ -266,7 +266,10 @@ exports.uploadSaft = async (req, res) => {
             if (inv.status === 'A') continue; // anulada
             if (!inv.date) continue;
 
-            const paid  = paidMap[inv.no] || 0;
+            // FR = Fatura-Recibo — por definição fiscal PT, já paga no momento da emissão
+            // (documento único fatura+recibo). O Moloni nem sempre gera um Payment
+            // separado para FR, pelo que não se pode depender de paidMap para este tipo.
+            const paid  = inv.type === 'FR' ? inv.gross : (paidMap[inv.no] || 0);
             const outstanding = Math.max(0, inv.gross - paid);
             if (outstanding < 0.01) continue; // paid in full
 
@@ -400,7 +403,8 @@ exports.uploadSaft = async (req, res) => {
             const cust = customerMap[inv.custId];
             if (!cust || !cust.nif) continue;
 
-            const paid = Math.min(paidMap[inv.no] || 0, inv.gross);
+            // FR = Fatura-Recibo — já paga por definição fiscal (ver nota acima)
+            const paid = inv.type === 'FR' ? inv.gross : Math.min(paidMap[inv.no] || 0, inv.gross);
             const outstanding = Math.max(0, inv.gross - paid);
             // daysOverdue counted from dueDate (not invoiceDate)
             const refDate = inv.dueDate || inv.date;
