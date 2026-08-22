@@ -4,7 +4,7 @@
  *
  * driveType:  traction | traction_mrl | hydraulic | goods | platform
  * doorType:   automatic | swing | mixed | gate | patim_movel
- * visitType:  maintenance | quarterly | annual | pre_inspection | emergency | repair
+ * visitType:  maintenance | quarterly | semestral | annual | pre_inspection | emergency | repair
  */
 
 const INSPECTION_TEMPLATES = (() => {
@@ -29,6 +29,7 @@ const INSPECTION_TEMPLATES = (() => {
   // --- Segurança (comuns a todos os tipos) ---
   const SAFETY_COMMON = [
     item('alarme',        'Sistema de alarme bidirecional e comunicação',         'EN 81-28 / EN 81-20 § 5.4.9.4', true),
+    item('teste-alarme',  'Teste funcional do alarme de emergência (mín. mensal)', 'EN 81-80 Art. 5.º / DL 320/2002 Art. 12.º', true),
     item('emergencia-luz','Iluminação de emergência (≥ 5 lux na cabina)',          'EN 81-20 § 5.4.11.2', true),
     item('paragem-final', 'Fins-de-curso de piso superior e inferior',            'EN 81-20 § 5.12.1.3'),
     item('contatos-seg',  'Circuito de segurança — verificação global',           'EN 81-20 § 5.11',       true),
@@ -191,22 +192,28 @@ const INSPECTION_TEMPLATES = (() => {
 
   // --- Itens extras para revisão trimestral ---
   const QUARTERLY_EXTRA = [
-    item('teste-alarme',  'Teste funcional do alarme de emergência',          'DL 320/2002 Art. 12.º', true),
     item('nivelamento',   'Ensaio de nivelamento (precisão ≤ ±10 mm)',        'EN 81-20 § 5.12.1'),
     item('teste-sobrecarga','Teste de sobrecarga (110 % — verificação travão)','EN 81-20 § 5.9.2.2', true),
   ];
 
+  // --- Itens extras para revisão semestral (mín. 2×/ano) ---
+  const SEMESTRAL_EXTRA = [
+    item('ins-cabos',     'Inspeção detalhada dos cabos (contagem de fios partidos)', 'DL 320/2002 (Contrato de Manutenção Simples) / EN 81-20 § 5.5.2', true),
+    item('teste-pq',      'Ensaio funcional do para-quedas (progressivo)',    'DL 320/2002 (Contrato de Manutenção Simples) / EN 81-20 § 5.6', true),
+  ];
+
   // --- Itens extras para revisão anual ---
   const ANNUAL_EXTRA = [
-    item('ins-cabos',     'Inspeção detalhada dos cabos (contagem de fios partidos)', 'EN 81-20 § 5.5.2', true),
-    item('teste-pq',      'Ensaio funcional do para-quedas (progressivo)',    'EN 81-20 § 5.6',     true),
     item('teste-limitador','Ensaio do limitador de velocidade',               'EN 81-20 § 5.6.2',   true),
     item('medicao-isolam','Medição da resistência de isolamento',             'EN 81-20 § 5.10.4'),
     item('folga-fosso',   'Verificação das folgas do fosso (dimensões)',      'EN 81-20 § 5.2.3'),
+    item('desgaste-anual','Medição de desgaste de cabos, travão e para-quedas', 'EN 81-50 (test_frequencies.annual_inspection)'),
+    item('limpeza-anual-completa','Limpeza anual completa de poço, caixa, cabina e casa das máquinas', 'DL 320/2002 (Contrato de Manutenção Simples)'),
   ];
 
   // --- Itens pré-inspeção OI ---
   const PRE_INSPECTION_EXTRA = [
+    ...SEMESTRAL_EXTRA,
     ...ANNUAL_EXTRA,
     item('doc-tecnica',   'Ficha técnica do ascensor disponível para OI',     'DL 95/2019'),
     item('registo-oi',    'Dossier de registo de inspeções anteriores',       'DL 320/2002 Art. 14.º'),
@@ -229,6 +236,7 @@ const INSPECTION_TEMPLATES = (() => {
     item('fc-inf-513',     'Fim-de-curso inferior — contacto e ajuste mecânico',           'DL 513/70 Art. 90.º',   true),
     item('cseg-513',       'Circuito de segurança — relés, contactores e contactos',       'DL 513/70 Art. 88.º',   true),
     item('alarme-513',     'Alarme de emergência (campainha / interfone) — funcional',     'DL 513/70 Art. 83.º',   true),
+    item('teste-alarme-513','Teste funcional do alarme de emergência (mín. mensal)',       'EN 81-80 Art. 5.º / DL 320/2002 Art. 12.º', true),
     item('ilum-emg-513',   'Iluminação de emergência na cabina — funcional',               'DL 320/2002 Art. 8.º'),
     item('amort-513',      'Amortecedores ou batentes do fosso — estado e fixação',        'DL 513/70 Art. 73.º'),
     item('cpeso-pq-513',   'Contrapeso — fixação dos blocos e encravamento do para-quedas', 'DL 513/70 Art. 70.º'),
@@ -326,24 +334,31 @@ const INSPECTION_TEMPLATES = (() => {
 
   // --- DL 513/70 — Extras trimestrais ---
   const DL513_QUARTERLY_EXTRA = [
-    item('teste-alarme-513','Teste funcional do alarme de emergência',                    'DL 320/2002 Art. 12.º', true),
     item('nivel-513',       'Ensaio de nivelamento — precisão de paragem',               'DL 513/70 Art. 64.º'),
     item('travao-ajuste-513','Travão — verificação do curso de paragem e ajuste',        'DL 513/70 Art. 57.º',   true),
   ];
 
+  // --- DL 513/70 — Extras semestrais (mín. 2×/ano — Art. 108.º § 2) ---
+  const DL513_SEMESTRAL_EXTRA = [
+    item('revisao-pormenorizada-513', 'Revisão pormenorizada de todos os órgãos, com incidência em dispositivos de segurança, isolamento elétrico e ligações à terra', 'DL 513/70 Art. 108.º § 2', true),
+    item('ins-cabos-513',  'Inspeção detalhada dos cabos — contagem de fios partidos',    'DL 320/2002 (Contrato de Manutenção Simples) / DL 513/70 Art. 66.º', true),
+    item('ensaio-pq-513',  'Ensaio funcional do para-quedas (atuação à velocidade)',      'DL 320/2002 (Contrato de Manutenção Simples) / DL 513/70 Art. 77.º', true),
+    item('isolam-513',     'Medição da resistência de isolamento elétrico',               'DL 513/70 Art. 108.º § 2 / Art. 87.º'),
+    item('forca-fecho-porta-513', 'Força máxima de fecho da porta ≤ 150 N / energia cinética ≤ 10 J (quando porta de cabina automática modernizada)', 'EN 81-80 Art. 4.º'),
+  ];
+
   // --- DL 513/70 — Extras anuais ---
   const DL513_ANNUAL_EXTRA = [
-    item('ins-cabos-513',  'Inspeção detalhada dos cabos — contagem de fios partidos',    'DL 513/70 Art. 66.º',   true),
-    item('ensaio-pq-513',  'Ensaio funcional do para-quedas (atuação à velocidade)',      'DL 513/70 Art. 77.º',   true),
     item('ensaio-lv-513',  'Ensaio do limitador de velocidade — atuação nominal',         'DL 513/70 Art. 78.º',   true),
-    item('isolam-513',     'Medição da resistência de isolamento elétrico',               'DL 513/70 Art. 87.º'),
     item('folgas-fosso-513','Verificação das folgas do fosso (altura inferior e superior)','DL 513/70 Art. 7.º'),
     item('oleo-troca-513', 'Mudança de óleo do redutor — se ciclo cumprido',             'Manual fabricante'),
+    item('limpeza-anual-completa-513','Limpeza anual completa de poço, caixa, cabina e casa das máquinas', 'DL 320/2002 (Contrato de Manutenção Simples)'),
   ];
 
   // --- DL 513/70 — Preparação para inspeção OI ---
   const DL513_PRE_INSPECTION_EXTRA = [
     ...DL513_QUARTERLY_EXTRA,
+    ...DL513_SEMESTRAL_EXTRA,
     ...DL513_ANNUAL_EXTRA,
     item('ficha-tec-513',  'Ficha técnica do ascensor disponível para o OI',             'DL 95/2019'),
     item('dossier-oi-513', 'Dossier de registo de inspeções anteriores completo',        'DL 320/2002 Art. 14.º'),
@@ -574,11 +589,18 @@ const INSPECTION_TEMPLATES = (() => {
           icon: 'calendar-check', color: 'success', items: DL513_QUARTERLY_EXTRA,
         });
       }
+      if (visitType === 'semestral') {
+        dl513Sections.push({
+          id: 'semestral', title: 'Verificações Semestrais (DL 513/70)',
+          icon: 'calendar-week', color: 'info',
+          items: [...DL513_QUARTERLY_EXTRA, ...DL513_SEMESTRAL_EXTRA],
+        });
+      }
       if (visitType === 'annual') {
         dl513Sections.push({
           id: 'anual', title: 'Verificações Anuais / Periódicas (DL 513/70)',
           icon: 'star', color: 'success',
-          items: [...DL513_QUARTERLY_EXTRA, ...DL513_ANNUAL_EXTRA],
+          items: [...DL513_QUARTERLY_EXTRA, ...DL513_SEMESTRAL_EXTRA, ...DL513_ANNUAL_EXTRA],
         });
       }
       if (visitType === 'pre_inspection') {
@@ -762,13 +784,22 @@ const INSPECTION_TEMPLATES = (() => {
         items: QUARTERLY_EXTRA,
       });
     }
+    if (visitType === 'semestral') {
+      sections.push({
+        id: 'semestral',
+        title: 'Verificações Semestrais',
+        icon: 'calendar-week',
+        color: 'info',
+        items: [...QUARTERLY_EXTRA, ...SEMESTRAL_EXTRA],
+      });
+    }
     if (visitType === 'annual') {
       sections.push({
         id: 'anual',
         title: 'Verificações Anuais / Periódicas',
         icon: 'star',
         color: 'success',
-        items: [...QUARTERLY_EXTRA, ...ANNUAL_EXTRA],
+        items: [...QUARTERLY_EXTRA, ...SEMESTRAL_EXTRA, ...ANNUAL_EXTRA],
       });
     }
     if (visitType === 'pre_inspection') {
@@ -887,6 +918,12 @@ const INSPECTION_TEMPLATES = (() => {
       icon:  'search',
       color: 'info',
       norm:  'DL 320/2002 Art. 12.º',
+    },
+    semestral: {
+      label: 'Revisão Semestral',
+      icon:  'calendar-week',
+      color: 'info',
+      norm:  'DL 320/2002 (Contrato de Manutenção Simples) / DL 513/70 Art. 108.º § 2',
     },
     annual: {
       label: 'Revisão Anual / Periódica',

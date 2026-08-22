@@ -133,6 +133,7 @@
                                                     <select class="form-control" id="visitType" onchange="refreshChecklist()">
                                                         <option value="maintenance" selected>🗓️ Manutenção Mensal (Obrigatória)</option>
                                                         <option value="quarterly">🔍 Revisão Trimestral</option>
+                                                        <option value="semestral">📆 Revisão Semestral</option>
                                                         <option value="annual">⭐ Revisão Anual / Periódica</option>
                                                         <option value="pre_inspection">📋 Preparação para Inspeção OI</option>
                                                         <option value="repair">🔧 Reparação</option>
@@ -455,6 +456,7 @@
                 const map = {
                     maintenance: { prefix: 'MANU', title: 'RELATÓRIO DE MANUTENÇÃO' },
                     quarterly: { prefix: 'MANU', title: 'RELATÓRIO DE REVISÃO TRIMESTRAL' },
+                    semestral: { prefix: 'MANU', title: 'RELATÓRIO DE REVISÃO SEMESTRAL' },
                     annual: { prefix: 'INSP', title: 'RELATÓRIO DE REVISÃO ANUAL' },
                     pre_inspection: { prefix: 'INSP', title: 'RELATÓRIO DE PREPARAÇÃO OI' },
                     repair: { prefix: 'REP', title: 'RELATÓRIO DE REPARAÇÃO' },

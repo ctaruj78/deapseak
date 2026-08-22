@@ -65,10 +65,10 @@ const inspectionSchema = new mongoose.Schema({
         default: ''
     },
 
-    // Tipo de visita (maintenance, quarterly, annual, pre_inspection, repair, emergency)
+    // Tipo de visita (maintenance, quarterly, semestral, annual, pre_inspection, repair, emergency)
     visitType: {
         type: String,
-        enum: ['maintenance', 'quarterly', 'annual', 'pre_inspection', 'repair', 'emergency', ''],
+        enum: ['maintenance', 'quarterly', 'semestral', 'annual', 'pre_inspection', 'repair', 'emergency', ''],
         default: 'maintenance'
     },
 

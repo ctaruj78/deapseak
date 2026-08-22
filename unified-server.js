@@ -2482,6 +2482,7 @@ function getInspectionVisitMeta(visitType) {
     const map = {
         maintenance: { prefix: 'MANU', title: 'Relatório de Manutenção' },
         quarterly: { prefix: 'MANU', title: 'Relatório de Revisão Trimestral' },
+        semestral: { prefix: 'MANU', title: 'Relatório de Revisão Semestral' },
         annual: { prefix: 'INSP', title: 'Relatório de Revisão Anual' },
         pre_inspection: { prefix: 'INSP', title: 'Relatório de Preparação OI' },
         repair: { prefix: 'REP', title: 'Relatório de Reparação' },
@@ -4597,13 +4598,14 @@ function hasClientAccessToLift(lift, req) {
 async function computeDueVisitType(liftId, lift) {
     const MAINT_DAYS = parseInt(process.env.MANUT_INTERVAL_DAYS || '30');
     const QUARTERLY_DAYS = 90;
+    const SEMESTRAL_DAYS = 182;
     const ANNUAL_DAYS = 365;
     const PRE_INSPECTION_LEAD_DAYS = 60; // antecedência para preparar a OI oficial
 
     const rows = await db.collection('inspections').aggregate([
         { $match: {
             liftId: liftId.toString(),
-            visitType: { $in: ['maintenance', 'Manutenção', 'manutencao', 'quarterly', 'annual'] }
+            visitType: { $in: ['maintenance', 'Manutenção', 'manutencao', 'quarterly', 'semestral', 'annual'] }
         }},
         { $sort: { data: -1 } },
         { $group: { _id: '$visitType', lastDate: { $first: '$data' } } }
@@ -4631,6 +4633,11 @@ async function computeDueVisitType(liftId, lift) {
     const annualDays = daysSince(lastByType.annual);
     if (annualDays === null || annualDays > ANNUAL_DAYS) {
         return { visitType: 'annual', reason: annualDays === null ? 'nunca_feita' : 'atrasada' };
+    }
+
+    const semestralDays = daysSince(lastByType.semestral);
+    if (semestralDays === null || semestralDays > SEMESTRAL_DAYS) {
+        return { visitType: 'semestral', reason: semestralDays === null ? 'nunca_feita' : 'atrasada' };
     }
 
     const quarterlyDays = daysSince(lastByType.quarterly);
