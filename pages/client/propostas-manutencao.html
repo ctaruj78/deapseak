@@ -760,7 +760,7 @@
     fetch('/api/notifications?unread=true', { headers: { 'Authorization': `Bearer ${token}` } })
         .then(r => r.json()).then(d => {
             const b = document.getElementById('notificationsBadge');
-            if (b && d.data) { b.textContent = d.data.length; b.style.display = d.data.length > 0 ? 'inline-block' : 'none'; }
+            if (b && d.notifications) { b.textContent = d.notifications.length; b.style.display = d.notifications.length > 0 ? 'inline-block' : 'none'; }
         }).catch(() => {});
     fetch('/api/propostas-manutencao/my', { headers: { 'Authorization': `Bearer ${token}` } })
         .then(r => r.json()).then(d => {

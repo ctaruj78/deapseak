@@ -323,9 +323,9 @@ function loadSidebarCounts() {
         .then(res => res.json())
         .then(data => {
             const badge = document.getElementById('notificationsBadge');
-            if (badge && data.data) {
-                badge.textContent = data.data.length;
-                badge.style.display = data.data.length > 0 ? 'inline-block' : 'none';
+            if (badge && data.notifications) {
+                badge.textContent = data.notifications.length;
+                badge.style.display = data.notifications.length > 0 ? 'inline-block' : 'none';
             }
         }).catch(err => console.warn('Failed to load notifications count:', err));
 

@@ -451,7 +451,7 @@
         })
         .then(function(r) { return r.json(); })
         .then(function(data) {
-            var count = Array.isArray(data) ? data.length : (data.total || 0);
+            var count = Array.isArray(data.notifications) ? data.notifications.length : 0;
             ['notificationCount', 'notificationsBadge'].forEach(function(id) {
                 var el = document.getElementById(id);
                 if (el) el.textContent = count > 99 ? '99+' : count;

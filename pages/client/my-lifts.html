@@ -466,8 +466,8 @@
         })
         .then(res => res.json())
         .then(data => {
-            if (data.data && Array.isArray(data.data)) {
-                const count = data.data.length;
+            if (data.notifications && Array.isArray(data.notifications)) {
+                const count = data.notifications.length;
                 const badge = document.getElementById('invoicesCount');
                 if (badge) badge.textContent = count;
             }

@@ -230,7 +230,8 @@
     <!-- Service Integration -->
     <!-- Sistema de autorização -->
     <script src="../../assets/js/auth.js"></script>
-    
+    <script src="../../assets/js/modules/push-notifications-tech.js"></script>
+
     <!-- MongoDB ObjectId Converter -->
     <script src="../../assets/js/id-converter.js"></script>
     
@@ -857,7 +858,11 @@
                     AuthManager.logout();
                     return;
                 }
-                
+
+                if (typeof initTechPushNotifications === 'function') {
+                    initTechPushNotifications(this.currentUser.id);
+                }
+
                 await this.loadTasks();
             }
             

@@ -155,16 +155,22 @@ class EmailService {
             const adminEmail = process.env.ADMIN_EMAIL || 'info@festlift.pt';
             const clientName = this._esc(`${client?.firstName || ''} ${client?.lastName || ''}`.trim() || client?.email || 'Cliente');
             const liftMunNum = request.lift?.municipalNumber || request.liftMunicipalNumber;
-            const liftInfo = liftMunNum
-                ? `Elevador <strong>${this._esc(liftMunNum)}</strong>`
-                : 'Elevador não especificado';
+            const liftAddrObj = request.lift?.address;
+            const liftAddress = liftAddrObj
+                ? [liftAddrObj.street, liftAddrObj.city].filter(Boolean).join(', ')
+                : request.liftAddress;
+            const liftInfoParts = [];
+            if (liftAddress) liftInfoParts.push(this._esc(liftAddress));
+            if (liftMunNum) liftInfoParts.push(`Nº ${this._esc(liftMunNum)}`);
+            const liftInfo = liftInfoParts.length ? liftInfoParts.join(' — ') : 'Elevador não especificado';
             const priorityColor = request.priority === 'high' || request.priority === 'urgent' ? '#c62828' : '#f9a825';
             const clientEmailEsc = this._esc(client?.email || '');
             const body = `
                 <p>Foi submetido um novo pedido de servico por um cliente.</p>
                 <div style="background:#fff3e0;border-left:4px solid ${priorityColor};border-radius:6px;padding:18px 22px;margin:20px 0;">
                     <p style="margin:0 0 8px 0;"><strong>Pedido:</strong> #${request._id}</p>
-                    <p style="margin:0 0 8px 0;"><strong>Descrição:</strong> ${this._esc(request.title)}</p>
+                    <p style="margin:0 0 8px 0;"><strong>Título:</strong> ${this._esc(request.title)}</p>
+                    <p style="margin:0 0 8px 0;"><strong>Descrição:</strong> ${this._esc(request.description) || '—'}</p>
                     <p style="margin:0 0 8px 0;"><strong>Tipo:</strong> ${this.getRequestTypeText(request.type)}</p>
                     <p style="margin:0 0 8px 0;"><strong>Prioridade:</strong> ${this.getPriorityText(request.priority)}</p>
                     <p style="margin:0 0 8px 0;"><strong>Elevador:</strong> ${liftInfo}</p>
@@ -235,12 +241,21 @@ class EmailService {
                     <p style="margin:0;"><strong>Estado:</strong> ${this.getStatusText(request.status)}</p>
                 </div>
                 <p style="font-size:12px;color:#888;margin-top:24px;">Este e um email automatico — por favor nao responda diretamente.</p>`;
-            await this._sendEmail(client.email, `🔧 Tecnico atribuido ao pedido #${request._id} — FestLift`, this._tpl('#1565c0', 'Tecnico Atribuido', body));
-            console.log(`✅ Email sent to ${client.email} about technician assignment`);
-            await this.sendTechnicianTaskNotification(request, technician);
+            if (client?.email) {
+                try {
+                    await this._sendEmail(client.email, `🔧 Tecnico atribuido ao pedido #${request._id} — FestLift`, this._tpl('#1565c0', 'Tecnico Atribuido', body));
+                    console.log(`✅ Email sent to ${client.email} about technician assignment`);
+                } catch (error) {
+                    console.error('❌ Error sending client email:', error);
+                }
+            }
         } catch (error) {
-            console.error('❌ Error sending email:', error);
+            console.error('❌ Error building client email:', error);
         }
+        // Notificação ao técnico é independente da do cliente — uma falha
+        // no envio ao cliente (email invalido, SMTP, etc.) não pode impedir
+        // o técnico de saber que lhe foi atribuída uma tarefa.
+        await this.sendTechnicianTaskNotification(request, technician);
     }
 
     // Nova tarefa — notificacao ao tecnico
@@ -258,7 +273,13 @@ class EmailService {
                     ${request.description ? `<p style="margin:0 0 6px 0;"><strong>Detalhes:</strong> ${this._esc(request.description)}</p>` : ''}
                     <p style="margin:0 0 6px 0;"><strong>Tipo:</strong> ${this.getRequestTypeText(request.type)}</p>
                     <p style="margin:0 0 6px 0;"><strong>Prioridade:</strong> ${this.getPriorityText(request.priority)}</p>
-                    <p style="margin:0;"><strong>Elevador:</strong> ${this._esc(request.liftMunicipalNumber || request.liftId || '—')}</p>
+                    <p style="margin:0;"><strong>Elevador:</strong> ${(() => {
+                        const addrObj = request.lift?.address;
+                        const addr = addrObj ? [addrObj.street, addrObj.city].filter(Boolean).join(', ') : request.liftAddress;
+                        const munNum = request.lift?.municipalNumber || request.liftMunicipalNumber;
+                        const parts = [addr, munNum ? `Nº ${munNum}` : null].filter(Boolean);
+                        return this._esc(parts.join(' — ') || request.liftId || '—');
+                    })()}</p>
                 </div>
                 <a href="${siteUrl}/pages/tech/tasks.html" style="display:inline-block;background:#1565c0;color:#fff;text-decoration:none;padding:13px 28px;border-radius:6px;font-size:14px;font-weight:bold;margin-top:8px;">Ver tarefa →</a>
                 <p style="font-size:12px;color:#888;margin-top:24px;">Este e um email automatico — por favor nao responda diretamente.</p>`;

@@ -458,6 +458,7 @@
     <script src="../../assets/js/sidebar-init.js"></script>
     <script src="../../assets/js/auth.js"></script>
     <script src="../../assets/js/common.js"></script>
+    <script src="../../assets/js/modules/push-notifications-tech.js"></script>
 
     <script>
         $(document).ready(function() {
@@ -489,6 +490,9 @@
             // Inicialização WebSocket para do técnico
             if (currentUser) {
                 initTechWebSocket(currentUser);
+                if (typeof initTechPushNotifications === 'function') {
+                    initTechPushNotifications(currentUser.id);
+                }
             }
         });
 

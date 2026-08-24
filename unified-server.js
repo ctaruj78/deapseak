@@ -1301,8 +1301,15 @@ app.get('/api/notifications', authenticateToken, async (req, res) => {
             return res.status(503).json({ success: false, message: 'Base de dados indisponível' });
         }
         
+        const query = { userId: req.user.id };
+        if (req.query.unread === 'true') {
+            // Documentos sem campo 'read' (criados antes desta coluna existir,
+            // ou por fluxos que ainda não a definem) contam como não lidos.
+            query.read = { $ne: true };
+        }
+
         const notifications = await db.collection('notifications')
-            .find({ userId: req.user.id })
+            .find(query)
             .sort({ createdAt: -1 })
             .limit(50)
             .toArray();
@@ -9702,15 +9709,15 @@ app.post('/api/requests/:id/complete', authenticateToken, async (req, res) => {
     }
 });
 
-// POST /api/requests/:id/assign - призначити техніка до заявки
+// POST /api/requests/:id/assign - призначити (або перепризначити) техніка до заявки
 app.post('/api/requests/:id/assign', authenticateToken, async (req, res) => {
     try {
         const { ObjectId } = require('mongodb');
         const requestQuery = buildRequestQuery(req.params.id);
         const { technicianId, instructions, deadline } = req.body;
-        
+
         console.log('👨‍🔧 Призначення техніка:', technicianId, 'до заявки:', req.params.id);
-        
+
         // Перевірка прав (тільки admin або dispatcher)
         if (req.user.role !== 'admin' && req.user.role !== 'dispatcher') {
             return res.status(403).json({
@@ -9718,26 +9725,43 @@ app.post('/api/requests/:id/assign', authenticateToken, async (req, res) => {
                 message: 'Não tem permissões para atribuir técnicos'
             });
         }
-        
+
         if (!technicianId) {
             return res.status(400).json({
                 success: false,
                 message: 'Técnico não especificado'
             });
         }
-        
+
+        const existingRequest = await db.collection('requests').findOne(requestQuery);
+        if (!existingRequest) {
+            return res.status(404).json({
+                success: false,
+                message: 'Pedido não encontrado'
+            });
+        }
+
+        // Um pedido fechado tem de ser reaberto antes de (re)atribuir técnico —
+        // caso contrário perde-se o registo de quem tratou dele e quando.
+        if (['completed', 'cancelled'].includes(existingRequest.status)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Pedido já está concluído/cancelado. Reabra-o antes de atribuir um técnico.'
+            });
+        }
+
         // Перевірка чи технік існує
         const technician = await db.collection('users').findOne({
             _id: new ObjectId(technicianId)
         });
-        
+
         if (!technician) {
             return res.status(404).json({
                 success: false,
                 message: 'Técnico não encontrado'
             });
         }
-        
+
         if (technician.role !== 'tech' && technician.role !== 'technician') {
             return res.status(400).json({
                 success: false,
@@ -9752,47 +9776,184 @@ app.post('/api/requests/:id/assign', authenticateToken, async (req, res) => {
             });
         }
 
+        const previousTechnicianId = existingRequest.technician ? String(existingRequest.technician) : null;
+        const isSameTechnician = previousTechnicianId === String(technicianId);
+        const isReassignment = !!previousTechnicianId && !isSameTechnician;
+
+        const nowIso = new Date().toISOString();
         const updateData = {
             technician: technicianId,
             technicianName: `${technician.firstName} ${technician.lastName}`,
             status: 'assigned',
-            assignedAt: new Date().toISOString(),
+            assignedAt: nowIso,
             assignedBy: {
                 id: req.user.id || req.user.userId,
                 username: req.user.username,
                 role: req.user.role
             },
-            updatedAt: new Date().toISOString(),
+            updatedAt: nowIso,
             updatedBy: req.user.username
         };
-        
+
         if (instructions) {
             updateData.instructions = instructions.trim();
         }
-        
+
         if (deadline) {
             updateData.deadline = new Date(deadline).toISOString();
         }
-        
+
+        const updateOps = { $set: updateData };
+        // Histórico de atribuições — permite ver que um pedido foi reatribuído
+        // (ex.: o técnico original ficou indisponível) e por quem/quando.
+        if (!isSameTechnician) {
+            updateOps.$push = {
+                technicianHistory: {
+                    technicianId: String(technicianId),
+                    technicianName: updateData.technicianName,
+                    assignedAt: nowIso,
+                    assignedBy: updateData.assignedBy,
+                    previousTechnicianId: previousTechnicianId || null,
+                    previousTechnicianName: existingRequest.technicianName || null
+                }
+            };
+        }
+
         const result = await db.collection('requests').updateOne(
             requestQuery,
-            { $set: updateData }
+            updateOps
         );
-        
+
         if (result.matchedCount === 0) {
             return res.status(404).json({
                 success: false,
                 message: 'Pedido não encontrado'
             });
         }
-        
+
         console.log('✅ Técnico atribuído com sucesso');
-        
+
+        // Ajuste de carga de trabalho — liberta o técnico anterior (se substituído)
+        // e incrementa o novo. Sem isto, o indicador de carga usado no modal de
+        // atribuição (currentAssignments) fica sempre desatualizado.
+        try {
+            if (isReassignment) {
+                const prevId = new ObjectId(previousTechnicianId);
+                const prevTech = await db.collection('users').findOne({ _id: prevId });
+                if (prevTech && (prevTech.currentAssignments || 0) > 0) {
+                    const newCount = prevTech.currentAssignments - 1;
+                    const prevUpdate = { currentAssignments: newCount };
+                    if (!['offline', 'vacation'].includes(prevTech.status)) {
+                        prevUpdate.status = newCount >= (prevTech.maxAssignments || Infinity) ? 'busy' : 'online';
+                    }
+                    await db.collection('users').updateOne({ _id: prevId }, { $set: prevUpdate });
+                }
+            }
+            if (!isSameTechnician) {
+                const newCount = (technician.currentAssignments || 0) + 1;
+                const techUpdate = { currentAssignments: newCount };
+                if (!['offline', 'vacation'].includes(technician.status)) {
+                    techUpdate.status = newCount >= (technician.maxAssignments || Infinity) ? 'busy' : 'online';
+                }
+                await db.collection('users').updateOne({ _id: technician._id }, { $set: techUpdate });
+            }
+        } catch (workloadErr) {
+            console.error('⚠️ Erro ao ajustar carga de técnicos:', workloadErr.message);
+        }
+
         res.json({
             success: true,
             message: 'Técnico atribuído com sucesso',
             data: updateData
         });
+
+        // Notificações (email + in-app) — técnico novo, técnico anterior (se
+        // substituído) e cliente. Corre depois da resposta para não atrasar o
+        // pedido; antes disto nenhuma notificação era enviada, apesar do
+        // frontend afirmar "Notificações enviadas".
+        (async () => {
+            try {
+                const fullRequest = await db.collection('requests').findOne(requestQuery);
+                const clientId = fullRequest?.client || fullRequest?.liftClient;
+                let clientUser = null;
+                if (clientId) {
+                    try { clientUser = await db.collection('users').findOne({ _id: new ObjectId(clientId) }); } catch (_) {}
+                }
+
+                if (clientUser?.email) {
+                    emailService.sendTechnicianAssignedNotification(fullRequest, technician, clientUser)
+                        .catch(err => console.error('Erro email atribuição (cliente+técnico):', err.message));
+                } else {
+                    emailService.sendTechnicianTaskNotification(fullRequest, technician)
+                        .catch(err => console.error('Erro email técnico:', err.message));
+                }
+
+                const nowDate = new Date();
+                await db.collection('notifications').insertOne({
+                    userId: String(technicianId),
+                    type: 'new_assignment',
+                    title: 'Nova tarefa atribuída',
+                    message: `Pedido #${fullRequest.requestNumber || fullRequest._id} — ${fullRequest.title || ''}${fullRequest.liftAddress ? ' — ' + fullRequest.liftAddress : ''}`,
+                    requestId: fullRequest._id.toString(),
+                    icon: 'fas fa-tools',
+                    priority: ['urgent', 'high'].includes(fullRequest.priority) ? 'high' : 'normal',
+                    status: 'unread',
+                    read: false,
+                    createdAt: nowDate,
+                    timestamp: nowDate
+                });
+
+                if (clientUser) {
+                    await db.collection('notifications').insertOne({
+                        userId: String(clientUser._id),
+                        type: 'technician_assigned',
+                        title: 'Técnico atribuído ao seu pedido',
+                        message: `${updateData.technicianName} foi atribuído ao pedido #${fullRequest.requestNumber || fullRequest._id}`,
+                        requestId: fullRequest._id.toString(),
+                        icon: 'fas fa-user-check',
+                        priority: 'normal',
+                        status: 'unread',
+                        read: false,
+                        createdAt: nowDate,
+                        timestamp: nowDate
+                    });
+                }
+
+                if (isReassignment) {
+                    await db.collection('notifications').insertOne({
+                        userId: previousTechnicianId,
+                        type: 'assignment_removed',
+                        title: 'Removido de uma tarefa',
+                        message: `Foi removido do pedido #${fullRequest.requestNumber || fullRequest._id} — reatribuído a ${updateData.technicianName}`,
+                        requestId: fullRequest._id.toString(),
+                        icon: 'fas fa-user-minus',
+                        priority: 'normal',
+                        status: 'unread',
+                        read: false,
+                        createdAt: nowDate,
+                        timestamp: nowDate
+                    });
+                }
+
+                if (global.io) {
+                    // 'assignment_update' é o evento que o dashboard do técnico já escuta
+                    // (toast + contadores em pages/tech/dashboard.html) — só nunca era emitido.
+                    global.io.to(`user_${technicianId}`).emit('assignment_update', {
+                        requestId: fullRequest._id.toString(),
+                        title: fullRequest.title,
+                        priority: fullRequest.priority,
+                        liftAddress: fullRequest.liftAddress
+                    });
+                    global.io.to(`user_${technicianId}`).emit('new_assignment', { requestId: fullRequest._id.toString() });
+                    if (isReassignment) global.io.to(`user_${previousTechnicianId}`).emit('assignment_removed', { requestId: fullRequest._id.toString() });
+                    if (clientUser) global.io.to(`user_${clientUser._id}`).emit('request_updated', { requestId: fullRequest._id.toString(), status: 'assigned' });
+                    global.io.to('role_admin').emit('request_updated', { requestId: fullRequest._id.toString() });
+                    global.io.to('role_dispatcher').emit('request_updated', { requestId: fullRequest._id.toString() });
+                }
+            } catch (notifyErr) {
+                console.error('❌ Erro ao enviar notificações de atribuição:', notifyErr);
+            }
+        })();
     } catch (error) {
         console.error('❌ Erro ao atribuir técnico:', error);
         res.status(500).json({
