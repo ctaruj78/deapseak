@@ -170,7 +170,7 @@ class EnhancedLiftModal {
             this.map = L.map('enhancedLiftMap').setView([38.7223, -9.1393], 12); // Lisboa по дефолту
             
             // Додаємо тайли OpenStreetMap
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '© OpenStreetMap contributors'
             }).addTo(this.map);
 

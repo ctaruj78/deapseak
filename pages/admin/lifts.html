@@ -6293,7 +6293,7 @@ Email de contacto: info@festlift.pt`;
             console.log('✅ Mapa criado');
             
             // Додаexisteмо tiles
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '© OpenStreetMap contributors',
                 maxZoom: 19
             }).addTo(window.detailsMapInstance);
@@ -6610,7 +6610,7 @@ Email de contacto: info@festlift.pt`;
             console.log('✅ Mapa de edição criado');
             
             // Додаexisteмо tiles
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '© OpenStreetMap contributors',
                 maxZoom: 19
             }).addTo(window.editMapInstance);

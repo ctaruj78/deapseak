@@ -6013,7 +6013,7 @@ Equipa FestLift</textarea>
             console.log('✅ Mapa criado');
             
             // Adicionar tiles
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '© OpenStreetMap contributors',
                 maxZoom: 19
             }).addTo(window.detailsMapInstance);
@@ -6301,7 +6301,7 @@ Equipa FestLift</textarea>
             console.log('✅ Mapa de edição criado');
             
             // Adicionar tiles
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '© OpenStreetMap contributors',
                 maxZoom: 19
             }).addTo(window.editMapInstance);

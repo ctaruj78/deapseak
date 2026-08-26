@@ -515,7 +515,7 @@ class MonitoringManager {
 
         try {
             this.map = L.map('techMap').setView(defaultCenter, 12);
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '© <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors',
                 maxZoom: 19
             }).addTo(this.map);
