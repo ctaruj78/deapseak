@@ -12,6 +12,11 @@ class HistoryManager {
         this.init();
     }
 
+    _esc(s) {
+        if (s == null) return '';
+        return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    }
+
     init() {
         this.loadHistory();
         this.setupEventListeners();
@@ -145,7 +150,7 @@ class HistoryManager {
                 date,
                 liftId,
                 lift: liftLabel,
-                location: request.lift?.address?.street || '—',
+                location: request.liftAddress || request.lift?.address?.street || '—',
                 technician: request.assignedTo?.firstName ? `${request.assignedTo.firstName} ${request.assignedTo.lastName || ''}`.trim() : '—',
                 status: request.status || 'pending',
                 description: request.title || request.description || 'Pedido de serviço',
@@ -271,13 +276,13 @@ class HistoryManager {
                 <div class="timeline-content">
                     <div class="timeline-icon">${this.getEventIcon(event.type)}</div>
                     <div class="timeline-details">
-                        <h4>${event.description}</h4>
-                        <p><strong><i class="fas fa-elevator"></i> Elevador:</strong> ${event.lift}</p>
-                        <p><strong><i class="fas fa-map-marker-alt"></i> Localizacao:</strong> ${event.location}</p>
-                        <p><strong><i class="fas fa-user-cog"></i> Técnico:</strong> ${event.technician}</p>
-                        <p><strong><i class="fas fa-clock"></i> Duração:</strong> ${event.duration} min</p>
+                        <h4>${this._esc(event.description)}</h4>
+                        <p><strong><i class="fas fa-elevator"></i> Elevador:</strong> ${this._esc(event.lift)}</p>
+                        <p><strong><i class="fas fa-map-marker-alt"></i> Localização:</strong> ${this._esc(event.location)}</p>
+                        <p><strong><i class="fas fa-user-cog"></i> Técnico:</strong> ${this._esc(event.technician)}</p>
+                        <p><strong><i class="fas fa-clock"></i> Duração:</strong> ${event.duration ? this._esc(event.duration) + ' min' : '—'}</p>
                         <p><strong><i class="fas fa-money-bill-wave"></i> Custo:</strong> €${(event.cost ?? 0).toLocaleString('pt-PT', { minimumFractionDigits: 2 })}</p>
-                        <p><strong><i class="fas fa-star"></i> Avaliacao:</strong> ${this.getRatingStars(event.rating)}</p>
+                        <p><strong><i class="fas fa-star"></i> Avaliação:</strong> ${this.getRatingStars(event.rating)}</p>
                         <span class="${statusClass}">${statusText}</span>
                         <div class="mt-3">
                             <button class="btn btn-sm btn-info" onclick="historyManager.showEventDetails('${event.id}')">

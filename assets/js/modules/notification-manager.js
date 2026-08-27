@@ -327,49 +327,100 @@ class NotificationManager {
         $('#viewNotificationModal').modal('show');
     }
 
-    toggleRead(id) {
-        const notification = this.notifications.find(n => n.id === id);
-        if (notification) {
-            notification.read = !notification.read;
-            this.saveNotifications();
+    async toggleRead(id) {
+        const notification = this.notifications.find(n => (n._id || n.id) === id);
+        if (!notification) return;
+        const wasRead = notification.read;
+        notification.read = !wasRead;
+        this.filterNotifications(this.currentFilter);
+        this.updateBadges();
+        this.updateStats();
+        // A API só suporta marcar como lida (não há endpoint para "não lida") —
+        // se o técnico/dispatcher reabrir uma já lida, isso fica só na sessão atual.
+        if (!wasRead) {
+            try {
+                const res = await fetch(`/api/notifications/${id}/read`, {
+                    method: 'PATCH',
+                    headers: { 'Authorization': `Bearer ${this.getToken()}` }
+                });
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            } catch (error) {
+                console.error('Erro ao marcar notificação como lida:', error);
+                notification.read = wasRead;
+                this.filterNotifications(this.currentFilter);
+                this.updateBadges();
+                this.updateStats();
+                this.showNotification('Não foi possível atualizar a notificação', 'error');
+                return;
+            }
+        }
+        this.showNotification(
+            notification.read ? 'Notificação lida' : 'Notificação marcada como não lida',
+            'success'
+        );
+    }
+
+    async markAllAsRead() {
+        try {
+            const res = await fetch('/api/notifications/read-all', {
+                method: 'PATCH',
+                headers: { 'Authorization': `Bearer ${this.getToken()}` }
+            });
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            this.notifications.forEach(notification => { notification.read = true; });
             this.filterNotifications(this.currentFilter);
             this.updateBadges();
-            this.showNotification(
-                notification.read ? 'Notificação lida' : 'Notificação marcada como não lida', 
-                'success'
-            );
+            this.updateStats();
+            this.showNotification('Todas as notificações marcadas como lidas', 'success');
+        } catch (error) {
+            console.error('Erro ao marcar todas como lidas:', error);
+            this.showNotification('Não foi possível marcar as notificações como lidas', 'error');
         }
     }
 
-    markAllAsRead() {
-        this.notifications.forEach(notification => {
-            notification.read = true;
-        });
-        
-        this.saveNotifications();
-        this.filterNotifications(this.currentFilter);
-        this.updateBadges();
-        this.showNotification('Todas as notificações marcadas como lidas', 'success');
-    }
-
     async deleteNotification(id) {
-        if (await swalConfirm('Eliminar esta notificação?')) {
-            this.notifications = this.notifications.filter(n => n.id !== id);
-            this.saveNotifications();
+        if (!await swalConfirm('Eliminar esta notificação?')) return;
+        try {
+            const res = await fetch(`/api/notifications/${id}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${this.getToken()}` }
+            });
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            this.notifications = this.notifications.filter(n => (n._id || n.id) !== id);
             this.filterNotifications(this.currentFilter);
             this.updateBadges();
+            this.updateStats();
             this.showNotification('Notificação eliminada', 'success');
+        } catch (error) {
+            console.error('Erro ao eliminar notificação:', error);
+            this.showNotification('Não foi possível eliminar a notificação', 'error');
         }
     }
 
     async clearAll() {
-        if (await swalConfirm('Eliminar todas as notificações? Esta ação não pode ser desfeita.')) {
-            this.notifications = [];
-            this.saveNotifications();
-            this.filteredNotifications = [];
+        if (!await swalConfirm('Eliminar todas as notificações? Esta ação não pode ser desfeita.')) return;
+        const token = this.getToken();
+        const ids = this.notifications.map(n => n._id || n.id).filter(Boolean);
+        try {
+            const results = await Promise.all(ids.map(id =>
+                fetch(`/api/notifications/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } })
+                    .then(res => res.ok)
+                    .catch(() => false)
+            ));
+            const deletedIds = new Set(ids.filter((_, i) => results[i]));
+            this.notifications = this.notifications.filter(n => !deletedIds.has(n._id || n.id));
+            this.filteredNotifications = [...this.notifications];
             this.renderNotifications();
             this.updateBadges();
-            this.showNotification('Todas as notificações eliminadas', 'success');
+            this.updateStats();
+            if (deletedIds.size === ids.length) {
+                this.showNotification('Todas as notificações eliminadas', 'success');
+            } else {
+                this.showNotification('Algumas notificações não puderam ser eliminadas', 'warning');
+            }
+        } catch (error) {
+            console.error('Erro ao eliminar notificações:', error);
+            this.showNotification('Não foi possível eliminar as notificações', 'error');
         }
     }
 
@@ -380,8 +431,8 @@ class NotificationManager {
         
         const today = new Date();
         const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-        const todayNotifications = this.notifications.filter(n => 
-            new Date(n.timestamp) >= todayStart
+        const todayNotifications = this.notifications.filter(n =>
+            new Date(n.createdAt || n.timestamp) >= todayStart
         ).length;
         
         document.getElementById('totalNotifications').textContent = total;
@@ -506,36 +557,6 @@ class NotificationManager {
         toast.on('hidden.bs.toast', function () { $(this).remove(); });
     }
 
-    // Метод для додавання нового сповіщення (для тестування)
-    addDemoNotification() {
-        const types = ['maintenance', 'alert', 'info', 'update', 'billing'];
-        const priorities = ['low', 'medium', 'high', 'critical'];
-        const messages = [
-            'Nova manutenção programada para a próxima semana.',
-            'Detetada potencial falha no sistema de segurança.',
-            'Calendário de trabalho dos técnicos atualizado para este mês.',
-            'O seu último pedido foi concluído com sucesso.',
-            'Nova fatura disponível para consulta na área pessoal.'
-        ];
-        
-        const newNotification = {
-            id: Math.max(...this.notifications.map(n => n.id), 0) + 1,
-            title: 'Nova notificação',
-            message: messages[Math.floor(Math.random() * messages.length)],
-            type: types[Math.floor(Math.random() * types.length)],
-            priority: priorities[Math.floor(Math.random() * priorities.length)],
-            read: false,
-            timestamp: new Date().toISOString(),
-            relatedTo: 'test',
-            actionUrl: 'dashboard.html'
-        };
-        
-        this.notifications.unshift(newNotification);
-        this.saveNotifications();
-        this.filterNotifications(this.currentFilter);
-        this.updateBadges();
-        this.showNotification('Notificação de demonstração adicionada', 'success');
-    }
 }
 
 // Ініціалізація
