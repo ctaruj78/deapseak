@@ -111,27 +111,32 @@
                 },
                 events: async function(fetchInfo, successCallback, failureCallback) {
                     try {
-                        const token = localStorage.getItem('token') || sessionStorage.getItem('token') || '';
-                        const res = await fetch('/api/requests', {
+                        const token = (typeof AuthManager !== 'undefined') ? AuthManager.getAuthToken()
+                            : (localStorage.getItem('liftmanager_jwt') || localStorage.getItem('token') || sessionStorage.getItem('token') || '');
+                        const res = await fetch('/api/requests?limit=500', {
                             headers: token ? { 'Authorization': 'Bearer ' + token } : {}
                         });
-                        let data = res.ok ? await res.json() : [];
-                        if (Array.isArray(data.data)) data = data.data;
-                        if (!data.length) {
-                            data = [
-                                { id: 1, title: "Substituição do disco rígido", date: "2025-09-28", status: "assigned" },
-                                { id: 2, title: "Instalação de actualização de software", date: "2025-09-29", status: "in-progress" },
-                                { id: 3, title: "Diagnóstico do servidor", date: "2025-09-30", status: "completed" }
-                            ];
+                        if (!res.ok) {
+                            const body = await res.json().catch(() => ({}));
+                            throw new Error(body.message || `HTTP ${res.status}`);
                         }
-                        const events = data.map(r => ({
-                            id: r.id,
-                            title: r.title + (r.status ? ' (' + r.status + ')' : ''),
-                            start: String(r.date).split(' ')[0],
-                            color: r.status === 'completed' ? '#28a745' : (r.status === 'in-progress' ? '#ffc107' : '#007bff')
-                        }));
+                        const body = await res.json();
+                        const requests = body.data?.requests || [];
+                        const events = requests
+                            .map(r => {
+                                const when = r.scheduledDate || r.deadline || r.createdAt;
+                                if (!when) return null;
+                                return {
+                                    id: r._id,
+                                    title: (r.title || 'Pedido') + (r.status ? ' (' + r.status + ')' : ''),
+                                    start: String(when).split('T')[0],
+                                    color: r.status === 'completed' ? '#28a745' : (r.status === 'in_progress' ? '#ffc107' : '#007bff')
+                                };
+                            })
+                            .filter(Boolean);
                         successCallback(events);
                     } catch (e) {
+                        toastr.error(e.message || 'Erro ao carregar o calendário de pedidos');
                         failureCallback(e);
                     }
                 },

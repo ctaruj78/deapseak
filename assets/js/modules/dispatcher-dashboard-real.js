@@ -1083,20 +1083,20 @@ class DispatcherDashboardReal {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    technician: technicianId,
+                    technicianId,
                     priority,
                     deadline,
-                    notes,
+                    instructions: notes,
                     notifyClient
                 })
             });
-            
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}`);
-            }
-            
+
             const data = await response.json();
-            
+
+            if (!response.ok) {
+                throw new Error(data.message || `HTTP ${response.status}`);
+            }
+
             if (data.success) {
                 this.showNotification('Técnico atribuído com sucesso', 'success');
                 $('#assignmentModal').modal('hide');
@@ -1106,10 +1106,10 @@ class DispatcherDashboardReal {
             }
         } catch (error) {
             console.error('❌ Erro призначення:', error);
-            this.showNotification('Erro ao atribuir técnico', 'error');
+            this.showNotification(error.message || 'Erro ao atribuir técnico', 'error');
         }
     }
-    
+
     /**
      * 💾 Відправка оновленої заявки
      */

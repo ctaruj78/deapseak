@@ -6565,37 +6565,43 @@ Equipa FestLift</textarea>
 
     async function scheduleMaintenance(liftId) {
         console.log('🔧 A planear manutenção do elevador:', liftId);
-        
-        // Pode-se abrir модальне вікно планування ou перенаправити
+
         const maintenanceDate = prompt('Introduza a data de manutenção planeada (AAAA-MM-DD):');
-        
-        if (maintenanceDate) {
-            // Тут pode-se adicionar логіку збереження в API
-            toastr.info(`Manutenção planeada para ${maintenanceDate}`);
-            
-            // Actualizar estado do elevador
-            const lifts = JSON.parse(localStorage.getItem('lifts') || '[]');
-            const liftIndex = lifts.findIndex(l => (l._id || l.id) === liftId);
-            
-            if (liftIndex !== -1) {
-                lifts[liftIndex].nextMaintenance = maintenanceDate;
-                lifts[liftIndex].status = 'maintenance';
-                localStorage.setItem('lifts', JSON.stringify(lifts));
-                
-                // Actualizar allLiftsData і guardar atual pesquisa/filtros
-                if (window.allLiftsData) {
-                    const globalIdx = window.allLiftsData.findIndex(l => (l._id || l.id)?.toString() === liftId?.toString());
-                    if (globalIdx !== -1) {
-                        window.allLiftsData[globalIdx].nextMaintenance = maintenanceDate;
-                        window.allLiftsData[globalIdx].status = 'maintenance';
-                    }
-                }
-                if (typeof applyAllFilters === 'async function') {
-                    applyAllFilters();
-                } else {
-                    displayLiftsInTable(lifts);
-                }
+        if (!maintenanceDate) return;
+
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(maintenanceDate) || isNaN(new Date(maintenanceDate).getTime())) {
+            toastr.error('Data inválida. Use o formato AAAA-MM-DD.');
+            return;
+        }
+
+        const token = (typeof AuthManager !== 'undefined') ? AuthManager.getAuthToken()
+            : (localStorage.getItem('liftmanager_jwt') || localStorage.getItem('authToken'));
+
+        try {
+            const response = await fetch('/api/requests', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    type: 'maintenance',
+                    liftId,
+                    scheduledDate: maintenanceDate,
+                    priority: 'medium'
+                })
+            });
+            const data = await response.json();
+            if (!response.ok || !data.success) {
+                throw new Error(data.message || `HTTP ${response.status}`);
             }
+            toastr.success(`Manutenção agendada para ${maintenanceDate}`);
+            if (typeof window.loadLiftsFromAPI === 'function') {
+                window.loadLiftsFromAPI();
+            }
+        } catch (err) {
+            console.error('❌ Erro ao agendar manutenção:', err);
+            toastr.error(err.message || 'Erro ao agendar manutenção');
         }
     }
 

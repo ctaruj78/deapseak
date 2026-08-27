@@ -828,8 +828,8 @@ document.addEventListener("DOMContentLoaded", function() {
                                 <tr>
                                     <th class="bg-light">Estado</th>
                                     <td>
-                                        <span class="badge badge-${lift.status === 'active' ? 'success' : lift.status === 'maintenance' ? 'warning' : 'danger'}">
-                                            ${lift.status === 'active' ? '✓ Activo' : lift.status === 'maintenance' ? '⚠ Em manutenção' : '✗ Avariado'}
+                                        <span class="badge badge-${(lift.status === 'operational' || lift.status === 'active') ? 'success' : (lift.status === 'maintenance' || lift.status === 'repair' || lift.status === 'inspection') ? 'warning' : 'danger'}">
+                                            ${(lift.status === 'operational' || lift.status === 'active') ? '✓ Activo' : (lift.status === 'maintenance' || lift.status === 'repair' || lift.status === 'inspection') ? '⚠ Em manutenção' : '✗ Avariado'}
                                         </span>
                                     </td>
                                 </tr>

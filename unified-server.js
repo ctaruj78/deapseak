@@ -13901,7 +13901,10 @@ app.use('/api/auth/refresh', refreshLimiter);         // захист від tok
 app.use('/api/auth/forgot-password', forgotPasswordLimiter); // захист від email spam
 app.use('/api/auth/reset-password', forgotPasswordLimiter);  // захист від token-submission abuse
 app.use('/api/auth', authRoutes);
-app.use('/api/users', authRoutes); // authRoutes містить /users endpoints
+// ⚠️ NÃO montar authRoutes também em /api/users: todos os endpoints que o
+// frontend usa em /api/users/* já têm rota dedicada e autenticada mais
+// abaixo neste ficheiro; montar o router aqui só expunha /login, /register,
+// /forgot-password, /reset-password e /refresh sem os rate limiters acima.
 
 // 🏢 Lift Routes (CRUD операції з ліфтами)
 const liftRoutes = require('./backend/routes/liftRoutes');
@@ -13958,7 +13961,6 @@ app.use('/api/saft', saftRoutes);
 
 console.log('✅ Backend API routes підключено:');
 console.log('   - /api/auth (login, register, profile)');
-console.log('   - /api/users (через authRoutes)');
 console.log('   - /api/lifts (CRUD ліфтів)');
 console.log('   - /api/requests (завдання, інспекції)');
 console.log('   - /api/settings (налаштування)');
@@ -15977,8 +15979,27 @@ app.use('/docs', (req, res, next) => {
 // provada frágil), usa-se uma allow-list: só as pastas/ficheiros que o frontend
 // realmente precisa passam para o express.static; tudo o resto dá 404.
 const STATIC_ALLOWED_DIRS = new Set([
-    'assets', 'pages', 'plugins', 'components', 'mobile', 'uploads', 'templates'
+    'assets', 'pages', 'plugins', 'components', 'mobile', 'templates'
 ]);
+// uploads/ contém documentos sensíveis de clientes reais (autos de inspeção,
+// exportações SAF-T, orçamentos, requerimentos) — não pode ser servido
+// publicamente. Só uploads/avatars fica público (fotos de perfil, já
+// referenciadas em <img src> sem autenticação em toda a app); tudo o resto
+// exige uma sessão válida (o cookie auth_token já é definido em auth.js
+// login()/refresh(), por isso <img>/<a> normais continuam a funcionar).
+function isAuthenticatedForUploads(req) {
+    const authHeader = req.headers['authorization'];
+    const token = (authHeader && authHeader.split(' ')[1]) ||
+                  req.headers['x-auth-token'] ||
+                  req.cookies?.auth_token;
+    if (!token) return false;
+    try {
+        jwt.verify(token, JWT_SECRET);
+        return true;
+    } catch (_err) {
+        return false;
+    }
+}
 const STATIC_ALLOWED_FILES = new Set([
     'index.html', '404.html', 'offline.html', 'manifest.json',
     'sw.js', 'service-worker.js', 'sw-offline.js', 'LICENSE'
@@ -16002,6 +16023,11 @@ app.use((req, res, next) => {
     if (decodedPath === '/docs/user-manual.pdf' || decodedPath === '/docs/user-manual-short.webm') return next();
     const segments = decodedPath.split('/').filter(Boolean);
     const first = segments[0];
+    if (first === 'uploads') {
+        if (segments[1] === 'avatars') return next();
+        if (isAuthenticatedForUploads(req)) return next();
+        return res.status(401).send('Não autenticado');
+    }
     if (segments.length === 1 && STATIC_ALLOWED_FILES.has(first)) return next();
     if (STATIC_ALLOWED_DIRS.has(first)) return next();
     return res.status(404).send('Not found');
