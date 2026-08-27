@@ -895,7 +895,7 @@
                             createdBy: req.createdBy || 'Desconhecido',
                             assignedTo: req.technician,
                             technicianName: req.technicianName || '',
-                            deadline: req.deadline || req.scheduledAt,
+                            deadline: req.deadline || req.scheduledDate || req.scheduledAt,
                             resolution: req.resolution || req.workDetails?.summary || ''
                         }));
                     } else {

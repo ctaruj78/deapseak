@@ -2409,7 +2409,7 @@ function escapeHtml(s) {
                             </div>
                             
                             <!-- Paginação -->
-                            <div id="reports-pagination" class="d-flex justify-content-between align-items-center mt-2" style="display: none !important;">
+                            <div id="reports-pagination" class="justify-content-between align-items-center mt-2" style="display: none;">
                                 <small class="text-muted">
                                     A mostrar <span id="reports-showing">0</span> de <span id="reports-total">0</span>
                                 </small>
@@ -9553,14 +9553,14 @@ Email de contacto: info@festlift.pt`;
                         var slAddr = sl.address ? (sl.address.street || '') : '';
                         var slNum  = sl.municipalNumber || sl.serialNumber || sl._id;
                         $('#pdfAutoLiftName').text(slNum + (slAddr ? ' — ' + slAddr : ''));
-                        $('#pdfAutoLiftFound').show();
+                        $('#pdfAutoLiftFound').css('display', 'flex');
                         $('#pdfAutoLiftNotFound').hide();
                         $('#pdfLiftSelectRow').hide();
                     } else {
                         // Ambiguous or low-confidence — ALWAYS show dropdown so user chooses the correct lift
                         sel.prepend('<option value="">— Selecione o elevador —</option>');
                         sel.val(data.suggestedLift ? data.suggestedLift._id : '');
-                        $('#pdfAutoLiftFound').hide();
+                        $('#pdfAutoLiftFound').css('display', 'none');
                         $('#pdfAutoLiftNotFound').hide();
                         $('#pdfLiftSelectRow').show();
                         // Show warning when multiple lifts share the same address
@@ -9635,7 +9635,7 @@ Email de contacto: info@festlift.pt`;
                         });
                     } catch(_) {}
 
-                    $('#pdfAutoLiftFound').hide();
+                    $('#pdfAutoLiftFound').css('display', 'none');
                     $('#pdfAutoLiftNotFound').show();
                     $('#pdfLiftSelectRow').show();
                 }
@@ -9746,7 +9746,7 @@ Email de contacto: info@festlift.pt`;
                 // Show results
                 $('#pdfParserLoading').hide();
                 $('#pdfParserResults').show();
-                $('#pdfParserFooterConfirm').show();
+                $('#pdfParserFooterConfirm').css('display', 'flex');
 
             } catch (err) {
                 $('#pdfParserLoading').hide();
@@ -9785,7 +9785,7 @@ Email de contacto: info@festlift.pt`;
         // Back button
         $(document).on('click', '#pdfParserBackBtn', function() {
             $('#pdfParserResults').hide();
-            $('#pdfParserFooterConfirm').hide();
+            $('#pdfParserFooterConfirm').css('display', 'none');
             $('#pdfParserStep1').show();
             $('#pdfParserFooterStep1').show();
         });
@@ -9793,7 +9793,7 @@ Email de contacto: info@festlift.pt`;
         // "Alterar elevador" link — reveal dropdown when auto-found
         $(document).on('click', '#pdfAutoLiftChangeLink', function(e) {
             e.preventDefault();
-            $('#pdfAutoLiftFound').hide();
+            $('#pdfAutoLiftFound').css('display', 'none');
             $('#pdfLiftSelectRow').show();
         });
 
@@ -9927,7 +9927,7 @@ Email de contacto: info@festlift.pt`;
             $('#pdfParserLoading').hide();
             $('#pdfParserResults').hide();
             $('#pdfParserFooterStep1').show();
-            $('#pdfParserFooterConfirm').hide();
+            $('#pdfParserFooterConfirm').css('display', 'none');
             $('#pdfParserConfirmBtn').prop('disabled', false).html('<i class="fas fa-check mr-1"></i> Sim, guardar');
 
             // Full reset of parsed/edited fields and dynamic blocks
@@ -9959,7 +9959,7 @@ Email de contacto: info@festlift.pt`;
                     var _num = _preLift.municipalNumber || _preLift._id;
                     $('#pdfParserLiftSelect').empty().append('<option value="' + _preId + '" selected>' + _num + (_addr ? ' — ' + _addr : '') + '</option>');
                     $('#pdfAutoLiftName').text(_num + (_addr ? ' — ' + _addr : ''));
-                    $('#pdfAutoLiftFound').show();
+                    $('#pdfAutoLiftFound').css('display', 'flex');
                     $('#pdfAutoLiftNotFound').hide();
                     $('#pdfLiftSelectRow').hide();
                 }
@@ -10123,7 +10123,7 @@ Email de contacto: info@festlift.pt`;
                     <div class="form-group" id="pdfParserLiftGroup">
                         <label class="font-weight-bold small"><i class="fas fa-elevator mr-1"></i> Elevador</label>
                         <!-- Auto-found with high confidence -->
-                        <div id="pdfAutoLiftFound" class="alert alert-success py-2 mb-1 d-flex justify-content-between align-items-center" style="display:none!important;font-size:.85rem;">
+                        <div id="pdfAutoLiftFound" class="alert alert-success py-2 mb-1 justify-content-between align-items-center" style="display:none;font-size:.85rem;">
                             <span><i class="fas fa-check-circle mr-1"></i> <strong>Elevador encontrado:</strong> <span id="pdfAutoLiftName"></span></span>
                             <a href="#" id="pdfAutoLiftChangeLink" class="text-success ml-2" style="font-size:.8rem;white-space:nowrap;">(Alterar)</a>
                         </div>
@@ -10150,7 +10150,7 @@ Email de contacto: info@festlift.pt`;
                 <div id="pdfParserFooterStep1">
                     <button class="btn btn-secondary btn-sm" data-dismiss="modal">Cancelar</button>
                 </div>
-                <div id="pdfParserFooterConfirm" style="display:none;" class="d-flex w-100 justify-content-between align-items-center">
+                <div id="pdfParserFooterConfirm" style="display:none;" class="w-100 justify-content-between align-items-center">
                     <button class="btn btn-outline-secondary btn-sm" id="pdfParserBackBtn">
                         <i class="fas fa-arrow-left mr-1"></i> Anterior
                     </button>

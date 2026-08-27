@@ -1024,11 +1024,12 @@
                         const error = await response.json();
                         throw new Error(error.message || 'Erro de atribuição');
                     }
-                    // Also update deadline/scheduledAt via PUT if provided
+                    // Also update deadline/scheduledDate via PUT if provided
+                    // (scheduledDate is the field the technician's calendar/tasks actually read)
                     if (extras.deadline) {
                         await AuthManager.fetchWithAuth(`/api/requests/${requestId}`, {
                             method: 'PUT',
-                            body: JSON.stringify({ deadline: extras.deadline, scheduledAt: extras.deadline })
+                            body: JSON.stringify({ deadline: extras.deadline, scheduledDate: extras.deadline })
                         });
                     }
                     console.log('✅ Pedido atribuído com sucesso');
@@ -1734,7 +1735,7 @@
                 this.currentViewingAssignment = assignment;
                 
                 // ── Prazo (4.ª coluna da barra de info) ──
-                const deadlineVal = assignment.deadline || assignment.scheduledAt;
+                const deadlineVal = assignment.deadline || assignment.scheduledDate || assignment.scheduledAt;
                 if (deadlineVal) {
                     const isOverdue = new Date(deadlineVal) < new Date() && assignment.status !== 'completed';
                     $('#modalDeadline').html(`<span class="${isOverdue ? 'text-danger' : ''}">${new Date(deadlineVal).toLocaleDateString('pt-PT')}</span>`);
@@ -1815,14 +1816,15 @@
                     return;
                 }
                 const html = comments.map(c => {
-                    const name = (c.user && (c.user.username || c.user.firstName)) || 'Utilizador';
+                    const name = this.escapeHtml((c.user && (c.user.username || c.user.firstName)) || 'Utilizador');
                     const time = c.createdAt ? new Date(c.createdAt).toLocaleString('pt-PT') : '';
+                    const text = this.escapeHtml(c.text || '');
                     return `<div class="border-bottom pb-2 mb-2">
                         <div class="d-flex justify-content-between align-items-start">
                             <strong class="text-primary"><i class="fas fa-user-circle mr-1"></i>${name}</strong>
                             <small class="text-muted">${time}</small>
                         </div>
-                        <p class="mb-0 mt-1">${c.text || ''}</p>
+                        <p class="mb-0 mt-1">${text}</p>
                     </div>`;
                 }).join('');
                 $('#dispCommentsList').html(html);
@@ -1836,7 +1838,7 @@
                 const assignment = this.assignments.find(a => a.id === aid);
                 const mongoId = assignment?._id || aid;
                 try {
-                    const resp = await AuthManager.fetchWithAuth(`/api/requests/${mongoId}/comments`, {
+                    const resp = await AuthManager.fetchWithAuth(`/api/requests/${mongoId}/comment`, {
                         method: 'POST', body: JSON.stringify({ text })
                     });
                     if (!resp || !resp.ok) throw new Error('Erro');

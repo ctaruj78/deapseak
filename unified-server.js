@@ -1512,7 +1512,7 @@ app.post('/api/qr/public/alert', async (req, res) => {
             return res.status(503).json({ success: false, message: 'Base de dados indisponível' });
         }
 
-        const ip = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket.remoteAddress || 'unknown';
+        const ip = req.ip || req.socket.remoteAddress || 'unknown';
 
         // Honeypot field anti-bot: responder sucesso silencioso sem criar alerta
         if (req.body && typeof req.body.website === 'string' && req.body.website.trim()) {
@@ -1846,9 +1846,12 @@ app.delete('/api/qr/history', authenticateToken, async (req, res) => {
 });
 
 // DELETE single scan record
-app.delete('/api/qr/history/:id', authenticateToken, async (req, res) => {
+app.delete('/api/qr/history/:id', authenticateToken, requireRole('admin', 'dispatcher'), async (req, res) => {
     try {
         if (!db) return res.status(503).json({ success: false, message: 'Base de dados indisponível' });
+        if (!isValidObjectId(req.params.id)) {
+            return res.status(400).json({ success: false, message: 'ID inválido' });
+        }
         const { ObjectId } = require('mongodb');
         const result = await db.collection('qr_scans').deleteOne({ _id: new ObjectId(req.params.id) });
         if (result.deletedCount === 0) return res.status(404).json({ success: false, message: 'Leitura não encontrada' });
@@ -12709,7 +12712,7 @@ async function _callGuestAI(prompt) {
 // POST /api/ai/guest-analyze — аналіз звіту (ліміт 2/добу)
 app.post('/api/ai/guest-analyze', async (req, res) => {
     try {
-        const ip = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket.remoteAddress || 'unknown';
+        const ip = req.ip || req.socket.remoteAddress || 'unknown';
         const usage = _getGuestUsage(ip);
 
         if (usage.reports >= _GUEST_REPORT_LIMIT) {
@@ -12762,7 +12765,7 @@ ${reportText.substring(0, 6000)}
 // POST /api/ai/guest-chat — chat para convidados (ліміт 20 msg/добу)
 app.post('/api/ai/guest-chat', async (req, res) => {
     try {
-        const ip = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.socket.remoteAddress || 'unknown';
+        const ip = req.ip || req.socket.remoteAddress || 'unknown';
         const usage = _getGuestUsage(ip);
 
         if (usage.chat >= _GUEST_CHAT_LIMIT) {

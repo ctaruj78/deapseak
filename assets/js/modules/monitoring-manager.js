@@ -902,6 +902,25 @@ class MonitoringManager {
         // Тут буде код для відображення QR коду
     }
 
+    // Rolar até ao painel de alertas (botão de sino da barra de navegação)
+    showAlerts() {
+        const container = document.getElementById('alertsContainer') ||
+                         document.querySelector('.alerts-container');
+        if (container) {
+            container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }
+
+    // Alternar autoatualização (botão da barra de navegação)
+    toggleAutoRefresh() {
+        this.autoRefresh = !this.autoRefresh;
+        const checkbox = document.getElementById('autoRefreshToggle');
+        if (checkbox) checkbox.checked = this.autoRefresh;
+        if (typeof toastr !== 'undefined') {
+            toastr.info(this.autoRefresh ? 'Autoatualização ativada' : 'Autoatualização desativada');
+        }
+    }
+
     // Підтвердження сповіщення
     async acknowledgeAlert(alertId) {
         try {
@@ -912,14 +931,14 @@ class MonitoringManager {
                 
                 // API виклик
                 const token = localStorage.getItem('token') || localStorage.getItem('authToken');
-                await fetch(`${this.apiUrl}/monitoring/alerts/${alertId}/acknowledge`, {
-                    method: 'PUT',
+                await fetch(`${this.apiUrl}/notifications/${alertId}/read`, {
+                    method: 'PATCH',
                     headers: {
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
                     }
                 });
-                
+
                 console.log('✅ Notificações підтверджено:', alertId);
             }
         } catch (error) {
@@ -938,14 +957,14 @@ class MonitoringManager {
                 
                 // API виклик
                 const token = localStorage.getItem('token') || localStorage.getItem('authToken');
-                await fetch(`${this.apiUrl}/monitoring/alerts/${alertId}/resolve`, {
-                    method: 'PUT',
+                await fetch(`${this.apiUrl}/notifications/${alertId}`, {
+                    method: 'DELETE',
                     headers: {
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
                     }
                 });
-                
+
                 console.log('✅ Notificações вирішено:', alertId);
             }
         } catch (error) {

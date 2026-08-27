@@ -205,11 +205,16 @@
             <section class="content">
                 <div class="container-fluid">
                     <div class="card">
-                        <div class="card-header">
-                            <h3 class="card-title">Recentes notificações</h3>
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <h3 class="card-title mb-0">Notificações recentes</h3>
+                            <button class="btn btn-sm btn-outline-secondary" id="markAllReadBtn">Marcar todas como lidas</button>
                         </div>
                         <div class="card-body">
-                            <p>Aqui será apresentado lista de notificações para do técnico.</p>
+                            <div id="notificationsLoading" class="text-center text-muted py-3">
+                                <i class="fas fa-spinner fa-spin"></i> A carregar...
+                            </div>
+                            <ul class="list-group" id="notificationsList" style="display:none;"></ul>
+                            <p id="notificationsEmpty" class="text-muted text-center py-3" style="display:none;">Sem notificações.</p>
                         </div>
                     </div>
                 </div>
@@ -226,6 +231,87 @@
     <script src="../../plugins/jquery/jquery.min.js"></script>
     <script src="../../plugins/bootstrap/bootstrap.bundle.min.js"></script>
     <script src="../../plugins/adminlte/adminlte.min.js"></script>
+    <script>
+        function escapeHtml(s) {
+            if (s == null) return '';
+            return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+        }
+
+        function getToken() {
+            return (typeof AuthManager !== 'undefined' && AuthManager.getAuthToken)
+                ? AuthManager.getAuthToken()
+                : (localStorage.getItem('liftmanager_jwt') || localStorage.getItem('authToken') || localStorage.getItem('token'));
+        }
+
+        async function loadNotifications() {
+            const token = getToken();
+            const loading = document.getElementById('notificationsLoading');
+            const list = document.getElementById('notificationsList');
+            const empty = document.getElementById('notificationsEmpty');
+            try {
+                const res = await fetch('/api/notifications', { headers: { 'Authorization': `Bearer ${token}` } });
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const data = await res.json();
+                const notifications = data.notifications || data.data || [];
+                loading.style.display = 'none';
+                if (!notifications.length) {
+                    empty.style.display = 'block';
+                    list.style.display = 'none';
+                    return;
+                }
+                list.style.display = 'block';
+                empty.style.display = 'none';
+                list.innerHTML = notifications.map(n => {
+                    const when = n.createdAt ? new Date(n.createdAt).toLocaleString('pt-PT') : '';
+                    const unread = !n.read;
+                    return `<li class="list-group-item d-flex justify-content-between align-items-start ${unread ? 'font-weight-bold' : ''}" data-id="${escapeHtml(n._id)}">
+                        <div>
+                            <i class="${escapeHtml(n.icon || 'fas fa-bell')} mr-2 text-${unread ? 'primary' : 'muted'}"></i>
+                            ${escapeHtml(n.title || 'Notificação')}
+                            <div class="small text-muted font-weight-normal">${escapeHtml(n.message || '')}</div>
+                            <div class="small text-muted font-weight-normal">${when}</div>
+                        </div>
+                        <div class="btn-group">
+                            ${unread ? `<button class="btn btn-sm btn-outline-secondary" onclick="markRead('${escapeHtml(n._id)}')" title="Marcar como lida"><i class="fas fa-check"></i></button>` : ''}
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteNotification('${escapeHtml(n._id)}')" title="Remover"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </li>`;
+                }).join('');
+            } catch (err) {
+                console.error('❌ Erro ao carregar notificações:', err);
+                loading.style.display = 'none';
+                empty.textContent = 'Erro ao carregar notificações.';
+                empty.style.display = 'block';
+            }
+        }
+
+        async function markRead(id) {
+            const token = getToken();
+            try {
+                await fetch(`/api/notifications/${id}/read`, { method: 'PATCH', headers: { 'Authorization': `Bearer ${token}` } });
+                loadNotifications();
+            } catch (err) { console.error('❌ Erro ao marcar como lida:', err); }
+        }
+
+        async function deleteNotification(id) {
+            const token = getToken();
+            try {
+                await fetch(`/api/notifications/${id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${token}` } });
+                loadNotifications();
+            } catch (err) { console.error('❌ Erro ao remover notificação:', err); }
+        }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            loadNotifications();
+            document.getElementById('markAllReadBtn')?.addEventListener('click', async function() {
+                const token = getToken();
+                try {
+                    await fetch('/api/notifications/read-all', { method: 'PATCH', headers: { 'Authorization': `Bearer ${token}` } });
+                    loadNotifications();
+                } catch (err) { console.error('❌ Erro ao marcar todas como lidas:', err); }
+            });
+        });
+    </script>
 </body>
 </html>
 <script src="../../assets/js/monitor.js"></script>

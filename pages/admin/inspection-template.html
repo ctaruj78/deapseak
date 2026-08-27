@@ -119,9 +119,6 @@
                                         <button class="btn btn-success btn-sm" onclick="saveInspection()">
                                             <i class="fas fa-save"></i> Guardar
                                         </button>
-                                        <button class="btn btn-info btn-sm" onclick="loadTemplate()">
-                                            <i class="fas fa-file-import"></i> Carregar modelo
-                                        </button>
                                     </div>
                                 </div>
                                 <div class="card-body">
@@ -645,38 +642,6 @@
                 return checklist;
             },
 
-            loadTemplate() {
-                // Load a predefined inspection template
-                $('#inspector').val('João Silva');
-                $('#liftLocation').val('Rua Principal, 10, Entrada 1');
-                $('#liftModel').val('OTIS Gen2');
-                $('#clientEmail').val('cliente@exemplo.pt');
-                $('#generalComments').val('Realizada manutenção mensal do equipamento de elevação conforme requisitos de segurança. Equipamento em bom estado geral.');
-                $('#recommendations').val('Recomenda-se a substituição de componentes desgastados no prazo de 30 dias. Atenção especial ao sistema de travagem.');
-                
-                // Preenchaer alguns itens do checklist como exemplo
-                $('[data-item="para-quedas"] select').val('ok');
-                $('[data-item="para-quedas"] input').val('Sistema funcional, testado com sucesso');
-                
-                $('[data-item="emergency-brake"] select').val('ok');
-                $('[data-item="emergency-brake"] input').val('Travão operacional');
-                
-                $('[data-item="alarme"] select').val('warning');
-                $('[data-item="alarme"] input').val('Volume do alarme baixo - recomenda-se verificação');
-                
-                $('[data-item="door-locks"] select').val('ok');
-                
-                $('[data-item="cables"] select').val('ok');
-                $('[data-item="cables"] input').val('Cabos em bom estado, sem desgaste visível');
-                
-                $('[data-item="motor"] select').val('ok');
-                
-                $('[data-item="electric-panel"] select').val('error');
-                $('[data-item="electric-panel"] input').val('URGENTE: Contactores com sinais de sobreaquecimento - substituir imediatamente');
-                
-                this.updateReportPreview();
-            },
-
             async prefillFromLiftContext() {
                 const params = new URLSearchParams(window.location.search);
                 const liftId = params.get('liftId');
@@ -1043,10 +1008,6 @@
         // Global functions
         async function saveInspection() {
             await inspectionManager.saveInspection();
-        }
-
-        function loadTemplate() {
-            inspectionManager.loadTemplate();
         }
 
         function printReport() {

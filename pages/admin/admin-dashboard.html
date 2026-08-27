@@ -634,8 +634,12 @@
         function parseArrayResult(payload) {
             if (Array.isArray(payload)) return payload;
             if (Array.isArray(payload?.data)) return payload.data;
+            if (Array.isArray(payload?.data?.lifts)) return payload.data.lifts;
+            if (Array.isArray(payload?.data?.requests)) return payload.data.requests;
+            if (Array.isArray(payload?.data?.users)) return payload.data.users;
             if (Array.isArray(payload?.users)) return payload.users;
             if (Array.isArray(payload?.requests)) return payload.requests;
+            if (Array.isArray(payload?.lifts)) return payload.lifts;
             return [];
         }
 
@@ -873,7 +877,9 @@
 
                     if (liftsRes && liftsRes.ok) {
                         const liftsData = await liftsRes.json();
-                        totalLifts = Array.isArray(liftsData) ? liftsData.length : (liftsData.data?.length || 0);
+                        totalLifts = Array.isArray(liftsData) ? liftsData.length
+                            : Array.isArray(liftsData.data?.lifts) ? (liftsData.data.pagination?.total ?? liftsData.data.lifts.length)
+                            : (liftsData.data?.length || 0);
                     }
 
                     if (requestsRes && requestsRes.ok) {

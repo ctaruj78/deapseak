@@ -45,6 +45,7 @@ class NotificationManager {
                     this.filteredNotifications = [...this.notifications];
                     this.renderNotifications();
                     this.updateBadges();
+                    this.updateStats();
                 })
                 .catch((error) => {
                     console.error('Erro ao carregar notificações reais:', error);
@@ -52,6 +53,7 @@ class NotificationManager {
                     this.filteredNotifications = [];
                     this.renderNotifications();
                     this.updateBadges();
+                    this.updateStats();
                 });
         } catch (error) {
             console.error('Erro a carregar notificações:', error);
@@ -98,8 +100,17 @@ class NotificationManager {
         this.showNotification('Definições guardadas', 'success');
     }
 
-    saveNotifications() {
-        // No local demo cache anymore; keep only in-memory state.
+    getToken() {
+        return sessionStorage.getItem('liftmanager_jwt')
+            || localStorage.getItem('liftmanager_jwt')
+            || localStorage.getItem('authToken')
+            || localStorage.getItem('token')
+            || '';
+    }
+
+    _esc(s) {
+        if (s == null) return '';
+        return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
     }
 
     renderNotifications() {
@@ -137,8 +148,9 @@ class NotificationManager {
         
         const typeIcon = this.getTypeIcon(notification.type);
         const priorityBadge = this.getPriorityBadge(notification.priority);
-        const timeAgo = this.getTimeAgo(notification.timestamp);
-        
+        const timeAgo = this.getTimeAgo(notification.createdAt || notification.timestamp);
+        const id = notification._id || notification.id;
+
         div.innerHTML = `
             <div class="card-body">
                 <div class="d-flex align-items-start">
@@ -147,17 +159,17 @@ class NotificationManager {
                     </div>
                     <div class="notification-content">
                         <div class="d-flex justify-content-between align-items-start">
-                            <h5 class="notification-title">${notification.title}</h5>
+                            <h5 class="notification-title">${this._esc(notification.title)}</h5>
                             <div class="notification-actions">
-                                <button class="btn btn-sm btn-outline-secondary" onclick="notificationManager.toggleRead(${notification.id})" title="${notification.read ? 'Marcar como não lido' : 'Marcar como lido'}">
+                                <button class="btn btn-sm btn-outline-secondary" onclick="notificationManager.toggleRead('${id}')" title="${notification.read ? 'Marcar como não lido' : 'Marcar como lido'}">
                                     <i class="fas ${notification.read ? 'fa-envelope' : 'fa-envelope-open'}"></i>
                                 </button>
-                                <button class="btn btn-sm btn-outline-danger" onclick="notificationManager.deleteNotification(${notification.id})" title="Eliminar">
+                                <button class="btn btn-sm btn-outline-danger" onclick="notificationManager.deleteNotification('${id}')" title="Eliminar">
                                     <i class="fas fa-trash"></i>
                                 </button>
                             </div>
                         </div>
-                        <p class="notification-message">${notification.message}</p>
+                        <p class="notification-message">${this._esc(notification.message)}</p>
                         <div class="notification-meta">
                             ${priorityBadge}
                             <span class="notification-time">${timeAgo}</span>
@@ -167,11 +179,11 @@ class NotificationManager {
             </div>
             <div class="card-footer bg-transparent">
                 <div class="btn-group btn-group-sm">
-                    <button class="btn btn-outline-primary" onclick="notificationManager.viewNotification(${notification.id})">
+                    <button class="btn btn-outline-primary" onclick="notificationManager.viewNotification('${id}')">
                         <i class="fas fa-eye"></i> Ver
                     </button>
                     ${notification.actionUrl ? `
-                    <button class="btn btn-outline-success" onclick="location.href='${notification.actionUrl}'">
+                    <button class="btn btn-outline-success" onclick="location.href='${this._esc(notification.actionUrl)}'">
                         <i class="fas fa-external-link-alt"></i> Detalhes
                     </button>
                     ` : ''}
@@ -259,8 +271,8 @@ class NotificationManager {
     }
 
     sortByDate() {
-        this.filteredNotifications.sort((a, b) => 
-            new Date(b.timestamp) - new Date(a.timestamp)
+        this.filteredNotifications.sort((a, b) =>
+            new Date(b.createdAt || b.timestamp) - new Date(a.createdAt || a.timestamp)
         );
         this.renderNotifications();
         this.showNotification('Ordenado por data', 'info');
@@ -276,18 +288,18 @@ class NotificationManager {
     }
 
     viewNotification(id) {
-        const notification = this.notifications.find(n => n.id === id);
+        const notification = this.notifications.find(n => (n._id || n.id) === id);
         if (!notification) return;
-        
+
         // Позначити як прочитане
         if (!notification.read) {
             this.toggleRead(id);
         }
-        
+
         // Заповнити модальне вікно
         document.getElementById('modalNotificationTitle').textContent = notification.title;
         document.getElementById('modalNotificationContent').textContent = notification.message;
-        document.getElementById('modalNotificationTime').textContent = this.getTimeAgo(notification.timestamp);
+        document.getElementById('modalNotificationTime').textContent = this.getTimeAgo(notification.createdAt || notification.timestamp);
         
         // Іконка та пріоритет
         const iconElement = document.getElementById('modalNotificationIcon');
