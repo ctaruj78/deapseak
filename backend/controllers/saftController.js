@@ -300,12 +300,17 @@ exports.uploadSaft = async (req, res) => {
 
         // If a pendentes was imported within 90 days, use it — it shows ALL outstanding
         // invoices accumulated across all months, not just this SAF-T period.
+        // Only makes sense for a SAF-T whose own period is itself recent — a historical
+        // backfill (e.g. re-importing 2021 invoices today) must never be stamped with
+        // today's global pendentes snapshot.
         const pendentes = settings?.pendentes;
         const pendDaysOld = pendentes?.importedAt
             ? daysBetween(pendentes.importedAt, new Date())
             : 999;
+        const periodEnd = period.end || period.start;
+        const periodIsRecent = periodEnd ? daysBetween(periodEnd, new Date()) <= 90 : true;
 
-        if (pendentes?.debtors?.length && pendDaysOld <= 90) {
+        if (pendentes?.debtors?.length && pendDaysOld <= 90 && periodIsRecent) {
             // Use pendentes as the authoritative debtor source for this SAF-T record
             for (const d of pendentes.debtors) {
                 if (ignoredNifs.has(d.customerTaxId)) continue;

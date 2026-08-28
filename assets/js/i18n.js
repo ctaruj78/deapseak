@@ -291,7 +291,7 @@ class I18n {
                 dashboard: 'Painel',
                 lifts: 'Elevadores',
                 requests: 'Solicitações',
-                users: 'Usuários',
+                users: 'Utilizadores',
                 analytics: 'Análises',
                 settings: 'Configurações',
                 profile: 'Perfil',

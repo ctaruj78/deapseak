@@ -6694,9 +6694,8 @@ Equipa FestLift</textarea>
     // Função atualização da interface desde даними API
     async function refreshLiftsDisplay() {
         try {
-            const lifts = await loadLiftsFromAPI();
-            // Оновлюexisteмо separadorлицю de elevadores
-            displayLiftsInTable(lifts);
+            await loadLiftsFromAPI();
+            // Tabela já foi paginada e renderizada dentro de loadLiftsFromAPI
             console.log('🔄 Interface actualizada com dados da API');
         } catch (error) {
             console.error('❌ Erro ao actualizar interface:', error);
@@ -7978,7 +7977,8 @@ Equipa FestLift</textarea>
             // Тільки tabela показуexiste відfiltroовані dados
             updateLiftsStatistics(window.allLiftsData);
         }
-        
+        window.applyAllFilters = applyAllFilters;
+
         if (statusFilter) {
             statusFilter.addEventListener('change', function() {
                 // Скидаexisteмо на першу a página при зміні filtroу
