@@ -172,8 +172,10 @@ function extractMetadata(text) {
             /instala[çc][ãa]o\s*:?\s*([^\n]{10,120})/i,
             // 6. City + postal code (reversed)
             /([A-ZÀ-Ú][a-zà-úa-z\s]+,\s*\d{4}[-\s]\d{3})/,
-            // 7. "local:" labeled
-            /local\s*:?\s*([^\n]{10,120})/i,
+            // 7. "local:" labeled — anchored to start of line so it doesn't match
+            //    "local" appearing mid-sentence inside violation/article text
+            //    (e.g. "...entre o local de resgate e cabina..." in Art. E14 2.2.2)
+            /^\s*local\s*:?\s*([^\n]{10,120})/im,
             // 8. Building/edificio
             /(?:Edif[íi]cio|Pr[ée]dio)\s+([^\n]{10,120})/i,
             // 9. Rua/Avenida — LAST RESORT: may match inspection company HQ address
