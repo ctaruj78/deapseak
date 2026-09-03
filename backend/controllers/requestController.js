@@ -221,9 +221,10 @@ exports.getAllRequests = async (req, res, next) => {
 
         // Пошук по заголовку ou опису
         if (search) {
+            const safeSearch = String(search).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
             query.$or = [
-                { title: { $regex: search, $options: 'i' } },
-                { description: { $regex: search, $options: 'i' } }
+                { title: { $regex: safeSearch, $options: 'i' } },
+                { description: { $regex: safeSearch, $options: 'i' } }
             ];
         }
 
@@ -335,6 +336,11 @@ exports.updateRequest = async (req, res, next) => {
             if (request.status !== 'new') {
                 throw new AppError('Só é possível editar pedidos novos', 400);
             }
+        }
+
+        // Técnico só pode editar pedidos que lhe estão atribuídos
+        if (req.user.role === 'technician' && request.assignedTo?.toString() !== req.user.id) {
+            throw new AppError('Acesso negado. Este pedido não está atribuído a si.', 403);
         }
 
         Object.assign(request, updates);
@@ -467,6 +473,17 @@ exports.updateRequestStatus = async (req, res, next) => {
             throw new AppError('Цей запит призначено іншому техніку', 403);
         }
 
+        // Клієнт може змінювати статус тільки своїх запитів, і тільки скасовувати їх —
+        // призначення/виконання запиту належить диспетчеру/техніку
+        if (req.user.role === 'client') {
+            if (request.client?.toString() !== req.user.id) {
+                throw new AppError('Acesso negado', 403);
+            }
+            if (status !== 'cancelled') {
+                throw new AppError('Clientes só podem cancelar os seus próprios pedidos', 403);
+            }
+        }
+
         const oldStatus = request.status;
         await request.changeStatus(status, req.user.id);
         await request.save();
@@ -517,6 +534,15 @@ exports.addComment = async (req, res, next) => {
             throw new AppError('Pedido não encontrado', 404);
         }
 
+        // Cliente só pode comentar nos seus próprios pedidos; técnico só nos que lhe
+        // estão atribuídos — admin/dispatcher sem restrição
+        if (req.user.role === 'client' && request.client?.toString() !== req.user.id) {
+            throw new AppError('Acesso negado', 403);
+        }
+        if (req.user.role === 'technician' && request.assignedTo?.toString() !== req.user.id) {
+            throw new AppError('Acesso negado', 403);
+        }
+
         await request.addComment(req.user.id, text);
         await request.save();
 
@@ -552,6 +578,15 @@ exports.addPhotos = async (req, res, next) => {
 
         if (!request) {
             throw new AppError('Pedido não encontrado', 404);
+        }
+
+        // Cliente só pode adicionar fotos nos seus próprios pedidos; técnico só nos que lhe
+        // estão atribuídos — admin/dispatcher sem restrição
+        if (req.user.role === 'client' && request.client?.toString() !== req.user.id) {
+            throw new AppError('Acesso negado', 403);
+        }
+        if (req.user.role === 'technician' && request.assignedTo?.toString() !== req.user.id) {
+            throw new AppError('Acesso negado', 403);
         }
 
         if (type === 'before') {
@@ -701,6 +736,11 @@ exports.cancelRequest = async (req, res, next) => {
             throw new AppError('Acesso negado', 403);
         }
 
+        // Технік може скасувати тільки призначений йому запит
+        if (req.user.role === 'technician' && request.assignedTo?.toString() !== req.user.id) {
+            throw new AppError('Acesso negado', 403);
+        }
+
         // Зменшити навантаження техніка при скасуванні призначеного запиту
         if (request.assignedTo && (request.status === 'assigned' || request.status === 'in_progress')) {
             const technician = await User.findById(request.assignedTo);
@@ -767,6 +807,21 @@ exports.submitFeedback = async (req, res, next) => {
         const numericRating = Number(rating);
         if (!Number.isFinite(numericRating) || numericRating < 1 || numericRating > 5) {
             throw new AppError('A classificação deve ser um número entre 1 e 5', 400);
+        }
+
+        // Compatibilidade com pedidos antigos: o campo `lift` (required no schema)
+        // só passou a ser gravado na criação recentemente — pedidos criados antes
+        // disso têm apenas `liftId` (string, campo legacy não declarado no schema,
+        // mas ainda presente no documento). Sem isto, request.save() abaixo falhava
+        // sempre com ValidationError "Path `lift` is required".
+        if (!request.lift) {
+            const liftIdLegacy = request.get('liftId');
+            if (liftIdLegacy && mongoose.Types.ObjectId.isValid(String(liftIdLegacy))) {
+                const liftDoc = await Lift.findById(liftIdLegacy).select('_id');
+                if (liftDoc) {
+                    request.lift = liftDoc._id;
+                }
+            }
         }
 
         request.feedback = {

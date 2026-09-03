@@ -996,7 +996,12 @@ class DispatcherDashboardReal {
         }
         if (title) title.textContent = `Pedido #${request.requestNumber || request.id.toString().slice(-6)}`;
         if (assignBtn) {
-            assignBtn.onclick = () => { $('#viewRequestModal').modal('hide'); this.assignRequest(id); };
+            assignBtn.onclick = () => {
+                // Esperar que o modal anterior termine de fechar antes de abrir o seguinte
+                // (evita corrida com o backdrop/modal-open do Bootstrap)
+                $('#viewRequestModal').one('hidden.bs.modal', () => { this.assignRequest(id); });
+                $('#viewRequestModal').modal('hide');
+            };
             assignBtn.style.display = request.status === 'completed' ? 'none' : 'inline-block';
         }
         $('#viewRequestModal').modal('show');

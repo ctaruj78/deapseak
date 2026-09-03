@@ -41,7 +41,7 @@ const requestSchema = new mongoose.Schema({
     },
     type: {
         type: String,
-        enum: ['emergency', 'maintenance', 'repair', 'inspection', 'other'],
+        enum: ['emergency', 'maintenance', 'repair', 'inspection', 'other', 'orcamento'],
         default: 'maintenance',
         index: true
     },

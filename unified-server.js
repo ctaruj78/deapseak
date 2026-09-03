@@ -9261,9 +9261,11 @@ app.post('/api/requests', authenticateToken, async (req, res) => {
 
         // Отримуємо інформацію про ліфт, якщо вказано liftId
         let liftData = null;
+        let liftObjectId = null; // ObjectId do lift, usado para popular o campo `lift` (schema Mongoose Request exige-o para /feedback)
         if (req.body.liftId) {
             try {
                 const liftId = new ObjectId(req.body.liftId);
+                liftObjectId = liftId;
                 liftData = await db.collection('lifts').findOne({ _id: liftId });
 
                 if (liftData) {
@@ -9333,6 +9335,12 @@ app.post('/api/requests', authenticateToken, async (req, res) => {
             ...dadosPedido,
             requestNumber,
             client: clientRef,
+            // lift (ObjectId): schema Mongoose Request exige este campo (usado por
+            // POST /api/requests/:id/feedback via requestController.submitFeedback).
+            // Sem isto, a avaliação do cliente falhava com 500 (Path `lift` is required).
+            // Mantemos liftId (string) em paralelo — continua a ser o campo lido
+            // em todo o resto do unified-server.js (queries com db.collection('requests')).
+            lift: liftObjectId || undefined,
             status: dadosPedido.status || dadosPedido.state || 'new',
             // Автоматично генеруємо заголовок якщо не вказано
             title: dadosPedido.title || (() => {
@@ -10839,12 +10847,25 @@ async function buildSmartAIContext(lowerMsg, originalMsg, role, user, db) {
     // ── 1. Address lookup (any role) ──────────────────────────
     if (addrMatch?.length > 0) {
         const rawTerm = addrMatch[0].trim().split(/\s+/).slice(0, 5).join('\\s+');
-        const liftsFound = await db.collection('lifts').find({
+        const addrQuery = {
             $or: [
                 { 'address.street': { $regex: rawTerm, $options: 'i' } },
                 { address: { $regex: rawTerm, $options: 'i' } }
             ]
-        }).limit(5).toArray();
+        };
+        // 🔐 Cliente só pode obter respostas sobre os seus próprios elevadores
+        // (mesmo padrão de scoping usado em GET /api/qr/codes)
+        if (role === 'client') {
+            const { ObjectId: OID } = require('mongodb');
+            let oid = null;
+            try { oid = new OID(userId); } catch (_) {}
+            const clientOr = oid
+                ? [{ client: userId }, { client: oid }, { clientEmail: userEmail.toLowerCase() }]
+                : [{ client: userId }, { clientEmail: userEmail.toLowerCase() }];
+            addrQuery.$and = [{ $or: addrQuery.$or }, { $or: clientOr }];
+            delete addrQuery.$or;
+        }
+        const liftsFound = await db.collection('lifts').find(addrQuery).limit(5).toArray();
 
         if (liftsFound.length > 0) {
             const block = ['📍 ELEVADORES ENCONTRADOS POR MORADA:'];
@@ -10867,9 +10888,21 @@ async function buildSmartAIContext(lowerMsg, originalMsg, role, user, db) {
     // ── 2. Municipal number lookup ────────────────────────────
     if (munMatch) {
         const numStr = munMatch[0].replace(/\s+/g,'');
-        const lift = await db.collection('lifts').findOne({
+        const munQuery = {
             $or: [{ municipalNumber: { $regex: numStr, $options: 'i' } }, { installationNumber: numStr }]
-        });
+        };
+        // 🔐 Cliente só pode obter respostas sobre os seus próprios elevadores
+        if (role === 'client') {
+            const { ObjectId: OID } = require('mongodb');
+            let oid = null;
+            try { oid = new OID(userId); } catch (_) {}
+            const clientOr = oid
+                ? [{ client: userId }, { client: oid }, { clientEmail: userEmail.toLowerCase() }]
+                : [{ client: userId }, { clientEmail: userEmail.toLowerCase() }];
+            munQuery.$and = [{ $or: munQuery.$or }, { $or: clientOr }];
+            delete munQuery.$or;
+        }
+        const lift = await db.collection('lifts').findOne(munQuery);
         if (lift) {
             parts.push(`📋 ELEVADOR #${numStr}:\n${_fmtLift(lift)}`);
         }
@@ -15714,8 +15747,13 @@ app.post('/api/reports/generate', authenticateToken, async (req, res) => {
             }
         }
 
+        // db.requests.createdAt é gravado como STRING ISO (new Date().toISOString(),
+        // ver POST /api/requests) e não como Date BSON — comparar com objetos Date
+        // aqui nunca dava match (String < Date na ordem de tipos BSON), pelo que o
+        // relatório devolvia sempre 0 pedidos. Comparamos como strings ISO, que
+        // ordenam cronologicamente de forma idêntica ao formato completo com 'Z'.
         const requestsQuery = {
-            createdAt: { $gte: start, $lte: end }
+            createdAt: { $gte: start.toISOString(), $lte: end.toISOString() }
         };
         if (status) requestsQuery.status = status;
         if (effectiveTechnicianId) {

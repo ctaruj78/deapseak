@@ -146,7 +146,7 @@ const userSchema = new mongoose.Schema({
     },
     specialty: {
         type: String,
-        enum: ['hydraulic', 'electric', 'mechanical', 'general', 'maintenance'], // Додано 'maintenance' для сумісності
+        enum: ['hydraulic', 'electric', 'mechanical', 'general', 'maintenance', 'hardware', 'software'], // Додано 'maintenance'/'hardware'/'software' для сумісності
         default: 'general'
     },
     status: {

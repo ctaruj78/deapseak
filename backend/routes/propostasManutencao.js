@@ -221,7 +221,7 @@ router.post('/solicitar', authenticate, authorizeRoles('client'), solicitarLimit
         let { nif, morada, codigoPostal, edificio, numAscensores, observacoes } = req.body;
 
         morada = String(morada || '').trim().slice(0, 300);
-        codigoPostal = String(codigoPostal || '').trim().slice(0, 20);
+        codigoPostal = String(codigoPostal || '').trim().slice(0, 100); // alinhado com maxlength:100 em models/PropostaManutencao.js
         edificio = String(edificio || '').trim().slice(0, 200);
         nif = String(nif || '').trim().slice(0, 30);
         observacoes = String(observacoes || '').trim().slice(0, 2000);

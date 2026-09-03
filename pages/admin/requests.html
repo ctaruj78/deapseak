@@ -1062,6 +1062,17 @@
                     </div>
 
                     <div class="form-group">
+                        <label for="editRequestStatus">Estado:</label>
+                        <select class="form-control" id="editRequestStatus" required>
+                            <option value="new">Novo</option>
+                            <option value="assigned">Atribuído</option>
+                            <option value="in_progress">Em progresso</option>
+                            <option value="completed">Concluído</option>
+                            <option value="cancelled">Cancelado</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
                         <label for="editRequestTitle">Título:</label>
                         <input type="text" class="form-control" id="editRequestTitle" required>
                     </div>
@@ -1866,82 +1877,6 @@ class ServiceRequestManager {
         `;
     }
 
-    async editRequest(requestId) {
-        const request = this.requests.find(r => r.id === requestId);
-        if (!request) {
-            toastr.error('Pedido não encontrado');
-            return;
-        }
-
-        this.currentRequest = request;
-        
-        // Definir data mínima (actual)
-        const now = new Date().toISOString().slice(0, 16);
-        $('#editScheduledAt').attr('min', now);
-        
-        // Preenchaer formulário de edição
-        $('#editRequestId').val(request.id);
-        $('#editRequestLift').val(request.liftId);
-        $('#editRequestType').val(request.type);
-        $('#editRequestPriority').val(request.priority);
-        $('#editRequestTitle').val(request.title);
-        $('#editRequestDescription').val(request.description);
-        
-        if (request.scheduledAt) {
-            const date = new Date(request.scheduledAt);
-            const formattedDate = date.toISOString().slice(0, 16);
-            $('#editScheduledAt').val(formattedDate);
-        }
-        
-        // Mostrar janela modal
-        $('#editRequestModal').modal('show');
-    }
-
-    async saveEditedRequest() {
-        try {
-            // Usar _id real do MongoDB em vez de display ID (REQ-001)
-            const requestId = this.currentRequest._id;
-            
-            if (!requestId) {
-                throw new Error('ID do pedido não encontrado');
-            }
-            
-            const updateData = {
-                priority: $('#editRequestPriority').val(),
-                title: $('#editRequestTitle').val(),
-                description: $('#editRequestDescription').val(),
-                scheduledDate: $('#editScheduledAt').val() || undefined
-            };
-            
-            console.log('🔄 A actualizar pedido:', requestId, updateData);
-            
-            const response = await AuthManager.fetchWithAuth(`/api/requests/${requestId}`, {
-                method: 'PUT',
-                body: JSON.stringify(updateData)
-            });
-            
-            if (!response || !response.ok) {
-                const error = await response.json();
-                throw new Error(error.message || 'Erro ao actualizar pedido');
-            }
-            
-            const result = await response.json();
-            
-            toastr.success('Pedido actualizado com sucesso!');
-            
-            // Fechar janela modal
-            $('#editRequestModal').modal('hide');
-            
-            // Recarregar lista de pedidos
-            await this.loadRequests();
-            this.renderRequests();
-            
-        } catch (error) {
-            console.error('Erro ao actualizar pedido:', error);
-            toastr.error('Não foi possível actualizar o pedido: ' + error.message);
-        }
-    }
-
     extendDeadlineFromModal() {
         if (!this.currentRequest) return;
         const savedId = (this.currentRequest._id && this.currentRequest._id.toString)
@@ -2240,14 +2175,25 @@ class ServiceRequestManager {
             
             if (result.success && result.request) {
                 this.currentRequest = result.request;
-                
+
                 // Preenchaer formulário de edição
                 $('#editRequestId').val(this.currentRequest._id);
                 $('#editRequestTitle').val(this.currentRequest.title || '');
                 $('#editRequestDescription').val(this.currentRequest.description || '');
                 $('#editRequestPriority').val(this.currentRequest.priority || 'medium');
                 $('#editRequestStatus').val(this.currentRequest.status || 'new');
-                
+
+                // Definir data mínima (actual)
+                const now = new Date().toISOString().slice(0, 16);
+                $('#editScheduledAt').attr('min', now);
+
+                if (this.currentRequest.scheduledAt) {
+                    const date = new Date(this.currentRequest.scheduledAt);
+                    $('#editScheduledAt').val(date.toISOString().slice(0, 16));
+                } else {
+                    $('#editScheduledAt').val('');
+                }
+
                 // Abrir janela modal
                 $('#editRequestModal').modal('show');
             } else {
@@ -2266,7 +2212,8 @@ class ServiceRequestManager {
                 title: $('#editRequestTitle').val(),
                 description: $('#editRequestDescription').val(),
                 priority: $('#editRequestPriority').val(),
-                status: $('#editRequestStatus').val()
+                status: $('#editRequestStatus').val(),
+                scheduledDate: $('#editScheduledAt').val() || undefined
             };
             
             const response = await AuthManager.fetchWithAuth(`/api/requests/${requestId}`, {
@@ -2904,73 +2851,6 @@ function setReqView(mode) {
         container.removeClass('req-cards-list').addClass('req-cards-grid');
     } else {
         container.removeClass('req-cards-grid').addClass('req-cards-list');
-    }
-}
-
-async function submitTechnicianAssignment() {
-    // Verificar disponibilidade de AuthManager
-    if (typeof AuthManager === 'undefined') {
-        toastr.error('É necessária autenticação para esta acção.\nPor favor, entre através da página de login.');
-        window.location.replace('/pages/auth/login.html');
-        return;
-    }
-    
-    if (!AuthManager.isAuthenticated()) {
-        toastr.error('A sua sessão expirou.\nPor favor, entre novamente.');
-        window.location.replace('/pages/auth/login.html');
-        return;
-    }
-    
-    try {
-        const selectedTechnician = $('#selectedTechnician').val();
-        const instructions = $('#techInstructions').val();
-        const deadline = $('#deadline').val();
-        
-        if (!selectedTechnician) {
-            toastr.warning('Selecione o técnico');
-            return;
-        }
-        
-        if (!window.serviceManager || !window.serviceManager.currentRequest) {
-            toastr.info('Nenhum pedido seleccionado para atribuição');
-            return;
-        }
-        
-        // Usar _id real do MongoDB em vez de display ID
-        const requestId = window.serviceManager.currentRequest._id || window.serviceManager.currentRequest.id;
-        
-        console.log(`A atribuir técnico ${selectedTechnician} ao pedido ${requestId}`);
-        
-        const response = await AuthManager.fetchWithAuth(`/api/requests/${requestId}/assign`, {
-            method: 'POST',
-            body: JSON.stringify({
-                technicianId: selectedTechnician,
-                instructions: instructions,
-                deadline: deadline
-            })
-        });
-        
-        if (!response || !response.ok) {
-            const error = await response.json();
-            throw new Error(error.message || 'Erro ao atribuir técnico');
-        }
-        
-        const result = await response.json();
-        
-        // Fechar janelas modais
-        $('#assignTechnicianModal').modal('hide');
-        $('#viewRequestModal').modal('hide');
-        
-        // Mensagem de sucesso
-        toastr.success('Técnico atribuído com sucesso!');
-        
-        // Recarregar dados do pedido
-        await window.serviceManager.loadRequests();
-        window.serviceManager.renderRequests();
-        
-    } catch (error) {
-        console.error('Erro ao atribuir técnico:', error);
-        toastr.error('Erro ao atribuir técnico: ' + error.message);
     }
 }
 

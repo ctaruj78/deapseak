@@ -648,6 +648,12 @@ exports.adminResetUserPassword = async (req, res, next) => {
         const user = await User.findById(req.params.id);
         if (!user) throw new AppError('Utilizador não encontrado', 404);
 
+        // Dispatcher não pode repor a password de contas admin/dispatcher —
+        // apenas admin pode repor password de qualquer papel
+        if (req.user.role === 'dispatcher' && ['admin', 'dispatcher'].includes(user.role)) {
+            throw new AppError('Acesso negado. Dispatcher não pode repor a password de contas admin ou dispatcher.', 403);
+        }
+
         const newPassword = generateTemporaryPassword();
         user.password = newPassword;
         user.mustChangePassword = true;
@@ -679,6 +685,18 @@ exports.adminResetUserPassword = async (req, res, next) => {
 // Оновлення даних користувача (admin/dispatcher)
 exports.updateUserById = async (req, res, next) => {
     try {
+        const targetUser = await User.findById(req.params.id).select('role');
+        if (!targetUser) {
+            return res.status(404).json({ success: false, message: 'Utilizador não encontrado' });
+        }
+
+        // Dispatcher não pode alterar dados (incl. email) de contas admin/dispatcher,
+        // nem promover ninguém (incluindo a si próprio) a admin — 'role' nunca está
+        // em allowedFields aqui, promoção só é possível via PUT /users/:id/role (admin only)
+        if (req.user.role === 'dispatcher' && ['admin', 'dispatcher'].includes(targetUser.role)) {
+            throw new AppError('Acesso negado. Dispatcher não pode modificar contas admin ou dispatcher.', 403);
+        }
+
         const allowedFields = [
             'firstName', 'lastName', 'companyName', 'phone', 'email',
             'clientType', 'priority', 'status', 'address',

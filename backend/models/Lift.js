@@ -58,15 +58,22 @@ const liftSchema = new mongoose.Schema({
     serialNumber: String,
     type: { type: String, default: 'passenger' },
     // Tipo de accionamento — determina norma e checklist aplicável
+    // 'dl513' (código legado de fabricante/modelo, sem sinónimo canónico) mantido
+    // como valor legítimo — ver 80+14 elevadores já existentes com valores fora
+    // do enum anterior (auditoria 2026-09-03).
     driveType: {
         type: String,
-        enum: ['traction', 'traction_mrl', 'hydraulic', 'goods', 'platform'],
+        enum: ['traction', 'traction_mrl', 'hydraulic', 'goods', 'platform', 'dl513'],
         default: 'traction'
     },
     // Tipo de porta — determina itens específicos de portas no checklist
+    // 'mixed'/'mixed_patim'/'mixed_gate'/'patim_movel' são categorias reais
+    // (combinações de tipos de porta por piso, porta tipo "patim"/estore
+    // metálico) e não sinónimos de automatic/swing/gate — por isso alargados
+    // aqui em vez de forçados para um dos 3 valores existentes.
     doorType: {
         type: String,
-        enum: ['automatic', 'swing', 'gate'],
+        enum: ['automatic', 'swing', 'gate', 'mixed', 'mixed_patim', 'mixed_gate', 'patim_movel'],
         default: 'automatic'
     },
     capacity: { type: Number, required: true },
@@ -77,9 +84,12 @@ const liftSchema = new mongoose.Schema({
     nextInspectionDate: { type: Date, index: true },
     inspectionFrequency: { type: Number, default: 6 }, // meses
     maintenanceNotes: String,
+    // 'inactive'/'broken' são valores legados (5 elevadores em produção,
+    // auditoria 2026-09-03) mantidos como estados válidos em vez de forçados
+    // para maintenance/out_of_service — são estados semanticamente distintos.
     status: {
         type: String,
-        enum: ['operational', 'maintenance', 'repair', 'out_of_service', 'inspection'],
+        enum: ['operational', 'maintenance', 'repair', 'out_of_service', 'inspection', 'inactive', 'broken'],
         default: 'operational',
         index: true
     },
@@ -171,6 +181,7 @@ const DRIVE_MAP = {
     'traction_mrl': 'traction_mrl',
     'traction_mrl': 'traction_mrl',
     'канатний (з машинним залом)': 'traction',
+    'канатний (mrl)': 'traction_mrl',
     'traction':     'traction',
     'гвинтовий':    'platform',
     'платформний':  'platform',
@@ -192,7 +203,12 @@ const DOOR_MAP = {
     'ручні (ґрати)':                  'gate',
     'gate':                           'gate',
 };
-liftSchema.pre('save', function(next) {
+// NOTA: usa pre('validate'), não pre('save') — o Mongoose corre a validação
+// (incl. checks de enum) ANTES dos hooks pre('save'), portanto um pre('save')
+// aqui nunca chegava a executar para valores fora do enum (a validação já
+// tinha rejeitado o documento). Isto explicava porque valores UI legados
+// permaneciam por normalizar na BD apesar deste mapa existir.
+liftSchema.pre('validate', function(next) {
     if (this.driveType) {
         const mapped = DRIVE_MAP[this.driveType.toLowerCase().trim()];
         if (mapped) this.driveType = mapped;

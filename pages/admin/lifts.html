@@ -912,6 +912,13 @@ function escapeHtml(s) {
     if (s == null) return '';
     return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
+// Escapa uma string para uso seguro dentro de uma string JS de aspas simples
+// (ex: interpolada num atributo onclick inline). Deve ser combinada com escapeHtml()
+// para também ficar segura como valor de atributo HTML.
+function escapeJsString(s) {
+    if (s == null) return '';
+    return String(s).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+}
 </script>
 
         <!-- Content Wrapper -->
@@ -1922,6 +1929,7 @@ function escapeHtml(s) {
                     const badge   = STATUS_BADGE[ins.status] || 'secondary';
                     const statusLabel = { rascunho:'Rascunho', finalizado:'Finalizado', enviado:'Enviado', arquivado:'Arquivado' }[ins.status] || escapeHtml(ins.status || '—');
                     const safeNumero = escapeHtml(ins.numero);
+                    const safeNumeroJs = escapeHtml(escapeJsString(ins.numero));
                     html += `<div class="list-group-item px-0 py-2" style="border-left:none;border-right:none;">
                         <div class="d-flex justify-content-between align-items-start">
                             <div>
@@ -1936,7 +1944,7 @@ function escapeHtml(s) {
                                 <a href="/api/inspections/${ins._id}/pdf" target="_blank"
                                    class="btn btn-xs btn-outline-danger" title="Descarregar PDF"
                                    style="font-size:0.72rem;padding:2px 7px;"
-                                   onclick="this.setAttribute('href','/api/inspections/${ins._id}/pdf');localStorage.getItem('liftmanager_jwt')&&fetch(this.getAttribute('href'),{headers:{'Authorization':'Bearer '+localStorage.getItem('liftmanager_jwt')}}).then(r=>r.blob()).then(b=>{let a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='${safeNumero}.pdf';a.click();});return false;">
+                                   onclick="this.setAttribute('href','/api/inspections/${ins._id}/pdf');localStorage.getItem('liftmanager_jwt')&&fetch(this.getAttribute('href'),{headers:{'Authorization':'Bearer '+localStorage.getItem('liftmanager_jwt')}}).then(r=>r.blob()).then(b=>{let a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='${safeNumeroJs}.pdf';a.click();});return false;">
                                     <i class="fas fa-file-pdf"></i> PDF
                                 </a>
                             </div>

@@ -481,7 +481,7 @@ class EnhancedLiftModal {
             liftSubtype: selectedSubtype,
             capacity: parseInt($('#enhancedLiftCapacity').val()) || 8,
             speed: parseFloat($('#enhancedLiftSpeed').val()) || 1.0,
-            installationYear: parseInt($('#enhancedInstallationYear').val()) || new Date().getFullYear(),
+            installationYear: parseInt($('#enhancedInstallYear').val()) || new Date().getFullYear(),
             manufactureYear: parseInt($('#enhancedManufactureYear').val()) || null,
             installYear: parseInt($('#enhancedInstallYear').val()) || null,
             driveType: $('#enhancedDriveType').val() || '',

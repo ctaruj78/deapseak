@@ -129,10 +129,11 @@ exports.getAllLifts = async (req, res, next) => {
 
         if (status) query.status = status;
         if (search) {
+            const safeSearch = String(search).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
             query.$or = [
-                { municipalNumber: { $regex: search, $options: 'i' } },
-                { 'address.street': { $regex: search, $options: 'i' } },
-                { 'address.city': { $regex: search, $options: 'i' } }
+                { municipalNumber: { $regex: safeSearch, $options: 'i' } },
+                { 'address.street': { $regex: safeSearch, $options: 'i' } },
+                { 'address.city': { $regex: safeSearch, $options: 'i' } }
             ];
         }
         if (needsMaintenance === 'true') query.nextInspectionDate = { $lte: new Date() };
@@ -596,9 +597,13 @@ exports.getMaintenanceContract = async (req, res, next) => {
         // Перевірка доступу
         const userRole = req.user.role;
         const isOwner = lift.client && lift.client.toString() === req.user.id;
+        const isAssignedTechnician = lift.technician && lift.technician.toString() === req.user.id;
 
         if (userRole === 'client' && !isOwner) {
             throw new AppError('Acesso negado', 403);
+        }
+        if (userRole === 'technician' && !isAssignedTechnician) {
+            throw new AppError('Acesso negado. Contrato não pertence a um elevador atribuído a si.', 403);
         }
 
         res.json({
@@ -716,9 +721,13 @@ exports.emailMaintenanceContract = async (req, res, next) => {
         // Перевірка доступу
         const userRole = req.user.role;
         const isOwner = lift.client && lift.client._id.toString() === req.user.id;
+        const isAssignedTechnician = lift.technician && lift.technician.toString() === req.user.id;
 
         if (userRole === 'client' && !isOwner) {
             throw new AppError('Acesso negado', 403);
+        }
+        if (userRole === 'technician' && !isAssignedTechnician) {
+            throw new AppError('Acesso negado. Contrato não pertence a um elevador atribuído a si.', 403);
         }
 
         // TODO: Інтегрувати з emailService для відправки

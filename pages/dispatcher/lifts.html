@@ -1584,22 +1584,24 @@
                 let html = '<div class="list-group list-group-flush">';
                 list.forEach(ins => {
                     const dateStr = ins.data ? new Date(ins.data).toLocaleDateString('pt-PT') : '—';
-                    const type    = VISIT_LABELS[ins.visitType] || ins.visitType || 'Manutenção';
+                    const type    = VISIT_LABELS[ins.visitType] || escapeHtml(ins.visitType || 'Manutenção');
                     const badge   = STATUS_BADGE[ins.status] || 'secondary';
-                    const statusLabel = {rascunho:'Rascunho',finalizado:'Finalizado',enviado:'Enviado',arquivado:'Arquivado'}[ins.status] || ins.status;
+                    const statusLabel = {rascunho:'Rascunho',finalizado:'Finalizado',enviado:'Enviado',arquivado:'Arquivado'}[ins.status] || escapeHtml(ins.status || '—');
+                    const safeNumero = escapeHtml(ins.numero);
+                    const safeNumeroJs = escapeHtml(escapeJsString(ins.numero));
                     html += `<div class="list-group-item px-0 py-2" style="border-left:none;border-right:none;">
                         <div class="d-flex justify-content-between align-items-start">
                             <div>
-                                <strong style="font-size:0.82rem;">${ins.numero}</strong>
+                                <strong style="font-size:0.82rem;">${safeNumero}</strong>
                                 <span class="text-muted ml-2" style="font-size:0.8rem;">${dateStr}</span><br>
                                 <span class="badge badge-light border" style="font-size:0.72rem;">${type}</span>
                                 <span class="badge badge-${badge} ml-1" style="font-size:0.72rem;">${statusLabel}</span>
-                                <span class="text-muted ml-1" style="font-size:0.75rem;">— ${ins.inspector || '—'}</span>
+                                <span class="text-muted ml-1" style="font-size:0.75rem;">— ${escapeHtml(ins.inspector || '—')}</span>
                             </div>
                             <a href="/api/inspections/${ins._id}/pdf" target="_blank"
                                class="btn btn-xs btn-outline-danger ml-2 flex-shrink-0" title="Descarregar PDF"
                                style="font-size:0.72rem;padding:2px 8px;"
-                               onclick="(function(el){const tk=localStorage.getItem('liftmanager_jwt')||localStorage.getItem('authToken')||'';fetch(el.href,{headers:{'Authorization':'Bearer '+tk}}).then(r=>r.blob()).then(b=>{let a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='${ins.numero}.pdf';a.click();});return false;})(this);">
+                               onclick="(function(el){const tk=localStorage.getItem('liftmanager_jwt')||localStorage.getItem('authToken')||'';fetch(el.href,{headers:{'Authorization':'Bearer '+tk}}).then(r=>r.blob()).then(b=>{let a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='${safeNumeroJs}.pdf';a.click();});return false;})(this);">
                                 <i class="fas fa-file-pdf"></i> PDF
                             </a>
                         </div>
@@ -5144,6 +5146,13 @@ Equipa FestLift</textarea>
         if (s == null) return '';
         return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
     }
+    // Escapa uma string para uso seguro dentro de uma string JS de aspas simples
+    // (ex: interpolada num atributo onclick inline). Deve ser combinada com escapeHtml()
+    // para também ficar segura como valor de atributo HTML.
+    function escapeJsString(s) {
+        if (s == null) return '';
+        return String(s).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+    }
 
     // 📄 Пагінація
     let currentPage = 1;
@@ -6179,10 +6188,10 @@ Equipa FestLift</textarea>
                             <div class="alert alert-success py-2 mb-0 d-flex align-items-center">
                                 <i class="fas fa-file-contract fa-lg mr-2"></i>
                                 <div class="flex-grow-1">
-                                    <strong>Contrato carregado</strong> n.º ${contract.contractNumber || '—'}
-                                    <span class="text-success ml-2">&bull; ${cfPeriod}</span>
+                                    <strong>Contrato carregado</strong> n.º ${escapeHtml(contract.contractNumber || '—')}
+                                    <span class="text-success ml-2">&bull; ${escapeHtml(cfPeriod)}</span>
                                 </div>
-                                <a href="${cfUrl}" target="_blank" class="btn btn-sm btn-outline-success ml-2">
+                                <a href="${escapeHtml(cfUrl)}" target="_blank" class="btn btn-sm btn-outline-success ml-2">
                                     <i class="fas fa-eye"></i> Ver
                                 </a>
                             </div>`;
@@ -6898,7 +6907,7 @@ Equipa FestLift</textarea>
                 
                 // Tipo: локалізована nome
                 const typeLabels = { inspection: 'Inspecção', maintenance: 'Manutenção', repair: 'Reparação', emergency: 'Emergência', annual: 'Inspecção', routine: 'Manutenção', certification: 'Certificação', technical: 'Técnico', safety: 'Verificação de segurança' };
-                const typeLabel = typeLabels[type] || type;
+                const typeLabel = typeLabels[type] || escapeHtml(type);
 
                 html += `
                     <div class="list-group-item py-2">
@@ -6910,8 +6919,8 @@ Equipa FestLift</textarea>
                                     ${fileUrl ? '<i class="fas fa-paperclip text-success ml-1" title="PDF anexado"></i>' : ''}
                                 </h6>
                                 <p class="mb-0"><small><strong>Data:</strong> ${date}</small></p>
-                                ${inspector ? `<p class="mb-0"><small><strong>Inspector:</strong> ${inspector}</small></p>` : ''}
-                                ${notes ? `<p class="mb-0"><small class="text-muted">${cleanCardText(notes).substring(0, 130)}${cleanCardText(notes).length > 130 ? "…" : ""}</small></p>` : ''}
+                                ${inspector ? `<p class="mb-0"><small><strong>Inspector:</strong> ${escapeHtml(inspector)}</small></p>` : ''}
+                                ${notes ? `<p class="mb-0"><small class="text-muted">${escapeHtml(cleanCardText(notes).substring(0, 130))}${cleanCardText(notes).length > 130 ? "…" : ""}</small></p>` : ''}
                             </div>
                             <div class="btn-group-vertical ml-2" style="min-width:100px;">
                                 <button class="btn btn-sm btn-outline-primary mb-1" onclick='viewReportDetails(${JSON.stringify(report).replace(/'/g, "&apos;")}, ${realIndex})' title="Ver detalhes">
@@ -7539,16 +7548,16 @@ Equipa FestLift</textarea>
             const statusBadge = s => {
                 const map = { rascunho:'secondary', enviado:'info', aprovado:'success', rejeitado:'danger', expirado:'warning' };
                 const labels = { rascunho:'Rascunho', enviado:'Enviado', aprovado:'Aprovado', rejeitado:'Rejeitado', expirado:'Expirado' };
-                return `<span class="badge badge-${map[s]||'secondary'}">${labels[s]||s}</span>`;
+                return `<span class="badge badge-${map[s]||'secondary'}">${labels[s]||escapeHtml(s)}</span>`;
             };
             container.innerHTML = `<table class="table table-sm table-hover table-bordered">
                 <thead class="thead-light"><tr>
                     <th>Número</th><th>Data</th><th>Cliente</th><th>Total</th><th>Status</th><th></th>
                 </tr></thead>
                 <tbody>${list.map(o => `<tr>
-                    <td><strong>${o.numero}</strong></td>
+                    <td><strong>${escapeHtml(o.numero)}</strong></td>
                     <td>${new Date(o.data).toLocaleDateString('pt-PT')}</td>
-                    <td>${o.cliente?.nome || '—'}</td>
+                    <td>${escapeHtml(o.cliente?.nome || '—')}</td>
                     <td>€${(o.total||0).toFixed(2)}</td>
                     <td>${statusBadge(o.status)}</td>
                     <td><a href="/pages/dispatcher/invoice-template.html?id=${o._id}&view=true" target="_blank" class="btn btn-xs btn-outline-info btn-sm"><i class="fas fa-eye"></i></a></td>
@@ -7592,7 +7601,7 @@ Equipa FestLift</textarea>
                     container.innerHTML = `
                         <div class="alert alert-info py-2">
                             <i class="fas fa-file-contract mr-1"></i>
-                            Contrato n.º <strong>${liftCn}</strong> (PDF não carregado)
+                            Contrato n.º <strong>${escapeHtml(liftCn)}</strong> (PDF não carregado)
                         </div>
                         <button type="button" class="btn btn-sm btn-success" onclick="showUploadContractModal('${liftId}')">
                             <i class="fas fa-upload"></i> Descarregar PDF do contrato
@@ -7627,17 +7636,17 @@ Equipa FestLift</textarea>
                 <div class="card">
                     <div class="card-body">
                         <h6 class="card-title">
-                            <i class="fas fa-file-contract text-success"></i> Contrato №${contractNumber}
+                            <i class="fas fa-file-contract text-success"></i> Contrato №${escapeHtml(contractNumber)}
                         </h6>
                         <p class="card-text">
-                            <strong>Período de ações:</strong> ${periodText}<br>
+                            <strong>Período de ações:</strong> ${escapeHtml(periodText)}<br>
                             ${description ? `<strong>Notas:</strong> ${escapeHtml(description)}<br>` : ''}
                         </p>
                         <div class="btn-group">
-                            <a href="${fileUrl}" target="_blank" class="btn btn-sm btn-primary">
+                            <a href="${escapeHtml(fileUrl)}" target="_blank" class="btn btn-sm btn-primary">
                                 <i class="fas fa-eye"></i> Ver
                             </a>
-                            <a href="${fileUrl}" download class="btn btn-sm btn-info">
+                            <a href="${escapeHtml(fileUrl)}" download class="btn btn-sm btn-info">
                                 <i class="fas fa-download"></i> Descarregar
                             </a>
                             <button type="button" class="btn btn-sm btn-success" onclick="emailContract('${liftId}')">
@@ -9164,8 +9173,8 @@ Equipa FestLift</textarea>
         for (const r of sorted.slice(0, 5)) {
             const d = (r.inspectionDate || r.date)
                 ? new Date(r.inspectionDate || r.date).toLocaleDateString('pt-PT') : '—';
-            const type = typeLabels[r.inspectionType || r.type] || r.inspectionType || r.type || '—';
-            const status = statusLabels[r.status] || r.status || '—';
+            const type = typeLabels[r.inspectionType || r.type] || escapeHtml(r.inspectionType || r.type || '—');
+            const status = statusLabels[r.status] || escapeHtml(r.status || '—');
             let validUntil = '—';
             const vu = r.validUntil || r.nextInspectionDate;
             if (vu) validUntil = new Date(vu).toLocaleDateString('pt-PT');

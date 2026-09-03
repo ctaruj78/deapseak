@@ -2518,24 +2518,41 @@
                         const { technicianId, days } = formValues;
                         const newDeadline = new Date();
                         newDeadline.setDate(newDeadline.getDate() + days);
-                        let count = 0;
+                        let fullSuccess = 0;
+                        let partialFailure = 0; // atribuído mas prazo não prolongado
+                        let failCount = 0;
                         for (const req of overdue) {
+                            const reqId = (req._id && req._id.toString) ? req._id.toString() : req._id;
                             try {
-                                const reqId = (req._id && req._id.toString) ? req._id.toString() : req._id;
                                 const r = await AuthManager.fetchWithAuth(`/api/requests/${reqId}/assign`, {
                                     method: 'POST',
                                     body: JSON.stringify({ technicianId })
                                 });
+                                if (!r || !r.ok) { failCount++; continue; }
                                 // Also extend the deadline
-                                await AuthManager.fetchWithAuth(`/api/requests/${reqId}`, {
+                                const rDeadline = await AuthManager.fetchWithAuth(`/api/requests/${reqId}`, {
                                     method: 'PUT',
                                     body: JSON.stringify({ deadline: newDeadline.toISOString() })
                                 });
-                                if (r && r.ok) count++;
-                            } catch (e) {}
+                                if (rDeadline && rDeadline.ok) {
+                                    fullSuccess++;
+                                } else {
+                                    partialFailure++;
+                                }
+                            } catch (e) {
+                                failCount++;
+                            }
                         }
                         await dispatcherManager.loadAssignments();
-                        Swal.fire({ icon: 'success', title: 'Concluído!', text: `Reatribuído e prazo prolongado: ${count} junto ${overdue.length} pedidos em +${days} dias.`, confirmButtonColor: '#28a745', customClass: { popup: 'swal-dispatch' } });
+                        const totalFailed = failCount + partialFailure;
+                        if (totalFailed === 0) {
+                            Swal.fire({ icon: 'success', title: 'Concluído!', text: `Reatribuído e prazo prolongado: ${fullSuccess} de ${overdue.length} pedidos em +${days} dias.`, confirmButtonColor: '#28a745', customClass: { popup: 'swal-dispatch' } });
+                        } else {
+                            let detail = `Reatribuído e prazo prolongado com sucesso: ${fullSuccess} de ${overdue.length} pedidos.`;
+                            if (partialFailure > 0) detail += ` ${partialFailure} atribuído(s) mas sem prolongamento de prazo.`;
+                            if (failCount > 0) detail += ` ${failCount} falharam por completo.`;
+                            Swal.fire({ icon: 'warning', title: 'Concluído com falhas', text: detail, confirmButtonColor: '#f39c12', customClass: { popup: 'swal-dispatch' } });
+                        }
                     }
                 },
 
