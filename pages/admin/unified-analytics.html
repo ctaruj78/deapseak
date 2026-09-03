@@ -2442,6 +2442,14 @@ setTimeout(() => {
             });
             const result = await res.json().catch(() => ({}));
             btn.disabled = false; btn.innerHTML = old;
+            if (res.status === 409 && result.data) {
+                // Já existe no cadastro — abrir edição em vez de falhar silenciosamente
+                $('#addMunicipalityModal').modal('hide');
+                if (typeof toastr !== 'undefined') toastr.info(`"${name}" já existe no cadastro — a abrir para edição`);
+                await loadMunicipalitiesAnalytics();
+                window.openMunicipalityEditModal(encodeURIComponent(result.data.id || ''), encodeURIComponent(result.data.name || name));
+                return;
+            }
             if (!res.ok || result.success === false) throw new Error(result.message || `HTTP ${res.status}`);
             $('#addMunicipalityModal').modal('hide');
             if (typeof toastr !== 'undefined') toastr.success(`Município "${name}" adicionado com sucesso`);

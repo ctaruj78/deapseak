@@ -6654,11 +6654,13 @@ app.post('/api/municipalities', authenticateToken, async (req, res) => {
         const baseData = await loadMunicipalitiesBaseData();
         const existing = (baseData.municipalities || []).find(m => m.name.toLowerCase() === name.toLowerCase());
         if (existing) {
-            return res.status(409).json({ success: false, message: `Município "${name}" já existe no cadastro (ID: ${existing.id})` });
+            return res.status(409).json({ success: false, message: `Município "${name}" já existe no cadastro (ID: ${existing.id})`, data: existing });
         }
         const existingOverride = await db.collection('municipality_overrides').findOne({ name: { $regex: new RegExp(`^${name}$`, 'i') } });
         if (existingOverride) {
-            return res.status(409).json({ success: false, message: `Município "${name}" já foi adicionado manualmente` });
+            const clean = { ...existingOverride };
+            delete clean._id;
+            return res.status(409).json({ success: false, message: `Município "${name}" já foi adicionado manualmente`, data: clean });
         }
 
         const postalCodesRaw = body.postal_codes || '';
@@ -6716,12 +6718,19 @@ app.put('/api/municipalities/:id', authenticateToken, async (req, res) => {
 
         const municipalityId = req.params.id;
         const baseData = await loadMunicipalitiesBaseData();
-        const baseMunicipality = (baseData.municipalities || []).find(m => (m.id || '').toString() === municipalityId);
+        let baseMunicipality = (baseData.municipalities || []).find(m => (m.id || '').toString() === municipalityId);
+        let manualEntry = null;
         if (!baseMunicipality) {
-            return res.status(404).json({
-                success: false,
-                message: 'Município não encontrado'
-            });
+            // Not in the base cadastro — check manually-added municipalities
+            manualEntry = await db.collection('municipality_overrides').findOne({ id: municipalityId, isManual: true });
+            if (!manualEntry) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'Município não encontrado'
+                });
+            }
+            baseMunicipality = { ...manualEntry };
+            delete baseMunicipality._id;
         }
 
         const body = req.body || {};
