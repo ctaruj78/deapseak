@@ -35,7 +35,7 @@ const propostaManutencaoSchema = new mongoose.Schema({
     cliente: {
         nome: { type: String, required: true, maxlength: 200 },
         morada: { type: String, maxlength: 300 },
-        codigoPostal: { type: String, maxlength: 20 },
+        codigoPostal: { type: String, maxlength: 100 },
         nif: { type: String, maxlength: 30 },
         email: {
             type: String,
@@ -53,7 +53,7 @@ const propostaManutencaoSchema = new mongoose.Schema({
         edificio: { type: String, maxlength: 200 },
         nome: { type: String, maxlength: 200 },
         morada: { type: String, maxlength: 300 },
-        codigoPostal: { type: String, maxlength: 20 },
+        codigoPostal: { type: String, maxlength: 100 },
         nif: { type: String, maxlength: 30 }
     },
 
