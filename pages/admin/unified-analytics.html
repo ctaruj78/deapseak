@@ -23,7 +23,6 @@
     <!-- Toastr -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
     <link rel="stylesheet" href="../../plugins/sweetalert2/css/sweetalert2.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
     <script src="../../plugins/sweetalert2/js/sweetalert2.min.js"></script>
     
     <style>
@@ -1549,6 +1548,10 @@
 
 <!-- Scripts (LOCAL) -->
 <script src="../../plugins/jquery/jquery.min.js"></script>
+<!-- Toastr precisa do jQuery já carregado — a versão do cdnjs captura a
+     referência ao jQuery no momento em que corre, e fica permanentemente
+     quebrada (`$.extend` undefined) se carregar antes -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 <script src="../../plugins/bootstrap/bootstrap.bundle.min.js"></script>
 <script src="../../plugins/adminlte/adminlte.min.js"></script>
 
@@ -2381,7 +2384,7 @@ setTimeout(() => {
 
             $('#editMunicipalityModal').modal('hide');
             if (typeof toastr !== 'undefined') toastr.success('Município atualizado com sucesso');
-            await loadTopMunicipalities();
+            await loadMunicipalitiesAnalytics();
         } catch (error) {
             console.error('❌ Erro ao guardar município:', error);
             showError('Erro ao guardar município: ' + error.message);
@@ -2443,11 +2446,25 @@ setTimeout(() => {
             const result = await res.json().catch(() => ({}));
             btn.disabled = false; btn.innerHTML = old;
             if (res.status === 409 && result.data) {
-                // Já existe no cadastro — abrir edição em vez de falhar silenciosamente
+                // Já existe no cadastro — abrir edição em vez de falhar silenciosamente.
+                // Preenche directamente a partir da resposta (não depende de mapas
+                // internos ainda não recarregados) e só mostra o modal de edição
+                // depois do modal de adicionar terminar de fechar (evita conflito
+                // de transições do Bootstrap ao encadear dois modals).
+                const existing = result.data;
+                document.getElementById('editMunicipalityId').value = existing.id || '';
+                document.getElementById('editMunicipalityName').value = existing.name || name;
+                document.getElementById('editMunicipalityEmail').value = existing.email || '';
+                document.getElementById('editMunicipalityPhone').value = existing.phone || '';
+                document.getElementById('editMunicipalityWebsite').value = existing.website || '';
+                document.getElementById('editMunicipalityLiftEmail').value = (existing.lift_department && existing.lift_department.email) || '';
+                document.getElementById('editMunicipalityLiftDept').value = (existing.lift_department && existing.lift_department.department_name) || '';
+                if (typeof toastr !== 'undefined') toastr.info(`"${existing.name || name}" já existe no cadastro — edite os dados e guarde`);
+                $('#addMunicipalityModal').one('hidden.bs.modal', function() {
+                    $('#editMunicipalityModal').modal('show');
+                });
                 $('#addMunicipalityModal').modal('hide');
-                if (typeof toastr !== 'undefined') toastr.info(`"${name}" já existe no cadastro — a abrir para edição`);
-                await loadMunicipalitiesAnalytics();
-                window.openMunicipalityEditModal(encodeURIComponent(result.data.id || ''), encodeURIComponent(result.data.name || name));
+                loadMunicipalitiesAnalytics();
                 return;
             }
             if (!res.ok || result.success === false) throw new Error(result.message || `HTTP ${res.status}`);

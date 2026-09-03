@@ -23,7 +23,6 @@
     <!-- Toastr -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
     <link rel="stylesheet" href="../../plugins/sweetalert2/css/sweetalert2.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
     <script src="../../plugins/sweetalert2/js/sweetalert2.min.js"></script>
     
     <style>
@@ -1278,6 +1277,10 @@
 
 <!-- Scripts (LOCAL) -->
 <script src="/assets/plugins/jquery/jquery.min.js"></script>
+<!-- Toastr precisa do jQuery já carregado — a versão do cdnjs captura a
+     referência ao jQuery no momento em que corre, e fica permanentemente
+     quebrada (`$.extend` undefined) se carregar antes -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 <script src="/assets/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
 <script src="/plugins/adminlte/adminlte.min.js"></script>
 
