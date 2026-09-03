@@ -64,7 +64,7 @@ const propostaManutencaoSchema = new mongoose.Schema({
         nif: { type: String, maxlength: 30 },
         unidadesContratadas: { type: String, maxlength: 100 },
         morada: { type: String, maxlength: 300 },
-        codigoPostal: { type: String, maxlength: 20 }
+        codigoPostal: { type: String, maxlength: 100 }
     },
 
     // Tipo de manutenção: 'simples' (inspeção/conservação) ou 'completa'
