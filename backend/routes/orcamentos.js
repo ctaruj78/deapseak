@@ -636,7 +636,8 @@ router.get('/', authenticate, authorizeRoles('admin', 'dispatcher', 'client'), a
         
         const orcamentosQuery = Orcamento.find(query)
             .populate('criadoPor', 'name email')
-            .sort({ data: -1 });
+            .sort({ data: -1 })
+            .lean();
 
         // Для клієнта не повертаємо службові поля
         if (req.user.role === 'client') {
