@@ -340,13 +340,18 @@ class TechnicianManager {
                     body: JSON.stringify(techData)
                 });
                 
+                const updatedTech = await response.json();
                 if (response.ok) {
-                    const updatedTech = await response.json();
-                    const index = this.technicians.findIndex(t => String(t.id) === String(updatedTech.id));
+                    // PUT /api/technicians/:id só devolve { success, message } — sem o documento
+                    // actualizado — por isso fundimos os campos que enviámos no próprio array local.
+                    const index = this.technicians.findIndex(t => String(t.id) === String(techData.id));
                     if (index !== -1) {
-                        this.technicians[index] = updatedTech;
+                        this.technicians[index] = { ...this.technicians[index], ...techData };
                     }
                     this.showNotification('Técnico atualizado com sucesso', 'success');
+                } else {
+                    this.showNotification(updatedTech.message || 'Erro ao guardar técnico', 'error');
+                    return;
                 }
             } else {
                 // Adicionar novo técnico
@@ -500,21 +505,20 @@ if (!await swalConfirm('Tem a certeza que quer eliminar este técnico?')) return
 
     // Показати сповіщення
     showNotification(message, type = 'info') {
-        // Використання Toastr або вбудованого сповіщення AdminLTE
         if (typeof toastr !== 'undefined') {
-            toastr[type](message);
+            toastr[type] ? toastr[type](message) : toastr.info(message);
         } else {
-            toastr.info(message);
+            console.warn(`[${type}] ${message}`);
         }
     }
 
     // Mostrar notificações (para navegação)
     showNotifications() {
-        toastr.info('Funcionalidade de notificações será implementada na próxima versão');
+        this.showNotification('Funcionalidade de notificações será implementada na próxima versão', 'info');
     }
 
     // Показати повідомлення (для навігації)
     showMessages() {
-        toastr.info('Funcionalidade de mensagens será implementada na próxima versão');
+        this.showNotification('Funcionalidade de mensagens será implementada na próxima versão', 'info');
     }
 }
