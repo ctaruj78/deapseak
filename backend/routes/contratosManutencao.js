@@ -10,7 +10,7 @@ const PDFDocument = require('pdfkit');
 const path = require('path');
 const fs = require('fs');
 const crypto = require('crypto');
-const { CONDICOES_GERAIS_ARTIGOS } = require('../constants/propostaManutencaoTerms');
+const { CONDICOES_GERAIS_ARTIGOS, CONDICOES_GERAIS_ARTIGOS_COMPLETA } = require('../constants/propostaManutencaoTerms');
 
 // Um contrato assinado por ambas as partes não cria sozinho o(s) registo(s) de
 // elevador — dados como fabricante, capacidade ou coordenadas GPS não constam
@@ -204,8 +204,9 @@ async function gerarPDFContratoManutencao(contrato) {
             doc.moveTo(50, doc.y).lineTo(550, doc.y).stroke();
             doc.moveDown();
 
+            const tipoLabel = contrato.tipo === 'completa' ? 'Manutenção Completa' : 'Manutenção Simples';
             doc.fontSize(17).font('Helvetica-Bold').fillColor(AZUL)
-                .text(`Contrato de Manutenção Simples Nº ${contrato.numero}`, { align: 'center' });
+                .text(`Contrato de ${tipoLabel} Nº ${contrato.numero}`, { align: 'center' });
             doc.moveDown(0.5);
 
             doc.fontSize(9).font('Helvetica-Oblique').fillColor('#333333').text(
@@ -241,7 +242,7 @@ async function gerarPDFContratoManutencao(contrato) {
             doc.fontSize(10).font('Helvetica').fillColor('#000000');
 
             const renovacao = contrato.renovacao || {};
-            const termosTexto = `Entre a FESTLIFT, Lda., com sede na Avenida do Parque nº 84-B, Rio de Mouro, 2635-609, pessoa coletiva n.º 515924741, reconhecida pela Direção Geral de Energia e Geologia (DGEG), com o certificado n.º EC 2/2.208, como Empresa de Manutenção de Instalações de Elevação (EMIE), nos termos da Lei n.º 65/2013 de 27 de Agosto e legislação complementar, e o Cliente identificado acima, é firmado o presente Contrato de Manutenção Simples respeitante a ${contrato.numAscensores || '__'} ascensor(es), destinado(s) a transporte de pessoas, instalado(s) em ${contrato.localInstalacao || '—'}. ` +
+            const termosTexto = `Entre a FESTLIFT, Lda., com sede na Avenida do Parque nº 84-B, Rio de Mouro, 2635-609, pessoa coletiva n.º 515924741, reconhecida pela Direção Geral de Energia e Geologia (DGEG), com o certificado n.º EC 2/2.208, como Empresa de Manutenção de Instalações de Elevação (EMIE), nos termos da Lei n.º 65/2013 de 27 de Agosto e legislação complementar, e o Cliente identificado acima, é firmado o presente Contrato de ${tipoLabel} respeitante a ${contrato.numAscensores || '__'} ascensor(es), destinado(s) a transporte de pessoas, instalado(s) em ${contrato.localInstalacao || '—'}. ` +
                 `Pela aceitação do presente contrato a EMIE obriga-se a fornecer, de acordo com as Condições Gerais abaixo, um serviço de manutenção para o equipamento discriminado. ` +
                 `O preço do serviço de manutenção é de €${(contrato.precoMensal || 0).toFixed(2)} por mês, por unidade, acrescido de IVA à taxa legal em vigor. ` +
                 `O pagamento é ${contrato.pagamento || 'Trimestral e adiantado'}. ` +
@@ -255,7 +256,8 @@ async function gerarPDFContratoManutencao(contrato) {
             doc.fontSize(12).font('Helvetica-Bold').fillColor(AZUL).text('Condições Gerais', 50, doc.y);
             doc.moveDown(0.3);
 
-            CONDICOES_GERAIS_ARTIGOS.forEach((artigo) => {
+            const artigosAplicaveis = contrato.tipo === 'completa' ? CONDICOES_GERAIS_ARTIGOS_COMPLETA : CONDICOES_GERAIS_ARTIGOS;
+            artigosAplicaveis.forEach((artigo) => {
                 if (doc.y > 700) { doc.addPage(); }
                 doc.fontSize(10).font('Helvetica-Bold').fillColor(AZUL).text(artigo.titulo, 50, doc.y, { width: 500 });
                 doc.moveDown(0.2);
@@ -345,6 +347,7 @@ router.post('/from-proposta/:propostaId', authenticate, authorizeRoles('admin', 
             numero,
             propostaId: proposta._id,
             data: new Date(),
+            tipo: proposta.tipo,
             cliente: proposta.cliente,
             instalacao: proposta.instalacao,
             faturacao: proposta.faturacao,
@@ -417,9 +420,10 @@ router.get('/', authenticate, authorizeRoles('admin', 'dispatcher', 'client'), a
     }
 });
 
-// GET /api/contratos-manutencao/condicoes-gerais/texto - Texto integral das Condições Gerais (público — texto legal não sensível)
+// GET /api/contratos-manutencao/condicoes-gerais/texto?tipo=completa|simples - Texto integral das Condições Gerais (público — texto legal não sensível)
 router.get('/condicoes-gerais/texto', (req, res) => {
-    res.json({ success: true, data: CONDICOES_GERAIS_ARTIGOS });
+    const artigos = req.query.tipo === 'completa' ? CONDICOES_GERAIS_ARTIGOS_COMPLETA : CONDICOES_GERAIS_ARTIGOS;
+    res.json({ success: true, data: artigos });
 });
 
 // ─────────────────────────────────────────────────────────────

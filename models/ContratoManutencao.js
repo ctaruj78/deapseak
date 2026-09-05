@@ -29,6 +29,14 @@ const contratoManutencaoSchema = new mongoose.Schema({
         default: Date.now
     },
 
+    // Tipo de manutenção herdado da proposta de origem — determina o título
+    // do documento e as Condições Gerais aplicáveis (ver propostaManutencaoTerms.js)
+    tipo: {
+        type: String,
+        enum: ['simples', 'completa'],
+        default: 'simples'
+    },
+
     cliente: {
         nome: { type: String, required: true },
         morada: String,

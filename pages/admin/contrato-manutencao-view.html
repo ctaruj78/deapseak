@@ -169,7 +169,6 @@ $(document).ready(function() {
     const id = new URLSearchParams(window.location.search).get('id');
     if (!id) { toastr.error('Contrato não especificado'); return; }
     loadContrato(id);
-    loadCondicoes();
     initSigPad();
 });
 
@@ -195,6 +194,7 @@ async function loadContrato(id) {
         document.getElementById('numeroTitle').textContent = contrato.numero;
         document.getElementById('breadcrumbTitle').textContent = `/ Contrato ${contrato.numero}`;
         document.title = `FestLift — Contrato ${contrato.numero}`;
+        loadCondicoes();
 
         const statusEl = document.getElementById('statusBadge');
         statusEl.className = `badge badge-${contrato.status}`;
