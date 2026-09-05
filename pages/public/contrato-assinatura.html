@@ -66,7 +66,7 @@
     <div class="brand">
         <h1>FESTLIFT <small>elevadores e serviços</small></h1>
     </div>
-    <h2 class="doc-title">Contrato de Manutenção Simples</h2>
+    <h2 class="doc-title" id="docTitle">Contrato de Manutenção Simples</h2>
     <div class="doc-line"></div>
 
     <div style="text-align:center;margin-bottom:16px;">
@@ -178,8 +178,10 @@ async function init() {
 }
 
 function render() {
+    const tipoLabel = contrato.tipo === 'completa' ? 'Manutenção Completa' : 'Manutenção Simples';
     document.getElementById('numeroTitle').textContent = `Contrato ${contrato.numero}`;
     document.title = `Contrato ${contrato.numero} — FestLift`;
+    document.getElementById('docTitle').textContent = `Contrato de ${tipoLabel}`;
 
     const statusEl = document.getElementById('statusBadge');
     statusEl.className = `badge badge-${contrato.status}`;
@@ -193,7 +195,7 @@ function render() {
 
     const renovacao = contrato.renovacao || {};
     document.getElementById('termosTexto').textContent =
-        `Contrato de Manutenção Simples respeitante a ${contrato.numAscensores || '__'} ascensor(es), destinado(s) a transporte de pessoas, instalado(s) em ${contrato.localInstalacao || '—'}. ` +
+        `Contrato de ${tipoLabel} respeitante a ${contrato.numAscensores || '__'} ascensor(es), destinado(s) a transporte de pessoas, instalado(s) em ${contrato.localInstalacao || '—'}. ` +
         `O preço do serviço de manutenção é de €${(contrato.precoMensal || 0).toFixed(2)} por mês, por unidade, acrescido de IVA à taxa legal em vigor. ` +
         `O pagamento é ${contrato.pagamento || 'Trimestral e adiantado'}. ` +
         `O contrato terá início em ${contrato.dataInicioContrato ? new Date(contrato.dataInicioContrato).toLocaleDateString('pt-PT') : '—'} e manter-se-á válido durante ${contrato.duracaoAnos || 1} ano(s), considerando-se tacitamente prorrogado por períodos de ${renovacao.periodo || '1 ano'}, salvo denúncia por qualquer das partes com pelo menos ${renovacao.avisoDias || '60 dias'} de antecedência, através de ${renovacao.metodoNotificacao || 'carta registada'}${renovacao.emailNotificacao ? ' (' + renovacao.emailNotificacao + ')' : ''}. ` +
@@ -217,7 +219,8 @@ function render() {
 
 async function loadCondicoes() {
     try {
-        const res = await fetch('/api/contratos-manutencao/condicoes-gerais/texto');
+        const tipoQuery = contrato?.tipo === 'completa' ? 'completa' : 'simples';
+        const res = await fetch(`/api/contratos-manutencao/condicoes-gerais/texto?tipo=${tipoQuery}`);
         const result = await res.json();
         if (!result.success) return;
         document.getElementById('condicoesContainer').innerHTML = result.data.map((artigo) => `

@@ -179,7 +179,7 @@ async function gerarPDFContratoManutencao(contrato) {
     return new Promise((resolve, reject) => {
         try {
             const AZUL = '#1a3a6b';
-            const doc = new PDFDocument({ margin: 50, size: 'A4' });
+            const doc = new PDFDocument({ margin: 50, size: 'A4', bufferPages: true });
             const chunks = [];
 
             doc.on('data', chunk => chunks.push(chunk));
@@ -312,10 +312,31 @@ async function gerarPDFContratoManutencao(contrato) {
             doc.text(`Data: ${formatDatePT(contrato.assinaturaEmpresa?.data)}`, leftX, boxY + 96, { width: colWidth });
             doc.text(`Data: ${formatDatePT(contrato.assinaturaCliente?.data)}`, rightX, boxY + 96, { width: colWidth });
 
-            const footerY = 780;
-            doc.fontSize(8).font('Helvetica').fillColor('#666666');
-            doc.text('FestLift - Elevadores e Serviços, Lda. | NIF: 515 924 741 | Email: info@festlift.pt', 50, footerY, { align: 'center', width: 500 });
-            doc.text('Tel: +351 214 190 863 | Móvel: +351 926 380 243 | Avenida do Parque nº 84-B, Rio de Mouro, 2635-609', 50, footerY + 12, { align: 'center', width: 500 });
+            // Rodapé (reservado a NIF/contactos — só na última página) e numeração
+            // "Nº do contrato — Página X de Y" (em todas) — sem isto, páginas de um
+            // contrato assinado podem ser substituídas/reordenadas sem deixar rasto.
+            // Corre depois de todo o conteúdo (incluindo addPage automáticos) e antes
+            // de doc.end(), com bufferPages. Zera temporariamente a margem inferior e
+            // usa posições relativas a doc.page.height: sem isso o pdfkit interpreta a
+            // escrita perto do fundo como "não cabe" e insere uma página em branco extra
+            // só para essa linha (foi exatamente isto que aconteceu com o rodapé antigo,
+            // escrito a y fixo 792 — acima do limite imprimível de ~792 numa A4).
+            const pageRange = doc.bufferedPageRange();
+            for (let i = pageRange.start; i < pageRange.start + pageRange.count; i++) {
+                doc.switchToPage(i);
+                const oldBottomMargin = doc.page.margins.bottom;
+                doc.page.margins.bottom = 0;
+
+                if (i === pageRange.start + pageRange.count - 1) {
+                    doc.fontSize(8).font('Helvetica').fillColor('#666666');
+                    doc.text('FestLift - Elevadores e Serviços, Lda. | NIF: 515 924 741 | Email: info@festlift.pt', 50, doc.page.height - 56, { align: 'center', width: doc.page.width - 100, lineBreak: false });
+                    doc.text('Tel: +351 214 190 863 | Móvel: +351 926 380 243 | Avenida do Parque nº 84-B, Rio de Mouro, 2635-609', 50, doc.page.height - 44, { align: 'center', width: doc.page.width - 100, lineBreak: false });
+                }
+
+                doc.fontSize(8).font('Helvetica').fillColor('#666666')
+                    .text(`${contrato.numero} — Página ${i + 1} de ${pageRange.count}`, 50, doc.page.height - 28, { align: 'center', width: doc.page.width - 100, lineBreak: false });
+                doc.page.margins.bottom = oldBottomMargin;
+            }
             doc.fillColor('#000000');
 
             doc.end();

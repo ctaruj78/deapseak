@@ -211,8 +211,9 @@ async function loadContrato(id) {
         document.getElementById('precoMensal').textContent = contrato.precoMensal ? `€${Number(contrato.precoMensal).toFixed(2)} / mês + IVA` : '—';
 
         const renovacao = contrato.renovacao || {};
+        const tipoLabel = contrato.tipo === 'completa' ? 'Manutenção Completa' : 'Manutenção Simples';
         document.getElementById('termosTexto').textContent =
-            `Contrato de Manutenção Simples respeitante a ${contrato.numAscensores || '__'} ascensor(es), destinado(s) a transporte de pessoas, instalado(s) em ${contrato.localInstalacao || '—'}. ` +
+            `Contrato de ${tipoLabel} respeitante a ${contrato.numAscensores || '__'} ascensor(es), destinado(s) a transporte de pessoas, instalado(s) em ${contrato.localInstalacao || '—'}. ` +
             `O preço do serviço de manutenção é de €${(contrato.precoMensal || 0).toFixed(2)} por mês, por unidade, acrescido de IVA à taxa legal em vigor. ` +
             `O pagamento é ${contrato.pagamento || 'Trimestral e adiantado'}. ` +
             `O contrato terá início em ${contrato.dataInicioContrato ? new Date(contrato.dataInicioContrato).toLocaleDateString('pt-PT') : '—'} e manter-se-á válido durante ${contrato.duracaoAnos || 1} ano(s), considerando-se tacitamente prorrogado por períodos de ${renovacao.periodo || '1 ano'}, salvo denúncia por qualquer das partes com pelo menos ${renovacao.avisoDias || '60 dias'} de antecedência, através de ${renovacao.metodoNotificacao || 'carta registada'}${renovacao.emailNotificacao ? ' (' + renovacao.emailNotificacao + ')' : ''}. ` +
@@ -285,7 +286,8 @@ async function enviarLinkAssinatura() {
 
 async function loadCondicoes() {
     try {
-        const res = await fetch('/api/contratos-manutencao/condicoes-gerais/texto', { headers: { 'Authorization': `Bearer ${getToken()}` } });
+        const tipoQuery = contrato?.tipo === 'completa' ? 'completa' : 'simples';
+        const res = await fetch(`/api/contratos-manutencao/condicoes-gerais/texto?tipo=${tipoQuery}`, { headers: { 'Authorization': `Bearer ${getToken()}` } });
         const result = await res.json();
         if (!result.success) return;
 
