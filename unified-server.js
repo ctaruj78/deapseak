@@ -15444,16 +15444,27 @@ const uploadContactAttachment = multer({
     }
 });
 
+const EmailContacto = require('./models/EmailContacto');
+const { parseCcList } = require('./backend/utils/emailCc');
+
 // POST /api/email/send-template - Відправити email з кастомного template (com anexos opcionais)
 app.post('/api/email/send-template', authenticateToken, emailLimiter, requireRole('admin', 'dispatcher'), uploadContactAttachment.array('attachments', 5), async (req, res) => {
     const attachedFiles = req.files || [];
     try {
-        const { email, templateId, subject, htmlContent } = req.body;
+        const { email, templateId, subject, htmlContent, cc, clienteId, clienteNome } = req.body;
 
         if (!email || !htmlContent) {
             return res.status(400).json({
                 success: false,
                 error: 'Email та HTML контент є обов\'язковими'
+            });
+        }
+
+        const { list: ccList, invalid: ccInvalid } = parseCcList(cc);
+        if (ccInvalid.length) {
+            return res.status(400).json({
+                success: false,
+                error: `Email(s) em CC inválido(s): ${ccInvalid.join(', ')}`
             });
         }
 
@@ -15478,6 +15489,7 @@ app.post('/api/email/send-template', authenticateToken, emailLimiter, requireRol
         const mailOptions = {
             from: smtpFromRaw,
             to: email,
+            cc: ccList.length ? ccList.join(', ') : undefined,
             subject: subject || 'Email de teste - FestLift',
             html: htmlContent,
             bcc: adminBcc && adminBcc.toLowerCase() !== String(email).toLowerCase() ? adminBcc : undefined
@@ -15490,14 +15502,39 @@ app.post('/api/email/send-template', authenticateToken, emailLimiter, requireRol
             }));
         }
 
-        await transporter.sendMail(mailOptions);
+        try {
+            await transporter.sendMail(mailOptions);
 
-        console.log(`✅ Template email sent to ${email} (template: ${templateId || 'custom'}, anexos: ${attachedFiles.length})`)
-        res.json({
-            success: true,
-            message: 'Email успішно відправлено',
-            templateId: templateId
-        });
+            console.log(`✅ Template email sent to ${email} (template: ${templateId || 'custom'}, anexos: ${attachedFiles.length})`)
+
+            await EmailContacto.create({
+                cliente: { id: clienteId || undefined, nome: clienteNome, email },
+                cc: ccList,
+                assunto: subject || 'Email de teste - FestLift',
+                mensagem: htmlContent,
+                anexos: attachedFiles.map(f => f.originalname),
+                enviadoPor: { id: req.user.id, email: req.user.email },
+                sucesso: true
+            });
+
+            res.json({
+                success: true,
+                message: 'Email успішно відправлено',
+                templateId: templateId
+            });
+        } catch (sendError) {
+            await EmailContacto.create({
+                cliente: { id: clienteId || undefined, nome: clienteNome, email },
+                cc: ccList,
+                assunto: subject || 'Email de teste - FestLift',
+                mensagem: htmlContent,
+                anexos: attachedFiles.map(f => f.originalname),
+                enviadoPor: { id: req.user.id, email: req.user.email },
+                sucesso: false,
+                erro: sendError.message
+            }).catch(() => {});
+            throw sendError;
+        }
     } catch (error) {
         console.error('❌ Error sending template email:', error);
         res.status(500).json({
@@ -15510,6 +15547,48 @@ app.post('/api/email/send-template', authenticateToken, emailLimiter, requireRol
                 await fs.unlink(f.path).catch(() => {});
             }
         }
+    }
+});
+
+// GET /api/email/contact-log - Histórico de emails enviados via "Contactar Cliente"
+app.get('/api/email/contact-log', authenticateToken, requireRole('admin', 'dispatcher'), async (req, res) => {
+    try {
+        const page = Math.max(parseInt(req.query.page) || 1, 1);
+        const limit = Math.min(Math.max(parseInt(req.query.limit) || 20, 1), 100);
+        const query = {};
+        if (req.query.clienteId) query['cliente.id'] = req.query.clienteId;
+
+        const [items, total] = await Promise.all([
+            EmailContacto.find(query)
+                .sort({ createdAt: -1 })
+                .skip((page - 1) * limit)
+                .limit(limit)
+                .lean(),
+            EmailContacto.countDocuments(query)
+        ]);
+
+        res.json({
+            success: true,
+            data: items,
+            pagination: { page, limit, total, pages: Math.ceil(total / limit) }
+        });
+    } catch (error) {
+        console.error('❌ Error fetching email contact log:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// DELETE /api/email/contact-log/:id - Remover um registo do histórico de "Contactar Cliente"
+app.delete('/api/email/contact-log/:id', authenticateToken, requireRole('admin', 'dispatcher'), async (req, res) => {
+    try {
+        const deleted = await EmailContacto.findByIdAndDelete(req.params.id);
+        if (!deleted) {
+            return res.status(404).json({ success: false, error: 'Registo não encontrado' });
+        }
+        res.json({ success: true, message: 'Registo eliminado' });
+    } catch (error) {
+        console.error('❌ Error deleting email contact log entry:', error);
+        res.status(500).json({ success: false, error: error.message });
     }
 });
 

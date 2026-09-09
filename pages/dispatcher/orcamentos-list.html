@@ -587,14 +587,9 @@
 
         // Enviar orçamento por email diretamente da lista (sem abrir o orçamento)
         async function enviarOrcamentoRapido(id, emailAtual, btn) {
-            const clientEmail = prompt('Confirme o email do cliente:', emailAtual || '');
-            if (!clientEmail) return;
-
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            if (!emailRegex.test(clientEmail)) {
-                toastr.error('Email inválido');
-                return;
-            }
+            const destinatarios = await promptEmailComCc(emailAtual || '');
+            if (!destinatarios) return;
+            const { email: clientEmail, cc: ccList } = destinatarios;
 
             const originalHtml = btn ? btn.innerHTML : null;
             if (btn) {
@@ -606,7 +601,7 @@
                 // AuthManager.fetchWithAuth tenta refresh silencioso do token antes de desistir
                 const response = await AuthManager.fetchWithAuth(`/api/orcamentos/${id}/enviar`, {
                     method: 'POST',
-                    body: JSON.stringify({ email: clientEmail })
+                    body: JSON.stringify({ email: clientEmail, cc: ccList })
                 });
                 if (!response) {
                     throw new Error('Sessão expirada. Faça login novamente.');
@@ -1136,6 +1131,44 @@ async function swalConfirm(text, title = 'Confirmar') {
         cancelButtonText: 'Cancelar'
     });
     return r.isConfirmed;
+}
+
+// Pede o email do destinatário e, opcionalmente, uma lista de CCs.
+// Retorna { email, cc: string[] } ou null se cancelado.
+async function promptEmailComCc(defaultEmail) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const r = await Swal.fire({
+        title: 'Enviar orçamento',
+        html: `
+            <div style="text-align:left;">
+                <label style="font-size:13px;color:#555;">Email do cliente</label>
+                <input id="swalEmail" class="swal2-input" style="margin:4px 0 12px;" value="${(defaultEmail || '').replace(/"/g, '&quot;')}">
+                <label style="font-size:13px;color:#555;">CC <span style="font-weight:normal;">(opcional, vários separados por vírgula)</span></label>
+                <input id="swalCc" class="swal2-input" style="margin:4px 0 0;" placeholder="email1@exemplo.pt, email2@exemplo.pt">
+            </div>
+        `,
+        focusConfirm: false,
+        showCancelButton: true,
+        confirmButtonText: 'Enviar',
+        cancelButtonText: 'Cancelar',
+        confirmButtonColor: '#28a745',
+        preConfirm: () => {
+            const email = document.getElementById('swalEmail').value.trim();
+            const ccRaw = document.getElementById('swalCc').value.trim();
+            if (!email || !emailRegex.test(email)) {
+                Swal.showValidationMessage('Indique um email de cliente válido');
+                return false;
+            }
+            const cc = ccRaw ? ccRaw.split(/[,;]/).map(s => s.trim()).filter(Boolean) : [];
+            const invalid = cc.filter(c => !emailRegex.test(c));
+            if (invalid.length) {
+                Swal.showValidationMessage(`Email(s) em CC inválido(s): ${invalid.join(', ')}`);
+                return false;
+            }
+            return { email, cc };
+        }
+    });
+    return r.isConfirmed ? r.value : null;
 }
 </script>
     <script src="/plugins/toastr/js/toastr.min.js"></script>

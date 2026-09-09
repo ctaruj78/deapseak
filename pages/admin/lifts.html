@@ -10285,6 +10285,9 @@ async function editInspectionReport(liftId, index) {
     $('#editInspRptType').val(typeVal);
     $('#editInspRptNotes').val(report ? (report.notes || report.comments || '') : '');
 
+    // Garante que o botão não fica preso no estado "A guardar..." de uma edição anterior
+    $('#editInspRptSaveBtn').prop('disabled', false).html('<i class="fas fa-save mr-1"></i> Guardar alterações');
+
     $('#editInspectionReportModal').modal('show');
 }
 
@@ -10324,6 +10327,7 @@ $(document).on('click', '#editInspRptSaveBtn', async function() {
         var result = await resp.json();
         if (!result.success) throw new Error(result.message || 'Erro ao guardar');
 
+        $btn.prop('disabled', false).html('<i class="fas fa-save mr-1"></i> Guardar alterações');
         $('#editInspectionReportModal').modal('hide');
         if (typeof toastr !== 'undefined') toastr.success('✅ Relatório actualizado!');
         else toastr.success('Relatório actualizado com sucesso!');

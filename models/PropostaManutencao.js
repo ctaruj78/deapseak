@@ -196,6 +196,7 @@ const propostaManutencaoSchema = new mongoose.Schema({
     emailsEnviados: [{
         data: { type: Date, default: Date.now },
         para: String,
+        cc: [String],
         assunto: String,
         sucesso: Boolean,
         erro: String

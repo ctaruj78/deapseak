@@ -811,6 +811,12 @@ router.post('/:id/enviar', authenticate, authorizeRoles('admin', 'dispatcher'), 
 
         const emailDestino = req.body.email || proposta.cliente.email;
 
+        const { parseCcList } = require('../utils/emailCc');
+        const { list: ccList, invalid: ccInvalid } = parseCcList(req.body.cc);
+        if (ccInvalid.length) {
+            return res.status(400).json({ success: false, message: `Email(s) em CC inválido(s): ${ccInvalid.join(', ')}` });
+        }
+
         const nodemailer = require('nodemailer');
         const transporter = nodemailer.createTransport({
             host: process.env.SMTP_HOST || 'smtp-relay.brevo.com',
@@ -872,6 +878,7 @@ router.post('/:id/enviar', authenticate, authorizeRoles('admin', 'dispatcher'), 
             await transporter.sendMail({
                 from: smtpFrom,
                 to: emailDestino,
+                cc: ccList.length ? ccList.join(', ') : undefined,
                 bcc: adminBcc && adminBcc.toLowerCase() !== emailDestino.toLowerCase() ? adminBcc : undefined,
                 subject: assunto,
                 html: emailHTML,
@@ -885,7 +892,7 @@ router.post('/:id/enviar', authenticate, authorizeRoles('admin', 'dispatcher'), 
                 { _id: proposta._id },
                 {
                     $set: { status: 'enviado', dataEnvio: new Date() },
-                    $push: { emailsEnviados: { para: emailDestino, assunto, data: new Date(), sucesso: true } }
+                    $push: { emailsEnviados: { para: emailDestino, cc: ccList, assunto, data: new Date(), sucesso: true } }
                 }
             );
 
@@ -895,7 +902,7 @@ router.post('/:id/enviar', authenticate, authorizeRoles('admin', 'dispatcher'), 
             console.error('❌ Erro SMTP:', smtpError.message);
             await PropostaManutencao.updateOne(
                 { _id: proposta._id },
-                { $push: { emailsEnviados: { para: emailDestino, assunto, data: new Date(), sucesso: false, erro: smtpError.message } } }
+                { $push: { emailsEnviados: { para: emailDestino, cc: ccList, assunto, data: new Date(), sucesso: false, erro: smtpError.message } } }
             );
             return res.status(500).json({ success: false, message: `Erro ao enviar email via SMTP: ${smtpError.message}`, error: smtpError.message });
         }

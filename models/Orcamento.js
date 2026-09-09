@@ -207,8 +207,10 @@ const orcamentoSchema = new mongoose.Schema({
             default: Date.now
         },
         para: String,
+        cc: [String],
         assunto: String,
-        sucesso: Boolean
+        sucesso: Boolean,
+        erro: String
     }]
 }, {
     timestamps: true // createdAt, updatedAt автоматично

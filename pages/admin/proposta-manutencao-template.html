@@ -543,7 +543,8 @@ async function guardarProposta() {
 async function enviarProposta() {
     if (!currentPropostaId) { toastr.warning('Guarde a proposta antes de enviar'); return; }
     const email = document.getElementById('clienteEmail').value.trim();
-    if (!await swalConfirm(`Enviar esta proposta para ${email}?`, 'Confirmar envio')) return;
+    const ccList = await promptCcEnvio(`Enviar esta proposta para ${email}?`);
+    if (ccList === null) return;
 
     const btn = document.getElementById('btnEnviar');
     btn.disabled = true;
@@ -553,7 +554,7 @@ async function enviarProposta() {
         const res = await fetch(`/api/propostas-manutencao/${currentPropostaId}/enviar`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` },
-            body: JSON.stringify({})
+            body: JSON.stringify({ cc: ccList })
         });
         const result = await res.json();
         if (result.success) {
@@ -605,6 +606,37 @@ async function swalConfirm(text, title = 'Confirmar') {
         confirmButtonText: 'Enviar', cancelButtonText: 'Cancelar'
     });
     return r.isConfirmed;
+}
+
+// Confirma o envio e recolhe uma lista opcional de CCs.
+// Retorna string[] de CCs (pode ser []), ou null se cancelado.
+async function promptCcEnvio(text) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const r = await Swal.fire({
+        title: 'Confirmar envio',
+        html: `
+            <p style="text-align:left;margin-bottom:10px;">${text}</p>
+            <div style="text-align:left;">
+                <label style="font-size:13px;color:#555;">CC <span style="font-weight:normal;">(opcional, vários separados por vírgula)</span></label>
+                <input id="swalCc" class="swal2-input" style="margin:4px 0 0;" placeholder="email1@exemplo.pt, email2@exemplo.pt">
+            </div>
+        `,
+        focusConfirm: false,
+        showCancelButton: true,
+        confirmButtonColor: '#007bff', cancelButtonColor: '#95a5a6',
+        confirmButtonText: 'Enviar', cancelButtonText: 'Cancelar',
+        preConfirm: () => {
+            const ccRaw = document.getElementById('swalCc').value.trim();
+            const cc = ccRaw ? ccRaw.split(/[,;]/).map(s => s.trim()).filter(Boolean) : [];
+            const invalid = cc.filter(c => !emailRegex.test(c));
+            if (invalid.length) {
+                Swal.showValidationMessage(`Email(s) em CC inválido(s): ${invalid.join(', ')}`);
+                return false;
+            }
+            return cc;
+        }
+    });
+    return r.isConfirmed ? r.value : null;
 }
 </script>
 <script src="../../assets/js/monitor.js"></script>

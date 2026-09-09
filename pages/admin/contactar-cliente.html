@@ -54,6 +54,11 @@
                                     <small class="text-muted" id="clienteEmailPreview"></small>
                                 </div>
                                 <div class="form-group">
+                                    <label>CC <span class="text-muted font-weight-normal">(opcional)</span></label>
+                                    <input type="text" id="cc" class="form-control" placeholder="email1@exemplo.pt, email2@exemplo.pt">
+                                    <small class="text-muted">Vários emails separados por vírgula.</small>
+                                </div>
+                                <div class="form-group">
                                     <label>Assunto <span class="text-danger">*</span></label>
                                     <input type="text" id="assunto" class="form-control" placeholder="Ex.: Sobre a sua questão relativa ao elevador">
                                 </div>
@@ -82,10 +87,38 @@
                             <div class="card-header"><h3 class="card-title">Pré-visualização</h3></div>
                             <div class="card-body">
                                 <div class="small text-muted mb-2">Para: <span id="prevPara">—</span></div>
+                                <div class="small text-muted mb-2">CC: <span id="prevCc">—</span></div>
                                 <div class="small text-muted mb-2">Assunto: <span id="prevAssunto">—</span></div>
                                 <div class="small text-muted mb-2">Anexos: <span id="prevAnexos">—</span></div>
                                 <hr>
                                 <div id="prevMensagem" class="small" style="white-space:pre-wrap;">—</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="card card-outline card-secondary">
+                            <div class="card-header">
+                                <h3 class="card-title">Histórico de Emails Enviados</h3>
+                            </div>
+                            <div class="card-body p-0">
+                                <table class="table table-hover mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Data</th>
+                                            <th>Cliente</th>
+                                            <th>CC</th>
+                                            <th>Assunto</th>
+                                            <th>Enviado por</th>
+                                            <th>Estado</th>
+                                            <th class="text-right">Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="historicoBody">
+                                        <tr><td colspan="7" class="text-center text-muted py-3">A carregar...</td></tr>
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
                     </div>
@@ -116,7 +149,8 @@ const MAX_ANEXO_SIZE = 10 * 1024 * 1024;
 $(document).ready(function() {
     loadSidebarWithInit('includes/sidebar.html');
     loadClientes();
-    $('#assunto, #mensagem').on('input', updatePreview);
+    loadHistorico();
+    $('#assunto, #mensagem, #cc').on('input', updatePreview);
 });
 
 function onAnexosChange(fileList) {
@@ -202,11 +236,110 @@ function updatePreview() {
     const cliente = getClienteAtual();
     document.getElementById('prevPara').textContent = cliente ? cliente.email : '—';
     document.getElementById('clienteEmailPreview').textContent = cliente ? cliente.email : '';
+    document.getElementById('prevCc').textContent = $('#cc').val().trim() || '—';
     document.getElementById('prevAssunto').textContent = $('#assunto').val() || '—';
     document.getElementById('prevMensagem').textContent = $('#mensagem').val() || '—';
     document.getElementById('prevAnexos').textContent = anexosSelecionados.length
         ? anexosSelecionados.map(f => f.name).join(', ')
         : '—';
+}
+
+let historicoItems = {};
+
+async function loadHistorico() {
+    const tbody = document.getElementById('historicoBody');
+    try {
+        const res = await fetch('/api/email/contact-log?limit=20', {
+            headers: { 'Authorization': `Bearer ${getToken()}` }
+        });
+        const result = await res.json();
+        const items = result.data || [];
+        historicoItems = {};
+        items.forEach(item => { historicoItems[item._id] = item; });
+        if (!items.length) {
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-3">Ainda não foram enviados emails.</td></tr>';
+            return;
+        }
+        tbody.innerHTML = items.map(item => {
+            const data = item.createdAt ? new Date(item.createdAt).toLocaleString('pt-PT') : '—';
+            const clienteLabel = (item.cliente && (item.cliente.nome ? `${item.cliente.nome} — ` : '') + (item.cliente.email || '')) || '—';
+            const cc = (item.cc && item.cc.length) ? item.cc.join(', ') : '—';
+            const enviadoPor = (item.enviadoPor && item.enviadoPor.email) || '—';
+            const estado = item.sucesso
+                ? '<span class="badge badge-success">Enviado</span>'
+                : `<span class="badge badge-danger" title="${escHtml(item.erro || '')}">Falhou</span>`;
+            return `
+                <tr>
+                    <td class="small">${data}</td>
+                    <td class="small">${escHtml(clienteLabel)}</td>
+                    <td class="small">${escHtml(cc)}</td>
+                    <td class="small">${escHtml(item.assunto || '—')}</td>
+                    <td class="small">${escHtml(enviadoPor)}</td>
+                    <td>${estado}</td>
+                    <td class="text-right">
+                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="verHistoricoItem('${item._id}')" title="Ver"><i class="fas fa-eye"></i></button>
+                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="eliminarHistoricoItem('${item._id}')" title="Eliminar"><i class="fas fa-trash"></i></button>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    } catch (e) {
+        console.error('Erro ao carregar histórico de emails:', e);
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center text-danger py-3">Erro ao carregar histórico.</td></tr>';
+    }
+}
+
+function verHistoricoItem(id) {
+    const item = historicoItems[id];
+    if (!item) return;
+    const clienteLabel = (item.cliente && (item.cliente.nome ? `${item.cliente.nome} — ` : '') + (item.cliente.email || '')) || '—';
+    const cc = (item.cc && item.cc.length) ? item.cc.join(', ') : '—';
+    const anexos = (item.anexos && item.anexos.length) ? item.anexos.join(', ') : '—';
+    const data = item.createdAt ? new Date(item.createdAt).toLocaleString('pt-PT') : '—';
+    const erroLinha = item.sucesso ? '' : `<div class="small text-danger mb-2"><strong>Erro:</strong> ${escHtml(item.erro || '')}</div>`;
+    Swal.fire({
+        title: item.assunto || 'Email enviado',
+        html: `
+            <div style="text-align:left;font-size:13px;">
+                <div class="mb-2"><strong>Data:</strong> ${data}</div>
+                <div class="mb-2"><strong>Para:</strong> ${escHtml(clienteLabel)}</div>
+                <div class="mb-2"><strong>CC:</strong> ${escHtml(cc)}</div>
+                <div class="mb-2"><strong>Anexos:</strong> ${escHtml(anexos)}</div>
+                ${erroLinha}
+                <hr>
+                <div style="max-height:300px;overflow:auto;border:1px solid #eee;padding:10px;border-radius:4px;">${item.mensagem || ''}</div>
+            </div>
+        `,
+        width: 600,
+        confirmButtonText: 'Fechar'
+    });
+}
+
+async function eliminarHistoricoItem(id) {
+    const r = await Swal.fire({
+        title: 'Eliminar registo',
+        text: 'Eliminar este registo do histórico? Esta ação não pode ser revertida.',
+        icon: 'warning', showCancelButton: true,
+        confirmButtonColor: '#e74c3c', cancelButtonColor: '#95a5a6',
+        confirmButtonText: 'Eliminar', cancelButtonText: 'Cancelar'
+    });
+    if (!r.isConfirmed) return;
+    try {
+        const res = await fetch(`/api/email/contact-log/${id}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${getToken()}` }
+        });
+        const result = await res.json();
+        if (result.success) {
+            toastr.success('Registo eliminado');
+            loadHistorico();
+        } else {
+            toastr.error(result.error || 'Erro ao eliminar registo');
+        }
+    } catch (e) {
+        console.error('Erro ao eliminar registo:', e);
+        toastr.error('Erro ao eliminar registo');
+    }
 }
 
 function escHtml(str) {
@@ -230,16 +363,26 @@ function montarHtmlEmail(mensagem) {
     `;
 }
 
+function parseCcInput(raw) {
+    const parts = (raw || '').split(/[,;]/).map(s => s.trim()).filter(Boolean);
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const invalid = parts.filter(p => !emailRegex.test(p));
+    return { list: parts, invalid };
+}
+
 async function enviarContacto() {
     const cliente = getClienteAtual();
     const assunto = $('#assunto').val().trim();
     const mensagem = $('#mensagem').val().trim();
+    const { list: ccList, invalid: ccInvalid } = parseCcInput($('#cc').val());
 
     if (!cliente) { toastr.warning('Selecione um cliente'); return; }
     if (!assunto) { toastr.warning('Indique o assunto'); return; }
     if (!mensagem) { toastr.warning('Escreva a mensagem'); return; }
+    if (ccInvalid.length) { toastr.warning(`Email(s) em CC inválido(s): ${ccInvalid.join(', ')}`); return; }
 
-    if (!await swalConfirm(`Enviar este email para ${cliente.email}?`, 'Confirmar envio')) return;
+    const ccText = ccList.length ? ` (CC: ${ccList.join(', ')})` : '';
+    if (!await swalConfirm(`Enviar este email para ${cliente.email}${ccText}?`, 'Confirmar envio')) return;
 
     const btn = document.getElementById('btnEnviar');
     btn.disabled = true;
@@ -248,9 +391,12 @@ async function enviarContacto() {
     try {
         const formData = new FormData();
         formData.append('email', cliente.email);
+        formData.append('cc', ccList.join(','));
         formData.append('subject', assunto);
         formData.append('htmlContent', montarHtmlEmail(mensagem));
         formData.append('templateId', 'contacto-cliente-livre');
+        formData.append('clienteId', cliente._id);
+        formData.append('clienteNome', ((cliente.firstName || '') + ' ' + (cliente.lastName || '')).trim() || cliente.name || cliente.username || '');
         anexosSelecionados.forEach(f => formData.append('attachments', f));
 
         const res = await fetch('/api/email/send-template', {
@@ -261,11 +407,12 @@ async function enviarContacto() {
         const result = await res.json();
         if (result.success) {
             toastr.success(`Email enviado para ${cliente.email}`);
-            $('#assunto,#mensagem').val('');
+            $('#assunto,#mensagem,#cc').val('');
             document.getElementById('clienteSelect').value = '';
             anexosSelecionados = [];
             renderAnexos();
             updatePreview();
+            loadHistorico();
         } else {
             toastr.error(result.error || result.message || 'Erro ao enviar email');
         }

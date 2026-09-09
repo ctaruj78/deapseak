@@ -1035,8 +1035,17 @@ router.post('/:id/enviar', authenticate, authorizeRoles('admin', 'dispatcher'), 
         
         // Отримати email з body ou використати з орçаменту
         const emailDestino = req.body.email || orcamento.cliente.email;
-        
-        console.log(`📧 Enviando orçamento ${orcamento.numero} para ${emailDestino}`);
+
+        const { parseCcList } = require('../utils/emailCc');
+        const { list: ccList, invalid: ccInvalid } = parseCcList(req.body.cc);
+        if (ccInvalid.length) {
+            return res.status(400).json({
+                success: false,
+                message: `Email(s) em CC inválido(s): ${ccInvalid.join(', ')}`
+            });
+        }
+
+        console.log(`📧 Enviando orçamento ${orcamento.numero} para ${emailDestino}${ccList.length ? ' (cc: ' + ccList.join(', ') + ')' : ''}`);
         
         // ✅ Enviar via SMTP (Brevo SMTP relay)
         const nodemailer = require('nodemailer');
@@ -1149,6 +1158,7 @@ router.post('/:id/enviar', authenticate, authorizeRoles('admin', 'dispatcher'), 
             await transporter.sendMail({
                 from: smtpFrom,
                 to: emailDestino,
+                cc: ccList.length ? ccList.join(', ') : undefined,
                 bcc: adminBcc && adminBcc.toLowerCase() !== emailDestino.toLowerCase() ? adminBcc : undefined,
                 subject: `Orçamento ${orcamento.numero} - FestLift - Elevadores e Serviços, Lda.`,
                 html: emailHTML,
@@ -1170,6 +1180,7 @@ router.post('/:id/enviar', authenticate, authorizeRoles('admin', 'dispatcher'), 
                     $push: {
                         emailsEnviados: {
                             para: emailDestino,
+                            cc: ccList,
                             assunto: `Orçamento ${orcamento.numero} - FestLift - Elevadores e Serviços, Lda.`,
                             data: new Date(),
                             sucesso: true
@@ -1192,6 +1203,7 @@ router.post('/:id/enviar', authenticate, authorizeRoles('admin', 'dispatcher'), 
                     $push: {
                         emailsEnviados: {
                             para: emailDestino,
+                            cc: ccList,
                             assunto: `Orçamento ${orcamento.numero} - FestLift`,
                             data: new Date(),
                             sucesso: false,
