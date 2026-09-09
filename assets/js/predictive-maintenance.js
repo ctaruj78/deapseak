@@ -107,10 +107,10 @@ class PredictiveMaintenanceSystem {
             let maintenanceLog = [];
             
             // Спробуємо завантажити з API
+            const token = (typeof AuthManager !== 'undefined' && AuthManager.getAuthToken)
+                ? AuthManager.getAuthToken()
+                : (sessionStorage.getItem('liftmanager_jwt') || localStorage.getItem('liftmanager_jwt') || localStorage.getItem('authToken') || localStorage.getItem('token'));
             try {
-                const token = (typeof AuthManager !== 'undefined' && AuthManager.getAuthToken)
-                    ? AuthManager.getAuthToken()
-                    : (sessionStorage.getItem('liftmanager_jwt') || localStorage.getItem('liftmanager_jwt') || localStorage.getItem('authToken') || localStorage.getItem('token'));
                 if (token) {
                     console.log('🔑 Використовуємо токен для запиту ліфтів...');
                     const response = await fetch('/api/lifts', {
@@ -151,6 +151,40 @@ class PredictiveMaintenanceSystem {
             } catch (e) {
                 console.error('❌ Erro запиту до API /api/lifts:', e);
             }
+
+            // 🔧 Pedidos de manutenção reais (avarias/reparações/inspeções) — sem isto
+            // o cálculo de risco nunca via avarias reportadas pelos clientes, só as
+            // inspeções periódicas formais. archived=all porque pedidos já concluídos
+            // (o histórico mais relevante para o risco) ficam arquivados.
+            let requests = [];
+            try {
+                if (token) {
+                    const reqResponse = await fetch('/api/requests?archived=all&limit=500', {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    if (reqResponse.ok) {
+                        const reqData = await reqResponse.json();
+                        requests = Array.isArray(reqData) ? reqData : (reqData.data || []);
+                        console.log(`✅ Carregados ${requests.length} pedidos de manutenção da API`);
+                    } else {
+                        console.warn(`⚠️ API /api/requests devolveu erro ${reqResponse.status}`);
+                    }
+                }
+            } catch (e) {
+                console.error('❌ Erro запиту до API /api/requests:', e);
+            }
+
+            // Agrupamos por liftId para lookup rápido em getMaintenanceHistory().
+            // Chamadas falsas canceladas não refletem uma avaria real do elevador.
+            this.requestsByLift = {};
+            requests
+                .filter(r => r.status !== 'cancelled')
+                .forEach(r => {
+                    const liftId = r.liftId || (r.lift && (r.lift._id || r.lift));
+                    if (!liftId) return;
+                    if (!this.requestsByLift[liftId]) this.requestsByLift[liftId] = [];
+                    this.requestsByLift[liftId].push(r);
+                });
 
             // ⚠️ NÃO usar localStorage['lifts'] como fallback: essa chave é partilhada
             // globalmente (admin/dispatcher também escrevem nela) e não é filtrada por
@@ -1186,7 +1220,20 @@ class PredictiveMaintenanceSystem {
             });
         }
         
-        // 2. Історія з localStorage
+        // 2. Pedidos de manutenção reais (avarias, reparações, inspeções pedidas
+        // por clientes/técnicos) — a fonte mais direta de problemas reais no elevador.
+        (this.requestsByLift?.[liftId] || []).forEach(request => {
+            history.push({
+                type: request.type || 'other',
+                date: request.createdAt || request.date,
+                status: request.status,
+                severity: this.categorizeRequestSeverity(request),
+                findings: request.title || request.description || '',
+                source: 'requests'
+            });
+        });
+
+        // 3. Історія з localStorage
         const maintenanceLog = JSON.parse(localStorage.getItem('maintenance_log') || '[]');
         maintenanceLog
             .filter(log => log.liftId === liftId)
@@ -1196,8 +1243,8 @@ class PredictiveMaintenanceSystem {
                     source: 'maintenance_log'
                 });
             });
-        
-        // 3. Scheduled inspections
+
+        // 4. Scheduled inspections
         const inspections = JSON.parse(localStorage.getItem('scheduled_inspections') || '[]');
         inspections
             .filter(i => i.liftId === liftId && i.status === 'completed')
@@ -1241,6 +1288,18 @@ class PredictiveMaintenanceSystem {
         }
         
         return 'medium'; // За замовчуванням
+    }
+
+    /**
+     * 🚨 Severidade de um pedido de manutenção real (avaria/reparação/etc.)
+     * com base na prioridade atribuída pelo dispatcher/técnico.
+     */
+    categorizeRequestSeverity(request) {
+        const priority = (request.priority || '').toLowerCase();
+        if (priority === 'critical' || priority === 'urgent') return 'critical';
+        if (priority === 'high') return 'high';
+        if (priority === 'low') return 'low';
+        return 'medium';
     }
 
     getElevatorById(liftId) {
