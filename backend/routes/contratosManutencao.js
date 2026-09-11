@@ -357,9 +357,34 @@ router.post('/from-proposta/:propostaId', authenticate, authorizeRoles('admin', 
             return res.status(400).json({ success: false, message: 'Só é possível gerar contrato a partir de uma proposta aprovada' });
         }
 
-        const existente = await ContratoManutencao.findOne({ propostaId: proposta._id }).lean();
-        if (existente) {
-            return res.json({ success: true, message: 'Contrato já existente para esta proposta', data: existente, jaExistia: true });
+        const existenteDoc = await ContratoManutencao.findOne({ propostaId: proposta._id });
+        if (existenteDoc) {
+            // Fluxo: editar uma proposta já aprovada reabre-a como 'rascunho' (ver
+            // PUT /:id em propostasManutencao.js), obrigando a reaprová-la antes de
+            // gerar o contrato outra vez. Como propostaId é único, este endpoint
+            // nunca cria um segundo contrato — por isso, se ainda ninguém assinou,
+            // sincronizamos o contrato pendente com os dados atuais da proposta em
+            // vez de devolver a versão antiga congelada na primeira geração.
+            if (existenteDoc.status === 'pendente') {
+                existenteDoc.tipo = proposta.tipo;
+                existenteDoc.cliente = proposta.cliente;
+                existenteDoc.instalacao = proposta.instalacao;
+                existenteDoc.faturacao = proposta.faturacao;
+                existenteDoc.numAscensores = proposta.numAscensores;
+                existenteDoc.localInstalacao = proposta.localInstalacao;
+                existenteDoc.precoMensal = proposta.precoMensal;
+                existenteDoc.pagamento = proposta.pagamento;
+                existenteDoc.dataInicioContrato = proposta.dataInicioContrato;
+                existenteDoc.duracaoAnos = proposta.duracaoAnos;
+                existenteDoc.renovacao = proposta.renovacao;
+                existenteDoc.liftId = proposta.liftId || null;
+                existenteDoc.lifts = proposta.lifts || [];
+                existenteDoc.liftAddress = proposta.liftAddress || null;
+                await existenteDoc.save();
+                console.log(`🔄 Contrato ${existenteDoc.numero} sincronizado com a proposta ${proposta.numero} (edição pós-geração)`);
+                return res.json({ success: true, message: 'Contrato existente atualizado com os dados mais recentes da proposta', data: existenteDoc.toObject(), jaExistia: true });
+            }
+            return res.json({ success: true, message: 'Contrato já existente para esta proposta', data: existenteDoc.toObject(), jaExistia: true });
         }
 
         const numero = await ContratoManutencao.gerarNumero();
