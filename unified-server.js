@@ -16151,6 +16151,17 @@ app.use((req, res, next) => {
     // must still reach express.static.
     if (decodedPath === '/docs/user-manual.pdf' || decodedPath === '/docs/user-manual-short.webm') return next();
     const segments = decodedPath.split('/').filter(Boolean);
+    // A ".." segment (raw or percent-encoded, already decoded above) lets this
+    // gate's first-segment check approve a path that then escapes
+    // STATIC_ALLOWED_DIRS once express.static resolves it against __dirname
+    // — e.g. "/assets/../backups/x" passes "first === 'assets'" below but
+    // resolves outside assets/. Reject outright rather than trying to keep
+    // this check's decoding/normalisation in lockstep with express.static's.
+    if (segments.includes('..')) return res.status(404).send('Not found');
+    const resolved = path.normalize(path.join(__dirname, decodedPath));
+    if (resolved !== __dirname && !resolved.startsWith(__dirname + path.sep)) {
+        return res.status(404).send('Not found');
+    }
     const first = segments[0];
     if (first === 'uploads') {
         if (segments[1] === 'avatars') return next();
