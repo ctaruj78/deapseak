@@ -132,15 +132,13 @@ $(document).ready(function() {
         const originalText = btn.html();
         btn.html('<i class="fas fa-spinner fa-spin"></i> Pesquisa...').prop('disabled', true);
 
-        $.get('https://nominatim.openstreetmap.org/search', {
-            q: address,
-            format: 'json',
-            addressdetails: 1,
-            limit: 1
-        }, function(data) {
-            if (data && data.length > 0) {
-                const lat = parseFloat(data[0].lat);
-                const lon = parseFloat(data[0].lon);
+        // Proxied through the server's own /api/geocode (Nominatim+Google
+        // fallback, cached, rate-limited) instead of calling Nominatim
+        // directly from the browser.
+        $.get('/api/geocode', { q: address }, function(data) {
+            if (data && data.success) {
+                const lat = data.lat;
+                const lon = data.lng;
                 map.setView([lat, lon], 16);
                 L.marker([lat, lon]).addTo(map)
                     .bindPopup('Знайдено: ' + address)

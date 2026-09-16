@@ -381,14 +381,18 @@ class CommonUtils {
 
     static async geocodeAddress(address) {
         try {
-            const response = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`);
+            // Proxied through the server's own /api/geocode (Nominatim+Google
+            // fallback, cached, rate-limited) instead of calling Nominatim
+            // directly from the browser — same usage-policy/rate-limit risk
+            // class that already broke the map tiles a few times.
+            const response = await fetch(`/api/geocode?q=${encodeURIComponent(address)}`);
             const data = await response.json();
-            
-            if (data && data.length > 0) {
+
+            if (data && data.success) {
                 return {
-                    lat: parseFloat(data[0].lat),
-                    lng: parseFloat(data[0].lon),
-                    display_name: data[0].display_name
+                    lat: data.lat,
+                    lng: data.lng,
+                    display_name: data.display
                 };
             }
             return null;

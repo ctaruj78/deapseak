@@ -824,7 +824,10 @@
           if (lift.lat && lift.lng) return [parseFloat(lift.lat), parseFloat(lift.lng)];
           if (lift.latitude && lift.longitude) return [parseFloat(lift.latitude), parseFloat(lift.longitude)];
 
-          // 3. Geocode the address via Nominatim (OpenStreetMap, free, no key needed)
+          // 3. Geocode the address via the server's own /api/geocode proxy
+          // (Nominatim+Google fallback, cached, rate-limited server-side) —
+          // not called directly from the browser (same usage-policy/rate-
+          // limit risk class that already broke the map tiles a few times).
           const addressStr = (typeof lift.location === 'string' ? lift.location : '')
             || lift.address?.street || (typeof lift.address === 'string' ? lift.address : '')
             || lift.name || '';
@@ -832,12 +835,10 @@
             if (_geocodeCache[addressStr]) return _geocodeCache[addressStr];
             try {
               const q = encodeURIComponent(addressStr + ', Portugal');
-              const resp = await fetch(`https://nominatim.openstreetmap.org/search?q=${q}&format=json&limit=1`, {
-                headers: { 'Accept-Language': 'pt', 'User-Agent': 'FestLift/2.0' }
-              });
+              const resp = await fetch(`/api/geocode?q=${q}`);
               const data = await resp.json();
-              if (data && data[0]) {
-                const coords = [parseFloat(data[0].lat), parseFloat(data[0].lon)];
+              if (data && data.success) {
+                const coords = [data.lat, data.lng];
                 _geocodeCache[addressStr] = coords;
                 return coords;
               }

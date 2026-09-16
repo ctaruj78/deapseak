@@ -2014,15 +2014,17 @@
                 L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}', { attribution: 'Tiles &copy; Esri', maxZoom: 19, maxNativeZoom: 16 }).addTo(map);
                 L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19, maxNativeZoom: 16 }).addTo(map);
 
-                // Geocodificar endereço via Nominatim (gratuito, sem chave)
-                const nominatimUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1`;
+                // Geocodificar endereço via o proxy /api/geocode do servidor
+                // (Nominatim+Google com cache/rate-limit no servidor) — não
+                // chamado diretamente do browser.
+                const geocodeUrl = `/api/geocode?q=${encodeURIComponent(address)}`;
 
-                fetch(nominatimUrl, { headers: { 'Accept-Language': 'uk,pt,en' } })
+                fetch(geocodeUrl)
                     .then(r => r.json())
-                    .then(results => {
-                        if (results && results.length > 0) {
-                            const lat = parseFloat(results[0].lat);
-                            const lon = parseFloat(results[0].lon);
+                    .then(data => {
+                        if (data && data.success) {
+                            const lat = data.lat;
+                            const lon = data.lng;
                             map.setView([lat, lon], 16);
                             L.marker([lat, lon])
                                 .addTo(map)
