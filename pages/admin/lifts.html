@@ -6301,8 +6301,8 @@ Email de contacto: info@festlift.pt`;
             console.log('✅ Mapa criado');
             
             // Додаexisteмо tiles
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© OpenStreetMap contributors',
+            L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+                attribution: 'Tiles &copy; Esri',
                 maxZoom: 19
             }).addTo(window.detailsMapInstance);
             
@@ -6618,8 +6618,8 @@ Email de contacto: info@festlift.pt`;
             console.log('✅ Mapa de edição criado');
             
             // Додаexisteмо tiles
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© OpenStreetMap contributors',
+            L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+                attribution: 'Tiles &copy; Esri',
                 maxZoom: 19
             }).addTo(window.editMapInstance);
             

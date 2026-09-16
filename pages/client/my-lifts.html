@@ -862,8 +862,8 @@
           }
           const map = L.map('liftsMap').setView([38.7223, -9.1393], 10);
           window._liftsPageMap = map;
-          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: 'Map data © OpenStreetMap contributors'
+          L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+            attribution: 'Tiles &copy; Esri'
           }).addTo(map);
 
           const bounds = [];

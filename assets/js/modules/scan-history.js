@@ -171,8 +171,8 @@ const scanHistory = (function() {
         // Initialize Leaflet map
         const map = L.map('scanMap').setView([38.7167, -9.1395], 11); // Lisboa center
 
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap contributors'
+        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+            attribution: 'Tiles &copy; Esri'
         }).addTo(map);
 
         // Add markers

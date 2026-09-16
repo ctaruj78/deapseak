@@ -170,8 +170,8 @@ class EnhancedLiftModal {
             this.map = L.map('enhancedLiftMap').setView([38.7223, -9.1393], 12); // Lisboa по дефолту
             
             // Додаємо тайли OpenStreetMap
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© OpenStreetMap contributors'
+            L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+                attribution: 'Tiles &copy; Esri'
             }).addTo(this.map);
 
             // Обробник кліків по карті

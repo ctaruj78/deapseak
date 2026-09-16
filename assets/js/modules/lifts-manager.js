@@ -599,8 +599,8 @@ class LiftsManager {
                     window._clientLiftMap = null;
                 }
                 window._clientLiftMap = L.map('clientLiftMap').setView([lat, lng], 15);
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    attribution: '© OpenStreetMap contributors'
+                L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+                    attribution: 'Tiles &copy; Esri'
                 }).addTo(window._clientLiftMap);
                 L.marker([lat, lng])
                     .addTo(window._clientLiftMap)

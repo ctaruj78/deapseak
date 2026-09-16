@@ -6,7 +6,7 @@ class DispatcherSettingsManager {
     constructor() {
         this.userData = null;
         this.settings = {};
-        this.token = localStorage.getItem('authToken');
+        this.token = (typeof AuthManager !== 'undefined' && AuthManager.getAuthToken()) || localStorage.getItem('authToken');
         this.init();
     }
 
@@ -327,6 +327,36 @@ class DispatcherSettingsManager {
                 if (label) label.textContent = this.files[0]?.name || 'Selecione um ficheiro';
             });
         });
+
+        document.getElementById('userAvatar')?.addEventListener('change', (e) => this.uploadAvatar(e.target.files[0]));
+    }
+
+    // ─── Avatar ──────────────────────────────────────────────────────────────
+
+    async uploadAvatar(file) {
+        if (!file) return;
+        try {
+            const formData = new FormData();
+            formData.append('avatar', file);
+            const res = await fetch('/api/users/avatar', {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${this.token}` },
+                body: formData
+            });
+            const data = await res.json();
+            if (res.ok && data.success !== false) {
+                const stored = JSON.parse(localStorage.getItem('userData') || '{}');
+                stored.avatar = data.avatarUrl;
+                localStorage.setItem('userData', JSON.stringify(stored));
+                this.userData = { ...this.userData, avatar: data.avatarUrl };
+                this.showNotification('Avatar atualizado com sucesso!', 'success');
+            } else {
+                this.showNotification(data.message || 'Erro ao atualizar avatar', 'error');
+            }
+        } catch (err) {
+            console.error('uploadAvatar error:', err);
+            this.showNotification('Erro de ligação ao servidor', 'error');
+        }
     }
 
     // ─── Toast ───────────────────────────────────────────────────────────────

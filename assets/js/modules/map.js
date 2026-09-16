@@ -59,8 +59,8 @@ class MapManager {
         this.map = L.map(this.containerId).setView(this.options.center, this.options.zoom);
 
         // Додавання тайлів OpenStreetMap
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap contributors',
+        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+            attribution: 'Tiles &copy; Esri',
             maxZoom: 19
         }).addTo(this.map);
 
