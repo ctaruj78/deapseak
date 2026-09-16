@@ -532,6 +532,18 @@ const emailLimiter = rateLimit({
     standardHeaders: true,
     legacyHeaders: false,
 });
+// uploads/ sits before the /api/ mount below, so it never went through
+// generalLimiter — that let filenames built from a millisecond timestamp
+// (e.g. saft-${Date.now()}.csv) be brute-forced within a known upload window
+// with no throttling at all. Generous enough for normal document viewing
+// (an inspection report page can open several PDFs/photos at once).
+const uploadsLimiter = rateLimit({
+    windowMs: 60 * 1000, // 1 min
+    max: 120,
+    message: { success: false, message: 'Demasiados pedidos. Aguarde um momento.' },
+    standardHeaders: true,
+    legacyHeaders: false,
+});
 
 // Middleware - CORS
 const isProduction = process.env.NODE_ENV === 'production';
@@ -16127,17 +16139,18 @@ const STATIC_ALLOWED_DIRS = new Set([
 // referenciadas em <img src> sem autenticação em toda a app); tudo o resto
 // exige uma sessão válida (o cookie auth_token já é definido em auth.js
 // login()/refresh(), por isso <img>/<a> normais continuam a funcionar).
-function isAuthenticatedForUploads(req) {
+// Returns the decoded JWT payload (so callers can check .role for the few
+// upload subtrees that need more than "some valid session"), or null.
+function authenticatedUploadUser(req) {
     const authHeader = req.headers['authorization'];
     const token = (authHeader && authHeader.split(' ')[1]) ||
                   req.headers['x-auth-token'] ||
                   req.cookies?.auth_token;
-    if (!token) return false;
+    if (!token) return null;
     try {
-        jwt.verify(token, JWT_SECRET);
-        return true;
+        return jwt.verify(token, JWT_SECRET);
     } catch (_err) {
-        return false;
+        return null;
     }
 }
 const STATIC_ALLOWED_FILES = new Set([
@@ -16176,8 +16189,17 @@ app.use((req, res, next) => {
     const first = segments[0];
     if (first === 'uploads') {
         if (segments[1] === 'avatars') return next();
-        if (isAuthenticatedForUploads(req)) return next();
-        return res.status(401).send('Não autenticado');
+        return uploadsLimiter(req, res, () => {
+            const user = authenticatedUploadUser(req);
+            if (!user) return res.status(401).send('Não autenticado');
+            // SAF-T exports are internal fiscal/accounting artefacts, never
+            // meant for clients — unlike orçamentos/requerimentos/inspection
+            // reports, nothing legitimately links a client here.
+            if (segments[1] === 'saft' && !['admin', 'dispatcher'].includes(user.role)) {
+                return res.status(403).send('Acesso negado');
+            }
+            return next();
+        });
     }
     if (segments.length === 1 && STATIC_ALLOWED_FILES.has(first)) return next();
     if (STATIC_ALLOWED_DIRS.has(first)) return next();
