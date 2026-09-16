@@ -155,9 +155,10 @@ exports.login = async (req, res, next) => {
             role: user.role
         };
         const token = generateToken(tokenPayload);
-        // rememberMe = true → refresh token живе 365 днів (не треба логінитися цілий рік)
+        // rememberMe = true → refresh token живе 30 днів замість стандартних 7д
+        // (раніше було 365д/30д — рік для украденого refresh token був явним перебором)
         const rememberMe = req.body.rememberMe === true;
-        const refreshToken = generateRefreshToken(tokenPayload, rememberMe ? '365d' : '30d');
+        const refreshToken = generateRefreshToken(tokenPayload, rememberMe ? '30d' : '7d');
 
         // Відповідь без пароля
         const userResponse = user.toObject();

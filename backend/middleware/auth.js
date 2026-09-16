@@ -38,13 +38,19 @@ const authenticate = (req, res, next) => {
     }
 };
 
-// Access token: short-lived (8h) — refresh token handles session continuity
-const generateToken = (payload, expiresIn = '8h') => {
+// Access token: short-lived — refresh token handles session continuity.
+// CLAUDE.md documents 15min; NOT set that low yet — ~83 pages call fetch()
+// with a raw Authorization header instead of AuthManager.fetchWithAuth()
+// (which silently refreshes on 401), so a 15min token would surface visible
+// login-expiry friction across most of the app. 2h is a real reduction from
+// the previous 8h with much lower risk; drop further once fetchWithAuth
+// adoption is closer to universal.
+const generateToken = (payload, expiresIn = '2h') => {
     return jwt.sign(payload, JWT_SECRET, { expiresIn });
 };
 
-// Refresh token: longer-lived (14d)
-const generateRefreshToken = (payload, expiresIn = '14d') => {
+// Refresh token: longer-lived, matches CLAUDE.md's documented 7d
+const generateRefreshToken = (payload, expiresIn = '7d') => {
     return jwt.sign(payload, JWT_REFRESH_SECRET, { expiresIn });
 };
 
