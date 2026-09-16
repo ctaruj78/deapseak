@@ -171,9 +171,10 @@ const scanHistory = (function() {
         // Initialize Leaflet map
         const map = L.map('scanMap').setView([38.7167, -9.1395], 11); // Lisboa center
 
-        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
             attribution: 'Tiles &copy; Esri'
         }).addTo(map);
+        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19 }).addTo(map);
 
         // Add markers
         scansWithCoords.forEach(scan => {

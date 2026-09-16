@@ -309,9 +309,10 @@ class LiftManager {
             if (!mapContainer) return;
             mapContainer.style.display = 'block';
             this.map = L.map('liftMap').setView([38.7223, -9.1393], 13); // Лісабон
-            L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+            L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
                 attribution: 'Tiles &copy; Esri'
             }).addTo(this.map);
+            L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19 }).addTo(this.map);
             // Додавання інтерактиву: клік по карті встановлює координати
             this.map.on('click', (e) => {
                 $('#liftLat').val(e.latlng.lat.toFixed(6));

@@ -599,9 +599,10 @@ class LiftsManager {
                     window._clientLiftMap = null;
                 }
                 window._clientLiftMap = L.map('clientLiftMap').setView([lat, lng], 15);
-                L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+                L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
                     attribution: 'Tiles &copy; Esri'
                 }).addTo(window._clientLiftMap);
+                L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19 }).addTo(window._clientLiftMap);
                 L.marker([lat, lng])
                     .addTo(window._clientLiftMap)
                     .bindPopup(`<b>${lift.municipalNumber || 'Elevador'}</b><br>${lift.address?.street || ''}`)

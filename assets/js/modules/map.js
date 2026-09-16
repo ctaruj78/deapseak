@@ -59,10 +59,11 @@ class MapManager {
         this.map = L.map(this.containerId).setView(this.options.center, this.options.zoom);
 
         // Додавання тайлів OpenStreetMap
-        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
             attribution: 'Tiles &copy; Esri',
             maxZoom: 19
         }).addTo(this.map);
+        L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19 }).addTo(this.map);
 
         // Додавання контролів
         this.addControls();

@@ -167,10 +167,11 @@
                 // Criar мапу
                 map = L.map('map').setView([userLocation.lat, userLocation.lng], 13);
                 
-                L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+                L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
                     attribution: 'Tiles &copy; Esri',
                     maxZoom: 19
                 }).addTo(map);
+                L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19 }).addTo(map);
 
                 // Coordenadas do elevador — sem fallback para coordenadas falsas
                 const _liftCoords = lift.location?.coordinates || [];
@@ -288,10 +289,11 @@
                 const liftLng = liftLngFb;
                 
                 map = L.map('map').setView([liftLat, liftLng], 15);
-                L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+                L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
                     attribution: 'Tiles &copy; Esri',
                     maxZoom: 19
                 }).addTo(map);
+                L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19 }).addTo(map);
                 
                 L.marker([liftLat, liftLng]).addTo(map)
                     .bindPopup(`${lift.model || 'Elevador'}<br>${lift.address?.street || ''}`).openPopup();
@@ -332,10 +334,11 @@
             }
 
             map = L.map('map').setView(center, zoom);
-            L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+            L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
                 attribution: 'Tiles &copy; Esri',
                 maxZoom: 19
             }).addTo(map);
+            L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19 }).addTo(map);
 
             if (userLocation) {
                 L.marker([userLocation.lat, userLocation.lng], {
