@@ -364,8 +364,13 @@
         if (b && b._sw && b._ne) {
             this._maplibreMap.fitBounds([[b._sw.lng, b._sw.lat], [b._ne.lng, b._ne.lat]], fitOpts);
         } else if (Array.isArray(b)) {
-            var lngLats = b.map(function (p) { return Array.isArray(p) ? [p[1], p[0]] : [p.lng, p.lat]; });
-            this._maplibreMap.fitBounds(maplibregl.LngLatBounds.convert(lngLats), fitOpts);
+            // `bounds` here is an arbitrary-length list of points (one per marker,
+            // Leaflet's fitBounds(latlngArray) convention) — NOT a 2-point [sw,ne]
+            // box. Must reduce to an envelope ourselves: handing the raw list to
+            // MapLibre's fitBounds/LngLatBounds.convert (which expects exactly a
+            // [sw,ne] pair) silently used only the first two points as the box.
+            var envelope = boundsFromLatLngs(b.map(normalizeLatLng));
+            this._maplibreMap.fitBounds([[envelope._sw.lng, envelope._sw.lat], [envelope._ne.lng, envelope._ne.lat]], fitOpts);
         }
         return this;
     };
