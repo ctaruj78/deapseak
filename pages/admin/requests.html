@@ -3054,7 +3054,7 @@ if (typeof toastr !== 'undefined') {
                     : n.type === 'maintenance' ? 'fa-tools text-warning'
                     : n.type === 'billing' ? 'fa-file-invoice-dollar text-info'
                     : 'fa-bell text-primary';
-                const title = n.title || 'Notificação';
+                const title = escapeHtml(n.title || 'Notificação');
                 const time = n.timestamp ? new Date(n.timestamp).toLocaleString('pt-PT', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' }) : '';
                 return `
                     <a href="notifications.html" class="dropdown-item">

@@ -695,6 +695,12 @@
             updatePagination();
         }
 
+        // Notification title/message can originate from client-submitted request
+        // text (e.g. a request title) — never render them unescaped.
+        function escapeHtml(str) {
+            return String(str ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+        }
+
         function createNotificationHtml(notification) {
             const statusClass = notification.status === 'unread' ? 'unread' : 'read';
             const priorityClass = notification.priority;
@@ -704,13 +710,13 @@
                 <div class="notification-item ${statusClass} ${priorityClass}" data-id="${notification.id}">
                     <div class="d-flex p-3">
                         <div class="notification-icon ${priorityClass} mr-3">
-                            <i class="${notification.icon}"></i>
+                            <i class="${escapeHtml(notification.icon)}"></i>
                         </div>
                         <div class="flex-grow-1">
                             <div class="d-flex justify-content-between align-items-start">
                                 <div>
-                                    <h6 class="mb-1">${notification.title}</h6>
-                                    <p class="mb-1 text-muted">${notification.message}</p>
+                                    <h6 class="mb-1">${escapeHtml(notification.title)}</h6>
+                                    <p class="mb-1 text-muted">${escapeHtml(notification.message)}</p>
                                     <small class="text-muted">
                                         <i class="fas fa-clock mr-1"></i>${timeAgo} •
                                         <span class="badge badge-${getTypeBadgeColor(notification.type)}">${getTypeLabel(notification.type)}</span>

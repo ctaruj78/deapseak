@@ -21,11 +21,19 @@ const requestSchema = new mongoose.Schema({
     title: {
         type: String,
         required: true,
-        trim: true
+        trim: true,
+        maxlength: [200, 'Título não pode exceder 200 caracteres'],
+        // Client-submitted free text is rendered into staff notification
+        // dropdowns/lists elsewhere in the app — stripping tag syntax here
+        // closes that class of stored-HTML-injection regardless of whether
+        // every render site remembers to escape.
+        set: (v) => (typeof v === 'string' ? v.replace(/[<>]/g, '') : v)
     },
     description: {
         type: String,
-        required: true
+        required: true,
+        maxlength: [2000, 'Descrição não pode exceder 2000 caracteres'],
+        set: (v) => (typeof v === 'string' ? v.replace(/[<>]/g, '') : v)
     },
     status: {
         type: String,
