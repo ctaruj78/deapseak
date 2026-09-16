@@ -1,5 +1,5 @@
 /**
- * Scan History Module for LiftMaster Pro
+ * Scan History Module for FestLift
  * Handles scan history functionality with real data from API
  */
 

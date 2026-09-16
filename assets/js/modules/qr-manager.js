@@ -1,5 +1,5 @@
 /**
- * QR Manager Module for LiftMaster Pro
+ * QR Manager Module for FestLift
  * Handles all QR code management functionality
  */
 

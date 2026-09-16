@@ -1,5 +1,5 @@
 /**
- * QR Generator Module for LiftMaster Pro
+ * QR Generator Module for FestLift
  * Handles QR code generation functionality
  */
 
@@ -223,7 +223,7 @@ const qrGenerator = (function() {
             // Формуємо дані для QR
             let qrData;
             if (type === 'custom' && target === 'text') {
-                qrData = customData || 'DeapSeaK LiftMaster';
+                qrData = customData || 'FestLift';
             } else if (target.startsWith('lift_')) {
                 const liftId = target.replace('lift_', '');
                 qrData = JSON.stringify({

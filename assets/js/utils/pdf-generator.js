@@ -256,7 +256,7 @@ class PDFGenerator {
         
         this.pdf.setFontSize(8);
         this.pdf.setFont(undefined, 'italic');
-        this.pdf.text('Згенеровано LiftMaster Pro System', this.pageWidth / 2, footerY, { align: 'center' });
+        this.pdf.text('Згенеровано FestLift System', this.pageWidth / 2, footerY, { align: 'center' });
         this.pdf.text(`Сторінка ${this.pdf.internal.getNumberOfPages()}`, this.pageWidth - this.margin, footerY, { align: 'right' });
     }
 

@@ -197,7 +197,7 @@ class CommonUtils {
                     </div>
                     <img src="${canvas.toDataURL('image/png')}" alt="QR Code" style="max-width: 300px;">
                     <div class="print-info">
-                        LiftMaster Pro - Система управління ліфтами
+                        FestLift - Система управління ліфтами
                     </div>
                     <button class="no-print" onclick="window.print()">Imprimir</button>
                 </body>

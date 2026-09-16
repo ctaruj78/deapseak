@@ -74,7 +74,7 @@ exports.sendEmail = async (req, res, next) => {
             console.log('📤 Надсилання через Brevo SMTP...');
             
             const mailOptions = {
-                from: process.env.SMTP_FROM || `"LiftMaster Pro" <noreply@festlift.pt>`,
+                from: process.env.SMTP_FROM || `"FestLift" <noreply@festlift.pt>`,
                 to: to,
                 subject: subject,
                 html: html
@@ -105,7 +105,7 @@ exports.sendEmail = async (req, res, next) => {
             console.log('   SMTP_PORT=587');
             console.log('   SMTP_USER=your-brevo-email@example.com');
             console.log('   SMTP_PASS=your-brevo-smtp-key');
-            console.log('   SMTP_FROM="LiftMaster Pro" <noreply@festlift.pt>');
+            console.log('   SMTP_FROM="FestLift" <noreply@festlift.pt>');
             console.log('======================================================');
 
             res.json({
@@ -159,12 +159,12 @@ exports.sendPasswordEmail = async (req, res, next) => {
             <body>
                 <div class="container">
                     <div class="header">
-                        <h1>🔑 Ласкаво просимо до LiftMaster Pro!</h1>
+                        <h1>🔑 Ласкаво просимо до FestLift!</h1>
                         <p>Система управління ліфтами від FestLift</p>
                     </div>
                     <div class="content">
                         <h2>Вітаємо!</h2>
-                        <p>Для вас створено обліковий запис в системі <strong>LiftMaster Pro</strong>.</p>
+                        <p>Для вас створено обліковий запис в системі <strong>FestLift</strong>.</p>
                         
                         <div class="credentials">
                             <h3>📧 Ваші дані для входу:</h3>
@@ -205,7 +205,7 @@ exports.sendPasswordEmail = async (req, res, next) => {
         // Використати загальний метод надсилання
         req.body = {
             to: email,
-            subject: 'Ваш доступ до LiftMaster Pro - Тимчасовий пароль',
+            subject: 'Ваш доступ до FestLift - Тимчасовий пароль',
             html: html
         };
 

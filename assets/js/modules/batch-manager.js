@@ -1,5 +1,5 @@
 /**
- * Batch Manager Module for LiftMaster Pro
+ * Batch Manager Module for FestLift
  * Handles batch operations functionality
  */
 

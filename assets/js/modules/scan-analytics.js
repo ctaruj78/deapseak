@@ -1,5 +1,5 @@
 /**
- * Scan Analytics Module for LiftMaster Pro
+ * Scan Analytics Module for FestLift
  * Handles scan analytics functionality
  */
 

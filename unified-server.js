@@ -11088,6 +11088,13 @@ O teu nome é "Assistente FestLift". O sistema chama-se "FestLift".
 Os nomes "DeapSeak" e "DeapSeaK" NÃO EXISTEM e NUNCA devem aparecer nas tuas respostas.
 Se escreveres "DeapSeak" ou "DeapSeaK" estás a cometer um erro grave. USA SEMPRE "FestLift".
 
+A FestLift é uma empresa real de manutenção de instalações de elevação (EMIE) em Portugal.
+A plataforma FestLift (o software em que estás integrado) é a ferramenta interna que a própria
+empresa FestLift usa para gerir os seus elevadores, técnicos, clientes e obrigações legais.
+Ou seja: a FestLift NÃO é apenas um fornecedor de software para outras EMIEs — a FestLift é ela
+própria a EMIE que presta o serviço de manutenção aos clientes geridos neste sistema.
+Se te perguntarem "a FestLift é uma empresa de manutenção de elevadores?", a resposta é SIM.
+
 You are FestLift AI Assistant - an intelligent consultant for the FestLift Portuguese lift management system.
 You help with lift inspections, maintenance, regulations, and technical support.
 
@@ -12479,6 +12486,8 @@ async function callGeminiAI(message, role, username, regulationsContext = null, 
 function getOllamaSystemPrompt(role) {
     const roleLabel = { admin: 'administrador', tech: 'técnico', dispatcher: 'despachante', client: 'cliente' }[role] || role;
     return `És o Assistente FestLift — especialista em elevadores em Portugal.
+A FestLift é uma empresa real de manutenção de instalações de elevação (EMIE); esta plataforma é a
+ferramenta interna que a própria FestLift usa para gerir os seus elevadores, técnicos e clientes.
 Responde SEMPRE em português europeu (pt-PT), de forma técnica.
 Papel do utilizador: ${roleLabel}.
 
@@ -12516,6 +12525,8 @@ function getGroqSystemPrompt(role, username) {
         client: 'Tens acesso ao estado dos teus elevadores, histórico de intervenções e documentos do contrato.'
     }[role] || '';
     return `És o Assistente FestLift — especialista em gestão de elevadores em Portugal.
+A FestLift é uma empresa real de manutenção de instalações de elevação (EMIE); esta plataforma é a
+ferramenta interna que a própria FestLift usa para gerir os seus elevadores, técnicos e clientes.
 Nome do utilizador: ${username || roleLabel}. Papel: ${roleLabel}.
 ${roleContext}
 Responde SEMPRE em português europeu (pt-PT), de forma técnica, detalhada e profissional.
@@ -15482,7 +15493,7 @@ app.post('/api/email/send-template', authenticateToken, emailLimiter, requireRol
         // BCC para a equipa interna, ao mesmo padrão usado no envio de propostas/
         // orçamentos — sem isto, um email enviado a um cliente por aqui não
         // deixava nenhum registo na caixa de entrada do FestLift.
-        const smtpFromRaw = process.env.EMAIL_FROM || process.env.SMTP_FROM || '"LiftMaster Pro" <info@festlift.pt>';
+        const smtpFromRaw = process.env.EMAIL_FROM || process.env.SMTP_FROM || '"FestLift" <info@festlift.pt>';
         const smtpFromEmail = smtpFromRaw.match(/<([^>]+)>/)?.[1] || smtpFromRaw;
         const adminBcc = process.env.EMAIL_BCC || smtpFromEmail || null;
 

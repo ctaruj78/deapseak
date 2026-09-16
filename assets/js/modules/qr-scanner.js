@@ -1,5 +1,5 @@
 /**
- * QR Scanner Module for LiftMaster Pro
+ * QR Scanner Module for FestLift
  * Handles QR code scanning functionality
  */
 

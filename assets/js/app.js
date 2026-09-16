@@ -1,5 +1,5 @@
 /**
- * LiftMaster Pro - Головний JavaScript файл
+ * FestLift - Головний JavaScript файл
  * Ініціалізація додатку, утиліти та базовий функціонал
  */
 
@@ -32,7 +32,7 @@ window.LiftMaster = {
     
     // Ініціалізація додатку
     init: function() {
-        console.log('🚀 LiftMaster Pro ініціалізація...');
+        console.log('🚀 FestLift ініціалізація...');
         
         this.initAdminLTE();
         this.checkAuthentication();
@@ -41,7 +41,7 @@ window.LiftMaster = {
         this.setupInterceptors();
         this.setupServiceWorker();
         
-        console.log('✅ LiftMaster Pro com sucesso ініціалізовано');
+        console.log('✅ FestLift com sucesso ініціалізовано');
     },
     
     // Ініціалізація AdminLTE
