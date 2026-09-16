@@ -338,7 +338,7 @@
         });
         this._maplibreMap.addControl(new maplibregl.AttributionControl({ compact: true, customAttribution: ATTRIBUTION }));
         if (opts.zoomControl !== false) {
-            this._maplibreMap.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'topright');
+            this._maplibreMap.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right');
         }
         if (opts.scrollWheelZoom === false) this._maplibreMap.scrollZoom.disable();
         if (opts.dragging === false) this._maplibreMap.dragPan.disable();

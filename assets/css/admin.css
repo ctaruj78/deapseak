@@ -243,7 +243,8 @@
     border: 2px solid #e9ecef;
 }
 
-.leaflet-container {
+.leaflet-container,
+.maplibregl-map {
     border-radius: var(--border-radius);
 }
 
