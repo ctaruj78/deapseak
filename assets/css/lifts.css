@@ -165,7 +165,8 @@ tr.address-group-odd:hover > td {
     border: 1px solid #dee2e6;
 }
 
-.leaflet-popup-content {
+.leaflet-popup-content,
+.maplibregl-popup-content {
     font-size: 14px;
 }
 
