@@ -14163,9 +14163,6 @@ app.get('/api/maintenance-history', authenticateToken, async (req, res) => {
     }
 });
 
-app.use(errorHandler);
-console.log('✅ Global error handler підключено');
-
 // ═══════════════════════════════════════════════════════════
 // 📊 ORÇAMENTOS API — implementado em backend/routes/orcamentos.js
 // (montado antes deste ponto do ficheiro; os handlers inline antigos aqui —
@@ -16467,6 +16464,13 @@ app.post('/api/agent/client-decide', authenticateToken, async (req, res) => {
     }
 });
 // ─────────────────────────────────────────────────────────────────────────────
+
+// Must be the LAST app.use() call — Express only routes an error to handlers
+// registered after the point where it was thrown, so this has to sit below
+// every route (it used to be registered mid-file, silently missing errors
+// from ~30 routes added after it, including everything above this line).
+app.use(errorHandler);
+console.log('✅ Global error handler підключено');
 
 // Wait for MongoDB to be ready before accepting HTTP traffic.
 // This prevents the "Cannot read properties of undefined (reading 'collection')"
