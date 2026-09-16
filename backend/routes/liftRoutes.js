@@ -27,8 +27,9 @@ router.get('/export/excel',
     liftController.exportLiftsToExcel
 );
 
-// GET /api/lifts/nearby - Пошук ліфтів поблизу (геопросторовий пошук)
-router.get('/nearby', authenticate, liftController.getLiftsNearby);
+// GET /api/lifts/nearby - Пошук ліфтів поблизу (геопросторовий пошук; populate() client+technician
+// full profiles, not currently called from any page — restrict to staff who manage lifts)
+router.get('/nearby', authenticate, authorizeRoles('admin', 'dispatcher'), liftController.getLiftsNearby);
 
 // GET /api/lifts/municipal/:municipalNumber - Отримання ліфта по муніципальному номеру
 router.get('/municipal/:municipalNumber', authenticate, liftController.getLiftByMunicipalNumber);

@@ -4,6 +4,39 @@ const qrService = require('../services/qrService');
 const exportService = require('../services/exportService');
 const crypto = require('crypto');
 
+// A technician may only mutate a lift they have real, current access to — mirrors
+// the active-task/QR-scan guard already used by the inline GET /api/lifts/:id
+// handler in unified-server.js (see requests/qr_scans lookups there). Deliberately
+// NOT a check against Lift.technician: that field isn't how real assignment is
+// tracked in this app (the `requests` collection's `technician`/`liftId` are plain
+// strings, not the Mongoose Request model's ObjectId refs — a real assignment
+// lives there, not on the lift document). Without this, any technician account
+// could change status/inspection history/photos on any of the company's lifts,
+// not just ones they're actually working on.
+const technicianHasLiftAccess = async (liftId, userId, username) => {
+    const db = require('mongoose').connection.db;
+    const techActor = username || userId;
+    const recentScanSince = new Date(Date.now() - 12 * 60 * 60 * 1000);
+    const [activeTaskAccess, recentQrAccess] = await Promise.all([
+        db.collection('requests').findOne({
+            liftId: liftId.toString(),
+            technician: userId,
+            status: { $in: ['pending', 'in_progress', 'assigned'] }
+        }),
+        db.collection('qr_scans').findOne({
+            liftId: liftId.toString(),
+            referenceType: 'lift',
+            scannedAt: { $gte: recentScanSince },
+            $or: [
+                { userId: userId },
+                { username: techActor },
+                { scannedBy: techActor }
+            ]
+        })
+    ]);
+    return !!(activeTaskAccess || recentQrAccess);
+};
+
 // Утиліта: генерація тимчасового пароля (аналог authController)
 const _genTempPassword = (length = 10) => {
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#$%';
@@ -368,8 +401,12 @@ exports.updateLiftStatus = async (req, res, next) => {
     try {
         const { status } = req.body;
         if (!status) throw new AppError('Status required', 400);
+        const existing = await Lift.findById(req.params.id);
+        if (!existing) throw new AppError('Lift not found', 404);
+        if (req.user.role === 'technician' && !(await technicianHasLiftAccess(existing._id, req.user.id, req.user.username || req.user.email))) {
+            throw new AppError('Acesso negado', 403);
+        }
         const lift = await Lift.findByIdAndUpdate(req.params.id, { status }, { new: true }).populate('client').populate('technician');
-        if (!lift) throw new AppError('Lift not found', 404);
         res.json({ success: true, message: 'Status updated', data: { lift } });
     } catch (error) {
         next(error);
@@ -381,6 +418,9 @@ exports.addInspection = async (req, res, next) => {
         const { date, inspector, notes, photos } = req.body;
         const lift = await Lift.findById(req.params.id);
         if (!lift) throw new AppError('Lift not found', 404);
+        if (req.user.role === 'technician' && !(await technicianHasLiftAccess(lift._id, req.user.id, req.user.username || req.user.email))) {
+            throw new AppError('Acesso negado', 403);
+        }
         lift.inspectionHistory.push({ date: date || new Date(), inspector, notes, photos: photos || [] });
         lift.lastInspectionDate = date || new Date();
         const nextDate = new Date(lift.lastInspectionDate);
@@ -404,6 +444,9 @@ exports.addPhoto = async (req, res, next) => {
         if (!isSafeUrl) throw new AppError('Photo URL inválido', 400);
         const lift = await Lift.findById(req.params.id);
         if (!lift) throw new AppError('Lift not found', 404);
+        if (req.user.role === 'technician' && !(await technicianHasLiftAccess(lift._id, req.user.id, req.user.username || req.user.email))) {
+            throw new AppError('Acesso negado', 403);
+        }
         lift.photos.push({
             url,
             description: String(description || '').slice(0, 500),
