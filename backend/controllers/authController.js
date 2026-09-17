@@ -2,6 +2,13 @@ const { User } = require('../models');
 const { generateToken, generateRefreshToken, verifyRefreshToken } = require('../middleware/auth');
 const { AppError } = require('../middleware/errorHandler');
 const crypto = require('crypto');
+const bcrypt = require('bcrypt');
+
+// Static, unreachable hash — compared against on the "user not found" login
+// path so it costs the same bcrypt time as a real password check, closing a
+// timing side-channel that let "no such user" (instant) be distinguished
+// from "wrong password" (real bcrypt.compare) despite identical error text.
+const DUMMY_PASSWORD_HASH = '$2b$10$CwTycUXWue0Thq9StjUM0uJ8vJ0PTLA0z6VtBGDGA/6ee.5jP8Xhy';
 
 /**
  * Генерація випадкового тимчасового пароля
@@ -115,7 +122,10 @@ exports.login = async (req, res, next) => {
         }).select('+password +loginAttempts +lockUntil'); // Включаємо пароль та lockout поля
 
         if (!user) {
-            // Однакова відповідь щоб не дати можливість розрізнити існування email
+            // Однакова відповідь щоб не дати можливість розрізнити існування email —
+            // і однаковий bcrypt-час, інакше миттєва відповідь тут (проти реального
+            // bcrypt.compare на гілці "невірний пароль") сама стає timing-оракулом.
+            await bcrypt.compare(password, DUMMY_PASSWORD_HASH);
             throw new AppError('Email ou palavra-passe incorretos', 401);
         }
 

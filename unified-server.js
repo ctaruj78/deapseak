@@ -479,6 +479,12 @@ app.use(helmet({
 }));
 
 // 🔐 Rate Limiting
+// Единий вхід в мережу — cloudflared (localhost-only bind, див. /etc/cloudflared/config.yml),
+// тому `trust proxy` довіряє позиційному X-Forwarded-For. Для лімітерів, що безпосередньо
+// захищають від брутфорсу, беремо CF-Connecting-IP (Cloudflare завжди перезаписує його
+// повністю, на відміну від XFF) як primary key — про запас, якщо колись топологія мережі
+// зміниться (напр. хтось тимчасово забінденить сервер на 0.0.0.0 для тестів).
+const cfAwareKey = (req) => req.headers['cf-connecting-ip'] || req.ip;
 const loginLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 хвилин
     max: 5,                    // max 5 спроб входу за 15 хв (захист від брутфорсу)
@@ -486,6 +492,7 @@ const loginLimiter = rateLimit({
     standardHeaders: true,
     legacyHeaders: false,
     skipSuccessfulRequests: true, // Contamos apenas tentativas falhadas
+    keyGenerator: cfAwareKey,
 });
 const aiLimiter = rateLimit({
     windowMs: 60 * 1000, // 1 хвилина
@@ -510,6 +517,7 @@ const refreshLimiter = rateLimit({
     message: { success: false, message: 'Demasiados pedidos de renovação de sessão. Aguarde 5 minutos.' },
     standardHeaders: true,
     legacyHeaders: false,
+    keyGenerator: cfAwareKey,
 });
 const forgotPasswordLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 min
@@ -517,6 +525,7 @@ const forgotPasswordLimiter = rateLimit({
     message: { success: false, message: 'Demasiadas tentativas de recuperação de senha. Tente novamente em 15 minutos.' },
     standardHeaders: true,
     legacyHeaders: false,
+    keyGenerator: cfAwareKey,
 });
 const geocodeLimiter = rateLimit({
     windowMs: 60 * 1000, // 1 min
@@ -16247,7 +16256,16 @@ const socketIo = require('socket.io');
 const server = http.createServer(app);
 const io = socketIo(server, {
     cors: {
-        origin: "*",
+        // Той самий allow-list, що й HTTP CORS вище (ALLOWED_ORIGINS) — раніше
+        // тут стояло "*", тобто будь-який зовнішній сайт міг відкрити WS-хендшейк.
+        origin: function(origin, callback) {
+            if (!origin) return callback(null, true); // native clients / server-to-server
+            if (!isProduction) return callback(null, true);
+            const allowed = allowedOrigins.length > 0
+                ? allowedOrigins.some(o => origin.startsWith(o.trim()))
+                : origin.includes('festlift.pt');
+            callback(allowed ? null : new Error('CORS: Origin not allowed'), allowed);
+        },
         methods: ["GET", "POST"]
     }
 });
