@@ -28,6 +28,7 @@ const zlib = require('zlib');
 const { EJSON } = require('bson');
 const mongoSanitize = require('express-mongo-sanitize'); // 🔐 NoSQL injection protection
 const cookieParser = require('cookie-parser');
+const { revokeUserTokens } = require('./backend/middleware/tokenRevocation');
 const execAsync = promisify(exec);
 
 // ═══════════════════════════════════════════════════════════
@@ -8446,6 +8447,8 @@ app.put('/api/users/:id', authenticateToken, async (req, res) => {
                 error: 'Utilizador não encontrado'
             });
         }
+
+        if (password) revokeUserTokens(userId); // 🔐 password mudou — invalida sessões antigas
 
         console.log('✅ Оновлено користувача:', userId);
         res.json({

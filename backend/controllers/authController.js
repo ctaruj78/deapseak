@@ -1,6 +1,7 @@
 const { User } = require('../models');
 const { generateToken, generateRefreshToken, verifyRefreshToken } = require('../middleware/auth');
 const { AppError } = require('../middleware/errorHandler');
+const { revokeUserTokens } = require('../middleware/tokenRevocation');
 const crypto = require('crypto');
 const bcrypt = require('bcrypt');
 
@@ -47,7 +48,18 @@ exports.register = async (req, res, next) => {
         });
 
         if (existingUser) {
-            throw new AppError('Користувач з таким email ou username вже існує', 400);
+            // 🔐 SECURITY: НЕ повідомляємо, що email/username вже зайнятий —
+            // цей публічний, неавтентифікований ендпоінт інакше стає готовим
+            // оракулом для перевірки, які email зареєстровані в системі
+            // (розвідка перед фішингом/credential-stuffing). Відповідь навмисно
+            // виглядає як успішна реєстрація (без токена/даних користувача —
+            // не даємо доступу до чужого акаунту), і час вирівняний тим самим
+            // bcrypt-хешуванням, що й реальне створення користувача.
+            await bcrypt.hash(password, 10);
+            return res.status(201).json({
+                success: true,
+                message: 'Registo recebido. Se os dados forem válidos, poderá iniciar sessão em breve.'
+            });
         }
 
         // 🔐 SECURITY: публічна реєстрація ЗАВЖДИ створює клієнта.
@@ -284,6 +296,7 @@ exports.changePassword = async (req, res, next) => {
         user.mustChangePassword = false; // Знімаємо примусовову після зміни
         user.tempPasswordHint = '';  // Очищаємо підказку пароля після зміни
         await user.save();
+        revokeUserTokens(user._id); // 🔐 invalida sessões antigas (ex.: token roubado)
 
         res.json({
             success: true,
@@ -441,6 +454,9 @@ exports.toggleUserBan = async (req, res, next) => {
         user.isActive = !user.isActive;
         await user.save();
 
+        // 🔐 Ao bloquear, invalida já os tokens em uso (não espera pelo próximo /refresh)
+        if (!user.isActive) revokeUserTokens(user._id);
+
         res.json({
             success: true,
             message: user.isActive ? 'Utilizador desbloqueado' : 'Utilizador bloqueado',
@@ -532,6 +548,7 @@ exports.resetPassword = async (req, res, next) => {
         user.resetPasswordToken = undefined;
         user.resetPasswordExpire = undefined;
         await user.save();
+        revokeUserTokens(user._id); // 🔐 invalida qualquer sessão/token roubado antes deste reset
 
         res.json({
             success: true,
@@ -674,6 +691,7 @@ exports.adminResetUserPassword = async (req, res, next) => {
         // validateModifiedOnly: не валідувати поля, які не змінюємо — старі записи
         // клієнтів можуть мати порожній lastName і інакше .save() падав на них
         await user.save({ validateModifiedOnly: true });
+        revokeUserTokens(user._id); // 🔐 admin forçou novo password — invalida sessões antigas
 
         // Надсилаємо email
         try {

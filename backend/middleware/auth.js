@@ -4,6 +4,7 @@
 
 const jwt = require('jsonwebtoken');
 const { AppError } = require('./errorHandler');
+const { isTokenRevoked } = require('./tokenRevocation');
 
 // 🔐 SECURITY: окремі секрети для access і refresh токенів
 // Якщо JWT_REFRESH_SECRET не вказано — використовуємо похідний від основного
@@ -29,6 +30,9 @@ const authenticate = (req, res, next) => {
         jwt.verify(token, JWT_SECRET, (err, decoded) => {
             if (err) {
                 return next(new AppError('Недійсний ou прострочений токен', 403));
+            }
+            if (isTokenRevoked(decoded.id, decoded.iat)) {
+                return next(new AppError('Sessão inválida — inicie sessão novamente', 403));
             }
             req.user = decoded;
             next();
@@ -56,11 +60,16 @@ const generateRefreshToken = (payload, expiresIn = '7d') => {
 
 // Перевірка Refresh токена — ОКРЕМИЙ секрет!
 const verifyRefreshToken = (token) => {
+    let decoded;
     try {
-        return jwt.verify(token, JWT_REFRESH_SECRET);
+        decoded = jwt.verify(token, JWT_REFRESH_SECRET);
     } catch (error) {
         throw new AppError('Refresh token inválido', 403);
     }
+    if (isTokenRevoked(decoded.id, decoded.iat)) {
+        throw new AppError('Refresh token inválido', 403);
+    }
+    return decoded;
 };
 
 module.exports = {
