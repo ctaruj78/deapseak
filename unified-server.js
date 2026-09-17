@@ -12589,7 +12589,7 @@ async function callGroqAI(message, role, username, regulationsContext = null, re
     const apiKey = process.env.GROQ_API_KEY;
     if (!apiKey) throw new Error('GROQ_API_KEY não configurado');
 
-    const model = process.env.GROQ_MODEL || 'llama-3.3-70b-versatile';
+    const model = process.env.GROQ_MODEL || 'openai/gpt-oss-120b';
     const systemPrompt = getGroqSystemPrompt(role, username);
     const contextualPrompt = buildAIUserPrompt(message, regulationsContext, reportTextContext, 6000, dbContext);
 
@@ -12633,7 +12633,7 @@ async function callMainAI(message, role, username, regulationsContext = null, re
     if (AI_PROVIDER === 'groq' || (AI_PROVIDER === 'auto' && process.env.GROQ_API_KEY)) {
         try {
             const response = await callGroqAI(message, role, username, regulationsContext, reportTextContext, dbContext);
-            return { response, poweredBy: `Groq (${process.env.GROQ_MODEL || 'llama-3.3-70b-versatile'})` };
+            return { response, poweredBy: `Groq (${process.env.GROQ_MODEL || 'openai/gpt-oss-120b'})` };
         } catch (groqErr) {
             console.warn(`⚠️ Groq failed (${groqErr.message?.slice(0, 80)}), falling back to Ollama...`);
         }
@@ -12707,7 +12707,7 @@ async function _callGuestAI(prompt) {
     // auto: try Groq first (fast, free, 70B), then Ollama, then Gemini
     if (AI_PROVIDER === 'groq' || (AI_PROVIDER === 'auto' && process.env.GROQ_API_KEY)) {
         try {
-            const model = process.env.GROQ_MODEL || 'llama-3.3-70b-versatile';
+            const model = process.env.GROQ_MODEL || 'openai/gpt-oss-120b';
             const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${process.env.GROQ_API_KEY}` },

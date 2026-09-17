@@ -968,7 +968,7 @@ class AgentService {
     async _generateViaGroq(prompt) {
         const apiKey = process.env.GROQ_API_KEY;
         if (!apiKey) throw new Error('GROQ_API_KEY not set');
-        const model = process.env.GROQ_MODEL || 'llama-3.3-70b-versatile';
+        const model = process.env.GROQ_MODEL || 'openai/gpt-oss-120b';
         const CHAT_MARKER = '\n\nMENSAGEM DO UTILIZADOR: ';
         const splitIdx = prompt.indexOf(CHAT_MARKER);
         const messages = splitIdx !== -1
@@ -1038,7 +1038,7 @@ class AgentService {
                 try {
                     outputText = await this._generateViaGroq(prompt);
                     selectedProvider = 'groq';
-                    selectedModel = process.env.GROQ_MODEL || 'llama-3.3-70b-versatile';
+                    selectedModel = process.env.GROQ_MODEL || 'openai/gpt-oss-120b';
                     return outputText;
                 } catch (groqErr) {
                     fallbackUsed = true;
@@ -1099,7 +1099,7 @@ class AgentService {
                             selectedProvider = 'groq';
                             console.warn(`🤖 AgentService legal route Gemini->Groq fallback: ${gemErr.message}`);
                             outputText = await this._generateViaGroq(prompt);
-                            selectedModel = process.env.GROQ_MODEL || 'llama-3.3-70b-versatile';
+                            selectedModel = process.env.GROQ_MODEL || 'openai/gpt-oss-120b';
                             return outputText;
                         } catch (groqErr) {
                             fallbackReason = groqErr.message;
@@ -1125,7 +1125,7 @@ class AgentService {
                 try {
                     selectedProvider = 'groq';
                     outputText = await this._generateViaGroq(prompt);
-                    selectedModel = process.env.GROQ_MODEL || 'llama-3.3-70b-versatile';
+                    selectedModel = process.env.GROQ_MODEL || 'openai/gpt-oss-120b';
                     return outputText;
                 } catch (groqErr) {
                     fallbackUsed = true;
@@ -2154,6 +2154,14 @@ class AgentService {
             return null;
         }
 
+        // Conceptual/explanatory questions (e.g. "qual a diferença entre C1 e C2")
+        // must reach the LLM even when they share vocabulary (c1/c2/inspecao/...)
+        // with the keyword-based data-lookup routes below — otherwise a genuine
+        // question gets misrouted into a DB search and answered with "nothing found".
+        if (/(diferenca entre|\bo que e\b|o que significa|para que serve|como funciona|\bexplica|qual e a diferenca|qual a diferenca)/.test(m)) {
+            return null;
+        }
+
         // ── Follow-up for previously selected client ────────────────────────
         if (/(dele|dela|його|її|dados|detalhes|lifts|elevadores|ліфти|дані|info|pedidos|запити|requests)/.test(m)) {
             const follow = await this._respondFromFocusedClient(userId, m);
@@ -2421,7 +2429,8 @@ class AgentService {
             const next = l.nextInspectionDate ? new Date(l.nextInspectionDate).toLocaleDateString('pt-PT') : '—';
             const status = l.status || 'ativo';
             const badge = status === 'ativo' ? '✅' : '⚠️';
-            return `${badge} **${l.location || l.name || l._id?.toString().slice(-6)}** | Municipal: ${l.municipalNumber || '?'} | Próx. insp: ${next}`;
+            const label = [l.address?.street, l.address?.city].filter(Boolean).join(', ') || l._id?.toString().slice(-6);
+            return `${badge} **${label}** | Municipal: ${l.municipalNumber || '?'} | Próx. insp: ${next}`;
         }).join('\n');
         return `🏢 **Elevadores registados** (${list.length}):\n\n${rows}`;
     }
