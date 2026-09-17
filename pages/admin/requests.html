@@ -14,6 +14,7 @@
     <link rel="stylesheet" href="../../plugins/fontawesome/css/all.min.css">
     <link rel="stylesheet" href="/plugins/datatables/css/dataTables.bootstrap4.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+    <link rel="stylesheet" href="../../plugins/maplibre-gl/maplibre-gl.css" />
 
     <style>
         .request-card {
@@ -1103,6 +1104,8 @@
 <script src="../../plugins/jquery/jquery.min.js"></script>
 <script src="../../plugins/bootstrap/bootstrap.bundle.min.js"></script>
 <script src="../../plugins/adminlte/adminlte.min.js"></script>
+<script src="../../plugins/maplibre-gl/maplibre-gl.js"></script>
+<script src="../../plugins/maplibre-leaflet-shim.js"></script>
 
 <!-- Sidebar initialization script -->
 <script src="../../assets/js/sidebar-init.js"></script>
@@ -1828,15 +1831,25 @@ class ServiceRequestManager {
         $('#viewRequestModal').modal('show');
     }
 
-    _loadAdminMap(address) {
+    async _loadAdminMap(address) {
         const $c = $('#vrmMapContainer');
         if (!address || address === 'Endereço não especificado') {
             $c.html('<div class="text-center text-muted"><i class="fas fa-map-marked-alt fa-3x mb-2"></i><br>Endereço não especificado</div>');
             return;
         }
-        const encodedAddress = encodeURIComponent(address);
-        const mapUrl = `https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodedAddress}&zoom=15`;
-        $c.html(`<iframe width="100%" height="100%" frameborder="0" style="border:0;border-radius:10px" allowfullscreen src="${mapUrl}"></iframe>`);
+        $c.html('<div class="text-center text-muted"><i class="fas fa-spinner fa-spin fa-2x"></i></div>');
+        try {
+            const res = await fetch('/api/geocode?q=' + encodeURIComponent(address));
+            const data = await res.json();
+            if (!data.success) throw new Error(data.message || 'geocode failed');
+            $c.empty().css({ display: 'block' });
+            if (this._adminMap) { this._adminMap.remove(); this._adminMap = null; }
+            this._adminMap = L.map($c.attr('id')).setView([data.lat, data.lng], 15);
+            L.tileLayer('', { maxZoom: 19 }).addTo(this._adminMap);
+            L.marker([data.lat, data.lng]).addTo(this._adminMap);
+        } catch (e) {
+            $c.html('<div class="text-center text-muted"><i class="fas fa-map-marked-alt fa-3x mb-2"></i><br>Mapa indisponível</div>');
+        }
     }
 
     openInMapsAdmin() {
