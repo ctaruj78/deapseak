@@ -669,34 +669,33 @@ const qrManager = (function() {
         return { cls: 'fl-status--off', label: 'INATIVO' };
     }
 
-    // Shared CSS for the A6 cabin sticker, tiled 2x2 on an A4 sheet. The sheet
-    // keeps a 5mm blank buffer on every edge (@page margin) because home/office
-    // printers reserve a hardware-only unprintable strip near the paper edges
-    // (usually worst at the trailing edge) — without this buffer that strip
-    // clips straight into the bottom row's sticker content instead of blank
-    // paper. Stickers are sized to fill the remaining 200x287mm evenly (100x143mm
-    // each), just under nominal A6 (105x148mm).
+    // Shared CSS for the A6 cabin sticker, tiled 2x2 on an A4 sheet with ZERO
+    // page margin and no gap between cells. This matches pre-cut adhesive
+    // sticker sheets — an A4 sheet physically scored/cut into 4 equal
+    // quarters right through the middle, edge-to-edge, with no blank frame
+    // between them. Each sticker is exactly 105x148.5mm (a true quarter of
+    // the A4 sheet, matching nominal A6), so the print boundaries land
+    // exactly on the physical cut lines and nothing is lost off either side.
     function cabinStickerCss() {
         return `
   * { margin:0; padding:0; box-sizing:border-box; }
-  @page { size: 210mm 297mm; margin: 5mm; }
-  html { width:200mm; }
+  @page { size: 210mm 297mm; margin: 0; }
+  html, body { width:210mm; height:297mm; }
   body {
     background:#0F172A;
     -webkit-print-color-adjust:exact; print-color-adjust:exact;
   }
   .fl-page {
-    width:200mm; height:287mm;
-    display:grid; grid-template-columns:100mm 100mm; grid-template-rows:143.5mm 143.5mm;
+    width:210mm; height:297mm;
+    display:grid; grid-template-columns:105mm 105mm; grid-template-rows:148.5mm 148.5mm;
     page-break-after: always;
   }
   .fl-page:last-child { page-break-after: auto; }
   .fl-sticker {
-    position:relative; width:100mm; height:143mm;
+    position:relative; width:105mm; height:148.5mm;
     background:#0F172A; color:#F8FAFC; overflow:hidden;
     display:flex; flex-direction:column;
     font-family:'Inter',sans-serif;
-    border:1px dashed rgba(255,255,255,.35);
   }
   .fl-bar { height:8px; flex-shrink:0; background:linear-gradient(90deg,#F4B223 0%,#F4B223 46%,#2456A6 100%); }
   .fl-head { padding:16px 25px 15px; display:flex; align-items:flex-start; justify-content:space-between; gap:16px; border-bottom:1px solid rgba(255,255,255,.07); }

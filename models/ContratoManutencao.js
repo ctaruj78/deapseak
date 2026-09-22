@@ -54,11 +54,13 @@ const contratoManutencaoSchema = new mongoose.Schema({
         edificio: String,
         nome: String,
         morada: String,
-        codigoPostal: String
+        codigoPostal: String,
+        nif: String
     },
 
     faturacao: {
         nome: String,
+        nif: String,
         unidadesContratadas: String,
         morada: String,
         codigoPostal: String

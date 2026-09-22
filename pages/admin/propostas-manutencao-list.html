@@ -84,6 +84,12 @@
                             <div class="col-md-2 form-group d-flex align-items-end">
                                 <button class="btn btn-outline-secondary btn-block" onclick="carregarPropostas()"><i class="fas fa-search mr-1"></i>Filtrar</button>
                             </div>
+                            <div class="col-md-3 form-group d-flex align-items-end">
+                                <div class="custom-control custom-switch">
+                                    <input type="checkbox" class="custom-control-input" id="filtroArquivadas" onchange="carregarPropostas()">
+                                    <label class="custom-control-label" for="filtroArquivadas">Ver arquivadas</label>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -141,6 +147,13 @@ function escHtml(str) {
     return (str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
+// Para valores livres (ex.: nome de cliente) embutidos dentro de strings JS
+// de aspa simples em atributos onclick — evita quebrar o handler se o nome
+// tiver um apóstrofo (ex.: "O'Brien").
+function escJs(str) {
+    return (str || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+}
+
 function statusBadgeClass(status) {
     return { solicitado: 'badge-solicitado', rascunho: 'badge-rascunho', enviado: 'badge-enviado', aprovado: 'badge-aprovado', rejeitado: 'badge-rejeitado', expirado: 'badge-expirado' }[status] || 'badge-secondary';
 }
@@ -155,9 +168,11 @@ async function carregarPropostas() {
 
     const search = document.getElementById('filtroSearch').value.trim();
     const status = document.getElementById('filtroStatus').value;
+    const verArquivadas = document.getElementById('filtroArquivadas').checked;
     const params = new URLSearchParams();
     if (search) params.set('search', search);
     if (status) params.set('status', status);
+    if (verArquivadas) params.set('archived', 'true');
     params.set('limit', '100');
 
     try {
@@ -193,11 +208,37 @@ async function carregarPropostas() {
             const preco = p.precoMensal ? `€${Number(p.precoMensal).toFixed(2)}` : '—';
             const data = p.data ? new Date(p.data).toLocaleDateString('pt-PT') : '—';
             const tipoLabel = p.tipo === 'completa' ? 'Completa' : 'Simples';
+            // Aviso visual quando existe proposta irmã (Simples+Completa do mesmo
+            // pedido, mesmo cliente) — evita arquivar/eliminar a errada por engano.
+            const irmaHint = p.propostaIrmaId
+                ? ` <a href="proposta-manutencao-template.html?id=${p.propostaIrmaId}" class="text-muted" title="Tem proposta irmã associada (mesmo pedido, outro tipo) — confirme o número antes de arquivar/eliminar"><i class="fas fa-link"></i></a>`
+                : '';
             const podeEliminar = ['solicitado', 'rascunho', 'rejeitado', 'expirado'].includes(p.status);
+            const argsRef = `'${p._id}', '${escJs(p.numero)}', '${tipoLabel}', '${escJs(p.cliente?.nome || '')}'`;
+
+            if (p.archived) {
+                return `
+                <tr class="text-muted">
+                    <td><strong>${escHtml(p.numero)}</strong></td>
+                    <td><span class="badge badge-light border">${tipoLabel}</span>${irmaHint}</td>
+                    <td>${escHtml(p.cliente?.nome || '—')}<br><small class="text-muted">${escHtml(p.cliente?.email || '')}</small></td>
+                    <td>${escHtml(instalacao)}</td>
+                    <td>${preco}</td>
+                    <td>${data}</td>
+                    <td><span class="badge ${statusBadgeClass(p.status)}">${escHtml(statusLabel(p.status))}</span> <span class="badge badge-secondary">Arquivada</span></td>
+                    <td class="text-right">
+                        <a href="proposta-manutencao-template.html?id=${p._id}" class="btn btn-sm btn-outline-primary" title="Ver"><i class="fas fa-eye"></i></a>
+                        <button class="btn btn-sm btn-outline-secondary" onclick="downloadPDF('${p._id}', '${p.numero}')" title="Descarregar PDF"><i class="fas fa-file-pdf"></i></button>
+                        <button class="btn btn-sm btn-outline-success" onclick="restaurarProposta(${argsRef})" title="Restaurar do arquivo"><i class="fas fa-undo"></i></button>
+                    </td>
+                </tr>
+            `;
+            }
+
             return `
                 <tr>
                     <td><strong>${escHtml(p.numero)}</strong></td>
-                    <td><span class="badge badge-light border">${tipoLabel}</span></td>
+                    <td><span class="badge badge-light border">${tipoLabel}</span>${irmaHint}</td>
                     <td>${escHtml(p.cliente?.nome || '—')}<br><small class="text-muted">${escHtml(p.cliente?.email || '')}</small></td>
                     <td>${escHtml(instalacao)}</td>
                     <td>${preco}</td>
@@ -208,9 +249,9 @@ async function carregarPropostas() {
                             ? `<a href="proposta-manutencao-template.html?id=${p._id}" class="btn btn-sm btn-primary" title="Preencher condições e responder ao cliente"><i class="fas fa-reply mr-1"></i>Responder</a>`
                             : `<a href="proposta-manutencao-template.html?id=${p._id}" class="btn btn-sm btn-outline-primary" title="Ver / Editar"><i class="fas fa-edit"></i></a>
                         <button class="btn btn-sm btn-outline-secondary" onclick="downloadPDF('${p._id}', '${p.numero}')" title="Descarregar PDF"><i class="fas fa-file-pdf"></i></button>`}
-                        ${(p.status === 'rascunho' || p.status === 'enviado') ? `<button class="btn btn-sm btn-outline-success" onclick="marcarAprovado('${p._id}')" title="Marcar como Aprovado (aceite fora do portal)"><i class="fas fa-check-double"></i></button>` : ''}
+                        ${['rascunho', 'enviado', 'expirado'].includes(p.status) ? `<button class="btn btn-sm btn-outline-success" onclick="marcarAprovado('${p._id}')" title="Marcar como Aprovado (aceite fora do portal, mesmo expirada)"><i class="fas fa-check-double"></i></button>` : ''}
                         ${p.status === 'aprovado' ? `<button class="btn btn-sm btn-outline-success" onclick="gerarContrato('${p._id}')" title="Gerar / Ver Contrato"><i class="fas fa-file-signature"></i></button>` : ''}
-                        <button class="btn btn-sm btn-outline-danger" onclick="arquivarProposta('${p._id}')" title="Arquivar"><i class="fas fa-archive"></i></button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="arquivarProposta(${argsRef})" title="Arquivar"><i class="fas fa-archive"></i></button>
                         ${podeEliminar ? `<button class="btn btn-sm btn-outline-danger" onclick="eliminarProposta('${p._id}', '${escHtml(p.numero)}')" title="Eliminar definitivamente"><i class="fas fa-trash"></i></button>` : ''}
                     </td>
                 </tr>
@@ -279,8 +320,9 @@ async function gerarContrato(propostaId) {
     }
 }
 
-async function arquivarProposta(id) {
-    if (!await swalConfirm('Arquivar esta proposta? Pode ser restaurada mais tarde.', 'Arquivar proposta')) return;
+async function arquivarProposta(id, numero, tipo, clienteNome) {
+    const confirmText = `Arquivar a proposta ${numero} (${tipo}) de ${clienteNome}? Fica escondida da lista, mas pode ser restaurada em "Ver arquivadas".`;
+    if (!await swalConfirm(confirmText, 'Arquivar proposta')) return;
     try {
         const res = await fetch(`/api/propostas-manutencao/${id}/archive`, {
             method: 'POST',
@@ -288,13 +330,32 @@ async function arquivarProposta(id) {
         });
         const result = await res.json();
         if (result.success) {
-            toastr.success('Proposta arquivada');
+            toastr.success(`Proposta ${numero} arquivada`);
             carregarPropostas();
         } else {
             toastr.error(result.message || 'Erro ao arquivar');
         }
     } catch (e) {
         toastr.error('Erro ao arquivar proposta');
+    }
+}
+
+async function restaurarProposta(id, numero, tipo, clienteNome) {
+    if (!await swalConfirm(`Restaurar a proposta ${numero} (${tipo}) de ${clienteNome} do arquivo?`, 'Restaurar proposta')) return;
+    try {
+        const res = await fetch(`/api/propostas-manutencao/${id}/unarchive`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${getToken()}` }
+        });
+        const result = await res.json();
+        if (result.success) {
+            toastr.success(`Proposta ${numero} restaurada`);
+            carregarPropostas();
+        } else {
+            toastr.error(result.message || 'Erro ao restaurar (apenas administradores podem restaurar)');
+        }
+    } catch (e) {
+        toastr.error('Erro ao restaurar proposta');
     }
 }
 

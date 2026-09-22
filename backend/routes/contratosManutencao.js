@@ -229,13 +229,10 @@ async function gerarPDFContratoManutencao(contrato) {
                 doc.fontSize(10).font('Helvetica').fillColor('#000000');
                 if (contrato.instalacao.edificio) doc.text(`Edifício: ${contrato.instalacao.edificio}`, 50, doc.y + 5);
                 if (contrato.instalacao.nome) doc.text(`Nome: ${contrato.instalacao.nome}`, 50, doc.y + 5);
+                if (contrato.instalacao.nif) doc.text(`NIF: ${contrato.instalacao.nif}`, 50, doc.y + 5);
                 if (contrato.instalacao.morada) doc.text(`Morada: ${contrato.instalacao.morada}${contrato.instalacao.codigoPostal ? ', ' + contrato.instalacao.codigoPostal : ''}`, 50, doc.y + 5);
                 doc.moveDown();
             }
-
-            doc.fontSize(10).font('Helvetica').fillColor('#000000');
-            doc.text(`Data: ${formatDatePT(contrato.data)}`, 50, doc.y);
-            doc.moveDown();
 
             doc.fontSize(12).font('Helvetica-Bold').fillColor(AZUL).text('Termos do Contrato', 50, doc.y);
             doc.moveDown(0.3);
@@ -246,7 +243,7 @@ async function gerarPDFContratoManutencao(contrato) {
                 `Pela aceitação do presente contrato a EMIE obriga-se a fornecer, de acordo com as Condições Gerais abaixo, um serviço de manutenção para o equipamento discriminado. ` +
                 `O preço do serviço de manutenção é de €${(contrato.precoMensal || 0).toFixed(2)} por mês, por unidade, acrescido de IVA à taxa legal em vigor. ` +
                 `O pagamento é ${contrato.pagamento || 'Trimestral e adiantado'}. ` +
-                `O contrato terá início em ${formatDatePT(contrato.dataInicioContrato)} e manter-se-á válido durante ${contrato.duracaoAnos || 1} ano(s), considerando-se tacitamente prorrogado por períodos de ${renovacao.periodo || '1 ano'}, salvo denúncia por qualquer das partes com pelo menos ${renovacao.avisoDias || '60 dias'} de antecedência, através de ${renovacao.metodoNotificacao || 'carta registada'}${renovacao.emailNotificacao ? ' (' + renovacao.emailNotificacao + ')' : ''}. ` +
+                `O contrato terá início na data de assinatura por ambas as partes (ver página de Assinaturas) e manter-se-á válido durante ${contrato.duracaoAnos || 1} ano(s), considerando-se tacitamente prorrogado por períodos de ${renovacao.periodo || '1 ano'}, salvo denúncia por qualquer das partes com pelo menos ${renovacao.avisoDias || '60 dias'} de antecedência, através de ${renovacao.metodoNotificacao || 'carta registada'}${renovacao.emailNotificacao ? ' (' + renovacao.emailNotificacao + ')' : ''}. ` +
                 `Em caso de denúncia antecipada pelo Cliente, a FESTLIFT terá direito a indemnização no valor da totalidade das mensalidades previstas até ao termo do prazo contratado.`;
 
             doc.text(termosTexto, 50, doc.y, { width: 500, align: 'justify' });
