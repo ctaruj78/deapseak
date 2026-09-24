@@ -719,17 +719,17 @@ const qrManager = (function() {
   .fl-status--off span:first-child { background:#ff6b6b; }
   .fl-status--off span:last-child { color:#ff6b6b; }
   .fl-body { padding:0 25px; display:flex; flex-direction:column; flex:1; }
-  .fl-support { text-align:center; margin-top:10px; font-family:'Space Grotesk',sans-serif; font-size:10px; letter-spacing:2.5px; text-transform:uppercase; color:#7C8AA3; font-weight:700; }
-  .fl-qr-card { margin:8px auto 0; background:#F8FAFC; border-radius:20px; padding:16px; position:relative; }
-  .fl-qr-card canvas { width:187px !important; height:187px !important; display:block; }
+  .fl-support { text-align:center; margin-top:7px; font-family:'Space Grotesk',sans-serif; font-size:10px; letter-spacing:2.5px; text-transform:uppercase; color:#7C8AA3; font-weight:700; }
+  .fl-qr-card { margin:6px auto 0; background:#F8FAFC; border-radius:20px; padding:13px; position:relative; }
+  .fl-qr-card canvas { width:174px !important; height:174px !important; display:block; }
   .fl-qr-card i { position:absolute; width:16px; height:16px; }
   .fl-qr-card i.tl { top:8px; left:8px; border-top:3px solid #F4B223; border-left:3px solid #F4B223; border-radius:4px 0 0 0; }
   .fl-qr-card i.tr { top:8px; right:8px; border-top:3px solid #F4B223; border-right:3px solid #F4B223; border-radius:0 4px 0 0; }
   .fl-qr-card i.bl { bottom:8px; left:8px; border-bottom:3px solid #F4B223; border-left:3px solid #F4B223; border-radius:0 0 0 4px; }
   .fl-qr-card i.br { bottom:8px; right:8px; border-bottom:3px solid #F4B223; border-right:3px solid #F4B223; border-radius:0 0 4px 0; }
-  .fl-caption { text-align:center; margin-top:10px; font-size:11px; line-height:1.55; color:#A7B4C8; }
+  .fl-caption { text-align:center; margin-top:7px; font-size:11px; line-height:1.55; color:#A7B4C8; }
   .fl-caption b { color:#F8FAFC; }
-  .fl-foot { margin-top:8px; background:#020617; padding:11px 25px; display:flex; flex-direction:column; gap:10px; }
+  .fl-foot { margin-top:6px; background:#020617; padding:9px 25px 22px; display:flex; flex-direction:column; gap:10px; }
   .fl-foot-row { display:flex; justify-content:space-between; gap:14px; }
   .fl-contact { display:flex; flex-direction:column; gap:4px; flex:1; }
   .fl-contact.right { padding-left:14px; }
@@ -737,7 +737,7 @@ const qrManager = (function() {
   .fl-contact-head span { font-family:'Space Grotesk',sans-serif; font-weight:700; font-size:8px; letter-spacing:1.4px; text-transform:uppercase; }
   .fl-contact-val { font-size:13px; color:#F8FAFC; font-weight:600; }
   .fl-divider { width:1px; background:rgba(255,255,255,.1); }
-  .fl-email { display:flex; align-items:center; gap:6px; padding-top:8px; border-top:1px solid rgba(255,255,255,.1); font-size:11px; color:#A7B4C8; font-weight:500; }
+  .fl-email { display:flex; align-items:center; gap:6px; padding-top:6px; border-top:1px solid rgba(255,255,255,.1); font-size:11px; color:#A7B4C8; font-weight:500; }
 `;
     }
 
@@ -835,8 +835,20 @@ ${bodies}
 <script>
   ${qrInits}
   window.onload = function() {
-    window.print();
-    window.onafterprint = function() { window.close(); };
+    var doPrint = function() {
+      window.print();
+      window.onafterprint = function() { window.close(); };
+    };
+    // Wait for the webfonts (Space Grotesk/Inter) to finish loading before
+    // printing — onload fires once the stylesheet link loads, not once the
+    // actual glyph files download, so printing too early can render text in
+    // a fallback font with different line-height and push content past the
+    // fixed 148.5mm sticker height.
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(doPrint).catch(doPrint);
+    } else {
+      doPrint();
+    }
   };
 </script>
 </body>
