@@ -1391,13 +1391,31 @@
                 try {
                     const token = getClientToken();
                     const res = await fetch('/api/auth/change-password', { method: 'POST', headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ currentPassword: current, newPassword: newPwd }) });
-                    if (res.ok) {
+                    const d = await res.json();
+                    if (res.ok && d.success) {
+                        // O backend revoga o token usado nesta própria requisição ao mudar a
+                        // password e devolve um par novo — sem guardar isto aqui a sessão
+                        // ficava com a password trocada mas sem nenhum token válido
+                        const newToken = d.data && d.data.token;
+                        const newRefreshToken = d.data && d.data.refreshToken;
+                        if (newToken) {
+                            ['token','authToken','lm_token','deapseak_token','liftmanager_jwt'].forEach(k => localStorage.setItem(k, newToken));
+                            sessionStorage.setItem('liftmanager_jwt', newToken);
+                        }
+                        if (newRefreshToken) localStorage.setItem('liftmanager_refresh', newRefreshToken);
+                        try {
+                            const storedUser = JSON.parse(localStorage.getItem('userData') || sessionStorage.getItem('liftmanager_user') || '{}');
+                            storedUser.mustChangePassword = false;
+                            ['userData','user','lm_session','liftmanager_user'].forEach(k => localStorage.setItem(k, JSON.stringify(storedUser)));
+                            sessionStorage.setItem('liftmanager_user', JSON.stringify(storedUser));
+                        } catch (e) {}
+
                         showSettingsToast('Palavra-passe alterada com sucesso', 'success');
                         $('#passwordForm')[0].reset();
                         // Ocultar cartão de palavra-passe temporária após alteração
                         document.getElementById('tempPasswordHintCard').style.display = 'none';
                     }
-                    else { const d = await res.json(); showSettingsToast(d.message || 'Erro ao alterar a palavra-passe', 'error'); }
+                    else { showSettingsToast(d.message || 'Erro ao alterar a palavra-passe', 'error'); }
                 } catch { showSettingsToast('Erro de ligação', 'error'); }
                 finally { $('#changePwdBtn').prop('disabled', false).html('<i class="fas fa-key mr-2"></i>Alterar palavra-passe'); }
             });

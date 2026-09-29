@@ -75,10 +75,14 @@ exports.register = async (req, res, next) => {
         });
 
         // Генерація токенів
+        // mustChangePassword vai no próprio JWT — é isso que o middleware
+        // authenticate() usa para bloquear o acesso à app enquanto a password
+        // temporária não for trocada (ver backend/middleware/auth.js)
         const tokenPayload = {
             id: user._id.toString(),
             email: user.email,
-            role: user.role
+            role: user.role,
+            mustChangePassword: !!user.mustChangePassword
         };
         const token = generateToken(tokenPayload);
         const refreshToken = generateRefreshToken(tokenPayload);
@@ -171,10 +175,14 @@ exports.login = async (req, res, next) => {
         await user.constructor.updateOne({ _id: user._id }, { $set: { lastLogin: new Date() } });
 
         // Генерація токенів
+        // mustChangePassword vai no próprio JWT — é isso que o middleware
+        // authenticate() usa para bloquear o acesso à app enquanto a password
+        // temporária não for trocada (ver backend/middleware/auth.js)
         const tokenPayload = {
             id: user._id.toString(),
             email: user.email,
-            role: user.role
+            role: user.role,
+            mustChangePassword: !!user.mustChangePassword
         };
         const token = generateToken(tokenPayload);
         // rememberMe = true → refresh token живе 30 днів замість стандартних 7д
@@ -295,12 +303,24 @@ exports.changePassword = async (req, res, next) => {
         user.password = newPassword;
         user.mustChangePassword = false; // Знімаємо примусовову після зміни
         user.tempPasswordHint = '';  // Очищаємо підказку пароля після зміни
-        await user.save();
+        // validateModifiedOnly: não validar campos que não mudámos — registos antigos
+        // podem ter phone num formato que o validator atual rejeita (mesmo padrão já
+        // usado em adminResetUserPassword), senão .save() falha com 500 mesmo sem
+        // nenhum problema com a password em si
+        await user.save({ validateModifiedOnly: true });
         revokeUserTokens(user._id); // 🔐 invalida sessões antigas (ex.: token roubado)
+
+        // O token desta própria requisição foi emitido ANTES da revogação acima,
+        // logo ficaria também revogado — sem isto o utilizador ficava com a password
+        // trocada com sucesso mas sem nenhuma sessão válida para continuar a usar a app
+        const tokenPayload = { id: user._id.toString(), email: user.email, role: user.role, mustChangePassword: false };
+        const newAccessToken = generateToken(tokenPayload);
+        const newRefreshToken = generateRefreshToken(tokenPayload);
 
         res.json({
             success: true,
-            message: 'Palavra-passe alterada com sucesso'
+            message: 'Palavra-passe alterada com sucesso',
+            data: { token: newAccessToken, refreshToken: newRefreshToken }
         });
     } catch (error) {
         next(error);
@@ -452,7 +472,7 @@ exports.toggleUserBan = async (req, res, next) => {
         }
 
         user.isActive = !user.isActive;
-        await user.save();
+        await user.save({ validateModifiedOnly: true });
 
         // 🔐 Ao bloquear, invalida já os tokens em uso (não espera pelo próximo /refresh)
         if (!user.isActive) revokeUserTokens(user._id);
@@ -496,7 +516,7 @@ exports.requestPasswordReset = async (req, res, next) => {
 
         user.resetPasswordToken = resetTokenHash;
         user.resetPasswordExpire = Date.now() + 10 * 60 * 1000; // 10 хвилин
-        await user.save();
+        await user.save({ validateModifiedOnly: true });
 
         // Відправляємо email з токеном
         const emailService = require('../services/emailService');
@@ -508,7 +528,7 @@ exports.requestPasswordReset = async (req, res, next) => {
             console.error('Erro ao enviar email:', emailError);
             user.resetPasswordToken = undefined;
             user.resetPasswordExpire = undefined;
-            await user.save();
+            await user.save({ validateModifiedOnly: true });
             throw new AppError('Erro ao enviar email', 500);
         }
 
@@ -547,7 +567,7 @@ exports.resetPassword = async (req, res, next) => {
         user.password = newPassword;
         user.resetPasswordToken = undefined;
         user.resetPasswordExpire = undefined;
-        await user.save();
+        await user.save({ validateModifiedOnly: true });
         revokeUserTokens(user._id); // 🔐 invalida qualquer sessão/token roubado antes deste reset
 
         res.json({
@@ -584,7 +604,7 @@ exports.refreshToken = async (req, res, next) => {
         }
 
         // Генеруємо новий access token (7 днів)
-        const tokenPayload = { id: user._id.toString(), email: user.email, role: user.role };
+        const tokenPayload = { id: user._id.toString(), email: user.email, role: user.role, mustChangePassword: !!user.mustChangePassword };
         const newToken = generateToken(tokenPayload);
         const newRefreshToken = generateRefreshToken(tokenPayload);
 

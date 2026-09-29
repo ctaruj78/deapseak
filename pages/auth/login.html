@@ -41,6 +41,10 @@
             if (!userStr) return;
             var user = JSON.parse(userStr);
             if (!user || !user.role) return;
+            // Password temporária pendente — fica no login para reabrir o modal
+            // de troca obrigatória em vez de mandar para o dashboard (senão criava
+            // um loop de redireção com o guard equivalente em assets/js/auth.js)
+            if (user.mustChangePassword) return;
             document.documentElement.style.visibility = 'hidden';
             var routes = { admin: '/pages/admin/admin-dashboard.html', dispatcher: '/pages/dispatcher/dashboard.html', technician: '/pages/tech/dashboard.html', tech: '/pages/tech/dashboard.html', client: '/pages/client/dashboard.html' };
             window.location.replace(routes[user.role] || '/pages/admin/admin-dashboard.html');
@@ -279,7 +283,18 @@
                 }
             } else if (typeof AuthManager !== 'undefined' && AuthManager.isAuthenticated()) {
                 const user = AuthManager.getCurrentUser();
-                if (user && user.role) {
+                if (user && user.mustChangePassword) {
+                    // Sessão válida mas a troca de password obrigatória ficou por
+                    // concluir (ex.: refresh a meio, dashboard mandou de volta para
+                    // cá) — reabrimos o modal em vez de mostrar o formulário de login
+                    const modal = document.getElementById('mustChangePasswordModal');
+                    if (modal) {
+                        window.__mustChangeRedirectUrl = sessionStorage.getItem('redirect_after_login');
+                        window.__mustChangeUserRole = user.role;
+                        modal.style.display = 'flex';
+                        document.getElementById('mcpEmail').value = user.email || '';
+                    }
+                } else if (user && user.role) {
                     // Авторизований — ховаємо всю сторінку і перенаправляємо миттєво
                     document.body.style.opacity = '0';
                     document.body.style.visibility = 'hidden';
@@ -646,10 +661,26 @@
                 return;
             }
 
-            // Sucesso — оновлюexisteмо userData в localStorage
-            const storedUser = JSON.parse(localStorage.getItem('userData') || '{}');
+            // Sucesso — o backend revogou o token antigo (ver changePassword em
+            // authController.js) e devolveu um par novo; sem isto a sessão ficava
+            // com password trocada mas sem nenhum token válido para continuar
+            const newToken = data.data && data.data.token;
+            const newRefreshToken = data.data && data.data.refreshToken;
+            if (newToken) {
+                ['token','authToken','lm_token','deapseak_token','liftmanager_jwt'].forEach(k => localStorage.setItem(k, newToken));
+                sessionStorage.setItem('liftmanager_jwt', newToken);
+            }
+            if (newRefreshToken) {
+                localStorage.setItem('liftmanager_refresh', newRefreshToken);
+            }
+
+            // Atualizamos userData em AMBOS os storages — AuthManager.getCurrentUser()
+            // só lê sessionStorage, esquecer isto aqui mantinha mustChangePassword=true
+            // no olhar do guard de auth.js e criava um loop de redireção para o login
+            const storedUser = JSON.parse(localStorage.getItem('userData') || sessionStorage.getItem('liftmanager_user') || '{}');
             storedUser.mustChangePassword = false;
             ['userData','user','lm_session','liftmanager_user'].forEach(k => localStorage.setItem(k, JSON.stringify(storedUser)));
+            sessionStorage.setItem('liftmanager_user', JSON.stringify(storedUser));
 
             document.getElementById('mustChangePasswordModal').style.display = 'none';
             // Перенаправляexisteмо

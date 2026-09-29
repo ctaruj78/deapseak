@@ -172,7 +172,7 @@
         if (typeof toastr !== 'undefined') {
             toastr.error(message);
         } else {
-            toastr.info(message);
+            console.error(message);
         }
     }
 
@@ -208,7 +208,7 @@
             if (typeof toastr !== 'undefined') {
                 toastr.success('Perfil atualizado com sucesso!');
             } else {
-                toastr.success('Perfil atualizado com sucesso!');
+                console.log('✅ Perfil atualizado com sucesso!');
             }
 
             return updatedUser;
@@ -239,17 +239,37 @@
                 })
             });
 
-            if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.message || 'Erro зміни пароля');
+            const result = await response.json();
+            if (!response.ok || !result.success) {
+                throw new Error(result.message || 'Erro зміни пароля');
             }
+
+            // O backend revoga o token antigo ao mudar a password (a própria
+            // requisição acima ainda passou, mas qualquer pedido seguinte com o
+            // token antigo seria rejeitado) — sem guardar o par novo devolvido
+            // aqui, a sessão ficava com password trocada mas sem token válido
+            const newToken = result.data && result.data.token;
+            const newRefreshToken = result.data && result.data.refreshToken;
+            if (newToken) {
+                ['token','authToken','lm_token','deapseak_token','liftmanager_jwt'].forEach(k => localStorage.setItem(k, newToken));
+                sessionStorage.setItem('liftmanager_jwt', newToken);
+            }
+            if (newRefreshToken) {
+                localStorage.setItem('liftmanager_refresh', newRefreshToken);
+            }
+            try {
+                const storedUser = JSON.parse(localStorage.getItem('userData') || sessionStorage.getItem('liftmanager_user') || '{}');
+                storedUser.mustChangePassword = false;
+                ['userData','user','lm_session','liftmanager_user'].forEach(k => localStorage.setItem(k, JSON.stringify(storedUser)));
+                sessionStorage.setItem('liftmanager_user', JSON.stringify(storedUser));
+            } catch (e) {}
 
             console.log('✅ Palavra-passe змінено');
 
             if (typeof toastr !== 'undefined') {
                 toastr.success('Palavra-passe com sucesso змінено!');
             } else {
-                toastr.success('Palavra-passe com sucesso змінено!');
+                console.log('✅ Palavra-passe com sucesso змінено!');
             }
 
             return true;

@@ -28,7 +28,7 @@ const zlib = require('zlib');
 const { EJSON } = require('bson');
 const mongoSanitize = require('express-mongo-sanitize'); // 🔐 NoSQL injection protection
 const cookieParser = require('cookie-parser');
-const { revokeUserTokens } = require('./backend/middleware/tokenRevocation');
+const { revokeUserTokens, isTokenRevoked } = require('./backend/middleware/tokenRevocation');
 const execAsync = promisify(exec);
 
 // ═══════════════════════════════════════════════════════════
@@ -705,6 +705,7 @@ if (!process.env.JWT_SECRET) {
     process.exit(1);
 }
 const JWT_SECRET = process.env.JWT_SECRET;
+const { generateToken, generateRefreshToken } = require('./backend/middleware/auth');
 
 // API маршрути
 app.get('/api/health', async (req, res) => {
@@ -3023,9 +3024,28 @@ app.post('/api/users/change-password', authenticateToken, async (req, res) => {
             return res.status(401).json({ success: false, message: 'Palavra-passe atual incorreta.' });
 
         const hashed = await bcrypt.hash(newPassword, 10);
-        await db.collection('users').updateOne({ _id: userId }, { $set: { password: hashed, updatedAt: new Date() } });
+        // mustChangePassword/tempPasswordHint tinham ficado de fora aqui — quem mudasse
+        // a password temporária por esta rota (ex.: pages/dispatcher/profile.html) ficava
+        // com a flag presa em true para sempre, exatamente como o bug em /api/auth/change-password
+        await db.collection('users').updateOne(
+            { _id: userId },
+            { $set: { password: hashed, mustChangePassword: false, tempPasswordHint: '', updatedAt: new Date() } }
+        );
+        revokeUserTokens(userId); // 🔐 invalida sessões antigas (password mudou)
+
+        // O token usado nesta própria requisição foi emitido ANTES da revogação
+        // acima, logo ficaria também revogado — emitimos um par novo já sem
+        // mustChangePassword para o frontend poder continuar a sessão
+        const tokenPayload = { id: user._id.toString(), email: user.email, role: user.role, mustChangePassword: false };
+        const newToken = generateToken(tokenPayload);
+        const newRefreshToken = generateRefreshToken(tokenPayload);
+
         console.log('✅ Palavra-passe alterada:', req.user.email);
-        res.json({ success: true, message: 'Palavra-passe alterada com sucesso.' });
+        res.json({
+            success: true,
+            message: 'Palavra-passe alterada com sucesso.',
+            data: { token: newToken, refreshToken: newRefreshToken }
+        });
     } catch (err) {
         console.error('❌ change-password error:', err);
         res.status(500).json({ success: false, message: 'Erro ao alterar palavra-passe.' });
@@ -3183,6 +3203,14 @@ app.post('/api/support/tickets/:id/close', authenticateToken, async (req, res) =
 });
 
 // Middleware для перевірки токена
+// Rotas que continuam acessíveis com mustChangePassword=true — o resto das
+// 175+ rotas que usam authenticateToken fica bloqueado até a troca ser feita
+// (ver o mesmo gate em backend/middleware/auth.js's authenticate())
+const AUTH_TOKEN_ALLOWED_WHILE_MUST_CHANGE_PASSWORD = new Set([
+    '/api/users/change-password',
+    '/api/users/me'
+]);
+
 function authenticateToken(req, res, next) {
     const authHeader = req.headers['authorization'];
     // 🔐 SECURITY: query param ?token видалено — токени в URL потрапляють в логи та history
@@ -3207,6 +3235,23 @@ function authenticateToken(req, res, next) {
                 success: false,
                 message: 'Token inválido ou expirado'
             });
+        }
+        // 🔐 Esta rota tinha ficado de fora da revogação de tokens (ban, troca de
+        // password) feita em backend/middleware/tokenRevocation.js — um token
+        // banido/trocado continuava válido aqui até expirar (até 2h), mesmo já
+        // rejeitado em todas as rotas que passam por backend/middleware/auth.js
+        if (isTokenRevoked(user.id, user.iat)) {
+            return res.status(403).json({ success: false, message: 'Sessão inválida — inicie sessão novamente' });
+        }
+        if (user.mustChangePassword) {
+            const p = req.originalUrl.split('?')[0];
+            if (!AUTH_TOKEN_ALLOWED_WHILE_MUST_CHANGE_PASSWORD.has(p)) {
+                return res.status(403).json({
+                    success: false,
+                    message: 'É necessário definir uma nova palavra-passe antes de continuar',
+                    code: 'MUST_CHANGE_PASSWORD'
+                });
+            }
         }
         req.user = user;
         next();

@@ -24,7 +24,15 @@ function revokeUserTokens(userId) {
 function isTokenRevoked(userId, tokenIatSeconds) {
     const revokedAt = revokedSince.get(String(userId));
     if (!revokedAt) return false;
-    return tokenIatSeconds * 1000 < revokedAt;
+    // JWT `iat` só tem resolução ao segundo. Alguns endpoints (changePassword,
+    // toggleUserBan) chamam revokeUserTokens() e depois emitem já um par de
+    // tokens de substituição para o pedido continuar autenticado — se caírem
+    // no mesmo segundo (o normal, microsegundos depois), `iat*1000` fica
+    // sempre <= revokedAt e o token novo era rejeitado no pedido seguinte.
+    // Arredondar revokedAt para baixo ao segundo resolve isto sem abrir uma
+    // janela real: só perdoa tokens emitidos no MESMO segundo da revogação.
+    const revokedAtSecond = Math.floor(revokedAt / 1000) * 1000;
+    return tokenIatSeconds * 1000 < revokedAtSecond;
 }
 
 module.exports = { revokeUserTokens, isTokenRevoked };

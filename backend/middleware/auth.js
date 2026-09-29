@@ -17,6 +17,17 @@ if (!JWT_SECRET) {
     process.exit(1);
 }
 
+// 🔐 Enquanto mustChangePassword=true (só nova a partir de tokens emitidos após
+// este fix — tokens antigos não têm este claim e passam, ver login()/refreshToken()
+// em authController.js), só estes endpoints ficam acessíveis: o resto fica bloqueado
+// até a password temporária ser trocada. Sem isto, um token válido dava acesso total
+// à app mesmo que a troca de password obrigatória nunca tivesse sido concluída.
+const ALLOWED_WHILE_MUST_CHANGE_PASSWORD = new Set([
+    '/api/auth/change-password',
+    '/api/auth/profile',
+    '/api/auth/me'
+]);
+
 // Перевірка JWT токена — ТІЛЬКИ Authorization header (query param небезпечний)
 const authenticate = (req, res, next) => {
     try {
@@ -33,6 +44,14 @@ const authenticate = (req, res, next) => {
             }
             if (isTokenRevoked(decoded.id, decoded.iat)) {
                 return next(new AppError('Sessão inválida — inicie sessão novamente', 403));
+            }
+            if (decoded.mustChangePassword) {
+                const path = req.originalUrl.split('?')[0];
+                if (!ALLOWED_WHILE_MUST_CHANGE_PASSWORD.has(path)) {
+                    const err2 = new AppError('É necessário definir uma nova palavra-passe antes de continuar', 403);
+                    err2.code = 'MUST_CHANGE_PASSWORD';
+                    return next(err2);
+                }
             }
             req.user = decoded;
             next();

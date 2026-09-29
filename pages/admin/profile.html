@@ -1192,6 +1192,17 @@
                     throw new Error(result.message || 'Erro ao alterar palavra-passe');
                 }
 
+                // O backend revoga o token usado nesta própria requisição ao mudar a
+                // password e devolve um par novo — sem guardar isto aqui a sessão
+                // ficava com a password trocada mas sem nenhum token válido
+                const newToken = result.data && result.data.token;
+                const newRefreshToken = result.data && result.data.refreshToken;
+                if (newToken) {
+                    ['token','authToken','lm_token','deapseak_token','liftmanager_jwt','jwt_token'].forEach(k => localStorage.setItem(k, newToken));
+                    sessionStorage.setItem('liftmanager_jwt', newToken);
+                }
+                if (newRefreshToken) localStorage.setItem('liftmanager_refresh', newRefreshToken);
+
                 toastr.success('Palavra-passe alterada com sucesso.');
                 document.getElementById('currentPassword').value = '';
                 document.getElementById('newPassword').value = '';

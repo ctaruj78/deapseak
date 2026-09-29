@@ -247,6 +247,19 @@ class AuthManager {
             const response = await fetch(apiUrl, config);
             
             if (response.status === 401 || response.status === 403) {
+                // Password temporária ainda não trocada — refresh só emitia outro
+                // token com o mesmo claim, por isso redireciona logo para o login
+                // (que mostra o modal de troca obrigatória) em vez de tentar de novo
+                if (response.status === 403) {
+                    try {
+                        const body = await response.clone().json();
+                        if (body && body.code === 'MUST_CHANGE_PASSWORD') {
+                            sessionStorage.setItem('redirect_after_login', window.location.href);
+                            window.location.href = '/pages/auth/login.html?mustChangePassword=1';
+                            return null;
+                        }
+                    } catch (e) {}
+                }
                 // Спробуємо оновити токен перш ніж виходити
                 const refreshed = await this.refreshAccessToken();
                 if (refreshed) {
@@ -360,6 +373,19 @@ class AuthManager {
                 this._doLoginRedirect(pathname);
                 return;
             }
+        }
+
+        // 🔐 Password temporária ainda não foi trocada — não deixamos o utilizador
+        // navegar/atualizar a página e continuar a usar a app com ela por trás.
+        // Isto fecha o caso em que o modal de troca obrigatória (login.html) foi
+        // ignorado/perdido (refresh, fechar o modal, etc.): qualquer outra página
+        // manda logo de volta para o login, que reabre o modal.
+        const _mcpUser = this.getCurrentUser();
+        if (_mcpUser && _mcpUser.mustChangePassword) {
+            console.warn('⚠️ mustChangePassword pendente — редірект на логін para concluir a troca.');
+            sessionStorage.setItem('redirect_after_login', window.location.href);
+            window.location.replace('/pages/auth/login.html?mustChangePassword=1');
+            return;
         }
 
         // 🔐 Перевірка ролі: якщо сторінка вимагає конкретну роль — перевіряємо

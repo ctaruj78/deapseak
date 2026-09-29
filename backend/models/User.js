@@ -57,7 +57,9 @@ const userSchema = new mongoose.Schema({
                 // Пробіли, дефіси та дужки допускаються
                 if (!v || v === '') return true;
                 const stripped = v.replace(/[\s\-().]/g, '');
-                return /^(\+\d{1,4}|0)\d{6,14}$/.test(stripped);
+                // Prefixo +CC ou 0 opcional — números portugueses são escritos
+                // como 9 dígitos sem qualquer prefixo (ex.: 912345678)
+                return /^(\+\d{1,4}|0)?\d{6,14}$/.test(stripped);
             },
             message: 'Formato de telefone inválido'
         }

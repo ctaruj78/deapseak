@@ -33,7 +33,10 @@ const errorHandler = (err, req, res, next) => {
             res.status(err.statusCode).json({
                 success: false,
                 status: err.status,
-                message: err.message
+                message: err.message,
+                // Código curto e opcional para o frontend distinguir casos especiais
+                // (ex.: MUST_CHANGE_PASSWORD) sem depender do texto da mensagem
+                ...(err.code && { code: err.code })
             });
         } else {
             // Непередбачувані помилки — vão para logs/error.log (winston) além do
