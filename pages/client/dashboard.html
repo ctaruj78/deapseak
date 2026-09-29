@@ -442,6 +442,10 @@
 
 <!-- Script para destacar item ativo -->
 <script>
+function escapeHtml(s) {
+    if (s == null) return '';
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
 (function() {
     // Determinar a página atual
     const currentPage = window.location.pathname.split('/').pop().replace('.html', '');
@@ -1227,9 +1231,9 @@
                             <div class="card-body py-2">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div>
-                                        <h6 class="mb-1">${request.title || 'Pedido de manutenção'}</h6>
+                                        <h6 class="mb-1">${escapeHtml(request.title || 'Pedido de manutenção')}</h6>
                                         <small class="text-muted">
-                                            ${request.lift?.address || 'Morada não indicada'} • 
+                                            ${escapeHtml(request.lift?.address || 'Morada não indicada')} •
                                             ${new Date(request.createdAt).toLocaleDateString('pt-PT')}
                                         </small>
                                     </div>
@@ -1238,7 +1242,7 @@
                                         ${priorityBadge}
                                     </div>
                                 </div>
-                                ${request.description ? `<p class="mb-1 text-muted small">${request.description.substring(0, 100)}${request.description.length > 100 ? '...' : ''}</p>` : ''}
+                                ${request.description ? `<p class="mb-1 text-muted small">${escapeHtml(request.description.substring(0, 100))}${request.description.length > 100 ? '...' : ''}</p>` : ''}
                             </div>
                         </div>
                     `);
@@ -1446,15 +1450,15 @@
                 
                 const notification = $(`
                     <div class="alert ${alertClass} alert-dismissible fade show" role="alert" style="position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 300px;">
-                        ${message}
+                        ${escapeHtml(message)}
                         <button type="button" class="close" data-dismiss="alert">
                             <span>&times;</span>
                         </button>
                     </div>
                 `);
-                
+
                 $('body').append(notification);
-                
+
                 // Автоматичне eliminação através de 5 segundos
                 setTimeout(() => {
                     notification.alert('close');

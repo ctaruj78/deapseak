@@ -327,6 +327,19 @@
 <script src="../../plugins/adminlte/adminlte.min.js"></script>
 
 <script>
+    function escapeHtml(s) {
+        if (s == null) return '';
+        return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    }
+    function escapeForOnclickArg(str) {
+        return String(str ?? '')
+            .replace(/\\/g, '\\\\')
+            .replace(/'/g, "\\'")
+            .replace(/"/g, '&quot;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
+    }
+
     const API_BASE_URL = '';
     let orcamentosData = [];
     let pendingAction = null; // { id, status }
@@ -483,13 +496,13 @@
             <div class="col-md-6 col-lg-4 mb-4">
                 <div class="card orcamento-card h-100" style="cursor:pointer;" onclick="verDetalhe('${o._id}')">
                     <div class="card-header bg-gradient-primary d-flex justify-content-between align-items-center">
-                        <span class="text-white font-weight-bold"><i class="fas fa-file-invoice-dollar mr-1"></i>${o.numero}</span>
-                        <span class="status-badge ${statusClass}">${statusText}</span>
+                        <span class="text-white font-weight-bold"><i class="fas fa-file-invoice-dollar mr-1"></i>${escapeHtml(o.numero)}</span>
+                        <span class="status-badge ${statusClass}">${escapeHtml(statusText)}</span>
                     </div>
                     <div class="card-body">
                         <p class="mb-1"><i class="fas fa-calendar text-primary mr-1"></i><strong>Data:</strong> ${data}</p>
                         <p class="mb-1"><i class="fas fa-clock text-warning mr-1"></i><strong>Válido até:</strong> ${validadeAte}</p>
-                        ${(o.liftAddress || o.cliente?.morada) ? `<p class="mb-1 text-muted small"><i class="fas fa-map-marker-alt mr-1"></i>${(o.liftAddress || o.cliente.morada).replace(/\n/g, ', ')}</p>` : ''}
+                        ${(o.liftAddress || o.cliente?.morada) ? `<p class="mb-1 text-muted small"><i class="fas fa-map-marker-alt mr-1"></i>${escapeHtml((o.liftAddress || o.cliente.morada).replace(/\n/g, ', '))}</p>` : ''}
                         ${(o.fotos && o.fotos.length > 0) ? `<p class="mb-1 text-muted small"><i class="fas fa-camera mr-1"></i>${o.fotos.length} fotografia${o.fotos.length > 1 ? 's' : ''}</p>` : ''}
                         <hr>
                         <h4 class="text-right text-primary mb-0"><strong>€ ${total}</strong></h4>
@@ -499,13 +512,13 @@
                             <button class="btn btn-info btn-sm" onclick="verDetalhe('${o._id}'); event.stopPropagation();">
                                 <i class="fas fa-eye"></i> Ver detalhe
                             </button>
-                            <button class="btn btn-secondary btn-sm" onclick="downloadPDF('${o._id}', '${o.numero}'); event.stopPropagation();" title="Download PDF">
+                            <button class="btn btn-secondary btn-sm" onclick="downloadPDF('${o._id}', '${escapeForOnclickArg(o.numero)}'); event.stopPropagation();" title="Download PDF">
                                 <i class="fas fa-file-pdf"></i> PDF
                             </button>
-                            <button class="btn btn-outline-success btn-sm" onclick="printPDF('${o._id}', '${o.numero}'); event.stopPropagation();" title="Imprimir">
+                            <button class="btn btn-outline-success btn-sm" onclick="printPDF('${o._id}', '${escapeForOnclickArg(o.numero)}'); event.stopPropagation();" title="Imprimir">
                                 <i class="fas fa-print"></i>
                             </button>
-                            <button class="btn btn-outline-warning btn-sm" onclick="emailOrcamento('${o._id}', '${o.numero}'); event.stopPropagation();" title="Enviar por email">
+                            <button class="btn btn-outline-warning btn-sm" onclick="emailOrcamento('${o._id}', '${escapeForOnclickArg(o.numero)}'); event.stopPropagation();" title="Enviar por email">
                                 <i class="fas fa-envelope"></i>
                             </button>
                         </div>
@@ -582,13 +595,13 @@
         if (o.status === 'enviado') {
             footer.innerHTML = `
                 <button class="btn btn-secondary" data-dismiss="modal">Fechar</button>
-                <button class="btn btn-outline-secondary" onclick="downloadPDF('${o._id}', '${o.numero}')">
+                <button class="btn btn-outline-secondary" onclick="downloadPDF('${o._id}', '${escapeForOnclickArg(o.numero)}')">
                     <i class="fas fa-file-pdf"></i> Download PDF
                 </button>
-                <button class="btn btn-outline-success" onclick="printPDF('${o._id}', '${o.numero}')">
+                <button class="btn btn-outline-success" onclick="printPDF('${o._id}', '${escapeForOnclickArg(o.numero)}')">
                     <i class="fas fa-print"></i> Imprimir
                 </button>
-                <button class="btn btn-outline-warning" onclick="emailOrcamento('${o._id}', '${o.numero}')">
+                <button class="btn btn-outline-warning" onclick="emailOrcamento('${o._id}', '${escapeForOnclickArg(o.numero)}')">
                     <i class="fas fa-envelope"></i> Enviar por Email
                 </button>
                 <button class="btn btn-success" onclick="abrirResposta('${o._id}', 'aprovado')">
@@ -600,13 +613,13 @@
         } else {
             footer.innerHTML = `
                 <button class="btn btn-secondary" data-dismiss="modal">Fechar</button>
-                <button class="btn btn-outline-secondary" onclick="downloadPDF('${o._id}', '${o.numero}')">
+                <button class="btn btn-outline-secondary" onclick="downloadPDF('${o._id}', '${escapeForOnclickArg(o.numero)}')">
                     <i class="fas fa-file-pdf"></i> Download PDF
                 </button>
-                <button class="btn btn-outline-success" onclick="printPDF('${o._id}', '${o.numero}')">
+                <button class="btn btn-outline-success" onclick="printPDF('${o._id}', '${escapeForOnclickArg(o.numero)}')">
                     <i class="fas fa-print"></i> Imprimir
                 </button>
-                <button class="btn btn-outline-warning" onclick="emailOrcamento('${o._id}', '${o.numero}')">
+                <button class="btn btn-outline-warning" onclick="emailOrcamento('${o._id}', '${escapeForOnclickArg(o.numero)}')">
                     <i class="fas fa-envelope"></i> Enviar por Email
                 </button>`;
         }

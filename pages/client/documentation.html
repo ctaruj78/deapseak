@@ -561,6 +561,21 @@
 <script src="../../assets/js/modules/regulations-ai-integration.js?v=20260701a"></script>
 
 <script>
+function escapeHtml(s) {
+    if (s == null) return '';
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+// Para valores interpolados dentro de onclick="fn('...')" — escapa aspas/barras
+// em vez de entidades HTML, senão a string JS dentro do atributo ficava inválida
+function escapeForOnclickArg(str) {
+    return String(str ?? '')
+        .replace(/\\/g, '\\\\')
+        .replace(/'/g, "\\'")
+        .replace(/"/g, '&quot;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+}
+
 let regulationsAI;
 let allRegulations = [];
 let currentCategory = 'all';
@@ -709,19 +724,19 @@ function displayRegulations(regulations) {
         const category = getRegCategory(reg);
         const card = `
             <div class="col-md-6 mb-3">
-                <div class="card regulation-card" onclick="showRegulationDetail('${identifier}')">
+                <div class="card regulation-card" onclick="showRegulationDetail('${escapeForOnclickArg(identifier)}')">
                     <div class="card-body">
                         <h5 class="card-title">
-                            <strong>${identifier}</strong>
+                            <strong>${escapeHtml(identifier)}</strong>
                             <span class="badge badge-${getCategoryColor(category)} regulation-badge float-right">
                                 ${getCategoryName(category)}
                             </span>
                         </h5>
                         <p class="card-text">
-                            <strong>${reg.titleUA || reg.title || ''}</strong>
+                            <strong>${escapeHtml(reg.titleUA || reg.title || '')}</strong>
                         </p>
                         <p class="text-muted small">
-                            ${reg.summaryUA || reg.summary || ''}
+                            ${escapeHtml(reg.summaryUA || reg.summary || '')}
                         </p>
                         <div class="mt-2">
                             <span class="badge badge-info">${getTypeName(reg.type)}</span>
@@ -799,7 +814,7 @@ async function showRegulationDetail(code) {
     const title = reg.titleUA || reg.title || identifier;
     const summary = reg.summaryUA || reg.summary || '';
     
-    $('#regulationTitle').html(`<strong>${identifier}</strong> - ${title}`);
+    $('#regulationTitle').html(`<strong>${escapeHtml(identifier)}</strong> - ${escapeHtml(title)}`);
     
     const issueDate = reg.date || reg.issueDate;
     const points = reg.inspection_points || reg.requirements || [];
@@ -814,11 +829,11 @@ async function showRegulationDetail(code) {
 
     let body = `
         <div class="regulation-detail">
-            <p><strong>Resumo:</strong><br>${summary}</p>
-            
+            <p><strong>Resumo:</strong><br>${escapeHtml(summary)}</p>
+
             ${issueDate ? `<p><small class="text-muted">📅 Emissão: ${new Date(issueDate).toLocaleDateString('pt-PT')}</small></p>` : ''}
-            ${reg.status ? `<p><small class="text-muted">📌 Status: ${reg.status}</small></p>` : ''}
-            ${scopeTags.length ? `<p><small><strong>Âmbito:</strong> ${scopeTags.map(s => `<span class="badge badge-light mr-1">${s}</span>`).join('')}</small></p>` : ''}
+            ${reg.status ? `<p><small class="text-muted">📌 Status: ${escapeHtml(reg.status)}</small></p>` : ''}
+            ${scopeTags.length ? `<p><small><strong>Âmbito:</strong> ${scopeTags.map(s => `<span class="badge badge-light mr-1">${escapeHtml(s)}</span>`).join('')}</small></p>` : ''}
             
             ${points.length > 0 ? `
                 <h5 class="section-subtitle"><i class="fas fa-clipboard-list"></i> Pontos de inspeção (${points.length})</h5>
@@ -833,12 +848,12 @@ async function showRegulationDetail(code) {
                         : [];
                     return `
                     <div class="requirement-item">
-                        <strong>${article}</strong>
-                        ${description ? `<br><small class="text-muted">${description}</small>` : ''}
-                        ${urgency ? `<br><small>Classe: <span class="badge badge-${urgency === 'C1' || urgency === 'mandatory' ? 'danger' : 'warning'}">${urgency}</span></small>` : ''}
-                        ${deadline ? `<br><small>Prazo: ${deadline}</small>` : ''}
-                        ${penalty ? `<br><small>Coima/impacto: ${penalty}</small>` : ''}
-                        ${commonViolations.length ? `<br><small>Exemplos: ${commonViolations.join('; ')}</small>` : ''}
+                        <strong>${escapeHtml(article)}</strong>
+                        ${description ? `<br><small class="text-muted">${escapeHtml(description)}</small>` : ''}
+                        ${urgency ? `<br><small>Classe: <span class="badge badge-${urgency === 'C1' || urgency === 'mandatory' ? 'danger' : 'warning'}">${escapeHtml(urgency)}</span></small>` : ''}
+                        ${deadline ? `<br><small>Prazo: ${escapeHtml(deadline)}</small>` : ''}
+                        ${penalty ? `<br><small>Coima/impacto: ${escapeHtml(penalty)}</small>` : ''}
+                        ${commonViolations.length ? `<br><small>Exemplos: ${escapeHtml(commonViolations.join('; '))}</small>` : ''}
                     </div>
                 `;
                 }).join('')}
@@ -854,9 +869,9 @@ async function showRegulationDetail(code) {
                     const classif = a.classification || '';
                     return `
                         <div class="article-item">
-                            <div class="article-title">Art. ${articleNumber} - ${articleTitle}</div>
-                            ${classif ? `<small class="text-muted">Classificação: ${classif}</small><br>` : ''}
-                            <small>${articleText}</small>
+                            <div class="article-title">Art. ${escapeHtml(articleNumber)} - ${escapeHtml(articleTitle)}</div>
+                            ${classif ? `<small class="text-muted">Classificação: ${escapeHtml(classif)}</small><br>` : ''}
+                            <small>${escapeHtml(articleText)}</small>
                         </div>
                     `;
                 }).join('')}
@@ -929,8 +944,8 @@ async function askAI() {
         displayRegulations(enriched);
 
         const aiSummary = enriched.length > 0
-            ? `Foram encontrados ${enriched.length} documento(s) legais relevantes para "${question}".`
-            : `Não encontrei documentos legais para "${question}". Tente por lei/artigo, por exemplo: "DL 320/2002 artigo 8", "Decreto 513/70 art. 14", "inspeção periódica".`;
+            ? `Foram encontrados ${enriched.length} documento(s) legais relevantes para "${escapeHtml(question)}".`
+            : `Não encontrei documentos legais para "${escapeHtml(question)}". Tente por lei/artigo, por exemplo: "DL 320/2002 artigo 8", "Decreto 513/70 art. 14", "inspeção periódica".`;
         
         // Mostrar resposta AI
         const aiAnswer = `
@@ -1066,24 +1081,24 @@ function extractAllArticles(reg) {
 
 function formatPenalties(penalties) {
     if (!penalties) return '';
-    if (typeof penalties === 'string') return penalties;
+    if (typeof penalties === 'string') return escapeHtml(penalties);
     if (Array.isArray(penalties)) {
-        return penalties.filter(Boolean).map(item => `<div>• ${item}</div>`).join('');
+        return penalties.filter(Boolean).map(item => `<div>• ${escapeHtml(item)}</div>`).join('');
     }
     if (typeof penalties === 'object') {
         const rows = Object.entries(penalties).filter(([, value]) => Boolean(value));
-        return rows.map(([key, value]) => `<div><strong>${key}:</strong> ${value}</div>`).join('');
+        return rows.map(([key, value]) => `<div><strong>${escapeHtml(key)}:</strong> ${escapeHtml(value)}</div>`).join('');
     }
     return '';
 }
 
 function formatSource(source) {
     if (!source) return '';
-    if (typeof source === 'string') return source;
+    if (typeof source === 'string') return escapeHtml(source);
     if (typeof source === 'object') {
         const chunks = [];
-        if (source.file) chunks.push(source.file);
-        if (source.url) chunks.push(source.url);
+        if (source.file) chunks.push(escapeHtml(source.file));
+        if (source.url) chunks.push(escapeHtml(source.url));
         if (source.sections_count) chunks.push(`secções: ${source.sections_count}`);
         if (source.critical_articles) chunks.push(`artigos críticos: ${source.critical_articles}`);
         if (source.chapters_count) chunks.push(`capítulos: ${source.chapters_count}`);

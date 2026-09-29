@@ -787,6 +787,10 @@
     <script src="../../assets/js/modules/lifts-manager.js?v=1783372819"></script>
 
     <script>
+        function escapeHtml(s) {
+            if (s == null) return '';
+            return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+        }
         let currentLiftId = null;
         
         // Оouщаexisteмо mapa при закритті модального вікна
@@ -882,9 +886,9 @@
               fillOpacity: 0.75,
               weight: 2
             }).addTo(map);
-            const liftName = lift.name || lift.model || 'Elevador';
-            const municipalNum = lift.municipalNumber ? `<br><b>Municipal №:</b> ${lift.municipalNumber}` : '';
-            let popupHtml = `<b>${liftName}</b>${municipalNum}<br><b>Estado:</b> ${lift.status}<br><b>Morada:</b> ${addressDisplay}`;
+            const liftName = escapeHtml(lift.name || lift.model || 'Elevador');
+            const municipalNum = lift.municipalNumber ? `<br><b>Municipal №:</b> ${escapeHtml(lift.municipalNumber)}` : '';
+            let popupHtml = `<b>${liftName}</b>${municipalNum}<br><b>Estado:</b> ${escapeHtml(lift.status)}<br><b>Morada:</b> ${escapeHtml(addressDisplay)}`;
             marker.bindPopup(popupHtml);
             marker.bindTooltip(liftName, { permanent: false, direction: 'top' });
           }

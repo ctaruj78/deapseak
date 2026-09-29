@@ -710,7 +710,7 @@
             return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
         }
         function typeName(t) {
-            return { FT: 'Fatura', FR: 'Fat.-Recibo', ND: 'N.Débito', NC: 'N.Crédito' }[t] || (t || '—');
+            return { FT: 'Fatura', FR: 'Fat.-Recibo', ND: 'N.Débito', NC: 'N.Crédito' }[t] || esc(t || '—');
         }
         function statusBadge(s) {
             var m = {
@@ -720,7 +720,7 @@
                 pending:   ['badge-secondary', 'Pendente'],
                 cancelled: ['badge-light',     'Anulado'],
             };
-            var b = m[s] || ['badge-light', s || ''];
+            var b = m[s] || ['badge-light', esc(s || '')];
             return '<span class="badge ' + b[0] + '" style="font-size:.8rem">' + b[1] + '</span>';
         }
 

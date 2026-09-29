@@ -519,14 +519,14 @@
         .then(data => {
             if (data.data && Array.isArray(data.data)) {
                 const count = data.data.length;
-                const badge = document.getElementById('invoicesCount');
+                const badge = document.getElementById('orcamentosCount');
                 if (badge) badge.textContent = count;
             }
         })
         .catch(err => {
             console.warn('Failed to load orcamentos count:', err);
             // Ocultar contador se o endpoint não existir
-            const badge = document.getElementById('invoicesCount');
+            const badge = document.getElementById('orcamentosCount');
             if (badge) badge.style.display = 'none';
         });
         
@@ -1062,10 +1062,12 @@
         }
         
         async function logout() {
+            // AuthManager.logout() limpa TODAS as chaves de sessão (sessionStorage +
+            // localStorage, incluindo liftmanager_jwt/token usados pelos fetch desta
+            // página) — a versão anterior só removia authToken/userData, pelo que a
+            // sessão continuava válida para quem reabrisse o browser depois de "sair"
             if (await swalConfirm('Tem a certeza que quer sair do sistema?')) {
-                localStorage.removeItem('authToken');
-                localStorage.removeItem('userData');
-                window.location.replace('/pages/auth/login.html');
+                AuthManager.logout();
             }
         }
 

@@ -661,6 +661,11 @@
 <script src="../../assets/js/predictive-maintenance.js?v=20260909"></script>
 
 <script>
+function escapeHtml(s) {
+    if (s == null) return '';
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
 let predictiveSystem;
 let clientLifts = [];
 
@@ -986,7 +991,7 @@ function createPredictionRow(lift, prediction) {
         const pr = rec.priority === 'critical' ? 'danger' : rec.priority === 'high' ? 'warning' : 'info';
         const label = rec.priority === 'critical' ? 'URGENTE' : rec.priority === 'high' ? 'IMPORTANTE' : 'PLANEADO';
         recsHtml += `<div class="d-flex justify-content-between align-items-start mb-1 p-1 border-left border-${pr}" style="border-left-width:3px!important">
-            <small>${rec.description || rec.action}<br><span class="text-muted">${rec.timeframe || ''}</span></small>
+            <small>${escapeHtml(rec.description || rec.action)}<br><span class="text-muted">${escapeHtml(rec.timeframe || '')}</span></small>
             <span class="badge badge-${pr} ml-2">${label}</span>
         </div>`;
     });
@@ -994,8 +999,8 @@ function createPredictionRow(lift, prediction) {
     
     return `
         <tr class="prediction-row" style="cursor:pointer" onclick="togglePredictionDetails('${liftId}')">
-            <td><strong>#${lift.municipalNumber || '—'}</strong></td>
-            <td><small>${addrStr}</small></td>
+            <td><strong>#${escapeHtml(lift.municipalNumber || '—')}</strong></td>
+            <td><small>${escapeHtml(addrStr)}</small></td>
             <td><span class="badge badge-${riskBadgeClass}">${riskPercent}%</span> <small class="text-muted">${riskLabel}</small></td>
             <td><small>${age}a</small></td>
             <td><small>${lastInspection}</small></td>
