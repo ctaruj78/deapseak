@@ -17,7 +17,9 @@
     
     <!-- AR.js para AR функціоналу -->
     <script src="https://aframe.io/releases/1.2.0/aframe.min.js"></script>
-    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
+    <!-- Fixado num commit exato (era :master — qualquer push ao repo mudava o que
+         esta página carregava, sem aviso nem controlo nosso) -->
+    <script src="https://raw.githack.com/AR-js-org/AR.js/147ccd4170bb153f64d7fd9858eaff1d3294990c/aframe/build/aframe-ar.js"></script>
     
     <style>
         .ar-helper-page {
@@ -773,7 +775,7 @@
                     voiceBtn.className = 'btn btn-warning mb-2';
                     voiceBtn.innerHTML = '<i class="fas fa-microphone"></i> Controlo por voz';
                     voiceBtn.onclick = () => voiceAR.start();
-                    document.querySelector('.ar-control-panel')?.appendChild(voiceBtn);
+                    document.querySelector('.ar-controls')?.appendChild(voiceBtn);
                 } else {
                     console.warn('⚠️ VoiceAR ou ARHelper não carregado');
                 }
@@ -785,14 +787,14 @@
             pushBtn.className = 'btn btn-danger mb-2';
             pushBtn.innerHTML = '<i class="fas fa-bell"></i> Testar notificações push';
             pushBtn.onclick = () => window.pushNotifications.notifyNewTask('Verificar elevador №5');
-            document.querySelector('.ar-control-panel')?.appendChild(pushBtn);
+            document.querySelector('.ar-controls')?.appendChild(pushBtn);
 
             setTimeout(() => {
-                window.photoVideoCapture.init('.ar-control-panel');
+                window.photoVideoCapture.init('.ar-controls');
             }, 1000);
 
             setTimeout(() => {
-                window.messenger.render('.ar-control-panel');
+                window.messenger.render('.ar-controls');
             }, 1500);
         });
 

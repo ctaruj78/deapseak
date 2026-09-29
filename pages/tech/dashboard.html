@@ -501,10 +501,7 @@
             
             try {
                 // Отримуexisteмо dados desde API
-                const [assignments, requests] = await Promise.all([
-                    loadTechAssignments(),
-                    loadTechRequests()
-                ]);
+                const assignments = await loadTechAssignments();
 
                 // Обчислюexisteмо сeтистики
                 const isActive = a => a.status === 'assigned' || a.status === 'in_progress';
@@ -576,24 +573,6 @@
                 return tasks;
             } catch (error) {
                 console.error('❌ API error:', error);
-                return [];
-            }
-        }
-
-        // Função carregamento pedidos do técnico
-        async function loadTechRequests() {
-            try {
-                const response = await AuthManager.fetchWithAuth('/api/requests');
-                
-                if (!response || !response.ok) {
-                    console.warn('⚠️  API повернув estado:', response?.status);
-                    return [];
-                }
-                
-                const data = await response.json();
-                return Array.isArray(data) ? data : (data.data || data.requests || []);
-            } catch (error) {
-                console.error('❌ Erro API:', error);
                 return [];
             }
         }
@@ -782,8 +761,8 @@
                 const commentsHtml = (task.comments && task.comments.length > 0)
                     ? task.comments.map(c => `
                         <div class="border-left border-primary pl-2 mb-2">
-                            <small class="text-muted">${new Date(c.createdAt).toLocaleString('pt-PT')}</small>
-                            <p class="mb-0">${c.text}</p>
+                            <small class="text-muted">${escapeHtml(new Date(c.createdAt).toLocaleString('pt-PT'))}</small>
+                            <p class="mb-0">${escapeHtml(c.text)}</p>
                         </div>`).join('')
                     : '<p class="text-muted">Sem notas</p>';
 
@@ -791,27 +770,27 @@
                     <div class="row">
                         <div class="col-md-6">
                             <table class="table table-sm table-borderless">
-                                <tr><th width="140">Número:</th><td><code>${task.requestNumber || '—'}</code></td></tr>
-                                <tr><th>Tipo:</th><td>${typeLabels[task.type] || task.type || '—'}</td></tr>
+                                <tr><th width="140">Número:</th><td><code>${escapeHtml(task.requestNumber || '—')}</code></td></tr>
+                                <tr><th>Tipo:</th><td>${escapeHtml(typeLabels[task.type] || task.type || '—')}</td></tr>
                                 <tr><th>Prioridade:</th><td>${getPriorityBadge(task.priority)}</td></tr>
                                 <tr><th>Estado:</th><td>${getStatusBadge(task.status)}</td></tr>
-                                <tr><th>Planeado:</th><td>${scheduledStr}</td></tr>
-                                <tr><th>Criado:</th><td>${createdStr}</td></tr>
+                                <tr><th>Planeado:</th><td>${escapeHtml(scheduledStr)}</td></tr>
+                                <tr><th>Criado:</th><td>${escapeHtml(createdStr)}</td></tr>
                             </table>
                         </div>
                         <div class="col-md-6">
                             <table class="table table-sm table-borderless">
-                                <tr><th width="100">Elevador:</th><td>${liftInfo}</td></tr>
-                                ${task.lift?.address ? `<tr><th>Endereço:</th><td>${task.lift.address}</td></tr>` : ''}
-                                ${task.laborHours ? `<tr><th>H. de trabalho:</th><td>${task.laborHours} h</td></tr>` : ''}
-                                ${task.partsUsed ? `<tr><th>Peças sobresselentes:</th><td>${task.partsUsed}</td></tr>` : ''}
+                                <tr><th width="100">Elevador:</th><td>${escapeHtml(liftInfo)}</td></tr>
+                                ${task.lift?.address ? `<tr><th>Endereço:</th><td>${escapeHtml(task.lift.address)}</td></tr>` : ''}
+                                ${task.laborHours ? `<tr><th>H. de trabalho:</th><td>${escapeHtml(task.laborHours)} h</td></tr>` : ''}
+                                ${task.partsUsed ? `<tr><th>Peças sobresselentes:</th><td>${escapeHtml(task.partsUsed)}</td></tr>` : ''}
                             </table>
                         </div>
                     </div>
                     <hr>
                     <h6>Descrição do pedido</h6>
-                    <p>${task.description || task.title || '—'}</p>
-                    ${task.workDescription ? `<h6>Trabalho realizado</h6><p>${task.workDescription}</p>` : ''}
+                    <p>${escapeHtml(task.description || task.title || '—')}</p>
+                    ${task.workDescription ? `<h6>Trabalho realizado</h6><p>${escapeHtml(task.workDescription)}</p>` : ''}
                     <hr>
                     <h6>Notas / Comentários</h6>
                     ${commentsHtml}
@@ -914,8 +893,8 @@
             
             // Відкриваexisteмо Google Maps desde rotaом
             // Em primeiro lugar отримуexisteмо coordenadas do elevador
-            fetch(`/api/lifts/${liftId}`)
-                .then(response => response.json())
+            AuthManager.fetchWithAuth(`/api/lifts/${liftId}`)
+                .then(response => response ? response.json() : Promise.reject(new Error('Sem sessão válida')))
                 .then(lift => {
                     if (lift && lift.location && lift.location.coordinates) {
                         const [lng, lat] = lift.location.coordinates;
@@ -1075,10 +1054,12 @@
          */
         function handlePriorityAlert(data) {
             // Міняexisteмо колір сeтистики на vermelho para привернення уваги
-            $('#urgentAssignments').closest('.stat-card').addClass('border-danger');
-            
+            // (era .stat-card — essa classe não existe aqui, o card real é .small-box
+            // do AdminLTE, por isso este destaque nunca aparecia)
+            $('#urgentAssignments').closest('.small-box').addClass('border-danger');
+
             // Додаexisteмо мигання
-            $('#urgentAssignments').closest('.stat-card').fadeOut(300).fadeIn(300).fadeOut(300).fadeIn(300);
+            $('#urgentAssignments').closest('.small-box').fadeOut(300).fadeIn(300).fadeOut(300).fadeIn(300);
         }
         
         /**
@@ -1102,7 +1083,7 @@
             
             const notification = $(`
                 <div class="alert ${alertClass} alert-dismissible fade show" role="alert" style="position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 300px;">
-                    <i class="fas fa-tools"></i> ${message}
+                    <i class="fas fa-tools"></i> ${escapeHtml(message)}
                     <button type="button" class="close" data-dismiss="alert">
                         <span>&times;</span>
                     </button>

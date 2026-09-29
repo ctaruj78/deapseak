@@ -1201,9 +1201,9 @@
                     const cls   = { ok: 'text-success', warning: 'text-warning', error: 'text-danger', na: 'text-muted', yes: 'text-success', no: 'text-danger' };
                     const icon  = icons[status] || (status || '—');
                     const cl    = cls[status] || 'text-secondary';
-                    let li = `<li><span class="${cl}"><strong>${icon}</strong></span> ${itemName}`;
-                    if (norm)    li += ` <small class="text-muted">[${norm}]</small>`;
-                    if (comment) li += ` — <em>${comment}</em>`;
+                    let li = `<li><span class="${cl}"><strong>${icon}</strong></span> ${escapeHtml(itemName)}`;
+                    if (norm)    li += ` <small class="text-muted">[${escapeHtml(norm)}]</small>`;
+                    if (comment) li += ` — <em>${escapeHtml(comment)}</em>`;
                     li += '</li>';
                     sectionItems += li;
                 });
@@ -1249,6 +1249,18 @@
                 emergency: { prefix: 'EMG', title: 'RELATÓRIO DE INTERVENÇÃO DE EMERGÊNCIA' }
             };
             return map[visitType] || { prefix: 'INSP', title: 'RELATÓRIO TÉCNICO' };
+        }
+
+        // Só usado quando /api/inspections/next-number falha — o contador real e
+        // sequencial vive no servidor. Um sufixo fixo "-001" aqui fazia colidir
+        // dois relatórios criados em modo degradado no mesmo mês; um sufixo
+        // aleatório não é um número sequencial real, mas pelo menos não repete.
+        function generateFallbackInspectionNumber(visitType) {
+            const year = new Date().getFullYear();
+            const month = String(new Date().getMonth() + 1).padStart(2, '0');
+            const prefix = getReportMetaByVisitType(visitType).prefix;
+            const rand = Math.random().toString(36).slice(2, 6).toUpperCase();
+            return `${prefix}-${year}-${month}-TMP${rand}`;
         }
 
         /* ================================================================
@@ -1327,11 +1339,11 @@
                     <div class="row">
                         <div class="col-md-6">
                             <i class="fas fa-map-marker-alt text-danger mr-1"></i>
-                            <strong>Morada:</strong> ${addr || 'N/A'}<br>
+                            <strong>Morada:</strong> ${escapeHtml(addr || 'N/A')}<br>
                             <i class="fas fa-hashtag text-secondary mr-1"></i>
-                            <strong>N.º Municipal:</strong> ${lift.municipalNumber || 'N/A'}<br>
+                            <strong>N.º Municipal:</strong> ${escapeHtml(lift.municipalNumber || 'N/A')}<br>
                             <i class="fas fa-tools text-primary mr-1"></i>
-                            <strong>Modelo:</strong> ${lift.manufacturer||''} ${lift.model||''}
+                            <strong>Modelo:</strong> ${escapeHtml(lift.manufacturer||'')} ${escapeHtml(lift.model||'')}
                         </div>
                         <div class="col-md-6">
                             <i class="fas fa-cog text-secondary mr-1"></i>
@@ -1428,20 +1440,13 @@
                             $('#inspectionNumber').val(data.numero);
                             $('#reportInspectionNumber').text(data.numero);
                         } else {
-                            // fallback local sequencial por mês
-                            const year = new Date().getFullYear();
-                            const month = String(new Date().getMonth() + 1).padStart(2, '0');
-                            const prefix = getReportMetaByVisitType(visitType).prefix;
-                            const number = `${prefix}-${year}-${month}-001`;
+                            const number = generateFallbackInspectionNumber(visitType);
                             $('#inspectionNumber').val(number);
                             $('#reportInspectionNumber').text(number);
                         }
                     },
                     error: () => {
-                        const year = new Date().getFullYear();
-                        const month = String(new Date().getMonth() + 1).padStart(2, '0');
-                        const prefix = getReportMetaByVisitType(visitType).prefix;
-                        const number = `${prefix}-${year}-${month}-001`;
+                        const number = generateFallbackInspectionNumber(visitType);
                         $('#inspectionNumber').val(number);
                         $('#reportInspectionNumber').text(number);
                     }
@@ -1553,14 +1558,14 @@
             },
 
             loadTemplate() {
-                // Load a predefined inspection template
-                $('#inspector').val('João Silva');
-                $('#liftLocation').val('Rua Principal, 123, Entrada A');
-                $('#liftModel').val('OTIS Gen2');
-                $('#clientEmail').val('cliente@exemplo.pt');
-                $('#generalComments').val('Realizada manutenção periódica conforme normas de segurança.');
-                $('#recommendations').val('Recomenda-se a substituição de componentes desgastados no prazo de 30 dias.');
-                
+                // Gera o checklist real (INSPECTION_TEMPLATES) para o Tipo de Visita
+                // selecionado (mensal/trimestral/semestral/anual/...) + Acionamento/Porta.
+                // Antes disto o botão "Carregar modelo" não tinha NENHUMA ligação ao motor
+                // de checklists — só sobrescrevia inspector/morada/modelo/email com dados
+                // fictícios fixos ("João Silva"/"OTIS Gen2"), daí parecer que não existe
+                // nenhum modelo (mensal, trimestral ou outro).
+                if (!ensureEquipmentTypeSelected()) return;
+                refreshChecklist();
                 updateReportPreview();
             },
 
@@ -1604,9 +1609,7 @@
             },
 
             async downloadPDF() {
-                const token = localStorage.getItem('liftmanager_jwt') ||
-                              localStorage.getItem('authToken') ||
-                              localStorage.getItem('token');
+                const token = getAuthToken();
                 if (!token) {
                     CommonUtils.showNotification('Sessão expirada. Por favor, faça login novamente.', 'warning');
                     return;
@@ -1783,7 +1786,7 @@
             if (tbody) tbody.innerHTML = '';
 
             try {
-                const token = localStorage.getItem('liftmanager_jwt') || localStorage.getItem('authToken');
+                const token = getAuthToken();
                 const response = await fetch('/api/inspections?limit=20', {
                     headers: token ? { 'Authorization': `Bearer ${token}` } : {}
                 });
@@ -1820,7 +1823,7 @@
         async function deleteInspectionDB(id, numero) {
             if (!await swalConfirm(`Apagar o relatório ${numero}?`)) return;
             try {
-                const token = localStorage.getItem('liftmanager_jwt') || localStorage.getItem('authToken');
+                const token = getAuthToken();
                 const response = await fetch(`/api/inspections/${id}`, {
                     method: 'DELETE',
                     headers: token ? { 'Authorization': `Bearer ${token}` } : {}

@@ -691,9 +691,6 @@ document.addEventListener("DOMContentLoaded", function() {
             // Criar nova instância Html5Qrcode para processar ficheiro
             const fileScanner = new Html5Qrcode("qr-reader");
             
-            // Ler ficheiro como URL
-            const imageUrl = URL.createObjectURL(file);
-            
             // Leitura de código QR de ficheiro
             const decodedText = await fileScanner.scanFile(file, true);
             
@@ -802,7 +799,7 @@ document.addEventListener("DOMContentLoaded", function() {
                             <table class="table table-bordered table-sm">
                                 <tr>
                                     <th style="width: 40%" class="bg-light">N.º Municipal</th>
-                                    <td><strong>${lift.municipalNumber || '—'}</strong></td>
+                                    <td><strong>${escapeHtml(lift.municipalNumber || '—')}</strong></td>
                                 </tr>
                                 <tr>
                                     <th class="bg-light">Morada</th>
@@ -858,7 +855,7 @@ document.addEventListener("DOMContentLoaded", function() {
                             <table class="table table-bordered">
                                 <tr>
                                     <th style="width: 30%">ID Pedidos</th>
-                                    <td>${request._id || 'Não especificado'}</td>
+                                    <td>${escapeHtml(request._id || 'Não especificado')}</td>
                                 </tr>
                                 <tr>
                                     <th>Descrição</th>
@@ -909,7 +906,7 @@ document.addEventListener("DOMContentLoaded", function() {
                             <table class="table table-bordered">
                                 <tr>
                                     <th style="width: 30%">ID</th>
-                                    <td>${result.data.id || 'Não especificado'}</td>
+                                    <td>${escapeHtml(result.data.id || 'Não especificado')}</td>
                                 </tr>
                                 <tr>
                                     <th>Nome</th>
@@ -1043,7 +1040,7 @@ document.addEventListener("DOMContentLoaded", function() {
                                 </small>
                             </div>
                             <p class="mb-1 text-truncate">
-                                ${scan.referenceId ? `ID: ${scan.referenceId}` : 'Código QR desconhecido'}
+                                ${scan.referenceId ? `ID: ${escapeHtml(scan.referenceId)}` : 'Código QR desconhecido'}
                             </p>
                             <small class="text-${scan.status === 'success' ? 'success' : scan.status === 'unknown' ? 'warning' : 'danger'}">
                                 <i class="fas fa-${scan.status === 'success' ? 'check-circle' : scan.status === 'unknown' ? 'question-circle' : 'times-circle'}"></i>
@@ -1055,9 +1052,9 @@ document.addEventListener("DOMContentLoaded", function() {
                                 <p><strong>Data e hora:</strong> ${formattedDate}, ${formattedTime}</p>
                                 <p><strong>Estado:</strong> ${scan.status === 'success' ? 'Com sucesso' : scan.status === 'unknown' ? 'Desconhecido' : 'Erro'}</p>
                                 <p><strong>Tipo do QR-code:</strong> ${scan.referenceType || 'Não definido'}</p>
-                                <p><strong>ID de instalação:</strong> ${scan.referenceId || 'Não definido'}</p>
+                                <p><strong>ID de instalação:</strong> ${escapeHtml(scan.referenceId || 'Não definido')}</p>
                                 <p><strong>Dados do código QR:</strong></p>
-                                <pre class="bg-light p-2">${JSON.stringify(scan.data, null, 2)}</pre>
+                                <pre class="bg-light p-2">${escapeHtml(JSON.stringify(scan.data, null, 2))}</pre>
                             </div>
                         </a>
                     `;

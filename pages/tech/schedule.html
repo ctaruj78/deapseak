@@ -728,7 +728,8 @@
             }, 30000);
 
             // A carregar dados do técnico
-            const userData = JSON.parse(localStorage.getItem('userData')) || {};
+            let userData = {};
+            try { userData = JSON.parse(localStorage.getItem('userData')) || {}; } catch (e) { /* dados corrompidos — segue com objeto vazio */ }
             if (userData.firstName) {
                 $('#techName').text(`${userData.firstName} ${userData.lastName || ''}`);
             }

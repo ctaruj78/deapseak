@@ -216,7 +216,7 @@
                         popupAnchor: [1, -34],
                         shadowSize: [41, 41]
                     })
-                }).addTo(map).bindPopup(`📍 A sua posição${userLocation.address ? '<br><small style="color:#555">' + userLocation.address + '</small>' : ''}`);
+                }).addTo(map).bindPopup(`📍 A sua posição${userLocation.address ? '<br><small style="color:#555">' + escapeHtml(userLocation.address) + '</small>' : ''}`);
 
                 // Маркер do elevador
                 L.marker([liftLat, liftLng], {
@@ -228,7 +228,7 @@
                         popupAnchor: [1, -34],
                         shadowSize: [41, 41]
                     })
-                }).addTo(map).bindPopup(`🎯 ${lift.model || 'Elevador'}`).openPopup();
+                }).addTo(map).bindPopup(`🎯 ${escapeHtml(lift.model || 'Elevador')}`).openPopup();
 
                 // Розfatura відсeні
                 const R = 6371e3;
@@ -289,7 +289,7 @@
                 L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19, maxNativeZoom: 16 }).addTo(map);
                 
                 L.marker([liftLat, liftLng]).addTo(map)
-                    .bindPopup(`${lift.model || 'Elevador'}<br>${lift.address?.street || ''}`).openPopup();
+                    .bindPopup(`${escapeHtml(lift.model || 'Elevador')}<br>${escapeHtml(lift.address?.street || '')}`).openPopup();
                 
                 toastr.error('Não foi possível determinar a sua posição. A mostrar apenas local de atribuição.');
             }

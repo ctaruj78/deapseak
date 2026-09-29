@@ -601,6 +601,11 @@
     <script src="../../plugins/adminlte/adminlte.min.js"></script>
 
     <script>
+        function escapeHtml(s) {
+            if (s == null) return '';
+            return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+        }
+
         class ReportsManager {
             constructor() {
                 this.reports = [];
@@ -705,7 +710,7 @@
                     row.innerHTML = `
                         <td>${this.formatDate(report.date)}</td>
                         <td>${this.getTypeLabel(report.type)}</td>
-                        <td>${report.name}</td>
+                        <td>${escapeHtml(report.name)}</td>
                         <td><span class="badge badge-${report.status === 'completed' ? 'success' : 'warning'}">${this.getStatusLabel(report.status)}</span></td>
                         <td>${report.size}</td>
                         <td>
@@ -744,23 +749,31 @@
             }
 
             downloadReport(type) {
+                // toISOString() converte para UTC — em Portugal no horário de verão
+                // (UTC+1), qualquer hora entre 00:00-00:59 local recuava um dia.
+                const toLocalDateStr = (d) => {
+                    const y = d.getFullYear();
+                    const m = String(d.getMonth() + 1).padStart(2, '0');
+                    const day = String(d.getDate()).padStart(2, '0');
+                    return `${y}-${m}-${day}`;
+                };
                 const now = new Date();
                 let startDate, endDate;
-                endDate = now.toISOString().slice(0, 10);
+                endDate = toLocalDateStr(now);
                 if (type === 'daily') {
                     startDate = endDate;
                 } else if (type === 'weekly') {
                     const d = new Date(now); d.setDate(d.getDate() - 6);
-                    startDate = d.toISOString().slice(0, 10);
+                    startDate = toLocalDateStr(d);
                 } else {
                     const d = new Date(now.getFullYear(), now.getMonth(), 1);
-                    startDate = d.toISOString().slice(0, 10);
+                    startDate = toLocalDateStr(d);
                 }
                 const token = localStorage.getItem('authToken');
                 fetch('/api/reports/generate', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                    body: JSON.stringify({ type: 'all', startDate, endDate })
+                    body: JSON.stringify({ type, startDate, endDate })
                 })
                 .then(r => r.json())
                 .then(data => {
@@ -868,7 +881,8 @@
             $('[data-widget="pushmenu"]').PushMenu();
             
             // A carregar dados do técnico
-            const userData = JSON.parse(localStorage.getItem('userData')) || {};
+            let userData = {};
+            try { userData = JSON.parse(localStorage.getItem('userData')) || {}; } catch (e) { /* dados corrompidos — segue com objeto vazio */ }
             if (userData.firstName) {
                 $('#techName').text(`${userData.firstName} ${userData.lastName || ''}`);
             }

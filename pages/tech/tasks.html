@@ -779,6 +779,10 @@
                                   placeholder="Descreva o trabalho realizado (mínimo 10 caracteres)..."></textarea>
                         <small id="completeTaskDescError" class="text-danger" style="display:none;">A descrição deve ter pelo menos 10 caracteres.</small>
                     </div>
+                    <div class="form-group">
+                        <label for="completeTaskHours">Horas de trabalho</label>
+                        <input type="number" id="completeTaskHours" class="form-control" min="0.5" step="0.5" value="1">
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
@@ -970,13 +974,16 @@
 
                     $('#completeTaskModal').modal('hide');
 
+                    const hoursInput = parseFloat(document.getElementById('completeTaskHours').value);
+                    const laborHours = (!isNaN(hoursInput) && hoursInput > 0) ? hoursInput : 1;
+
                     try {
                         const response = await AuthManager.fetchWithAuth(`/api/requests/${requestId}/complete`, {
                             method: 'POST',
                             body: JSON.stringify({
                                 resolution: workDescription,
                                 workDone: workDescription,
-                                laborHours: 1 // Por definição 1 hora
+                                laborHours
                             })
                         });
 
@@ -1020,25 +1027,26 @@
                     const row = document.createElement('tr');
                     row.innerHTML = `
                         <td>#${taskId.toString().substr(-6)}</td>
-                        <td>${escapeHtml(task.liftId) || 'Geral'}</td>
+                        <td>${new Date(task.createdAt).toLocaleDateString()}</td>
                         <td>${escapeHtml(task.type) || 'Manutenção'}</td>
+                        <td>${escapeHtml(task.liftId) || 'Geral'}</td>
                         <td>
-                            <span class="status-badge status-${task.status.replace('_', '-')}">
+                            <span class="status-badge status-${escapeHtml(String(task.status || '').replace('_', '-'))}">
                                 ${this.getStatusText(task.status)}
                             </span>
                         </td>
                         <td>
-                            <span class="priority-badge priority-${task.priority}">
+                            <span class="priority-badge priority-${escapeHtml(task.priority)}">
                                 ${this.getPriorityText(task.priority)}
                             </span>
                         </td>
-                        <td>${new Date(task.createdAt).toLocaleDateString()}</td>
+                        <td>${task.deadline ? new Date(task.deadline).toLocaleDateString() : '—'}</td>
                         <td>
                             <button class="btn btn-sm btn-info btn-icon" onclick="techTaskManager.viewTask('${taskId}')" title="Ver">
                                 <i class="fas fa-eye"></i>
                             </button>
                             ${(task.status === 'new' || task.status === 'pending') && task.type === 'maintenance' && task.rawLiftId ? `
-                                <a href="/pages/tech/manutencao.html?liftId=${task.rawLiftId}" class="btn btn-sm btn-primary btn-icon" title="Fazer manutenção">
+                                <a href="/pages/tech/manutencao.html?liftId=${encodeURIComponent(task.rawLiftId)}" class="btn btn-sm btn-primary btn-icon" title="Fazer manutenção">
                                     <i class="fas fa-tools"></i>
                                 </a>
                             ` : ''}
@@ -1101,8 +1109,8 @@
                             <p><strong>Elevador:</strong> ${escapeHtml(task.liftId)}</p>
                             <p><strong>Endereço:</strong> ${escapeHtml(task.liftAddress)}</p>
                             <p><strong>Tipo:</strong> ${escapeHtml(task.type)}</p>
-                            <p><strong>Prioridade:</strong> <span class="priority-badge priority-${task.priority}">${this.getPriorityText(task.priority)}</span></p>
-                            <p><strong>Estado:</strong> <span class="status-badge status-${task.status.replace('_', '-')}">${this.getStatusText(task.status)}</span></p>
+                            <p><strong>Prioridade:</strong> <span class="priority-badge priority-${escapeHtml(task.priority)}">${this.getPriorityText(task.priority)}</span></p>
+                            <p><strong>Estado:</strong> <span class="status-badge status-${escapeHtml(String(task.status || '').replace('_', '-'))}">${this.getStatusText(task.status)}</span></p>
                         </div>
                         <div class="col-md-6">
                             <h6>Detalhes</h6>
