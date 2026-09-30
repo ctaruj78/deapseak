@@ -6625,7 +6625,17 @@ Equipa FestLift</textarea>
         const maintenanceDate = prompt('Introduza a data de manutenção planeada (AAAA-MM-DD):');
         if (!maintenanceDate) return;
 
-        if (!/^\d{4}-\d{2}-\d{2}$/.test(maintenanceDate) || isNaN(new Date(maintenanceDate).getTime())) {
+        // new Date('AAAA-MM-DD') não rejeita dias inexistentes (ex: 2026-02-30 é
+        // silenciosamente reinterpretado como 2026-03-02) — reconstrói e compara
+        // componente a componente para apanhar isso.
+        const dateMatch = /^(\d{4})-(\d{2})-(\d{2})$/.exec(maintenanceDate);
+        if (!dateMatch) {
+            toastr.error('Data inválida. Use o formato AAAA-MM-DD.');
+            return;
+        }
+        const [, y, mo, d] = dateMatch.map(Number);
+        const parsedDate = new Date(y, mo - 1, d);
+        if (isNaN(parsedDate.getTime()) || parsedDate.getFullYear() !== y || parsedDate.getMonth() !== mo - 1 || parsedDate.getDate() !== d) {
             toastr.error('Data inválida. Use o formato AAAA-MM-DD.');
             return;
         }
@@ -8768,6 +8778,11 @@ Equipa FestLift</textarea>
         
         // Send email button
         // Manual municipality select
+        // Cache em memória da lista completa — o dropdown já a guarda como <option>
+        // depois do 1º fetch, mas o handler 'change' voltava a pedir tudo outra vez
+        // ao servidor só para encontrar o único município selecionado localmente.
+        let _cachedMunicipalitiesList = null;
+
         $(document).on('click', '#btn-select-municipality-manual', async function() {
             const $manual = $('#municipality-manual-select');
             if ($manual.is(':visible')) { $manual.hide(); return; }
@@ -8777,9 +8792,10 @@ Equipa FestLift</textarea>
                 try {
                     const res = await apiCall('/api/municipalities', 'GET');
                     const list = (res.data || []).sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+                    _cachedMunicipalitiesList = list;
                     $dropdown.empty().append('<option value="">— Selecione um município —</option>');
                     list.forEach(m => {
-                        $dropdown.append(`<option value="${m.id}">${m.name} (${m.distrito || ''})</option>`);
+                        $dropdown.append(`<option value="${escapeHtml(String(m.id))}">${escapeHtml(m.name)} (${escapeHtml(m.distrito || '')})</option>`);
                     });
                 } catch (e) {
                     toastr.error('Erro ao carregar municípios: ' + e.message);
@@ -8793,8 +8809,13 @@ Equipa FestLift</textarea>
             const munId = $(this).val();
             if (!munId) return;
             try {
-                const res = await apiCall('/api/municipalities', 'GET');
-                const mun = (res.data || []).find(m => m.id === munId);
+                let list = _cachedMunicipalitiesList;
+                if (!list) {
+                    const res = await apiCall('/api/municipalities', 'GET');
+                    list = res.data || [];
+                    _cachedMunicipalitiesList = list;
+                }
+                const mun = list.find(m => m.id === munId);
                 if (!mun) return;
 
                 currentMunicipalityData = mun;
@@ -8919,7 +8940,13 @@ Equipa FestLift</textarea>
                     e.target.value = '';
                     return;
                 }
-                
+                // O texto ao lado do campo promete "até 10MB" mas nada verificava isso
+                if (file.size > 10 * 1024 * 1024) {
+                    toastr.error('❌ O ficheiro excede o limite de 10MB');
+                    e.target.value = '';
+                    return;
+                }
+
                 console.log('📄 Ficheiro PDF seleccionado:', file.name);
                 clearCurrentInspectionPDFFileURL();
                 currentInspectionPDFFile = file;

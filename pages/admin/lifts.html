@@ -9147,6 +9147,11 @@ Email de contacto: info@festlift.pt`;
         });
         
         // Manual municipality select
+        // Cache em memória da lista completa — o dropdown já a guarda como <option>
+        // depois do 1º fetch, mas o handler 'change' voltava a pedir tudo outra vez
+        // ao servidor só para encontrar o único município selecionado localmente.
+        let _cachedMunicipalitiesList = null;
+
         $(document).on('click', '#btn-select-municipality-manual', async function() {
             const $manual = $('#municipality-manual-select');
             if ($manual.is(':visible')) { $manual.hide(); return; }
@@ -9156,6 +9161,7 @@ Email de contacto: info@festlift.pt`;
                 try {
                     const res = await apiCall('/api/municipalities', 'GET');
                     const list = (res.data || []).sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+                    _cachedMunicipalitiesList = list;
                     $dropdown.empty().append('<option value="">— Selecione um município —</option>');
                     list.forEach(m => {
                         $dropdown.append(`<option value="${escapeHtml(String(m.id))}">${escapeHtml(m.name)} (${escapeHtml(m.distrito || '')})</option>`);
@@ -9172,8 +9178,13 @@ Email de contacto: info@festlift.pt`;
             const munId = $(this).val();
             if (!munId) return;
             try {
-                const res = await apiCall('/api/municipalities', 'GET');
-                const mun = (res.data || []).find(m => m.id === munId);
+                let list = _cachedMunicipalitiesList;
+                if (!list) {
+                    const res = await apiCall('/api/municipalities', 'GET');
+                    list = res.data || [];
+                    _cachedMunicipalitiesList = list;
+                }
+                const mun = list.find(m => m.id === munId);
                 if (!mun) return;
 
                 currentMunicipalityData = mun;
