@@ -428,7 +428,7 @@
                                 <div class="card-header">
                                     <h3 class="card-title">Criar Orçamento</h3>
                                     <div class="card-tools">
-                                        <button type="button" class="btn btn-primary btn-sm" onclick="saveOrcamento()">
+                                        <button type="button" id="btnSalvar" class="btn btn-primary btn-sm" onclick="saveOrcamento()">
                                             <i class="fas fa-save"></i> Guardar Orçamento
                                         </button>
                                         <button type="button" class="btn btn-success btn-sm" onclick="generateInvoice()">
@@ -622,10 +622,10 @@
                                         <button class="btn btn-primary btn-sm" onclick="printInvoice()">
                                             <i class="fas fa-print"></i> Imprimir
                                         </button>
-                                        <button class="btn btn-success btn-sm" onclick="downloadPDF()">
+                                        <button id="btnDownloadPDF" class="btn btn-success btn-sm" onclick="downloadPDF()">
                                             <i class="fas fa-download"></i> PDF
                                         </button>
-                                        <button class="btn btn-info btn-sm" onclick="sendEmail()">
+                                        <button id="btnEnviarEmail" class="btn btn-info btn-sm" onclick="sendEmail()">
                                             <i class="fas fa-envelope"></i> Email
                                         </button>
                                     </div>
@@ -2035,41 +2035,53 @@
                 console.log('✅ Orçamento carregado (público):', orcamento);
                 
                 // Deаповнити форму (apenas чиeння)
-                $('#orcamentoNumero').text(orcamento.numero);
-                $('#data').val(new Date(orcamento.data).toISOString().split('T')[0]).prop('disabled', true);
-                $('#clienteNome').val(orcamento.cliente.nome).prop('disabled', true);
-                $('#clienteEmail').val(orcamento.cliente.email).prop('disabled', true);
-                $('#clienteMorada').val(orcamento.cliente.morada || '').prop('disabled', true);
-                $('#clienteTelefone').val(orcamento.cliente.telefone || '').prop('disabled', true);
-                $('#clienteNIF').val(orcamento.cliente.nif || '').prop('disabled', true);
-                $('#notas').val(orcamento.notas || '').prop('disabled', true);
-                
-                // Descarregar serviçoи
+                // Os seletores abaixo tinham nomes em português (#orcamentoNumero,
+                // #clienteNome, #servicosTable, ...) que nunca existiram no DOM — os
+                // IDs reais dos campos são em inglês (#invoiceNumber, #clientName,
+                // #servicesTable, ...), pelo que esta vista pública ficava sempre em
+                // branco. Corrigido para os IDs reais.
+                $('#invoiceNumber').val(orcamento.numero).prop('disabled', true);
+                $('#invoiceDate').val(new Date(orcamento.data).toISOString().split('T')[0]).prop('disabled', true);
+                $('#clientName').val(orcamento.cliente.nome).prop('disabled', true);
+                $('#clientEmail').val(orcamento.cliente.email).prop('disabled', true);
+                $('#clientAddress').val(orcamento.cliente.morada || '').prop('disabled', true);
+                $('#clientPhone').val(orcamento.cliente.telefone || '').prop('disabled', true);
+                $('#clientNIF').val(orcamento.cliente.nif || '').prop('disabled', true);
+                $('#notes').val(orcamento.notas || '').prop('disabled', true);
+
+                // Descarregar serviçoи — mesmas classes (.qty/.price) do carregamento
+                // autenticado, para que updatePreview() consiga ler as linhas
+                $('#servicesTable tbody').empty();
                 if (orcamento.servicos && orcamento.servicos.length > 0) {
-                    $('#servicosTable tbody').empty();
-                    orcamento.servicos.forEach((servico, index) => {
-                        $('#servicosTable tbody').append(`
-                            <tr data-index="${index}">
-                                <td><input type="text" class="form-control servico-descricao" value="${escapeHtml(servico.descricao)}" disabled></td>
-                                <td><input type="number" class="form-control servico-quantidade" value="${servico.quantidade}" disabled></td>
-                                <td><input type="number" class="form-control servico-preco" value="${servico.preco}" step="0.01" disabled></td>
-                                <td class="servico-total">€${servico.total.toFixed(2)}</td>
+                    orcamento.servicos.forEach(servico => {
+                        $('#servicesTable tbody').append(`
+                            <tr>
+                                <td><input type="text" class="form-control" value="${escapeHtml(servico.descricao)}" disabled></td>
+                                <td><input type="number" class="form-control qty" value="${servico.quantidade}" disabled></td>
+                                <td><input type="number" class="form-control price" value="${servico.precoUnitario}" step="0.01" disabled></td>
+                                <td class="total">${(servico.quantidade * servico.precoUnitario).toFixed(2)}</td>
                                 <td></td>
                             </tr>
                         `);
                     });
                 }
-                
-                // Mostrar тоeли
+
+                // Recalcular a pré-visualização com os dados agora preenchidos
+                if (typeof invoiceManager !== 'undefined' && invoiceManager.updatePreview) {
+                    invoiceManager.updatePreview();
+                }
+
+                // Mostrar тоeли (sobrepõe os totais recalculados pela pré-visualização
+                // com os valores guardados, que são a fonte de verdade)
                 $('#subtotal').text(`€${orcamento.subtotal.toFixed(2)}`);
-                $('#ivaValor').text(`€${orcamento.iva.toFixed(2)}`);
-                $('#total').text(`€${orcamento.total.toFixed(2)}`);
-                
+                $('#tax').text(`€${orcamento.iva.toFixed(2)}`);
+                $('#grandTotal').text(`€${orcamento.total.toFixed(2)}`);
+
                 // Ocultar кнопки edição
                 $('.card-footer').hide();
                 $('#btnSalvar').hide();
                 $('#btnEnviarEmail').hide();
-                
+
                 // Mostrar apenas botão скачування PDF
                 $('#btnDownloadPDF').show();
                 

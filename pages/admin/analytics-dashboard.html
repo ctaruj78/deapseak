@@ -956,6 +956,12 @@ class SmartAnalyticsDashboard {
 // Funções globais para da interface
 function refreshAllData() {
     console.log('🔄 Atualização todosх dados...');
+    // new SmartAnalyticsDashboard() recria os gráficos nos mesmos <canvas> — sem
+    // destruir as instâncias anteriores primeiro, o Chart.js recusa a segunda
+    // chamada com "Canvas is already in use" (o botão Atualizar partia ao 2º clique).
+    if (window.analyticsManager && window.analyticsManager.charts) {
+        Object.values(window.analyticsManager.charts).forEach(c => c && c.destroy());
+    }
     window.analyticsManager = new SmartAnalyticsDashboard();
     
     if (window.eventBus) {

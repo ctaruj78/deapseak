@@ -1250,7 +1250,9 @@
                     $('#userPhone').val(user.phone || '');
                     $('#userCompany').val(user.company || '');
                     $('#userAddress').val(user.address || '');
-                    $('#userRole').val(user.role);
+                    // Registos antigos podem ter role 'tech' (sem opção correspondente no
+                    // select) em vez de 'technician' — normalizar antes de atribuir.
+                    $('#userRole').val(user.role === 'tech' ? 'technician' : user.role);
                     $('#userStatus').val(user.status);
                     $('#userPassword').val('')
                         .attr('type', 'password')
