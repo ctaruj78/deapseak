@@ -768,6 +768,10 @@
     <script src="../../assets/js/modules/navigation-manager.js"></script>
 
     <script>
+        function escapeHtml(s) {
+            if (s == null) return '';
+            return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+        }
         $(document).ready(function() {
             function getToken() {
                 return sessionStorage.getItem('liftmanager_jwt') ||
@@ -880,7 +884,7 @@
                         $('#reportResult').show();
                         const items = Array.isArray(data.items) ? data.items : [];
                         const tbody = items.map(function(r) {
-                            return '<tr><td>' + (r.id || r._id || '—') + '</td><td>' + (r.lift || '—') + '</td><td>' + (r.technician || '—') + '</td><td>' + (r.status || '—') + '</td><td>' + (r.createdAt ? new Date(r.createdAt).toLocaleDateString('pt-PT') : '—') + '</td><td>' + (r.completedAt ? new Date(r.completedAt).toLocaleDateString('pt-PT') : '—') + '</td></tr>';
+                            return '<tr><td>' + escapeHtml(r.id || r._id || '—') + '</td><td>' + escapeHtml(r.lift || '—') + '</td><td>' + escapeHtml(r.technician || '—') + '</td><td>' + escapeHtml(r.status || '—') + '</td><td>' + (r.createdAt ? new Date(r.createdAt).toLocaleDateString('pt-PT') : '—') + '</td><td>' + (r.completedAt ? new Date(r.completedAt).toLocaleDateString('pt-PT') : '—') + '</td></tr>';
                         }).join('') || '<tr><td colspan="6" class="text-center">Sem dados para o período selecionado</td></tr>';
                         $('#report-result-placeholder').closest('tbody').html(tbody);
                         if (data.stats) {

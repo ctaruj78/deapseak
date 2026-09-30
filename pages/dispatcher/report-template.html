@@ -343,6 +343,10 @@
 <script src="../../assets/js/sidebar-init.js"></script>
 <script src="../../assets/js/config.js"></script>
 <script>
+    function escapeHtml(s) {
+        if (s == null) return '';
+        return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    }
     $(document).ready(function() {
         loadSidebarWithInit("includes/sidebar.html");
     });
@@ -501,17 +505,17 @@
             const priorityLabels = { high:'Alta', medium:'Média', low:'Baixa' };
 
             tbody.innerHTML = items.map((item, i) => {
-                const sc = `status-badge-${(item.status || '').replace(/\s/g,'_')}`;
-                const pc = `priority-${item.status === 'cancelled' ? 'low' : (item.priority || 'low')}`;
+                const sc = `status-badge-${escapeHtml((item.status || '').replace(/\s/g,'_'))}`;
+                const pc = `priority-${item.status === 'cancelled' ? 'low' : escapeHtml(item.priority || 'low')}`;
                 const created   = item.createdAt   ? fmtPt(item.createdAt)   : '—';
                 const completed = item.completedAt ? fmtPt(item.completedAt) : '—';
                 return `<tr>
                     <td>${i + 1}</td>
-                    <td>${item.title || '—'}</td>
-                    <td><small>${item.lift || '—'}</small></td>
-                    <td>${item.technician || '—'}</td>
-                    <td><span class="badge ${sc}">${statusLabels[item.status] || item.status || '—'}</span></td>
-                    <td class="${pc}">${priorityLabels[item.priority] || item.priority || '—'}</td>
+                    <td>${escapeHtml(item.title || '—')}</td>
+                    <td><small>${escapeHtml(item.lift || '—')}</small></td>
+                    <td>${escapeHtml(item.technician || '—')}</td>
+                    <td><span class="badge ${sc}">${escapeHtml(statusLabels[item.status] || item.status || '—')}</span></td>
+                    <td class="${pc}">${escapeHtml(priorityLabels[item.priority] || item.priority || '—')}</td>
                     <td>${created}</td>
                     <td>${completed}</td>
                 </tr>`;

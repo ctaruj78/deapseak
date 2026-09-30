@@ -128,6 +128,10 @@
 <script src="../../plugins/adminlte/adminlte.min.js"></script>
 <script src="../../assets/js/sidebar-init.js"></script>
 <script>
+function escapeHtml(s) {
+    if (s == null) return '';
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
 loadSidebarWithInit("includes/sidebar.html");
 
 function formatPrice(price) {
@@ -196,12 +200,12 @@ function renderListings() {
     const oneHourAgo = Date.now() - 60 * 60 * 1000;
     tbody.innerHTML = listings.map(l => `
         <tr class="listing-row ${new Date(l.firstSeenAt).getTime() > oneHourAgo ? 'is-new' : ''}">
-            <td><span class="badge badge-secondary">${PLATFORM_LABELS[l.platform] || l.platform}</span></td>
-            <td>${l.title || '—'}</td>
+            <td><span class="badge badge-secondary">${escapeHtml(PLATFORM_LABELS[l.platform] || l.platform)}</span></td>
+            <td>${escapeHtml(l.title || '—')}</td>
             <td class="price-cell">${formatPrice(l.price)}</td>
-            <td>${l.location || '—'}</td>
+            <td>${escapeHtml(l.location || '—')}</td>
             <td>${formatDate(l.postedAt)}</td>
-            <td><a href="${l.url}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-primary"><i class="fas fa-external-link-alt"></i></a></td>
+            <td><a href="${escapeHtml(l.url)}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-primary"><i class="fas fa-external-link-alt"></i></a></td>
         </tr>
     `).join('');
 }

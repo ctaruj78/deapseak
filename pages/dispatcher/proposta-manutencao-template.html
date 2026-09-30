@@ -266,6 +266,10 @@
 <script src="../../assets/js/config.js"></script>
 
 <script>
+function escapeHtml(s) {
+    if (s == null) return '';
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
 let clientes = [];
 let currentPropostaId = null;
 let propostaTemIrma = false;
@@ -608,7 +612,7 @@ async function promptCcEnvio(text) {
     const r = await Swal.fire({
         title: 'Confirmar envio',
         html: `
-            <p style="text-align:left;margin-bottom:10px;">${text}</p>
+            <p style="text-align:left;margin-bottom:10px;">${escapeHtml(text)}</p>
             <div style="text-align:left;">
                 <label style="font-size:13px;color:#555;">CC <span style="font-weight:normal;">(opcional, vários separados por vírgula)</span></label>
                 <input id="swalCc" class="swal2-input" style="margin:4px 0 0;" placeholder="email1@exemplo.pt, email2@exemplo.pt">

@@ -225,7 +225,7 @@ async function carregarPropostas() {
                     <td><span class="badge ${statusBadgeClass(p.status)}">${escHtml(statusLabel(p.status))}</span> <span class="badge badge-secondary">Arquivada</span></td>
                     <td class="text-right">
                         <a href="proposta-manutencao-template.html?id=${p._id}" class="btn btn-sm btn-outline-primary" title="Ver"><i class="fas fa-eye"></i></a>
-                        <button class="btn btn-sm btn-outline-secondary" onclick="downloadPDF('${p._id}', '${p.numero}')" title="Descarregar PDF"><i class="fas fa-file-pdf"></i></button>
+                        <button class="btn btn-sm btn-outline-secondary" onclick="downloadPDF('${p._id}', '${escJs(p.numero)}')" title="Descarregar PDF"><i class="fas fa-file-pdf"></i></button>
                         <button class="btn btn-sm btn-outline-success" onclick="restaurarProposta(${argsRef})" title="Restaurar do arquivo (apenas admin)"><i class="fas fa-undo"></i></button>
                     </td>
                 </tr>
@@ -245,11 +245,11 @@ async function carregarPropostas() {
                         ${p.status === 'solicitado'
                             ? `<a href="proposta-manutencao-template.html?id=${p._id}" class="btn btn-sm btn-primary" title="Preencher condições e responder ao cliente"><i class="fas fa-reply mr-1"></i>Responder</a>`
                             : `<a href="proposta-manutencao-template.html?id=${p._id}" class="btn btn-sm btn-outline-primary" title="Ver / Editar"><i class="fas fa-edit"></i></a>
-                        <button class="btn btn-sm btn-outline-secondary" onclick="downloadPDF('${p._id}', '${p.numero}')" title="Descarregar PDF"><i class="fas fa-file-pdf"></i></button>`}
+                        <button class="btn btn-sm btn-outline-secondary" onclick="downloadPDF('${p._id}', '${escJs(p.numero)}')" title="Descarregar PDF"><i class="fas fa-file-pdf"></i></button>`}
                         ${['rascunho', 'enviado', 'expirado'].includes(p.status) ? `<button class="btn btn-sm btn-outline-success" onclick="marcarAprovado('${p._id}')" title="Marcar como Aprovado (aceite fora do portal, mesmo expirada)"><i class="fas fa-check-double"></i></button>` : ''}
                         ${p.status === 'aprovado' ? `<button class="btn btn-sm btn-outline-success" onclick="gerarContrato('${p._id}')" title="Gerar / Ver Contrato"><i class="fas fa-file-signature"></i></button>` : ''}
                         <button class="btn btn-sm btn-outline-danger" onclick="arquivarProposta(${argsRef})" title="Arquivar"><i class="fas fa-archive"></i></button>
-                        ${podeEliminar ? `<button class="btn btn-sm btn-outline-danger" onclick="eliminarProposta('${p._id}', '${escHtml(p.numero)}')" title="Eliminar definitivamente"><i class="fas fa-trash"></i></button>` : ''}
+                        ${podeEliminar ? `<button class="btn btn-sm btn-outline-danger" onclick="eliminarProposta('${p._id}', '${escJs(p.numero)}')" title="Eliminar definitivamente"><i class="fas fa-trash"></i></button>` : ''}
                     </td>
                 </tr>
             `;
