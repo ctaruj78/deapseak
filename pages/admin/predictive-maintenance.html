@@ -1506,6 +1506,12 @@ class PredictiveMaintenanceDashboard {
     createTrendChart() {
         const ctx = document.getElementById('predictionTrendChart');
         if (!ctx) return;
+        // loadPredictionsData() (e non-overview tab switch) volta a chamar isto todas
+        // as vezes que o separador "Previsões" é reaberto — sem destruir a instância
+        // anterior, o Chart.js recusa reutilizar o canvas ("Canvas is already in use")
+        // e reabrir o separador uma segunda vez rebentava com um erro.
+        const existing = Chart.getChart(ctx);
+        if (existing) existing.destroy();
 
         const months = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun'];
         const predictions = [12000, 15000, 11000, 18000, 16000, 14000];
@@ -1541,6 +1547,8 @@ class PredictiveMaintenanceDashboard {
     createModelAccuracyChart() {
         const ctx = document.getElementById('modelAccuracyChart');
         if (!ctx) return;
+        const existing = Chart.getChart(ctx);
+        if (existing) existing.destroy();
 
         new Chart(ctx, {
             type: 'doughnut',
@@ -1564,6 +1572,8 @@ class PredictiveMaintenanceDashboard {
     createPredictionDistributionChart() {
         const ctx = document.getElementById('predictionDistributionChart');
         if (!ctx) return;
+        const existing = Chart.getChart(ctx);
+        if (existing) existing.destroy();
 
         new Chart(ctx, {
             type: 'bar',
@@ -1634,6 +1644,8 @@ class PredictiveMaintenanceDashboard {
     createAlertsChart() {
         const ctx = document.getElementById('alertStatisticsChart');
         if (!ctx) return;
+        const existing = Chart.getChart(ctx);
+        if (existing) existing.destroy();
 
         const days = [];
         const alertCounts = [];
