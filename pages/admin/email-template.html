@@ -329,6 +329,13 @@
     <script src="../../assets/js/sidebar-init.js"></script>
 
     <script>
+        function escapeHtml(str) {
+            if (str === null || str === undefined) return '';
+            return String(str).replace(/[&<>"']/g, c => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            }[c]));
+        }
+
         // Email templates manager
         const emailTemplateManager = {
             templates: {
@@ -428,7 +435,7 @@
                     previewWindow.document.write(`
                         <html>
                             <head>
-                                <title>Pré-visualizar: ${template.name}</title>
+                                <title>Pré-visualizar: ${escapeHtml(template.name)}</title>
                                 <style>
                                     body { font-family: Arial, sans-serif; padding: 20px; }
                                     h3 { color: #333; }
@@ -436,9 +443,9 @@
                                 </style>
                             </head>
                             <body>
-                                <h3>Assunto: ${template.subject}</h3>
+                                <h3>Assunto: ${escapeHtml(template.subject)}</h3>
                                 <hr>
-                                <div style="white-space: pre-line;">${template.content}</div>
+                                <div style="white-space: pre-line;">${escapeHtml(template.content)}</div>
                             </body>
                         </html>
                     `);
@@ -497,7 +504,7 @@
                     if (result.success) {
                         this.showNotification(`✅ Email de teste enviado para ${email}`, 'success');
                     } else {
-                        this.showNotification(`❌ Erro: ${result.error}`, 'error');
+                        this.showNotification(`❌ Erro: ${result.error || 'desconhecido'}`, 'error');
                     }
 
                 } catch (error) {
@@ -517,30 +524,31 @@
                 
                 customTemplates.forEach(templateId => {
                     const template = this.templates[templateId];
+                    const safeTemplateId = escapeHtml(templateId).replace(/'/g, "\\'");
                     const card = $(`
                         <div class="col-md-6">
                             <div class="template-card card">
                                 <div class="card-header bg-info text-white">
                                     <h4 class="card-title mb-0">
-                                        <i class="fas fa-envelope mr-2"></i> ${template.name}
+                                        <i class="fas fa-envelope mr-2"></i> ${escapeHtml(template.name)}
                                     </h4>
                                 </div>
                                 <div class="card-body">
-                                    <p><strong>Assunto:</strong> ${template.subject}</p>
+                                    <p><strong>Assunto:</strong> ${escapeHtml(template.subject)}</p>
                                     <div class="template-preview">
-                                        ${template.content.replace(/\n/g, '<br>')}
+                                        ${escapeHtml(template.content).replace(/\n/g, '<br>')}
                                     </div>
                                     <div class="mt-3">
-                                        <button class="btn btn-warning btn-sm" onclick="editTemplate('${templateId}')">
+                                        <button class="btn btn-warning btn-sm" onclick="editTemplate('${safeTemplateId}')">
                                             <i class="fas fa-edit"></i> Editar
                                         </button>
-                                        <button class="btn btn-info btn-sm" onclick="previewTemplate('${templateId}')">
+                                        <button class="btn btn-info btn-sm" onclick="previewTemplate('${safeTemplateId}')">
                                             <i class="fas fa-eye"></i> Pré-visualizar
                                         </button>
-                                        <button class="btn btn-success btn-sm" onclick="testSendTemplate('${templateId}')">
+                                        <button class="btn btn-success btn-sm" onclick="testSendTemplate('${safeTemplateId}')">
                                             <i class="fas fa-paper-plane"></i> Envio de Teste
                                         </button>
-                                        <button class="btn btn-danger btn-sm" onclick="deleteTemplate('${templateId}')">
+                                        <button class="btn btn-danger btn-sm" onclick="deleteTemplate('${safeTemplateId}')">
                                             <i class="fas fa-trash"></i> Eliminar
                                         </button>
                                     </div>
@@ -562,7 +570,7 @@
 
                 const notification = $(`
                     <div class="alert ${alertClass} alert-dismissible fade show" style="position: fixed; top: 20px; right: 20px; z-index: 9999;">
-                        ${message}
+                        ${escapeHtml(message)}
                         <button type="button" class="close" data-dismiss="alert">
                             <span>&times;</span>
                         </button>
