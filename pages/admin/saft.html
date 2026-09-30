@@ -1114,6 +1114,7 @@ async function uploadPendentes() {
     }
 
     window.batchHandleSelect = function(input) {
+        if (_running) { toastr.warning('Aguarde a importação em curso terminar antes de carregar novos ficheiros.'); return; }
         var files = Array.from(input.files).filter(function(f) {
             return f.name.toLowerCase().endsWith('.xml');
         });
@@ -1138,6 +1139,7 @@ async function uploadPendentes() {
             var dt    = e.dataTransfer;
             var files = Array.from(dt.files).filter(function(f) { return f.name.toLowerCase().endsWith('.xml'); });
             if (!files.length) { toastr.info('Apenas ficheiros .xml são aceites.'); return; }
+            if (_running) { toastr.warning('Aguarde a importação em curso terminar antes de carregar novos ficheiros.'); return; }
             files.sort(function(a, b) { return a.name.localeCompare(b.name); });
             _files = files;
             renderQueue();
