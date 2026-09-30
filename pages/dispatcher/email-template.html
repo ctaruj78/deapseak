@@ -634,8 +634,12 @@
             // Load saved templates from localStorage
             const saved = localStorage.getItem('emailTemplates');
             if (saved) {
-                emailTemplateManager.templates = { ...emailTemplateManager.templates, ...JSON.parse(saved) };
-                emailTemplateManager.renderCustomTemplates();
+                try {
+                    emailTemplateManager.templates = { ...emailTemplateManager.templates, ...JSON.parse(saved) };
+                    emailTemplateManager.renderCustomTemplates();
+                } catch (e) {
+                    console.error('emailTemplates corrompido em localStorage:', e);
+                }
             }
 
             $('#createTemplateBtn').click(function() {

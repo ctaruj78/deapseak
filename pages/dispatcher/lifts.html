@@ -8873,7 +8873,7 @@ Equipa FestLift</textarea>
                     $('#municipalityModal').modal('hide');
                 } else {
                     const errMsg = result?.message || result?.data?.message || 'Erro ao enviar relatório';
-                    if (typeof toastr !== 'undefined') toastr.error(errMsg); else toastr.error(errMsg);
+                    if (typeof toastr !== 'undefined') toastr.error(errMsg); else console.error(errMsg);
                     $btn.prop('disabled', false).html(originalText);
                 }
             } catch (error) {

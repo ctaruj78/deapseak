@@ -2284,7 +2284,8 @@
             }, 30000);
 
             // A carregar dados do despachante
-            const userData = JSON.parse(localStorage.getItem('userData')) || {};
+            let userData = {};
+            try { userData = JSON.parse(localStorage.getItem('userData')) || {}; } catch (e) { /* dados corrompidos — segue com objeto vazio */ }
             if (userData.firstName) {
                 $('#dispatcherName').text(`${userData.firstName} ${userData.lastName || ''}`);
             }
