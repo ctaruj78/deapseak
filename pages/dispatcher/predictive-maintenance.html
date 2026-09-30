@@ -1107,7 +1107,7 @@ class PredictiveMaintenanceDashboard {
                 <div class="timeline-item">
                     <div class="d-flex justify-content-between align-items-start">
                         <div>
-                            <h6>Elevador ${item.liftId}</h6>
+                            <h6>Elevador ${escapeHtml(item.liftId)}</h6>
                             <p class="mb-1">Data: ${date.toLocaleDateString('pt-PT')}</p>
                             <p class="mb-0 text-muted">Prioridade: ${(item.priority * 100).toFixed(1)}%</p>
                         </div>

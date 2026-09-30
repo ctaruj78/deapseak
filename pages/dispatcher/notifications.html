@@ -88,6 +88,14 @@
             if (s == null) return '';
             return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
         }
+        function escJs(s) {
+            return String(s ?? '')
+                .replace(/\\/g, '\\\\')
+                .replace(/'/g, "\\'")
+                .replace(/"/g, '&quot;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;');
+        }
 
         function getToken() {
             return (typeof AuthManager !== 'undefined' && AuthManager.getAuthToken)
@@ -124,8 +132,8 @@
                             <div class="small text-muted font-weight-normal">${when}</div>
                         </div>
                         <div class="btn-group">
-                            ${unread ? `<button class="btn btn-sm btn-outline-secondary" onclick="markRead('${escapeHtml(n._id)}')" title="Marcar como lida"><i class="fas fa-check"></i></button>` : ''}
-                            <button class="btn btn-sm btn-outline-danger" onclick="deleteNotification('${escapeHtml(n._id)}')" title="Remover"><i class="fas fa-trash"></i></button>
+                            ${unread ? `<button class="btn btn-sm btn-outline-secondary" onclick="markRead('${escJs(n._id)}')" title="Marcar como lida"><i class="fas fa-check"></i></button>` : ''}
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteNotification('${escJs(n._id)}')" title="Remover"><i class="fas fa-trash"></i></button>
                         </div>
                     </li>`;
                 }).join('');

@@ -754,7 +754,7 @@
             lifts.forEach(lift => {
                 const displayName = lift.model || lift.name || `Elevador ${lift.id}`;
                 const displayAddress = lift.location || lift.address || 'Endereço não especificado';
-                selector.append(`<option value="${lift.id}">${displayName} - ${displayAddress}</option>`);
+                selector.append(`<option value="${escapeHtml(String(lift.id))}">${escapeHtml(displayName)} - ${escapeHtml(displayAddress)}</option>`);
             });
         }
 
