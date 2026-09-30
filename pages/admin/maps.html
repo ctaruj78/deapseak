@@ -202,6 +202,10 @@
 <script src="../../assets/js/config.js"></script>
 
 <script>
+    function escapeHtml(s) {
+        if (s == null) return '';
+        return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    }
     let lifts = [];
     let filteredLifts = [];
     let map;
@@ -341,16 +345,16 @@
     }
 
     function createLiftPopup(lift) {
-        const statusClass = `status-${lift.status}`;
+        const statusClass = `status-${escapeHtml(lift.status)}`;
         const statusText = getStatusText(lift.status);
         return `
             <div class="lift-popup">
-                <h6><i class="fas fa-elevator"></i> ${lift.model}</h6>
-                <p><strong>📍 Endereço:</strong><br>${lift.location}</p>
+                <h6><i class="fas fa-elevator"></i> ${escapeHtml(lift.model)}</h6>
+                <p><strong>📍 Endereço:</strong><br>${escapeHtml(lift.location)}</p>
                 <p><strong>📊 Estado:</strong> <span class="lift-status ${statusClass}">${statusText}</span></p>
-                <p><strong>🔧 Última manutenção:</strong> ${lift.lastMaintenance}</p>
+                <p><strong>🔧 Última manutenção:</strong> ${escapeHtml(lift.lastMaintenance)}</p>
                 <div class="text-center mt-2">
-                    <button class="btn btn-sm btn-success" onclick="createRouteToLift('${lift.id}')"><i class="fas fa-route"></i> Traçar rota</button>
+                    <button class="btn btn-sm btn-success" onclick="createRouteToLift('${escapeHtml(lift.id)}')"><i class="fas fa-route"></i> Traçar rota</button>
                     <a href="lifts.html" class="btn btn-sm btn-primary"><i class="fas fa-info-circle"></i> Detalhes</a>
                 </div>
             </div>

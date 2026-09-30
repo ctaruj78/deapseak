@@ -396,7 +396,7 @@ function renderTable(articles) {
             <td class="small">${updDate}</td>
             <td>
                 <button class="btn btn-xs btn-outline-primary mr-1" onclick="editArticle('${a._id}')" title="Editar"><i class="fas fa-edit"></i></button>
-                <button class="btn btn-xs btn-outline-danger" onclick="deleteArticle('${a._id}', '${escHtml(a.title).replace(/'/g,"\\'")}')` + `" title="Eliminar"><i class="fas fa-trash"></i></button>
+                <button class="btn btn-xs btn-outline-danger" onclick="deleteArticle('${a._id}', '${escHtml(a.title).replace(/\\/g,'\\\\').replace(/'/g,"\\'")}')` + `" title="Eliminar"><i class="fas fa-trash"></i></button>
             </td>
         </tr>`;
     });

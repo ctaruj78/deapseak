@@ -777,7 +777,7 @@
                 lift_delete_request: 'Pedido de eliminação',
                 deletion_request: 'Pedido de eliminação'
             };
-            return labels[type] || type;
+            return labels[type] || escapeHtml(type);
         }
 
         function getTypeBadgeColor(type) {

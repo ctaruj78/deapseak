@@ -647,6 +647,10 @@
 <script src="/assets/js/smart-analytics-engine.js"></script>
 
 <script>
+function escapeHtml(s) {
+    if (s == null) return '';
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
 /**
  * 📊 Smart Analytics Dashboard para FestLift
  * Integração desde EventBus para real-time análise
@@ -847,8 +851,8 @@ class SmartAnalyticsDashboard {
         const eventHtml = `
             <div class="event-item ${type}" data-timestamp="${now.getTime()}">
                 <div class="event-time text-muted">${timeString}</div>
-                <div class="event-action font-weight-bold">${action}</div>
-                <div class="event-details text-sm">${details}</div>
+                <div class="event-action font-weight-bold">${escapeHtml(action)}</div>
+                <div class="event-details text-sm">${escapeHtml(details)}</div>
             </div>
         `;
         

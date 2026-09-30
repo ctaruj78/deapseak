@@ -81,6 +81,10 @@
     <script src="../../plugins/maplibre-leaflet-shim.js"></script>
 
     <script>
+        function escapeHtml(s) {
+            if (s == null) return '';
+            return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+        }
         // Load lift data from localStorage only
         let lifts = JSON.parse(localStorage.getItem('lifts')) || [];
 
@@ -138,11 +142,11 @@
         }
 
         function createLiftPopup(lift) {
-            const statusClass = `status-${lift.status}`;
+            const statusClass = `status-${escapeHtml(lift.status)}`;
             const statusText = getStatusText(lift.status);
-            const displayName = lift.model || lift.name || `Elevador ${lift.id}`;
-            const displayAddress = lift.location || lift.address || 'Endereço não especificado';
-            const lastService = lift.lastMaintenance || lift.lastService || 'Desconhecido';
+            const displayName = escapeHtml(lift.model || lift.name || `Elevador ${lift.id}`);
+            const displayAddress = escapeHtml(lift.location || lift.address || 'Endereço não especificado');
+            const lastService = escapeHtml(lift.lastMaintenance || lift.lastService || 'Desconhecido');
 
             return `
                 <div class="lift-popup">

@@ -298,7 +298,7 @@ function verHistoricoItem(id) {
     const data = item.createdAt ? new Date(item.createdAt).toLocaleString('pt-PT') : '—';
     const erroLinha = item.sucesso ? '' : `<div class="small text-danger mb-2"><strong>Erro:</strong> ${escHtml(item.erro || '')}</div>`;
     Swal.fire({
-        title: item.assunto || 'Email enviado',
+        title: escHtml(item.assunto || 'Email enviado'),
         html: `
             <div style="text-align:left;font-size:13px;">
                 <div class="mb-2"><strong>Data:</strong> ${data}</div>
@@ -307,7 +307,7 @@ function verHistoricoItem(id) {
                 <div class="mb-2"><strong>Anexos:</strong> ${escHtml(anexos)}</div>
                 ${erroLinha}
                 <hr>
-                <div style="max-height:300px;overflow:auto;border:1px solid #eee;padding:10px;border-radius:4px;">${item.mensagem || ''}</div>
+                <div style="max-height:300px;overflow:auto;border:1px solid #eee;padding:10px;border-radius:4px;">${escHtml(item.mensagem || '')}</div>
             </div>
         `,
         width: 600,

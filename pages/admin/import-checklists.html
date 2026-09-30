@@ -35,13 +35,17 @@
         </section>
     </div>
     <script>
+    function escapeHtml(s) {
+        if (s == null) return '';
+        return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    }
     $(document).ready(function() {
         function renderChecklists() {
             const checklists = JSON.parse(localStorage.getItem('imported_checklists') || '[]');
             const list = $('#checklistsList');
             list.empty();
             checklists.forEach((cl, idx) => {
-                list.append(`<li class="list-group-item">${cl.title || cl.name || 'Sem título'} (${cl.items ? cl.items.length : 0} itens)</li>`);
+                list.append(`<li class="list-group-item">${escapeHtml(cl.title || cl.name || 'Sem título')} (${cl.items ? cl.items.length : 0} itens)</li>`);
             });
         }
         renderChecklists();

@@ -279,7 +279,7 @@ function renderTable(categorias) {
             <td>${estadoBadge}</td>
             <td>
                 <button class="btn btn-xs btn-outline-primary mr-1" onclick="editCategoria('${c._id}')" title="Editar"><i class="fas fa-edit"></i></button>
-                <button class="btn btn-xs btn-outline-danger" onclick="deleteCategoria('${c._id}', '${escHtml(c.nome).replace(/'/g,"\\'")}')" title="Eliminar"><i class="fas fa-trash"></i></button>
+                <button class="btn btn-xs btn-outline-danger" onclick="deleteCategoria('${c._id}', '${escHtml(c.nome).replace(/\\/g,'\\\\').replace(/'/g,"\\'")}')" title="Eliminar"><i class="fas fa-trash"></i></button>
             </td>
         </tr>`;
     });

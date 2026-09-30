@@ -630,6 +630,10 @@
     <script src="../../assets/js/websocket-client.js" onload="console.log('✅ WebSocket Client loaded')" onerror="console.error('❌ Erro ao carregar WebSocket Client')"></script>
 
     <script>
+        function escapeHtml(s) {
+            if (s == null) return '';
+            return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+        }
         // 🔥 CONNECTED TO REAL API
         function parseArrayResult(payload) {
             if (Array.isArray(payload)) return payload;
@@ -679,7 +683,7 @@
                 <li class="media mb-3">
                     <i class="${item.icon} ${item.color} mr-3 mt-1"></i>
                     <div class="media-body">
-                        <h6 class="mt-0 mb-1">${item.title}</h6>
+                        <h6 class="mt-0 mb-1">${escapeHtml(item.title)}</h6>
                         <small class="text-muted">${formatRelativeTime(item.at)}</small>
                     </div>
                 </li>
@@ -715,10 +719,10 @@
                         <div class="media-body">
                             <h6 class="mt-0 mb-1">
                                 ${isNew ? '<span class="badge badge-success mr-1">Novo</span>' : ''}
-                                <span class="badge badge-secondary mr-1">${platformLabels[l.platform] || l.platform}</span>
-                                <a href="${l.url}" target="_blank" rel="noopener">${l.title || 'Sem título'}</a>
+                                <span class="badge badge-secondary mr-1">${escapeHtml(platformLabels[l.platform] || l.platform)}</span>
+                                <a href="${escapeHtml(l.url)}" target="_blank" rel="noopener">${escapeHtml(l.title || 'Sem título')}</a>
                             </h6>
-                            <small class="text-muted">${price} · ${l.location || '—'} · ${formatRelativeTime(l.firstSeenAt)}</small>
+                            <small class="text-muted">${price} · ${escapeHtml(l.location || '—')} · ${formatRelativeTime(l.firstSeenAt)}</small>
                         </div>
                     </li>
                 `;
