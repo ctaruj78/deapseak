@@ -797,6 +797,15 @@
             if (s == null) return '';
             return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
         }
+        function safeUrl(u) {
+            try {
+                const resolved = new URL(u, window.location.origin);
+                if (resolved.protocol === 'http:' || resolved.protocol === 'https:' || resolved.protocol === 'blob:') {
+                    return resolved.href;
+                }
+            } catch (e) {}
+            return '';
+        }
         // Invoice management
         function decodeTokenRole(token) {
             try {
@@ -2077,11 +2086,13 @@
             if (!grid) return;
             grid.innerHTML = '';
             (fotos || []).forEach((url, idx) => {
+                const safe = escapeHtml(safeUrl(url));
+                if (!safe) return;
                 const wrap = document.createElement('div');
                 wrap.style.cssText = 'position:relative;display:inline-block;';
                 wrap.innerHTML = `
-                    <a href="${url}" target="_blank">
-                        <img src="${url}" style="width:90px;height:90px;object-fit:cover;border-radius:6px;border:1px solid #ddd;" title="Ver foto">
+                    <a href="${safe}" target="_blank">
+                        <img src="${safe}" style="width:90px;height:90px;object-fit:cover;border-radius:6px;border:1px solid #ddd;" title="Ver foto">
                     </a>
                     <button type="button" onclick="deleteFoto(${idx})"
                         style="position:absolute;top:2px;right:2px;background:rgba(220,53,69,.85);border:none;border-radius:50%;width:20px;height:20px;color:#fff;font-size:11px;line-height:18px;text-align:center;cursor:pointer;padding:0;"
@@ -2095,9 +2106,9 @@
             if (previewSection && previewGrid) {
                 const validFotos = (fotos || []).filter(u => u && !u.startsWith('blob:'));
                 previewSection.style.display = validFotos.length ? 'block' : 'none';
-                previewGrid.innerHTML = validFotos.map(url =>
-                    `<a href="${url}" target="_blank">
-                        <img src="${url}" style="width:160px;height:120px;object-fit:cover;border-radius:6px;border:1px solid #ccc;" title="Ver foto">
+                previewGrid.innerHTML = validFotos.map(url => escapeHtml(safeUrl(url))).filter(Boolean).map(safe =>
+                    `<a href="${safe}" target="_blank">
+                        <img src="${safe}" style="width:160px;height:120px;object-fit:cover;border-radius:6px;border:1px solid #ccc;" title="Ver foto">
                     </a>`
                 ).join('');
             }
