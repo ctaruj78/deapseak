@@ -487,15 +487,15 @@ class TicketsManager {
                         <td>#${String(id).slice(-6) || '—'}</td>
                         <td>${this.esc(t.subject || t.title || '—')}</td>
                         <td>${this.categoryLabel(t.category)}</td>
-                        <td><span class="priority-badge priority-${t.priority || 'medium'}">${this.priorityLabel(t.priority)}</span></td>
-                        <td><span class="ticket-status status-${(t.status || 'open').replace('_','-')}">${this.statusLabel(t.status)}</span></td>
+                        <td><span class="priority-badge priority-${this.esc(t.priority || 'medium')}">${this.priorityLabel(t.priority)}</span></td>
+                        <td><span class="ticket-status status-${this.esc((t.status || 'open').replace('_','-'))}">${this.statusLabel(t.status)}</span></td>
                         <td>${t.createdAt ? new Date(t.createdAt).toLocaleDateString('pt-PT') : '—'}</td>
                         <td>
-                            <button class="btn btn-sm btn-info" onclick="ticketsManager.viewTicket('${id}')" title="Ver">
+                            <button class="btn btn-sm btn-info" onclick="ticketsManager.viewTicket('${this.escAttr(id)}')" title="Ver">
                                 <i class="fas fa-eye"></i>
                             </button>
                             ${(t.status === 'open' || t.status === 'in_progress') ? `
-                            <button class="btn btn-sm btn-danger" onclick="ticketsManager.closeTicket('${id}')" title="Fechar">
+                            <button class="btn btn-sm btn-danger" onclick="ticketsManager.closeTicket('${this.escAttr(id)}')" title="Fechar">
                                 <i class="fas fa-times"></i>
                             </button>` : ''}
                         </td>
@@ -525,10 +525,10 @@ class TicketsManager {
                         <div class="col-md-6">
                             <p><strong>Assunto:</strong> ${this.esc(t.subject || t.title || '—')}</p>
                             <p><strong>Categoria:</strong> ${this.categoryLabel(t.category)}</p>
-                            <p><strong>Prioridade:</strong> <span class="priority-badge priority-${t.priority || 'medium'}">${this.priorityLabel(t.priority)}</span></p>
+                            <p><strong>Prioridade:</strong> <span class="priority-badge priority-${this.esc(t.priority || 'medium')}">${this.priorityLabel(t.priority)}</span></p>
                         </div>
                         <div class="col-md-6">
-                            <p><strong>Estado:</strong> <span class="ticket-status status-${(t.status||'open').replace('_','-')}">${this.statusLabel(t.status)}</span></p>
+                            <p><strong>Estado:</strong> <span class="ticket-status status-${this.esc((t.status||'open').replace('_','-'))}">${this.statusLabel(t.status)}</span></p>
                             <p><strong>Data:</strong> ${t.createdAt ? new Date(t.createdAt).toLocaleString('pt-PT') : '—'}</p>
                         </div>
                         <div class="col-12 mt-3">
@@ -599,6 +599,16 @@ class TicketsManager {
             }
             esc(str) {
                 return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+            }
+            // Para valores dentro de onclick="fn('...')" — esc() não escapa aspas,
+            // o que deixava o id do ticket poder fechar a string e injetar JS
+            escAttr(str) {
+                return String(str ?? '')
+                    .replace(/\\/g, '\\\\')
+                    .replace(/'/g, "\\'")
+                    .replace(/"/g, '&quot;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;');
             }
         }
 

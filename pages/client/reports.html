@@ -412,6 +412,10 @@
 <script src="../../plugins/adminlte/adminlte.min.js"></script>
 
 <script>
+    function escapeHtml(s) {
+        if (s == null) return '';
+        return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    }
     let currentReport = null;
 
     // ── Auth helpers ─────────────────────────────────────────────
@@ -512,7 +516,7 @@
             'canceled':    ['badge-cancelled',  'Cancelado']
         };
         var key = (status || '').toLowerCase().replace(/\s+/g, '');
-        var info = map[key] || ['badge-default', status || '—'];
+        var info = map[key] || ['badge-default', escapeHtml(status || '—')];
         return '<span class="badge-status ' + info[0] + '">' + info[1] + '</span>';
     }
 
@@ -520,7 +524,7 @@
     function renderResult(data) {
         document.getElementById('resultTitle').innerHTML =
             '<i class="fas fa-file-alt mr-2"></i>Relatório &middot; '
-            + data.type + ' &middot; ' + data.startDate + ' &rarr; ' + data.endDate;
+            + escapeHtml(data.type) + ' &middot; ' + escapeHtml(data.startDate) + ' &rarr; ' + escapeHtml(data.endDate);
 
         var s = data.stats || {};
         var statDefs = [
@@ -554,9 +558,9 @@
                     : '—';
                 return '<tr>'
                     + '<td class="text-muted">' + (idx + 1) + '</td>'
-                    + '<td><strong>' + (item.title || '—') + '</strong></td>'
-                    + '<td>' + (item.lift || '—') + '</td>'
-                    + '<td>' + (item.technician || '—') + '</td>'
+                    + '<td><strong>' + escapeHtml(item.title || '—') + '</strong></td>'
+                    + '<td>' + escapeHtml(item.lift || '—') + '</td>'
+                    + '<td>' + escapeHtml(item.technician || '—') + '</td>'
                     + '<td>' + statusBadge(item.status) + '</td>'
                     + '<td class="text-nowrap">' + d + '</td>'
                     + '</tr>';

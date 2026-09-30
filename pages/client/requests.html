@@ -1227,7 +1227,7 @@
                     const row = document.createElement('tr');
 
                     // Número pedidos
-                    const displayId = request.requestNumber || ('#' + requestId.slice(-6).toUpperCase());
+                    const displayId = escapeHtml(request.requestNumber) || ('#' + requestId.slice(-6).toUpperCase());
 
                     // Data
                     const dateStr = request.createdAt
@@ -1253,7 +1253,7 @@
                     const statusClass = { new: 'primary', assigned: 'warning', in_progress: 'info', completed: 'success', cancelled: 'secondary' }[statusNorm] || 'secondary';
 
                     // Técnico
-                    const techLabel = request.technicianName || (request.assignedTo ? 'Atribuído' : '<span class="text-muted">Não atribuído</span>');
+                    const techLabel = request.technicianName ? escapeHtml(request.technicianName) : (request.assignedTo ? 'Atribuído' : '<span class="text-muted">Não atribuído</span>');
 
                     row.innerHTML = `
                         <td><strong>${displayId}</strong></td>
@@ -1318,8 +1318,8 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <h6>Informação principal</h6>
-                                <p><strong>ID:</strong> ${request.requestNumber || ('#' + requestId.slice(-6).toUpperCase())}</p>
-                                <p><strong>Elevador:</strong> ${request.liftMunicipalNumber || request.liftId || '—'}</p>
+                                <p><strong>ID:</strong> ${escapeHtml(request.requestNumber) || ('#' + requestId.slice(-6).toUpperCase())}</p>
+                                <p><strong>Elevador:</strong> ${escapeHtml(request.liftMunicipalNumber || request.liftId || '—')}</p>
                                 ${request.liftAddress ? `<p><strong>Morada:</strong> ${escapeHtml(request.liftAddress)}</p>` : ''}
                                 <p><strong>Tipo:</strong> ${this.getTypeText(request.type)}</p>
                                 <p><strong>Prioridade:</strong> ${this.getPriorityText(request.priority)}</p>

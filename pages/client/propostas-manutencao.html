@@ -360,6 +360,19 @@
 <script src="../../plugins/adminlte/adminlte.min.js"></script>
 
 <script>
+    function escapeHtml(s) {
+        if (s == null) return '';
+        return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+    }
+    function escapeForOnclickArg(str) {
+        return String(str ?? '')
+            .replace(/\\/g, '\\\\')
+            .replace(/'/g, "\\'")
+            .replace(/"/g, '&quot;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
+    }
+
     const API_BASE_URL = '';
     let propostasData = [];
     let pendingAction = null; // { id, novoStatus }
@@ -482,14 +495,14 @@
             <div class="col-md-6 col-lg-4 mb-4">
                 <div class="card orcamento-card h-100" style="cursor:pointer;" onclick="verDetalhe('${p._id}')">
                     <div class="card-header bg-gradient-primary d-flex justify-content-between align-items-center">
-                        <span class="text-white font-weight-bold"><i class="fas fa-file-contract mr-1"></i>${p.numero}</span>
-                        <span class="status-badge ${statusClass}">${statusText}</span>
+                        <span class="text-white font-weight-bold"><i class="fas fa-file-contract mr-1"></i>${escapeHtml(p.numero)}</span>
+                        <span class="status-badge ${statusClass}">${escapeHtml(statusText)}</span>
                     </div>
                     <div class="card-body">
                         <p class="mb-1"><i class="fas fa-tools text-secondary mr-1"></i><strong>Tipo:</strong> Manutenção ${p.tipo === 'completa' ? 'Completa' : 'Simples'}</p>
                         <p class="mb-1"><i class="fas fa-calendar text-primary mr-1"></i><strong>Data:</strong> ${data}</p>
                         ${p.status !== 'solicitado' ? `<p class="mb-1"><i class="fas fa-clock text-warning mr-1"></i><strong>Válida até:</strong> ${validadeAte}</p>` : ''}
-                        ${p.instalacao?.morada ? `<p class="mb-1 text-muted small"><i class="fas fa-map-marker-alt mr-1"></i>${p.instalacao.morada}</p>` : ''}
+                        ${p.instalacao?.morada ? `<p class="mb-1 text-muted small"><i class="fas fa-map-marker-alt mr-1"></i>${escapeHtml(p.instalacao.morada)}</p>` : ''}
                         <hr>
                         ${p.status === 'solicitado'
                             ? `<p class="text-muted mb-0 text-right"><i class="fas fa-elevator mr-1"></i>${p.numAscensores || '—'} elevador(es)</p>`
@@ -500,7 +513,7 @@
                             <button class="btn btn-info btn-sm" onclick="verDetalhe('${p._id}'); event.stopPropagation();">
                                 <i class="fas fa-eye"></i> Ver detalhe
                             </button>
-                            ${p.status !== 'solicitado' ? `<button class="btn btn-secondary btn-sm" onclick="downloadPDF('${p._id}', '${p.numero}'); event.stopPropagation();" title="Download PDF">
+                            ${p.status !== 'solicitado' ? `<button class="btn btn-secondary btn-sm" onclick="downloadPDF('${p._id}', '${escapeForOnclickArg(p.numero)}'); event.stopPropagation();" title="Download PDF">
                                 <i class="fas fa-file-pdf"></i> PDF
                             </button>` : ''}
                         </div>
@@ -530,7 +543,7 @@
         const p = propostasData.find(x => x._id === id);
         if (!p) return;
 
-        document.getElementById('modalNumero').textContent = `Proposta ${p.numero}`;
+        document.getElementById('modalNumero').textContent = `Proposta ${p.numero || ''}`;
 
         const renovacao = p.renovacao || {};
         document.getElementById('modalBody').innerHTML = `
@@ -539,39 +552,39 @@
                     <p><strong>Tipo:</strong> Manutenção ${p.tipo === 'completa' ? 'Completa' : 'Simples'}</p>
                     <p><strong>Data:</strong> ${new Date(p.data).toLocaleDateString('pt-PT')}</p>
                     ${p.status !== 'solicitado' ? `<p><strong>Válida até:</strong> ${p.validadeAte ? new Date(p.validadeAte).toLocaleDateString('pt-PT') : 'N/A'}</p>` : ''}
-                    <p><strong>Status:</strong> <span class="status-badge ${`badge-${p.status}`}">${statusLabels[p.status] || p.status}</span></p>
+                    <p><strong>Status:</strong> <span class="status-badge ${`badge-${p.status}`}">${escapeHtml(statusLabels[p.status] || p.status)}</span></p>
                     ${p.dataResposta ? `<p><strong>Data de resposta:</strong> ${new Date(p.dataResposta).toLocaleDateString('pt-PT')}</p>` : ''}
                     ${(p.status === 'aprovado' || p.status === 'rejeitado') ? `<p><strong>${p.status === 'aprovado' ? 'Aprovada' : 'Rejeitada'} por:</strong> ${!p.aprovadoPor || p.aprovadoPor === 'cliente' ? 'si próprio(a)' : 'FestLift'}</p>` : ''}
-                    ${p.observacao ? `<p><strong>Observação:</strong> ${p.observacao}</p>` : ''}
+                    ${p.observacao ? `<p><strong>Observação:</strong> ${escapeHtml(p.observacao)}</p>` : ''}
                 </div>
                 <div class="col-sm-6">
-                    <p><strong>Nome:</strong> ${p.cliente?.nome || '—'}</p>
-                    <p><strong>Email:</strong> ${p.cliente?.email || '—'}</p>
-                    ${p.instalacao?.morada ? `<p><strong>Instalação:</strong> ${p.instalacao.morada}</p>` : ''}
+                    <p><strong>Nome:</strong> ${escapeHtml(p.cliente?.nome || '—')}</p>
+                    <p><strong>Email:</strong> ${escapeHtml(p.cliente?.email || '—')}</p>
+                    ${p.instalacao?.morada ? `<p><strong>Instalação:</strong> ${escapeHtml(p.instalacao.morada)}</p>` : ''}
                 </div>
             </div>
             ${p.status === 'solicitado' ? `
             <table class="table table-sm table-bordered">
                 <tbody>
-                    <tr><th style="width:40%">NIF / Nº de contribuinte</th><td>${p.cliente?.nif || '—'}</td></tr>
-                    <tr><th>Código postal</th><td>${p.instalacao?.codigoPostal || p.cliente?.codigoPostal || '—'}</td></tr>
-                    <tr><th>Nº de elevadores</th><td>${p.numAscensores || '—'}</td></tr>
+                    <tr><th style="width:40%">NIF / Nº de contribuinte</th><td>${escapeHtml(p.cliente?.nif || '—')}</td></tr>
+                    <tr><th>Código postal</th><td>${escapeHtml(p.instalacao?.codigoPostal || p.cliente?.codigoPostal || '—')}</td></tr>
+                    <tr><th>Nº de elevadores</th><td>${escapeHtml(p.numAscensores || '—')}</td></tr>
                 </tbody>
             </table>
-            ${p.observacaoCliente ? `<div class="alert alert-light mt-2"><strong>Observações enviadas:</strong> ${p.observacaoCliente}</div>` : ''}
+            ${p.observacaoCliente ? `<div class="alert alert-light mt-2"><strong>Observações enviadas:</strong> ${escapeHtml(p.observacaoCliente)}</div>` : ''}
             <p class="text-muted small mt-2"><i class="fas fa-info-circle mr-1"></i>A equipa FestLift irá analisar o seu pedido e enviar-lhe uma proposta com as condições comerciais.</p>` : `
             <table class="table table-sm table-bordered">
                 <tbody>
-                    <tr><th style="width:40%">Nº de ascensores</th><td>${p.numAscensores || '—'}</td></tr>
+                    <tr><th style="width:40%">Nº de ascensores</th><td>${escapeHtml(p.numAscensores || '—')}</td></tr>
                     <tr><th>Preço mensal (por unidade)</th><td>€${(p.precoMensal || 0).toFixed(2)} + IVA</td></tr>
-                    <tr><th>Pagamento</th><td>${p.pagamento || '—'}</td></tr>
-                    <tr><th>Duração do contrato</th><td>${p.duracaoAnos || 1} ano(s)</td></tr>
+                    <tr><th>Pagamento</th><td>${escapeHtml(p.pagamento || '—')}</td></tr>
+                    <tr><th>Duração do contrato</th><td>${escapeHtml(p.duracaoAnos || 1)} ano(s)</td></tr>
                     <tr><th>Data de início</th><td>${p.dataInicioContrato ? new Date(p.dataInicioContrato).toLocaleDateString('pt-PT') : '—'}</td></tr>
-                    <tr><th>Renovação tácita</th><td>${renovacao.periodo || '—'}</td></tr>
-                    <tr><th>Aviso prévio de denúncia</th><td>${renovacao.avisoDias || '—'} (via ${renovacao.metodoNotificacao || '—'})</td></tr>
+                    <tr><th>Renovação tácita</th><td>${escapeHtml(renovacao.periodo || '—')}</td></tr>
+                    <tr><th>Aviso prévio de denúncia</th><td>${escapeHtml(renovacao.avisoDias || '—')} (via ${escapeHtml(renovacao.metodoNotificacao || '—')})</td></tr>
                 </tbody>
             </table>
-            ${p.notas ? `<div class="alert alert-light mt-2"><strong>Notas:</strong> ${p.notas}</div>` : ''}
+            ${p.notas ? `<div class="alert alert-light mt-2"><strong>Notas:</strong> ${escapeHtml(p.notas)}</div>` : ''}
             <p class="text-muted small mt-2"><i class="fas fa-info-circle mr-1"></i>Consulte o PDF em anexo para os termos e condições completos.</p>`}`;
 
         const footer = document.getElementById('modalFooter');
@@ -582,7 +595,7 @@
         } else if (p.status === 'enviado') {
             footer.innerHTML = `
                 <button class="btn btn-secondary" data-dismiss="modal">Fechar</button>
-                <button class="btn btn-outline-secondary" onclick="downloadPDF('${p._id}', '${p.numero}')">
+                <button class="btn btn-outline-secondary" onclick="downloadPDF('${p._id}', '${escapeForOnclickArg(p.numero)}')">
                     <i class="fas fa-file-pdf"></i> Download PDF
                 </button>
                 <button class="btn btn-success" onclick="abrirResposta('${p._id}', 'aprovado')">
@@ -594,7 +607,7 @@
         } else {
             footer.innerHTML = `
                 <button class="btn btn-secondary" data-dismiss="modal">Fechar</button>
-                <button class="btn btn-outline-secondary" onclick="downloadPDF('${p._id}', '${p.numero}')">
+                <button class="btn btn-outline-secondary" onclick="downloadPDF('${p._id}', '${escapeForOnclickArg(p.numero)}')">
                     <i class="fas fa-file-pdf"></i> Download PDF
                 </button>
                 ${p.status === 'aprovado' ? `<button class="btn btn-primary" onclick="verContrato('${p._id}')"><i class="fas fa-file-signature"></i> Ver Contrato</button>` : ''}`;
