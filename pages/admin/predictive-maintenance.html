@@ -822,6 +822,10 @@
 <script src="/assets/js/predictive-maintenance.js?v=1.8"></script>
 
 <script>
+function escapeHtml(s) {
+    if (s == null) return '';
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
 /**
  * 🔮 Funções globais para handlers onclick
  * ВАЖЛИВО: Оголошуються ДО classeу, para бути acessoними imediatamente
@@ -976,11 +980,11 @@ window.showRiskMatrix = function() {
         
         tableHtml += `
             <tr>
-                <td><strong>${liftId}</strong></td>
-                <td>${address}</td>
+                <td><strong>${escapeHtml(liftId)}</strong></td>
+                <td>${escapeHtml(address)}</td>
                 <td><span class="badge badge-${badgeClass}">${risk.toFixed(1)}%</span></td>
-                <td><span class="badge badge-${badgeClass}">${level}</span></td>
-                <td>${recommendation}</td>
+                <td><span class="badge badge-${badgeClass}">${escapeHtml(level)}</span></td>
+                <td>${escapeHtml(recommendation)}</td>
             </tr>
         `;
     });
@@ -1197,13 +1201,13 @@ class PredictiveMaintenanceDashboard {
         
         alerts.slice(0, 5).forEach(alert => {
             const alertHtml = `
-                <div class="alert-item alert-${alert.priority} p-2 mb-2">
+                <div class="alert-item alert-${escapeHtml(alert.priority)} p-2 mb-2">
                     <div class="d-flex justify-content-between align-items-start">
                         <div>
-                            <strong>${alert.message}</strong><br>
+                            <strong>${escapeHtml(alert.message)}</strong><br>
                             <small class="text-muted">${new Date(alert.timestamp).toLocaleString('pt-PT')}</small>
                         </div>
-                        <button class="btn btn-sm btn-link" onclick="acknowledgeAlert('${alert.id}')">
+                        <button class="btn btn-sm btn-link" onclick="acknowledgeAlert('${escapeHtml(alert.id)}')">
                             <i class="fas fa-check"></i>
                         </button>
                     </div>
@@ -1258,13 +1262,13 @@ class PredictiveMaintenanceDashboard {
             const recsHtml = (data.recommendations || []).map(rec => {
                 const pr = rec.priority === 'critical' ? 'danger' : rec.priority === 'high' ? 'warning' : 'info';
                 return `<div class="mb-1 pl-2 border-left border-${pr}" style="border-left-width:3px!important">
-                    <small>${rec.description || rec.action || ''}<br><span class="text-muted">${rec.timeframe || ''}</span></small></div>`;
+                    <small>${escapeHtml(rec.description || rec.action || '')}<br><span class="text-muted">${escapeHtml(rec.timeframe || '')}</span></small></div>`;
             }).join('') || '<small class="text-success"><i class="fas fa-check-circle"></i> Tudo em ordem</small>';
 
             rows.push(`
                 <tr style="cursor:pointer" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display==='none'?'table-row':'none'">
-                    <td><strong>#${displayName}</strong></td>
-                    <td><small>${address}</small></td>
+                    <td><strong>#${escapeHtml(displayName)}</strong></td>
+                    <td><small>${escapeHtml(address)}</small></td>
                     <td><span class="badge badge-${badgeClass}">${riskPercent}%</span> <small class="text-muted">${riskText}</small></td>
                     <td><small>${age}a</small></td>
                     <td>${compBadge}</td>
