@@ -1371,7 +1371,7 @@
 
                 list.innerHTML = backups.map(b => {
                     const when = b.modifiedAt ? new Date(b.modifiedAt).toLocaleString('pt-PT') : '-';
-                    return `<div class="list-group-item d-flex justify-content-between align-items-center">${b.name || 'backup'}<small class="text-muted">${when}</small></div>`;
+                    return `<div class="list-group-item d-flex justify-content-between align-items-center">${escapeHtml(b.name || 'backup')}<small class="text-muted">${escapeHtml(when)}</small></div>`;
                 }).join('');
             } catch (error) {
                 console.error('❌ Error loading system overview:', error);
@@ -1430,7 +1430,7 @@
                     const when = new Date(r.createdAt || r.updatedAt || Date.now()).toLocaleString('pt-PT');
                     const ref = r.number || r.requestNumber || r._id || 'pedido';
                     const status = r.status || 'novo';
-                    return `<div class="timeline-item"><div class="timeline-date">${when}</div><div>Pedido ${ref}</div><small class="text-muted">Estado: ${status}</small></div>`;
+                    return `<div class="timeline-item"><div class="timeline-date">${escapeHtml(when)}</div><div>Pedido ${escapeHtml(ref)}</div><small class="text-muted">Estado: ${escapeHtml(status)}</small></div>`;
                 }).join('');
             } catch (error) {
                 console.error('❌ Error loading real activity:', error);
