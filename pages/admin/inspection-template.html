@@ -1111,15 +1111,17 @@
                 if (typeof refreshChecklist === 'function') refreshChecklist();
                 if (insp.checklist && typeof insp.checklist === 'object') {
                     setTimeout(() => {
+                        // getChecklistData() guarda { status, comment, label, norm, section } por
+                        // item (chave = data-item) — não um valor escalar, por isso o restauro
+                        // tem de preencher os subcampos .checklist-status/.checklist-comment do
+                        // próprio .checklist-item, não um input com esse id/name.
                         Object.entries(insp.checklist).forEach(([itemId, val]) => {
-                            const el = document.getElementById(itemId) || document.querySelector(`[name="${itemId}"]`);
-                            if (el) {
-                                if (el.type === 'checkbox') el.checked = !!val;
-                                else if (el.type === 'radio') {
-                                    const r = document.querySelector(`[name="${el.name}"][value="${val}"]`);
-                                    if (r) r.checked = true;
-                                } else el.value = val;
-                            }
+                            const item = document.querySelector(`.checklist-item[data-item="${itemId}"]`);
+                            if (!item || val == null || typeof val !== 'object') return;
+                            const statusEl = item.querySelector('.checklist-status');
+                            const commentEl = item.querySelector('.checklist-comment');
+                            if (statusEl && val.status != null) statusEl.value = val.status;
+                            if (commentEl && val.comment != null) commentEl.value = val.comment;
                         });
                     }, 300);
                 }
