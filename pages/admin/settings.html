@@ -456,7 +456,10 @@ async function initializeSettings() {
         }
 
         // 🔥 CONNECTED TO REAL API /api/settings
-        const token = localStorage.getItem('token');
+        // AuthManager.getAuthToken() em vez de uma única chave — 'token' é só uma
+        // das várias cópias mantidas para compatibilidade, e nem todos os fluxos de
+        // login/refresh garantem escrever exatamente essa.
+        const token = AuthManager.getAuthToken();
         
         // A carregar configurações desde API
         const settingsResponse = await fetch('/api/settings', {

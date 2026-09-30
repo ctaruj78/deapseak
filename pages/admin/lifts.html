@@ -4439,19 +4439,18 @@ Email de contacto: info@festlift.pt`;
                 const existingModals = document.querySelectorAll('.modal.show');
                 
                 // Всeновлюexisteмо currentLiftId desde atualmenteго конtextoу
-                const municipalNumber = document.getElementById('enhancedMunicipalNumber');
-                if (municipalNumber && municipalNumber.value) {
-                    window.currentLiftId = municipalNumber.value;
-                    console.log('🏗️ Instalado currentLiftId:', window.currentLiftId);
+                // O ID real do elevador (Mongo ObjectId) — antes disto o código usava
+                // primeiro o Nº municipal (texto legível, não um ID válido) e só
+                // depois tentava este, ou pior, gerava um 'LIFT_'+Date.now()
+                // completamente inventado. Guardar um relatório contra qualquer um
+                // desses falhava (ou gravava contra o elevador errado) porque o
+                // backend espera um ObjectId real.
+                if (window.enhancedLiftModal?.currentLiftId) {
+                    window.currentLiftId = window.enhancedLiftModal.currentLiftId;
+                    console.log('🏗️ currentLiftId recebido do modal melhorado:', window.currentLiftId);
                 } else {
-                    // Пробуexisteмо отримати desde enhanced modal
-                    if (window.enhancedLiftModal?.currentLiftId) {
-                        window.currentLiftId = window.enhancedLiftModal.currentLiftId;
-                        console.log('🏗️ currentLiftId recebido do modal melhorado:', window.currentLiftId);
-                    } else {
-                        window.currentLiftId = 'LIFT_' + Date.now();
-                        console.log('🏗️ Criado novo currentLiftId:', window.currentLiftId);
-                    }
+                    toastr.warning('Guarde os dados do elevador antes de adicionar um relatório de inspeção.');
+                    return;
                 }
                 
                 // Відкриваexisteмо нове модальне вікно desde вищим z-index
