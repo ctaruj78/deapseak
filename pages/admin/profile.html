@@ -1462,8 +1462,10 @@ async function eliminarConta() {
     if (!await swalConfirm('Tem a certeza? Todas os dados serão eliminados permanentemente.')) return;
     const token = localStorage.getItem('authToken') || localStorage.getItem('liftmanager_jwt');
     fetch('/api/users/me', { method: 'DELETE', headers: { Authorization: 'Bearer ' + token } })
-        .then(() => { localStorage.clear(); sessionStorage.clear(); window.location.replace('/pages/auth/login.html'); })
+        .then(res => {
+            if (!res.ok) { toastr.error('Erro na eliminação. Contacte o administrador.'); return; }
+            localStorage.clear(); sessionStorage.clear(); window.location.replace('/pages/auth/login.html');
+        })
         .catch(() => { toastr.error('Erro na eliminação. Contacte o administrador.'); });
 }
 </script>
-</body> -->
