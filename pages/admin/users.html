@@ -1049,7 +1049,7 @@
                             <td>${displayId}</td>
                             <td>${this.escapeHtml(displayName)}</td>
                             <td>${this.escapeHtml(user.email)}</td>
-                            <td><span class="role-badge role-${user.role}">${this.getRoleLabel(user.role)}</span></td>
+                            <td><span class="role-badge role-${this.escapeHtml(user.role)}">${this.escapeHtml(this.getRoleLabel(user.role))}</span></td>
                             <td><span class="status-badge status-${user.status || 'active'}">${this.getStatusLabel(user.status || 'active')}</span></td>
                             <td class="text-center">${_accessBadge}</td>
                             <td class="text-center" style="white-space:nowrap">${_lastLoginStr}</td>
@@ -1530,13 +1530,13 @@
                                     
                                     <div class="form-group">
                                         <label><i class="fas fa-user"></i> Email do utilizador:</label>
-                                        <input type="text" class="form-control" value="${email}" readonly>
+                                        <input type="text" class="form-control" value="${this.escapeHtml(email)}" readonly>
                                     </div>
-                                    
+
                                     <div class="form-group">
                                         <label><i class="fas fa-lock"></i> Palavra-passe gerada:</label>
                                         <div class="input-group">
-                                            <input type="text" id="displayPassword" class="form-control font-weight-bold" value="${password}" readonly>
+                                            <input type="text" id="displayPassword" class="form-control font-weight-bold" value="${this.escapeHtml(password)}" readonly>
                                             <div class="input-group-append">
                                                 <button type="button" class="btn btn-success" id="copyDisplayPassword">
                                                     <i class="fas fa-copy"></i> Copiar
@@ -1599,7 +1599,7 @@
                         $('#emailStatusAlert')
                             .removeClass('alert-danger')
                             .addClass('alert alert-success')
-                            .html('<i class="fas fa-check-circle"></i> <strong>Com sucesso!</strong> Email com instruções enviado para ' + email)
+                            .html('<i class="fas fa-check-circle"></i> <strong>Com sucesso!</strong> Email com instruções enviado para ' + userManager.escapeHtml(email))
                             .fadeIn();
                         
                         btn.html('<i class="fas fa-check"></i> Enviado!');
@@ -1611,7 +1611,7 @@
                         $('#emailStatusAlert')
                             .removeClass('alert-success')
                             .addClass('alert alert-danger')
-                            .html('<i class="fas fa-exclamation-triangle"></i> <strong>Erro!</strong> ' + error.message)
+                            .html('<i class="fas fa-exclamation-triangle"></i> <strong>Erro!</strong> ' + userManager.escapeHtml(error.message))
                             .fadeIn();
                         
                         btn.prop('disabled', false).html(originalHTML);
