@@ -547,14 +547,14 @@
                         const icon = icons[status] || (status || '--');
                         const cls = classes[status] || 'text-secondary';
 
-                        sectionItems += `<li><span class="${cls}"><strong>${icon}</strong></span> ${itemName}`;
-                        if (norm) sectionItems += ` <small class="text-muted">(${norm})</small>`;
-                        if (comment) sectionItems += ` — <em>${comment}</em>`;
+                        sectionItems += `<li><span class="${cls}"><strong>${icon}</strong></span> ${escapeHtml(itemName)}`;
+                        if (norm) sectionItems += ` <small class="text-muted">(${escapeHtml(norm)})</small>`;
+                        if (comment) sectionItems += ` — <em>${escapeHtml(comment)}</em>`;
                         sectionItems += '</li>';
                     });
 
                     if (hasItems) {
-                        reportChecklist.append(`<h6>${sectionTitle}</h6><ul>${sectionItems}</ul>`);
+                        reportChecklist.append(`<h6>${escapeHtml(sectionTitle)}</h6><ul>${sectionItems}</ul>`);
                     }
                 });
                 
