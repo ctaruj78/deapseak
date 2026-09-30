@@ -942,6 +942,18 @@
             if (s == null) return '';
             return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
         }
+        // fetchWithAuth() devolve null quando a autenticação falha (já está a
+        // redirecionar para o login nesse caso) — chamar .json() diretamente em
+        // null lançava um TypeError secundário que mascarava a mensagem real.
+        async function safeErrorMessage(response, fallback) {
+            if (!response) return fallback;
+            try {
+                const body = await response.json();
+                return body.message || fallback;
+            } catch (e) {
+                return fallback;
+            }
+        }
         let serviceIntegration;
 
         async function logout() {
@@ -1026,8 +1038,7 @@
                         body: JSON.stringify(body)
                     });
                     if (!response || !response.ok) {
-                        const error = await response.json();
-                        throw new Error(error.message || 'Erro de atribuição');
+                        throw new Error(await safeErrorMessage(response, 'Erro de atribuição'));
                     }
                     // Also update deadline/scheduledDate via PUT if provided
                     // (scheduledDate is the field the technician's calendar/tasks actually read)
@@ -2229,8 +2240,7 @@
                     });
                     
                     if (!response || !response.ok) {
-                        const error = await response.json();
-                        throw new Error(error.message || 'Erro de confirmação');
+                        throw new Error(await safeErrorMessage(response, 'Erro de confirmação'));
                     }
                     
                     toastr.info('Pedido confirmado!');
@@ -2685,8 +2695,7 @@
                         });
                         
                         if (!response || !response.ok) {
-                            const error = await response.json();
-                            throw new Error(error.message || 'Erro de alteração estado');
+                            throw new Error(await safeErrorMessage(response, 'Erro de alteração estado'));
                         }
                         
                         toastr.info('Trabalho iniciado!');
@@ -2770,8 +2779,7 @@
                         });
                         
                         if (!response || !response.ok) {
-                            const error = await response.json();
-                            throw new Error(error.message || 'Erro ao adicionar comentário');
+                            throw new Error(await safeErrorMessage(response, 'Erro ao adicionar comentário'));
                         }
                         
                         toastr.success('Comentário adicionado!');
@@ -2800,8 +2808,7 @@
                         });
                         
                         if (!response || !response.ok) {
-                            const error = await response.json();
-                            throw new Error(error.message || 'Erro conclusão');
+                            throw new Error(await safeErrorMessage(response, 'Erro conclusão'));
                         }
                         
                         toastr.info('Pedido concluído!');
@@ -2822,8 +2829,7 @@
                         });
                         
                         if (!response || !response.ok) {
-                            const error = await response.json();
-                            throw new Error(error.message || 'Erro atualização estado');
+                            throw new Error(await safeErrorMessage(response, 'Erro atualização estado'));
                         }
                         
                         await this.loadAssignments();
