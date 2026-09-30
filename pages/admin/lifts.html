@@ -3819,10 +3819,17 @@ Equipa FestLift
         
         if (timeUntilNotification > 0) {
             // Planeamento email (в реальній системі це será backend job)
-            setTimeout(() => {
-                sendInspectionEmail(inspection);
-            }, Math.min(timeUntilNotification, 2147483647)); // Máximo setTimeout
-            
+            const MAX_SETTIMEOUT = 2147483647; // ~24.8 dias — limite do setTimeout
+            if (timeUntilNotification > MAX_SETTIMEOUT) {
+                // Não dá para agendar diretamente para além do limite do setTimeout —
+                // reagenda mais perto do prazo em vez de disparar cedo demais.
+                setTimeout(() => scheduleEmailNotification(inspection), MAX_SETTIMEOUT);
+            } else {
+                setTimeout(() => {
+                    sendInspectionEmail(inspection);
+                }, timeUntilNotification);
+            }
+
             console.log(`Email agendado para ${notificationDate.toLocaleString()}`);
         } else {
             // Se data já минула, відправляexisteмо зразу
@@ -7579,7 +7586,7 @@ Email de contacto: info@festlift.pt`;
                 if (result.success) {
                     $('#viewReportModal').modal('hide');
                     if (typeof toastr !== 'undefined') toastr.success('PDF anexado com sucesso!');
-                    else toastr.success('PDF anexado com sucesso!');
+                    else console.log('PDF anexado com sucesso!');
                     if (typeof showLiftDetails === 'function') showLiftDetails(liftId);
                 } else {
                     toastr.error('Erro: ' + (result.message || 'Não foi possível anexar o PDF'));
@@ -8625,7 +8632,7 @@ Email de contacto: info@festlift.pt`;
                     } catch (err) {
                         console.error('Erro ao gerar PDF:', err);
                         if (typeof toastr !== 'undefined') toastr.error('Erro ao gerar PDF: ' + err.message);
-                        else toastr.error('Erro ao gerar PDF: ' + err.message);
+                        else console.error('Erro ao gerar PDF: ' + err.message);
                     } finally {
                         btn.disabled = false;
                         btn.innerHTML = '<i class="fas fa-file-pdf mr-1"></i> Exportar PDF';
@@ -9566,7 +9573,7 @@ Email de contacto: info@festlift.pt`;
                     $('#pdfParserStep1').show();
                     $('#pdfParserFooterStep1').show();
                     if (typeof toastr !== 'undefined') toastr.error(data.message || 'Erro na análise do PDF');
-                    else toastr.error('Erro: ' + (data.message || 'Não foi possível analisar o PDF'));
+                    else console.error('Erro: ' + (data.message || 'Não foi possível analisar o PDF'));
                     return;
                 }
 
@@ -9871,7 +9878,7 @@ Email de contacto: info@festlift.pt`;
                 }
                 $('#pdfParserDate').addClass('is-invalid').focus();
                 if (typeof toastr !== 'undefined') toastr.warning('Preencha a data de inspecção antes de guardar.');
-                else toastr.warning('Por favor preencha a data de inspecção antes de guardar.');
+                else console.warn('Por favor preencha a data de inspecção antes de guardar.');
                 return;
             }
             $('#pdfParserDate').removeClass('is-invalid');
@@ -9928,7 +9935,7 @@ Email de contacto: info@festlift.pt`;
                 if (!result.success) {
                     if (result.duplicate) {
                         if (typeof toastr !== 'undefined') toastr.warning('⚠️ ' + result.message);
-                        else toastr.success(result.message);
+                        else console.warn(result.message);
                         $('#pdfParserModal').modal('hide');
                         // Reload to show the conflicting record so user can see why it's a duplicate
                         if (typeof loadAdminStep4InspectionInfo === 'function') loadAdminStep4InspectionInfo(liftId);
@@ -9940,7 +9947,7 @@ Email de contacto: info@festlift.pt`;
                 $('#pdfParserModal').modal('hide');
 
                 if (typeof toastr !== 'undefined') toastr.success('✅ Relatório de inspecção guardado!');
-                else toastr.success('Relatório de inspecção guardado com sucesso!');
+                else console.log('Relatório de inspecção guardado com sucesso!');
 
                 // Sync all open views after save
                 if (window._currentEditingLift) window._currentEditingLift.inspectionHistory = null;
@@ -10341,7 +10348,7 @@ $(document).on('click', '#editInspRptSaveBtn', async function() {
     if (!dateVal) {
         $('#editInspRptDate').addClass('is-invalid').focus();
         if (typeof toastr !== 'undefined') toastr.warning('A data de inspecção é obrigatória.');
-        else toastr.warning('Por favor preencha a data de inspecção.');
+        else console.warn('Por favor preencha a data de inspecção.');
         return;
     }
     $('#editInspRptDate').removeClass('is-invalid');
@@ -10372,7 +10379,7 @@ $(document).on('click', '#editInspRptSaveBtn', async function() {
         $btn.prop('disabled', false).html('<i class="fas fa-save mr-1"></i> Guardar alterações');
         $('#editInspectionReportModal').modal('hide');
         if (typeof toastr !== 'undefined') toastr.success('✅ Relatório actualizado!');
-        else toastr.success('Relatório actualizado com sucesso!');
+        else console.log('Relatório actualizado com sucesso!');
 
         // Reload detail view
         if (typeof showLiftDetails === 'function' && liftId) {

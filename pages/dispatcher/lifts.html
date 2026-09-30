@@ -3619,10 +3619,17 @@ Equipa FestLift
         
         if (timeUntilNotification > 0) {
             // Planeamento email (в реальній системі це será backend job)
-            setTimeout(() => {
-                sendInspectionEmail(inspection);
-            }, Math.min(timeUntilNotification, 2147483647)); // Máximo setTimeout
-            
+            const MAX_SETTIMEOUT = 2147483647; // ~24.8 dias — limite do setTimeout
+            if (timeUntilNotification > MAX_SETTIMEOUT) {
+                // Não dá para agendar diretamente para além do limite do setTimeout —
+                // reagenda mais perto do prazo em vez de disparar cedo demais.
+                setTimeout(() => scheduleEmailNotification(inspection), MAX_SETTIMEOUT);
+            } else {
+                setTimeout(() => {
+                    sendInspectionEmail(inspection);
+                }, timeUntilNotification);
+            }
+
             console.log(`Email agendado para ${notificationDate.toLocaleString()}`);
         } else {
             // Se data já минула, відправляexisteмо зразу
@@ -8233,7 +8240,7 @@ Equipa FestLift</textarea>
                     } catch (err) {
                         console.error('Erro ao gerar PDF:', err);
                         if (typeof toastr !== 'undefined') toastr.error('Erro ao gerar PDF: ' + err.message);
-                        else toastr.error('Erro ao gerar PDF: ' + err.message);
+                        else console.error('Erro ao gerar PDF: ' + err.message);
                     } finally {
                         btn.disabled = false;
                         btn.innerHTML = '<i class="fas fa-file-pdf mr-1"></i> Exportar PDF';
@@ -8832,7 +8839,7 @@ Equipa FestLift</textarea>
 
                 if (result && (result.success || result.data?.success)) {
                     if (typeof toastr !== 'undefined') toastr.success(`Relatório enviado com sucesso para ${municipalityEmail}`);
-                    else toastr.success(`Relatório enviado com sucesso para ${municipalityEmail}`);
+                    else console.log(`Relatório enviado com sucesso para ${municipalityEmail}`);
                     $('#municipalityModal').modal('hide');
                 } else {
                     const errMsg = result?.message || result?.data?.message || 'Erro ao enviar relatório';
@@ -8842,7 +8849,7 @@ Equipa FestLift</textarea>
             } catch (error) {
                 console.error('❌ Erro ao enviar relatório ao município:', error);
                 if (typeof toastr !== 'undefined') toastr.error('Erro ao enviar: ' + error.message);
-                else toastr.error('Erro ao enviar: ' + error.message);
+                else console.error('Erro ao enviar: ' + error.message);
                 $btn.prop('disabled', false).html(originalText);
             }
         });
@@ -9317,7 +9324,7 @@ Equipa FestLift</textarea>
             const data = await res.json();
             if (data.success) {
                 if (typeof toastr !== 'undefined') toastr.success(successMsg);
-                else toastr.success(successMsg);
+                else console.log(successMsg);
                 if (window._currentInspectionLift) {
                     const now = data.sentAt || new Date().toISOString();
                     if (type === 'mun_request') window._currentInspectionLift.munRequest = { sentAt: now };
@@ -9327,12 +9334,12 @@ Equipa FestLift</textarea>
             }
             const errMsg = data.error || data.message || 'Erro desconhecido ao enviar email';
             if (typeof toastr !== 'undefined') toastr.error('Erro ao enviar email: ' + errMsg);
-            else toastr.error('Erro ao enviar email: ' + errMsg);
+            else console.error('Erro ao enviar email: ' + errMsg);
             return false;
         } catch (err) {
             console.error('❌ Erro ao enviar email via SMTP:', err);
             if (typeof toastr !== 'undefined') toastr.error('Erro de ligação ao servidor de email: ' + err.message);
-            else toastr.error('Erro de ligação ao servidor de email: ' + err.message);
+            else console.error('Erro de ligação ao servidor de email: ' + err.message);
             return false;
         }
     }
@@ -9429,7 +9436,7 @@ Equipa FestLift</textarea>
                     $('#pdfParserStep1').show();
                     $('#pdfParserFooterStep1').show();
                     if (typeof toastr !== 'undefined') toastr.error(data.message || 'Erro na análise do PDF');
-                    else toastr.error('Erro: ' + (data.message || 'Não foi possível analisar o PDF'));
+                    else console.error('Erro: ' + (data.message || 'Não foi possível analisar o PDF'));
                     return;
                 }
 
@@ -9664,7 +9671,7 @@ Equipa FestLift</textarea>
                 if (!result.success) {
                     if (result.duplicate) {
                         if (typeof toastr !== 'undefined') toastr.warning('⚠️ ' + result.message);
-                        else toastr.success(result.message);
+                        else console.warn(result.message);
                         $('#pdfParserModal').modal('hide');
                         return;
                     }
@@ -9674,7 +9681,7 @@ Equipa FestLift</textarea>
                 $('#pdfParserModal').modal('hide');
 
                 if (typeof toastr !== 'undefined') toastr.success('✅ Relatório de inspecção guardado!');
-                else toastr.success('Relatório de inspecção guardado com sucesso!');
+                else console.log('Relatório de inspecção guardado com sucesso!');
 
                 // Reload inspection data if lift is currently viewed
                 var curId = window.currentLiftId || window._currentInspectionLiftId;
