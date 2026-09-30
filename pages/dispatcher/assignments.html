@@ -938,8 +938,12 @@
     <script src="/plugins/sortable/js/Sortable.min.js"></script>
 
     <script>
+        function escapeHtml(s) {
+            if (s == null) return '';
+            return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+        }
         let serviceIntegration;
-        
+
         async function logout() {
             // AuthManager.logout() limpa TODAS as chaves de sessão (sessionStorage +
             // localStorage, incluindo liftmanager_jwt/token) — esta versão só removia
@@ -1074,11 +1078,11 @@
                         return `<div class="workload-seg ${cls}"></div>`;
                     }).join('');
                     return `
-                        <div class="workload-row" onclick="window._dispSelectTech(this,'${tid}')">
-                            <div class="tech-avatar-sm" style="background:${avatarBg};color:#fff">${initials}</div>
+                        <div class="workload-row" onclick="window._dispSelectTech(this,'${escapeHtml(tid)}')">
+                            <div class="tech-avatar-sm" style="background:${avatarBg};color:#fff">${escapeHtml(initials)}</div>
                             <div class="flex-grow-1">
-                                <div class="font-weight-bold">${name}</div>
-                                <small class="text-muted">${tech.email || ''}</small>
+                                <div class="font-weight-bold">${escapeHtml(name)}</div>
+                                <small class="text-muted">${escapeHtml(tech.email || '')}</small>
                             </div>
                             <div class="d-flex align-items-center ml-2" style="gap:6px">
                                 <div class="workload-dot ${dc}" title="${tasks} activos"></div>
@@ -1094,7 +1098,7 @@
                     return aid === requestId;
                 }) || {};
                 const priorityMap = { critical:'danger', high:'warning', medium:'info', low:'success' };
-                const pBadge = req.priority ? `<span class="badge badge-${priorityMap[req.priority]||'secondary'}">${req.priority}</span>` : '';
+                const pBadge = req.priority ? `<span class="badge badge-${priorityMap[req.priority]||'secondary'}">${escapeHtml(req.priority)}</span>` : '';
                 const addr = req.liftAddress || req.address || req.location || '—';
 
                 const modalHtml = `
@@ -1108,8 +1112,8 @@
                       <div class="modal-body">
                         <div class="alert alert-light border mb-3 py-2">
                           <div class="d-flex align-items-center">
-                            <div>${pBadge}<strong class="ml-1">${req.title || req.type || 'Pedido'}</strong>
-                              <div class="text-muted small mt-1"><i class="fas fa-map-marker-alt mr-1"></i>${addr}</div>
+                            <div>${pBadge}<strong class="ml-1">${escapeHtml(req.title || req.type || 'Pedido')}</strong>
+                              <div class="text-muted small mt-1"><i class="fas fa-map-marker-alt mr-1"></i>${escapeHtml(addr)}</div>
                             </div>
                           </div>
                         </div>
@@ -1725,7 +1729,7 @@
                                 <small class="text-muted d-block mb-2">
                                     <i class="far fa-clock mr-1"></i>${date.toLocaleString('pt-PT')}
                                 </small>
-                                <p class="mb-0 text-secondary">${event.description}</p>
+                                <p class="mb-0 text-secondary">${escapeHtml(event.description)}</p>
                             </div>
                         </div>
                     `);
@@ -2029,7 +2033,7 @@
                             map.setView([lat, lon], 16);
                             L.marker([lat, lon])
                                 .addTo(map)
-                                .bindPopup(`<b>${address}</b>`)
+                                .bindPopup(`<b>${escapeHtml(address)}</b>`)
                                 .openPopup();
                             if ($('#modalCoordinates').length) {
                                 $('#modalCoordinates').text(`${lat.toFixed(5)}, ${lon.toFixed(5)}`);
@@ -2038,7 +2042,7 @@
                             // Morada не знайдена — показуexisteмо Лісouн desde mensagemм
                             L.popup()
                                 .setLatLng([38.7223, -9.1393])
-                                .setContent(`Endereço não encontrado: <b>${address}</b>`)
+                                .setContent(`Endereço não encontrado: <b>${escapeHtml(address)}</b>`)
                                 .openOn(map);
                         }
                     })
@@ -2103,8 +2107,8 @@
                                         <div class="mb-2">
                                             <i class="fas fa-user-circle fa-3x text-primary"></i>
                                         </div>
-                                        <h6 class="font-weight-bold mb-1">${tech.name}</h6>
-                                        <small class="text-muted d-block mb-2">${tech.specialty || 'Técnico'}</small>
+                                        <h6 class="font-weight-bold mb-1">${escapeHtml(tech.name)}</h6>
+                                        <small class="text-muted d-block mb-2">${escapeHtml(tech.specialty || 'Técnico')}</small>
 
                                         <div class="mb-3">
                                             <i class="fas fa-tasks text-info"></i>
