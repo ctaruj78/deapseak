@@ -3123,11 +3123,11 @@ Equipa FestLift
                     reportsList += `
                         <div class="list-group-item d-flex justify-content-between align-items-center">
                             <div>
-                                <h6 class="mb-1">${report.fileName}</h6>
-                                <p class="mb-1"><small class="text-muted">Tipo: ${report.reportType} | Data: ${date} | Tamanho: ${size}</small></p>
+                                <h6 class="mb-1">${escapeHtml(report.fileName)}</h6>
+                                <p class="mb-1"><small class="text-muted">Tipo: ${escapeHtml(report.reportType)} | Data: ${date} | Tamanho: ${size}</small></p>
                             </div>
                             <div class="btn-group-sm">
-                                <button class="btn btn-outline-danger btn-sm" onclick="deleteArchivedReport('${report.id}')">
+                                <button class="btn btn-outline-danger btn-sm" onclick="deleteArchivedReport('${escapeHtml(report.id)}')">
                                     <i class="fas fa-trash"></i>
                                 </button>
                             </div>
@@ -6528,11 +6528,12 @@ Equipa FestLift</textarea>
             }
             const imgData = canvas.toDataURL('image/png');
             
-            const municipalNumber = lift?.municipalNumber || 'Não especificado';
+            const municipalNumber = escapeHtml(lift?.municipalNumber || 'Não especificado');
             const manufacturer = lift?.manufacturer || 'Não especificado';
-            const model = lift?.model ? `${manufacturer} ${lift.model}` : manufacturer;
-            const type = lift?.type || 'Não especificado';
-            
+            const model = escapeHtml(lift?.model ? `${manufacturer} ${lift.model}` : manufacturer);
+            const type = escapeHtml(lift?.type || 'Não especificado');
+            const addressStrSafe = escapeHtml(addressStr);
+
             const htmlContent = [
                 '<!DOCTYPE html>',
                 '<html>',
@@ -6553,7 +6554,7 @@ Equipa FestLift</textarea>
                 '<h2>Código QR do elevador</h2>',
                 '<div class="info">',
                 '<div><strong>Nº Municipal:</strong> ' + municipalNumber + '</div>',
-                '<div><strong>Endereço:</strong> ' + addressStr + '</div>',
+                '<div><strong>Endereço:</strong> ' + addressStrSafe + '</div>',
                 '<div><strong>Modelo:</strong> ' + model + '</div>',
                 '<div><strong>Tipo:</strong> ' + type + '</div>',
                 '</div>',
@@ -7234,12 +7235,12 @@ Equipa FestLift</textarea>
         const metaRow = `
             <div class="row mb-2">
                 <div class="col-6"><strong><i class="fas fa-calendar text-muted mr-1"></i> Data:</strong><br>${date}</div>
-                <div class="col-6"><strong><i class="fas fa-user text-muted mr-1"></i> Inspector:</strong><br>${inspector || '<em class="text-muted">Não especificado</em>'}</div>
+                <div class="col-6"><strong><i class="fas fa-user text-muted mr-1"></i> Inspector:</strong><br>${inspector ? escapeHtml(inspector) : '<em class="text-muted">Não especificado</em>'}</div>
             </div>`;
         const notesRow = notes ? `
             <div class="mt-2">
                 <strong><i class="fas fa-comment text-muted mr-1"></i> Comentários / Cláusulas:</strong>
-                <div class="p-2 bg-light rounded mt-1" style="white-space:pre-wrap;font-size:.9em;">${notes}</div>
+                <div class="p-2 bg-light rounded mt-1" style="white-space:pre-wrap;font-size:.9em;">${escapeHtml(notes)}</div>
             </div>` : '';
         const footer = `<small class="text-muted"><i class="fas fa-clock mr-1"></i> ${report.createdAt ? new Date(report.createdAt).toLocaleString('pt-PT') : date}</small>`;
 
@@ -7367,10 +7368,10 @@ Equipa FestLift</textarea>
             : 'Data desconhecida';
         const typeLabels2 = { inspection: 'Inspecção', maintenance: 'Manutenção técnica', repair: 'Reparação', emergency: 'Chamada de emergência' };
         const typeRaw2 = report.inspectionType || report.type || '';
-        const type = typeLabels2[typeRaw2] || typeRaw2 || 'Não especificado';
-        const notes = report.comments || report.findings || report.notes || '';
+        const type = escapeHtml(typeLabels2[typeRaw2] || typeRaw2 || 'Não especificado');
+        const notes = escapeHtml(report.comments || report.findings || report.notes || '');
         const status = report.status || 'completed';
-        const inspector = report.inspector || report.inspectorName || '';
+        const inspector = escapeHtml(report.inspector || report.inspectorName || '');
         
         // Estado
         let statusText = '';
@@ -7383,10 +7384,10 @@ Equipa FestLift</textarea>
         }
         
         // Отримуexisteмо dados do elevador
-        const liftId = $('#detail-id').text() || '';
-        const liftLocation = $('#detail-location').text() || '';
-        const liftType = $('#detail-type').text() || '';
-        
+        const liftId = escapeHtml($('#detail-id').text() || '');
+        const liftLocation = escapeHtml($('#detail-location').text() || '');
+        const liftType = escapeHtml($('#detail-type').text() || '');
+
         const printContent = `
             <!DOCTYPE html>
             <html>
@@ -9106,7 +9107,7 @@ Equipa FestLift</textarea>
                 if (!inp||!inp.value.trim()) return;
                 var msg = inp.value.trim();
                 var t = new Date().toLocaleTimeString('pt-PT',{hour:'2-digit',minute:'2-digit'});
-                if (msgs) { msgs.innerHTML+='<div class="text-right mb-2"><span class="bg-primary text-white px-2 py-1 rounded d-inline-block">'+msg.replace(/</g,'&lt;')+'</span><br><small class="text-muted">'+t+'</small></div>'; msgs.scrollTop=msgs.scrollHeight; }
+                if (msgs) { msgs.innerHTML+='<div class="text-right mb-2"><span class="bg-primary text-white px-2 py-1 rounded d-inline-block">'+escapeHtml(msg)+'</span><br><small class="text-muted">'+t+'</small></div>'; msgs.scrollTop=msgs.scrollHeight; }
                 inp.value='';
                 if(window.wsClient){try{window.wsClient.sendChatMessage((document.getElementById('chatLiftId')||{}).value||'general',msg,Date.now().toString());}catch(e){}}
             }
