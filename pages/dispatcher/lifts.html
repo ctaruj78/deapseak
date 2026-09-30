@@ -8579,7 +8579,14 @@ Equipa FestLift</textarea>
                 }
                 
                 let htmlContent = await response.text();
-                
+
+                // Todos os valores abaixo (dados do elevador/cliente/município, notas
+                // digitadas pelo dispatcher) são substituídos DIRETAMENTE no HTML do
+                // template por string replace — sem isto, qualquer um destes campos
+                // podia injetar HTML/script na pré-visualização (e no email real).
+                for (const k of Object.keys(liftData)) liftData[k] = escapeHtml(liftData[k]);
+                for (const k of Object.keys(municipalityData)) municipalityData[k] = escapeHtml(municipalityData[k]);
+
                 // Formatoуexisteмо дату у португальському formatoі
                 const formatDate = (dateStr) => {
                     if (!dateStr) return new Date().toLocaleDateString('pt-PT');
@@ -8611,7 +8618,7 @@ Equipa FestLift</textarea>
                     .replace(/{{serviceStartDate}}/g, formatDate(serviceStartDate))
                     .replace(/{{currentDate}}/g, formatDate(new Date().toISOString().split('T')[0]))
                     .replace(/{{date}}/g, formatDate(new Date().toISOString().split('T')[0]))
-                    .replace(/{{notes}}/g, notes || 'Sem notas adicionais');
+                    .replace(/{{notes}}/g, escapeHtml(notes) || 'Sem notas adicionais');
 
                 // Browser preview não resolve imagens CID (usadas no envio real por email).
                 // Fazemos fallback para um ficheiro local apenas na pré-visualização.
@@ -9561,7 +9568,7 @@ Equipa FestLift</textarea>
                         var sev = v.classification || (v.severity || '?');
                         var cls = (sev === 'C1' || sev === 'critical') ? 'danger' : (sev === 'C2' || sev === 'medium') ? 'warning' : 'secondary';
                         var desc = typeof v === 'string' ? v : (v.description || v.text || JSON.stringify(v));
-                        return '<div class="mb-1"><span class="badge badge-' + cls + '">' + sev + '</span> ' + desc + '</div>';
+                        return '<div class="mb-1"><span class="badge badge-' + cls + '">' + escapeHtml(sev) + '</span> ' + escapeHtml(desc) + '</div>';
                     }).join('');
                     $('#pdfParserViolationsList').html(viols);
                     $('#pdfParserViolationsCount').text(ed.violations.length);
