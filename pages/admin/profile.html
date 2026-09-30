@@ -844,7 +844,7 @@
                                     <small class="text-muted">Último entrada: ontem</small>
                                 </div>
                             </div>
-                            <button class="btn btn-danger btn-sm mt-2" onclick="if(await swalConfirm('Terminar todas as sessões ativas? Será removido do sistema.')){localStorage.removeItem('authToken');localStorage.removeItem('userData');sessionStorage.clear();window.location.replace('/pages/auth/login.html');}">
+                            <button class="btn btn-danger btn-sm mt-2" onclick="endAllSessions()">
                                 <i class="fas fa-sign-out-alt mr-1"></i>Concluir todas as sessões
                             </button>
                         </div>
@@ -1231,6 +1231,16 @@
                    sessionStorage.getItem('liftmanager_jwt') ||
                    localStorage.getItem('token') ||
                    localStorage.getItem('jwt_token');
+        }
+
+        async function endAllSessions() {
+            // Era um onclick inline com `await` — sintaticamente inválido fora de uma
+            // função async, o botão não fazia nada ao clicar. AuthManager.logout()
+            // também limpa mais chaves do que o localStorage.removeItem('authToken')
+            // manual que aqui estava (não apagava liftmanager_jwt/sessionStorage, etc.)
+            if (await swalConfirm('Terminar todas as sessões ativas? Será removido do sistema.')) {
+                AuthManager.logout();
+            }
         }
 
         function formatBytes(bytes) {

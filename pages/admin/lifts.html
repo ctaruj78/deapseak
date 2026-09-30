@@ -4263,14 +4263,20 @@ Email de contacto: info@festlift.pt`;
     });
 
     async function sendInspectionEmail(inspection) {
-        
+
         try {
             const token = AuthManager.getAuthToken();
-            
+
             if (!token) {
                 console.error('JWT token não encontrado');
                 return;
             }
+
+            // formattedDate/emailContent nunca foram declaradas — a função lançava
+            // ReferenceError sempre que chamada, e os lembretes de inspeção agendados
+            // (scheduleEmailNotification) falhavam silenciosamente
+            const formattedDate = new Date(inspection.date).toLocaleDateString('pt-PT');
+            const emailContent = `Lembrete: a inspecção "${inspection.type || 'periódica'}" do elevador está marcada para ${formattedDate}.`;
 
             // Відправка através de Brevo SMTP API
             const response = await fetch('/api/email/send-inspection-reminder', {
@@ -4914,7 +4920,7 @@ Email de contacto: info@festlift.pt`;
 
             if (!response.ok) {
                 const errBody = await response.json().catch(() => ({}));
-                return { success: false, error: errBody.message || errBody.error || `HTTP ${response.status}` };
+                return { success: false, status: response.status, error: errBody.message || errBody.error || `HTTP ${response.status}` };
             }
             
             const result = await response.json();
@@ -4968,7 +4974,16 @@ Email de contacto: info@festlift.pt`;
                 }
             } else {
                 console.error('❌ Erro ao carregar elevadores:', result.error || 'Unknown error');
-                // Fallback до localStorage se API indisponível
+                // Se a falha é de autenticação (403 "Sessão inválida" após um ban/troca de
+                // password — fetchWithAuth só faz logout automático no 401, não no 403),
+                // mostrar dados de elevadores em cache do localStorage seria expor dados
+                // potencialmente sensíveis sem uma sessão válida no servidor. Nesse caso
+                // força-se logout em vez de usar a cache.
+                if (result.status === 401 || result.status === 403) {
+                    AuthManager.logout();
+                    return [];
+                }
+                // Fallback до localStorage se API indisponível (erro de rede/servidor)
                 const localLifts = JSON.parse(localStorage.getItem('lifts') || '[]');
                 window.allLiftsData = localLifts;
                 if (typeof applyAllFilters === 'function') {

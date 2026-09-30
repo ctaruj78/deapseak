@@ -941,10 +941,11 @@
         let serviceIntegration;
         
         async function logout() {
+            // AuthManager.logout() limpa TODAS as chaves de sessão (sessionStorage +
+            // localStorage, incluindo liftmanager_jwt/token) — esta versão só removia
+            // authToken/userData, pelo que a sessão continuava válida depois de "sair"
             if (await swalConfirm('Tem a certeza que quer sair do sistema?')) {
-                localStorage.removeItem('authToken');
-                localStorage.removeItem('userData');
-                window.location.replace('/pages/auth/login.html');
+                AuthManager.logout();
             }
         }
 

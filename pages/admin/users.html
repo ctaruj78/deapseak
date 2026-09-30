@@ -842,29 +842,45 @@
             }
 
             generateSecurePassword(length = 12) {
+                // Math.random() não é criptograficamente seguro e esta password é
+                // enviada como credencial real para POST /api/users — crypto.getRandomValues
+                // (nativo, sem polyfill) substitui tanto a escolha de caracteres como o
+                // baralhamento final, que também usava Math.random().
+                const randomInt = (max) => {
+                    const arr = new Uint32Array(1);
+                    crypto.getRandomValues(arr);
+                    return arr[0] % max;
+                };
+
                 // Caracteres para geração (excluídos ambíguos: 0, O, I, l, 1)
                 const uppercase = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
                 const lowercase = 'abcdefghjkmnpqrstuvwxyz';
                 const numbers = '23456789';
                 const special = '!@#$%&*';
-                
+
                 const allChars = uppercase + lowercase + numbers + special;
-                
+
                 let password = '';
-                
+
                 // Garantir mínimo de um caractere de cada tipo
-                password += uppercase[Math.floor(Math.random() * uppercase.length)];
-                password += lowercase[Math.floor(Math.random() * lowercase.length)];
-                password += numbers[Math.floor(Math.random() * numbers.length)];
-                password += special[Math.floor(Math.random() * special.length)];
-                
+                password += uppercase[randomInt(uppercase.length)];
+                password += lowercase[randomInt(lowercase.length)];
+                password += numbers[randomInt(numbers.length)];
+                password += special[randomInt(special.length)];
+
                 // Preenchaer o restante do comprimento
                 for (let i = password.length; i < length; i++) {
-                    password += allChars[Math.floor(Math.random() * allChars.length)];
+                    password += allChars[randomInt(allChars.length)];
                 }
-                
-                // Misturar caracteres
-                return password.split('').sort(() => Math.random() - 0.5).join('');
+
+                // Misturar caracteres (Fisher-Yates, não sort() com comparador aleatório —
+                // esse padrão nem sequer dá um baralhamento uniforme)
+                const chars = password.split('');
+                for (let i = chars.length - 1; i > 0; i--) {
+                    const j = randomInt(i + 1);
+                    [chars[i], chars[j]] = [chars[j], chars[i]];
+                }
+                return chars.join('');
             }
 
             async loadUsers() {
@@ -1316,8 +1332,6 @@
                         // Se palavra-passe não introduzida - servidor gerará automaticamente
                         if (!password) {
                             console.log('🔐 Palavra-passe não especificada - servidor gerará automaticamente');
-                        } else {
-                            console.log('🔑 A usar palavra-passe do cliente:', password);
                         }
                         
                         response = await AuthManager.fetchWithAuth('/api/users', {
@@ -1337,8 +1351,7 @@
                         if (result.data && result.data.temporaryPassword) {
                             // Servidor gerou palavra-passe
                             const generatedPassword = result.data.temporaryPassword;
-                            console.log('🔑 Servidor gerou palavra-passe:', generatedPassword);
-                            
+
                             // PRIMEIRO fechar formulário de criação
                             $('#userModal').modal('hide');
                             
@@ -1349,8 +1362,7 @@
                             });
                         } else if (passwordToSend) {
                             // Cliente gerou palavra-passe - também mostrar janela modal
-                            console.log('🔑 A mostrar palavra-passe do cliente:', passwordToSend);
-                            
+
                             // PRIMEIRO fechar formulário de criação
                             $('#userModal').modal('hide');
                             
