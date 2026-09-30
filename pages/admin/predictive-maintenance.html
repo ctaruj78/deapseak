@@ -834,6 +834,15 @@ function escJs(s) {
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;');
 }
+function safeParseLocalStorage(key, fallback) {
+    try {
+        const raw = localStorage.getItem(key);
+        return raw ? JSON.parse(raw) : fallback;
+    } catch (e) {
+        console.error(`localStorage '${key}' corrompido:`, e);
+        return fallback;
+    }
+}
 /**
  * 🔮 Funções globais para handlers onclick
  * ВАЖЛИВО: Оголошуються ДО classeу, para бути acessoними imediatamente
@@ -853,7 +862,7 @@ window.exportPredictions = function() {
         const data = {
             predictions: predictiveMaintenance.getSystemPredictions(),
             alerts: predictiveMaintenance.getActiveAlerts(),
-            statistics: JSON.parse(localStorage.getItem('maintenance_statistics') || '{}'),
+            statistics: safeParseLocalStorage('maintenance_statistics', {}),
             exportedAt: new Date().toISOString()
         };
         
@@ -1147,7 +1156,7 @@ class PredictiveMaintenanceDashboard {
         console.log('📊 A carregar dados dashboard...');
         
         // Отримуexisteмо сeтистику do sistema
-        const stats = JSON.parse(localStorage.getItem('maintenance_statistics') || '{}');
+        const stats = safeParseLocalStorage('maintenance_statistics', {});
         this.updateOverviewStats(stats);
         
         // Отримуexisteмо прогнози
@@ -1380,7 +1389,7 @@ class PredictiveMaintenanceDashboard {
         const container = $('#maintenanceTimeline');
         container.empty();
         
-        const schedule = JSON.parse(localStorage.getItem('optimized_maintenance_schedule') || '{}');
+        const schedule = safeParseLocalStorage('optimized_maintenance_schedule', {});
         
         if (!schedule.schedule || schedule.schedule.length === 0) {
             container.html('<p class="text-muted">Gráfico de Manutenção será gerado após análise</p>');
@@ -1409,8 +1418,8 @@ class PredictiveMaintenanceDashboard {
 
     updateMLInsights() {
         // Derive insight from real predictions stored by predictiveMaintenance service
-        const stats = JSON.parse(localStorage.getItem('maintenance_statistics') || '{}');
-        const alerts = JSON.parse(localStorage.getItem('maintenance_alerts') || '[]');
+        const stats = safeParseLocalStorage('maintenance_statistics', {});
+        const alerts = safeParseLocalStorage('maintenance_alerts', []);
         const activeAlerts = alerts.filter(a => !a.acknowledged);
         const criticalCount = activeAlerts.filter(a => a.severity === 'high' || a.severity === 'critical').length;
         const highRisk = stats.highRiskLifts || 0;
@@ -1602,7 +1611,7 @@ class PredictiveMaintenanceDashboard {
         // (guardados em localStorage 'maintenance_alerts') — antes mostrava sempre
         // 4 alertas de exemplo fixos, com um botão "confirmar" que chamava uma
         // função inexistente.
-        const alerts = JSON.parse(localStorage.getItem('maintenance_alerts') || '[]');
+        const alerts = safeParseLocalStorage('maintenance_alerts', []);
 
         if (alerts.length === 0) {
             alertsContainer.innerHTML = '<p class="text-muted text-center py-3">Sem alertas no momento.</p>';
@@ -1651,7 +1660,7 @@ class PredictiveMaintenanceDashboard {
         const alertCounts = [];
         
         // Build real alert counts per day from localStorage
-        const allAlerts = JSON.parse(localStorage.getItem('maintenance_alerts') || '[]');
+        const allAlerts = safeParseLocalStorage('maintenance_alerts', []);
         for (let i = 6; i >= 0; i--) {
             const date = new Date();
             date.setDate(date.getDate() - i);
