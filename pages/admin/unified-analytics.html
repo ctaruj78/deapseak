@@ -2289,17 +2289,17 @@ setTimeout(() => {
         const statusClass = comm.status === 'sent' ? 'success' : 'danger';
         const statusLabel = comm.status === 'sent' ? 'Enviado' : 'Erro';
         const msgIdHtml = comm.messageId
-            ? `<dd class="text-monospace small">${comm.messageId}</dd>`
+            ? `<dd class="text-monospace small">${escapeHtml(comm.messageId)}</dd>`
             : `<dd class="text-muted small"><em>Sem ID disponível</em></dd>`;
         body.innerHTML = `
             <dl class="mb-0">
-                <dt>Município</dt><dd>${comm.municipality}</dd>
-                <dt>Elevador (Nº)</dt><dd>${comm.lift}</dd>
+                <dt>Município</dt><dd>${escapeHtml(comm.municipality)}</dd>
+                <dt>Elevador (Nº)</dt><dd>${escapeHtml(comm.lift)}</dd>
                 <dt>Tipo</dt><dd>${_typeLabel(comm.type)}</dd>
                 <dt>Data de envio</dt><dd>${dateStr}</dd>
                 <dt>Estado</dt><dd><span class="badge badge-${statusClass}">${statusLabel}</span></dd>
-                ${comm.recipient ? `<dt>Destinatário</dt><dd>${comm.recipient}</dd>` : ''}
-                ${comm.sentBy ? `<dt>Enviado por</dt><dd>${comm.sentBy}</dd>` : ''}
+                ${comm.recipient ? `<dt>Destinatário</dt><dd>${escapeHtml(comm.recipient)}</dd>` : ''}
+                ${comm.sentBy ? `<dt>Enviado por</dt><dd>${escapeHtml(comm.sentBy)}</dd>` : ''}
                 <dt>Message ID</dt>${msgIdHtml}
             </dl>`;
         $('#emailDetailsModal').modal('show');
@@ -2541,13 +2541,13 @@ setTimeout(() => {
                                    <button class="btn btn-sm btn-outline-info" onclick="previewReport('${r._id||r.id}')"><i class="fas fa-eye"></i></button>`
                                 : `<button class="btn btn-sm btn-outline-secondary" disabled><i class="fas fa-spinner fa-spin"></i></button>`;
                             const badge = typeBadge[r.type] || 'secondary';
-                            const label = typeLabels[r.type] || r.type;
+                            const label = typeLabels[r.type] || escapeHtml(r.type);
                             const created = r.createdAt ? new Date(r.createdAt).toLocaleDateString('pt-PT') : '—';
                             const period  = r.periodFrom && r.periodTo
                                 ? `${new Date(r.periodFrom).toLocaleDateString('pt-PT')} – ${new Date(r.periodTo).toLocaleDateString('pt-PT')}`
-                                : (r.period || '—');
+                                : escapeHtml(r.period || '—');
                             return `<tr>
-                                <td>${r.title || r.name || 'Relatório'}</td>
+                                <td>${escapeHtml(r.title || r.name || 'Relatório')}</td>
                                 <td><span class="badge badge-${badge}">${label}</span></td>
                                 <td>${period}</td>
                                 <td>${created}</td>
