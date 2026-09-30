@@ -2153,7 +2153,20 @@
             if (!fotosInput) return;
             fotosInput.addEventListener('change', () => {
                 // Acumular novos ficheiros (evita duplicados por nome+tamanho)
+                // Validar tipo/tamanho — o texto ao lado do botão promete "JPG, PNG —
+                // máx. 10 MB cada" mas nada verificava isso: um ficheiro grande só
+                // falhava (sem aviso claro) quando o utilizador já tinha pré-visualizado
+                // e tentado guardar.
+                const MAX_PHOTO_BYTES = 10 * 1024 * 1024;
                 Array.from(fotosInput.files).forEach(file => {
+                    if (!file.type.startsWith('image/')) {
+                        toastr.error(`"${file.name}" não é uma imagem válida (JPG/PNG).`);
+                        return;
+                    }
+                    if (file.size > MAX_PHOTO_BYTES) {
+                        toastr.error(`"${file.name}" excede o limite de 10 MB.`);
+                        return;
+                    }
                     const isDup = window._pendingFotoFiles.some(f => f.name === file.name && f.size === file.size);
                     if (!isDup) window._pendingFotoFiles.push(file);
                 });
