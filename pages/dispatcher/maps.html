@@ -353,6 +353,10 @@
     <script src="../../assets/js/config.js"></script>
 
     <script>
+        function escapeHtml(s) {
+            if (s == null) return '';
+            return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+        }
         let lifts = [];
         let map;
         let markers = [];
@@ -596,11 +600,11 @@
         }
 
         function createLiftPopup(lift) {
-            const statusClass = `status-${lift.status}`;
+            const statusClass = `status-${escapeHtml(lift.status)}`;
             const statusText = getStatusText(lift.status);
-            const displayName = lift.model || lift.name || `Elevador ${lift.id}`;
-            const displayAddress = lift.location || lift.address || 'Endereço não especificado';
-            const lastService = lift.lastMaintenance || lift.lastService || 'Desconhecido';
+            const displayName = escapeHtml(lift.model || lift.name || `Elevador ${lift.id}`);
+            const displayAddress = escapeHtml(lift.location || lift.address || 'Endereço não especificado');
+            const lastService = escapeHtml(lift.lastMaintenance || lift.lastService || 'Desconhecido');
 
             return `
                 <div class="lift-popup">
@@ -609,7 +613,7 @@
                     <p><strong>📊 Estado:</strong> <span class="lift-status ${statusClass}">${statusText}</span></p>
                     <p><strong>🔧 Última manutenção:</strong> ${lastService}</p>
                     <div class="text-center mt-2">
-                        <button id="route-btn-${lift.id}" class="btn btn-sm btn-success" onclick="createRouteToLift('${lift.id}')">
+                        <button id="route-btn-${lift.id}" class="btn btn-sm btn-success" onclick="createRouteToLift('${escapeHtml(lift.id)}')">
                             <i class="fas fa-route"></i> Traçar rota
                         </button>
                         <a href="lifts.html" class="btn btn-sm btn-primary">
