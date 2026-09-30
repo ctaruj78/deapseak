@@ -454,10 +454,10 @@
                 <td>${escapeHtml(lift)}</td>
                 <td>${escapeHtml(tech)}</td>
                 <td>${date}</td>
-                <td><span class="priority-badge ${PRIORITY_CLASSES[priority] || ''}">${PRIORITY_LABELS[priority] || priority}</span></td>
-                <td><span class="status-badge ${STATUS_CLASSES[status] || ''}">${STATUS_LABELS[status] || status}</span></td>
+                <td><span class="priority-badge ${PRIORITY_CLASSES[priority] || ''}">${PRIORITY_LABELS[priority] || escapeHtml(priority)}</span></td>
+                <td><span class="status-badge ${STATUS_CLASSES[status] || ''}">${STATUS_LABELS[status] || escapeHtml(status)}</span></td>
                 <td>
-                    <button class="btn btn-xs btn-info" onclick="viewInspection('${escapeHtml(id)}')" title="Detalhes">
+                    <button class="btn btn-xs btn-info" onclick="viewInspection('${escJs(id)}')" title="Detalhes">
                         <i class="fas fa-eye"></i>
                     </button>
                 </td>
@@ -627,9 +627,9 @@
                 <div class="col-md-6">
                     <table class="table table-sm table-borderless">
                         <tr><th width="40%">Estado</th>
-                            <td><span class="status-badge ${STATUS_CLASSES[status] || ''}">${STATUS_LABELS[status] || status}</span></td></tr>
+                            <td><span class="status-badge ${STATUS_CLASSES[status] || ''}">${STATUS_LABELS[status] || escapeHtml(status)}</span></td></tr>
                         <tr><th>Prioridade</th>
-                            <td><span class="priority-badge ${PRIORITY_CLASSES[priority] || ''}">${PRIORITY_LABELS[priority] || priority}</span></td></tr>
+                            <td><span class="priority-badge ${PRIORITY_CLASSES[priority] || ''}">${PRIORITY_LABELS[priority] || escapeHtml(priority)}</span></td></tr>
                         <tr><th>ID</th><td><small class="text-muted">${escapeHtml(String(ins._id || ins.id || '—'))}</small></td></tr>
                     </table>
                 </div>
@@ -649,6 +649,17 @@
             .replace(/>/g, '&gt;')
             .replace(/"/g, '&quot;')
             .replace(/'/g, '&#039;');
+    }
+
+    // Para valores dentro de onclick="fn('...')" — escapeHtml() sozinho não chega
+    // (entidades HTML são decodificadas pelo parser antes do JS correr)
+    function escJs(str) {
+        return String(str ?? '')
+            .replace(/\\/g, '\\\\')
+            .replace(/'/g, "\\'")
+            .replace(/"/g, '&quot;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
     }
 
     // ── Schedule modal ───────────────────────────────────────────────────────
