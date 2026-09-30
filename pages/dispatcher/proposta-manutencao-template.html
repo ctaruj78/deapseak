@@ -492,10 +492,16 @@ function coletarDados() {
     };
 }
 
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 async function guardarProposta() {
     const dados = coletarDados();
     if (!dados.cliente.nome || !dados.cliente.email) {
         toastr.warning('Indique o nome e o email do cliente');
+        return;
+    }
+    if (!EMAIL_REGEX.test(dados.cliente.email)) {
+        toastr.warning('O email do cliente não tem um formato válido');
         return;
     }
 
@@ -540,6 +546,10 @@ async function guardarProposta() {
 async function enviarProposta() {
     if (!currentPropostaId) { toastr.warning('Guarde a proposta antes de enviar'); return; }
     const email = document.getElementById('clienteEmail').value.trim();
+    if (!EMAIL_REGEX.test(email)) {
+        toastr.warning('O email do cliente não tem um formato válido');
+        return;
+    }
     const ccList = await promptCcEnvio(`Enviar esta proposta para ${email}?`);
     if (ccList === null) return;
 
@@ -608,7 +618,7 @@ async function swalConfirm(text, title = 'Confirmar') {
 // Confirma o envio e recolhe uma lista opcional de CCs.
 // Retorna string[] de CCs (pode ser []), ou null se cancelado.
 async function promptCcEnvio(text) {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const emailRegex = EMAIL_REGEX;
     const r = await Swal.fire({
         title: 'Confirmar envio',
         html: `
