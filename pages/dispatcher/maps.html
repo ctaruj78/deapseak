@@ -918,6 +918,14 @@
                                 routingControl = null;
                                 console.log('🗺️ Rota fechado');
                             }
+                            // Os listeners de arrasto abaixo ficam presos ao document
+                            // (não ao container, que é removido) — sem isto, cada rota
+                            // traçada/fechada ao longo da sessão deixava mais 4
+                            // listeners mortos acumulados no document.
+                            document.removeEventListener('mousemove', drag);
+                            document.removeEventListener('mouseup', dragEnd);
+                            document.removeEventListener('touchmove', drag);
+                            document.removeEventListener('touchend', dragEnd);
                         });
                         
                         container.appendChild(closeBtn);

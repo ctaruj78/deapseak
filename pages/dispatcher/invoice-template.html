@@ -1531,7 +1531,10 @@
                     row.appendChild(col);
                 });
                 list.appendChild(row);
-                list.addEventListener('change', () => invoiceManager.updatePreview());
+                // .onchange substitui o handler anterior em vez de o empilhar —
+                // addEventListener() aqui acumulava um listener extra a cada
+                // pesquisa de morada, disparando updatePreview() N vezes por clique.
+                list.onchange = () => invoiceManager.updatePreview();
             }
 
             panel.style.display = '';

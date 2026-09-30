@@ -1965,8 +1965,11 @@
                     row.appendChild(col);
                 });
                 list.appendChild(row);
-                // Atualizar preview ao mudar checkboxes
-                list.addEventListener('change', () => invoiceManager.updatePreview());
+                // Atualizar preview ao mudar checkboxes — .onchange substitui o
+                // handler anterior em vez de o empilhar; addEventListener() aqui
+                // acumulava um listener extra a cada pesquisa de morada nesta mesma
+                // sessão, disparando updatePreview() N vezes por clique após N pesquisas.
+                list.onchange = () => invoiceManager.updatePreview();
             }
 
             panel.style.display = '';

@@ -2169,6 +2169,10 @@ setTimeout(() => {
             const blob = await res.blob();
             const url = URL.createObjectURL(blob);
             if (w) w.location.href = url; else window.open(url, '_blank');
+            // A URL fica associada a este documento (não à janela de preview), por
+            // isso revogar logo a seguir partia o preview — dá-se um tempo generoso
+            // para o PDF carregar na nova aba antes de libertar a memória.
+            setTimeout(() => URL.revokeObjectURL(url), 60000);
         } catch (e) {
             if (w) w.close();
             toastr.error(e.message || 'Erro ao abrir relatório');
