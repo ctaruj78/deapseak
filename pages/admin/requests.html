@@ -2389,12 +2389,10 @@ function assignTechnician() {
         return;
     }
     
-    // Registo detalhado para diagnóstico
+    // Registo de diagnóstico — sem o valor do token/JWT em claro no console
     console.log('🔍 A verificar autorização...');
-    console.log('Token (liftmanager_jwt):', localStorage.getItem('liftmanager_jwt'));
-    console.log('User:', localStorage.getItem('liftmanager_user'));
+    console.log('Token presente:', !!localStorage.getItem('liftmanager_jwt'));
     console.log('AuthManager.isAuthenticated():', AuthManager.isAuthenticated());
-    console.log('AuthManager.getCurrentUser():', AuthManager.getCurrentUser());
     
     // Verificação de autorização
     if (!AuthManager.isAuthenticated()) {

@@ -4069,8 +4069,16 @@ Email de contacto: info@festlift.pt`;
 
     async function _openReqPdf(url) {
         try {
+            // url normalmente é um caminho interno construído aqui mesmo, mas um dos
+            // dois chamadores usa um valor devolvido pela API (data.pdfUrl) — confirmar
+            // que é mesmo interno antes de anexar o Bearer token, para nunca o enviar
+            // para um domínio externo caso esse campo alguma vez seja adulterado.
+            const resolved = new URL(url, window.location.origin);
+            if (resolved.origin !== window.location.origin) {
+                throw new Error('URL de PDF inválido (fora da origem)');
+            }
             const token = AuthManager.getAuthToken();
-            const res = await fetch(url, { headers: { 'Authorization': `Bearer ${token}` } });
+            const res = await fetch(resolved.href, { headers: { 'Authorization': `Bearer ${token}` } });
             if (!res.ok) throw new Error(`HTTP ${res.status}`);
             const blob = await res.blob();
             // Nomear o blob antes de abrir: se o Chrome do utilizador estiver configurado
