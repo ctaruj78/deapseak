@@ -15856,7 +15856,7 @@ app.get('/api/reports', authenticateToken, async (req, res) => {
 app.post('/api/reports/generate', authenticateToken, async (req, res) => {
     try {
         const { ObjectId } = require('mongodb');
-        const { type = 'maintenance', startDate, endDate, technicianId, status, liftId } = req.body;
+        const { type = 'maintenance', startDate, endDate, technicianId, status, priority, liftId } = req.body;
 
         if (!startDate || !endDate) {
             return res.status(400).json({ message: 'Indique startDate e endDate' });
@@ -15912,6 +15912,7 @@ app.post('/api/reports/generate', authenticateToken, async (req, res) => {
             createdAt: { $gte: start.toISOString(), $lte: end.toISOString() }
         };
         if (status) requestsQuery.status = status;
+        if (priority) requestsQuery.priority = priority;
         if (effectiveTechnicianId) {
             try { requestsQuery.assignedTo = new ObjectId(effectiveTechnicianId); } catch (e) { requestsQuery.assignedTo = effectiveTechnicianId; }
         }

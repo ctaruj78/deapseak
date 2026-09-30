@@ -829,14 +829,25 @@
                 $(this).addClass('active');
             });
 
+            // toISOString() converte para UTC antes de formatar — em fusos com offset
+            // positivo (ex: Portugal no horário de verão, UTC+1), perto da meia-noite
+            // isto podia devolver o dia ANTERIOR ao que o calendário local mostra.
+            // Usa os componentes locais da data em vez de converter para UTC.
+            function formatDateForInput(date) {
+                const y = date.getFullYear();
+                const m = String(date.getMonth() + 1).padStart(2, '0');
+                const d = String(date.getDate()).padStart(2, '0');
+                return `${y}-${m}-${d}`;
+            }
+
             // Швидкий вибір períodoу
             $('.quick-periods .btn').on('click', function() {
                 const days = parseInt($(this).data('days'));
                 const today = new Date();
                 const start = new Date();
                 start.setDate(today.getDate() - days + 1);
-                $('#startDate').val(start.toISOString().split('T')[0]);
-                $('#endDate').val(today.toISOString().split('T')[0]);
+                $('#startDate').val(formatDateForInput(start));
+                $('#endDate').val(formatDateForInput(today));
             });
 
             // Всeновлення дат predefinido
@@ -847,10 +858,6 @@
             $('#startDate').val(formatDateForInput(firstDay));
             $('#endDate').val(formatDateForInput(lastDay));
 
-            function formatDateForInput(date) {
-                return date.toISOString().split('T')[0];
-            }
-
             // Geração relatório
             $('#btn-generate-report').on('click', function() {
                 const reportType = $('.report-type-card.active').data('report-type') || 'maintenance';
@@ -860,8 +867,10 @@
                 // nunca disparava — o filtro era sempre enviado literalmente como "all".
                 const technicianIdRaw = $('#technicianFilter').val();
                 const statusRaw = $('#statusFilter').val();
+                const priorityRaw = $('#priorityFilter').val();
                 const technicianId = technicianIdRaw === 'all' ? undefined : technicianIdRaw;
                 const status = statusRaw === 'all' ? undefined : statusRaw;
+                const priority = priorityRaw === 'all' ? undefined : priorityRaw;
 
                 if (!startDate || !endDate) {
                     toastr.warning('Selecione as datas inicial e final');
@@ -883,7 +892,7 @@
                     method: 'POST',
                     contentType: 'application/json',
                     headers: token ? { 'Authorization': 'Bearer ' + token } : {},
-                    data: JSON.stringify({ type: reportType, startDate, endDate, technicianId, status }),
+                    data: JSON.stringify({ type: reportType, startDate, endDate, technicianId, status, priority }),
                     success: function(data) {
                         $('#reportResult').show();
                         const items = Array.isArray(data.items) ? data.items : [];
