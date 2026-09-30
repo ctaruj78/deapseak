@@ -793,6 +793,10 @@
     </script>
 
     <script>
+        function escapeHtml(s) {
+            if (s == null) return '';
+            return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+        }
         // Invoice management
         function decodeTokenRole(token) {
             try {
@@ -965,7 +969,7 @@
                 $('#previewInvoiceNumber').text($('#invoiceNumber').val());
                 $('#previewInvoiceDate').text($('#invoiceDate').val());
                 $('#previewClientName').text($('#clientName').val() || 'Nome do Cliente');
-                $('#previewClientAddress').html($('#clientAddress').val().replace(/\n/g, '<br>') || 'Morada do Cliente');
+                $('#previewClientAddress').html(escapeHtml($('#clientAddress').val()).replace(/\n/g, '<br>') || 'Morada do Cliente');
                 $('#previewClientEmail').text($('#clientEmail').val() || 'cliente@exemplo.pt');
                 $('#previewNotes').text($('#notes').val() || 'Este orçamento é válido por 30 dias a partir da data de apresentação.');
 
@@ -975,7 +979,7 @@
                 const liftsForPreview = selectedLifts.length > 0 ? selectedLifts : linkedFromRecord;
                 let liftsHtml = '';
                 if (liftsForPreview.length > 0) {
-                    const labels = liftsForPreview.map(l => l.label || `Elev. #${l.munNum || '—'}`);
+                    const labels = liftsForPreview.map(l => escapeHtml(l.label || `Elev. #${l.munNum || '—'}`));
                     const count = liftsForPreview.length;
                     liftsHtml = `<div class="mt-1"><small class="text-primary"><i class="fas fa-elevator"></i> <strong>Elevadores (${count}):</strong> ${labels.join(', ')}</small></div>`;
                 }
@@ -999,13 +1003,13 @@
                     const row = resumido ? `
                         <tr>
                             <td>${index + 1}</td>
-                            <td>${description}</td>
+                            <td>${escapeHtml(description)}</td>
                             <td>${qty}</td>
                         </tr>
                     ` : `
                         <tr>
                             <td>${index + 1}</td>
-                            <td>${description}</td>
+                            <td>${escapeHtml(description)}</td>
                             <td>${qty}</td>
                             <td>${price.toFixed(2)} €</td>
                             <td>${total} €</td>
@@ -1944,9 +1948,9 @@
                         <div class="custom-control custom-checkbox mb-2">
                             <input type="checkbox" class="custom-control-input lift-checkbox"
                                 id="lift_${lift._id}" value="${lift._id}"
-                                data-label="${liftLabel}" data-munnum="${munNum}">
+                                data-label="${escapeHtml(liftLabel)}" data-munnum="${escapeHtml(munNum)}">
                             <label class="custom-control-label font-weight-bold" for="lift_${lift._id}">
-                                <i class="fas fa-elevator text-primary mr-1"></i>${liftLabel}
+                                <i class="fas fa-elevator text-primary mr-1"></i>${escapeHtml(liftLabel)}
                             </label>
                         </div>`;
                     row.appendChild(col);
@@ -2037,7 +2041,7 @@
                     orcamento.servicos.forEach((servico, index) => {
                         $('#servicosTable tbody').append(`
                             <tr data-index="${index}">
-                                <td><input type="text" class="form-control servico-descricao" value="${servico.descricao}" disabled></td>
+                                <td><input type="text" class="form-control servico-descricao" value="${escapeHtml(servico.descricao)}" disabled></td>
                                 <td><input type="number" class="form-control servico-quantidade" value="${servico.quantidade}" disabled></td>
                                 <td><input type="number" class="form-control servico-preco" value="${servico.preco}" step="0.01" disabled></td>
                                 <td class="servico-total">€${servico.total.toFixed(2)}</td>
@@ -2221,7 +2225,7 @@
                 orcamento.servicos.forEach(servico => {
                     const newRow = `
                         <tr>
-                            <td><input type="hidden" class="categoria-id" value="${servico.categoriaId || ''}"><input type="text" class="form-control" value="${servico.descricao}"></td>
+                            <td><input type="hidden" class="categoria-id" value="${escapeHtml(servico.categoriaId || '')}"><input type="text" class="form-control" value="${escapeHtml(servico.descricao)}"></td>
                             <td><input type="number" class="form-control qty" value="${servico.quantidade}" min="1"></td>
                             <td><input type="number" class="form-control price" value="${servico.precoUnitario}" step="0.01"></td>
                             <td class="total">${(servico.quantidade * servico.precoUnitario).toFixed(2)}</td>
