@@ -555,7 +555,11 @@
                 item.completedAt ? new Date(item.completedAt).toLocaleDateString('pt-PT') : '',
             ]);
         });
-        const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+        // Neutraliza injeção de fórmulas: um valor a começar por = + - @ é
+        // interpretado como fórmula pelo Excel/Google Sheets ao abrir o CSV
+        // (pode levar a exfiltração de dados ou execução via DDE em Excel antigo).
+        const csvSafe = v => /^[=+\-@]/.test(String(v)) ? `'${v}` : v;
+        const csv = rows.map(r => r.map(v => `"${csvSafe(String(v)).replace(/"/g,'""')}"`).join(',')).join('\n');
         const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');

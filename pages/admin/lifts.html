@@ -8426,7 +8426,12 @@ Email de contacto: info@festlift.pt`;
                     const statusLabels = { operational: 'Operacional', maintenance: 'Manutenção', inactive: 'Inativo', inspection_required: 'Inspeção Necessária', 'out-of-service': 'Fora de Serviço' };
 
                     // Escapa aspas duplas dentro dos campos e converte para string
-                    const esc = v => String(v == null ? '' : v).replace(/"/g, '""');
+                    // Neutraliza injeção de fórmulas: um valor a começar por = + - @ é
+                    // interpretado como fórmula pelo Excel/Google Sheets ao abrir o CSV.
+                    const esc = v => {
+                        const s = String(v == null ? '' : v);
+                        return (/^[=+\-@]/.test(s) ? `'${s}` : s).replace(/"/g, '""');
+                    };
 
                     const headers = ['Nr Municipal', 'Tipo', 'Fabricante', 'Modelo', 'Endereco', 'Municipio', 'NIF Edificio', 'Estado', 'Cliente', 'Ultima Inspecao', 'Prox. Inspecao', 'Nr Contrato', 'Data de Criacao'];
                     const csvRows = [headers.join(';')];

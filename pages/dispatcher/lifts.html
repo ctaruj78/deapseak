@@ -1572,7 +1572,7 @@
             container.innerHTML = '<div class="text-center text-muted py-2"><i class="fas fa-spinner fa-spin mr-1"></i> A carregar...</div>';
             try {
                 const token = localStorage.getItem('liftmanager_jwt') || localStorage.getItem('authToken') || '';
-                const r = await fetch(`/api/inspections?liftId=${liftId}&limit=5`, {
+                const r = await fetch(`/api/inspections?liftId=${encodeURIComponent(liftId)}&limit=5`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 const json = await r.json();
@@ -8040,8 +8040,13 @@ Equipa FestLift</textarea>
                     const typeLabels = { passenger: 'Passageiro', cargo: 'Carga', car: 'Automóvel', escalator: 'Escada Rolante', platform: 'Plataforma' };
                     const statusLabels = { operational: 'Operacional', maintenance: 'Manutenção', inactive: 'Inativo', inspection_required: 'Inspeção Necessária', 'out-of-service': 'Fora de Serviço' };
 
-                    // Escapa aspas duplas dentro dos campos e converte para string
-                    const esc = v => String(v == null ? '' : v).replace(/"/g, '""');
+                    // Escapa aspas duplas dentro dos campos e converte para string. Também
+                    // neutraliza injeção de fórmulas: um valor a começar por = + - @ é
+                    // interpretado como fórmula pelo Excel/Google Sheets ao abrir o CSV.
+                    const esc = v => {
+                        const s = String(v == null ? '' : v);
+                        return (/^[=+\-@]/.test(s) ? `'${s}` : s).replace(/"/g, '""');
+                    };
 
                     const headers = ['Nr Municipal', 'Tipo', 'Fabricante', 'Modelo', 'Endereco', 'Municipio', 'Estado', 'Cliente', 'Ultima Inspecao', 'Prox. Inspecao', 'Nr Contrato', 'Data de Criacao'];
                     const csvRows = [headers.join(';')];
