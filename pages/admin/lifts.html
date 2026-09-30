@@ -1941,10 +1941,10 @@ function escapeJsString(s) {
                                 <span class="text-muted ml-1" style="font-size:0.75rem;">— ${escapeHtml(ins.inspector || '—')}</span>
                             </div>
                             <div class="d-flex" style="gap:4px;flex-shrink:0;">
-                                <a href="/api/inspections/${ins._id}/pdf" target="_blank"
+                                <a href="/api/inspections/${encodeURIComponent(ins._id)}/pdf" target="_blank"
                                    class="btn btn-xs btn-outline-danger" title="Descarregar PDF"
                                    style="font-size:0.72rem;padding:2px 7px;"
-                                   onclick="this.setAttribute('href','/api/inspections/${ins._id}/pdf');localStorage.getItem('liftmanager_jwt')&&fetch(this.getAttribute('href'),{headers:{'Authorization':'Bearer '+localStorage.getItem('liftmanager_jwt')}}).then(r=>r.blob()).then(b=>{let a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='${safeNumeroJs}.pdf';a.click();});return false;">
+                                   onclick="this.setAttribute('href','/api/inspections/${encodeURIComponent(ins._id)}/pdf');localStorage.getItem('liftmanager_jwt')&&fetch(this.getAttribute('href'),{headers:{'Authorization':'Bearer '+localStorage.getItem('liftmanager_jwt')}}).then(r=>r.blob()).then(b=>{let a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='${safeNumeroJs}.pdf';a.click();});return false;">
                                     <i class="fas fa-file-pdf"></i> PDF
                                 </a>
                             </div>
@@ -4769,7 +4769,7 @@ Email de contacto: info@festlift.pt`;
             Object.values(window.editMapInstance._layers || {}).forEach(layer => {
                 if (layer instanceof L.Marker) {
                     layer.setLatLng([lat, lng]);
-                    layer.bindPopup(`<strong>${address}</strong><br><small>Arraste o marcador para um posicionamento mais preciso</small>`).openPopup();
+                    layer.bindPopup(`<strong>${escapeHtml(address)}</strong><br><small>Arraste o marcador para um posicionamento mais preciso</small>`).openPopup();
                 }
             });
             setTimeout(() => window.editMapInstance.invalidateSize(), 200);
@@ -4786,8 +4786,8 @@ Email de contacto: info@festlift.pt`;
                 <div class="d-flex align-items-start">
                     <span class="badge badge-primary mr-2 mt-1" style="min-width:22px;">${i + 1}</span>
                     <div>
-                        <div style="font-size:.9rem;font-weight:600;">${r.city ? `<span class="text-primary">${r.city}</span> · ` : ''}${r.postcode || ''}</div>
-                        <div style="font-size:.78rem;color:#555;">${r.display}</div>
+                        <div style="font-size:.9rem;font-weight:600;">${r.city ? `<span class="text-primary">${escapeHtml(r.city)}</span> · ` : ''}${escapeHtml(r.postcode || '')}</div>
+                        <div style="font-size:.78rem;color:#555;">${escapeHtml(r.display)}</div>
                     </div>
                 </div>
             </button>`).join('');
@@ -6328,11 +6328,11 @@ Email de contacto: info@festlift.pt`;
             
             // Додаexisteмо popup se existe endereço
             if (address) {
-                marker.bindPopup(`<strong>${address}</strong>`).openPopup();
+                marker.bindPopup(`<strong>${escapeHtml(address)}</strong>`).openPopup();
             }
-            
+
             console.log('✅ Marcador adicionado');
-            
+
             // Оновлюexisteмо tamanho карти (важливо para модальних вікон)
             setTimeout(() => {
                 window.detailsMapInstance.invalidateSize();
@@ -6651,7 +6651,7 @@ Email de contacto: info@festlift.pt`;
             
             // Додаexisteмо popup se existe endereço
             if (address) {
-                marker.bindPopup(`<strong>${address}</strong><br><small>Arraste o marcador para alterar a posição</small>`).openPopup();
+                marker.bindPopup(`<strong>${escapeHtml(address)}</strong><br><small>Arraste o marcador para alterar a posição</small>`).openPopup();
             }
             
             console.log('✅ Marcador adicionado');
@@ -6839,11 +6839,12 @@ Email de contacto: info@festlift.pt`;
             }
             const imgData = canvas.toDataURL('image/png');
             
-            const municipalNumber = lift?.municipalNumber || 'Não especificado';
+            const municipalNumber = escapeHtml(lift?.municipalNumber || 'Não especificado');
             const manufacturer = lift?.manufacturer || 'Não especificado';
-            const model = lift?.model ? `${manufacturer} ${lift.model}` : manufacturer;
-            const type = lift?.type || 'Não especificado';
-            
+            const model = escapeHtml(lift?.model ? `${manufacturer} ${lift.model}` : manufacturer);
+            const type = escapeHtml(lift?.type || 'Não especificado');
+            const addressStrSafe = escapeHtml(addressStr);
+
             const htmlContent = [
                 '<!DOCTYPE html>',
                 '<html>',
@@ -6863,7 +6864,7 @@ Email de contacto: info@festlift.pt`;
                 '<h2>Código QR do elevador</h2>',
                 '<div class="info">',
                 '<div><strong>Nº Municipal:</strong> ' + municipalNumber + '</div>',
-                '<div><strong>Endereço:</strong> ' + addressStr + '</div>',
+                '<div><strong>Endereço:</strong> ' + addressStrSafe + '</div>',
                 '<div><strong>Modelo:</strong> ' + model + '</div>',
                 '<div><strong>Tipo:</strong> ' + type + '</div>',
                 '</div>',
@@ -7460,12 +7461,12 @@ Email de contacto: info@festlift.pt`;
         const metaRow = `
             <div class="row mb-2">
                 <div class="col-6"><strong><i class="fas fa-calendar text-muted mr-1"></i> Data:</strong><br>${date}</div>
-                <div class="col-6"><strong><i class="fas fa-user text-muted mr-1"></i> Inspector:</strong><br>${inspector || '<em class="text-muted">Não especificado</em>'}</div>
+                <div class="col-6"><strong><i class="fas fa-user text-muted mr-1"></i> Inspector:</strong><br>${inspector ? escapeHtml(inspector) : '<em class="text-muted">Não especificado</em>'}</div>
             </div>`;
         const notesRow = notes ? `
             <div class="mt-2">
                 <strong><i class="fas fa-comment text-muted mr-1"></i> Comentários / Cláusulas:</strong>
-                <div class="p-2 bg-light rounded mt-1" style="white-space:pre-wrap;font-size:.9em;">${notes}</div>
+                <div class="p-2 bg-light rounded mt-1" style="white-space:pre-wrap;font-size:.9em;">${escapeHtml(notes)}</div>
             </div>` : '';
         const footer = `<small class="text-muted"><i class="fas fa-clock mr-1"></i> ${report.createdAt ? new Date(report.createdAt).toLocaleString('pt-PT') : date}</small>`;
 
@@ -7634,10 +7635,10 @@ Email de contacto: info@festlift.pt`;
             }) 
             : 'Data desconhecida';
         const _adminRepRtMap = { annual: 'inspection', certification: 'inspection', routine: 'maintenance', emergency: 'emergency' };
-        const type = report.inspectionType || report.type || _adminRepRtMap[report.reportType] || report.reportType || 'Não especificado';
-        const notes = report.comments || report.findings || report.notes || 'Sem comentários';
+        const type = escapeHtml(report.inspectionType || report.type || _adminRepRtMap[report.reportType] || report.reportType || 'Não especificado');
+        const notes = escapeHtml(report.comments || report.findings || report.notes || 'Sem comentários');
         const status = report.status || 'completed';
-        const inspector = report.inspector || report.inspectorName || 'Desconhecido';
+        const inspector = escapeHtml(report.inspector || report.inspectorName || 'Desconhecido');
         
         // Estado
         let statusText = '';
@@ -7650,9 +7651,9 @@ Email de contacto: info@festlift.pt`;
         }
         
         // Отримуexisteмо dados do elevador
-        const liftId = $('#detail-id').text() || '';
-        const liftLocation = $('#detail-location').text() || '';
-        const liftType = $('#detail-type').text() || '';
+        const liftId = escapeHtml($('#detail-id').text() || '');
+        const liftLocation = escapeHtml($('#detail-location').text() || '');
+        const liftType = escapeHtml($('#detail-type').text() || '');
         
         const printContent = `
             <!DOCTYPE html>
@@ -8961,7 +8962,14 @@ Email de contacto: info@festlift.pt`;
                 }
                 
                 let htmlContent = await response.text();
-                
+
+                // Todos os valores abaixo (dados do elevador/cliente/município, notas
+                // digitadas pelo admin) são substituídos DIRETAMENTE no HTML do template
+                // por string replace — sem isto, qualquer um destes campos podia injetar
+                // HTML/script na pré-visualização (e no email real, mesmo caminho de merge).
+                for (const k of Object.keys(liftData)) liftData[k] = escapeHtml(liftData[k]);
+                for (const k of Object.keys(municipalityData)) municipalityData[k] = escapeHtml(municipalityData[k]);
+
                 // Formatoуexisteмо дату у португальському formatoі
                 const formatDate = (dateStr) => {
                     if (!dateStr) return new Date().toLocaleDateString('pt-PT');
@@ -8993,7 +9001,7 @@ Email de contacto: info@festlift.pt`;
                     .replace(/{{serviceStartDate}}/g, formatDate(serviceStartDate))
                     .replace(/{{date}}/g, formatDate(new Date().toISOString().split('T')[0]))
                     .replace(/{{currentDate}}/g, formatDate(new Date().toISOString().split('T')[0]))
-                    .replace(/{{notes}}/g, notes || 'Sem notas adicionais');
+                    .replace(/{{notes}}/g, escapeHtml(notes) || 'Sem notas adicionais');
 
                 // Browser preview não resolve imagens CID (usadas no envio real por email).
                 // Fazemos fallback para um ficheiro local apenas na pré-visualização.
@@ -9754,7 +9762,7 @@ Email de contacto: info@festlift.pt`;
                         var sev = v.classification || v.severity || '?';
                         var cls = (sev === 'C1' || sev === 'critical') ? 'danger' : (sev === 'C2' || sev === 'medium') ? 'warning' : 'secondary';
                         var desc = typeof v === 'string' ? v : (v.description || v.text || JSON.stringify(v));
-                        return '<div class="mb-1"><span class="badge badge-' + cls + '">' + sev + '</span> ' + desc + '</div>';
+                        return '<div class="mb-1"><span class="badge badge-' + cls + '">' + escapeHtml(sev) + '</span> ' + escapeHtml(desc) + '</div>';
                     }).join('');
                     $('#pdfParserViolationsList').html(viols);
                     $('#pdfParserViolationsCount').text(ed.violations.length);
@@ -10381,12 +10389,12 @@ $(document).on('click', '#editInspRptSaveBtn', async function() {
                 pending:   ['badge-secondary', 'Pendente'],
                 cancelled: ['badge-light',     'Anulado'],
             };
-            var b = m[status] || ['badge-light', status];
+            var b = m[status] || ['badge-light', escapeHtml(status)];
             return '<span class="badge ' + b[0] + '" style="font-size:.7rem">' + b[1] + '</span>';
         }
 
         function fatTypeName(t) {
-            return { FT:'Fatura', FR:'Fat.-Recibo', ND:'N.Débito', NC:'N.Crédito' }[t] || t;
+            return { FT:'Fatura', FR:'Fat.-Recibo', ND:'N.Débito', NC:'N.Crédito' }[t] || escapeHtml(t);
         }
 
         function fatUpdateSummaryCards(summary) {
@@ -10442,7 +10450,9 @@ $(document).on('click', '#editInspRptSaveBtn', async function() {
                         '<td class="text-right text-success">' + fatFmt(inv.amountPaid) + '</td>' +
                         '<td class="text-right' + (inv.outstanding > 0.01 ? ' text-danger font-weight-bold' : '') + '">' + fatFmt(inv.outstanding) + '</td>' +
                         '<td class="text-center">' + fatBadgeHtml(inv.status) + '</td>' +
-                        '<td class="text-center"><button class="btn btn-xs btn-outline-danger" title="Ver PDF" onclick="fatOpenPdf(\'' + encodeURIComponent(inv.invoiceNo) + '\')"><i class="fas fa-file-pdf"></i></button></td>' +
+                        // encodeURIComponent NÃO escapa ' ( ) ! ~ * — um invoiceNo com uma
+                        // aspa simples fechava a string JS do onclick e injetava código
+                        '<td class="text-center"><button class="btn btn-xs btn-outline-danger" title="Ver PDF" onclick="fatOpenPdf(\'' + encodeURIComponent(inv.invoiceNo).replace(/'/g, '%27').replace(/\(/g, '%28').replace(/\)/g, '%29') + '\')"><i class="fas fa-file-pdf"></i></button></td>' +
                         '</tr>';
                 }).join('');
             }
@@ -10528,12 +10538,12 @@ $(document).on('click', '#editInspRptSaveBtn', async function() {
             var yearEl = document.getElementById('fatYearFilter');
             var year   = yearEl ? yearEl.value : '';
             var rows = inv.map(function(i) {
-                return '<tr><td>' + (i.invoiceNo||'') + '</td><td>' + fatTypeName(i.invoiceType) + '</td>' +
+                return '<tr><td>' + escapeHtml(i.invoiceNo||'') + '</td><td>' + fatTypeName(i.invoiceType) + '</td>' +
                     '<td>' + fatDate(i.invoiceDate) + '</td>' +
                     '<td align="right">' + fatFmt(i.grossTotal) + '</td>' +
                     '<td align="right">' + fatFmt(i.amountPaid) + '</td>' +
                     '<td align="right">' + fatFmt(i.outstanding) + '</td>' +
-                    '<td>' + (i.status||'') + '</td></tr>';
+                    '<td>' + escapeHtml(i.status||'') + '</td></tr>';
             }).join('');
             var w = window.open('','_blank');
             if (!w) {
