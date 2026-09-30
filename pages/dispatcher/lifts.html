@@ -1601,7 +1601,7 @@
                             <a href="/api/inspections/${encodeURIComponent(ins._id)}/pdf" target="_blank"
                                class="btn btn-xs btn-outline-danger ml-2 flex-shrink-0" title="Descarregar PDF"
                                style="font-size:0.72rem;padding:2px 8px;"
-                               onclick="(function(el){const tk=localStorage.getItem('liftmanager_jwt')||localStorage.getItem('authToken')||'';fetch(el.href,{headers:{'Authorization':'Bearer '+tk}}).then(r=>r.blob()).then(b=>{let a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='${safeNumeroJs}.pdf';a.click();});return false;})(this);">
+                               onclick="(function(el){const tk=localStorage.getItem('liftmanager_jwt')||localStorage.getItem('authToken')||'';fetch(el.href,{headers:{'Authorization':'Bearer '+tk}}).then(r=>r.blob()).then(b=>{let u=URL.createObjectURL(b);let a=document.createElement('a');a.href=u;a.download='${safeNumeroJs}.pdf';a.click();setTimeout(()=>URL.revokeObjectURL(u),10000);});return false;})(this);">
                                 <i class="fas fa-file-pdf"></i> PDF
                             </a>
                         </div>
@@ -2892,18 +2892,31 @@
         
         // Глобальна змінна para збереження PDF ficheiro
         let currentPDFFile = null;
+        let currentPDFFileURL = null;
+
+        // Reutiliza o mesmo object URL para o ficheiro atual em vez de criar um novo
+        // a cada clique em preview/print/download (URL.createObjectURL nunca era
+        // revogado — cada clique acumulava mais um blob na memória da sessão).
+        function getCurrentPDFFileURL() {
+            if (!currentPDFFile) return null;
+            if (!currentPDFFileURL) currentPDFFileURL = URL.createObjectURL(currentPDFFile);
+            return currentPDFFileURL;
+        }
+        function clearCurrentPDFFileURL() {
+            if (currentPDFFileURL) { URL.revokeObjectURL(currentPDFFileURL); currentPDFFileURL = null; }
+        }
 
         // Функції para trabalhos desde PDF relatórioми
         function previewPDF() {
             if (currentPDFFile) {
-                const fileURL = URL.createObjectURL(currentPDFFile);
+                const fileURL = getCurrentPDFFileURL();
                 window.open(fileURL, '_blank');
             }
         }
 
         function printPDF() {
             if (currentPDFFile) {
-                const fileURL = URL.createObjectURL(currentPDFFile);
+                const fileURL = getCurrentPDFFileURL();
                 const printWindow = window.open(fileURL, '_blank');
                 if (!printWindow) {
                     toastr.warning('O navegador bloqueou a janela de impressão. Permita pop-ups para este site.');
@@ -3049,6 +3062,7 @@ Equipa FestLift
         async function removePDF() {
             if (await swalConfirm('Tem a certeza que quer eliminar este relatório?')) {
                 currentPDFFile = null;
+                clearCurrentPDFFileURL();
                 document.getElementById('inspectionReport').value = '';
                 document.getElementById('pdfPreviewContainer').style.display = 'none';
             }
@@ -3066,7 +3080,7 @@ Equipa FestLift
             const timestamp = new Date().toISOString().split('T')[0];
             const filename = `${reportType}_report_${timestamp}.pdf`;
             
-            const fileURL = URL.createObjectURL(currentPDFFile);
+            const fileURL = getCurrentPDFFileURL();
             const downloadLink = document.createElement('a');
             downloadLink.href = fileURL;
             downloadLink.download = filename;
@@ -3196,6 +3210,7 @@ Equipa FestLift
                 pdfInput.addEventListener('change', function(e) {
                     const file = e.target.files[0];
                     if (file && file.type === 'application/pdf') {
+                        clearCurrentPDFFileURL();
                         currentPDFFile = file;
                         document.getElementById('pdfFileName').textContent = file.name;
                         document.getElementById('pdfPreviewContainer').style.display = 'block';
@@ -3715,6 +3730,18 @@ Equipa FestLift
     
     // Глобальні змінні para do sistema de inspeções
     let currentInspectionPDFFile = null;
+    let currentInspectionPDFFileURL = null;
+
+    // Mesma razão do getCurrentPDFFileURL() acima: reutilizar o object URL em vez
+    // de criar um novo a cada preview/print/download deste (segundo) ficheiro PDF.
+    function getCurrentInspectionPDFFileURL() {
+        if (!currentInspectionPDFFile) return null;
+        if (!currentInspectionPDFFileURL) currentInspectionPDFFileURL = URL.createObjectURL(currentInspectionPDFFile);
+        return currentInspectionPDFFileURL;
+    }
+    function clearCurrentInspectionPDFFileURL() {
+        if (currentInspectionPDFFileURL) { URL.revokeObjectURL(currentInspectionPDFFileURL); currentInspectionPDFFileURL = null; }
+    }
     
     // Inicialização currentLiftId se не existe
     if (typeof window.currentLiftId === 'undefined') {
@@ -3780,6 +3807,7 @@ Equipa FestLift
             
             // 5. Скидаexisteмо змінні
             currentInspectionPDFFile = null;
+            clearCurrentInspectionPDFFileURL();
             const previewContainer = document.getElementById('pdfReportPreviewContainer');
             if (previewContainer) {
                 previewContainer.style.display = 'none';
@@ -3913,6 +3941,7 @@ Adicionar outro relatório?`);
             pdfInput.addEventListener('change', function(e) {
                 const file = e.target.files[0];
                 if (file && file.type === 'application/pdf') {
+                    clearCurrentInspectionPDFFileURL();
                     currentInspectionPDFFile = file;
                     document.getElementById('pdfReportFileName').textContent = file.name;
                     document.getElementById('pdfReportPreviewContainer').style.display = 'block';
@@ -4350,14 +4379,14 @@ Adicionar outro relatório?`);
     // Функції para trabalhos desde PDF relatórioми de inspeções
     function previewInspectionPDF() {
         if (currentInspectionPDFFile) {
-            const fileURL = URL.createObjectURL(currentInspectionPDFFile);
+            const fileURL = getCurrentInspectionPDFFileURL();
             window.open(fileURL, '_blank');
         }
     }
 
     function printInspectionPDF() {
         if (currentInspectionPDFFile) {
-            const fileURL = URL.createObjectURL(currentInspectionPDFFile);
+            const fileURL = getCurrentInspectionPDFFileURL();
             const printWindow = window.open(fileURL, '_blank');
             if (!printWindow) {
                 toastr.warning('O navegador bloqueou a janela de impressão. Permita pop-ups para este site.');
@@ -4379,7 +4408,7 @@ Adicionar outro relatório?`);
         const inspectionDate = document.getElementById('inspectionDate').value || new Date().toISOString().split('T')[0];
         const filename = `${inspectionType}_report_${inspectionDate}.pdf`;
         
-        const fileURL = URL.createObjectURL(currentInspectionPDFFile);
+        const fileURL = getCurrentInspectionPDFFileURL();
         const downloadLink = document.createElement('a');
         downloadLink.href = fileURL;
         downloadLink.download = filename;
@@ -4541,6 +4570,7 @@ Equipa FestLift</textarea>
     async function removeInspectionPDF() {
         if (await swalConfirm('Tem a certeza que quer eliminar este relatório de inspecção?')) {
             currentInspectionPDFFile = null;
+            clearCurrentInspectionPDFFileURL();
             document.getElementById('inspectionReportPDF').value = '';
             document.getElementById('pdfReportPreviewContainer').style.display = 'none';
         }
@@ -8891,6 +8921,7 @@ Equipa FestLift</textarea>
                 }
                 
                 console.log('📄 Ficheiro PDF seleccionado:', file.name);
+                clearCurrentInspectionPDFFileURL();
                 currentInspectionPDFFile = file;
                 
                 // Atéказуexisteмо прев'ю ficheiro
