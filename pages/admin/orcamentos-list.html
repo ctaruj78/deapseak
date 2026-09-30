@@ -989,9 +989,12 @@
         }
 
         function _renderLiftOptions() {
-            // Merge already checked + current linked so checked state is preserved across searches
+            // _vincularSelectedLiftIds já é sincronizado a partir das checkboxes visíveis
+            // logo a seguir — juntar _vincularCurrentLiftIds aqui fazia um elevador
+            // desmarcado pelo utilizador voltar a aparecer marcado assim que a lista
+            // era re-renderizada (ex: ao pesquisar), impedindo desvincular.
             _syncVisibleChecksToSelection();
-            const merged = [...new Set([...Array.from(_vincularSelectedLiftIds), ..._vincularCurrentLiftIds])];
+            const merged = Array.from(_vincularSelectedLiftIds);
             clearTimeout(_vincularSearchTimer);
             const query = (document.getElementById('vincularSearch').value || '').trim();
             _vincularSearchTimer = setTimeout(() => {
