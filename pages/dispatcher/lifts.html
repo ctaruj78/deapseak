@@ -8927,11 +8927,16 @@ Equipa FestLift</textarea>
                     
                     // Automático заповнюexisteмо поля форми
                     if (parsedData.liftInfo) {
-                        // Data de inspecção
+                        // Data de inspecção — o extrator captura tanto AAAA/MM/DD (padrão
+                        // principal "Data da Inspeção") como DD/MM/AAAA (padrão alternativo
+                        // genérico) — assumir sempre a ordem [ano,mês,dia] partia o segundo
+                        // formato ao meio (ex: "15/03/2026" virava ano="15").
                         if (parsedData.liftInfo.inspectionDate) {
-                            const dateStr = parsedData.liftInfo.inspectionDate.replace(/\//g, '-');
-                            const [year, month, day] = dateStr.split('-');
-                            $('#inspectionDate').val(`${year}-${month}-${day}`);
+                            const parts = parsedData.liftInfo.inspectionDate.replace(/\//g, '-').split('-');
+                            const isoDate = parts[0].length === 4
+                                ? `${parts[0]}-${parts[1]}-${parts[2]}`
+                                : `${parts[2]}-${parts[1]}-${parts[0]}`;
+                            $('#inspectionDate').val(isoDate);
                         }
                         
                         // Empresa de manutenção
