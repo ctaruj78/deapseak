@@ -1935,7 +1935,10 @@
                     const result = await res.json();
                     if (result.success) {
                         await Swal.fire({ icon: 'success', title: 'Restaurado!', text: 'Pedido devolvido aos activos.', timer: 1800, showConfirmButton: false });
-                        $('#assignmentModal').modal('hide');
+                        // O botão "Restaurar" vive dentro de #viewAssignmentModal, não
+                        // #assignmentModal (um modal diferente) — fechar o modal errado
+                        // deixava a vista de detalhes aberta a mostrar dados obsoletos.
+                        $('#viewAssignmentModal').modal('hide');
                         await this.loadAssignments();
                     } else {
                         toastr.error('Erro: ' + (result.message || 'Não foi possível restaurar'));
