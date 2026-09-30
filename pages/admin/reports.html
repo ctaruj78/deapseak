@@ -856,8 +856,12 @@
                 const reportType = $('.report-type-card.active').data('report-type') || 'maintenance';
                 const startDate = $('#startDate').val();
                 const endDate = $('#endDate').val();
-                const technicianId = $('#technicianFilter').val();
-                const status = $('#statusFilter').val();
+                // "Todos" tem value="all" (truthy), por isso `|| undefined` mais abaixo
+                // nunca disparava — o filtro era sempre enviado literalmente como "all".
+                const technicianIdRaw = $('#technicianFilter').val();
+                const statusRaw = $('#statusFilter').val();
+                const technicianId = technicianIdRaw === 'all' ? undefined : technicianIdRaw;
+                const status = statusRaw === 'all' ? undefined : statusRaw;
 
                 if (!startDate || !endDate) {
                     toastr.warning('Selecione as datas inicial e final');
@@ -879,7 +883,7 @@
                     method: 'POST',
                     contentType: 'application/json',
                     headers: token ? { 'Authorization': 'Bearer ' + token } : {},
-                    data: JSON.stringify({ type: reportType, startDate, endDate, technicianId: technicianId || undefined, status: status || undefined }),
+                    data: JSON.stringify({ type: reportType, startDate, endDate, technicianId, status }),
                     success: function(data) {
                         $('#reportResult').show();
                         const items = Array.isArray(data.items) ? data.items : [];
@@ -931,6 +935,9 @@
                     headers: { 'Authorization': 'Bearer ' + token },
                     success: function(data) {
                         const users = Array.isArray(data) ? data : (data.users || []);
+                        // Substituir as opções de exemplo (tech1/tech2/tech3) pelos técnicos
+                        // reais — antes ficavam ambas misturadas no select.
+                        $('#technicianFilter').find('option:not([value="all"])').remove();
                         users.forEach(function(u) {
                             const id = u._id || u.id || '';
                             const name = u.name || [u.firstName, u.lastName].filter(Boolean).join(' ') || u.username || 'Técnico';
