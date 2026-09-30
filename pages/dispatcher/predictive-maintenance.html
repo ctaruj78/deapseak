@@ -574,6 +574,14 @@ function escapeHtml(s) {
     if (s == null) return '';
     return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
+function escJs(s) {
+    return String(s ?? '')
+        .replace(/\\/g, '\\\\')
+        .replace(/'/g, "\\'")
+        .replace(/"/g, '&quot;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+}
 /**
  * 🔮 Funções globais para handlers onclick
  * ВАЖЛИВО: Оголошуються ДО classeу, para бути acessoними imediatamente
@@ -612,15 +620,21 @@ window.exportPredictions = function() {
 // Confirmar todos alertas
 window.acknowledgeAllAlerts = function() {
     console.log('Підтверджуexisteмо todos alertas...');
-    
-    const alertButtons = document.querySelectorAll('#allAlertsList button[onclick*="acknowledgeAlert"]');
-    alertButtons.forEach(button => {
-        const match = button.onclick.toString().match(/acknowledgeAlert\((\d+)\)/);
-        if (match) {
-            acknowledgeAlert(parseInt(match[1]));
+
+    // A extração por regex do onclick esperava um id numérico puro
+    // (acknowledgeAlert\((\d+)\)) — os ids reais são strings tipo
+    // "critical_failure_risk_<liftId>_<timestamp>" entre aspas, por isso a
+    // regex nunca correspondia a nada e nenhum alerta era confirmado.
+    if (window.predictiveMaintenance) {
+        predictiveMaintenance.getActiveAlerts().forEach(a => predictiveMaintenance.acknowledgeAlert(a.id));
+    }
+    if (window.dashboardController) {
+        if (typeof dashboardController.loadAllAlerts === 'function') dashboardController.loadAllAlerts();
+        if (window.predictiveMaintenance && typeof dashboardController.updateAlerts === 'function') {
+            dashboardController.updateAlerts(predictiveMaintenance.getActiveAlerts());
         }
-    });
-    
+    }
+
     toastr.success('Todas alertas confirmado!');
 };
 
@@ -666,16 +680,29 @@ window.exportSchedule = async function() {
 // Confirmar окремий alerta
 window.acknowledgeAlert = function(alertId) {
     console.log('Підтверджуexisteмо alerta:', alertId);
-    
+
+    // Antes só tentava esconder um elemento [data-alert-id] que nenhum dos
+    // renderizadores de alertas alguma vez definia, e nunca chamava
+    // predictiveMaintenance.acknowledgeAlert() — o alerta nunca era
+    // persistido como confirmado em localStorage, "confirmar" era decorativo.
+    if (window.predictiveMaintenance) {
+        predictiveMaintenance.acknowledgeAlert(alertId);
+    }
+
     const alertCard = document.querySelector(`[data-alert-id="${alertId}"]`);
     if (alertCard) {
         alertCard.style.opacity = '0.5';
-        alertCard.querySelector('button').disabled = true;
-        
-        setTimeout(() => {
-            alertCard.remove();
-            toastr.success('Alerta confirmado');
-        }, 500);
+        const btn = alertCard.querySelector('button');
+        if (btn) btn.disabled = true;
+    }
+
+    toastr.success('Alerta confirmado');
+
+    if (window.dashboardController) {
+        if (typeof dashboardController.loadAllAlerts === 'function') dashboardController.loadAllAlerts();
+        if (window.predictiveMaintenance && typeof dashboardController.updateAlerts === 'function') {
+            dashboardController.updateAlerts(predictiveMaintenance.getActiveAlerts());
+        }
     }
 };
 
@@ -948,7 +975,7 @@ class PredictiveMaintenanceDashboard {
                             <strong>${escapeHtml(alert.message)}</strong><br>
                             <small class="text-muted">${new Date(alert.timestamp).toLocaleString('pt-PT')}</small>
                         </div>
-                        <button class="btn btn-sm btn-link" onclick="acknowledgeAlert('${escapeHtml(alert.id)}')">
+                        <button class="btn btn-sm btn-link" onclick="acknowledgeAlert('${escJs(alert.id)}')">
                             <i class="fas fa-check"></i>
                         </button>
                     </div>
@@ -1300,60 +1327,38 @@ class PredictiveMaintenanceDashboard {
         const alertsContainer = document.getElementById('allAlertsList');
         if (!alertsContainer) return;
 
-        // Імітуexisteмо різні tipoи de alertas
-        const sampleAlerts = [
-            {
-                id: 1,
-                type: 'critical',
-                lift: 'Elevador-001',
-                message: 'Desgaste crítico de cabos',
-                timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toLocaleString('pt-PT'),
-                acknowledged: false
-            },
-            {
-                id: 2,
-                type: 'high',
-                lift: 'Elevador-005',
-                message: 'Vibração do motor acima do limite admissível',
-                timestamp: new Date(Date.now() - 5 * 60 * 60 * 1000).toLocaleString('pt-PT'),
-                acknowledged: false
-            },
-            {
-                id: 3,
-                type: 'medium',
-                lift: 'Elevador-012',
-                message: 'A aproximar-se o prazo de manutenção planeada',
-                timestamp: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toLocaleString('pt-PT'),
-                acknowledged: true
-            },
-            {
-                id: 4,
-                type: 'low',
-                lift: 'Elevador-008',
-                message: 'Recomenda-se substituição de filtros',
-                timestamp: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toLocaleString('pt-PT'),
-                acknowledged: true
-            }
-        ];
+        // Alertas reais gerados por predictiveMaintenance.generateSystemAlerts()
+        // (guardados em localStorage 'maintenance_alerts') — antes mostrava sempre
+        // 4 alertas de exemplo fixos, com um botão "confirmar" que chamava uma
+        // função inexistente.
+        const alerts = JSON.parse(localStorage.getItem('maintenance_alerts') || '[]');
+
+        if (alerts.length === 0) {
+            alertsContainer.innerHTML = '<p class="text-muted text-center py-3">Sem alertas no momento.</p>';
+            return;
+        }
 
         let html = '';
-        sampleAlerts.forEach(alert => {
-            const badgeClass = this.getPriorityBadge(alert.type);
-            const statusIcon = alert.acknowledged ? 
-                '<i class="fas fa-check-circle text-success"></i>' : 
+        alerts.forEach(alert => {
+            const badgeClass = this.getPriorityBadge(alert.priority);
+            const statusIcon = alert.acknowledged ?
+                '<i class="fas fa-check-circle text-success"></i>' :
                 '<i class="fas fa-exclamation-circle text-warning"></i>';
+            const liftData = window.predictiveMaintenance ? predictiveMaintenance.maintenanceData.get(alert.liftId) : null;
+            const liftLabel = (liftData && liftData.municipalNumber) || alert.liftId || '—';
+            const when = alert.timestamp ? new Date(alert.timestamp).toLocaleString('pt-PT') : '';
 
             html += `
-                <div class="alert alert-${badgeClass} alert-dismissible" style="margin-bottom: 10px;">
+                <div class="alert alert-${badgeClass} alert-dismissible" data-alert-id="${escapeHtml(alert.id)}" style="margin-bottom: 10px;">
                     <div class="d-flex align-items-center">
                         ${statusIcon}
                         <div class="ml-2 flex-grow-1">
-                            <strong>${alert.lift}</strong> - ${alert.message}
+                            <strong>${escapeHtml(liftLabel)}</strong> - ${escapeHtml(alert.message)}
                             <br>
-                            <small class="text-muted">${alert.timestamp}</small>
+                            <small class="text-muted">${escapeHtml(when)}</small>
                         </div>
                         ${!alert.acknowledged ? `
-                            <button class="btn btn-sm btn-outline-success ml-2" onclick="acknowledgeAlert(${alert.id})">
+                            <button class="btn btn-sm btn-outline-success ml-2" onclick="acknowledgeAlert('${escJs(alert.id)}')">
                                 <i class="fas fa-check"></i>
                             </button>
                         ` : ''}
