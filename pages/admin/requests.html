@@ -2872,8 +2872,10 @@ async function getCurrentAssignmentId() {
 }
 
 async function logout() {
+    // Não limpava nenhum storage — apenas redirecionava, deixando o JWT
+    // válido em localStorage/sessionStorage mesmo depois de "sair"
     if (await swalConfirm('Tem a certeza que quer sair?')) {
-        window.location.replace('/pages/auth/login.html');
+        AuthManager.logout();
     }
 }
 
