@@ -9136,7 +9136,7 @@ Email de contacto: info@festlift.pt`;
                     const list = (res.data || []).sort((a, b) => (a.name || '').localeCompare(b.name || ''));
                     $dropdown.empty().append('<option value="">— Selecione um município —</option>');
                     list.forEach(m => {
-                        $dropdown.append(`<option value="${m.id}">${m.name} (${m.distrito || ''})</option>`);
+                        $dropdown.append(`<option value="${escapeHtml(String(m.id))}">${escapeHtml(m.name)} (${escapeHtml(m.distrito || '')})</option>`);
                     });
                 } catch (e) {
                     toastr.error('Erro ao carregar municípios: ' + e.message);
@@ -9661,12 +9661,12 @@ Email de contacto: info@festlift.pt`;
                         sel.append('<option value="">— ' + (isFiltered ? 'Selecione o elevador correspondente' : 'Selecione o elevador') + ' —</option>');
                         showList.forEach(function(l) {
                             var addr = l.address ? (l.address.street + ', ' + (l.address.city||'')) : '';
-                            sel.append('<option value="' + l._id + '">' + (l.municipalNumber || l._id) + ' — ' + addr + '</option>');
+                            sel.append('<option value="' + escapeHtml(String(l._id)) + '">' + escapeHtml(l.municipalNumber || l._id) + ' — ' + escapeHtml(addr) + '</option>');
                         });
 
                         // Show filter hint
                         var hint = isFiltered
-                            ? '<div class="small text-muted mt-1"><i class="fas fa-filter mr-1"></i>Mostrando ' + showList.length + ' elevadores próximos de <strong>' + (edPostal || edAddr.split(',')[0]) + '</strong>. <a href="#" id="pdfShowAllLifts">Ver todos</a></div>'
+                            ? '<div class="small text-muted mt-1"><i class="fas fa-filter mr-1"></i>Mostrando ' + showList.length + ' elevadores próximos de <strong>' + escapeHtml(edPostal || edAddr.split(',')[0]) + '</strong>. <a href="#" id="pdfShowAllLifts">Ver todos</a></div>'
                             : '<div class="small text-muted mt-1"><i class="fas fa-search mr-1"></i>Pesquise pelo endereço ou número</div>';
                         $('#pdfLiftSelectRow').find('.pdf-lift-hint').remove();
                         $('#pdfLiftSelectRow').append('<div class="pdf-lift-hint">' + hint + '</div>');
@@ -9678,7 +9678,7 @@ Email de contacto: info@festlift.pt`;
                             sel.empty().append('<option value="">— Selecione o elevador —</option>');
                             allFetched.forEach(function(l) {
                                 var addr = l.address ? (l.address.street + ', ' + (l.address.city||'')) : '';
-                                sel.append('<option value="' + l._id + '">' + (l.municipalNumber || l._id) + ' — ' + addr + '</option>');
+                                sel.append('<option value="' + escapeHtml(String(l._id)) + '">' + escapeHtml(l.municipalNumber || l._id) + ' — ' + escapeHtml(addr) + '</option>');
                             });
                             if (curVal) sel.val(curVal);
                             $(this).parent().html('<i class="fas fa-list mr-1"></i>A mostrar todos os ' + allFetched.length + ' elevadores');
