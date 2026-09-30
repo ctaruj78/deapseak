@@ -1579,6 +1579,10 @@
 
 <!-- Script adicional para activação garantida de previsão AI -->
 <script>
+function escapeHtml(s) {
+    if (s == null) return '';
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
 // Função para activar previsão AI
 window.activateAIPredictive = function() {
     console.log('🤖 A activar previsão AI...');
@@ -1956,11 +1960,11 @@ setTimeout(() => {
             const statusLabel = comm.status === 'sent' ? 'Enviado' : comm.status === 'failed' ? 'Erro' : comm.status;
             return `
                 <tr>
-                    <td><strong>${comm.municipality}</strong></td>
-                    <td>${comm.lift}</td>
+                    <td><strong>${escapeHtml(comm.municipality)}</strong></td>
+                    <td>${escapeHtml(comm.lift)}</td>
                     <td><span class="badge badge-info">${_typeLabel(comm.type)}</span></td>
                     <td>${new Date(comm.sentAt).toLocaleString('pt-PT')}</td>
-                    <td><span class="badge badge-${statusClass}"><i class="fas fa-${statusIcon}"></i> ${statusLabel}</span></td>
+                    <td><span class="badge badge-${statusClass}"><i class="fas fa-${statusIcon}"></i> ${escapeHtml(statusLabel)}</span></td>
                     <td>
                         <button class="btn btn-sm btn-outline-primary mr-1" onclick="viewEmailDetails(${comm._idx})" title="Ver detalhes">
                             <i class="fas fa-eye"></i>
@@ -2126,19 +2130,19 @@ setTimeout(() => {
                     return `
                     <tr>
                         <td><strong>${index + 1}</strong></td>
-                        <td><strong>${mun.name}</strong></td>
-                        <td>${mun.distrito}</td>
+                        <td><strong>${escapeHtml(mun.name)}</strong></td>
+                        <td>${escapeHtml(mun.distrito)}</td>
                         <td><span class="badge badge-primary">${mun.liftsCount}</span></td>
                         <td><span class="badge badge-success">${mun.emailsSent}</span></td>
                         <td>${mun.distance} km</td>
                         <td>
                             <small>
-                                ${mun.phone}<br>
-                                <a href="mailto:${mun.email}">${mun.email}</a>
+                                ${escapeHtml(mun.phone)}<br>
+                                <a href="mailto:${encodeURIComponent(mun.email || '')}">${escapeHtml(mun.email)}</a>
                             </small>
                         </td>
                         <td>
-                            <button class="btn btn-sm btn-outline-primary" ${canEdit ? '' : 'disabled'} onclick="openMunicipalityEditModal('${encodeURIComponent(mun.id || '')}','${encodeURIComponent(mun.name || '')}')" title="${canEdit ? 'Editar contactos do município' : 'Município sem ID no cadastro oficial'}">
+                            <button class="btn btn-sm btn-outline-primary" ${canEdit ? '' : 'disabled'} onclick="openMunicipalityEditModal('${encodeURIComponent(mun.id || '').replace(/'/g,'%27').replace(/\(/g,'%28').replace(/\)/g,'%29')}','${encodeURIComponent(mun.name || '').replace(/'/g,'%27').replace(/\(/g,'%28').replace(/\)/g,'%29')}')" title="${canEdit ? 'Editar contactos do município' : 'Município sem ID no cadastro oficial'}">
                                 <i class="fas fa-edit"></i>
                             </button>
                         </td>
