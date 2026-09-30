@@ -2353,7 +2353,7 @@ setTimeout(() => {
                 return;
             }
 
-            const token = localStorage.getItem('token');
+            const token = localStorage.getItem('token') || localStorage.getItem('liftmanager_jwt') || localStorage.getItem('authToken') || '';
             const payload = {
                 email: document.getElementById('editMunicipalityEmail').value.trim(),
                 phone: document.getElementById('editMunicipalityPhone').value.trim(),

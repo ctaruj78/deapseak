@@ -325,6 +325,12 @@ function initSigPad() {
         sigCtx.lineWidth = 2.2;
         sigCtx.lineCap = 'round';
         sigCtx.lineJoin = 'round';
+        // Alterar canvas.width/height limpa sempre o bitmap, mesmo redimensionando
+        // para o mesmo tamanho — sem isto, sigHasSig ficava true com o canvas já
+        // vazio (ex: rotação do ecrã a meio da assinatura) e guardarAssinaturaEmpresa()
+        // enviava uma imagem em branco sem avisar.
+        sigHasSig = false;
+        wrap.classList.remove('has-sig');
     }
 
     function getPos(e) {

@@ -835,7 +835,12 @@
                 });
 
                 // Ocultar alerta ao fechar janela modal
-                $('#userModal').off('hidden.bs.modal').on('hidden.bs.modal', function() {
+                // Namespaced (.cleanup) — o handler de uso único mais abaixo (após
+                // criar um utilizador) faz .off('hidden.bs.modal') sem namespace na
+                // sua própria limpeza, o que removia TAMBÉM este handler permanente
+                // e, a partir daí, o alerta/botão deixavam de ser escondidos ao
+                // fechar o modal pelo resto da sessão.
+                $('#userModal').off('hidden.bs.modal.cleanup').on('hidden.bs.modal.cleanup', function() {
                     $('#generatedPasswordAlert').hide();
                     $('#sendAccessBtn').hide();
                 });
@@ -1358,9 +1363,9 @@
                             $('#userModal').modal('hide');
                             
                             // Aguardar fecho, DEPOIS mostrar palavra-passe
-                            $('#userModal').on('hidden.bs.modal', () => {
+                            $('#userModal').on('hidden.bs.modal.showPassword', () => {
                                 this.showGeneratedPasswordModal(userData.email, generatedPassword);
-                                $('#userModal').off('hidden.bs.modal'); // Desactivar handler
+                                $('#userModal').off('hidden.bs.modal.showPassword'); // Só este handler
                             });
                         } else if (passwordToSend) {
                             // Cliente gerou palavra-passe - também mostrar janela modal
@@ -1369,9 +1374,9 @@
                             $('#userModal').modal('hide');
                             
                             // Aguardar fecho, DEPOIS mostrar palavra-passe
-                            $('#userModal').on('hidden.bs.modal', () => {
+                            $('#userModal').on('hidden.bs.modal.showPassword', () => {
                                 this.showGeneratedPasswordModal(userData.email, passwordToSend);
-                                $('#userModal').off('hidden.bs.modal'); // Desactivar handler
+                                $('#userModal').off('hidden.bs.modal.showPassword'); // Só este handler
                             });
                         } else {
                             // Se não é necessário mostrar palavra-passe - fechar normalmente
