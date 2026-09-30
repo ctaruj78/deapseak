@@ -2072,11 +2072,19 @@
                     const activeTechs = techs.filter(t => t.active);
                     let techTaskCounts = {};
                     try {
-                        const pendingReqs = await AuthManager.fetchWithAuth('/api/requests?status=pending,in_progress&limit=500');
-                        if (pendingReqs.success) {
-                            (pendingReqs.data || []).forEach(r => {
-                                const tid = r.technicianId || r.assignedTo;
-                                if (tid) techTaskCounts[tid] = (techTaskCounts[tid] || 0) + 1;
+                        // fetchWithAuth devolve o Response cru, não JSON — `.success`
+                        // num Response é sempre undefined, este bloco nunca corria e
+                        // a ordenação por carga de trabalho tratava todos os técnicos
+                        // como tendo 0 tarefas pendentes.
+                        const pendingResp = await AuthManager.fetchWithAuth('/api/requests?status=pending,in_progress&limit=500');
+                        const pendingReqs = pendingResp ? await pendingResp.json() : null;
+                        if (pendingReqs && pendingReqs.success) {
+                            (pendingReqs.data?.requests || pendingReqs.data || []).forEach(r => {
+                                // assignedTo vem populado ({_id, firstName, ...}), não como
+                                // string crua — sem o ?._id, a chave virava sempre a mesma
+                                // string "[object Object]" para todos os técnicos.
+                                const tid = r.technicianId || r.assignedTo?._id || r.assignedTo;
+                                if (tid) techTaskCounts[String(tid)] = (techTaskCounts[String(tid)] || 0) + 1;
                             });
                         }
                     } catch (_) {}
@@ -2632,6 +2640,7 @@
                         return;
                     }
                     let successCount = 0;
+                    const failedIds = [];
                     for (const item of selectedItems) {
                         const reqId = item.dataset.id;
                         try {
@@ -2640,11 +2649,24 @@
                                 body: JSON.stringify({ technicianId: techId })
                             });
                             if (r && r.ok) successCount++;
-                        } catch (e) {}
+                            else failedIds.push(reqId);
+                        } catch (e) {
+                            console.error('Erro ao atribuir pedido', reqId, e);
+                            failedIds.push(reqId);
+                        }
                     }
                     $('#bulkAssignmentModal').modal('hide');
                     await dispatcherManager.loadAssignments();
-                    Swal.fire({ icon: 'success', title: 'Concluído!', text: `Atribuído ${successCount} junto ${selectedItems.length} pedidos.`, confirmButtonColor: '#28a745', customClass: { popup: 'swal-dispatch' } });
+                    const allOk = successCount === selectedItems.length;
+                    Swal.fire({
+                        icon: allOk ? 'success' : (successCount > 0 ? 'warning' : 'error'),
+                        title: allOk ? 'Concluído!' : 'Concluído com falhas',
+                        text: allOk
+                            ? `Atribuído ${successCount} junto ${selectedItems.length} pedidos.`
+                            : `Atribuído ${successCount} de ${selectedItems.length} pedidos. Falhou: ${failedIds.join(', ')}`,
+                        confirmButtonColor: allOk ? '#28a745' : '#f39c12',
+                        customClass: { popup: 'swal-dispatch' }
+                    });
                 },
                 
                 // 🎯 ГОЛОВНІ ФУНКЦІЇ ДЛЯ РОБОТИ De DeАЯВКАМИ
