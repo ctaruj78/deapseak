@@ -741,6 +741,12 @@
                         container.appendChild(closeBtn);
                     }
                 }, 100);
+            }).on('routingerror', function(e) {
+                console.error('❌ Erro побудови rotaу:', e.error);
+                toastr.error('Não foi possível traçar a rota. Possivelmente, o endereço é demasiado longo ou indisponível para trânsito automóvel.');
+                // Sem isto o botão ficava preso em "A construir..." para sempre —
+                // só era desbloqueado no evento routesfound (sucesso).
+                unlockRouteButton(liftId);
             }).addTo(map);
 
             const displayName = lift.model || lift.name || `Elevador ${lift.id}`;
@@ -1044,7 +1050,8 @@
             const total = lifts.length;
             const active = lifts.filter(l => l.status === 'active').length;
             const maintenance = lifts.filter(l => l.status === 'maintenance').length;
-            const error = lifts.filter(l => l.status === 'inactive').length;
+            // mapStatus() normaliza out_of_service/inactive para 'error' — nunca 'inactive'
+            const error = lifts.filter(l => l.status === 'error').length;
 
             $('#totalLifts').text(total);
             $('#activeLifts').text(active);
@@ -1056,7 +1063,7 @@
             switch (status) {
                 case 'active': return '#28a745';
                 case 'maintenance': return '#ffc107';
-                case 'inactive': return '#dc3545';
+                case 'error': return '#dc3545';
                 default: return '#6c757d';
             }
         }
@@ -1065,7 +1072,7 @@
             switch (status) {
                 case 'active': return 'Ativo';
                 case 'maintenance': return 'Em manutenção';
-                case 'inactive': return 'Com falhas';
+                case 'error': return 'Com falhas';
                 default: return 'Desconhecido';
             }
         }
