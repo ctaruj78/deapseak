@@ -266,13 +266,13 @@ function renderTable(categorias) {
         return;
     }
     const rows = categorias.map(c => {
-        const grupoLabel = GRUPO_LABELS[c.grupo] || c.grupo;
+        const grupoLabel = GRUPO_LABELS[c.grupo] || escHtml(c.grupo);
         const criticoBadge = c.critico ? '<span class="badge badge-danger">Crítica</span>' : '<span class="text-muted">—</span>';
         const estadoBadge = c.ativo ? '<span class="badge badge-success">Ativa</span>' : '<span class="badge badge-secondary">Inativa</span>';
         const preco = typeof c.precoSugerido === 'number' ? c.precoSugerido.toLocaleString('pt-PT', { style:'currency', currency:'EUR' }) : '—';
         return `<tr class="categoria-row ${c.ativo ? '' : 'inativa'}">
             <td><strong>${escHtml(c.nome)}</strong></td>
-            <td><span class="badge badge-grupo-${c.grupo}">${grupoLabel}</span></td>
+            <td><span class="badge badge-grupo-${escHtml(c.grupo)}">${grupoLabel}</span></td>
             <td>${preco}</td>
             <td class="small">${escHtml(c.norma || '—')}</td>
             <td>${criticoBadge}</td>

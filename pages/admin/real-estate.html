@@ -132,6 +132,13 @@ function escapeHtml(s) {
     if (s == null) return '';
     return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 }
+function safeUrl(u) {
+    try {
+        const resolved = new URL(u, window.location.origin);
+        if (resolved.protocol === 'http:' || resolved.protocol === 'https:') return resolved.href;
+    } catch (e) {}
+    return '#';
+}
 loadSidebarWithInit("includes/sidebar.html");
 
 function formatPrice(price) {
@@ -205,7 +212,7 @@ function renderListings() {
             <td class="price-cell">${formatPrice(l.price)}</td>
             <td>${escapeHtml(l.location || '—')}</td>
             <td>${formatDate(l.postedAt)}</td>
-            <td><a href="${escapeHtml(l.url)}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-primary"><i class="fas fa-external-link-alt"></i></a></td>
+            <td><a href="${escapeHtml(safeUrl(l.url))}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-primary"><i class="fas fa-external-link-alt"></i></a></td>
         </tr>
     `).join('');
 }
