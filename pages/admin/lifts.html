@@ -1944,7 +1944,7 @@ function escapeJsString(s) {
                                 <a href="/api/inspections/${encodeURIComponent(ins._id)}/pdf" target="_blank"
                                    class="btn btn-xs btn-outline-danger" title="Descarregar PDF"
                                    style="font-size:0.72rem;padding:2px 7px;"
-                                   onclick="this.setAttribute('href','/api/inspections/${encodeURIComponent(ins._id)}/pdf');localStorage.getItem('liftmanager_jwt')&&fetch(this.getAttribute('href'),{headers:{'Authorization':'Bearer '+localStorage.getItem('liftmanager_jwt')}}).then(r=>r.blob()).then(b=>{let u=URL.createObjectURL(b);let a=document.createElement('a');a.href=u;a.download='${safeNumeroJs}.pdf';a.click();setTimeout(()=>URL.revokeObjectURL(u),10000);});return false;">
+                                   onclick="this.setAttribute('href','/api/inspections/${encodeURIComponent(ins._id)}/pdf');localStorage.getItem('liftmanager_jwt')&&fetch(this.getAttribute('href'),{headers:{'Authorization':'Bearer '+localStorage.getItem('liftmanager_jwt')}}).then(r=>{if(!r.ok)throw new Error('HTTP '+r.status);return r.blob();}).then(b=>{let u=URL.createObjectURL(b);let a=document.createElement('a');a.href=u;a.download='${safeNumeroJs}.pdf';a.click();setTimeout(()=>URL.revokeObjectURL(u),10000);}).catch(e=>{if(typeof toastr!=='undefined')toastr.error('Erro ao descarregar PDF: '+e.message);else console.error('Erro ao descarregar PDF:',e);});return false;">
                                     <i class="fas fa-file-pdf"></i> PDF
                                 </a>
                             </div>
