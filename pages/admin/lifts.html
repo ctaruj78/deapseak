@@ -1912,7 +1912,7 @@ function escapeJsString(s) {
             };
             container.innerHTML = '<div class="text-center text-muted py-2"><i class="fas fa-spinner fa-spin mr-1"></i> A carregar...</div>';
             try {
-                const token = localStorage.getItem('liftmanager_jwt') || localStorage.getItem('authToken') || '';
+                const token = localStorage.getItem('liftmanager_jwt') || sessionStorage.getItem('liftmanager_jwt') || localStorage.getItem('authToken') || '';
                 const r = await fetch(`/api/inspections?liftId=${liftId}&limit=5`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
@@ -1991,8 +1991,10 @@ function escapeJsString(s) {
             var rowsCnt = document.getElementById('eLiftRowsContainer');
             if (rowsCnt) rowsCnt.style.display = isPublic ? '' : 'none';
             // Show/hide lifts count at address (only relevant for public)
+            // A coluna real é .col-md-5, não .col-md-3 — closest() nunca encontrava
+            // nada e este campo ficava sempre visível, mesmo para subtipos não-públicos.
             var cntCol = document.querySelector('#enhancedLiftsCountAtAddress');
-            if (cntCol && cntCol.closest('.col-md-3')) cntCol.closest('.col-md-3').style.display = isPublic ? '' : 'none';
+            if (cntCol && cntCol.closest('.col-md-5')) cntCol.closest('.col-md-5').style.display = isPublic ? '' : 'none';
             // Show/hide alert
             var alrt = document.getElementById('noRegistryAlert');
             if (alrt) alrt.classList.toggle('d-none', isPublic);
