@@ -832,7 +832,15 @@
             });
         }
 
-        function markAllAsRead() {
+        async function markAllAsRead() {
+            // Só mudava o array local — recarregar a página ou abrir noutra sessão
+            // voltava a mostrar tudo como não lido, pois nunca chamava a API real.
+            const token = localStorage.getItem('liftmanager_jwt') || localStorage.getItem('authToken') || localStorage.getItem('token');
+            try {
+                await fetch('/api/notifications/read-all', { method: 'PATCH', headers: { 'Authorization': `Bearer ${token}` } });
+            } catch (e) {
+                console.warn('Erro ao marcar todas como lidas:', e.message);
+            }
             notifications.forEach(n => n.status = 'read');
             updateStats();
             loadNotifications();
@@ -875,8 +883,14 @@
             loadNotifications();
         }
 
-        function bulkMarkAsRead() {
+        async function bulkMarkAsRead() {
+            // Idem markAllAsRead — nunca chamava a API, só o array local.
             const selectedIds = getSelectedNotificationIds();
+            const token = localStorage.getItem('liftmanager_jwt') || localStorage.getItem('authToken') || localStorage.getItem('token');
+            await Promise.all(selectedIds.map(id =>
+                fetch(`/api/notifications/${id}/read`, { method: 'PATCH', headers: { 'Authorization': `Bearer ${token}` } })
+                    .catch(e => console.warn('Erro ao marcar como lida', id, e.message))
+            ));
             selectedIds.forEach(id => {
                 const notification = notifications.find(n => n.id == id);
                 if (notification) notification.status = 'read';
@@ -892,17 +906,27 @@
             const selectedIds = getSelectedNotificationIds();
             const token = localStorage.getItem('liftmanager_jwt') || localStorage.getItem('authToken') || localStorage.getItem('token');
 
-            await Promise.all(selectedIds.map(id =>
+            // Antes removia TODOS os ids selecionados do array local mesmo quando o
+            // DELETE falhava (erro só ia para console.warn) — a notificação
+            // reaparecia após um refresh, mas o utilizador já via "eliminado com sucesso".
+            const results = await Promise.all(selectedIds.map(id =>
                 fetch(`/api/notifications/${id}`, {
                     method: 'DELETE',
                     headers: { 'Authorization': `Bearer ${token}` }
-                }).catch(e => console.warn('Delete failed for', id, e.message))
+                }).then(r => ({ id, ok: r.ok })).catch(e => {
+                    console.warn('Delete failed for', id, e.message);
+                    return { id, ok: false };
+                })
             ));
 
-            selectedIds.forEach(id => {
+            const failed = results.filter(r => !r.ok);
+            results.filter(r => r.ok).forEach(({ id }) => {
                 const index = notifications.findIndex(n => n.id == id);
                 if (index !== -1) notifications.splice(index, 1);
             });
+            if (failed.length) {
+                toastr.warning(`${failed.length} notificação(ões) não foi(ram) eliminada(s). Tente novamente.`);
+            }
             updateStats();
             loadNotifications();
             toggleBulkActions();

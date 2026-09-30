@@ -6663,19 +6663,23 @@ Equipa FestLift</textarea>
             return;
         }
 
+        // Eliminar através de API PRIMEIRO — antes disto, o cache local e a tabela
+        // eram atualizados e "eliminado com sucesso" era mostrado mesmo quando o
+        // DELETE no servidor falhava, deixando o elevador só temporariamente
+        // escondido (reaparecia no próximo carregamento da API) enquanto o
+        // utilizador já assumia que tinha sido removido.
+        const deleteResult = await apiCall(`/api/lifts/${liftId}`, 'DELETE');
+        if (!deleteResult.success) {
+            toastr.error(deleteResult.error || deleteResult.message || 'Erro ao eliminar elevador. Nada foi removido.');
+            return;
+        }
+        console.log('✅ Elevador eliminado da API');
+
         // Eliminar desde localStorage
         let lifts = JSON.parse(localStorage.getItem('lifts') || '[]');
         lifts = lifts.filter(l => (l._id || l.id) !== liftId);
         localStorage.setItem('lifts', JSON.stringify(lifts));
-        
-        // Simож спробувати eliminar através de API
-        const deleteResult = await apiCall(`/api/lifts/${liftId}`, 'DELETE');
-        if (deleteResult.success) {
-            console.log('✅ Elevador eliminado da API');
-        } else {
-            console.warn('⚠️ Erro ao eliminar da API, mas dados locais actualizados');
-        }
-        
+
         // Actualizar window.allLiftsData para видmasний elevador не з'являвся в pesquisaу
         if (window.allLiftsData) {
             window.allLiftsData = window.allLiftsData.filter(
