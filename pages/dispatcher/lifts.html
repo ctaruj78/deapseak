@@ -1598,7 +1598,7 @@
                                 <span class="badge badge-${badge} ml-1" style="font-size:0.72rem;">${statusLabel}</span>
                                 <span class="text-muted ml-1" style="font-size:0.75rem;">— ${escapeHtml(ins.inspector || '—')}</span>
                             </div>
-                            <a href="/api/inspections/${ins._id}/pdf" target="_blank"
+                            <a href="/api/inspections/${encodeURIComponent(ins._id)}/pdf" target="_blank"
                                class="btn btn-xs btn-outline-danger ml-2 flex-shrink-0" title="Descarregar PDF"
                                style="font-size:0.72rem;padding:2px 8px;"
                                onclick="(function(el){const tk=localStorage.getItem('liftmanager_jwt')||localStorage.getItem('authToken')||'';fetch(el.href,{headers:{'Authorization':'Bearer '+tk}}).then(r=>r.blob()).then(b=>{let a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='${safeNumeroJs}.pdf';a.click();});return false;})(this);">
@@ -3587,19 +3587,19 @@ Equipa FestLift
             html += `
                 <div class="list-group-item d-flex justify-content-between align-items-center">
                     <div>
-                        <h6 class="mb-1">${inspection.type} - ${date}</h6>
+                        <h6 class="mb-1">${escapeHtml(inspection.type)} - ${date}</h6>
                         <p class="mb-1">
-                            <small class="text-muted">Email: ${inspection.clientEmail}</small><br>
+                            <small class="text-muted">Email: ${escapeHtml(inspection.clientEmail)}</small><br>
                             <small class="text-${statusColor}">
                                 ${daysUntil > 0 ? `Faltam ${daysUntil} dias` : 'Inspecção hoje!'}
                             </small>
                         </p>
                     </div>
                     <div class="btn-group-sm">
-                        <button class="btn btn-outline-primary btn-sm" onclick="sendInspectionReminder('${inspection.id}')">
+                        <button class="btn btn-outline-primary btn-sm" onclick="sendInspectionReminder('${escapeHtml(inspection.id)}')">
                             <i class="fas fa-envelope"></i>
                         </button>
-                        <button class="btn btn-outline-danger btn-sm" onclick="cancelInspection('${inspection.id}')">
+                        <button class="btn btn-outline-danger btn-sm" onclick="cancelInspection('${escapeHtml(inspection.id)}')">
                             <i class="fas fa-trash"></i>
                         </button>
                     </div>
@@ -6046,7 +6046,7 @@ Equipa FestLift</textarea>
             
             // Adicionar popup se existir endereço
             if (address) {
-                marker.bindPopup(`<strong>${address}</strong>`).openPopup();
+                marker.bindPopup(`<strong>${escapeHtml(address)}</strong>`).openPopup();
             }
             
             console.log('✅ Marcador adicionado');
@@ -6340,7 +6340,7 @@ Equipa FestLift</textarea>
             
             // Adicionar popup se existir endereço
             if (address) {
-                marker.bindPopup(`<strong>${address}</strong><br><small>Arraste o marcador para alterar a posição</small>`).openPopup();
+                marker.bindPopup(`<strong>${escapeHtml(address)}</strong><br><small>Arraste o marcador para alterar a posição</small>`).openPopup();
             }
             
             console.log('✅ Marcador adicionado');
@@ -6905,7 +6905,7 @@ Equipa FestLift</textarea>
                 // Estado badge
                 const statusColors = { passed: 'success', failed: 'danger', conditional: 'warning', completed: 'info', pending: 'secondary' };
                 const statusTexts = { passed: 'Aprovado', failed: 'Reprovado', conditional: 'Reinspecção', completed: 'Concluído', pending: 'Pendente' };
-                const statusBadge = `<span class="badge badge-${statusColors[status] || 'secondary'}">${statusTexts[status] || status || 'Adicionado'}</span>`;
+                const statusBadge = `<span class="badge badge-${statusColors[status] || 'secondary'}">${statusTexts[status] || escapeHtml(status) || 'Adicionado'}</span>`;
                 
                 // Tipo: локалізована nome
                 const typeLabels = { inspection: 'Inspecção', maintenance: 'Manutenção', repair: 'Reparação', emergency: 'Emergência', annual: 'Inspecção', routine: 'Manutenção', certification: 'Certificação', technical: 'Técnico', safety: 'Verificação de segurança' };
@@ -8449,7 +8449,7 @@ Equipa FestLift</textarea>
                         
                         // Atéказуexisteмо інформацію про депарeмент, se existe
                         if (mun.lift_department) {
-                            $('#mun-concelho-name').append(`<br><small class="text-muted">${deptName}</small>`);
+                            $('#mun-concelho-name').append(`<br><small class="text-muted">${escapeHtml(deptName)}</small>`);
                         }
                         
                         $('#municipality-info-loading').hide();
@@ -8765,7 +8765,7 @@ Equipa FestLift</textarea>
                 const deptName = mun.lift_department?.department_name || 'Câmara Municipal';
 
                 $('#mun-concelho-name').text(mun.name || 'Não especificado');
-                if (mun.lift_department) $('#mun-concelho-name').append(`<br><small class="text-muted">${deptName}</small>`);
+                if (mun.lift_department) $('#mun-concelho-name').append(`<br><small class="text-muted">${escapeHtml(deptName)}</small>`);
                 $('#mun-distrito-name').text(mun.distrito || 'Não especificado');
                 $('#mun-email').text(liftEmail || 'Não especificado');
                 $('#mun-phone').text(mun.phone || 'Não especificado');
@@ -9445,7 +9445,7 @@ Equipa FestLift</textarea>
                     data.allMatches.forEach(function(l) {
                         var addr = l.address ? (l.address.street + ', ' + (l.address.city || '')) : '';
                         var numCam = l.municipalNumber || l.serialNumber || '';
-                        sel.append('<option value="' + l._id + '">[' + l.confidence + '%] ' + (numCam || l._id) + ' — ' + addr + '</option>');
+                        sel.append('<option value="' + l._id + '">[' + l.confidence + '%] ' + escapeHtml(numCam || l._id) + ' — ' + escapeHtml(addr) + '</option>');
                     });
 
                     // Se aberto de elevador específico e esse elevador não está nos matches — adicionar separadamente
@@ -9453,7 +9453,7 @@ Equipa FestLift</textarea>
                         var cl = window._currentEditingLift;
                         if (cl && (cl._id || cl.id) === presetId) {
                             var clAddr = cl.address ? (cl.address.street + ', ' + (cl.address.city || '')) : '';
-                            sel.prepend('<option value="' + presetId + '">📍 Actual: ' + (cl.municipalNumber || presetId) + ' — ' + clAddr + '</option>');
+                            sel.prepend('<option value="' + presetId + '">📍 Actual: ' + escapeHtml(cl.municipalNumber || presetId) + ' — ' + escapeHtml(clAddr) + '</option>');
                         }
                     }
 
@@ -9513,7 +9513,7 @@ Equipa FestLift</textarea>
                         if (!Array.isArray(lifts)) lifts = [];
                         lifts.forEach(function(l) {
                             var addr = l.address ? (l.address.street + ', ' + (l.address.city || '')) : '';
-                            sel.append('<option value="' + l._id + '">' + (l.municipalNumber || l._id) + ' — ' + addr + '</option>');
+                            sel.append('<option value="' + l._id + '">' + escapeHtml(l.municipalNumber || l._id) + ' — ' + escapeHtml(addr) + '</option>');
                         });
                     } catch(_) {}
                     if (presetId) sel.val(presetId);
@@ -9740,12 +9740,12 @@ Equipa FestLift</textarea>
                 pending:   ['badge-secondary', 'Pendente'],
                 cancelled: ['badge-light',     'Anulado'],
             };
-            var b = m[status] || ['badge-light', status];
+            var b = m[status] || ['badge-light', fatEsc(status)];
             return '<span class="badge ' + b[0] + '" style="font-size:.7rem">' + b[1] + '</span>';
         }
 
         function fatTypeName(t) {
-            return { FT:'Fatura', FR:'Fat.-Recibo', ND:'N.Débito', NC:'N.Crédito' }[t] || t;
+            return { FT:'Fatura', FR:'Fat.-Recibo', ND:'N.Débito', NC:'N.Crédito' }[t] || fatEsc(t);
         }
 
         function fatEsc(s) {
@@ -9877,12 +9877,12 @@ Equipa FestLift</textarea>
             var yearEl = document.getElementById('fatYearFilter');
             var year   = yearEl ? yearEl.value : '';
             var rows = inv.map(function(i) {
-                return '<tr><td>' + (i.invoiceNo||'') + '</td><td>' + fatTypeName(i.invoiceType) + '</td>' +
+                return '<tr><td>' + fatEsc(i.invoiceNo||'') + '</td><td>' + fatTypeName(i.invoiceType) + '</td>' +
                     '<td>' + fatDate(i.invoiceDate) + '</td>' +
                     '<td align="right">' + fatFmt(i.grossTotal) + '</td>' +
                     '<td align="right">' + fatFmt(i.amountPaid) + '</td>' +
                     '<td align="right">' + fatFmt(i.outstanding) + '</td>' +
-                    '<td>' + (i.status||'') + '</td></tr>';
+                    '<td>' + fatEsc(i.status||'') + '</td></tr>';
             }).join('');
             var w = window.open('','_blank');
             if (!w) {
