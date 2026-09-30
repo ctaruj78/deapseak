@@ -78,6 +78,11 @@
 <script src="../../plugins/sweetalert2/js/sweetalert2.min.js"></script>
     <script src="../../plugins/jquery/jquery.min.js"></script>
 <script src="/socket.io/socket.io.js"></script>
+<!-- data-required-role="admin" acima só é aplicado se auth.js estiver carregado —
+     esta página nunca o carregava, por isso qualquer utilizador autenticado
+     (não só admins) via a shell da página, embora as chamadas à API e os
+     eventos Socket.IO já estivessem corretamente protegidos por role no servidor. -->
+<script src="../../assets/js/auth.js"></script>
 <script>
   let logs = [];
   let currentFilter = null;
