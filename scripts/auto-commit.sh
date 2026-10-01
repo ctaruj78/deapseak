@@ -12,6 +12,9 @@ else
 fi
 
 # Пушимо на GitHub (credentials збережені в ~/.git-credentials)
-git push origin v2_refactor >> /home/andriy/deapseak/logs/auto-commit.log 2>&1 && \
-    echo "[$(date '+%Y-%m-%d %H:%M')] Auto-push done" || \
-    echo "[$(date '+%Y-%m-%d %H:%M')] Auto-push failed"
+# Поточна гілка, а не захардкоджена v2_refactor — інакше пушиться застаріла
+# гілка, поки реальна робота йде в іншій.
+CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+git push origin "$CURRENT_BRANCH" >> /home/andriy/deapseak/logs/auto-commit.log 2>&1 && \
+    echo "[$(date '+%Y-%m-%d %H:%M')] Auto-push done ($CURRENT_BRANCH)" || \
+    echo "[$(date '+%Y-%m-%d %H:%M')] Auto-push failed ($CURRENT_BRANCH)"
