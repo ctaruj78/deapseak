@@ -27,11 +27,14 @@
         .sheet {
             background: var(--paper);
             border: 1px solid var(--line);
-            border-radius: 10px;
-            padding: 26px 26px 18px;
+            border-radius: 12px;
+            padding: 28px 28px 20px;
             color: var(--ink);
             font-family: "IBM Plex Sans", system-ui, sans-serif;
+            overflow-x: auto;
+            box-shadow: 0 1px 3px rgba(21,32,43,.06);
         }
+        .sheet-inner { min-width: 900px; }
 
         .letterhead {
             display: flex;
@@ -39,129 +42,143 @@
             align-items: flex-end;
             gap: 16px;
             border-bottom: 3px solid var(--ink);
-            padding-bottom: 12px;
-            margin-bottom: 16px;
+            padding-bottom: 14px;
+            margin-bottom: 20px;
             flex-wrap: wrap;
         }
-        .brand { font-family: "Archivo", sans-serif; font-weight: 800; font-size: 21px; letter-spacing: -.01em; }
+        .brand { font-family: "Archivo", sans-serif; font-weight: 800; font-size: 24px; letter-spacing: -.01em; }
         .brand span { color: var(--accent); }
-        .brand-sub { font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+        .brand-sub { font-size: 12px; color: var(--muted); margin-top: 3px; }
         .doc-title { text-align: right; }
         .doc-title h2 {
             font-family: "Archivo", sans-serif;
             font-weight: 700;
-            font-size: 16px;
-            margin: 0 0 2px;
+            font-size: 17.5px;
+            margin: 0 0 3px;
             text-transform: uppercase;
             letter-spacing: .04em;
         }
-        .doc-title .sub { font-size: 11.5px; color: var(--muted); }
+        .doc-title .sub { font-size: 12px; color: var(--muted); }
 
         .formfields {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 12px 16px;
-            margin-bottom: 16px;
+            display: flex;
+            gap: 32px;
+            margin-bottom: 18px;
         }
+        .field { width: 170px; }
         .field label {
             display: block;
-            font-size: 10.5px;
+            font-size: 11px;
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: .06em;
             color: var(--muted);
-            margin-bottom: 3px;
+            margin-bottom: 4px;
         }
         .field input, .field select {
             width: 100%;
             font-family: "IBM Plex Mono", monospace;
-            font-size: 14px;
+            font-size: 15px;
             font-weight: 500;
-            padding: 5px 2px;
+            padding: 6px 2px;
             border: none;
             border-bottom: 1.5px solid var(--ink);
             background: transparent;
             color: var(--ink);
         }
+        /*
+         * Selects com background:transparent + appearance nativa podem
+         * renderizar o texto da opção selecionada invisível em alguns
+         * Chromium/Linux (o widget nativo do SO não desenha o texto sobre
+         * fundo transparente). Assumimos o desenho completo do controlo.
+         */
+        .field select {
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background: transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%2315202b' stroke-width='1.4' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") right 2px center / 10px 6px no-repeat;
+            padding-right: 16px;
+            cursor: pointer;
+        }
         .field input:focus, .field select:focus { outline: none; border-bottom-color: var(--accent); }
 
-        .ronda-table { width: 100%; border-collapse: collapse; }
-        .ronda-table thead { display: table-header-group; }
-        .ronda-table th {
-            font-size: 10px;
+        /*
+         * AdminLTE define `td{width:100%!important}` a nível global (afeta QUALQUER
+         * <td> da app, não só as nossas) — isso anulava as larguras das colunas e
+         * cada célula tentava ocupar 100% da linha, empilhando tudo verticalmente.
+         * Em vez de lutar contra esse !important, a lista usa <div> + CSS Grid, que
+         * esse seletor não consegue tocar.
+         */
+        .ronda-cols { grid-template-columns: 32px 1fr 76px 40px 110px 100px 56px; }
+        .ronda-table { width: 100%; border: 1.5px solid var(--ink); border-radius: 4px; overflow: hidden; }
+        .ronda-head {
+            display: grid;
+            gap: 0;
+            font-size: 10.5px;
             font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: .05em;
-            color: var(--muted);
-            text-align: left;
-            padding: 6px 8px;
-            border-bottom: 2px solid var(--ink);
-        }
-        .ronda-table th.c-num, .ronda-table td.c-num { text-align: center; width: 30px; }
-        .ronda-table th.c-elev, .ronda-table td.c-elev { text-align: center; width: 48px; }
-        .ronda-table th.c-code, .ronda-table td.c-code { width: 108px; }
-        .ronda-table th.c-done, .ronda-table td.c-done { text-align: center; width: 44px; }
-        .ronda-table th.c-notes, .ronda-table td.c-notes { width: 130px; }
-
-        .ronda-table tr.row { break-inside: avoid; }
-        .ronda-table td {
-            padding: 7px 8px;
-            border-bottom: 1px solid var(--line);
-            font-size: 12.5px;
-            vertical-align: top;
-        }
-        .ronda-table td.addr .street { font-weight: 500; }
-        .ronda-table td.addr .meta { font-size: 11px; color: var(--muted); font-family: "IBM Plex Mono", monospace; }
-        .ronda-table td.addr .meta .city { color: var(--accent); font-family: "IBM Plex Sans", sans-serif; font-weight: 500; }
-        .ronda-table td.c-num { color: var(--muted); font-family: "IBM Plex Mono", monospace; font-size: 11px; }
-
-        .pill {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            min-width: 22px;
-            height: 20px;
-            padding: 0 6px;
-            border-radius: 999px;
-            background: var(--accent);
+            letter-spacing: .03em;
             color: #fff;
-            font-family: "IBM Plex Mono", monospace;
-            font-weight: 600;
-            font-size: 12px;
+            background: var(--ink);
         }
-        .code { font-family: "IBM Plex Mono", monospace; font-weight: 600; font-size: 12.5px; letter-spacing: .01em; }
-        .code.empty { color: var(--line-strong); font-weight: 400; }
-        .box { width: 15px; height: 15px; border: 1.4px solid var(--line-strong); border-radius: 3px; margin: 0 auto; }
-        .notes-line { display: block; height: 14px; border-bottom: 1px solid var(--line); }
+        .ronda-head > div { padding: 9px 6px; border-right: 1px solid rgba(255,255,255,.18); text-align: center; }
+        .ronda-head > div:nth-child(2) { text-align: left; padding-left: 10px; }
+        .ronda-head > div:last-child { border-right: none; }
+
+        .ronda-row { display: grid; gap: 0; break-inside: avoid; border-bottom: 1.3px solid var(--line-strong); }
+        .ronda-row:nth-child(even) { background: var(--paper-sunken); }
+        .ronda-row > div {
+            padding: 9px 6px;
+            border-right: 1px solid var(--line);
+            font-size: 13px;
+            text-align: center;
+        }
+        .ronda-row > div:last-child { border-right: none; }
+        .ronda-row .c-num { color: var(--muted); font-family: "IBM Plex Mono", monospace; font-size: 12px; }
+        .ronda-row .addr { text-align: left; padding-left: 10px; }
+        .ronda-row .addr .street { font-weight: 500; }
+        .ronda-row .addr .city { color: var(--accent); font-weight: 500; font-size: 12px; }
+        .ronda-row .c-elev { font-weight: 700; font-size: 13.5px; }
+        .ronda-row .c-cont { font-family: "IBM Plex Mono", monospace; font-size: 12px; color: var(--muted); }
+        .ronda-row .c-code { font-family: "IBM Plex Mono", monospace; font-weight: 600; font-size: 13px; }
+        .ronda-row .c-code.empty { color: var(--line-strong); font-weight: 400; }
+        .ronda-row .c-mroom { font-family: "IBM Plex Mono", monospace; font-size: 12px; color: var(--muted); }
+        .box { width: 17px; height: 17px; border: 1.6px solid var(--line-strong); border-radius: 3px; margin: 0 auto; }
 
         .sheet-footer {
             display: flex;
             justify-content: space-between;
             align-items: baseline;
             gap: 12px;
-            margin-top: 14px;
-            padding-top: 10px;
+            margin-top: 18px;
+            padding-top: 12px;
             border-top: 1px solid var(--line);
-            font-size: 11px;
+            font-size: 11.5px;
             color: var(--muted);
             flex-wrap: wrap;
         }
-        .sheet-footer .totals { font-family: "IBM Plex Mono", monospace; }
+        .sheet-footer .totals { font-family: "IBM Plex Mono", monospace; font-weight: 500; }
 
         .loading-state, .empty-state { padding: 50px 10px; text-align: center; color: var(--muted); font-size: 13px; }
 
         @media print {
             .no-print { display: none !important; }
-            .sheet { border: none; border-radius: 0; padding: 0; }
-            .sheet, .sheet * { background: #fff !important; color: #000 !important; }
+            .sheet { border: none; border-radius: 0; padding: 0; overflow: visible; box-shadow: none; }
+            .sheet-inner { min-width: 0; }
+            .sheet, .sheet * { color: #000 !important; }
+            .ronda-row:nth-child(even) { background: #f2f2f2 !important; }
+            .sheet > .sheet-inner, .sheet { background: #fff !important; }
             .brand span { color: #000 !important; }
-            .letterhead, .ronda-table th { border-color: #000 !important; }
-            .ronda-table td { border-bottom-color: #999 !important; }
-            .pill { background: #000 !important; color: #fff !important; }
-            .field input, .field select { border-bottom-color: #000 !important; }
+            .letterhead { border-color: #000 !important; }
+            .ronda-table { border-color: #000 !important; }
+            .ronda-head { background: #000 !important; color: #fff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .ronda-head > div { color: #fff !important; }
+            .ronda-row { border-color: #000 !important; }
+            .ronda-row > div { border-right-color: #bbb !important; }
+            .field input { border-bottom-color: #000 !important; }
             .box { border-color: #000 !important; }
-            .ronda-table tr.row { break-inside: avoid; }
-            @page { margin: 14mm 12mm; }
+            .ronda-row { break-inside: avoid; }
+            @page { size: A4 landscape; margin: 10mm; }
         }
     </style>
 </head>
@@ -222,6 +239,7 @@
                 <div class="card">
                     <div class="card-body">
                         <div class="sheet" id="sheet">
+                        <div class="sheet-inner">
                             <div class="letterhead">
                                 <div>
                                     <div class="brand">Fest<span>Lift</span></div>
@@ -246,32 +264,28 @@
                                     <label for="fYear">Ano</label>
                                     <input type="text" id="fYear" inputmode="numeric" maxlength="4">
                                 </div>
-                                <div class="field">
-                                    <label for="fDate">Data de impressão</label>
-                                    <input type="text" id="fDate" readonly>
-                                </div>
                             </div>
 
-                            <table class="ronda-table">
-                                <thead>
-                                    <tr>
-                                        <th class="c-num">#</th>
-                                        <th>Morada</th>
-                                        <th class="c-elev">Elev.</th>
-                                        <th class="c-code">Código acesso</th>
-                                        <th class="c-done">Feito</th>
-                                        <th class="c-notes">Notas</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="tbody">
-                                    <tr><td colspan="6" class="loading-state"><i class="fas fa-spinner fa-spin mr-2"></i>A carregar elevadores…</td></tr>
-                                </tbody>
-                            </table>
+                            <div class="ronda-table">
+                                <div class="ronda-head ronda-cols">
+                                    <div class="c-num">Nº</div>
+                                    <div>Morada</div>
+                                    <div class="c-cont">Cont.</div>
+                                    <div class="c-elev">El.</div>
+                                    <div class="c-code">Código entrada</div>
+                                    <div class="c-mroom">Cas. máq.</div>
+                                    <div>Feito</div>
+                                </div>
+                                <div id="tbody">
+                                    <div class="loading-state"><i class="fas fa-spinner fa-spin mr-2"></i>A carregar elevadores…</div>
+                                </div>
+                            </div>
 
                             <div class="sheet-footer">
                                 <div>FestLift — lista gerada a partir do registo de elevadores ativos.</div>
                                 <div class="totals" id="totals"></div>
                             </div>
+                        </div>
                         </div>
                     </div>
                 </div>
@@ -327,14 +341,13 @@ function esc(s) {
     });
 }
 
-function buildMonthSelect() {
+function initHeaderFields() {
     var sel = document.getElementById("fMonth");
     var now = new Date();
     sel.innerHTML = MONTHS.map(function (m, i) {
         return '<option value="' + esc(m) + '"' + (i === now.getMonth() ? " selected" : "") + ">" + esc(m) + "</option>";
     }).join("");
     document.getElementById("fYear").value = now.getFullYear();
-    document.getElementById("fDate").value = now.toLocaleDateString("pt-PT");
 }
 
 // Agrupa ligações por morada (rua+concelho), preservando a ordem de chegada
@@ -355,16 +368,18 @@ function buildGroups(lifts) {
         }
         var key = street.toLowerCase() + "|" + city.toLowerCase();
         if (!byKey[key]) {
-            byKey[key] = { street: street, city: city, zip: zip, count: 0, intercoms: [] };
+            byKey[key] = { street: street, city: city, zip: zip, count: 0, intercoms: [], contracts: [] };
             order.push(key);
         }
         byKey[key].count++;
         var code = ((l.intercomCode || "") + "").replace(/[^\x20-\x7E]/g, "").trim();
         if (code && byKey[key].intercoms.indexOf(code) === -1) byKey[key].intercoms.push(code);
+        var cont = ((l.maintenanceContract && l.maintenanceContract.contractNumber) || "").trim();
+        if (cont && byKey[key].contracts.indexOf(cont) === -1) byKey[key].contracts.push(cont);
     });
     return order.map(function (k) {
         var g = byKey[k];
-        return { street: g.street, city: g.city, zip: g.zip, count: g.count, intercom: g.intercoms.join(" / ") };
+        return { street: g.street, city: g.city, zip: g.zip, count: g.count, intercom: g.intercoms.join(" / "), contract: g.contracts.join(" / ") };
     });
 }
 
@@ -388,7 +403,7 @@ function render() {
     var rows = filterCity === "__all" ? GROUPS : GROUPS.filter(function (g) { return g.city === filterCity; });
 
     if (!rows.length) {
-        tbody.innerHTML = '<tr><td colspan="6" class="empty-state">Sem moradas para este concelho.</td></tr>';
+        tbody.innerHTML = '<div class="empty-state">Sem moradas para este concelho.</div>';
         document.getElementById("totals").textContent = "";
         return;
     }
@@ -397,16 +412,17 @@ function render() {
     var totalLifts = 0;
     rows.forEach(function (g, i) {
         totalLifts += g.count;
-        var codeHtml = g.intercom ? '<span class="code">' + esc(g.intercom) + "</span>" : '<span class="code empty">—</span>';
+        var codeHtml = g.intercom ? '<span class="c-code">' + esc(g.intercom) + "</span>" : '<span class="c-code empty">—</span>';
         html.push(
-            '<tr class="row">' +
-                '<td class="c-num">' + (i + 1) + "</td>" +
-                '<td class="addr"><span class="street">' + esc(g.street) + '</span><br><span class="meta">' + esc(g.zip) + ' · <span class="city">' + esc(g.city) + '</span></span></td>' +
-                '<td class="c-elev"><span class="pill">' + g.count + "</span></td>" +
-                '<td class="c-code">' + codeHtml + "</td>" +
-                '<td class="c-done"><span class="box"></span></td>' +
-                '<td class="c-notes"><span class="notes-line"></span></td>' +
-            "</tr>"
+            '<div class="ronda-row ronda-cols">' +
+                '<div class="c-num">' + (i + 1) + "</div>" +
+                '<div class="addr"><span class="street">' + esc(g.street) + '</span> <span class="city">— ' + esc(g.city) + '</span></div>' +
+                '<div class="c-cont">' + esc(g.contract || "—") + "</div>" +
+                '<div class="c-elev">' + g.count + "</div>" +
+                '<div>' + codeHtml + "</div>" +
+                '<div class="c-mroom"></div>' +
+                '<div><span class="box"></span></div>' +
+            "</div>"
         );
     });
     tbody.innerHTML = html.join("");
@@ -414,11 +430,11 @@ function render() {
 }
 
 async function loadLifts() {
-    document.getElementById("tbody").innerHTML = '<tr><td colspan="6" class="loading-state"><i class="fas fa-spinner fa-spin mr-2"></i>A carregar elevadores…</td></tr>';
+    document.getElementById("tbody").innerHTML = '<div class="loading-state"><i class="fas fa-spinner fa-spin mr-2"></i>A carregar elevadores…</div>';
     var result = await apiCall('/api/lifts?limit=10000');
     if (!result || result.success === false) {
         toastr.error('Erro ao carregar elevadores: ' + (result && result.message || 'desconhecido'));
-        document.getElementById("tbody").innerHTML = '<tr><td colspan="6" class="empty-state">Erro ao carregar dados.</td></tr>';
+        document.getElementById("tbody").innerHTML = '<div class="empty-state">Erro ao carregar dados.</div>';
         return;
     }
     ALL_LIFTS = (result.data && result.data.lifts) || result.data || [];
@@ -430,7 +446,7 @@ async function loadLifts() {
 
 $(document).ready(function () {
     loadSidebarWithInit('includes/sidebar.html');
-    buildMonthSelect();
+    initHeaderFields();
     loadLifts();
 
     try {
