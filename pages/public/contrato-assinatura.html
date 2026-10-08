@@ -83,6 +83,7 @@
 
     <div class="section-title">Termos do Contrato</div>
     <p class="termos" id="termosTexto"></p>
+    <p class="termos" id="notasContrato" style="white-space:pre-line;display:none;"></p>
 
     <div class="section-title" style="display:flex;justify-content:space-between;align-items:center;">
         <span>Condições Gerais</span>
@@ -194,6 +195,7 @@ function render() {
     document.getElementById('precoMensal').textContent = contrato.precoMensal ? `€${Number(contrato.precoMensal).toFixed(2)} / mês + IVA` : '—';
 
     const renovacao = contrato.renovacao || {};
+    if (contrato.notas) { const n = document.getElementById('notasContrato'); n.textContent = 'Notas: ' + contrato.notas; n.style.display = 'block'; }
     document.getElementById('termosTexto').textContent =
         `Contrato de ${tipoLabel} respeitante a ${contrato.numAscensores || '__'} ascensor(es), destinado(s) a transporte de pessoas, instalado(s) em ${contrato.localInstalacao || '—'}. ` +
         `O preço do serviço de manutenção é de €${(contrato.precoMensal || 0).toFixed(2)} por mês, por unidade, acrescido de IVA à taxa legal em vigor. ` +

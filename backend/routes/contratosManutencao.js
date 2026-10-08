@@ -1,4 +1,14 @@
 const express = require('express');
+// Notas da proposta passam para o contrato (ex.: linha telefónica não incluída),
+// excluindo a frase de validade da proposta, que não se aplica a um contrato.
+function notasParaContrato(notas) {
+    return String(notas || '')
+        .split('\n')
+        .filter(l => l.trim() && !/^\s*Esta proposta é válida por/i.test(l))
+        .join('\n')
+        .trim() || undefined;
+}
+
 const router = express.Router();
 const mongoose = require('mongoose');
 const ContratoManutencao = require('../../models/ContratoManutencao');
@@ -374,6 +384,7 @@ router.post('/from-proposta/:propostaId', authenticate, authorizeRoles('admin', 
                 existenteDoc.dataInicioContrato = proposta.dataInicioContrato;
                 existenteDoc.duracaoAnos = proposta.duracaoAnos;
                 existenteDoc.renovacao = proposta.renovacao;
+                existenteDoc.notas = notasParaContrato(proposta.notas);
                 existenteDoc.liftId = proposta.liftId || null;
                 existenteDoc.lifts = proposta.lifts || [];
                 existenteDoc.liftAddress = proposta.liftAddress || null;
@@ -401,6 +412,7 @@ router.post('/from-proposta/:propostaId', authenticate, authorizeRoles('admin', 
             dataInicioContrato: proposta.dataInicioContrato,
             duracaoAnos: proposta.duracaoAnos,
             renovacao: proposta.renovacao,
+            notas: notasParaContrato(proposta.notas),
             liftId: proposta.liftId || null,
             lifts: proposta.lifts || [],
             liftAddress: proposta.liftAddress || null,
