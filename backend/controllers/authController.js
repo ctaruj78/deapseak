@@ -286,6 +286,9 @@ exports.changePassword = async (req, res, next) => {
         if (!currentPassword || !newPassword) {
             throw new AppError('Надайте поточний та новий пароль', 400);
         }
+        if (typeof newPassword !== 'string' || newPassword.length < 8) {
+            throw new AppError('A nova palavra-passe deve ter pelo menos 8 caracteres', 400);
+        }
 
         const user = await User.findById(req.user.id).select('+password');
 
