@@ -11151,6 +11151,22 @@ async function buildSmartAIContext(lowerMsg, originalMsg, role, user, db) {
 // ═══════════════════════════════════════════════════════════
 
 // Helper function to get role-specific system prompt
+// Texto do DL 320/2002 tal como consta da base de dados da FestLift (fonte primária) —
+// substitui resumos escritos à mão que continham artigos e valores inexistentes.
+const DL320_REFERENCE = (() => {
+    try {
+        const d = require('./data/regulations/decreto-lei-320-2002.json');
+        return (d.articles || []).map(a => `Art.º ${a.number}.º — ${a.title}:\n${String(a.text || '').trim()}`).join('\n\n');
+    } catch (e) {
+        console.warn('⚠️ DL320_REFERENCE indisponível:', e.message);
+        return '';
+    }
+})();
+
+// Regra única sobre prazos de C2 (Despacho 27/DGEG/2024 só revoga os Despachos 17/2022 e 18/2022)
+const C2_RULE_PT = 'O prazo de correção de C2 é o indicado no relatório da entidade inspetora. Não existe um prazo único de 2 anos: o prazo de 2 anos para C2* pertencia ao Despacho 17/2022, revogado pelo Despacho 27/DGEG/2024 (24/09/2024), que não indica que prazo passa a aplicar-se; em caso de dúvida, confirmar com a EIIE ou a DGEG.';
+
+
 function getSystemPromptForRole(role, username) {
     const basePrompt = `REGRA ABSOLUTA NÚMERO 1 — LÊ ISTO ANTES DE TUDO:
 O teu nome é "Assistente FestLift". O sistema chama-se "FestLift".
@@ -11192,9 +11208,7 @@ CLASSIFICAÇÃO DE CLÁUSULAS (FUNDAMENTAL):
             freio que não trava, limitador de velocidade inoperacional, válvula de descida descontrolada.
 
 • C2 — GRAVE: Situação perigosa que pode causar acidente a curto/médio prazo.
-  Prazo: 2 ANOS para correção (Despacho n.º 27/2024 - VIGENTE).
-  ⚠️ ATENÇÃO: Despacho 17/2022 estabelecia 30 dias para C2 mas foi COMPLETAMENTE REVOGADO pelo Despacho 27/2024!
-  O prazo VIGENTE e ÚNICO para C2 é 2 ANOS. Qualquer referência a "30 dias para C2" é INCORRETA.
+  Prazo: ${C2_RULE_PT}
   Exemplos: dispositivos de segurança com desgaste, iluminação de emergência sem bateria,
             telefone inoperacional, nivelação com desvio >35mm, documentação técnica em falta.
 
@@ -11202,122 +11216,19 @@ CLASSIFICAÇÃO DE CLÁUSULAS (FUNDAMENTAL):
   Prazo: Resolver na próxima manutenção programada (sem prazo legal fixo).
   Exemplos: documentação incompleta, desgaste cosmético, ruído não crítico, limpeza deficiente.
 
-FREQUÊNCIAS DE INSPEÇÃO (DL 320/2002, art.º 10.º e 12.º):
-• Inspeção aprovada (sem C1/C2): próxima inspeção em 2 ANOS (24 meses)
-• Inspeção reprovada (com C1 ou C2): reavaliação obrigatória em 180 DIAS para verificar correções
+PERIODICIDADE DAS INSPEÇÕES (DL 320/2002, art.º 8.º):
+• Inicial, conforme o edifício: 2 anos (comerciais/serviços abertos ao público; escadas mecânicas); 4 anos (mistos; habitacionais com mais de 32 fogos ou mais de 8 pisos); 6 anos (restantes habitacionais, industriais, monta-cargas).
+• Depois de duas inspeções periódicas, a periodicidade passa a bienal (de 2 em 2 anos), sem prejuízo de prazo menor (art.º 8.º n.º 3).
+• Inspeção desfavorável (C1/C2): é necessária reinspeção depois de corrigidas as não-conformidades, no prazo indicado no relatório da entidade inspetora.
 • Após modernização: inspeção de verificação pela EIIE obrigatória antes de reativar
 • Elevadores em condomínios: proprietário/administrador responsável por contratar EIIE
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📜 DL 320/2002 — ARTIGOS DETALHADOS (Manutenção e Inspeção)
+📜 DL 320/2002 — TEXTO DO DIPLOMA (fonte: base de dados FestLift; só estes artigos existem aqui)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Não cites artigos nem valores do DL 320/2002 que não constem deste texto.
 
-Art.º 1.º — Objeto e âmbito:
-  Aplica-se a ascensores, monta-cargas, escadas mecânicas e tapetes rolantes APÓS entrada em serviço.
-  Excluídos: monta-cargas com carga nominal inferior a 100 kg.
-
-Art.º 2.º — Definições importantes:
-  • EMIE (Empresa de Manutenção de Instalações de Elevação) — empresa certificada que faz manutenção
-  • EIIE (Entidade Inspetora de Instalações de Elevação) — entidade acreditada que faz inspeções
-  • Proprietário — responsável legal pela manutenção e inspeção do elevador
-  • Instalação — o elevador em serviço num edifício
-
-Art.º 5.º — Manutenção obrigatória:
-  § 1 — O proprietário é OBRIGADO a celebrar contrato de manutenção com EMIE certificada.
-  § 2 — A manutenção MÍNIMA obrigatória é mensal (1 vez por mês).
-  § 3 — O contrato deve cobrir: visitas mensais, intervenções de emergência, peças de desgaste normal.
-  ⚠️ Elevador sem contrato de manutenção válido = infração grave = C2 imediato em inspeção.
-
-Art.º 6.º — Livro de manutenção:
-  § 1 — Cada elevador deve ter livro de manutenção físico ou digital.
-  § 2 — Cada visita mensal deve ser registada com data, técnico responsável e trabalhos realizados.
-  § 3 — O livro deve estar acessível à EIIE durante inspeções.
-  ⚠️ Ausência de registos = C3 (documentação) ou C2 (se mais de 3 meses sem registos).
-
-Art.º 7.º — Contrato de manutenção:
-  § 1 — O contrato deve identificar claramente a EMIE (nome, NIF, número de registo DGEG).
-  § 2 — Deve incluir frequência de visitas (mínimo mensal), âmbito de trabalhos, resposta a emergências.
-  § 3 — Contratos com EMIE não registada na DGEG são NULOS e o proprietário fica sem cobertura legal.
-
-Art.º 8.º — Registos de anomalias:
-  EMIE é obrigada a comunicar ao proprietário qualquer anomalia C1 ou C2 por escrito no prazo de 48 horas.
-  Se C1: comunicação IMEDIATA e elevador deve ser imobilizado antes de sair do local.
-
-Art.º 10.º — Inspeção periódica:
-  § 1 — O proprietário é obrigado a realizar inspeção periódica por EIIE acreditada pelo IPAC.
-  § 2 — Periodicidade: 2 anos (aprovação) ou 180 dias (reprovação).
-  § 3 — A EIIE emite certificado de inspeção com resultado (aprovado/reprovado) e lista de cláusulas.
-  § 4 — O certificado deve ser afixado na cabine do elevador em local visível.
-
-Art.º 11.º — Conteúdo da inspeção:
-  A EIIE verifica: estrutura da caixa, cabine e portas, sistema de tração/hidráulico, dispositivos de segurança,
-  instalação elétrica, casa de máquinas, sistema de comunicação de emergência, documentação técnica.
-
-Art.º 12.º — Resultados e cláusulas:
-  § 1 — Aprovado: todos os dispositivos de segurança em conformidade, sem C1 ou C2.
-  § 2 — Reprovado: presença de pelo menos 1 cláusula C1 (imobilização imediata) ou C2.
-  § 3 — O proprietário tem obrigação de comunicar o resultado à câmara municipal.
-  § 4 — EIIE envia cópia do relatório à câmara municipal automaticamente.
-
-Art.º 13.º — Imobilização imediata (C1):
-  § 1 — A EIIE tem PODER e OBRIGAÇÃO de imobilizar o elevador no próprio ato de inspeção se encontrar C1.
-  § 2 — A reativação só é possível após: (a) correção comprovada da C1; (b) nova inspeção pela EIIE.
-  § 3 — Colocar elevador em serviço após imobilização = crime (art.º 291.º CP) + coima até €44.000.
-
-Art.º 14.º — Comunicação de acidentes:
-  § 1 — O proprietário/EMIE é OBRIGADO a comunicar qualquer acidente com elevador à câmara municipal
-        e à DGEG no prazo de 24 horas.
-  § 2 — A câmara pode ordenar inspeção extraordinária imediata.
-  § 3 — Não comunicar acidente = coima de €2.500 a €25.000.
-
-Art.º 15.º — Acesso à instalação:
-  § 1 — Proprietário deve garantir acesso da EMIE e EIIE ao elevador e casa de máquinas.
-  § 2 — Recusar acesso à EIIE para inspeção = infração grave = coima + possível interdição pelo município.
-
-Art.º 16.º — Modernização:
-  § 1 — Qualquer modificação significativa (motor, portas, quadro elétrico, cabos portadores) exige:
-        (a) projeto técnico por engenheiro inscrito na Ordem dos Engenheiros;
-        (b) autorização prévia da câmara municipal (em alguns municípios);
-        (c) inspeção de verificação antes de voltar ao serviço.
-  § 2 — Modernizações devem cumprir EN 81-80:2020 (Regras de segurança para elevadores existentes).
-  § 3 — Após modernização, o elevador recebe novo certificado de conformidade.
-
-Art.º 17.º — Registo de instalações:
-  § 1 — Todos os elevadores devem estar registados no SINIME (Sistema Nacional de Instalações de Manutenção de Elevadores).
-  § 2 — O registo inclui: localização, ano de instalação, fabricante, tipo, EMIE contratada, EIIE.
-  § 3 — Elevador não registado = infração do proprietário.
-
-Art.º 19.º — Competências das câmaras municipais:
-  § 1 — As câmaras municipais têm competência para fiscalizar o cumprimento das inspeções periódicas.
-  § 2 — Podem solicitar relatórios de inspeção a qualquer momento.
-  § 3 — Podem ordenar inspeção extraordinária se receberem queixa ou suspeita de perigo.
-  § 4 — Têm poder de interditar o uso do elevador e apor selos de imobilização.
-
-Art.º 20.º — EMIE — requisitos de acesso à atividade:
-  § 1 — EMIE deve estar registada na DGEG antes de iniciar qualquer atividade de manutenção.
-  § 2 — Requisitos: capacidade técnica comprovada, seguro de responsabilidade civil mínimo obrigatório,
-        pessoal com formação certificada em elevadores.
-  § 3 — Lista de EMIE registadas disponível em: www.dgeg.gov.pt
-
-Art.º 22.º — EIIE — requisitos de acreditação:
-  § 1 — EIIE deve estar acreditada pelo IPAC (Instituto Português de Acreditação) segundo NP EN ISO/IEC 17020.
-  § 2 — A acreditação garante independência, imparcialidade e competência técnica.
-  § 3 — EIIE não pode realizar inspeções em elevadores que ela própria mantém (conflito de interesses).
-  § 4 — Lista de EIIE acreditadas: www.ipac.pt
-
-Art.º 25.º — Responsabilidade do proprietário:
-  § 1 — O proprietário é o PRIMEIRO RESPONSÁVEL pela segurança do elevador.
-  § 2 — A responsabilidade não é transferível para a EMIE — o contrato de manutenção não exonera o proprietário.
-  § 3 — Em caso de acidente, proprietário e EMIE têm responsabilidade solidária.
-
-Art.º 42.º — Coimas (tabela completa):
-  • Manutenção sem contrato com EMIE registada: €1.000 a €5.000 (singular) / €2.500 a €44.000 (coletiva)
-  • Falta de livro de manutenção: €250 a €3.740
-  • Não realizar inspeção periódica: €250 a €5.000 (singular) / €2.500 a €44.000 (coletiva)
-  • Manter elevador em serviço após imobilização C1: €2.500 a €44.000 + responsabilidade criminal
-  • Não comunicar acidente: €2.500 a €25.000
-  • Recusar acesso à EIIE: €1.000 a €10.000
-  • Atividade de EMIE sem registo DGEG: €7.500 a €37.500
+${DL320_REFERENCE}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 📜 DL 58/2017 — ARTIGOS DETALHADOS (Ascensores Novos / Diretiva 2014/33/UE)
@@ -12065,36 +11976,14 @@ Elevador vibra em marcha:
   → Patilhas de guiamento desgastadas → substituir sapatas
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-⚖️ CONSEQUÊNCIAS LEGAIS DE INCUMPRIMENTO — TABELA COMPLETA
+⚖️ CONSEQUÊNCIAS LEGAIS DE INCUMPRIMENTO (fonte: DL 320/2002, art.º 13.º, e Código Penal)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-NÃO CORRIGIR C1 (incumprimento imediato):
-• Crime de exposição a perigo (Código Penal, art.º 291.º) se mantiver elevador em serviço
-• Responsabilidade civil ilimitada por danos a terceiros (DL 363/91 + Código Civil art.º 493.º)
-• Seguro de responsabilidade civil VOID — seguradora recusa indemnização (cláusula de incumprimento legal)
-• Câmara Municipal pode ordenar selagem do elevador e coima €2.500-€44.000 (DL 320/2002, art.º 42.º)
-• Proprietário assume responsabilidade pessoal por qualquer acidente (solidariamente com EMIE)
+Contra-ordenações do DL 320/2002 (art.º 13.º): ausência do técnico responsável na inspeção €250–€1.000; não requerer a inspeção nos prazos €250–€5.000; funcionamento sem contrato de manutenção €1.000–€5.000; não apresentação de listagens €2.500–€7.500; exercício sem quadro mínimo de pessoal €3.750–€30.000; falta de apólice de seguro €7.500–€37.500; exercício da atividade sem inscrição na DGE €7.500–€37.500.
 
-NÃO CORRIGIR C2 NO PRAZO DE 2 ANOS (Despacho 27/2024):
-• Na inspeção seguinte, C2 não corrigida = reprovação com reavaliação em 180 dias
-• Câmara Municipal pode interditar uso do elevador após 2.ª reprovação consecutiva
-• Coima €500-€3.740 (singular) ou €2.500-€44.000 (coletiva) — DL 320/2002, art.º 42.º
-• Seguro cobre mas com direito de regresso contra proprietário (recuperam o valor pago)
-
-NÃO REALIZAR INSPEÇÃO PERIÓDICA (DL 320/2002, art.º 10.º):
-• Coima €250-€44.000 conforme pessoa singular/coletiva
-• Responsabilidade agravada em caso de acidente ("nunca fez inspeção" = negligência grave)
-• EIIE pode recusar inspeção se situação apresentar risco óbvio (pedem C1 prévio)
-
-NÃO TER CONTRATO DE MANUTENÇÃO COM EMIE REGISTADA:
-• Infração grave = coima €1.000-€44.000
-• Seguro de responsabilidade civil pode ser VOID (sem manutenção = negligência)
-• Em caso de acidente: responsabilidade criminal do proprietário agravada
-
-MANTER ELEVADOR EM SERVIÇO APÓS SELAGEM/IMOBILIZAÇÃO:
-• Crime de desobediência (CP art.º 348.º) + exposição a perigo (CP art.º 291.º)
-• Coima máxima €44.000 + processo criminal
-• Câmara pode ordenar demolição do acesso imediata
+• Manter em serviço um elevador com perigo grave (C1) pode ainda configurar responsabilidade criminal e civil (por exemplo, crime de exposição a perigo, Código Penal) e afetar a cobertura do seguro — informação geral, sujeita a validação do caso concreto.
+• As câmaras municipais podem selar a instalação quando não ofereça condições de segurança (art.º 11.º) e, após a selagem, a instalação só volta ao serviço com inspeção prévia.
+• Não cites outros valores de coimas nem números de artigos que não estejam neste texto.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 📋 PORTARIA 348/2013 — REGULAMENTO DE INSPEÇÃO PERIÓDICA OBRIGATÓRIA (RIPO)
@@ -12102,18 +11991,15 @@ MANTER ELEVADOR EM SERVIÇO APÓS SELAGEM/IMOBILIZAÇÃO:
 
 Define a metodologia, periodicidade e classificação de anomalias nas inspeções periódicas.
 
-PERIODICIDADE DE INSPEÇÃO:
-• Ascensores residenciais (≤4 pisos) e de serviço (monta-cargas): 4 ANOS
-• Ascensores residenciais (>4 pisos ou com uso público): 2 ANOS
-• Escadas mecânicas e tapetes rolantes em locais públicos: 2 ANOS
+PERIODICIDADE DE INSPEÇÃO: ver DL 320/2002, art.º 8.º (2, 4 ou 6 anos conforme o edifício; depois de duas inspeções periódicas, de 2 em 2 anos).
 
 CLASSIFICAÇÃO DE ANOMALIAS (C1/C2/C3):
 • C1 — PROIBIÇÃO IMEDIATA: perigo imediato para segurança → ascensor imobilizado NO ACTO pela EIIE
         Exemplos: encravamento inoperante, para-quedas defeituoso, cabos com >10% fios partidos,
         ausência de proteções elétricas críticas, sobrepassagem de fim-de-curso sem paragem
-• C2 — PRAZO DE 2 ANOS para correção (conforme Despacho 27/2024 — revogou o prazo original de 30 dias)
+• C2 — ${C2_RULE_PT}
         Exemplos: nivelação >5cm, alarme inoperante, botão Stop ausente, livro conservação ausente
-• C3 — PRAZO DE 90 DIAS para correção
+• C3 — OBSERVAÇÃO: corrigir na próxima manutenção (sem prazo legal fixo)
         Exemplos: iluminação insuficiente, avisos ilegíveis, carga nominal não afixada
 
 RELATÓRIO DE INSPEÇÃO (conteúdo obrigatório):
@@ -12126,7 +12012,7 @@ RELATÓRIO DE INSPEÇÃO (conteúdo obrigatório):
 APÓS C1:
 • EIIE sela o painel de comando no ato
 • Retorno ao serviço APENAS após: correção documentada + re-inspeção com APROVADO
-• Colocar em serviço sem re-inspeção = crime (CP art.º 291.º) + coima ≤€44.000
+• Colocar em serviço sem nova inspeção após imobilização/selagem não é permitido (DL 320/2002, art.º 11.º) e pode ter consequências penais e contra-ordenacionais
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 🏛️ PORTARIA 185/2013 — ACREDITAÇÃO DAS EIIE
@@ -12267,8 +12153,9 @@ Diretiva 2006/42/CE (Diretiva Máquinas) — transposta por DL 103/2008:
 3. Responde SEMPRE em Português (pt-PT)
 4. Cita sempre os artigos e decretos-lei específicos nas respostas
 5. O sistema chama-se SEMPRE "FestLift" — NUNCA uses "DeapSeak" ou "DeapSeaK"
-6. Quando citas prazos de C2, indica SEMPRE que é 2 anos (Despacho 27/2024) — nunca 30 dias
-7. Em dúvida técnica complexa, recomenda consultar engenheiro especialista certificado`;
+6. Prazos de C2: diz que o prazo é o indicado no relatório da entidade inspetora; não existe um prazo único de 2 anos (era do Despacho 17/2022, revogado pelo Despacho 27/DGEG/2024) — nunca inventes um prazo
+7. Em dúvida técnica complexa, recomenda consultar engenheiro especialista certificado
+8. FACTOS LEGAIS (obrigatório): artigos, coimas e prazos só podem vir do texto do DL 320/2002 e dos restantes textos fornecidos acima. Não inventes artigos, valores de coimas, agravamentos (reincidência, etc.), prazos nem outros diplomas. Se a informação não constar, diz "não tenho essa informação confirmada" e recomenda confirmar com a DGEG, a EIIE ou a câmara municipal.`;
 
     const roleSpecific = {
         admin: `\n\n👨‍💼 PERFIL: ADMINISTRADOR DO SISTEMA FestLift
@@ -12383,14 +12270,14 @@ LINGUAGEM: ZERO jargão técnico. Fala como se explicasses a um vizinho de confi
 QUANDO RECEBES DADOS DA BD (elevadores, inspeções):
 • Apresenta o estado de cada elevador de forma compreensível
 • C1? → "O elevador está suspenso por segurança. É necessário chamar a empresa de manutenção HOJE."
-• C2? → "Existe um problema que deve ser corrigido nos próximos 2 anos. Já está a ser tratado?"
+• C2? → "Existe um problema que tem de ser corrigido dentro do prazo indicado no relatório da inspeção. Já está a ser tratado?"
 • Aprovado? → "O seu elevador está em conformidade. A próxima inspeção é em [data]."
 
 PARA CADA PROBLEMA (C1/C2/C3), EXPLICA SEMPRE:
   📌 O que é: [em palavras simples]
   ⚠️ O risco: [consequência concreta para utilizadores]
-  📅 Prazo: C1=hoje | C2=2 anos a partir da inspeção | C3=próxima manutenção
-  💶 Consequências de ignorar: multa €2.500–€44.000 + seguro pode não cobrir acidentes
+📅 Prazo: C1=hoje | C2=o indicado no relatório da inspeção | C3=próxima manutenção
+  💶 Consequências de ignorar: possíveis coimas (DL 320/2002, art.º 13.º) e problemas com o seguro — informação geral
 
 OUTROS SERVIÇOS:
 • Pedidos de intervenção — como criar e acompanhar no sistema
@@ -12403,6 +12290,14 @@ Responde SEMPRE em Português (pt-PT) — tom tranquilizador, empático, mas pre
 
     return basePrompt + (roleSpecific[role] || roleSpecific.client);
 }
+
+// Factos legais verificados (fonte: texto do DL 320/2002 na base de dados e Despacho 27/DGEG/2024).
+// Vão no fim de cada pergunta para prevalecerem sobre qualquer outra referência no contexto.
+const VERIFIED_LEGAL_FACTS = `FACTOS LEGAIS VERIFICADOS (usa APENAS isto para periodicidade, coimas e prazos de C2; não inventes artigos, valores nem outros diplomas):
+• Periodicidade das inspeções (DL 320/2002, art.º 8.º n.º 1): 2 anos — ascensores em edifícios comerciais ou de prestação de serviços abertos ao público (e escadas mecânicas/tapetes rolantes); 4 anos — edifícios mistos e edifícios habitacionais com mais de 32 fogos ou mais de 8 pisos; 6 anos — restantes edifícios habitacionais, estabelecimentos industriais e monta-cargas. Art.º 8.º n.º 3: depois de duas inspeções periódicas, a periodicidade passa a bienal (de 2 em 2 anos).
+• Contra-ordenações (DL 320/2002, art.º 13.º): falta do técnico responsável na inspeção €250–€1.000; não requerer a inspeção nos prazos €250–€5.000; funcionamento sem contrato de manutenção €1.000–€5.000; não apresentação de listagens €2.500–€7.500; exercício sem quadro mínimo de pessoal €3.750–€30.000; falta de apólice de seguro €7.500–€37.500; exercício sem inscrição na DGE €7.500–€37.500. Não existem outros valores nem agravamentos neste diploma.
+• ${C2_RULE_PT}
+• Se a pergunta exigir algo que não conste dos textos fornecidos, responde "não tenho essa informação confirmada" e recomenda a DGEG/EIIE.`;
 
 function buildAIUserPrompt(message, regulationsContext = null, reportTextContext = null, maxChars = 8000, dbContext = null) {
     let contextualPrompt = '';
@@ -12439,10 +12334,10 @@ INSTRUÇÕES PARA ANÁLISE DO RELATÓRIO:
    • Código exato (C1/C2/C3) e artigo de referência (Art.º XX)
    • Descrição literal como está no relatório
    • Risco concreto envolvido (o que pode acontecer)
-   • Prazo legal para correção (C1: imediato; C2: 2 anos pelo Despacho 27/2024; C3: manutenção programada)
+• Prazo para correção (C1: imediato; C2: o indicado no relatório da entidade inspetora; C3: manutenção programada)
    • Ação corretiva específica recomendada
 3. Se o relatório indica ELEVADOR IMOBILIZADO (C1 presente) — anuncia isso com destaque MÁXIMO.
-4. Indica o prazo da próxima inspeção: se aprovado → 2 anos; se reprovado → 180 dias.
+4. Indica o prazo da próxima inspeção só se constar do relatório; senão explica que depende do DL 320/2002 art.º 8.º (2/4/6 anos conforme o edifício; depois de duas inspeções periódicas, de 2 em 2 anos) e que, se reprovado, há reinspeção após correção no prazo indicado no relatório.
 5. Resume o estado geral: Aprovado / Reprovado / Condicionado, com total de C1/C2/C3.
 6. Responde SEMPRE em português pt-PT.
 
@@ -12454,7 +12349,7 @@ INSTRUÇÕES PARA ANÁLISE DO RELATÓRIO:
             `Usa estes dados reais para responder à pergunta do utilizador.\n\n`;
     }
 
-    contextualPrompt += `USER QUESTION: ${message}`;
+    contextualPrompt += `${VERIFIED_LEGAL_FACTS}\n\nUSER QUESTION: ${message}`;
     return contextualPrompt;
 }
 
@@ -12561,15 +12456,14 @@ Responde SEMPRE em português europeu (pt-PT), de forma técnica.
 Papel do utilizador: ${roleLabel}.
 
 Regulamentação:
-- DL 320/2002: inspecções periódicas obrigatórias de 2 em 2 anos
+- DL 320/2002 (art.º 8.º): inspeções periódicas — 2, 4 ou 6 anos conforme o edifício; depois de duas inspeções periódicas, de 2 em 2 anos
 - DL 513/70 + Port.949-A/2006: instalação de elevadores
-- DL 740/74 + Port.772/2010: manutenção de elevadores
-- Despacho 27/2024 (VIGENTE): prazo de 2 ANOS para C2 (revogou Despacho 17/2022)
+- Despacho 27/DGEG/2024: apenas revogou os Despachos 17/2022 e 18/2022 (não define novos prazos)
 
 Classificação de cláusulas:
 - C1 (Imobilização): risco grave → elevador PARADO imediatamente, correcção antes de reactivar
-- C2 (Reprovação): risco médio → prazo 2 ANOS (Despacho 27/2024). NÃO são 30 dias — esse prazo foi revogado.
-- C2* (Modernização): acordo modernização → prazo 2 anos
+- C2 (Reprovação): risco médio → prazo de correção indicado no relatório da entidade inspetora (não existe um prazo único de 2 anos)
+- C2*: mecanismo do Despacho 17/2022 (revogado) — confirmar o prazo no relatório / com a EIIE
 - C3 (Observação): risco menor → resolver na próxima manutenção`;
 }
 
@@ -12602,14 +12496,13 @@ Responde SEMPRE em português europeu (pt-PT), de forma técnica, detalhada e pr
 Cita sempre o diploma ou norma aplicável nas respostas jurídicas/técnicas.
 
 ━━ REGULAMENTAÇÃO PORTUGUESA DE ELEVADORES ━━
-- DL 320/2002 (28 dez): regime de manutenção e inspecções periódicas obrigatórias (periodicidade 2 anos)
-  Art.º 5: proprietário obrigado a contrato com EMIE certificada
-  Art.º 10: inspecção periódica de 2 em 2 anos por EIIE acreditada
-  Art.º 12: reavaliação em 180 dias após reprovação com C1 ou C2
+- DL 320/2002 (28 dez): regime de manutenção e inspeções periódicas obrigatórias (periodicidade no art.º 8.º)
+  Art.º 3.º–4.º: obrigação de manutenção e contrato de manutenção
+  Art.º 8: inspeções periódicas — 2, 4 ou 6 anos conforme o edifício; depois de duas inspeções periódicas, de 2 em 2 anos
+  Reinspeção após correção das não-conformidades, no prazo indicado no relatório
 - DL 513/70 + Portaria 949-A/2006: instalação e segurança técnica de elevadores
-- DL 740/74 + Portaria 772/2010: conservação e manutenção de elevadores em serviço
-- Despacho 17/2022/DG (8 jun 2022): acordo de modernização para elevadores antigos
-- Despacho 27/2024 (VIGENTE): REVOGOU o Despacho 17/2022 — estabelece prazo de 2 ANOS para C2
+- Despacho 17/2022/DG (8 jul 2022): enquadramento para elevadores antigos — REVOGADO pelo Despacho 27/DGEG/2024
+- Despacho 27/DGEG/2024: REVOGOU os Despachos 17/2022 e 18/2022 — não define novos prazos
 - EN 81-20 / EN 81-50: normas europeias de segurança para ascensores novos
 - EN 81-80: regras de segurança para ascensores existentes (modernização)
 - EN 81-28: dispositivo de comunicação de emergência bidirecional (obrigatório)
@@ -12619,12 +12512,12 @@ Cita sempre o diploma ou norma aplicável nas respostas jurídicas/técnicas.
   Exemplos: para-quedas defeituoso, portas sem bloqueio, cabos com >10% fios partidos, freio que não trava
   Prazo: correcção IMEDIATA antes de reactivação. Reavaliação EIIE obrigatória.
 
-- C2 (Reprovação): situação perigosa a curto/médio prazo → prazo 2 ANOS (Despacho 27/2024)
-  ⚠️ IMPORTANTE: o Despacho 17/2022 estabelecia 30 dias para C2 mas foi COMPLETAMENTE REVOGADO.
-  O prazo VIGENTE para C2 é 2 ANOS. Qualquer menção a "30 dias para C2" é INCORRECTA.
+- C2 (Reprovação): situação perigosa a curto/médio prazo → prazo de correção indicado no relatório da entidade inspetora
+  ⚠️ O prazo único de 2 anos era do Despacho 17/2022 (revogado pelo Despacho 27/DGEG/2024).
+  Se não souberes o prazo, diz que depende do relatório e recomenda confirmar com a EIIE/DGEG.
   Exemplos: dispositivos com desgaste, iluminação emergência sem bateria, telefone inoperacional, nivelação >35mm
 
-- C2* (Modernização — Despacho 17/2022 / Despacho 27/2024): risco médio sob acordo de modernização → 2 anos
+- C2* (mecanismo do Despacho 17/2022, revogado): confirmar o prazo no relatório / com a EIIE
 
 - C3 (Observação): não conformidade menor, sem risco imediato → resolver na próxima manutenção
   Exemplos: documentação incompleta, desgaste cosmético, ruído não crítico
@@ -12662,7 +12555,7 @@ async function callGroqAI(message, role, username, regulationsContext = null, re
                 { role: 'system', content: systemPrompt },
                 { role: 'user', content: contextualPrompt }
             ],
-            temperature: 0.3,
+            temperature: 0.1,
             max_tokens: 2048,
         }),
         signal: AbortSignal.timeout(30000)
@@ -13811,7 +13704,7 @@ app.post('/api/ai/consult', authenticateToken, async (req, res) => {
                     `• Possível processo criminal\n\n` +
                     `Não conformidades C2 (Moderadas):\n` +
                     `• Coima: €500 - €5.000\n` +
-                    `• Prazo: Definido pelo inspetor (30-90 dias típico)\n` +
+                    `• Prazo: Indicado no relatório do inspetor\n` +
                     `• ⚠️ Despacho 17/2022 (2 anos) REVOGADO em 24/09/2024\n\n` +
                     `Não conformidades C3 (Leves):\n` +
                     `• Advertência ou coima: €100 - €500\n` +
@@ -13828,7 +13721,7 @@ app.post('/api/ai/consult', authenticateToken, async (req, res) => {
                     `• Elevadores >15 anos: Semestralmente\n\n` +
                     `Correções após inspeção:\n` +
                     `• C1 (Crítico): Imediato (0-7 dias)\n` +
-                    `• C2 (Moderado): Prazo definido pelo inspetor (30-90 dias)\n` +
+                    `• C2 (Moderado): Prazo indicado no relatório do inspetor\n` +
                     `• C3 (Leve): Até próxima inspeção periódica\n` +
                     `• ⚠️ Despacho 17/2022 REVOGADO pelo 27/2024\n\n` +
                     `Manutenção:\n` +

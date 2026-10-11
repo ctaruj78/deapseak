@@ -1211,7 +1211,7 @@
         {
           "number": 10,
           "title": "Inspeção periódica",
-          "text": "§1 Proprietário obrigado a realizar inspeção periódica por EIIE acreditada IPAC. §2 Periodicidade: 2 anos (aprovação) ou 180 dias (reprovação). §3 Certificado afixado na cabine.",
+          "text": "§1 Proprietário obrigado a realizar inspeção periódica por EIIE acreditada IPAC. §2 Periodicidade: ver DL 320/2002, art.º 8.º (2, 4 ou 6 anos conforme o edifício; depois de duas inspeções periódicas, de 2 em 2 anos). §3 Certificado afixado na cabine.",
           "keywords": [
             "inspeção periódica",
             "EIIE",
@@ -3941,9 +3941,9 @@
       },
       "inspection_points": [
         {
-          "requirement": "Inspeção periódica obrigatória a cada 2 anos",
-          "description": "Elevadores em edifícios residenciais devem ser inspecionados por OII credenciada de 2 em 2 anos",
-          "client_explanation": "Cada 2 anos um inspetor credenciado verifica o seu elevador e emite certificado de conformidade",
+          "requirement": "Inspeção periódica obrigatória (DL 320/2002, art.º 8.º): periodicidade inicial de 2, 4 ou 6 anos conforme o edifício; depois de duas inspeções periódicas, de 2 em 2 anos",
+          "description": "Os elevadores devem ser inspecionados por uma entidade inspetora acreditada; a periodicidade depende do tipo de edifício e, depois de duas inspeções periódicas, passa a ser de 2 em 2 anos",
+          "client_explanation": "Periodicamente (no fim, de 2 em 2 anos) um inspetor credenciado verifica o seu elevador e emite certificado de conformidade",
           "severity": "mandatory",
           "urgency": "C1",
           "penalty": "€250 a €5000 por falta de inspeção em dia"
@@ -4009,7 +4009,7 @@
           "number": 2,
           "classification": "technical",
           "title": "Periodicidade das inspeções — Tabela por tipo",
-          "text": "Frequência de inspeção periódica obrigatória: a) Ascensores residenciais (≤4 pisos, área habitual): 2 anos. b) Ascensores residenciais (>4 pisos ou com uso público): 2 anos. c) Ascensores em locais públicos (estações, hospitais, centros comerciais): 2 anos. d) Ascensores de serviço (monta-cargas, plataformas): 4 anos. e) Escadas mecânicas e tapetes rolantes em espaços públicos: 2 anos. Nota: a câmara municipal pode reduzir o intervalo se detectar incumprimento repetido.",
+          "text": "Periodicidade das inspeções periódicas (DL 320/2002, art.º 8.º): a) 2 anos — ascensores em edifícios comerciais ou de prestação de serviços abertos ao público; escadas mecânicas e tapetes rolantes. b) 4 anos — edifícios mistos e edifícios habitacionais com mais de 32 fogos ou mais de oito pisos. c) 6 anos — restantes edifícios habitacionais, estabelecimentos industriais e monta-cargas. d) Depois de duas inspeções periódicas a periodicidade passa a bienal (n.º 3). Nota: a câmara municipal pode reduzir o intervalo se detectar incumprimento repetido.",
           "keywords": [
             "periodicidade",
             "2 anos",
@@ -4026,7 +4026,7 @@
           "number": 3,
           "classification": "technical",
           "title": "Classificação de anomalias — C1, C2, C3",
-          "text": "C1 — PROIBIÇÃO DE FUNCIONAMENTO IMEDIATA: anomalias que representam perigo imediato para a segurança das pessoas. O elevador é imobilizado no acto da inspeção pela EIIE. Exemplos: encravamento de porta inoperante, para-quedas defeituoso, cabos com >10% fios partidos, ausência de proteções eléctricas críticas. C2 — PRAZO ATUAL DE 2 ANOS para correção (Despacho 27/2024 — revogou o prazo original de 30 dias da Portaria 348/2013). Exemplos: nivelação >5cm, alarme inoperante, botão Stop ausente, ausência de identificação EMIE. C3 — PRAZO DE 90 DIAS. Exemplos: iluminação insuficiente, avisos ilegíveis, livro de conservação desactualizado.",
+          "text": "C1 — PROIBIÇÃO DE FUNCIONAMENTO IMEDIATA: anomalias que representam perigo imediato para a segurança das pessoas. O elevador é imobilizado no acto da inspeção pela EIIE. Exemplos: encravamento de porta inoperante, para-quedas defeituoso, cabos com >10% fios partidos, ausência de proteções eléctricas críticas. C2 — prazo de correção indicado no relatório da entidade inspetora (o prazo de 2 anos para C2* pertencia ao Despacho 17/2022, revogado pelo Despacho 27/DGEG/2024, que não define novos prazos). Exemplos: nivelação >5cm, alarme inoperante, botão Stop ausente, ausência de identificação EMIE. C3 — observação: corrigir na próxima manutenção (sem prazo legal fixo). Exemplos: iluminação insuficiente, avisos ilegíveis, livro de conservação desactualizado.",
           "keywords": [
             "C1",
             "C2",
@@ -4037,7 +4037,7 @@
             "anomalias",
             "classificação",
             "Despacho 27/2024",
-            "2 anos C2"
+            "prazo C2"
           ],
           "relatedViolations": [
             "C1",
@@ -4887,7 +4887,7 @@
       "icon": "🔴",
       "meaning": "Risco imediato de acidente grave ou morte",
       "action": "DESATIVAR ELEVADOR IMEDIATAMENTE",
-      "deadline": "0-7 dias",
+      "deadline": "Imediato (imobilização no ato da inspeção)",
       "legalConsequence": "Responsabilidade criminal em caso de acidente"
     },
     "C2": {
@@ -4896,7 +4896,7 @@
       "icon": "🟠",
       "meaning": "Não conformidade que pode evoluir para risco crítico",
       "action": "Correção urgente necessária",
-      "deadline": "30 dias",
+      "deadline": "Indicado no relatório da entidade inspetora",
       "legalConsequence": "Coima administrativa possível"
     },
     "C3": {
@@ -4905,7 +4905,7 @@
       "icon": "🟡",
       "meaning": "Não conformidade menor sem risco imediato",
       "action": "Incluir em próxima manutenção",
-      "deadline": "90 dias",
+      "deadline": "Próxima manutenção (sem prazo legal fixo)",
       "legalConsequence": "Advertência possível"
     }
   },

@@ -6,7 +6,7 @@
  * Оновлено: 01.01.2026
  * 
  * КРИТИЧНІ ЗМІНИ:
- * ⚠️ Despacho 17/2022: C2 терміни змінені 30 днів → 2 РОКИ!
+ * ⚠️ Despacho 17/2022 foi REVOGADO pelo Despacho 27/DGEG/2024 (24/09/2024), que não define novos prazos para C2
  */
 
 const regulationsLoader = require('./regulations-loader');
@@ -118,12 +118,12 @@ class AIKnowledgeBase {
 
 **Despacho n.º 27/2024 (24 setembro 2024):**
 ❌ REVOGOU os Despachos 17/2022 e 18/2022
-🔙 Sistema VOLTOU às regras anteriores
 
-**Prazos C2 ATUAIS (após 24/09/2024):**
+**Prazo de C2 (após 24/09/2024):**
 
-✅ **Prazo estabelecido pelo inspetor** (geralmente 30-90 dias)
-❌ **NÃO são mais 2 anos!** (Despacho 17/2022 revogado)
+✅ **O indicado no relatório da entidade inspetora.**
+❌ **Não existe um prazo único de 2 anos** (era do Despacho 17/2022, revogado).
+ℹ️ O Despacho 27/2024 apenas revoga; em caso de dúvida confirmar com a EIIE ou a DGEG.
 
 **Legislação aplicável:**
 - Portaria 344/93, Art. 6º e 7º

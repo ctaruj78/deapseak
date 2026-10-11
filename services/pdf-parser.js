@@ -365,7 +365,7 @@ const classificationInfo = {
         icon: '🟠',
         meaning: 'Não conformidade que pode evoluir para risco crítico',
         action: 'Correção necessária no prazo estabelecido',
-        deadline: 'Prazo estabelecido pelo inspetor (geralmente 30-90 dias)',
+        deadline: 'Prazo indicado no relatório da entidade inspetora',
         additionalInfo: '⚠️ ATENÇÃO: Despacho 17/2022 (2 anos) foi REVOGADO pelo Despacho 27/2024 em 24/09/2024',
         legalConsequence: 'Coima €2.000-€15.000 se não corrigido no prazo',
         reference: 'Portaria 344/93, Art. 6º e 7º | Decreto-Lei 320/2002'

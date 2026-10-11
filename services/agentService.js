@@ -3410,7 +3410,7 @@ NAVEGAÇÃO DA APP (onde está o quê e ações típicas):
 • Dashboard — KPIs em tempo real: total de elevadores, pedidos abertos, alertas do agente, inspeções do mês
 • Pedidos — pedidos de serviço: criar novo pedido, atribuir técnico, mudar estado (aberto→em curso→fechado), ver historial
 • Orçamentos — ciclo completo: rascunho → enviado → aprovado / rejeitado / expirado; editar serviços e preços, enviar ao cliente por email
-• Inspeções — registar visita técnica; ver checklist com itens OK/NOK; cláusulas C1 (imobilização), C2 (prazo 30 dias), C3 (recomendação); conforme DL 320/2002
+• Inspeções — registar visita técnica; ver checklist com itens OK/NOK; cláusulas C1 (imobilização), C2 (prazo indicado no relatório da inspeção), C3 (recomendação); conforme DL 320/2002
 • Elevadores — ficha do elevador: morada, número municipal, datas de inspeção, certificado; filtrar por estado ou vencimento
 • Clientes — perfil do cliente: todos os elevadores, pedidos, orçamentos associados; pesquisar por nome ou email
 • Utilizadores — criar/editar contas e técnicos, gerir roles e permissões (só admin)

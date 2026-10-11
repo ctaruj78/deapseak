@@ -11,8 +11,8 @@
  * 4. DR 13/80 - Requisitos técnicos
  * 5. Directiva 95/16/CE - Directiva EU
  * 6. Portaria 344/93 - Procedimentos inspeção
- * 7. Despacho 17/2022 - NOVO! C2 prazos: 30 dias → 2 ANOS
- * 8. Despacho 27/2024 - CRÍTICO: Revoga 17/2022!
+ * 7. Despacho 17/2022 - REVOGADO (pelo Despacho 27/DGEG/2024)
+ * 8. Despacho 27/2024 - Revoga os Despachos 17/2022 e 18/2022 (não define novos prazos)
  * 9. DL 163/2006 - Certificação técnicos
  * 10. Lei 58/2013 - Segurança equipamentos
  * 11. EN 81-20:2020 - Norma europeia
@@ -191,15 +191,11 @@ class RegulationsLoader {
             C2: {
                 name: 'Cláusula Tipo 2',
                 risk: 'Médio risco',
-                deadline: '2 anos (anteriormente 30 dias)',
-                criticalChange: '⚠️ ALTERAÇÃO REVOLUCIONÁRIA: Despacho 17/2022/DG',
-                oldDeadline: '30 dias (antes de 28/04/2022)',
-                newDeadline: '2 ANOS (desde 28/04/2022)',
-                additionalRequirement: 'Inspeção de acompanhamento obrigatória ao 1 ano',
-                exception: 'NÃO se aplica se houver C1 no mesmo elevador',
-                action: 'Correção no prazo de 2 anos',
-                legalConsequence: 'Coima €2.000-€15.000 após 2 anos',
-                reference: 'Portaria 344/93, Art. 7º + Despacho 17/2022/DG, Art. 1º'
+                deadline: 'Indicado no relatório da entidade inspetora',
+                note: 'Não existe um prazo único de 2 anos: o prazo de 2 anos para C2* pertencia ao Despacho 17/2022, revogado pelo Despacho 27/DGEG/2024 (24/09/2024), que não indica que prazo passa a aplicar-se. Em caso de dúvida confirmar com a EIIE/DGEG.',
+                action: 'Corrigir no prazo indicado no relatório e pedir reinspeção',
+                legalConsequence: 'Ver DL 320/2002, art.º 13.º (contra-ordenações)',
+                reference: 'DL 320/2002; Despacho 27/DGEG/2024 (revoga os Despachos 17/2022 e 18/2022)'
             },
             C3: {
                 name: 'Cláusula Tipo 3',
@@ -297,18 +293,18 @@ class RegulationsLoader {
                 totalArticles: Object.keys(this.articlesIndex).length,
                 criticalChanges: [
                     {
-                        law: 'Despacho 17/2022/DG',
-                        change: 'C2 prazos alterados: 30 dias → 2 ANOS',
-                        date: '28/04/2022',
-                        impact: 'REVOLUCIONÁRIO - afeta todos os elevadores em Portugal'
+                        law: 'Despacho 27/DGEG/2024',
+                        change: 'Revoga os Despachos 17/2022 e 18/2022; não define que prazos passam a aplicar-se',
+                        date: '24/09/2024',
+                        impact: 'O prazo de 2 anos para C2* (Despacho 17/2022) deixou de ter base nesse despacho'
                     }
                 ]
             },
             quickReference: {
                 c1_deadline: 'Imediato',
-                c2_deadline: '2 anos (com inspeção ao 1 ano)',
+                c2_deadline: 'Indicado no relatório da entidade inspetora (sem prazo único de 2 anos)',
                 c3_deadline: 'Até próxima inspeção',
-                inspection_frequency: 'Anual (>10 anos) ou Bienal (≤10 anos)',
+                inspection_frequency: 'DL 320/2002 art.º 8.º: 2, 4 ou 6 anos conforme o edifício; depois de duas inspeções periódicas, de 2 em 2 anos',
                 maintenance_frequency: 'Mensal (elevadores passageiros)',
                 accreditation_body: 'IPAC - Instituto Português de Acreditação'
             }

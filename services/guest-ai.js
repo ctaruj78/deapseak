@@ -62,6 +62,11 @@ async function buildContext(db, question, maxArticles = 4, maxChars = 2000) {
     .sort((x, y) => y.score - x.score)
     .slice(0, maxArticles);
 
+  // Sem correspondência (ex.: pergunta noutro idioma): usa os artigos base do DL 320/2002 e das classificações
+  if (!scored.length) {
+    arts.filter(a => /DL 320\/2002|Classificação C1/i.test(a.title)).forEach(a => scored.push({ a, score: 0 }));
+  }
+
   const sources = scored.map(x => x.a.title);
   const text = scored.map(x => `### ${x.a.title}\n${strip(x.a.content).slice(0, maxChars)}`).join('\n\n');
   return { text, sources };
@@ -74,8 +79,10 @@ const RULES = `REGRAS (obrigatórias):
 4. Factos sobre a FestLift: usa APENAS a secção SOBRE A FESTLIFT. Nunca inventes quem desenvolveu a plataforma, quantos elevadores gere, nem confundas FestLift com festivais ou eventos.
 5. Perguntas técnicas práticas (avarias, componentes): dá orientação geral e prudente, diz que é informação geral e que a avaliação no local deve ser feita por um técnico de manutenção certificado. Nunca incentives a contornar dispositivos de segurança.
 6. Se a pergunta for ofensiva, sem sentido ou fora do tema (elevadores, manutenção, normas, FestLift), responde em uma frase educada a explicar o que podes ajudar. Não repitas a pergunta.
-7. Não acrescentes detalhes que não estejam no CONTEXTO (por exemplo, a partir de que data se conta um prazo, se não vier indicado). Para factos sobre a FestLift não escrevas "Base:".
-8. Sê direto: máximo 200 palavras, primeiro a resposta, depois (se houver) "Base:" com os títulos dos artigos do CONTEXTO usados. Não inventes referências.`;
+7. NUNCA atribuas C1, C2 ou C3 a uma anomalia concreta (ex.: "botoneira em falta") a não ser que esse mesmo exemplo conste do CONTEXTO; caso contrário diz que a classificação cabe à entidade inspetora. NUNCA descrevas procedimentos técnicos, ensaios ou requisitos de equipamento que não estejam no CONTEXTO ou que sejam apenas suposição: nesse caso dá só orientação geral muito prudente e remete para um técnico certificado.
+8. Só escreve "Base:" se tiveres usado de facto artigos do CONTEXTO, e lista apenas os que sustentam o que afirmaste. Se não houver artigos relevantes, não escrevas "Base:".
+9. Não acrescentes detalhes que não estejam no CONTEXTO (por exemplo, a partir de que data se conta um prazo, se não vier indicado). Para factos sobre a FestLift não escrevas "Base:".
+10. Sê direto: máximo 200 palavras, primeiro a resposta, depois (se houver) "Base:" com os títulos dos artigos do CONTEXTO usados. Não inventes referências.`;
 
 function buildChatPrompt(question, ctx) {
   return `És o assistente de IA público da FestLift, especializado em elevadores em Portugal. Estás em modo visitante (demonstração).
