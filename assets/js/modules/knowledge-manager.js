@@ -39,6 +39,11 @@ class KnowledgeManager {
             this.articles = JSON.parse(localStorage.getItem('kb_articles_cache')) || [];
         }
         this.filteredArticles = [...this.articles];
+        const topic = new URLSearchParams(window.location.search).get('topic');
+        if (topic && /^[a-z]+$/.test(topic)) {
+            this.filterByTopic(topic);
+            return;
+        }
         this.renderArticles(this.filteredArticles);
     }
 
@@ -60,11 +65,13 @@ class KnowledgeManager {
         const id = a._id || a.id;
         const catColors = {
             manutencao:'success', reparacao:'danger',
-            seguranca:'warning', avarias:'info', regulamentacao:'secondary'
+            seguranca:'warning', avarias:'info', regulamentacao:'secondary',
+            esquemas:'primary', tutoriais:'success'
         };
         const catLabels = {
             manutencao:'Manutenção', reparacao:'Reparação',
-            seguranca:'Segurança', avarias:'Avarias', regulamentacao:'Regulamentação'
+            seguranca:'Segurança', avarias:'Avarias', regulamentacao:'Regulamentação',
+            esquemas:'Esquemas', tutoriais:'Tutoriais'
         };
         const diffLabels = { basico:'Básico', intermedio:'Intermédio', avancado:'Avançado' };
         const color   = catColors[a.category]   || 'secondary';
@@ -138,7 +145,7 @@ class KnowledgeManager {
         const featured = this.articles.filter(a => a.featured).slice(0, 4);
         const list = featured.length ? featured : this.articles.slice(0, 4);
         if (!list.length) { container.innerHTML = '<p class="text-muted small">Nenhum artigo disponível</p>'; return; }
-        const catColors = { manutencao:'success', reparacao:'danger', seguranca:'warning', avarias:'info', regulamentacao:'secondary' };
+        const catColors = { manutencao:'success', reparacao:'danger', seguranca:'warning', avarias:'info', regulamentacao:'secondary', esquemas:'primary', tutoriais:'success' };
         container.innerHTML = `<div class="row">${list.map(a => {
             const id = a._id || a.id;
             const color = catColors[a.category] || 'secondary';

@@ -445,17 +445,30 @@
                             <div class="card">
                                 <div class="card-header">
                                     <h3 class="card-title"><i class="fas fa-table mr-2"></i>Histórico de relatórios</h3>
+                                    <div class="card-tools d-flex align-items-center">
+                                        <div class="btn-group btn-group-sm mr-2" role="group">
+                                            <button type="button" class="btn btn-outline-primary active" id="viewActive" onclick="reportsManager.setView('false')">Ativos</button>
+                                            <button type="button" class="btn btn-outline-primary" id="viewArchived" onclick="reportsManager.setView('true')">Arquivados</button>
+                                        </div>
+                                        <div id="bulkActions" style="display:none;">
+                                            <span class="small text-muted mr-1"><span id="selCount">0</span> selecionados</span>
+                                            <button class="btn btn-sm btn-outline-secondary" id="bulkArchiveBtn" onclick="reportsManager.bulk('archive')"><i class="fas fa-box-archive"></i> Arquivar</button>
+                                            <button class="btn btn-sm btn-outline-secondary" id="bulkRestoreBtn" onclick="reportsManager.bulk('unarchive')" style="display:none;"><i class="fas fa-rotate-left"></i> Restaurar</button>
+                                            <button class="btn btn-sm btn-outline-danger" onclick="reportsManager.bulk('delete')"><i class="fas fa-trash"></i> Eliminar</button>
+                                        </div>
+                                    </div>
                                 </div>
                                 <div class="card-body p-0">
                                     <div class="table-responsive">
                                         <table class="table table-hover">
                                             <thead>
                                                 <tr>
+                                                    <th style="width:30px"><input type="checkbox" id="selAll" onchange="reportsManager.toggleAll(this.checked)"></th>
                                                     <th>Data</th>
                                                     <th>Tipo</th>
                                                     <th>Nome</th>
                                                     <th>Estado</th>
-                                                    <th>Tamanho</th>
+                                                    <th>Itens</th>
                                                     <th>Ações</th>
                                                 </tr>
                                             </thead>
@@ -608,6 +621,8 @@
 
         class ReportsManager {
             constructor() {
+                this.view = 'false';
+                this.selected = new Set();
                 this.reports = [];
                 this.filteredReports = [];
                 this.init();
@@ -620,7 +635,7 @@
             async loadReports() {
                 try {
                     const token = localStorage.getItem('authToken');
-                    const resp = await fetch('/api/reports', { headers: { 'Authorization': `Bearer ${token}` } });
+                    const resp = await fetch('/api/reports?archived=' + this.view, { headers: { 'Authorization': `Bearer ${token}` } });
                     const data = await resp.json();
                     const typeLabel = { daily: 'Diário', weekly: 'Semanal', monthly: 'Mensal', custom: 'Personalizado', all: 'Completo', maintenance: 'Manutenção', inspection: 'Inspeções' };
                     this.reports = (data.reports || []).map(r => ({
@@ -628,18 +643,21 @@
                         apiId: r.id,
                         date: r.endDate || r.createdAt,
                         type: r.type,
-                        name: `Relatório ${typeLabel[r.type] || r.type} ${r.startDate} a ${r.endDate}`,
+                        name: r.name || `Relatório ${typeLabel[r.type] || r.type} ${r.startDate} a ${r.endDate}`,
                         status: 'completed',
-                        size: '—',
+                        size: r.itemsCount != null ? r.itemsCount : '—',
+                        archived: !!r.archived,
                         format: 'pdf'
                     }));
                 } catch (err) {
                     toastr.error('Erro ao carregar relatórios: ' + err.message);
                     this.reports = [];
                 }
+                this.selected.clear();
                 this.filteredReports = [...this.reports];
                 this.renderReportsTable();
                 this.updateStats();
+                this.updateBulkBar();
             }
 
             updateStats() {
@@ -705,24 +723,125 @@
                 const tbody = document.getElementById('reportsTable');
                 tbody.innerHTML = '';
 
+                if (!this.filteredReports.length) {
+                    tbody.innerHTML = `<tr><td colspan="7" class="text-center text-muted py-4">${this.view === 'true' ? 'Sem relatórios arquivados.' : 'Sem relatórios.'}</td></tr>`;
+                    return;
+                }
                 this.filteredReports.forEach(report => {
                     const row = document.createElement('tr');
+                    const id = escapeHtml(report.id);
                     row.innerHTML = `
+                        <td><input type="checkbox" ${this.selected.has(report.id) ? 'checked' : ''} onchange="reportsManager.toggleOne('${id}', this.checked)"></td>
                         <td>${this.formatDate(report.date)}</td>
                         <td>${this.getTypeLabel(report.type)}</td>
                         <td>${escapeHtml(report.name)}</td>
-                        <td><span class="badge badge-${report.status === 'completed' ? 'success' : 'warning'}">${this.getStatusLabel(report.status)}</span></td>
+                        <td><span class="badge badge-${report.archived ? 'secondary' : 'success'}">${report.archived ? 'Arquivado' : 'Concluído'}</span></td>
                         <td>${report.size}</td>
-                        <td>
-                            ${report.status === 'completed' ? (
-                                report.apiId
-                                    ? `<a href="/api/reports/${report.apiId}/${report.format === 'excel' ? 'excel' : 'pdf'}" class="btn btn-sm btn-primary" target="_blank"><i class="fas fa-download"></i></a>`
-                                    : `<button class="btn btn-sm btn-primary" onclick="reportsManager.downloadReport('${report.type}')"><i class="fas fa-download"></i></button>`
-                            ) : '<span class="text-muted">Pendente</span>'}
+                        <td class="text-nowrap">
+                            <button class="btn btn-sm btn-outline-info" title="Pré-visualizar" onclick="reportsManager.preview('${id}')"><i class="fas fa-eye"></i></button>
+                            <a href="/api/reports/${id}/pdf" class="btn btn-sm btn-primary" title="Descarregar PDF" target="_blank"><i class="fas fa-file-pdf"></i></a>
+                            <a href="/api/reports/${id}/excel" class="btn btn-sm btn-success" title="Descarregar CSV (Excel)" target="_blank"><i class="fas fa-file-csv"></i></a>
+                            <button class="btn btn-sm btn-outline-secondary" title="Renomear" onclick="reportsManager.rename('${id}')"><i class="fas fa-pen"></i></button>
+                            <button class="btn btn-sm btn-outline-secondary" title="${report.archived ? 'Restaurar' : 'Arquivar'}" onclick="reportsManager.bulkOne('${id}', '${report.archived ? 'unarchive' : 'archive'}')"><i class="fas ${report.archived ? 'fa-rotate-left' : 'fa-box-archive'}"></i></button>
+                            <button class="btn btn-sm btn-outline-danger" title="Eliminar" onclick="reportsManager.bulkOne('${id}', 'delete')"><i class="fas fa-trash"></i></button>
                         </td>
                     `;
                     tbody.appendChild(row);
                 });
+            }
+
+            // ─── Gestão: vista, seleção, arquivar, eliminar, renomear, pré-visualizar ───
+            authHeaders() {
+                return { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('authToken')}` };
+            }
+
+            setView(v) {
+                this.view = v;
+                document.getElementById('viewActive').classList.toggle('active', v === 'false');
+                document.getElementById('viewArchived').classList.toggle('active', v === 'true');
+                this.loadReports();
+            }
+
+            toggleOne(id, on) {
+                if (on) this.selected.add(id); else this.selected.delete(id);
+                this.updateBulkBar();
+            }
+
+            toggleAll(on) {
+                this.selected = on ? new Set(this.filteredReports.map(r => r.id)) : new Set();
+                this.renderReportsTable();
+                this.updateBulkBar();
+            }
+
+            updateBulkBar() {
+                const n = this.selected.size;
+                document.getElementById('bulkActions').style.display = n ? '' : 'none';
+                document.getElementById('selCount').textContent = n;
+                const arch = this.view === 'true';
+                document.getElementById('bulkArchiveBtn').style.display = arch ? 'none' : '';
+                document.getElementById('bulkRestoreBtn').style.display = arch ? '' : 'none';
+                const all = document.getElementById('selAll');
+                if (all) all.checked = n > 0 && n === this.filteredReports.length;
+            }
+
+            bulk(action) { return this.runBulk([...this.selected], action); }
+            bulkOne(id, action) { return this.runBulk([id], action); }
+
+            async runBulk(ids, action) {
+                if (!ids.length) return;
+                if (action === 'delete') {
+                    const ok = await swalConfirm(ids.length > 1 ? `Eliminar ${ids.length} relatórios? Esta ação é irreversível.` : 'Eliminar este relatório? Esta ação é irreversível.', 'Eliminar');
+                    if (!ok) return;
+                }
+                try {
+                    const resp = await fetch('/api/reports/bulk', { method: 'POST', headers: this.authHeaders(), body: JSON.stringify({ ids, action }) });
+                    const data = await resp.json();
+                    if (!resp.ok) throw new Error(data.message || 'Erro');
+                    const msg = { delete: 'eliminado(s)', archive: 'arquivado(s)', unarchive: 'restaurado(s)' }[action];
+                    toastr.success(`${data.processed} relatório(s) ${msg}`);
+                    this.loadReports();
+                } catch (err) {
+                    toastr.error('Erro: ' + err.message);
+                }
+            }
+
+            async rename(id) {
+                const current = this.reports.find(r => r.id === id)?.name || '';
+                const { value, isConfirmed } = await Swal.fire({
+                    title: 'Renomear relatório', input: 'text', inputValue: current,
+                    inputAttributes: { maxlength: 120 }, showCancelButton: true,
+                    confirmButtonText: 'Guardar', cancelButtonText: 'Cancelar'
+                });
+                if (!isConfirmed || !String(value || '').trim()) return;
+                try {
+                    const resp = await fetch(`/api/reports/${id}`, { method: 'PATCH', headers: this.authHeaders(), body: JSON.stringify({ name: value }) });
+                    if (!resp.ok) throw new Error((await resp.json()).message || 'Erro');
+                    toastr.success('Relatório renomeado');
+                    this.loadReports();
+                } catch (err) {
+                    toastr.error('Erro: ' + err.message);
+                }
+            }
+
+            async preview(id) {
+                try {
+                    const resp = await fetch(`/api/reports/${id}`, { headers: this.authHeaders() });
+                    const r = await resp.json();
+                    if (!resp.ok) throw new Error(r.message || 'Erro');
+                    const st = r.stats || {};
+                    const rows = (r.items || []).slice(0, 50).map(it => `<tr><td>${escapeHtml(it.title || '—')}</td><td>${escapeHtml(it.lift || '—')}</td><td>${escapeHtml(it.technician || '—')}</td><td>${escapeHtml(it.status || '—')}</td></tr>`).join('');
+                    Swal.fire({
+                        title: escapeHtml(r.name || `Relatório ${this.getTypeLabel(r.type)}`),
+                        width: 800,
+                        html: `<p class="text-muted small">${escapeHtml(r.startDate)} a ${escapeHtml(r.endDate)}</p>
+                               <p><b>Total:</b> ${st.total || 0} · <b>Concluídos:</b> ${st.completed || 0} · <b>Em progresso:</b> ${st.inProgress || 0} · <b>Pendentes:</b> ${st.pending || 0} · <b>Cancelados:</b> ${st.cancelled || 0}</p>
+                               <div style="max-height:320px;overflow:auto;text-align:left"><table class="table table-sm table-bordered"><thead><tr><th>Título</th><th>Elevador</th><th>Técnico</th><th>Estado</th></tr></thead><tbody>${rows || '<tr><td colspan="4" class="text-center text-muted">Sem itens</td></tr>'}</tbody></table></div>
+                               ${(r.items || []).length > 50 ? `<p class="small text-muted">A mostrar 50 de ${r.items.length}. Descarregue o relatório para ver todos.</p>` : ''}`,
+                        confirmButtonText: 'Fechar'
+                    });
+                } catch (err) {
+                    toastr.error('Erro: ' + err.message);
+                }
             }
 
             formatDate(dateString) {
@@ -782,6 +901,7 @@
                         link.href = `/api/reports/${data.id}/pdf`;
                         link.setAttribute('download', '');
                         link.click();
+                        this.loadReports();
                     } else {
                         toastr.error('Erro ao gerar relatório: ' + (data.message || 'Erro desconhecido'));
                     }
@@ -845,10 +965,7 @@
 
                     const typeLabel = { daily: 'Diário', weekly: 'Semanal', monthly: 'Mensal', custom: 'Personalizado', all: 'Completo', maintenance: 'Manutenção', inspection: 'Inspeções' }[type] || type;
                     const label = `Relatório ${typeLabel} ${startDate} a ${endDate}`;
-                    this.reports.unshift({ id: data.id, date: endDate, type: 'custom', name: label, status: 'completed', size: '—', apiId: data.id, format });
-                    this.filteredReports = [...this.reports];
-                    this.renderReportsTable();
-                    this.updateStats();
+                    this.loadReports();
                 } catch (err) {
                     document.getElementById('crError').style.display = 'block';
                     document.getElementById('crErrorMsg').textContent = err.message;

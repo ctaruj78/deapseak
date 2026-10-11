@@ -1,5 +1,5 @@
 // voice-ar.js
-// Голосове керування AR-помічником для техніка
+// Controlo por voz do auxiliar AR para o técnico
 
 class VoiceAR {
   constructor(arHelper) {
@@ -7,13 +7,13 @@ class VoiceAR {
     this.recognition = null;
     this.isActive = false;
     this.commands = {
-      'запусти вимірювання': () => arHelper.activateTool('measureTool'),
-      'анотація': () => arHelper.activateTool('annotationTool'),
-      'зроби знімок': () => arHelper.takeScreenshot(),
-      'показати хот-споти': () => arHelper.showHotspots(),
-      'пошук компонент': (comp) => arHelper.showComponentInfo(comp),
-      'запусти ar': () => arHelper.startAR(),
-      'зупини ar': () => arHelper.stopAR()
+      'iniciar medição': () => arHelper.activateTool('measureTool'),
+      'anotação': () => arHelper.activateTool('annotationTool'),
+      'tirar fotografia': () => arHelper.takeScreenshot(),
+      'mostrar hotspots': () => arHelper.showHotspots(),
+      'procurar componente': (comp) => arHelper.showComponentInfo(comp),
+      'iniciar ar': () => arHelper.startAR(),
+      'parar ar': () => arHelper.stopAR()
     };
   }
 
@@ -44,16 +44,16 @@ class VoiceAR {
   }
 
   handleCommand(text) {
+    if (text.startsWith('procurar componente')) {
+      const comp = text.replace('procurar componente', '').trim();
+      this.commands['procurar componente'](comp);
+      return;
+    }
     for (const cmd in this.commands) {
       if (text.includes(cmd)) {
         this.commands[cmd]();
         return;
       }
-    }
-    if (text.startsWith('пошук компонент')) {
-      const comp = text.replace('пошук компонент', '').trim();
-      this.commands['пошук компонент'](comp);
-      return;
     }
     toastr.info('Comando não reconhecido: ' + text);
   }

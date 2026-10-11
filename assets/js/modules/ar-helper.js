@@ -54,7 +54,7 @@ class ARHelper {
     setupRealTimeFeatures() {
         // Real-time статус
         this.broadcastStatus();
-        setInterval(() => this.broadcastStatus(), 30000); // Кожні 30 секунд
+        setInterval(() => this.broadcastStatus(), 30000); // A cada 30 segundos
 
         // Синхронізація аннотацій
         // TODO: Реалізувати метод syncAnnotations()
@@ -64,7 +64,7 @@ class ARHelper {
     loadUserInfo() {
         try {
             const currentUser = JSON.parse(localStorage.getItem('currentUser')) || { 
-                firstName: 'Технік' 
+                firstName: 'Técnico'
             };
             $('#techName').text(currentUser.firstName);
         } catch (error) {
@@ -222,14 +222,14 @@ class ARHelper {
             model.components.forEach(componentId => {
                 const componentInfo = this.getComponentInfo(componentId, modelId);
                 const componentItem = `
-                    <div class="component-item" data-component="${componentId}" style="cursor:pointer" title="Натисніть для деталей">
+                    <div class="component-item" data-component="${componentId}" style="cursor:pointer" title="Clique para ver detalhes">
                         <div class="d-flex justify-content-between align-items-center">
                             <div>
                                 <i class="${componentInfo.icon} mr-2"></i>
                                 <strong>${componentInfo.name}</strong>
                             </div>
                             <div class="component-status">
-                                <span class="badge badge-success">Активний</span>
+                                <span class="badge badge-success">Ativo</span>
                             </div>
                         </div>
                         <small class="text-muted">${componentInfo.description.substring(0, 60)}${componentInfo.description.length > 60 ? '…' : ''}</small>
@@ -241,7 +241,7 @@ class ARHelper {
             componentList.html(`
                 <div class="text-center text-muted py-3">
                     <i class="fas fa-elevator fa-2x mb-2"></i>
-                    <p>Оберіть модель ліфта</p>
+                    <p>Escolha o modelo do elevador</p>
                 </div>
             `);
         }
@@ -251,10 +251,10 @@ class ARHelper {
         const supported = this.isWebXRSupported() || this.isARJSSupported();
         if (!supported) {
             $('#startAR, #startARBtn').prop('disabled', true)
-                .text('AR не підтримується')
+                .text('AR não suportado')
                 .removeClass('btn-primary').addClass('btn-secondary');
             
-            this.showNotification('AR не підтримується на вашому пристрої', 'error');
+            this.showNotification('AR não suportado no seu dispositivo', 'error');
         }
         return supported;
     }
@@ -278,13 +278,13 @@ class ARHelper {
     async startAR() {
         try {
             if (!this.checkARSupport()) {
-                this.showNotification('AR не підтримується на вашому пристрої', 'error');
+                this.showNotification('AR não suportado no seu dispositivo', 'error');
                 return;
             }
 
             // Перевірка дозволу камери
             if (!await this.requestCameraPermission()) {
-                this.showNotification('Дозвіл камери не надано', 'error');
+                this.showNotification('Permissão da câmara não concedida', 'error');
                 return;
             }
 
@@ -300,12 +300,12 @@ class ARHelper {
                 await this.loadModel(modelId);
             }
 
-            this.showNotification('AR режим активовано 🚀', 'success');
+            this.showNotification('Modo AR ativado 🚀', 'success');
             this.logAREvent('ar_session_start');
 
         } catch (error) {
             console.error('Помилка запуску AR:', error);
-            this.showNotification('Помилка запуску AR: ' + error.message, 'error');
+            this.showNotification('Erro ao iniciar AR: ' + error.message, 'error');
         }
     }
 
@@ -336,7 +336,7 @@ class ARHelper {
 
             console.log('AR сцена ініціалізована');
         } catch (error) {
-            throw new Error('Помилка ініціалізації AR сцени: ' + error.message);
+            throw new Error('Erro ao inicializar a cena AR: ' + error.message);
         }
     }
 
@@ -352,13 +352,13 @@ class ARHelper {
 
     async loadModel(modelId) {
         if (!this.models[modelId]) {
-            throw new Error('Модель не знайдена');
+            throw new Error('Modelo não encontrado');
         }
 
         this.currentModel = this.models[modelId];
         
         // Імітація завантаження 3D моделі
-        this.showNotification(`Завантаження моделі: ${this.currentModel.name}`, 'info');
+        this.showNotification(`A carregar modelo: ${this.currentModel.name}`, 'info');
         
         // Оновлення інтерфейсу
         this.updateComponentList(modelId);
@@ -430,7 +430,7 @@ class ARHelper {
                 break;
         }
 
-        this.showNotification(`${this.getToolName(toolType)} активовано`, 'info');
+        this.showNotification(`${this.getToolName(toolType)} ativado`, 'info');
     }
 
     deactivateTool() {
@@ -463,7 +463,7 @@ class ARHelper {
         this.setupMeasureEventListeners();
 
         // Показуємо підказку
-        this.showToolHint('Натисніть на точку для початку вимірювання, потім на кінцеву точку');
+        this.showToolHint('Clique num ponto para iniciar a medição e depois no ponto final');
     }
 
     deactivateMeasureTool() {
@@ -508,7 +508,7 @@ class ARHelper {
         // Візуально показуємо початкову точку
         this.showMeasurementPoint(point, 'start');
 
-        this.showToolHint('Натисніть на кінцеву точку або Esc для скасування');
+        this.showToolHint('Clique no ponto final ou prima Esc para cancelar');
     }
 
     endMeasurement(point) {
@@ -520,7 +520,7 @@ class ARHelper {
             start: this.measureStartPoint,
             end: point,
             distance: distance,
-            unit: 'cm' // Можна додати вибір одиниць
+            unit: 'cm' // É possível adicionar seleção de unidades
         };
 
         this.measurements.push(measurement);
@@ -533,7 +533,7 @@ class ARHelper {
         // Показуємо результат
         this.showMeasurementResult(measurement);
 
-        this.showToolHint('Вимірювання завершено. Натисніть для нового вимірювання');
+        this.showToolHint('Medição concluída. Clique para uma nova medição');
     }
 
     cancelMeasurement() {
@@ -541,7 +541,7 @@ class ARHelper {
             this.clearMeasurementPoints();
             this.isMeasuring = false;
             this.measureStartPoint = null;
-            this.showToolHint('Вимірювання скасовано');
+            this.showToolHint('Medição cancelada');
         }
     }
 
@@ -612,7 +612,7 @@ class ARHelper {
         // Додаємо обробники подій для анотацій
         this.setupAnnotationEventListeners();
 
-        this.showToolHint('Натисніть на точку для додавання анотації');
+        this.showToolHint('Clique num ponto para adicionar uma anotação');
     }
 
     deactivateAnnotationTool() {
@@ -635,7 +635,7 @@ class ARHelper {
     }
 
     addAnnotation(point) {
-        const annotationText = prompt('Введіть текст анотації:');
+        const annotationText = prompt('Introduza o texto da anotação:');
         if (!annotationText || annotationText.trim() === '') return;
 
         const annotation = {
@@ -685,7 +685,7 @@ class ARHelper {
         // Додаємо обробники подій для хот-спотів
         this.setupHotspotEventListeners();
 
-        this.showToolHint('Натисніть на точку для створення хот-споту');
+        this.showToolHint('Clique num ponto para criar um hotspot');
     }
 
     deactivateHotspotTool() {
@@ -708,7 +708,7 @@ class ARHelper {
     }
 
     createHotspot(point) {
-        const hotspotTitle = prompt('Введіть назву хот-споту:');
+        const hotspotTitle = prompt('Introduza o nome do hotspot:');
         if (!hotspotTitle || hotspotTitle.trim() === '') return;
 
         const hotspot = {
@@ -768,7 +768,7 @@ class ARHelper {
         // Показуємо деталі хот-споту
         const details = `
             <strong>${hotspot.title}</strong><br>
-            <small>Створено: ${hotspot.timestamp.toLocaleString('pt-PT')}</small>
+            <small>Criado em: ${hotspot.timestamp.toLocaleString('pt-PT')}</small>
         `;
         this.showNotification(details, 'info');
     }
@@ -795,9 +795,9 @@ class ARHelper {
 
     getToolName(toolType) {
         const names = {
-            'measure': 'Вимірювання',
-            'annotation': 'Анотації',
-            'hotspot': 'Хот-споти'
+            'measure': 'Medição',
+            'annotation': 'Anotações',
+            'hotspot': 'Hotspots'
         };
         return names[toolType] || toolType;
     }
@@ -805,7 +805,7 @@ class ARHelper {
     async takeScreenshot() {
         try {
             if (!this.isARActive) {
-                this.showNotification('Спочатку активуйте AR режим', 'warning');
+                this.showNotification('Ative primeiro o modo AR', 'warning');
                 return;
             }
 
@@ -821,12 +821,12 @@ class ARHelper {
             this.saveScreenshot(screenshot);
             this.updateScreenshotsGallery();
 
-            this.showNotification('Знімок збережено 📸', 'success');
+            this.showNotification('Captura guardada 📸', 'success');
             this.logAREvent('screenshot_taken');
 
         } catch (error) {
             console.error('Помилка знімка:', error);
-            this.showNotification('Помилка при знімку', 'error');
+            this.showNotification('Erro ao capturar imagem', 'error');
         }
     }
 
@@ -893,7 +893,7 @@ class ARHelper {
         // Збереження знімка в localStorage
         const screenshots = JSON.parse(localStorage.getItem('ar_screenshots') || '[]');
         screenshots.unshift(screenshot);
-        localStorage.setItem('ar_screenshots', JSON.stringify(screenshots.slice(0, 10))); // Зберігаємо останні 10
+        localStorage.setItem('ar_screenshots', JSON.stringify(screenshots.slice(0, 10))); // Guarda as últimas 10
     }
 
     updateScreenshotsGallery() {
@@ -904,14 +904,14 @@ class ARHelper {
             gallery.html(`
                 <div class="text-center text-muted py-5 w-100">
                     <i class="fas fa-camera fa-3x mb-2"></i>
-                    <p>Ще немає знімків</p>
+                    <p>Ainda não há capturas</p>
                 </div>
             `);
             return;
         }
 
         this.screenshots.forEach((screenshot, index) => {
-            if (index >= 6) return; // Максимум 6 знімків
+            if (index >= 6) return; // Máximo de 6 capturas
 
             const screenshotElement = `
                 <div class="screenshot-item" style="width: 150px;">
@@ -953,13 +953,13 @@ class ARHelper {
             : '';
 
         const maintenanceHtml = info.maintenance.length > 0
-            ? `<div class="mt-2"><strong><i class="fas fa-tools mr-1 text-primary"></i>Обслуговування:</strong><ul class="mb-1 mt-1 pl-3">
+            ? `<div class="mt-2"><strong><i class="fas fa-tools mr-1 text-primary"></i>Manutenção:</strong><ul class="mb-1 mt-1 pl-3">
                 ${info.maintenance.map(m => `<li class="small">${m}</li>`).join('')}
                </ul></div>`
             : '';
 
         const issuesHtml = info.issues.length > 0
-            ? `<div class="mt-2"><strong><i class="fas fa-exclamation-triangle mr-1 text-warning"></i>Типові несправності:</strong><ul class="mb-1 mt-1 pl-3">
+            ? `<div class="mt-2"><strong><i class="fas fa-exclamation-triangle mr-1 text-warning"></i>Avarias típicas:</strong><ul class="mb-1 mt-1 pl-3">
                 ${info.issues.map(i => `<li class="small text-danger">${i}</li>`).join('')}
                </ul></div>`
             : '';
@@ -977,452 +977,452 @@ class ARHelper {
     getComponentInfo(componentId, modelId) {
         // Базові дані компонентів (загальні)
         const baseComponents = {
-            'motor': { name: 'Двигун', icon: 'fas fa-cogs', color: '#dc3545' },
-            'controlSystem': { name: 'Система управління', icon: 'fas fa-microchip', color: '#007bff' },
-            'brakes': { name: 'Гальмівна система', icon: 'fas fa-stop-circle', color: '#28a745' },
-            'safetySystem': { name: 'Система безпеки', icon: 'fas fa-shield-alt', color: '#ffc107' },
-            'doors': { name: 'Дверні механізми', icon: 'fas fa-door-open', color: '#6f42c1' },
-            'display': { name: 'Дисплей та індикація', icon: 'fas fa-tv', color: '#17a2b8' },
-            'emergency': { name: 'Аварійна система', icon: 'fas fa-exclamation-triangle', color: '#fd7e14' },
-            'aiModule': { name: 'AI модуль', icon: 'fas fa-brain', color: '#e83e8c' },
-            'energySaver': { name: 'Енергозберігач', icon: 'fas fa-bolt', color: '#20c997' },
-            'smartControl': { name: 'Smart контроль', icon: 'fas fa-magic', color: '#6c757d' },
-            'hydraulicUnit': { name: 'Гідравлічний агрегат', icon: 'fas fa-oil-can', color: '#795548' }
+            'motor': { name: 'Motor', icon: 'fas fa-cogs', color: '#dc3545' },
+            'controlSystem': { name: 'Sistema de comando', icon: 'fas fa-microchip', color: '#007bff' },
+            'brakes': { name: 'Sistema de travagem', icon: 'fas fa-stop-circle', color: '#28a745' },
+            'safetySystem': { name: 'Sistema de segurança', icon: 'fas fa-shield-alt', color: '#ffc107' },
+            'doors': { name: 'Mecanismos de porta', icon: 'fas fa-door-open', color: '#6f42c1' },
+            'display': { name: 'Visor e indicação', icon: 'fas fa-tv', color: '#17a2b8' },
+            'emergency': { name: 'Sistema de emergência', icon: 'fas fa-exclamation-triangle', color: '#fd7e14' },
+            'aiModule': { name: 'Módulo IA', icon: 'fas fa-brain', color: '#e83e8c' },
+            'energySaver': { name: 'Poupança de energia', icon: 'fas fa-bolt', color: '#20c997' },
+            'smartControl': { name: 'Controlo inteligente', icon: 'fas fa-magic', color: '#6c757d' },
+            'hydraulicUnit': { name: 'Central hidráulica', icon: 'fas fa-oil-can', color: '#795548' }
         };
 
         // Повна технічна база по моделях
         const modelComponentData = {
             'model1': { // Otis Gen2
                 'motor': {
-                    description: 'Синхронний безредукторний двигун з постійними магнітами (PMSM). Вбудований у шківний вузол без машинного приміщення.',
+                    description: 'Motor síncrono sem redutor, de ímanes permanentes (PMSM). Integrado no conjunto da polia, sem casa das máquinas.',
                     specs: [
-                        { label: 'Тип', value: 'PMSM, безредукторний' },
-                        { label: 'Потужність', value: '7.5 / 11 / 15 кВт' },
-                        { label: 'Швидкість кабіни', value: '1.0 – 1.75 м/с' },
-                        { label: 'Вантажопідйомність', value: '480 – 1275 кг' },
-                        { label: 'Клас ізоляції', value: 'F (155°C)' },
-                        { label: 'Ступінь захисту', value: 'IP21' },
+                        { label: 'Tipo', value: 'PMSM, sem redutor' },
+                        { label: 'Potência', value: '7.5 / 11 / 15 kW' },
+                        { label: 'Velocidade da cabine', value: '1.0 – 1.75 m/s' },
+                        { label: 'Carga nominal', value: '480 – 1275 kg' },
+                        { label: 'Classe de isolamento', value: 'F (155°C)' },
+                        { label: 'Grau de proteção', value: 'IP21' },
                     ],
-                    maintenance: ['Перевірка вібрації/шуму — щомісяця', 'Перевірка затягування болтів кріплення — кожні 6 міс.', 'Вимірювання ізоляції обмоток — раз на рік', 'Заміна підшипників — кожні 5 років або 20 000 год.'],
-                    issues: ['Перегрів через засмічення вентиляційних отворів', 'Вібрація при зносі підшипників', 'Помилки енкодера через пошкодження кабелю'],
+                    maintenance: ['Verificar vibração/ruído — mensal', 'Verificar aperto dos parafusos de fixação — de 6 em 6 meses', 'Medir isolamento dos enrolamentos — anual', 'Substituir rolamentos — a cada 5 anos ou 20 000 h'],
+                    issues: ['Sobreaquecimento por obstrução das aberturas de ventilação', 'Vibração por desgaste dos rolamentos', 'Erros do encoder por cabo danificado'],
                     manual: 'Otis Gen2 MRL Motor Manual Rev.6'
                 },
                 'controlSystem': {
-                    description: 'Контролер OTIS OVF20CR (VVVF-привод). Вбудований у шафу управління, підтримує діагностику через порт RS-485.',
+                    description: 'Controlador OTIS OVF20CR (acionamento VVVF). Integrado no quadro de comando, com diagnóstico através da porta RS-485.',
                     specs: [
-                        { label: 'Тип привода', value: 'VVVF (змінний напруга/частота)' },
-                        { label: 'Живлення', value: '3×400 V / 50 Hz' },
-                        { label: 'Протокол', value: 'CANopen, RS-485' },
-                        { label: 'Макс. зупинок', value: '64' },
-                        { label: 'ПЗ', value: 'OVF20CR v4.x' },
+                        { label: 'Tipo de acionamento', value: 'VVVF (tensão/frequência variáveis)' },
+                        { label: 'Alimentação', value: '3×400 V / 50 Hz' },
+                        { label: 'Protocolo', value: 'CANopen, RS-485' },
+                        { label: 'Máx. paragens', value: '64' },
+                        { label: 'Software', value: 'OVF20CR v4.x' },
                     ],
-                    maintenance: ['Перевірка журналів помилок — щомісяця', 'Очищення вентиляції шафи — кожні 3 міс.', 'Резервна копія параметрів — після будь-яких змін', 'Тест навчального пробігу — після ТО'],
-                    issues: ['Помилка E221 — збій сигналу давача рівня', 'Помилка E541 — перевищення температури привода', 'Відмова CAN-шини при окисленні роз\'ємів'],
+                    maintenance: ['Verificar registo de erros — mensal', 'Limpar ventilação do quadro — de 3 em 3 meses', 'Cópia de segurança dos parâmetros — após qualquer alteração', 'Teste de viagem de aprendizagem — após a manutenção'],
+                    issues: ['Erro E221 — falha do sinal do sensor de nível', 'Erro E541 — temperatura excessiva do acionamento', 'Falha do barramento CAN por oxidação dos conectores'],
                     manual: 'OVF20CR Controller Programming Guide'
                 },
                 'brakes': {
-                    description: 'Двогальмівний електромагнітний вузол, інтегрований у двигун. Відповідає EN 81-20.',
+                    description: 'Conjunto eletromagnético de duplo travão integrado no motor. Conforme a EN 81-20.',
                     specs: [
-                        { label: 'Тип', value: 'Електромагнітний, spring-set' },
-                        { label: 'Напруга розблокування', value: '230 VDC' },
-                        { label: 'Зусилля затиску', value: '2× 400 N·m' },
-                        { label: 'Зазор', value: '0.3 – 0.5 мм' },
+                        { label: 'Tipo', value: 'Eletromagnético, spring-set' },
+                        { label: 'Tensão de libertação', value: '230 VDC' },
+                        { label: 'Força de aperto', value: '2× 400 N·m' },
+                        { label: 'Folga', value: '0.3 – 0.5 mm' },
                     ],
-                    maintenance: ['Перевірка зазору гальмівних колодок — кожні 3 міс.', 'Перевірка спрацювання мікроперемикача — щомісяця', 'Змащення осей — раз на рік', 'Заміна колодок при зносі > 1 мм'],
-                    issues: ['Вібрація при гальмуванні — знос колодок', 'Гальмо не відпускає — низька напруга котушки', 'Занадто малий зазор — перегрів колодок'],
+                    maintenance: ['Verificar folga das pastilhas de travão — de 3 em 3 meses', 'Verificar atuação do microinterruptor — mensal', 'Lubrificar os eixos — anual', 'Substituir pastilhas com desgaste > 1 mm'],
+                    issues: ['Vibração na travagem — desgaste das pastilhas', 'O travão não liberta — tensão baixa na bobina', 'Folga demasiado pequena — sobreaquecimento das pastilhas'],
                     manual: 'Otis Gen2 Brake Adjustment Manual'
                 },
                 'safetySystem': {
-                    description: 'Ловіч кабіни (обмежувач швидкості + прогресивний вловлювач), буфери, кінцеві вимикачі.',
+                    description: 'Paraquedas da cabine (limitador de velocidade + paraquedas progressivo), amortecedores, fins de curso.',
                     specs: [
-                        { label: 'Обмежувач швидкості', value: 'Спрацювання при 1.4× Vном' },
-                        { label: 'Тип вловлювача', value: 'Прогресивний' },
-                        { label: 'Буфери', value: 'Полімерні, EN 81-20 §5.8' },
-                        { label: 'Перевантаження', value: 'Датчик на платформі кабіни' },
+                        { label: 'Limitador de velocidade', value: 'Atua a 1.4× Vnom' },
+                        { label: 'Tipo de paraquedas', value: 'Progressivo' },
+                        { label: 'Amortecedores', value: 'Poliméricos, EN 81-20 §5.8' },
+                        { label: 'Sobrecarga', value: 'Sensor na plataforma da cabine' },
                     ],
-                    maintenance: ['Перевірка вловлювача та обмежувача — раз на рік', 'Змащення каната обмежувача — кожні 6 міс.', 'Тест аварійного зупинення — під час щорічного ТО'],
-                    issues: ['Спрацювання вловлювача без причини — знос каната', 'Буфер не повертається — пошкоджений полімер'],
+                    maintenance: ['Verificar paraquedas e limitador — anual', 'Lubrificar o cabo do limitador — de 6 em 6 meses', 'Teste de paragem de emergência — na manutenção anual'],
+                    issues: ['Paraquedas atua sem motivo — desgaste do cabo', 'O amortecedor não regressa — polímero danificado'],
                     manual: 'Otis Gen2 Safety System Manual'
                 },
                 'doors': {
-                    description: 'Центральнорозсувні двері з оператором Wittur NOVA 2000. Фотоелектрична захисна завіса.',
+                    description: 'Portas de abertura central com operador Wittur NOVA 2000. Cortina de segurança fotoelétrica.',
                     specs: [
-                        { label: 'Тип', value: 'Центральнорозсувні, 2-стулкові' },
-                        { label: 'Оператор', value: 'Wittur NOVA 2000' },
-                        { label: 'Час відкриття', value: '≤ 2.5 с' },
-                        { label: 'Захисна завіса', value: 'Всесторонній захист, 80 сенсорів' },
-                        { label: 'Силовий зв\'язок', value: 'Вузол WID (безключний)' },
+                        { label: 'Tipo', value: 'Abertura central, 2 folhas' },
+                        { label: 'Operador', value: 'Wittur NOVA 2000' },
+                        { label: 'Tempo de abertura', value: '≤ 2.5 s' },
+                        { label: 'Cortina de segurança', value: 'Proteção total, 80 sensores' },
+                        { label: 'Ligação de força', value: 'Conjunto WID (sem chave)' },
                     ],
-                    maintenance: ['Змащення роликів і напрямних — кожні 3 міс.', 'Перевірка фотозавіси — щомісяця', 'Регулювання силового зв\'язку — при заїданні', 'Заміна ременя оператора — кожні 3 роки'],
-                    issues: ['Двері відкриваються повільно — знос ременя', 'Помилка Door Zone — збій сенсора DVZ', 'Часткове відкриття — забруднення завіси'],
+                    maintenance: ['Lubrificar roletes e guias — de 3 em 3 meses', 'Verificar cortina fotoelétrica — mensal', 'Ajustar a ligação de força — em caso de bloqueio', 'Substituir a correia do operador — de 3 em 3 anos'],
+                    issues: ['As portas abrem lentamente — desgaste da correia', 'Erro Door Zone — falha do sensor DVZ', 'Abertura parcial — cortina suja'],
                     manual: 'Wittur NOVA 2000 Operator Manual'
                 }
             },
             'model2': { // Schindler 3300
                 'motor': {
-                    description: 'Двигун з постійними магнітами Schindler EcoGear. Безредукторна конструкція без машинного приміщення (MRL).',
+                    description: 'Motor de ímanes permanentes Schindler EcoGear. Construção sem redutor e sem casa das máquinas (MRL).',
                     specs: [
-                        { label: 'Тип', value: 'PMM (постійні магніти), MRL' },
-                        { label: 'Потужність', value: '11 / 15 кВт' },
-                        { label: 'Швидкість кабіни', value: '1.0 / 1.6 м/с' },
-                        { label: 'Вантажопідйомність', value: '320 – 1000 кг' },
-                        { label: 'Клас ізоляції', value: 'F' },
-                        { label: 'Охолодження', value: 'природна конвекція (IC410)' },
+                        { label: 'Tipo', value: 'PMM (ímanes permanentes), MRL' },
+                        { label: 'Potência', value: '11 / 15 kW' },
+                        { label: 'Velocidade da cabine', value: '1.0 / 1.6 m/s' },
+                        { label: 'Carga nominal', value: '320 – 1000 kg' },
+                        { label: 'Classe de isolamento', value: 'F' },
+                        { label: 'Arrefecimento', value: 'convecção natural (IC410)' },
                     ],
-                    maintenance: ['Перевірка рівня вібрації — кожні 3 міс.', 'Затягування клемних з\'єднань — раз на рік', 'Перевірка ізоляції обмоток мегоометром — раз на рік', 'Заміна підшипників — через 40 000 год. або 10 років'],
-                    issues: ['Нагрів при навантаженні > 80% — перевірити вентиляцію шахти', 'Стук при пуску — перевірити посадку шківа', 'Код F50 — помилка резолвера (перевірити кабель)'],
+                    maintenance: ['Verificar nível de vibração — de 3 em 3 meses', 'Apertar ligações dos terminais — anual', 'Verificar isolamento dos enrolamentos com megóhmetro — anual', 'Substituir rolamentos — após 40 000 h ou 10 anos'],
+                    issues: ['Aquecimento com carga > 80% — verificar ventilação da caixa', 'Pancada no arranque — verificar assentamento da polia', 'Código F50 — erro do resolver (verificar o cabo)'],
                     manual: 'Schindler 3300 Motor Technical Manual SV-3301'
                 },
                 'controlSystem': {
-                    description: 'Контролер Schindler ACVF3 Drive з інвертором. Шафа у верхній частині шахти. Підключення діагностики через Schindler ADMS.',
+                    description: 'Controlador Schindler ACVF3 Drive com inversor. Quadro na parte superior da caixa. Diagnóstico através do Schindler ADMS.',
                     specs: [
-                        { label: 'Тип привода', value: 'VVVF, ACVF3' },
-                        { label: 'Живлення', value: '3×400 V / 50 Hz ±10%' },
-                        { label: 'Протокол зв\'язку', value: 'Schindler PBUS (RS-485)' },
-                        { label: 'Зони зупинок', value: 'до 40' },
-                        { label: 'Діагностика', value: 'Schindler ADMS / IMOS' },
+                        { label: 'Tipo de acionamento', value: 'VVVF, ACVF3' },
+                        { label: 'Alimentação', value: '3×400 V / 50 Hz ±10%' },
+                        { label: 'Protocolo de comunicação', value: 'Schindler PBUS (RS-485)' },
+                        { label: 'Zonas de paragem', value: 'até 40' },
+                        { label: 'Diagnóstico', value: 'Schindler ADMS / IMOS' },
                     ],
-                    maintenance: ['Зчитування кодів помилок через IMOS — щомісяця', 'Перевірка контактних з\'єднань — кожні 6 міс.', 'Оновлення ПЗ — за рекомендацією Schindler', 'Навчальний пробіг після ТО'],
-                    issues: ['Помилка 3312 — відхилення позиції кабіни', 'Помилка 5011 — відмова дверного контролера', 'Перегрів IGBT-транзисторів при частих пусках'],
+                    maintenance: ['Ler códigos de erro através do IMOS — mensal', 'Verificar ligações de contacto — de 6 em 6 meses', 'Atualizar software — conforme recomendação da Schindler', 'Viagem de aprendizagem após a manutenção'],
+                    issues: ['Erro 3312 — desvio da posição da cabine', 'Erro 5011 — falha do controlador de portas', 'Sobreaquecimento dos transístores IGBT em arranques frequentes'],
                     manual: 'Schindler 3300 ACVF3 Controller Manual'
                 },
                 'brakes': {
-                    description: 'Два незалежних електромагнітних гальма, вбудовані в двигун. Моніторинг через мікроперемикачі.',
+                    description: 'Dois travões eletromagnéticos independentes integrados no motor. Monitorização por microinterruptores.',
                     specs: [
-                        { label: 'Тип', value: 'Електромагнітний bi-stable' },
-                        { label: 'Напруга', value: '100 VDC (утримуюча 50 VDC)' },
-                        { label: 'Зазор колодок', value: '0.25 – 0.45 мм' },
-                        { label: 'Мін. товщина колодки', value: '≥ 2 мм' },
+                        { label: 'Tipo', value: 'Eletromagnético bi-stable' },
+                        { label: 'Tensão', value: '100 VDC (retenção 50 VDC)' },
+                        { label: 'Folga das pastilhas', value: '0.25 – 0.45 mm' },
+                        { label: 'Espessura mín. da pastilha', value: '≥ 2 mm' },
                     ],
-                    maintenance: ['Вимір зазору — кожні 3 міс.', 'Перевірка мікровимикачів — щомісяця', 'Змащення пружин — раз на рік (тільки суха мастила)', 'Заміна накладок при зносі до межі'],
-                    issues: ['Заклинювання при низьких температурах — конденсат у котушці', 'Зашумлення при відпусканні — нерівний знос накладок', 'Помилка BRS — сигнал мікровимикача не надходить'],
+                    maintenance: ['Medir a folga — de 3 em 3 meses', 'Verificar microinterruptores — mensal', 'Lubrificar as molas — anual (apenas lubrificante seco)', 'Substituir os revestimentos quando atingirem o limite de desgaste'],
+                    issues: ['Bloqueio a baixas temperaturas — condensação na bobina', 'Ruído na libertação — desgaste irregular dos revestimentos', 'Erro BRS — o sinal do microinterruptor não chega'],
                     manual: 'Schindler 3300 Brake Service Manual SV-3304'
                 },
                 'doors': {
-                    description: 'Розсувні двері з оператором Sematic S600. EDF-система (ElectroDynamic Force) для плавного ходу.',
+                    description: 'Portas de correr com operador Sematic S600. Sistema EDF (ElectroDynamic Force) para movimento suave.',
                     specs: [
-                        { label: 'Тип', value: '2-панельні, телескопічні або центральні' },
-                        { label: 'Оператор', value: 'Sematic S600' },
-                        { label: 'Час відкриття', value: '2.0 – 3.0 с' },
-                        { label: 'Захисна завіса', value: 'Multiscan 40/80 зон' },
-                        { label: 'Зв\'язок', value: 'CAN Bus між оператором і контролером' },
+                        { label: 'Tipo', value: '2 painéis, telescópicas ou centrais' },
+                        { label: 'Operador', value: 'Sematic S600' },
+                        { label: 'Tempo de abertura', value: '2.0 – 3.0 s' },
+                        { label: 'Cortina de segurança', value: 'Multiscan 40/80 zonas' },
+                        { label: 'Comunicação', value: 'CAN Bus entre operador e controlador' },
                     ],
-                    maintenance: ['Змащення верхньої напрямної (силікон) — кожні 3 міс.', 'Чищення датчиків завіси — щомісяця', 'Перевірка натяжного пристрою нижньої лопаті — кожні 6 міс.', 'Калібрування оператора S600 після заміни'],
-                    issues: ['Помилки сенсора EDF — забруднення повзунів', 'Вибій дверей — знос обмежувача ходу', 'CAN-помилка — обрив або занадто довгий кабель'],
+                    maintenance: ['Lubrificar a guia superior (silicone) — de 3 em 3 meses', 'Limpar sensores da cortina — mensal', 'Verificar o dispositivo tensor da folha inferior — de 6 em 6 meses', 'Calibrar o operador S600 após substituição'],
+                    issues: ['Erros do sensor EDF — sujidade nos patins', 'Batida das portas — desgaste do limitador de curso', 'Erro CAN — cabo cortado ou demasiado comprido'],
                     manual: 'Schindler 3300 Door System Manual SV-3306'
                 },
                 'controlSystem_extra': {
-                    description: 'IMOS (Intelligent Monitoring) — вбудований інтерфейс для зчитування журналів, налаштування зон та оновлення ПЗ.',
+                    description: 'IMOS (Intelligent Monitoring) — interface integrada para leitura de registos, configuração de zonas e atualização de software.',
                     specs: [],
-                    maintenance: ['Підключення ноутбука через RS-232 адаптер', 'Ввести пароль техніка рівня L2', 'Меню: Diagnostics → Error Log → Clear'],
+                    maintenance: ['Ligar o portátil através de adaptador RS-232', 'Introduzir a palavra-passe de técnico nível L2', 'Menu: Diagnostics → Error Log → Clear'],
                     issues: [],
                     manual: 'Schindler IMOS User Guide v3.2'
                 },
                 'display': {
-                    description: 'LCD-індикатор поверху та індикатор в кабіні. COP/LOP з підсвіткою кнопок і голосовим сповіщенням.',
+                    description: 'Indicador LCD de piso e indicador na cabine. COP/LOP com botões iluminados e aviso por voz.',
                     specs: [
-                        { label: 'Тип дисплея COP', value: 'LCD 7-сегментний + точковий' },
-                        { label: 'Інтерфейс LOP', value: 'CAN Bus' },
-                        { label: 'Голосові повідомлення', value: 'SD-картка, WAV/MP3' },
-                        { label: 'Кнопки', value: 'LED-підсвічування 24V' },
+                        { label: 'Tipo de visor COP', value: 'LCD 7 segmentos + matriz de pontos' },
+                        { label: 'Interface LOP', value: 'CAN Bus' },
+                        { label: 'Mensagens de voz', value: 'Cartão SD, WAV/MP3' },
+                        { label: 'Botões', value: 'Iluminação LED 24V' },
                     ],
-                    maintenance: ['Чищення кнопок та дисплеїв — щомісяця', 'Перевірка кабельних клемних контактів LOP — раз на рік', 'Заміна SD-картки при пошкодженні аудіо'],
-                    issues: ['Не горять поверхові кнопки — перегоріло LED або обрив живлення', 'Дисплей не показує поверх — збій CAN-адреси LOP', 'Немає аудіо — пошкоджена SD або низький рівень гучності'],
+                    maintenance: ['Limpar botões e visores — mensal', 'Verificar terminais dos cabos do LOP — anual', 'Substituir o cartão SD em caso de áudio danificado'],
+                    issues: ['Os botões de piso não acendem — LED queimado ou alimentação cortada', 'O visor não mostra o piso — falha do endereço CAN do LOP', 'Sem áudio — cartão SD danificado ou volume baixo'],
                     manual: 'Schindler COP/LOP Technical Manual SV-3308'
                 }
             },
             'model3': { // Kone MonoSpace
                 'motor': {
-                    description: 'Дисковий двигун Kone EcoDisc — плоска конструкція, вбудована над шахтою без окремого машинного приміщення.',
+                    description: 'Motor de disco Kone EcoDisc — construção plana, integrada por cima da caixa sem casa das máquinas própria.',
                     specs: [
-                        { label: 'Тип', value: 'EcoDisc (дисковий PM)' },
-                        { label: 'Потужність', value: '3.5 – 11 кВт' },
-                        { label: 'Швидкість', value: '0.63 – 1.6 м/с' },
-                        { label: 'Вантажопідйомність', value: '320 – 1000 кг' },
-                        { label: 'ККД', value: '> 86%' },
-                        { label: 'Маса', value: '145 кг (типово)' },
+                        { label: 'Tipo', value: 'EcoDisc (PM de disco)' },
+                        { label: 'Potência', value: '3.5 – 11 kW' },
+                        { label: 'Velocidade', value: '0.63 – 1.6 m/s' },
+                        { label: 'Carga nominal', value: '320 – 1000 kg' },
+                        { label: 'Rendimento', value: '> 86%' },
+                        { label: 'Massa', value: '145 kg (típica)' },
                     ],
-                    maintenance: ['Контроль температури секцій обмотки — щомісяця', 'Перевірка підшипників: 50 000 год. або 10 р.', 'Клинопасова передача відсутня — мастило не потрібне'],
-                    issues: ['Перегрів при тривалому навантаженні — вентиляція шахти', 'Помилка EN3 — несправність енкодера EcoDisc', 'Стукіт — ослаблення кріплення диску'],
+                    maintenance: ['Controlar a temperatura das secções do enrolamento — mensal', 'Verificar rolamentos: 50 000 h ou 10 anos', 'Sem transmissão por correia — não é necessária lubrificação'],
+                    issues: ['Sobreaquecimento com carga prolongada — ventilação da caixa', 'Erro EN3 — avaria do encoder EcoDisc', 'Batidas — fixação do disco solta'],
                     manual: 'Kone EcoDisc Motor Service Manual KM803001'
                 },
                 'controlSystem': {
-                    description: 'Контролер Kone V3F16L (VVVF). Шафа KCE, підтримка Kone Care Remote Monitoring.',
+                    description: 'Controlador Kone V3F16L (VVVF). Quadro KCE, com suporte a Kone Care Remote Monitoring.',
                     specs: [
-                        { label: 'Тип', value: 'V3F16L VVVF' },
-                        { label: 'Живлення', value: '3×400 V / 50 Hz' },
-                        { label: 'Зв\'язок', value: 'KNX, ModBus, Kone Care' },
-                        { label: 'Зупинок', value: 'до 32' },
-                        { label: 'Моніторинг', value: 'Kone Care 24/7' },
+                        { label: 'Tipo', value: 'V3F16L VVVF' },
+                        { label: 'Alimentação', value: '3×400 V / 50 Hz' },
+                        { label: 'Comunicação', value: 'KNX, ModBus, Kone Care' },
+                        { label: 'Paragens', value: 'até 32' },
+                        { label: 'Monitorização', value: 'Kone Care 24/7' },
                     ],
-                    maintenance: ['Перевірка інверторних конденсаторів — раз на 5 р.', 'Чистка фільтрів шафи — кожні 3 міс.', 'Тест навчального пробігу після ТО'],
-                    issues: ['Помилка F16 — відхилення напруги ланки DC', 'Помилка F22 — перегрів IGBT', 'Не завантажується ПЗ — перевірити EEPROM'],
+                    maintenance: ['Verificar condensadores do inversor — de 5 em 5 anos', 'Limpar filtros do quadro — de 3 em 3 meses', 'Teste de viagem de aprendizagem após a manutenção'],
+                    issues: ['Erro F16 — desvio da tensão do barramento DC', 'Erro F22 — sobreaquecimento do IGBT', 'O software não carrega — verificar a EEPROM'],
                     manual: 'Kone V3F16L Service Manual KM71352'
                 },
                 'brakes': {
-                    description: 'Вбудовані дискові гальма в корпус EcoDisc. Два незалежних механізми з електронним моніторингом.',
+                    description: 'Travões de disco integrados na carcaça do EcoDisc. Dois mecanismos independentes com monitorização eletrónica.',
                     specs: [
-                        { label: 'Тип', value: 'Дисковий, spring-set' },
-                        { label: 'Спрацювання', value: 'Вимкнення живлення котушки' },
-                        { label: 'Зазор', value: '0.20 – 0.40 мм' },
-                        { label: 'Мін. товщина накладки', value: '≥ 3 мм' },
+                        { label: 'Tipo', value: 'De disco, spring-set' },
+                        { label: 'Atuação', value: 'Corte da alimentação da bobina' },
+                        { label: 'Folga', value: '0.20 – 0.40 mm' },
+                        { label: 'Espessura mín. do revestimento', value: '≥ 3 mm' },
                     ],
-                    maintenance: ['Вимір зазору через інспекційний лючок — кожні 3 міс.', 'Перевірка BMON-сигналу — щомісяця', 'Заміна пружин та накладок — кожні 10 р.'],
-                    issues: ['Кабіна не утримується — мала сила затиску, регулювати пружину', 'BMON-помилка — обрив дроту мікровимикача', 'Перегрів дисків — занадто малий зазор'],
+                    maintenance: ['Medir a folga pela janela de inspeção — de 3 em 3 meses', 'Verificar o sinal BMON — mensal', 'Substituir molas e revestimentos — de 10 em 10 anos'],
+                    issues: ['A cabine não se mantém — força de aperto baixa, regular a mola', 'Erro BMON — fio do microinterruptor cortado', 'Sobreaquecimento dos discos — folga demasiado pequena'],
                     manual: 'Kone EcoDisc Brake Guide KM803005'
                 },
                 'safetySystem': {
-                    description: 'Kone SafetyPro: двоканальна система безпеки з навчальним ехо-тестом щоразу при вмиканні.',
+                    description: 'Kone SafetyPro: sistema de segurança de dois canais com teste de eco de aprendizagem em cada arranque.',
                     specs: [
-                        { label: 'Обмежувач швидкості', value: 'Kone OSG-LD' },
-                        { label: 'Вловлювач', value: 'Прогресивний, Kone SIP' },
-                        { label: 'Буфери', value: 'По EN 81-20, маслогідравлічні' },
+                        { label: 'Limitador de velocidade', value: 'Kone OSG-LD' },
+                        { label: 'Paraquedas', value: 'Progressivo, Kone SIP' },
+                        { label: 'Amortecedores', value: 'Segundo EN 81-20, hidráulicos' },
                     ],
-                    maintenance: ['Тест обмежувача швидкості — раз на рік', 'Заміна мастила буфера — кожні 2 р.', 'Самодіагностика SafetyPro при кожному пуску'],
-                    issues: ['Спрацювання OSG без причини — знос або бруд на канаті', 'Кабіна опускається повільно після спрацювання — буфер недозаряджений'],
+                    maintenance: ['Testar o limitador de velocidade — anual', 'Substituir o óleo do amortecedor — de 2 em 2 anos', 'Autodiagnóstico SafetyPro em cada arranque'],
+                    issues: ['OSG atua sem motivo — desgaste ou sujidade no cabo', 'A cabine desce lentamente após a atuação — amortecedor com carga insuficiente'],
                     manual: 'Kone SafetyPro Manual KM803010'
                 },
                 'emergency': {
-                    description: 'ARO (Automatic Rescue Operation) — автоматичне самоперевезення до найближчого поверху при зникненні живлення від батареї ARD.',
+                    description: 'ARO (Automatic Rescue Operation) — deslocação automática até ao piso mais próximo em caso de falha de energia, com a bateria ARD.',
                     specs: [
-                        { label: 'Тип', value: 'ARO (ARD — Automatic Rescue Device)' },
-                        { label: 'Напруга батареї', value: '48 VDC, 20 Ah' },
-                        { label: 'Час резерву', value: '≥ 1 урятувальний хід' },
-                        { label: 'Самотест', value: 'Щоденно' },
+                        { label: 'Tipo', value: 'ARO (ARD — Automatic Rescue Device)' },
+                        { label: 'Tensão da bateria', value: '48 VDC, 20 Ah' },
+                        { label: 'Autonomia', value: '≥ 1 viagem de resgate' },
+                        { label: 'Autoteste', value: 'Diário' },
                     ],
-                    maintenance: ['Перевірка заряду батареї — щомісяця', 'Заміна батареї — кожні 3–4 роки', 'Тест ARO пробігу — раз на рік'],
-                    issues: ['ARO не спрацьовує — розряджена батарея', 'Помилка ARD-FAULT — обрив у ланцюзі батареї'],
+                    maintenance: ['Verificar a carga da bateria — mensal', 'Substituir a bateria — de 3 em 3 ou 4 em 4 anos', 'Testar a viagem ARO — anual'],
+                    issues: ['ARO não atua — bateria descarregada', 'Erro ARD-FAULT — circuito da bateria cortado'],
                     manual: 'Kone ARD Installation & Maintenance KM71360'
                 },
                 'doors': {
-                    description: 'Двері KONE MiniSpace з оператором Sematic або Fermator. Інфрачервона завіса + механічний реверс.',
+                    description: 'Portas KONE MiniSpace com operador Sematic ou Fermator. Cortina infravermelha + reversão mecânica.',
                     specs: [
-                        { label: 'Тип', value: '2-стулкові центральні або бокові' },
-                        { label: 'Оператор', value: 'Sematic SM2000 / Fermator VF5' },
-                        { label: 'Час циклу', value: '2.5 – 4.0 с' },
-                        { label: 'Захист', value: 'ІЧ-завіса + механічна реверсна стрічка' },
+                        { label: 'Tipo', value: '2 folhas, centrais ou laterais' },
+                        { label: 'Operador', value: 'Sematic SM2000 / Fermator VF5' },
+                        { label: 'Tempo de ciclo', value: '2.5 – 4.0 s' },
+                        { label: 'Proteção', value: 'Cortina IV + fita de reversão mecânica' },
                     ],
-                    maintenance: ['Змащення роликів та напрямних — кожні 3 міс.', 'Перевірка ІЧ-завіси — щомісяця', 'Регулювання кінцевого демпфера — при ударах'],
-                    issues: ['Двері не відкриваються повністю — знос чи знеструмлення оператора', 'Помилки DE code — збій CAN між кабіною і контролером'],
+                    maintenance: ['Lubrificar roletes e guias — de 3 em 3 meses', 'Verificar a cortina IV — mensal', 'Regular o amortecedor de fim de curso — em caso de impactos'],
+                    issues: ['As portas não abrem completamente — desgaste ou operador sem alimentação', 'Erros DE code — falha do CAN entre cabine e controlador'],
                     manual: 'Kone Door System Manual KM803020'
                 }
             },
             'model4': { // Thyssenkrupp Evolution
                 'motor': {
-                    description: 'Синхронний двигун з постійними магнітами Thyssenkrupp SYN. Модульна конструкція для швидкої заміни.',
+                    description: 'Motor síncrono de ímanes permanentes Thyssenkrupp SYN. Construção modular para substituição rápida.',
                     specs: [
-                        { label: 'Тип', value: 'PMSM синхронний' },
-                        { label: 'Потужність', value: '7.5 – 22 кВт' },
-                        { label: 'Швидкість', value: '1.0 – 2.5 м/с' },
-                        { label: 'Вантажопідйомність', value: '480 – 1600 кг' },
-                        { label: 'Ізоляція', value: 'Клас H (180°C)' },
+                        { label: 'Tipo', value: 'PMSM síncrono' },
+                        { label: 'Potência', value: '7.5 – 22 kW' },
+                        { label: 'Velocidade', value: '1.0 – 2.5 m/s' },
+                        { label: 'Carga nominal', value: '480 – 1600 kg' },
+                        { label: 'Isolamento', value: 'Classe H (180°C)' },
                     ],
-                    maintenance: ['Перевірка температури за PTC-датчиком — щомісяця', 'Вимірювання ізоляції — раз на рік', 'Заміна підшипників — через 60 000 год.'],
-                    issues: ['PTC-трипінг — перевантаження або забита вентиляція', 'Помилка ENC_FAULT — збій енкодера SIL2', 'Ненормальний шум — підшипник або ослаблений кронштейн'],
+                    maintenance: ['Verificar a temperatura pelo sensor PTC — mensal', 'Medir o isolamento — anual', 'Substituir rolamentos — após 60 000 h'],
+                    issues: ['Disparo PTC — sobrecarga ou ventilação obstruída', 'Erro ENC_FAULT — falha do encoder SIL2', 'Ruído anormal — rolamento ou suporte solto'],
                     manual: 'TKE Evolution Motor Service Manual TK-EV-MOT-01'
                 },
                 'controlSystem': {
-                    description: 'Контролер MAX (Multiple Architecture eXchange). Web-based діагностика через MAX Connect.',
+                    description: 'Controlador MAX (Multiple Architecture eXchange). Diagnóstico web através do MAX Connect.',
                     specs: [
-                        { label: 'Тип', value: 'MAX VVVF' },
-                        { label: 'Живлення', value: '3×400–480 V / 50–60 Hz' },
-                        { label: 'Зв\'язок', value: 'Ethernet / LAN, MAX Connect' },
-                        { label: 'Зупинок', value: 'до 64' },
-                        { label: 'Хмарний моніторинг', value: 'TK Cloud Service' },
+                        { label: 'Tipo', value: 'MAX VVVF' },
+                        { label: 'Alimentação', value: '3×400–480 V / 50–60 Hz' },
+                        { label: 'Comunicação', value: 'Ethernet / LAN, MAX Connect' },
+                        { label: 'Paragens', value: 'até 64' },
+                        { label: 'Monitorização na nuvem', value: 'TK Cloud Service' },
                     ],
-                    maintenance: ['Перевірка та очищення плат — кожні 6 міс.', 'Оновлення ПЗ через MAX Connect', 'Архів журналів помилок — перед ТО'],
-                    issues: ['Помилка MAX-0234 — відмова комунікаційного модуля', 'MAX не підключається — перевірити IP та firewall', 'Підвисання контролера — зробити холодний перезапуск'],
+                    maintenance: ['Verificar e limpar as placas — de 6 em 6 meses', 'Atualizar o software através do MAX Connect', 'Arquivar o registo de erros — antes da manutenção'],
+                    issues: ['Erro MAX-0234 — falha do módulo de comunicação', 'O MAX não liga — verificar IP e firewall', 'Controlador bloqueado — fazer um reinício a frio'],
                     manual: 'TKE MAX Controller Technical Manual'
                 },
                 'brakes': {
-                    description: 'Два незалежних гальма з функцією SlowDown (плавне гальмування).',
+                    description: 'Dois travões independentes com função SlowDown (travagem suave).',
                     specs: [
-                        { label: 'Тип', value: 'Електромагнітний, захисний spring-set' },
-                        { label: 'Напруга', value: '205 VDC' },
-                        { label: 'SlowDown', value: 'Так, ETSL sensorless' },
-                        { label: 'Зазор', value: '0.2 – 0.4 мм' },
+                        { label: 'Tipo', value: 'Eletromagnético, de segurança spring-set' },
+                        { label: 'Tensão', value: '205 VDC' },
+                        { label: 'SlowDown', value: 'Sim, ETSL sensorless' },
+                        { label: 'Folga', value: '0.2 – 0.4 mm' },
                     ],
-                    maintenance: ['Перевірка зазору — кожні 3 міс.', 'Тест функції SlowDown — раз на рік', 'Заміна котушок — при опорі < 45 Ω'],
-                    issues: ['Кабіна не зупиняється рівно — неоднаковий зазор двох гальм', 'SlowDown не спрацьовує — помилка реле ETSL'],
+                    maintenance: ['Verificar a folga — de 3 em 3 meses', 'Testar a função SlowDown — anual', 'Substituir bobinas — com resistência < 45 Ω'],
+                    issues: ['A cabine não pára nivelada — folga desigual dos dois travões', 'SlowDown não atua — erro do relé ETSL'],
                     manual: 'TKE Evolution Brake Guide TK-EV-BRK-02'
                 },
                 'safetySystem': {
-                    description: 'Thyssenkrupp ACCEL Guard — безконтактна система безпеки SIL3. Моніторинг швидкості, прискорення, позиції.',
+                    description: 'Thyssenkrupp ACCEL Guard — sistema de segurança sem contacto SIL3. Monitorização de velocidade, aceleração e posição.',
                     specs: [
-                        { label: 'Рівень безпеки', value: 'SIL 3, EN 13849' },
-                        { label: 'Вловлювач', value: 'TK SafetyGrip прогресивний' },
-                        { label: 'Моніторинг', value: 'ACCEL Guard (акселерометр)' },
+                        { label: 'Nível de segurança', value: 'SIL 3, EN 13849' },
+                        { label: 'Paraquedas', value: 'TK SafetyGrip progressivo' },
+                        { label: 'Monitorização', value: 'ACCEL Guard (acelerómetro)' },
                     ],
-                    maintenance: ['Самотест при кожному пуску (SIL3)', 'Перевірка вловлювача — раз на рік', 'Сертифікація ACCEL Guard — кожні 5 р.'],
-                    issues: ['Помилка SG-TRIP — спрацювання вловлювача, Reset: виклик тех.', 'ACCEL Guard FAULT — замінити акселерометричний блок'],
+                    maintenance: ['Autoteste em cada arranque (SIL3)', 'Verificar o paraquedas — anual', 'Certificação do ACCEL Guard — de 5 em 5 anos'],
+                    issues: ['Erro SG-TRIP — atuação do paraquedas, Reset: chamar o técnico', 'ACCEL Guard FAULT — substituir o bloco do acelerómetro'],
                     manual: 'TKE ACCEL Guard Safety Manual TK-EV-SAF-03'
                 },
                 'aiModule': {
-                    description: 'AI-модуль MAX Edge для предиктивного обслуговування: аналізує вібрацію, струм двигуна, температуру в реальному часі.',
+                    description: 'Módulo de IA MAX Edge para manutenção preditiva: analisa vibração, corrente do motor e temperatura em tempo real.',
                     specs: [
-                        { label: 'Платформа', value: 'MAX Edge (Edge Computing)' },
-                        { label: 'Алгоритми', value: 'Vibration FFT, thermal trend, motor current signature' },
-                        { label: 'Зв\'язок', value: 'LTE / WiFi → TK Cloud' },
-                        { label: 'Сповіщення', value: 'Push / SMS / API' },
+                        { label: 'Plataforma', value: 'MAX Edge (Edge Computing)' },
+                        { label: 'Algoritmos', value: 'Vibration FFT, thermal trend, motor current signature' },
+                        { label: 'Comunicação', value: 'LTE / WiFi → TK Cloud' },
+                        { label: 'Alertas', value: 'Push / SMS / API' },
                     ],
-                    maintenance: ['Перевірка підключення до TK Cloud — щомісяця', 'Оновлення ML-моделей автоматичне', 'Калібрування датчиків — раз на рік'],
-                    issues: ['Не надходять сповіщення — перевірити SIM або WiFi налаштування', 'Хибні попередження — зробити recalibration у MAX Connect'],
+                    maintenance: ['Verificar a ligação ao TK Cloud — mensal', 'Atualização automática dos modelos de ML', 'Calibrar os sensores — anual'],
+                    issues: ['Não chegam alertas — verificar SIM ou configuração WiFi', 'Avisos falsos — fazer recalibração no MAX Connect'],
                     manual: 'TKE MAX Edge AI Manual TK-EV-AI-04'
                 },
                 'doors': {
-                    description: 'Двері з оператором TK Door Classic / Premium. Підтримка активного VVVF-дверного привода.',
+                    description: 'Portas com operador TK Door Classic / Premium. Suporta acionamento de portas VVVF ativo.',
                     specs: [
-                        { label: 'Тип', value: '2 / 4-панельні телескопічні або центральні' },
-                        { label: 'Оператор', value: 'TK Door Premium (VVVF)' },
-                        { label: 'Завіса', value: '3D MultiScan (40 – 120 зон)' },
-                        { label: 'Час', value: '2.0 – 3.0 с' },
+                        { label: 'Tipo', value: '2 / 4 painéis telescópicas ou centrais' },
+                        { label: 'Operador', value: 'TK Door Premium (VVVF)' },
+                        { label: 'Cortina', value: '3D MultiScan (40 – 120 zonas)' },
+                        { label: 'Tempo', value: '2.0 – 3.0 s' },
                     ],
-                    maintenance: ['Змащення верхньої напрямної — кожні 3 міс.', 'Перевірка MultiScan — щомісяця', 'Калібрування VVVF-оператора після заміни'],
-                    issues: ['VVVF Door Fault — перевірити параметри оператора', 'MultiScan false trip — очистити лінзи'],
+                    maintenance: ['Lubrificar a guia superior — de 3 em 3 meses', 'Verificar o MultiScan — mensal', 'Calibrar o operador VVVF após substituição'],
+                    issues: ['VVVF Door Fault — verificar parâmetros do operador', 'MultiScan false trip — limpar as lentes'],
                     manual: 'TKE Door System Manual TK-EV-DOR-05'
                 }
             },
             'model5': { // Mitsubishi Electric
                 'motor': {
-                    description: 'Синхронний двигун MELSERVO Mitsubishi з вбудованим рекуперативним інвертором VFCL.',
+                    description: 'Motor síncrono MELSERVO Mitsubishi com inversor regenerativo VFCL integrado.',
                     specs: [
-                        { label: 'Тип', value: 'PMSM + рекуперація' },
-                        { label: 'Потужність', value: '5.5 – 18.5 кВт' },
-                        { label: 'Швидкість', value: '0.75 – 2.0 м/с' },
-                        { label: 'Вантажопідйомність', value: '450 – 1350 кг' },
-                        { label: 'Рекуперація', value: '20–30 % економії' },
+                        { label: 'Tipo', value: 'PMSM + regeneração' },
+                        { label: 'Potência', value: '5.5 – 18.5 kW' },
+                        { label: 'Velocidade', value: '0.75 – 2.0 m/s' },
+                        { label: 'Carga nominal', value: '450 – 1350 kg' },
+                        { label: 'Regeneração', value: '20–30 % de poupança' },
                     ],
-                    maintenance: ['Контроль температури обмотки — щомісяця', 'Очищення теплового раіатора інвертора — кожні 3 міс.', 'Заміна підшипників — кожні 50 000 год.'],
-                    issues: ['Помилка OC (overcurrent) — перевірити міжвиткове КЗ', 'Висока температура — засмічення вентиляційних ребер інвертора', 'Збій резолвера — замінити кабель або модуль'],
+                    maintenance: ['Controlar a temperatura do enrolamento — mensal', 'Limpar o dissipador de calor do inversor — de 3 em 3 meses', 'Substituir rolamentos — a cada 50 000 h'],
+                    issues: ['Erro OC (overcurrent) — verificar curto-circuito entre espiras', 'Temperatura elevada — aletas de ventilação do inversor obstruídas', 'Falha do resolver — substituir o cabo ou o módulo'],
                     manual: 'Mitsubishi NEXIEZ-MRL Motor Manual GMC-2023'
                 },
                 'controlSystem': {
-                    description: 'Контролер VFCL-2S (Vector Frequency Control) з мережевим рекуперативним конвертором.',
+                    description: 'Controlador VFCL-2S (Vector Frequency Control) com conversor regenerativo de rede.',
                     specs: [
-                        { label: 'Тип', value: 'VFCL-2S VVVF з рекуперацією' },
-                        { label: 'Живлення', value: '3×380–480 V' },
-                        { label: 'Зв\'язок', value: 'M-Net, Modbus RTU' },
-                        { label: 'Зупинок', value: 'до 48' },
-                        { label: 'Сервіс', value: 'Mitsubishi MELVIT II (ноутбук)' },
+                        { label: 'Tipo', value: 'VFCL-2S VVVF com regeneração' },
+                        { label: 'Alimentação', value: '3×380–480 V' },
+                        { label: 'Comunicação', value: 'M-Net, Modbus RTU' },
+                        { label: 'Paragens', value: 'até 48' },
+                        { label: 'Assistência', value: 'Mitsubishi MELVIT II (portátil)' },
                     ],
-                    maintenance: ['Підключення MELVIT II — щорічна діагностика', 'Очищення плат від пилу — кожні 6 міс.', 'Перевірка рекупераційного модуля — раз на рік'],
-                    issues: ['Помилка MC-0011 — відмова основного реле', 'Помилка MC-0044 — перевищення похибки позиціонування', 'Рекуператор не працює — перевірити опір на вхідних контакторах'],
+                    maintenance: ['Ligar o MELVIT II — diagnóstico anual', 'Limpar as placas de pó — de 6 em 6 meses', 'Verificar o módulo de regeneração — anual'],
+                    issues: ['Erro MC-0011 — falha do relé principal', 'Erro MC-0044 — erro de posicionamento excessivo', 'O regenerador não funciona — verificar a resistência nos contactores de entrada'],
                     manual: 'Mitsubishi VFCL-2S Technical Manual GMC-CTRL-2023'
                 },
                 'brakes': {
-                    description: 'Два незалежних гальма MELBRAKE вбудовані в шківний вузол. Контроль через BMS (Brake Monitoring System).',
+                    description: 'Dois travões independentes MELBRAKE integrados no conjunto da polia. Controlo através do BMS (Brake Monitoring System).',
                     specs: [
-                        { label: 'Тип', value: 'MELBRAKE, spring-set' },
-                        { label: 'Напруга', value: '190 VDC' },
-                        { label: 'Зазор', value: '0.3 – 0.5 мм' },
+                        { label: 'Tipo', value: 'MELBRAKE, spring-set' },
+                        { label: 'Tensão', value: '190 VDC' },
+                        { label: 'Folga', value: '0.3 – 0.5 mm' },
                     ],
-                    maintenance: ['Перевірка BMS-сигналів — щомісяця', 'Вимір зазору — кожні 3 міс.', 'Заміна накладок — при товщині < 2 мм'],
-                    issues: ['BMS-FAULT — перевірити мікровимикач та дроти', 'Подвійне спрацювання гальм — перевірити напругу котушки'],
+                    maintenance: ['Verificar os sinais BMS — mensal', 'Medir a folga — de 3 em 3 meses', 'Substituir revestimentos — com espessura < 2 mm'],
+                    issues: ['BMS-FAULT — verificar microinterruptor e fios', 'Dupla atuação dos travões — verificar a tensão da bobina'],
                     manual: 'Mitsubishi MELBRAKE Service Manual GMC-BRK-23'
                 },
                 'energySaver': {
-                    description: 'Система рекуперативного живлення MELREG повертає до 30% енергії в мережу при русі завантаженої кабіни вниз.',
+                    description: 'O sistema de alimentação regenerativa MELREG devolve até 30% da energia à rede quando a cabine carregada desce.',
                     specs: [
-                        { label: 'Тип', value: 'Active Front End (AFE) рекуперація' },
-                        { label: 'Ефективність', value: '≥ 95% конверсії' },
-                        { label: 'Економія', value: 'до 30% від загального споживання' },
+                        { label: 'Tipo', value: 'Regeneração Active Front End (AFE)' },
+                        { label: 'Eficiência', value: '≥ 95% de conversão' },
+                        { label: 'Poupança', value: 'até 30% do consumo total' },
                         { label: 'Cos φ', value: '≥ 0.99' },
                     ],
-                    maintenance: ['Перевірка ємності конденсаторів — раз на 3 р.', 'Очищення фільтрів', 'Тест рекуперації при ТО — фіксувати у журнал'],
-                    issues: ['Рекуперація відключена — хмарка THD або збій AFE', 'Помилка REGEN-OC — замінити IGBT модуль'],
+                    maintenance: ['Verificar a capacidade dos condensadores — de 3 em 3 anos', 'Limpar filtros', 'Testar a regeneração na manutenção — registar no livro'],
+                    issues: ['Regeneração desligada — distorção THD ou falha do AFE', 'Erro REGEN-OC — substituir o módulo IGBT'],
                     manual: 'Mitsubishi MELREG Energy Recovery Manual'
                 },
                 'safetySystem': {
-                    description: 'Система безпеки MELSAFE з двоканальним ПЛК безпеки SIL2. OSG + прогресивний вловлювач.',
+                    description: 'Sistema de segurança MELSAFE com PLC de segurança SIL2 de dois canais. OSG + paraquedas progressivo.',
                     specs: [
-                        { label: 'Рівень', value: 'SIL 2' },
+                        { label: 'Nível', value: 'SIL 2' },
                         { label: 'OSG', value: 'MELSAFE-OSG1' },
-                        { label: 'Вловлювач', value: 'Прогресивний' },
+                        { label: 'Paraquedas', value: 'Progressivo' },
                     ],
-                    maintenance: ['Тест OSG — раз на рік', 'Самотест MELSAFE przy кожному вмиканні', 'Сертифікація SIL2 — кожні 5 р.'],
-                    issues: ['MELSAFE TRIP — скинути через MELVIT II',  'Помилка OSG — перевірити канат і напрямні'],
+                    maintenance: ['Testar o OSG — anual', 'Autoteste MELSAFE em cada arranque', 'Certificação SIL2 — de 5 em 5 anos'],
+                    issues: ['MELSAFE TRIP — repor através do MELVIT II',  'Erro OSG — verificar o cabo e as guias'],
                     manual: 'Mitsubishi MELSAFE Safety Manual GMC-SAF-23'
                 },
                 'doors': {
-                    description: 'Двері Mitsubishi MRL з оператором VF5 (Fermator) або MELDOOR. Безконтактна багатопроменева завіса.',
+                    description: 'Portas Mitsubishi MRL com operador VF5 (Fermator) ou MELDOOR. Cortina multifeixe sem contacto.',
                     specs: [
-                        { label: 'Оператор', value: 'MELDOOR 3.0 або Fermator VF5' },
-                        { label: 'Завіса', value: 'Mitsubishi MultiLight 60 або 80 променів' },
-                        { label: 'Час', value: '2.5 – 3.5 с' },
+                        { label: 'Operador', value: 'MELDOOR 3.0 ou Fermator VF5' },
+                        { label: 'Cortina', value: 'Mitsubishi MultiLight 60 ou 80 feixes' },
+                        { label: 'Tempo', value: '2.5 – 3.5 s' },
                     ],
-                    maintenance: ['Змащення роликів — кожні 3 міс.', 'Перевірка MultiLight — щомісяця', 'Регулювання кінцевих датчиків після ТО'],
-                    issues: ['Помилка MLD-05 — сенсор завіси MultiLight', 'Двері трясуть при закритті — знос напрямної'],
+                    maintenance: ['Lubrificar roletes — de 3 em 3 meses', 'Verificar o MultiLight — mensal', 'Regular os sensores de fim de curso após a manutenção'],
+                    issues: ['Erro MLD-05 — sensor da cortina MultiLight', 'As portas tremem ao fechar — desgaste da guia'],
                     manual: 'Mitsubishi MRL Door System Manual GMC-DOR-23'
                 }
             },
             'model6': { // Hyundai Elevator
                 'motor': {
-                    description: 'PMSM двигун Hyundai HIPER з вбудованим гальмом та енкодером. Компактна конструкція MRL.',
+                    description: 'Motor PMSM Hyundai HIPER com travão e encoder integrados. Construção MRL compacta.',
                     specs: [
-                        { label: 'Тип', value: 'PMSM HIPER, MRL' },
-                        { label: 'Потужність', value: '5.5 – 15 кВт' },
-                        { label: 'Швидкість', value: '1.0 – 1.75 м/с' },
-                        { label: 'Вантажопідйомність', value: '450 – 1050 кг' },
+                        { label: 'Tipo', value: 'PMSM HIPER, MRL' },
+                        { label: 'Potência', value: '5.5 – 15 kW' },
+                        { label: 'Velocidade', value: '1.0 – 1.75 m/s' },
+                        { label: 'Carga nominal', value: '450 – 1050 kg' },
                     ],
-                    maintenance: ['Перевірка підшипників і шуму — кожні 3 міс.', 'Вимірювання ізоляції — раз на рік', 'Заміна підшипників — кожні 35 000 год.'],
-                    issues: ['Помилка ENC-ERR — збій магнітного енкодера (перевірити повітряний зазор)', 'Перегрів при частих пусках — перевірити вентиляцію шахти'],
+                    maintenance: ['Verificar rolamentos e ruído — de 3 em 3 meses', 'Medir o isolamento — anual', 'Substituir rolamentos — a cada 35 000 h'],
+                    issues: ['Erro ENC-ERR — falha do encoder magnético (verificar o entreferro)', 'Sobreaquecimento em arranques frequentes — verificar a ventilação da caixa'],
                     manual: 'Hyundai HIPER Motor Manual HE-MOT-2023'
                 },
                 'controlSystem': {
-                    description: 'Контролер HYUNDAI SVT (VVVF) з модульною шафою ECD та підтримкою Remote Monitoring через HiEMS.',
+                    description: 'Controlador HYUNDAI SVT (VVVF) com quadro modular ECD e suporte a Remote Monitoring através do HiEMS.',
                     specs: [
-                        { label: 'Тип', value: 'SVT-3000 VVVF' },
-                        { label: 'Живлення', value: '3×380–415 V / 50 Hz' },
-                        { label: 'Зв\'язок', value: 'CAN, Modbus, HiEMS (4G)' },
-                        { label: 'Зупинок', value: 'до 64' },
+                        { label: 'Tipo', value: 'SVT-3000 VVVF' },
+                        { label: 'Alimentação', value: '3×380–415 V / 50 Hz' },
+                        { label: 'Comunicação', value: 'CAN, Modbus, HiEMS (4G)' },
+                        { label: 'Paragens', value: 'até 64' },
                     ],
-                    maintenance: ['Зчитування журналу HiEMS — щомісяця', 'Очищення повітряних фільтрів — кожні 3 міс.', 'Оновлення ПЗ — за рекомендацією Hyundai'],
-                    issues: ['Помилка F031 — відмова дверного зворотного зв\'язку', 'Помилка F045 — перевищення відхилення позиції', 'HiEMS offline — перевірити SIM-картку або антену'],
+                    maintenance: ['Ler o registo do HiEMS — mensal', 'Limpar filtros de ar — de 3 em 3 meses', 'Atualizar software — conforme recomendação da Hyundai'],
+                    issues: ['Erro F031 — falha do feedback das portas', 'Erro F045 — desvio de posição excessivo', 'HiEMS offline — verificar cartão SIM ou antena'],
                     manual: 'Hyundai SVT-3000 Controller Manual HE-CTRL-23'
                 },
                 'brakes': {
-                    description: 'Два пружинних електромагнітних гальма з BIME (Brake Intelligent Monitoring Electronics).',
+                    description: 'Dois travões eletromagnéticos de mola com BIME (Brake Intelligent Monitoring Electronics).',
                     specs: [
-                        { label: 'Тип', value: 'EM spring-set + BIME' },
-                        { label: 'Напруга', value: '195 VDC' },
-                        { label: 'Зазор', value: '0.25 – 0.45 мм' },
+                        { label: 'Tipo', value: 'EM spring-set + BIME' },
+                        { label: 'Tensão', value: '195 VDC' },
+                        { label: 'Folga', value: '0.25 – 0.45 mm' },
                     ],
-                    maintenance: ['Контроль BIME-журналу — щомісяця', 'Регулювання зазору гальма — кожні 3 міс.', 'Заміна накладок — при зносі < 2 мм'],
-                    issues: ['BIME-ALERT — перевірити мікроперемикач', 'Гальмо не відпускає — знижена напруга VDC на котушці'],
+                    maintenance: ['Controlar o registo BIME — mensal', 'Regular a folga do travão — de 3 em 3 meses', 'Substituir revestimentos — com desgaste < 2 mm'],
+                    issues: ['BIME-ALERT — verificar o microinterruptor', 'O travão não liberta — tensão VDC baixa na bobina'],
                     manual: 'Hyundai BIME Brake Manual HE-BRK-23'
                 },
                 'safetySystem': {
-                    description: 'HyunSafe SIL2 — двоканальна система безпеки. OSG, прогресивний вловлювач, ETSL (Electronic Terminal Speed Limiting).',
+                    description: 'HyunSafe SIL2 — sistema de segurança de dois canais. OSG, paraquedas progressivo, ETSL (Electronic Terminal Speed Limiting).',
                     specs: [
-                        { label: 'Рівень', value: 'SIL 2 EN 62061' },
-                        { label: 'ETSL', value: 'Електронне обмеження на кінцевих поверхах' },
+                        { label: 'Nível', value: 'SIL 2 EN 62061' },
+                        { label: 'ETSL', value: 'Limitação eletrónica nos pisos extremos' },
                         { label: 'OSG', value: 'HyunSafe OSG-V1' },
                     ],
-                    maintenance: ['Тест ETSL — кожні 6 міс.', 'Перевірка OSG — раз на рік', 'HyunSafe самодіагностика — при кожному пуску'],
-                    issues: ['Помилка ETSL-TRIP — перевірити позицію кодера рівня', 'OSG-FAIL — знос або забруднення каната'],
+                    maintenance: ['Testar o ETSL — de 6 em 6 meses', 'Verificar o OSG — anual', 'Autodiagnóstico HyunSafe — em cada arranque'],
+                    issues: ['Erro ETSL-TRIP — verificar a posição do encoder de nível', 'OSG-FAIL — desgaste ou sujidade no cabo'],
                     manual: 'Hyundai HyunSafe Safety Manual HE-SAF-23'
                 },
                 'smartControl': {
-                    description: 'Hyundai iPOP (Intelligent Predictive Operation Program) — AI-система оптимізації диспетчеризації і передбачення відказів.',
+                    description: 'Hyundai iPOP (Intelligent Predictive Operation Program) — sistema de IA para otimização do despacho e previsão de avarias.',
                     specs: [
-                        { label: 'Платформа', value: 'iPOP Cloud + Edge' },
-                        { label: 'Функції', value: 'Predictive dispatch, energy optimization, fault prediction' },
-                        { label: 'Зв\'язок', value: 'LTE → HiEMS Cloud' },
-                        { label: 'Аналітика', value: 'Real-time dashboard у HiEMS App' },
+                        { label: 'Plataforma', value: 'iPOP Cloud + Edge' },
+                        { label: 'Funções', value: 'Predictive dispatch, energy optimization, fault prediction' },
+                        { label: 'Comunicação', value: 'LTE → HiEMS Cloud' },
+                        { label: 'Análise', value: 'Real-time dashboard na HiEMS App' },
                     ],
-                    maintenance: ['Перевірка підключення до HiEMS — щомісяця', 'Оновлення iPOP-алгоритмів — автоматично', 'Калібрування датчиків — раз на рік'],
-                    issues: ['iPOP не оновлюється — проблема з мережею', 'Хибні попередження — зробити baseline recalibration у HiEMS'],
+                    maintenance: ['Verificar a ligação ao HiEMS — mensal', 'Atualizar os algoritmos iPOP — automático', 'Calibrar os sensores — anual'],
+                    issues: ['O iPOP não atualiza — problema de rede', 'Avisos falsos — fazer baseline recalibration no HiEMS'],
                     manual: 'Hyundai iPOP Smart Control Manual HE-SMART-23'
                 },
                 'doors': {
-                    description: 'Двері Hyundai з оператором GEZE Slimdrive ECdrive або власним HE DoorMaster.',
+                    description: 'Portas Hyundai com operador GEZE Slimdrive ECdrive ou HE DoorMaster próprio.',
                     specs: [
-                        { label: 'Оператор', value: 'HE DoorMaster або GEZE ECdrive' },
-                        { label: 'Завіса', value: 'BODE InfraLight 80 зон або HE SafeLight' },
-                        { label: 'Час', value: '2.5 – 4.0 с' },
+                        { label: 'Operador', value: 'HE DoorMaster ou GEZE ECdrive' },
+                        { label: 'Cortina', value: 'BODE InfraLight 80 zonas ou HE SafeLight' },
+                        { label: 'Tempo', value: '2.5 – 4.0 s' },
                     ],
-                    maintenance: ['Змащення роликів — кожні 3 міс.', 'Перевірка SafeLight — щомісяця', 'Калібрування оператора після ТО'],
-                    issues: ['Помилка DM-003 — сенсор дверей не підтверджує закриття', 'Двері повільні — знос зубчастого ременя'],
+                    maintenance: ['Lubrificar roletes — de 3 em 3 meses', 'Verificar o SafeLight — mensal', 'Calibrar o operador após a manutenção'],
+                    issues: ['Erro DM-003 — o sensor das portas não confirma o fecho', 'Portas lentas — desgaste da correia dentada'],
                     manual: 'Hyundai DoorMaster Service Manual HE-DOR-23'
                 }
             },
@@ -1431,363 +1431,363 @@ class ARHelper {
 
             'model7': { // Arkel
                 'motor': {
-                    description: 'Безредукторний PMSM-двигун підбирається під контролер ARCONTROL. Часто встановлюється серія Ziehl-Abegg або власна Arkel AM-серія у компактному виконанні без МП.',
+                    description: 'O motor PMSM sem redutor é dimensionado para o controlador ARCONTROL. Frequentemente instala-se a série Ziehl-Abegg ou a série própria Arkel AM em versão compacta sem casa das máquinas.',
                     specs: [
-                        { label: 'Тип', value: 'PMSM, безредукторний MRL' },
-                        { label: 'Потужність', value: '3 – 11 кВт' },
-                        { label: 'Швидкість', value: '1.0 – 1.75 м/с' },
-                        { label: 'Вантажопідйомність', value: '320 – 1275 кг' },
-                        { label: 'Напруга', value: '3×400 V / 50 Hz' },
+                        { label: 'Tipo', value: 'PMSM, sem redutor MRL' },
+                        { label: 'Potência', value: '3 – 11 kW' },
+                        { label: 'Velocidade', value: '1.0 – 1.75 m/s' },
+                        { label: 'Carga nominal', value: '320 – 1275 kg' },
+                        { label: 'Tensão', value: '3×400 V / 50 Hz' },
                     ],
-                    maintenance: ['Перевірка підшипників на вібрацію — кожні 3 міс.', 'Вимірювання ізоляції обмоток — раз на рік', 'Контроль кріплення шківа — кожні 6 міс.'],
-                    issues: ['Перегрів при навантаженні > 90% — перевірити вентиляцію', 'Вібрація — знос підшипників або розбалансування шківа'],
+                    maintenance: ['Verificar vibração dos rolamentos — de 3 em 3 meses', 'Medir o isolamento dos enrolamentos — anual', 'Controlar a fixação da polia — de 6 em 6 meses'],
+                    issues: ['Sobreaquecimento com carga > 90% — verificar a ventilação', 'Vibração — desgaste dos rolamentos ou desequilíbrio da polia'],
                     manual: 'Arkel AM-Series Motor Technical Manual v3.2'
                 },
                 'controlSystem': {
-                    description: 'Контролер ARCONTROL KM50-T (або KM200) — VVVF-привод турецького виробника Arkel. Широко застосовується в Португалії та Іспанії, підтримує CAN та ModbusTCP.',
+                    description: 'Controlador ARCONTROL KM50-T (ou KM200) — acionamento VVVF do fabricante turco Arkel. Muito utilizado em Portugal e Espanha, suporta CAN e ModbusTCP.',
                     specs: [
-                        { label: 'Серія', value: 'ARCONTROL KM50-T / KM200' },
-                        { label: 'Привод', value: 'VVVF (AC-VVVF)' },
-                        { label: 'Протокол', value: 'CAN, Modbus TCP/IP' },
-                        { label: 'Зупинок', value: 'до 32' },
-                        { label: 'ПЗ', value: 'ARCSOFT v5.x' },
-                        { label: 'Дисплей', value: 'LCD + USB-порт для оновлень' },
+                        { label: 'Série', value: 'ARCONTROL KM50-T / KM200' },
+                        { label: 'Acionamento', value: 'VVVF (AC-VVVF)' },
+                        { label: 'Protocolo', value: 'CAN, Modbus TCP/IP' },
+                        { label: 'Paragens', value: 'até 32' },
+                        { label: 'Software', value: 'ARCSOFT v5.x' },
+                        { label: 'Visor', value: 'LCD + porta USB para atualizações' },
                     ],
-                    maintenance: ['Зчитування журналу помилок — щомісяця', 'Оновлення ARCSOFT — при новому ТО', 'Резервна копія параметрів — після будь-яких змін', 'Очищення шафи управління — кожні 3 міс.'],
-                    issues: ['Помилка E12 — збій сигналу енкодера', 'Помилка E27 — відхилення напруги DC-ланки', 'Помилка E43 — перегрів IGBT модуля'],
+                    maintenance: ['Ler o registo de erros — mensal', 'Atualizar o ARCSOFT — numa nova manutenção', 'Cópia de segurança dos parâmetros — após qualquer alteração', 'Limpar o quadro de comando — de 3 em 3 meses'],
+                    issues: ['Erro E12 — falha do sinal do encoder', 'Erro E27 — desvio da tensão do barramento DC', 'Erro E43 — sobreaquecimento do módulo IGBT'],
                     manual: 'Arkel ARCONTROL KM50-T Programmer\'s Guide v5'
                 },
                 'brakes': {
-                    description: 'Подвійне електромагнітне пружинне гальмо, вбудоване у двигун AM-серії. Відповідає EN 81-20 та EN 81-50.',
+                    description: 'Travão eletromagnético de mola duplo, integrado no motor da série AM. Conforme a EN 81-20 e a EN 81-50.',
                     specs: [
-                        { label: 'Тип', value: 'EM spring-set, подвійне' },
-                        { label: 'Напруга котушки', value: '230 VDC' },
-                        { label: 'Зусилля', value: '2× 350 N·m' },
-                        { label: 'Зазор', value: '0.25 – 0.50 мм' },
+                        { label: 'Tipo', value: 'EM spring-set, duplo' },
+                        { label: 'Tensão da bobina', value: '230 VDC' },
+                        { label: 'Força', value: '2× 350 N·m' },
+                        { label: 'Folga', value: '0.25 – 0.50 mm' },
                     ],
-                    maintenance: ['Перевірка зазору — кожні 3 міс.', 'Перевірка мікроперемикачів BS — щомісяця', 'Заміна накладок при зносі > 1 мм'],
-                    issues: ['Гальмо не відпускає — знижена напруга котушки', 'Гальмо дзвенить — зазор занадто великий'],
+                    maintenance: ['Verificar a folga — de 3 em 3 meses', 'Verificar os microinterruptores BS — mensal', 'Substituir revestimentos com desgaste > 1 mm'],
+                    issues: ['O travão não liberta — tensão baixa na bobina', 'O travão ressoa — folga demasiado grande'],
                     manual: 'Arkel Brake Adjustment & Safety Manual AR-BRK-21'
                 },
                 'safetySystem': {
-                    description: 'Система безпеки ARKEL SafeGuard: OSG (обмежувач швидкості), прогресивний вловлювач, буфери EN 81-20, ETSL через ARCONTROL.',
+                    description: 'Sistema de segurança ARKEL SafeGuard: OSG (limitador de velocidade), paraquedas progressivo, amortecedores EN 81-20, ETSL através do ARCONTROL.',
                     specs: [
                         { label: 'OSG', value: 'Arkel SG-100V / SG-120V' },
-                        { label: 'Вловлювач', value: 'Прогресивний, EN 81-50' },
-                        { label: 'Буфер', value: 'Polyurethane, EN 81-20' },
-                        { label: 'ETSL', value: 'Через ARCONTROL (software)' },
+                        { label: 'Paraquedas', value: 'Progressivo, EN 81-50' },
+                        { label: 'Amortecedor', value: 'Poliuretano, EN 81-20' },
+                        { label: 'ETSL', value: 'Através do ARCONTROL (software)' },
                     ],
-                    maintenance: ['Тест OSG + вловлювача — раз на рік', 'Перевірка буферів шахти — кожні 6 міс.', 'Тест ETSL-функції — кожні 6 міс.'],
-                    issues: ['OSG спрацювала помилково — перевірити натяг каната OSG', 'ETSL-TRIP — перекалібрувати позиційний кодер'],
+                    maintenance: ['Testar OSG + paraquedas — anual', 'Verificar os amortecedores da caixa — de 6 em 6 meses', 'Testar a função ETSL — de 6 em 6 meses'],
+                    issues: ['OSG atuou por erro — verificar a tensão do cabo do OSG', 'ETSL-TRIP — recalibrar o encoder de posição'],
                     manual: 'Arkel SafeGuard Safety System Manual AR-SAF-22'
                 },
                 'doors': {
-                    description: 'Двірні оператори Fermator або Wittur, підключені до ARCONTROL через LIMAX-33CP або CEDES-шину. Типова конфігурація для Португалії.',
+                    description: 'Operadores de portas Fermator ou Wittur, ligados ao ARCONTROL através de LIMAX-33CP ou barramento CEDES. Configuração típica em Portugal.',
                     specs: [
-                        { label: 'Оператор', value: 'Fermator VF5 або Wittur ACVF' },
-                        { label: 'Ширина', value: '700 – 1000 мм' },
-                        { label: 'Завіса', value: 'CEDES Safe Light 3D' },
-                        { label: 'Час циклу', value: '2.8 – 3.8 с' },
+                        { label: 'Operador', value: 'Fermator VF5 ou Wittur ACVF' },
+                        { label: 'Largura', value: '700 – 1000 mm' },
+                        { label: 'Cortina', value: 'CEDES Safe Light 3D' },
+                        { label: 'Tempo de ciclo', value: '2.8 – 3.8 s' },
                     ],
-                    maintenance: ['Змащення рейок напрямних — кожні 3 міс.', 'Перевірка гумових буферів — раз на рік', 'Калібрування оператора — після ТО'],
-                    issues: ['Двері не закриваються повністю — замінити гумові буфери', 'Помилка LIMAX — перевірити кріплення магнітної стрічки'],
+                    maintenance: ['Lubrificar os carris das guias — de 3 em 3 meses', 'Verificar os batentes de borracha — anual', 'Calibrar o operador — após a manutenção'],
+                    issues: ['As portas não fecham completamente — substituir os batentes de borracha', 'Erro LIMAX — verificar a fixação da fita magnética'],
                     manual: 'Fermator VF5 Operator Service Manual + Arkel Door Integration AR-DOR-21'
                 }
             },
 
             'model8': { // Edel Elevadores
                 'hydraulicUnit': {
-                    description: 'Гідростанція Edel з насосним агрегатом Bucher Hydraulics або BERINGER. Прямодіючий гідравлічний привод без редуктора. Типова установка в Португалії для 2–6 поверхів.',
+                    description: 'Central hidráulica Edel com grupo de bombagem Bucher Hydraulics ou BERINGER. Acionamento hidráulico direto sem redutor. Instalação típica em Portugal para 2–6 pisos.',
                     specs: [
-                        { label: 'Тип приводу', value: 'Гідравлічний, прямодіючий' },
-                        { label: 'Насос', value: 'Bucher QX / BERINGER VP серія' },
-                        { label: 'Тиск', value: '80 – 160 бар (залежно від вантажу)' },
-                        { label: 'Мастило', value: 'ENV46 або Biodegradable HLP46' },
-                        { label: 'Ємність бака', value: '80 – 250 л' },
-                        { label: 'Вантажопідйомність', value: '320 – 1600 кг' },
-                        { label: 'Швидкість', value: '0.63 – 1.0 м/с' },
+                        { label: 'Tipo de acionamento', value: 'Hidráulico, direto' },
+                        { label: 'Bomba', value: 'Bucher QX / BERINGER série VP' },
+                        { label: 'Pressão', value: '80 – 160 bar (consoante a carga)' },
+                        { label: 'Óleo', value: 'ENV46 ou Biodegradable HLP46' },
+                        { label: 'Capacidade do depósito', value: '80 – 250 L' },
+                        { label: 'Carga nominal', value: '320 – 1600 kg' },
+                        { label: 'Velocidade', value: '0.63 – 1.0 m/s' },
                     ],
-                    maintenance: ['Перевірка рівня масла — щомісяця', 'Заміна мастила — кожні 2 роки або 10 000 год.', 'Перевірка герметичності гідроциліндра — кожні 3 міс.', 'Чищення фільтра — кожні 6 міс.', 'Перевірка клапанів безпеки — раз на рік'],
-                    issues: ['Витік масла під циліндром — знос ущільнень поршня', 'Повільне підняття — засмічений фільтр або низький рівень масла', 'Дрейф кабіни вниз — внутрішній витік клапана утримання'],
+                    maintenance: ['Verificar o nível do óleo — mensal', 'Substituir o óleo — de 2 em 2 anos ou 10 000 h', 'Verificar a estanquidade do cilindro hidráulico — de 3 em 3 meses', 'Limpar o filtro — de 6 em 6 meses', 'Verificar as válvulas de segurança — anual'],
+                    issues: ['Fuga de óleo sob o cilindro — desgaste das vedações do êmbolo', 'Subida lenta — filtro obstruído ou nível de óleo baixo', 'Deriva da cabine para baixo — fuga interna da válvula de retenção'],
                     manual: 'Edel Hydraulic Unit Service Manual EDL-HYD-21'
                 },
                 'controlSystem': {
-                    description: 'Контролер Edel базується на платформі Löhnert Elektronik або власній PCB-стійці. VVVF-перетворювач Schneider Electric ATV312 для управління насосним агрегатом.',
+                    description: 'O controlador Edel baseia-se na plataforma Löhnert Elektronik ou num bastidor PCB próprio. Conversor VVVF Schneider Electric ATV312 para comandar o grupo de bombagem.',
                     specs: [
-                        { label: 'Контролер', value: 'Edel ELC-300 або Löhnert LE400' },
-                        { label: 'Частотник', value: 'Schneider ATV312 або Siemens G120' },
-                        { label: 'Протокол', value: 'CAN або RS-485 Modbus' },
-                        { label: 'Зупинок', value: 'до 16' },
-                        { label: 'Живлення', value: '1×230 V або 3×400 V / 50 Hz' },
+                        { label: 'Controlador', value: 'Edel ELC-300 ou Löhnert LE400' },
+                        { label: 'Variador de frequência', value: 'Schneider ATV312 ou Siemens G120' },
+                        { label: 'Protocolo', value: 'CAN ou RS-485 Modbus' },
+                        { label: 'Paragens', value: 'até 16' },
+                        { label: 'Alimentação', value: '1×230 V ou 3×400 V / 50 Hz' },
                     ],
-                    maintenance: ['Перевірка журналу — щомісяця', 'Очищення шафи — кожні 3 міс.', 'Резервна копія конфігурації — після змін'],
-                    issues: ['Помилка A-HYD01 — тиск не досягнуто за час', 'Помилка A-LVL02 — кабіна не на рівні поверху', 'Помилка A-OVT — перегрів мастила (> 70°C)'],
+                    maintenance: ['Verificar o registo — mensal', 'Limpar o quadro — de 3 em 3 meses', 'Cópia de segurança da configuração — após alterações'],
+                    issues: ['Erro A-HYD01 — pressão não atingida a tempo', 'Erro A-LVL02 — cabine não nivelada com o piso', 'Erro A-OVT — sobreaquecimento do óleo (> 70°C)'],
                     manual: 'Edel ELC-300 Controller Manual EDL-CTRL-20'
                 },
                 'safetySystem': {
-                    description: 'Система безпеки гідравлічного ліфта Edel: клапан розриву трубопроводу (pipe-rupture valve), обмежувач швидкості EN 81-20, ETSL.',
+                    description: 'Sistema de segurança do elevador hidráulico Edel: válvula de rutura de tubagem (pipe-rupture valve), limitador de velocidade EN 81-20, ETSL.',
                     specs: [
-                        { label: 'Клапан розриву', value: 'Sun Hydraulics CBCA або HAWE' },
-                        { label: 'OSG', value: 'Dynatech або KÃ¼bler SG-50' },
-                        { label: 'Буфер', value: 'Гумовий, EN 81-20' },
-                        { label: 'Стандарт', value: 'EN 81-2:1998 + A3:2009' },
+                        { label: 'Válvula de rutura', value: 'Sun Hydraulics CBCA ou HAWE' },
+                        { label: 'OSG', value: 'Dynatech ou Kübler SG-50' },
+                        { label: 'Amortecedor', value: 'Borracha, EN 81-20' },
+                        { label: 'Norma', value: 'EN 81-2:1998 + A3:2009' },
                     ],
-                    maintenance: ['Тест клапана розриву — раз на рік', 'Перевірка вловлювача — раз на рік', 'Тест аварійного опускання — кожні 6 міс.'],
-                    issues: ['Кабіна опускається при простої — внутрішній витік клапана або поршня', 'Клапан розриву спрацьовує помилково — відрегулювати тарування'],
+                    maintenance: ['Testar a válvula de rutura — anual', 'Verificar o paraquedas — anual', 'Testar a descida de emergência — de 6 em 6 meses'],
+                    issues: ['A cabine desce em repouso — fuga interna da válvula ou do êmbolo', 'A válvula de rutura atua por erro — ajustar a calibração'],
                     manual: 'Edel Safety Systems Manual EDL-SAF-21'
                 },
                 'doors': {
-                    description: 'Двері Fermator або SELCOM із напівавтоматичним або автоматичним оператором. Типово: розсувні, центральне відкриття.',
+                    description: 'Portas Fermator ou SELCOM com operador semiautomático ou automático. Tipicamente: de correr, abertura central.',
                     specs: [
-                        { label: 'Оператор', value: 'Fermator VF5 або SELCOM SUPRA' },
-                        { label: 'Тип', value: 'Автоматичний, центральне відкриття' },
-                        { label: 'Ширина', value: '700 – 900 мм' },
-                        { label: 'Завіса', value: 'Riedel FB-200 або SafeLight 2D' },
+                        { label: 'Operador', value: 'Fermator VF5 ou SELCOM SUPRA' },
+                        { label: 'Tipo', value: 'Automático, abertura central' },
+                        { label: 'Largura', value: '700 – 900 mm' },
+                        { label: 'Cortina', value: 'Riedel FB-200 ou SafeLight 2D' },
                     ],
-                    maintenance: ['Змащення — кожні 3 міс.', 'Перевірка завіси — щомісяця', 'Регулювання зусилля закриття — раз на рік'],
-                    issues: ['Двері відчиняються самостійно — збій датчика кабіни на рівні', 'Завіса не реагує — забруднені лінзи або зсув суппорта'],
+                    maintenance: ['Lubrificar — de 3 em 3 meses', 'Verificar a cortina — mensal', 'Regular a força de fecho — anual'],
+                    issues: ['As portas abrem sozinhas — falha do sensor de cabine nivelada', 'A cortina não reage — lentes sujas ou suporte desalinhado'],
                     manual: 'Fermator VF5 + Edel Door Integration EDL-DOR-20'
                 }
             },
 
             'model9': { // Megom 2000
                 'hydraulicUnit': {
-                    description: 'Гідростанція Megom 2000 з агрегатом BERINGER або власним MEGOM HPS-серії. Характерна для невисоких будівель (2–4 поверхи) у Лісабоні та Порту.',
+                    description: 'Central hidráulica Megom 2000 com grupo BERINGER ou MEGOM série HPS próprio. Característica de edifícios baixos (2–4 pisos) em Lisboa e no Porto.',
                     specs: [
-                        { label: 'Тип', value: 'Гідравлічний прямодіючий' },
-                        { label: 'Насос', value: 'MEGOM HPS-80 або BERINGER VP22' },
-                        { label: 'Тиск', value: '60 – 140 бар' },
-                        { label: 'Мастило', value: 'HLP46 мінеральне або HETG 46 біо' },
-                        { label: 'Ємність бака', value: '60 – 160 л' },
-                        { label: 'Вантажопідйомність', value: '250 – 1000 кг' },
-                        { label: 'Швидкість', value: '0.50 – 0.63 м/с' },
+                        { label: 'Tipo', value: 'Hidráulico direto' },
+                        { label: 'Bomba', value: 'MEGOM HPS-80 ou BERINGER VP22' },
+                        { label: 'Pressão', value: '60 – 140 bar' },
+                        { label: 'Óleo', value: 'HLP46 mineral ou HETG 46 bio' },
+                        { label: 'Capacidade do depósito', value: '60 – 160 L' },
+                        { label: 'Carga nominal', value: '250 – 1000 kg' },
+                        { label: 'Velocidade', value: '0.50 – 0.63 m/s' },
                     ],
-                    maintenance: ['Рівень мастила — щомісяця', 'Заміна мастила — раз на 2 роки', 'Заміна ущільнень — за потребою або кожні 5 років', 'Очищення фільтрів — кожні 6 міс.', 'Тиск і герметичність — раз на рік'],
-                    issues: ['Кабіна не піднімається до потрібного поверху — знос насоса або засмічений фільтр', 'Витік масла з ущільнень штока — зношені манжети', 'Стуки при пуску — повітря у гідравлічному контурі'],
+                    maintenance: ['Nível do óleo — mensal', 'Substituir o óleo — de 2 em 2 anos', 'Substituir as vedações — se necessário ou de 5 em 5 anos', 'Limpar os filtros — de 6 em 6 meses', 'Pressão e estanquidade — anual'],
+                    issues: ['A cabine não sobe até ao piso pretendido — desgaste da bomba ou filtro obstruído', 'Fuga de óleo pelas vedações da haste — manguitos gastos', 'Pancadas no arranque — ar no circuito hidráulico'],
                     manual: 'Megom 2000 HPS Hydraulic Service Manual MG-HYD-20'
                 },
                 'controlSystem': {
-                    description: 'Контролер Megom 2000 MCP-200 — власна розробка на базі PLC Siemens S7-200 SMART. Режими: автоматичний, ревізія, аварійне опускання.',
+                    description: 'Controlador Megom 2000 MCP-200 — desenvolvimento próprio com base no PLC Siemens S7-200 SMART. Modos: automático, revisão, descida de emergência.',
                     specs: [
-                        { label: 'Контролер', value: 'Megom MCP-200' },
-                        { label: 'Базова PLC', value: 'Siemens S7-200 SMART' },
-                        { label: 'Дисплей', value: 'LCD 4-рядки + STEP7 Micro/Win' },
-                        { label: 'Протокол', value: 'RS-485 ModbusRTU' },
-                        { label: 'Зупинок', value: 'до 8' },
+                        { label: 'Controlador', value: 'Megom MCP-200' },
+                        { label: 'PLC base', value: 'Siemens S7-200 SMART' },
+                        { label: 'Visor', value: 'LCD 4 linhas + STEP7 Micro/Win' },
+                        { label: 'Protocolo', value: 'RS-485 ModbusRTU' },
+                        { label: 'Paragens', value: 'até 8' },
                     ],
-                    maintenance: ['Резервна копія PLC — після змін', 'Зчитування журналу аварій — щомісяця', 'Перевірка живлення 24VDC — кожні 3 міс.'],
-                    issues: ['STOP F10 — збій давача рівня', 'STOP F22 — перевантаження насосного агрегату', 'Контролер зависає — перевірити живлення 24V та RTC-батарею'],
+                    maintenance: ['Cópia de segurança do PLC — após alterações', 'Ler o registo de avarias — mensal', 'Verificar a alimentação 24VDC — de 3 em 3 meses'],
+                    issues: ['STOP F10 — falha do sensor de nível', 'STOP F22 — sobrecarga do grupo de bombagem', 'O controlador bloqueia — verificar a alimentação 24V e a bateria RTC'],
                     manual: 'Megom MCP-200 Controller & PLC Manual MG-CTRL-19'
                 },
                 'safetySystem': {
-                    description: 'Система безпеки Megom 2000: клапан обмеження тиску, pipe-rupture valve HAWE, механічний вловлювач і OSG EN 81-2.',
+                    description: 'Sistema de segurança Megom 2000: válvula limitadora de pressão, pipe-rupture valve HAWE, paraquedas mecânico e OSG EN 81-2.',
                     specs: [
-                        { label: 'Pipe-rupture valve', value: 'HAWE RHC-25 або Sun CBCA' },
+                        { label: 'Pipe-rupture valve', value: 'HAWE RHC-25 ou Sun CBCA' },
                         { label: 'OSG', value: 'Dynatech SG-40' },
-                        { label: 'Аварійне опускання', value: 'Ручне або автоматичне (24V)' },
-                        { label: 'Стандарт', value: 'EN 81-2:1998 + NP EN 81-20' },
+                        { label: 'Descida de emergência', value: 'Manual ou automática (24V)' },
+                        { label: 'Norma', value: 'EN 81-2:1998 + NP EN 81-20' },
                     ],
-                    maintenance: ['Тест аварійного опускання — кожні 6 міс.', 'Перевірка pipe-rupture valve — раз на рік', 'Контроль вловлювача — раз на рік'],
-                    issues: ['Кабіна повільно дрейфує вниз — внутрішній витік клапана HAWE', 'Аварійне опускання не спрацьовує — перевірити соленоїд 24V'],
+                    maintenance: ['Testar a descida de emergência — de 6 em 6 meses', 'Verificar a pipe-rupture valve — anual', 'Controlar o paraquedas — anual'],
+                    issues: ['A cabine desce lentamente — fuga interna da válvula HAWE', 'A descida de emergência não atua — verificar o solenoide 24V'],
                     manual: 'Megom 2000 Safety & Hydraulic Valve Manual MG-SAF-19'
                 },
                 'doors': {
-                    description: 'Напівавтоматичні або автоматичні двері SELCOM чи Fermator. Блокування типу Wittur або APRIMATIC.',
+                    description: 'Portas semiautomáticas ou automáticas SELCOM ou Fermator. Bloqueio do tipo Wittur ou APRIMATIC.',
                     specs: [
-                        { label: 'Тип', value: 'Авто або напівавто, бічне відкриття' },
-                        { label: 'Оператор', value: 'SELCOM SUPRA або Fermator EC' },
-                        { label: 'Блокування', value: 'Wittur WT300 або APRIMATIC' },
-                        { label: 'Ширина', value: '700 – 800 мм' },
+                        { label: 'Tipo', value: 'Auto ou semiauto, abertura lateral' },
+                        { label: 'Operador', value: 'SELCOM SUPRA ou Fermator EC' },
+                        { label: 'Bloqueio', value: 'Wittur WT300 ou APRIMATIC' },
+                        { label: 'Largura', value: '700 – 800 mm' },
                     ],
-                    maintenance: ['Змащення механізму — кожні 3 міс.', 'Перевірка блокував дверей — щомісяця', 'Регулювання зазорів — раз на рік'],
-                    issues: ['Блокування не знімається — перевірити котушку замка та напругу 230V', 'Двері туго закриваються — знос гумових буферів або засмічення рейки'],
+                    maintenance: ['Lubrificar o mecanismo — de 3 em 3 meses', 'Verificar o bloqueio das portas — mensal', 'Regular as folgas — anual'],
+                    issues: ['O bloqueio não liberta — verificar a bobina da fechadura e a tensão 230V', 'As portas fecham com dificuldade — desgaste dos batentes de borracha ou carril obstruído'],
                     manual: 'Megom 2000 Door System Manual MG-DOR-19'
                 }
             },
 
             'model10': { // CTA Elevadores
                 'motor': {
-                    description: 'Тяговий агрегат CTA на базі Ziehl-Abegg ZAgiva або SIEI ARVO-серії — безредукторний, у шахті (MRL). CTA Elevadores встановлює переважно в Лісабоні та Алгарве.',
+                    description: 'Grupo de tração CTA baseado em Ziehl-Abegg ZAgiva ou SIEI série ARVO — sem redutor, na caixa (MRL). A CTA Elevadores instala sobretudo em Lisboa e no Algarve.',
                     specs: [
-                        { label: 'Тип', value: 'PMSM, безредукторний' },
-                        { label: 'Потужність', value: '4 – 15 кВт' },
-                        { label: 'Серія', value: 'Ziehl-Abegg ZAgiva або SIEI ARVO' },
-                        { label: 'Швидкість', value: '1.0 – 2.5 м/с' },
-                        { label: 'Вантажопідйомність', value: '320 – 2000 кг' },
-                        { label: 'Напруга', value: '3×400 V / 50 Hz' },
+                        { label: 'Tipo', value: 'PMSM, sem redutor' },
+                        { label: 'Potência', value: '4 – 15 kW' },
+                        { label: 'Série', value: 'Ziehl-Abegg ZAgiva ou SIEI ARVO' },
+                        { label: 'Velocidade', value: '1.0 – 2.5 m/s' },
+                        { label: 'Carga nominal', value: '320 – 2000 kg' },
+                        { label: 'Tensão', value: '3×400 V / 50 Hz' },
                     ],
-                    maintenance: ['Перевірка вібрації — кожні 3 міс.', 'Вимірювання ізоляції — раз на рік', 'Перевірка кріплення шківа — кожні 6 міс.'],
-                    issues: ['Нагрів при пікових навантаженнях — перевірити вентиляцію шахти', 'Шум — знос підшипників'],
+                    maintenance: ['Verificar a vibração — de 3 em 3 meses', 'Medir o isolamento — anual', 'Verificar a fixação da polia — de 6 em 6 meses'],
+                    issues: ['Aquecimento em picos de carga — verificar a ventilação da caixa', 'Ruído — desgaste dos rolamentos'],
                     manual: 'Ziehl-Abegg ZAgiva Motor Technical Manual ZA-MRL-22'
                 },
                 'controlSystem': {
-                    description: 'Контролер CTA CTACONTROL-2100 або SIEI ACE3000 — VVVF-привод для тягового ліфта. Підтримує EnDat/SinCos-енкодер, CAN-шину та дистанційний моніторинг.',
+                    description: 'Controlador CTA CTACONTROL-2100 ou SIEI ACE3000 — acionamento VVVF para elevador de tração. Suporta encoder EnDat/SinCos, barramento CAN e monitorização remota.',
                     specs: [
-                        { label: 'Контролер', value: 'CTACONTROL-2100 або SIEI ACE3000' },
-                        { label: 'Привод', value: 'VVVF, PM motor control' },
-                        { label: 'Протокол', value: 'CAN, EnDat 2.2' },
-                        { label: 'Зупинок', value: 'до 32' },
-                        { label: 'Моніторинг', value: 'CTA Remote Monitor (GSM/IP)' },
+                        { label: 'Controlador', value: 'CTACONTROL-2100 ou SIEI ACE3000' },
+                        { label: 'Acionamento', value: 'VVVF, PM motor control' },
+                        { label: 'Protocolo', value: 'CAN, EnDat 2.2' },
+                        { label: 'Paragens', value: 'até 32' },
+                        { label: 'Monitorização', value: 'CTA Remote Monitor (GSM/IP)' },
                     ],
-                    maintenance: ['Зчитування журналу — щомісяця', 'Резервна копія після змін — обов\'язково', 'Тест навчального пробігу — після ТО'],
-                    issues: ['Помилка C11 — відхилення швидкості', 'Помилка C34 — збій EnDat-зв\'язку', 'Помилка C52 — перегрів IGBT'],
+                    maintenance: ['Ler o registo — mensal', 'Cópia de segurança após alterações — obrigatória', 'Teste de viagem de aprendizagem — após a manutenção'],
+                    issues: ['Erro C11 — desvio de velocidade', 'Erro C34 — falha da comunicação EnDat', 'Erro C52 — sobreaquecimento do IGBT'],
                     manual: 'CTA CTACONTROL-2100 Service Manual CTA-CTRL-21'
                 },
                 'brakes': {
-                    description: 'Подвійне МП-гальмо з моніторингом стану через CTACONTROL. Відповідає EN 81-20.',
+                    description: 'Travão eletromagnético duplo com monitorização de estado através do CTACONTROL. Conforme a EN 81-20.',
                     specs: [
-                        { label: 'Тип', value: 'EM spring-set, MRL-монтаж' },
-                        { label: 'Напруга', value: '230 VDC' },
-                        { label: 'Зазор', value: '0.30 – 0.55 мм' },
-                        { label: 'Контроль', value: 'Мікроперемикач BS1/BS2' },
+                        { label: 'Tipo', value: 'EM spring-set, montagem MRL' },
+                        { label: 'Tensão', value: '230 VDC' },
+                        { label: 'Folga', value: '0.30 – 0.55 mm' },
+                        { label: 'Controlo', value: 'Microinterruptor BS1/BS2' },
                     ],
-                    maintenance: ['Перевірка зазору — кожні 3 міс.', 'Перевірка BS1/BS2 — щомісяця', 'Змащення осей важелів — раз на рік'],
-                    issues: ['Гальмо не відпускає — низька напруга 230V', 'Надмірний знос — збільшений зазор понад 0.55 мм'],
+                    maintenance: ['Verificar a folga — de 3 em 3 meses', 'Verificar BS1/BS2 — mensal', 'Lubrificar os eixos das alavancas — anual'],
+                    issues: ['O travão não liberta — tensão de 230V baixa', 'Desgaste excessivo — folga superior a 0.55 mm'],
                     manual: 'CTA Brake System Manual CTA-BRK-21'
                 },
                 'safetySystem': {
-                    description: 'Система безпеки CTA SafeElev: OSG Dynatech, прогресивний вловлювач Montanari, буфери EN 81-20. ETSL реалізований через CTACONTROL-2100.',
+                    description: 'Sistema de segurança CTA SafeElev: OSG Dynatech, paraquedas progressivo Montanari, amortecedores EN 81-20. ETSL implementado através do CTACONTROL-2100.',
                     specs: [
-                        { label: 'OSG', value: 'Dynatech V100 або Montanari MO-25' },
-                        { label: 'Вловлювач', value: 'Montanari progressive' },
-                        { label: 'ETSL', value: 'Software у CTACONTROL-2100' },
-                        { label: 'Норматив', value: 'EN 81-20, NP EN 81-20' },
+                        { label: 'OSG', value: 'Dynatech V100 ou Montanari MO-25' },
+                        { label: 'Paraquedas', value: 'Montanari progressive' },
+                        { label: 'ETSL', value: 'Software no CTACONTROL-2100' },
+                        { label: 'Norma', value: 'EN 81-20, NP EN 81-20' },
                     ],
-                    maintenance: ['Тест OSG + вловлювача — раз на рік', 'Тест ETSL — кожні 6 міс.', 'Перевірка буферів ями та перекрою — кожні 6 міс.'],
-                    issues: ['OSG не спрацьовує — знос або корозія храповика OSG', 'ETSL-TRIP — рекалібрувати кодер рівня'],
+                    maintenance: ['Testar OSG + paraquedas — anual', 'Testar o ETSL — de 6 em 6 meses', 'Verificar os amortecedores do poço e do topo — de 6 em 6 meses'],
+                    issues: ['O OSG não atua — desgaste ou corrosão do came do OSG', 'ETSL-TRIP — recalibrar o encoder de nível'],
                     manual: 'CTA SafeElev Safety Manual CTA-SAF-21'
                 },
                 'doors': {
-                    description: 'Двері Fermator VVVF або SELCOM SUPRA з контролером, інтегрованим у CTACONTROL. Завіса Riedel або CEDES.',
+                    description: 'Portas Fermator VVVF ou SELCOM SUPRA com controlador integrado no CTACONTROL. Cortina Riedel ou CEDES.',
                     specs: [
-                        { label: 'Оператор', value: 'Fermator VVVF або SELCOM SUPRA' },
-                        { label: 'Ширина', value: '700 – 1100 мм' },
-                        { label: 'Завіса', value: 'CEDES Safe Light 3D або Riedel FB-100' },
-                        { label: 'Час циклу', value: '2.5 – 4.0 с' },
+                        { label: 'Operador', value: 'Fermator VVVF ou SELCOM SUPRA' },
+                        { label: 'Largura', value: '700 – 1100 mm' },
+                        { label: 'Cortina', value: 'CEDES Safe Light 3D ou Riedel FB-100' },
+                        { label: 'Tempo de ciclo', value: '2.5 – 4.0 s' },
                     ],
-                    maintenance: ['Змащення — кожні 3 міс.', 'Перевірка завіси — щомісяця', 'Калібрування VVVF-оператора — після ТО'],
-                    issues: ['Двері зупиняються в середині ходу — помилка VVVF-оператора', 'Завіса не спрацьовує — перевірити вирівнювання TX/RX'],
+                    maintenance: ['Lubrificar — de 3 em 3 meses', 'Verificar a cortina — mensal', 'Calibrar o operador VVVF — após a manutenção'],
+                    issues: ['As portas param a meio do curso — erro do operador VVVF', 'A cortina não atua — verificar o alinhamento TX/RX'],
                     manual: 'Fermator VVVF Operator Manual + CTA Door Guide CTA-DOR-21'
                 }
             },
 
             'model11': { // Mikrolift
                 'motor': {
-                    description: 'Компактний двигун Mikrolift ML-Drive або Ziehl-Abegg FI-серія для малих житлових ліфтів (до 4 поверхів). Вбудований у нішу без машинного приміщення.',
+                    description: 'Motor compacto Mikrolift ML-Drive ou Ziehl-Abegg série FI para pequenos elevadores residenciais (até 4 pisos). Integrado num nicho sem casa das máquinas.',
                     specs: [
-                        { label: 'Тип', value: 'PMSM, компактний MRL' },
-                        { label: 'Потужність', value: '1.5 – 5.5 кВт' },
-                        { label: 'Вантажопідйомність', value: '150 – 630 кг' },
-                        { label: 'Швидкість', value: '0.63 – 1.0 м/с' },
-                        { label: 'Напруга', value: '1×230 V або 3×400 V / 50 Hz' },
+                        { label: 'Tipo', value: 'PMSM, MRL compacto' },
+                        { label: 'Potência', value: '1.5 – 5.5 kW' },
+                        { label: 'Carga nominal', value: '150 – 630 kg' },
+                        { label: 'Velocidade', value: '0.63 – 1.0 m/s' },
+                        { label: 'Tensão', value: '1×230 V ou 3×400 V / 50 Hz' },
                     ],
-                    maintenance: ['Перевірка шуму/вібрації — кожні 3 міс.', 'Вимірювання ізоляції — раз на рік', 'Перевірка ременя або ланцюга (якщо є) — кожні 6 міс.'],
-                    issues: ['Підвищений шум — знос підшипників або ремінного приводу', 'Ліфт не рухається — перевірити термозахист двигуна (overload relay)'],
+                    maintenance: ['Verificar ruído/vibração — de 3 em 3 meses', 'Medir o isolamento — anual', 'Verificar a correia ou corrente (se existir) — de 6 em 6 meses'],
+                    issues: ['Ruído elevado — desgaste dos rolamentos ou da transmissão por correia', 'O elevador não se move — verificar a proteção térmica do motor (overload relay)'],
                     manual: 'Mikrolift ML-Drive Motor Maintenance Manual ML-MOT-22'
                 },
                 'controlSystem': {
-                    description: 'Контролер Mikrolift INTELLIFT-50 або інтегрований блок на базі Omron CP1L. Простий і надійний. Підключення через USB або RS-232.',
+                    description: 'Controlador Mikrolift INTELLIFT-50 ou bloco integrado baseado em Omron CP1L. Simples e fiável. Ligação por USB ou RS-232.',
                     specs: [
-                        { label: 'Контролер', value: 'INTELLIFT-50 або Omron CP1L' },
-                        { label: 'Привод', value: 'VVVF або прямий пуск (DOL)' },
-                        { label: 'Інтерфейс', value: 'USB / RS-232' },
-                        { label: 'Зупинок', value: 'до 8' },
-                        { label: 'Живлення', value: '1×230 V або 3×400 V' },
+                        { label: 'Controlador', value: 'INTELLIFT-50 ou Omron CP1L' },
+                        { label: 'Acionamento', value: 'VVVF ou arranque direto (DOL)' },
+                        { label: 'Interface', value: 'USB / RS-232' },
+                        { label: 'Paragens', value: 'até 8' },
+                        { label: 'Alimentação', value: '1×230 V ou 3×400 V' },
                     ],
-                    maintenance: ['Журнал подій — щомісяця', 'Резервна копія — після будь-яких змін', 'Перевірка живлення 24V — кожні 3 міс.'],
-                    issues: ['Ліфт зупинився між поверхами — перевірити сигнал рівня (leveling sensor)', 'Дисплей не відображає поверх — збій RS-485'],
+                    maintenance: ['Registo de eventos — mensal', 'Cópia de segurança — após qualquer alteração', 'Verificar a alimentação 24V — de 3 em 3 meses'],
+                    issues: ['O elevador parou entre pisos — verificar o sinal de nivelamento (leveling sensor)', 'O visor não mostra o piso — falha do RS-485'],
                     manual: 'Mikrolift INTELLIFT-50 Controller Manual ML-CTRL-22'
                 },
                 'safetySystem': {
-                    description: 'Система безпеки Mikrolift: OSG Dynatech або KÃ¼bler, клиновий вловлювач (EN 81-20), паракетні буфери, захист від перевантаження (load sensor).',
+                    description: 'Sistema de segurança Mikrolift: OSG Dynatech ou Kübler, paraquedas de cunha (EN 81-20), amortecedores, proteção de sobrecarga (load sensor).',
                     specs: [
-                        { label: 'OSG', value: 'Dynatech SG-30 або Kübler KG-40' },
-                        { label: 'Вловлювач', value: 'Клиновий (residential EN 81-20)' },
-                        { label: 'Датчик навант.', value: 'Strain gauge або пружинний' },
-                        { label: 'Стандарт', value: 'EN 81-20 / NP EN 81-20' },
+                        { label: 'OSG', value: 'Dynatech SG-30 ou Kübler KG-40' },
+                        { label: 'Paraquedas', value: 'De cunha (residential EN 81-20)' },
+                        { label: 'Sensor de carga', value: 'Strain gauge ou de mola' },
+                        { label: 'Norma', value: 'EN 81-20 / NP EN 81-20' },
                     ],
-                    maintenance: ['Тест OSG + вловлювача — раз на рік', 'Перевірка датчика навантаження — кожні 6 міс.', 'Перевірка буферів — кожні 6 міс.'],
-                    issues: ['Ліфт не пускається при нормальному навантаженні — збій/зміщення датчика навантаження', 'OSG не підтягується після спрацювання — перевірити натяг каната OSG'],
+                    maintenance: ['Testar OSG + paraquedas — anual', 'Verificar o sensor de carga — de 6 em 6 meses', 'Verificar os amortecedores — de 6 em 6 meses'],
+                    issues: ['O elevador não arranca com carga normal — falha/desvio do sensor de carga', 'O OSG não rearma após a atuação — verificar a tensão do cabo do OSG'],
                     manual: 'Mikrolift Safety System Manual ML-SAF-22'
                 },
                 'doors': {
-                    description: 'Напівавтоматичні розсувні двері або телескопічні автоматичні, оператор Fermax або APRIMATIC. Характерні для малих житлових ліфтів.',
+                    description: 'Portas de correr semiautomáticas ou telescópicas automáticas, operador Fermax ou APRIMATIC. Típicas de pequenos elevadores residenciais.',
                     specs: [
-                        { label: 'Тип', value: 'Авто або напівавто розсувні' },
-                        { label: 'Оператор', value: 'APRIMATIC TS200 або Fermax' },
-                        { label: 'Ширина', value: '600 – 800 мм' },
-                        { label: 'Завіса', value: 'SafeRay 2D або мікроперемикач' },
+                        { label: 'Tipo', value: 'De correr, auto ou semiauto' },
+                        { label: 'Operador', value: 'APRIMATIC TS200 ou Fermax' },
+                        { label: 'Largura', value: '600 – 800 mm' },
+                        { label: 'Cortina', value: 'SafeRay 2D ou microinterruptor' },
                     ],
-                    maintenance: ['Змащення рейки — кожні 3 міс.', 'Перевірка замків — щомісяця', 'Регулювання сили закриття — раз на рік'],
-                    issues: ['Двері відкриваються самостійно — знос або збій замка кабінних дверей', 'Оператор не відпрацьовує до кінця — перевірити кінцевий вимикач'],
+                    maintenance: ['Lubrificar o carril — de 3 em 3 meses', 'Verificar as fechaduras — mensal', 'Regular a força de fecho — anual'],
+                    issues: ['As portas abrem sozinhas — desgaste ou falha da fechadura da porta de cabine', 'O operador não completa o curso — verificar o fim de curso'],
                     manual: 'Mikrolift Door Installation & Service Manual ML-DOR-22'
                 }
             },
 
             'model12': { // Heytech
                 'motor': {
-                    description: 'Двигун Heytech EcoTraction (PM MRL) або Leroy-Somer серії DYNEO — безредукторний, вбудований у шахту. Встановлюється в житлових та малих комерційних будівлях Португалії.',
+                    description: 'Motor Heytech EcoTraction (PM MRL) ou Leroy-Somer série DYNEO — sem redutor, integrado na caixa. Instala-se em edifícios residenciais e pequenos edifícios comerciais em Portugal.',
                     specs: [
-                        { label: 'Тип', value: 'PMSM, безредукторний' },
-                        { label: 'Серія', value: 'Heytech EcoTraction або Leroy-Somer DYNEO' },
-                        { label: 'Потужність', value: '3 – 12 кВт' },
-                        { label: 'Швидкість', value: '1.0 – 1.6 м/с' },
-                        { label: 'Вантажопідйомність', value: '320 – 1000 кг' },
-                        { label: 'Напруга', value: '3×380–415 V / 50 Hz' },
+                        { label: 'Tipo', value: 'PMSM, sem redutor' },
+                        { label: 'Série', value: 'Heytech EcoTraction ou Leroy-Somer DYNEO' },
+                        { label: 'Potência', value: '3 – 12 kW' },
+                        { label: 'Velocidade', value: '1.0 – 1.6 m/s' },
+                        { label: 'Carga nominal', value: '320 – 1000 kg' },
+                        { label: 'Tensão', value: '3×380–415 V / 50 Hz' },
                     ],
-                    maintenance: ['Перевірка підшипників — кожні 3 міс.', 'Вимірювання ізоляції обмоток — раз на рік', 'Перевірка шківа на знос — кожні 6 міс.'],
-                    issues: ['Перегрів — засмічені вентиляційні ребра або неправильна ориентація монтажу', 'Нерівномірний хід — знос канатів або перекіс шківа'],
+                    maintenance: ['Verificar rolamentos — de 3 em 3 meses', 'Medir o isolamento dos enrolamentos — anual', 'Verificar o desgaste da polia — de 6 em 6 meses'],
+                    issues: ['Sobreaquecimento — aletas de ventilação obstruídas ou orientação de montagem incorreta', 'Marcha irregular — desgaste dos cabos ou polia desalinhada'],
                     manual: 'Heytech EcoTraction Motor Manual HT-MOT-23'
                 },
                 'controlSystem': {
-                    description: 'Контролер Heytech HTCTRL-500 (VVVF) на базі частотника Danfoss FC302 або Schneider ATV650. Підключення лифту до Heytech Connect (IoT-хмара) через GSM/IP.',
+                    description: 'Controlador Heytech HTCTRL-500 (VVVF) baseado em variador Danfoss FC302 ou Schneider ATV650. Ligação do elevador ao Heytech Connect (nuvem IoT) por GSM/IP.',
                     specs: [
-                        { label: 'Контролер', value: 'Heytech HTCTRL-500' },
-                        { label: 'Частотник', value: 'Danfoss FC302 або Schneider ATV650' },
-                        { label: 'Протокол', value: 'CANopen, ModbusTCP' },
-                        { label: 'Зупинок', value: 'до 24' },
+                        { label: 'Controlador', value: 'Heytech HTCTRL-500' },
+                        { label: 'Variador de frequência', value: 'Danfoss FC302 ou Schneider ATV650' },
+                        { label: 'Protocolo', value: 'CANopen, ModbusTCP' },
+                        { label: 'Paragens', value: 'até 24' },
                         { label: 'IoT', value: 'Heytech Connect (4G/Wi-Fi)' },
                     ],
-                    maintenance: ['Зчитування журналу HTCTRL — щомісяця', 'Оновлення ПЗ через Heytech Connect — автоматично', 'Очищення шафи — кожні 3 міс.'],
-                    issues: ['Помилка HT-E05 — відхилення швидкості > 5%', 'Помилка HT-E14 — збій зв\'язку CAN', 'Heytech Connect offline — перевірити SIM або модуль 4G'],
+                    maintenance: ['Ler o registo do HTCTRL — mensal', 'Atualizar o software através do Heytech Connect — automático', 'Limpar o quadro — de 3 em 3 meses'],
+                    issues: ['Erro HT-E05 — desvio de velocidade > 5%', 'Erro HT-E14 — falha de comunicação CAN', 'Heytech Connect offline — verificar SIM ou módulo 4G'],
                     manual: 'Heytech HTCTRL-500 Controller Service Manual HT-CTRL-23'
                 },
                 'brakes': {
-                    description: 'Вбудоване подвійне EM-гальмо Heytech EcoBrake — пружинного типу з моніторингом зношеності накладок через HTCTRL.',
+                    description: 'Travão EM duplo integrado Heytech EcoBrake — do tipo de mola, com monitorização do desgaste dos revestimentos através do HTCTRL.',
                     specs: [
-                        { label: 'Тип', value: 'EM spring-set, подвійне (EcoBrake)' },
-                        { label: 'Напруга котушки', value: '230 VDC' },
-                        { label: 'Зазор', value: '0.25 – 0.45 мм' },
-                        { label: 'Контроль', value: 'Мікроперемикач + wear indicator' },
+                        { label: 'Tipo', value: 'EM spring-set, duplo (EcoBrake)' },
+                        { label: 'Tensão da bobina', value: '230 VDC' },
+                        { label: 'Folga', value: '0.25 – 0.45 mm' },
+                        { label: 'Controlo', value: 'Microinterruptor + wear indicator' },
                     ],
-                    maintenance: ['Перевірка зазору — кожні 3 міс.', 'Перевірка wear indicator — щомісяця', 'Заміна накладок при зносі > 1.5 мм'],
-                    issues: ['Гальмо дзвенить — зазор >0.50 мм', 'Помилка HT-B01 — мікроперемикач не підтверджує відпускання гальма'],
+                    maintenance: ['Verificar a folga — de 3 em 3 meses', 'Verificar o wear indicator — mensal', 'Substituir revestimentos com desgaste > 1.5 mm'],
+                    issues: ['O travão ressoa — folga >0.50 mm', 'Erro HT-B01 — o microinterruptor não confirma a libertação do travão'],
                     manual: 'Heytech EcoBrake Service Manual HT-BRK-23'
                 },
                 'safetySystem': {
-                    description: 'Безпека Heytech SafeCore SIL2: двоканальний OSG, прогресивний вловлювач Montanari або Dynatech, ETSL через HTCTRL-500.',
+                    description: 'Segurança Heytech SafeCore SIL2: OSG de dois canais, paraquedas progressivo Montanari ou Dynatech, ETSL através do HTCTRL-500.',
                     specs: [
-                        { label: 'Рівень', value: 'SIL 2 (EN 62061)' },
-                        { label: 'OSG', value: 'Heytech SG-150 або Dynatech V80' },
-                        { label: 'Вловлювач', value: 'Montanari progressive або Dynatech PC-35' },
+                        { label: 'Nível', value: 'SIL 2 (EN 62061)' },
+                        { label: 'OSG', value: 'Heytech SG-150 ou Dynatech V80' },
+                        { label: 'Paraquedas', value: 'Montanari progressive ou Dynatech PC-35' },
                         { label: 'ETSL', value: 'HTCTRL-500 software + encoder' },
-                        { label: 'Стандарт', value: 'EN 81-20, NP EN 81-20' },
+                        { label: 'Norma', value: 'EN 81-20, NP EN 81-20' },
                     ],
-                    maintenance: ['Тест OSG + вловлювача — раз на рік', 'Тест ETSL — кожні 6 міс.', 'Перевірка буферів ями — кожні 6 міс.'],
-                    issues: ['SafeCore-ALRM01 — помилкова активація — перевірити натяг каната OSG', 'ETSL-TRIP — рекалібрувати кодер через HTCTRL Service Mode'],
+                    maintenance: ['Testar OSG + paraquedas — anual', 'Testar o ETSL — de 6 em 6 meses', 'Verificar os amortecedores do poço — de 6 em 6 meses'],
+                    issues: ['SafeCore-ALRM01 — ativação falsa — verificar a tensão do cabo do OSG', 'ETSL-TRIP — recalibrar o encoder através do HTCTRL Service Mode'],
                     manual: 'Heytech SafeCore SIL2 Safety Manual HT-SAF-23'
                 },
                 'doors': {
-                    description: 'Двері Fermator VVVF або власна серія Heytech AutoDoor із завісою CEDES або Riedel. Оператор інтегрований у HTCTRL-500.',
+                    description: 'Portas Fermator VVVF ou série própria Heytech AutoDoor com cortina CEDES ou Riedel. Operador integrado no HTCTRL-500.',
                     specs: [
-                        { label: 'Оператор', value: 'Heytech AutoDoor або Fermator VVVF' },
-                        { label: 'Тип', value: 'Авто, центральне або бічне відкриття' },
-                        { label: 'Ширина', value: '700 – 900 мм' },
-                        { label: 'Завіса', value: 'CEDES 3D або Riedel FB-200' },
-                        { label: 'Час', value: '2.8 – 4.0 с' },
+                        { label: 'Operador', value: 'Heytech AutoDoor ou Fermator VVVF' },
+                        { label: 'Tipo', value: 'Auto, abertura central ou lateral' },
+                        { label: 'Largura', value: '700 – 900 mm' },
+                        { label: 'Cortina', value: 'CEDES 3D ou Riedel FB-200' },
+                        { label: 'Tempo', value: '2.8 – 4.0 s' },
                     ],
-                    maintenance: ['Змащення роликів і рейки — кожні 3 міс.', 'Перевірка завіси — щомісяця', 'Калібрування AutoDoor — після ТО'],
-                    issues: ['Помилка DOR-03 — дверний оператор не повертає сигнал закриття', 'Двері туго відкриваються — знос верхнього ролика або засмічення рейки'],
+                    maintenance: ['Lubrificar roletes e carril — de 3 em 3 meses', 'Verificar a cortina — mensal', 'Calibrar o AutoDoor — após a manutenção'],
+                    issues: ['Erro DOR-03 — o operador de portas não devolve o sinal de fecho', 'As portas abrem com dificuldade — desgaste do rolete superior ou carril obstruído'],
                     manual: 'Heytech AutoDoor Service Manual HT-DOR-23'
                 }
             }
@@ -1802,7 +1802,7 @@ class ARHelper {
 
         return {
             ...base,
-            description: modelData?.description || `Компонент: ${base.name}`,
+            description: modelData?.description || `Componente: ${base.name}`,
             specs: modelData?.specs || [],
             maintenance: modelData?.maintenance || [],
             issues: modelData?.issues || [],
@@ -1813,9 +1813,9 @@ class ARHelper {
     showComponentManual(componentId, modelId) {
         const info = this.getComponentInfo(componentId, modelId);
         if (info.manual) {
-            this.showNotification(`Мануал: ${info.manual}`, 'info');
+            this.showNotification(`Manual: ${info.manual}`, 'info');
         } else {
-            this.showNotification(`Документація не знайдена`, 'warning');
+            this.showNotification(`Documentação não encontrada`, 'warning');
         }
     }
 
@@ -1832,12 +1832,12 @@ class ARHelper {
             $('#arPlaceholder').show();
             $('#arScene').hide();
 
-            this.showNotification('AR режим вимкнено', 'info');
+            this.showNotification('Modo AR desativado', 'info');
             this.logAREvent('ar_session_end');
 
         } catch (error) {
             console.error('Помилка вимкнення AR:', error);
-            this.showNotification('Помилка при вимкненні AR', 'error');
+            this.showNotification('Erro ao desativar AR', 'error');
         }
     }
 
@@ -1859,19 +1859,19 @@ class ARHelper {
         const arStatus = $('#arStatus');
 
         if (this.isARActive) {
-            arButton.html('<i class="fas fa-stop"></i> Зупинити AR');
+            arButton.html('<i class="fas fa-stop"></i> Parar AR');
             arButton.removeClass('btn-primary').addClass('btn-danger');
-            arStatus.text('Активно').removeClass('badge-info').addClass('badge-success');
+            arStatus.text('Ativo').removeClass('badge-info').addClass('badge-success');
         } else {
-            arButton.html('<i class="fas fa-play"></i> Запустити AR');
+            arButton.html('<i class="fas fa-play"></i> Iniciar AR');
             arButton.removeClass('btn-danger').addClass('btn-primary');
-            arStatus.text('Неактивно').removeClass('badge-success').addClass('badge-info');
+            arStatus.text('Inativo').removeClass('badge-success').addClass('badge-info');
         }
     }
 
     updateModelInfo() {
         if (this.currentModel) {
-            $('#arStatus').text(`Активно - ${this.currentModel.name}`);
+            $('#arStatus').text(`Ativo - ${this.currentModel.name}`);
         }
     }
 
@@ -1932,29 +1932,28 @@ class ARHelper {
     openManual(manualType) {
         const manual = this.getManual(manualType);
         if (manual) {
-            window.open(manual.url, '_blank');
+            window.location.href = manual.url;
             this.logAREvent('manual_opened', { manual: manualType });
         }
     }
 
     openVideoTutorials() {
-        this.showNotification('Відеоінструкції відкриваються...', 'info');
-        // У реальному додатку: відкриття відео платформи
+        window.location.href = '/pages/tech/knowledge-base.html?topic=tutoriais';
     }
 
     getManual(manualType) {
         const manuals = {
             'safety': {
-                name: 'Інструкція з безпеки',
-                url: '../../docs/safety-manual.pdf'
+                name: 'Instruções de segurança',
+                url: '/pages/tech/knowledge-base.html?topic=seguranca'
             },
             'components': {
-                name: 'Схеми компонентів',
-                url: '../../docs/components-guide.pdf'
+                name: 'Esquemas de componentes',
+                url: '/pages/tech/knowledge-base.html?topic=esquemas'
             },
             'troubleshooting': {
-                name: 'Розбір несправностей',
-                url: '../../docs/troubleshooting-guide.pdf'
+                name: 'Resolução de problemas',
+                url: '/pages/tech/knowledge-base.html?topic=avarias'
             }
         };
         return manuals[manualType];
@@ -1962,7 +1961,7 @@ class ARHelper {
 
     // Додаткові методи для розширеного функціоналу
     startTutorial() {
-        this.showNotification('Запуск навчального режиму...', 'info');
+        this.showNotification('A iniciar modo de aprendizagem...', 'info');
         // Логіка інтерактивного навчання
     }
 
@@ -1983,7 +1982,7 @@ class ARHelper {
         link.download = `ar_session_${new Date().toISOString().replace(/[:.]/g, '-')}.json`;
         link.click();
         
-        this.showNotification('Дані сесії експортовано', 'success');
+        this.showNotification('Dados da sessão exportados', 'success');
     }
 
     // ===================================
@@ -2032,7 +2031,7 @@ class ARHelper {
 
     handleLiftStatusChange(data) {
         console.log('🔄 Статус ліфта змінено:', data);
-        this.showNotification(`Ліфт ${data.liftId}: ${data.status}`, 
+        this.showNotification(`Elevador ${data.liftId}: ${data.status}`,
             data.status === 'error' ? 'error' : 'info');
     }
 
@@ -2054,14 +2053,14 @@ class ARHelper {
         };
         
         this.annotations.push(collaborativeAnnotation);
-        this.showNotification(`${user.firstName} додав аннотацію`, 'info');
+        this.showNotification(`${user.firstName} adicionou uma anotação`, 'info');
     }
 
     handleEmergencyStop() {
         if (this.isARActive) {
             this.stopARSession();
         }
-        this.showNotification('Аварійна зупинка AR сесії', 'error');
+        this.showNotification('Paragem de emergência da sessão AR', 'error');
     }
 }
 

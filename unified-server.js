@@ -15761,6 +15761,36 @@ function canAccessReport(user, report) {
     return report.ownerKey === getReportOwnerKey(user);
 }
 
+// Persistência dos relatórios (Mongo) com fallback para a Map em memória
+async function saveGeneratedReport(report) {
+    generatedReportsStore.set(report.id, report);
+    if (!db) return;
+    try {
+        await db.collection('generated_reports').updateOne({ id: report.id }, { $set: report }, { upsert: true });
+    } catch (e) { console.error('❌ saveGeneratedReport:', e.message); }
+}
+
+async function getGeneratedReport(id) {
+    if (db) {
+        try {
+            const doc = await db.collection('generated_reports').findOne({ id: String(id) }, { projection: { _id: 0 } });
+            if (doc) return doc;
+        } catch (e) { console.error('❌ getGeneratedReport:', e.message); }
+    }
+    return generatedReportsStore.get(String(id)) || null;
+}
+
+async function updateGeneratedReport(id, patch) {
+    const mem = generatedReportsStore.get(String(id));
+    if (mem) Object.assign(mem, patch);
+    if (db) await db.collection('generated_reports').updateOne({ id: String(id) }, { $set: patch });
+}
+
+async function deleteGeneratedReport(id) {
+    generatedReportsStore.delete(String(id));
+    if (db) await db.collection('generated_reports').deleteOne({ id: String(id) });
+}
+
 function normalizeReportStatus(value) {
     const status = String(value || '').toLowerCase();
     if (!status) return 'new';
@@ -15831,24 +15861,91 @@ function formatLiftLabel(lift, fallback = '—') {
     return text || fallback;
 }
 
-// GET /api/reports - список згенерованих звітів
+// GET /api/reports - список згенерованих звітів (?archived=false|true|all)
 app.get('/api/reports', authenticateToken, async (req, res) => {
     try {
-        const list = Array.from(generatedReportsStore.values())
-            .filter(report => canAccessReport(req.user, report))
-            .map(report => ({
-                id: report.id,
-                type: report.type,
-                startDate: report.startDate,
-                endDate: report.endDate,
-                createdAt: report.createdAt,
-                stats: report.stats
+        const archivedQ = String(req.query.archived || 'false');
+        let all;
+        if (db) {
+            const filter = ['admin', 'dispatcher'].includes(req.user?.role) ? {} : { ownerKey: getReportOwnerKey(req.user) };
+            all = await db.collection('generated_reports').find(filter, { projection: { _id: 0, items: 0 } })
+                .sort({ createdAt: -1 }).limit(300).toArray();
+        } else {
+            all = Array.from(generatedReportsStore.values()).filter(r => canAccessReport(req.user, r));
+        }
+        const list = all
+            .filter(r => archivedQ === 'all' || (archivedQ === 'true') === !!r.archived)
+            .map(r => ({
+                id: r.id, type: r.type, name: r.name || null,
+                startDate: r.startDate, endDate: r.endDate, createdAt: r.createdAt,
+                archived: !!r.archived, stats: r.stats,
+                itemsCount: r.itemsCount ?? r.items?.length ?? r.stats?.total ?? 0
             }))
             .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-            .slice(0, 50);
+            .slice(0, 100);
         res.json({ reports: list, total: list.length });
     } catch (error) {
         res.status(500).json({ message: 'Erro ao obter relatórios' });
+    }
+});
+
+// GET /api/reports/:id - detalhe (pré-visualização)
+app.get('/api/reports/:id', authenticateToken, async (req, res, next) => {
+    if (['generate', 'bulk'].includes(req.params.id)) return next();
+    const report = await getGeneratedReport(req.params.id);
+    if (!report) return res.status(404).json({ message: 'Relatório não encontrado' });
+    if (!canAccessReport(req.user, report)) return res.status(403).json({ message: 'Acesso negado' });
+    res.json(report);
+});
+
+// PATCH /api/reports/:id - renomear / arquivar / desarquivar
+app.patch('/api/reports/:id', authenticateToken, async (req, res) => {
+    try {
+        const report = await getGeneratedReport(req.params.id);
+        if (!report) return res.status(404).json({ message: 'Relatório não encontrado' });
+        if (!canAccessReport(req.user, report)) return res.status(403).json({ message: 'Acesso negado' });
+        const patch = {};
+        if (typeof req.body.archived === 'boolean') patch.archived = req.body.archived;
+        if (typeof req.body.name === 'string') patch.name = req.body.name.trim().slice(0, 120);
+        if (!Object.keys(patch).length) return res.status(400).json({ message: 'Nada para atualizar' });
+        await updateGeneratedReport(report.id, patch);
+        res.json({ success: true, ...patch });
+    } catch (error) {
+        res.status(500).json({ message: 'Erro ao atualizar relatório' });
+    }
+});
+
+// DELETE /api/reports/:id
+app.delete('/api/reports/:id', authenticateToken, async (req, res) => {
+    try {
+        const report = await getGeneratedReport(req.params.id);
+        if (!report) return res.status(404).json({ message: 'Relatório não encontrado' });
+        if (!canAccessReport(req.user, report)) return res.status(403).json({ message: 'Acesso negado' });
+        await deleteGeneratedReport(report.id);
+        res.json({ success: true });
+    } catch (error) {
+        res.status(500).json({ message: 'Erro ao eliminar relatório' });
+    }
+});
+
+// POST /api/reports/bulk - { ids: [], action: 'archive' | 'unarchive' | 'delete' }
+app.post('/api/reports/bulk', authenticateToken, async (req, res) => {
+    try {
+        const { ids, action } = req.body || {};
+        if (!Array.isArray(ids) || !ids.length || ids.length > 100 || !['archive', 'unarchive', 'delete'].includes(action)) {
+            return res.status(400).json({ message: 'Pedido inválido' });
+        }
+        let done = 0;
+        for (const id of ids) {
+            const report = await getGeneratedReport(id);
+            if (!report || !canAccessReport(req.user, report)) continue;
+            if (action === 'delete') await deleteGeneratedReport(report.id);
+            else await updateGeneratedReport(report.id, { archived: action === 'archive' });
+            done++;
+        }
+        res.json({ success: true, processed: done });
+    } catch (error) {
+        res.status(500).json({ message: 'Erro na operação em lote' });
     }
 });
 
@@ -16049,10 +16146,12 @@ app.post('/api/reports/generate', authenticateToken, async (req, res) => {
             ownerRole: userRole,
             ownerEmail: userEmail,
             stats,
+            itemsCount: items.length,
+            archived: false,
             items
         };
 
-        generatedReportsStore.set(reportId, report);
+        await saveGeneratedReport(report);
 
         // Зберігаємо пам'ять: тримаємо останні 200 звітів
         if (generatedReportsStore.size > 200) {
@@ -16071,8 +16170,8 @@ app.post('/api/reports/generate', authenticateToken, async (req, res) => {
 });
 
 // GET /api/reports/:id/pdf - export PDF
-app.get('/api/reports/:id/pdf', authenticateToken, (req, res) => {
-    const report = generatedReportsStore.get(req.params.id);
+app.get('/api/reports/:id/pdf', authenticateToken, async (req, res) => {
+    const report = await getGeneratedReport(req.params.id);
     if (!report) return res.status(404).json({ message: 'Relatório não encontrado' });
     if (!canAccessReport(req.user, report)) {
         return res.status(403).json({ message: 'Acesso negado' });
@@ -16114,8 +16213,8 @@ app.get('/api/reports/:id/pdf', authenticateToken, (req, res) => {
 });
 
 // GET /api/reports/:id/excel - export CSV (Excel-compatible)
-app.get('/api/reports/:id/excel', authenticateToken, (req, res) => {
-    const report = generatedReportsStore.get(req.params.id);
+app.get('/api/reports/:id/excel', authenticateToken, async (req, res) => {
+    const report = await getGeneratedReport(req.params.id);
     if (!report) return res.status(404).json({ message: 'Relatório não encontrado' });
     if (!canAccessReport(req.user, report)) {
         return res.status(403).json({ message: 'Acesso negado' });
@@ -16278,6 +16377,124 @@ app.use(express.static(path.join(__dirname), {
         res.setHeader('X-Content-Type-Options', 'nosniff');
     }
 }));
+
+// ═══════════════════════════════════════════════════════════
+// 💬 MENSAGENS TÉCNICO ↔ DESPACHANTE
+// ═══════════════════════════════════════════════════════════
+const isTechRole = (r) => r === 'technician' || r === 'tech';
+const isDispatchRole = (r) => r === 'dispatcher' || r === 'admin';
+
+async function resolveUserName(userId, fallback) {
+    try {
+        const { ObjectId } = require('mongodb');
+        if (!db || !ObjectId.isValid(String(userId))) return fallback;
+        const u = await db.collection('users').findOne({ _id: new ObjectId(String(userId)) }, { projection: { firstName: 1, lastName: 1, name: 1, username: 1 } });
+        if (!u) return fallback;
+        return (u.name || `${u.firstName || ''} ${u.lastName || ''}`.trim() || u.username || fallback);
+    } catch (e) { return fallback; }
+}
+
+// GET /api/dispatch-messages[?technicianId=] — histórico da conversa
+app.get('/api/dispatch-messages', authenticateToken, async (req, res) => {
+    try {
+        if (!db) return res.status(503).json({ message: 'Base de dados indisponível' });
+        const role = req.user.role;
+        let technicianId;
+        if (isTechRole(role)) technicianId = String(req.user.id);
+        else if (isDispatchRole(role)) technicianId = String(req.query.technicianId || '');
+        else return res.status(403).json({ message: 'Acesso negado' });
+        if (!technicianId) return res.status(400).json({ message: 'technicianId obrigatório' });
+
+        const msgs = await db.collection('dispatch_messages')
+            .find({ technicianId }, { projection: { _id: 0 } })
+            .sort({ createdAt: -1 }).limit(100).toArray();
+        res.json({ messages: msgs.reverse() });
+    } catch (e) {
+        res.status(500).json({ message: 'Erro ao obter mensagens' });
+    }
+});
+
+// GET /api/dispatch-messages/threads — conversas (despachante/admin)
+app.get('/api/dispatch-messages/threads', authenticateToken, async (req, res) => {
+    try {
+        if (!db) return res.status(503).json({ message: 'Base de dados indisponível' });
+        if (!isDispatchRole(req.user.role)) return res.status(403).json({ message: 'Acesso negado' });
+        const threads = await db.collection('dispatch_messages').aggregate([
+            { $sort: { createdAt: -1 } },
+            { $group: {
+                _id: '$technicianId',
+                technicianName: { $first: '$technicianName' },
+                lastText: { $first: '$text' },
+                lastAt: { $first: '$createdAt' },
+                lastFrom: { $first: '$from' },
+                unread: { $sum: { $cond: [{ $and: [{ $eq: ['$from', 'technician'] }, { $ne: ['$readByDispatcher', true] }] }, 1, 0] } }
+            } },
+            { $sort: { lastAt: -1 } },
+            { $limit: 100 }
+        ]).toArray();
+        res.json({ threads: threads.map(t => ({ technicianId: t._id, technicianName: t.technicianName, lastText: t.lastText, lastAt: t.lastAt, lastFrom: t.lastFrom, unread: t.unread })) });
+    } catch (e) {
+        res.status(500).json({ message: 'Erro ao obter conversas' });
+    }
+});
+
+// POST /api/dispatch-messages — enviar { text, technicianId? (só despachante/admin) }
+app.post('/api/dispatch-messages', authenticateToken, async (req, res) => {
+    try {
+        if (!db) return res.status(503).json({ message: 'Base de dados indisponível' });
+        const role = req.user.role;
+        const text = String(req.body?.text || '').trim().slice(0, 1000);
+        if (!text) return res.status(400).json({ message: 'Mensagem vazia' });
+
+        let technicianId, from;
+        if (isTechRole(role)) { technicianId = String(req.user.id); from = 'technician'; }
+        else if (isDispatchRole(role)) {
+            technicianId = String(req.body?.technicianId || '');
+            from = 'dispatcher';
+            if (!technicianId) return res.status(400).json({ message: 'technicianId obrigatório' });
+        } else return res.status(403).json({ message: 'Acesso negado' });
+
+        const senderName = await resolveUserName(req.user.id, from === 'technician' ? 'Técnico' : 'Despachante');
+        const technicianName = from === 'technician' ? senderName : await resolveUserName(technicianId, 'Técnico');
+        const msg = {
+            technicianId, technicianName, from,
+            senderId: String(req.user.id), senderName, text,
+            createdAt: new Date(),
+            readByDispatcher: from === 'dispatcher',
+            readByTechnician: from === 'technician'
+        };
+        await db.collection('dispatch_messages').insertOne(msg);
+        delete msg._id;
+
+        if (global.io) {
+            global.io.to(`user_${technicianId}`).emit('dispatch_message', msg);
+            global.io.to('role_dispatcher').emit('dispatch_message', msg);
+            global.io.to('role_admin').emit('dispatch_message', msg);
+        }
+        res.status(201).json({ success: true, message: msg });
+    } catch (e) {
+        console.error('❌ dispatch-messages POST:', e.message);
+        res.status(500).json({ message: 'Erro ao enviar mensagem' });
+    }
+});
+
+// POST /api/dispatch-messages/read — marcar como lidas { technicianId? }
+app.post('/api/dispatch-messages/read', authenticateToken, async (req, res) => {
+    try {
+        if (!db) return res.status(503).json({ message: 'Base de dados indisponível' });
+        const role = req.user.role;
+        if (isTechRole(role)) {
+            await db.collection('dispatch_messages').updateMany({ technicianId: String(req.user.id), from: 'dispatcher', readByTechnician: { $ne: true } }, { $set: { readByTechnician: true } });
+        } else if (isDispatchRole(role)) {
+            const technicianId = String(req.body?.technicianId || '');
+            if (!technicianId) return res.status(400).json({ message: 'technicianId obrigatório' });
+            await db.collection('dispatch_messages').updateMany({ technicianId, from: 'technician', readByDispatcher: { $ne: true } }, { $set: { readByDispatcher: true } });
+        } else return res.status(403).json({ message: 'Acesso negado' });
+        res.json({ success: true });
+    } catch (e) {
+        res.status(500).json({ message: 'Erro ao atualizar mensagens' });
+    }
+});
 
 // Fallback для SPA - якщо файл не знайдено, віддаємо index.html
 app.get('*', (req, res, next) => {

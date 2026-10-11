@@ -21,7 +21,7 @@ class PushNotifications {
   }
 
   notifyNewTask(task) {
-    this.send('Нове завдання', `Вам призначено: ${task}`);
+    this.send('Nova tarefa', `Вам призначено: ${task}`);
   }
 
   notifyEmergency(msg) {

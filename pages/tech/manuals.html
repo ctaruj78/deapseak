@@ -316,8 +316,8 @@
 
     <script>
         function downloadManual(filename) {
-            // Симуляція carregamento
-            toastr.info(`A carregar ${filename} iniciadas. Na aplicação real aqui será feito o carregamento real do ficheiro.`);
+            const topics = { 'elevator-maintenance.pdf': 'tutoriais', 'electrical-systems.pdf': 'esquemas', 'mechanical-components.pdf': 'esquemas' };
+            window.location.href = 'knowledge-base.html?topic=' + (topics[filename] || 'esquemas');
         }
     </script>
 <script src="../../assets/js/monitor.js"></script>

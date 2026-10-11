@@ -13,11 +13,11 @@ class PhotoVideoCapture {
     const container = document.querySelector(containerSelector);
     if (!container) return;
     container.innerHTML = `
-      <h4>Fotografia/Vídeo-фіксація</h4>
+      <h4>Fotografia/Vídeo</h4>
       <video id="arVideo" width="320" height="240" autoplay muted style="border:1px solid #ccc;"></video>
       <div class="mt-2">
-        <button class="btn btn-primary btn-sm" id="startVideoBtn">Старт відео</button>
-        <button class="btn btn-success btn-sm" id="capturePhotoBtn">Зробити фото</button>
+        <button class="btn btn-primary btn-sm" id="startVideoBtn">Iniciar vídeo</button>
+        <button class="btn btn-success btn-sm" id="capturePhotoBtn">Tirar fotografia</button>
       </div>
       <div id="photoGallery" class="mt-3"></div>
     `;
