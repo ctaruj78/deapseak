@@ -12760,7 +12760,8 @@ async function _callDeepSeekAI(messages) {
 }
 
 // Helper: call Gemini/Ollama in guest mode
-async function _callGuestAI(prompt) {
+async function _callGuestAI(prompt, opts = {}) {
+    const _temp = opts.temperature ?? 0.3;
     // auto: try Groq first (fast, free, 70B), then Ollama, then Gemini
     if (AI_PROVIDER === 'groq' || (AI_PROVIDER === 'auto' && process.env.GROQ_API_KEY)) {
         try {
@@ -12768,7 +12769,7 @@ async function _callGuestAI(prompt) {
             const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${process.env.GROQ_API_KEY}` },
-                body: JSON.stringify({ model, messages: [{ role: 'user', content: prompt }], temperature: 0.3, max_tokens: 1024 }),
+                body: JSON.stringify({ model, messages: [{ role: 'user', content: prompt }], temperature: _temp, max_tokens: 1024 }),
                 signal: AbortSignal.timeout(20000)
             });
             if (resp.ok) {
@@ -12797,7 +12798,7 @@ async function _callGuestAI(prompt) {
         const maxAttempts = (i === 0) ? 2 : 1;
         for (let attempt = 0; attempt < maxAttempts; attempt++) {
             try {
-                const m = genAI.getGenerativeModel({ model: modelName });
+                const m = genAI.getGenerativeModel({ model: modelName, generationConfig: { temperature: _temp } });
                 const result = await m.generateContent(prompt);
                 return result.response.text();
             } catch (err) {
@@ -12831,6 +12832,19 @@ async function _callGuestAI(prompt) {
     throw lastErr;
 }
 
+// GET /api/admin/guest-ai-log — perguntas/respostas do assistente público (só admin)
+app.get('/api/admin/guest-ai-log', authenticateToken, async (req, res) => {
+    try {
+        if (req.user.role !== 'admin') return res.status(403).json({ message: 'Acesso negado' });
+        if (!db) return res.status(503).json({ message: 'Base de dados indisponível' });
+        const limit = Math.min(parseInt(req.query.limit, 10) || 100, 500);
+        const items = await db.collection('guest_ai_log').find({}, { projection: { _id: 0 } }).sort({ createdAt: -1 }).limit(limit).toArray();
+        res.json({ total: items.length, items });
+    } catch (e) {
+        res.status(500).json({ message: 'Erro ao obter registos' });
+    }
+});
+
 // POST /api/ai/guest-analyze — аналіз звіту (ліміт 2/добу)
 app.post('/api/ai/guest-analyze', async (req, res) => {
     try {
@@ -12859,20 +12873,12 @@ app.post('/api/ai/guest-analyze', async (req, res) => {
             }});
         }
 
-        const prompt = `És um especialista em manutenção de elevadores para a FestLift (Portugal).
-Analisa o seguinte relatório de inspeção/manutenção de elevador e fornece:
-1. Resumo das principais conclusões
-2. Problemas de segurança detectados (se existirem)
-3. Ações recomendadas com prioridade
+        const guestAI = require('./services/guest-ai');
+        const ctx = await guestAI.buildContext(db, reportText.substring(0, 3000));
+        const prompt = guestAI.buildAnalyzePrompt(reportText, ctx);
 
-Responde sempre em Português Europeu (pt-PT), de forma clara e estruturada. Máximo 350 palavras.
-
-RELATÓRIO:
----
-${reportText.substring(0, 6000)}
----`;
-
-        const text = await _callGuestAI(prompt);
+        const text = await _callGuestAI(prompt, { temperature: 0.1 });
+        guestAI.logExchange(db, { kind: 'analyze', ip, question: reportText.substring(0, 500), answer: text, sources: ctx.sources, provider: AI_PROVIDER });
         res.json({ success: true, data: {
             response: text,
             usedReports: usage.reports,
@@ -12914,35 +12920,12 @@ app.post('/api/ai/guest-chat', async (req, res) => {
             }});
         }
 
-        const prompt = `És o assistente de IA da FestLift, especialista em elevadores em Portugal.
+        const guestAI = require('./services/guest-ai');
+        const ctx = await guestAI.buildContext(db, message);
+        const prompt = guestAI.buildChatPrompt(message, ctx);
 
-    Base legal/normativa de referência:
-    - Decreto-Lei 320/2002 (manutenção, inspeções periódicas, livro de manutenção, responsabilidades)
-    - Decreto-Lei 58/2017 (ascensores novos / diretiva 2014/33/UE)
-    - Decreto-Lei 295/98 e Decreto 513/70 (contexto histórico e instalações mais antigas)
-    - Lei 65/2013 (regime EMIE/EIIE) e regras IPAC aplicáveis
-    - Normas NP EN 81 (incluindo 81-20, 81-50, 81-70, 81-72, 81-73, 81-77, 81-80)
-    - NP EN 13015 (programas e registos de manutenção)
-    - Despacho 27/2024 (VIGENTE — revogou Despacho 17/2022)
-
-    CLASSIFICAÇÃO DE CLÁUSULAS DE INSPEÇÃO (FUNDAMENTAL):
-    - C1 (Imobilização imediata): risco grave de acidente → elevador PARADO imediatamente, correcção antes de reactivar
-    - C2 (Reprovação): prazo de 2 ANOS para correcção (Despacho 27/2024). ATENÇÃO: o antigo prazo de 30 dias foi revogado.
-    - C3 (Observação): não conformidade menor → resolver na próxima manutenção
-
-    Regras de resposta:
-    - Responde sempre em Português Europeu (pt-PT), de forma clara, detalhada e útil.
-    - Máximo 280 palavras por resposta.
-    - Quando aplicável, cita diploma/norma e artigo/cláusula.
-    - Se houver dúvida jurídica específica, recomenda validação formal junto da DGEG/EIIE.
-    - NÃO afirmar que visitantes sem login têm acesso ao histórico completo do elevador.
-    - Em temas sensíveis, acrescenta: "Informação geral, sujeita a validação técnica e legal do caso concreto".
-
-    Nota: Este utilizador é visitante (modo demonstração) — responde a questões gerais sobre elevadores, manutenção, normas e funcionamento do sistema FestLift.
-
-PERGUNTA: ${message.substring(0, 1000)}`;
-
-        const text = await _callGuestAI(prompt);
+        const text = await _callGuestAI(prompt, { temperature: 0.1 });
+        guestAI.logExchange(db, { kind: 'chat', ip, question: message, answer: text, sources: ctx.sources, provider: AI_PROVIDER });
         const normMatches = (text.match(/DL\s*\d+\/\d+|Decreto-?Lei\s*n[.ºo]*\s*\d+\/\d+|NP\s*EN\s*81(?:-\d+)?|EN\s*81(?:-\d+)?|NP\s*EN\s*13015|IPAC|DGEG/gi) || [])
             .map(v => v.replace(/\s+/g, ' ').trim())
             .filter((v, i, arr) => arr.indexOf(v) === i)
@@ -16494,6 +16477,80 @@ app.post('/api/dispatch-messages/read', authenticateToken, async (req, res) => {
     } catch (e) {
         res.status(500).json({ message: 'Erro ao atualizar mensagens' });
     }
+});
+
+// ═══════════════════════════════════════════════════════════
+// ✅ LISTAS DE VERIFICAÇÃO (PDF para imprimir/preencher)
+// ═══════════════════════════════════════════════════════════
+app.get('/api/checklists', authenticateToken, (req, res) => {
+    const { CHECKLISTS } = require('./services/checklist-templates');
+    res.json({ checklists: Object.entries(CHECKLISTS).map(([slug, c]) => ({ slug, title: c.title, subtitle: c.subtitle })) });
+});
+
+app.get('/api/checklists/:slug/pdf', authenticateToken, (req, res) => {
+    const { CHECKLISTS } = require('./services/checklist-templates');
+    const tpl = CHECKLISTS[req.params.slug];
+    if (!tpl) return res.status(404).json({ message: 'Lista de verificação não encontrada' });
+
+    const PDFDocument = require('pdfkit');
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="Checklist_${req.params.slug}.pdf"`);
+
+    const doc = new PDFDocument({ margin: 40, size: 'A4' });
+    doc.pipe(res);
+    const left = doc.page.margins.left;
+    const width = doc.page.width - left - doc.page.margins.right;
+
+    doc.fontSize(18).fillColor('#000').text('FestLift — Lista de verificação', { align: 'center' });
+    doc.moveDown(0.2);
+    doc.fontSize(14).text(tpl.title, { align: 'center' });
+    doc.fontSize(10).fillColor('#555').text(tpl.subtitle, { align: 'center' });
+    doc.moveDown(0.8);
+
+    // Cabeçalho para preencher
+    doc.fillColor('#000').fontSize(10);
+    const field = (label) => {
+        const y = doc.y;
+        doc.text(label, left, y, { continued: false, width: 90 });
+        doc.moveTo(left + 90, y + 11).lineTo(left + width, y + 11).strokeColor('#999').lineWidth(0.5).stroke();
+        doc.y = y + 18;
+    };
+    field('Elevador / morada:');
+    field('Cliente:');
+    field('Técnico:');
+    field('Data:');
+    doc.moveDown(0.5);
+
+    tpl.sections.forEach(section => {
+        if (doc.y > doc.page.height - 140) doc.addPage();
+        doc.fontSize(12).fillColor('#0d6efd').text(section.title, left, doc.y);
+        doc.moveDown(0.3);
+        section.items.forEach(item => {
+            if (doc.y > doc.page.height - 70) doc.addPage();
+            const y = doc.y;
+            doc.rect(left, y + 1, 10, 10).strokeColor('#000').lineWidth(0.8).stroke();
+            doc.fontSize(10).fillColor('#000').text(item, left + 18, y, { width: width - 90 });
+            const endY = doc.y;
+            doc.fontSize(8).fillColor('#777').text('OK  N/OK  N/A', left + width - 65, y + 2, { width: 65 });
+            doc.y = endY + 3;
+        });
+        doc.moveDown(0.6);
+    });
+
+    if (doc.y > doc.page.height - 130) doc.addPage();
+    doc.fontSize(11).fillColor('#000').text('Observações:', left, doc.y);
+    doc.moveDown(0.3);
+    for (let i = 0; i < 3; i++) {
+        const y = doc.y + 12;
+        doc.moveTo(left, y).lineTo(left + width, y).strokeColor('#999').lineWidth(0.5).stroke();
+        doc.y = y + 4;
+    }
+    doc.moveDown(1.2);
+    const sy = doc.y;
+    doc.fontSize(10).text('Assinatura do técnico: ______________________', left, sy);
+    doc.text('Assinatura do cliente: ______________________', left + width / 2, sy);
+
+    doc.end();
 });
 
 // Fallback для SPA - якщо файл не знайдено, віддаємо index.html

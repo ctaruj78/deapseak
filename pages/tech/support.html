@@ -185,6 +185,13 @@
                 <p>Suporte</p>
             </a>
         </li>
+        <!-- Logout -->
+        <li class="nav-item">
+            <a href="#" class="nav-link" onclick="event.preventDefault();if(typeof logout==='function'){logout();}else if(typeof AuthManager!=='undefined'){AuthManager.logout();}">
+                <i class="nav-icon fas fa-sign-out-alt text-danger"></i>
+                <p>Sair</p>
+            </a>
+        </li>
     </ul>
 </nav>
             </div>
@@ -236,35 +243,105 @@
                                 <div class="col-12">
                                     <div class="card">
                                         <div class="card-header">
-                                            <h5>Horário de atendimento</h5>
+                                            <h5>Perguntas frequentes</h5>
                                         </div>
                                         <div class="card-body">
                                             <div class="accordion" id="faqAccordion">
                                                 <div class="card">
-                                                    <div class="card-header" id="headingOne">
+                                                    <div class="card-header" id="heading1">
                                                         <h5 class="mb-0">
-                                                            <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                                                            <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapse1" aria-expanded="true" aria-controls="collapse1">
                                                                 Como obter acesso ao sistema?
                                                             </button>
                                                         </h5>
                                                     </div>
-                                                    <div id="collapseOne" class="collapse show" aria-labelledby="headingOne" data-parent="#faqAccordion">
+                                                    <div id="collapse1" class="collapse show" aria-labelledby="heading1" data-parent="#faqAccordion">
                                                         <div class="card-body">
-                                                            Contacte o administrador para obter login e palavra-passe.
+                                                            Peça ao administrador as suas credenciais. Se esqueceu a palavra-passe, use «Esqueci a palavra-passe» no ecrã de login ou contacte o administrador.
                                                         </div>
                                                     </div>
                                                 </div>
                                                 <div class="card">
-                                                    <div class="card-header" id="headingTwo">
+                                                    <div class="card-header" id="heading2">
                                                         <h5 class="mb-0">
-                                                            <button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                                                            <button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#collapse2" aria-expanded="false" aria-controls="collapse2">
+                                                                O que fazer se houver pessoas presas no elevador?
+                                                            </button>
+                                                        </h5>
+                                                    </div>
+                                                    <div id="collapse2" class="collapse" aria-labelledby="heading2" data-parent="#faqAccordion">
+                                                        <div class="card-body">
+                                                            Mantenha a calma, comunique com os passageiros e siga o protocolo de resgate (Base de conhecimento → Segurança). Se houver feridos, ligue 112 e avise a linha de emergência acima. Não force portas nem desbloqueie o travão sem seguir o procedimento.
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="card">
+                                                    <div class="card-header" id="heading3">
+                                                        <h5 class="mb-0">
+                                                            <button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#collapse3" aria-expanded="false" aria-controls="collapse3">
                                                                 O que fazer em caso de avaria do elevador?
                                                             </button>
                                                         </h5>
                                                     </div>
-                                                    <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#faqAccordion">
+                                                    <div id="collapse3" class="collapse" aria-labelledby="heading3" data-parent="#faqAccordion">
                                                         <div class="card-body">
-                                                            Em primeiro lugar, avalie a situação e ligue para a linha de apoio.
+                                                            Coloque o elevador fora de serviço e sinalize-o em todos os pisos, avalie a causa com o guia «Resolução de problemas» (Base de conhecimento) e registe a intervenção. Em caso de dúvida, ligue para a linha de apoio.
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="card">
+                                                    <div class="card-header" id="heading4">
+                                                        <h5 class="mb-0">
+                                                            <button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#collapse4" aria-expanded="false" aria-controls="collapse4">
+                                                                Como abro a lista de verificação de um elevador?
+                                                            </button>
+                                                        </h5>
+                                                    </div>
+                                                    <div id="collapse4" class="collapse" aria-labelledby="heading4" data-parent="#faqAccordion">
+                                                        <div class="card-body">
+                                                            Leia o código QR do elevador (Ferramentas → Leitor QR). A morada, o número municipal e o tipo de visita são preenchidos automaticamente. Confirme o tipo de acionamento e de portas antes de começar.
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="card">
+                                                    <div class="card-header" id="heading5">
+                                                        <h5 class="mb-0">
+                                                            <button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#collapse5" aria-expanded="false" aria-controls="collapse5">
+                                                                O tipo de porta ou de acionamento da ficha está errado ou em falta. E agora?
+                                                            </button>
+                                                        </h5>
+                                                    </div>
+                                                    <div id="collapse5" class="collapse" aria-labelledby="heading5" data-parent="#faqAccordion">
+                                                        <div class="card-body">
+                                                            Selecione o tipo real no formulário e avise o administrador/despachante para corrigir a ficha do elevador, para que não volte a acontecer.
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="card">
+                                                    <div class="card-header" id="heading6">
+                                                        <h5 class="mb-0">
+                                                            <button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#collapse6" aria-expanded="false" aria-controls="collapse6">
+                                                                Como falo com o despachante?
+                                                            </button>
+                                                        </h5>
+                                                    </div>
+                                                    <div id="collapse6" class="collapse" aria-labelledby="heading6" data-parent="#faqAccordion">
+                                                        <div class="card-body">
+                                                            Na página «Auxiliar AR» existe o painel «Mensagens com o despachante». A conversa fica guardada e o despachante responde em tempo real.
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="card">
+                                                    <div class="card-header" id="heading7">
+                                                        <h5 class="mb-0">
+                                                            <button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#collapse7" aria-expanded="false" aria-controls="collapse7">
+                                                                A câmara não funciona. O que verifico?
+                                                            </button>
+                                                        </h5>
+                                                    </div>
+                                                    <div id="collapse7" class="collapse" aria-labelledby="heading7" data-parent="#faqAccordion">
+                                                        <div class="card-body">
+                                                            Clique no ícone à esquerda do endereço, abra «Definições do site» e permita a câmara. No Windows, confirme em Definições → Privacidade → Câmara que o navegador tem acesso.
                                                         </div>
                                                     </div>
                                                 </div>

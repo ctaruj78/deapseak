@@ -190,6 +190,35 @@ const INSPECTION_TEMPLATES = (() => {
     item('doc-patim-legacy', 'Dossier técnico da modernização / manutenção do patim móvel e STOP de cabina disponível', 'Registo técnico EMIE / solução legacy PT', true),
   ];
 
+  // --- Casa das máquinas / central — variantes por tipo de instalação ---
+  // Hidráulico: a central hidráulica fica sempre num local técnico (acesso, ventilação,
+  // limpeza) e tem de existir instrução/dispositivo de descida manual de emergência.
+  const MACHINE_ROOM_HYDRAULIC = [
+    item('acesso-cm',     'Acesso à casa da central hidráulica — chave e sinalização', 'EN 81-2 / DL 320/2002'),
+    item('temp-cm',       'Ventilação/temperatura do local da central',               'EN 81-2 / Manual fabricante'),
+    item('limp-cm',       'Limpeza do local da central (sem óleo derramado)',          'DL 320/2002 Art. 8.º'),
+    item('mov-manual',    'Instruções e dispositivo de descida manual de emergência conformes', 'EN 81-2 / DR 13/80 Art. 105.º', true),
+  ];
+
+  // MRL (sem casa das máquinas): quadro/painel de resgate e instruções acessíveis.
+  const RESCUE_MRL = [
+    item('painel-resgate','Painel/quadro de resgate acessível, sinalizado e funcional', 'EN 81-20 / EN 81-28', true),
+    item('instr-resgate', 'Instruções de resgate afixadas e legíveis',                'EN 81-20 / DR 13/80 Art. 105.º', true),
+    item('acesso-quadro', 'Acesso ao quadro/máquina — chave e sinalização',            'EN 81-20'),
+  ];
+
+  // --- Comunicação de emergência (linha telefónica / GSM) — depende da ficha do elevador ---
+  function commItem(commType) {
+    const TEXT = {
+      landline: 'Linha telefónica de emergência — linha ativa e chamada de teste ao centro de resgate',
+      gsm:      'Comunicador GSM — sinal, cartão SIM ativo/saldo e chamada de teste ao centro de resgate',
+      intercom: 'Intercomunicador local — funcionamento em ambos os sentidos',
+    };
+    const label = TEXT[commType]
+      || 'Comunicação de emergência (linha telefónica/GSM) — chamada de teste ao centro de resgate; tipo por registar na ficha';
+    return item('linha-comunicacao', label, 'EN 81-28', true);
+  }
+
   // --- Itens extras para revisão trimestral ---
   const QUARTERLY_EXTRA = [
     item('nivelamento',   'Ensaio de nivelamento (precisão ≤ ±10 mm)',        'EN 81-20 § 5.12.1'),
@@ -458,7 +487,12 @@ const INSPECTION_TEMPLATES = (() => {
   /* ------------------------------------------------------------------ */
   /* Função principal: retorna secções para a combinação pedida          */
   /* ------------------------------------------------------------------ */
-  function getSections(driveType, doorType, visitType) {
+  function getSections(driveType, doorType, visitType, commType) {
+    // "Patim móvel" descreve só a porta de CABINA; assume-se patamares com batentes
+    // (variante mista). Antes, o tipo isolado deixava as portas de patamar por verificar.
+    // "gate" mantém-se isolado: guilhotina/portão nos patamares E na cabina.
+    if (doorType === 'patim_movel') doorType = 'mixed_patim';
+
     const isMixedAutomatic = doorType === 'mixed' || doorType === 'mixed_auto';
     const isMixedGate = doorType === 'mixed_gate';
     const isMixedPatim = doorType === 'mixed_patim';
@@ -497,7 +531,7 @@ const INSPECTION_TEMPLATES = (() => {
 
       dl513Sections.push({
         id: 'seguranca', title: 'Sistemas de Segurança (DL 513/70)',
-        icon: 'shield-alt', color: 'danger', items: DL513_SAFETY,
+        icon: 'shield-alt', color: 'danger', items: [...DL513_SAFETY, commItem(commType)],
       });
 
       // Ascensor DL 513/70 — modernização parcial possível (batentes patamar + automática cabina)
@@ -625,6 +659,8 @@ const INSPECTION_TEMPLATES = (() => {
 
     // ---- Segurança ----
     const safetyItems = [...SAFETY_COMMON];
+    // Linha/GSM de emergência: só em elevadores de passageiros
+    if (driveType !== 'goods') safetyItems.push(commItem(commType));
     if (driveType === 'hydraulic') {
       safetyItems.push(...SAFETY_HYDRAULIC);
     } else {
@@ -670,7 +706,10 @@ const INSPECTION_TEMPLATES = (() => {
         title: 'Porta de Cabina — Portões / Guilhotina',
         icon: 'grip-lines-vertical',
         color: 'info',
-        items: DOORS_GATE,
+        // 'contatos-porta' já existe no bloco de batentes (patamar): id próprio para não colidir ao guardar
+        items: DOORS_GATE.map(i => i.id === 'contatos-porta'
+          ? { ...i, id: 'contatos-portao', label: 'Contactos elétricos do portão de cabina' }
+          : i),
       });
     } else if (isMixedPatim) {
       // STOP de cabina já verificado no bloco patim móvel — não repetir no bloco batentes
@@ -764,13 +803,29 @@ const INSPECTION_TEMPLATES = (() => {
 
     // ---- Casa das máquinas (apenas se tiver CM, ou se precisar do item de
     // movimento manual da cabina — obrigatório em qualquer cabina sem portas) ----
-    if (driveType === 'traction' || doorType === 'patim_movel' || isMixedPatim) {
+    if (driveType === 'hydraulic') {
+      sections.push({
+        id: 'cm',
+        title: 'Central Hidráulica / Local Técnico',
+        icon: 'warehouse',
+        color: 'secondary',
+        items: MACHINE_ROOM_HYDRAULIC,
+      });
+    } else if (driveType === 'traction' || doorType === 'patim_movel' || isMixedPatim) {
       sections.push({
         id: 'cm',
         title: 'Casa das Máquinas',
         icon: 'warehouse',
         color: 'secondary',
         items: MACHINE_ROOM,
+      });
+    } else if (driveType === 'traction_mrl') {
+      sections.push({
+        id: 'cm',
+        title: 'Resgate e Acesso (MRL)',
+        icon: 'life-ring',
+        color: 'secondary',
+        items: RESCUE_MRL,
       });
     }
 
@@ -954,8 +1009,8 @@ const INSPECTION_TEMPLATES = (() => {
   /* ------------------------------------------------------------------ */
   /* Renderer HTML                                                       */
   /* ------------------------------------------------------------------ */
-  function renderChecklist(driveType, doorType, visitType) {
-    const sections = getSections(driveType, doorType, visitType);
+  function renderChecklist(driveType, doorType, visitType, commType) {
+    const sections = getSections(driveType, doorType, visitType, commType);
     let html = '';
 
     sections.forEach(section => {

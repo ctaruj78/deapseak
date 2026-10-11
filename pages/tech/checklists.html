@@ -219,6 +219,13 @@
                 <p>Suporte</p>
             </a>
         </li>
+        <!-- Logout -->
+        <li class="nav-item">
+            <a href="#" class="nav-link" onclick="event.preventDefault();if(typeof logout==='function'){logout();}else if(typeof AuthManager!=='undefined'){AuthManager.logout();}">
+                <i class="nav-icon fas fa-sign-out-alt text-danger"></i>
+                <p>Sair</p>
+            </a>
+        </li>
     </ul>
 </nav>
             </div>
@@ -253,44 +260,7 @@
                                     <h3 class="card-title">Disponíveis listas de verificação</h3>
                                 </div>
                                 <div class="card-body">
-                                    <div class="row">
-                                        <div class="col-md-4">
-                                            <div class="card checklist-card">
-                                                <div class="card-body text-center">
-                                                    <i class="fas fa-list-check fa-3x text-success mb-3"></i>
-                                                    <h5>Diário inspeção</h5>
-                                                    <p class="text-muted">Lista de verificação para inspeção diária técnica</p>
-                                                    <button class="btn download-btn" onclick="downloadChecklist('daily-inspection.pdf')">
-                                                        <i class="fas fa-download"></i> Descarregar
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <div class="card checklist-card">
-                                                <div class="card-body text-center">
-                                                    <i class="fas fa-list-check fa-3x text-warning mb-3"></i>
-                                                    <h5>Mensal inspeção</h5>
-                                                    <p class="text-muted">Detalhado mensal lista de verificação</p>
-                                                    <button class="btn download-btn" onclick="downloadChecklist('monthly-inspection.pdf')">
-                                                        <i class="fas fa-download"></i> Descarregar
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <div class="card checklist-card">
-                                                <div class="card-body text-center">
-                                                    <i class="fas fa-list-check fa-3x text-danger mb-3"></i>
-                                                    <h5>Lista de verificação de reparação</h5>
-                                                    <p class="text-muted">Lista de verificação para trabalhos de reparação</p>
-                                                    <button class="btn download-btn" onclick="downloadChecklist('repair-checklist.pdf')">
-                                                        <i class="fas fa-download"></i> Descarregar
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
+                                    <div class="row" id="checklistGrid"><div class="col-12 text-muted">A carregar...</div></div>
                                 </div>
                             </div>
                         </div>
@@ -315,10 +285,63 @@
     <script src="../../plugins/adminlte/adminlte.min.js"></script>
 
     <script>
-        function downloadChecklist(filename) {
-            // Симуляція carregamento
-            toastr.info(`A carregar ${filename} iniciadas. Na aplicação real aqui será feito o carregamento real do ficheiro.`);
+        const CHECKLIST_META = {
+            mensal:      { icon: 'text-warning', desc: 'Manutenção preventiva mensal (DL 320/2002)' },
+            trimestral:  { icon: 'text-info',    desc: 'Manutenção trimestral: mecânica, elétrica e portas' },
+            anual:       { icon: 'text-primary', desc: 'Inspeção anual com ensaios obrigatórios' },
+            preinspecao: { icon: 'text-success', desc: 'Preparação para a inspeção periódica' },
+            seguranca:   { icon: 'text-danger',  desc: 'Verificação dos sistemas de segurança' },
+            tecnica:     { icon: 'text-secondary', desc: 'Inspeção técnica completa do estado do elevador' },
+            reparacao:   { icon: 'text-danger',  desc: 'Antes, durante e depois de uma reparação' }
+        };
+        const CHECKLIST_ORDER = ['mensal', 'trimestral', 'anual', 'preinspecao', 'seguranca', 'tecnica', 'reparacao'];
+
+        function checklistToken() {
+            return (window.AuthManager && AuthManager.getToken && AuthManager.getToken())
+                || localStorage.getItem('liftmanager_jwt') || localStorage.getItem('authToken') || '';
         }
+
+        async function loadChecklists() {
+            const grid = document.getElementById('checklistGrid');
+            try {
+                const res = await fetch('/api/checklists', { headers: { 'Authorization': 'Bearer ' + checklistToken() } });
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                const list = (await res.json()).checklists || [];
+                list.sort((a, b) => CHECKLIST_ORDER.indexOf(a.slug) - CHECKLIST_ORDER.indexOf(b.slug));
+                grid.innerHTML = '';
+                list.forEach(c => {
+                    const meta = CHECKLIST_META[c.slug] || { icon: 'text-secondary', desc: c.subtitle };
+                    const col = document.createElement('div');
+                    col.className = 'col-md-4';
+                    col.innerHTML = `<div class="card checklist-card"><div class="card-body text-center">
+                        <i class="fas fa-list-check fa-3x ${meta.icon} mb-3"></i>
+                        <h5></h5><p class="text-muted"></p>
+                        <button class="btn download-btn"><i class="fas fa-download"></i> Descarregar</button>
+                    </div></div>`;
+                    col.querySelector('h5').textContent = c.title;
+                    col.querySelector('p').textContent = meta.desc;
+                    col.querySelector('button').onclick = () => downloadChecklist(c.slug);
+                    grid.appendChild(col);
+                });
+            } catch (err) {
+                grid.innerHTML = '<div class="col-12 text-danger">Erro ao carregar as listas de verificação: ' + err.message + '</div>';
+            }
+        }
+
+        async function downloadChecklist(slug) {
+            try {
+                const res = await fetch(`/api/checklists/${slug}/pdf`, { headers: { 'Authorization': 'Bearer ' + checklistToken() } });
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                const url = URL.createObjectURL(await res.blob());
+                const a = document.createElement('a');
+                a.href = url; a.download = `Checklist_${slug}.pdf`; a.click();
+                setTimeout(() => URL.revokeObjectURL(url), 5000);
+            } catch (err) {
+                toastr.error('Erro ao descarregar: ' + err.message);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadChecklists);
     </script>
 <script src="../../assets/js/monitor.js"></script>
 <script></script>

@@ -219,6 +219,13 @@
                 <p>Suporte</p>
             </a>
         </li>
+        <!-- Logout -->
+        <li class="nav-item">
+            <a href="#" class="nav-link" onclick="event.preventDefault();if(typeof logout==='function'){logout();}else if(typeof AuthManager!=='undefined'){AuthManager.logout();}">
+                <i class="nav-icon fas fa-sign-out-alt text-danger"></i>
+                <p>Sair</p>
+            </a>
+        </li>
     </ul>
 </nav>
             </div>
@@ -250,47 +257,11 @@
                         <div class="col-12">
                             <div class="card">
                                 <div class="card-header">
-                                    <h3 class="card-title">Manuais disponíveis</h3>
+                                    <h3 class="card-title">Manuais, esquemas e tutoriais</h3>
                                 </div>
                                 <div class="card-body">
-                                    <div class="row">
-                                        <div class="col-md-4">
-                                            <div class="card manual-card">
-                                                <div class="card-body text-center">
-                                                    <i class="fas fa-file-pdf fa-3x text-danger mb-3"></i>
-                                                    <h5>Manual de operação de elevadores</h5>
-                                                    <p class="text-muted">Manual detalhado de manutenção e reparação</p>
-                                                    <button class="btn download-btn" onclick="downloadManual('elevator-maintenance.pdf')">
-                                                        <i class="fas fa-download"></i> Descarregar
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <div class="card manual-card">
-                                                <div class="card-body text-center">
-                                                    <i class="fas fa-file-pdf fa-3x text-primary mb-3"></i>
-                                                    <h5>Elétricas do sistema</h5>
-                                                    <p class="text-muted">Manual de componentes elétricos</p>
-                                                    <button class="btn download-btn" onclick="downloadManual('electrical-systems.pdf')">
-                                                        <i class="fas fa-download"></i> Descarregar
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <div class="card manual-card">
-                                                <div class="card-body text-center">
-                                                    <i class="fas fa-file-pdf fa-3x text-success mb-3"></i>
-                                                    <h5>Componentes mecânicos</h5>
-                                                    <p class="text-muted">Manual de rotinas mecânicas</p>
-                                                    <button class="btn download-btn" onclick="downloadManual('mechanical-components.pdf')">
-                                                        <i class="fas fa-download"></i> Descarregar
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
+                                    <input type="text" id="manualSearch" class="form-control mb-3" placeholder="Pesquisar manuais, esquemas e tutoriais...">
+                                    <div id="manualsList"><p class="text-muted">A carregar...</p></div>
                                 </div>
                             </div>
                         </div>
@@ -315,10 +286,70 @@
     <script src="../../plugins/adminlte/adminlte.min.js"></script>
 
     <script>
-        function downloadManual(filename) {
-            const topics = { 'elevator-maintenance.pdf': 'tutoriais', 'electrical-systems.pdf': 'esquemas', 'mechanical-components.pdf': 'esquemas' };
-            window.location.href = 'knowledge-base.html?topic=' + (topics[filename] || 'esquemas');
+        const MANUAL_CATS = [
+            ['esquemas', 'Esquemas de componentes', 'fa-project-diagram', 'text-primary'],
+            ['tutoriais', 'Tutoriais passo a passo', 'fa-chalkboard-teacher', 'text-success'],
+            ['manutencao', 'Manutenção', 'fa-tools', 'text-success'],
+            ['reparacao', 'Reparação', 'fa-wrench', 'text-danger'],
+            ['avarias', 'Avarias e diagnóstico', 'fa-search', 'text-info'],
+            ['seguranca', 'Segurança', 'fa-shield-alt', 'text-warning'],
+            ['regulamentacao', 'Regulamentação', 'fa-gavel', 'text-secondary']
+        ];
+        let manualArticles = [];
+
+        function manualToken() {
+            return (window.AuthManager && AuthManager.getToken && AuthManager.getToken())
+                || localStorage.getItem('liftmanager_jwt') || localStorage.getItem('authToken') || '';
         }
+
+        function renderManuals() {
+            const q = document.getElementById('manualSearch').value.trim().toLowerCase();
+            const box = document.getElementById('manualsList');
+            box.textContent = '';
+            const match = a => !q || (a.title || '').toLowerCase().includes(q) || (a.summary || '').toLowerCase().includes(q)
+                || (a.tags || []).some(t => String(t).toLowerCase().includes(q));
+            let shown = 0;
+            MANUAL_CATS.forEach(([cat, label, icon, color]) => {
+                const items = manualArticles.filter(a => a.category === cat && match(a));
+                if (!items.length) return;
+                shown += items.length;
+                const h = document.createElement('h5');
+                h.className = 'mt-3';
+                h.innerHTML = `<i class="fas ${icon} ${color} mr-2"></i>`;
+                h.appendChild(document.createTextNode(`${label} (${items.length})`));
+                box.appendChild(h);
+                const row = document.createElement('div');
+                row.className = 'row';
+                items.forEach(a => {
+                    const col = document.createElement('div');
+                    col.className = 'col-md-4 mb-3';
+                    col.innerHTML = '<div class="card manual-card h-100"><div class="card-body text-center"><h6></h6><p class="text-muted small"></p><a class="btn download-btn btn-sm"><i class="fas fa-book-open"></i> Abrir</a></div></div>';
+                    col.querySelector('h6').textContent = a.title;
+                    col.querySelector('p').textContent = a.summary || '';
+                    col.querySelector('a').href = 'knowledge-base.html?article=' + encodeURIComponent(a._id || a.id);
+                    row.appendChild(col);
+                });
+                box.appendChild(row);
+            });
+            if (!shown) box.innerHTML = '<p class="text-muted">Nenhum documento encontrado.</p>';
+        }
+
+        async function loadManuals() {
+            try {
+                const res = await fetch('/api/knowledge-base', { headers: { 'Authorization': 'Bearer ' + manualToken() } });
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                const json = await res.json();
+                manualArticles = Array.isArray(json) ? json : (json.data || []);
+                renderManuals();
+            } catch (err) {
+                document.getElementById('manualsList').innerHTML = '<p class="text-danger">Erro ao carregar documentos: ' + err.message + '</p>';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('manualSearch').addEventListener('input', renderManuals);
+            loadManuals();
+        });
     </script>
 <script src="../../assets/js/monitor.js"></script>
 <script></script>

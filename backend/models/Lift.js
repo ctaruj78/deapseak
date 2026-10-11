@@ -76,6 +76,8 @@ const liftSchema = new mongoose.Schema({
         enum: ['automatic', 'swing', 'gate', 'mixed', 'mixed_patim', 'mixed_gate', 'patim_movel'],
         default: 'automatic'
     },
+    // Comunicação de emergência (EN 81-28) — define o item de verificação no checklist
+    emergencyComm: { type: String, enum: ['', 'landline', 'gsm', 'intercom', 'none'], default: '' },
     capacity: { type: Number, required: true },
     speed: Number,
     floors: { type: Number, required: true },

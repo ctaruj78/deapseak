@@ -262,6 +262,13 @@
                 <p>Suporte</p>
             </a>
         </li>
+        <!-- Logout -->
+        <li class="nav-item">
+            <a href="#" class="nav-link" onclick="event.preventDefault();if(typeof logout==='function'){logout();}else if(typeof AuthManager!=='undefined'){AuthManager.logout();}">
+                <i class="nav-icon fas fa-sign-out-alt text-danger"></i>
+                <p>Sair</p>
+            </a>
+        </li>
     </ul>
 </nav>
             </div>

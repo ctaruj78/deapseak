@@ -1259,6 +1259,8 @@
                                                         <option value="hydraulic">Hidráulico</option>
                                                         <option value="traction_mrl">Por cabo — MRL (sem casa das máquinas)</option>
                                                         <option value="traction">Por cabo — com casa das máquinas</option>
+                                                        <option value="dl513">Por cabo — DL 513/70 (instalação antiga)</option>
+                                                        <option value="goods">Monta-cargas (só bens)</option>
                                                         <option value="platform">Por parafuso / Plataforma</option>
                                                     </select>
                                                 </div>
@@ -1269,10 +1271,26 @@
                                                     <select name="doorType" class="form-control">
                                                         <option value="">— Selecione —</option>
                                                         <option value="automatic">Automáticas (operador)</option>
+                                                        <option value="swing">Só batentes (monta-cargas / plataforma) — ficha antiga: indicar a porta de cabina</option>
                                                         <option value="mixed">Misto — Batentes (patamar) + Automáticas (cabine)</option>
                                                         <option value="gate">Portões / Guilhotina</option>
                                                         <option value="mixed_gate">Misto — Batentes (patamar) + Portões / Guilhotina (cabine)</option>
+                                                        <option value="patim_movel">Cabina sem portas / Patim móvel</option>
                                                         <option value="mixed_patim">Misto — Batentes (patamar) + Cabina sem portas / Patim móvel</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label>Comunicação de emergência</label>
+                                                    <select  name="emergencyComm" class="form-control">
+                                                        <option value="">— Não especificado —</option>
+                                                        <option value="landline">Linha telefónica</option>
+                                                        <option value="gsm">GSM (cartão SIM)</option>
+                                                        <option value="intercom">Intercomunicador local</option>
+                                                        <option value="none">Sem comunicação</option>
                                                     </select>
                                                 </div>
                                             </div>
@@ -6277,6 +6295,7 @@ Equipa FestLift</textarea>
             }
 
             // Licença / certificado
+            $('[name="emergencyComm"]').val(lift.emergencyComm || '');
             $('[name="licenseDate"]').val(lift.licenseDate ? new Date(lift.licenseDate).toISOString().split('T')[0] : '');
             $('[name="licenseExpiry"]').val(lift.licenseExpiry ? new Date(lift.licenseExpiry).toISOString().split('T')[0] : '');
             if (lift.licenseDate)   $('#dispLicenseDateBadge').show();   else $('#dispLicenseDateBadge').hide();

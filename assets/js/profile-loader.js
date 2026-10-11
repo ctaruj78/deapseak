@@ -135,13 +135,31 @@
 
         // Аватар
         const avatarElements = document.querySelectorAll('[data-user-avatar]');
+        const initial = (user.firstName || user.name || user.username || 'U').charAt(0).toUpperCase();
+        const showInitial = (el) => {
+            el.textContent = '';
+            const box = document.createElement('div');
+            box.style.cssText = 'width:100%;height:100%;background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:2.5rem;font-weight:bold;';
+            box.textContent = initial;
+            el.appendChild(box);
+        };
         avatarElements.forEach(el => {
-            if (user.avatar) {
+            if (!user.avatar) return showInitial(el);
+            if (el.tagName === 'IMG') {
+                el.onerror = () => { el.onerror = null; el.src = '/assets/img/user2-160x160.jpg'; };
                 el.src = user.avatar;
             } else {
-                // Дефолтний аватар на основі першої літери імені
-                const initial = (user.firstName || user.name || user.username || 'U').charAt(0).toUpperCase();
-                el.innerHTML = `<div style="width: 100%; height: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 2.5rem; font-weight: bold;">${initial}</div>`;
+                // o marcador é um contentor (div): cria a imagem lá dentro
+                el.textContent = '';
+                el.style.display = 'block';
+                el.style.width = '100%';
+                el.style.height = '100%';
+                const img = document.createElement('img');
+                img.alt = 'Avatar';
+                img.style.cssText = 'width:100%;height:100%;object-fit:cover;border-radius:50%;';
+                img.onerror = () => showInitial(el);
+                img.src = user.avatar;
+                el.appendChild(img);
             }
         });
 

@@ -198,18 +198,18 @@ class InspectionManager {
                 <td>${this.getResultText(inspection)}</td>
                 <td>
                     <div class="btn-group">
-                        <button class="btn btn-sm btn-info btn-icon" onclick="inspectionManager.viewInspection('${inspection.id}')" title="Перегляд">
+                        <button class="btn btn-sm btn-info btn-icon" onclick="inspectionManager.viewInspection('${inspection.id}')" title="Ver">
                             <i class="fas fa-eye"></i>
                         </button>
                         <button class="btn btn-sm btn-secondary btn-icon" onclick="inspectionManager.downloadReport('${inspection.id}')" title="Relatório">
                             <i class="fas fa-download"></i>
                         </button>
                         ${inspection.status === 'in-progress' ? 
-                            `<button class="btn btn-sm btn-success btn-icon" onclick="inspectionManager.continueInspection('${inspection.id}')" title="Продовжити">
+                            `<button class="btn btn-sm btn-success btn-icon" onclick="inspectionManager.continueInspection('${inspection.id}')" title="Continuar">
                                 <i class="fas fa-play"></i>
                             </button>` : ''}
                         ${inspection.status === 'planned' ? 
-                            `<button class="btn btn-sm btn-warning btn-icon" onclick="inspectionManager.startInspection('${inspection.id}')" title="Розпочати">
+                            `<button class="btn btn-sm btn-warning btn-icon" onclick="inspectionManager.startInspection('${inspection.id}')" title="Iniciar">
                                 <i class="fas fa-play-circle"></i>
                             </button>` : ''}
                     </div>
@@ -220,10 +220,10 @@ class InspectionManager {
 
     getStatusText(status) {
         const statuses = {
-            'planned': 'Запланована',
-            'in-progress': 'В процесі',
+            'planned': 'Planeada',
+            'in-progress': 'Em curso',
             'completed': 'Concluída',
-            'overdue': 'Протермінована',
+            'overdue': 'Em atraso',
             'cancelled': 'Cancelada'
         };
         return statuses[status] || status;
@@ -231,10 +231,10 @@ class InspectionManager {
 
     getTypeText(type) {
         const types = {
-            'safety': 'Безпека',
-            'technical': 'Технічна',
-            'periodic': 'Períodoична',
-            'emergency': 'Аварійна',
+            'safety': 'Segurança',
+            'technical': 'Técnica',
+            'periodic': 'Periódica',
+            'emergency': 'Emergência',
             'custom': 'Outro'
         };
         return types[type] || type;
@@ -242,9 +242,9 @@ class InspectionManager {
 
     getPriorityText(priority) {
         const priorities = {
-            'high': 'Altий',
-            'medium': 'Agoедній',
-            'low': 'Низький'
+            'high': 'Alta',
+            'medium': 'Média',
+            'low': 'Baixa'
         };
         return priorities[priority] || priority;
     }
@@ -253,11 +253,11 @@ class InspectionManager {
         if (inspection.status !== 'completed') return '-';
         
         if (inspection.result === 'passed') {
-            return `<span class="text-success"><i class="fas fa-check-circle"></i> Пройдено (${inspection.score}%)</span>`;
+            return `<span class="text-success"><i class="fas fa-check-circle"></i> Aprovada (${inspection.score}%)</span>`;
         } else if (inspection.result === 'failed') {
             return `<span class="text-danger"><i class="fas fa-times-circle"></i> Reprovado</span>`;
         } else {
-            return `<span class="text-warning"><i class="fas fa-exclamation-circle"></i> Умовно пройдено</span>`;
+            return `<span class="text-warning"><i class="fas fa-exclamation-circle"></i> Aprovada com reservas</span>`;
         }
     }
 
@@ -384,18 +384,18 @@ class InspectionManager {
         $('#newInspectionModal').modal('hide');
         this.applyFilters();
         
-        this.showNotification('Інспекцію com sucesso створено!', 'success');
+        this.showNotification('Inspeção criada com sucesso!', 'success');
     }
 
     generateInspectionTitle(type) {
         const titles = {
-            'safety': 'Перевірка безпеки',
-            'technical': 'Технічний огляд',
-            'periodic': 'Períodoична перевірка',
-            'emergency': 'Аварійна перевірка',
-            'custom': 'Спеціальна перевірка'
+            'safety': 'Verificação de segurança',
+            'technical': 'Inspeção técnica',
+            'periodic': 'Verificação periódica',
+            'emergency': 'Verificação de emergência',
+            'custom': 'Verificação especial'
         };
-        return titles[type] || 'Nova інспекція';
+        return titles[type] || 'Nova inspeção';
     }
 
     viewInspection(inspectionId) {
@@ -445,7 +445,7 @@ class InspectionManager {
                             <strong><i class="fas fa-tag"></i> Tipo:</strong> ${typeText}
                         </div>
                         <div class="info-item">
-                            <strong><i class="fas fa-calendar"></i> Заплановано:</strong> ${this.formatDateTime(inspection.scheduledDate)}
+                            <strong><i class="fas fa-calendar"></i> Planeada:</strong> ${this.formatDateTime(inspection.scheduledDate)}
                         </div>
                     </div>
                     <div class="col-md-6">
@@ -454,12 +454,12 @@ class InspectionManager {
                         </div>
                         ${inspection.completedDate ? `
                             <div class="info-item">
-                                <strong><i class="fas fa-check-circle"></i> Завершено:</strong> ${this.formatDateTime(inspection.completedDate)}
+                                <strong><i class="fas fa-check-circle"></i> Concluída:</strong> ${this.formatDateTime(inspection.completedDate)}
                             </div>
                         ` : ''}
                         ${inspection.duration ? `
                             <div class="info-item">
-                                <strong><i class="fas fa-clock"></i> Duração:</strong> ${inspection.duration} хв
+                                <strong><i class="fas fa-clock"></i> Duração:</strong> ${inspection.duration} min
                             </div>
                         ` : ''}
                     </div>
@@ -468,7 +468,7 @@ class InspectionManager {
                 ${inspection.description ? `
                     <div class="card mb-4">
                         <div class="card-header">
-                            <h5 class="card-title"><i class="fas fa-align-left"></i> Descrição інспекції</h5>
+                            <h5 class="card-title"><i class="fas fa-align-left"></i> Descrição da inspeção</h5>
                         </div>
                         <div class="card-body">
                             <p class="card-text">${inspection.description}</p>
@@ -479,7 +479,7 @@ class InspectionManager {
                 ${inspection.checklist && inspection.checklist.length > 0 ? `
                     <div class="card mb-4">
                         <div class="card-header">
-                            <h5 class="card-title"><i class="fas fa-clipboard-list"></i> Чек-лист</h5>
+                            <h5 class="card-title"><i class="fas fa-clipboard-list"></i> Lista de verificação</h5>
                             ${inspection.progress ? `
                                 <div class="progress progress-sm">
                                     <div class="progress-bar bg-success" style="width: ${inspection.progress}%"></div>
@@ -493,7 +493,7 @@ class InspectionManager {
                                         <div class="d-flex justify-content-between align-items-center">
                                             <span>${item.item}</span>
                                             <span class="badge ${item.status === 'completed' ? (item.result === 'passed' ? 'badge-success' : 'badge-danger') : 'badge-secondary'}">
-                                                ${item.status === 'completed' ? (item.result === 'passed' ? 'Пройдено' : 'Reprovado') : 'В очікуванні'}
+                                                ${item.status === 'completed' ? (item.result === 'passed' ? 'Aprovado' : 'Reprovado') : 'Pendente'}
                                             </span>
                                         </div>
                                         ${item.notes ? `<p class="mb-0 mt-2"><small>${item.notes}</small></p>` : ''}
@@ -507,7 +507,7 @@ class InspectionManager {
                 ${inspection.photos && inspection.photos.length > 0 ? `
                     <div class="card mb-4">
                         <div class="card-header">
-                            <h5 class="card-title"><i class="fas fa-images"></i> Fotografiaграфії</h5>
+                            <h5 class="card-title"><i class="fas fa-images"></i> Fotografias</h5>
                         </div>
                         <div class="card-body">
                             <div class="d-flex flex-wrap">
@@ -525,7 +525,7 @@ class InspectionManager {
                 ${inspection.notes ? `
                     <div class="card mb-4">
                         <div class="card-header">
-                            <h5 class="card-title"><i class="fas fa-sticky-note"></i> Нотатки</h5>
+                            <h5 class="card-title"><i class="fas fa-sticky-note"></i> Notas</h5>
                         </div>
                         <div class="card-body">
                             <p class="card-text">${inspection.notes}</p>
@@ -536,12 +536,12 @@ class InspectionManager {
                 ${inspection.result ? `
                     <div class="card mb-4">
                         <div class="card-header">
-                            <h5 class="card-title"><i class="fas fa-chart-bar"></i> Результат</h5>
+                            <h5 class="card-title"><i class="fas fa-chart-bar"></i> Resultado</h5>
                         </div>
                         <div class="card-body">
                             <div class="text-center">
                                 <h2 class="${inspection.result === 'passed' ? 'text-success' : 'text-danger'}">
-                                    ${inspection.result === 'passed' ? 'Пройдено' : 'Reprovado'}
+                                    ${inspection.result === 'passed' ? 'Aprovada' : 'Reprovada'}
                                     ${inspection.score ? ` (${inspection.score}%)` : ''}
                                 </h2>
                             </div>
@@ -562,7 +562,7 @@ class InspectionManager {
         localStorage.setItem('inspections', JSON.stringify(this.inspections));
         this.applyFilters();
         
-        this.showNotification('Інспекцію розпочато!', 'success');
+        this.showNotification('Inspeção iniciada!', 'success');
         this.viewInspection(inspectionId);
     }
 
@@ -575,27 +575,27 @@ class InspectionManager {
         const inspection = this.inspections.find(i => i.id === inspectionId);
         if (!inspection) return;
 
-        this.showNotification(`Підготовка звіту для інспекції ${inspectionId}...`, 'info');
+        this.showNotification(`A preparar relatório da inspeção ${inspectionId}...`, 'info');
         
         // Імітація створення PDF
         setTimeout(() => {
             const reportContent = this.generateReportContent(inspection);
-            const blob = new Blob([reportContent], { type: 'application/pdf' });
+            const blob = new Blob([reportContent], { type: 'text/plain;charset=utf-8' });
             const url = URL.createObjectURL(blob);
             
             const link = document.createElement('a');
             link.href = url;
-            link.download = `звіт_інспекція_${inspectionId}.pdf`;
+            link.download = `relatorio_inspecao_${inspectionId}.txt`;
             link.click();
             
-            this.showNotification('Relatório com sucesso завантажено', 'success');
+            this.showNotification('Relatório descarregado com sucesso', 'success');
         }, 1500);
     }
 
     generateReportContent(inspection) {
         // Імітація створення звіту
         return `
-            ЗВІТ ПРО ІНСПЕКЦІЮ #${inspection.id}
+            RELATÓRIO DE INSPEÇÃO #${inspection.id}
             ===================================
             
             Nome: ${inspection.title}
@@ -604,51 +604,59 @@ class InspectionManager {
             Estado: ${this.getStatusText(inspection.status)}
             Prioridade: ${this.getPriorityText(inspection.priority)}
             
-            Заплановано: ${this.formatDateTime(inspection.scheduledDate)}
-            ${inspection.startedDate ? `Розпочато: ${this.formatDateTime(inspection.startedDate)}` : ''}
-            ${inspection.completedDate ? `Завершено: ${this.formatDateTime(inspection.completedDate)}` : ''}
+            Planeada: ${this.formatDateTime(inspection.scheduledDate)}
+            ${inspection.startedDate ? `Iniciada: ${this.formatDateTime(inspection.startedDate)}` : ''}
+            ${inspection.completedDate ? `Concluída: ${this.formatDateTime(inspection.completedDate)}` : ''}
             
             ${inspection.description ? `Descrição: ${inspection.description}` : ''}
             
-            ${inspection.result ? `Результат: ${inspection.result === 'passed' ? 'Пройдено' : 'Reprovado'}${inspection.score ? ` (${inspection.score}%)` : ''}` : ''}
+            ${inspection.result ? `Resultado: ${inspection.result === 'passed' ? 'Aprovada' : 'Reprovada'}${inspection.score ? ` (${inspection.score}%)` : ''}` : ''}
             
             ===================================
-            Згенеровано: ${new Date().toLocaleString('pt-PT')}
+            Gerado em: ${new Date().toLocaleString('pt-PT')}
         `;
     }
 
-    loadSafetyChecklist() {
-        this.showNotification('A carregar чек-листу безпеки...', 'info');
-        // Тут буде реальна логіка завантаження
+    async downloadChecklistPdf(slug, label) {
+        this.showNotification(`A preparar ${label}...`, 'info');
+        try {
+            const token = (window.AuthManager && AuthManager.getToken && AuthManager.getToken())
+                || localStorage.getItem('liftmanager_jwt') || localStorage.getItem('authToken') || '';
+            const res = await fetch(`/api/checklists/${slug}/pdf`, { headers: { 'Authorization': `Bearer ${token}` } });
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            const url = URL.createObjectURL(await res.blob());
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `Checklist_${slug}.pdf`;
+            link.click();
+            setTimeout(() => URL.revokeObjectURL(url), 5000);
+            this.showNotification('Lista de verificação descarregada', 'success');
+        } catch (err) {
+            this.showNotification('Erro ao descarregar a lista de verificação: ' + err.message, 'error');
+        }
     }
 
-    loadTechnicalChecklist() {
-        this.showNotification('A carregar технічного чек-листу...', 'info');
-        // Тут буде реальна логіка завантаження
-    }
-
-    loadAnnualChecklist() {
-        this.showNotification('A carregar щорічного чек-листу...', 'info');
-        // Тут буде реальна логіка завантаження
-    }
+    loadSafetyChecklist() { return this.downloadChecklistPdf('seguranca', 'lista de verificação de segurança'); }
+    loadTechnicalChecklist() { return this.downloadChecklistPdf('tecnica', 'lista de inspeção técnica'); }
+    loadAnnualChecklist() { return this.downloadChecklistPdf('anual', 'lista de inspeção anual'); }
 
     exportInspections() {
         const filteredInspections = this.getFilteredInspections();
         
         if (filteredInspections.length === 0) {
-            this.showNotification('Немає інспекцій для експорту', 'warning');
+            this.showNotification('Não há inspeções para exportar', 'warning');
             return;
         }
 
-        this.showNotification('Підготовка експорту...', 'info');
+        this.showNotification('A preparar exportação...', 'info');
         
         // Створення CSV
         const csvContent = this.convertToCSV(filteredInspections);
-        this.downloadCSV(csvContent, `інспекції_${new Date().toISOString().split('T')[0]}.csv`);
+        this.downloadCSV(csvContent, `inspecoes_${new Date().toISOString().split('T')[0]}.csv`);
     }
 
     convertToCSV(inspections) {
-        const headers = ['ID', 'Tipo', 'Elevador', 'Estado', 'Prioridade', 'Заплановано', 'Técnico', 'Результат'];
+        const headers = ['ID', 'Tipo', 'Elevador', 'Estado', 'Prioridade', 'Planeada', 'Técnico', 'Resultado'];
         const rows = inspections.map(inspection => [
             inspection.id,
             this.getTypeText(inspection.type),
@@ -680,11 +688,11 @@ class InspectionManager {
     }
 
     importChecklist() {
-        this.showNotification('Функція імпорту чек-листів буде реалізована в майбутніх версіях', 'info');
+        this.showNotification('A importação de listas de verificação estará disponível em breve', 'info');
     }
 
     exportReports() {
-        this.showNotification('Функція експорту звітів буде реалізована в майбутніх версіях', 'info');
+        this.showNotification('A exportação de relatórios estará disponível em breve', 'info');
     }
 
     showNotification(message, type = 'info') {

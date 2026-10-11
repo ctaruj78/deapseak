@@ -461,6 +461,13 @@
                 <p>Suporte</p>
             </a>
         </li>
+        <!-- Logout -->
+        <li class="nav-item">
+            <a href="#" class="nav-link" onclick="event.preventDefault();if(typeof logout==='function'){logout();}else if(typeof AuthManager!=='undefined'){AuthManager.logout();}">
+                <i class="nav-icon fas fa-sign-out-alt text-danger"></i>
+                <p>Sair</p>
+            </a>
+        </li>
     </ul>
 </nav>
             </div>
@@ -575,14 +582,7 @@
                                             </div>
 
                                             <!-- AR Scene -->
-                                            <div id="arScene" style="display: none;">
-                                                <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;">
-                                                    <a-marker preset="hiro">
-                                                        <a-box position="0 0.5 0" material="color: red;"></a-box>
-                                                    </a-marker>
-                                                    <a-entity camera></a-entity>
-                                                </a-scene>
-                                            </div>
+                                            <div id="arScene" style="display: none;"></div>
 
                                             <!-- AR Overlay -->
                                             <div class="ar-overlay">
@@ -719,7 +719,7 @@
     <script src="/plugins/select2/js/select2.min.js"></script>
 
     <!-- AR Helper JS -->
-    <script src="../../assets/js/modules/ar-helper.js?v=20261011"></script>
+    <script src="../../assets/js/modules/ar-helper.js?v=20261011b"></script>
     <script src="../../assets/js/modules/voice-ar.js?v=20261011"></script>
     <script src="../../assets/js/modules/photo-video-capture.js?v=20261011"></script>
     <script src="../../assets/js/modules/push-notifications.js?v=20261011"></script>

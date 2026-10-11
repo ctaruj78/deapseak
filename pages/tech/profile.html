@@ -189,6 +189,13 @@
                 <p>Suporte</p>
             </a>
         </li>
+        <!-- Logout -->
+        <li class="nav-item">
+            <a href="#" class="nav-link" onclick="event.preventDefault();if(typeof logout==='function'){logout();}else if(typeof AuthManager!=='undefined'){AuthManager.logout();}">
+                <i class="nav-icon fas fa-sign-out-alt text-danger"></i>
+                <p>Sair</p>
+            </a>
+        </li>
     </ul>
 </nav>
             </div>
@@ -323,7 +330,7 @@
 
 <!-- 👤 Carregador de perfil da API -->
 <script src="/plugins/toastr/js/toastr.min.js"></script>
-<script src="../../assets/js/profile-loader.js"></script>
+<script src="../../assets/js/profile-loader.js?v=20261011"></script>
 <script>
     function submitPasswordChange(e) {
         e.preventDefault();

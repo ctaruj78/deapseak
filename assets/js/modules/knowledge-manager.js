@@ -39,7 +39,12 @@ class KnowledgeManager {
             this.articles = JSON.parse(localStorage.getItem('kb_articles_cache')) || [];
         }
         this.filteredArticles = [...this.articles];
-        const topic = new URLSearchParams(window.location.search).get('topic');
+        const params = new URLSearchParams(window.location.search);
+        const articleParam = params.get('article');
+        if (articleParam && /^[A-Za-z0-9_-]+$/.test(articleParam)) {
+            setTimeout(() => this.viewArticle(articleParam), 300);
+        }
+        const topic = params.get('topic');
         if (topic && /^[a-z]+$/.test(topic)) {
             this.filterByTopic(topic);
             return;

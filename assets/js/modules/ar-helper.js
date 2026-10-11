@@ -329,6 +329,17 @@ class ARHelper {
             $('#arPlaceholder').hide();
             $('#arScene').show();
 
+            // A cena só é criada ao iniciar o AR — assim a câmara não é pedida ao abrir a página
+            if (!document.querySelector('#arScene a-scene')) {
+                $('#arScene').prepend(`
+                    <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;">
+                        <a-marker preset="hiro">
+                            <a-box position="0 0.5 0" material="color: red;"></a-box>
+                        </a-marker>
+                        <a-entity camera></a-entity>
+                    </a-scene>`);
+            }
+
             // Ініціалізація AR.js сцени
             if (typeof AFRAME !== 'undefined') {
                 this.setupAFrameScene();
@@ -1842,7 +1853,12 @@ class ARHelper {
     }
 
     clearARScene() {
-        // Очищення AR сцени
+        // Remove a cena e liberta a câmara (o AR.js deixa o <video> ligado)
+        $('#arScene').empty();
+        document.querySelectorAll('video[id^="arjs-video"]').forEach(v => {
+            if (v.srcObject) v.srcObject.getTracks().forEach(t => t.stop());
+            v.remove();
+        });
         if (typeof AFRAME !== 'undefined') {
             const scene = document.querySelector('a-scene');
             if (scene) {

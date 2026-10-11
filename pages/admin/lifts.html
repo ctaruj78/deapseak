@@ -1626,6 +1626,7 @@ function escapeJsString(s) {
                                                         <option value="traction_mrl">Por cabo — MRL (sem casa das máquinas)</option>
                                                         <option value="traction">Por cabo — com casa das máquinas</option>
                                                         <option value="dl513">Por cabo — DL 513/70 (instalação antiga)</option>
+                                                        <option value="goods">Monta-cargas (só bens)</option>
                                                         <option value="platform">Por parafuso / Plataforma</option>
                                                     </select>
                                                 </div>
@@ -1636,10 +1637,26 @@ function escapeJsString(s) {
                                                     <select id="enhancedDoorType" name="doorType" class="form-control">
                                                         <option value="">— Selecione —</option>
                                                         <option value="automatic">Automáticas (operador)</option>
+                                                        <option value="swing">Só batentes (monta-cargas / plataforma) — ficha antiga: indicar a porta de cabina</option>
                                                         <option value="mixed">Misto — Batentes (patamar) + Automáticas (cabine)</option>
                                                         <option value="gate">Portões / Guilhotina</option>
                                                         <option value="mixed_gate">Misto — Batentes (patamar) + Portões / Guilhotina (cabine)</option>
+                                                        <option value="patim_movel">Cabina sem portas / Patim móvel</option>
                                                         <option value="mixed_patim">Misto — Batentes (patamar) + Cabina sem portas / Patim móvel</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label>Comunicação de emergência</label>
+                                                    <select id="enhancedEmergencyComm" name="emergencyComm" class="form-control">
+                                                        <option value="">— Não especificado —</option>
+                                                        <option value="landline">Linha telefónica</option>
+                                                        <option value="gsm">GSM (cartão SIM)</option>
+                                                        <option value="intercom">Intercomunicador local</option>
+                                                        <option value="none">Sem comunicação</option>
                                                     </select>
                                                 </div>
                                             </div>
@@ -6545,6 +6562,7 @@ Email de contacto: info@festlift.pt`;
             $('#enhancedFloorsCount').val(lift.floorsCount || lift.floors || '');
             $('#enhancedDriveType').val(lift.driveType || '');
             $('#enhancedDoorType').val(lift.doorType || '');
+            $('#enhancedEmergencyComm').val(lift.emergencyComm || '');
             $('#enhancedManufactureYear').val(lift.manufactureYear || '');
             $('#enhancedInstallYear').val(lift.installYear || '');
             

@@ -437,6 +437,13 @@
                 <p>Suporte</p>
             </a>
         </li>
+        <!-- Logout -->
+        <li class="nav-item">
+            <a href="#" class="nav-link" onclick="event.preventDefault();if(typeof logout==='function'){logout();}else if(typeof AuthManager!=='undefined'){AuthManager.logout();}">
+                <i class="nav-icon fas fa-sign-out-alt text-danger"></i>
+                <p>Sair</p>
+            </a>
+        </li>
     </ul>
 </nav>
             </div>
@@ -919,7 +926,14 @@
 
                     this.displayTasks(this.tasks);
                     this.updateStats(this.tasks);
-                    
+
+                    // Abrir diretamente uma tarefa (ex.: a partir de uma notificação)
+                    const openId = new URLSearchParams(window.location.search).get('task');
+                    if (openId) {
+                        if (this.tasks.some(t => t.id === openId)) this.viewTask(openId);
+                        else toastr.info('Esta tarefa já não está na sua lista.');
+                    }
+
                 } catch (error) {
                     console.error('Erro carregamento de tarefas:', error);
                     CommonUtils.showNotification('Erro carregamento de tarefas: ' + error.message, 'error');

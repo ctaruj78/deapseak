@@ -114,16 +114,6 @@
 
     <!-- Sidebar -->
     <div class="sidebar">
-      <!-- Sidebar user panel (optional) -->
-                
-        <div class="image">
-          <img src="../../assets/img/user2-160x160.jpg" class="img-circle elevation-2" alt="User Image" id="user-avatar">
-        </div>
-        <div class="info">
-          <a href="#" class="d-block" id="username">Técnico</a>
-        </div>
-      </div>
-
       <!-- Sidebar Menu -->
       <!-- CANONICAL TECH SIDEBAR - Copy this to all tech pages -->
 <nav class="mt-2">
@@ -273,6 +263,13 @@
             <a href="/pages/tech/support.html" class="nav-link">
                 <i class="nav-icon fas fa-headset"></i>
                 <p>Suporte</p>
+            </a>
+        </li>
+        <!-- Logout -->
+        <li class="nav-item">
+            <a href="#" class="nav-link" onclick="event.preventDefault();if(typeof logout==='function'){logout();}else if(typeof AuthManager!=='undefined'){AuthManager.logout();}">
+                <i class="nav-icon fas fa-sign-out-alt text-danger"></i>
+                <p>Sair</p>
             </a>
         </li>
     </ul>
@@ -513,10 +510,8 @@ document.addEventListener("DOMContentLoaded", function() {
     
     // Apresentar informação sobre o utilizador
     if (user) {
-        document.getElementById('username').textContent = user.firstName + ' ' + user.lastName;
-        if (user.avatar) {
-            document.getElementById('user-avatar').src = user.avatar;
-        }
+        const techNameEl = document.getElementById('techName');
+        if (techNameEl) techNameEl.textContent = [user.firstName, user.lastName].filter(Boolean).join(' ');
     }
 
     // Variáveis para trabalhar com câmara

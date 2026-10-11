@@ -395,6 +395,13 @@
                 <p>Suporte</p>
             </a>
         </li>
+        <!-- Logout -->
+        <li class="nav-item">
+            <a href="#" class="nav-link" onclick="event.preventDefault();if(typeof logout==='function'){logout();}else if(typeof AuthManager!=='undefined'){AuthManager.logout();}">
+                <i class="nav-icon fas fa-sign-out-alt text-danger"></i>
+                <p>Sair</p>
+            </a>
+        </li>
     </ul>
 </nav>
             </div>
@@ -704,7 +711,7 @@
     <script src="../../plugins/adminlte/adminlte.min.js"></script>
 
     <!-- Knowledge Base Manager JS -->
-    <script src="/assets/js/modules/knowledge-manager.js"></script>
+    <script src="/assets/js/modules/knowledge-manager.js?v=20261011"></script>
 
     <script>
         let currentArticleId = null;

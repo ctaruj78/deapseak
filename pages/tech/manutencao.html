@@ -32,7 +32,7 @@
     <link rel="stylesheet" href="../../plugins/adminlte/adminlte.min.css">
     <link rel="stylesheet" href="../../plugins/fontawesome/css/all.min.css">
     <!-- Inspection template engine -->
-    <script src="../../assets/js/inspection-templates.js"></script>
+    <script src="../../assets/js/inspection-templates.js?v=20261011d"></script>
     
     <style>
         .inspection-checklist {
@@ -265,6 +265,13 @@
                 <p>Suporte</p>
             </a>
         </li>
+        <!-- Logout -->
+        <li class="nav-item">
+            <a href="#" class="nav-link" onclick="event.preventDefault();if(typeof logout==='function'){logout();}else if(typeof AuthManager!=='undefined'){AuthManager.logout();}">
+                <i class="nav-icon fas fa-sign-out-alt text-danger"></i>
+                <p>Sair</p>
+            </a>
+        </li>
     </ul>
 </nav>
             </div>
@@ -361,10 +368,12 @@
                                                     <select class="form-control" id="doorType" required>
                                                         <option value="" selected disabled>— Selecione o tipo de porta real —</option>
                                                         <option value="automatic">🔄 Automáticas (operador)</option>
-                                                        <option value="swing">🚪 Batentes / Semi-automáticas</option>
+                                                        <option value="swing">🚪 Só batentes (monta-cargas / plataformas)</option>
                                                         <option value="mixed">🚪🔄 Misto — Batentes (patamar) + Automática (cabina)</option>
+                                                        <option value="mixed_gate">🚪🔲 Misto — Batentes (patamar) + Portões / Guilhotina (cabina)</option>
+                                                        <option value="mixed_patim">🚪↔️ Misto — Batentes (patamar) + Cabina sem portas / Patim móvel</option>
                                                         <option value="patim_movel">↔️ Cabina sem portas / Patim móvel</option>
-                                                        <option value="gate">🔲 Portões de Rede / Guilhotina</option>
+                                                        <option value="gate">🔲 Guilhotina / Portões de rede (patamar e cabina)</option>
                                                     </select>
                                                 </div>
                                             </div>
@@ -1087,7 +1096,21 @@
         /* ================================================================
            CHECKLIST ENGINE — gera checklist a partir de INSPECTION_TEMPLATES
            ================================================================ */
+        // Em elevadores de passageiros a cabina tem sempre porta automática, portão/guilhotina
+        // ou patim móvel — "só batentes" existe apenas em monta-cargas e plataformas.
+        function syncDoorOptions() {
+            const passenger = ['traction', 'traction_mrl', 'hydraulic', 'dl513'].includes($('#driveType').val());
+            // "Patim" isolado é só a porta de cabina (patamares assumidos batentes) — usa-se a variante mista.
+            // "Só batentes" apenas em monta-cargas/plataformas.
+            const hide = { swing: passenger, patim_movel: true };
+            Object.keys(hide).forEach(v => {
+                $('#doorType option[value="' + v + '"]').prop('disabled', hide[v]).toggle(!hide[v]);
+            });
+            if (hide[$('#doorType').val()]) $('#doorType').val('');
+        }
+
         function refreshChecklist() {
+            syncDoorOptions();
             const visitType  = $('#visitType').val();
             const driveType  = $('#driveType').val();
             const doorType   = $('#doorType').val();
@@ -1105,7 +1128,7 @@
                 if (typeof INSPECTION_TEMPLATES === 'undefined') {
                     throw new Error('INSPECTION_TEMPLATES não carregado');
                 }
-                html = INSPECTION_TEMPLATES.renderChecklist(driveType, doorType, visitType);
+                html = INSPECTION_TEMPLATES.renderChecklist(driveType, doorType, visitType, window.currentLiftComm);
             } catch(e) {
                 console.error('Erro ao gerar checklist:', e);
                 $('#checklistPlaceholder').html('<div class="alert alert-danger"><i class="fas fa-exclamation-circle"></i> Erro ao carregar checklist: ' + e.message + '<br><button class="btn btn-sm btn-warning mt-2" onclick="location.reload()">Recarregar página</button></div>').show();
@@ -1306,8 +1329,21 @@
                 if (lift.client && lift.client.name) $('#clientName').val(lift.client.name);
                 else if (lift.clientName)            $('#clientName').val(lift.clientName);
 
-                if (lift.driveType) $('#driveType').val(lift.driveType);
-                if (lift.doorType)  $('#doorType').val(lift.doorType);
+                // Valores antigos/inválidos na ficha do elevador (ex.: texto livre) → tipo válido
+                const driveAliases = { 'Канатний (MRL)': 'traction_mrl' };
+                const normDrive = driveAliases[lift.driveType] || lift.driveType;
+                if (normDrive) $('#driveType').val(normDrive);
+                // Fichas antigas: portão/patim isolados → variante mista equivalente
+                const doorAliases = { patim_movel: 'mixed_patim' };
+                if (doorAliases[lift.doorType]) lift.doorType = doorAliases[lift.doorType];
+                syncDoorOptions();
+                if (lift.doorType === 'swing' && $('#driveType').val() && $('#doorType option[value="swing"]').prop('disabled')) {
+                    // Ficha antiga: "batentes" sem indicar a porta de cabina — o técnico escolhe a real
+                    CommonUtils.showNotification('A ficha deste elevador indica apenas "batentes". Selecione o tipo real: automática, portão/guilhotina ou patim móvel (misto com batentes de patamar).', 'warning');
+                } else if (lift.doorType) {
+                    $('#doorType').val(lift.doorType);
+                }
+                window.currentLiftComm = lift.emergencyComm || '';
 
                 // Se ninguém forçou o tipo de visita via URL, sugerir automaticamente
                 // o nível em falta (mensal/trimestral/anual/pré-OI) com base no histórico.
@@ -1329,7 +1365,7 @@
                 };
                 const autoReasonLabel = autoVisitType ? (reasonLabels[lift.dueVisitReason] || '') : '';
 
-                const driveM = INSPECTION_TEMPLATES.NORMS_META[lift.driveType || 'traction'];
+                const driveM = INSPECTION_TEMPLATES.NORMS_META[normDrive || 'traction'];
                 const doorM  = INSPECTION_TEMPLATES.DOOR_META[lift.doorType || 'automatic'];
                 const vm     = INSPECTION_TEMPLATES.VISIT_META[$('#visitType').val() || 'maintenance'];
 
