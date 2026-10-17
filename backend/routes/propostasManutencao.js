@@ -712,6 +712,30 @@ router.put('/:id', authenticate, authorizeRoles('admin', 'dispatcher'), async (r
 
         await proposta.save();
 
+        // O PDF do contrato lê do documento ContratoManutencao (cópia criada na
+        // aprovação), não da proposta — sem isto, editar uma proposta já aprovada
+        // (ex.: preencher a data de início) nunca chegava ao contrato pendente.
+        try {
+            const ContratoManutencao = require('../../models/ContratoManutencao');
+            const contrato = await ContratoManutencao.findOne({ propostaId: proposta._id });
+            if (contrato && contrato.status === 'pendente') {
+                contrato.tipo = proposta.tipo;
+                contrato.cliente = proposta.cliente;
+                contrato.instalacao = proposta.instalacao;
+                contrato.faturacao = proposta.faturacao;
+                contrato.numAscensores = proposta.numAscensores;
+                contrato.localInstalacao = proposta.localInstalacao;
+                contrato.precoMensal = proposta.precoMensal;
+                contrato.pagamento = proposta.pagamento;
+                contrato.dataInicioContrato = proposta.dataInicioContrato;
+                contrato.duracaoAnos = proposta.duracaoAnos;
+                contrato.renovacao = proposta.renovacao;
+                await contrato.save();
+            }
+        } catch (e) {
+            console.error('Erro ao sincronizar contrato pendente:', e.message);
+        }
+
         // Permite criar a versão Completa em par também ao RESPONDER a um pedido
         // existente (PUT), não só ao criar uma proposta nova (POST) — este é de
         // longe o caso mais comum, já que responder a um pedido de cliente é
