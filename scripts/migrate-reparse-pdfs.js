@@ -19,6 +19,10 @@ const fs       = require('fs');
 const { parsePDF } = require('../services/pdf-parser-unified');
 
 const DRY_RUN    = process.argv.includes('--dry-run');
+// --gateci-only: só entradas cujo PDF tem a tabela GATECI compacta (parser determinístico)
+const GATECI_ONLY = process.argv.includes('--gateci-only');
+const { extractGateciCompactLines } = require('../services/pdf-parser-bureau-veritas');
+const pdfParse = require('pdf-parse');
 const LIFT_FILTER = (() => {
     const idx = process.argv.indexOf('--lift');
     return idx !== -1 ? process.argv[idx + 1] : null;
@@ -100,6 +104,19 @@ async function run() {
                 console.log(`  ⚠️  ${mn} — PDF não encontrado: ${entry.reportFile || '(sem reportFile)'}`);
                 newHistory.push(entry);
                 continue;
+            }
+
+            if (GATECI_ONLY) {
+                let isGateci = false;
+                try {
+                    const txt = (await pdfParse(fs.readFileSync(pdfAbsPath))).text || '';
+                    isGateci = extractGateciCompactLines(txt).length > 0;
+                } catch { /* ignora */ }
+                if (!isGateci) {
+                    skipped++;
+                    newHistory.push(entry);
+                    continue;
+                }
             }
 
             let parsed;

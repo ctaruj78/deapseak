@@ -1832,7 +1832,7 @@
                     // Format article display
                     const articleDisplay = v.article === 'NOTA' ? 
                         '<span class="badge badge-secondary">NOTA</span>' : 
-                        `<strong>Artigo ${v.article}</strong>`;
+                        `<strong>${v.articleInfo?.en81 ? 'EN 81-1 ponto' : 'Artigo'} ${v.article}</strong>`;
                     
                     html += `
                         <div class="violation-card ${severityClass}">

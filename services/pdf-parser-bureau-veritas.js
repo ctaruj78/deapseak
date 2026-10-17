@@ -24,6 +24,8 @@ const regulationArticles = require('./regulation-articles-complete');
 
 // Імпортуємо matchByDescriptionText з окремого модуля
 const { matchByDescriptionText } = require('./violation-keywords');
+const { lookupEn81Clause } = require('./en81-clauses');
+const { extractCmlNotaViolations } = require('./pdf-parser-cml-nota');
 
 /**
  * BASE DE DADOS DE KEYWORDS DE VIOLAÇÕES
@@ -554,7 +556,55 @@ function extractMetadata(text) {
 /**
  * ВИТЯГУВАННЯ ПОРУШЕНЬ - З ФІЛЬТРАЦІЄЮ "NOTA DE CLÁUSULAS"
  */
+// GATECI compacto: "C29.10.10 descrição…" (classe + artigo colados) numa tabela
+// "TIPO ARTIGO/PONTO DEFICIÊNCIA DETETADA". Parser por linhas — o regex genérico
+// perdia artigos de 2 níveis (12.) e trocava descrições.
+function extractGateciCompactLines(text) {
+    const head = /ARTIGO\s*\/?\s*PONTO\s*DEFICI[ÊE]NCIA\s*DETETADA/i.exec(text || '');
+    if (!head) return [];
+    let region = text.slice(head.index + head[0].length);
+    const end = region.search(/\n\s*(?:Avenida\b|RESULTADO\s+DA\s+INSPE[ÇC][ÃA]O\s+DE\b)/i);
+    if (end >= 0) region = region.slice(0, end);
+    const out = [];
+    let cur = null;
+    for (const raw of region.split('\n')) {
+        const line = raw.trim();
+        if (!line) continue;
+        // 1) Artigo de DL com ordinal ("C310º…", "C333º-1…") — não é ponto EN 81
+        let m = line.match(/^(C[123])(\d+º(?:\s*-\s*\d+)?)\s*(.*)$/);
+        if (m) {
+            if (cur) out.push(cur);
+            cur = { classification: m[1], article: m[2].replace(/\s+/g, ''), description: m[3], en81: false };
+        } else if ((m = line.match(/^(C[123])(\d+(?:\.\d+)*(?:\/\d+(?:\.\d+)*)?)\.?\s*(.*)$/))) {
+            // 2) Ponto EN 81-1 ("C29.10.10…", "C312.A…")
+            if (cur) out.push(cur);
+            cur = { classification: m[1], article: m[2], description: m[3], en81: true };
+        } else if ((m = line.match(/^(C[123])(?=[A-Za-zÀ-ú(])\s*(.*)$/))) {
+            // 3) Referência normativa sem número ("C3EN 50678…", "C3(MS) Ponto 2…")
+            if (cur) out.push(cur);
+            cur = { classification: m[1], article: 'NOTA', description: m[2], en81: false };
+        } else if (cur) {
+            cur.description += ' ' + line;
+        }
+    }
+    if (cur) out.push(cur);
+    return out
+        .map(v => ({ ...v, description: v.description.replace(/([a-zà-ú]{4,})(apresentam?)\b/g, '$1 $2').replace(/\s+/g, ' ').trim() }))
+        .filter(v => v.description.length >= 8);
+}
+
 function extractViolations(text) {
+    const compactLines = extractGateciCompactLines(text);
+    if (compactLines.length > 0) {
+        console.log(`  ✅ GATECI compact line parser: ${compactLines.length} violations`);
+        return compactLines.map(v => ({ ...createViolation(v.classification, v.article, v.description, { enClause: v.en81 }), _deterministic: true }));
+    }
+    // Nota de cláusulas CML (variantes A/B): parser determinístico por itens
+    const cmlNota = extractCmlNotaViolations(text);
+    if (cmlNota) {
+        console.log(`  ✅ CML nota de cláusulas (determinístico): ${cmlNota.length} violações`);
+        return cmlNota.map(v => ({ ...createViolation(v.classification, v.article, v.description), _deterministic: true }));
+    }
     const violations = [];
     const seen = new Set();
 
@@ -1339,16 +1389,17 @@ function isExplanationText(text) {
 /**
  * Створює об'єкт порушення
  */
-function createViolation(classification, articleNum, description) {
+function createViolation(classification, articleNum, description, opts = {}) {
     // Нормалізація номера артикулу
     const normalizedArticle = articleNum ? articleNum.replace(/\.$/, '') : '';
     
     // Отримуємо інформацію з бази даних за артикулом
-    let article = regulationArticles[normalizedArticle];
+    // opts.enClause: nº é ponto da EN 81 (ex. "12", "9.9"), não "Artigo N.º" do DL → não usar a tabela de artigos
+    let article = opts.enClause ? undefined : regulationArticles[normalizedArticle];
     let usedParentFallback = false;
     
     // Якщо не знайдено — шукаємо основний артикул (напр. "8.3.2" → "8")
-    if (!article && normalizedArticle.includes('.')) {
+    if (!article && !opts.enClause && normalizedArticle.includes('.')) {
         const mainArticle = normalizedArticle.split('.')[0];
         article = regulationArticles[mainArticle];
         if (article) {
@@ -1360,11 +1411,37 @@ function createViolation(classification, articleNum, description) {
         }
     }
 
+    // ── EN 81-1: pontos da norma (tabela GATECI) ───────────────────────────
+    // O número identifica o ponto da EN 81-1 → título/porquê/solução vêm da tabela por prefixo.
+    // O text-match só complementa quando a entrada é genérica (capítulo) e do MESMO capítulo.
+    if (opts.enClause) {
+        const urgency = classification === 'C1' ? 'CRÍTICO' : classification === 'C2' ? 'MODERADO' : 'BAIXO';
+        const entry = lookupEn81Clause(normalizedArticle);
+        let title = entry ? entry.title : `EN 81-1 ponto ${normalizedArticle}`;
+        let why = entry ? entry.why : 'Cumprimento obrigatório da regulamentação';
+        let solution = entry ? entry.solution : 'Consultar técnico certificado';
+        if (!entry || !entry.specific) {
+            const tm = matchByDescriptionText(description);
+            const sameChapter = tm && tm.article && String(tm.article).split('.')[0] === normalizedArticle.split(/[./]/)[0];
+            if (sameChapter) {
+                title = tm.title || title; why = tm.why || why; solution = tm.solution || solution;
+            }
+        }
+        article = {
+            title,
+            en81: true,
+            explanation: title,
+            why,
+            solution,
+            urgency
+        };
+    }
+
     // ── TEXT-BASED ENRICHMENT ──────────────────────────────────────────────
     // Quando a sub-cláusula (ex. 6.3.6) não existe na DB e usamos o pai (Art.6),
     // o título/why do pai são para outro contexto. Text-match corrige isso.
     let textMatch = null;
-    if (!article || usedParentFallback || article.explanation === 'Consultar regulamento para detalhes específicos') {
+    if (!opts.enClause && (!article || usedParentFallback || article.explanation === 'Consultar regulamento para detalhes específicos')) {
         textMatch = matchByDescriptionText(description);
         if (textMatch) {
             // Se não tínhamos artigo, usar o artigo inferido pelo texto
@@ -1403,7 +1480,7 @@ function createViolation(classification, articleNum, description) {
     // Za замовчуванням (artigo desconhecido, sem text-match)
     if (!article) {
         article = {
-            title: normalizedArticle ? `Artigo ${normalizedArticle}` : 'Artigo não identificado',
+            title: normalizedArticle ? (opts.enClause ? `EN 81-1 ponto ${normalizedArticle}` : `Artigo ${normalizedArticle}`) : 'Artigo não identificado',
             explanation: 'Consultar regulamento para detalhes específicos',
             why: 'Cumprimento obrigatório da regulamentação',
             solution: 'Consultar técnico certificado',
@@ -1602,6 +1679,7 @@ module.exports = {
     parseBureauVeritasPDF,
     extractMetadata,
     extractViolations,
+    extractGateciCompactLines,
     extractConclusion,
     getViolationsStats
 };

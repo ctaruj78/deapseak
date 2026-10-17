@@ -177,11 +177,12 @@ function isValidViolationObject(v) {
     if (!v || !v.classification) return false;
 
     // LLM-extracted violations are pre-validated — skip the regex-based article filter
-    if (v._llm) return true;
+    if (v._llm || v._deterministic) return true;
 
     // article типу "6781" — це номер процесу, не артикул закону
     if (v.article) {
-        const artNum = parseInt(String(v.article).replace(/\D/g, ''), 10);
+        // Só o 1.º segmento: "9.10.10" / "14.2.3.3" são artigos EN81 válidos (antes → 91010 → descartado)
+        const artNum = parseInt((String(v.article).match(/\d+/) || [''])[0], 10);
         if (!isNaN(artNum) && artNum > 500) return false;
     }
 
@@ -221,7 +222,7 @@ function cleanViolations(violations = []) {
 
         const description = String(v.description || '').trim();
         // LLM was explicitly prompted to exclude boilerplate — skip regex filters for its output
-        if (!v._llm) {
+        if (!v._llm && !v._deterministic) {
             if (isLegendOrBoilerplateClause(description)) continue;
             if (isMetadataNoiseClause(description)) continue;
         }
@@ -271,6 +272,12 @@ function inferResultStatus(text = '') {
     const source = String(text || '');
     if (!source) {
         return { status: 'unknown', hasExplicitImmobilization: false, hasApprovedC2Star: false };
+    }
+
+    // IEP: caixas de verificação "Aprovado [X] / Reprovado [X]" na carta de apresentação
+    const box = source.match(/\bAprovado[ \t]*(X)?[ \t]*\r?\n[ \t]*Reprovado[ \t]*(X)?[ \t]*(?:\r?\n|$)/i);
+    if (box && (box[1] || box[2])) {
+        return { status: box[2] ? 'failed' : 'approved', hasExplicitImmobilization: false, hasApprovedC2Star: false };
     }
 
     const resultIdx = source.search(/RESULTADO\s+DA\s+INSPE/i);
@@ -490,7 +497,14 @@ async function parseReport(filePath) {
         let result = null;
 
         // ── STEP 1: LLM extraction (primary, if text is usable) ──────────────
-        if (fullText.length >= 300) {
+        // Tabela GATECI compacta ("C29.10.10 …"): o LLM erra artigos/classes → parser determinístico primeiro
+        const deterministicGateci = require('./pdf-parser-bureau-veritas').extractGateciCompactLines(fullText).length > 0 ||
+            require('./pdf-parser-cml-nota').extractCmlNotaViolations(fullText) !== null;
+        if (deterministicGateci) {
+            console.log('🔒 GATECI compact table detected — using deterministic parser (skip LLM)');
+        }
+
+        if (fullText.length >= 300 && !deterministicGateci) {
             const llmResult = await extractWithLLM(fullText).catch(err => {
                 console.warn('⚠️ LLM extraction threw:', err.message);
                 return null;
@@ -499,7 +513,14 @@ async function parseReport(filePath) {
             if (llmResult?.success) {
                 const hasDate = llmResult.metadata?.date;
                 const hasViolations = (llmResult.violations?.length || 0) > 0;
-                if (hasDate || hasViolations) {
+                // LLM com 0 violações mas o texto indica reprovação / cláusulas C1-C3 → não confiar
+                const textSignalsDeficiencies = !hasViolations && (
+                    /\bReprovad[oa]\b/i.test(fullText) ||
+                    /(?:^|\n)\s*C[123]\d+(?:\.\d+)+/.test(fullText)
+                );
+                if (textSignalsDeficiencies) {
+                    console.log('⚠️ LLM returned 0 violations but text signals deficiencies — falling back to regex');
+                } else if (hasDate || hasViolations) {
                     console.log(`✅ Using LLM result (date=${hasDate}, violations=${llmResult.violations?.length || 0})`);
                     result = llmResult;
                 } else {
@@ -517,7 +538,15 @@ async function parseReport(filePath) {
                 if (!hasDate) {
                     console.log('⚠️ BV parser found no date — falling back to enhanced parser');
                     const enhanced = await pdfParserEnhanced.parsePDF(filePath).catch(() => null);
-                    if (enhanced?.success) result = enhanced;
+                    if (enhanced?.success) {
+                        // Violações determinísticas (nota CML / tabela GATECI) são mais fiáveis que as do enhanced
+                        const det = (result?.violations || []).filter(v => v._deterministic);
+                        result = enhanced;
+                        if (det.length > 0) {
+                            result.violations = det;
+                            if (result.analysis) result.analysis.violations = det;
+                        }
+                    }
                 }
             } else {
                 result = await pdfParserEnhanced.parsePDF(filePath);
