@@ -148,7 +148,7 @@ async function garantirContaCliente(cliente, req) {
             subject: 'Bem-vindo(a) à plataforma FestLift — os seus dados de acesso',
             html: `
                 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #ddd; border-radius: 8px; overflow: hidden;">
-                    <div style="background: linear-gradient(135deg, #1a3a6b 0%, #2355a0 100%); color: white; padding: 28px 30px; text-align: center;">
+                    <div style="background-color: #1a3a6b; background-image: linear-gradient(135deg, #1a3a6b 0%, #2355a0 100%); color: white; padding: 28px 30px; text-align: center;">
                         <h1 style="margin: 0; font-size: 22px;">FestLift</h1>
                         <p style="margin: 6px 0 0 0; font-size: 13px; opacity: 0.9;">Plataforma de Gestão de Elevadores</p>
                     </div>
@@ -630,7 +630,7 @@ router.post('/:id/enviar-link', authenticate, authorizeRoles('admin', 'dispatche
                 subject: assunto,
                 html: `
                     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #ddd; border-radius: 8px; overflow: hidden;">
-                        <div style="background: linear-gradient(135deg, #1a3a6b 0%, #2355a0 100%); color: white; padding: 28px 30px; text-align: center;">
+                        <div style="background-color: #1a3a6b; background-image: linear-gradient(135deg, #1a3a6b 0%, #2355a0 100%); color: white; padding: 28px 30px; text-align: center;">
                             <h1 style="margin: 0; font-size: 22px;">FestLift</h1>
                             <p style="margin: 6px 0 0 0; font-size: 13px; opacity: 0.9;">Elevadores e Serviços, Lda.</p>
                         </div>

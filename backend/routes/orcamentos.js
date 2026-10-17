@@ -1087,14 +1087,18 @@ router.post('/:id/enviar', authenticate, authorizeRoles('admin', 'dispatcher'), 
                 const fotoPath = orcamento.fotos[i];
                 const fsPath = path.join(__dirname, '../..', fotoPath);
                 try {
-                    const fotoBuffer = fs.readFileSync(fsPath);
-                    const ext = (path.extname(fotoPath).replace('.', '') || 'jpeg').toLowerCase();
-                    const mimeType = ext === 'jpg' ? 'image/jpeg' : `image/${ext}`;
+                    // WebP não é suportado pelo Outlook desktop → converter para JPEG no email
+                    const fotoBuffer = await sharp(fs.readFileSync(fsPath))
+                        .rotate()
+                        .resize({ width: 1200, height: 1200, fit: 'inside', withoutEnlargement: true })
+                        .jpeg({ quality: 82 })
+                        .toBuffer();
                     fotoAttachments.push({
-                        filename: `foto${i}.${ext}`,
+                        filename: `foto${i}.jpg`,
                         content: fotoBuffer,
-                        contentType: mimeType,
-                        cid: `foto${i}@festlift`
+                        contentType: 'image/jpeg',
+                        cid: `foto${i}@festlift`,
+                        contentDisposition: 'inline'
                     });
                 } catch (e) {
                     console.warn(`⚠️ Foto não encontrada no disco: ${fsPath}`);
@@ -1104,51 +1108,42 @@ router.post('/:id/enviar', authenticate, authorizeRoles('admin', 'dispatcher'), 
 
         // Nota: corpo simples — detalhes completos constam APENAS no PDF em anexo.
         // Evita duplicação no Apple Mail / macOS Mail.
-        const emailHTML = `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #ddd; border-radius: 8px; overflow: hidden;">
-                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 28px 30px; text-align: center;">
-                    <h1 style="margin: 0; font-size: 22px; letter-spacing: 1px;">FestLift</h1>
-                    <p style="margin: 6px 0 0 0; font-size: 13px; opacity: 0.9;">Elevadores e Serviços, Lda.</p>
-                </div>
-                <div style="padding: 32px 30px;">
-                    <p style="margin: 0 0 16px 0; font-size: 15px; color: #333;">
-                        Caro(a) <strong>${orcamento.cliente.nome}</strong>,
-                    </p>
-                    <p style="margin: 0 0 16px 0; font-size: 15px; color: #333; line-height: 1.6;">
-                        Enviamos em anexo o <strong>Orçamento ${orcamento.numero}</strong>,
-                        no valor de <strong style="color: #667eea;">€${orcamento.total.toFixed(2)}</strong> (IVA incluído),
-                        válido até <strong>${validadeFormatted}</strong>.
-                    </p>
-                    <p style="margin: 0 0 24px 0; font-size: 15px; color: #333; line-height: 1.6;">
-                        Para qualquer questão ou esclarecimento, estamos inteiramente ao dispor.
-                    </p>
-                    <div style="background: #f0f4ff; border-left: 4px solid #667eea; padding: 14px 18px; border-radius: 0 6px 6px 0; margin-bottom: 24px;">
-                        <p style="margin: 0; font-size: 13px; color: #555;">
-                            📎 O orçamento detalhado encontra-se no ficheiro PDF em anexo.
-                        </p>
-                    </div>
-                    ${orcamento.fotos && orcamento.fotos.length > 0 ? `
-                    <div style="margin-bottom: 24px;">
-                        <p style="font-size: 13px; color: #555; margin-bottom: 10px;"><strong>📷 Documentação fotográfica:</strong></p>
-                        <div style="display:flex; flex-wrap:wrap; gap:8px;">
-                            ${orcamento.fotos.map((fotoPath, i) => {
-                                return `<img src="cid:foto${i}@festlift" style="width:160px;height:120px;object-fit:cover;border-radius:6px;border:1px solid #ddd;" alt="Foto">`;
-                            }).join('')}
-                        </div>
-                    </div>` : ''}
-                    <p style="margin: 0; font-size: 15px; color: #333;">
-                        Com os melhores cumprimentos,<br>
-                        <strong>FestLift - Elevadores e Serviços, Lda.</strong>
-                    </p>
-                </div>
-                <div style="background: #f8f9fa; padding: 18px 30px; text-align: center; border-top: 1px solid #e0e0e0;">
-                    <p style="margin: 0; font-size: 12px; color: #888;">
-                        info@festlift.pt &nbsp;|&nbsp; +351 214 190 863<br>
-                        <small>Este email foi gerado automaticamente — por favor não responda diretamente.</small>
-                    </p>
-                </div>
-            </div>
-        `;
+        const fotosHTML = fotoAttachments.length > 0 ? `
+                <tr><td style="padding:0 30px 24px 30px;">
+                    <p style="margin:0 0 10px 0;font-family:Arial,Helvetica,sans-serif;font-size:13px;color:#555555;"><strong>Documentação fotográfica:</strong></p>
+                    ${fotoAttachments.map(f => `<img src="cid:${f.cid}" width="160" alt="Foto" style="display:inline-block;width:160px;height:auto;margin:0 8px 8px 0;border:1px solid #dddddd;">`).join('')}
+                </td></tr>` : '';
+
+        // Layout em tabelas + estilos inline + fallbacks de cor: compatível com Outlook (Word),
+        // Gmail, Apple Mail, Yahoo e clientes móveis. Detalhes completos constam APENAS no PDF.
+        const emailHTML = `<!DOCTYPE html>
+<html lang="pt"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"></head>
+<body style="margin:0;padding:0;background-color:#f4f4f4;">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#f4f4f4"><tr><td align="center" style="padding:16px 8px;">
+<table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" bgcolor="#ffffff" style="width:100%;max-width:600px;background-color:#ffffff;border:1px solid #dddddd;font-family:Arial,Helvetica,sans-serif;">
+    <tr><td align="center" bgcolor="#667eea" style="background-color:#667eea;background-image:linear-gradient(135deg,#667eea 0%,#764ba2 100%);color:#ffffff;padding:28px 30px;">
+        <div style="margin:0;font-size:22px;font-weight:bold;letter-spacing:1px;color:#ffffff;">FestLift</div>
+        <div style="margin:6px 0 0 0;font-size:13px;color:#ffffff;">Elevadores e Serviços, Lda.</div>
+    </td></tr>
+    <tr><td style="padding:32px 30px 16px 30px;font-size:15px;color:#333333;line-height:1.6;">
+        <p style="margin:0 0 16px 0;">Caro(a) <strong>${orcamento.cliente.nome}</strong>,</p>
+        <p style="margin:0 0 16px 0;">Enviamos em anexo o <strong>Orçamento ${orcamento.numero}</strong>, no valor de <strong style="color:#667eea;">€${orcamento.total.toFixed(2)}</strong> (IVA incluído), válido até <strong>${validadeFormatted}</strong>.</p>
+        <p style="margin:0;">Para qualquer questão ou esclarecimento, estamos inteiramente ao dispor.</p>
+    </td></tr>
+    <tr><td style="padding:8px 30px 24px 30px;">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr>
+            <td bgcolor="#f0f4ff" style="background-color:#f0f4ff;border-left:4px solid #667eea;padding:14px 18px;font-size:13px;color:#555555;">O orçamento detalhado encontra-se no ficheiro PDF em anexo.</td>
+        </tr></table>
+    </td></tr>${fotosHTML}
+    <tr><td style="padding:0 30px 32px 30px;font-size:15px;color:#333333;line-height:1.5;">
+        Com os melhores cumprimentos,<br><strong>FestLift - Elevadores e Serviços, Lda.</strong>
+    </td></tr>
+    <tr><td align="center" bgcolor="#f8f9fa" style="background-color:#f8f9fa;padding:18px 30px;border-top:1px solid #e0e0e0;font-size:12px;color:#888888;">
+        info@festlift.pt &nbsp;|&nbsp; +351 214 190 863<br><span style="font-size:11px;">Este email foi gerado automaticamente — por favor não responda diretamente.</span>
+    </td></tr>
+</table>
+</td></tr></table>
+</body></html>`;
 
         console.log('📄 Gerando PDF do orçamento...');
         const pdfBuffer = await gerarPDFOrcamento(orcamento);
@@ -1162,6 +1157,7 @@ router.post('/:id/enviar', authenticate, authorizeRoles('admin', 'dispatcher'), 
                 bcc: adminBcc && adminBcc.toLowerCase() !== emailDestino.toLowerCase() ? adminBcc : undefined,
                 subject: `Orçamento ${orcamento.numero} - FestLift - Elevadores e Serviços, Lda.`,
                 html: emailHTML,
+                text: `Caro(a) ${orcamento.cliente.nome},\n\nEnviamos em anexo o Orçamento ${orcamento.numero}, no valor de €${orcamento.total.toFixed(2)} (IVA incluído), válido até ${validadeFormatted}.\n\nCom os melhores cumprimentos,\nFestLift - Elevadores e Serviços, Lda.\ninfo@festlift.pt | +351 214 190 863`,
                 attachments: [
                     {
                         filename: `Orcamento_${orcamento.numero}.pdf`,

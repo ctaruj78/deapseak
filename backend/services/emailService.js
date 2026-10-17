@@ -54,16 +54,25 @@ class EmailService {
             html: htmlContent
         };
 
+        if (typeof htmlContent === 'string' && htmlContent.includes('cid:festlift-logo@festlift')) {
+            mailOptions.attachments = [{
+                filename: 'festlift-logo.png',
+                path: require('path').join(__dirname, '../../assets/img/festlift-logo.png'),
+                cid: 'festlift-logo@festlift',
+                contentDisposition: 'inline'
+            }];
+        }
+
         const effectiveBcc = bcc || (this.adminBcc && toField !== this.adminBcc ? this.adminBcc : null);
         if (effectiveBcc) mailOptions.bcc = effectiveBcc;
 
         if (attachments && attachments.length > 0) {
-            mailOptions.attachments = attachments.map(a => ({
+            mailOptions.attachments = (mailOptions.attachments || []).concat(attachments.map(a => ({
                 filename: a.name,
                 content: Buffer.from(a.content, 'base64'),
                 cid: a.contentId || undefined,
                 encoding: 'base64'
-            }));
+            })));
         }
 
         try {
@@ -94,15 +103,15 @@ class EmailService {
 
     // Shared branded wrapper — consistent FestLift header/footer for all emails
     _tpl(headerColor, headerLabel, bodyHtml) {
-        const logoUrl = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAScAAABhCAMAAACj8pe2AAABBVBMVEUAAAD////yphPyphPyphPyphPyphPyphPyphPyphP////yphPyphPyphPyphP////yphP////yphP////////51Zj////yphP////////////////////////yphP////yphPyphPyphP////////yphPyphP////////////yphPyphP////////////////yphP////yphPyphP////yphPyphPyphP////////////////////////yphP////yphPyphPyphP////yphPyphP////////yphPyphPyphPyphP////yphP////////////////////yphPyphP////yphMllZjmAAAAVXRSTlMARJlE7xFmzFXdu4h3M6p2uxEizAcD6QfeqvzumFUtIvrq5oluOhsM1J6AbWY5GuPSwsK0paKQSj8zMC0mFgz3yXxBHvXhfWJhWxbZsq+RW0sgt3ODe+6y2gAABTpJREFUeNrs10+LgmAQBvCh1c0oIwR5b6KCHvQihnqLFIP+0Knl+f4fZWsdS3etrgvO7/QSdHB4Z9556P+xFYn39NXUIvGOuQO0DxKv7V3ABUoSL6gJoBXmDljrJJ4Jt8BtOB1XwMwhMezDAzJFV/YcqA8khiwANyZmaEAuC8JfmzPgB3RnJUAakuhzTkB67BVu+VM40WXUwNzmNy+mxsW9NaK4s3OgNrjfpssk2zTnygeuZ9E4psDJad+8mFSWWI9FIZEU0wh84My3pmwmUuwVvHjmgFaQIIpdYMEReJ2Gbe0iuzkdauDLprFTGeBV/ObNcvXoxbXe/gqsxp5irATYhnxzvENvts/M9pYBO5PGrNCAieJJ9DvRGd6eSxYB7p5Gq/v9IfdZf/ecqE49x5piuv0U+OVgltmGnf4cZ4q5z2feAwYt/Ko378fHKaOo4qRifOr0hHUJ+GRe/yBxTwjxzW4do0wMAmEYHlubYbBRNKRImwvkIN/9r/LHDYuYf2QXtlnWebqIhsxbSIwxxhgz4tDzRIQbeljZZwAh7UIVKv2so+a5pB3RX/KV3u0kpT1ntk6DThK6lSDWSe3k0QsyZSdq1FkXVHlzznHEiUfnX3dyw4/4Zu912lAd9MBAIeukjeO7XXsg66SOk1CllS5inar/9yrjEgs7Os3a6YkHnSSjScsHnRr/g53oyN3aap0G40gBmijWaXSNyJ5i2zhnJ9IGU8iyRVRxznv8ZScJ0v8jWCd1nIRw0GWzTsNZGafihGhlVMk6EeGGBXdu2Knnp+r0x84ZpcwNw0B4sGTZrhNj8tQfWnqBnmfuf5SuE22ztKF9KC3kr7+X1aw1ggzYhECCrz/9M3O6yglf3l70x8+YOV3nNA6mt/35+IdPj5T+v5wmk8lkMplMfolEXLNlTE5ouMaIPyCq4V3xl3JCezffFjFlj6B5UQLQuyQWAbJqJ5DLsaLVm4IyvJgHUh4O1zk15T4HzBiz8lhPgsN5R1YukhpoXlRFZO5BWsHGKomIWveWIuvRJMy5bKd5oEFqd20McswBLbJKTfGxHjTuzlu+IbswhFRA82KjmAKydCIzwvxHQXt2r0x1fTEPkjaLro14zqFlAthnRObhvOc7euPSQgXNC/TQA6q2dpWTN0koXE/zIC5Nk2sjfA5oe0Kr57Q7bxnU2CqtgtULmHIdsjH+sO/Mux9KMvNpHiSToK6N8DmgRW2PFd93u/OedxpWmDYELkcBaAIW1Voasmr4fo4zP7tjo4bTfFTKIq4z4XOGSQr1eY4P5z3P8X/AJgWT39NveiswmUwm39o5mxYFoSgM37ZuRLxdSosWCSmkErjow2gRjJuoDN7//1fm0j1m2UiznbnnWcjZuHl5z8PBhf8Bb7fd7s0oy3oo+shK2b6QCfvYjYDTwgSVxLOeNJ2bZ6Yv4DAVNuI5QFyaOVKDn7Ocm6YtTsBoJ+xkOAfCq5nXyhVvTBU1qIwBxxPWcjkgoHyOfiG7MY62ZrqGwNzqf0BtcmBMkir848ta3pwnNV2E3exXQFyb2c3Xz2o6k5rGgC6W7cgzEJLEBypq1UQNmsXAai8YUWlJRU0oiTSrlm8ouhA4W62mljQHCklL5mf6eWoa5AY4VIJpJaUlTk1Ky3hCqRWALhbTICeAIolflaqaU4HV1GUZPCRVps3pCehiMS+kCjASJyKd3FIwXTIf0BInZAKoVDDvUDRtaDZ+RfkMrVr1WEJWUx+kbpI600/tA6vkfiQwvdBpeT86mQ+4AQpW0y8YsJr+Lt9Y8G9bbqBHhQAAAABJRU5ErkJggg==';
+        const logoUrl = 'cid:festlift-logo@festlift';
         return `<!DOCTYPE html><html lang="pt"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
 <body style="margin:0;padding:0;background:#f0f2f5;font-family:Arial,Helvetica,sans-serif;">
 <table width="100%" cellpadding="0" cellspacing="0" style="background:#f0f2f5;padding:32px 0;"><tr><td align="center">
 <table width="600" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.1);">
-  <tr><td style="background:${headerColor};padding:22px 36px;">
+  <tr><td bgcolor="${headerColor}" style="background-color:${headerColor};padding:22px 36px;">
     <table width="100%" cellpadding="0" cellspacing="0"><tr>
       <td valign="middle">
-        <img src="${logoUrl}" alt="FestLift" width="180" height="59" style="display:block;border:0;max-width:180px;" />
+        <img src="${logoUrl}" alt="FestLift" width="180" height="59" style="display:block;border:0;width:180px;height:59px;" />
       </td>
       <td align="right" valign="middle"><div style="font-size:13px;color:rgba(255,255,255,.9);font-weight:600;">${headerLabel}</div></td>
     </tr></table>
@@ -402,7 +411,7 @@ class EmailService {
 
         const html = `
             <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;color:#333;">
-                <div style="background:linear-gradient(135deg,#1a237e,#1565c0);padding:24px 32px;border-radius:8px 8px 0 0;">
+                <div style="background-color:#1a237e;background-image:linear-gradient(135deg,#1a237e,#1565c0);padding:24px 32px;border-radius:8px 8px 0 0;">
                     <h1 style="color:#fff;margin:0;font-size:22px;">🛗 FestLift — Plataforma de Gestao de Elevadores</h1>
                 </div>
                 <div style="background:#fff;padding:32px;border:1px solid #e0e0e0;border-top:none;border-radius:0 0 8px 8px;">
