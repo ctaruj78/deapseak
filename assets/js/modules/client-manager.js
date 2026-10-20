@@ -190,7 +190,7 @@ class ClientManager {
         col.innerHTML = `
             <div class="client-card">
                 <span class="status-badge ${statusClass}">${statusText}</span>
-                <div class="client-avatar">${client.avatarUrl ? `<img src="${client.avatarUrl}" alt="${client.name}" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">` : (client.avatar || 'C')}</div>
+                <div class="client-avatar">${client.avatarUrl ? `<img src="${String(client.avatarUrl).replace(/"/g, '&quot;')}" alt="" data-initial="${String((client.name || 'C').trim().charAt(0).toUpperCase() || 'C').replace(/[&<>"']/g, '')}" onerror="this.onerror=null;this.replaceWith(document.createTextNode(this.dataset.initial))" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">` : (client.avatar || 'C')}</div>
                 <h5 class="text-center">${client.name}</h5>
                 <p class="text-center text-muted mb-2">${typeText}</p>
                 <div class="text-center mb-3">

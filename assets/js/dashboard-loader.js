@@ -90,11 +90,29 @@ class DashboardLoader {
             this.setLoading();
             
             // Паралельно завантажуємо всі дані
+            // Кожен запит незалежний: відмова одного (напр. 403) не ламає решту статистики
+            const safe = (p) => p.catch(err => { console.warn('⚠️ DashboardLoader:', err.message); return null; });
+            const fetchUsers = async () => {
+                try {
+                    // Диспетчеру /api/users без ?role= завжди 403 — одразу йдемо за ролями
+                    let role = null;
+                    try { role = JSON.parse(sessionStorage.getItem('liftmanager_user') || 'null')?.role; } catch (_) {}
+                    if (role === 'dispatcher') throw new Error('dispatcher');
+                    return await this.fetchAPI('/api/users');
+                } catch (e) {
+                    // Диспетчер: /api/users дозволений лише з ?role=
+                    const [c, t] = await Promise.all([
+                        this.fetchAPI('/api/users?role=client'),
+                        this.fetchAPI('/api/users?role=technician')
+                    ]);
+                    return [].concat(Array.isArray(c) ? c : [], Array.isArray(t) ? t : []);
+                }
+            };
             const [usersData, liftsData, requestsData, dashboardData] = await Promise.all([
-                this.fetchAPI('/api/users'),
-                this.fetchAPI('/api/lifts'),
-                this.fetchAPI('/api/requests'),
-                this.fetchAPI('/api/dashboard')
+                safe(fetchUsers()),
+                safe(this.fetchAPI('/api/lifts')),
+                safe(this.fetchAPI('/api/requests')),
+                safe(this.fetchAPI('/api/dashboard'))
             ]);
 
             console.log('📦 Отримані дані:', {
@@ -195,7 +213,7 @@ class DashboardLoader {
             // profile.html
             'qrCodes', 'systemUptime',
             // unified-analytics.html
-            'total-lifts', 'active-lifts', 'qr-scans', 'maintenance-needed'
+            'total-lifts', 'active-lifts'
         ];
         elements.forEach(id => {
             const el = document.getElementById(id);
@@ -212,7 +230,7 @@ class DashboardLoader {
             // profile.html
             'qrCodes', 'systemUptime',
             // unified-analytics.html
-            'total-lifts', 'active-lifts', 'qr-scans', 'maintenance-needed'
+            'total-lifts', 'active-lifts'
         ];
         elements.forEach(id => {
             const el = document.getElementById(id);
@@ -237,8 +255,7 @@ class DashboardLoader {
         // Елементи для unified-analytics.html
         this.updateElement('total-lifts', stats.totalLifts);
         this.updateElement('active-lifts', stats.activeLifts);
-        this.updateElement('qr-scans', stats.totalLifts); // TODO: окремий лічильник QR сканувань
-        this.updateElement('maintenance-needed', 0); // TODO: лічильник ліфтів що потребують Manutenção
+        // qr-scans та maintenance-needed керує unified-analytics-engine (реальні дані) — тут не перезаписуємо
     }
 
     updateElement(id, value) {

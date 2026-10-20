@@ -153,9 +153,10 @@ class AuthManager {
                 return false;
             }
 
-            // Якщо токен закінчується менш ніж через 24 horasи — оновлюємо заздалегідь
-            if (payload.exp && (payload.exp - now) < 86400) {
-                console.log('🔄 Токен закінчується < 24h, оновлюємо у фоні...');
+            // Access-токен живе ~2h, тому оновлюємо лише коли лишилось < 30 хв
+            // (раніше поріг 24h був завжди істинним → refresh на кожен виклик → 429)
+            if (payload.exp && (payload.exp - now) < 1800) {
+                console.log('🔄 Токен закінчується < 30 хв, оновлюємо у фоні...');
                 this.refreshAccessToken().catch(() => {});
             }
 

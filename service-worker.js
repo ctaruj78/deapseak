@@ -13,15 +13,15 @@ const urlsToCache = [
   '/assets/js/modules/technician-manager.js',
   '/assets/js/modules/ai-assistant.js',
   '/assets/css/main.css',
-  '/data/lifts.json',
-  '/data/sample-data.json',
   '/docs/user-manual.pdf'
 ];
 
 self.addEventListener('install', event => {
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(urlsToCache))
+    // Кешуємо кожен ресурс окремо: недоступний файл не повинен ламати встановлення SW
+    caches.open(CACHE_NAME).then(cache =>
+      Promise.allSettled(urlsToCache.map(u => cache.add(u)))
+    )
   );
 });
 
@@ -82,7 +82,8 @@ self.addEventListener('fetch', event => {
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys().then(keys => Promise.all(
-      keys.filter(key => key !== CACHE_NAME).map(key => caches.delete(key))
+      // чіпаємо лише власні кеші, щоб не стирати кеші sw.js
+      keys.filter(key => key.startsWith('deapseak-tech-cache-') && key !== CACHE_NAME).map(key => caches.delete(key))
     ))
   );
 });

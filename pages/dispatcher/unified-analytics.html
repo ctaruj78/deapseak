@@ -224,6 +224,7 @@
         
         .health-good { background: #d4edda; color: #155724; }
         .health-warning { background: #fff3cd; color: #856404; }
+        .health-bad { background: #f8d7da; color: #721c24; }
         .health-critical { background: #f8d7da; color: #721c24; }
     </style>
     <link rel="stylesheet" href="/assets/css/table-drag-scroll.css">
@@ -531,36 +532,36 @@
                                 <div class="col-md-3">
                                     <div class="analytics-card">
                                         <div class="card-body text-center">
-                                            <h3 class="text-success">€ 67.000</h3>
+                                            <h3 class="text-success" id="monthly-revenue">€ —</h3>
                                             <p class="mb-0">Receita deste mês</p>
-                                            <small class="text-success"><i class="fas fa-arrow-up"></i> +12% vs mês anterior</small>
+                                            <small class="text-success" id="monthly-revenue-change">—</small>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="analytics-card">
                                         <div class="card-body text-center">
-                                            <h3 class="text-warning">€ 35.000</h3>
+                                            <h3 class="text-warning" id="maintenance-costs">€ —</h3>
                                             <p class="mb-0">Custos de manutenção</p>
-                                            <small class="text-warning"><i class="fas fa-arrow-up"></i> +5% vs mês anterior</small>
+                                            <small class="text-warning" id="maintenance-costs-change">—</small>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="analytics-card">
                                         <div class="card-body text-center">
-                                            <h3 class="text-primary">€ 32.000</h3>
+                                            <h3 class="text-primary" id="net-profit">€ —</h3>
                                             <p class="mb-0">Lucro líquido</p>
-                                            <small class="text-success"><i class="fas fa-arrow-up"></i> +18% vs mês anterior</small>
+                                            <small class="text-primary" id="net-profit-change">—</small>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="analytics-card">
                                         <div class="card-body text-center">
-                                            <h3 class="text-info">47.8%</h3>
+                                            <h3 class="text-info" id="profitability-rate">—%</h3>
                                             <p class="mb-0">Rentabilidade</p>
-                                            <small class="text-success"><i class="fas fa-arrow-up"></i> +3.2% vs mês anterior</small>
+                                            <small class="text-info" id="profitability-rate-change">—</small>
                                         </div>
                                     </div>
                                 </div>
@@ -1304,7 +1305,7 @@
 <script src="/assets/js/predictive-maintenance.js?v=1.8"></script>
 
 <!-- Unified Analytics Engine -->
-<script src="/assets/js/unified-analytics-engine.js?v=2.3"></script>
+<script src="/assets/js/unified-analytics-engine.js?v=2.4"></script>
 
 <!-- Script adicional para activação garantida de previsão AI -->
 <script>
@@ -1513,6 +1514,20 @@ setTimeout(() => {
 // Municipalities Analytics Data Loader
 (function() {
     'use strict';
+    let municipalitiesById = {};
+    let municipalitiesByName = {};
+    let _munStatsAll = [];
+    let _commsAll = [];
+
+    function normalizeMunicipalityName(name) {
+        return String(name || '').trim().toLowerCase();
+    }
+
+    function resolveMunicipalityId(m) {
+        if (!m || typeof m !== 'object') return '';
+        return m.id || m._id || '';
+    }
+
     
     // Carregar dados ao mudar de separador
     document.addEventListener('DOMContentLoaded', function() {
@@ -1627,6 +1642,7 @@ setTimeout(() => {
             
             // Ordenar por data (mais recentes primeiro)
             communications.sort((a, b) => new Date(b.sentAt) - new Date(a.sentAt));
+            _commsAll = communications;
             
             // Apresentar tabela
             const tbody = document.getElementById('communications-tbody');
@@ -1730,6 +1746,7 @@ setTimeout(() => {
             });
             
             // Ordenar por quantidade de elevadores
+            _munStatsAll = Object.values(municipalityStats);
             const topMunicipalities = Object.values(municipalityStats)
                 .sort((a, b) => b.liftsCount - a.liftsCount)
                 .slice(0, 10);
@@ -1779,53 +1796,80 @@ setTimeout(() => {
     
     // Criar gráficos
     function createMunicipalitiesCharts() {
-        // Gráfico de distribuição por distrito
+        if (typeof Chart === 'undefined') return;
+
+        // --- Distribuição por distrito: elevadores reais agrupados por distrito ---
         const distritoCanvas = document.getElementById('municipalities-by-distrito');
-        if (distritoCanvas && typeof Chart !== 'undefined') {
+        if (distritoCanvas) {
+            const existing = Chart.getChart(distritoCanvas);
+            if (existing) existing.destroy();
+
+            const byDistrito = {};
+            _munStatsAll.forEach(m => {
+                const d = (m.distrito && m.distrito !== 'N/A') ? m.distrito : 'Outros';
+                byDistrito[d] = (byDistrito[d] || 0) + m.liftsCount;
+            });
+            let entries = Object.entries(byDistrito).sort((a, b) => b[1] - a[1]);
+            const named = entries.filter(([k]) => k !== 'Outros');
+            const rest = named.slice(4).reduce((acc, [, v]) => acc + v, 0) + (byDistrito['Outros'] || 0);
+            entries = named.slice(0, 4);
+            if (rest > 0) entries.push(['Outros', rest]);
+
             new Chart(distritoCanvas, {
                 type: 'doughnut',
                 data: {
-                    labels: ['Lisboa', 'Setúbal', 'Santarém', 'Leiria', 'Outros'],
+                    labels: entries.map(e => e[0]),
                     datasets: [{
-                        data: [18, 8, 6, 3, 2],
+                        data: entries.map(e => e[1]),
                         backgroundColor: ['#007bff', '#28a745', '#ffc107', '#17a2b8', '#6c757d']
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: {
-                        legend: { position: 'bottom' }
-                    }
+                    plugins: { legend: { position: 'bottom' } }
                 }
             });
         }
-        
-        // Gráfico de tipos de mensagens
+
+        // --- Tipos de mensagens: contagem real do histórico de comunicações ---
         const typesCanvas = document.getElementById('notification-types-chart');
-        if (typesCanvas && typeof Chart !== 'undefined') {
+        if (typesCanvas) {
+            const existing = Chart.getChart(typesCanvas);
+            if (existing) existing.destroy();
+
+            const labelOf = {
+                'novo-elevador': 'Novo Elevador',
+                'inicio-servico': 'Início de Serviço',
+                'fim-servico': 'Fim de Serviço',
+                'inspecao': 'Inspeção',
+                'manutencao-inicio': 'Manutenção Início',
+                'manutencao-fim': 'Manutenção Fim',
+                'relatorio-mensal': 'Relatório Mensal'
+            };
+            const counts = {};
+            _commsAll.forEach(c => {
+                const key = String(c.type || '').replace('municipality-', '');
+                const label = labelOf[key] || key.replace(/-/g, ' ') || 'Outro';
+                counts[label] = (counts[label] || 0) + 1;
+            });
+            const typeEntries = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+
             new Chart(typesCanvas, {
                 type: 'bar',
                 data: {
-                    labels: ['Novo Elevador', 'Inspeção', 'Manutenção Início', 'Manutenção Fim', 'Relatorio Mensal'],
+                    labels: typeEntries.map(e => e[0]),
                     datasets: [{
                         label: 'Quantidade de mensagens',
-                        data: [12, 8, 5, 6, 3],
+                        data: typeEntries.map(e => e[1]),
                         backgroundColor: '#007bff'
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: {
-                        legend: { display: false }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: { stepSize: 2 }
-                        }
-                    }
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
                 }
             });
         }
@@ -2185,5 +2229,43 @@ setTimeout(() => {
     <script src="/assets/js/table-drag-scroll.js"></script>
 <script src="../../assets/js/monitor.js"></script>
 <script></script>
+
+<script>
+// Estado do sistema: verificação real via /api/health (ao carregar e a cada 30s)
+(function() {
+    function pick(ids) { for (const id of ids) { const el = document.getElementById(id); if (el) return el; } return null; }
+    function paint(el, cls, text) {
+        if (!el) return;
+        el.textContent = text;
+        const box = el.closest('.system-health');
+        if (box) { box.classList.remove('health-good', 'health-warning', 'health-bad'); box.classList.add(cls); }
+    }
+    async function checkSystemHealth() {
+        const serverEl = pick(['disp-sys-server-status', 'sys-server-status']);
+        const dbEl = pick(['disp-sys-db-status', 'sys-db-status']);
+        if (!serverEl && !dbEl) return;
+        const t0 = Date.now();
+        try {
+            const ctrl = new AbortController();
+            const timer = setTimeout(() => ctrl.abort(), 8000);
+            const r = await fetch('/api/health', { cache: 'no-store', signal: ctrl.signal });
+            clearTimeout(timer);
+            const ms = Date.now() - t0;
+            let j = null;
+            try { j = await r.json(); } catch (_) {}
+            paint(serverEl, r.ok ? 'health-good' : 'health-warning', r.ok ? `Online • ${ms}ms` : `Erro de resposta (HTTP ${r.status})`);
+            const dbOk = j && j.mongodb === 'connected';
+            paint(dbEl, dbOk ? 'health-good' : 'health-bad', dbOk ? 'MongoDB ligado' : 'MongoDB indisponível');
+        } catch (e) {
+            paint(serverEl, 'health-bad', 'Sem resposta');
+            paint(dbEl, 'health-warning', 'Não verificado');
+        }
+    }
+    document.addEventListener('DOMContentLoaded', function() {
+        checkSystemHealth();
+        setInterval(checkSystemHealth, 30000);
+    });
+})();
+</script>
 </body>
 </html>

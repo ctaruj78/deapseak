@@ -1705,15 +1705,24 @@ class UnifiedAnalyticsEngine {
     async updateUsersMetrics() {
         try {
             const token = sessionStorage.getItem('liftmanager_jwt') || localStorage.getItem('liftmanager_jwt') || localStorage.getItem('authToken') || localStorage.getItem('token');
-            const res = await fetch('/api/users', {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-            if (!res.ok) throw new Error('HTTP ' + res.status);
-            const body = await res.json();
-            // API повертає { success, data: [...] } або просто масив
-            const users = Array.isArray(body) ? body : (body.data || body.users || []);
+            let role = null;
+            try { role = JSON.parse(sessionStorage.getItem('liftmanager_user') || 'null')?.role; } catch (_) {}
+            const headers = { 'Authorization': `Bearer ${token}` };
+            const getUsers = async (url) => {
+                const res = await fetch(url, { headers });
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                const body = await res.json();
+                // API повертає { success, data: [...] } або просто масив
+                return Array.isArray(body) ? body : (body.data || body.users || []);
+            };
 
-            const admins      = users.filter(u => u.role === 'admin').length;
+            // Диспетчеру /api/users дозволений лише з ?role= (клієнти/техніки), адміни недоступні
+            const isDispatcher = role === 'dispatcher';
+            const users = isDispatcher
+                ? [].concat(await getUsers('/api/users?role=client'), await getUsers('/api/users?role=technician'))
+                : await getUsers('/api/users');
+
+            const admins      = isDispatcher ? '—' : users.filter(u => u.role === 'admin').length;
             const technicians = users.filter(u => u.role === 'technician' || u.role === 'tech').length;
             const active      = users.filter(u => u.status !== 'inactive' && u.status !== 'blocked').length;
 

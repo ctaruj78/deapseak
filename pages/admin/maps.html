@@ -219,11 +219,14 @@
             return;
         }
 
-        await loadLiftsFromAPI();
         initializeMap();
+        await loadLiftsFromAPI();
+        renderMarkers(filteredLifts);
+        showEmptyStateIfNeeded();
         populateLiftSelector();
         updateStats();
         setupEventListeners();
+        geocodeMissingInBackground();
     });
 
     async function loadLiftsFromAPI() {
@@ -241,24 +244,6 @@
                 let lat = hasCoords ? coords[1] : null;
                 let lng = hasCoords ? coords[0] : null;
 
-                if (!hasCoords) {
-                    const fullAddress = [lift.address?.street, lift.address?.zipCode, lift.address?.city, lift.address?.country].filter(Boolean).join(', ');
-                    if (fullAddress && typeof AuthManager.fetchWithAuth === 'function') {
-                        try {
-                            const geoResp = await AuthManager.fetchWithAuth(`/api/geocode?q=${encodeURIComponent(fullAddress)}`);
-                            if (geoResp.ok) {
-                                const geoData = await geoResp.json();
-                                if (geoData.success && geoData.lat && geoData.lng) {
-                                    lat = geoData.lat;
-                                    lng = geoData.lng;
-                                }
-                            }
-                        } catch (e) {
-                            console.warn('Geocoding failed for', fullAddress, e.message);
-                        }
-                    }
-                }
-
                 return {
                     id: lift._id || lift.id,
                     model: lift.model || lift.name || 'Desconhecido',
@@ -268,6 +253,7 @@
                     country: lift.address?.country || 'Desconhecido',
                     lat,
                     lng,
+                    needsGeo: !hasCoords,
                     status: mapStatus(lift.status),
                     lastMaintenance: lift.lastInspectionDate ? new Date(lift.lastInspectionDate).toLocaleDateString('pt-PT') : 'Desconhecido',
                     municipalNumber: lift.municipalNumber || lift.number || ''
@@ -281,6 +267,40 @@
             lifts = [];
             filteredLifts = [];
         }
+    }
+
+    function showEmptyStateIfNeeded() {
+        const c = document.getElementById('liftsMap');
+        if (!c) return;
+        c.querySelectorAll('.map-empty-state').forEach(e => e.remove());
+        if (!markers.length) {
+            const empty = document.createElement('div');
+            empty.className = 'map-empty-state';
+            empty.innerHTML = '<i class="fas fa-info-circle text-info mr-1"></i> Nenhum elevador com coordenadas válidas disponível no momento.';
+            c.appendChild(empty);
+        }
+    }
+
+    async function geocodeMissingInBackground() {
+        const pending = lifts.filter(l => l.needsGeo && l.address && l.address !== 'Endereço não especificado');
+        if (!pending.length) return;
+        let done = 0, idx = 0;
+        const worker = async () => {
+            while (idx < pending.length) {
+                const l = pending[idx++];
+                try {
+                    const r = await AuthManager.fetchWithAuth(`/api/geocode?q=${encodeURIComponent(l.country && l.country !== 'Desconhecido' ? l.address + ', ' + l.country : l.address)}`);
+                    if (r.ok) {
+                        const g = await r.json();
+                        if (g.success && g.lat && g.lng) { l.lat = g.lat; l.lng = g.lng; done++; }
+                    }
+                } catch (e) { console.warn('Geocoding failed for', l.address, e.message); }
+                l.needsGeo = false;
+            }
+        };
+        await Promise.all([worker(), worker(), worker()]);
+        if (done) { renderMarkers(filteredLifts); updateStats(); }
+        showEmptyStateIfNeeded();
     }
 
     function mapStatus(status) {
@@ -311,12 +331,6 @@
         L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19, maxNativeZoom: 16 }).addTo(map);
 
         renderMarkers(filteredLifts);
-        if (!filteredLifts.length && mapContainer) {
-            const empty = document.createElement('div');
-            empty.className = 'map-empty-state';
-            empty.innerHTML = '<i class="fas fa-info-circle text-info mr-1"></i> Nenhum elevador com coordenadas válidas disponível no momento.';
-            mapContainer.appendChild(empty);
-        }
     }
 
     function renderMarkers(liftsToRender) {
@@ -416,8 +430,10 @@
     async function reloadMapData() {
         await loadLiftsFromAPI();
         initializeMap();
+        showEmptyStateIfNeeded();
         populateLiftSelector();
         updateStats();
+        geocodeMissingInBackground();
     }
 
     async function regeocodeAllLifts() {

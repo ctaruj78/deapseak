@@ -1,5 +1,5 @@
 // Service Worker для push notifications та PWA
-const CACHE_NAME = 'liftmanager-v2.2';
+const CACHE_NAME = 'liftmanager-v2.3';
 const urlsToCache = [
     '/manifest.json'
 ];
@@ -14,32 +14,26 @@ self.addEventListener('install', event => {
     self.skipWaiting();
 });
 
-// Activate event - очищення старого кешу + примусове перезавантаження всіх сторінок
+// Activate event - очищення лише власних старих кешів (не чіпаємо кеші service-worker.js)
 self.addEventListener('activate', event => {
-    console.log('Service Worker activating v2.0 — clearing all caches and reloading clients');
+    console.log('Service Worker activating', CACHE_NAME);
     event.waitUntil(
         caches.keys()
             .then(cacheNames => Promise.all(
-                cacheNames.map(name => {
-                    console.log('Deleting cache:', name);
-                    return caches.delete(name); // видаляємо ВСІ кеші
-                })
+                cacheNames
+                    .filter(name => name.startsWith('liftmanager-') && name !== CACHE_NAME)
+                    .map(name => caches.delete(name))
             ))
             .then(() => self.clients.claim())
-            .then(() => self.clients.matchAll({ type: 'window' }))
-            .then(clients => {
-                // Перезавантажуємо всі відкриті вкладки
-                clients.forEach(client => {
-                    console.log('Reloading client:', client.url);
-                    client.navigate(client.url);
-                });
-            })
     );
 });
 
 // Fetch event - HTML-сторінки та API ЗАВЖДИ з мережі, без кешу
 self.addEventListener('fetch', event => {
     const url = new URL(event.request.url);
+
+    // Чужі origin-и (CDN, розширення браузера) та не-GET — не чіпаємо
+    if (event.request.method !== 'GET' || url.origin !== self.location.origin) return;
 
     // HTML сторінки та API — завжди мережа, ніколи кеш
     if (event.request.destination === 'document' ||
@@ -56,9 +50,12 @@ self.addEventListener('fetch', event => {
     // Статичні ресурси (CSS, JS, шрифти) — кеш з фолбеком на мережу
     event.respondWith(
         caches.match(event.request).then(cached => {
-            if (cached) return cached;
+            // Кеш з text/html під .js/.css (fallback-сторінка) — ігноруємо
+            const cachedBad = cached && /text\/html/i.test(cached.headers.get('content-type') || '') && !/\.html?$/i.test(url.pathname);
+            if (cached && !cachedBad) return cached;
             return fetch(event.request).then(response => {
-                if (event.request.method === 'GET' && response.ok) {
+                const isHtml = /text\/html/i.test(response.headers.get('content-type') || '');
+                if (event.request.method === 'GET' && response.ok && !(isHtml && /\.(js|css|woff2?|ttf|png|jpe?g|svg|ico)$/i.test(url.pathname))) {
                     const clone = response.clone();
                     caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
                 }

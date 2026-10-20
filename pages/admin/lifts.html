@@ -4681,7 +4681,7 @@ Email de contacto: info@festlift.pt`;
             });
             
         } else {
-            console.error('❌ Ligação de previsão AI não encontrada!');
+            console.debug('Ligação de previsão AI não encontrada (menu ainda não carregado ou sem este item)');
         }
         
         // Додаexisteмо обробник para звичайної análise
@@ -9065,7 +9065,13 @@ Email de contacto: info@festlift.pt`;
                     .replace(/{{serviceStartDate}}/g, formatDate(serviceStartDate))
                     .replace(/{{date}}/g, formatDate(new Date().toISOString().split('T')[0]))
                     .replace(/{{currentDate}}/g, formatDate(new Date().toISOString().split('T')[0]))
-                    .replace(/{{notes}}/g, escapeHtml(notes) || 'Sem notas adicionais');
+                    .replace(/{{notes}}/g, escapeHtml(notes) || 'Sem notas adicionais')
+                    .replace(/{{notesBlock}}/g, () => {
+                        const n = String(notes || '').trim();
+                        if (!n) return '';
+                        const esc = escapeHtml(n).replace(/\r?\n/g, '<br>');
+                        return `<table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:25px;border-left:4px solid #1a3a5c;background-color:#f4f7fa;"><tr><td style="padding:18px 20px;"><p style="margin:0 0 8px 0;font-size:13px;font-weight:700;color:#1a3a5c;font-family:Arial,Helvetica,sans-serif;">Notas Adicionais</p><p style="margin:0;font-size:13px;line-height:1.7;color:#333333;font-family:Arial,Helvetica,sans-serif;">${esc}</p></td></tr></table>`;
+                    });
 
                 // Browser preview não resolve imagens CID (usadas no envio real por email).
                 // Fazemos fallback para um ficheiro local apenas na pré-visualização.
@@ -9244,7 +9250,8 @@ Email de contacto: info@festlift.pt`;
                 const lift = currentMunicipalityLiftData || {};
                 const address = lift.address
                     ? (typeof lift.address === 'string' ? lift.address
-                        : [lift.address.street, lift.address.zipCode, lift.address.city].filter(Boolean).join(', '))
+                        : [lift.address.street, lift.address.city, (lift.address.country && lift.address.country !== 'Ukraine') ? lift.address.country : '']
+                            .filter(Boolean).join(', '))
                     : '';
 
                 const municipalityEmail = currentMunicipalityData.lift_department?.email || currentMunicipalityData.email;
@@ -9271,7 +9278,7 @@ Email de contacto: info@festlift.pt`;
                         postalCode: postalCode,
                         brand: lift.manufacturer || lift.brand || 'N/A',
                         model: lift.model || 'N/A',
-                        installationYear: lift.installYear || lift.installationYear || 'N/A',
+                        installationYear: lift.installationDate ? new Date(lift.installationDate).getFullYear() : (lift.installYear || lift.installationYear || 'N/A'),
                         capacity: lift.capacity || 'N/A',
                         municipalityName: currentMunicipalityData.name || 'Câmara Municipal',
                         serviceStartDate: serviceStartDate || '',

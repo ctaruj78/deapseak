@@ -148,7 +148,7 @@ const scanHistory = (function() {
         scansTable = $('#scansTable').DataTable({
             responsive: true,
             language: {
-                url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/pt_PT.json'
+                url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/pt-PT.json'
             },
             order: [[3, 'desc']],
             columnDefs: [{ orderable: false, targets: 7 }]

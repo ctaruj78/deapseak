@@ -491,6 +491,12 @@ class EmailService {
                 .replace(/{{clientPhone}}/g, liftData.clientPhone || 'N/A')
                 .replace(/{{clientEmail}}/g, liftData.clientEmail || 'N/A')
                 .replace(/{{notes}}/g, liftData.notes || 'Nao especificado')
+                .replace(/{{notesBlock}}/g, () => {
+                    const n = String(liftData.notes || '').trim();
+                    if (!n) return '';
+                    const esc = n.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/\r?\n/g, '<br>');
+                    return `<table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:25px;border-left:4px solid #1a3a5c;background-color:#f4f7fa;"><tr><td style="padding:18px 20px;"><p style="margin:0 0 8px 0;font-size:13px;font-weight:700;color:#1a3a5c;font-family:Arial,Helvetica,sans-serif;">Notas Adicionais</p><p style="margin:0;font-size:13px;line-height:1.7;color:#333333;font-family:Arial,Helvetica,sans-serif;">${esc}</p></td></tr></table>`;
+                })
                 .replace(/{{date}}/g, new Date().toLocaleDateString('pt-PT', { day: '2-digit', month: 'long', year: 'numeric' }));
 
             const subject = templateType === 'inicio-servico'
