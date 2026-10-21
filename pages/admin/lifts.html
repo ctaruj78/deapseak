@@ -2774,7 +2774,7 @@ function escapeJsString(s) {
                         <div class="form-group">
                             <label for="contract-file">Descarregar PDF do contrato *</label>
                             <input type="file" id="contract-file" class="form-control-file" accept=".pdf" required>
-                            <small class="form-text text-muted">Apenas ficheiros PDF. Tamanho máximo: 10MB</small>
+                            <small class="form-text text-muted">Apenas ficheiros PDF. Tamanho máximo: 50MB</small>
                         </div>
                         <!-- Bloco para aplicar a outros elevadores no mesmo endereço -->
                         <div id="contract-siblings-info" class="mt-3" style="display:none;">
@@ -7988,7 +7988,7 @@ Email de contacto: info@festlift.pt`;
                             <i class="fas fa-file-contract text-success"></i> Contrato №${escapeHtml(contractNumber)}
                         </h6>
                         <p class="card-text">
-                            <strong>Período de ações:</strong> ${escapeHtml(periodText)}<br>
+                            <strong>Período de vigência:</strong> ${escapeHtml(periodText)}<br>
                             ${description ? `<strong>Notas:</strong> ${escapeHtml(description)}<br>` : ''}
                         </p>
                         <div class="btn-group">

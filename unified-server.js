@@ -5226,7 +5226,8 @@ app.put('/api/lifts/:id', authenticateToken, async (req, res) => {
 });
 
 // POST /api/lifts/:id/contract - завантаження контракту
-app.post('/api/lifts/:id/contract', authenticateToken, upload.single('contract'), async (req, res) => {
+const uploadContractLarge = multer({ storage: upload.storage, fileFilter: upload.fileFilter, limits: { fileSize: 50 * 1024 * 1024 } });
+app.post('/api/lifts/:id/contract', authenticateToken, uploadContractLarge.single('contract'), async (req, res) => {
     try {
         // 🔐 Тільки admin та dispatcher можуть завантажувати контракти
         if (req.user.role !== 'admin' && req.user.role !== 'dispatcher') {

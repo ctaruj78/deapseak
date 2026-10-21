@@ -19,6 +19,20 @@ const errorHandler = (err, req, res, next) => {
     err.statusCode = err.statusCode || 500;
     err.status = err.status || 'error';
 
+    // Erros do multer são do cliente (ficheiro grande/inesperado), não 500
+    if (err.name === 'MulterError') {
+        const msgs = {
+            LIMIT_FILE_SIZE: 'Ficheiro demasiado grande (máx. 50MB para contratos, 10MB para os restantes).',
+            LIMIT_UNEXPECTED_FILE: 'Campo de ficheiro inesperado.',
+            LIMIT_FILE_COUNT: 'Demasiados ficheiros.'
+        };
+        return res.status(err.code === 'LIMIT_FILE_SIZE' ? 413 : 400).json({
+            success: false,
+            status: 'fail',
+            message: msgs[err.code] || err.message
+        });
+    }
+
     if (process.env.NODE_ENV === 'development') {
         res.status(err.statusCode).json({
             success: false,
