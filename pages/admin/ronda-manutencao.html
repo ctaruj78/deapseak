@@ -374,7 +374,7 @@ function buildGroups(lifts) {
         byKey[key].count++;
         var code = ((l.intercomCode || "") + "").replace(/[^\x20-\x7E]/g, "").trim();
         if (code && byKey[key].intercoms.indexOf(code) === -1) byKey[key].intercoms.push(code);
-        var cont = ((l.maintenanceContract && l.maintenanceContract.contractNumber) || "").trim();
+        var cont = ((l.maintenanceContract && l.maintenanceContract.contractNumber) || l.contractNumber || "").toString().trim();
         if (cont && byKey[key].contracts.indexOf(cont) === -1) byKey[key].contracts.push(cont);
     });
     return order.map(function (k) {
