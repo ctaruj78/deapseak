@@ -91,6 +91,11 @@ const emailService = require('./backend/services/emailService');
 const SEND_WELCOME_EMAILS = process.env.SEND_WELCOME_EMAILS === 'true';
 
 const app = express();
+
+// Express 4 não apanha rejeições de handlers async — sem isto um único pedido mau derruba o processo.
+process.on('unhandledRejection', (reason) => {
+    console.error('❌ unhandledRejection:', reason instanceof Error ? reason.stack || reason.message : reason);
+});
 app.set('trust proxy', 1); // Confiar no proxy (Codespaces / nginx)
 
 // ═══════════════════════════════════════════════════════════
@@ -1423,7 +1428,7 @@ app.post('/api/notifications/broadcast', authenticateToken, async (req, res) => 
         }
         const technicians = await db.collection('users')
             .find({ role: { $in: ['technician', 'tech'] } }, { projection: { _id: 1 } })
-            .lean().toArray();
+            .toArray();
         if (technicians.length === 0) {
             return res.json({ success: true, sent: 0, message: 'Nenhum técnico encontrado' });
         }
@@ -1642,23 +1647,41 @@ app.post('/api/qr/public/alert', async (req, res) => {
         usage.count += 1;
         _publicQrAlertUsage.set(ip, usage);
 
-        await db.collection('notifications').insertOne({
-            type: 'public_qr_alert',
-            title: 'Novo alerta QR público',
-            message: `${issueLabel} — Elevador ${lift.municipalNumber || lift._id.toString()}`,
-            requestId: insertResult.insertedId.toString(),
-            liftId: lift._id.toString(),
-            read: false,
-            createdAt: new Date()
-        });
+        // O pedido já está criado — falhas ao notificar não devem devolver erro ao visitante.
+        try {
+            // GET /api/notifications filtra por userId, por isso é preciso uma notificação por utilizador do staff
+            const staffUsers = await db.collection('users')
+                .find({ role: { $in: ['admin', 'dispatcher'] } }, { projection: { _id: 1 } })
+                .toArray();
+            const alertCreatedAt = new Date();
+            if (staffUsers.length > 0) {
+                await db.collection('notifications').insertMany(staffUsers.map(u => ({
+                    userId: u._id.toString(),
+                    type: 'public_qr_alert',
+                    title: isTrapped ? '🚨 Pessoa presa no elevador' : 'Novo alerta QR público',
+                    message: `${issueLabel} — Elevador ${lift.municipalNumber || lift._id.toString()}`,
+                    requestId: insertResult.insertedId.toString(),
+                    liftId: lift._id.toString(),
+                    priority: isTrapped ? 'high' : 'medium',
+                    read: false,
+                    createdAt: alertCreatedAt
+                })));
+            }
 
-        if (global.io) {
-            global.io.to('admin').emit('public:qr-alert', {
-                requestId: insertResult.insertedId.toString(),
-                liftId: lift._id.toString(),
-                issueType: normalizedIssueType,
-                isTrapped: !!isTrapped
-            });
+            if (global.io) {
+                const alertPayload = {
+                    requestId: insertResult.insertedId.toString(),
+                    liftId: lift._id.toString(),
+                    issueType: normalizedIssueType,
+                    isTrapped: !!isTrapped
+                };
+                // As salas reais são role_admin / role_dispatcher (ver 'authenticate' no Socket.IO).
+                // new_request faz o dashboard do dispatcher recarregar a lista de pedidos.
+                global.io.to('role_admin').to('role_dispatcher').emit('public:qr-alert', alertPayload);
+                global.io.to('role_admin').to('role_dispatcher').emit('new_request', { ...alertPayload, source: 'public_qr' });
+            }
+        } catch (notifyErr) {
+            console.error('⚠️ Alerta QR público criado, mas a notificação falhou:', notifyErr.message);
         }
 
         return res.json({
@@ -1851,7 +1874,7 @@ app.delete('/api/qr/codes/:id', authenticateToken, requireRole('admin', 'dispatc
 
 // GET QR scan history
 // DELETE all scan records
-app.delete('/api/qr/history', authenticateToken, async (req, res) => {
+app.delete('/api/qr/history', authenticateToken, requireRole('admin'), async (req, res) => {
     try {
         if (!db) return res.status(503).json({ success: false, message: 'Base de dados indisponível' });
 
@@ -4976,6 +4999,17 @@ app.put('/api/lifts/:id', authenticateToken, async (req, res) => {
             });
         }
         
+        // 🔒 Клієнт може змінювати лише контактні поля свого ліфта (решта — тільки admin/dispatcher).
+        // Інакше через maintenanceContract/nif/moloniCode/clientEmail можна читати чужі файли, рахунки та перепризначати акаунти.
+        const CLIENT_EDITABLE_LIFT_FIELDS = ['intercomCode', 'contactPerson', 'clientPhone'];
+        if (req.user.role === 'client') {
+            const body = req.body && typeof req.body === 'object' ? req.body : {};
+            req.body = {};
+            for (const key of CLIENT_EDITABLE_LIFT_FIELDS) {
+                if (typeof body[key] === 'string') req.body[key] = body[key].trim().slice(0, 200);
+            }
+        }
+
         console.log('📝 PUT /api/lifts/:id - Отримані дані:', {
             clientName: req.body.clientName,
             clientEmail: req.body.clientEmail,
@@ -5039,6 +5073,12 @@ app.put('/api/lifts/:id', authenticateToken, async (req, res) => {
         delete updateData.createdBy;
         // nextMaintenance НЕ зберігається — обчислюється динамічно як lastMaintenance + 1 місяць
         delete updateData.nextMaintenance;
+        if (req.user.role === 'client') {
+            // авто-згенеровані municipalNumber/qrCode вище теж не мають потрапляти в запис клієнта
+            for (const key of Object.keys(updateData)) {
+                if (!CLIENT_EDITABLE_LIFT_FIELDS.includes(key) && key !== 'updatedAt' && key !== 'updatedBy') delete updateData[key];
+            }
+        }
 
         // 🔄 НОРМАЛІЗАЦІЯ enum: driveType та doorType (legacy display text → DB code)
         const DRIVE_MAP_PUT = {
@@ -15647,6 +15687,11 @@ async function saveGeneratedReport(report) {
     } catch (e) { console.error('❌ saveGeneratedReport:', e.message); }
 }
 
+// Parte segura para nomes de ficheiro / cabeçalhos HTTP (relatórios antigos podem ter type/id com caracteres inválidos)
+function reportFileNamePart(value) {
+    return String(value ?? '').replace(/[^A-Za-z0-9_-]/g, '_').slice(0, 64) || 'x';
+}
+
 async function getGeneratedReport(id) {
     if (db) {
         try {
@@ -15830,7 +15875,9 @@ app.post('/api/reports/bulk', authenticateToken, async (req, res) => {
 app.post('/api/reports/generate', authenticateToken, async (req, res) => {
     try {
         const { ObjectId } = require('mongodb');
-        const { type = 'maintenance', startDate, endDate, technicianId, status, priority, liftId } = req.body;
+        const { startDate, endDate, technicianId, status, priority, liftId } = req.body;
+        // type entra no nome do ficheiro de download — só aceita um slug simples (ex.: activity, pending, breakdown)
+        const type = String(req.body.type || '').toLowerCase().replace(/[^a-z0-9_-]/g, '').slice(0, 32) || 'maintenance';
 
         if (!startDate || !endDate) {
             return res.status(400).json({ message: 'Indique startDate e endDate' });
@@ -16048,6 +16095,7 @@ app.post('/api/reports/generate', authenticateToken, async (req, res) => {
 
 // GET /api/reports/:id/pdf - export PDF
 app.get('/api/reports/:id/pdf', authenticateToken, async (req, res) => {
+  try {
     const report = await getGeneratedReport(req.params.id);
     if (!report) return res.status(404).json({ message: 'Relatório não encontrado' });
     if (!canAccessReport(req.user, report)) {
@@ -16055,7 +16103,7 @@ app.get('/api/reports/:id/pdf', authenticateToken, async (req, res) => {
     }
 
     const PDFDocument = require('pdfkit');
-    const fileName = `Relatorio_${report.type}_${report.id}.pdf`;
+    const fileName = `Relatorio_${reportFileNamePart(report.type)}_${reportFileNamePart(report.id)}.pdf`;
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
 
@@ -16068,7 +16116,8 @@ app.get('/api/reports/:id/pdf', authenticateToken, async (req, res) => {
     doc.text(`Período: ${report.startDate} até ${report.endDate}`);
     doc.text(`Gerado em: ${new Date(report.createdAt).toLocaleString('pt-PT')}`);
     doc.moveDown(0.5);
-    doc.text(`Total: ${report.stats.total} | Concluídos: ${report.stats.completed} | Em progresso: ${report.stats.inProgress} | Pendentes: ${report.stats.pending} | Cancelados: ${report.stats.cancelled || 0}`);
+    const st = report.stats || {};
+    doc.text(`Total: ${st.total || 0} | Concluídos: ${st.completed || 0} | Em progresso: ${st.inProgress || 0} | Pendentes: ${st.pending || 0} | Cancelados: ${st.cancelled || 0}`);
     doc.moveDown(1);
 
     doc.fontSize(12).text('Itens', { underline: true });
@@ -16087,10 +16136,16 @@ app.get('/api/reports/:id/pdf', authenticateToken, async (req, res) => {
     }
 
     doc.end();
+  } catch (error) {
+    console.error('❌ Reports pdf error:', error);
+    if (!res.headersSent) res.status(500).json({ message: 'Erro ao gerar PDF' });
+    else res.end();
+  }
 });
 
 // GET /api/reports/:id/excel - export CSV (Excel-compatible)
 app.get('/api/reports/:id/excel', authenticateToken, async (req, res) => {
+  try {
     const report = await getGeneratedReport(req.params.id);
     if (!report) return res.status(404).json({ message: 'Relatório não encontrado' });
     if (!canAccessReport(req.user, report)) {
@@ -16118,10 +16173,14 @@ app.get('/api/reports/:id/excel', authenticateToken, async (req, res) => {
     });
 
     const csv = '\uFEFF' + toCsv(rows);
-    const fileName = `Relatorio_${report.type}_${report.id}.csv`;
+    const fileName = `Relatorio_${reportFileNamePart(report.type)}_${reportFileNamePart(report.id)}.csv`;
     res.setHeader('Content-Type', 'text/csv; charset=utf-8');
     res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
     return res.send(csv);
+  } catch (error) {
+    console.error('❌ Reports excel error:', error);
+    return res.status(500).json({ message: 'Erro ao gerar ficheiro' });
+  }
 });
 
 // ═══════════════════════════════════════════════════════════
@@ -16555,7 +16614,7 @@ app.get('/api/agent/notifications', authenticateToken, async (req, res) => {
 });
 
 // POST decision on a notification (yes / no / postpone)
-app.post('/api/agent/decide', authenticateToken, async (req, res) => {
+app.post('/api/agent/decide', authenticateToken, requireRole('admin', 'dispatcher'), async (req, res) => {
     try {
         const { notificationId, action, reason } = req.body;
         if (!notificationId || !action) return res.status(400).json({ success: false, error: 'Missing notificationId or action' });
