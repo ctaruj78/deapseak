@@ -412,6 +412,9 @@ class LiftsManager {
                         <button class="btn btn-sm btn-secondary" onclick="window.liftsManager.viewLiftDetails('${lift.id || lift._id}')">
                             <i class="fas fa-info-circle"></i> Detalhes
                         </button>
+                        <button class="btn btn-sm btn-outline-dark" onclick="window.liftsManager.viewMunicipality('${lift.id || lift._id}')" title="Contactos da câmara municipal">
+                            <i class="fas fa-landmark"></i> Câmara
+                        </button>
                         <div class="mt-2 border-top pt-2">
                             <a href="/pages/client/invoices.html?liftId=${lift.id || lift._id}" class="btn btn-sm btn-outline-info btn-block">
                                 <i class="fas fa-file-invoice-dollar mr-1"></i>Faturas e Recibos
@@ -1239,6 +1242,56 @@ class LiftsManager {
         }
 
         return false;
+    }
+
+    // Contactos da câmara municipal do elevador (só leitura) — o cliente contacta a câmara por conta própria
+    async viewMunicipality(liftId) {
+        try {
+            const token = (typeof AuthManager !== 'undefined' && AuthManager.getAuthToken)
+                ? AuthManager.getAuthToken()
+                : (sessionStorage.getItem('liftmanager_jwt') || localStorage.getItem('liftmanager_jwt') || localStorage.getItem('token'));
+            const res = await fetch(`/api/lifts/${encodeURIComponent(liftId)}/municipality`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+            const payload = await res.json();
+            const m = payload && payload.data;
+            if (!m || (!m.email && !m.phone)) {
+                Swal.fire({
+                    icon: 'info',
+                    title: 'Câmara Municipal',
+                    text: 'Não existem contactos disponíveis para a câmara deste elevador.',
+                    confirmButtonText: 'Fechar'
+                });
+                return;
+            }
+
+            const rows = [];
+            if (m.email) {
+                const email = this._escapeHtml(m.email);
+                rows.push(`<p class="mb-2"><i class="fas fa-envelope text-muted mr-2"></i><a href="mailto:${email}">${email}</a></p>`);
+            }
+            if (m.phone) {
+                const phone = this._escapeHtml(m.phone);
+                const telHref = this._escapeHtml(String(m.phone).replace(/[^\d+]/g, ''));
+                rows.push(`<p class="mb-0"><i class="fas fa-phone text-muted mr-2"></i><a href="tel:${telHref}">${phone}</a></p>`);
+            }
+
+            Swal.fire({
+                title: this._escapeHtml(m.name ? `Câmara Municipal de ${m.name}` : 'Câmara Municipal'),
+                html: `<div class="text-left d-inline-block">${rows.join('')}</div>`,
+                confirmButtonText: 'Fechar'
+            });
+        } catch (error) {
+            console.error('Error loading municipality contacts:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Erro',
+                text: 'Não foi possível carregar os contactos da câmara',
+                confirmButtonText: 'OK'
+            });
+        }
     }
 
     async _loadLiftOrcamentos(lift) {

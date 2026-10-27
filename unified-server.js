@@ -4753,6 +4753,48 @@ async function computeDueVisitType(liftId, lift) {
     return { visitType: 'maintenance', reason: 'em_dia' };
 }
 
+// GET /api/lifts/:id/municipality — contactos da câmara municipal do elevador (só leitura: nome, email, telefone).
+// Para o cliente poder contactar a câmara por conta própria; usa os dados atuais (com overrides), não a cópia gravada no elevador.
+app.get('/api/lifts/:id/municipality', authenticateToken, requireRole('client', 'admin', 'dispatcher'), async (req, res) => {
+    try {
+        if (!db) return res.status(503).json({ success: false, message: 'Base de dados indisponível' });
+        if (!isValidObjectId(req.params.id)) {
+            return res.status(400).json({ success: false, message: 'ID inválido' });
+        }
+        const { ObjectId } = require('mongodb');
+        const lift = await db.collection('lifts').findOne(
+            { _id: new ObjectId(req.params.id) },
+            { projection: { client: 1, clientEmail: 1, municipality: 1, address: 1 } }
+        );
+        if (!lift) return res.status(404).json({ success: false, message: 'Elevador não encontrado' });
+        if (req.user.role === 'client' && !hasClientAccessToLift(lift, req)) {
+            return res.status(403).json({ success: false, message: 'Sem permissões para este elevador' });
+        }
+
+        const { municipalities } = await loadMunicipalitiesWithOverrides();
+        let municipality = null;
+        const savedId = lift.municipality && lift.municipality.id;
+        if (savedId) municipality = municipalities.find(m => String(m.id) === String(savedId)) || null;
+        if (!municipality) {
+            const zipPrefix = String((lift.address && lift.address.zipCode) || '').split('-')[0];
+            if (zipPrefix) municipality = getMunicipalityByPostalPrefix(zipPrefix);
+        }
+        if (!municipality) return res.json({ success: true, data: null });
+
+        res.json({
+            success: true,
+            data: {
+                name: municipality.name,
+                email: (municipality.lift_department && municipality.lift_department.email) || municipality.email || null,
+                phone: municipality.phone || null
+            }
+        });
+    } catch (error) {
+        console.error('❌ Erro ao obter contactos da câmara:', error);
+        res.status(500).json({ success: false, message: 'Erro do servidor' });
+    }
+});
+
 app.get('/api/lifts/:id', authenticateToken, async (req, res) => {
     try {
         if (!db) return res.status(503).json({ success: false, message: 'Base de dados indisponível.' });
