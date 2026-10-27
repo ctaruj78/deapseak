@@ -133,6 +133,26 @@
         this._mlMarker.setPopup(this._popup);
         return this;
     };
+    // Leaflet's bindTooltip: etiqueta ao passar o rato (popup não interativo; some ao sair ou ao clicar)
+    ShimMarker.prototype.bindTooltip = function (content) {
+        var self = this;
+        var offset = this._element._shimOffset || [0, 0];
+        var tip = new maplibregl.Popup({
+            closeButton: false,
+            closeOnClick: false,
+            className: 'shim-tooltip',
+            offset: [offset[0], offset[1] - 14]
+        });
+        if (typeof content === 'string') tip.setHTML(content);
+        else tip.setDOMContent(content);
+        this._tooltip = tip;
+        this._element.addEventListener('mouseenter', function () {
+            if (self._map && !(self._popup && self._popup.isOpen())) tip.setLngLat(toLngLatArr(self._latlng)).addTo(self._map);
+        });
+        this._element.addEventListener('mouseleave', function () { tip.remove(); });
+        this._element.addEventListener('click', function () { tip.remove(); });
+        return this;
+    };
     ShimMarker.prototype.openPopup = function () {
         if (this._popup && !this._popup.isOpen()) this._mlMarker.togglePopup();
         return this;
