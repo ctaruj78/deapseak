@@ -379,8 +379,27 @@
     ShimMap.prototype.addLayer = function (layer) { if (layer && layer.addTo) layer.addTo(this); return this; };
     ShimMap.prototype.removeLayer = function (layer) { if (layer && layer.remove) layer.remove(); return this; };
     ShimMap.prototype.removeControl = function (control) { if (control && control.remove) control.remove(); return this; };
+    // Leaflet aceita padding como [x, y] (e paddingTopLeft/BottomRight); o MapLibre só aceita número ou
+    // {top,bottom,left,right} e ignora arrays — sem esta tradução os marcadores ficavam colados ao bordo do mapa.
+    function toMapLibreFitOpts(o) {
+        if (!o || typeof o !== 'object') return o;
+        var out = Object.assign({}, o);
+        function pair(v) { return Array.isArray(v) && v.length >= 2 ? [Number(v[0]) || 0, Number(v[1]) || 0] : null; }
+        var pad = pair(o.padding), tl = pair(o.paddingTopLeft), br = pair(o.paddingBottomRight);
+        if (pad || tl || br) {
+            var base = pad || [0, 0];
+            out.padding = {
+                left: (tl ? tl[0] : base[0]), top: (tl ? tl[1] : base[1]),
+                right: (br ? br[0] : base[0]), bottom: (br ? br[1] : base[1])
+            };
+            delete out.paddingTopLeft;
+            delete out.paddingBottomRight;
+        }
+        return out;
+    }
     ShimMap.prototype.fitBounds = function (bounds, fitOpts) {
         var b = bounds;
+        fitOpts = toMapLibreFitOpts(fitOpts);
         if (b && b._sw && b._ne) {
             this._maplibreMap.fitBounds([[b._sw.lng, b._sw.lat], [b._ne.lng, b._ne.lat]], fitOpts);
         } else if (Array.isArray(b)) {
