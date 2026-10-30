@@ -13,7 +13,8 @@ router.get('/', authenticate, authorizeRoles('admin', 'dispatcher'), async (req,
         if (req.query.zona) filtro.zona = req.query.zona;
 
         const categorias = await OrcamentoCategoria.find(filtro)
-            .sort({ zona: 1, grupo: 1, ordem: 1, nome: 1 })
+            .sort({ zona: 1, nome: 1 })
+            .collation({ locale: 'pt', strength: 1 })
             .lean();
 
         res.json({ success: true, data: categorias });
