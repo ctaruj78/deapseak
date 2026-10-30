@@ -9515,6 +9515,8 @@ Equipa FestLift</textarea>
 
             var fd = new FormData();
             fd.append('pdf', file);
+            var _presetLift = window._pdfPresetLiftId || '';
+            if (_presetLift) fd.append('liftId', _presetLift);
 
             try {
                 var token = (typeof AuthManager !== 'undefined') ? AuthManager.getAuthToken() :

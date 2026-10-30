@@ -21,8 +21,8 @@ const pdfParse = require('pdf-parse');
  * Universal inspection PDF parser — делегує до pdf-parser-unified.
  * Єдина точка входу: автоматично обирає між BV, Enhanced та Gemini structured.
  */
-async function parseUniversal(filePath) {
-    const result = await parseUnifiedReport(filePath);
+async function parseUniversal(filePath, opts = {}) {
+    const result = await parseUnifiedReport(filePath, opts);
     if (result && result.success) {
         result._parserUsed = result.detectedFormat || 'unified';
     }
@@ -404,7 +404,13 @@ router.post('/parse-inspection-pdf', authenticate, authorizeRoles('admin', 'disp
 
         try {
             // ── Parse the PDF with universal router ───────────────────────
-            const parsed = await parseUniversal(tmpPath);
+            // liftId (opcional): PDF com vários elevadores → analisar o bloco do elevador escolhido
+            let targetMunicipal;
+            if (req.body && req.body.liftId && /^[a-f\d]{24}$/i.test(String(req.body.liftId))) {
+                const target = await Lift.findById(req.body.liftId).select('municipalNumber').lean();
+                targetMunicipal = target && target.municipalNumber;
+            }
+            const parsed = await parseUniversal(tmpPath, { municipalNumber: targetMunicipal });
 
             // Even a partial result (success:false) is still useful if we at
             // least extracted some text — let the user fill in missing fields.

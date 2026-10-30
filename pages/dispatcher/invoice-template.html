@@ -1067,17 +1067,18 @@
                 if (!result.success) return;
                 window._catalogoCategorias = result.data || [];
 
-                const grupoLabels = { eletrico: 'Elétrico', mecanico: 'Mecânico', estrutural: 'Estrutural', seguranca: 'Segurança', outro: 'Outro' };
+                const zonaLabels = { casa_maquinas: 'Casa das máquinas', maquina: 'Máquina / Motor / Travão', quadro: 'Quadro elétrico', caixa: 'Caixa', poco: 'Poço', cabina: 'Cabina', patamar: 'Patamar / Portas', documentos: 'Documentos / Outros' };
+                const zonaOrdem = ['casa_maquinas', 'maquina', 'quadro', 'caixa', 'poco', 'cabina', 'patamar', 'documentos'];
                 const porGrupo = {};
                 window._catalogoCategorias.forEach(c => {
-                    (porGrupo[c.grupo] = porGrupo[c.grupo] || []).push(c);
+                    (porGrupo[c.zona || 'documentos'] = porGrupo[c.zona || 'documentos'] || []).push(c);
                 });
 
                 const sel = document.getElementById('catalogoSelect');
                 if (!sel) return;
                 let html = '<option value="">Escolher do catálogo de categorias...</option>';
-                Object.keys(porGrupo).forEach(grupo => {
-                    html += `<optgroup label="${escAttr(grupoLabels[grupo] || grupo)}">`;
+                zonaOrdem.filter(z => porGrupo[z]).forEach(grupo => {
+                    html += `<optgroup label="${escAttr(zonaLabels[grupo] || grupo)}">`;
                     porGrupo[grupo].forEach(c => {
                         const preco = typeof c.precoSugerido === 'number' ? c.precoSugerido.toFixed(2) + ' €' : '';
                         html += `<option value="${c._id}">${escAttr(c.nome)}${preco ? ' — ' + preco : ''}</option>`;

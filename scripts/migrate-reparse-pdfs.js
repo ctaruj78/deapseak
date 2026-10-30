@@ -121,7 +121,7 @@ async function run() {
 
             let parsed;
             try {
-                parsed = await parsePDF(pdfAbsPath);
+                parsed = await parsePDF(pdfAbsPath, { municipalNumber: mn });
             } catch (err) {
                 errors++;
                 console.error(`  ❌ ${mn} — Erro ao parsear ${path.basename(pdfAbsPath)}: ${err.message}`);

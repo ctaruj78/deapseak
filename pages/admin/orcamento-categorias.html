@@ -76,6 +76,20 @@
                                     <option value="outro">Outro</option>
                                 </select>
                             </div>
+                            <div class="col-auto"><strong class="small">Zona:</strong></div>
+                            <div class="col-auto">
+                                <select id="filterZona" class="form-control form-control-sm" onchange="loadCategorias()">
+                                    <option value="">Todas</option>
+                                    <option value="casa_maquinas">Casa das máquinas</option>
+                                    <option value="maquina">Máquina / Motor / Travão</option>
+                                    <option value="quadro">Quadro elétrico</option>
+                                    <option value="caixa">Caixa</option>
+                                    <option value="poco">Poço</option>
+                                    <option value="cabina">Cabina</option>
+                                    <option value="patamar">Patamar / Portas</option>
+                                    <option value="documentos">Documentos / Outros</option>
+                                </select>
+                            </div>
                             <div class="col-auto">
                                 <div class="custom-control custom-switch">
                                     <input type="checkbox" class="custom-control-input" id="filterAtivo" onchange="loadCategorias()">
@@ -94,6 +108,7 @@
                                 <thead class="thead-light">
                                     <tr>
                                         <th style="width:28%">Nome</th>
+                                        <th>Zona</th>
                                         <th>Grupo</th>
                                         <th>Preço sugerido</th>
                                         <th>Norma</th>
@@ -103,7 +118,7 @@
                                     </tr>
                                 </thead>
                                 <tbody id="categoriasTableBody">
-                                    <tr><td colspan="7" class="text-center py-4"><i class="fas fa-spinner fa-spin mr-2"></i>A carregar...</td></tr>
+                                    <tr><td colspan="8" class="text-center py-4"><i class="fas fa-spinner fa-spin mr-2"></i>A carregar...</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -137,6 +152,21 @@
                         <div class="form-group">
                             <label>Nome <span class="text-danger">*</span></label>
                             <input type="text" id="fNome" class="form-control" placeholder="Ex.: Quadro de Elevador CPU STO">
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="form-group">
+                            <label>Zona</label>
+                            <select id="fZona" class="form-control">
+                                <option value="casa_maquinas">Casa das máquinas</option>
+                                <option value="maquina">Máquina / Motor / Travão</option>
+                                <option value="quadro">Quadro elétrico</option>
+                                <option value="caixa">Caixa</option>
+                                <option value="poco">Poço</option>
+                                <option value="cabina">Cabina</option>
+                                <option value="patamar">Patamar / Portas</option>
+                                <option value="documentos">Documentos / Outros</option>
+                            </select>
                         </div>
                     </div>
                     <div class="col-md-2">
@@ -218,6 +248,7 @@ $(document).ready(function() {
     loadCategorias();
 });
 
+const ZONA_LABELS = { casa_maquinas: 'Casa das máquinas', maquina: 'Máquina / Motor / Travão', quadro: 'Quadro elétrico', caixa: 'Caixa', poco: 'Poço', cabina: 'Cabina', patamar: 'Patamar / Portas', documentos: 'Documentos / Outros' };
 const GRUPO_LABELS = { eletrico:'Elétrico', mecanico:'Mecânico', estrutural:'Estrutural', seguranca:'Segurança', outro:'Outro' };
 
 function getToken() {
@@ -245,15 +276,17 @@ async function apiCall(url, method = 'GET', body = null) {
 
 async function loadCategorias() {
     const grupo = $('#filterGrupo').val();
+    const zona = $('#filterZona').val();
     const soAtivas = $('#filterAtivo').is(':checked');
 
     const params = new URLSearchParams();
     if (grupo) params.append('grupo', grupo);
+    if (zona) params.append('zona', zona);
     if (soAtivas) params.append('ativo', 'true');
 
     const res = await apiCall(`/api/orcamento-categorias?${params.toString()}`);
     if (!res.success) {
-        $('#categoriasTableBody').html(`<tr><td colspan="7" class="text-center py-4 text-danger"><i class="fas fa-exclamation-triangle mr-2"></i>Erro ao carregar categorias: ${escHtml(res.message || '')}</td></tr>`);
+        $('#categoriasTableBody').html(`<tr><td colspan="8" class="text-center py-4 text-danger"><i class="fas fa-exclamation-triangle mr-2"></i>Erro ao carregar categorias: ${escHtml(res.message || '')}</td></tr>`);
         return;
     }
     renderTable(res.data || []);
@@ -261,7 +294,7 @@ async function loadCategorias() {
 
 function renderTable(categorias) {
     if (!categorias.length) {
-        $('#categoriasTableBody').html('<tr><td colspan="7" class="text-center py-4 text-muted">Nenhuma categoria encontrada</td></tr>');
+        $('#categoriasTableBody').html('<tr><td colspan="8" class="text-center py-4 text-muted">Nenhuma categoria encontrada</td></tr>');
         $('#tableFooter').text('');
         return;
     }
@@ -272,6 +305,7 @@ function renderTable(categorias) {
         const preco = typeof c.precoSugerido === 'number' ? c.precoSugerido.toLocaleString('pt-PT', { style:'currency', currency:'EUR' }) : '—';
         return `<tr class="categoria-row ${c.ativo ? '' : 'inativa'}">
             <td><strong>${escHtml(c.nome)}</strong></td>
+            <td>${escHtml(ZONA_LABELS[c.zona] || c.zona || '—')}</td>
             <td><span class="badge badge-grupo-${escHtml(c.grupo)}">${grupoLabel}</span></td>
             <td>${preco}</td>
             <td class="small">${escHtml(c.norma || '—')}</td>
@@ -292,6 +326,7 @@ function openCreate() {
     $('#editCategoriaId').val('');
     $('#fNome,#fDescricao,#fNorma,#fNota').val('');
     $('#fGrupo').val('eletrico');
+    $('#fZona').val('casa_maquinas');
     $('#fUnidade').val('un');
     $('#fPreco').val('');
     $('#fCritico').prop('checked', false);
@@ -306,6 +341,7 @@ async function editCategoria(id) {
     $('#editCategoriaId').val(c._id);
     $('#fNome').val(c.nome);
     $('#fGrupo').val(c.grupo);
+    $('#fZona').val(c.zona || 'documentos');
     $('#fUnidade').val(c.unidade || 'un');
     $('#fPreco').val(c.precoSugerido || 0);
     $('#fDescricao').val(c.descricao || '');
@@ -321,6 +357,7 @@ async function saveCategoria() {
     const payload = {
         nome: $('#fNome').val().trim(),
         grupo: $('#fGrupo').val(),
+        zona: $('#fZona').val(),
         unidade: $('#fUnidade').val().trim() || 'un',
         precoSugerido: parseFloat($('#fPreco').val()) || 0,
         descricao: $('#fDescricao').val().trim(),

@@ -30,6 +30,7 @@ const pdfParse = require('pdf-parse');
 const pdfParserEnhanced = require('./pdf-parser-enhanced');
 const { parseBureauVeritasPDF } = require('./pdf-parser-bureau-veritas');
 const { extractWithLLM } = require('./pdf-parser-llm');
+const { isLikelyScanned, ocrPDF } = require('./pdf-ocr-gemini');
 
 // ─── НОРМАЛІЗАЦІЯ ТЕКСТУ ─────────────────────────────────────────────────────
 
@@ -476,9 +477,10 @@ function detectFormat(text) {
  * Автоматично визначає формат і повертає структурований об'єкт.
  *
  * @param {string} filePath - Абсолютний шлях до PDF файлу
+ * @param {{municipalNumber?: string}} [opts] - n.º municipal do elevador alvo (PDF com vários elevadores)
  * @returns {Promise<Object>} - { success, metadata, violations, stats, ... }
  */
-async function parseReport(filePath) {
+async function parseReport(filePath, opts = {}) {
     try {
         const buffer = await fs.readFile(filePath);
 
@@ -488,7 +490,33 @@ async function parseReport(filePath) {
             const parsed = await pdfParse(buffer);
             fullText = parsed.text || '';
         } catch {
-            // Scanned PDF — will be handled by enhanced parser's OCR fallback
+            // Scanned PDF — handled by the OCR step below
+        }
+
+        // PDF sem camada de texto (scan / texto em contornos): OCR já aqui, para que os parsers
+        // determinísticos (nota CML, GATECI) e a deteção de formato vejam o texto real.
+        let ocrText = null;
+        if (isLikelyScanned(fullText) && process.env.GEMINI_API_KEY) {
+            const ocr = await ocrPDF(filePath, process.env.GEMINI_API_KEY, 8).catch(() => null);
+            if (ocr?.success && ocr.text.length > 200) {
+                fullText = ocrText = ocr.text;
+                console.log(`🔎 OCR text used for parsing (${ocrText.length} chars)`);
+            }
+        }
+
+        // PDF com vários elevadores: analisar só o bloco do elevador alvo (ou o primeiro, sem alvo)
+        const { selectElevatorBlock } = require('./pdf-parser-cml-nota');
+        const elevSel = selectElevatorBlock(fullText, opts.municipalNumber);
+        if (elevSel.elevators.length > 1) {
+            console.log(`🛗 PDF com ${elevSel.elevators.length} elevadores (${elevSel.elevators.join(', ')}) — alvo: ${opts.municipalNumber || 'primeiro'}`);
+            if (!elevSel.matched) {
+                return {
+                    success: false,
+                    error: `O PDF não contém o elevador ${opts.municipalNumber} (contém: ${elevSel.elevators.join(', ')})`,
+                    elevatorsInFile: elevSel.elevators
+                };
+            }
+            fullText = ocrText = elevSel.text;
         }
 
         const format = detectFormat(fullText);
@@ -532,7 +560,7 @@ async function parseReport(filePath) {
         // ── STEP 2: Regex fallback ────────────────────────────────────────────
         if (!result) {
             if (format === 'bureau-veritas' || format === 'known-pt') {
-                result = await parseBureauVeritasPDF(filePath);
+                result = await parseBureauVeritasPDF(filePath, ocrText);
 
                 const hasDate = result?.metadata?.date || result?.success === false;
                 if (!hasDate) {
@@ -570,6 +598,7 @@ async function parseReport(filePath) {
         result = applyUnifiedPostProcessing(result);
 
         if (result.success) result.detectedFormat = result.detectedFormat || format;
+        if (elevSel.elevators.length > 1) result.elevatorsInFile = elevSel.elevators;
         return result;
 
     } catch (error) {

@@ -66,6 +66,48 @@ function isLikelyScanned(text) {
 }
 
 /**
+ * Fallback sem binários externos: renderiza páginas com pdf.js (incluído no pdf-parse) + canvas.
+ * Cobre PDFs com texto em contornos/vetores. PDFs só com imagens em formatos que o pdf.js
+ * antigo não decodifica saem em branco — páginas em branco são descartadas.
+ */
+async function renderWithPdfjs(pdfPath, maxPages) {
+    const { createCanvas, Image } = require('canvas');
+    if (typeof global.Image === 'undefined') global.Image = Image;
+    const pdfjs = require('pdf-parse/lib/pdf.js/v1.10.100/build/pdf.js');
+    pdfjs.disableWorker = true;
+
+    const canvasFactory = {
+        create(w, h) { const canvas = createCanvas(w, h); return { canvas, context: canvas.getContext('2d') }; },
+        reset(o, w, h) { o.canvas.width = w; o.canvas.height = h; },
+        destroy() {}
+    };
+
+    const doc = await pdfjs.getDocument({ data: new Uint8Array(await fs.readFile(pdfPath)) }).promise;
+    const images = [];
+    for (let p = 1; p <= Math.min(doc.numPages, maxPages); p++) {
+        const page = await doc.getPage(p);
+        const viewport = page.getViewport(2.5);
+        const { canvas, context } = canvasFactory.create(viewport.width, viewport.height);
+        context.fillStyle = '#fff';
+        context.fillRect(0, 0, viewport.width, viewport.height);
+        try {
+            await page.render({ canvasContext: context, viewport, canvasFactory }).promise;
+        } catch (e) {
+            console.warn(`   ⚠️ pdf.js could not render page ${p}: ${e.message}`);
+            continue;
+        }
+        // Página em branco = conteúdo que o pdf.js não conseguiu desenhar
+        const px = context.getImageData(0, 0, canvas.width, canvas.height).data;
+        let ink = false;
+        for (let i = 0; i < px.length; i += 4 * 97) { if (px[i] < 250) { ink = true; break; } }
+        if (!ink) { console.warn(`   ⚠️ page ${p} rendered blank, skipping`); continue; }
+        images.push({ base64: canvas.toBuffer('image/png').toString('base64'), mimeType: 'image/png' });
+    }
+    console.log(`   ✅ pdf.js rendered ${images.length} page image(s)`);
+    return images;
+}
+
+/**
  * Конвертує PDF в масив base64 зображень за допомогою pdftoppm
  * @param {string} pdfPath - Шлях до PDF файлу
  * @param {number} maxPages - Максимальна кількість сторінок (дефолт 5)
@@ -88,13 +130,11 @@ async function pdfToImages(pdfPath, maxPages = 10) {
             outputPrefix
         ], { timeout: 120000 });
         
-        if (result.error) {
-            throw new Error(`pdftoppm error: ${result.error.message}`);
-        }
-        
-        if (result.status !== 0) {
-            const stderr = result.stderr?.toString() || '';
-            throw new Error(`pdftoppm exited with ${result.status}: ${stderr}`);
+        if (result.error || result.status !== 0) {
+            // pdftoppm não instalado (ou falhou) — render em Node (pdf.js + canvas)
+            const why = result.error ? result.error.message : (result.stderr?.toString() || `exit ${result.status}`);
+            console.warn(`⚠️ pdftoppm unavailable (${why.trim()}), falling back to pdf.js renderer`);
+            return await renderWithPdfjs(pdfPath, maxPages);
         }
         
         // Читаємо всі PNG файли
@@ -138,7 +178,8 @@ async function pdfToImages(pdfPath, maxPages = 10) {
  */
 async function extractTextWithGemini(images, apiKey) {
     const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+    // temperature 0: OCR tem de ser reprodutível (o mesmo PDF dava textos diferentes e quebrava os parsers determinísticos)
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash', generationConfig: { temperature: 0 } });
     
     console.log(`🤖 Sending ${images.length} page(s) to Gemini Vision for OCR...`);
     
@@ -158,7 +199,7 @@ CRITICAL RULES:
 2. VIOLATION CODES: Extract C1, C2, C3 exactly as written (case-sensitive, never omit)
 3. LEGAL REFERENCES: Keep exact format — Decreto-Lei n.º 320/2002, Art.º 4.º, Portaria n.º 123/2004, DL, Port., Artigo
 4. NUMBERS & CODES: Reproduce exactly — report numbers, lift IDs, dates (DD/MM/YYYY), NIF, certificate numbers
-5. TABLE STRUCTURE: Preserve using spaces/pipes — do NOT collapse columns
+5. TABLE STRUCTURE: Keep each row on its own line and separate columns with spaces only — NEVER use the pipe character | or markdown tables; continuation lines of a clause are plain indented text
 6. SIGNATURES & STAMPS: Extract all text from stamps, seals, watermarks if readable
 7. HEADERS/FOOTERS: Include page numbers, company names, document titles
 8. CASE SENSITIVITY: UPPERCASE stays UPPERCASE, lowercase stays lowercase

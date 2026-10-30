@@ -19,6 +19,13 @@ const orcamentoCategoriaSchema = new mongoose.Schema({
         default: 'outro'
     },
 
+    // Zona do elevador onde a obra é feita (pesquisa rápida: máquina, poço, cabina…)
+    zona: {
+        type: String,
+        enum: ['casa_maquinas', 'maquina', 'quadro', 'caixa', 'poco', 'cabina', 'patamar', 'documentos'],
+        default: 'documentos'
+    },
+
     // Texto completo usado como descrição da linha de serviço quando esta categoria é vendida
     descricao: {
         type: String,
@@ -75,6 +82,7 @@ const orcamentoCategoriaSchema = new mongoose.Schema({
 
 orcamentoCategoriaSchema.index({ grupo: 1, ordem: 1 });
 orcamentoCategoriaSchema.index({ ativo: 1 });
+orcamentoCategoriaSchema.index({ zona: 1 });
 
 const OrcamentoCategoria = mongoose.model('OrcamentoCategoria', orcamentoCategoriaSchema);
 

@@ -328,6 +328,7 @@ function extractMetadata(text) {
     
     // 2. ДАТА ІНСПЕКЦІЇ - різні формати
     const datePatterns = [
+        /Data\s+da\s+Inspe[çc][çc]?[ãa]o\s+Peri[óo]dica\s*:?\s*((?<!\d)\d{2}[\/\-]\d{2}[\/\-]\d{4}(?!\d))/i, // NOTA DE CLÁUSULAS: "DATA DA INSPECÇÃO PERIÓDICA: 04-08-2023"
         /Data\s+da\s+Inspe[çc][çc]?[ãa]o\s*[:\s]{1,30}((?<!\d)\d{2}[\/\-]\d{2}[\/\-]\d{4}(?!\d))/i, // DD/MM/YYYY or DD-MM-YYYY (wide whitespace)
         /Data\s+da\s+Inspe[çc][çc]?[ãa]o\s*[:\s]{1,30}((?<!\d)\d{4}[\/\-]\d{2}[\/\-]\d{2}(?!\d))/i, // YYYY/MM/DD or YYYY-MM-DD
         /Data\s+da\s+Inspe[çc][çc]?[ãa]o\s*[:\s]{1,30}(\d{2}\s+de\s+\w+\s+de\s+\d{4})/i, // 30 de Junho de 2025
@@ -360,6 +361,16 @@ function extractMetadata(text) {
         console.log('  ✅ Installation No:', metadata.installationNumber);
     }
     
+    // 3b. NOTA DE CLÁUSULAS: "ELEVADOR N.º: 371-11.10/003683" (um PDF pode trazer vários elevadores — fica o primeiro)
+    if (!metadata.installationNumber) {
+        const elevMatch = text.match(/ELEVADOR\s+N\.?[ºo]\s*:?\s*(\d[\d.\-\/]*\d)/i);
+        if (elevMatch) {
+            metadata.installationNumber = elevMatch[1];
+            metadata.liftId = elevMatch[1];
+            console.log('  ✅ Elevador No:', metadata.installationNumber);
+        }
+    }
+
     // 4. НОМЕР ПРОЦЕСУ (may start with letters e.g. CML-14267-28770)
     const processMatch = text.match(/Processo\s+n[ºo.]\s*([A-Z0-9][A-Z0-9\-\/]+)/i);
     if (processMatch) {
@@ -395,6 +406,7 @@ function extractMetadata(text) {
 
     // 4c. Validade / Próxima inspecção (valid until) — multiple formats
     const validUntilPatterns = [
+        /Data\s+limite\s+para\s+reinspe[çc][çc]?[ãa]o\s*:?\s*(\d{2}[\/\-]\d{2}[\/\-]\d{4})/i, // NOTA DE CLÁUSULAS
         /Validade\s*[:\s]+(\d{4}[\/\-]\d{2}[\/\-]\d{2})/i,              // YYYY/MM/DD or YYYY-MM-DD
         /Validade\s*[:\s]+(\d{2}[\/\-]\d{2}[\/\-]\d{4})/i,              // DD/MM/YYYY or DD-MM-YYYY
         /V[aá]lid[ao]\s+at[eé]\s*[:\s]+(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4})/i,
@@ -1600,15 +1612,16 @@ function getViolationsStats(violations) {
 /**
  * ГОЛОВНА ФУНКЦІЯ ПАРСИНГУ - УНІВЕРСАЛЬНА ДЛЯ ВСІХ ФОРМАТІВ
  */
-async function parseBureauVeritasPDF(filePath) {
+async function parseBureauVeritasPDF(filePath, preExtractedText = null) {
     try {
         console.log('\n📄 ========== PORTUGUESE INSPECTION REPORT PARSING ==========');
         console.log('📄 File:', filePath);
         
         const dataBuffer = fs.readFileSync(filePath);
         const data = await pdfParse(dataBuffer);
+        // preExtractedText: texto de OCR quando o PDF não tem camada de texto
         // [?] representa caracteres não decodificados pelo pdf-parse (fontes spec. OI)
-        const text = data.text
+        const text = (preExtractedText || data.text)
             .replace(/\[\?\]/g, '')       // remover placeholder pdf-parse
             .replace(/ {2,}/g, ' ');       // colapsar espaços duplos resultantes
         

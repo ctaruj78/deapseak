@@ -209,6 +209,29 @@ function parseVariantE(text) {
     return out;
 }
 
+/**
+ * PDF único com vários elevadores ("NOTA DE CLÁUSULAS" repetida, uma por elevador).
+ * Devolve { elevators: [n.º…], text, matched } — `text` é o bloco do elevador pedido
+ * (por n.º municipal, ignorando pontuação/maiúsculas) ou o primeiro se não houver alvo.
+ * matched=false quando há alvo e nenhum bloco corresponde. Com 0–1 blocos devolve o texto intacto.
+ */
+function selectElevatorBlock(text, target) {
+    const src = String(text || '');
+    const starts = [...src.matchAll(/^[ \t]*NOTA\s+DE\s+CL[ÁA]USULAS[ \t]*$/gmi)].map(m => m.index);
+    if (starts.length < 2) return { elevators: [], text: src, matched: true };
+    const norm = (v) => String(v || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    const blocks = starts.map((st, i) => {
+        const body = src.slice(st, i + 1 < starts.length ? starts[i + 1] : undefined);
+        const num = (body.match(/ELEVADOR\s+N[ºo°.]*\s*:?\s*(\d[\d.\-\/]*\d)/i) || [])[1] || null;
+        return { num, body };
+    });
+    const elevators = blocks.map(b => b.num).filter(Boolean);
+    if (elevators.length < 2) return { elevators, text: src, matched: true };
+    if (!target) return { elevators, text: blocks[0].body, matched: true };
+    const hit = blocks.find(b => b.num && norm(b.num) === norm(target));
+    return { elevators, text: hit ? hit.body : '', matched: Boolean(hit) };
+}
+
 /** Lista de violações da nota CML ou null se o formato não for reconhecido. */
 function extractCmlNotaViolations(text) {
     if (!text) return null;
@@ -229,4 +252,4 @@ function extractCmlNotaViolations(text) {
     return kept.map(k => k.v);
 }
 
-module.exports = { extractCmlNotaViolations };
+module.exports = { extractCmlNotaViolations, selectElevatorBlock };
