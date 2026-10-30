@@ -3,7 +3,7 @@
  * Seed de categorias de orçamento derivadas da análise das cláusulas C2/C3 dos
  * relatórios de inspeção carregados no sistema (2026-10-30).
  *
- * 240 cláusulas -> ~160 formulações distintas -> 88 categorias (obra/produto).
+ * 240 cláusulas -> ~160 formulações distintas -> 74 categorias (após fusão de duplicados em 2026-10-30) (obra/produto).
  * Cláusulas escritas de formas diferentes mas com a mesma obra foram fundidas
  * numa só categoria (ex.: 6 variantes de "não existe proteção para evitar que
  * os cabos saltem dos gornes" -> 1 categoria).
@@ -27,27 +27,15 @@ const OrcamentoCategoria = require('../models/OrcamentoCategoria');
 
 const categorias = [
     {
-        "nome": "Cabos de suspensão — encurtamento (cabos esticados, fim de curso atua tarde)",
+        "nome": "Cabos de suspensão — encurtamento (esticados)",
         "grupo": "mecanico",
         "unidade": "verba",
         "precoSugerido": 0,
-        "descricao": "Encurtamento dos cabos de suspensão com refixação dos terminais e equalização da tensão, para que o fim de curso de segurança atue antes de a cabina/contrapeso assentarem nos pára-choques; inclui ensaio do fim de curso.",
-        "norma": "RSEE (Dec. 513/70), Art. 74.º n.º 2 A (fim de curso de segurança)",
-        "notaNaoConformidade": "[RASCUNHO — VERIFICAR COM TÉCNICO RESPONSÁVEL] Artigo: RSEE (Dec. 513/70), Art. 74.º n.º 2 A (fim de curso de segurança). Se o fim de curso de segurança só atua depois de a cabina ou o contrapeso já estarem assentes nos pára-choques (amortecedores), os cabos de suspensão alongaram com o uso. O encurtamento dos cabos repõe a posição de paragem e devolve ao fim de curso a sua função de proteção.",
+        "descricao": "Corte/encurtamento dos cabos por terminais refixados e equalização, para o fim de curso atuar antes dos pára-choques; se necessário, reposicionar o interruptor do fim de curso; inclui ensaio.",
+        "norma": "RSEE (Dec. 513/70), Art. 74.º n.º 2 A (fim de curso de segurança) (conforme relatórios de inspeção)",
+        "notaNaoConformidade": "[RASCUNHO — VERIFICAR COM TÉCNICO RESPONSÁVEL] Artigo: RSEE (Dec. 513/70), Art. 74.º n.º 2 A (fim de curso de segurança) (conforme relatórios de inspeção). Se o fim de curso de segurança só atua depois de a cabina ou o contrapeso já estarem assentes nos pára-choques (amortecedores), os cabos de suspensão alongaram com o uso. O encurtamento dos cabos repõe a posição de paragem e devolve ao fim de curso a sua função de proteção.",
         "critico": true,
         "ordem": 200,
-        "zona": "caixa"
-    },
-    {
-        "nome": "Fim de curso de segurança — reposicionamento/substituição dos interruptores",
-        "grupo": "seguranca",
-        "unidade": "un",
-        "precoSugerido": 0,
-        "descricao": "Reposicionamento, substituição e ensaio dos interruptores de fim de curso de segurança (e respetivas calhas/ressaltos), quando os cabos estão em bom estado e a causa é o ajuste ou o desgaste do próprio dispositivo.",
-        "norma": "RSEE (Dec. 513/70), Art. 74.º n.º 2 A (fim de curso de segurança)",
-        "notaNaoConformidade": "[RASCUNHO — VERIFICAR COM TÉCNICO RESPONSÁVEL] Artigo: RSEE (Dec. 513/70), Art. 74.º n.º 2 A (fim de curso de segurança). O fim de curso de segurança tem de atuar antes de a cabina ou o contrapeso assentarem nos pára-choques; se atuar tarde, ou o dispositivo está desafinado ou os cabos alongaram.",
-        "critico": false,
-        "ordem": 210,
         "zona": "caixa"
     },
     {
@@ -63,28 +51,16 @@ const categorias = [
         "zona": "poco"
     },
     {
-        "nome": "Topo da caixa — altura livre sobre a cabina (contrapeso nos pára-choques)",
-        "grupo": "estrutural",
-        "unidade": "verba",
-        "precoSugerido": 0,
-        "descricao": "Regularização da altura livre acima da cobertura da cabina quando o contrapeso assenta nos pára-choques (≥ 1 + 0,035V² m): ajuste de amortecedores/contrapeso ou obra no topo da caixa.",
-        "norma": "RSEE (Dec. 513/70), Art. 16.º n.º 2",
-        "notaNaoConformidade": "[RASCUNHO — VERIFICAR COM TÉCNICO RESPONSÁVEL] Artigo: RSEE (Dec. 513/70), Art. 16.º n.º 2. No fim do curso, a cabina pode não dispor da altura de segurança sobre a sua cobertura.",
-        "critico": true,
-        "ordem": 230,
-        "zona": "poco"
-    },
-    {
-        "nome": "Contrapeso — curso com a cabina nos pára-choques",
+        "nome": "Folgas de topo e curso do contrapeso (pára-choques)",
         "grupo": "mecanico",
         "unidade": "verba",
         "precoSugerido": 0,
-        "descricao": "Regularização do curso do contrapeso com a cabina assente nos pára-choques (≥ 0,035V² m): ajuste de pára-choques e de curso.",
-        "norma": "RSEE (Dec. 513/70), Art. 16.º n.º 3",
-        "notaNaoConformidade": "[RASCUNHO — VERIFICAR COM TÉCNICO RESPONSÁVEL] Artigo: RSEE (Dec. 513/70), Art. 16.º n.º 3. Folga de curso insuficiente do contrapeso ao fim do trajeto.",
+        "descricao": "Reposição das folgas de topo da caixa e do curso do contrapeso com a cabina nos pára-choques (ajuste de pára-choques/calços/batentes).",
+        "norma": "RSEE (Dec. 513/70), Art. 16.º n.os 2 e 3 (conforme relatórios de inspeção)",
+        "notaNaoConformidade": "[RASCUNHO — VERIFICAR COM TÉCNICO RESPONSÁVEL] Artigo: RSEE (Dec. 513/70), Art. 16.º n.os 2 e 3 (conforme relatórios de inspeção). Folga de curso insuficiente do contrapeso ao fim do trajeto.",
         "critico": true,
         "ordem": 240,
-        "zona": "poco"
+        "zona": "caixa"
     },
     {
         "nome": "Roda tensora do limitador — proteção de saída do cabo",
@@ -96,18 +72,6 @@ const categorias = [
         "notaNaoConformidade": "[RASCUNHO — VERIFICAR COM TÉCNICO RESPONSÁVEL] Artigo: Relatório de inspeção sem artigo indicado (nota) [VERIFICAR]. A roda tensora do limitador deve ter proteção que impeça a saída do cabo e a entrada de corpos estranhos.",
         "critico": false,
         "ordem": 250,
-        "zona": "maquina"
-    },
-    {
-        "nome": "Gornes — proteção contra saída dos cabos (roda de tração e de desvio)",
-        "grupo": "mecanico",
-        "unidade": "un",
-        "precoSugerido": 0,
-        "descricao": "Fornecimento e instalação de proteção (guarda/varão) nas rodas de tração, de desvio e tensora, impedindo a saída dos cabos dos gornes e o alojamento de corpos estranhos entre os gornes e os cabos.",
-        "norma": "RSEE (Dec. 513/70), Art. 64.º n.º 1 A",
-        "notaNaoConformidade": "[RASCUNHO — VERIFICAR COM TÉCNICO RESPONSÁVEL] Artigo: RSEE (Dec. 513/70), Art. 64.º n.º 1 A. Sem esta proteção, um cabo pode saltar do gorne ou ser apanhado por um corpo estranho, com risco de dano grave para o cabo e para quem trabalha na casa das máquinas. É das cláusulas C2 mais repetidas nos relatórios.",
-        "critico": true,
-        "ordem": 260,
         "zona": "maquina"
     },
     {
@@ -255,27 +219,15 @@ const categorias = [
         "zona": "maquina"
     },
     {
-        "nome": "Limitador de velocidade — substituição (desgaste/oxidação)",
+        "nome": "Limitador de velocidade — substituição (limitador/cabo)",
         "grupo": "seguranca",
         "unidade": "un",
         "precoSugerido": 0,
-        "descricao": "Substituição do limitador de velocidade com desgaste/oxidação, com selagem e ensaio de atuação.",
-        "norma": "RSEE (Dec. 513/70), Art. 67.º; ponto 9.9 (conforme relatórios de inspeção)",
-        "notaNaoConformidade": "[RASCUNHO — VERIFICAR COM TÉCNICO RESPONSÁVEL] Artigo: RSEE (Dec. 513/70), Art. 67.º; ponto 9.9 (conforme relatórios de inspeção). O limitador de velocidade desgastado ou oxidado pode não atuar na velocidade certa, e é o órgão que aciona o paraquedas.",
+        "descricao": "Substituição do limitador de velocidade e/ou do seu cabo (desgaste, oxidação, aderência).",
+        "norma": "RSEE (Dec. 513/70), Art. 67.º; pontos 9.9, 9.9.4 e 9.9.6 (conforme relatórios de inspeção)",
+        "notaNaoConformidade": "[RASCUNHO — VERIFICAR COM TÉCNICO RESPONSÁVEL] Artigo: RSEE (Dec. 513/70), Art. 67.º; pontos 9.9, 9.9.4 e 9.9.6 (conforme relatórios de inspeção). O limitador de velocidade desgastado ou oxidado pode não atuar na velocidade certa, e é o órgão que aciona o paraquedas.",
         "critico": false,
         "ordem": 390,
-        "zona": "maquina"
-    },
-    {
-        "nome": "Limitador de velocidade — substituição do cabo (oxidação/desgaste/aderência)",
-        "grupo": "mecanico",
-        "unidade": "un",
-        "precoSugerido": 0,
-        "descricao": "Substituição do cabo do limitador de velocidade e verificação da aderência na roda.",
-        "norma": "Pontos 9.9.4 e 9.9.6 (conforme relatórios de inspeção)",
-        "notaNaoConformidade": "[RASCUNHO — VERIFICAR COM TÉCNICO RESPONSÁVEL] Artigo: Pontos 9.9.4 e 9.9.6 (conforme relatórios de inspeção). Se o cabo do limitador perder aderência ou estiver oxidado, o limitador pode não acionar o paraquedas a tempo.",
-        "critico": false,
-        "ordem": 400,
         "zona": "maquina"
     },
     {
@@ -351,30 +303,6 @@ const categorias = [
         "zona": "quadro"
     },
     {
-        "nome": "Comunicação bidirecional — cobertura da cabina e poço",
-        "grupo": "seguranca",
-        "unidade": "un",
-        "precoSugerido": 0,
-        "descricao": "Fornecimento e instalação de dispositivos de comunicação bidirecional (pedido de socorro) na cobertura da cabina e no poço, ligados ao serviço de socorro.",
-        "norma": "Pontos 5.10 e 5.12.3.1; DL 295/98 (conforme relatórios de inspeção)",
-        "notaNaoConformidade": "[RASCUNHO — VERIFICAR COM TÉCNICO RESPONSÁVEL] Artigo: Pontos 5.10 e 5.12.3.1; DL 295/98 (conforme relatórios de inspeção). Um técnico preso no topo da cabina ou no poço tem de poder pedir socorro; sistemas de socorro inoperacionais nesses locais originam C2.",
-        "critico": true,
-        "ordem": 470,
-        "zona": "poco"
-    },
-    {
-        "nome": "Intercomunicador — casa das máquinas–cabina (curso > 30 m)",
-        "grupo": "seguranca",
-        "unidade": "un",
-        "precoSugerido": 0,
-        "descricao": "Instalação de intercomunicador ou dispositivo análogo alimentado por fonte de segurança entre o local de resgate e a cabina (curso superior a 30 m).",
-        "norma": "Ponto 14.2.3.4; DL 295/98 (conforme relatórios de inspeção)",
-        "notaNaoConformidade": "[RASCUNHO — VERIFICAR COM TÉCNICO RESPONSÁVEL] Artigo: Ponto 14.2.3.4; DL 295/98 (conforme relatórios de inspeção). Em cursos superiores a 30 m, o resgate sem comunicação direta é demorado e inseguro.",
-        "critico": true,
-        "ordem": 480,
-        "zona": "cabina"
-    },
-    {
         "nome": "Pedido de socorro — sinalização do elevador de origem",
         "grupo": "seguranca",
         "unidade": "un",
@@ -384,18 +312,6 @@ const categorias = [
         "notaNaoConformidade": "[RASCUNHO — VERIFICAR COM TÉCNICO RESPONSÁVEL] Artigo: Ponto 15.12 (conforme relatórios de inspeção). Em instalações com vários elevadores, o pedido de socorro tem de indicar de que elevador provém.",
         "critico": false,
         "ordem": 490,
-        "zona": "cabina"
-    },
-    {
-        "nome": "Iluminação de emergência no teto",
-        "grupo": "eletrico",
-        "unidade": "un",
-        "precoSugerido": 0,
-        "descricao": "Fornecimento e instalação de iluminação de emergência (autónoma) no teto da cabina.",
-        "norma": "Ponto 5.4.10.4 (conforme relatório de inspeção)",
-        "notaNaoConformidade": "[RASCUNHO — VERIFICAR COM TÉCNICO RESPONSÁVEL] Artigo: Ponto 5.4.10.4 (conforme relatório de inspeção). Em falha de energia, o técnico no teto da cabina fica sem luz para o resgate.",
-        "critico": true,
-        "ordem": 500,
         "zona": "cabina"
     },
     {
@@ -423,39 +339,15 @@ const categorias = [
         "zona": "patamar"
     },
     {
-        "nome": "Iluminação do acesso — luminárias",
+        "nome": "Proteção diferencial 30 mA — tomadas, iluminação e saídas",
         "grupo": "eletrico",
         "unidade": "un",
         "precoSugerido": 0,
-        "descricao": "Substituição de luminárias do acesso à casa das máquinas.",
-        "norma": "Ponto 6.3.6 (conforme relatório de inspeção) — [VERIFICAR]",
-        "notaNaoConformidade": "[RASCUNHO — VERIFICAR COM TÉCNICO RESPONSÁVEL] Artigo: Ponto 6.3.6 (conforme relatório de inspeção) [VERIFICAR]. O acesso à casa das máquinas deve estar iluminado para circulação segura.",
-        "critico": false,
-        "ordem": 530,
-        "zona": "casa_maquinas"
-    },
-    {
-        "nome": "Proteção diferencial 30 mA — tomadas e iluminação",
-        "grupo": "eletrico",
-        "unidade": "un",
-        "precoSugerido": 0,
-        "descricao": "Fornecimento e instalação de aparelhagem de proteção diferencial de alta sensibilidade (≤ 30 mA) nos circuitos de tomadas e iluminação da casa das máquinas.",
+        "descricao": "Instalação/substituição dos disjuntores diferenciais de 30 mA.",
         "norma": "DL 740/74 e Portaria 949-A/2006 (conforme relatórios de inspeção)",
         "notaNaoConformidade": "[RASCUNHO — VERIFICAR COM TÉCNICO RESPONSÁVEL] Artigo: DL 740/74 e Portaria 949-A/2006 (conforme relatórios de inspeção). Sem proteção diferencial de alta sensibilidade (≤ 30 mA), um contacto indireto com a massa pode ser perigoso para o técnico.",
-        "critico": false,
-        "ordem": 540,
-        "zona": "quadro"
-    },
-    {
-        "nome": "Quadro geral — reparação/substituição do disjuntor diferencial das saídas",
-        "grupo": "eletrico",
-        "unidade": "un",
-        "precoSugerido": 0,
-        "descricao": "Reparação/substituição do disjuntor diferencial do quadro e proteção diferencial das saídas.",
-        "norma": "DL 740/74 e Portaria 949-A/2006 (conforme relatórios de inspeção)",
-        "notaNaoConformidade": "[RASCUNHO — VERIFICAR COM TÉCNICO RESPONSÁVEL] Artigo: DL 740/74 e Portaria 949-A/2006 (conforme relatórios de inspeção). Sem proteção diferencial nas saídas, existe risco de contacto indireto.",
         "critico": true,
-        "ordem": 550,
+        "ordem": 540,
         "zona": "quadro"
     },
     {
@@ -507,23 +399,11 @@ const categorias = [
         "zona": "casa_maquinas"
     },
     {
-        "nome": "Impermeabilização (infiltração de água)",
+        "nome": "Humidade e infiltração de água",
         "grupo": "estrutural",
         "unidade": "verba",
         "precoSugerido": 0,
-        "descricao": "Impermeabilização da casa das máquinas e vedação da ventilação para impedir a entrada de água.",
-        "norma": "Ponto 6.3.5.1; RSEE (Dec. 513/70), Art. 27.º (conforme relatórios de inspeção)",
-        "notaNaoConformidade": "[RASCUNHO — VERIFICAR COM TÉCNICO RESPONSÁVEL] Artigo: Ponto 6.3.5.1; RSEE (Dec. 513/70), Art. 27.º (conforme relatórios de inspeção). A casa das máquinas deve estar ao abrigo da humidade e da água; infiltrações danificam quadro, máquina e instalação elétrica.",
-        "critico": false,
-        "ordem": 600,
-        "zona": "casa_maquinas"
-    },
-    {
-        "nome": "Humidade — tratamento de vestígios",
-        "grupo": "estrutural",
-        "unidade": "verba",
-        "precoSugerido": 0,
-        "descricao": "Tratamento de vestígios de humidade (secagem, pintura anti-humidade) na casa das máquinas.",
+        "descricao": "Eliminação da infiltração, impermeabilização e tratamento dos vestígios de humidade.",
         "norma": "Ponto 6.3.5.1; DL 295/98; RSEE (Dec. 513/70), Art. 27.º (conforme relatórios de inspeção)",
         "notaNaoConformidade": "[RASCUNHO — VERIFICAR COM TÉCNICO RESPONSÁVEL] Artigo: Ponto 6.3.5.1; DL 295/98; RSEE (Dec. 513/70), Art. 27.º (conforme relatórios de inspeção). Vestígios de humidade na casa das máquinas aceleram a oxidação e a degradação do equipamento elétrico e mecânico.",
         "critico": false,
@@ -627,27 +507,15 @@ const categorias = [
         "zona": "casa_maquinas"
     },
     {
-        "nome": "Instruções de manobra — movimento manual da cabina",
+        "nome": "Instruções de resgate e manobra manual",
         "grupo": "seguranca",
         "unidade": "un",
         "precoSugerido": 0,
-        "descricao": "Elaboração e afixação de instruções de movimento manual da cabina conformes com o equipamento instalado.",
-        "norma": "RSEE (Dec. 513/70), Art. 105.º; EN 81-20:2014, ponto 5.2.6.2.3",
-        "notaNaoConformidade": "[RASCUNHO — VERIFICAR COM TÉCNICO RESPONSÁVEL] Artigo: RSEE (Dec. 513/70), Art. 105.º; EN 81-20:2014, ponto 5.2.6.2.3. Instruções ausentes ou não conformes com o equipamento podem causar resgate improvisado e acidente.",
+        "descricao": "Instruções afixadas para movimento manual da cabina e uso da chave de desencravamento.",
+        "norma": "RSEE (Dec. 513/70), Art. 105.º; EN 81-20:2014, ponto 5.2.6.2.3; RSEE (Dec. 513/70), Art. 95.º (conforme relatórios de inspeção) — [VERIFICAR]",
+        "notaNaoConformidade": "[RASCUNHO — VERIFICAR COM TÉCNICO RESPONSÁVEL] Artigo: RSEE (Dec. 513/70), Art. 105.º; EN 81-20:2014, ponto 5.2.6.2.3; RSEE (Dec. 513/70), Art. 95.º (conforme relatórios de inspeção) — [VERIFICAR]. Instruções ausentes ou não conformes com o equipamento podem causar resgate improvisado e acidente.",
         "critico": true,
         "ordem": 700,
-        "zona": "casa_maquinas"
-    },
-    {
-        "nome": "Instruções de resgate — chave de desencravamento (paragem intempestiva)",
-        "grupo": "seguranca",
-        "unidade": "un",
-        "precoSugerido": 0,
-        "descricao": "Afixação, na casa das máquinas/painel de emergência, de instruções pormenorizadas para paragem intempestiva: operação do dispositivo de resgate e uso da chave de desencravamento.",
-        "norma": "RSEE (Dec. 513/70), Art. 95.º (conforme relatório de inspeção) — [VERIFICAR]",
-        "notaNaoConformidade": "[RASCUNHO — VERIFICAR COM TÉCNICO RESPONSÁVEL] Artigo: RSEE (Dec. 513/70), Art. 95.º (conforme relatório de inspeção) [VERIFICAR]. Sem instruções afixadas, o socorro não é executável em segurança.",
-        "critico": true,
-        "ordem": 710,
         "zona": "casa_maquinas"
     },
     {
@@ -675,27 +543,15 @@ const categorias = [
         "zona": "caixa"
     },
     {
-        "nome": "Espaço de refúgio — sinalização (poço e topo da cabina)",
+        "nome": "Espaço de refúgio — sinalização e aviso",
         "grupo": "seguranca",
         "unidade": "un",
         "precoSugerido": 0,
-        "descricao": "Sinalização do espaço de refúgio (postura/nº de pessoas) no poço e no topo da cabina e correção do espaço de refúgio, se inferior ao sinalizado.",
-        "norma": "EN 81-20:2014, ponto 5.2.5.7.1 (conforme relatórios de inspeção)",
-        "notaNaoConformidade": "[RASCUNHO — VERIFICAR COM TÉCNICO RESPONSÁVEL] Artigo: EN 81-20:2014, ponto 5.2.5.7.1 (conforme relatórios de inspeção). Quem trabalha no poço ou no topo da cabina tem de ter um espaço de refúgio sinalizado.",
+        "descricao": "Pictogramas de espaço de refúgio (poço e topo da cabina) e aviso de nº de pessoas e postura.",
+        "norma": "EN 81-20:2014, pontos 5.2.5.7.1 e 5.2.6.3.2.1 (conforme relatórios de inspeção)",
+        "notaNaoConformidade": "[RASCUNHO — VERIFICAR COM TÉCNICO RESPONSÁVEL] Artigo: EN 81-20:2014, pontos 5.2.5.7.1 e 5.2.6.3.2.1 (conforme relatórios de inspeção). Quem trabalha no poço ou no topo da cabina tem de ter um espaço de refúgio sinalizado.",
         "critico": true,
         "ordem": 740,
-        "zona": "poco"
-    },
-    {
-        "nome": "Espaço de refúgio — aviso de nº de pessoas e postura",
-        "grupo": "seguranca",
-        "unidade": "un",
-        "precoSugerido": 0,
-        "descricao": "Afixação de aviso legível a partir dos patamares/entrada com o nº de pessoas e a postura do espaço de refúgio.",
-        "norma": "EN 81-20:2014, pontos 5.2.5.7.1 e 5.2.6.3.2.1 (conforme relatórios de inspeção)",
-        "notaNaoConformidade": "[RASCUNHO — VERIFICAR COM TÉCNICO RESPONSÁVEL] Artigo: EN 81-20:2014, pontos 5.2.5.7.1 e 5.2.6.3.2.1 (conforme relatórios de inspeção). No poço e no teto da cabina deve existir aviso legível, a partir dos acessos, do nº de pessoas e da postura admitidos no espaço de refúgio.",
-        "critico": false,
-        "ordem": 750,
         "zona": "poco"
     },
     {
@@ -711,39 +567,15 @@ const categorias = [
         "zona": "cabina"
     },
     {
-        "nome": "Divisória entre elevadores — altura mínima 2,5 m",
+        "nome": "Divisória de proteção no poço (entre elevadores/contrapeso)",
         "grupo": "estrutural",
         "unidade": "verba",
         "precoSugerido": 0,
-        "descricao": "Instalação/prolongamento de divisória entre elevadores (altura mínima 2,5 m; a toda a altura quando a distância for inferior a 30 cm).",
-        "norma": "RSEE (Dec. 513/70), Art. 9.º n.º 3 e Art. 15.º n.º 1 (conforme relatório de inspeção) — [VERIFICAR]",
-        "notaNaoConformidade": "[RASCUNHO — VERIFICAR COM TÉCNICO RESPONSÁVEL] Artigo: RSEE (Dec. 513/70), Art. 9.º n.º 3 e Art. 15.º n.º 1 (conforme relatório de inspeção) [VERIFICAR]. Sem divisória, quem trabalha num elevador fica exposto às peças em movimento do adjacente.",
+        "descricao": "Instalação/prolongamento da divisória (altura mínima 2,5 m; resguardo do contrapeso 2 m) e fecho de aberturas de grande dimensão.",
+        "norma": "RSEE (Dec. 513/70), Art. 9.º n.º 3 e Art. 15.º n.º 1; Ponto 5.6.1; EN 81-20:2014, pontos 5.2.5 e 5.2.5.5.1 (conforme relatórios de inspeção) — [VERIFICAR]",
+        "notaNaoConformidade": "[RASCUNHO — VERIFICAR COM TÉCNICO RESPONSÁVEL] Artigo: RSEE (Dec. 513/70), Art. 9.º n.º 3 e Art. 15.º n.º 1; Ponto 5.6.1; EN 81-20:2014, pontos 5.2.5 e 5.2.5.5.1 (conforme relatórios de inspeção) — [VERIFICAR]. Sem divisória, quem trabalha num elevador fica exposto às peças em movimento do adjacente.",
         "critico": true,
         "ordem": 770,
-        "zona": "poco"
-    },
-    {
-        "nome": "Divisória entre elevadores — fecho de aberturas de grande dimensão",
-        "grupo": "estrutural",
-        "unidade": "verba",
-        "precoSugerido": 0,
-        "descricao": "Fecho/reparação das aberturas de grande dimensão da divisória do fundo da caixa entre elevadores.",
-        "norma": "Ponto 5.6.1 (conforme relatório de inspeção) — [VERIFICAR]",
-        "notaNaoConformidade": "[RASCUNHO — VERIFICAR COM TÉCNICO RESPONSÁVEL] Artigo: Ponto 5.6.1 (conforme relatório de inspeção) [VERIFICAR]. Aberturas grandes permitem acesso a peças em movimento do elevador adjacente.",
-        "critico": true,
-        "ordem": 780,
-        "zona": "poco"
-    },
-    {
-        "nome": "Contrapeso — resguardo/divisória de proteção no poço (2 m)",
-        "grupo": "estrutural",
-        "unidade": "un",
-        "precoSugerido": 0,
-        "descricao": "Instalação de resguardo/divisória de proteção do contrapeso no poço (altura mínima 2 m; abertura inferior ≤ 0,30 m).",
-        "norma": "EN 81-20:2014, pontos 5.2.5 e 5.2.5.5.1 (conforme relatórios de inspeção)",
-        "notaNaoConformidade": "[RASCUNHO — VERIFICAR COM TÉCNICO RESPONSÁVEL] Artigo: EN 81-20:2014, pontos 5.2.5 e 5.2.5.5.1 (conforme relatórios de inspeção). O contrapeso deve estar protegido no poço (altura mínima 2 m) para impedir o acesso a peças em movimento.",
-        "critico": false,
-        "ordem": 790,
         "zona": "poco"
     },
     {
@@ -783,11 +615,11 @@ const categorias = [
         "zona": "casa_maquinas"
     },
     {
-        "nome": "Portas de patamar — dispositivo de inversão do fecho",
+        "nome": "Braço elástico — inversão do fecho da porta",
         "grupo": "seguranca",
         "unidade": "un",
         "precoSugerido": 0,
-        "descricao": "Reparação/substituição do braço elástico ou dispositivo de inversão do movimento de fecho das portas de patamar.",
+        "descricao": "Reparação/substituição do braço elástico e do respetivo contacto que inverte o movimento de fecho da porta.",
         "norma": "Ponto 14.2.2.1 (DL 295/98, conforme relatório de inspeção)",
         "notaNaoConformidade": "[RASCUNHO — VERIFICAR COM TÉCNICO RESPONSÁVEL] Artigo: Ponto 14.2.2.1 (DL 295/98, conforme relatório de inspeção). Sem inversão do fecho, a porta pode prender a pessoa que entra.",
         "critico": true,
@@ -795,11 +627,11 @@ const categorias = [
         "zona": "patamar"
     },
     {
-        "nome": "Portas de patamar — batentes de amortecimento do fecho",
+        "nome": "Portas de patamar — amortecedor hidráulico do fecho",
         "grupo": "mecanico",
         "unidade": "un",
         "precoSugerido": 0,
-        "descricao": "Substituição/afinação de batentes de amortecimento das portas de patamar.",
+        "descricao": "Substituição/afinação do amortecedor hidráulico (e batentes de amortecimento) do fecho das portas de patamar.",
         "norma": "Anexo D.2.a; ponto 16.1.3 (conforme relatório de inspeção) — [VERIFICAR]",
         "notaNaoConformidade": "[RASCUNHO — VERIFICAR COM TÉCNICO RESPONSÁVEL] Artigo: Anexo D.2.a; ponto 16.1.3 (conforme relatório de inspeção) [VERIFICAR]. Batentes inoperacionais fazem a porta bater e danificam fechos e contactos.",
         "critico": true,
@@ -927,27 +759,15 @@ const categorias = [
         "zona": "cabina"
     },
     {
-        "nome": "Botão STOP — posição e cor",
+        "nome": "Botoneira — botão STOP e identificação dos botões",
         "grupo": "eletrico",
         "unidade": "un",
         "precoSugerido": 0,
-        "descricao": "Reposicionamento (acima dos restantes botões) e cor vermelha do botão STOP da cabina.",
-        "norma": "RSEE (Dec. 513/70), Art. 93.º n.º 1 (conforme relatórios de inspeção)",
-        "notaNaoConformidade": "[RASCUNHO — VERIFICAR COM TÉCNICO RESPONSÁVEL] Artigo: RSEE (Dec. 513/70), Art. 93.º n.º 1 (conforme relatórios de inspeção). O botão STOP da cabina deve estar acima dos restantes botões e ser vermelho.",
+        "descricao": "Posição/cor do botão STOP e identificação dos botões da cabina.",
+        "norma": "RSEE (Dec. 513/70), Art. 93.º n.º 1; Ponto 15.2.3.2 (conforme relatórios de inspeção) — [VERIFICAR]",
+        "notaNaoConformidade": "[RASCUNHO — VERIFICAR COM TÉCNICO RESPONSÁVEL] Artigo: RSEE (Dec. 513/70), Art. 93.º n.º 1; Ponto 15.2.3.2 (conforme relatórios de inspeção) — [VERIFICAR]. O botão STOP da cabina deve estar acima dos restantes botões e ser vermelho.",
         "critico": false,
         "ordem": 950,
-        "zona": "cabina"
-    },
-    {
-        "nome": "Botões — identificação",
-        "grupo": "eletrico",
-        "unidade": "un",
-        "precoSugerido": 0,
-        "descricao": "Identificação dos botões da cabina.",
-        "norma": "Ponto 15.2.3.2 (conforme relatório de inspeção) — [VERIFICAR]",
-        "notaNaoConformidade": "[RASCUNHO — VERIFICAR COM TÉCNICO RESPONSÁVEL] Artigo: Ponto 15.2.3.2 (conforme relatório de inspeção) [VERIFICAR]. Os botões da cabina devem estar identificados para o utilizador distinguir as funções.",
-        "critico": false,
-        "ordem": 960,
         "zona": "cabina"
     },
     {
@@ -999,27 +819,15 @@ const categorias = [
         "zona": "cabina"
     },
     {
-        "nome": "Pavimento da cabina — revestimento",
+        "nome": "Pavimento e materiais da cabina",
         "grupo": "outro",
         "unidade": "un",
         "precoSugerido": 0,
-        "descricao": "Substituição do revestimento do pavimento da cabina.",
-        "norma": "Ponto 8.3.2; RSEE (Dec. 513/70), Art. 44.º (conforme relatórios de inspeção) — [VERIFICAR]",
-        "notaNaoConformidade": "[RASCUNHO — VERIFICAR COM TÉCNICO RESPONSÁVEL] Artigo: Ponto 8.3.2; RSEE (Dec. 513/70), Art. 44.º (conforme relatórios de inspeção) [VERIFICAR]. Revestimento irregular ou danificado do pavimento da cabina representa risco de tropeção.",
+        "descricao": "Revestimento do pavimento e materiais da cabina conforme exigências de combustibilidade.",
+        "norma": "Ponto 8.3.2; RSEE (Dec. 513/70), Art. 44.º (n.º 2 — combustibilidade) (conforme relatórios de inspeção) — [VERIFICAR]",
+        "notaNaoConformidade": "[RASCUNHO — VERIFICAR COM TÉCNICO RESPONSÁVEL] Artigo: Ponto 8.3.2; RSEE (Dec. 513/70), Art. 44.º (n.º 2 — combustibilidade) (conforme relatórios de inspeção) — [VERIFICAR]. Revestimento irregular ou danificado do pavimento da cabina representa risco de tropeção.",
         "critico": false,
         "ordem": 1010,
-        "zona": "cabina"
-    },
-    {
-        "nome": "Materiais da cabina — combustibilidade",
-        "grupo": "outro",
-        "unidade": "verba",
-        "precoSugerido": 0,
-        "descricao": "Substituição de materiais da cabina por materiais não perigosos em caso de incêndio.",
-        "norma": "RSEE (Dec. 513/70), Art. 44.º n.º 2",
-        "notaNaoConformidade": "[RASCUNHO — VERIFICAR COM TÉCNICO RESPONSÁVEL] Artigo: RSEE (Dec. 513/70), Art. 44.º n.º 2. Os materiais da cabina não podem ser perigosos pela sua inflamabilidade ou pelos gases e fumos libertados em caso de incêndio.",
-        "critico": false,
-        "ordem": 1020,
         "zona": "cabina"
     },
     {
@@ -1047,39 +855,15 @@ const categorias = [
         "zona": "casa_maquinas"
     },
     {
-        "nome": "Documentos da modificação importante (DL 58/2017, Anexo I; EN 13015)",
+        "nome": "Modificação importante — documentação e validação (DL 58/2017)",
         "grupo": "outro",
         "unidade": "verba",
         "precoSugerido": 0,
-        "descricao": "Elaboração e entrega dos documentos da modificação importante (DL 58/2017, Anexo I; EN 13015).",
-        "norma": "DL 58/2017, Anexo I; EN 13015:2001+A1:2008 (conforme relatórios de inspeção)",
-        "notaNaoConformidade": "[RASCUNHO — VERIFICAR COM TÉCNICO RESPONSÁVEL] Artigo: DL 58/2017, Anexo I; EN 13015:2001+A1:2008 (conforme relatórios de inspeção). Sem documentos da modificação importante, a inspeção classifica C2.",
+        "descricao": "Dossiê da modificação importante, declaração de conformidade e evidência de validação pelo Organismo Notificado.",
+        "norma": "DL 58/2017, Anexo I; EN 13015:2001+A1:2008; DL 320/2002, Art. 20.º n.º 2; DL 58/2017; Requisitos do DL 58/2017 / ponto 2 das OMS (conforme relatórios de inspeção) — [VERIFICAR]",
+        "notaNaoConformidade": "[RASCUNHO — VERIFICAR COM TÉCNICO RESPONSÁVEL] Artigo: DL 58/2017, Anexo I; EN 13015:2001+A1:2008; DL 320/2002, Art. 20.º n.º 2; DL 58/2017; Requisitos do DL 58/2017 / ponto 2 das OMS (conforme relatórios de inspeção) — [VERIFICAR]. Sem documentos da modificação importante, a inspeção classifica C2.",
         "critico": true,
         "ordem": 1050,
-        "zona": "documentos"
-    },
-    {
-        "nome": "DL 58/2017 — validação do cumprimento na substituição parcial",
-        "grupo": "outro",
-        "unidade": "verba",
-        "precoSugerido": 0,
-        "descricao": "Validação do cumprimento do DL 58/2017 nos componentes substituídos (ex.: quadro de comando, limitadores).",
-        "norma": "DL 320/2002, Art. 20.º n.º 2; DL 58/2017 (conforme relatórios de inspeção)",
-        "notaNaoConformidade": "[RASCUNHO — VERIFICAR COM TÉCNICO RESPONSÁVEL] Artigo: DL 320/2002, Art. 20.º n.º 2; DL 58/2017 (conforme relatórios de inspeção). A substituição parcial sem validação do cumprimento do DL 58/2017 origina C2.",
-        "critico": true,
-        "ordem": 1060,
-        "zona": "documentos"
-    },
-    {
-        "nome": "Organismo Notificado — evidência de validação",
-        "grupo": "outro",
-        "unidade": "verba",
-        "precoSugerido": 0,
-        "descricao": "Obtenção da validação da modernização por Organismo Notificado.",
-        "norma": "Requisitos do DL 58/2017 / ponto 2 das OMS (conforme relatório de inspeção) — [VERIFICAR]",
-        "notaNaoConformidade": "[RASCUNHO — VERIFICAR COM TÉCNICO RESPONSÁVEL] Artigo: Requisitos do DL 58/2017 / ponto 2 das OMS (conforme relatório de inspeção) [VERIFICAR]. Após modernização parcial importante deve existir evidência da validação por um Organismo Notificado.",
-        "critico": false,
-        "ordem": 1070,
         "zona": "documentos"
     }
 ];
