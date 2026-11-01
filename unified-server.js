@@ -7092,11 +7092,12 @@ function _makePageWriter(page, jW, jH, font, fontBold) {
     return {
         text(str, jx, jy, opts = {}) {
             if (!str) return;
+            // Texto sempre a negro, em negrito e com um mínimo de 9pt (legível em ecrã e impresso)
             page.drawText(String(str), {
                 x: toX(jx),
                 y: toY(jy),
-                font: opts.bold ? fontBold : font,
-                size: opts.size || 8,
+                font: fontBold,
+                size: Math.max(opts.size || 9, 9),
                 color: opts.color || BLACK,
             });
         },
@@ -7105,7 +7106,7 @@ function _makePageWriter(page, jW, jH, font, fontBold) {
                 x: toX(jx),
                 y: toY(jy),
                 font: fontBold,
-                size: opts.size || 8,
+                size: opts.size || 10,
                 color: BLACK,
             });
         },
@@ -7124,9 +7125,9 @@ function _makePageWriter(page, jW, jH, font, fontBold) {
 
 async function _loadPdfFonts(pdfDoc) {
     const { StandardFonts } = require('pdf-lib');
-    const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+    // Requerimentos: texto sempre em negrito (mais nítido e escuro) — `font` e `fontBold` são a mesma fonte
     const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
-    return { font, fontBold };
+    return { font: fontBold, fontBold };
 }
 
 // AcroForm field writer — all fields remain editable in PDF readers
@@ -7154,7 +7155,7 @@ function _makeFormFields(pdfDoc, page, jW, jH, font) {
     return {
         field(value, jx, jy, jw, opts = {}) {
             if (!value && value !== 0) return;
-            const sz = opts.size || 8;
+            const sz = Math.max(opts.size || 8, 9);
             const h = opts.h || sz + 4;
             try {
                 const f = form.createTextField(uid());
@@ -7169,6 +7170,7 @@ function _makeFormFields(pdfDoc, page, jW, jH, font) {
                     backgroundColor: rgb(1, 1, 1),
                     borderColor: rgb(1, 1, 1),
                 });
+                f.updateAppearances(font);
             } catch (e) { console.error('form field err:', e.message?.slice(0, 60)); }
         },
         check(on, jx, jy, sz = 9) {
@@ -7329,9 +7331,9 @@ async function _fillCascais(pdfDoc, lift, inspType, requerente, req) {
     t(today,                                          7.5, 31.050);
 
     // Carimbo da EMA — right column (x 21+), between header y 34.118 and signature y 36.098
-    t('FestLift - Elevadores e Serviços, Lda.',     21.2, 34.400, { size: 7 });
-    t('NIF: 515 924 741',                           21.2, 34.950, { size: 7 });
-    t('Tel: 214 190 863',                           21.2, 35.500, { size: 7 });
+    t('FestLift - Elevadores e Serviços, Lda.',     21.2, 34.700, { size: 9 });
+    t('NIF: 515 924 741',                           21.2, 35.250, { size: 9 });
+    t('Tel: 214 190 863',                           21.2, 35.800, { size: 9 });
 }
 
 // === Generic form fill for other municipalities ===

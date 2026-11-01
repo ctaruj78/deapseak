@@ -3,7 +3,7 @@
  * Converte a 1.ª página de um PDF em PNG (Playwright/Chromium + pdf.js do pdf-parse) para
  * verificar visualmente formulários preenchidos — não depende de poppler/ghostscript.
  *
- * Uso:  node scripts/render-pdf-preview.js <entrada.pdf> <saida.png> [escala=1.6]
+ * Uso:  node scripts/render-pdf-preview.js <entrada.pdf> <saida.png> [escala=1.6] [página=1]
  */
 const fs = require('fs');
 const path = require('path');
@@ -26,7 +26,7 @@ function startServer() {
     });
 }
 
-async function renderPdfToPng(pdfPath, pngPath, scale = 1.6) {
+async function renderPdfToPng(pdfPath, pngPath, scale = 1.6, pageNo = 1) {
     const srv = await startServer();
     const base = `http://127.0.0.1:${srv.address().port}`;
     const browser = await chromium.launch();
@@ -36,17 +36,17 @@ async function renderPdfToPng(pdfPath, pngPath, scale = 1.6) {
         await page.goto(base + '/');
         await page.addScriptTag({ url: base + '/pdf.js' });
         const b64 = fs.readFileSync(pdfPath).toString('base64');
-        const size = await page.evaluate(async ({ b64, scale, workerSrc }) => {
+        const size = await page.evaluate(async ({ b64, scale, workerSrc, pageNo }) => {
             PDFJS.workerSrc = workerSrc;
             const bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
             const pdf = await PDFJS.getDocument({ data: bytes });
-            const pg = await pdf.getPage(1);
+            const pg = await pdf.getPage(pageNo);
             const vp = pg.getViewport(scale);
             const c = document.getElementById('c');
             c.width = vp.width; c.height = vp.height;
             await pg.render({ canvasContext: c.getContext('2d'), viewport: vp }).promise;
             return { w: vp.width, h: vp.height };
-        }, { b64, scale, workerSrc: base + '/pdf.worker.js' });
+        }, { b64, scale, workerSrc: base + '/pdf.worker.js', pageNo });
         await page.setViewportSize({ width: Math.ceil(size.w), height: Math.ceil(size.h) });
         await page.locator('#c').screenshot({ path: pngPath });
     } finally {
@@ -58,7 +58,7 @@ async function renderPdfToPng(pdfPath, pngPath, scale = 1.6) {
 module.exports = { renderPdfToPng };
 
 if (require.main === module) {
-    const [, , pdf, png, scale] = process.argv;
+    const [, , pdf, png, scale, pageNo] = process.argv;
     if (!pdf || !png) { console.error('Uso: node scripts/render-pdf-preview.js <entrada.pdf> <saida.png> [escala]'); process.exit(1); }
-    renderPdfToPng(pdf, png, scale ? parseFloat(scale) : 1.6).then(() => console.log('OK', png)).catch(e => { console.error('ERRO', e.message); process.exit(1); });
+    renderPdfToPng(pdf, png, scale ? parseFloat(scale) : 1.6, pageNo ? parseInt(pageNo, 10) : 1).then(() => console.log('OK', png)).catch(e => { console.error('ERRO', e.message); process.exit(1); });
 }
