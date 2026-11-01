@@ -630,6 +630,11 @@ class LiftsManager {
             capacityText = `${persons} pessoas / ${lift.capacity} kg`;
         }
 
+        // Comunicação de emergência e mensalidade da linha (só se indicada)
+        const emergencyCommText = ({ landline: 'Linha telefónica', gsm: 'GSM (cartão SIM)', intercom: 'Intercomunicador local', none: 'Sem comunicação' })[lift.emergencyComm] || '';
+        const linePrice = Number(lift.emergencyCommPrice) || 0;
+        const lineIncluded = !!lift.emergencyCommIncluded && !!emergencyCommText;
+
         // Estado
         const statusText = this.getStatusText(lift.status);
         const statusClass = this.getStatusBadgeClass(lift.status);
@@ -668,6 +673,8 @@ class LiftsManager {
                                     ${lift.driveType ? `<tr><td><strong>Tipo de acionamento:</strong></td><td>${lift.driveType}</td></tr>` : ''}
                                     ${lift.doorType ? `<tr><td><strong>Tipo de porta:</strong></td><td>${lift.doorType}</td></tr>` : ''}
                                     ${lift.floorsCount ? `<tr><td><strong>Número de pisos:</strong></td><td>${lift.floorsCount}</td></tr>` : ''}
+                                    ${emergencyCommText ? `<tr><td><strong>Comunicação de emergência:</strong></td><td>${emergencyCommText}</td></tr>` : ''}
+                                    ${lineIncluded ? `<tr><td><strong>Custo da linha:</strong></td><td>Incluído no contrato de manutenção</td></tr>` : (linePrice > 0 ? `<tr><td><strong>Custo da linha (mensal):</strong></td><td>${linePrice.toFixed(2).replace('.', ',')} €</td></tr>` : '')}
                                     ${lift.inspectionFrequency ? `<tr><td><strong>Frequência de inspeções:</strong></td><td>${lift.inspectionFrequency === 24 ? '2 anos' : lift.inspectionFrequency === 12 ? '1 ano' : lift.inspectionFrequency + ' meses'}</td></tr>` : ''}
                                 </table>
                             </div>

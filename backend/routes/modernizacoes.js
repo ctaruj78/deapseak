@@ -3,7 +3,8 @@ const router = express.Router({ mergeParams: true });
 const fs = require('fs');
 const path = require('path');
 const mongoose = require('mongoose');
-const { PDFDocument } = require('pdf-lib');
+// jszip vem como dependência do exceljs (já usado no projeto)
+const JSZip = require('jszip');
 const Lift = require('../models/Lift');
 const ComponenteCatalogo = require('../../models/ComponenteCatalogo');
 const { authenticate } = require('../middleware/auth');
@@ -100,33 +101,36 @@ function ficheiroSeguro(rel) {
     return abs.startsWith(DOCS_DIR) && fs.existsSync(abs) ? abs : null;
 }
 
-// GET /api/lifts/:liftId/modernizacoes/:mid/dossier — um único PDF com todos os certificados fixados
+// GET /api/lifts/:liftId/modernizacoes/:mid/dossier — ZIP com todos os certificados fixados (um PDF por documento + índice)
 router.get('/:mid/dossier', authenticate, authorizeRoles('admin', 'dispatcher'), async (req, res) => {
     try {
         const lift = await Lift.findById(req.params.liftId).select('modernizacoes address').lean();
         const m = lift && (lift.modernizacoes || []).find(x => String(x._id) === req.params.mid);
         if (!m) return res.status(404).json({ success: false, message: 'Modernização não encontrada' });
 
-        const out = await PDFDocument.create();
-        let paginas = 0;
-        const emFalta = [];
+        const slug = t => String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^A-Za-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 60);
+        const data = d => (d ? new Date(d).toLocaleDateString('pt-PT') : '—');
+        const zip = new JSZip();
+        const indice = [`Dossier de certificados — montagem em ${data(m.data)}`, ''];
         const vistos = new Set();
+        let n = 0;
         for (const d of m.documentos) {
-            if (d.gerado || !d.ficheiro || vistos.has(d.ficheiro)) continue;
+            const linha = `${d.componenteNome} | ${d.titulo} | nº ${d.numero || '—'}${d.revisao ? ' rev. ' + d.revisao : ''} | emitido ${data(d.emitidoEm)} | válido até ${data(d.validoAte)}`;
+            if (d.gerado) { indice.push(`[a gerar] ${linha}`); continue; }
+            const abs = !vistos.has(d.ficheiro) && ficheiroSeguro(d.ficheiro);
+            if (vistos.has(d.ficheiro)) continue;
             vistos.add(d.ficheiro);
-            const abs = ficheiroSeguro(d.ficheiro);
-            if (!abs) { emFalta.push(d.titulo); continue; }
-            try {
-                const src = await PDFDocument.load(fs.readFileSync(abs), { ignoreEncryption: true });
-                (await out.copyPages(src, src.getPageIndices())).forEach(p => { out.addPage(p); paginas++; });
-            } catch (e) { emFalta.push(`${d.titulo} (PDF ilegível)`); }
+            if (!abs) { indice.push(`[EM FALTA] ${linha}`); continue; }
+            const nome = `${String(++n).padStart(2, '0')}-${slug(d.componenteNome)}-${slug(d.titulo)}.pdf`;
+            zip.file(nome, fs.readFileSync(abs));
+            indice.push(`${nome} — ${linha}${d.foraValidade ? ' (expirado à data de montagem)' : ''}${d.amostra ? ' (AMOSTRA)' : ''}`);
         }
-        if (!paginas) return res.status(404).json({ success: false, message: 'Sem ficheiros PDF para juntar', emFalta });
+        if (!n) return res.status(404).json({ success: false, message: 'Sem ficheiros PDF no dossier' });
+        zip.file('indice.txt', indice.join('\n'));
 
-        if (emFalta.length) res.setHeader('X-Documentos-Em-Falta', encodeURIComponent(emFalta.join('; ')));
-        res.setHeader('Content-Type', 'application/pdf');
-        res.setHeader('Content-Disposition', `inline; filename="certificados-${new Date(m.data).toISOString().slice(0, 10)}.pdf"`);
-        res.send(Buffer.from(await out.save()));
+        res.setHeader('Content-Type', 'application/zip');
+        res.setHeader('Content-Disposition', `attachment; filename="certificados-${new Date(m.data).toISOString().slice(0, 10)}.zip"`);
+        res.send(await zip.generateAsync({ type: 'nodebuffer', compression: 'DEFLATE' }));
     } catch (error) {
         console.error('❌ modernizacoes dossier:', error);
         res.status(500).json({ success: false, message: 'Erro ao gerar dossier' });

@@ -78,6 +78,10 @@ const liftSchema = new mongoose.Schema({
     },
     // Comunicação de emergência (EN 81-28) — define o item de verificação no checklist
     emergencyComm: { type: String, enum: ['', 'landline', 'gsm', 'intercom', 'none'], default: '' },
+    // Mensalidade da linha (GSM/telefone), cobrada à parte da manutenção (€/mês)
+    emergencyCommPrice: { type: Number, min: 0 },
+    // true = a mensalidade da linha já está incluída no contrato de manutenção (não se cobra à parte)
+    emergencyCommIncluded: { type: Boolean, default: false },
     capacity: { type: Number, required: true },
     speed: Number,
     floors: { type: Number, required: true },

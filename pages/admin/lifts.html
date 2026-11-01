@@ -1660,6 +1660,19 @@ function escapeJsString(s) {
                                                     </select>
                                                 </div>
                                             </div>
+                                            <div class="col-md-6" id="emergencyCommPriceGroup" style="display:none;">
+                                                <div class="form-group">
+                                                    <label>Custo da linha / mês (€) <small class="text-muted font-weight-normal">(cobrado à parte)</small></label>
+                                                    <div class="input-group">
+                                                        <input type="number" name="emergencyCommPrice" class="form-control" placeholder="0.00" step="0.01" min="0">
+                                                        <div class="input-group-append"><span class="input-group-text">€</span></div>
+                                                    </div>
+                                                    <div class="custom-control custom-checkbox mt-2">
+                                                        <input type="checkbox" class="custom-control-input" id="emergencyCommIncluded" name="emergencyCommIncluded">
+                                                        <label class="custom-control-label" for="emergencyCommIncluded">Incluída no contrato de manutenção</label>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -2245,6 +2258,14 @@ function escapeJsString(s) {
                                     <td id="detail-door-type">-</td>
                                 </tr>
                                 <tr>
+                                    <td><strong>Comunicação de emergência:</strong></td>
+                                    <td id="detail-emergency-comm">-</td>
+                                </tr>
+                                <tr id="detail-emergency-price-row" style="display:none;">
+                                    <td><strong>Custo da linha (€/mês):</strong></td>
+                                    <td id="detail-emergency-price">-</td>
+                                </tr>
+                                <tr>
                                     <td><strong>Ano de fabrico:</strong></td>
                                     <td id="detail-manufacture-year">-</td>
                                 </tr>
@@ -2625,10 +2646,10 @@ function escapeJsString(s) {
                             <div class="form-group mb-1">
                                 <label class="small font-weight-bold">Forma de pagamento</label>
                                 <select id="inspReqModal_pagamento" class="form-control form-control-sm">
+                                    <option value="transferencia">Transferência bancária</option>
+                                    <option value="multibanco">Entidade de Multibanco</option>
                                     <option value="dinheiro">Numerário / Dinheiro</option>
                                     <option value="cheque">Cheque</option>
-                                    <option value="multibanco">Multibanco</option>
-                                    <option value="transferencia">Transferência bancária</option>
                                 </select>
                             </div>
                             <button type="button" id="btnAbrirRequerimento" class="btn btn-success btn-sm w-100">
@@ -3162,7 +3183,7 @@ function escapeJsString(s) {
     <script src="../../assets/js/lifts.js?v=20260401j"></script>
     <script src="../../assets/js/simple-lift-modal.js?v=20241206"></script>
     <script src="../../assets/js/form-validator.js?v=20260303a"></script>
-    <script src="../../assets/js/enhanced-lift-modal.js?v=20260820b"></script>
+    <script src="../../assets/js/enhanced-lift-modal.js?v=20261101c"></script>
 
     <script>
         // 🧹 Função para очиaindaння testeових dados (temporária, para розробки)
@@ -4206,7 +4227,7 @@ Email de contacto: info@festlift.pt`;
         if (!liftId) return toastr.error('Elevador não identificado');
         const type       = $('#inspReqModal_reqType').val()    || 'periodica';
         const requerente = $('#inspReqModal_requerente').val() || 'festlift';
-        const pagamento  = $('#inspReqModal_pagamento').val()  || 'dinheiro';
+        const pagamento  = $('#inspReqModal_pagamento').val()  || 'transferencia';
         const btn = this;
         const old = btn.innerHTML;
         btn.disabled = true;
@@ -4262,6 +4283,14 @@ Email de contacto: info@festlift.pt`;
         if (!reqId) return toastr.error('Gere o requerimento primeiro');
         const email = ($('#inspReqModal_munEmail').val() || '').trim();
         if (!email) return toastr.error('Email do município não especificado');
+        // Nada é enviado ao município sem confirmação explícita
+        const _confirm = await Swal.fire({
+            title: 'Enviar ao município?',
+            html: 'O requerimento será enviado por email para:<br><strong>' + $('<div>').text(email).html() + '</strong>',
+            icon: 'question', showCancelButton: true,
+            confirmButtonText: 'Sim, enviar', cancelButtonText: 'Cancelar'
+        });
+        if (!_confirm.isConfirmed) return;
         const btn = this; const old = btn.innerHTML;
         btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> A enviar...';
         try {
@@ -5908,6 +5937,12 @@ Email de contacto: info@festlift.pt`;
                     mixed_patim: 'Misto — Batentes (patamar) + Cabina sem portas / Patim móvel',
                 };
                 $('#detail-door-type').text(doorLabels[lift.doorType] || lift.doorType || 'Não especificado');
+                const emergencyLabels = { landline: 'Linha telefónica', gsm: 'GSM (cartão SIM)', intercom: 'Intercomunicador local', none: 'Sem comunicação' };
+                $('#detail-emergency-comm').text(emergencyLabels[lift.emergencyComm] || 'Não especificado');
+                const _linePrice = Number(lift.emergencyCommPrice);
+                const _lineIncluded = !!lift.emergencyCommIncluded;
+                $('#detail-emergency-price-row').toggle(_lineIncluded || !!_linePrice);
+                $('#detail-emergency-price').text(_lineIncluded ? 'Incluída no contrato de manutenção' : (_linePrice ? `${_linePrice.toFixed(2)} €` : '-'));
                 
                 // Роки
                 $('#detail-manufacture-year').text(lift.manufactureYear || 'Não especificado');
@@ -6563,6 +6598,9 @@ Email de contacto: info@festlift.pt`;
             $('#enhancedDriveType').val(lift.driveType || '');
             $('#enhancedDoorType').val(lift.doorType || '');
             $('#enhancedEmergencyComm').val(lift.emergencyComm || '');
+            $('[name="emergencyCommPrice"]').val(lift.emergencyCommPrice || '');
+            $('[name="emergencyCommIncluded"]').prop('checked', !!lift.emergencyCommIncluded).trigger('change');
+            $('#enhancedEmergencyComm').trigger('change');
             $('#enhancedManufactureYear').val(lift.manufactureYear || '');
             $('#enhancedInstallYear').val(lift.installYear || '');
             

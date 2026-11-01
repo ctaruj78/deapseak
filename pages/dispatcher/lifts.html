@@ -1294,6 +1294,19 @@
                                                     </select>
                                                 </div>
                                             </div>
+                                            <div class="col-md-6" id="emergencyCommPriceGroup" style="display:none;">
+                                                <div class="form-group">
+                                                    <label>Custo da linha / mês (€) <small class="text-muted font-weight-normal">(cobrado à parte)</small></label>
+                                                    <div class="input-group">
+                                                        <input type="number" name="emergencyCommPrice" class="form-control" placeholder="0.00" step="0.01" min="0">
+                                                        <div class="input-group-append"><span class="input-group-text">€</span></div>
+                                                    </div>
+                                                    <div class="custom-control custom-checkbox mt-2">
+                                                        <input type="checkbox" class="custom-control-input" id="emergencyCommIncluded" name="emergencyCommIncluded">
+                                                        <label class="custom-control-label" for="emergencyCommIncluded">Incluída no contrato de manutenção</label>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -1828,6 +1841,14 @@
                                 <tr>
                                     <td><strong>Velocidade:</strong></td>
                                     <td id="detail-speed">-</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Comunicação de emergência:</strong></td>
+                                    <td id="detail-emergency-comm">-</td>
+                                </tr>
+                                <tr id="detail-emergency-price-row" style="display:none;">
+                                    <td><strong>Custo da linha (€/mês):</strong></td>
+                                    <td id="detail-emergency-price">-</td>
                                 </tr>
 
                                 <tr>
@@ -2874,7 +2895,7 @@
     <script src="../../assets/js/lifts.js?v=20260401j"></script>
     <script src="../../assets/js/simple-lift-modal.js?v=20241206"></script>
     <script src="../../assets/js/form-validator.js?v=20260303a"></script>
-    <script src="../../assets/js/enhanced-lift-modal.js?v=20260303c"></script>
+    <script src="../../assets/js/enhanced-lift-modal.js?v=20261101c"></script>
 
     <script>
         // 🧹 Função para очиaindaння testeових dados (temporária, para розробки)
@@ -5749,6 +5770,12 @@ Equipa FestLift</textarea>
                 
                 // Velocidade
                 $('#detail-speed').text(lift.speed ? `${lift.speed} m/s` : 'Não especificado');
+                const emergencyLabels = { landline: 'Linha telefónica', gsm: 'GSM (cartão SIM)', intercom: 'Intercomunicador local', none: 'Sem comunicação' };
+                $('#detail-emergency-comm').text(emergencyLabels[lift.emergencyComm] || 'Não especificado');
+                const _linePrice = Number(lift.emergencyCommPrice);
+                const _lineIncluded = !!lift.emergencyCommIncluded;
+                $('#detail-emergency-price-row').toggle(_lineIncluded || !!_linePrice);
+                $('#detail-emergency-price').text(_lineIncluded ? 'Incluída no contrato de manutenção' : (_linePrice ? `${_linePrice.toFixed(2)} €` : '-'));
                 
                 // Horaтоe de inspeções - apenas se вказана
                 $('#detail-frequency').text(
@@ -6296,6 +6323,9 @@ Equipa FestLift</textarea>
 
             // Licença / certificado
             $('[name="emergencyComm"]').val(lift.emergencyComm || '');
+            $('[name="emergencyCommPrice"]').val(lift.emergencyCommPrice || '');
+            $('[name="emergencyCommIncluded"]').prop('checked', !!lift.emergencyCommIncluded).trigger('change');
+            $('[name="emergencyComm"]').trigger('change');
             $('[name="licenseDate"]').val(lift.licenseDate ? new Date(lift.licenseDate).toISOString().split('T')[0] : '');
             $('[name="licenseExpiry"]').val(lift.licenseExpiry ? new Date(lift.licenseExpiry).toISOString().split('T')[0] : '');
             if (lift.licenseDate)   $('#dispLicenseDateBadge').show();   else $('#dispLicenseDateBadge').hide();

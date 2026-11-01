@@ -485,6 +485,9 @@ class EnhancedLiftModal {
             installYear: parseInt($('#enhancedInstallYear').val()) || null,
             driveType: $('#enhancedDriveType').val() || '',
             doorType: $('#enhancedDoorType').val() || '',
+            emergencyComm: $('[name="emergencyComm"]').val() || '',
+            emergencyCommPrice: parseFloat($('[name="emergencyCommPrice"]').val()) || null,
+            emergencyCommIncluded: $('[name="emergencyCommIncluded"]').is(':checked'),
             address: $('#enhancedLiftAddress').val() || '',
             postcode: $('#enhancedLiftPostcode').val() || '',
             nif: ($('#enhancedLiftNif').val() || '').trim().toUpperCase() || null,
@@ -779,6 +782,9 @@ class EnhancedLiftModal {
                 floorsCount: liftData.floorsCount || null,
                 driveType: liftData.driveType || null,
                 doorType: liftData.doorType || null,
+                emergencyComm: liftData.emergencyComm || '',
+                emergencyCommPrice: liftData.emergencyCommPrice || null,
+                emergencyCommIncluded: !!liftData.emergencyCommIncluded,
                 manufactureYear: liftData.manufactureYear || null,
                 installYear: liftData.installYear || null,
                 installationDate: liftData.installationYear ? `${liftData.installationYear}-01-01` : null,
@@ -1119,6 +1125,10 @@ class EnhancedLiftModal {
         $('#enhancedInstallYear').val(liftData.installYear || '');
         $('#enhancedDriveType').val(liftData.driveType || '');
         $('#enhancedDoorType').val(liftData.doorType || '');
+        $('[name="emergencyComm"]').val(liftData.emergencyComm || '');
+        $('[name="emergencyCommPrice"]').val(liftData.emergencyCommPrice || '');
+        $('[name="emergencyCommIncluded"]').prop('checked', !!liftData.emergencyCommIncluded).trigger('change');
+        $('[name="emergencyComm"]').trigger('change');
         $('#enhancedFloorsCount').val(liftData.floorsCount || liftData.floors || '');
         $('#enhancedLiftAddress').val(liftData.address || '');
         $('#enhancedLiftPostcode').val(liftData.postcode || '');
@@ -1599,4 +1609,21 @@ $(document).ready(function() {
             }
         }, 1000);
     }
+});
+
+// Custo da linha só aparece quando há GSM ou linha telefónica
+$(document).on('change', '[name="emergencyComm"]', function () {
+    const comLinha = ['gsm', 'landline'].includes($(this).val());
+    $('#emergencyCommPriceGroup').toggle(comLinha);
+    if (!comLinha) {
+        $('[name="emergencyCommPrice"]').val('');
+        $('[name="emergencyCommIncluded"]').prop('checked', false).trigger('change');
+    }
+});
+
+// Linha incluída no contrato → não há valor a cobrar à parte
+$(document).on('change', '[name="emergencyCommIncluded"]', function () {
+    const incluida = $(this).is(':checked');
+    $('[name="emergencyCommPrice"]').prop('disabled', incluida);
+    if (incluida) $('[name="emergencyCommPrice"]').val('');
 });

@@ -51,6 +51,12 @@
 
         <section class="content">
             <div class="container-fluid">
+                <ul class="nav nav-tabs mb-3">
+                    <li class="nav-item"><a class="nav-link active" href="#tabCatalogo" data-toggle="tab">Catálogo</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#tabModernizacoes" data-toggle="tab" onclick="carregarModernizacoes()">Modernizações</a></li>
+                </ul>
+                <div class="tab-content">
+                <div class="tab-pane fade show active" id="tabCatalogo">
                 <div id="avisoExpirar" class="alert alert-warning d-none"></div>
 
                 <div class="card card-outline card-primary mb-3">
@@ -93,9 +99,47 @@
                         </div>
                     </div>
                 </div>
+                </div>
+
+                <div class="tab-pane fade" id="tabModernizacoes">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <p class="text-muted small mb-0">Elevadores com modernização registada. Os certificados ficam fixados à data de montagem: atualizações posteriores do catálogo não os alteram.</p>
+                        <button class="btn btn-primary" onclick="abrirModernizacao()"><i class="fas fa-plus mr-1"></i>Registar modernização</button>
+                    </div>
+                    <div class="card"><div class="card-body p-0"><div class="table-responsive">
+                        <table class="table mb-0">
+                            <thead class="thead-light"><tr><th>Elevador</th><th>Montagem</th><th>Componentes</th><th>Documentos</th><th style="width:130px">Ações</th></tr></thead>
+                            <tbody id="modBody"><tr><td colspan="5" class="text-center text-muted py-4">—</td></tr></tbody>
+                        </table>
+                    </div></div></div>
+                </div>
+                </div>
             </div>
         </section>
     </div>
+</div>
+
+<!-- Modal modernização -->
+<div class="modal fade" id="modModal" tabindex="-1">
+    <div class="modal-dialog modal-lg"><div class="modal-content">
+        <div class="modal-header"><h5 class="modal-title">Registar modernização</h5><button type="button" class="close" data-dismiss="modal">&times;</button></div>
+        <div class="modal-body">
+            <input type="hidden" id="modLift">
+            <div class="form-group"><label>Elevador *</label>
+                <input id="modBusca" class="form-control" placeholder="Pesquisar por morada, cidade ou nº municipal..." oninput="pesquisarElevador()" autocomplete="off">
+                <div id="modResultados" class="list-group mt-1"></div>
+                <div id="modEscolhido" class="mt-1 small font-weight-bold text-success"></div>
+            </div>
+            <div class="form-row">
+                <div class="form-group col-md-4"><label>Data de montagem *</label><input type="date" id="modData" class="form-control"></div>
+                <div class="form-group col-md-8"><label>Notas</label><input id="modNotas" class="form-control"></div>
+            </div>
+            <label>Componentes instalados *</label>
+            <div id="modComps" class="border rounded p-2" style="max-height:260px; overflow:auto"></div>
+            <p class="small text-muted mt-2 mb-0">O nº de série do quadro é importante: a Declaração UE da Arkel é anual e por intervalo de séries.</p>
+        </div>
+        <div class="modal-footer"><button class="btn btn-secondary" data-dismiss="modal">Cancelar</button><button class="btn btn-primary" id="modGuardar" onclick="guardarModernizacao()">Registar</button></div>
+    </div></div>
 </div>
 
 <!-- Modal componente -->
@@ -358,6 +402,115 @@ async function guardarDocumento() {
     toastr.success('Documento adicionado');
     abertos.add(cid);
     carregar();
+}
+
+// ---- Modernizações ----
+let modTimer = null;
+
+async function carregarModernizacoes() {
+    $('#modBody').html('<tr><td colspan="5" class="text-center py-4"><i class="fas fa-spinner fa-spin mr-2"></i>A carregar...</td></tr>');
+    const res = await apiCall('/api/componentes-catalogo/modernizacoes');
+    if (!res.success) {
+        $('#modBody').html(`<tr><td colspan="5" class="text-center text-danger py-4">${escHtml(res.message || 'Erro ao carregar')}</td></tr>`);
+        return;
+    }
+    const linhas = [];
+    (res.data || []).forEach(l => (l.modernizacoes || []).forEach(m => {
+        const a = l.address || {};
+        const aviso = m.documentos.some(d => d.foraValidade || d.amostra) ? ' <i class="fas fa-exclamation-triangle text-warning" title="Há documentos expirados ou de amostra"></i>' : '';
+        linhas.push(`<tr>
+            <td><strong>${escHtml([a.street, a.city].filter(Boolean).join(', ') || '—')}</strong><br><small class="text-muted">${escHtml(l.municipalNumber || '')}</small></td>
+            <td>${fmtData(m.data)}</td>
+            <td>${m.componentes.map(c => escHtml(c.nome) + (c.numeroSerie ? ` <small class="text-muted">(${escHtml(c.numeroSerie)})</small>` : '')).join('<br>')}</td>
+            <td>${m.documentos.map(d => d.ficheiro
+                ? `<div class="small"><a href="#" onclick="abrirPdfModernizacao('${l._id}','${m._id}','${d._id}'); return false;"><i class="fas fa-file-pdf mr-1"></i>${escHtml(d.titulo)}</a>${d.foraValidade ? ' <span class="badge badge-danger">expirado</span>' : ''}${d.amostra ? ' <span class="badge badge-warning">amostra</span>' : ''}</div>`
+                : `<div class="small text-muted"><i class="fas fa-file mr-1"></i>${escHtml(d.titulo)} <span class="badge badge-info">a gerar</span></div>`).join('')}${aviso}</td>
+            <td><button class="btn btn-sm btn-outline-primary" title="Descarregar todos os documentos (ZIP)" onclick="baixarDossier('${l._id}','${m._id}')"><i class="fas fa-file-archive"></i></button>
+                <button class="btn btn-sm btn-outline-danger" title="Eliminar registo" onclick="eliminarModernizacao('${l._id}','${m._id}')"><i class="fas fa-trash"></i></button></td></tr>`);
+    }));
+    $('#modBody').html(linhas.join('') || '<tr><td colspan="5" class="text-center text-muted py-4">Ainda não há modernizações registadas.</td></tr>');
+}
+
+async function abrirPdfModernizacao(lid, mid, did) {
+    try {
+        const res = await fetch(`/api/lifts/${lid}/modernizacoes/${mid}/documentos/${did}/ficheiro`, { headers: { 'Authorization': `Bearer ${getToken()}` } });
+        if (!res.ok) throw new Error('Ficheiro não encontrado');
+        window.open(URL.createObjectURL(await res.blob()), '_blank');
+    } catch (e) { toastr.error(e.message); }
+}
+
+async function baixarDossier(lid, mid) {
+    try {
+        const res = await fetch(`/api/lifts/${lid}/modernizacoes/${mid}/dossier`, { headers: { 'Authorization': `Bearer ${getToken()}` } });
+        if (!res.ok) throw new Error((await res.json().catch(() => ({}))).message || 'Erro ao gerar dossier');
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(await res.blob());
+        a.download = (res.headers.get('Content-Disposition') || '').match(/filename="([^"]+)"/)?.[1] || 'certificados.zip';
+        a.click();
+    } catch (e) { toastr.error(e.message); }
+}
+
+async function eliminarModernizacao(lid, mid) {
+    const r = await Swal.fire({ title: 'Eliminar registo?', text: 'O registo da modernização e os certificados fixados serão removidos deste elevador. O catálogo não é alterado.', icon: 'warning',
+        showCancelButton: true, confirmButtonColor: '#e74c3c', cancelButtonColor: '#95a5a6', confirmButtonText: 'Eliminar', cancelButtonText: 'Cancelar' });
+    if (!r.isConfirmed) return;
+    const res = await apiCall(`/api/lifts/${lid}/modernizacoes/${mid}`, 'DELETE');
+    if (!res.success) return toastr.error(res.message || 'Erro ao eliminar');
+    toastr.success('Registo eliminado');
+    carregarModernizacoes();
+}
+
+function abrirModernizacao() {
+    $('#modLift').val(''); $('#modBusca').val(''); $('#modResultados').empty(); $('#modEscolhido').text('');
+    $('#modData').val(new Date().toISOString().slice(0, 10)); $('#modNotas').val('');
+    const porTipo = {};
+    componentes.filter(c => c.ativo !== false).forEach(c => (porTipo[c.tipo] = porTipo[c.tipo] || []).push(c));
+    $('#modComps').html(Object.entries(porTipo).map(([t, cs]) => `<div class="mb-2"><strong class="small text-uppercase text-muted">${TIPO_LABELS[t] || t}</strong>` +
+        cs.map(c => `<div class="d-flex align-items-center mb-1">
+            <div class="custom-control custom-checkbox flex-grow-1"><input type="checkbox" class="custom-control-input mod-comp" id="mc_${c._id}" value="${c._id}">
+                <label class="custom-control-label" for="mc_${c._id}">${escHtml(c.fabricante)} ${escHtml(c.modelo)}</label></div>
+            <input class="form-control form-control-sm w-50 mod-serie" data-id="${c._id}" placeholder="Nº de série (opcional)"></div>`).join('') + '</div>').join('')
+        || '<span class="text-muted small">O catálogo está vazio.</span>');
+    $('#modModal').modal('show');
+}
+
+function pesquisarElevador() {
+    clearTimeout(modTimer);
+    const q = $('#modBusca').val().trim();
+    if (q.length < 2) { $('#modResultados').empty(); return; }
+    modTimer = setTimeout(async () => {
+        const res = await apiCall(`/api/lifts?search=${encodeURIComponent(q)}&limit=8`);
+        const lifts = (res.data && res.data.lifts) || [];
+        $('#modResultados').html(lifts.map(l => {
+            const a = l.address || {};
+            const txt = [a.street, a.city].filter(Boolean).join(', ') + (l.municipalNumber ? ` (${l.municipalNumber})` : '');
+            return `<a href="#" class="list-group-item list-group-item-action py-1" data-id="${l._id}" data-txt="${escHtml(txt)}" onclick="escolherElevador(this); return false;">${escHtml(txt)}</a>`;
+        }).join('') || '<span class="small text-muted">Sem resultados.</span>');
+    }, 300);
+}
+
+function escolherElevador(el) {
+    $('#modLift').val(el.dataset.id);
+    $('#modEscolhido').text('✓ ' + el.dataset.txt);
+    $('#modResultados').empty();
+}
+
+async function guardarModernizacao() {
+    const lid = $('#modLift').val();
+    const sel = $('.mod-comp:checked').map((_, e) => ({ componenteId: e.value, numeroSerie: ($(`.mod-serie[data-id="${e.value}"]`).val() || '').trim() })).get();
+    if (!lid) return toastr.warning('Escolha o elevador');
+    if (!$('#modData').val()) return toastr.warning('Indique a data de montagem');
+    if (!sel.length) return toastr.warning('Selecione pelo menos um componente');
+    $('#modGuardar').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i>');
+    const res = await apiCall(`/api/lifts/${lid}/modernizacoes`, 'POST', { data: $('#modData').val(), notas: $('#modNotas').val().trim(), componentes: sel });
+    $('#modGuardar').prop('disabled', false).text('Registar');
+    if (!res.success) return toastr.error(res.message || 'Erro ao registar');
+    $('#modModal').modal('hide');
+    toastr.success('Modernização registada');
+    if (res.avisos && res.avisos.length) {
+        Swal.fire({ icon: 'warning', title: 'Atenção', html: '<ul class="text-left small mb-0">' + res.avisos.map(a => `<li>${escHtml(a)}</li>`).join('') + '</ul>' });
+    }
+    carregarModernizacoes();
 }
 
 function logout() {

@@ -7473,6 +7473,8 @@ async function _fillGeneric(pdfDoc, lift, munName, inspType, requerente, req) {
     fld(['Data', '___/___/____', '__/__/____', 'de ____'], today, 0.5, 8.0);
 }
 
+const requerimentoExact = require('./services/requerimento-exact');
+
 async function fillRequerimentoOriginal(lift, munName, inspType, requerente, clientData) {
     const { PDFDocument } = require('pdf-lib');
     const fs = require('fs');
@@ -7505,6 +7507,11 @@ async function fillRequerimentoOriginal(lift, munName, inspType, requerente, cli
         await _fillCascais(pdfDoc, lift, inspType, requerente, req);
     } else if (munName === 'Lisboa') {
         await _fillLisboa(pdfDoc, lift, inspType, requerente, req);
+    } else if (requerimentoExact.EXACT_FILLERS[munName]) {
+        // Coordenadas exactas (pdf-parse) + validação — ver services/requerimento-exact.js
+        const owner = { name: lift.clientName || (clientData && clientData.name) || '', nif: lift.nif || (clientData && clientData.nif) || '' };
+        const r = await requerimentoExact.fillExact(munName, pdfDoc, pdfPath, { lift, inspType, requerente, req, owner });
+        if (r.problems.length) console.warn(`⚠️ Requerimento ${munName}: colocação com problemas —`, r.problems.join(' | '));
     } else {
         await _fillGeneric(pdfDoc, lift, munName, inspType, requerente, req);
     }

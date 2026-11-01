@@ -3,6 +3,7 @@ const router = express.Router();
 const fs = require('fs');
 const path = require('path');
 const multer = require('multer');
+const Lift = require('../models/Lift');
 const ComponenteCatalogo = require('../../models/ComponenteCatalogo');
 const { authenticate } = require('../middleware/auth');
 const { authorizeRoles } = require('../middleware/roleAuth');
@@ -22,6 +23,20 @@ router.get('/', authenticate, authorizeRoles('admin', 'dispatcher'), async (req,
     } catch (error) {
         console.error('❌ componentes-catalogo GET:', error);
         res.status(500).json({ success: false, message: 'Erro ao carregar catálogo' });
+    }
+});
+
+// GET /api/componentes-catalogo/modernizacoes — elevadores com modernização registada
+router.get('/modernizacoes', authenticate, authorizeRoles('admin', 'dispatcher'), async (req, res) => {
+    try {
+        const data = await Lift.find({ 'modernizacoes.0': { $exists: true } })
+            .select('municipalNumber address modernizacoes')
+            .sort({ 'address.city': 1, 'address.street': 1 })
+            .lean();
+        res.json({ success: true, data });
+    } catch (error) {
+        console.error('❌ componentes-catalogo modernizacoes:', error);
+        res.status(500).json({ success: false, message: 'Erro ao carregar modernizações' });
     }
 });
 
