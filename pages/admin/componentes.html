@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="/assets/img/favicon.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FestLift — Componentes e Certificados</title>
+    <script src="../../assets/js/auth.js"></script>
+    <link rel="stylesheet" href="../../plugins/adminlte/adminlte.min.css">
+    <link rel="stylesheet" href="../../plugins/fontawesome/css/all.min.css">
+    <link rel="stylesheet" href="../../plugins/sweetalert2/css/sweetalert2.min.css">
+    <link rel="stylesheet" href="/plugins/toastr/css/toastr.min.css">
+    <style>
+        .doc-substituido { opacity:.55; }
+        .comp-row { cursor:pointer; }
+        .comp-row:hover { background:#f8f9fa; }
+    </style>
+</head>
+<body class="hold-transition sidebar-mini layout-fixed" data-required-role="admin">
+<div class="wrapper">
+
+    <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+        <ul class="navbar-nav">
+            <li class="nav-item"><a class="nav-link" data-widget="pushmenu" href="#"><i class="fas fa-bars"></i></a></li>
+            <li class="nav-item d-none d-sm-inline-block"><a href="admin-dashboard.html" class="nav-link">Painel</a></li>
+            <li class="nav-item d-none d-sm-inline-block"><a class="nav-link text-muted">/ Componentes e Certificados</a></li>
+        </ul>
+        <ul class="navbar-nav ml-auto">
+            <li class="nav-item"><a class="nav-link" href="#" onclick="logout()"><i class="fas fa-sign-out-alt text-danger"></i></a></li>
+        </ul>
+    </nav>
+
+    <aside class="main-sidebar sidebar-dark-primary elevation-4">
+        <div id="sidebar-container"></div>
+    </aside>
+
+    <div class="content-wrapper">
+        <div class="content-header">
+            <div class="container-fluid">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <h1 class="m-0"><i class="fas fa-certificate mr-2 text-primary"></i>Componentes e Certificados</h1>
+                        <p class="text-muted mb-0 small">Modelos instalados nas modernizações (painéis, limitadores, portas…) e respetivos certificados. Cada revisão de um certificado é guardada como versão: as antigas ficam no catálogo para os elevadores já modernizados.</p>
+                    </div>
+                    <div class="col-auto">
+                        <button class="btn btn-primary" onclick="abrirComponente()"><i class="fas fa-plus mr-1"></i>Novo componente</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <section class="content">
+            <div class="container-fluid">
+                <div id="avisoExpirar" class="alert alert-warning d-none"></div>
+
+                <div class="card card-outline card-primary mb-3">
+                    <div class="card-body py-2">
+                        <div class="row align-items-center">
+                            <div class="col-auto"><strong class="small">Tipo:</strong></div>
+                            <div class="col-auto">
+                                <select id="filterTipo" class="form-control form-control-sm" onchange="render()">
+                                    <option value="">Todos</option>
+                                    <option value="painel">Painel / Quadro</option>
+                                    <option value="limitador">Limitador de velocidade</option>
+                                    <option value="porta">Porta</option>
+                                    <option value="fechadura">Fechadura</option>
+                                    <option value="maquina">Máquina</option>
+                                    <option value="travao">Travão</option>
+                                    <option value="paraquedas">Pára-quedas</option>
+                                    <option value="cabina">Cabina</option>
+                                    <option value="hidraulica">Hidráulica</option>
+                                    <option value="outro">Outro</option>
+                                </select>
+                            </div>
+                            <div class="col-auto">
+                                <input type="text" id="filterBusca" class="form-control form-control-sm" placeholder="Pesquisar fabricante, modelo..." oninput="render()">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table mb-0">
+                                <thead class="thead-light">
+                                    <tr><th>Tipo</th><th>Fabricante</th><th>Modelo</th><th>Documentos</th><th>Estado</th><th style="width:110px">Ações</th></tr>
+                                </thead>
+                                <tbody id="compBody">
+                                    <tr><td colspan="6" class="text-center py-4"><i class="fas fa-spinner fa-spin mr-2"></i>A carregar...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+
+<!-- Modal componente -->
+<div class="modal fade" id="compModal" tabindex="-1">
+    <div class="modal-dialog"><div class="modal-content">
+        <div class="modal-header"><h5 class="modal-title" id="compModalTitle">Componente</h5><button type="button" class="close" data-dismiss="modal">&times;</button></div>
+        <div class="modal-body">
+            <input type="hidden" id="compId">
+            <div class="form-group"><label>Tipo *</label>
+                <select id="compTipo" class="form-control">
+                    <option value="painel">Painel / Quadro</option><option value="limitador">Limitador de velocidade</option>
+                    <option value="porta">Porta</option><option value="fechadura">Fechadura</option><option value="maquina">Máquina</option>
+                    <option value="travao">Travão</option><option value="paraquedas">Pára-quedas</option><option value="cabina">Cabina</option>
+                    <option value="hidraulica">Hidráulica</option><option value="outro">Outro</option>
+                </select></div>
+            <div class="form-row">
+                <div class="form-group col-6"><label>Fabricante *</label><input id="compFabricante" class="form-control"></div>
+                <div class="form-group col-6"><label>Modelo *</label><input id="compModelo" class="form-control"></div>
+            </div>
+            <div class="form-group"><label>Descrição</label><textarea id="compDescricao" class="form-control" rows="2"></textarea></div>
+            <div class="form-group"><label>Morada do fabricante</label><input id="compMorada" class="form-control"></div>
+            <div class="form-group"><label>Dados técnicos <small class="text-muted">(uma linha por dado: nome | valor | unidade)</small></label>
+                <textarea id="compDados" class="form-control" rows="4" placeholder="Velocidade nominal | 0,2 – 1,6 | m/s"></textarea></div>
+            <div class="form-group"><label>Notas</label><textarea id="compNotas" class="form-control" rows="2"></textarea></div>
+        </div>
+        <div class="modal-footer"><button class="btn btn-secondary" data-dismiss="modal">Cancelar</button><button class="btn btn-primary" id="compGuardar" onclick="guardarComponente()">Guardar</button></div>
+    </div></div>
+</div>
+
+<!-- Modal documento / nova versão -->
+<div class="modal fade" id="docModal" tabindex="-1">
+    <div class="modal-dialog"><div class="modal-content">
+        <div class="modal-header"><h5 class="modal-title">Novo documento / nova revisão</h5><button type="button" class="close" data-dismiss="modal">&times;</button></div>
+        <div class="modal-body">
+            <input type="hidden" id="docComp">
+            <div class="form-row">
+                <div class="form-group col-6"><label>Tipo *</label>
+                    <select id="docTipo" class="form-control">
+                        <option value="certificado_ce">Certificado CE / exame UE de tipo</option>
+                        <option value="declaracao_conformidade">Declaração de conformidade</option>
+                        <option value="manual">Manual</option><option value="ensaio">Ensaio</option><option value="outro">Outro</option>
+                    </select></div>
+                <div class="form-group col-6"><label>Família <small class="text-muted">(versões)</small></label>
+                    <input id="docFamilia" class="form-control" list="familias" placeholder="ex.: ce-tipo">
+                    <datalist id="familias"></datalist></div>
+            </div>
+            <div class="form-group"><label>Título *</label><input id="docTitulo" class="form-control"></div>
+            <div class="form-row">
+                <div class="form-group col-8"><label>Nº do certificado</label><input id="docNumero" class="form-control"></div>
+                <div class="form-group col-4"><label>Revisão</label><input id="docRevisao" class="form-control"></div>
+            </div>
+            <div class="form-row">
+                <div class="form-group col-6"><label>Emitido em</label><input type="date" id="docEmitido" class="form-control"></div>
+                <div class="form-group col-6"><label>Válido até</label><input type="date" id="docValido" class="form-control"></div>
+            </div>
+            <div class="form-group"><label>Organismo notificado</label><input id="docOrg" class="form-control" placeholder="Liftinstituut B.V. (NB 0400)"></div>
+            <div class="form-group"><label>Normas <small class="text-muted">(separadas por ;)</small></label><input id="docNormas" class="form-control"></div>
+            <div class="form-group"><label>Ficheiro PDF</label><input type="file" id="docFicheiro" class="form-control-file" accept="application/pdf"></div>
+            <p class="small text-muted mb-0">Ao adicionar uma revisão com a mesma família e data de emissão posterior, a versão anterior fica "substituída" mas continua no catálogo.</p>
+        </div>
+        <div class="modal-footer"><button class="btn btn-secondary" data-dismiss="modal">Cancelar</button><button class="btn btn-primary" id="docGuardar" onclick="guardarDocumento()">Guardar</button></div>
+    </div></div>
+</div>
+
+<script src="../../plugins/jquery/jquery.min.js"></script>
+<script src="../../plugins/bootstrap/bootstrap.bundle.min.js"></script>
+<script src="../../plugins/adminlte/adminlte.min.js"></script>
+<script src="/plugins/toastr/js/toastr.min.js"></script>
+<script src="../../plugins/sweetalert2/js/sweetalert2.min.js"></script>
+<script src="../../assets/js/sidebar-init.js"></script>
+<script src="../../assets/js/config.js"></script>
+
+<script>
+$(document).ready(function() {
+    loadSidebarWithInit('includes/sidebar.html');
+    carregar();
+});
+
+const TIPO_LABELS = { painel:'Painel / Quadro', limitador:'Limitador', porta:'Porta', fechadura:'Fechadura', maquina:'Máquina', travao:'Travão', paraquedas:'Pára-quedas', cabina:'Cabina', hidraulica:'Hidráulica', outro:'Outro' };
+const DOC_LABELS = { certificado_ce:'Certificado CE', declaracao_conformidade:'Declaração de conformidade', manual:'Manual', ensaio:'Ensaio', outro:'Outro' };
+const ESTADO = {
+    valido:       ['success',   'Válido'],
+    a_expirar:    ['warning',   'A expirar'],
+    expirado:     ['danger',    'Expirado'],
+    substituido:  ['secondary', 'Substituído'],
+    sem_validade: ['light',     'Sem validade']
+};
+
+let componentes = [];
+let abertos = new Set();
+
+function getToken() { return sessionStorage.getItem('liftmanager_jwt') || localStorage.getItem('liftmanager_jwt') || ''; }
+
+async function apiCall(url, method = 'GET', body = null, isForm = false) {
+    const mk = () => {
+        const o = { method, headers: { 'Authorization': `Bearer ${getToken()}` } };
+        if (body) { if (isForm) o.body = body; else { o.headers['Content-Type'] = 'application/json'; o.body = JSON.stringify(body); } }
+        return o;
+    };
+    try {
+        let res = await fetch(url, mk());
+        if (res.status === 401 || res.status === 403) {
+            const refreshed = (typeof AuthManager !== 'undefined') && await AuthManager.refreshAccessToken().catch(() => false);
+            if (refreshed) res = await fetch(url, mk());
+        }
+        return await res.json();
+    } catch (e) { return { success: false, message: e.message }; }
+}
+
+function escHtml(str) {
+    return String(str == null ? '' : str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function fmtData(d) { return d ? new Date(d).toLocaleDateString('pt-PT') : '—'; }
+function badge(estado) { const [c, t] = ESTADO[estado] || ESTADO.sem_validade; return `<span class="badge badge-${c}">${t}</span>`; }
+
+// Estado do componente = pior estado entre os documentos vigentes (não substituídos)
+function estadoComp(c) {
+    const vig = c.documentos.filter(d => d.estado !== 'substituido');
+    for (const e of ['expirado', 'a_expirar']) if (vig.some(d => d.estado === e)) return e;
+    return vig.some(d => d.estado === 'valido') ? 'valido' : 'sem_validade';
+}
+
+async function carregar() {
+    const res = await apiCall('/api/componentes-catalogo');
+    if (!res.success) {
+        $('#compBody').html(`<tr><td colspan="6" class="text-center py-4 text-danger"><i class="fas fa-exclamation-triangle mr-2"></i>Erro ao carregar catálogo: ${escHtml(res.message)}</td></tr>`);
+        return;
+    }
+    componentes = res.data || [];
+    render();
+}
+
+function render() {
+    const tipo = $('#filterTipo').val();
+    const q = $('#filterBusca').val().trim().toLowerCase();
+    const lista = componentes.filter(c => (!tipo || c.tipo === tipo) &&
+        (!q || `${c.fabricante} ${c.modelo}`.toLowerCase().includes(q)));
+
+    const exp = [];
+    componentes.forEach(c => c.documentos.forEach(d => {
+        if (d.estado === 'a_expirar' || d.estado === 'expirado') exp.push(`<li><strong>${escHtml(c.fabricante)} ${escHtml(c.modelo)}</strong> — ${escHtml(d.titulo)} (${badge(d.estado)} ${fmtData(d.validoAte)})</li>`);
+    }));
+    $('#avisoExpirar').toggleClass('d-none', !exp.length)
+        .html(exp.length ? `<strong><i class="fas fa-exclamation-triangle mr-1"></i>Certificados a expirar ou expirados</strong><ul class="mb-0 mt-1">${exp.join('')}</ul>` : '');
+
+    if (!lista.length) { $('#compBody').html('<tr><td colspan="6" class="text-center text-muted py-4">Sem componentes.</td></tr>'); return; }
+
+    $('#compBody').html(lista.map(c => {
+        const vig = c.documentos.filter(d => d.estado !== 'substituido').length;
+        const aberto = abertos.has(c._id);
+        return `<tr class="comp-row" onclick="toggle('${c._id}')">
+            <td>${TIPO_LABELS[c.tipo] || c.tipo}</td>
+            <td>${escHtml(c.fabricante)}</td>
+            <td><strong>${escHtml(c.modelo)}</strong></td>
+            <td>${vig} <small class="text-muted">/ ${c.documentos.length} total</small></td>
+            <td>${badge(estadoComp(c))}</td>
+            <td onclick="event.stopPropagation()">
+                <button class="btn btn-sm btn-outline-primary" title="Editar" onclick="abrirComponente('${c._id}')"><i class="fas fa-edit"></i></button>
+                <button class="btn btn-sm btn-outline-danger" title="Eliminar" onclick="eliminar('${c._id}')"><i class="fas fa-trash"></i></button>
+            </td></tr>` + (aberto ? `<tr><td colspan="6" class="bg-light">${detalhe(c)}</td></tr>` : '');
+    }).join(''));
+}
+
+function toggle(id) { abertos.has(id) ? abertos.delete(id) : abertos.add(id); render(); }
+
+function detalhe(c) {
+    const dados = (c.dadosTecnicos || []).map(t => `<tr><td class="text-muted">${escHtml(t.chave)}</td><td>${escHtml(t.valor)} ${escHtml(t.unidade)}</td></tr>`).join('');
+    const docs = [...c.documentos].sort((a, b) => (a.estado === 'substituido') - (b.estado === 'substituido'));
+    const linhas = docs.map(d => `<tr class="${d.estado === 'substituido' ? 'doc-substituido' : ''}">
+        <td>${escHtml(d.titulo)}${d.amostra ? ' <span class="badge badge-warning">AMOSTRA</span>' : ''}${d.gerado ? ' <span class="badge badge-info">gerado</span>' : ''}
+            <br><small class="text-muted">${DOC_LABELS[d.tipo] || ''}${d.familia ? ' · ' + escHtml(d.familia) : ''}${d.observacao ? ' · ' + escHtml(d.observacao) : ''}</small></td>
+        <td>${escHtml(d.numero)}${d.revisao ? ' <small class="text-muted">rev. ' + escHtml(d.revisao) + '</small>' : ''}</td>
+        <td>${fmtData(d.emitidoEm)}</td><td>${fmtData(d.validoAte)}</td>
+        <td>${badge(d.estado)}</td>
+        <td>${d.ficheiro ? `<button class="btn btn-sm btn-outline-secondary" onclick="abrirPdf('${c._id}','${d._id}')"><i class="fas fa-file-pdf"></i></button>` : ''}</td></tr>`).join('');
+    return `<div class="row"><div class="col-md-4">
+            ${c.descricao ? `<p class="small">${escHtml(c.descricao)}</p>` : ''}
+            ${dados ? `<table class="table table-sm table-borderless small mb-2">${dados}</table>` : ''}
+            ${c.fabricanteMorada ? `<p class="small text-muted mb-1">${escHtml(c.fabricanteMorada)}</p>` : ''}
+            ${c.notas ? `<p class="small text-muted">${escHtml(c.notas)}</p>` : ''}
+        </div><div class="col-md-8">
+            <div class="d-flex justify-content-between mb-1"><strong>Documentos</strong>
+                <button class="btn btn-sm btn-primary" onclick="abrirDocumento('${c._id}')"><i class="fas fa-plus mr-1"></i>Documento / revisão</button></div>
+            <table class="table table-sm mb-0"><thead><tr><th>Título</th><th>Nº</th><th>Emitido</th><th>Válido até</th><th>Estado</th><th></th></tr></thead><tbody>${linhas}</tbody></table>
+        </div></div>`;
+}
+
+async function abrirPdf(cid, did) {
+    try {
+        const res = await fetch(`/api/componentes-catalogo/${cid}/documentos/${did}/ficheiro`, { headers: { 'Authorization': `Bearer ${getToken()}` } });
+        if (!res.ok) throw new Error('Ficheiro não encontrado');
+        window.open(URL.createObjectURL(await res.blob()), '_blank');
+    } catch (e) { toastr.error(e.message); }
+}
+
+function abrirComponente(id) {
+    const c = id ? componentes.find(x => x._id === id) : null;
+    $('#compModalTitle').text(c ? 'Editar componente' : 'Novo componente');
+    $('#compId').val(c ? c._id : '');
+    $('#compTipo').val(c ? c.tipo : 'painel');
+    $('#compFabricante').val(c ? c.fabricante : '');
+    $('#compModelo').val(c ? c.modelo : '');
+    $('#compDescricao').val(c ? c.descricao : '');
+    $('#compMorada').val(c ? c.fabricanteMorada : '');
+    $('#compDados').val(c ? (c.dadosTecnicos || []).map(t => `${t.chave} | ${t.valor} | ${t.unidade || ''}`).join('\n') : '');
+    $('#compNotas').val(c ? c.notas : '');
+    $('#compModal').modal('show');
+}
+
+async function guardarComponente() {
+    const id = $('#compId').val();
+    const dadosTecnicos = $('#compDados').val().split('\n').map(l => l.split('|').map(x => x.trim()))
+        .filter(p => p[0] && p[1]).map(p => ({ chave: p[0], valor: p[1], unidade: p[2] || '' }));
+    const body = { tipo: $('#compTipo').val(), fabricante: $('#compFabricante').val().trim(), modelo: $('#compModelo').val().trim(),
+        descricao: $('#compDescricao').val().trim(), fabricanteMorada: $('#compMorada').val().trim(), dadosTecnicos, notas: $('#compNotas').val().trim() };
+    if (!body.fabricante || !body.modelo) return toastr.warning('Fabricante e modelo são obrigatórios');
+    $('#compGuardar').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i>');
+    const res = await apiCall(id ? `/api/componentes-catalogo/${id}` : '/api/componentes-catalogo', id ? 'PUT' : 'POST', body);
+    $('#compGuardar').prop('disabled', false).text('Guardar');
+    if (!res.success) return toastr.error(res.message || 'Erro ao guardar');
+    $('#compModal').modal('hide');
+    toastr.success('Componente guardado');
+    carregar();
+}
+
+async function eliminar(id) {
+    const c = componentes.find(x => x._id === id);
+    const r = await Swal.fire({ title: 'Eliminar componente?', text: `${c.fabricante} ${c.modelo} e todos os seus documentos serão removidos do catálogo.`, icon: 'warning',
+        showCancelButton: true, confirmButtonColor: '#e74c3c', cancelButtonColor: '#95a5a6', confirmButtonText: 'Eliminar', cancelButtonText: 'Cancelar' });
+    if (!r.isConfirmed) return;
+    const res = await apiCall(`/api/componentes-catalogo/${id}`, 'DELETE');
+    if (!res.success) return toastr.error(res.message || 'Erro ao eliminar');
+    toastr.success('Componente eliminado');
+    carregar();
+}
+
+function abrirDocumento(cid) {
+    const c = componentes.find(x => x._id === cid);
+    $('#docComp').val(cid);
+    $('#docModal input[type=text], #docModal input[type=date], #docModal input:not([type])').not('#docComp').val('');
+    $('#docFicheiro').val('');
+    $('#familias').html([...new Set(c.documentos.map(d => d.familia).filter(Boolean))].map(f => `<option value="${escHtml(f)}">`).join(''));
+    $('#docModal').modal('show');
+}
+
+async function guardarDocumento() {
+    const cid = $('#docComp').val();
+    const fd = new FormData();
+    const campos = { tipo: '#docTipo', familia: '#docFamilia', titulo: '#docTitulo', numero: '#docNumero', revisao: '#docRevisao',
+        emitidoEm: '#docEmitido', validoAte: '#docValido', organismoNotificado: '#docOrg', normas: '#docNormas' };
+    Object.entries(campos).forEach(([k, sel]) => { const v = $(sel).val().trim(); if (v) fd.append(k, v); });
+    if (!fd.get('titulo')) return toastr.warning('O título é obrigatório');
+    const f = $('#docFicheiro')[0].files[0];
+    if (f) fd.append('ficheiro', f);
+    $('#docGuardar').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i>');
+    const res = await apiCall(`/api/componentes-catalogo/${cid}/documentos`, 'POST', fd, true);
+    $('#docGuardar').prop('disabled', false).text('Guardar');
+    if (!res.success) return toastr.error(res.message || 'Erro ao guardar documento');
+    $('#docModal').modal('hide');
+    toastr.success('Documento adicionado');
+    abertos.add(cid);
+    carregar();
+}
+
+function logout() {
+    if (typeof AuthManager !== 'undefined') AuthManager.logout();
+    else { localStorage.clear(); window.location.replace('/pages/auth/login.html'); }
+}
+</script>
+<script src="../../assets/js/monitor.js"></script>
+</body>
+</html>

@@ -14039,6 +14039,9 @@ app.use('/api/contratos-manutencao', contratosManutencaoRoutes);
 // 📋 Catálogo de categorias para orçamentos de modernização
 const orcamentoCategoriasRoutes = require('./backend/routes/orcamentoCategorias');
 app.use('/api/orcamento-categorias', orcamentoCategoriasRoutes);
+const componentesCatalogoRoutes = require('./backend/routes/componentesCatalogo');
+app.use('/api/componentes-catalogo', componentesCatalogoRoutes);
+app.use('/api/lifts/:liftId/modernizacoes', require('./backend/routes/modernizacoes'));
 
 const saftRoutes = require('./backend/routes/saftRoutes');
 app.use('/api/saft', saftRoutes);

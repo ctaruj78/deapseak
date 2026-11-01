@@ -135,6 +135,36 @@ const liftSchema = new mongoose.Schema({
         uploadedAt: { type: Date, default: Date.now },
         notes: String
     }],
+    // Modernizações concluídas: componentes instalados + "fotografia" dos certificados em vigor
+    // à data de montagem (copiada do catálogo — atualizações posteriores do catálogo não a alteram).
+    modernizacoes: [{
+        data: { type: Date, required: true },
+        orcamento: { type: mongoose.Schema.Types.ObjectId, ref: 'Orcamento' },
+        componentes: [{
+            componente: { type: mongoose.Schema.Types.ObjectId, ref: 'ComponenteCatalogo', required: true },
+            nome: String,
+            tipo: String,
+            numeroSerie: String
+        }],
+        documentos: [{
+            componente: { type: mongoose.Schema.Types.ObjectId, ref: 'ComponenteCatalogo' },
+            componenteNome: String,
+            tipo: String,
+            titulo: String,
+            ficheiro: String,
+            numero: String,
+            revisao: String,
+            organismoNotificado: String,
+            emitidoEm: Date,
+            validoAte: Date,
+            gerado: { type: Boolean, default: false },
+            amostra: { type: Boolean, default: false },
+            foraValidade: { type: Boolean, default: false }
+        }],
+        notas: String,
+        criadoPor: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+        criadoEm: { type: Date, default: Date.now }
+    }],
     maintenanceContract: {
         contractFile: String, // ficheiro PDF do contrato
         contractNumber: String,
