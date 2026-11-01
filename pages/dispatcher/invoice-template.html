@@ -254,15 +254,10 @@
                                         <div class="row">
                                             <div class="col-12">
                                                 <h5>Serviços/Produtos</h5>
-                                                <div class="input-group input-group-sm mb-2" style="max-width:480px;">
-                                                    <select id="catalogoSelect" class="form-control">
-                                                        <option value="">Escolher do catálogo de categorias...</option>
-                                                    </select>
-                                                    <div class="input-group-append">
-                                                        <button type="button" class="btn btn-outline-primary" onclick="addServiceFromCatalog()">
-                                                            <i class="fas fa-layer-group"></i> Adicionar do catálogo
-                                                        </button>
-                                                    </div>
+                                                <div id="catalogoPicker" class="mb-2" style="max-width:560px;">
+                                                    <div id="catalogoZonas" class="mb-1"></div>
+                                                    <input type="text" id="catalogoBusca" class="form-control form-control-sm mb-1" placeholder="Pesquisar em todo o catálogo..." oninput="renderCatalogo()">
+                                                    <div id="catalogoLista" class="list-group" style="max-height:230px;overflow-y:auto;"></div>
                                                 </div>
                                                 <div class="table-responsive">
                                                     <table class="table table-bordered" id="servicesTable">
@@ -1058,6 +1053,40 @@
             return String(str || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
         }
 
+        window._catalogoZona = null;
+
+        const CATALOGO_ZONAS = [
+            ['pacotes', 'Pacotes'], ['casa_maquinas', 'Casa máq.'], ['maquina', 'Máquina'], ['quadro', 'Quadro'], ['caixa', 'Caixa'],
+            ['poco', 'Poço'], ['cabina', 'Cabina'], ['patamar', 'Patamar'], ['documentos', 'Outros']
+        ];
+
+        function renderCatalogo() {
+            const cats = window._catalogoCategorias || [];
+            const busca = (document.getElementById('catalogoBusca').value || '').trim().toLowerCase();
+            const zonaDe = c => c.tipo === 'pacote' ? 'pacotes' : (c.zona || 'documentos');
+            const cont = {};
+            cats.forEach(c => { cont[zonaDe(c)] = (cont[zonaDe(c)] || 0) + 1; });
+            if (!window._catalogoZona) window._catalogoZona = (CATALOGO_ZONAS.find(z => cont[z[0]]) || [null])[0];
+
+            document.getElementById('catalogoZonas').innerHTML = CATALOGO_ZONAS.filter(z => cont[z[0]]).map(z =>
+                `<button type="button" class="btn btn-sm mr-1 mb-1 ${!busca && window._catalogoZona === z[0] ? 'btn-primary' : (z[0] === 'pacotes' ? 'btn-outline-success' : 'btn-outline-primary')}" onclick="selecionarZonaCatalogo('${z[0]}')">${z[1]} <span class="badge badge-light">${cont[z[0]]}</span></button>`
+            ).join('');
+
+            const lista = cats.filter(c => busca
+                ? (c.nome + ' ' + (c.descricao || '')).toLowerCase().includes(busca)
+                : zonaDe(c) === window._catalogoZona);
+            document.getElementById('catalogoLista').innerHTML = lista.length ? lista.map(c => {
+                const preco = typeof c.precoSugerido === 'number' && c.precoSugerido > 0 ? c.precoSugerido.toFixed(2) + ' €' : '';
+                return `<button type="button" class="list-group-item list-group-item-action py-1 px-2 d-flex justify-content-between" onclick="addServiceFromCatalog('${c._id}')"><span>${escAttr(c.nome)}</span><small class="text-muted ml-2">${preco}</small></button>`;
+            }).join('') : '<div class="list-group-item text-muted py-1 px-2">Sem resultados</div>';
+        }
+
+        function selecionarZonaCatalogo(zona) {
+            window._catalogoZona = zona;
+            document.getElementById('catalogoBusca').value = '';
+            renderCatalogo();
+        }
+
         async function loadCategoriasCatalogo(token) {
             try {
                 const res = await fetch('/api/orcamento-categorias?ativo=true', {
@@ -1066,34 +1095,13 @@
                 const result = await res.json();
                 if (!result.success) return;
                 window._catalogoCategorias = result.data || [];
-
-                const zonaLabels = { casa_maquinas: 'Casa das máquinas', maquina: 'Máquina / Motor / Travão', quadro: 'Quadro elétrico', caixa: 'Caixa', poco: 'Poço', cabina: 'Cabina', patamar: 'Patamar / Portas', documentos: 'Documentos / Outros' };
-                const zonaOrdem = ['casa_maquinas', 'maquina', 'quadro', 'caixa', 'poco', 'cabina', 'patamar', 'documentos'];
-                const porGrupo = {};
-                window._catalogoCategorias.forEach(c => {
-                    (porGrupo[c.zona || 'documentos'] = porGrupo[c.zona || 'documentos'] || []).push(c);
-                });
-
-                const sel = document.getElementById('catalogoSelect');
-                if (!sel) return;
-                let html = '<option value="">Escolher do catálogo de categorias...</option>';
-                zonaOrdem.filter(z => porGrupo[z]).forEach(grupo => {
-                    html += `<optgroup label="${escAttr(zonaLabels[grupo] || grupo)}">`;
-                    porGrupo[grupo].forEach(c => {
-                        const preco = typeof c.precoSugerido === 'number' ? c.precoSugerido.toFixed(2) + ' €' : '';
-                        html += `<option value="${c._id}">${escAttr(c.nome)}${preco ? ' — ' + preco : ''}</option>`;
-                    });
-                    html += '</optgroup>';
-                });
-                sel.innerHTML = html;
+                if (document.getElementById('catalogoLista')) renderCatalogo();
             } catch (e) {
                 console.error('Erro ao carregar catálogo de categorias:', e);
             }
         }
 
-        function addServiceFromCatalog() {
-            const sel = document.getElementById('catalogoSelect');
-            const id = sel.value;
+        function addServiceFromCatalog(id) {
             if (!id) return;
             const cat = (window._catalogoCategorias || []).find(c => c._id === id);
             if (!cat) return;
@@ -1108,7 +1116,6 @@
                 </tr>
             `;
             $('#servicesTable tbody').append(newRow);
-            sel.value = '';
             invoiceManager.calculateTotals();
             invoiceManager.updatePreview();
         }

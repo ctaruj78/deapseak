@@ -39,7 +39,7 @@ router.get('/:id', authenticate, authorizeRoles('admin', 'dispatcher'), async (r
 // POST /api/orcamento-categorias — criar categoria (admin only)
 router.post('/', authenticate, authorizeRoles('admin'), async (req, res) => {
     try {
-        const { nome, grupo, zona, descricao, unidade, precoSugerido, norma, notaNaoConformidade, critico, ativo, ordem } = req.body;
+        const { nome, grupo, zona, descricao, unidade, precoSugerido, norma, notaNaoConformidade, critico, ativo, ordem, tipo, inclui } = req.body;
 
         if (!nome || !descricao) {
             return res.status(400).json({ success: false, message: 'Nome e descrição são obrigatórios' });
@@ -57,6 +57,8 @@ router.post('/', authenticate, authorizeRoles('admin'), async (req, res) => {
             critico: !!critico,
             ativo: ativo !== undefined ? !!ativo : true,
             ordem,
+            tipo,
+            inclui,
             criadoPor: req.user.id
         });
 
@@ -70,7 +72,7 @@ router.post('/', authenticate, authorizeRoles('admin'), async (req, res) => {
 // PUT /api/orcamento-categorias/:id — editar categoria (admin only)
 router.put('/:id', authenticate, authorizeRoles('admin'), async (req, res) => {
     try {
-        const campos = ['nome', 'grupo', 'zona', 'descricao', 'unidade', 'precoSugerido', 'norma', 'notaNaoConformidade', 'critico', 'ativo', 'ordem'];
+        const campos = ['nome', 'grupo', 'zona', 'descricao', 'unidade', 'precoSugerido', 'norma', 'notaNaoConformidade', 'critico', 'ativo', 'ordem', 'tipo', 'inclui'];
         const updates = {};
         campos.forEach(campo => {
             if (req.body[campo] !== undefined) updates[campo] = req.body[campo];

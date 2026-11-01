@@ -61,6 +61,20 @@ const orcamentoCategoriaSchema = new mongoose.Schema({
         default: false
     },
 
+    // 'pacote' = linha vendável que agrupa várias categorias (campo `inclui`);
+    // 'item' = categoria individual.
+    tipo: {
+        type: String,
+        enum: ['item', 'pacote'],
+        default: 'item'
+    },
+
+    // Só para pacotes: categorias cobertas por este pacote (não geram aviso quando o pacote é vendido)
+    inclui: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'OrcamentoCategoria'
+    }],
+
     ativo: {
         type: Boolean,
         default: true
