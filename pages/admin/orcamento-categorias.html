@@ -76,19 +76,8 @@
                                     <option value="outro">Outro</option>
                                 </select>
                             </div>
-                            <div class="col-auto"><strong class="small">Zona:</strong></div>
                             <div class="col-auto">
-                                <select id="filterZona" class="form-control form-control-sm" onchange="loadCategorias()">
-                                    <option value="">Todas</option>
-                                    <option value="casa_maquinas">Casa das máquinas</option>
-                                    <option value="maquina">Máquina / Motor / Travão</option>
-                                    <option value="quadro">Quadro elétrico</option>
-                                    <option value="caixa">Caixa</option>
-                                    <option value="poco">Poço</option>
-                                    <option value="cabina">Cabina</option>
-                                    <option value="patamar">Patamar / Portas</option>
-                                    <option value="documentos">Documentos / Outros</option>
-                                </select>
+                                <input type="text" id="filterBusca" class="form-control form-control-sm" placeholder="Pesquisar nome, norma..." oninput="applyView()">
                             </div>
                             <div class="col-auto">
                                 <div class="custom-control custom-switch">
@@ -97,6 +86,7 @@
                                 </div>
                             </div>
                         </div>
+                        <div id="zonaBotoes" class="mt-2"></div>
                     </div>
                 </div>
 
@@ -107,13 +97,13 @@
                             <table class="table table-hover mb-0">
                                 <thead class="thead-light">
                                     <tr>
-                                        <th style="width:28%">Nome</th>
-                                        <th>Zona</th>
-                                        <th>Grupo</th>
-                                        <th>Preço sugerido</th>
-                                        <th>Norma</th>
-                                        <th>Crítica</th>
-                                        <th>Estado</th>
+                                        <th style="width:28%; cursor:pointer;" data-sort="nome" onclick="sortBy('nome')">Nome</th>
+                                        <th style="cursor:pointer;" data-sort="zona" onclick="sortBy('zona')">Zona</th>
+                                        <th style="cursor:pointer;" data-sort="grupo" onclick="sortBy('grupo')">Grupo</th>
+                                        <th style="cursor:pointer;" data-sort="preco" onclick="sortBy('preco')">Preço sugerido</th>
+                                        <th style="cursor:pointer;" data-sort="norma" onclick="sortBy('norma')">Norma</th>
+                                        <th style="cursor:pointer;" data-sort="critica" onclick="sortBy('critica')">Crítica</th>
+                                        <th style="cursor:pointer;" data-sort="estado" onclick="sortBy('estado')">Estado</th>
                                         <th style="width:110px">Ações</th>
                                     </tr>
                                 </thead>
@@ -204,6 +194,7 @@
                         <div class="form-group">
                             <label>Norma aplicável</label>
                             <input type="text" id="fNorma" class="form-control" placeholder="Ex.: EN 81-20:2014, Art. 5.2.1; D.L. n.º 320/2002, Art. 9.º">
+                            <small id="fNormaAviso" class="form-text text-danger" style="display:none;"></small>
                         </div>
                     </div>
                     <div class="col-md-3 d-flex align-items-center">
@@ -216,6 +207,23 @@
                 <div class="form-group">
                     <label>Nota de não-conformidade <small class="text-muted">(inserida no PDF do AVISO quando esta categoria NÃO estiver no orçamento)</small></label>
                     <textarea id="fNota" class="form-control" rows="4" placeholder="Ex.: A caixa do elevador deve ser completamente fechada em toda a sua altura..."></textarea>
+                </div>
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label>Tipo</label>
+                            <select id="fTipo" class="form-control" onchange="toggleInclui()">
+                                <option value="item">Item</option>
+                                <option value="pacote">Pacote</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-9" id="fIncluiGroup" style="display:none;">
+                        <div class="form-group">
+                            <label>Inclui <small class="text-muted">(categorias cobertas por este pacote — Ctrl/Cmd para selecionar várias)</small></label>
+                            <select id="fInclui" class="form-control" multiple size="8"></select>
+                        </div>
+                    </div>
                 </div>
                 <div class="row">
                     <div class="col-md-3">
@@ -240,6 +248,7 @@
 <script src="/plugins/toastr/js/toastr.min.js"></script>
 <script src="../../plugins/sweetalert2/js/sweetalert2.min.js"></script>
 <script src="../../assets/js/sidebar-init.js"></script>
+<script src="../../assets/js/normas-revogadas.js"></script>
 <script src="../../assets/js/config.js"></script>
 
 <script>
@@ -276,12 +285,10 @@ async function apiCall(url, method = 'GET', body = null) {
 
 async function loadCategorias() {
     const grupo = $('#filterGrupo').val();
-    const zona = $('#filterZona').val();
     const soAtivas = $('#filterAtivo').is(':checked');
 
     const params = new URLSearchParams();
     if (grupo) params.append('grupo', grupo);
-    if (zona) params.append('zona', zona);
     if (soAtivas) params.append('ativo', 'true');
 
     const res = await apiCall(`/api/orcamento-categorias?${params.toString()}`);
@@ -289,7 +296,59 @@ async function loadCategorias() {
         $('#categoriasTableBody').html(`<tr><td colspan="8" class="text-center py-4 text-danger"><i class="fas fa-exclamation-triangle mr-2"></i>Erro ao carregar categorias: ${escHtml(res.message || '')}</td></tr>`);
         return;
     }
-    renderTable(res.data || []);
+    window._categorias = res.data || [];
+    applyView();
+}
+
+let sortState = { key: 'zona', dir: 1 };
+let zonaSel = '';
+
+function selecionarZona(z) {
+    zonaSel = z;
+    applyView();
+}
+
+function sortValue(c, key) {
+    switch (key) {
+        case 'nome': return (c.nome || '').toLowerCase();
+        case 'zona': return Object.keys(ZONA_LABELS).indexOf(c.zona || 'documentos');
+        case 'grupo': return (GRUPO_LABELS[c.grupo] || c.grupo || '').toLowerCase();
+        case 'preco': return c.precoSugerido || 0;
+        case 'norma': return (c.norma || '').toLowerCase();
+        case 'critica': return c.critico ? 0 : 1;
+        case 'estado': return c.ativo ? 0 : 1;
+    }
+    return '';
+}
+
+function sortBy(key) {
+    sortState = { key, dir: sortState.key === key ? -sortState.dir : 1 };
+    applyView();
+}
+
+function applyView() {
+    const busca = ($('#filterBusca').val() || '').trim().toLowerCase();
+    const zonaDe = c => c.tipo === 'pacote' ? 'pacotes' : (c.zona || 'documentos');
+    const buscadas = (window._categorias || []).filter(c =>
+        !busca || (c.nome + ' ' + (c.norma || '') + ' ' + (c.descricao || '')).toLowerCase().includes(busca));
+    const cont = {};
+    buscadas.forEach(c => { cont[zonaDe(c)] = (cont[zonaDe(c)] || 0) + 1; });
+    const botao = (z, label, n) => `<button type="button" class="btn btn-sm mr-1 mb-1 ${zonaSel === z ? 'btn-primary' : (z === 'pacotes' ? 'btn-outline-success' : 'btn-outline-primary')}" onclick="selecionarZona('${z}')">${label} <span class="badge badge-light">${n}</span></button>`;
+    $('#zonaBotoes').html(botao('', 'Todas', buscadas.length) + botao('pacotes', 'Pacotes', cont.pacotes || 0) +
+        Object.keys(ZONA_LABELS).map(z => botao(z, ZONA_LABELS[z], cont[z] || 0)).join(''));
+    let lista = zonaSel ? buscadas.filter(c => zonaDe(c) === zonaSel) : buscadas;
+    const { key, dir } = sortState;
+    lista = lista.slice().sort((a, b) => {
+        const va = sortValue(a, key), vb = sortValue(b, key);
+        const r = typeof va === 'number' ? va - vb : String(va).localeCompare(String(vb), 'pt');
+        return (r || String(a.nome).localeCompare(String(b.nome), 'pt')) * dir;
+    });
+    $('th[data-sort]').each(function () {
+        const k = $(this).data('sort');
+        $(this).find('.sort-arrow').remove();
+        if (k === key) $(this).append(` <small class="sort-arrow">${dir === 1 ? '▲' : '▼'}</small>`);
+    });
+    renderTable(lista);
 }
 
 function renderTable(categorias) {
@@ -304,7 +363,7 @@ function renderTable(categorias) {
         const estadoBadge = c.ativo ? '<span class="badge badge-success">Ativa</span>' : '<span class="badge badge-secondary">Inativa</span>';
         const preco = typeof c.precoSugerido === 'number' ? c.precoSugerido.toLocaleString('pt-PT', { style:'currency', currency:'EUR' }) : '—';
         return `<tr class="categoria-row ${c.ativo ? '' : 'inativa'}">
-            <td><strong>${escHtml(c.nome)}</strong></td>
+            <td><strong>${escHtml(c.nome)}</strong>${c.tipo === 'pacote' ? ' <span class="badge badge-success">Pacote</span>' : ''}</td>
             <td>${escHtml(ZONA_LABELS[c.zona] || c.zona || '—')}</td>
             <td><span class="badge badge-grupo-${escHtml(c.grupo)}">${grupoLabel}</span></td>
             <td>${preco}</td>
@@ -321,6 +380,29 @@ function renderTable(categorias) {
     $('#tableFooter').text(`${categorias.length} categoria${categorias.length !== 1 ? 's' : ''} encontrada${categorias.length !== 1 ? 's' : ''}`);
 }
 
+$(document).on('input', '#fNorma', function () {
+    const nota = window.notaNormaRevogada ? window.notaNormaRevogada($(this).val()) : '';
+    $('#fNormaAviso').text(nota ? 'Atenção: ' + nota + '. Será indicado no orçamento.' : '').toggle(!!nota);
+});
+
+function toggleInclui() {
+    $('#fIncluiGroup').toggle($('#fTipo').val() === 'pacote');
+}
+
+async function fillInclui(selecionados, selfId) {
+    const res = await apiCall('/api/orcamento-categorias');
+    const itens = (res.success ? res.data : []).filter(c => c.tipo !== 'pacote' && c._id !== selfId);
+    const sel = new Set((selecionados || []).map(String));
+    const opts = Object.keys(ZONA_LABELS).map(z => {
+        const doGrupo = itens.filter(c => (c.zona || 'documentos') === z);
+        if (!doGrupo.length) return '';
+        return `<optgroup label="${escHtml(ZONA_LABELS[z])}">` + doGrupo.map(c =>
+            `<option value="${c._id}"${sel.has(String(c._id)) ? ' selected' : ''}>${escHtml(c.nome)}</option>`).join('') + '</optgroup>';
+    }).join('');
+    $('#fInclui').html(opts);
+    toggleInclui();
+}
+
 function openCreate() {
     $('#categoriaModalTitle').html('<i class="fas fa-plus mr-2"></i>Nova categoria');
     $('#editCategoriaId').val('');
@@ -331,6 +413,8 @@ function openCreate() {
     $('#fPreco').val('');
     $('#fCritico').prop('checked', false);
     $('#fAtivo').prop('checked', true);
+    $('#fTipo').val('item');
+    fillInclui([], '');
 }
 
 async function editCategoria(id) {
@@ -349,6 +433,8 @@ async function editCategoria(id) {
     $('#fNota').val(c.notaNaoConformidade || '');
     $('#fCritico').prop('checked', !!c.critico);
     $('#fAtivo').prop('checked', c.ativo !== false);
+    $('#fTipo').val(c.tipo || 'item');
+    await fillInclui(c.inclui || [], c._id);
     $('#categoriaModal').modal('show');
 }
 
@@ -364,7 +450,9 @@ async function saveCategoria() {
         norma: $('#fNorma').val().trim(),
         notaNaoConformidade: $('#fNota').val().trim(),
         critico: $('#fCritico').is(':checked'),
-        ativo: $('#fAtivo').is(':checked')
+        ativo: $('#fAtivo').is(':checked'),
+        tipo: $('#fTipo').val(),
+        inclui: $('#fTipo').val() === 'pacote' ? ($('#fInclui').val() || []) : []
     };
     if (!payload.nome || !payload.descricao) {
         toastr.warning('Nome e descrição são obrigatórios');

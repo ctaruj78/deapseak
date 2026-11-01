@@ -494,6 +494,7 @@
 
     <!-- Sidebar initialization script -->
     <script src="../../assets/js/sidebar-init.js"></script>
+    <script src="../../assets/js/normas-revogadas.js"></script>
     <!-- jsPDF para geração de PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
@@ -659,17 +660,19 @@
                     const qty = $(this).find('.qty').val() || '0';
                     const price = parseFloat($(this).find('.price').val()) || 0;
                     const total = (parseFloat(qty) * price).toFixed(2);
+                    const normaPrev = $(this).find('.categoria-norma').val();
+                    const normaHtml = normaPrev ? `<br><small class="text-muted">Norma: ${escapeHtml(normaPrev)}</small>` : '';
 
                     const row = resumido ? `
                         <tr>
                             <td>${index + 1}</td>
-                            <td>${escapeHtml(description)}</td>
+                            <td>${escapeHtml(description)}${normaHtml}</td>
                             <td>${qty}</td>
                         </tr>
                     ` : `
                         <tr>
                             <td>${index + 1}</td>
-                            <td>${escapeHtml(description)}</td>
+                            <td>${escapeHtml(description)}${normaHtml}</td>
                             <td>${qty}</td>
                             <td>${price.toFixed(2)} €</td>
                             <td>${total} €</td>
@@ -811,15 +814,17 @@
                         const quantidade = $(this).find('.qty').val() || '0';
                         const preco = parseFloat($(this).find('.price').val()) || 0;
                         const total = (parseFloat(quantidade) * preco).toFixed(2);
+                        const normaPdf = $(this).find('.categoria-norma').val() || '';
+                        const descPdf = descricao + (normaPdf ? '\nNorma: ' + normaPdf : '');
 
                         if (descricao && quantidade && preco) {
                             servicos.push(resumidoPdf ? [
                                 (index + 1).toString(),
-                                descricao,
+                                descPdf,
                                 quantidade
                             ] : [
                                 (index + 1).toString(),
-                                descricao,
+                                descPdf,
                                 quantidade,
                                 preco.toFixed(2) + ' €',
                                 total + ' €'
@@ -1053,6 +1058,15 @@
             return String(str || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
         }
 
+        function normaParaCliente(n) {
+            n = String(n || '');
+            if (/\[VERIFICAR\]|rascunho/i.test(n)) return '';
+            if (!/EN\s?\d|RSEE|D\.?\s?L\.?|Dec\.|Portaria|RTIEBT|RGEU|Ponto|Despacho/i.test(n)) return '';
+            const base = n.replace(/\s*[—–-]?\s*\(?conforme relat[óo]rios? de inspe[cç][ãa]o\)?/gi, '').replace(/[;,\s—-]+$/, '').trim();
+            const revogada = typeof window.notaNormaRevogada === 'function' ? window.notaNormaRevogada(n) : '';
+            return revogada ? `${base} — ${revogada}` : base;
+        }
+
         window._catalogoZona = null;
 
         const CATALOGO_ZONAS = [
@@ -1108,7 +1122,7 @@
 
             const newRow = `
                 <tr>
-                    <td><input type="hidden" class="categoria-id" value="${cat._id}"><input type="text" class="form-control" value="${escAttr(cat.descricao)}"></td>
+                    <td><input type="hidden" class="categoria-id" value="${cat._id}"><input type="hidden" class="categoria-norma" value="${escAttr(normaParaCliente(cat.norma))}"><input type="text" class="form-control" value="${escAttr(cat.descricao)}"></td>
                     <td><input type="number" class="form-control qty" value="1" min="1"></td>
                     <td><input type="number" class="form-control price" value="${cat.precoSugerido || 0}" step="0.01"></td>
                     <td class="total">0.00</td>
@@ -1152,6 +1166,7 @@
                 const quantidade = parseFloat($(this).find('.qty').val()) || 0;
                 const precoUnitario = parseFloat($(this).find('.price').val()) || 0;
                 const categoriaId = $(this).find('.categoria-id').val() || '';
+                const norma = $(this).find('.categoria-norma').val() || '';
 
                 // Preço não é obrigatório por linha — em modo "Resumido" o total pode
                 // vir de #resumidoTotalOverride em vez de ser somado item a item.
@@ -1163,6 +1178,7 @@
                         total: quantidade * precoUnitario
                     };
                     if (categoriaId) item.categoriaId = categoriaId;
+                    if (norma) item.norma = norma;
                     servicos.push(item);
                 }
             });
@@ -1711,7 +1727,7 @@
                 orcamento.servicos.forEach(servico => {
                     const newRow = `
                         <tr>
-                            <td><input type="hidden" class="categoria-id" value="${escapeHtml(servico.categoriaId || '')}"><input type="text" class="form-control" value="${escapeHtml(servico.descricao)}"></td>
+                            <td><input type="hidden" class="categoria-id" value="${escapeHtml(servico.categoriaId || '')}"><input type="hidden" class="categoria-norma" value="${escapeHtml(servico.norma || '')}"><input type="text" class="form-control" value="${escapeHtml(servico.descricao)}"></td>
                             <td><input type="number" class="form-control qty" value="${servico.quantidade}" min="1"></td>
                             <td><input type="number" class="form-control price" value="${servico.precoUnitario}" step="0.01"></td>
                             <td class="total">${(servico.quantidade * servico.precoUnitario).toFixed(2)}</td>

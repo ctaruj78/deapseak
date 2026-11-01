@@ -40,7 +40,7 @@ const categorias = [
         grupo: 'eletrico',
         unidade: 'un',
         precoSugerido: 800,
-        descricao: 'Botoneira de Cabina — fornecimento e instalação de nova botoneira de superfície em Aço INOX escovado. Display 7 SEGMENTOS com sinalização de excesso de carga, setas de indicação de sentido, indicação de piso. Botões antivandálicos com Braille e iluminação LED. Quadro luminoso com contacto de assistência. Sinalização acústica de alarme. Botões para pisos, botão de alarme, botão STOP',
+        descricao: 'Botoneira de Cabina — fornecimento e instalação de nova botoneira de superfície em Aço INOX escovado. Display de visualização com sinalização de excesso de carga, setas de indicação de sentido, indicação de piso. Botões antivandálicos com Braille e iluminação LED. Quadro luminoso com contacto de assistência. Sinalização acústica de alarme. Botões para pisos, botão de alarme, botão STOP',
         norma: '[VERIFICAR] EN 81-20:2014 (botão de alarme e botão STOP na botoneira de cabina); EN 81-70:2021 (acessibilidade — Braille, botões táteis, altura)',
         notaNaoConformidade: '[RASCUNHO — VERIFICAR COM TÉCNICO RESPONSÁVEL] Uma botoneira de cabina antiga pode não garantir alarme funcional permanente nem cumprir requisitos de acessibilidade (Braille, botões táteis, altura de instalação).',
         critico: false,

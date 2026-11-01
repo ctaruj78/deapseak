@@ -52,6 +52,18 @@
                                         <option value="">A carregar clientes...</option>
                                     </select>
                                     <small class="text-muted" id="clienteEmailPreview"></small>
+                                    <div class="custom-control custom-switch mt-2">
+                                        <input type="checkbox" class="custom-control-input" id="destExterno" onchange="toggleDestExterno()">
+                                        <label class="custom-control-label" for="destExterno">Outro destinatário (não é cliente registado)</label>
+                                    </div>
+                                    <div id="destExternoBox" class="row mt-2" style="display:none;">
+                                        <div class="col-md-5">
+                                            <input type="text" id="destNome" class="form-control" placeholder="Nome (opcional)" oninput="updatePreview()">
+                                        </div>
+                                        <div class="col-md-7">
+                                            <input type="email" id="destEmail" class="form-control" placeholder="email@exemplo.pt" oninput="updatePreview()">
+                                        </div>
+                                    </div>
                                 </div>
                                 <div class="form-group">
                                     <label>CC <span class="text-muted font-weight-normal">(opcional)</span></label>
@@ -227,7 +239,19 @@ document.addEventListener('change', function(e) {
     if (e.target && e.target.id === 'clienteSelect') updatePreview();
 });
 
+function toggleDestExterno() {
+    const externo = document.getElementById('destExterno').checked;
+    document.getElementById('destExternoBox').style.display = externo ? '' : 'none';
+    document.getElementById('clienteSelect').disabled = externo;
+    updatePreview();
+}
+
 function getClienteAtual() {
+    if (document.getElementById('destExterno').checked) {
+        const email = document.getElementById('destEmail').value.trim();
+        if (!/^[^\s@,;]+@[^\s@,;]+\.[^\s@,;]+$/.test(email)) return null;
+        return { _id: '', email, name: document.getElementById('destNome').value.trim() };
+    }
     const id = document.getElementById('clienteSelect').value;
     return clientes.find(c => c._id === id) || null;
 }
@@ -382,7 +406,7 @@ async function enviarContacto() {
     const mensagem = $('#mensagem').val().trim();
     const { list: ccList, invalid: ccInvalid } = parseCcInput($('#cc').val());
 
-    if (!cliente) { toastr.warning('Selecione um cliente'); return; }
+    if (!cliente) { toastr.warning(document.getElementById('destExterno').checked ? 'Indique um email de destinatário válido' : 'Selecione um cliente'); return; }
     if (!assunto) { toastr.warning('Indique o assunto'); return; }
     if (!mensagem) { toastr.warning('Escreva a mensagem'); return; }
     if (ccInvalid.length) { toastr.warning(`Email(s) em CC inválido(s): ${ccInvalid.join(', ')}`); return; }
@@ -401,7 +425,7 @@ async function enviarContacto() {
         formData.append('subject', assunto);
         formData.append('htmlContent', montarHtmlEmail(mensagem));
         formData.append('templateId', 'contacto-cliente-livre');
-        formData.append('clienteId', cliente._id);
+        if (cliente._id) formData.append('clienteId', cliente._id);
         formData.append('clienteNome', ((cliente.firstName || '') + ' ' + (cliente.lastName || '')).trim() || cliente.name || cliente.username || '');
         anexosSelecionados.forEach(f => formData.append('attachments', f));
 
@@ -415,6 +439,7 @@ async function enviarContacto() {
             toastr.success(`Email enviado para ${cliente.email}`);
             $('#assunto,#mensagem,#cc').val('');
             document.getElementById('clienteSelect').value = '';
+            $('#destEmail,#destNome').val('');
             anexosSelecionados = [];
             renderAnexos();
             updatePreview();

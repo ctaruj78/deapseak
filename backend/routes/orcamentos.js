@@ -275,8 +275,15 @@ async function gerarPDFOrcamento(orcamento) {
             orcamento.servicos.forEach((servico) => {
                 // Calcular altura real do texto de descrição (pode ter múltiplas linhas)
                 const descText = servico.descricao || '';
+                const normaLimpa = String(servico.norma || '')
+                    .replace(/\s*[—–-]?\s*\(?conforme relat[óo]rios? de inspe[cç][ãa]o\)?/gi, '')
+                    .replace(/[;,\s—-]+$/, '').trim();
+                const normaText = normaLimpa ? `Norma: ${normaLimpa}` : '';
                 const descHeight = doc.heightOfString(descText, { width: descWidth });
-                const rowHeight = Math.max(descHeight, 12) + 10; // padding de 10pt
+                doc.fontSize(8);
+                const normaHeight = normaText ? doc.heightOfString(normaText, { width: descWidth }) + 2 : 0;
+                doc.fontSize(10);
+                const rowHeight = Math.max(descHeight + normaHeight, 12) + 10; // padding de 10pt
 
                 if (yPos + rowHeight > 700) { // Nova página se necessário
                     doc.addPage();
@@ -285,6 +292,11 @@ async function gerarPDFOrcamento(orcamento) {
 
                 doc.font('Helvetica').fontSize(10).fillColor(ORCAMENTO_COLOR);
                 doc.text(descText, col1, yPos, { width: descWidth, lineBreak: true });
+                if (normaText) {
+                    doc.font('Helvetica-Oblique').fontSize(8).fillColor(OBSERVACAO_COLOR)
+                        .text(normaText, col1, yPos + descHeight + 2, { width: descWidth, lineBreak: true });
+                    doc.font('Helvetica').fontSize(10).fillColor(ORCAMENTO_COLOR);
+                }
                 doc.text(servico.quantidade.toString(), col2, yPos, { width: 70, align: 'right' });
                 if (!resumido) {
                     doc.text(`€${servico.precoUnitario.toFixed(2)}`, col3, yPos, { width: 90, align: 'right' });

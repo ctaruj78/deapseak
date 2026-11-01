@@ -15504,6 +15504,11 @@ app.post('/api/email/send-template', authenticateToken, emailLimiter, requireRol
             });
         }
 
+        // Destinatário único e válido (o campo pode vir de um cliente ou de um endereço externo)
+        if (!/^[^\s@,;<>]+@[^\s@,;<>]+\.[^\s@,;<>]+$/.test(String(email).trim())) {
+            return res.status(400).json({ success: false, error: 'Email do destinatário inválido' });
+        }
+
         const nodemailer = require('nodemailer');
         const transporter = nodemailer.createTransport({
             host: process.env.SMTP_HOST,

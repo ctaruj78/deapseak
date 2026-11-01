@@ -70,7 +70,7 @@ const pacotes = [
     {
         nome: 'PACOTE — Quadro de manobra (comando)',
         zona: 'quadro', grupo: 'eletrico',
-        descricao: 'Fornecimento e instalação de quadro de manobra completo, incluindo variador, proteções, bypass das portas, UCM, paragem por imobilização anormal, modo bombeiros, identificação de circuitos, ligações e ensaios.',
+        descricao: 'Fornecimento e instalação de novo Quadro de Elevador de tecnologia CPU STO com variador de frequência 7.5 KW-17a, com sistema SIMPLEX, Alarme, Botoeira de Revisão e unidade de cabina, instalação elétrica de caixa, instalação elétrica de cabina e respetivos cabos de manobra de ligação ao quadro, limites e fins de curso, conjunto de sensores magnéticos para as paragens e mudanças, manobra coletiva de descida. Dispositivos que asseguram a segurança e funcionamento do elevador.',
         inclui: [
             'Quadro de Elevador de tecnologia CPU STO',
             'Bypass das portas — monitorização independente',
@@ -91,20 +91,6 @@ const pacotes = [
         inclui: ['Botão de abertura da porta']
     },
     {
-        nome: 'PACOTE — Portas de patamar',
-        zona: 'patamar', grupo: 'seguranca',
-        descricao: 'Revisão/adequação das portas de patamar: fechaduras com duplo contacto elétrico, braço elástico, amortecedor hidráulico do fecho, visor, aviso da chave de desencravamento, soleiras e tratamento anticorrosivo e pintura.',
-        inclui: [
-            'Fechaduras de patamar com duplo contacto elétrico',
-            'Braço elástico — inversão do fecho da porta',
-            'Portas de patamar — amortecedor hidráulico do fecho',
-            'Portas de patamar — visor (dimensão ≤ 15 cm)',
-            'Chave de desencravamento — aviso de perigo',
-            'Soleiras cabina/patamar — ajuste de folga (≤ 2 cm)',
-            'Portas de patamar — tratamento anticorrosivo e pintura'
-        ]
-    },
-    {
         nome: 'PACOTE — Cabos de suspensão',
         zona: 'caixa', grupo: 'mecanico',
         descricao: 'Fornecimento e instalação de cabos de suspensão, com igualização da tensão, marcação da zona de desencravamento e ensaio.',
@@ -118,7 +104,8 @@ const pacotes = [
     {
         nome: 'PACOTE — Botoneiras e sinalização',
         zona: 'cabina', grupo: 'eletrico',
-        descricao: 'Fornecimento e instalação de botoneira de cabina e botoeiras de patamar, com setas/sinalizadores, indicação de posição, identificação do elevador, mensagem de voz e sinalização de sobrecarga.',
+        descricaoDe: ['Botoneira de Cabina', 'Botoeiras de Patamar'],
+        descricao: 'Fornecimento e instalação de botoneira de cabina e botoeiras de patamar, com setas/sinalizadores, indicação de posição, identificação do elevador e sinalização de sobrecarga.',
         inclui: [
             'Botoneira de Cabina',
             'Botoneira — botão STOP e identificação dos botões',
@@ -126,7 +113,6 @@ const pacotes = [
             'Setas/sinalizadores',
             'Indicação da presença da cabina / luz permanente',
             'Número de identificação do elevador',
-            'Mensagem de voz de posição',
             'Sobrecarga — sinalização sonora e visual'
         ]
     },
@@ -147,11 +133,17 @@ const pacotes = [
 
 (async () => {
     await mongoose.connect(process.env.MONGODB_URI);
-    const todas = await OrcamentoCategoria.find({ tipo: { $ne: 'pacote' } }, 'nome').lean();
+    const todas = await OrcamentoCategoria.find({ tipo: { $ne: 'pacote' } }, 'nome descricao').lean();
+    const descPorNome = new Map(todas.map(c => [c.nome, c.descricao]));
     const porNome = new Map(todas.map(c => [c.nome, c._id]));
     const faltam = [];
 
     for (const [i, p] of pacotes.entries()) {
+        if (p.descricaoDe) {
+            // usa o texto realmente vendido nas categorias individuais
+            const textos = p.descricaoDe.map(n => descPorNome.get(n)).filter(Boolean);
+            if (textos.length === p.descricaoDe.length) p.descricao = textos.join(' ');
+        }
         const ids = [];
         p.inclui.forEach(n => porNome.has(n) ? ids.push(porNome.get(n)) : faltam.push(`${p.nome} -> ${n}`));
         console.log(`${DRY ? '[dry] ' : ''}${p.nome} (${ids.length}/${p.inclui.length})`);

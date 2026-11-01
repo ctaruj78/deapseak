@@ -76,6 +76,11 @@ const orcamentoSchema = new mongoose.Schema({
         categoriaId: {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'OrcamentoCategoria'
+        },
+        // Norma aplicável (já validada) a mostrar por baixo da descrição no orçamento
+        norma: {
+            type: String,
+            default: ''
         }
     }],
     
