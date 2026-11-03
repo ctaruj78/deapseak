@@ -229,6 +229,86 @@ class EmailService {
         }
     }
 
+    // Alerta QR público — email imediato à equipa (admin/dispatcher). Falhar aqui não pode ser silencioso:
+    // o visitante só avisa por QR, por isso este email é o único aviso fora do painel.
+    async sendPublicQrAlertInternalNotification(request, { isTrapped = false, issueLabel = '' } = {}) {
+        const adminEmail = process.env.ADMIN_EMAIL || 'info@festlift.pt';
+        const siteUrl = process.env.SITE_URL || 'https://crm.festlift.pt';
+        const reporter = request.reporter || {};
+        const color = isTrapped ? '#c62828' : '#f9a825';
+        const body = `
+            <p>${isTrapped ? '<strong style="color:#c62828;">🚨 PESSOA PRESA NO ELEVADOR — ação imediata.</strong>' : 'Um visitante reportou um problema através do QR público do elevador.'}</p>
+            <div style="background:#fff3e0;border-left:4px solid ${color};border-radius:6px;padding:18px 22px;margin:20px 0;">
+                <p style="margin:0 0 8px 0;"><strong>Pedido:</strong> ${this._esc(request.requestNumber || '')}</p>
+                <p style="margin:0 0 8px 0;"><strong>Situação:</strong> ${this._esc(issueLabel)}</p>
+                <p style="margin:0 0 8px 0;"><strong>Elevador:</strong> ${this._esc([request.liftAddress, request.liftMunicipalNumber ? `Nº ${request.liftMunicipalNumber}` : ''].filter(Boolean).join(' — ') || '—')}</p>
+                <p style="margin:0 0 8px 0;"><strong>Cliente:</strong> ${this._esc(request.liftClient || '—')}</p>
+                <p style="margin:0 0 8px 0;"><strong>Visitante:</strong> ${this._esc(reporter.name || 'N/D')} — ${this._esc(reporter.phone || '')} — <a href="mailto:${this._esc(reporter.email || '')}">${this._esc(reporter.email || '')}</a></p>
+                <p style="margin:0;"><strong>Detalhes:</strong> ${this._esc((request.description || '').split('Detalhes: ').pop())}</p>
+            </div>
+            <a href="${siteUrl}/pages/admin/requests.html" style="display:inline-block;background:#1565c0;color:#fff;text-decoration:none;padding:13px 28px;border-radius:6px;font-size:14px;font-weight:bold;">Abrir pedidos →</a>`;
+        try {
+            await this._sendEmail(
+                adminEmail,
+                `${isTrapped ? '🚨 URGENTE — Pessoa presa' : '⚠️ Alerta QR'} — ${issueLabel} — ${request.liftMunicipalNumber || ''}`,
+                this._tpl(color, isTrapped ? 'Alerta Urgente' : 'Alerta QR Público', body)
+            );
+            console.log(`✅ Alerta QR público enviado para ${adminEmail}`);
+        } catch (error) {
+            console.error('❌ Erro ao enviar alerta QR público à equipa:', error);
+        }
+    }
+
+    // Alerta QR público — confirmação de receção ao visitante
+    async sendPublicQrReporterReceived(request) {
+        const to = request.reporter?.email;
+        if (!to) return;
+        try {
+            const body = `
+                <p>Caro(a) <strong>${this._esc(request.reporter.name || 'visitante')}</strong>,</p>
+                <p>Recebemos o seu alerta sobre o elevador${request.liftAddress ? ` em <strong>${this._esc(request.liftAddress)}</strong>` : ''}. A nossa equipa já foi notificada e irá tratar do assunto o mais rapidamente possível.</p>
+                <div style="background:#e8f0fe;border-left:4px solid #1565c0;border-radius:6px;padding:18px 22px;margin:20px 0;">
+                    <p style="margin:0 0 6px 0;"><strong>Referência:</strong> ${this._esc(request.requestNumber || '')}</p>
+                    <p style="margin:0;"><strong>Situação reportada:</strong> ${this._esc((request.title || '').replace('Alerta QR público — ', ''))}</p>
+                </div>
+                <p>Em caso de emergência (pessoa presa), ligue <strong>112</strong> e contacte-nos: +351 214 190 863.</p>
+                <p style="font-size:12px;color:#888;margin-top:24px;">Este e um email automatico — por favor nao responda diretamente.</p>`;
+            await this._sendEmail(to, `✅ Alerta recebido ${request.requestNumber || ''} — FestLift`, this._tpl('#1565c0', 'Alerta Recebido', body));
+        } catch (error) {
+            console.error('❌ Erro ao enviar confirmação ao visitante QR:', error);
+        }
+    }
+
+    // Alerta QR público — atualização ao visitante (técnico atribuído / concluído)
+    async sendPublicQrReporterUpdate(request, kind, technician = null) {
+        const to = request.reporter?.email;
+        if (!to) return;
+        try {
+            const ref = this._esc(request.requestNumber || '');
+            let intro, subject, label, color;
+            if (kind === 'assigned') {
+                const techName = this._esc(`${technician?.firstName || ''} ${technician?.lastName || ''}`.trim());
+                intro = `<p>Um técnico foi atribuído ao problema que reportou${techName ? `: <strong>${techName}</strong>` : ''}${technician?.phone ? ` (${this._esc(technician.phone)})` : ''}. Será contactado(a) brevemente.</p>`;
+                subject = `🔧 Técnico a caminho — ${request.requestNumber || ''} — FestLift`;
+                label = 'Técnico Atribuído'; color = '#1565c0';
+            } else {
+                intro = '<p>O problema que reportou no elevador foi <strong>resolvido</strong> pela nossa equipa técnica. Obrigado por nos ter avisado.</p>';
+                subject = `✅ Problema resolvido — ${request.requestNumber || ''} — FestLift`;
+                label = 'Problema Resolvido'; color = '#2e7d32';
+            }
+            const body = `
+                <p>Caro(a) <strong>${this._esc(request.reporter.name || 'visitante')}</strong>,</p>
+                ${intro}
+                <div style="background:#f8f9fa;border-radius:6px;padding:14px 18px;margin:16px 0;">
+                    <p style="margin:0;"><strong>Referência:</strong> ${ref}${request.liftAddress ? ` — ${this._esc(request.liftAddress)}` : ''}</p>
+                </div>
+                <p style="font-size:12px;color:#888;margin-top:24px;">Este e um email automatico — por favor nao responda diretamente.</p>`;
+            await this._sendEmail(to, subject, this._tpl(color, label, body));
+        } catch (error) {
+            console.error('❌ Erro ao enviar atualização ao visitante QR:', error);
+        }
+    }
+
     // Tecnico atribuido ao pedido — notificacao ao cliente
     async sendTechnicianAssignedNotification(request, technician, client) {
         try {
@@ -236,9 +316,22 @@ class EmailService {
             const techName = this._esc(`${technician.firstName || ''} ${technician.lastName || ''}`.trim());
             const techEmail = this._esc(technician.email || '');
             const techPhone = this._esc(technician.phone || '');
+            const isQr = request.source === 'public_qr';
+            const addrObj = request.lift?.address;
+            const liftAddr = addrObj ? [addrObj.street, addrObj.city].filter(Boolean).join(', ') : request.liftAddress;
+            const munNum = request.lift?.municipalNumber || request.liftMunicipalNumber;
+            const liftInfo = [liftAddr, munNum ? `Nº ${munNum}` : null].filter(Boolean).join(' — ') || '—';
+            const desc = request.description || '';
+            const situation = (desc.match(/Situação: (.*)/) || [])[1] || (request.title || '').replace('Alerta QR público — ', '');
+            const details = (desc.match(/Detalhes: (.*)/) || [])[1] || '';
             const body = `
                 <p>Caro(a) <strong>${name}</strong>,</p>
-                <p>Um tecnico foi atribuido ao seu pedido de servico e entrara em contacto brevemente.</p>
+                <p>${isQr ? 'Foi reportado por um visitante (QR do elevador) um problema num elevador do seu edifício. Um técnico foi atribuído e entrará em contacto brevemente.' : 'Um tecnico foi atribuido ao seu pedido de servico e entrara em contacto brevemente.'}</p>
+                <div style="background:#fff8e1;border-left:4px solid #f9a825;border-radius:6px;padding:14px 18px;margin:16px 0;">
+                    <p style="margin:0 0 6px 0;"><strong>Elevador:</strong> ${this._esc(liftInfo)}</p>
+                    ${isQr ? `<p style="margin:0 0 6px 0;"><strong>Situação reportada:</strong> ${this._esc(situation)}</p>` : ''}
+                    ${isQr && details ? `<p style="margin:0;"><strong>Detalhes do visitante:</strong> ${this._esc(details)}</p>` : ''}
+                </div>
                 <div style="background:#e8f0fe;border-left:4px solid #1565c0;border-radius:6px;padding:18px 22px;margin:20px 0;">
                     <p style="margin:0 0 8px 0;font-weight:bold;color:#1565c0;">Tecnico responsavel:</p>
                     <p style="margin:0 0 6px 0;"><strong>Nome:</strong> ${techName}</p>
@@ -246,7 +339,7 @@ class EmailService {
                     <p style="margin:0;"><strong>Email:</strong> ${techEmail}</p>
                 </div>
                 <div style="background:#f8f9fa;border-radius:6px;padding:14px 18px;margin:16px 0;">
-                    <p style="margin:0 0 6px 0;"><strong>Pedido:</strong> #${request._id} — ${this._esc(request.title)}</p>
+                    <p style="margin:0 0 6px 0;"><strong>Pedido:</strong> ${this._esc(request.requestNumber || '#' + request._id)} — ${this._esc(request.title)}</p>
                     <p style="margin:0;"><strong>Estado:</strong> ${this.getStatusText(request.status)}</p>
                 </div>
                 <p style="font-size:12px;color:#888;margin-top:24px;">Este e um email automatico — por favor nao responda diretamente.</p>`;

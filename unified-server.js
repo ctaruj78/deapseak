@@ -1684,6 +1684,13 @@ app.post('/api/qr/public/alert', async (req, res) => {
             console.error('⚠️ Alerta QR público criado, mas a notificação falhou:', notifyErr.message);
         }
 
+        // Email independente do bloco acima (uma falha in-app não pode impedir o email à equipa)
+        const alertForEmail = { ...newRequest, _id: insertResult.insertedId };
+        emailService.sendPublicQrAlertInternalNotification(alertForEmail, { isTrapped: !!isTrapped, issueLabel })
+            .catch(err => console.error('⚠️ Email alerta QR (equipa):', err.message));
+        emailService.sendPublicQrReporterReceived(alertForEmail)
+            .catch(err => console.error('⚠️ Email alerta QR (visitante):', err.message));
+
         return res.json({
             success: true,
             message: 'Alerta enviado com sucesso. A nossa equipa irá contactar o mais rapidamente possível.',
@@ -9875,12 +9882,17 @@ app.post('/api/requests/:id/complete', authenticateToken, async (req, res) => {
         }
         
         console.log('✅ Pedido concluído com sucesso');
-        
+
         res.json({
             success: true,
             message: 'Pedido concluído com sucesso',
             data: updateData
         });
+
+        if (existingReq.source === 'public_qr' && existingReq.reporter?.email) {
+            emailService.sendPublicQrReporterUpdate({ ...existingReq, ...updateData }, 'completed')
+                .catch(err => console.error('Erro email conclusão (visitante QR):', err.message));
+        }
     } catch (error) {
         console.error('❌ Erro ao concluir pedido:', error);
         res.status(500).json({
@@ -10059,6 +10071,11 @@ app.post('/api/requests/:id/assign', authenticateToken, async (req, res) => {
                 let clientUser = null;
                 if (clientId) {
                     try { clientUser = await db.collection('users').findOne({ _id: new ObjectId(clientId) }); } catch (_) {}
+                }
+
+                if (fullRequest?.source === 'public_qr' && fullRequest.reporter?.email) {
+                    emailService.sendPublicQrReporterUpdate(fullRequest, 'assigned', technician)
+                        .catch(err => console.error('Erro email atribuição (visitante QR):', err.message));
                 }
 
                 if (clientUser?.email) {
