@@ -102,6 +102,13 @@ class EmailService {
     }
 
     // Shared branded wrapper — consistent FestLift header/footer for all emails
+    // Números de emergência (pessoa presa) — configuráveis em EMERGENCY_PHONES (separados por vírgula)
+    _emergencyPhonesHtml() {
+        const raw = process.env.EMERGENCY_PHONES || '926 380 243, 926 380 244';
+        return raw.split(',').map(n => n.trim()).filter(Boolean)
+            .map(n => `<strong>${this._esc(n)}</strong>`).join(' / ');
+    }
+
     _tpl(headerColor, headerLabel, bodyHtml) {
         const logoUrl = 'cid:festlift-logo@festlift';
         return `<!DOCTYPE html><html lang="pt"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
@@ -259,6 +266,34 @@ class EmailService {
         }
     }
 
+    // Alerta QR público — aviso imediato ao cliente (responsável pelo elevador), com todos os detalhes
+    async sendPublicQrAlertClientNotification(request, client, { isTrapped = false, issueLabel = '' } = {}) {
+        if (!client?.email) return;
+        try {
+            const siteUrl = process.env.SITE_URL || 'https://crm.festlift.pt';
+            const reporter = request.reporter || {};
+            const color = isTrapped ? '#c62828' : '#f9a825';
+            const name = this._esc(`${client.firstName || ''} ${client.lastName || ''}`.trim() || 'Cliente');
+            const details = (request.description || '').split('Detalhes: ').pop();
+            const body = `
+                <p>Caro(a) <strong>${name}</strong>,</p>
+                <p>${isTrapped ? '<strong style="color:#c62828;">🚨 Foi reportada uma pessoa presa num elevador do seu edifício.</strong> A nossa equipa foi alertada e está a tratar da situação com prioridade. Linha de emergência: ${this._emergencyPhonesHtml()}.' : 'Foi reportado um problema num elevador do seu edifício através do QR público. A nossa equipa já foi notificada e irá tratar do assunto.'}</p>
+                <div style="background:#fff3e0;border-left:4px solid ${color};border-radius:6px;padding:18px 22px;margin:20px 0;">
+                    <p style="margin:0 0 8px 0;"><strong>Referência:</strong> ${this._esc(request.requestNumber || '')}</p>
+                    <p style="margin:0 0 8px 0;"><strong>Situação:</strong> ${this._esc(issueLabel)}</p>
+                    <p style="margin:0 0 8px 0;"><strong>Elevador:</strong> ${this._esc([request.liftAddress, request.liftMunicipalNumber ? `Nº ${request.liftMunicipalNumber}` : ''].filter(Boolean).join(' — ') || '—')}</p>
+                    <p style="margin:0 0 8px 0;"><strong>Reportado por:</strong> ${this._esc(reporter.name || 'N/D')} — ${this._esc(reporter.phone || '')} — ${this._esc(reporter.email || '')}</p>
+                    <p style="margin:0;"><strong>Detalhes:</strong> ${this._esc(details)}</p>
+                </div>
+                <p>Será informado(a) quando for atribuído um técnico e quando o problema ficar resolvido.</p>
+                <a href="${siteUrl}/pages/client/requests.html" style="display:inline-block;background:#1565c0;color:#fff;text-decoration:none;padding:13px 28px;border-radius:6px;font-size:14px;font-weight:bold;">Ver pedido →</a>
+                <p style="font-size:12px;color:#888;margin-top:24px;">Este e um email automatico — por favor nao responda diretamente.</p>`;
+            await this._sendEmail(client.email, `${isTrapped ? '🚨 URGENTE — Pessoa presa' : '⚠️ Ocorrência reportada'} — ${request.requestNumber || ''} — FestLift`, this._tpl(color, isTrapped ? 'Alerta Urgente' : 'Ocorrência Reportada', body));
+        } catch (error) {
+            console.error('❌ Erro ao enviar alerta QR ao cliente:', error);
+        }
+    }
+
     // Alerta QR público — confirmação de receção ao visitante
     async sendPublicQrReporterReceived(request) {
         const to = request.reporter?.email;
@@ -271,7 +306,7 @@ class EmailService {
                     <p style="margin:0 0 6px 0;"><strong>Referência:</strong> ${this._esc(request.requestNumber || '')}</p>
                     <p style="margin:0;"><strong>Situação reportada:</strong> ${this._esc((request.title || '').replace('Alerta QR público — ', ''))}</p>
                 </div>
-                <p>Em caso de emergência (pessoa presa), ligue <strong>112</strong> e contacte-nos: +351 214 190 863.</p>
+                <p>Em caso de emergência (pessoa presa), ligue de imediato para o nosso número de emergência: ${this._emergencyPhonesHtml()}.</p>
                 <p style="font-size:12px;color:#888;margin-top:24px;">Este e um email automatico — por favor nao responda diretamente.</p>`;
             await this._sendEmail(to, `✅ Alerta recebido ${request.requestNumber || ''} — FestLift`, this._tpl('#1565c0', 'Alerta Recebido', body));
         } catch (error) {
@@ -289,10 +324,12 @@ class EmailService {
             if (kind === 'assigned') {
                 const techName = this._esc(`${technician?.firstName || ''} ${technician?.lastName || ''}`.trim());
                 intro = `<p>Um técnico foi atribuído ao problema que reportou${techName ? `: <strong>${techName}</strong>` : ''}${technician?.phone ? ` (${this._esc(technician.phone)})` : ''}. Será contactado(a) brevemente.</p>`;
-                subject = `🔧 Técnico a caminho — ${request.requestNumber || ''} — FestLift`;
+                subject = `🔧 Técnico atribuído — ${request.requestNumber || ''} — FestLift`;
                 label = 'Técnico Atribuído'; color = '#1565c0';
             } else {
-                intro = '<p>O problema que reportou no elevador foi <strong>resolvido</strong> pela nossa equipa técnica. Obrigado por nos ter avisado.</p>';
+                intro = `<p>O problema que reportou no elevador foi <strong>resolvido</strong> pela nossa equipa técnica. Obrigado por nos ter avisado.</p>
+                ${request.resolution ? `<div style="background:#e8f5e9;border-left:4px solid #2e7d32;border-radius:6px;padding:14px 18px;margin:16px 0;"><p style="margin:0 0 6px 0;font-weight:bold;color:#2e7d32;">O que aconteceu e o que foi feito:</p><p style="margin:0;white-space:pre-line;">${this._esc(request.resolution)}</p></div>` : ''}
+                <p>Se o problema voltar a ocorrer, contacte-nos: <strong>+351 214 190 863</strong> · <a href="mailto:info@festlift.pt">info@festlift.pt</a>. Em caso de pessoa presa, ligue de imediato: ${this._emergencyPhonesHtml()}.</p>`;
                 subject = `✅ Problema resolvido — ${request.requestNumber || ''} — FestLift`;
                 label = 'Problema Resolvido'; color = '#2e7d32';
             }
@@ -302,7 +339,7 @@ class EmailService {
                 <div style="background:#f8f9fa;border-radius:6px;padding:14px 18px;margin:16px 0;">
                     <p style="margin:0;"><strong>Referência:</strong> ${ref}${request.liftAddress ? ` — ${this._esc(request.liftAddress)}` : ''}</p>
                 </div>
-                <p style="font-size:12px;color:#888;margin-top:24px;">Este e um email automatico — por favor nao responda diretamente.</p>`;
+                <p style="font-size:12px;color:#888;margin-top:24px;">Este e um email automatico — para falar connosco use o telefone ou email acima.</p>`;
             await this._sendEmail(to, subject, this._tpl(color, label, body));
         } catch (error) {
             console.error('❌ Erro ao enviar atualização ao visitante QR:', error);
@@ -420,17 +457,18 @@ class EmailService {
             const name = this._esc(`${client.firstName || ''} ${client.lastName || ''}`.trim() || 'Cliente');
             const body = `
                 <p>Caro(a) <strong>${name}</strong>,</p>
-                <p>O seu pedido de manutencao do elevador foi concluido com sucesso pela nossa equipa tecnica.</p>
+                <p>${request.source === 'public_qr' ? 'A ocorrência reportada através do QR público do elevador foi <strong>resolvida</strong> pela nossa equipa técnica.' : 'O seu pedido de manutencao do elevador foi concluido com sucesso pela nossa equipa tecnica.'}</p>
                 <div style="background:#e8f5e9;border-left:4px solid #2e7d32;border-radius:6px;padding:18px 22px;margin:20px 0;">
                     <p style="margin:0 0 8px 0;font-weight:bold;color:#2e7d32;">Trabalho realizado:</p>
-                    <p style="margin:0 0 6px 0;"><strong>Pedido:</strong> #${request._id} — ${this._esc(request.title)}</p>
+                    <p style="margin:0 0 6px 0;"><strong>Pedido:</strong> ${this._esc(request.requestNumber || '#' + request._id)} — ${this._esc(request.title)}</p>
+                    ${request.liftAddress ? `<p style="margin:0 0 6px 0;"><strong>Elevador:</strong> ${this._esc(request.liftAddress)}</p>` : ''}
                     <p style="margin:0 0 6px 0;"><strong>Data de conclusao:</strong> ${new Date(request.completedAt || Date.now()).toLocaleString('pt-PT')}</p>
-                    ${request.workDetails ? `<p style="margin:0;"><strong>Detalhes:</strong> ${this._esc(request.workDetails)}</p>` : ''}
+                    ${(request.resolution || request.workDetails) ? `<p style="margin:0;white-space:pre-line;"><strong>O que aconteceu e o que foi feito:</strong> ${this._esc(request.resolution || request.workDetails)}</p>` : ''}
                 </div>
                 <p>Agradecemos a sua confianca nos servicos FestLift. Para quaisquer questoes, nao hesite em contactar-nos.</p>
                 <a href="${siteUrl}/pages/client/requests.html" style="display:inline-block;background:#2e7d32;color:#fff;text-decoration:none;padding:13px 28px;border-radius:6px;font-size:14px;font-weight:bold;margin-top:8px;">Ver historico →</a>
                 <p style="font-size:12px;color:#888;margin-top:24px;">Este e um email automatico — por favor nao responda diretamente.</p>`;
-            await this._sendEmail(client.email, `✅ Pedido #${request._id} concluido — FestLift`, this._tpl('#2e7d32', 'Pedido Concluido', body));
+            await this._sendEmail(client.email, `✅ Pedido ${request.requestNumber || '#' + request._id} concluido — FestLift`, this._tpl('#2e7d32', 'Pedido Concluido', body));
             console.log(`✅ Email sent to ${client.email} about completed request`);
         } catch (error) {
             console.error('❌ Error sending email:', error);

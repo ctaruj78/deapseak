@@ -1691,6 +1691,40 @@ app.post('/api/qr/public/alert', async (req, res) => {
         emailService.sendPublicQrReporterReceived(alertForEmail)
             .catch(err => console.error('⚠️ Email alerta QR (visitante):', err.message));
 
+        // Cliente (responsável pelo elevador) é avisado de imediato, com todos os detalhes
+        (async () => {
+            try {
+                const clientUser = await resolveRequestClientUser(alertForEmail);
+                if (!clientUser) {
+                    console.warn(`⚠️ Alerta QR ${requestNumber}: cliente do elevador não encontrado — sem aviso ao cliente`);
+                    return;
+                }
+                emailService.sendPublicQrAlertClientNotification(alertForEmail, clientUser, { isTrapped: !!isTrapped, issueLabel })
+                    .catch(err => console.error('⚠️ Email alerta QR (cliente):', err.message));
+                const nowC = new Date();
+                await db.collection('notifications').insertOne({
+                    userId: String(clientUser._id),
+                    type: 'public_qr_alert',
+                    title: isTrapped ? '🚨 Pessoa presa no elevador' : 'Ocorrência reportada no elevador',
+                    message: `${issueLabel} — ${lift.municipalNumber || ''} ${_formatLiftAddress(lift)}. Reportado por ${trimmedName || 'visitante'} (${trimmedPhone}).`,
+                    requestId: insertResult.insertedId.toString(),
+                    liftId: lift._id.toString(),
+                    priority: isTrapped ? 'high' : 'medium',
+                    status: 'unread',
+                    read: false,
+                    createdAt: nowC,
+                    timestamp: nowC
+                });
+                if (global.io) {
+                    global.io.to(`user_${clientUser._id}`).emit('new_request', {
+                        requestId: insertResult.insertedId.toString(), source: 'public_qr', isTrapped: !!isTrapped
+                    });
+                }
+            } catch (err) {
+                console.error('⚠️ Aviso ao cliente (alerta QR):', err.message);
+            }
+        })();
+
         return res.json({
             success: true,
             message: 'Alerta enviado com sucesso. A nossa equipa irá contactar o mais rapidamente possível.',
@@ -9640,6 +9674,71 @@ app.put('/api/requests/:id', authenticateToken, async (req, res) => {
     }
 });
 
+// Resolve o utilizador cliente de um pedido: pedidos criados via QR público não têm
+// campo `client`, por isso procura-se pelo elevador (liftId → lift.client / clientEmail).
+async function resolveRequestClientUser(request) {
+    const { ObjectId } = require('mongodb');
+    const tryId = async (v) => {
+        if (!v) return null;
+        const id = (typeof v === 'object' && v._id) ? v._id : v;
+        try { return await db.collection('users').findOne({ _id: new ObjectId(String(id)) }); } catch (_) { return null; }
+    };
+    let user = await tryId(request.client) || await tryId(request.liftClient);
+    if (user) return user;
+    if (request.liftId) {
+        let lift = null;
+        try { lift = await db.collection('lifts').findOne({ _id: new ObjectId(String(request.liftId)) }); } catch (_) {}
+        if (lift) {
+            user = await tryId(lift.client);
+            if (!user && lift.clientEmail) {
+                user = await db.collection('users').findOne({ email: String(lift.clientEmail).toLowerCase(), role: 'client' });
+            }
+        }
+    }
+    return user || null;
+}
+
+// Pedido concluído — notifica o cliente (email + in-app + socket) e o visitante QR.
+async function notifyRequestClosed(request) {
+    try {
+        if (request.source === 'public_qr' && request.reporter?.email) {
+            emailService.sendPublicQrReporterUpdate(request, 'completed')
+                .catch(err => console.error('Erro email conclusão (visitante QR):', err.message));
+        }
+        const clientUser = await resolveRequestClientUser(request);
+        if (!clientUser) {
+            console.warn(`⚠️ Pedido ${request.requestNumber || request._id}: cliente não encontrado — sem notificação de conclusão`);
+            return;
+        }
+        if (clientUser.email) {
+            emailService.sendRequestCompletedNotification(request, clientUser)
+                .catch(err => console.error('Erro email conclusão (cliente):', err.message));
+        }
+        const now = new Date();
+        await db.collection('notifications').insertOne({
+            userId: String(clientUser._id),
+            type: 'request_completed',
+            title: 'Pedido concluído',
+            message: `Pedido #${request.requestNumber || request._id}${request.liftAddress ? ' — ' + request.liftAddress : ''} foi concluído.${request.resolution ? ' ' + String(request.resolution).slice(0, 200) : ''}`,
+            requestId: String(request._id),
+            icon: 'fas fa-check-circle',
+            priority: 'normal',
+            status: 'unread',
+            read: false,
+            createdAt: now,
+            timestamp: now
+        });
+        if (global.io) {
+            global.io.to(`user_${clientUser._id}`).emit('request_completed', {
+                requestId: String(request._id),
+                requestNumber: request.requestNumber
+            });
+        }
+    } catch (err) {
+        console.error('Erro ao notificar conclusão do pedido:', err.message);
+    }
+}
+
 // PATCH /api/requests/:id/status - зміна статусу заявки
 app.patch('/api/requests/:id/status', authenticateToken, async (req, res) => {
     try {
@@ -9720,6 +9819,8 @@ app.patch('/api/requests/:id/status', authenticateToken, async (req, res) => {
             updateOperation.$unset = unsetFields;
         }
         
+        const prevReq = status === 'completed' ? await db.collection('requests').findOne(requestQuery) : null;
+
         const result = await db.collection('requests').updateOne(
             requestQuery,
             updateOperation
@@ -9737,6 +9838,10 @@ app.patch('/api/requests/:id/status', authenticateToken, async (req, res) => {
             message: 'Estado do pedido atualizado com sucesso',
             data: updateData
         });
+
+        if (status === 'completed' && prevReq && prevReq.status !== 'completed') {
+            notifyRequestClosed({ ...prevReq, ...updateData });
+        }
     } catch (error) {
         console.error('❌ Помилка зміни статусу:', error);
         res.status(500).json({
@@ -9889,9 +9994,8 @@ app.post('/api/requests/:id/complete', authenticateToken, async (req, res) => {
             data: updateData
         });
 
-        if (existingReq.source === 'public_qr' && existingReq.reporter?.email) {
-            emailService.sendPublicQrReporterUpdate({ ...existingReq, ...updateData }, 'completed')
-                .catch(err => console.error('Erro email conclusão (visitante QR):', err.message));
+        if (existingReq.status !== 'completed') {
+            notifyRequestClosed({ ...existingReq, ...updateData });
         }
     } catch (error) {
         console.error('❌ Erro ao concluir pedido:', error);
@@ -10067,11 +10171,7 @@ app.post('/api/requests/:id/assign', authenticateToken, async (req, res) => {
         (async () => {
             try {
                 const fullRequest = await db.collection('requests').findOne(requestQuery);
-                const clientId = fullRequest?.client || fullRequest?.liftClient;
-                let clientUser = null;
-                if (clientId) {
-                    try { clientUser = await db.collection('users').findOne({ _id: new ObjectId(clientId) }); } catch (_) {}
-                }
+                const clientUser = await resolveRequestClientUser(fullRequest);
 
                 if (fullRequest?.source === 'public_qr' && fullRequest.reporter?.email) {
                     emailService.sendPublicQrReporterUpdate(fullRequest, 'assigned', technician)

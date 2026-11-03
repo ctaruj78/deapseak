@@ -2498,7 +2498,7 @@ async function completeRequest() {
         return;
     }
     
-    const workDescription = prompt('Introduza a descrição do trabalho concluído:');
+    const workDescription = prompt('Descrição do trabalho concluído.\nEste texto é enviado ao cliente e, em alertas QR, também ao visitante.\nIndique: o que aconteceu, o que foi feito e se pode voltar a ocorrer.');
     if (!workDescription?.trim()) {
         toastr.info('A descrição do trabalho concluído é obrigatória');
         return;
