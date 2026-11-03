@@ -9744,6 +9744,7 @@ app.patch('/api/requests/:id/status', authenticateToken, async (req, res) => {
     try {
         const requestQuery = buildRequestQuery(req.params.id);
         const { status, technician } = req.body;
+        const resolutionText = typeof req.body.resolution === 'string' ? req.body.resolution.trim() : '';
         const role = req.user.role;
 
         console.log('🔄 Зміна статусу заявки:', req.params.id, '→', status);
@@ -9795,6 +9796,8 @@ app.patch('/api/requests/:id/status', authenticateToken, async (req, res) => {
         // Якщо статус "completed" - додаємо час завершення
         if (status === 'completed') {
             updateData.completedAt = new Date().toISOString();
+            updateData.completedBy = { id: req.user.id || req.user.userId, username: req.user.username, role };
+            if (resolutionText) updateData.resolution = resolutionText;
         }
         
         // Якщо статус "in_progress" - додаємо час початку

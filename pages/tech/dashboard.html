@@ -866,7 +866,7 @@
                     body: JSON.stringify({ workDescription, partsUsed, laborHours })
                 });
                 // Оновлюexisteмо estado
-                await updateTaskStatus(taskId, 'completed');
+                await updateTaskStatus(taskId, 'completed', workDescription);
                 $('#completeTaskModal').modal('hide');
             } catch (error) {
                 console.error('❌ Erro conclusão:', error);
@@ -953,11 +953,11 @@
         }
 
         // Função ao atualizar o estado da tarefa
-        async function updateTaskStatus(taskId, newStatus) {
+        async function updateTaskStatus(taskId, newStatus, resolution) {
             try {
                 const response = await AuthManager.fetchWithAuth(`/api/requests/${taskId}/status`, {
                     method: 'PATCH',
-                    body: JSON.stringify({ status: newStatus })
+                    body: JSON.stringify(resolution ? { status: newStatus, resolution } : { status: newStatus })
                 });
 
                 if (response && response.ok) {

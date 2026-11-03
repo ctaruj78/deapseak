@@ -1548,7 +1548,10 @@
                 if (!requestId) return;
                 const ok = await Swal.fire({
                     title: 'Fechar pedido?',
-                    text: 'O pedido será marcado como concluído.',
+                    text: 'Este texto é enviado ao cliente e, em alertas QR, também ao visitante. Indique: o que aconteceu, o que foi feito e se pode voltar a ocorrer.',
+                    input: 'textarea',
+                    inputPlaceholder: 'Descrição do trabalho concluído…',
+                    inputValidator: (v) => (!v || !v.trim()) ? 'A descrição é obrigatória' : undefined,
                     icon: 'question',
                     showCancelButton: true,
                     confirmButtonText: 'Sim, fechar',
@@ -1557,9 +1560,9 @@
                 });
                 if (!ok.isConfirmed) return;
                 try {
-                    const resp = await AuthManager.fetchWithAuth(`/api/requests/${requestId}/status`, {
-                        method: 'PATCH',
-                        body: JSON.stringify({ status: 'completed' })
+                    const resp = await AuthManager.fetchWithAuth(`/api/requests/${requestId}/complete`, {
+                        method: 'POST',
+                        body: JSON.stringify({ resolution: ok.value.trim() })
                     });
                     if (!resp || !resp.ok) throw new Error('Erro ao actualizar estado');
                     if (window.toastr) toastr.success('Pedido fechado como concluído');

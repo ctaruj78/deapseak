@@ -157,7 +157,7 @@ class EmailService {
                     <p style="margin:0;"><strong>Data de criação:</strong> ${new Date(request.createdAt).toLocaleString('pt-PT')}</p>
                 </div>
                 <p>Sera notificado(a) sobre qualquer atualizacao do estado do pedido.</p>
-                <p style="font-size:12px;color:#888;margin-top:24px;">Este e um email automatico — por favor nao responda diretamente.</p>`;
+                <p style="font-size:12px;color:#888;margin-top:24px;">Este é um email automático — por favor não responda diretamente.</p>`;
             await this._sendEmail(client.email, `✅ Pedido de servico recebido — FestLift`, this._tpl('#1565c0', 'Pedido de Servico', body));
             console.log(`✅ Email sent to ${client.email} about new request #${request._id}`);
         } catch (error) {
@@ -277,17 +277,17 @@ class EmailService {
             const details = (request.description || '').split('Detalhes: ').pop();
             const body = `
                 <p>Caro(a) <strong>${name}</strong>,</p>
-                <p>${isTrapped ? '<strong style="color:#c62828;">🚨 Foi reportada uma pessoa presa num elevador do seu edifício.</strong> A nossa equipa foi alertada e está a tratar da situação com prioridade. Linha de emergência: ${this._emergencyPhonesHtml()}.' : 'Foi reportado um problema num elevador do seu edifício através do QR público. A nossa equipa já foi notificada e irá tratar do assunto.'}</p>
+                <p>${isTrapped ? '<strong style="color:#c62828;">🚨 Foi reportada uma pessoa presa num elevador do seu edifício.</strong> A nossa equipa foi alertada e está a tratar da situação com prioridade. Linha de emergência: ' + this._emergencyPhonesHtml() + '.' : 'Foi reportado um problema num elevador do seu edifício através do QR público. A nossa equipa já foi notificada e irá tratar do assunto.'}</p>
                 <div style="background:#fff3e0;border-left:4px solid ${color};border-radius:6px;padding:18px 22px;margin:20px 0;">
                     <p style="margin:0 0 8px 0;"><strong>Referência:</strong> ${this._esc(request.requestNumber || '')}</p>
                     <p style="margin:0 0 8px 0;"><strong>Situação:</strong> ${this._esc(issueLabel)}</p>
                     <p style="margin:0 0 8px 0;"><strong>Elevador:</strong> ${this._esc([request.liftAddress, request.liftMunicipalNumber ? `Nº ${request.liftMunicipalNumber}` : ''].filter(Boolean).join(' — ') || '—')}</p>
                     <p style="margin:0 0 8px 0;"><strong>Reportado por:</strong> ${this._esc(reporter.name || 'N/D')} — ${this._esc(reporter.phone || '')} — ${this._esc(reporter.email || '')}</p>
-                    <p style="margin:0;"><strong>Detalhes:</strong> ${this._esc(details)}</p>
+                    ${details.trim() ? `<p style="margin:8px 0 0 0;"><strong>Detalhes:</strong> ${this._esc(details)}</p>` : ''}
                 </div>
                 <p>Será informado(a) quando for atribuído um técnico e quando o problema ficar resolvido.</p>
                 <a href="${siteUrl}/pages/client/requests.html" style="display:inline-block;background:#1565c0;color:#fff;text-decoration:none;padding:13px 28px;border-radius:6px;font-size:14px;font-weight:bold;">Ver pedido →</a>
-                <p style="font-size:12px;color:#888;margin-top:24px;">Este e um email automatico — por favor nao responda diretamente.</p>`;
+                <p style="font-size:12px;color:#888;margin-top:24px;">Este é um email automático — por favor não responda diretamente.</p>`;
             await this._sendEmail(client.email, `${isTrapped ? '🚨 URGENTE — Pessoa presa' : '⚠️ Ocorrência reportada'} — ${request.requestNumber || ''} — FestLift`, this._tpl(color, isTrapped ? 'Alerta Urgente' : 'Ocorrência Reportada', body));
         } catch (error) {
             console.error('❌ Erro ao enviar alerta QR ao cliente:', error);
@@ -307,7 +307,7 @@ class EmailService {
                     <p style="margin:0;"><strong>Situação reportada:</strong> ${this._esc((request.title || '').replace('Alerta QR público — ', ''))}</p>
                 </div>
                 <p>Em caso de emergência (pessoa presa), ligue de imediato para o nosso número de emergência: ${this._emergencyPhonesHtml()}.</p>
-                <p style="font-size:12px;color:#888;margin-top:24px;">Este e um email automatico — por favor nao responda diretamente.</p>`;
+                <p style="font-size:12px;color:#888;margin-top:24px;">Este é um email automático — por favor não responda diretamente.</p>`;
             await this._sendEmail(to, `✅ Alerta recebido ${request.requestNumber || ''} — FestLift`, this._tpl('#1565c0', 'Alerta Recebido', body));
         } catch (error) {
             console.error('❌ Erro ao enviar confirmação ao visitante QR:', error);
@@ -339,7 +339,7 @@ class EmailService {
                 <div style="background:#f8f9fa;border-radius:6px;padding:14px 18px;margin:16px 0;">
                     <p style="margin:0;"><strong>Referência:</strong> ${ref}${request.liftAddress ? ` — ${this._esc(request.liftAddress)}` : ''}</p>
                 </div>
-                <p style="font-size:12px;color:#888;margin-top:24px;">Este e um email automatico — para falar connosco use o telefone ou email acima.</p>`;
+                <p style="font-size:12px;color:#888;margin-top:24px;">Este é um email automático. Para falar connosco: +351 214 190 863 · info@festlift.pt</p>`;
             await this._sendEmail(to, subject, this._tpl(color, label, body));
         } catch (error) {
             console.error('❌ Erro ao enviar atualização ao visitante QR:', error);
@@ -370,19 +370,19 @@ class EmailService {
                     ${isQr && details ? `<p style="margin:0;"><strong>Detalhes do visitante:</strong> ${this._esc(details)}</p>` : ''}
                 </div>
                 <div style="background:#e8f0fe;border-left:4px solid #1565c0;border-radius:6px;padding:18px 22px;margin:20px 0;">
-                    <p style="margin:0 0 8px 0;font-weight:bold;color:#1565c0;">Tecnico responsavel:</p>
+                    <p style="margin:0 0 8px 0;font-weight:bold;color:#1565c0;">Técnico responsável:</p>
                     <p style="margin:0 0 6px 0;"><strong>Nome:</strong> ${techName}</p>
                     ${techPhone ? `<p style="margin:0 0 6px 0;"><strong>Telefone:</strong> ${techPhone}</p>` : ''}
                     <p style="margin:0;"><strong>Email:</strong> ${techEmail}</p>
                 </div>
                 <div style="background:#f8f9fa;border-radius:6px;padding:14px 18px;margin:16px 0;">
                     <p style="margin:0 0 6px 0;"><strong>Pedido:</strong> ${this._esc(request.requestNumber || '#' + request._id)} — ${this._esc(request.title)}</p>
-                    <p style="margin:0;"><strong>Estado:</strong> ${this.getStatusText(request.status)}</p>
+                    <p style="margin:0;"><strong>Estado:</strong> ${this.getStatusText(request.status || 'assigned')}</p>
                 </div>
-                <p style="font-size:12px;color:#888;margin-top:24px;">Este e um email automatico — por favor nao responda diretamente.</p>`;
+                <p style="font-size:12px;color:#888;margin-top:24px;">Este é um email automático — por favor não responda diretamente.</p>`;
             if (client?.email) {
                 try {
-                    await this._sendEmail(client.email, `🔧 Tecnico atribuido ao pedido #${request._id} — FestLift`, this._tpl('#1565c0', 'Tecnico Atribuido', body));
+                    await this._sendEmail(client.email, `🔧 Técnico atribuído ao pedido ${request.requestNumber || '#' + request._id} — FestLift`, this._tpl('#1565c0', 'Técnico Atribuído', body));
                     console.log(`✅ Email sent to ${client.email} about technician assignment`);
                 } catch (error) {
                     console.error('❌ Error sending client email:', error);
@@ -404,14 +404,14 @@ class EmailService {
             const techName = this._esc(`${technician.firstName || ''} ${technician.lastName || ''}`.trim() || 'Tecnico');
             const body = `
                 <p>Caro(a) <strong>${techName}</strong>,</p>
-                <p>Foi-lhe atribuida uma nova tarefa de servico. Por favor, entre em contacto com o cliente e execute o trabalho o mais brevemente possivel.</p>
+                <p>Foi-lhe atribuída uma nova tarefa de serviço. Por favor, entre em contacto com o cliente e execute o trabalho o mais brevemente possível.</p>
                 <div style="background:#fff8e1;border-left:4px solid #f9a825;border-radius:6px;padding:18px 22px;margin:20px 0;">
                     <p style="margin:0 0 8px 0;font-weight:bold;color:#e65100;">Detalhes da tarefa:</p>
-                    <p style="margin:0 0 6px 0;"><strong>Número:</strong> #${request._id}</p>
+                    <p style="margin:0 0 6px 0;"><strong>Número:</strong> ${this._esc(request.requestNumber || '#' + request._id)}</p>
                     <p style="margin:0 0 6px 0;"><strong>Descrição:</strong> ${this._esc(request.title)}</p>
-                    ${request.description ? `<p style="margin:0 0 6px 0;"><strong>Detalhes:</strong> ${this._esc(request.description)}</p>` : ''}
-                    <p style="margin:0 0 6px 0;"><strong>Tipo:</strong> ${this.getRequestTypeText(request.type)}</p>
-                    <p style="margin:0 0 6px 0;"><strong>Prioridade:</strong> ${this.getPriorityText(request.priority)}</p>
+                    ${request.description ? `<p style="margin:0 0 6px 0;white-space:pre-line;"><strong>Detalhes:</strong>\n${this._esc(request.description)}</p>` : ''}
+                    ${request.type ? `<p style="margin:0 0 6px 0;"><strong>Tipo:</strong> ${this.getRequestTypeText(request.type)}</p>` : ''}
+                    ${request.priority ? `<p style="margin:0 0 6px 0;"><strong>Prioridade:</strong> ${this.getPriorityText(request.priority)}</p>` : ''}
                     <p style="margin:0;"><strong>Elevador:</strong> ${(() => {
                         const addrObj = request.lift?.address;
                         const addr = addrObj ? [addrObj.street, addrObj.city].filter(Boolean).join(', ') : request.liftAddress;
@@ -421,8 +421,8 @@ class EmailService {
                     })()}</p>
                 </div>
                 <a href="${siteUrl}/pages/tech/tasks.html" style="display:inline-block;background:#1565c0;color:#fff;text-decoration:none;padding:13px 28px;border-radius:6px;font-size:14px;font-weight:bold;margin-top:8px;">Ver tarefa →</a>
-                <p style="font-size:12px;color:#888;margin-top:24px;">Este e um email automatico — por favor nao responda diretamente.</p>`;
-            await this._sendEmail(technician.email, `📋 Nova tarefa atribuida — Pedido #${request._id} — FestLift`, this._tpl('#f9a825', 'Nova Tarefa', body));
+                <p style="font-size:12px;color:#888;margin-top:24px;">Este é um email automático — por favor não responda diretamente.</p>`;
+            await this._sendEmail(technician.email, `📋 Nova tarefa atribuída — Pedido ${request.requestNumber || '#' + request._id} — FestLift`, this._tpl('#f9a825', 'Nova Tarefa', body));
             console.log(`✅ Email sent to ${technician.email} about new task`);
         } catch (error) {
             console.error('❌ Error sending email:', error);
@@ -442,7 +442,7 @@ class EmailService {
                     <p style="margin:0;"><strong>Novo estado:</strong> <span style="color:#1b5e20;font-weight:bold;">${this.getStatusText(newStatus)}</span></p>
                 </div>
                 <p>Obrigado por confiar nos servicos da FestLift.</p>
-                <p style="font-size:12px;color:#888;margin-top:24px;">Este e um email automatico — por favor nao responda diretamente.</p>`;
+                <p style="font-size:12px;color:#888;margin-top:24px;">Este é um email automático — por favor não responda diretamente.</p>`;
             await this._sendEmail(client.email, `🔄 Estado do pedido #${request._id} atualizado — FestLift`, this._tpl('#1565c0', 'Atualizacao de Estado', body));
             console.log(`✅ Email sent to ${client.email} about status change`);
         } catch (error) {
@@ -457,18 +457,18 @@ class EmailService {
             const name = this._esc(`${client.firstName || ''} ${client.lastName || ''}`.trim() || 'Cliente');
             const body = `
                 <p>Caro(a) <strong>${name}</strong>,</p>
-                <p>${request.source === 'public_qr' ? 'A ocorrência reportada através do QR público do elevador foi <strong>resolvida</strong> pela nossa equipa técnica.' : 'O seu pedido de manutencao do elevador foi concluido com sucesso pela nossa equipa tecnica.'}</p>
+                <p>${request.source === 'public_qr' ? 'A ocorrência reportada através do QR público do elevador foi <strong>resolvida</strong> pela nossa equipa técnica.' : 'O seu pedido de manutencao do elevador foi concluído com sucesso pela nossa equipa técnica.'}</p>
                 <div style="background:#e8f5e9;border-left:4px solid #2e7d32;border-radius:6px;padding:18px 22px;margin:20px 0;">
-                    <p style="margin:0 0 8px 0;font-weight:bold;color:#2e7d32;">Trabalho realizado:</p>
+                    <p style="margin:0 0 8px 0;font-weight:bold;color:#2e7d32;">Resumo:</p>
                     <p style="margin:0 0 6px 0;"><strong>Pedido:</strong> ${this._esc(request.requestNumber || '#' + request._id)} — ${this._esc(request.title)}</p>
                     ${request.liftAddress ? `<p style="margin:0 0 6px 0;"><strong>Elevador:</strong> ${this._esc(request.liftAddress)}</p>` : ''}
-                    <p style="margin:0 0 6px 0;"><strong>Data de conclusao:</strong> ${new Date(request.completedAt || Date.now()).toLocaleString('pt-PT')}</p>
+                    <p style="margin:0 0 6px 0;"><strong>Data de conclusão:</strong> ${new Date(request.completedAt || Date.now()).toLocaleString('pt-PT')}</p>
                     ${(request.resolution || request.workDetails) ? `<p style="margin:0;white-space:pre-line;"><strong>O que aconteceu e o que foi feito:</strong> ${this._esc(request.resolution || request.workDetails)}</p>` : ''}
                 </div>
-                <p>Agradecemos a sua confianca nos servicos FestLift. Para quaisquer questoes, nao hesite em contactar-nos.</p>
-                <a href="${siteUrl}/pages/client/requests.html" style="display:inline-block;background:#2e7d32;color:#fff;text-decoration:none;padding:13px 28px;border-radius:6px;font-size:14px;font-weight:bold;margin-top:8px;">Ver historico →</a>
-                <p style="font-size:12px;color:#888;margin-top:24px;">Este e um email automatico — por favor nao responda diretamente.</p>`;
-            await this._sendEmail(client.email, `✅ Pedido ${request.requestNumber || '#' + request._id} concluido — FestLift`, this._tpl('#2e7d32', 'Pedido Concluido', body));
+                <p>Agradecemos a sua confiança nos serviços FestLift. Para quaisquer questões, não hesite em contactar-nos.</p>
+                <a href="${siteUrl}/pages/client/requests.html" style="display:inline-block;background:#2e7d32;color:#fff;text-decoration:none;padding:13px 28px;border-radius:6px;font-size:14px;font-weight:bold;margin-top:8px;">Ver histórico →</a>
+                <p style="font-size:12px;color:#888;margin-top:24px;">Este é um email automático — por favor não responda diretamente.</p>`;
+            await this._sendEmail(client.email, `✅ Pedido ${request.requestNumber || '#' + request._id} concluído — FestLift`, this._tpl('#2e7d32', 'Pedido Concluído', body));
             console.log(`✅ Email sent to ${client.email} about completed request`);
         } catch (error) {
             console.error('❌ Error sending email:', error);
@@ -492,7 +492,7 @@ class EmailService {
                 <div style="background:#fff8e1;border-left:4px solid #f9a825;border-radius:6px;padding:14px 18px;margin:24px 0;">
                     <p style="margin:0;">🛡️ Se nao solicitou esta alteracao, ignore este email — a sua palavra-passe permanece inalterada.</p>
                 </div>
-                <p style="font-size:12px;color:#888;margin-top:24px;">Este e um email automatico — por favor nao responda diretamente.</p>`;
+                <p style="font-size:12px;color:#888;margin-top:24px;">Este é um email automático — por favor não responda diretamente.</p>`;
             await this._sendEmail(email, '🔐 Redefinicao de palavra-passe — FestLift', this._tpl('#c62828', 'Redefinicao de Palavra-passe', body));
             console.log(`✅ Password reset email sent to ${email}`);
         } catch (error) {
@@ -503,10 +503,10 @@ class EmailService {
 
     getRequestTypeText(type) {
         const types = {
-            maintenance: 'Manutencao preventiva',
-            repair: 'Reparacao',
-            emergency: 'Emergencia',
-            inspection: 'Inspecao',
+            maintenance: 'Manutenção preventiva',
+            repair: 'Reparação',
+            emergency: 'Emergência',
+            inspection: 'Inspeção',
             consultation: 'Consulta'
         };
         return types[type] || type;
@@ -515,7 +515,7 @@ class EmailService {
     getPriorityText(priority) {
         const priorities = {
             low: 'Baixa',
-            medium: 'Media',
+            medium: 'Média',
             high: 'Alta',
             urgent: 'Urgente'
         };
@@ -525,9 +525,9 @@ class EmailService {
     getStatusText(status) {
         const statuses = {
             new: 'Novo',
-            assigned: 'Atribuido',
+            assigned: 'Atribuído',
             in_progress: 'Em curso',
-            completed: 'Concluido',
+            completed: 'Concluído',
             cancelled: 'Cancelado'
         };
         return statuses[status] || status;
