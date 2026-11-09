@@ -2306,6 +2306,7 @@
                 if (viewMode) {
                     $('input, textarea, button[onclick*="addServiceRow"], button[onclick*="removeRow"]').prop('disabled', true);
                     $('button[onclick*="saveOrcamento"]').hide();
+                    $('#catalogoPicker, button[onclick*="addServiceRow"], #servicesTable .btn-danger').hide();
                     $('.card-header').prepend('<span class="badge badge-info">Modo de Visualização</span> ');
                 }
 
