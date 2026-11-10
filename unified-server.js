@@ -4134,11 +4134,38 @@ app.get('/api/lifts', authenticateToken, async (req, res) => {
         const totalCount = await db.collection('lifts').countDocuments(query);
         const sortField = (typeof req.query.sortBy === 'string' && req.query.sortBy) || 'createdAt';
         const sortDir = req.query.sortOrder === 'desc' ? -1 : 1;
-        let findCursor = db.collection('lifts').find(query).sort({ [sortField]: sortDir });
-        if (limitNum > 0) {
-            findCursor = findCursor.skip(skipNum).limit(limitNum);
+        // 🏠 Ліфти з однаковою адресою завжди йдуть підряд (єдина логіка для всіх сторінок:
+        // QR, ліфти, predictive-maintenance, ...). Групи — за першою появою в порядку createdAt.
+        // Працює лише для дефолтного сортування; групування робимо до skip/limit.
+        let lifts;
+        if (sortField === 'createdAt') {
+            const addrKey = (l) => {
+                const a = l.address;
+                if (a && typeof a === 'object' && a.street) {
+                    const street = String(a.street).replace(/[,\.]/g, ' ').replace(/\s+/g, ' ').trim().toLowerCase();
+                    const city = String(a.city || '').trim().toLowerCase();
+                    const zip = String(a.zipCode || '').replace(/\s+/g, '').trim().toLowerCase();
+                    return street + '|' + city + (zip ? '|' + zip : '');
+                }
+                if (typeof a === 'string' && a) return a.replace(/[,\.]/g, ' ').replace(/\s+/g, ' ').trim().toLowerCase();
+                return '_id_' + String(l._id);
+            };
+            const all = await db.collection('lifts').find(query).sort({ createdAt: sortDir, _id: sortDir }).toArray();
+            const grouped = new Map();
+            for (const l of all) {
+                const k = addrKey(l);
+                if (!grouped.has(k)) grouped.set(k, []);
+                grouped.get(k).push(l);
+            }
+            const ordered = [].concat(...grouped.values());
+            lifts = limitNum > 0 ? ordered.slice(skipNum, skipNum + limitNum) : ordered;
+        } else {
+            let findCursor = db.collection('lifts').find(query).sort({ [sortField]: sortDir });
+            if (limitNum > 0) {
+                findCursor = findCursor.skip(skipNum).limit(limitNum);
+            }
+            lifts = await findCursor.toArray();
         }
-        const lifts = await findCursor.toArray();
         
         console.log(`✅ Знайдено ліфтів: ${lifts.length}/${totalCount} (search: "${searchTerm}", page: ${pageNum})`);
         

@@ -103,7 +103,25 @@ const qrManager = (function() {
             }
 
             const data = await response.json();
-            const lifts = data.data || data;
+            const rawLifts = (data.data && data.data.lifts) || data.lifts || data.data || data;
+            const lifts = Array.isArray(rawLifts) ? rawLifts.slice() : [];
+
+            // Та сама логіка, що на сторінці ліфтів: createdAt asc (fallback — час з ObjectId),
+            // потім групування за адресою (street|city|zip) — групи йдуть за першою появою
+            const liftCreatedTs = (l) => {
+                const t = new Date(l.createdAt || l.created_at || l.addedAt || l.dateCreated || 0).getTime();
+                if (t > 0) return t;
+                const id = String(l._id || '');
+                return /^[a-f\d]{24}$/i.test(id) ? parseInt(id.substring(0, 8), 16) * 1000 : 0;
+            };
+            lifts.sort((a, b) => liftCreatedTs(a) - liftCreatedTs(b));
+            const groups = new Map();
+            lifts.forEach(l => {
+                const k = liftAddrKey(l);
+                if (!groups.has(k)) groups.set(k, []);
+                groups.get(k).push(l);
+            });
+            lifts.splice(0, lifts.length, ...[].concat(...groups.values()));
 
             // Convert lifts to QR codes
             currentQRs = lifts.map(lift => {
@@ -215,6 +233,42 @@ const qrManager = (function() {
     }
 
     // Render dispatcher - routes to list or grid
+    // Ключ адреси — ідентичний _liftAddrKey у pages/admin/lifts.html
+    function liftAddrKey(lift) {
+        if (lift.address && lift.address.street) {
+            const street = lift.address.street.replace(/[,\.]/g, ' ').replace(/\s+/g, ' ').trim().toLowerCase();
+            const city = (lift.address.city || '').trim().toLowerCase();
+            const zip = (lift.address.zipCode || '').replace(/\s+/g, '').trim().toLowerCase();
+            return street + '|' + city + (zip ? '|' + zip : '');
+        }
+        if (typeof lift.address === 'string' && lift.address) {
+            return lift.address.replace(/[,\.]/g, ' ').replace(/\s+/g, ' ').trim().toLowerCase();
+        }
+        return '_id_' + lift._id;
+    }
+
+    // Пагінація без розриву груп однієї адреси між сторінками (як _computeLiftsPages на сторінці ліфтів)
+    function computePages(items) {
+        const pages = [[]];
+        let count = 0, i = 0;
+        while (i < items.length) {
+            const key = liftAddrKey(items[i].liftData || {});
+            let j = i;
+            while (j < items.length && liftAddrKey(items[j].liftData || {}) === key) j++;
+            const size = j - i;
+            if (count > 0 && count + size > itemsPerPage) { pages.push([]); count = 0; }
+            for (let k = i; k < j; k++) pages[pages.length - 1].push(items[k]);
+            count += size;
+            i = j;
+        }
+        return pages;
+    }
+    function getPageItems(filtered) {
+        const pages = computePages(filtered);
+        currentPage = Math.min(Math.max(1, currentPage), pages.length);
+        return pages[currentPage - 1] || [];
+    }
+
     function renderQRTable() {
         if (currentView === 'grid') {
             renderGridView();
@@ -223,9 +277,9 @@ const qrManager = (function() {
         }
         // Update count display
         const filtered = filterQRData();
-        const start = (currentPage - 1) * itemsPerPage;
-        const end = Math.min(start + itemsPerPage, filtered.length);
-        $('#showingCount').text(filtered.length > 0 ? `${start + 1}–${Math.min(end, filtered.length)}` : '0');
+        const shown = getPageItems(filtered).length;
+        const start = computePages(filtered).slice(0, currentPage - 1).reduce((n, p) => n + p.length, 0);
+        $('#showingCount').text(filtered.length > 0 ? `${start + 1}–${start + shown}` : '0');
         $('#totalCount').text(filtered.length);
     }
 
@@ -238,9 +292,7 @@ const qrManager = (function() {
         tbody.empty();
 
         const filtered = filterQRData();
-        const start = (currentPage - 1) * itemsPerPage;
-        const end = start + itemsPerPage;
-        const page = filtered.slice(start, end);
+        const page = getPageItems(filtered);
 
         if (page.length === 0) {
             tbody.html('<tr><td colspan="10" class="text-center text-muted py-4"><i class="fas fa-search fa-2x d-block mb-2"></i>Sem dados для відображення</td></tr>');
@@ -282,7 +334,7 @@ const qrManager = (function() {
             `);
         });
 
-        renderPagination(Math.ceil(filtered.length / itemsPerPage));
+        renderPagination(computePages(filtered).length);
 
         // Генеруємо QR зображення для списку після рендерингу DOM
         setTimeout(() => {
@@ -314,9 +366,7 @@ const qrManager = (function() {
         container.show().empty();
 
         const filtered = filterQRData();
-        const start = (currentPage - 1) * itemsPerPage;
-        const end = start + itemsPerPage;
-        const page = filtered.slice(start, end);
+        const page = getPageItems(filtered);
 
         if (page.length === 0) {
             container.html('<div class="col-12 text-center text-muted py-5"><i class="fas fa-search fa-2x d-block mb-2"></i>Sem dados для відображення</div>');
@@ -368,7 +418,7 @@ const qrManager = (function() {
             `);
         });
 
-        renderPagination(Math.ceil(filtered.length / itemsPerPage));
+        renderPagination(computePages(filtered).length);
 
         // Generate QR codes after DOM is ready
         setTimeout(() => {
