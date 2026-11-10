@@ -4048,7 +4048,10 @@ app.get('/api/lifts', authenticateToken, async (req, res) => {
         const skipNum  = limitNum > 0 ? (pageNum - 1) * limitNum : 0;
         if (searchTerm) {
             const escapedSearch = searchTerm.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-            const re = new RegExp(escapedSearch, 'i');
+            // Tolerante a vírgulas/pontos/espaços: "Av. do Parque, nº112" == "Av. do Parque nº112"
+            const reSource = searchTerm.split(/[\s,.;]+/).filter(Boolean)
+                .map(t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('[\\s,.;]*') || escapedSearch;
+            const re = new RegExp(reSource, 'i');
             const searchTerms = searchTerm
                 .split(/\s+/)
                 .map(t => t.trim())
@@ -14871,7 +14874,7 @@ app.post('/api/email/send-orcamento', authenticateToken, emailLimiter, requireRo
                             ${orcamento.notas ? `
                                 <div style="margin-top: 20px; padding: 15px; background: #fff3cd; border-left: 4px solid #ffc107; border-radius: 4px;">
                                     <strong>Notas:</strong><br>
-                                    ${escapeHtml(orcamento.notas)}
+                                    <span style="white-space: pre-line;">${escapeHtml(orcamento.notas)}</span>
                                 </div>
                             ` : ''}
 

@@ -698,7 +698,7 @@
                                         <div class="row mt-4">
                                             <div class="col-md-6">
                                                 <h5>Notas:</h5>
-                                                <p id="previewNotes">Este orçamento é válido por 30 dias a partir da data de apresentação.</p>
+                                                <p id="previewNotes" style="white-space: pre-line;">Este orçamento é válido por 30 dias a partir da data de apresentação.</p>
                                             </div>
                                             <div class="col-md-6">
                                                 <div class="invoice-total">
@@ -1912,9 +1912,12 @@
                                 const addrStr = typeof addr === 'string'
                                     ? addr
                                     : [addr.street, addr.zipCode, addr.city].filter(Boolean).join(', ');
-                                const key = addrStr || String(lift._id);
+                                // Chave normalizada (ignora vírgulas/pontos/maiúsculas) para juntar o mesmo edifício
+                                const key = addrStr
+                                    ? addrStr.replace(/[,\.]/g, ' ').replace(/\s+/g, ' ').trim().toLowerCase()
+                                    : String(lift._id);
                                 if (!addressMap[key]) {
-                                    addressMap[key] = { address: key, lifts: [], clientName: lift.clientName || '', clientEmail: lift.clientEmail || lift.email || '' };
+                                    addressMap[key] = { address: addrStr || key, lifts: [], clientName: lift.clientName || '', clientEmail: lift.clientEmail || lift.email || '' };
                                 }
                                 if (!addressMap[key].clientName && lift.clientName) addressMap[key].clientName = lift.clientName;
                                 if (!addressMap[key].clientEmail && (lift.clientEmail || lift.email)) addressMap[key].clientEmail = lift.clientEmail || lift.email;
