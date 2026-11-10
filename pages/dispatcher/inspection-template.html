@@ -339,7 +339,7 @@
                         <div class="col-12">
                             <div class="card card-outline card-primary">
                                 <div class="card-header">
-                                    <h3 class="card-title"><i class="fas fa-database mr-1"></i> Relatórios Guardados na Base de Dados</h3>
+                                    <h3 class="card-title"><i class="fas fa-database mr-1"></i> Arquivo de Relatórios</h3>
                                     <div class="card-tools">
                                         <button class="btn btn-default btn-sm" onclick="loadInspectionHistory()">
                                             <i class="fas fa-sync-alt"></i> Actualizar
@@ -900,7 +900,9 @@
                     });
                     
                     if (response.ok) {
-                        toastr.success(`✅ Relatório enviado com sucesso para ${email}`);
+                        const ok = await response.json().catch(() => ({}));
+                        if (ok.inspectionNumber) $('#inspectionNumber').val(ok.inspectionNumber);
+                        toastr.success(`✅ Relatório ${ok.inspectionNumber || ''} enviado para ${email} e guardado no sistema`);
                     } else {
                         const error = await response.json();
                         toastr.error(`❌ Erro ao enviar: ${error.message || 'Erro desconhecido'}`);
@@ -1061,6 +1063,7 @@
             loadInspectionHistory();
         });
     </script>
+<script src="../../assets/js/inspection-archive.js"></script>
 <script src="../../assets/js/monitor.js"></script>
 <script>
 // swalConfirm — substitui confirm() nativo pelo Swal

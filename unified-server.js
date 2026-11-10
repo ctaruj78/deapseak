@@ -649,6 +649,9 @@ async function connectMongo() {
                 db.collection('lifts').createIndex({ clientId: 1, status: 1 }, { background: true }),
                 // municipalNumber: índice já criado pelo unique:true no Mongoose model
                 // requests: статус + дата (найчастіший запит)
+                db.collection('inspections').createIndex({ archived: 1, createdAt: -1 }, { background: true }),
+                db.collection('inspections').createIndex({ numero: 1 }, { background: true }),
+                db.collection('inspections').createIndex({ liftId: 1, createdAt: -1 }, { background: true }),
                 db.collection('requests').createIndex({ status: 1, createdAt: -1 }, { background: true }),
                 db.collection('requests').createIndex({ clientEmail: 1, status: 1 }, { background: true }),
                 db.collection('requests').createIndex({ liftId: 1, status: 1 }, { background: true }),
@@ -2548,28 +2551,79 @@ app.get('/api/inspections', authenticateToken, async (req, res) => {
         const limit = Math.min(10000, Math.max(1, parseInt(req.query.limit) || 200));
         const page  = Math.max(1, parseInt(req.query.page) || 1);
         const skip  = (page - 1) * limit;
-        const filter = {};
+        const and = [];
         if (req.query.visitType) {
             const types = req.query.visitType.split(',').map(t => t.trim()).filter(Boolean);
-            filter.visitType = types.length === 1 ? types[0] : { $in: types };
+            and.push({ visitType: types.length === 1 ? types[0] : { $in: types } });
         }
-        if (req.query.liftId) filter.liftId = req.query.liftId;
+        if (req.query.liftId) and.push({ liftId: String(req.query.liftId) });
+        if (req.query.status) and.push({ status: String(req.query.status) });
+        // Arquivados: por omissão escondidos (excepto ao filtrar por elevador); archived=true | all
+        const arch = String(req.query.archived || '');
+        if (arch === 'true') and.push({ archived: true });
+        else if (arch !== 'all' && !req.query.liftId) and.push({ archived: { $ne: true } });
+        // Pesquisa livre: nº, morada, cliente, email, técnico, nº municipal, modelo
+        const q = String(req.query.q || '').trim().slice(0, 100);
+        if (q) {
+            const rx = new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
+            and.push({ $or: ['numero', 'liftLocation', 'clientName', 'clientEmail', 'inspector', 'liftMunicipal', 'liftModel']
+                .map(f => ({ [f]: rx })) });
+        }
+        // Intervalo de datas (campo `data` pode ser string ISO ou Date)
+        const from = /^\d{4}-\d{2}-\d{2}$/.test(req.query.from || '') ? req.query.from : null;
+        const to   = /^\d{4}-\d{2}-\d{2}$/.test(req.query.to || '') ? req.query.to : null;
+        if (from || to) {
+            const strR = {}, dateR = {};
+            if (from) { strR.$gte = from; dateR.$gte = new Date(from + 'T00:00:00.000Z'); }
+            if (to)   { strR.$lte = to + '\uffff'; dateR.$lte = new Date(to + 'T23:59:59.999Z'); }
+            and.push({ $or: [{ data: strR }, { data: dateR }] });
+        }
         // Técnicos só veem as inspecções que criaram — admin/dispatcher veem todas
         if (req.user.role !== 'admin' && req.user.role !== 'dispatcher') {
-            filter.createdBy = req.user.id;
+            and.push({ createdBy: req.user.id });
         }
+        const filter = and.length ? { $and: and } : {};
+        const cursor = db.collection('inspections').find(filter);
+        // light=1: lista leve, sem checklist (para tabelas/pesquisa)
+        if (req.query.light === '1') cursor.project({ checklist: 0 });
         const [inspections, total] = await Promise.all([
-            db.collection('inspections')
-                .find(filter)
-                .sort({ createdAt: -1 })
-                .skip(skip)
-                .limit(limit)
-                .toArray(),
+            cursor.sort({ createdAt: -1 }).skip(skip).limit(limit).toArray(),
             db.collection('inspections').countDocuments(filter)
         ]);
-        res.json({ success: true, data: inspections || [], total });
+        res.json({ success: true, data: inspections || [], total, page, pages: Math.max(1, Math.ceil(total / limit)) });
     } catch (error) {
         console.error('❌ Помилка отримання інспекцій:', error);
+        res.status(500).json({ success: false, message: 'Erro do servidor' });
+    }
+});
+
+// PATCH /api/inspections/:id/archive — arquivar / desarquivar { archived: true|false }
+app.patch('/api/inspections/:id/archive', authenticateToken, requireRole('admin', 'dispatcher', 'technician'), async (req, res) => {
+    try {
+        const { ObjectId } = require('mongodb');
+        const archived = req.body.archived !== false;
+        const own = (req.user.role === 'admin' || req.user.role === 'dispatcher') ? {} : { createdBy: req.user.id };
+        const r = await db.collection('inspections').updateOne(
+            { _id: new ObjectId(req.params.id), ...own },
+            { $set: { archived, archivedAt: archived ? new Date() : null, updatedAt: new Date() } });
+        if (!r.matchedCount) return res.status(404).json({ success: false, message: 'Relatório não encontrado' });
+        res.json({ success: true, archived });
+    } catch (error) {
+        res.status(500).json({ success: false, message: 'Erro do servidor' });
+    }
+});
+
+// POST /api/inspections/bulk-archive — { ids: [], archived: true|false }
+app.post('/api/inspections/bulk-archive', authenticateToken, requireRole('admin', 'dispatcher', 'technician'), async (req, res) => {
+    try {
+        const { ObjectId } = require('mongodb');
+        const ids = (Array.isArray(req.body.ids) ? req.body.ids : []).slice(0, 500).filter(i => ObjectId.isValid(i)).map(i => new ObjectId(i));
+        const archived = req.body.archived !== false;
+        const own = (req.user.role === 'admin' || req.user.role === 'dispatcher') ? {} : { createdBy: req.user.id };
+        const r = await db.collection('inspections').updateMany({ _id: { $in: ids }, ...own },
+            { $set: { archived, archivedAt: archived ? new Date() : null, updatedAt: new Date() } });
+        res.json({ success: true, modified: r.modifiedCount });
+    } catch (error) {
         res.status(500).json({ success: false, message: 'Erro do servidor' });
     }
 });
@@ -2676,6 +2730,8 @@ app.get('/api/inspections/:id/pdf', authenticateToken, async (req, res) => {
             liftLocation: inspection.liftLocation,
             liftModel: inspection.liftModel,
             liftSerial: inspection.liftSerial,
+            clientName: inspection.clientName,
+            clientEmail: inspection.clientEmail,
             visitType: inspection.visitType,
             driveType: inspection.driveType,
             doorType: inspection.doorType,
@@ -15176,6 +15232,61 @@ async function gerarPDFRelatorio(data) {
     });
 }
 
+// Garante que o relatório fica SEMPRE guardado na BD (upsert por número+elevador)
+// e que dois elevadores diferentes nunca partilham o mesmo número.
+async function persistInspectionFromReport(body, user, extra = {}) {
+    if (!db) return null;
+    const now = new Date();
+    const visitType = body.visitType || 'maintenance';
+    const { prefix: prefixCode } = getInspectionVisitMeta(visitType);
+    const liftId = body.liftId || null;
+    let numero = body.inspectionNumber || body.numero || '';
+
+    const nextNumero = async () => {
+        const d = new Date();
+        const prefix = `${prefixCode}-${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-`;
+        const last = await db.collection('inspections').find({ numero: { $regex: `^${prefix}` } }).sort({ numero: -1 }).limit(1).toArray();
+        let seq = 1;
+        if (last.length) { const n = parseInt(last[0].numero.split('-').pop(), 10); if (!isNaN(n)) seq = n + 1; }
+        return `${prefix}${String(seq).padStart(3, '0')}`;
+    };
+
+    let existing = numero ? await db.collection('inspections').findOne({ numero }) : null;
+    // Mesmo número mas outro elevador → é outro relatório, atribuir novo número
+    if (existing && ((liftId && existing.liftId && String(existing.liftId) !== String(liftId)) ||
+                     (!liftId && existing.liftLocation && body.liftLocation && existing.liftLocation !== body.liftLocation))) {
+        numero = await nextNumero();
+        existing = null;
+    }
+    if (!numero) numero = await nextNumero();
+
+    const fields = {
+        data: body.inspectionDate || body.data || now,
+        inspector: body.inspector || '',
+        liftId,
+        liftLocation: body.liftLocation || '',
+        liftMunicipal: body.liftMunicipal || '',
+        liftModel: body.liftModel || '',
+        liftSerial: body.liftSerial || '',
+        clientEmail: body.clientEmail || body.recipientEmail || '',
+        clientName: body.clientName || '',
+        visitType,
+        driveType: body.driveType || '',
+        doorType: body.doorType || '',
+        checklist: body.checklist || {},
+        generalComments: body.generalComments || '',
+        recommendations: body.recommendations || '',
+        updatedAt: now,
+        ...extra
+    };
+    if (existing) {
+        await db.collection('inspections').updateOne({ _id: existing._id }, { $set: fields });
+    } else {
+        await db.collection('inspections').insertOne({ numero, status: 'finalizado', createdBy: user ? user.id : null, createdAt: now, ...fields });
+    }
+    return numero;
+}
+
 // POST /api/inspections/download-pdf - Descarregar PDF do relatório
 app.post('/api/inspections/download-pdf', authenticateToken, requireRole('admin', 'dispatcher', 'technician'), async (req, res) => {
     try {
@@ -15183,8 +15294,12 @@ app.post('/api/inspections/download-pdf', authenticateToken, requireRole('admin'
         if (!inspectionNumber) {
             return res.status(400).json({ success: false, message: 'inspectionNumber é obrigatório' });
         }
+        try { req.body.inspectionNumber = await persistInspectionFromReport(req.body, req.user) || inspectionNumber; }
+        catch (e) { console.error('⚠️ Auto-guardar (PDF) falhou:', e.message); }
         const pdfBuffer = await gerarPDFRelatorio(req.body);
-        const filename = `Relatorio_${String(inspectionNumber).replace(/[/\\]/g, '-')}.pdf`;
+        const filename = `Relatorio_${String(req.body.inspectionNumber).replace(/[/\\]/g, '-')}.pdf`;
+        res.setHeader('X-Inspection-Number', String(req.body.inspectionNumber));
+        res.setHeader('Access-Control-Expose-Headers', 'X-Inspection-Number');
         res.setHeader('Content-Type', 'application/pdf');
         res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
         res.setHeader('Content-Length', pdfBuffer.length);
@@ -15221,8 +15336,13 @@ app.post('/api/inspections/send-report', authenticateToken, emailLimiter, requir
         // Os detalhes completos constam APENAS no PDF em anexo.
         // Isto evita que clientes com Apple Mail / macOS vejam o conteúdo duplicado
         // (o macOS Mail renderiza o HTML inline E mostra o PDF em anexo em simultâneo).
+        // Guardar SEMPRE o relatório na BD antes de enviar (não depende do botão "Guardar")
+        let finalNumber = inspectionNumber;
+        try { finalNumber = await persistInspectionFromReport(req.body, req.user) || inspectionNumber; }
+        catch (e) { console.error('⚠️ Auto-guardar (envio) falhou:', e.message); }
+        req.body.inspectionNumber = finalNumber;
         const pdfBuffer = await gerarPDFRelatorio(req.body);
-        const numSafe = String(inspectionNumber).replace(/[/\\]/g, '-');
+        const numSafe = String(finalNumber).replace(/[/\\]/g, '-');
 
         const dataFormatted = inspectionDate
             ? new Date(inspectionDate).toLocaleDateString('pt-PT', { day: '2-digit', month: '2-digit', year: 'numeric' })
@@ -15239,12 +15359,15 @@ app.post('/api/inspections/send-report', authenticateToken, emailLimiter, requir
             }
         });
 
+        const fromRaw = process.env.EMAIL_FROM || 'FestLift <info@festlift.pt>';
+        const smtpBcc = process.env.EMAIL_BCC || fromRaw.match(/<([^>]+)>/)?.[1] || fromRaw;
         const mailOptions = {
-            from: process.env.EMAIL_FROM || 'FestLift <info@festlift.pt>',
+            from: fromRaw,
             to: recipientEmail,
-            subject: `${visitMeta.title} ${inspectionNumber} — FestLift`,
+            bcc: (smtpBcc && smtpBcc.toLowerCase() !== String(recipientEmail).toLowerCase()) ? smtpBcc : undefined,
+            subject: `${visitMeta.title} ${finalNumber} — FestLift`,
             // Texto simples (fallback)
-            text: `Exmo(a). Sr(a.)${clientName ? ' ' + clientName : ''},\n\nEm anexo encontra o ${visitMeta.title} ${inspectionNumber} relativo ao ascensor em ${liftLocation || '—'}, realizado em ${dataFormatted} pelo técnico ${inspector || '—'}.\n\nPara qualquer esclarecimento estamos ao dispor.\n\nCom os melhores cumprimentos,\nFestLift — Elevadores e Serviços, Lda.\ninfo@festlift.pt | +351 214 190 863`,
+            text: `Exmo(a). Sr(a.)${clientName ? ' ' + clientName : ''},\n\nEm anexo encontra o ${visitMeta.title} ${finalNumber} relativo ao ascensor em ${liftLocation || '—'}, realizado em ${dataFormatted} pelo técnico ${inspector || '—'}.\n\nPara qualquer esclarecimento estamos ao dispor.\n\nCom os melhores cumprimentos,\nFestLift — Elevadores e Serviços, Lda.\ninfo@festlift.pt | +351 214 190 863`,
             // HTML: carta de apresentação simples, sem checklist inline
             html: `
                 <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;border:1px solid #dde0e8;border-radius:10px;overflow:hidden;">
@@ -15257,7 +15380,7 @@ app.post('/api/inspections/send-report', authenticateToken, emailLimiter, requir
                             Exmo(a). Sr(a.)${clientName ? ' <strong>' + escapeHtml(clientName) + '</strong>' : ''},
                         </p>
                         <p style="font-size:15px;color:#333;line-height:1.65;margin:0 0 16px;">
-                            Em anexo encontra o <strong>${escapeHtml(visitMeta.title)} ${escapeHtml(inspectionNumber)}</strong>
+                            Em anexo encontra o <strong>${escapeHtml(visitMeta.title)} ${escapeHtml(finalNumber)}</strong>
                             relativo ao ascensor em <strong>${escapeHtml(liftLocation || '—')}</strong>,
                             realizado em <strong>${dataFormatted}</strong>
                             pelo técnico <strong>${escapeHtml(inspector || '—')}</strong>.
@@ -15291,10 +15414,12 @@ app.post('/api/inspections/send-report', authenticateToken, emailLimiter, requir
         };
 
         await transporter.sendMail(mailOptions);
-        console.log(`✅ Relatório ${inspectionNumber} enviado para ${recipientEmail} (PDF em anexo)`);
+        try { await db.collection('inspections').updateOne({ numero: finalNumber }, { $set: { status: 'enviado', sentTo: recipientEmail, sentAt: new Date() } }); } catch (_) {}
+        console.log(`✅ Relatório ${finalNumber} enviado para ${recipientEmail} (PDF em anexo)`);
 
         res.json({
             success: true,
+            inspectionNumber: finalNumber,
             message: `Relatório enviado com sucesso para ${recipientEmail}`
         });
 

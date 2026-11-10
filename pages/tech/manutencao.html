@@ -1013,7 +1013,7 @@
                         <div class="col-12">
                             <div class="card card-outline card-primary">
                                 <div class="card-header">
-                                    <h3 class="card-title"><i class="fas fa-database mr-1"></i> Relatórios Guardados na Base de Dados</h3>
+                                    <h3 class="card-title"><i class="fas fa-database mr-1"></i> Arquivo de Relatórios (os meus)</h3>
                                     <div class="card-tools">
                                         <button class="btn btn-default btn-sm" onclick="loadInspectionHistory()">
                                             <i class="fas fa-sync-alt"></i> Actualizar
@@ -1698,6 +1698,8 @@
                         throw new Error(err.message || `Erro ${response.status}`);
                     }
 
+                    const srvNum = response.headers.get('X-Inspection-Number');
+                    if (srvNum) { $('#inspectionNumber').val(srvNum); reportData.inspectionNumber = srvNum; }
                     const blob = await response.blob();
                     const url = URL.createObjectURL(blob);
                     const num = reportData.inspectionNumber || 'MANU';
@@ -1746,6 +1748,7 @@
                     const reportData = {
                         inspectionNumber: $('#inspectionNumber').val(),
                         inspectionDate: $('#inspectionDate').val(),
+                        liftId: window.currentLiftId || null,
                         inspector: $('#inspector').val(),
                         liftLocation: $('#liftLocation').val(),
                         liftModel: $('#liftModel').val(),
@@ -1782,7 +1785,9 @@
                     });
                     
                     if (response.ok) {
-                        CommonUtils.showNotification(`Relatório enviado com sucesso para ${email}`, 'success');
+                        const ok = await response.json().catch(() => ({}));
+                        if (ok.inspectionNumber) $('#inspectionNumber').val(ok.inspectionNumber);
+                        CommonUtils.showNotification(`Relatório ${ok.inspectionNumber || ''} enviado para ${email} e guardado no sistema (cópia enviada para a FestLift)`, 'success');
                     } else {
                         const error = await response.json();
                         CommonUtils.showNotification(`Erro ao enviar: ${error.message || 'Erro desconhecido'}`, 'error');
@@ -1895,5 +1900,6 @@ async function swalConfirm(text, title = 'Confirmar') {
     return r.isConfirmed;
 }
 </script>
+<script src="../../assets/js/inspection-archive.js"></script>
 </body>
 </html>
