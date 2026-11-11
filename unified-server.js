@@ -2375,6 +2375,106 @@ app.get('/api/qr/stats', authenticateToken, async (req, res) => {
 // ═══════════════════════════════════════════════════════════
 
 // ═══════════════════════════════════════════════════════════
+// 📖 BIBLIOTECA DE MANUAIS E ESQUEMAS (técnicos) — services/manuais.js
+// Ficheiros em uploads/manuais/ (sessão obrigatória; clientes bloqueados no gate de /uploads)
+// ═══════════════════════════════════════════════════════════
+const manuaisLib = require('./services/manuais');
+const MANUAIS_READ = ['admin', 'dispatcher', 'technician'];
+const manualUpload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 40 * 1024 * 1024 } });
+let manuaisIndexed = false;
+async function manuaisReady() {
+    if (!manuaisIndexed && db) { await manuaisLib.ensureIndexes(db); manuaisIndexed = true; }
+}
+const manualClean = (b) => {
+    const out = {};
+    const str = (v, n) => String(v == null ? '' : v).trim().slice(0, n);
+    if (b.title !== undefined) out.title = str(b.title, 200);
+    if (b.brand !== undefined) out.brand = str(b.brand, 60) || 'Outro';
+    if (b.model !== undefined) out.model = str(b.model, 80);
+    if (b.docType !== undefined && manuaisLib.DOC_TYPES[b.docType]) out.docType = b.docType;
+    if (b.component !== undefined && manuaisLib.COMPONENTS[b.component]) out.component = b.component;
+    if (b.language !== undefined && ['pt', 'es', 'en', 'ru', 'other'].includes(b.language)) out.language = b.language;
+    if (b.notes !== undefined) out.notes = str(b.notes, 1000);
+    if (b.published !== undefined) out.published = !!b.published;
+    if (b.tags !== undefined) out.tags = (Array.isArray(b.tags) ? b.tags : String(b.tags).split(',')).map(t => str(t, 40)).filter(Boolean).slice(0, 20);
+    return out;
+};
+
+app.get('/api/manuais', authenticateToken, requireRole(...MANUAIS_READ), async (req, res) => {
+    try {
+        if (!db) return res.status(503).json({ success: false, message: 'Base de dados indisponível' });
+        await manuaisReady();
+        const q = req.query;
+        const staff = ['admin', 'dispatcher'].includes(req.user.role);
+        const r = await manuaisLib.search(db, {
+            q: String(q.q || '').slice(0, 100), brand: q.brand, docType: q.docType, component: q.component,
+            language: q.language, sort: q.sort || 'recent', includeUnpublished: staff && q.all === '1'
+        });
+        res.json({ success: true, ...r, docTypes: manuaisLib.DOC_TYPES, components: manuaisLib.COMPONENTS });
+    } catch (error) {
+        console.error('❌ manuais GET:', error);
+        res.status(500).json({ success: false, message: 'Erro do servidor' });
+    }
+});
+
+app.post('/api/manuais/:id/view', authenticateToken, requireRole(...MANUAIS_READ), async (req, res) => {
+    try {
+        const { ObjectId } = require('mongodb');
+        if (!db || !ObjectId.isValid(req.params.id)) return res.json({ success: false });
+        await db.collection('manual_docs').updateOne({ _id: new ObjectId(req.params.id) }, { $inc: { views: 1 } });
+        res.json({ success: true });
+    } catch (e) { res.json({ success: false }); }
+});
+
+app.post('/api/manuais', authenticateToken, requireRole('admin', 'dispatcher'), manualUpload.single('file'), async (req, res) => {
+    try {
+        if (!db) return res.status(503).json({ success: false, message: 'Base de dados indisponível' });
+        if (!req.file || req.file.buffer.slice(0, 5).toString() !== '%PDF-')
+            return res.status(400).json({ success: false, message: 'Envie um ficheiro PDF válido' });
+        await manuaisReady();
+        const name = Buffer.from(req.file.originalname, 'latin1').toString('utf8');
+        const r = await manuaisLib.importPdf(db, req.file.buffer, name, { ...manualClean(req.body), reviewed: true }, req.user);
+        if (r.status === 'duplicate')
+            return res.status(409).json({ success: false, message: 'Este ficheiro já existe: ' + r.doc.title });
+        res.status(201).json({ success: true, data: r.doc });
+    } catch (error) {
+        console.error('❌ manuais POST:', error);
+        res.status(500).json({ success: false, message: 'Erro ao processar o PDF' });
+    }
+});
+
+app.put('/api/manuais/:id', authenticateToken, requireRole('admin', 'dispatcher'), async (req, res) => {
+    try {
+        const { ObjectId } = require('mongodb');
+        if (!db || !ObjectId.isValid(req.params.id)) return res.status(400).json({ success: false, message: 'ID inválido' });
+        const set = { ...manualClean(req.body), reviewed: true, updatedAt: new Date() };
+        const r = await db.collection('manual_docs').updateOne({ _id: new ObjectId(req.params.id) }, { $set: set });
+        if (!r.matchedCount) return res.status(404).json({ success: false, message: 'Documento não encontrado' });
+        res.json({ success: true });
+    } catch (error) {
+        console.error('❌ manuais PUT:', error);
+        res.status(500).json({ success: false, message: 'Erro do servidor' });
+    }
+});
+
+app.delete('/api/manuais/:id', authenticateToken, requireRole('admin'), async (req, res) => {
+    try {
+        const { ObjectId } = require('mongodb');
+        if (!db || !ObjectId.isValid(req.params.id)) return res.status(400).json({ success: false, message: 'ID inválido' });
+        const _id = new ObjectId(req.params.id);
+        const doc = await db.collection('manual_docs').findOne({ _id });
+        if (!doc) return res.status(404).json({ success: false, message: 'Documento não encontrado' });
+        await db.collection('manual_pages').deleteMany({ docId: _id });
+        await db.collection('manual_docs').deleteOne({ _id });
+        await fs.unlink(path.join(manuaisLib.DIR, path.basename(doc.filename))).catch(() => {});
+        res.json({ success: true });
+    } catch (error) {
+        console.error('❌ manuais DELETE:', error);
+        res.status(500).json({ success: false, message: 'Erro do servidor' });
+    }
+});
+
+// ═══════════════════════════════════════════════════════════
 // 📚 KNOWLEDGE BASE
 // ═══════════════════════════════════════════════════════════
 
@@ -16619,6 +16719,10 @@ app.use((req, res, next) => {
             // SAF-T exports are internal fiscal/accounting artefacts, never
             // meant for clients — unlike orçamentos/requerimentos/inspection
             // reports, nothing legitimately links a client here.
+            // Manuais/esquemas técnicos: só pessoal interno (nunca clientes).
+            if (segments[1] === 'manuais' && !['admin', 'dispatcher', 'technician', 'tech'].includes(user.role)) {
+                return res.status(403).send('Acesso negado');
+            }
             if (segments[1] === 'saft' && !['admin', 'dispatcher'].includes(user.role)) {
                 return res.status(403).send('Acesso negado');
             }

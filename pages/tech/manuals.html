@@ -260,7 +260,8 @@
                                     <h3 class="card-title">Manuais, esquemas e tutoriais</h3>
                                 </div>
                                 <div class="card-body">
-                                    <input type="text" id="manualSearch" class="form-control mb-3" placeholder="Pesquisar manuais, esquemas e tutoriais...">
+                                    <div id="manuaisLib"></div>
+                                    <h5 class="mt-4"><i class="fas fa-graduation-cap mr-2 text-success"></i>Artigos e tutoriais</h5>
                                     <div id="manualsList"><p class="text-muted">A carregar...</p></div>
                                 </div>
                             </div>
@@ -285,6 +286,7 @@
     <script src="../../plugins/bootstrap/bootstrap.bundle.min.js"></script>
     <script src="../../plugins/adminlte/adminlte.min.js"></script>
 
+    <script src="../../assets/js/manuais-lib.js"></script>
     <script>
         const MANUAL_CATS = [
             ['esquemas', 'Esquemas de componentes', 'fa-project-diagram', 'text-primary'],
@@ -303,7 +305,7 @@
         }
 
         function renderManuals() {
-            const q = document.getElementById('manualSearch').value.trim().toLowerCase();
+            const q = ((document.getElementById('mlQ') || {}).value || '').trim().toLowerCase();
             const box = document.getElementById('manualsList');
             box.textContent = '';
             const match = a => !q || (a.title || '').toLowerCase().includes(q) || (a.summary || '').toLowerCase().includes(q)
@@ -347,7 +349,7 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('manualSearch').addEventListener('input', renderManuals);
+            document.getElementById('mlQ').addEventListener('input', renderManuals);
             loadManuals();
         });
     </script>
