@@ -878,7 +878,7 @@ router.post('/:id/enviar', authenticate, authorizeRoles('admin', 'dispatcher'), 
                     </p>
                     <p style="margin: 0 0 16px 0; font-size: 15px; color: #333; line-height: 1.6;">
                         Enviamos em anexo a <strong>Proposta de Contrato de Manutenção ${proposta.numero}</strong>,
-                        no valor de <strong style="color: #1a3a6b;">€${(proposta.precoMensal || 0).toFixed(2)}/mês</strong> por unidade (+ IVA)${proposta.periodicidade && proposta.periodicidade !== 'mensal' ? `, com visitas de manutenção ${proposta.periodicidade === 'semestral' ? 'semestrais' : 'trimestrais'}` : ''},
+                        no valor de <strong style="color: #1a3a6b;">€${((proposta.precoMensal || 0) * ({ trimestral: 3, semestral: 6 }[proposta.periodicidade] || 1)).toFixed(2)}/${({ trimestral: 'trimestre', semestral: 'semestre' })[proposta.periodicidade] || 'mês'}</strong> por unidade (+ IVA)${proposta.periodicidade && proposta.periodicidade !== 'mensal' ? `, com visitas de manutenção ${proposta.periodicidade === 'semestral' ? 'semestrais' : 'trimestrais'}` : ''},
                         válida até <strong>${validadeFormatted}</strong>.
                     </p>
                     <p style="margin: 0 0 24px 0; font-size: 15px; color: #333; line-height: 1.6;">

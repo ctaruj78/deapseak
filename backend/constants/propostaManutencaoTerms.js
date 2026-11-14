@@ -157,7 +157,7 @@ function textoPrecoServico(precoMensal, periodicidade) {
         return `O preço do serviço de manutenção é de €${preco.toFixed(2)} por mês, por unidade, acrescido de IVA à taxa legal em vigor. `;
     }
     const nome = per.label.toLowerCase();
-    return `O preço do serviço de manutenção é de €${(preco * per.meses).toFixed(2)} ${per.porPeriodo}, por unidade, acrescido de IVA à taxa legal em vigor (equivalente a €${preco.toFixed(2)} por mês). ` +
+    return `O preço do serviço de manutenção é de €${(preco * per.meses).toFixed(2)} ${per.porPeriodo}, por unidade, acrescido de IVA à taxa legal em vigor. ` +
         `As visitas de manutenção são ${nome === 'trimestral' ? 'trimestrais (4 visitas por ano)' : 'semestrais (2 visitas por ano)'}, previamente agendadas com o Cliente. `;
 }
 

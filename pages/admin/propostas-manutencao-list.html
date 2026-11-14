@@ -103,7 +103,7 @@
                                     <th>Tipo</th>
                                     <th>Cliente</th>
                                     <th>Instalação</th>
-                                    <th>Preço/mês</th>
+                                    <th>Preço</th>
                                     <th>Data</th>
                                     <th>Estado</th>
                                     <th class="text-right">Ações</th>
@@ -205,7 +205,8 @@ async function carregarPropostas() {
 
         tbody.innerHTML = propostasOrdenadas.map(p => {
             const instalacao = p.instalacao?.edificio || p.instalacao?.morada || p.localInstalacao || '—';
-            const preco = p.precoMensal ? `€${Number(p.precoMensal).toFixed(2)}` : '—';
+            const _m = {trimestral:3,semestral:6}[p.periodicidade] || 1;
+            const preco = p.precoMensal ? `€${(Number(p.precoMensal) * _m).toFixed(2)}${_m === 3 ? ' /trim.' : _m === 6 ? ' /sem.' : ''}` : '—';
             const data = p.data ? new Date(p.data).toLocaleDateString('pt-PT') : '—';
             const tipoLabel = p.tipo === 'completa' ? 'Completa' : 'Simples';
             // Aviso visual quando existe proposta irmã (Simples+Completa do mesmo

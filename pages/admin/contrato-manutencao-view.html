@@ -74,7 +74,7 @@
                                 <p class="mb-1"><strong>Instalação:</strong> <span id="instNome">—</span></p>
                                 <p class="mb-1"><strong>Morada da instalação:</strong> <span id="instMorada">—</span></p>
                                 <p class="mb-1"><strong>Nº de ascensores:</strong> <span id="numAscensores">—</span></p>
-                                <p class="mb-1"><strong>Preço mensal:</strong> <span id="precoMensal">—</span></p>
+                                <p class="mb-1"><strong>Preço:</strong> <span id="precoMensal">—</span></p>
                             </div>
                         </div>
                     </div>
@@ -209,14 +209,14 @@ async function loadContrato(id) {
         document.getElementById('instNome').textContent = contrato.instalacao?.nome || contrato.instalacao?.edificio || '—';
         document.getElementById('instMorada').textContent = [contrato.instalacao?.morada, contrato.instalacao?.codigoPostal].filter(Boolean).join(', ') || contrato.localInstalacao || '—';
         document.getElementById('numAscensores').textContent = contrato.numAscensores || '—';
-        document.getElementById('precoMensal').textContent = contrato.precoMensal ? `€${Number(contrato.precoMensal).toFixed(2)} / mês + IVA` : '—';
+        document.getElementById('precoMensal').textContent = contrato.precoMensal ? (()=>{const m={trimestral:3,semestral:6}[contrato.periodicidade]||1;return `€${(Number(contrato.precoMensal)*m).toFixed(2)} / ${m===3?'trimestre':m===6?'semestre':'mês'} + IVA`;})() : '—';
 
         const renovacao = contrato.renovacao || {};
         const tipoLabel = contrato.tipo === 'completa' ? 'Manutenção Completa' : 'Manutenção Simples';
         { const n = document.getElementById('notasContrato'); if (contrato.notas) { n.textContent = 'Notas: ' + contrato.notas; n.style.display = 'block'; } else { n.style.display = 'none'; } }
         document.getElementById('termosTexto').textContent =
             `Contrato de ${tipoLabel} respeitante a ${contrato.numAscensores || '__'} ${(()=>{const E={homelift:['elevador(es) doméstico(s)','transporte de pessoas em habitação de uso privativo'],plataforma:['plataforma(s) elevatória(s)','transporte de pessoas com mobilidade condicionada'],montacargas:['monta-cargas','transporte exclusivo de cargas, sem acesso de pessoas'],montapratos:['monta-pratos','transporte de alimentos e pequenas cargas, sem acesso de pessoas']}[contrato.tipoEquipamento]||['ascensor(es)','transporte de pessoas'];return `${E[0]}, destinado(s) a ${E[1]}`;})()}, instalado(s) em ${contrato.localInstalacao || '—'}. ` +
-            `O preço do serviço de manutenção é de ${(()=>{const m={trimestral:3,semestral:6}[contrato.periodicidade]||1;const pr=Number(contrato.precoMensal||0);return m>1?`€${(pr*m).toFixed(2)} por ${m===3?'trimestre':'semestre'}, por unidade, acrescido de IVA à taxa legal em vigor (equivalente a €${pr.toFixed(2)} por mês). As visitas de manutenção são ${m===3?'trimestrais (4 visitas por ano)':'semestrais (2 visitas por ano)'}, previamente agendadas com o Cliente. `:`€${pr.toFixed(2)} por mês, por unidade, acrescido de IVA à taxa legal em vigor. `;})()}` +
+            `O preço do serviço de manutenção é de ${(()=>{const m={trimestral:3,semestral:6}[contrato.periodicidade]||1;const pr=Number(contrato.precoMensal||0);return m>1?`€${(pr*m).toFixed(2)} por ${m===3?'trimestre':'semestre'}, por unidade, acrescido de IVA à taxa legal em vigor. As visitas de manutenção são ${m===3?'trimestrais (4 visitas por ano)':'semestrais (2 visitas por ano)'}, previamente agendadas com o Cliente. `:`€${pr.toFixed(2)} por mês, por unidade, acrescido de IVA à taxa legal em vigor. `;})()}` +
             `O pagamento é ${contrato.pagamento || 'Trimestral e adiantado'}. ` +
             `O contrato terá início na data de assinatura por ambas as partes (ver página de Assinaturas) e manter-se-á válido durante ${contrato.duracaoAnos || 1} ano(s), considerando-se tacitamente prorrogado por períodos de ${renovacao.periodo || '1 ano'}, salvo denúncia por qualquer das partes com pelo menos ${renovacao.avisoDias || '60 dias'} de antecedência, através de ${renovacao.metodoNotificacao || 'carta registada'}${renovacao.emailNotificacao ? ' (' + renovacao.emailNotificacao + ')' : ''}. ` +
             `Em caso de denúncia antecipada pelo Cliente, a FESTLIFT terá direito a indemnização no valor da totalidade das mensalidades previstas até ao termo do prazo contratado.`;

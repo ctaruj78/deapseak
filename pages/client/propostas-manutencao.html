@@ -465,7 +465,7 @@
         const statusText = statusLabels[p.status] || p.status;
         const data = new Date(p.data).toLocaleDateString('pt-PT');
         const validadeAte = p.validadeAte ? new Date(p.validadeAte).toLocaleDateString('pt-PT') : 'N/A';
-        const preco = (p.precoMensal || 0).toFixed(2);
+        const preco = ((p.precoMensal || 0) * ({trimestral:3,semestral:6}[p.periodicidade] || 1)).toFixed(2);
 
         let actionBtns = '';
         if (p.status === 'solicitado') {
@@ -506,7 +506,7 @@
                         <hr>
                         ${p.status === 'solicitado'
                             ? `<p class="text-muted mb-0 text-right"><i class="fas fa-elevator mr-1"></i>${p.numAscensores || '—'} elevador(es)</p>`
-                            : `<h4 class="text-right text-primary mb-0"><strong>€ ${preco}<small class="text-muted" style="font-size:.55em;">/mês</small></strong></h4>`}
+                            : `<h4 class="text-right text-primary mb-0"><strong>€ ${preco}<small class="text-muted" style="font-size:.55em;">/${({trimestral:'trimestre',semestral:'semestre'})[p.periodicidade] || 'mês'}</small></strong></h4>`}
                     </div>
                     <div class="card-footer d-flex align-items-center justify-content-between flex-wrap" style="gap:6px;">
                         <div style="display:flex;gap:6px;align-items:center;">
@@ -577,7 +577,7 @@
                 <tbody>
                     <tr><th style="width:40%">Nº de ascensores</th><td>${escapeHtml(p.numAscensores || '—')}</td></tr>
                     <tr><th>Periodicidade das visitas</th><td>${({mensal:'Mensal',trimestral:'Trimestral (4 visitas/ano)',semestral:'Semestral (2 visitas/ano)'})[p.periodicidade] || 'Mensal'}</td></tr>
-                    <tr><th>Preço mensal (por unidade)</th><td>€${(p.precoMensal || 0).toFixed(2)} + IVA</td></tr>
+                    <tr><th>Preço ${({trimestral:'por trimestre',semestral:'por semestre'})[p.periodicidade] || 'mensal'} (por unidade)</th><td>€${((p.precoMensal || 0) * ({trimestral:3,semestral:6}[p.periodicidade] || 1)).toFixed(2)} + IVA</td></tr>
                     <tr><th>Pagamento</th><td>${escapeHtml(p.pagamento || '—')}</td></tr>
                     <tr><th>Duração do contrato</th><td>${escapeHtml(p.duracaoAnos || 1)} ano(s)</td></tr>
                     <tr><th>Data de início</th><td>${p.dataInicioContrato ? new Date(p.dataInicioContrato).toLocaleDateString('pt-PT') : '—'}</td></tr>

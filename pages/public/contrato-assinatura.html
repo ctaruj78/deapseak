@@ -79,7 +79,7 @@
     <div class="field-row"><strong>Email:</strong> <span id="clienteEmail">—</span></div>
     <div class="field-row"><strong>Instalação:</strong> <span id="instNome">—</span></div>
     <div class="field-row"><strong>Nº de ascensores:</strong> <span id="numAscensores">—</span></div>
-    <div class="field-row"><strong>Preço mensal:</strong> <span id="precoMensal">—</span></div>
+    <div class="field-row"><strong>Preço:</strong> <span id="precoMensal">—</span></div>
 
     <div class="section-title">Termos do Contrato</div>
     <p class="termos" id="termosTexto"></p>
@@ -192,13 +192,13 @@ function render() {
     document.getElementById('clienteEmail').textContent = contrato.cliente?.email || '—';
     document.getElementById('instNome').textContent = contrato.instalacao?.nome || contrato.instalacao?.edificio || '—';
     document.getElementById('numAscensores').textContent = contrato.numAscensores || '—';
-    document.getElementById('precoMensal').textContent = contrato.precoMensal ? `€${Number(contrato.precoMensal).toFixed(2)} / mês + IVA` : '—';
+    document.getElementById('precoMensal').textContent = contrato.precoMensal ? (()=>{const m={trimestral:3,semestral:6}[contrato.periodicidade]||1;return `€${(Number(contrato.precoMensal)*m).toFixed(2)} / ${m===3?'trimestre':m===6?'semestre':'mês'} + IVA`;})() : '—';
 
     const renovacao = contrato.renovacao || {};
     if (contrato.notas) { const n = document.getElementById('notasContrato'); n.textContent = 'Notas: ' + contrato.notas; n.style.display = 'block'; }
     document.getElementById('termosTexto').textContent =
         `Contrato de ${tipoLabel} respeitante a ${contrato.numAscensores || '__'} ${(()=>{const E={homelift:['elevador(es) doméstico(s)','transporte de pessoas em habitação de uso privativo'],plataforma:['plataforma(s) elevatória(s)','transporte de pessoas com mobilidade condicionada'],montacargas:['monta-cargas','transporte exclusivo de cargas, sem acesso de pessoas'],montapratos:['monta-pratos','transporte de alimentos e pequenas cargas, sem acesso de pessoas']}[contrato.tipoEquipamento]||['ascensor(es)','transporte de pessoas'];return `${E[0]}, destinado(s) a ${E[1]}`;})()}, instalado(s) em ${contrato.localInstalacao || '—'}. ` +
-        `O preço do serviço de manutenção é de ${(()=>{const m={trimestral:3,semestral:6}[contrato.periodicidade]||1;const pr=Number(contrato.precoMensal||0);return m>1?`€${(pr*m).toFixed(2)} por ${m===3?'trimestre':'semestre'}, por unidade, acrescido de IVA à taxa legal em vigor (equivalente a €${pr.toFixed(2)} por mês). As visitas de manutenção são ${m===3?'trimestrais (4 visitas por ano)':'semestrais (2 visitas por ano)'}, previamente agendadas com o Cliente. `:`€${pr.toFixed(2)} por mês, por unidade, acrescido de IVA à taxa legal em vigor. `;})()}` +
+        `O preço do serviço de manutenção é de ${(()=>{const m={trimestral:3,semestral:6}[contrato.periodicidade]||1;const pr=Number(contrato.precoMensal||0);return m>1?`€${(pr*m).toFixed(2)} por ${m===3?'trimestre':'semestre'}, por unidade, acrescido de IVA à taxa legal em vigor. As visitas de manutenção são ${m===3?'trimestrais (4 visitas por ano)':'semestrais (2 visitas por ano)'}, previamente agendadas com o Cliente. `:`€${pr.toFixed(2)} por mês, por unidade, acrescido de IVA à taxa legal em vigor. `;})()}` +
         `O pagamento é ${contrato.pagamento || 'Trimestral e adiantado'}. ` +
         `O contrato terá início em ${contrato.dataInicioContrato ? new Date(contrato.dataInicioContrato).toLocaleDateString('pt-PT') : '—'} e manter-se-á válido durante ${contrato.duracaoAnos || 1} ano(s), considerando-se tacitamente prorrogado por períodos de ${renovacao.periodo || '1 ano'}, salvo denúncia por qualquer das partes com pelo menos ${renovacao.avisoDias || '60 dias'} de antecedência, através de ${renovacao.metodoNotificacao || 'carta registada'}${renovacao.emailNotificacao ? ' (' + renovacao.emailNotificacao + ')' : ''}. ` +
         `Em caso de denúncia antecipada pelo Cliente, a FESTLIFT terá direito a indemnização no valor da totalidade das mensalidades previstas até ao termo do prazo contratado.`;
