@@ -247,6 +247,8 @@ async function carregarPropostas() {
                             ? `<a href="proposta-manutencao-template.html?id=${p._id}" class="btn btn-sm btn-primary" title="Preencher condições e responder ao cliente"><i class="fas fa-reply mr-1"></i>Responder</a>`
                             : `<a href="proposta-manutencao-template.html?id=${p._id}" class="btn btn-sm btn-outline-primary" title="Ver / Editar"><i class="fas fa-edit"></i></a>
                         <button class="btn btn-sm btn-outline-secondary" onclick="downloadPDF('${p._id}', '${escJs(p.numero)}')" title="Descarregar PDF"><i class="fas fa-file-pdf"></i></button>`}
+                        ${['rascunho', 'enviado', 'expirado'].includes(p.status) ? `<button class="btn btn-sm btn-outline-info" onclick="enviarPorEmail('${p._id}', '${escJs(p.numero)}', '${escJs(p.cliente?.email || '')}', '${escJs(p.cliente?.nome || '')}', ${p.status !== 'rascunho'})" title="${p.status === 'rascunho' ? 'Enviar por email' : 'Reenviar por email'}"><i class="fas fa-envelope"></i></button>` : ''}
+                        ${p.status !== 'solicitado' ? `<button class="btn btn-sm btn-outline-secondary" onclick="duplicarProposta('${p._id}', '${escJs(p.numero)}')" title="Duplicar (novo rascunho com as mesmas condições)"><i class="fas fa-copy"></i></button>` : ''}
                         ${['rascunho', 'enviado', 'expirado'].includes(p.status) ? `<button class="btn btn-sm btn-outline-success" onclick="marcarAprovado('${p._id}')" title="Marcar como Aprovado (aceite fora do portal, mesmo expirada)"><i class="fas fa-check-double"></i></button>` : ''}
                         ${p.status === 'aprovado' ? `<button class="btn btn-sm btn-outline-success" onclick="gerarContrato('${p._id}')" title="Gerar / Ver Contrato"><i class="fas fa-file-signature"></i></button>` : ''}
                         <button class="btn btn-sm btn-outline-danger" onclick="arquivarProposta(${argsRef})" title="Arquivar"><i class="fas fa-archive"></i></button>
@@ -379,6 +381,55 @@ async function eliminarProposta(id, numero) {
 function logout() {
     if (typeof AuthManager !== 'undefined') AuthManager.logout();
     else { localStorage.clear(); window.location.replace('/pages/auth/login.html'); }
+}
+
+async function enviarPorEmail(id, numero, email, nome, reenvio) {
+    const r = await Swal.fire({
+        title: reenvio ? 'Reenviar proposta' : 'Enviar proposta',
+        html: `
+            <p style="text-align:left;margin-bottom:10px;">Proposta <strong>${escHtml(numero)}</strong> (${escHtml(nome)}), com PDF em anexo.</p>
+            <div style="text-align:left;">
+                <label style="font-size:13px;color:#555;">Para</label>
+                <input id="swalTo" class="swal2-input" style="margin:4px 0 10px;" value="${escHtml(email)}">
+                <label style="font-size:13px;color:#555;">CC <span style="font-weight:normal;">(opcional, separados por vírgula)</span></label>
+                <input id="swalCc" class="swal2-input" style="margin:4px 0 0;" placeholder="email1@exemplo.pt, email2@exemplo.pt">
+            </div>`,
+        focusConfirm: false, showCancelButton: true,
+        confirmButtonColor: '#28a745', cancelButtonColor: '#95a5a6',
+        confirmButtonText: 'Enviar', cancelButtonText: 'Cancelar',
+        preConfirm: () => {
+            const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            const to = document.getElementById('swalTo').value.trim();
+            if (!re.test(to)) { Swal.showValidationMessage('Email de destino inválido'); return false; }
+            const ccRaw = document.getElementById('swalCc').value.trim();
+            const cc = ccRaw ? ccRaw.split(/[,;]/).map(x => x.trim()).filter(Boolean) : [];
+            const bad = cc.filter(c => !re.test(c));
+            if (bad.length) { Swal.showValidationMessage('Email(s) em CC inválido(s): ' + bad.join(', ')); return false; }
+            return { to, cc };
+        }
+    });
+    if (!r.isConfirmed) return;
+    toastr.info('A enviar...');
+    try {
+        const res = await fetch(`/api/propostas-manutencao/${id}/enviar`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${getToken()}` },
+            body: JSON.stringify({ email: r.value.to, cc: r.value.cc })
+        });
+        const result = await res.json();
+        if (result.success) { toastr.success(result.message || 'Proposta enviada'); carregarPropostas(); }
+        else toastr.error(result.message || 'Erro ao enviar proposta');
+    } catch (e) { toastr.error('Erro ao enviar proposta'); }
+}
+
+async function duplicarProposta(id, numero) {
+    if (!await swalConfirm(`Criar um rascunho novo a partir da proposta ${numero}?`, 'Duplicar proposta')) return;
+    try {
+        const res = await fetch(`/api/propostas-manutencao/${id}/duplicar`, { method: 'POST', headers: { 'Authorization': `Bearer ${getToken()}` } });
+        const result = await res.json();
+        if (result.success) { toastr.success(result.message); window.location.href = `proposta-manutencao-template.html?id=${result.data._id}`; }
+        else toastr.error(result.message || 'Erro ao duplicar');
+    } catch (e) { toastr.error('Erro ao duplicar proposta'); }
 }
 
 async function swalConfirm(text, title = 'Confirmar') {

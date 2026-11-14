@@ -794,6 +794,41 @@ router.put('/:id', authenticate, authorizeRoles('admin', 'dispatcher'), async (r
     }
 });
 
+// POST /api/propostas-manutencao/:id/duplicar - Cria um rascunho novo a partir de uma proposta existente
+// (útil para propostas semelhantes: outro edifício/cliente com as mesmas condições)
+router.post('/:id/duplicar', authenticate, authorizeRoles('admin', 'dispatcher'), async (req, res) => {
+    try {
+        const o = await PropostaManutencao.findById(req.params.id).lean();
+        if (!o) return res.status(404).json({ success: false, message: 'Proposta não encontrada' });
+        const numero = await PropostaManutencao.gerarNumero();
+        const copia = new PropostaManutencao({
+            numero,
+            cliente: o.cliente,
+            instalacao: o.instalacao,
+            faturacao: o.faturacao,
+            tipo: o.tipo,
+            periodicidade: o.periodicidade,
+            tipoEquipamento: o.tipoEquipamento,
+            numAscensores: o.numAscensores,
+            localInstalacao: o.localInstalacao,
+            precoMensal: o.precoMensal,
+            pagamento: o.pagamento,
+            duracaoAnos: o.duracaoAnos,
+            renovacao: o.renovacao,
+            notas: o.notas,
+            criadoPor: req.user.id,
+            status: 'rascunho',
+            origem: 'admin'
+        });
+        await copia.save();
+        console.log(`✅ Proposta ${numero} duplicada de ${o.numero}`);
+        res.json({ success: true, message: `Proposta ${numero} criada (rascunho)`, data: { _id: copia._id, numero } });
+    } catch (error) {
+        console.error('Erro ao duplicar proposta:', error);
+        res.status(500).json({ success: false, message: 'Erro ao duplicar proposta' });
+    }
+});
+
 // DELETE /api/propostas-manutencao/:id (admin/dispatcher)
 router.delete('/:id', authenticate, authorizeRoles('admin', 'dispatcher'), async (req, res) => {
     try {
