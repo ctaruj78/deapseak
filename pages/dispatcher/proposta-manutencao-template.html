@@ -160,6 +160,15 @@
                                             <option value="completa">Completa</option>
                                         </select>
                                     </div>
+                                    <div class="col-md-6 form-group">
+                                        <label>Periodicidade das Visitas</label>
+                                        <select id="periodicidade" class="form-control">
+                                            <option value="mensal">Mensal (ascensores de edifícios)</option>
+                                            <option value="trimestral">Trimestral (elevador de moradia / uso privativo)</option>
+                                            <option value="semestral">Semestral (uso muito reduzido)</option>
+                                        </select>
+                                        <small class="text-muted" id="periodicidadeHint" style="display:none;">Preço continua por mês; o PDF indica o equivalente por visita e acrescenta o artigo de regime de visitas para uso privativo.</small>
+                                    </div>
                                     <div class="col-md-6 form-group" id="criarCompletaWrap" style="display:flex;align-items:flex-end;">
                                         <div class="custom-control custom-checkbox">
                                             <input type="checkbox" class="custom-control-input" id="criarTambemCompleta">
@@ -335,6 +344,10 @@ document.addEventListener('change', function(e) {
         document.getElementById('clienteEmail').value = cliente.email || '';
         document.getElementById('clienteMorada').value = cliente.address || '';
     }
+    if (e.target && e.target.id === 'periodicidade') {
+        const h = document.getElementById('periodicidadeHint');
+        if (h) h.style.display = e.target.value === 'mensal' ? 'none' : 'block';
+    }
     if (e.target && e.target.id === 'tipoManutencao') {
         const wrap = document.getElementById('criarCompletaWrap');
         if (wrap) wrap.style.display = (e.target.value === 'simples' && !propostaTemIrma) ? 'flex' : 'none';
@@ -432,6 +445,8 @@ async function loadProposta(id) {
         document.getElementById('localInstalacao').value = p.localInstalacao || '';
         document.getElementById('precoMensal').value = p.precoMensal || '';
         document.getElementById('pagamento').value = p.pagamento || 'Trimestral e adiantado';
+        document.getElementById('periodicidade').value = p.periodicidade || 'mensal';
+        document.getElementById('periodicidade').dispatchEvent(new Event('change', { bubbles: true }));
         document.getElementById('duracaoAnos').value = p.duracaoAnos || 1;
         document.getElementById('dataInicioContrato').value = p.dataInicioContrato ? p.dataInicioContrato.substring(0, 10) : '';
 
@@ -475,6 +490,7 @@ function coletarDados() {
             codigoPostal: document.getElementById('fatCodigoPostal').value.trim()
         },
         tipo: document.getElementById('tipoManutencao').value,
+        periodicidade: document.getElementById('periodicidade').value,
         criarTambemCompleta: document.getElementById('criarTambemCompleta').checked,
         numAscensores: parseInt(document.getElementById('numAscensores').value) || 1,
         localInstalacao: document.getElementById('localInstalacao').value.trim(),

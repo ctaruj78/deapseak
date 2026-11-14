@@ -76,6 +76,14 @@ const propostaManutencaoSchema = new mongoose.Schema({
         default: 'simples'
     },
 
+    // Periodicidade das visitas preventivas: 'mensal' (padrão, ascensores de
+    // edifícios) ou 'trimestral'/'semestral' (elevadores de uso privativo, moradias)
+    periodicidade: {
+        type: String,
+        enum: ['mensal', 'trimestral', 'semestral'],
+        default: 'mensal'
+    },
+
     // Quando as duas versões (simples + completa) são criadas em conjunto
     // para o mesmo pedido, ligam-se uma à outra para navegação cruzada na UI
     propostaIrmaId: {

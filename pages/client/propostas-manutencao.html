@@ -576,6 +576,7 @@
             <table class="table table-sm table-bordered">
                 <tbody>
                     <tr><th style="width:40%">Nº de ascensores</th><td>${escapeHtml(p.numAscensores || '—')}</td></tr>
+                    <tr><th>Periodicidade das visitas</th><td>${({mensal:'Mensal',trimestral:'Trimestral (4 visitas/ano)',semestral:'Semestral (2 visitas/ano)'})[p.periodicidade] || 'Mensal'}</td></tr>
                     <tr><th>Preço mensal (por unidade)</th><td>€${(p.precoMensal || 0).toFixed(2)} + IVA</td></tr>
                     <tr><th>Pagamento</th><td>${escapeHtml(p.pagamento || '—')}</td></tr>
                     <tr><th>Duração do contrato</th><td>${escapeHtml(p.duracaoAnos || 1)} ano(s)</td></tr>

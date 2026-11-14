@@ -37,6 +37,13 @@ const contratoManutencaoSchema = new mongoose.Schema({
         default: 'simples'
     },
 
+    // Periodicidade das visitas preventivas, herdada da proposta
+    periodicidade: {
+        type: String,
+        enum: ['mensal', 'trimestral', 'semestral'],
+        default: 'mensal'
+    },
+
     cliente: {
         nome: { type: String, required: true },
         morada: String,

@@ -20,7 +20,7 @@ const PDFDocument = require('pdfkit');
 const path = require('path');
 const fs = require('fs');
 const crypto = require('crypto');
-const { CONDICOES_GERAIS_ARTIGOS, CONDICOES_GERAIS_ARTIGOS_COMPLETA } = require('../constants/propostaManutencaoTerms');
+const { textoPrecoServico, artigosParaContrato } = require('../constants/propostaManutencaoTerms');
 
 // Um contrato assinado por ambas as partes não cria sozinho o(s) registo(s) de
 // elevador — dados como fabricante, capacidade ou coordenadas GPS não constam
@@ -251,7 +251,7 @@ async function gerarPDFContratoManutencao(contrato) {
             const renovacao = contrato.renovacao || {};
             const termosTexto = `Entre a FESTLIFT, Lda., com sede na Avenida do Parque nº 84-B, Rio de Mouro, 2635-609, pessoa coletiva n.º 515924741, reconhecida pela Direção Geral de Energia e Geologia (DGEG), com o certificado n.º EC 2/2.208, como Empresa de Manutenção de Instalações de Elevação (EMIE), nos termos da Lei n.º 65/2013 de 27 de Agosto e legislação complementar, e o Cliente identificado acima, é firmado o presente Contrato de ${tipoLabel} respeitante a ${contrato.numAscensores || '__'} ascensor(es), destinado(s) a transporte de pessoas, instalado(s) em ${contrato.localInstalacao || '—'}. ` +
                 `Pela aceitação do presente contrato a EMIE obriga-se a fornecer, de acordo com as Condições Gerais abaixo, um serviço de manutenção para o equipamento discriminado. ` +
-                `O preço do serviço de manutenção é de €${(contrato.precoMensal || 0).toFixed(2)} por mês, por unidade, acrescido de IVA à taxa legal em vigor. ` +
+                textoPrecoServico(contrato.precoMensal, contrato.periodicidade) +
                 `O pagamento é ${contrato.pagamento || 'Trimestral e adiantado'}. ` +
                 `O contrato terá início ${contrato.dataInicioContrato ? 'em ' + formatDatePT(contrato.dataInicioContrato) : 'na data de assinatura por ambas as partes (ver página de Assinaturas)'} e manter-se-á válido durante ${contrato.duracaoAnos || 1} ano(s), considerando-se tacitamente prorrogado por períodos de ${renovacao.periodo || '1 ano'}, salvo denúncia por qualquer das partes com pelo menos ${renovacao.avisoDias || '60 dias'} de antecedência, através de ${renovacao.metodoNotificacao || 'carta registada'}${renovacao.emailNotificacao ? ' (' + renovacao.emailNotificacao + ')' : ''}. ` +
                 `Em caso de denúncia antecipada pelo Cliente, a FESTLIFT terá direito a indemnização no valor da totalidade das mensalidades previstas até ao termo do prazo contratado.`;
@@ -263,7 +263,7 @@ async function gerarPDFContratoManutencao(contrato) {
             doc.fontSize(12).font('Helvetica-Bold').fillColor(AZUL).text('Condições Gerais', 50, doc.y);
             doc.moveDown(0.3);
 
-            const artigosAplicaveis = contrato.tipo === 'completa' ? CONDICOES_GERAIS_ARTIGOS_COMPLETA : CONDICOES_GERAIS_ARTIGOS;
+            const artigosAplicaveis = artigosParaContrato(contrato.tipo, contrato.periodicidade);
             artigosAplicaveis.forEach((artigo) => {
                 if (doc.y > 700) { doc.addPage(); }
                 doc.fontSize(10).font('Helvetica-Bold').fillColor(AZUL).text(artigo.titulo, 50, doc.y, { width: 500 });
@@ -381,6 +381,7 @@ router.post('/from-proposta/:propostaId', authenticate, authorizeRoles('admin', 
                 existenteDoc.localInstalacao = proposta.localInstalacao;
                 existenteDoc.precoMensal = proposta.precoMensal;
                 existenteDoc.pagamento = proposta.pagamento;
+                existenteDoc.periodicidade = proposta.periodicidade;
                 existenteDoc.dataInicioContrato = proposta.dataInicioContrato;
                 existenteDoc.duracaoAnos = proposta.duracaoAnos;
                 existenteDoc.renovacao = proposta.renovacao;
@@ -409,6 +410,7 @@ router.post('/from-proposta/:propostaId', authenticate, authorizeRoles('admin', 
             localInstalacao: proposta.localInstalacao,
             precoMensal: proposta.precoMensal,
             pagamento: proposta.pagamento,
+            periodicidade: proposta.periodicidade,
             dataInicioContrato: proposta.dataInicioContrato,
             duracaoAnos: proposta.duracaoAnos,
             renovacao: proposta.renovacao,
@@ -477,7 +479,7 @@ router.get('/', authenticate, authorizeRoles('admin', 'dispatcher', 'client'), a
 
 // GET /api/contratos-manutencao/condicoes-gerais/texto?tipo=completa|simples - Texto integral das Condições Gerais (público — texto legal não sensível)
 router.get('/condicoes-gerais/texto', (req, res) => {
-    const artigos = req.query.tipo === 'completa' ? CONDICOES_GERAIS_ARTIGOS_COMPLETA : CONDICOES_GERAIS_ARTIGOS;
+    const artigos = artigosParaContrato(req.query.tipo === 'completa' ? 'completa' : 'simples', req.query.periodicidade);
     res.json({ success: true, data: artigos });
 });
 

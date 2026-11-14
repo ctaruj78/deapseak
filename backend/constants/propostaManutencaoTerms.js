@@ -131,4 +131,69 @@ const CONDICOES_GERAIS_ARTIGOS_COMPLETA = [
     }
 ];
 
-module.exports = { CONDICOES_GERAIS_ARTIGOS, CONDICOES_GERAIS_ARTIGOS_COMPLETA };
+// ─── Periodicidade das visitas ───────────────────────────────────────────────
+// Por defeito as visitas são mensais (ascensores de edifícios, DL 320/2002).
+// Para elevadores/plataformas de uso privativo (moradias) a visita mensal não
+// faz sentido, pelo que a proposta pode prever visitas trimestrais ou semestrais.
+// Os textos das Condições Gerais são adaptados e é acrescentado um artigo com o
+// regime de visitas (assistência a avarias, acesso, responsabilidades do Cliente).
+const PERIODICIDADES = {
+    mensal:     { label: 'Mensal',     meses: 1, visitasAno: 12, adverbio: 'mensalmente',     porPeriodo: 'por mês',      oPeriodo: 'mês' },
+    trimestral: { label: 'Trimestral', meses: 3, visitasAno: 4,  adverbio: 'trimestralmente', porPeriodo: 'por trimestre', oPeriodo: 'trimestre' },
+    semestral:  { label: 'Semestral',  meses: 6, visitasAno: 2,  adverbio: 'semestralmente',  porPeriodo: 'por semestre',  oPeriodo: 'semestre' }
+};
+
+function normalizarPeriodicidade(p) {
+    return PERIODICIDADES[p] ? p : 'mensal';
+}
+
+// Parágrafo do preço para o texto "Termos do Contrato" (proposta e contrato).
+// O preço continua expresso por mês/unidade; nas periodicidades espaçadas
+// indica-se o equivalente por visita para o Cliente perceber o que paga.
+function textoPrecoServico(precoMensal, periodicidade) {
+    const per = PERIODICIDADES[normalizarPeriodicidade(periodicidade)];
+    const preco = Number(precoMensal) || 0;
+    let t = `O preço do serviço de manutenção é de €${preco.toFixed(2)} por mês, por unidade, acrescido de IVA à taxa legal em vigor`;
+    if (per.meses > 1) {
+        t += ` (equivalente a €${(preco * per.meses).toFixed(2)} ${per.porPeriodo}, correspondente a uma visita ${per.label.toLowerCase()})`;
+    }
+    t += '. ';
+    if (per.meses > 1) {
+        t += `As visitas de manutenção são ${per.label.toLowerCase() === 'trimestral' ? 'trimestrais (4 visitas por ano)' : 'semestrais (2 visitas por ano)'}, previamente agendadas com o Cliente. `;
+    }
+    return t;
+}
+
+const ARTIGO_REGIME_VISITAS = (per) => ({
+    titulo: 'Regime de Visitas Periódicas — Instalações de Uso Privativo',
+    itens: [
+        `Atendendo à reduzida utilização do equipamento (instalação de uso privativo, designadamente em moradia), as visitas de manutenção preventiva realizam-se com periodicidade ${per.label.toLowerCase()} (${per.visitasAno} visitas por ano), em substituição da visita mensal prevista nas restantes condições gerais.`,
+        'As visitas são agendadas previamente com o Cliente, em dias úteis e horário normal de serviço. O Cliente compromete-se a garantir o acesso ao equipamento (cabina, poço, casa da máquina/quadro) na data acordada; caso a visita não possa realizar-se por motivo imputável ao Cliente, será reagendada, podendo a deslocação adicional ser faturada.',
+        'Em cada visita a FESTLIFT, Lda. realiza o plano de manutenção aplicável ao equipamento, regista a intervenção e informa o Cliente de qualquer anomalia ou recomendação, ficando as reparações não incluídas no contrato sujeitas a orçamento prévio.',
+        'Entre visitas, o Cliente deve comunicar de imediato qualquer anomalia, ruído, paragem ou comportamento invulgar, e abster-se de utilizar o equipamento até verificação por técnico da FESTLIFT, Lda. As chamadas de avaria e o serviço de emergência são prestados nos termos do presente contrato, independentemente da periodicidade das visitas preventivas.',
+        'O Cliente é responsável por não permitir a utilização do equipamento por crianças desacompanhadas ou por pessoas não instruídas quanto à manobra de socorro, e por manter o equipamento desligado em caso de ausência prolongada, quando tal lhe seja recomendado pelo técnico.',
+        'A periodicidade espaçada das visitas preventivas não dispensa as inspeções periódicas oficiais legalmente exigíveis, nem as obrigações legais do proprietário. O preço do contrato mantém-se inalterado independentemente do número de visitas efetuadas no período.'
+    ]
+});
+
+// Devolve os artigos aplicáveis (cópia) para o tipo e periodicidade indicados.
+function artigosParaContrato(tipo, periodicidade) {
+    const base = tipo === 'completa' ? CONDICOES_GERAIS_ARTIGOS_COMPLETA : CONDICOES_GERAIS_ARTIGOS;
+    const key = normalizarPeriodicidade(periodicidade);
+    if (key === 'mensal') return base;
+    const per = PERIODICIDADES[key];
+    const adaptados = base.map((a) => ({
+        titulo: a.titulo,
+        itens: a.itens.map((i) => i
+            .replace('Pelo menos uma vez por mês, proceder', `Pelo menos uma vez por ${per.oPeriodo}, proceder`)
+            .replace('inspecionar mensalmente o equipamento', `inspecionar ${per.adverbio} o equipamento`))
+    }));
+    // Artigo extra inserido antes do último artigo de litígios/condições gerais (no fim, para não renumerar os existentes)
+    adaptados.push(ARTIGO_REGIME_VISITAS(per));
+    // Numeração do artigo extra a seguir ao último
+    const n = base.length + 1;
+    adaptados[adaptados.length - 1].titulo = `${n}. ${adaptados[adaptados.length - 1].titulo}`;
+    return adaptados;
+}
+
+module.exports = { CONDICOES_GERAIS_ARTIGOS, CONDICOES_GERAIS_ARTIGOS_COMPLETA, PERIODICIDADES, normalizarPeriodicidade, textoPrecoServico, artigosParaContrato };

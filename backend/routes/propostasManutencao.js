@@ -9,7 +9,7 @@ const PDFDocument = require('pdfkit');
 const path = require('path');
 const fs = require('fs');
 const rateLimit = require('express-rate-limit');
-const { CONDICOES_GERAIS_ARTIGOS, CONDICOES_GERAIS_ARTIGOS_COMPLETA } = require('../constants/propostaManutencaoTerms');
+const { normalizarPeriodicidade, textoPrecoServico, artigosParaContrato } = require('../constants/propostaManutencaoTerms');
 
 // Limite dedicado para pedidos de proposta — evita que um cliente esgote a
 // numeração partilhada ou inunde a caixa de entrada interna com pedidos em loop.
@@ -126,7 +126,7 @@ async function gerarPDFPropostaManutencao(proposta) {
 
             const renovacao = proposta.renovacao || {};
             const termosTexto = `Contrato de ${tipoLabel} respeitante a ${proposta.numAscensores || '__'} ascensor(es), destinado(s) a transporte de pessoas, instalado(s) em ${proposta.localInstalacao || '—'}. ` +
-                `O preço do serviço de manutenção é de €${(proposta.precoMensal || 0).toFixed(2)} por mês, por unidade, acrescido de IVA à taxa legal em vigor. ` +
+                textoPrecoServico(proposta.precoMensal, proposta.periodicidade) +
                 `O pagamento é ${proposta.pagamento || 'Trimestral e adiantado'}. ` +
                 `O contrato terá início em ${formatDatePT(proposta.dataInicioContrato)} e manter-se-á válido durante ${proposta.duracaoAnos || 1} ano(s), considerando-se tacitamente prorrogado por períodos de ${renovacao.periodo || '1 ano'}, salvo denúncia por qualquer das partes com pelo menos ${renovacao.avisoDias || '60 dias'} de antecedência, através de ${renovacao.metodoNotificacao || 'carta registada'}${renovacao.emailNotificacao ? ' (' + renovacao.emailNotificacao + ')' : ''}. ` +
                 `Em caso de denúncia antecipada pelo Cliente, a FESTLIFT terá direito a indemnização no valor da totalidade das mensalidades previstas até ao termo do prazo contratado.`;
@@ -139,7 +139,7 @@ async function gerarPDFPropostaManutencao(proposta) {
             doc.fontSize(12).font('Helvetica-Bold').fillColor(AZUL).text('Condições Gerais', 50, doc.y);
             doc.moveDown(0.3);
 
-            const artigosAplicaveis = proposta.tipo === 'completa' ? CONDICOES_GERAIS_ARTIGOS_COMPLETA : CONDICOES_GERAIS_ARTIGOS;
+            const artigosAplicaveis = artigosParaContrato(proposta.tipo, proposta.periodicidade);
             artigosAplicaveis.forEach((artigo) => {
                 if (doc.y > 700) { doc.addPage(); }
                 doc.fontSize(10).font('Helvetica-Bold').fillColor(AZUL).text(artigo.titulo, 50, doc.y, { width: 500 });
@@ -570,7 +570,7 @@ router.post('/', authenticate, authorizeRoles('admin', 'dispatcher'), async (req
             cliente, instalacao, faturacao, numAscensores, localInstalacao,
             precoMensal, pagamento, dataInicioContrato, duracaoAnos, renovacao,
             notas, liftId: bodyLiftId, lifts: bodyLifts, liftAddress: bodyLiftAddress,
-            tipo, criarTambemCompleta
+            tipo, criarTambemCompleta, periodicidade
         } = req.body;
 
         if (!cliente || !cliente.nome || !cliente.email) {
@@ -602,6 +602,7 @@ router.post('/', authenticate, authorizeRoles('admin', 'dispatcher'), async (req
             localInstalacao,
             precoMensal,
             pagamento,
+            periodicidade: normalizarPeriodicidade(periodicidade),
             dataInicioContrato,
             duracaoAnos,
             renovacao,
@@ -667,7 +668,7 @@ router.put('/:id', authenticate, authorizeRoles('admin', 'dispatcher'), async (r
             cliente, instalacao, faturacao, numAscensores, localInstalacao,
             precoMensal, pagamento, dataInicioContrato, duracaoAnos, renovacao,
             notas, status, lifts: bodyLifts, liftAddress: bodyLiftAddress, tipo,
-            criarTambemCompleta
+            criarTambemCompleta, periodicidade
         } = req.body;
 
         if (cliente) proposta.cliente = cliente;
@@ -678,6 +679,7 @@ router.put('/:id', authenticate, authorizeRoles('admin', 'dispatcher'), async (r
         if (localInstalacao !== undefined) proposta.localInstalacao = localInstalacao;
         if (precoMensal !== undefined) proposta.precoMensal = precoMensal;
         if (pagamento) proposta.pagamento = pagamento;
+        if (periodicidade) proposta.periodicidade = normalizarPeriodicidade(periodicidade);
         if (dataInicioContrato) proposta.dataInicioContrato = dataInicioContrato;
         if (duracaoAnos !== undefined) proposta.duracaoAnos = duracaoAnos;
         if (renovacao) proposta.renovacao = renovacao;
@@ -727,6 +729,7 @@ router.put('/:id', authenticate, authorizeRoles('admin', 'dispatcher'), async (r
                 contrato.localInstalacao = proposta.localInstalacao;
                 contrato.precoMensal = proposta.precoMensal;
                 contrato.pagamento = proposta.pagamento;
+                contrato.periodicidade = proposta.periodicidade;
                 contrato.dataInicioContrato = proposta.dataInicioContrato;
                 contrato.duracaoAnos = proposta.duracaoAnos;
                 contrato.renovacao = proposta.renovacao;
@@ -755,6 +758,7 @@ router.put('/:id', authenticate, authorizeRoles('admin', 'dispatcher'), async (r
                 localInstalacao: proposta.localInstalacao,
                 precoMensal: proposta.precoMensal,
                 pagamento: proposta.pagamento,
+                periodicidade: proposta.periodicidade,
                 dataInicioContrato: proposta.dataInicioContrato,
                 duracaoAnos: proposta.duracaoAnos,
                 renovacao: proposta.renovacao,
@@ -870,7 +874,7 @@ router.post('/:id/enviar', authenticate, authorizeRoles('admin', 'dispatcher'), 
                     </p>
                     <p style="margin: 0 0 16px 0; font-size: 15px; color: #333; line-height: 1.6;">
                         Enviamos em anexo a <strong>Proposta de Contrato de Manutenção ${proposta.numero}</strong>,
-                        no valor de <strong style="color: #1a3a6b;">€${(proposta.precoMensal || 0).toFixed(2)}/mês</strong> por unidade (+ IVA),
+                        no valor de <strong style="color: #1a3a6b;">€${(proposta.precoMensal || 0).toFixed(2)}/mês</strong> por unidade (+ IVA)${proposta.periodicidade && proposta.periodicidade !== 'mensal' ? `, com visitas de manutenção ${proposta.periodicidade === 'semestral' ? 'semestrais' : 'trimestrais'}` : ''},
                         válida até <strong>${validadeFormatted}</strong>.
                     </p>
                     <p style="margin: 0 0 24px 0; font-size: 15px; color: #333; line-height: 1.6;">
