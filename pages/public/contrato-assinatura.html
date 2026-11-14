@@ -197,7 +197,7 @@ function render() {
     const renovacao = contrato.renovacao || {};
     if (contrato.notas) { const n = document.getElementById('notasContrato'); n.textContent = 'Notas: ' + contrato.notas; n.style.display = 'block'; }
     document.getElementById('termosTexto').textContent =
-        `Contrato de ${tipoLabel} respeitante a ${contrato.numAscensores || '__'} ascensor(es), destinado(s) a transporte de pessoas, instalado(s) em ${contrato.localInstalacao || '—'}. ` +
+        `Contrato de ${tipoLabel} respeitante a ${contrato.numAscensores || '__'} ${(()=>{const E={homelift:['elevador(es) doméstico(s)','transporte de pessoas em habitação de uso privativo'],plataforma:['plataforma(s) elevatória(s)','transporte de pessoas com mobilidade condicionada'],montacargas:['monta-cargas','transporte exclusivo de cargas, sem acesso de pessoas'],montapratos:['monta-pratos','transporte de alimentos e pequenas cargas, sem acesso de pessoas']}[contrato.tipoEquipamento]||['ascensor(es)','transporte de pessoas'];return `${E[0]}, destinado(s) a ${E[1]}`;})()}, instalado(s) em ${contrato.localInstalacao || '—'}. ` +
         `O preço do serviço de manutenção é de ${(()=>{const m={trimestral:3,semestral:6}[contrato.periodicidade]||1;const pr=Number(contrato.precoMensal||0);return m>1?`€${(pr*m).toFixed(2)} por ${m===3?'trimestre':'semestre'}, por unidade, acrescido de IVA à taxa legal em vigor (equivalente a €${pr.toFixed(2)} por mês). As visitas de manutenção são ${m===3?'trimestrais (4 visitas por ano)':'semestrais (2 visitas por ano)'}, previamente agendadas com o Cliente. `:`€${pr.toFixed(2)} por mês, por unidade, acrescido de IVA à taxa legal em vigor. `;})()}` +
         `O pagamento é ${contrato.pagamento || 'Trimestral e adiantado'}. ` +
         `O contrato terá início em ${contrato.dataInicioContrato ? new Date(contrato.dataInicioContrato).toLocaleDateString('pt-PT') : '—'} e manter-se-á válido durante ${contrato.duracaoAnos || 1} ano(s), considerando-se tacitamente prorrogado por períodos de ${renovacao.periodo || '1 ano'}, salvo denúncia por qualquer das partes com pelo menos ${renovacao.avisoDias || '60 dias'} de antecedência, através de ${renovacao.metodoNotificacao || 'carta registada'}${renovacao.emailNotificacao ? ' (' + renovacao.emailNotificacao + ')' : ''}. ` +
@@ -222,7 +222,7 @@ function render() {
 async function loadCondicoes() {
     try {
         const tipoQuery = contrato?.tipo === 'completa' ? 'completa' : 'simples';
-        const res = await fetch(`/api/contratos-manutencao/condicoes-gerais/texto?tipo=${tipoQuery}&periodicidade=${encodeURIComponent(contrato?.periodicidade || 'mensal')}`);
+        const res = await fetch(`/api/contratos-manutencao/condicoes-gerais/texto?tipo=${tipoQuery}&periodicidade=${encodeURIComponent(contrato?.periodicidade || 'mensal')}&equipamento=${encodeURIComponent(contrato?.tipoEquipamento || 'ascensor')}`);
         const result = await res.json();
         if (!result.success) return;
         document.getElementById('condicoesContainer').innerHTML = result.data.map((artigo) => `

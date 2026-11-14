@@ -173,24 +173,65 @@ const ARTIGO_REGIME_VISITAS = (per) => ({
     ]
 });
 
-// Devolve os artigos aplicáveis (cópia) para o tipo e periodicidade indicados.
-function artigosParaContrato(tipo, periodicidade) {
-    const base = tipo === 'completa' ? CONDICOES_GERAIS_ARTIGOS_COMPLETA : CONDICOES_GERAIS_ARTIGOS;
-    const key = normalizarPeriodicidade(periodicidade);
-    if (key === 'mensal') return base;
-    const per = PERIODICIDADES[key];
-    const adaptados = base.map((a) => ({
-        titulo: a.titulo,
-        itens: a.itens.map((i) => i
-            .replace('Pelo menos uma vez por mês, proceder', `Pelo menos uma vez por ${per.oPeriodo}, proceder`)
-            .replace('inspecionar mensalmente o equipamento', `inspecionar ${per.adverbio} o equipamento`))
-    }));
-    // Artigo extra inserido antes do último artigo de litígios/condições gerais (no fim, para não renumerar os existentes)
-    adaptados.push(ARTIGO_REGIME_VISITAS(per));
-    // Numeração do artigo extra a seguir ao último
-    const n = base.length + 1;
-    adaptados[adaptados.length - 1].titulo = `${n}. ${adaptados[adaptados.length - 1].titulo}`;
-    return adaptados;
+// ─── Tipo de equipamento ─────────────────────────────────────────────────────
+// O texto base fala de "ascensor(es) ... transporte de pessoas". Para os outros
+// equipamentos substitui-se a designação e retiram-se as cláusulas que só fazem
+// sentido com pessoas na cabina (desencarceramento, comunicação bidirecional...).
+const EQUIPAMENTOS = {
+    ascensor:    { label: 'Ascensor (passageiros)',               ref: 'ascensor(es)',                 plural: 'ascensores',                 fim: 'transporte de pessoas',                                         pessoas: true },
+    homelift:    { label: 'Elevador doméstico (homelift)',        ref: 'elevador(es) doméstico(s)',    plural: 'elevadores domésticos',      fim: 'transporte de pessoas em habitação de uso privativo',           pessoas: true },
+    plataforma:  { label: 'Plataforma elevatória',                ref: 'plataforma(s) elevatória(s)',  plural: 'plataformas elevatórias',    fim: 'transporte de pessoas com mobilidade condicionada',             pessoas: true },
+    montacargas: { label: 'Monta-cargas',                         ref: 'monta-cargas',                 plural: 'monta-cargas',               fim: 'transporte exclusivo de cargas, sem acesso de pessoas',         pessoas: false },
+    montapratos: { label: 'Monta-pratos (carga reduzida)',        ref: 'monta-pratos',                 plural: 'monta-pratos',               fim: 'transporte de alimentos e pequenas cargas, sem acesso de pessoas', pessoas: false }
+};
+
+function normalizarEquipamento(e) {
+    return EQUIPAMENTOS[e] ? e : 'ascensor';
 }
 
-module.exports = { CONDICOES_GERAIS_ARTIGOS, CONDICOES_GERAIS_ARTIGOS_COMPLETA, PERIODICIDADES, normalizarPeriodicidade, textoPrecoServico, artigosParaContrato };
+// Frase de objeto do contrato: "respeitante a N <equip>, destinado(s) a <fim>, instalado(s) em <local>"
+function textoObjeto(tipoEquipamento, num, local) {
+    const eq = EQUIPAMENTOS[normalizarEquipamento(tipoEquipamento)];
+    return `respeitante a ${num || '__'} ${eq.ref}, destinado(s) a ${eq.fim}, instalado(s) em ${local || '—'}`;
+}
+
+const REGEX_ITEM_PESSOAS = /encarcera|bidirecional|socorro|Linha Telefónica|manobras manuais/i;
+
+function adaptarEquipamento(artigos, tipoEquipamento) {
+    const key = normalizarEquipamento(tipoEquipamento);
+    if (key === 'ascensor') return artigos;
+    const eq = EQUIPAMENTOS[key];
+    const sub = (t) => t
+        .replace(' No caso de passageiros bloqueados no ascensor, é atribuída toda a prioridade à resolução da avaria.', '')
+        .replace(/ASCENSOR\(ES\)/g, eq.ref.toUpperCase())
+        .replace(/ascensor\(es\)/g, eq.ref)
+        .replace(/elevador\(es\)/g, eq.ref)
+        .replace(/ascensores/g, eq.plural)
+        .replace(/ascensor/g, eq.ref.replace(/\(.*?\)/g, ''));
+    return artigos.map((a) => ({
+        titulo: a.titulo,
+        itens: a.itens.filter((i) => eq.pessoas || !REGEX_ITEM_PESSOAS.test(i)).map(sub)
+    }));
+}
+
+// Devolve os artigos aplicáveis para o tipo, periodicidade e equipamento indicados.
+function artigosParaContrato(tipo, periodicidade, tipoEquipamento) {
+    const base = tipo === 'completa' ? CONDICOES_GERAIS_ARTIGOS_COMPLETA : CONDICOES_GERAIS_ARTIGOS;
+    const key = normalizarPeriodicidade(periodicidade);
+    let artigos = base;
+    if (key !== 'mensal') {
+        const per = PERIODICIDADES[key];
+        artigos = base.map((a) => ({
+            titulo: a.titulo,
+            itens: a.itens.map((i) => i
+                .replace('Pelo menos uma vez por mês, proceder', `Pelo menos uma vez por ${per.oPeriodo}, proceder`)
+                .replace('inspecionar mensalmente o equipamento', `inspecionar ${per.adverbio} o equipamento`))
+        }));
+        const extra = ARTIGO_REGIME_VISITAS(per);
+        extra.titulo = `${base.length + 1}. ${extra.titulo}`;
+        artigos.push(extra);
+    }
+    return adaptarEquipamento(artigos, tipoEquipamento);
+}
+
+module.exports = { CONDICOES_GERAIS_ARTIGOS, CONDICOES_GERAIS_ARTIGOS_COMPLETA, PERIODICIDADES, normalizarPeriodicidade, textoPrecoServico, EQUIPAMENTOS, normalizarEquipamento, textoObjeto, artigosParaContrato };

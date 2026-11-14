@@ -9,7 +9,7 @@ const PDFDocument = require('pdfkit');
 const path = require('path');
 const fs = require('fs');
 const rateLimit = require('express-rate-limit');
-const { normalizarPeriodicidade, textoPrecoServico, artigosParaContrato } = require('../constants/propostaManutencaoTerms');
+const { normalizarPeriodicidade, normalizarEquipamento, textoObjeto, textoPrecoServico, artigosParaContrato } = require('../constants/propostaManutencaoTerms');
 
 // Limite dedicado para pedidos de proposta — evita que um cliente esgote a
 // numeração partilhada ou inunde a caixa de entrada interna com pedidos em loop.
@@ -125,7 +125,7 @@ async function gerarPDFPropostaManutencao(proposta) {
             doc.fontSize(10).font('Helvetica').fillColor('#000000');
 
             const renovacao = proposta.renovacao || {};
-            const termosTexto = `Contrato de ${tipoLabel} respeitante a ${proposta.numAscensores || '__'} ascensor(es), destinado(s) a transporte de pessoas, instalado(s) em ${proposta.localInstalacao || '—'}. ` +
+            const termosTexto = `Contrato de ${tipoLabel} ${textoObjeto(proposta.tipoEquipamento, proposta.numAscensores, proposta.localInstalacao)}. ` +
                 textoPrecoServico(proposta.precoMensal, proposta.periodicidade) +
                 `O pagamento é ${proposta.pagamento || 'Trimestral e adiantado'}. ` +
                 `O contrato terá início em ${formatDatePT(proposta.dataInicioContrato)} e manter-se-á válido durante ${proposta.duracaoAnos || 1} ano(s), considerando-se tacitamente prorrogado por períodos de ${renovacao.periodo || '1 ano'}, salvo denúncia por qualquer das partes com pelo menos ${renovacao.avisoDias || '60 dias'} de antecedência, através de ${renovacao.metodoNotificacao || 'carta registada'}${renovacao.emailNotificacao ? ' (' + renovacao.emailNotificacao + ')' : ''}. ` +
@@ -139,7 +139,7 @@ async function gerarPDFPropostaManutencao(proposta) {
             doc.fontSize(12).font('Helvetica-Bold').fillColor(AZUL).text('Condições Gerais', 50, doc.y);
             doc.moveDown(0.3);
 
-            const artigosAplicaveis = artigosParaContrato(proposta.tipo, proposta.periodicidade);
+            const artigosAplicaveis = artigosParaContrato(proposta.tipo, proposta.periodicidade, proposta.tipoEquipamento);
             artigosAplicaveis.forEach((artigo) => {
                 if (doc.y > 700) { doc.addPage(); }
                 doc.fontSize(10).font('Helvetica-Bold').fillColor(AZUL).text(artigo.titulo, 50, doc.y, { width: 500 });
@@ -570,7 +570,7 @@ router.post('/', authenticate, authorizeRoles('admin', 'dispatcher'), async (req
             cliente, instalacao, faturacao, numAscensores, localInstalacao,
             precoMensal, pagamento, dataInicioContrato, duracaoAnos, renovacao,
             notas, liftId: bodyLiftId, lifts: bodyLifts, liftAddress: bodyLiftAddress,
-            tipo, criarTambemCompleta, periodicidade
+            tipo, criarTambemCompleta, periodicidade, tipoEquipamento
         } = req.body;
 
         if (!cliente || !cliente.nome || !cliente.email) {
@@ -603,6 +603,7 @@ router.post('/', authenticate, authorizeRoles('admin', 'dispatcher'), async (req
             precoMensal,
             pagamento,
             periodicidade: normalizarPeriodicidade(periodicidade),
+            tipoEquipamento: normalizarEquipamento(tipoEquipamento),
             dataInicioContrato,
             duracaoAnos,
             renovacao,
@@ -668,7 +669,7 @@ router.put('/:id', authenticate, authorizeRoles('admin', 'dispatcher'), async (r
             cliente, instalacao, faturacao, numAscensores, localInstalacao,
             precoMensal, pagamento, dataInicioContrato, duracaoAnos, renovacao,
             notas, status, lifts: bodyLifts, liftAddress: bodyLiftAddress, tipo,
-            criarTambemCompleta, periodicidade
+            criarTambemCompleta, periodicidade, tipoEquipamento
         } = req.body;
 
         if (cliente) proposta.cliente = cliente;
@@ -680,6 +681,7 @@ router.put('/:id', authenticate, authorizeRoles('admin', 'dispatcher'), async (r
         if (precoMensal !== undefined) proposta.precoMensal = precoMensal;
         if (pagamento) proposta.pagamento = pagamento;
         if (periodicidade) proposta.periodicidade = normalizarPeriodicidade(periodicidade);
+        if (tipoEquipamento) proposta.tipoEquipamento = normalizarEquipamento(tipoEquipamento);
         if (dataInicioContrato) proposta.dataInicioContrato = dataInicioContrato;
         if (duracaoAnos !== undefined) proposta.duracaoAnos = duracaoAnos;
         if (renovacao) proposta.renovacao = renovacao;
@@ -730,6 +732,7 @@ router.put('/:id', authenticate, authorizeRoles('admin', 'dispatcher'), async (r
                 contrato.precoMensal = proposta.precoMensal;
                 contrato.pagamento = proposta.pagamento;
                 contrato.periodicidade = proposta.periodicidade;
+                contrato.tipoEquipamento = proposta.tipoEquipamento;
                 contrato.dataInicioContrato = proposta.dataInicioContrato;
                 contrato.duracaoAnos = proposta.duracaoAnos;
                 contrato.renovacao = proposta.renovacao;
@@ -759,6 +762,7 @@ router.put('/:id', authenticate, authorizeRoles('admin', 'dispatcher'), async (r
                 precoMensal: proposta.precoMensal,
                 pagamento: proposta.pagamento,
                 periodicidade: proposta.periodicidade,
+                tipoEquipamento: proposta.tipoEquipamento,
                 dataInicioContrato: proposta.dataInicioContrato,
                 duracaoAnos: proposta.duracaoAnos,
                 renovacao: proposta.renovacao,

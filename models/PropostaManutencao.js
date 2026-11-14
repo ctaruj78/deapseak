@@ -84,6 +84,13 @@ const propostaManutencaoSchema = new mongoose.Schema({
         default: 'mensal'
     },
 
+    // Tipo de equipamento: determina a designação e as cláusulas do texto
+    tipoEquipamento: {
+        type: String,
+        enum: ['ascensor', 'homelift', 'plataforma', 'montacargas', 'montapratos'],
+        default: 'ascensor'
+    },
+
     // Quando as duas versões (simples + completa) são criadas em conjunto
     // para o mesmo pedido, ligam-se uma à outra para navegação cruzada na UI
     propostaIrmaId: {

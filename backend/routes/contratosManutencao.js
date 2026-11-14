@@ -20,7 +20,7 @@ const PDFDocument = require('pdfkit');
 const path = require('path');
 const fs = require('fs');
 const crypto = require('crypto');
-const { textoPrecoServico, artigosParaContrato } = require('../constants/propostaManutencaoTerms');
+const { textoObjeto, textoPrecoServico, artigosParaContrato } = require('../constants/propostaManutencaoTerms');
 
 // Um contrato assinado por ambas as partes não cria sozinho o(s) registo(s) de
 // elevador — dados como fabricante, capacidade ou coordenadas GPS não constam
@@ -249,7 +249,7 @@ async function gerarPDFContratoManutencao(contrato) {
             doc.fontSize(10).font('Helvetica').fillColor('#000000');
 
             const renovacao = contrato.renovacao || {};
-            const termosTexto = `Entre a FESTLIFT, Lda., com sede na Avenida do Parque nº 84-B, Rio de Mouro, 2635-609, pessoa coletiva n.º 515924741, reconhecida pela Direção Geral de Energia e Geologia (DGEG), com o certificado n.º EC 2/2.208, como Empresa de Manutenção de Instalações de Elevação (EMIE), nos termos da Lei n.º 65/2013 de 27 de Agosto e legislação complementar, e o Cliente identificado acima, é firmado o presente Contrato de ${tipoLabel} respeitante a ${contrato.numAscensores || '__'} ascensor(es), destinado(s) a transporte de pessoas, instalado(s) em ${contrato.localInstalacao || '—'}. ` +
+            const termosTexto = `Entre a FESTLIFT, Lda., com sede na Avenida do Parque nº 84-B, Rio de Mouro, 2635-609, pessoa coletiva n.º 515924741, reconhecida pela Direção Geral de Energia e Geologia (DGEG), com o certificado n.º EC 2/2.208, como Empresa de Manutenção de Instalações de Elevação (EMIE), nos termos da Lei n.º 65/2013 de 27 de Agosto e legislação complementar, e o Cliente identificado acima, é firmado o presente Contrato de ${tipoLabel} ${textoObjeto(contrato.tipoEquipamento, contrato.numAscensores, contrato.localInstalacao)}. ` +
                 `Pela aceitação do presente contrato a EMIE obriga-se a fornecer, de acordo com as Condições Gerais abaixo, um serviço de manutenção para o equipamento discriminado. ` +
                 textoPrecoServico(contrato.precoMensal, contrato.periodicidade) +
                 `O pagamento é ${contrato.pagamento || 'Trimestral e adiantado'}. ` +
@@ -263,7 +263,7 @@ async function gerarPDFContratoManutencao(contrato) {
             doc.fontSize(12).font('Helvetica-Bold').fillColor(AZUL).text('Condições Gerais', 50, doc.y);
             doc.moveDown(0.3);
 
-            const artigosAplicaveis = artigosParaContrato(contrato.tipo, contrato.periodicidade);
+            const artigosAplicaveis = artigosParaContrato(contrato.tipo, contrato.periodicidade, contrato.tipoEquipamento);
             artigosAplicaveis.forEach((artigo) => {
                 if (doc.y > 700) { doc.addPage(); }
                 doc.fontSize(10).font('Helvetica-Bold').fillColor(AZUL).text(artigo.titulo, 50, doc.y, { width: 500 });
@@ -382,6 +382,7 @@ router.post('/from-proposta/:propostaId', authenticate, authorizeRoles('admin', 
                 existenteDoc.precoMensal = proposta.precoMensal;
                 existenteDoc.pagamento = proposta.pagamento;
                 existenteDoc.periodicidade = proposta.periodicidade;
+                existenteDoc.tipoEquipamento = proposta.tipoEquipamento;
                 existenteDoc.dataInicioContrato = proposta.dataInicioContrato;
                 existenteDoc.duracaoAnos = proposta.duracaoAnos;
                 existenteDoc.renovacao = proposta.renovacao;
@@ -411,6 +412,7 @@ router.post('/from-proposta/:propostaId', authenticate, authorizeRoles('admin', 
             precoMensal: proposta.precoMensal,
             pagamento: proposta.pagamento,
             periodicidade: proposta.periodicidade,
+            tipoEquipamento: proposta.tipoEquipamento,
             dataInicioContrato: proposta.dataInicioContrato,
             duracaoAnos: proposta.duracaoAnos,
             renovacao: proposta.renovacao,
@@ -479,7 +481,7 @@ router.get('/', authenticate, authorizeRoles('admin', 'dispatcher', 'client'), a
 
 // GET /api/contratos-manutencao/condicoes-gerais/texto?tipo=completa|simples - Texto integral das Condições Gerais (público — texto legal não sensível)
 router.get('/condicoes-gerais/texto', (req, res) => {
-    const artigos = artigosParaContrato(req.query.tipo === 'completa' ? 'completa' : 'simples', req.query.periodicidade);
+    const artigos = artigosParaContrato(req.query.tipo === 'completa' ? 'completa' : 'simples', req.query.periodicidade, req.query.equipamento);
     res.json({ success: true, data: artigos });
 });
 

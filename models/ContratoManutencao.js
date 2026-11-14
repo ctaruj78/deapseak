@@ -37,6 +37,13 @@ const contratoManutencaoSchema = new mongoose.Schema({
         default: 'simples'
     },
 
+    // Tipo de equipamento: determina a designação e as cláusulas do texto
+    tipoEquipamento: {
+        type: String,
+        enum: ['ascensor', 'homelift', 'plataforma', 'montacargas', 'montapratos'],
+        default: 'ascensor'
+    },
+
     // Periodicidade das visitas preventivas, herdada da proposta
     periodicidade: {
         type: String,
