@@ -153,15 +153,12 @@ function normalizarPeriodicidade(p) {
 function textoPrecoServico(precoMensal, periodicidade) {
     const per = PERIODICIDADES[normalizarPeriodicidade(periodicidade)];
     const preco = Number(precoMensal) || 0;
-    let t = `O preço do serviço de manutenção é de €${preco.toFixed(2)} por mês, por unidade, acrescido de IVA à taxa legal em vigor`;
-    if (per.meses > 1) {
-        t += ` (equivalente a €${(preco * per.meses).toFixed(2)} ${per.porPeriodo}, correspondente a uma visita ${per.label.toLowerCase()})`;
+    if (per.meses === 1) {
+        return `O preço do serviço de manutenção é de €${preco.toFixed(2)} por mês, por unidade, acrescido de IVA à taxa legal em vigor. `;
     }
-    t += '. ';
-    if (per.meses > 1) {
-        t += `As visitas de manutenção são ${per.label.toLowerCase() === 'trimestral' ? 'trimestrais (4 visitas por ano)' : 'semestrais (2 visitas por ano)'}, previamente agendadas com o Cliente. `;
-    }
-    return t;
+    const nome = per.label.toLowerCase();
+    return `O preço do serviço de manutenção é de €${(preco * per.meses).toFixed(2)} ${per.porPeriodo}, por unidade, acrescido de IVA à taxa legal em vigor (equivalente a €${preco.toFixed(2)} por mês). ` +
+        `As visitas de manutenção são ${nome === 'trimestral' ? 'trimestrais (4 visitas por ano)' : 'semestrais (2 visitas por ano)'}, previamente agendadas com o Cliente. `;
 }
 
 const ARTIGO_REGIME_VISITAS = (per) => ({

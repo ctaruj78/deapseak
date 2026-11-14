@@ -171,7 +171,7 @@
                                         </select>
                                         <small class="text-muted" id="periodicidadeHint" style="display:none;">Preço continua por mês; o PDF indica o equivalente por visita e acrescenta o artigo de regime de visitas para uso privativo.</small>
                                     </div>
-                                    <div class="col-md-6 form-group" id="criarCompletaWrap" style="display:flex;align-items:flex-end;">
+                                    <div class="col-md-12 form-group" id="criarCompletaWrap" style="display:flex;align-items:flex-end;">
                                         <div class="custom-control custom-checkbox">
                                             <input type="checkbox" class="custom-control-input" id="criarTambemCompleta">
                                             <label class="custom-control-label" for="criarTambemCompleta">Criar também versão Completa (proposta separada, para o cliente comparar)</label>
@@ -191,7 +191,7 @@
                                         <input type="text" id="localInstalacao" class="form-control" placeholder="Designação / morada da instalação">
                                     </div>
                                     <div class="col-md-4 form-group">
-                                        <label>Preço Mensal (€ / unidade)</label>
+                                        <label id="precoLabel">Preço Mensal (€ / unidade)</label>
                                         <input type="number" id="precoMensal" class="form-control" min="0" step="0.01">
                                     </div>
                                     <div class="col-md-4 form-group">
@@ -347,6 +347,12 @@ document.addEventListener('change', function(e) {
         document.getElementById('clienteMorada').value = cliente.address || '';
     }
     if (e.target && e.target.id === 'periodicidade') {
+        const inp = document.getElementById('precoMensal');
+        const antes = parseFloat(inp.dataset.meses || '1');
+        const agora = perMeses();
+        if (inp.value && antes !== agora) inp.value = (Math.round(parseFloat(inp.value) / antes * agora * 100) / 100).toString();
+        inp.dataset.meses = agora;
+        refreshPrecoLabel();
         const h = document.getElementById('periodicidadeHint');
         if (h) h.style.display = e.target.value === 'mensal' ? 'none' : 'block';
     }
@@ -359,6 +365,12 @@ document.addEventListener('change', function(e) {
         if (renovacaoSel) renovacaoSel.value = e.target.value === 'completa' ? '3 anos' : '1 ano';
     }
 });
+
+
+const PER_MESES = { mensal: 1, trimestral: 3, semestral: 6 };
+const PER_LABEL = { mensal: 'Preço Mensal (€ / unidade)', trimestral: 'Preço por Trimestre (€ / unidade, total dos 3 meses)', semestral: 'Preço por Semestre (€ / unidade, total dos 6 meses)' };
+function perMeses() { return PER_MESES[document.getElementById('periodicidade').value] || 1; }
+function refreshPrecoLabel() { document.getElementById('precoLabel').textContent = PER_LABEL[document.getElementById('periodicidade').value] || PER_LABEL.mensal; }
 
 async function loadNextNumero() {
     try {
@@ -450,6 +462,7 @@ async function loadProposta(id) {
 
         document.getElementById('numAscensores').value = p.numAscensores || 1;
         document.getElementById('localInstalacao').value = p.localInstalacao || '';
+        document.getElementById('precoMensal').dataset.meses = '1';
         document.getElementById('precoMensal').value = p.precoMensal || '';
         document.getElementById('pagamento').value = p.pagamento || 'Trimestral e adiantado';
         document.getElementById('periodicidade').value = p.periodicidade || 'mensal';
@@ -501,7 +514,7 @@ function coletarDados() {
         criarTambemCompleta: document.getElementById('criarTambemCompleta').checked,
         numAscensores: parseInt(document.getElementById('numAscensores').value) || 1,
         localInstalacao: document.getElementById('localInstalacao').value.trim(),
-        precoMensal: parseFloat(document.getElementById('precoMensal').value) || 0,
+        precoMensal: Math.round(((parseFloat(document.getElementById('precoMensal').value) || 0) / perMeses()) * 10000) / 10000,
         pagamento: document.getElementById('pagamento').value.trim() || 'Trimestral e adiantado',
         duracaoAnos: parseInt(document.getElementById('duracaoAnos').value) || 1,
         dataInicioContrato: document.getElementById('dataInicioContrato').value || null,
