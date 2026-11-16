@@ -2642,6 +2642,40 @@ app.delete('/api/knowledge-base/:id', authenticateToken, async (req, res) => {
 // �📋 INSPECTIONS
 // ═══════════════════════════════════════════════════════════
 
+// ── Cliente: âmbito de relatórios visíveis (só os seus elevadores / email) ──
+async function clientInspectionScope(user) {
+    const { ObjectId } = require('mongodb');
+    const uid = String(user.id || user._id || '');
+    const email = String(user.email || '').toLowerCase();
+    const lc = [];
+    if (uid) {
+        lc.push({ client: uid }, { clientId: uid }, { 'client._id': uid });
+        if (ObjectId.isValid(uid)) { const o = new ObjectId(uid); lc.push({ client: o }, { clientId: o }, { 'client._id': o }); }
+    }
+    if (email) lc.push({ clientEmail: email }, { 'client.email': email });
+    const ids = lc.length ? (await db.collection('lifts').find({ $or: lc }, { projection: { _id: 1 } }).toArray()).map(l => l._id.toString()) : [];
+    const or = [];
+    if (ids.length) or.push({ liftId: { $in: ids } });
+    if (email) or.push({ clientEmail: new RegExp('^' + email.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$', 'i') });
+    return { $and: [{ status: { $in: ['enviado', 'finalizado'] } }, { $or: or.length ? or : [{ _id: null }] }] };
+}
+
+// Actualiza lifts.lastMaintenance quando um relatório de manutenção é guardado
+async function syncLiftLastMaintenance(liftId, data, visitType) {
+    try {
+        if (!liftId || !/^(maintenance|quarterly|semestral|annual|manutencao)/i.test(String(visitType || 'maintenance'))) return;
+        const { ObjectId } = require('mongodb');
+        if (!ObjectId.isValid(String(liftId))) return;
+        const d = new Date(data || Date.now());
+        if (isNaN(d)) return;
+        const _id = new ObjectId(String(liftId));
+        const lift = await db.collection('lifts').findOne({ _id }, { projection: { lastMaintenance: 1 } });
+        if (!lift) return;
+        if (lift.lastMaintenance && new Date(lift.lastMaintenance) >= d) return;
+        await db.collection('lifts').updateOne({ _id }, { $set: { lastMaintenance: d, updatedAt: new Date() } });
+    } catch (e) { console.warn('⚠️ syncLiftLastMaintenance:', e.message); }
+}
+
 // GET all inspections  (supports ?limit=N)
 app.get('/api/inspections', authenticateToken, async (req, res) => {
     try {
@@ -2679,7 +2713,9 @@ app.get('/api/inspections', authenticateToken, async (req, res) => {
             and.push({ $or: [{ data: strR }, { data: dateR }] });
         }
         // Técnicos só veem as inspecções que criaram — admin/dispatcher veem todas
-        if (req.user.role !== 'admin' && req.user.role !== 'dispatcher') {
+        if (req.user.role === 'client') {
+            and.push(await clientInspectionScope(req.user));
+        } else if (req.user.role !== 'admin' && req.user.role !== 'dispatcher') {
             and.push({ createdBy: req.user.id });
         }
         const filter = and.length ? { $and: and } : {};
@@ -2792,7 +2828,11 @@ app.get('/api/inspections/:id', authenticateToken, async (req, res) => {
         }
 
         // 🔒 Técnicos só podem ver as inspeções que criaram — admin/dispatcher veem todas
-        if (req.user.role !== 'admin' && req.user.role !== 'dispatcher' && inspection.createdBy !== req.user.id) {
+        if (req.user.role === 'client') {
+            const sc = await clientInspectionScope(req.user);
+            const ok = await db.collection('inspections').findOne({ $and: [{ _id: inspection._id }, sc] }, { projection: { _id: 1 } });
+            if (!ok) return res.status(403).json({ success: false, message: 'Acesso negado' });
+        } else if (req.user.role !== 'admin' && req.user.role !== 'dispatcher' && inspection.createdBy !== req.user.id) {
             return res.status(403).json({ success: false, message: 'Acesso negado' });
         }
 
@@ -2819,7 +2859,11 @@ app.get('/api/inspections/:id/pdf', authenticateToken, async (req, res) => {
         }
 
         // 🔒 Técnicos só podem descarregar as inspeções que criaram — admin/dispatcher veem todas
-        if (req.user.role !== 'admin' && req.user.role !== 'dispatcher' && inspection.createdBy !== req.user.id) {
+        if (req.user.role === 'client') {
+            const sc = await clientInspectionScope(req.user);
+            const ok = await db.collection('inspections').findOne({ $and: [{ _id: inspection._id }, sc] }, { projection: { _id: 1 } });
+            if (!ok) return res.status(403).json({ success: false, message: 'Acesso negado' });
+        } else if (req.user.role !== 'admin' && req.user.role !== 'dispatcher' && inspection.createdBy !== req.user.id) {
             return res.status(403).json({ success: false, message: 'Acesso negado' });
         }
 
@@ -2905,6 +2949,7 @@ app.post('/api/inspections', authenticateToken, requireRole('admin', 'dispatcher
         };
         const result = await db.collection('inspections').insertOne(doc);
         console.log(`✅ Inspecção ${numero} guardada (${doc.visitType}) por ${doc.inspector}`);
+        await syncLiftLastMaintenance(doc.liftId, doc.data, doc.visitType);
 
         // Auto-fechar pedidos de manutenção pendentes para este elevador
         const isMaintenanceVisit = ['maintenance', 'manutencao', 'Manutenção', 'MANU'].some(
@@ -15384,6 +15429,7 @@ async function persistInspectionFromReport(body, user, extra = {}) {
     } else {
         await db.collection('inspections').insertOne({ numero, status: 'finalizado', createdBy: user ? user.id : null, createdAt: now, ...fields });
     }
+    await syncLiftLastMaintenance(liftId, fields.data, visitType);
     return numero;
 }
 
@@ -17275,8 +17321,8 @@ async function agendarManutencaoAutomatica() {
                 liftId: { $in: liftIds },
                 visitType: { $in: ['maintenance', 'Manutenção', 'manutencao'] }
             }},
-            { $sort: { date: -1 } },
-            { $group: { _id: '$liftId', lastDate: { $first: '$date' } } }
+            { $sort: { data: -1 } },
+            { $group: { _id: '$liftId', lastDate: { $first: '$data' } } }
         ]).toArray();
         lastInspections.forEach(r => { lastMaintMap[r._id] = new Date(r.lastDate); });
 

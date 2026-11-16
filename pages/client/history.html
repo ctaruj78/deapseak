@@ -672,6 +672,26 @@
                         </div>
                     </div>
 
+                    <!-- Relatórios de manutenção (PDF) -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="card history-card">
+                                <div class="card-header">
+                                    <h3 class="card-title"><i class="fas fa-clipboard-check mr-2"></i>Relatórios de manutenção</h3>
+                                    <div class="card-tools"><span class="badge badge-primary" id="maintReportsCount">0</span></div>
+                                </div>
+                                <div class="card-body p-0">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover mb-0">
+                                            <thead><tr><th>Nº</th><th>Data</th><th>Tipo</th><th>Local</th><th>Técnico</th><th class="text-right">PDF</th></tr></thead>
+                                            <tbody id="maintReportsBody"><tr><td colspan="6" class="text-center text-muted p-3">A carregar...</td></tr></tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Timeline -->
                     <div class="row mt-4">
                         <div class="col-12">
@@ -817,6 +837,31 @@
         });
     </script>
     <script src="../../plugins/sweetalert2/js/sweetalert2.min.js"></script>
+<script>
+(function(){
+    function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+    var TYPES={maintenance:'Manutenção mensal',quarterly:'Revisão trimestral',semestral:'Revisão semestral',annual:'Revisão anual',pre_inspection:'Preparação para OI',repair:'Reparação',emergency:'Emergência'};
+    function tok(){return sessionStorage.getItem('liftmanager_jwt')||localStorage.getItem('liftmanager_jwt')||localStorage.getItem('token')||'';}
+    window.downloadClientReport=function(id,num){
+        fetch('/api/inspections/'+encodeURIComponent(id)+'/pdf',{headers:{Authorization:'Bearer '+tok()}})
+        .then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.blob();})
+        .then(function(b){var u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download=String(num).replace(/[\/\\]/g,'-')+'.pdf';a.click();setTimeout(function(){URL.revokeObjectURL(u);},10000);})
+        .catch(function(e){alert('Erro ao descarregar PDF: '+e.message);});
+    };
+    fetch('/api/inspections?limit=100&light=1',{headers:{Authorization:'Bearer '+tok()}})
+    .then(function(r){return r.json();})
+    .then(function(j){
+        var list=j.data||[],body=document.getElementById('maintReportsBody');
+        document.getElementById('maintReportsCount').textContent=list.length;
+        if(!list.length){body.innerHTML='<tr><td colspan="6" class="text-center text-muted p-3">Ainda não existem relatórios de manutenção.</td></tr>';return;}
+        body.innerHTML=list.map(function(i){
+            var d=i.data?new Date(i.data).toLocaleDateString('pt-PT'):'—';
+            return '<tr><td><strong>'+esc(i.numero)+'</strong></td><td>'+d+'</td><td>'+esc(TYPES[i.visitType]||i.visitType||'Manutenção')+'</td><td>'+esc(i.liftLocation||'—')+'</td><td>'+esc(i.inspector||'—')+'</td>'+
+            '<td class="text-right"><button class="btn btn-sm btn-outline-danger" data-id="'+esc(i._id)+'" data-num="'+esc(i.numero)+'" onclick="downloadClientReport(this.dataset.id,this.dataset.num)"><i class="fas fa-file-pdf"></i> PDF</button></td></tr>';
+        }).join('');
+    }).catch(function(){document.getElementById('maintReportsBody').innerHTML='<tr><td colspan="6" class="text-center text-warning p-3">Não foi possível carregar os relatórios.</td></tr>';});
+})();
+</script>
 </body>
     
 </html>
