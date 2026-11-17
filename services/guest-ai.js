@@ -40,7 +40,7 @@ async function buildContext(db, question, maxArticles = 4, maxChars = 2000) {
   const forced = [];
   if (/\bc[123]\b|classifica|prazo|reprova|imobiliz|nao conformidade/.test(q)) forced.push(/Classificação C1/i);
   if (/despacho|moderniza|acordo|\bc2\b|prazo/.test(q)) forced.push(/Despacho 27/i);
-  if (/320|manuten|inspe|coima|livro|obriga|contrato|emergencia/.test(q)) forced.push(/DL 320\/2002/i);
+  if (/320|manuten|inspe|coima|multa|contraordena|certificad|livro|obriga|contrato|emergencia/.test(q)) forced.push(/DL 320\/2002/i);
 
   const scored = arts
     .filter(a => !EXCLUDE_TITLE.test(a.title))
@@ -144,4 +144,46 @@ async function logExchange(db, { kind, ip, question, answer, sources, provider }
   }
 }
 
-module.exports = { buildContext, buildChatPrompt, buildAnalyzePrompt, logExchange, IDENTITY };
+
+// Assistente do website comercial www.festlift.pt (FEST) — fala em nome da empresa, com a mesma base de conhecimento.
+// Só afirmar aqui o que é verdadeiro (contactos/zonas vêm do próprio site).
+const SITE_IDENTITY = `FESTLIFT é uma empresa de elevadores com atividade em Lisboa, Santarém e Oeste (festlift.pt). Serviços: manutenção preventiva, reparação e assistência 24h, modernização de elevadores, apoio com certificados e inspeções (DGEG/EIIE) e orçamentos.
+Contactos: telefone geral +351 214 190 863; email info@festlift.pt; EMERGÊNCIAS (pessoa retida no elevador, avaria grave): +351 926 380 243. Para emergências indica sempre este número primeiro.
+Orçamentos: NUNCA indiques preços nem prazos de obra; oferece uma vistoria gratuita e pede ao cliente o nome e o telefone (o pedido fica registado e a equipa contacta). Se o cliente quiser ser contactado, pede nome e telefone.
+Não tens dados sobre o número de elevadores geridos, a equipa ou o fundador: se perguntarem, diz que não tens essa informação e indica o email.
+Não tem relação com festivais, eventos ou festas.`;
+
+function formatHistory(history) {
+  if (!Array.isArray(history)) return '';
+  return history.slice(-8).map(h => {
+    const t = Array.isArray(h && h.parts) ? h.parts.map(p => (p && p.text) || '').join(' ') : '';
+    const who = (h && h.role) === 'user' ? 'Cliente' : 'FEST';
+    return t.trim() ? `${who}: ${t.trim().slice(0, 600)}` : '';
+  }).filter(Boolean).join('\n');
+}
+
+function buildSiteChatPrompt(question, ctx, history) {
+  const hist = formatHistory(history);
+  return `És o FEST, assistente virtual do website da FESTLIFT, empresa de elevadores. Respondes a clientes e potenciais clientes (condomínios, proprietários, gestores).
+
+${RULES}
+
+REGRAS ADICIONAIS DO WEBSITE:
+- A "SOBRE A FESTLIFT" abaixo descreve a empresa (e não a plataforma de software): usa-a para serviços e contactos.
+- Trata o cliente de forma formal e cordial ("o senhor/a senhora" ou forma impessoal: "pode", "indique-nos"); nunca uses "tu". Esta regra substitui a parte de "tu" da regra 1.
+- Só convida a deixar nome e telefone quando o cliente demonstrar interesse em serviços, orçamento ou visita; não o faças em perguntas puramente informativas.
+- EMERGÊNCIA com pessoa presa/retida: responde em poucas linhas e APENAS com isto: (1) ligar já para +351 926 380 243 (ou 112 se alguém estiver indisposto ou em risco); (2) manter a calma e não forçar as portas nem tentar sair da cabine; (3) usar o botão de alarme/intercomunicador da cabine, se existir. NÃO acrescentes outros passos, NÃO sugiras premir botões de paragem e NÃO prometas tempos de chegada.
+- Zona de atuação: só podes afirmar "Lisboa, Santarém e Oeste". Para um concelho ou localidade concreta, diz que atuam nessas regiões e que a confirmação da cobertura é feita pela equipa (telefone +351 214 190 863 ou info@festlift.pt); NÃO confirmes localidades específicas e NÃO digas que uma localidade "está dentro" ou "fora" da zona; usa esta forma: "A FESTLIFT atua em Lisboa, Santarém e Oeste. Para confirmar a cobertura em <localidade>, contacte-nos pelo telefone +351 214 190 863 ou info@festlift.pt."
+- Nunca prometas prazos de chegada, de reparação ou de orçamento em nome da empresa.
+
+SOBRE A FESTLIFT:
+${SITE_IDENTITY}
+
+CONTEXTO (artigos da base de conhecimento):
+${ctx.text || '(nenhum artigo relevante encontrado para esta pergunta)'}
+${hist ? `\nCONVERSA ATÉ AGORA:\n${hist}\n` : ''}
+PERGUNTA DO CLIENTE:
+${String(question).substring(0, 1000)}`;
+}
+
+module.exports = { buildContext, buildChatPrompt, buildSiteChatPrompt, buildAnalyzePrompt, logExchange, IDENTITY };

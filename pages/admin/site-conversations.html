@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conversas do site - FestLift</title>
+    <script src="../../assets/js/auth.js"></script>
+    <link rel="stylesheet" href="../../plugins/adminlte/adminlte.min.css">
+    <link rel="stylesheet" href="../../plugins/fontawesome/css/all.min.css">
+    <style>
+        .conv-row{cursor:pointer}
+        .msg{padding:8px 12px;border-radius:10px;margin-bottom:8px;white-space:pre-wrap;max-width:85%}
+        .msg.user{background:#e3f2fd;margin-left:auto}
+        .msg.bot{background:#f1f3f5}
+        .msg.report{background:#fff8e1;border:1px dashed #ffb300;max-width:100%}
+        .msg small{display:block;opacity:.6}
+    </style>
+</head>
+<body class="hold-transition sidebar-mini layout-fixed" data-required-role="admin">
+<div class="wrapper">
+    <nav class="main-header navbar navbar-expand navbar-white navbar-light">
+        <ul class="navbar-nav"><li class="nav-item"><a class="nav-link" data-widget="pushmenu" href="#"><i class="fas fa-bars"></i></a></li>
+        <li class="nav-item d-none d-sm-inline-block"><a href="admin-dashboard.html" class="nav-link">Início</a></li></ul>
+    </nav>
+    <aside class="main-sidebar sidebar-dark-primary elevation-4" id="sidebar-placeholder"></aside>
+    <div class="content-wrapper">
+        <section class="content-header"><div class="container-fluid"><h1>Conversas do website <small class="text-muted">www.festlift.pt</small></h1></div></section>
+        <section class="content"><div class="container-fluid">
+            <div class="card">
+                <div class="card-body">
+                    <div class="form-inline mb-3">
+                        <input id="q" class="form-control mr-2" placeholder="Pesquisar texto, nome, telefone…" style="min-width:260px">
+                        <div class="custom-control custom-checkbox mr-3"><input type="checkbox" class="custom-control-input" id="onlyLeads"><label class="custom-control-label" for="onlyLeads">Só com contacto</label></div>
+                        <button class="btn btn-primary" id="reload"><i class="fas fa-sync"></i> Atualizar</button>
+                        <span class="ml-3 text-muted" id="count"></span>
+                    </div>
+                    <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead><tr><th>Última atividade</th><th>Contacto</th><th>Msgs</th><th>Primeira pergunta</th><th>Estado</th></tr></thead>
+                        <tbody id="rows"><tr><td colspan="5" class="text-muted">A carregar…</td></tr></tbody>
+                    </table></div>
+                </div>
+            </div>
+        </div></section>
+    </div>
+</div>
+
+<div class="modal fade" id="convModal" tabindex="-1"><div class="modal-dialog modal-lg modal-dialog-scrollable"><div class="modal-content">
+    <div class="modal-header"><h5 class="modal-title" id="mTitle">Conversa</h5><button type="button" class="close" data-dismiss="modal">&times;</button></div>
+    <div class="modal-body" id="mBody"></div>
+    <div class="modal-footer">
+        <select id="mStatus" class="form-control w-auto"><option value="new">Novo</option><option value="contacted">Contactado</option><option value="closed">Fechado</option></select>
+        <input id="mNote" class="form-control" placeholder="Nota interna" maxlength="1000">
+        <button class="btn btn-success" id="mSave">Guardar</button>
+    </div>
+</div></div></div>
+
+<script src="../../plugins/jquery/jquery.min.js"></script>
+<script src="../../plugins/bootstrap/bootstrap.bundle.min.js"></script>
+<script src="../../plugins/adminlte/adminlte.min.js"></script>
+<script src="../../assets/js/sidebar-init.js"></script>
+<script>
+$(function(){ loadSidebarWithInit("includes/sidebar.html"); });
+
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmt = d => d ? new Date(d).toLocaleString('pt-PT') : '';
+const STATUS = {new:['Novo','danger'], contacted:['Contactado','warning'], closed:['Fechado','success']};
+let items = [], current = null;
+
+async function load(){
+    const p = new URLSearchParams({limit: 300});
+    if ($('#onlyLeads').is(':checked')) p.set('lead','1');
+    if ($('#q').val().trim()) p.set('q', $('#q').val().trim());
+    const r = await AuthManager.fetchWithAuth('/api/admin/site-conversations?' + p);
+    const d = await r.json();
+    items = d.items || [];
+    $('#count').text(items.length + ' conversas');
+    $('#rows').html(items.length ? items.map((c,i)=>{
+        const firstQ = (c.messages||[]).find(m=>m.role==='user');
+        const st = STATUS[c.status||'new'] || STATUS.new;
+        const contact = c.lead ? `<b>${esc(c.lead.name)}</b><br>${esc(c.lead.phone)} ${esc(c.lead.email)}` : '<span class="text-muted">—</span>';
+        return `<tr class="conv-row" data-i="${i}"><td>${fmt(c.updatedAt)}</td><td>${contact}</td><td>${(c.messages||[]).length}</td><td>${esc((firstQ&&firstQ.text||'').slice(0,90))}</td><td><span class="badge badge-${st[1]}">${st[0]}</span></td></tr>`;
+    }).join('') : '<tr><td colspan="5" class="text-muted">Sem conversas.</td></tr>');
+}
+$('#rows').on('click','.conv-row',function(){
+    current = items[$(this).data('i')];
+    const l = current.lead;
+    $('#mTitle').text(l ? `${l.name} — ${l.phone}` : 'Conversa anónima');
+    let html = l ? `<div class="alert alert-info"><b>Contacto:</b> ${esc(l.name)} · ${esc(l.phone)} · ${esc(l.email)}<br><b>Serviço:</b> ${esc(l.service)} <b>Edifício:</b> ${esc(l.edificio)}<br>${esc(l.message)}</div>` : '';
+    html += (current.messages||[]).map(m=>`<div class="msg ${esc(m.role)}"><small>${m.role==='user'?'Cliente':m.role==='bot'?'FEST':'Relatório'} · ${fmt(m.at)}</small>${esc(m.text)}</div>`).join('');
+    $('#mBody').html(html);
+    $('#mStatus').val(current.status||'new'); $('#mNote').val(current.note||'');
+    $('#convModal').modal('show');
+});
+$('#mSave').on('click', async ()=>{
+    await AuthManager.fetchWithAuth('/api/admin/site-conversations/'+encodeURIComponent(current.sessionId), {
+        method:'PATCH', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({status:$('#mStatus').val(), note:$('#mNote').val()})
+    });
+    $('#convModal').modal('hide'); load();
+});
+$('#reload,#onlyLeads').on('click change', load);
+$('#q').on('keydown', e => { if (e.key==='Enter') load(); });
+load();
+</script>
+</body>
+</html>

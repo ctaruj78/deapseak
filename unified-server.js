@@ -13278,6 +13278,131 @@ app.post('/api/ai/guest-chat', async (req, res) => {
 });
 
 
+// ─────────────────────────────────────────────────────────────────────
+// Conversas do website (www.festlift.pt) — recebe cópia do ai-chat.php / sendmail.php
+// Autenticação: cabeçalho X-Site-Key == SITE_LOG_KEY (.env). Sem chave configurada → desativado.
+// ─────────────────────────────────────────────────────────────────────
+const siteLogLimiter = rateLimit({
+    windowMs: 60 * 1000, max: 120,
+    message: { success: false, message: 'Too many requests' }
+});
+function _siteKeyOk(req) {
+    const expected = process.env.SITE_LOG_KEY || '';
+    const got = String(req.get('x-site-key') || '');
+    if (expected.length < 24 || got.length !== expected.length) return false;
+    return require('crypto').timingSafeEqual(Buffer.from(got), Buffer.from(expected));
+}
+const _clip = (v, n) => String(v == null ? '' : v).slice(0, n);
+
+async function _saveSiteConv(b) {
+    const sessionId = _clip(b.sessionId, 64).replace(/[^A-Za-z0-9_-]/g, '');
+    if (sessionId.length < 8) return false;
+    const now = new Date();
+    const crypto = require('crypto');
+    const ip = _clip(b.ip, 64);
+    const ipHash = ip ? crypto.createHmac('sha256', process.env.JWT_SECRET || 'festlift').update(ip).digest('hex').slice(0, 16) : null;
+
+    const push = [];
+    if (b.userMessage) push.push({ role: 'user', text: _clip(b.userMessage, 4000), at: now });
+    if (b.reply) push.push({ role: 'bot', text: _clip(b.reply, 6000), at: now });
+    if (b.report && b.report.text) push.push({ role: 'report', text: _clip(b.report.text, 20000), at: now });
+
+    const set = { updatedAt: now };
+    if (b.provider) set.provider = _clip(b.provider, 20);
+    if (b.sources) set.lastSources = (Array.isArray(b.sources) ? b.sources : []).slice(0, 6).map(x => _clip(x, 120));
+    if (b.page) set.page = _clip(b.page, 200);
+    if (b.userAgent) set.userAgent = _clip(b.userAgent, 200);
+    if (ipHash) set.ipHash = ipHash;
+    if (b.lead && typeof b.lead === 'object') {
+        set.lead = {
+            name: _clip(b.lead.name, 120), phone: _clip(b.lead.phone, 30), email: _clip(b.lead.email, 254),
+            service: _clip(b.lead.service, 120), edificio: _clip(b.lead.edificio, 200), message: _clip(b.lead.message, 2000),
+            at: now
+        };
+        set.hasLead = true;
+    }
+    const update = { $set: set, $setOnInsert: { sessionId, startedAt: now, status: 'new' } };
+    if (push.length) update.$push = { messages: { $each: push, $slice: -200 } };
+
+    const col = db.collection('site_conversations');
+    await col.updateOne({ sessionId }, update, { upsert: true });
+    col.createIndex({ updatedAt: 1 }, { expireAfterSeconds: 365 * 24 * 3600 }).catch(() => {});
+    col.createIndex({ sessionId: 1 }, { unique: true }).catch(() => {});
+    return true;
+}
+
+// POST /api/public/site-log — { sessionId, userMessage?, reply?, provider?, page?, lead?{...}, report?{text} }
+app.post('/api/public/site-log', siteLogLimiter, async (req, res) => {
+    try {
+        if (!_siteKeyOk(req)) return res.status(401).json({ success: false });
+        if (!db) return res.status(503).json({ success: false });
+        const ok = await _saveSiteConv(req.body || {});
+        if (!ok) return res.status(400).json({ success: false, message: 'sessionId' });
+        res.json({ success: true });
+    } catch (e) {
+        console.warn('⚠️ site-log:', e.message);
+        res.status(500).json({ success: false });
+    }
+});
+
+// POST /api/public/site-chat — chat do website com a base de conhecimento (legislação etc.)
+// { sessionId, message, history?, ip?, page? } → { success, reply, sources }
+app.post('/api/public/site-chat', siteLogLimiter, async (req, res) => {
+    try {
+        if (!_siteKeyOk(req)) return res.status(401).json({ success: false });
+        if (!db) return res.status(503).json({ success: false });
+        const b = req.body || {};
+        const message = _clip(b.message, 2200).trim();
+        if (message.length < 2) return res.status(400).json({ success: false, message: 'Mensagem inválida.' });
+
+        const guestAI = require('./services/guest-ai');
+        const ctx = await guestAI.buildContext(db, message);
+        const prompt = guestAI.buildSiteChatPrompt(message, ctx, b.history);
+        const text = await _callGuestAI(prompt, { temperature: 0.2 });
+        if (!text || !String(text).trim()) return res.status(502).json({ success: false });
+
+        _saveSiteConv({ sessionId: b.sessionId, userMessage: message, reply: text, provider: 'crm-kb', sources: ctx.sources, ip: b.ip, page: b.page, userAgent: b.userAgent })
+            .catch(e => console.warn('⚠️ site-chat save:', e.message));
+        res.json({ success: true, reply: String(text).trim(), sources: ctx.sources });
+    } catch (e) {
+        console.warn('⚠️ site-chat:', e.message);
+        res.status(502).json({ success: false });
+    }
+});
+
+// GET /api/admin/site-conversations?lead=1&q=&limit=
+app.get('/api/admin/site-conversations', authenticateToken, requireRole('admin'), async (req, res) => {
+    try {
+        if (!db) return res.status(503).json({ message: 'Base de dados indisponível' });
+        const limit = Math.min(parseInt(req.query.limit, 10) || 100, 500);
+        const filter = {};
+        if (req.query.lead === '1') filter.hasLead = true;
+        if (req.query.q) {
+            const rx = new RegExp(String(req.query.q).slice(0, 60).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
+            filter.$or = [{ 'messages.text': rx }, { 'lead.name': rx }, { 'lead.phone': rx }, { 'lead.email': rx }];
+        }
+        const items = await db.collection('site_conversations').find(filter, { projection: { _id: 0 } }).sort({ updatedAt: -1 }).limit(limit).toArray();
+        res.json({ total: items.length, items });
+    } catch (e) {
+        res.status(500).json({ message: 'Erro ao obter conversas' });
+    }
+});
+
+// PATCH /api/admin/site-conversations/:sessionId — { status: new|contacted|closed, note }
+app.patch('/api/admin/site-conversations/:sessionId', authenticateToken, requireRole('admin'), async (req, res) => {
+    try {
+        const set = {};
+        if (['new', 'contacted', 'closed'].includes(req.body.status)) set.status = req.body.status;
+        if (typeof req.body.note === 'string') set.note = req.body.note.slice(0, 1000);
+        if (!Object.keys(set).length) return res.status(400).json({ message: 'Nada para atualizar' });
+        const r = await db.collection('site_conversations').updateOne({ sessionId: String(req.params.sessionId).slice(0, 64) }, { $set: set });
+        res.json({ success: r.matchedCount === 1 });
+    } catch (e) {
+        res.status(500).json({ message: 'Erro' });
+    }
+});
+
+
 
 // AI Chat endpoint
 app.post('/api/ai/chat', authenticateToken, aiLimiter, async (req, res) => {
