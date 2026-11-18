@@ -11341,8 +11341,8 @@ async function buildSmartAIContext(lowerMsg, originalMsg, role, user, db) {
     const parts = [];
 
     // ── Intent flags ──────────────────────────────────────────
-    const wantsMyLifts    = /meus elevadores|os meus|minha lista|minhas instalações|elevadores atribuídos|minha carteira|my lifts/i.test(lowerMsg);
-    const wantsMyTasks    = /minhas tarefas|meu trabalho|pendentes|por fazer|tarefas hoje|trabalho de hoje|pedidos atribuídos|my tasks|meus pedidos/i.test(lowerMsg);
+    const wantsMyLifts    = /meus elevadores|os meus|minha lista|minhas instalações|elevadores atribuídos|minha carteira|my lifts|quantos elevadores|quantos ascensores|elevadores (que )?tenho|tenho (\w+ )?(elevadores|ascensores)|o meu elevador|nosso elevador|elevadores d[oe] (meu|nosso)|(meu|nosso) (prédio|edifício|condomínio)/i.test(lowerMsg);
+    const wantsMyTasks    = /minhas tarefas|meu trabalho|pendentes|por fazer|tarefas hoje|trabalho de hoje|pedidos atribuídos|my tasks|meus pedidos|os meus pedidos|pedidos? (abertos?|em curso|pendentes?)|tenho (algum )?pedido|estado d[oe] (meu )?pedido/i.test(lowerMsg);
     const wantsRoute      = /rota|caminho|percurso|itinerário|ordem de visita|otimizar|mais curto|minimizar deslocação|trajeto/i.test(lowerMsg);
     const wantsUrgent     = /urgent|c1|crítico|crítica|imobilizado|parado|avaria/i.test(lowerMsg);
     const wantsStats      = /estatística|quantos|total|resumo|overview|visão geral|relatório|quantas inspeções/i.test(lowerMsg);
@@ -11509,9 +11509,14 @@ async function buildSmartAIContext(lowerMsg, originalMsg, role, user, db) {
 
     // ── 4. Role: CLIENT ───────────────────────────────────────
     if (role === 'client') {
+        const _emailRx = new RegExp('^' + String(userEmail).replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$', 'i');
         const clientLifts = await db.collection('lifts').find({
-            $or: [{ clientId: userId }, { 'client.id': userId }, { clientEmail: userEmail }, { 'client.email': userEmail }]
+            $or: [{ clientId: userId }, { 'client.id': userId }, { clientEmail: _emailRx }, { 'client.email': _emailRx }]
         }).limit(20).toArray();
+
+        if (clientLifts.length === 0 && (wantsMyLifts || wantsInspections || wantsStats)) {
+            parts.push('🏢 OS MEUS ELEVADORES: nenhum elevador está associado a esta conta de cliente. Diz isso ao utilizador e sugere contactar a FestLift para associar os seus elevadores à conta.');
+        }
 
         if (clientLifts.length > 0 && (wantsMyLifts || wantsInspections || wantsUrgent || wantsStats)) {
             const block = [`🏢 OS MEUS ELEVADORES (${clientLifts.length}):`];
@@ -11535,13 +11540,15 @@ async function buildSmartAIContext(lowerMsg, originalMsg, role, user, db) {
         // Client's open requests
         if (wantsMyTasks) {
             const openReqs = await db.collection('requests').find({
-                $or: [{ clientId: userId }, { clientEmail: userEmail }],
+                $or: [{ clientId: userId }, { clientEmail: _emailRx }],
                 status: { $nin: ['completed', 'cancelled', 'closed'] }
             }).limit(10).toArray();
             if (openReqs.length > 0) {
                 const block = [`📋 OS MEUS PEDIDOS ABERTOS (${openReqs.length}):`];
                 openReqs.forEach(r => block.push(`  • ${r.type||r.requestType||'pedido'} | ${r.status} | ${(r.description||'').slice(0,60)}`));
                 parts.push(block.join('\n'));
+            } else {
+                parts.push('📋 OS MEUS PEDIDOS ABERTOS: nenhum pedido aberto nesta conta.');
             }
         }
     }
@@ -11636,6 +11643,15 @@ POLÍTICA COMERCIAL E REPUTACIONAL (OBRIGATÓRIA):
 • Se o utilizador pedir comparação de marcas, responde com critérios técnicos e contratuais objetivos (interoperabilidade, SLA, peças, diagnóstico, custo total), sem juízos de valor.
 • Não dês aconselhamento jurídico definitivo; para temas legais, indica validação formal junto de DGEG/EIIE ou assessor jurídico.
 • Em matérias sensíveis, inclui uma nota breve: "Informação geral, sujeita a validação técnica e legal do caso concreto".
+
+
+ESTILO DE RESPOSTA (OBRIGATÓRIO):
+• Quem pergunta tem um problema ou uma decisão a tomar: começa logo pela resposta útil, sem saudações nem apresentações repetidas ("Olá, sou o Assistente...") — cumprimenta só se for a primeira mensagem.
+• Sê curto e claro: por defeito até ~120 palavras; só mais longo se for um procedimento com passos. Sem rodeios, sem repetir a pergunta, sem avisos genéricos.
+• Responde só ao que foi perguntado. Cita diploma/artigo apenas quando for o ponto da resposta e constar do contexto fornecido; nunca inventes artigos, valores ou prazos.
+• Quando existirem DADOS REAIS da base de dados, usa-os (moradas, estados, datas, pedidos). Nunca inventes dados do sistema; se faltar informação, diz exatamente o que falta.
+• Se faltar um dado essencial, faz UMA pergunta de esclarecimento.
+• Termina com o próximo passo concreto quando for útil.
 
 Current user: ${username}
 Role: ${role}
@@ -12935,8 +12951,16 @@ A FestLift é uma empresa real de manutenção de instalações de elevação (E
 ferramenta interna que a própria FestLift usa para gerir os seus elevadores, técnicos e clientes.
 Nome do utilizador: ${username || roleLabel}. Papel: ${roleLabel}.
 ${roleContext}
-Responde SEMPRE em português europeu (pt-PT), de forma técnica, detalhada e profissional.
-Cita sempre o diploma ou norma aplicável nas respostas jurídicas/técnicas.
+Responde SEMPRE em português europeu (pt-PT), de forma técnica, clara e direta.
+Cita o diploma ou norma aplicável quando a pergunta for jurídica/técnica e constar do contexto.
+ESTILO DE RESPOSTA (OBRIGATÓRIO):
+• Quem pergunta tem um problema ou uma decisão a tomar: começa logo pela resposta útil, sem saudações nem apresentações repetidas ("Olá, sou o Assistente...") — cumprimenta só se for a primeira mensagem.
+• Sê curto e claro: por defeito até ~120 palavras; só mais longo se for um procedimento com passos. Sem rodeios, sem repetir a pergunta, sem avisos genéricos.
+• Responde só ao que foi perguntado. Cita diploma/artigo apenas quando for o ponto da resposta e constar do contexto fornecido; nunca inventes artigos, valores ou prazos.
+• Quando existirem DADOS REAIS da base de dados, usa-os (moradas, estados, datas, pedidos). Nunca inventes dados do sistema; se faltar informação, diz exatamente o que falta.
+• Se faltar um dado essencial, faz UMA pergunta de esclarecimento.
+• Termina com o próximo passo concreto quando for útil.
+
 
 ━━ REGULAMENTAÇÃO PORTUGUESA DE ELEVADORES ━━
 - DL 320/2002 (28 dez): regime de manutenção e inspeções periódicas obrigatórias (periodicidade no art.º 8.º)
@@ -12975,7 +12999,7 @@ Cita sempre o diploma ou norma aplicável nas respostas jurídicas/técnicas.
 - Relatórios processados automaticamente: Bureau Veritas (BV), GATECI, CML, formato geral
 - QR codes em cada elevador para acesso rápido ao histórico
 
-Dá respostas completas e fundamentadas. Usa listas e citações legais quando aplicável.`;
+Usa listas curtas quando ajudarem.`;
 }
 
 async function callGroqAI(message, role, username, regulationsContext = null, reportTextContext = null, dbContext = null) {
@@ -13018,39 +13042,44 @@ async function callGroqAI(message, role, username, regulationsContext = null, re
 }
 
 async function callMainAI(message, role, username, regulationsContext = null, reportTextContext = null, dbContext = null) {
-    // Priority: Groq → Ollama → Gemini
-    // Groq: free, fast (Llama 3.3 70B ~500 tok/s)
-    // Ollama: local fallback (~25s on CPU)
-    // Gemini: last resort
+    // Ordem (auto): Gemini → Groq → Ollama (local, por último, lento e mais fraco)
+    let lastErr;
 
-    if (AI_PROVIDER === 'groq' || (AI_PROVIDER === 'auto' && process.env.GROQ_API_KEY)) {
+    if (process.env.GEMINI_API_KEY && AI_PROVIDER !== 'groq' && AI_PROVIDER !== 'ollama') {
         try {
-            const response = await callGroqAI(message, role, username, regulationsContext, reportTextContext, dbContext);
-            return { response, poweredBy: `Groq (${process.env.GROQ_MODEL || 'openai/gpt-oss-120b'})` };
-        } catch (groqErr) {
-            console.warn(`⚠️ Groq failed (${groqErr.message?.slice(0, 80)}), falling back to Ollama...`);
+            const response = await callGeminiAI(message, role, username, regulationsContext, reportTextContext, dbContext);
+            return { response, poweredBy: 'Google Gemini Flash' };
+        } catch (gemErr) {
+            lastErr = gemErr;
+            console.warn(`⚠️ Gemini failed (${gemErr.message?.slice(0, 80)}), falling back to Groq...`);
         }
     }
 
-    if (AI_PROVIDER !== 'gemini') {
-        const useOllama = AI_PROVIDER === 'ollama' || AI_PROVIDER === 'auto'
-            ? await isOllamaAvailable()
-            : false;
-        if (useOllama) {
+    if (AI_PROVIDER === 'groq' || AI_PROVIDER === 'auto' || AI_PROVIDER === 'gemini') {
+        if (process.env.GROQ_API_KEY) {
             try {
-                const response = await callOllamaAI(message, role, username, regulationsContext, reportTextContext, dbContext);
-                return { response, poweredBy: `Ollama (${OLLAMA_MODEL})` };
-            } catch (ollamaErr) {
-                console.warn(`⚠️ Ollama failed (${ollamaErr.message?.slice(0, 80)}), falling back to Gemini...`);
+                const response = await callGroqAI(message, role, username, regulationsContext, reportTextContext, dbContext);
+                return { response, poweredBy: `Groq (${process.env.GROQ_MODEL || 'openai/gpt-oss-120b'})` };
+            } catch (groqErr) {
+                lastErr = groqErr;
+                console.warn(`⚠️ Groq failed (${groqErr.message?.slice(0, 80)}), falling back to Ollama...`);
             }
         }
     }
 
-    if (!process.env.GEMINI_API_KEY) {
-        throw new Error('Todos os provedores AI falharam e GEMINI_API_KEY não está configurado');
+    if (AI_PROVIDER === 'ollama' || AI_PROVIDER === 'auto') {
+        if (await isOllamaAvailable()) {
+            try {
+                const response = await callOllamaAI(message, role, username, regulationsContext, reportTextContext, dbContext);
+                return { response, poweredBy: `Ollama (${OLLAMA_MODEL})` };
+            } catch (ollamaErr) {
+                lastErr = ollamaErr;
+                console.warn(`⚠️ Ollama failed (${ollamaErr.message?.slice(0, 80)})`);
+            }
+        }
     }
-    const response = await callGeminiAI(message, role, username, regulationsContext, reportTextContext, dbContext);
-    return { response, poweredBy: 'Google Gemini Flash (fallback)' };
+
+    throw lastErr || new Error('Todos os provedores AI falharam');
 }
 
 // ─── AI GUEST ENDPOINT (без авторизації, IP-ліміт 2 аналізи + 20 чат/добу) ──
@@ -13095,46 +13124,16 @@ async function _callDeepSeekAI(messages) {
     return data.choices[0].message.content;
 }
 
-// Helper: call Gemini/Ollama in guest mode
-async function _callGuestAI(prompt, opts = {}) {
-    const _temp = opts.temperature ?? 0.3;
-    // auto: try Groq first (fast, free, 70B), then Ollama, then Gemini
-    if (AI_PROVIDER === 'groq' || (AI_PROVIDER === 'auto' && process.env.GROQ_API_KEY)) {
-        try {
-            const model = process.env.GROQ_MODEL || 'openai/gpt-oss-120b';
-            const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${process.env.GROQ_API_KEY}` },
-                body: JSON.stringify({ model, messages: [{ role: 'user', content: prompt }], temperature: _temp, max_tokens: 1024 }),
-                signal: AbortSignal.timeout(20000)
-            });
-            if (resp.ok) {
-                const data = await resp.json();
-                const text = data?.choices?.[0]?.message?.content;
-                if (text) { console.log(`✅ [GuestAI] Groq (${model}) responded`); return text; }
-            } else {
-                console.warn(`⚠️ [GuestAI] Groq HTTP ${resp.status}, falling back...`);
-            }
-        } catch (groqErr) {
-            console.warn(`⚠️ [GuestAI] Groq failed: ${groqErr.message?.slice(0, 80)}, falling back...`);
-        }
-    }
-
-    const useOllama = AI_PROVIDER === 'ollama' || (AI_PROVIDER === 'auto' && await isOllamaAvailable());
-
-    if (useOllama) {
-        return callOllamaRaw([{ role: 'user', content: prompt }]);
-    }
-
+// Helper: IA para visitantes/website. Ordem (AI_PROVIDER=auto): Gemini → Groq → Ollama (local, por último) → DeepSeek
+async function _guestGemini(prompt, _temp) {
     const models = ['gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-flash-latest', 'gemini-flash-lite-latest'];
     let lastErr;
     for (let i = 0; i < models.length; i++) {
         const modelName = models[i];
-        // Retry primary model once with delay if overloaded
-        const maxAttempts = (i === 0) ? 2 : 1;
+        const maxAttempts = (i === 0) ? 2 : 1; // modelo principal: 1 repetição se sobrecarregado
         for (let attempt = 0; attempt < maxAttempts; attempt++) {
             try {
-                const m = genAI.getGenerativeModel({ model: modelName, generationConfig: { temperature: _temp } });
+                const m = genAI.getGenerativeModel({ model: modelName, generationConfig: { temperature: _temp } }, { timeout: 20000 });
                 const result = await m.generateContent(prompt);
                 return result.response.text();
             } catch (err) {
@@ -13142,7 +13141,7 @@ async function _callGuestAI(prompt, opts = {}) {
                 const isOverloaded = err.message.includes('503') || err.message.includes('overloaded') || err.message.includes('high demand');
                 const isTransient = isOverloaded || err.message.includes('429') ||
                     err.message.includes('404') || err.message.includes('not found') ||
-                    err.message.includes('not supported');
+                    err.message.includes('not supported') || /timeout|aborted/i.test(err.message);
                 if (!isTransient) throw err;
                 if (isOverloaded && attempt < maxAttempts - 1) {
                     console.warn(`⚠️ Model ${modelName} overloaded, retrying in 2s...`);
@@ -13154,18 +13153,51 @@ async function _callGuestAI(prompt, opts = {}) {
             }
         }
     }
-    // All Gemini models failed — try DeepSeek as final fallback
+    throw lastErr || new Error('Gemini indisponível');
+}
+
+async function _guestGroq(prompt, _temp) {
+    const model = process.env.GROQ_MODEL || 'openai/gpt-oss-120b';
+    const resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${process.env.GROQ_API_KEY}` },
+        body: JSON.stringify({ model, messages: [{ role: 'user', content: prompt }], temperature: _temp, max_tokens: 1024 }),
+        signal: AbortSignal.timeout(20000)
+    });
+    if (!resp.ok) throw new Error(`Groq HTTP ${resp.status}`);
+    const data = await resp.json();
+    const text = data?.choices?.[0]?.message?.content;
+    if (!text) throw new Error('Groq sem conteúdo');
+    console.log(`✅ [GuestAI] Groq (${model}) responded`);
+    return text;
+}
+
+async function _callGuestAI(prompt, opts = {}) {
+    const _temp = opts.temperature ?? 0.3;
+    const base = ['gemini', 'groq', 'ollama'];
+    const order = AI_PROVIDER === 'auto' ? base : [AI_PROVIDER, ...base.filter(x => x !== AI_PROVIDER)];
+    let lastErr;
+    for (const prov of order) {
+        try {
+            if (prov === 'gemini' && process.env.GEMINI_API_KEY) return await _guestGemini(prompt, _temp);
+            if (prov === 'groq' && process.env.GROQ_API_KEY) return await _guestGroq(prompt, _temp);
+            if (prov === 'ollama' && (AI_PROVIDER === 'ollama' || await isOllamaAvailable())) {
+                return await callOllamaRaw([{ role: 'user', content: prompt }]);
+            }
+        } catch (err) {
+            lastErr = err;
+            console.warn(`⚠️ [GuestAI] ${prov} failed: ${String(err.message).slice(0, 80)}, trying next...`);
+        }
+    }
     if (process.env.DEEPSEEK_API_KEY) {
         try {
             console.log('🔄 Guest AI: falling back to DeepSeek...');
-            const dsText = await _callDeepSeekAI([{ role: 'user', content: prompt }]);
-            console.log('✅ DeepSeek guest response OK');
-            return dsText;
+            return await _callDeepSeekAI([{ role: 'user', content: prompt }]);
         } catch (dsErr) {
             console.warn('⚠️ DeepSeek guest fallback failed:', dsErr.message);
         }
     }
-    throw lastErr;
+    throw lastErr || new Error('Sem provedor de IA disponível');
 }
 
 // GET /api/admin/guest-ai-log — perguntas/respostas do assistente público (só admin)
@@ -13258,9 +13290,10 @@ app.post('/api/ai/guest-chat', async (req, res) => {
 
         const guestAI = require('./services/guest-ai');
         const ctx = await guestAI.buildContext(db, message);
-        const prompt = guestAI.buildChatPrompt(message, ctx);
+        const prompt = guestAI.buildSiteChatPrompt(message, ctx, req.body.history);
 
-        const text = await _callGuestAI(prompt, { temperature: 0.1 });
+        let text = await _callGuestAI(prompt, { temperature: 0.2 });
+        text = _cleanSiteReply(text);
         guestAI.logExchange(db, { kind: 'chat', ip, question: message, answer: text, sources: ctx.sources, provider: AI_PROVIDER });
         const normMatches = (text.match(/DL\s*\d+\/\d+|Decreto-?Lei\s*n[.ºo]*\s*\d+\/\d+|NP\s*EN\s*81(?:-\d+)?|EN\s*81(?:-\d+)?|NP\s*EN\s*13015|IPAC|DGEG/gi) || [])
             .map(v => v.replace(/\s+/g, ' ').trim())
@@ -13293,6 +13326,11 @@ function _siteKeyOk(req) {
     return require('crypto').timingSafeEqual(Buffer.from(got), Buffer.from(expected));
 }
 const _clip = (v, n) => String(v == null ? '' : v).slice(0, n);
+
+function _cleanSiteReply(t) {
+    // "SOBRE A FESTLIFT" é contexto interno, nunca uma fonte a mostrar ao cliente
+    return String(t || '').replace(/[,;]?\s*SOBRE A FESTLIFT\s*/gi, ' ').replace(/\n*\s*Base:\s*(?:\n|\s)*$/i, '').replace(/[ \t]+\n/g, '\n').trim();
+}
 
 async function _saveSiteConv(b) {
     const sessionId = _clip(b.sessionId, 64).replace(/[^A-Za-z0-9_-]/g, '');
@@ -13358,8 +13396,10 @@ app.post('/api/public/site-chat', siteLogLimiter, async (req, res) => {
         const guestAI = require('./services/guest-ai');
         const ctx = await guestAI.buildContext(db, message);
         const prompt = guestAI.buildSiteChatPrompt(message, ctx, b.history);
-        const text = await _callGuestAI(prompt, { temperature: 0.2 });
+        let text = await _callGuestAI(prompt, { temperature: 0.2 });
         if (!text || !String(text).trim()) return res.status(502).json({ success: false });
+        // "SOBRE A FESTLIFT" é contexto interno, nunca uma fonte a mostrar ao cliente
+        text = _cleanSiteReply(text);
 
         _saveSiteConv({ sessionId: b.sessionId, userMessage: message, reply: text, provider: 'crm-kb', sources: ctx.sources, ip: b.ip, page: b.page, userAgent: b.userAgent })
             .catch(e => console.warn('⚠️ site-chat save:', e.message));
@@ -13403,6 +13443,62 @@ app.patch('/api/admin/site-conversations/:sessionId', authenticateToken, require
 });
 
 
+// ─────────────────────────────────────────────────────────────────────
+// Chat principal do CRM: base de conhecimento + registo das conversas
+// ─────────────────────────────────────────────────────────────────────
+async function _kbContextForUser(role, message) {
+    try {
+        if (!db || String(message || '').trim().length < 3) return null;
+        const guestAI = require('./services/guest-ai');
+        const ctx = await guestAI.buildContext(db, message, 3, 1500, { staff: role !== 'client', noFallback: true });
+        if (!ctx.text) return null;
+        return {
+            sources: ctx.sources,
+            text: 'BASE DE CONHECIMENTO FESTLIFT (artigos revistos pela equipa; fonte prioritária para legislação e procedimentos; ' +
+                  'se a informação não constar daqui nem dos dados acima, diz que não tens confirmação):\n' + ctx.text
+        };
+    } catch (e) {
+        console.warn('⚠️ KB context:', e.message);
+        return null;
+    }
+}
+
+async function _logAiChat(user, { question, answer, provider, sources, via, hasReport }) {
+    try {
+        if (!db) return;
+        const col = db.collection('ai_chat_log');
+        await col.insertOne({
+            userId: String((user && (user.id || user._id || user.userId)) || ''),
+            role: (user && user.role) || null,
+            via: via || 'chat',
+            question: _clip(question, 2000),
+            answer: _clip(answer, 5000),
+            provider: provider ? _clip(provider, 60) : null,
+            sources: (sources || []).slice(0, 6).map(x => _clip(x, 120)),
+            hasReport: !!hasReport,
+            createdAt: new Date()
+        });
+        col.createIndex({ createdAt: 1 }, { expireAfterSeconds: 180 * 24 * 3600 }).catch(() => {});
+    } catch (e) {
+        console.warn('⚠️ ai_chat_log:', e.message);
+    }
+}
+
+// GET /api/admin/ai-chat-log?role=&q=&limit= — perguntas/respostas do chat principal (só admin)
+app.get('/api/admin/ai-chat-log', authenticateToken, requireRole('admin'), async (req, res) => {
+    try {
+        const limit = Math.min(parseInt(req.query.limit, 10) || 100, 500);
+        const f = {};
+        if (['admin', 'dispatcher', 'tech', 'client'].includes(req.query.role)) f.role = req.query.role;
+        if (req.query.q) f.$or = [{ question: new RegExp(String(req.query.q).slice(0, 60).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i') }];
+        const items = await db.collection('ai_chat_log').find(f, { projection: { _id: 0 } }).sort({ createdAt: -1 }).limit(limit).toArray();
+        res.json({ total: items.length, items });
+    } catch (e) {
+        res.status(500).json({ message: 'Erro ao obter registos' });
+    }
+});
+
+
 
 // AI Chat endpoint
 app.post('/api/ai/chat', authenticateToken, aiLimiter, async (req, res) => {
@@ -13425,6 +13521,7 @@ app.post('/api/ai/chat', authenticateToken, aiLimiter, async (req, res) => {
         if (context && context.reportText) {
             console.log(`📋 Report context provided — sending to ${AI_PROVIDER} for contextual Q&A...`);
             const aiResult = await callMainAI(message, role, username, null, context.reportText);
+            _logAiChat(req.user, { question: message, answer: aiResult.response, provider: aiResult.poweredBy, via: 'chat', hasReport: true });
             return res.json({
                 success: true,
                 data: {
@@ -13450,6 +13547,9 @@ app.post('/api/ai/chat', authenticateToken, aiLimiter, async (req, res) => {
         } catch (dbLookupErr) {
             console.warn('⚠️ DB context lookup failed:', dbLookupErr.message);
         }
+
+        const kb = await _kbContextForUser(role, message);
+        if (kb) dbContext = [dbContext, kb.text].filter(Boolean).join('\n\n');
 
         // STEP 1: SEARCH IN REGULATIONS DATABASE FIRST
         console.log('🔍 Searching regulations database...');
@@ -13506,6 +13606,7 @@ app.post('/api/ai/chat', authenticateToken, aiLimiter, async (req, res) => {
         }
 
         // STEP 3: RETURN AI RESPONSE
+        _logAiChat(req.user, { question: message, answer: response, provider: poweredBy, sources: kb ? kb.sources : [], via: 'chat' });
         res.json({
             success: true,
             data: {
@@ -13556,6 +13657,8 @@ app.post('/api/ai/chat/stream', authenticateToken, aiLimiter, async (req, res) =
         if (db) {
             try { streamDbContext = await buildSmartAIContext(message.toLowerCase(), message, role, req.user, db); } catch(_){}
         }
+        const streamKb = await _kbContextForUser(role, message);
+        if (streamKb) streamDbContext = [streamDbContext, streamKb.text].filter(Boolean).join('\n\n');
         const contextualPrompt = buildAIUserPrompt(message, null, reportText, 50000, streamDbContext);
 
         const streamModels = ['gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-flash-latest', 'gemini-flash-lite-latest'];
@@ -13609,6 +13712,7 @@ app.post('/api/ai/chat/stream', authenticateToken, aiLimiter, async (req, res) =
             }
         }
 
+        _logAiChat(req.user, { question: message, answer: fullText, provider: `Gemini ${usedModel} (stream)`, sources: streamKb ? streamKb.sources : [], via: 'stream', hasReport: !!reportText });
         sendDone({ powered_by: `Google Gemini ${usedModel} (stream)`, timestamp: new Date().toISOString() });
         console.log(`✅ Gemini stream complete: ${fullText.length} chars for ${username}`);
 

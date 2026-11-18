@@ -13,73 +13,138 @@
       "number": "Secção 5.2",
       "title": "Caixa do elevador",
       "text": "A caixa do elevador deve:\na) Ser totalmente fechada por paredes, portas e teto;\nb) Resistir a cargas especificadas;\nc) Ser construída com materiais não combustíveis;\nd) Ter iluminação adequada (mínimo 50 lux);\ne) Ter ventilação suficiente.",
-      "keywords": ["caixa", "paredes", "resistência", "iluminação", "ventilação"]
+      "keywords": [
+        "caixa",
+        "paredes",
+        "resistência",
+        "iluminação",
+        "ventilação"
+      ]
     },
     {
       "number": "Secção 5.4",
       "title": "Portas de piso",
       "text": "As portas de piso devem:\na) Ser do tipo de fecho automático;\nb) Possuir dispositivo de bloqueio eletromecânico;\nc) Resistir a impactos conforme EN 81-20;\nd) Ter altura mínima de 2000 mm;\ne) Ter folga máxima de 6 mm entre painéis.",
-      "keywords": ["portas de piso", "bloqueio", "automático", "resistência"]
+      "keywords": [
+        "portas de piso",
+        "bloqueio",
+        "automático",
+        "resistência"
+      ]
     },
     {
       "number": "Secção 5.6",
       "title": "Casa de máquinas",
       "text": "A casa de máquinas deve:\na) Ser acessível e segura para técnicos;\nb) Ter altura livre mínima de 2000 mm;\nc) Ter iluminação mínima de 200 lux;\nd) Ter ventilação adequada (temperatura máxima 40°C);\ne) Ter proteção contra entrada de água;\nf) Ter sinalização de perigo visível.",
-      "keywords": ["casa de máquinas", "acessibilidade", "iluminação", "ventilação", "sinalização"]
+      "keywords": [
+        "casa de máquinas",
+        "acessibilidade",
+        "iluminação",
+        "ventilação",
+        "sinalização"
+      ]
     },
     {
       "number": "Secção 5.7",
       "title": "Máquinas e polias",
       "text": "O equipamento de tração deve:\na) Ter fator de segurança mínimo 12:1 para cabos;\nb) Ser protegido contra movimento acidental;\nc) Ter freio eletromecânico redundante;\nd) Suportar 125% da carga nominal;\ne) Ter dispositivo anti-retorno.",
-      "keywords": ["máquinas", "cabos", "freio", "carga", "segurança"]
+      "keywords": [
+        "máquinas",
+        "cabos",
+        "freio",
+        "carga",
+        "segurança"
+      ]
     },
     {
       "number": "Secção 5.8",
       "title": "Suspensão da cabine",
       "text": "Os cabos ou correntes devem:\na) Ter mínimo de 2 cabos ou correntes independentes;\nb) Fator de segurança ≥ 12;\nc) Ser inspecionados regularmente;\nd) Ter proteção contra corrosão;\ne) Ser substituídos se desgaste > 10% do diâmetro nominal.",
-      "keywords": ["cabos", "suspensão", "fator de segurança", "inspeção", "substituição"]
+      "keywords": [
+        "cabos",
+        "suspensão",
+        "fator de segurança",
+        "inspeção",
+        "substituição"
+      ]
     },
     {
       "number": "Secção 5.9",
       "title": "Dispositivos de segurança",
       "text": "Obrigatórios:\na) Para-quedas progressivo ou instantâneo;\nb) Limitador de velocidade testável;\nc) Amortecedores no poço (energia ou mola);\nd) Dispositivo de proteção contra velocidade excessiva na subida;\ne) Proteção contra movimento descontrolado da cabine.",
-      "keywords": ["para-quedas", "limitador de velocidade", "amortecedores", "segurança"]
+      "keywords": [
+        "para-quedas",
+        "limitador de velocidade",
+        "amortecedores",
+        "segurança"
+      ]
     },
     {
       "number": "Secção 5.10",
       "title": "Portas de cabine",
       "text": "As portas de cabine devem:\na) Ter sistema de proteção contra esmagamento;\nb) Reverter movimento ao detetar obstáculo;\nc) Ter força de fecho ≤ 150N;\nd) Ter cortina de luz ou sensor tátil;\ne) Prevenir arranque se porta aberta.",
-      "keywords": ["portas de cabine", "proteção", "sensores", "força de fecho"]
+      "keywords": [
+        "portas de cabine",
+        "proteção",
+        "sensores",
+        "força de fecho"
+      ]
     },
     {
       "number": "Secção 5.11",
       "title": "Iluminação e ventilação da cabine",
       "text": "A cabine deve ter:\na) Iluminação normal ≥ 100 lux ao nível do piso;\nb) Iluminação de emergência (50 lux por 1 hora mínimo);\nc) Ventilação natural ou forçada (mínimo 0,3 m³/h por pessoa);\nd) Temperatura máxima 35°C com ventilação adequada.",
-      "keywords": ["iluminação", "emergência", "ventilação", "temperatura"]
+      "keywords": [
+        "iluminação",
+        "emergência",
+        "ventilação",
+        "temperatura"
+      ]
     },
     {
       "number": "Secção 5.12",
       "title": "Alarme e comunicação",
       "text": "Sistema de alarme deve:\na) Funcionar mesmo sem energia (bateria);\nb) Conectar a serviço de monitoramento 24/7;\nc) Permitir comunicação bidirecional;\nd) Identificar automaticamente o elevador;\ne) Ter botão de alarme visível e acessível.",
-      "keywords": ["alarme", "comunicação", "emergência", "monitoramento"]
+      "keywords": [
+        "alarme",
+        "comunicação",
+        "emergência",
+        "monitoramento"
+      ]
     },
     {
       "number": "Secção 5.13",
       "title": "Proteção elétrica",
       "text": "Instalação elétrica deve:\na) Cumprir normas IEC 60364;\nb) Ter proteção contra choque elétrico (Classe I);\nc) Ter disjuntores e fusíveis adequados;\nd) Ter ligação à terra com resistência < 1Ω;\ne) Ter proteção contra sobretensões.",
-      "keywords": ["elétrica", "proteção", "terra", "disjuntores"]
+      "keywords": [
+        "elétrica",
+        "proteção",
+        "terra",
+        "disjuntores"
+      ]
     },
     {
       "number": "Secção 5.14",
       "title": "Espaços livres",
       "text": "Distâncias mínimas de segurança:\na) Entre cabine e parede: 50 mm;\nb) Entre contrapeso e parede: 30 mm;\nc) Altura livre no topo da cabine: 1000 mm (para técnicos);\nd) Profundidade do poço: suficiente para amortecedores + folga;\ne) Distância entre portas e painéis móveis: ≤ 120 mm.",
-      "keywords": ["espaços livres", "distâncias", "segurança", "poço"]
+      "keywords": [
+        "espaços livres",
+        "distâncias",
+        "segurança",
+        "poço"
+      ]
     },
     {
       "number": "Secção 5.15",
       "title": "Testes e comissionamento",
       "text": "Antes da entrada em serviço:\na) Teste de freio com 125% da carga nominal;\nb) Teste de para-quedas;\nc) Teste de limitador de velocidade;\nd) Teste de todos os dispositivos de segurança;\ne) Verificação de ruído (< 65 dB na cabine);\nf) Emissão de certificado de conformidade.",
-      "keywords": ["testes", "comissionamento", "freio", "para-quedas", "certificado"]
+      "keywords": [
+        "testes",
+        "comissionamento",
+        "freio",
+        "para-quedas",
+        "certificado"
+      ]
     }
   ],
   "key_changes_from_en81_1_2": [
@@ -128,5 +193,6 @@
     "✅ Em Portugal, a norma é referenciada no Decreto-Lei 320/2002",
     "✅ Inspeções devem verificar conformidade com requisitos essenciais da EN 81-20",
     "📅 Prazo de transição: até 2025 para adaptações críticas"
-  ]
+  ],
+  "verification": "Resumo de apoio de norma técnica (CEN/IPQ, texto integral pago): valores numéricos NÃO verificados."
 }

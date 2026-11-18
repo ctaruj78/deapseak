@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" type="image/png" href="/assets/img/favicon.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ajuda QR | FestLift</title>
+    <link rel="stylesheet" href="../../plugins/adminlte/adminlte.min.css">
+    <link rel="stylesheet" href="../../plugins/fontawesome/css/all.min.css">
+    <script src="../../assets/js/auth.js"></script>
+    <style>
+        body { background: #f4f6f9; }
+        .hero {
+            background: linear-gradient(135deg, #0f5ba7 0%, #0077b6 100%);
+            color: #fff;
+            padding: 24px 0;
+        }
+        .hero-top {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 16px;
+        }
+        .hero h1 { font-size: 1.5rem; margin: 0; font-weight: 700; }
+        .hero p { margin: 6px 0 0; opacity: 0.92; }
+        .lang-switcher {
+            display: inline-flex;
+            gap: 6px;
+            background: rgba(255,255,255,.16);
+            padding: 4px;
+            border-radius: 999px;
+            flex-shrink: 0;
+        }
+        .lang-btn {
+            border: 0;
+            border-radius: 999px;
+            padding: 6px 10px;
+            font-size: .82rem;
+            font-weight: 700;
+            background: transparent;
+            color: #fff;
+            cursor: pointer;
+        }
+        .lang-btn.active {
+            background: #fff;
+            color: #0f5ba7;
+        }
+        .card-elev {
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0,0,0,.08);
+            border: 0;
+        }
+        .lift-meta {
+            background: #eef6ff;
+            border: 1px solid #cfe7ff;
+            border-radius: 10px;
+            padding: 12px;
+        }
+        .urgent-box {
+            border: 1px solid #f6c4c4;
+            background: #fff5f5;
+            color: #8d1f1f;
+            border-radius: 10px;
+            padding: 10px 12px;
+            display: none;
+        }
+        .muted-note {
+            font-size: .9rem;
+            color: #6c757d;
+        }
+        .support-actions {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 10px;
+            margin-top: 12px;
+        }
+        .support-action {
+            border: 0;
+            border-radius: 10px;
+            color: #fff;
+            font-weight: 700;
+            padding: 10px 12px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+        .support-action:hover,
+        .support-action:focus {
+            color: #fff;
+            text-decoration: none;
+            opacity: .92;
+        }
+        .wa-action { background: #25D366; }
+        .call-action { background: #0d6efd; }
+        .mail-action { background: #6f42c1; }
+
+        .tech-actions {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 10px;
+            margin-top: 4px;
+        }
+        .tech-action {
+            border: 0;
+            border-radius: 10px;
+            color: #fff;
+            font-weight: 700;
+            padding: 16px 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .tech-action i { font-size: 1.4rem; }
+        .tech-action:hover, .tech-action:focus { color: #fff; text-decoration: none; opacity: .92; }
+        .maint-action { background: #0d6efd; }
+        .repair-action { background: #fd7e14; }
+        .emergency-action { background: #dc3545; }
+        @media (max-width: 576px) {
+            .tech-actions { grid-template-columns: 1fr; }
+        }
+        .footer-mini {
+            text-align: center;
+            padding: 12px;
+            color: #6c757d;
+            font-size: .85rem;
+        }
+        @media (max-width: 576px) {
+            .hero-top {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .lang-switcher {
+                align-self: flex-start;
+            }
+            .support-actions {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="hero">
+        <div class="container">
+            <div class="hero-top">
+                <div>
+                    <h1 id="pageTitle"><i class="fas fa-qrcode mr-2"></i>Ajuda via QR do Elevador</h1>
+                    <p id="pageSubtitle">Identificação rápida do equipamento e envio de alerta para a equipa FestLift.</p>
+                </div>
+                <div class="lang-switcher" aria-label="Language switcher">
+                    <button type="button" class="lang-btn active" data-lang="pt">PT</button>
+                    <button type="button" class="lang-btn" data-lang="en">EN</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container py-3 py-md-4">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card card-elev">
+                    <div class="card-body">
+                        <div id="loadingBox" class="text-center py-3">
+                            <i class="fas fa-spinner fa-spin mr-2"></i><span id="loadingText">A carregar dados do elevador...</span>
+                        </div>
+
+                        <div id="errorBox" class="alert alert-danger" style="display:none"></div>
+
+                        <div id="mainBox" style="display:none">
+                            <div class="lift-meta mb-3">
+                                <div><strong id="municipalLabel">N.º Municipal:</strong> <span id="liftMunicipal">-</span></div>
+                                <div><strong id="addressLabel">Morada:</strong> <span id="liftAddress">-</span></div>
+                            </div>
+
+                            <div class="lift-meta mb-3">
+                                <div><strong id="quickSupportTitle">Contacto rápido de suporte</strong></div>
+                                <div class="support-actions">
+                                    <a id="supportWhatsAppBtn" class="support-action wa-action" href="#" target="_blank" rel="noopener noreferrer">
+                                        <i class="fab fa-whatsapp"></i><span id="supportWhatsAppText">WhatsApp</span>
+                                    </a>
+                                    <a id="supportCallBtn" class="support-action call-action" href="#">
+                                        <i class="fas fa-phone-alt"></i><span id="supportCallText">Ligar</span>
+                                    </a>
+                                    <a id="supportEmailBtn" class="support-action mail-action" href="#">
+                                        <i class="fas fa-envelope"></i><span id="supportEmailText">Email</span>
+                                    </a>
+                                </div>
+                            </div>
+
+                            <!-- Técnico autenticado: escolha de intervenção -->
+                            <div id="techSection" style="display:none">
+                                <div class="lift-meta mb-3">
+                                    <div><strong id="techSectionTitle">O que vai fazer neste elevador?</strong></div>
+                                    <div class="tech-actions">
+                                        <button type="button" id="techMaintenanceBtn" class="tech-action maint-action">
+                                            <i class="fas fa-clipboard-check"></i><span id="techMaintenanceText">Manutenção</span>
+                                        </button>
+                                        <button type="button" id="techRepairBtn" class="tech-action repair-action">
+                                            <i class="fas fa-wrench"></i><span id="techRepairText">Reparação</span>
+                                        </button>
+                                        <button type="button" id="techEmergencyBtn" class="tech-action emergency-action">
+                                            <i class="fas fa-exclamation-triangle"></i><span id="techEmergencyText">Avaria</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Visitante sem conta: formulário de alerta -->
+                            <div id="guestSection">
+                            <div class="alert alert-info mb-3" id="infoBanner">
+                                <i class="fas fa-info-circle mr-1"></i>
+                                Esta página não mostra histórico técnico. Para segurança, visitantes sem conta apenas podem abrir alerta.
+                            </div>
+
+                            <form id="publicAlertForm" novalidate>
+                                <div class="form-group">
+                                    <label for="issueType" id="issueTypeLabel">O que se passa?</label>
+                                    <select id="issueType" class="form-control" required>
+                                        <option value="" id="issueTypePlaceholder">Selecione uma opção</option>
+                                        <option value="stuck" id="issueTypeStuck">Estamos presos na cabina</option>
+                                        <option value="malfunction" id="issueTypeMalfunction">Elevador avariado / não responde</option>
+                                        <option value="other" id="issueTypeOther">Outro problema</option>
+                                    </select>
+                                </div>
+
+                                <div id="urgentBox" class="urgent-box mb-3">
+                                    <i class="fas fa-exclamation-triangle mr-1"></i>
+                                    <span id="urgentText">Emergência identificada. Envie o alerta e aguarde contacto imediato da assistência.</span>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="issueDetails" id="issueDetailsLabel">Descreva brevemente</label>
+                                    <textarea id="issueDetails" class="form-control" rows="4" maxlength="1000" required placeholder="Ex.: A cabina parou entre pisos e as portas não abrem."></textarea>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="contactName" id="contactNameLabel">Nome (opcional)</label>
+                                    <input id="contactName" type="text" class="form-control" maxlength="120" placeholder="Nome de contacto">
+                                </div>
+
+                                <div class="form-row">
+                                    <div class="form-group col-md-6">
+                                        <label for="contactPhone" id="contactPhoneLabel">Telefone</label>
+                                        <input id="contactPhone" type="tel" class="form-control" required maxlength="40" placeholder="+351 ...">
+                                    </div>
+                                    <div class="form-group col-md-6">
+                                        <label for="contactEmail" id="contactEmailLabel">Email</label>
+                                        <input id="contactEmail" type="email" class="form-control" required maxlength="180" placeholder="nome@email.com">
+                                    </div>
+                                </div>
+
+                                <!-- Honeypot anti-bot -->
+                                <input type="text" id="website" name="website" tabindex="-1" autocomplete="off" style="position:absolute;left:-10000px;top:auto;width:1px;height:1px;overflow:hidden;">
+
+                                <button id="submitBtn" type="submit" class="btn btn-danger btn-block">
+                                    <i class="fas fa-paper-plane mr-1"></i><span id="submitBtnText">Enviar alerta</span>
+                                </button>
+                            </form>
+
+                            <div id="submitErrorBox" class="alert alert-danger mt-3" style="display:none"></div>
+
+                            <div id="resultBox" class="alert alert-success mt-3" style="display:none"></div>
+
+                            <p class="muted-note mt-3 mb-0" id="privacyNote">
+                                Ao enviar, os dados são usados apenas para contacto e gestão do pedido de assistência.
+                            </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="footer-mini">
+                    <span id="supportLabel">FestLift suporte:</span> <a id="supportPhoneLink" href="#">+351 214 190 863</a> | <a id="supportEmailLink" href="#">info@festlift.pt</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentLiftId = null;
+        let currentLang = 'pt';
+
+        const translations = {
+            pt: {
+                title: 'Ajuda QR | FestLift',
+                pageTitle: 'Ajuda via QR do Elevador',
+                pageSubtitle: 'Identificação rápida do equipamento e envio de alerta para a equipa FestLift.',
+                loading: 'A carregar dados do elevador...',
+                municipalLabel: 'N.º Municipal:',
+                addressLabel: 'Morada:',
+                infoBanner: 'Esta página não mostra histórico técnico. Para segurança, visitantes sem conta apenas podem abrir alerta.',
+                issueTypeLabel: 'O que se passa?',
+                quickSupportTitle: 'Contacto rápido de suporte',
+                supportWhatsAppText: 'WhatsApp',
+                supportCallText: 'Ligar',
+                supportEmailText: 'Email',
+                issueTypePlaceholder: 'Selecione uma opção',
+                issueTypeStuck: 'Estamos presos na cabina',
+                issueTypeMalfunction: 'Elevador avariado / não responde',
+                issueTypeOther: 'Outro problema',
+                urgentText: 'Emergência identificada. Envie o alerta e aguarde contacto imediato da assistência.',
+                issueDetailsLabel: 'Descreva brevemente',
+                issueDetailsPlaceholder: 'Ex.: A cabina parou entre pisos e as portas não abrem.',
+                contactNameLabel: 'Nome (opcional)',
+                contactNamePlaceholder: 'Nome de contacto',
+                contactPhoneLabel: 'Telefone',
+                contactPhonePlaceholder: '+351 ...',
+                contactEmailLabel: 'Email',
+                contactEmailPlaceholder: 'nome@email.com',
+                submit: 'Enviar alerta',
+                sending: 'A enviar...',
+                privacyNote: 'Ao enviar, os dados são usados apenas para contacto e gestão do pedido de assistência.',
+                supportLabel: 'FestLift suporte:',
+                errorInvalidQr: 'Link QR inválido: não foi possível identificar o elevador.',
+                errorLiftNotFound: 'Elevador não encontrado',
+                errorLoadLift: 'Erro ao carregar os dados do elevador.',
+                fillRequired: 'Preencha os campos obrigatórios antes de enviar.',
+                alertSendFailed: 'Não foi possível enviar o alerta.',
+                alertSendError: 'Erro ao enviar alerta.',
+                alertSuccessFallback: 'Alerta enviado com sucesso.',
+                requestNumberPrefix: 'Pedido:',
+                issueLabelStuck: 'Pessoa presa na cabina',
+                issueLabelMalfunction: 'Elevador avariado',
+                issueLabelOther: 'Outro problema',
+                techSectionTitle: 'O que vai fazer neste elevador?',
+                techMaintenanceText: 'Manutenção',
+                techRepairText: 'Reparação',
+                techEmergencyText: 'Avaria'
+            },
+            en: {
+                title: 'QR Help | FestLift',
+                pageTitle: 'Elevator QR Help',
+                pageSubtitle: 'Quick equipment identification and alert submission to the FestLift team.',
+                loading: 'Loading elevator data...',
+                municipalLabel: 'Municipal Number:',
+                addressLabel: 'Address:',
+                infoBanner: 'This page does not show technical history. For safety, visitors without an account can only open an alert.',
+                issueTypeLabel: 'What is happening?',
+                quickSupportTitle: 'Quick support contact',
+                supportWhatsAppText: 'WhatsApp',
+                supportCallText: 'Call',
+                supportEmailText: 'Email',
+                issueTypePlaceholder: 'Select an option',
+                issueTypeStuck: 'We are stuck in the cabin',
+                issueTypeMalfunction: 'Elevator malfunction / not responding',
+                issueTypeOther: 'Other problem',
+                urgentText: 'Emergency identified. Send the alert and wait for immediate assistance contact.',
+                issueDetailsLabel: 'Describe the issue briefly',
+                issueDetailsPlaceholder: 'Example: The cabin stopped between floors and the doors will not open.',
+                contactNameLabel: 'Name (optional)',
+                contactNamePlaceholder: 'Contact name',
+                contactPhoneLabel: 'Phone',
+                contactPhonePlaceholder: '+44 ...',
+                contactEmailLabel: 'Email',
+                contactEmailPlaceholder: 'name@email.com',
+                submit: 'Send alert',
+                sending: 'Sending...',
+                privacyNote: 'When submitted, your data is used only for contact and assistance request handling.',
+                supportLabel: 'FestLift support:',
+                errorInvalidQr: 'Invalid QR link: the elevator could not be identified.',
+                errorLiftNotFound: 'Elevator not found',
+                errorLoadLift: 'Error loading elevator data.',
+                fillRequired: 'Please fill in the required fields before sending.',
+                alertSendFailed: 'Could not send the alert.',
+                alertSendError: 'Error sending alert.',
+                alertSuccessFallback: 'Alert sent successfully.',
+                requestNumberPrefix: 'Request:',
+                issueLabelStuck: 'Person trapped in the cabin',
+                issueLabelMalfunction: 'Elevator malfunction',
+                issueLabelOther: 'Other problem',
+                techSectionTitle: 'What will you do on this elevator?',
+                techMaintenanceText: 'Maintenance',
+                techRepairText: 'Repair',
+                techEmergencyText: 'Breakdown'
+            }
+        };
+
+        function t(key) {
+            return (translations[currentLang] && translations[currentLang][key]) || translations.pt[key] || key;
+        }
+
+        function applyLanguage(lang) {
+            currentLang = translations[lang] ? lang : 'pt';
+            localStorage.setItem('publicQrHelpLang', currentLang);
+
+            document.documentElement.lang = currentLang;
+            document.title = t('title');
+            document.getElementById('pageTitle').innerHTML = `<i class="fas fa-qrcode mr-2"></i>${t('pageTitle')}`;
+            document.getElementById('pageSubtitle').textContent = t('pageSubtitle');
+            document.getElementById('loadingText').textContent = t('loading');
+            document.getElementById('municipalLabel').textContent = t('municipalLabel');
+            document.getElementById('addressLabel').textContent = t('addressLabel');
+            document.getElementById('infoBanner').innerHTML = `<i class="fas fa-info-circle mr-1"></i>${t('infoBanner')}`;
+            document.getElementById('issueTypeLabel').textContent = t('issueTypeLabel');
+            document.getElementById('quickSupportTitle').textContent = t('quickSupportTitle');
+            document.getElementById('supportWhatsAppText').textContent = t('supportWhatsAppText');
+            document.getElementById('supportCallText').textContent = t('supportCallText');
+            document.getElementById('supportEmailText').textContent = t('supportEmailText');
+            document.getElementById('issueTypePlaceholder').textContent = t('issueTypePlaceholder');
+            document.getElementById('issueTypeStuck').textContent = t('issueTypeStuck');
+            document.getElementById('issueTypeMalfunction').textContent = t('issueTypeMalfunction');
+            document.getElementById('issueTypeOther').textContent = t('issueTypeOther');
+            document.getElementById('urgentText').textContent = t('urgentText');
+            document.getElementById('issueDetailsLabel').textContent = t('issueDetailsLabel');
+            document.getElementById('issueDetails').placeholder = t('issueDetailsPlaceholder');
+            document.getElementById('contactNameLabel').textContent = t('contactNameLabel');
+            document.getElementById('contactName').placeholder = t('contactNamePlaceholder');
+            document.getElementById('contactPhoneLabel').textContent = t('contactPhoneLabel');
+            document.getElementById('contactPhone').placeholder = t('contactPhonePlaceholder');
+            document.getElementById('contactEmailLabel').textContent = t('contactEmailLabel');
+            document.getElementById('contactEmail').placeholder = t('contactEmailPlaceholder');
+            document.getElementById('submitBtnText').textContent = t('submit');
+            document.getElementById('privacyNote').textContent = t('privacyNote');
+            document.getElementById('supportLabel').textContent = t('supportLabel');
+            document.getElementById('techSectionTitle').textContent = t('techSectionTitle');
+            document.getElementById('techMaintenanceText').textContent = t('techMaintenanceText');
+            document.getElementById('techRepairText').textContent = t('techRepairText');
+            document.getElementById('techEmergencyText').textContent = t('techEmergencyText');
+
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.lang === currentLang);
+            });
+        }
+
+        function chooseInitialLanguage() {
+            const saved = localStorage.getItem('publicQrHelpLang');
+            if (saved && translations[saved]) return saved;
+
+            const browserLang = (navigator.language || navigator.userLanguage || 'pt').toLowerCase();
+            return browserLang.startsWith('en') ? 'en' : 'pt';
+        }
+
+        function setError(message) {
+            const err = document.getElementById('errorBox');
+            err.textContent = message;
+            err.style.display = 'block';
+            document.getElementById('loadingBox').style.display = 'none';
+        }
+
+        function showSubmitError(message) {
+            const box = document.getElementById('submitErrorBox');
+            box.textContent = message;
+            box.style.display = 'block';
+            box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        function hideSubmitError() {
+            document.getElementById('submitErrorBox').style.display = 'none';
+        }
+
+        function updateUrgencyUI() {
+            const issueType = document.getElementById('issueType').value;
+            document.getElementById('urgentBox').style.display = issueType === 'stuck' ? 'block' : 'none';
+        }
+
+        function toWhatsAppNumber(raw) {
+            const digits = String(raw || '').replace(/[^\d+]/g, '');
+            if (!digits) return '';
+            if (digits.startsWith('+')) return digits.slice(1);
+            return digits;
+        }
+
+        function buildWhatsAppLink(number, municipal, address) {
+            const waNumber = toWhatsAppNumber(number);
+            if (!waNumber) return '#';
+            const message = currentLang === 'en'
+                ? `Hello FestLift support. I scanned the elevator QR code. Lift: ${municipal || '-'} | Address: ${address || '-'}.`
+                : `Olá suporte FestLift. Li o QR do elevador. Elevador: ${municipal || '-'} | Morada: ${address || '-'}.`;
+            return `https://wa.me/${waNumber}?text=${encodeURIComponent(message)}`;
+        }
+
+        function isLoggedInTechnician() {
+            if (typeof AuthManager === 'undefined' || !AuthManager.isAuthenticated()) return false;
+            const user = AuthManager.getCurrentUser();
+            const role = String((user && user.role) || '').trim().toLowerCase();
+            return role === 'tech' || role === 'technician' || role === 'tecnico' || role === 'técnico';
+        }
+
+        function applyRoleView() {
+            const isTech = isLoggedInTechnician();
+            document.getElementById('techSection').style.display = isTech ? 'block' : 'none';
+            document.getElementById('guestSection').style.display = isTech ? 'none' : 'block';
+
+            // Técnicos usam sempre PT-PT; o seletor de idioma é só para visitantes
+            const langSwitcher = document.querySelector('.lang-switcher');
+            if (langSwitcher) langSwitcher.style.display = isTech ? 'none' : 'inline-flex';
+            if (isTech && currentLang !== 'pt') applyLanguage('pt');
+        }
+
+        async function loadLiftInfo() {
+            const params = new URLSearchParams(window.location.search);
+            const liftId = params.get('liftId');
+            if (!liftId) {
+                setError(t('errorInvalidQr'));
+                return;
+            }
+
+            currentLiftId = liftId;
+
+            try {
+                const res = await fetch(`/api/qr/public/lift/${encodeURIComponent(liftId)}`);
+                const data = await res.json();
+                if (!res.ok || !data.success || !data.data || !data.data.lift) {
+                    throw new Error(data.message || t('errorLiftNotFound'));
+                }
+
+                document.getElementById('liftMunicipal').textContent = data.data.lift.municipalNumber || '-';
+                document.getElementById('liftAddress').textContent = data.data.lift.address || '-';
+
+                const phone = data.data.emergencyContacts && data.data.emergencyContacts.phone ? data.data.emergencyContacts.phone : '+351 214 190 863';
+                const email = data.data.emergencyContacts && data.data.emergencyContacts.email ? data.data.emergencyContacts.email : 'info@festlift.pt';
+                const whatsapp = data.data.emergencyContacts && data.data.emergencyContacts.whatsapp
+                    ? data.data.emergencyContacts.whatsapp
+                    : phone;
+
+                const phoneLink = document.getElementById('supportPhoneLink');
+                phoneLink.textContent = phone;
+                phoneLink.href = `tel:${phone.replace(/\s+/g, '')}`;
+
+                const callBtn = document.getElementById('supportCallBtn');
+                callBtn.href = `tel:${phone.replace(/\s+/g, '')}`;
+
+                const emailLink = document.getElementById('supportEmailLink');
+                emailLink.textContent = email;
+                emailLink.href = `mailto:${email}`;
+
+                const emailBtn = document.getElementById('supportEmailBtn');
+                emailBtn.href = `mailto:${email}`;
+
+                const whatsappBtn = document.getElementById('supportWhatsAppBtn');
+                whatsappBtn.href = buildWhatsAppLink(whatsapp, data.data.lift.municipalNumber, data.data.lift.address);
+
+                applyRoleView();
+
+                document.getElementById('loadingBox').style.display = 'none';
+                document.getElementById('mainBox').style.display = 'block';
+            } catch (error) {
+                setError(error.message || t('errorLoadLift'));
+            }
+        }
+
+        async function sendPublicAlert(event) {
+            event.preventDefault();
+
+            if (!currentLiftId) return;
+
+            const issueType = document.getElementById('issueType').value.trim();
+            const issueDetails = document.getElementById('issueDetails').value.trim();
+            const name = document.getElementById('contactName').value.trim();
+            const phone = document.getElementById('contactPhone').value.trim();
+            const email = document.getElementById('contactEmail').value.trim();
+            const website = document.getElementById('website').value;
+
+            hideSubmitError();
+
+            if (!issueType || !issueDetails || !phone || !email) {
+                showSubmitError(t('fillRequired'));
+                return;
+            }
+
+            const btn = document.getElementById('submitBtn');
+            const original = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fas fa-spinner fa-spin mr-1"></i>${t('sending')}`;
+
+            try {
+                const res = await fetch('/api/qr/public/alert', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        liftId: currentLiftId,
+                        issueType,
+                        issueDetails,
+                        name,
+                        phone,
+                        email,
+                        website,
+                        isTrapped: issueType === 'stuck'
+                    })
+                });
+
+                const data = await res.json();
+                if (!res.ok || !data.success) {
+                    throw new Error(data.message || t('alertSendFailed'));
+                }
+
+                const box = document.getElementById('resultBox');
+                const reqNum = data.data && data.data.requestNumber ? ` ${t('requestNumberPrefix')} ${data.data.requestNumber}.` : '';
+                box.textContent = (data.message || t('alertSuccessFallback')) + reqNum;
+                box.style.display = 'block';
+                box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                document.getElementById('publicAlertForm').reset();
+                updateUrgencyUI();
+            } catch (error) {
+                showSubmitError(error.message || t('alertSendError'));
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = original;
+            }
+        }
+
+        document.querySelectorAll('.lang-btn').forEach(btn => {
+            btn.addEventListener('click', () => applyLanguage(btn.dataset.lang));
+        });
+        document.getElementById('issueType').addEventListener('change', updateUrgencyUI);
+        document.getElementById('publicAlertForm').addEventListener('submit', sendPublicAlert);
+
+        document.getElementById('techMaintenanceBtn').addEventListener('click', () => {
+            window.location.href = `/pages/tech/manutencao.html?liftId=${encodeURIComponent(currentLiftId)}`;
+        });
+        document.getElementById('techRepairBtn').addEventListener('click', () => {
+            window.location.href = `/pages/tech/tasks.html?liftId=${encodeURIComponent(currentLiftId)}`;
+        });
+        document.getElementById('techEmergencyBtn').addEventListener('click', () => {
+            window.location.href = `/pages/tech/tasks.html?liftId=${encodeURIComponent(currentLiftId)}`;
+        });
+
+        applyLanguage(chooseInitialLanguage());
+        loadLiftInfo();
+    </script>
+    <script src="../../assets/js/monitor.js"></script>
+</body>
+</html>

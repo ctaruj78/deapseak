@@ -319,7 +319,8 @@
 <script src="../../plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
 <script src="../../plugins/adminlte/adminlte.min.js"></script>
 <script>
-let isTyping = false;
+let chatHistory = [];
+    let isTyping = false;
 let remaining = 20;
 
 function autoResize(el) {
@@ -392,7 +393,7 @@ async function sendMessage() {
         const res = await fetch('/api/ai/guest-chat', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ message: msg })
+            body: JSON.stringify({ message: msg, history: chatHistory.slice(-8) })
         });
         const data = await res.json();
         removeTyping();
@@ -403,6 +404,8 @@ async function sendMessage() {
             remaining = 0;
         } else if (data.success && data.data) {
             appendMsg(data.data.response, 'bot');
+            chatHistory.push({ role: 'user', parts: [{ text: msg }] }, { role: 'model', parts: [{ text: data.data.response }] });
+            if (chatHistory.length > 16) chatHistory = chatHistory.slice(-16);
             remaining = data.data.remainingChat ?? remaining;
             document.getElementById('remainingCount').textContent = remaining;
             if (remaining <= 0) {
