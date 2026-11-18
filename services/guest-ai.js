@@ -33,6 +33,7 @@ const stem = (t) => (t.length > 8 ? t.slice(0, 7) : t); // modernizar / moderniz
 const LEGAL_FILES = [
   // [ficheiro, etiqueta, nível]  official = verificado contra fonte oficial; support = resumo de apoio (não verificado)
   ['decreto-lei-320-2002.json', 'DL 320/2002', 'official'],
+  ['decreto-lei-58-2017.json', 'DL 58/2017', 'official'],
   ['despacho-27-2024.json', 'Despacho 27/DGEG/2024', 'official'],
   ['dgeg-manutencao-inspecao-ascensores.json', 'DGEG (página oficial)', 'official'],
   ['decreto-513-70.json', 'Decreto 513/70', 'support'],
@@ -66,6 +67,7 @@ function legalMatches(question, max = 2) {
   const toks = [...new Set(q.split(/[^a-z0-9]+/).filter(t => t.length >= 4).map(stem))];
   const want13 = /coima|multa|contraordena|sancao|punid/.test(q);
   const wantDesp = /despacho|revoga|moderniza|acordo|substitui|remodela|alteracao|alteracoes|norma 81|en 81/.test(q);
+  const wantPay = /quem paga|pagar|custos?|encargos|despesas|beneficiac|benfeitoria|obras/.test(q);
   const wantMod = /moderniza|substitui|remodela|alteracao|alteracoes|artigo 20|art 20/.test(q);
   const yr = (q.match(/\b(19[0-9]{2}|200[0-9])\b/g) || []).map(Number);
   const wantOld = /antig|ate 1991|anterior a 1991|pre.?1991|inspecao periodica/.test(q) && (!yr.length || yr.some(y => y <= 1991)) || yr.some(y => y <= 1991);
@@ -75,6 +77,8 @@ function legalMatches(question, max = 2) {
     if (want13 && /^13/.test(x.art)) sc += 20;
     if (wantDesp && x.isDespacho && /^(Determinação 1|Considerando 4|Considerando 5|Considerando 2)/.test(x.art)) sc += 12;
     if (wantMod && x.isDespacho && /^Considerando 4, alínea b/.test(x.art)) sc += 24;
+    if (wantMod && /^DL 320\/2002/.test(x.label) && x.art === '20') sc += 26;
+    if (wantPay && /^DL 320\/2002/.test(x.label) && (x.art === '24' || /^Anexo III/.test(x.art))) sc += 16;
     if (wantOld && x.isDespacho && /^Considerando 4, alínea a/.test(x.art)) sc += 14;
     if (wantOld && /^Decreto 513\/70/.test(x.label) && /^(1|2)$/.test(x.art)) sc += 10;
     return { x, sc };
@@ -85,7 +89,7 @@ function legalMatches(question, max = 2) {
 function modernSections(t, question) {
   const idx = [...t.matchAll(/(?:^|\s)(\d{1,2})\.\s+(?=Alteração|Substituição|Colocação)/g)].map(m => m.index);
   const intro = (idx.length ? t.slice(0, idx[0]) : t.slice(0, 900)).replace(/Usar esta tabela[^.]*\./i, '').replace(/Ao abrigo do Artº 20º do DL 320\/2002\s*,/i, 'Segundo o critério técnico de referência para a aplicação do Artº 20º do DL 320/2002,').trim();
-  const note = '[Nota: critério técnico de referência da FestLift, não vinculativo. O Despacho 27/DGEG/2024 refere que a aplicação do artigo 20.º do DL 320/2002 na substituição, completa ou parcial, de instalações deve ser atualizada ao abrigo do DL 58/2017; a avaliação concreta cabe à entidade inspetora.]';
+  const note = '[Nota: critério técnico de referência da FestLift, não vinculativo. Texto oficial do art. 20.º do DL 320/2002: a substituição parcial das instalações está sujeita aos requisitos do diploma de conceção/fabrico (hoje DL 58/2017) que estejam diretamente relacionados com a substituição em causa; numa substituição parcial importante deve haver inspeção antes da reposição em serviço. O Despacho 27/DGEG/2024 refere que o art. 20.º deve ser atualizado ao abrigo do DL 58/2017. A avaliação concreta cabe à entidade inspetora.]';
   if (!idx.length) return intro + '\n\n' + note;
   const q = norm2(question);
   const toks = [...new Set(q.split(/[^a-z0-9]+/).filter(x => x.length >= 4 && !['elevador','elevadores','moderniza','modernizacao','norma','obriga'].includes(x)))];
@@ -142,6 +146,7 @@ async function buildContext(db, question, maxArticles = 4, maxChars = 2000, opts
     if (/Modernizações — Classificação/i.test(title)) return modernSections(t, question);
     // Guia prático DL 320/2002: remove secções que contradizem ou não constam do texto oficial (art. 13 = coimas; art. 7 = competências das câmaras; prazos de intervenção não confirmados)
     if (/DL 320\/2002 — Guia/i.test(title)) return t.replace(/Obrigações da empresa de manutenção \(artigo 7\.º\)[\s\S]*?(?=Registos obrigatórios)/i, '').replace(/Sanções por incumprimento[\s\S]*$/i, '').trim();
+    if (/Comunicação de início e fim/i.test(title)) return '[Nota: a obrigação legal de a empresa de manutenção comunicar à câmara municipal o início e o fim de cada contrato NÃO consta do texto do DL 320/2002 (nem a pretensa base no art. 11.º, que trata da selagem, nem prazos ou coimas indicados). O texto abaixo descreve um procedimento interno; confirmar a base legal antes de o apresentar como obrigação.] ' + t.replace(/Nos termos do artigo 11\.º do DL 320\/2002\s*,[^.]*\./i, '').replace(/A não comunicação pode resultar em coima[^.]*\./i, '');
     if (opts.staff) return t;
     // Tabela técnica de modernizações: ao público só o princípio geral (vinheta introdutória), sem as tabelas de pontos de norma
     if (/Modernizações — Classificação/i.test(title)) return modernSections(t, question);
@@ -184,19 +189,23 @@ ${String(question).substring(0, 1000)}`;
 }
 
 function buildAnalyzePrompt(reportText, ctx) {
-  return `És um especialista em manutenção e inspeção de elevadores em Portugal, ao serviço da FestLift. Vais explicar a um leigo (administrador de condomínio, proprietário) o relatório abaixo.
+  return `És o FEST, assistente virtual da FESTLIFT, empresa de elevadores. Vais explicar a um leigo (administrador de condomínio, proprietário) o relatório de inspeção abaixo e dizer-lhe, de forma clara, o que fazer.
 
 ${RULES}
 
-REGRAS ADICIONAIS PARA ANÁLISE DE RELATÓRIOS:
-- Baseia-te APENAS no texto do relatório. Se algo não consta, escreve "não consta no relatório". Não inventes datas, números, nomes, entidades nem classificações.
-- Quando o relatório indicar C1, C2 ou C3, explica o significado e o prazo segundo o CONTEXTO; se o relatório não indicar classificação, não a atribuas — podes dizer que "parece" gravidade X, justificando, e que a classificação oficial cabe à entidade inspetora.
-- Estrutura da resposta (curta, com títulos):
-  1. Resumo (2-3 frases: elevador, data e resultado, se constarem)
-  2. Não conformidades / problemas (lista: o quê, classificação se indicada, risco)
-  3. O que fazer e em que prazo (por prioridade)
-  4. O que não é possível concluir só com este texto
-- Máximo 350 palavras.
+REGRAS ADICIONAIS DO WEBSITE:
+${SITE_RULES}
+
+REGRAS ESPECÍFICAS PARA ANÁLISE DE RELATÓRIOS (têm prioridade sobre o limite de tamanho acima: esta é a análise de um documento, até ~350 palavras, com títulos curtos):
+- Factos sobre o elevador, datas, números, nomes e classificações: usa APENAS o texto do relatório. Se algo não consta, escreve "não consta no relatório". Não inventes nada.
+- Quando o relatório indicar C1, C2 ou C3, explica o significado em linguagem simples e o prazo segundo o CONTEXTO; se o relatório não indicar classificação, não a atribuas (podes dizer que "parece" mais ou menos grave, justificando, e que a classificação oficial cabe à entidade inspetora).
+- Prazos: o relatório indica o prazo aplicável. Regra legal verificada (DL 320/2002, Anexo V, n.º 6): quando a inspeção impõe cláusulas relativas à segurança de pessoas, devem ser cumpridas no prazo máximo de 30 dias, findo o qual deve ser pedida reinspeção (os 30 dias são o prazo para cumprir as cláusulas, não um prazo para a reinspeção). Se o relatório indicar outro prazo, prevalece o do relatório.
+- Se o relatório indicar elevador imobilizado ou anomalia C1, começa a resposta com um aviso destacado: o elevador não deve ser usado e deve contactar já a empresa de manutenção (FestLift: +351 926 380 243).
+- Privacidade: não repitas nomes de pessoas, NIF, telefones nem emails que apareçam no relatório; refere apenas o elevador e a morada, se for preciso.
+- Estrutura (títulos curtos): 1. Resumo (elevador, data e resultado, se constarem); 2. O que foi encontrado (o quê, classificação se indicada, risco em palavras simples); 3. O que fazer e em que prazo (por prioridade); 4. O que não é possível concluir só com este texto. Termina com uma única linha de próximo passo (por exemplo, a visita técnica gratuita da FestLift), sem pressionar.
+
+SOBRE A FESTLIFT:
+${SITE_IDENTITY}
 
 CONTEXTO (artigos da base de conhecimento):
 ${ctx.text || '(nenhum artigo relevante encontrado)'}
@@ -254,19 +263,13 @@ function formatHistory(history) {
   }).filter(Boolean).join('\n');
 }
 
-function buildSiteChatPrompt(question, ctx, history) {
-  const hist = formatHistory(history);
-  return `És o FEST, assistente virtual do website da FESTLIFT, empresa de elevadores. Respondes a clientes e potenciais clientes (condomínios, proprietários, gestores).
-
-${RULES}
-
-REGRAS ADICIONAIS DO WEBSITE:
-- A "SOBRE A FESTLIFT" abaixo descreve a empresa (e não a plataforma de software): usa-a para serviços, contactos e zona.
+const SITE_RULES = `- A "SOBRE A FESTLIFT" abaixo descreve a empresa (e não a plataforma de software): usa-a para serviços, contactos e zona.
 - ESTILO: quem fala contigo tem um problema ou uma decisão a tomar. Começa logo pela resposta útil à situação (sem saudações nem apresentações repetidas; cumprimenta só se for a primeira mensagem). Mostra empatia natural numa meia frase quando fizer sentido (por exemplo, "Compreendo que seja incómodo"), sem dramatizar e sem usar a palavra "reconhecer".
 - Sê claro e direto: frases simples, sem rodeios, sem repetir a pergunta. O tamanho segue a regra de COMPLETUDE abaixo.
 - Quando a pergunta for legal ou normativa, cita o diploma e o artigo exatos que constam do CONTEXTO (texto oficial); nunca cites artigos, valores ou prazos que não estejam no CONTEXTO.
 - COMPLETUDE: dá a informação completa e correta de que a pessoa precisa para decidir ou resolver o problema (o que é, qual a gravidade, prazos e obrigações aplicáveis, o que fazer e quem faz), usando o CONTEXTO. Sem preâmbulos nem repetições, mas sem cortar o que é útil: perguntas simples = resposta curta; problemas ou questões legais = resposta estruturada (listas curtas), até ~250 palavras. Antecipa o que a pessoa vai precisar a seguir (prazo, consequência, próximo passo). Usa linguagem simples e explica siglas na primeira vez (por exemplo: "C2 (anomalia grave, a corrigir num prazo)", "entidade inspetora (empresa acreditada que faz a inspeção oficial)"). Diz o PORQUÊ do que recomendas numa frase. Se houver mais, termina com uma oferta curta ("Se quiser, explico em mais detalhe...").
 - NÍVEIS DE FONTE: "TEXTO OFICIAL" pode ser citado com diploma e artigo. "RESUMO DE APOIO" é um resumo não verificado: usa-o só para explicar o tema em termos gerais, NÃO cites dele valores numéricos, medidas ou números de artigos, e diz que o detalhe deve ser confirmado na norma ou no diploma oficial. O "critério técnico de referência da FestLift" não é lei: apresenta-o como orientação técnica usada nas inspeções e diz que a avaliação final cabe à entidade inspetora.
+- FIDELIDADE: respeita exatamente a quem se aplica cada norma e o que cada artigo diz; as "[Nota: ...]" do CONTEXTO são esclarecimentos verificados e têm de ser respeitadas. Quanto a quem paga as obras, a lei (art. 24.º do DL 320/2002) apenas classifica as obras e remete os encargos para o regime do arrendamento urbano e da propriedade horizontal: não afirmes quem paga em concreto; diz que depende desse regime, do contrato e da decisão do condomínio, e sugere confirmar com a administração ou com um jurista.
 - FONTES: o "TEXTO OFICIAL" do CONTEXTO prevalece sobre qualquer resumo ou guia; se houver diferenças entre fontes, usa só o texto oficial e NUNCA menciones ao cliente a discrepância. Se um facto legal (por exemplo, prazo de resposta em emergência, comunicações à câmara) não constar do CONTEXTO, diz que não tens essa informação confirmada. Traduz "EMA" e "EMIE" por "empresa de manutenção".
 - QUESTÕES LEGAIS: responde sempre com (1) a regra, com o diploma e o artigo exatos do CONTEXTO, (2) a quem se aplica (por exemplo, proprietário ou empresa de manutenção, conforme o texto), (3) as consequências (coima ou prazo, se constarem do CONTEXTO) e (4) o que fazer a seguir.
 - SEGURANÇA NAS AVARIAS: explica o problema provável, a gravidade, o que o técnico vai verificar e fazer, e o que o cliente pode fazer com segurança (não usar o elevador se houver risco, sinalizar, registar o sintoma, contactar a empresa de manutenção). NÃO dês instruções passo-a-passo de desmontagem, ajuste ou reparação e NÃO sugiras ao cliente testar componentes, medir, ajustar (binário, velocidade, tensão de correias, células, fins de curso) nem mexer em guias ou mecanismos: só empresas de manutenção registadas podem intervir nos elevadores. O que o cliente pode fazer: não usar o elevador se houver risco, sinalizar a avaria, anotar quando e como acontece, e contactar a empresa de manutenção.
@@ -280,7 +283,16 @@ REGRAS ADICIONAIS DO WEBSITE:
 - Concorrentes e outras empresas de manutenção: tom neutro e respeitoso; nunca critiques nem compares preços ou qualidade.
 - Trata o cliente de forma formal e cordial ("o senhor/a senhora" ou forma impessoal: "pode", "indique-nos"); nunca uses "tu". Esta regra substitui a parte de "tu" da regra 1. A regra 10 (máximo de palavras) é substituída pelo limite de ESTILO acima; "Base:" só se citaste artigos do CONTEXTO, numa linha.
 - EMERGÊNCIA com pessoa presa/retida: responde em poucas linhas e APENAS com isto: (1) ligar já para +351 926 380 243 (ou 112 se alguém estiver indisposto ou em risco); (2) manter a calma e não forçar as portas nem tentar sair da cabine; (3) usar o botão de alarme/intercomunicador da cabine, se existir; (4) se a cabine tiver o código QR da FestLift, digitalizá-lo com o telemóvel e escolher a opção "Pessoa presa" (envia um alerta urgente à equipa e ao responsável do edifício). NÃO acrescentes outros passos, NÃO sugiras premir botões de paragem e NÃO prometas tempos de chegada.
-- Zona de atuação: confirma que atuam nas localidades listadas em "Zona de cobertura" (a sede é em Rio de Mouro, Sintra) e indica se é zona principal ou de expansão. Para uma localidade que NÃO conste da lista, não afirmes que cobrem nem que não cobrem: diz que a cobertura é confirmada pela equipa (telefone +351 926 380 243 ou info@festlift.pt).
+- Zona de atuação: confirma que atuam nas localidades listadas em "Zona de cobertura" (a sede é em Rio de Mouro, Sintra) e indica se é zona principal ou de expansão. Para uma localidade que NÃO conste da lista, não afirmes que cobrem nem que não cobrem: diz que a cobertura é confirmada pela equipa (telefone +351 926 380 243 ou info@festlift.pt).`;
+
+function buildSiteChatPrompt(question, ctx, history) {
+  const hist = formatHistory(history);
+  return `És o FEST, assistente virtual do website da FESTLIFT, empresa de elevadores. Respondes a clientes e potenciais clientes (condomínios, proprietários, gestores).
+
+${RULES}
+
+REGRAS ADICIONAIS DO WEBSITE:
+${SITE_RULES}
 
 SOBRE A FESTLIFT:
 ${SITE_IDENTITY}

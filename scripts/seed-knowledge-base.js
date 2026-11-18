@@ -651,19 +651,22 @@ const articles = [
     difficulty: 'basico',
     summary: 'Resumo do Decreto-Lei 320/2002: obrigações da empresa de manutenção, registos obrigatórios e sanções.',
     content: `<h2>Decreto-Lei n.º 320/2002 — O que é e o que implica</h2>
-<p>O DL 320/2002 é o principal diploma legal que regula a manutenção de elevadores em Portugal. Define as obrigações das empresas de manutenção, os prazos de inspeção e as sanções por incumprimento.</p>
+<p>O DL 320/2002, de 28 de dezembro, estabelece as disposições aplicáveis à manutenção e inspeção de ascensores, monta-cargas, escadas mecânicas e tapetes rolantes, após a sua entrada em serviço, bem como as condições de acesso às atividades de manutenção e de inspeção (art. 1.º). <em>Texto original de 2002; algumas partes foram alteradas depois (por exemplo, pela Lei 65/2013 quanto às profissões regulamentadas). Confirmar sempre a versão consolidada.</em></p>
 
-<h3>Obrigações da empresa de manutenção (artigo 7.º)</h3>
+<h3>Obrigações do proprietário e da empresa de manutenção</h3>
 <ul>
-  <li>Realizar manutenção mensal a cada elevador sob contrato</li>
-  <li>Comunicar à câmara municipal o início e fim de cada contrato de manutenção</li>
-  <li>Manter livro de manutenção atualizado, disponível para inspeção</li>
-  <li>Disponibilizar serviço de emergência 24/7</li>
-  <li>Intervir em chamadas de emergência em máximo <strong>4 horas</strong> (dias úteis) / <strong>6 horas</strong> (fins de semana)</li>
-  <li>Comunicar imediatamente à câmara qualquer imobilização por razões de segurança</li>
+  <li>As instalações estão obrigatoriamente sujeitas a manutenção regular, assegurada por uma empresa de manutenção (art. 3.º n.º 1) e o <strong>proprietário é obrigado a celebrar um contrato de manutenção</strong> (art. 4.º n.º 1).</li>
+  <li>A empresa de manutenção assume a responsabilidade criminal e civil pelos acidentes causados por deficiente manutenção; o proprietário é solidariamente responsável (art. 3.º n.os 1 e 2).</li>
+  <li>A empresa tem o dever de informar por escrito o proprietário das reparações necessárias (art. 3.º n.º 4).</li>
+  <li>Em caso de grave risco, a empresa deve imobilizar a instalação e dar conhecimento por escrito ao proprietário e à câmara municipal no prazo de <strong>48 horas</strong> (art. 3.º n.º 5).</li>
+  <li>Na instalação, designadamente na cabina, devem estar afixados a identificação da empresa, os contactos e o tipo de contrato (art. 5.º n.º 3).</li>
+  <li>Contrato simples (duração mínima de 1 ano) ou completo (5 anos, renovável); serviços mínimos no Anexo II: plano de manutenção mensal (salvo autorização da DGE), tempo de resposta a avarias não superior a 24 horas e serviço permanente de intervenção rápida para desencarceramento de pessoas (ascensores colocados em serviço ao abrigo do DL 295/98).</li>
+  <li>Acidentes: participar à câmara municipal no prazo máximo de 3 dias (imediatamente se houver vítimas mortais) (art. 9.º).</li>
+  <li>A empresa entrega anualmente à DGE, até 31 de outubro, a lista das instalações pelas quais é responsável (art. 22.º n.º 3).</li>
 </ul>
 
-<h3>Registos obrigatórios no livro de manutenção</h3>
+<h3>Registos habituais (boa prática)</h3>
+<p>Cada ascensor deve ser acompanhado de um livro de registo onde se anotam as reparações e as verificações periódicas (DL 58/2017, Anexo I, 6.2 b)). É habitual registar:</p>
 <ul>
   <li>Data e hora de cada visita</li>
   <li>Nome e assinatura do técnico</li>
@@ -672,16 +675,20 @@ const articles = [
   <li>Resultado de testes periódicos (travão, limitador de velocidade, etc.)</li>
 </ul>
 
-<h3>Sanções por incumprimento (artigo 15.º)</h3>
+<h3>Contra-ordenações (artigo 13.º)</h3>
 <table class="table table-bordered table-sm">
-  <thead><tr><th>Infração</th><th>Coima mín.</th><th>Coima máx.</th></tr></thead>
+  <thead><tr><th>Infração</th><th>Coima</th></tr></thead>
   <tbody>
-    <tr><td>Falta de contrato de manutenção</td><td>€ 250</td><td>€ 3.700</td></tr>
-    <tr><td>Não comunicar início/fim de contrato</td><td>€ 250</td><td>€ 3.700</td></tr>
-    <tr><td>Manutenção não realizada</td><td>€ 1.000</td><td>€ 10.000</td></tr>
-    <tr><td>Não disponibilizar serviço 24/7</td><td>€ 500</td><td>€ 5.000</td></tr>
+    <tr><td>Falta do técnico responsável pela manutenção no ato da inspeção</td><td>€ 250 a € 1 000</td></tr>
+    <tr><td>Não requerer a inspeção nos prazos previstos</td><td>€ 250 a € 5 000</td></tr>
+    <tr><td>Funcionamento sem contrato de manutenção</td><td>€ 1 000 a € 5 000</td></tr>
+    <tr><td>Não apresentação das listagens (art. 22.º)</td><td>€ 2 500 a € 7 500</td></tr>
+    <tr><td>Exercício de empresa de manutenção sem o quadro mínimo de pessoal</td><td>€ 3 750 a € 30 000</td></tr>
+    <tr><td>Falta de seguro de responsabilidade civil atualizado</td><td>€ 7 500 a € 37 500</td></tr>
+    <tr><td>Exercício da atividade sem inscrição na DGE</td><td>€ 7 500 a € 37 500</td></tr>
   </tbody>
-</table>`,
+</table>
+<p>No caso de pessoa singular, o montante máximo da coima é de € 3 750 (art. 13.º n.º 4). Negligência e tentativa são puníveis.</p>`,
     tags: ['DL 320/2002', 'regulamentação', 'obrigações', 'câmara municipal', 'coima'],
     featured: true,
     published: true,
@@ -796,7 +803,8 @@ const articles = [
     category: 'regulamentacao',
     difficulty: 'basico',
     summary: 'Obrigações legais de comunicação à câmara: quando comunicar, como preencher, prazos e o que acontece se não o fizer.',
-    content: `<h2>Comunicação à câmara municipal — Obrigação legal</h2>
+    content: `<p><strong>⚠️ Atenção (verificado a 18/11/2026):</strong> no texto do DL 320/2002 (DR I Série-A N.º 300, 28/12/2002) <strong>não consta</strong> uma obrigação de comunicar à câmara municipal o início e o fim de cada contrato de manutenção. O artigo 11.º trata da selagem das instalações e os prazos (15 dias) e coimas (€ 250–3.700) abaixo não têm base nesse texto. As comunicações à câmara que a lei prevê são: grave risco/imobilização (art. 3.º n.º 5, 48 h), acidentes (art. 9.º), recusa do proprietário em realizar obras (Anexo I n.º 9) e não devolução do comprovativo da taxa de inspeção (Anexo V n.º 2.1). O procedimento abaixo deve ser tratado como prática interna até a base legal ser confirmada.</p>
+<h2>Comunicação à câmara municipal — Obrigação legal</h2>
 <p>Nos termos do <strong>artigo 11.º do DL 320/2002</strong>, a empresa de manutenção tem obrigação de comunicar à câmara municipal o início e o fim de cada contrato de manutenção.</p>
 
 <h3>Comunicação de início de serviço</h3>
@@ -1001,8 +1009,12 @@ async function seed() {
         const col = db.collection('knowledge_base');
 
         const existing = await col.countDocuments();
+        if (existing > 0 && !process.argv.includes('--force')) {
+            console.log(`⛔ Já existem ${existing} artigos. Abortado para não apagar a base de conhecimento (os artigos foram corrigidos/aumentados depois deste seed). Para apagar TUDO e recriar, usar --force.`);
+            process.exit(0);
+        }
         if (existing > 0) {
-            console.log(`⚠️  Já existem ${existing} artigos. A apagar e recriar...`);
+            console.log(`⚠️  Já existem ${existing} artigos. A apagar e recriar (--force)...`);
             await col.deleteMany({});
         }
 

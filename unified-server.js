@@ -11606,9 +11606,19 @@ async function buildSmartAIContext(lowerMsg, originalMsg, role, user, db) {
 const DL320_REFERENCE = (() => {
     try {
         const d = require('./data/regulations/decreto-lei-320-2002.json');
-        return (d.articles || []).map(a => `Art.º ${a.number}.º — ${a.title}:\n${String(a.text || '').trim()}`).join('\n\n');
+        return (d.articles || []).map(a => `${/^\d+$/.test(String(a.number)) ? `Art.º ${a.number}.º` : a.number} — ${a.title}:\n${String(a.text || '').trim()}`).join('\n\n');
     } catch (e) {
         console.warn('⚠️ DL320_REFERENCE indisponível:', e.message);
+        return '';
+    }
+})();
+
+const DL58_REFERENCE = (() => {
+    try {
+        const d = require('./data/regulations/decreto-lei-58-2017.json');
+        return (d.articles || []).map(a => `${a.number} — ${a.title}:\n${String(a.text || '').trim()}`).join('\n\n');
+    } catch (e) {
+        console.warn('⚠️ DL58_REFERENCE indisponível:', e.message);
         return '';
     }
 })();
@@ -11693,84 +11703,18 @@ ${DL320_REFERENCE}
 📜 DL 58/2017 — ARTIGOS DETALHADOS (Ascensores Novos / Diretiva 2014/33/UE)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Art.º 1.º — Âmbito:
-  Aplica-se a ascensores instalados PERMANENTEMENTE em edifícios ou construções, colocados no mercado
-  após 9 de junho de 2017. Para elevadores existentes (antes de 2017) aplica-se DL 295/98 (revogado)
-  e DL 320/2002 (manutenção).
+TEXTO OFICIAL (Diário da República, 1.ª série, N.º 112, 9/6/2017) — extratos. O DL 58/2017 regula a CONCEÇÃO, FABRICO e COLOCAÇÃO NO MERCADO de ascensores novos e dos seus componentes de segurança (instaladores e fabricantes); NÃO regula a manutenção nem as inspeções periódicas de instalações existentes (isso é o DL 320/2002). Revogou o DL 295/98 (art. 46.º). Não cites artigos do DL 58/2017 que não estejam nos extratos abaixo.
 
-Art.º 3.º — Definições:
-  • Ascensor — aparelho de elevação com cabine que serve níveis definidos, com inclinação >15° em relação à vertical
-  • Instalador — pessoa singular ou coletiva que assume responsabilidade pelo projeto, fabrico,
-                  instalação e colocação em serviço
-  • Componentes de segurança — 14 componentes listados no Anexo III (para-quedas, limitador, portas, etc.)
-
-Art.º 5.º — Marcação CE:
-  § 1 — Todo ascensor novo colocado no mercado DEVE ter marcação CE.
-  § 2 — A marcação CE significa que o ascensor cumpre os Requisitos Essenciais de Saúde e Segurança (RESS)
-        do Anexo I da Diretiva 2014/33/UE.
-  § 3 — Sem marcação CE = proibido colocar em serviço.
-
-Art.º 6.º — Declaração UE de Conformidade:
-  § 1 — O instalador deve emitir Declaração UE de Conformidade antes de colocar em serviço.
-  § 2 — A declaração deve conter: identificação do ascensor, normas aplicadas, referência ao
-        organismo notificado que fez avaliação de conformidade.
-  § 3 — O instalador deve conservar a declaração por 10 anos.
-
-Art.º 9.º — Organismo Notificado:
-  § 1 — O instalador deve envolver obrigatoriamente um Organismo Notificado (ON) para avaliação de conformidade.
-  § 2 — Em Portugal, o ON para elevadores é geralmente o ISQ (Instituto de Soldadura e Qualidade) ou similar.
-  § 3 — O ON verifica: projeto, produção ou produto final (3 módulos alternativos disponíveis).
-
-Art.º 14.º — Obrigações do instalador:
-  (a) Garantir que o ascensor cumpre RESS do Anexo I
-  (b) Elaborar documentação técnica completa
-  (c) Realizar procedimento de avaliação de conformidade adequado
-  (d) Emitir declaração UE de conformidade e apor marcação CE
-  (e) Conservar documentação técnica por 10 anos
-  (f) Fornecer instruções de utilização e manutenção ao proprietário em português
-
-Art.º 16.º — Obrigações do importador/distribuidor:
-  Não pode colocar em serviço ascensores sem marcação CE e documentação completa.
-
-Art.º 20.º — Modificações substanciais:
-  Se após entrada em serviço for efetuada modificação substancial (ex: substituição de motor, mudança
-  de velocidade nominal, alteração de carga nominal), o ascensor é considerado NOVO e deve passar
-  novamente pelo processo de avaliação de conformidade completo (novo CE + novo ON).
-
-Art.º 26.º — Fiscalização:
-  ASAE (Autoridade de Segurança Alimentar e Económica) fiscaliza a colocação no mercado.
-  DGEG supervisiona e coordena a aplicação do DL 58/2017.
-  Câmaras municipais fiscalizam inspeções periódicas (DL 320/2002).
+${DL58_REFERENCE}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 📜 LEI 65/2013 — EMIE e EIIE (Regime de Acesso à Atividade)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Art.º 3.º — EMIE (Empresa de Manutenção de Instalações de Elevação):
-  • Registo obrigatório na DGEG antes de qualquer atividade
-  • Técnicos responsáveis devem ter formação específica em elevadores (curso reconhecido)
-  • Seguro de responsabilidade civil mínimo obrigatório (valor definido por portaria)
-  • Renovação anual do registo com prova de seguro válido
+Segundo a DGEG (página oficial), o DL 320/2002 está parcialmente revogado pela Lei 65/2013 no que respeita às profissões regulamentadas; as empresas de manutenção (EMIE, antes EMA) e as entidades inspetoras (EIIE) são reconhecidas pela DGEG.
+⚠️ Os requisitos de registo, formação, seguro e renovação aplicáveis hoje às EMIE/EIIE NÃO estão confirmados aqui: não os afirmes e remete para a DGEG. (O texto original de 2002, Anexos I e IV do DL 320/2002, previa um seguro mínimo e um quadro mínimo de pessoal, mas pode ter sido alterado.)
 
-Art.º 4.º — Técnicos de manutenção:
-  • Devem ter diploma de curso técnico-profissional em eletromecânica ou equipamento
-  • OU experiência comprovada de 3+ anos na área + formação complementar certificada
-  • Devem conhecer: EN 81 series, DL 320/2002, procedimentos de segurança em trabalho em altura
-
-Art.º 8.º — EIIE (Entidade Inspetora de Instalações de Elevação):
-  • Acreditação IPAC obrigatória segundo NP EN ISO/IEC 17020 (tipo A ou C)
-  • Inspetores devem ter formação universitária em engenharia + especialização em elevadores
-  • Proibição de inspeção de elevadores que a própria EIIE mantém (independência)
-  • Responsabilidade civil pelos relatórios emitidos
-
-Art.º 12.º — Reconhecimento mútuo UE:
-  EMIE/EIIE registadas noutro Estado-Membro da UE podem operar em Portugal mediante comunicação
-  prévia à DGEG (não necessitam de novo registo, mas devem cumprir requisitos do DL 320/2002).
-
-Art.º 15.º — Suspensão e cancelamento de registo:
-  DGEG pode suspender ou cancelar registo de EMIE/EIIE em caso de: acidente grave por negligência,
-  inspeções fraudulentas, falta de seguro válido, incumprimento reiterado.
-
+⚠️ AS SECÇÕES SEGUINTES (EN 81-*) SÃO RESUMOS DE APOIO NÃO VERIFICADOS NAS NORMAS OFICIAIS (os textos integrais são pagos). NÃO cites deles valores numéricos, cláusulas ou classificações C1/C2/C3 como se fossem exigência normativa; explica o tema em termos gerais e remete para a norma aplicável ou para a entidade inspetora (EIIE).
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 📜 EN 81-20:2020 — REQUISITOS TÉCNICOS DETALHADOS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -13245,7 +13189,12 @@ app.post('/api/ai/guest-analyze', async (req, res) => {
         const ctx = await guestAI.buildContext(db, reportText.substring(0, 3000));
         const prompt = guestAI.buildAnalyzePrompt(reportText, ctx);
 
-        const text = await _callGuestAI(prompt, { temperature: 0.1 });
+        let text = await _callGuestAI(prompt, { temperature: 0.2 });
+        text = _cleanSiteReply(text);
+        // Segurança: C1 / elevador imobilizado → aviso fixo no topo (não depende do modelo)
+        if (/\bC1\b|imobiliz/i.test(reportText) && !/926 380 243/.test(text)) {
+            text = '⚠️ **Atenção: elevador imobilizado ou com anomalia grave (C1).** Não utilize o elevador e contacte já a empresa de manutenção. FestLift: **+351 926 380 243** (telefone ou WhatsApp).\n\n' + text;
+        }
         guestAI.logExchange(db, { kind: 'analyze', ip, question: reportText.substring(0, 500), answer: text, sources: ctx.sources, provider: AI_PROVIDER });
         res.json({ success: true, data: {
             response: text,
